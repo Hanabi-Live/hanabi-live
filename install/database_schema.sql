@@ -321,12 +321,14 @@ CREATE INDEX chat_log_pm_index_datetime_sent_id ON chat_log_pm (datetime_sent, i
 DROP TABLE IF EXISTS banned_ips CASCADE;
 CREATE TABLE banned_ips (
     id               SERIAL       PRIMARY KEY,
-    ip               TEXT         NOT NULL,
+    ip               TEXT         NOT NULL  UNIQUE,
 
     /* An entry for a banned IP can optionally be associated with a user. */
     user_id          INTEGER      NULL      DEFAULT NULL,
 
+    /* An entry for a banned IP can optionally be associated with a reason. */
     reason           TEXT         NULL      DEFAULT NULL,
+
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -335,12 +337,14 @@ CREATE INDEX banned_ips_index_ip ON banned_ips (ip);
 DROP TABLE IF EXISTS muted_ips CASCADE;
 CREATE TABLE muted_ips (
     id               SERIAL       PRIMARY KEY,
-    ip               TEXT         NOT NULL,
+    ip               TEXT         NOT NULL  UNIQUE,
 
     /* An entry for a muted IP can optionally be associated with a user. */
     user_id          INTEGER      NULL      DEFAULT NULL,
 
+    /* An entry for a muted IP can optionally be associated with a reason. */
     reason           TEXT         NULL      DEFAULT NULL,
+
     datetime_banned  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );

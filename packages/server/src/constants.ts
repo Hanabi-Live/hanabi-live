@@ -13,3 +13,5 @@ export const STARTING_GIT_COMMIT_SHA1 = execSync("git rev-parse HEAD", {
 })
   .toString()
   .trim();
+
+export const NUM_CONSECUTIVE_DIACRITICS_ALLOWED = 3;

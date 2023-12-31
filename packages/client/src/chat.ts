@@ -1,6 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
+import type { CommandChatData } from "@hanabi/data";
 import { PROJECT_NAME } from "@hanabi/data";
 import { eRange, trimPrefix } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
@@ -12,7 +13,6 @@ import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
-import type { ChatMessage } from "./types/ChatMessage";
 
 export enum SelfChatMessageType {
   Normal,
@@ -440,55 +440,21 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   }
 }
 
-export function add(data: ChatMessage, fast: boolean): void {
-  // Find out which chat box we should add the new chat message to.
-  let chat: JQuery | undefined;
-  if (data.room === "lobby") {
-    chat = $("#lobby-chat-text");
-  } else if (data.room.startsWith("table")) {
-    if (globals.currentScreen === Screen.PreGame) {
-      chat = $("#lobby-chat-pregame-text");
-    } else if (globals.currentScreen === Screen.Game) {
-      chat = $("#game-chat-text");
-    } else {
-      // Ignore table chat if we are not in a pre-game and not in a game.
-      return;
-    }
-  } else if (data.room === "") {
-    // A blank room indicates a private message (PM). PMs do not have a room associated with them,
-    // so we default to displaying them on the chat window that the user currently has open.
-    if (data.recipient === globals.username) {
-      // This is a private message (PM) that we are receiving. Record who our last PM is from.
-      lastPM = data.who;
-    }
-
-    if (globals.currentScreen === Screen.PreGame) {
-      chat = $("#lobby-chat-pregame-text");
-    } else if (globals.currentScreen === Screen.Game) {
-      chat = $("#game-chat-text");
-    } else {
-      chat = $("#lobby-chat-text");
-    }
-  } else {
-    throw new Error("Failed to parse the room name.");
+export function add(data: CommandChatData, fast: boolean): void {
+  // If we are receiving a private message (PM), record who it is from.
+  if (data.recipient === globals.username) {
+    lastPM = data.who;
   }
 
-  // Automatically generate links from any URLs that are present in the message. (We must use
-  // "linkifyjs/html" instead of "linkifyjs/string" because the latter will convert "&gt;" to
-  // "&amp;gt;", and the server has already escaped HTML input.)
-  data.msg = linkifyHtml(data.msg, {
-    target: "_blank",
-    attributes: {
-      rel: "noopener noreferrer",
-    },
-  });
+  const chat = getChatBoxElement(data);
+  if (chat === undefined) {
+    return;
+  }
 
-  // Convert emotes to images.
-  data.msg = fillDiscordEmotes(data.msg);
-  data.msg = fillTwitchEmotes(data.msg);
+  const msg = getPreparedMessage(data.msg);
 
-  // Typescript hasn't implemented the required DateTimeFormat option (hourCycle: h23). So we format
-  // the hours manually.
+  // Typescript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
+  // format the hours manually.
   const datetime = `${`0${new Date(data.datetime).getHours()}`.slice(
     -2,
   )}:${`0${new Date(data.datetime).getMinutes()}`.slice(-2)}`;
@@ -504,12 +470,12 @@ export function add(data: ChatMessage, fast: boolean): void {
         : `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
   }
   if (data.server || data.recipient !== "") {
-    line += data.msg;
+    line += msg;
   } else if (data.who === "") {
-    line += data.msg;
+    line += msg;
   } else {
     line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
-    line += data.msg;
+    line += msg;
   }
   if (data.server && line.includes("[Server Notice]")) {
     line = line.replace(
@@ -575,25 +541,61 @@ export function add(data: ChatMessage, fast: boolean): void {
   }
 }
 
-// This is used when the client needs to send a chat message to itself.
-export function sendSelfPMFromServer(
-  msg: string,
-  room: string,
-  type = SelfChatMessageType.Normal,
-): void {
-  const message = formatChatMessage(msg, type);
-  add(
-    {
-      msg: message,
-      who: PROJECT_NAME,
-      discord: false,
-      server: true,
-      datetime: new Date().toString(),
-      room,
-      recipient: globals.username,
+/** Find out which chat box we should add the new chat message to. */
+function getChatBoxElement(data: CommandChatData): JQuery | undefined {
+  if (data.room === "lobby") {
+    return $("#lobby-chat-text");
+  }
+
+  if (data.room !== undefined && data.room.startsWith("table")) {
+    if (globals.currentScreen === Screen.PreGame) {
+      return $("#lobby-chat-pregame-text");
+    }
+
+    if (globals.currentScreen === Screen.Game) {
+      return $("#game-chat-text");
+    }
+
+    // Ignore table chat if we are not in a pre-game and not in a game.
+    return undefined;
+  }
+
+  // A blank room indicates a private message (PM). PMs do not have a room associated with them, so
+  // we default to displaying them on the chat window that the user currently has open.
+  if (data.room === undefined || data.room === "") {
+    if (globals.currentScreen === Screen.PreGame) {
+      return $("#lobby-chat-pregame-text");
+    }
+
+    if (globals.currentScreen === Screen.Game) {
+      return $("#game-chat-text");
+    }
+
+    return $("#lobby-chat-text");
+  }
+
+  return undefined;
+}
+
+/** Add links, Discord emotes, and Twitch emotes. */
+function getPreparedMessage(rawMsg: string) {
+  let msg = rawMsg;
+
+  // Automatically generate links from any URLs that are present in the message. (We must use
+  // "linkifyjs/html" instead of "linkifyjs/string" because the latter will convert "&gt;" to
+  // "&amp;gt;", and the server has already escaped HTML input.)
+  msg = linkifyHtml(msg, {
+    target: "_blank",
+    attributes: {
+      rel: "noopener noreferrer",
     },
-    false,
-  );
+  });
+
+  // Convert emotes to images.
+  msg = fillDiscordEmotes(msg);
+  msg = fillTwitchEmotes(msg);
+
+  return msg;
 }
 
 // Discord emotes are in the form of: <:PogChamp:254683883033853954>
@@ -698,6 +700,27 @@ function getTypingMessage(): string {
       return "Several people are typing...";
     }
   }
+}
+
+// This is used when the client needs to send a chat message to itself.
+export function sendSelfPMFromServer(
+  msg: string,
+  room: string,
+  type = SelfChatMessageType.Normal,
+): void {
+  const message = formatChatMessage(msg, type);
+  add(
+    {
+      msg: message,
+      who: PROJECT_NAME,
+      discord: false,
+      server: true,
+      datetime: new Date().toString(),
+      room,
+      recipient: globals.username,
+    },
+    false,
+  );
 }
 
 function formatChatMessage(msg: string, type: SelfChatMessageType): string {

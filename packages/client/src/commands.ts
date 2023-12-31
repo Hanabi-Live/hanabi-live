@@ -1,12 +1,12 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
+import type { CommandChatData } from "@hanabi/data";
+import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
-import { globals } from "./Globals";
 import * as pregame from "./lobby/pregame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
-import type { ChatMessage } from "./types/ChatMessage";
 
 // Define a command handler map.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,12 +44,16 @@ commands.set("error", (data: ErrorData) => {
 });
 
 // Received by the client when a new chat message arrives.
-commands.set("chat", (data: ChatMessage) => {
-  chat.add(data, false); // The second argument is "fast"
+commands.set("chat", (data: CommandChatData) => {
+  chat.add(data, false); // The second argument is "fast".
+  acknowledgeChatRead(data.room);
+});
 
-  if (!data.room.startsWith("table")) {
+function acknowledgeChatRead(room: string | undefined) {
+  if (room === undefined || !room.startsWith("table")) {
     return;
   }
+
   if (globals.currentScreen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received.
     globals.conn!.send("chatRead", {
@@ -83,7 +87,7 @@ commands.set("chat", (data: ChatMessage) => {
       globals.ui.updateChatLabel();
     }
   }
-});
+}
 
 // Received by the client when someone either starts or stops typing.
 interface ChatTypingMessage {
@@ -108,7 +112,7 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
 // messages.
 interface ChatListData {
-  list: ChatMessage[];
+  list: CommandChatData[];
   unread: number;
 }
 commands.set("chatList", (data: ChatListData) => {

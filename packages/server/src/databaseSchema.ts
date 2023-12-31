@@ -69,8 +69,7 @@ export const chatLogTable = pgTable(
   }),
 );
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const chatLogPMTable = pgTable(
+export const chatLogPMTable = pgTable(
   "chat_log_pm",
   {
     id: serial("id").primaryKey(),
@@ -96,7 +95,7 @@ const chatLogPMTable = pgTable(
 
 export const bannedIPsTable = pgTable("banned_ips", {
   id: serial("id").primaryKey(),
-  ip: text("ip").notNull(),
+  ip: text("ip").notNull().unique(),
 
   /** `DEFAULT NULL` is the default behavior. */
   userID: integer("user_id").references(() => usersTable.id),
@@ -109,10 +108,9 @@ export const bannedIPsTable = pgTable("banned_ips", {
     .defaultNow(),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const mutedIPsTable = pgTable("muted_ips", {
+export const mutedIPsTable = pgTable("muted_ips", {
   id: serial("id").primaryKey(),
-  ip: text("ip").notNull(),
+  ip: text("ip").notNull().unique(),
 
   /** `DEFAULT NULL` is the default behavior. */
   userID: integer("user_id").references(() => usersTable.id),

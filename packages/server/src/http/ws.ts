@@ -2,7 +2,7 @@ import type { SocketStream } from "@fastify/websocket";
 import type { FastifyRequest } from "fastify";
 import { deleteCookie, getCookieValue } from "../httpSession";
 import { models } from "../models";
-import { wsError } from "../ws";
+import { wsError } from "../wsHelpers";
 import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
 import type { WSUser } from "../wsUsers";
 import { getSessionID } from "../wsUsers";
@@ -31,8 +31,9 @@ export async function httpWS(
     return;
   }
 
-  const username = await models.users.getUsername(userID);
-  if (username === undefined) {
+  const { ip } = request;
+  const wsData = await models.users.getWSData(userID, ip);
+  if (wsData === undefined) {
     // The user has a cookie for a user that does not exist in the database (e.g. an "orphaned"
     // user). This can happen in situations where a test user was deleted, for example. Delete their
     // cookie and force them to re-login.
@@ -43,14 +44,16 @@ export async function httpWS(
   }
 
   const sessionID = getSessionID();
-  const { ip } = request;
+  const { username, normalizedUsername, muted } = wsData;
 
   const wsUser: WSUser = {
     connection,
     sessionID,
     userID,
     username,
+    normalizedUsername,
     ip,
+    muted,
   };
 
   enqueueWSMsg(WSQueueElementType.Login, wsUser);

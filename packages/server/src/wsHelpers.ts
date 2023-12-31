@@ -16,11 +16,11 @@ function getWSMsg<T extends Command>(command: T, data: CommandData[T]) {
  *
  * Messages are sent using the Golem protocol.
  */
-function wsSend<T extends Command>(
+export function wsSend<T extends Command>(
   connection: SocketStream,
   command: T,
   data: CommandData[T],
-) {
+): void {
   const msg = getWSMsg(command, data);
   connection.socket.send(msg);
 }
@@ -44,5 +44,12 @@ export function wsSendAll<T extends Command>(
 export function wsError(connection: SocketStream, msg: string): void {
   wsSend(connection, Command.error, {
     error: msg,
+  });
+}
+
+/** Helper function to send a warning to a WebSocket connection. */
+export function wsWarning(connection: SocketStream, msg: string): void {
+  wsSend(connection, Command.warning, {
+    warning: msg,
   });
 }

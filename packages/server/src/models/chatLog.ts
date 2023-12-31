@@ -8,6 +8,7 @@ export const chatLog = {
         message: chatLogTable.message,
       })
       .from(chatLogTable)
+      .orderBy(chatLogTable.id)
       .limit(1);
     const firstChatLog = chatLogs[0];
 

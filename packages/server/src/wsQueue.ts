@@ -9,7 +9,7 @@ import { logger } from "./logger";
 import { models } from "./models";
 import { getRedisGamesWithUser } from "./redis";
 import type { UserID } from "./types/UserID";
-import { wsError, wsSendAll } from "./ws";
+import { wsError, wsSendAll } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
 
@@ -62,7 +62,9 @@ async function processQueue(element: WSQueueElement) {
 async function login(wsUser: WSUser) {
   const { userID, username, ip } = wsUser;
 
-  logger.info(`Logging in WebSocket user: ${username} (${userID})`);
+  logger.info(
+    `Logging in WebSocket user ${username} (${userID}) from IP: ${ip}`,
+  );
 
   // Do all asynchronous work first before adding the user to the map and attaching handlers.
   const data = await getLoginData(userID, ip);
@@ -107,7 +109,7 @@ function addToMapAndAddConnectionHandlers(wsUser: WSUser, _data: LoginData) {
 }
 
 async function logout(wsUser: WSUser) {
-  const { userID, username } = wsUser;
+  const { userID, username, ip } = wsUser;
 
   // Check to see if there is a newer WebSocket connection for this user that is already connected.
   // If so, we can skip the logout work. (This check is necessary because when the same user logs in
@@ -121,7 +123,9 @@ async function logout(wsUser: WSUser) {
     return;
   }
 
-  logger.info(`Logging out WebSocket user: ${username} (${userID})`);
+  logger.info(
+    `Logging out WebSocket user ${username} (${userID}) from IP: ${ip}`,
+  );
 
   // We perform a type assertion to a readable map to represent that we are inside of the WebSocket
   // login queue, which is the only place that this map should be mutable.

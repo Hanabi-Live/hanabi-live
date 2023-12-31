@@ -6,9 +6,11 @@ import {
   ReadonlySet,
   getNumConsecutiveDiacritics,
   hasEmoji,
-  normalizeString,
+  hasWhitespace,
+  normalizeUsername,
   parseIntSafe,
 } from "isaacscript-common-ts";
+import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "../constants";
 import { setCookieValue } from "../httpSession";
 import { logger } from "../logger";
 import { models } from "../models";
@@ -16,10 +18,12 @@ import { getClientVersion } from "../version";
 
 const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 15;
-const NUM_CONSECUTIVE_DIACRITICS_ALLOWED = 3;
+
+/** Every special character other than hyphens, underscores, and periods. */
+const ILLEGAL_SPECIAL_CHARACTERS = "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?";
 
 const RESERVED_USERNAMES = new ReadonlySet([
-  normalizeString(PROJECT_NAME),
+  normalizeUsername(PROJECT_NAME),
   "hanab",
   "hanabi",
   "live",
@@ -28,8 +32,6 @@ const RESERVED_USERNAMES = new ReadonlySet([
   "hanabilive",
   "nabilive",
 ]);
-
-const WHITESPACE_REGEX = /\s/;
 
 /**
  * Handles the first part of login authentication. (The second step is found in "ws.ts".)
@@ -60,7 +62,7 @@ export async function httpLogin(
 
   let user = await models.users.get(username);
   if (user === undefined) {
-    const normalizedUsername = normalizeString(username);
+    const normalizedUsername = normalizeUsername(username);
     const newUserError = await validateNewUser(
       username,
       normalizedUsername,
@@ -144,8 +146,7 @@ async function validateNewUser(
   password: string,
   newPassword: string | undefined,
 ): Promise<string | undefined> {
-  const usernameHasWhitespace = WHITESPACE_REGEX.test(username);
-  if (usernameHasWhitespace) {
+  if (hasWhitespace(username)) {
     return "Usernames cannot contain any whitespace characters.";
   }
 
@@ -157,7 +158,7 @@ async function validateNewUser(
     return `Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`;
   }
 
-  if (username.includes("`~!@#$%^&*()=+[{]}\\|;:'\",<>/?")) {
+  if (username.includes(ILLEGAL_SPECIAL_CHARACTERS)) {
     return "Usernames cannot contain any special characters other than hyphens, underscores, and periods.";
   }
 
@@ -175,6 +176,8 @@ async function validateNewUser(
     return "That username is reserved. Please choose a different one.";
   }
 
+  // At this point, the normal username is longer than `MIN_USERNAME_LENGTH`, so if the normalized
+  // username is blank, then it is a transliteration issue.
   if (normalizedUsername === "") {
     return "That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.";
   }

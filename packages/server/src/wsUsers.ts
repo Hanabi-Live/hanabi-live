@@ -9,8 +9,10 @@ export interface WSUser {
 
   sessionID: SessionID;
   userID: UserID;
-  username: string;
+  username: string; // TODO: unused?
+  normalizedUsername: string;
   ip: string;
+  muted: boolean;
 }
 
 /**
@@ -29,4 +31,16 @@ let sessionID = 0 as SessionID;
 export function getSessionID(): SessionID {
   sessionID++;
   return sessionID;
+}
+
+export function getWSUserByNormalizedUsername(
+  normalizedUsername: string,
+): WSUser | undefined {
+  for (const wsUser of wsUsers.values()) {
+    if (wsUser.normalizedUsername === normalizedUsername) {
+      return wsUser;
+    }
+  }
+
+  return undefined;
 }

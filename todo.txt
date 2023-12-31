@@ -36,3 +36,4 @@ long term once the server is rewritten in TypeScript:
 - stronger typing for `disconShadowingSeat` field
 - remove -1 type from activePlayerIndex (prefer undefined)
 - readonly turn: number; // TODO: remove. This is unused.
+- separate sign up and login into two separate forms

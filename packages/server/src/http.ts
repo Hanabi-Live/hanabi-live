@@ -17,6 +17,7 @@ import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
 import type { Logger } from "pino";
+import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { httpLogin } from "./http/login";
@@ -25,7 +26,6 @@ import { httpMain } from "./http/main";
 import { httpTestCookie } from "./http/testCookie";
 import { httpWS } from "./http/ws";
 import { logger } from "./logger";
-import { models } from "./models";
 
 type FastifyInstanceWithLogger = FastifyInstance<
   RawServerDefault,
@@ -144,8 +144,9 @@ export async function httpInit(): Promise<void> {
   });
 
   httpServer.addHook("preHandler", async (request, reply) => {
-    const ipIsBanned = await models.bannedIPs.isBannedIP(request.ip);
-    if (ipIsBanned) {
+    const { ip } = request;
+
+    if (isBannedIP(ip)) {
       logger.info(
         `IP "${request.ip}" tried to send an HTTP request, but they are banned.`,
       );
