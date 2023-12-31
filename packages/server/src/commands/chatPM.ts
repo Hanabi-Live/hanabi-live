@@ -47,6 +47,11 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
     `PM <${wsUser.username}> --> <${wsUserRecipient.username}> ${msg}`,
   );
 
+  // Add the message to the database. (Even though this is the most time intensive part, we want to
+  // do it first in case database insertion fails. That way, we will not send "phantom" direct
+  // messages.)
+  await models.chatLogPM.insert(wsUser.userID, wsUserRecipient.userID, msg);
+
   const data = {
     msg,
     who: wsUser.username,
@@ -61,8 +66,4 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
 
   // Send the private message to the recipient.
   wsSend(wsUserRecipient.connection, Command.chat, data);
-
-  // Add the message to the database. (This can be done last since it is the most time intensive
-  // part.)
-  await models.chatLogPM.insert(wsUser.userID, wsUserRecipient.userID, msg);
 }

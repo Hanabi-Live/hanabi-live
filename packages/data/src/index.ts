@@ -2,7 +2,7 @@ export * from "./classes/Settings";
 export * from "./constants";
 export * from "./enums/Command";
 export * from "./enums/Status";
-export * from "./interfaces/http/httpLoginData2";
+export * from "./interfaces/http/httpLoginData";
 export * from "./types/GameID";
 export * from "./types/TableID";
 export * from "./types/UserID";

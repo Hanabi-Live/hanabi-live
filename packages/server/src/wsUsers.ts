@@ -1,6 +1,6 @@
 import type { SocketStream } from "@fastify/websocket";
+import type { UserID } from "@hanabi/data";
 import { ReadonlyMap } from "isaacscript-common-ts";
-import type { UserID } from "../../data/src/types/UserID";
 import type { SessionID } from "./types/SessionID";
 
 export interface WSUser {
