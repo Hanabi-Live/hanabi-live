@@ -8,3 +8,5 @@ export const httpLoginData = z
     version: z.string().min(1),
   })
   .readonly();
+
+export type HTTPLoginData = z.infer<typeof httpLoginData>;
