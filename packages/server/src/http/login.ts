@@ -20,7 +20,9 @@ const MIN_USERNAME_LENGTH = 2;
 const MAX_USERNAME_LENGTH = 15;
 
 /** Every special character other than hyphens, underscores, and periods. */
-const ILLEGAL_SPECIAL_CHARACTERS = "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?";
+const ILLEGAL_SPECIAL_CHARACTERS = [
+  ..."`~!@#$%^&*()=+[{]}\\|;:'\",<>/?",
+] as const;
 
 const RESERVED_USERNAMES = new ReadonlySet([
   normalizeUsername(PROJECT_NAME),
@@ -158,7 +160,10 @@ async function validateNewUser(
     return `Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`;
   }
 
-  if (username.includes(ILLEGAL_SPECIAL_CHARACTERS)) {
+  const hasIllegalCharacters = ILLEGAL_SPECIAL_CHARACTERS.some((char) =>
+    username.includes(char),
+  );
+  if (hasIllegalCharacters) {
     return "Usernames cannot contain any special characters other than hyphens, underscores, and periods.";
   }
 

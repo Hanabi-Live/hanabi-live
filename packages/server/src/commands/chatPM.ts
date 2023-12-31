@@ -8,7 +8,9 @@ import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 import { getWSUserByNormalizedUsername } from "../wsUsers";
 
-export async function commandChatPM(
+// TODO: import
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function commandChatPM(
   wsUser: WSUser,
   msg: string,
   recipient: string,
