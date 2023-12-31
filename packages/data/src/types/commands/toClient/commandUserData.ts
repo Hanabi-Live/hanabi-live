@@ -8,7 +8,7 @@ export const commandUserData = z
     userID,
     name: z.string(),
     status: z.nativeEnum(Status),
-    tableID,
+    tableID: tableID.optional(),
     hyphenated: z.boolean(),
     inactive: z.boolean(),
   })

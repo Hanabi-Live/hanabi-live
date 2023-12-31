@@ -57,9 +57,9 @@ func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 	return friends, nil
 }
 
-// GetMap composes a map that represents all of this user's friends
+// GetMap composes a map that represents all of this user's friends.
 // We use a map to represent the friends instead of a slice because it is faster to check for the
-// existence of a friend in a map than to iterate through a slice
+// existence of a friend in a map than to iterate through a slice.
 func (*UserFriends) GetMap(userID int) (map[int]struct{}, error) {
 	friendMap := make(map[int]struct{})
 

@@ -140,6 +140,9 @@ function setLink(userID: number) {
 
     // Get the table corresponding to the user. If the user is in the lobby or in a solo replay,
     // this will be undefined.
+    if (user.tableID === undefined) {
+      return;
+    }
     const table = globals.tableMap.get(user.tableID);
     if (table === undefined) {
       return;

@@ -1,4 +1,5 @@
 import type { SocketStream } from "@fastify/websocket";
+import { Status } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
 import { deleteCookie, getCookieValue } from "../httpSession";
 import { models } from "../models";
@@ -43,17 +44,25 @@ export async function httpWS(
     return;
   }
 
-  const sessionID = getSessionID();
-  const { username, normalizedUsername, muted } = wsData;
+  const { username, normalizedUsername, hyphenated, muted } = wsData;
 
   const wsUser: WSUser = {
     connection,
-    sessionID,
+
+    sessionID: getSessionID(),
     userID,
     username,
     normalizedUsername,
     ip,
     muted,
+    fakeUser: false,
+
+    status: Status.Lobby,
+    tableID: undefined,
+    /// friends,
+    /// reverseFriends,
+    hyphenated,
+    inactive: false,
   };
 
   enqueueWSMsg(WSQueueElementType.Login, wsUser);

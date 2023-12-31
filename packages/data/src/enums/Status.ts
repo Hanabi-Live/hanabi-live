@@ -1,3 +1,4 @@
+/** The activity that a user is currently performing. */
 export enum Status {
   Lobby,
   PreGame,
@@ -7,6 +8,7 @@ export enum Status {
   SharedReplay,
 }
 
+/** Corresponds to the `Status` enum. */
 export const StatusText = [
   "Lobby",
   "Pre-Game",

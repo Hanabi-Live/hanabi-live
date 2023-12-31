@@ -76,7 +76,7 @@ CREATE TABLE user_settings (
     create_table_one_less_card           BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_max_players             INTEGER   NOT NULL  DEFAULT 5,
+    create_table_max_players             SMALLINT  NOT NULL  DEFAULT 5,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 

@@ -1,5 +1,5 @@
 import type { SocketStream } from "@fastify/websocket";
-import type { UserID } from "@hanabi/data";
+import type { Status, TableID, UserID } from "@hanabi/data";
 import { ReadonlyMap } from "isaacscript-common-ts";
 import type { SessionID } from "./types/SessionID";
 
@@ -7,12 +7,22 @@ export interface WSUser {
   /** We need to store the `SocketStream` instead of the `WebSocket` for destruction purposes. */
   connection: SocketStream;
 
+  // Static fields
   sessionID: SessionID;
   userID: UserID;
   username: string;
   normalizedUsername: string;
   ip: string;
-  muted: boolean;
+  muted: boolean; // Users are forcefully disconnected upon being muted, so this is static.
+  fakeUser: boolean; // TODO: is this needed?
+
+  // Dynamic fields
+  status: Status;
+  tableID: TableID | undefined;
+  /// friends: Set<UserID>;
+  /// reverseFriends: Set<UserID>;
+  hyphenated: boolean;
+  inactive: boolean;
 }
 
 /**

@@ -40,7 +40,16 @@ async function processQueue(element: WSQueueElement) {
 }
 
 async function login(wsUser: WSUser) {
-  const { connection, userID, username, ip } = wsUser;
+  const {
+    connection,
+    userID,
+    username,
+    ip,
+    status,
+    tableID,
+    hyphenated,
+    inactive,
+  } = wsUser;
 
   logger.info(
     `Logging in WebSocket user ${username} (${userID}) from IP: ${ip}`,
@@ -65,12 +74,16 @@ async function login(wsUser: WSUser) {
     enqueueSetPlayerConnected(game.id, userID, true);
   }
 
-  /*
   wsSendAll(Command.user, {
     userID,
+    name: username,
     status,
+    tableID,
+    /// friends,
+    /// reverseFriends,
+    hyphenated,
+    inactive,
   });
-  */
 
   // Attach event handlers.
   connection.socket.on("close", () => {

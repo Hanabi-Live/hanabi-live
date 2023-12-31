@@ -1,9 +1,13 @@
+import type { UserID } from "@hanabi/data";
 import { eq, sql } from "drizzle-orm";
-import type { UserID } from "../../../data/src/types/UserID";
-import { mutedIPsTable, usersTable } from "../databaseSchema";
+import {
+  mutedIPsTable,
+  userSettingsTable,
+  usersTable,
+} from "../databaseSchema";
 import { db } from "../db";
 
-interface User {
+interface DatabaseUser {
   id: UserID;
   username: string;
   passwordHash: string;
@@ -12,6 +16,9 @@ interface User {
 interface WSData {
   username: string;
   normalizedUsername: string;
+  hyphenated: boolean;
+  /// friends: string[];
+  /// reverseFriends: string[];
   muted: boolean;
 }
 
@@ -21,7 +28,7 @@ export const users = {
     normalizedUsername: string,
     passwordHash: string,
     lastIP: string,
-  ): Promise<User | undefined> => {
+  ): Promise<DatabaseUser | undefined> => {
     const rows = await db
       .insert(usersTable)
       .values({
@@ -32,13 +39,16 @@ export const users = {
       })
       .returning();
 
-    // A type assertion is necessary since we are branding the user ID.
-    const user = rows[0] as User | undefined;
+    const row = rows[0];
+    if (row === undefined) {
+      return undefined;
+    }
 
-    return user;
+    // A type assertion is necessary since we are branding the user ID.
+    return row as Omit<typeof row, "id"> & { id: UserID };
   },
 
-  get: async (username: string): Promise<User | undefined> => {
+  get: async (username: string): Promise<DatabaseUser | undefined> => {
     const rows = await db
       .select({
         id: usersTable.id,
@@ -48,10 +58,13 @@ export const users = {
       .from(usersTable)
       .where(eq(usersTable.username, username));
 
-    // A type assertion is necessary since we are branding the user ID.
-    const user = rows[0] as User | undefined;
+    const row = rows[0];
+    if (row === undefined) {
+      return undefined;
+    }
 
-    return user;
+    // A type assertion is necessary since we are branding the user ID.
+    return row as Omit<typeof row, "id"> & { id: UserID };
   },
 
   getSimilarUsername: async (
@@ -64,7 +77,12 @@ export const users = {
       .from(usersTable)
       .where(eq(usersTable.normalizedUsername, normalizedUsername));
 
-    return rows[0]?.username;
+    const user = rows[0];
+    if (user === undefined) {
+      return undefined;
+    }
+
+    return user.username;
   },
 
   /** Get a user's WebSocket connection metadata that will be stored alongside their connection. */
@@ -89,6 +107,44 @@ export const users = {
     }
     const { username, normalizedUsername } = usernameRow;
 
+    const hyphenatedRows = await db
+      .select({
+        hyphenatedConventions: userSettingsTable.hyphenatedConventions,
+      })
+      .from(userSettingsTable)
+      .where(eq(userSettingsTable.userID, userID));
+
+    const hyphenatedRow = hyphenatedRows[0];
+    const hyphenated =
+      hyphenatedRow !== undefined && hyphenatedRow.hyphenatedConventions;
+
+    /*
+    const friendsRows = await db
+      .select({
+        username: usersTable.username,
+      })
+      .from(userFriendsTable)
+      .innerJoin(usersTable, eq(userFriendsTable.friendID, usersTable.id))
+      .where(eq(userFriendsTable.userID, userID));
+
+    const friends = friendsRows.map((friendsRow) => friendsRow.username);
+
+    const reverseFriendsRows = await db
+      .select({
+        username: usersTable.username,
+      })
+      .from(userReverseFriendsTable)
+      .innerJoin(
+        usersTable,
+        eq(userReverseFriendsTable.friendID, usersTable.id),
+      )
+      .where(eq(userReverseFriendsTable.userID, userID));
+
+    const reverseFriends = reverseFriendsRows.map(
+      (reverseFriendsRow) => reverseFriendsRow.username,
+    );
+    */
+
     const mutedRows = await db
       .select({
         id: mutedIPsTable.id,
@@ -101,6 +157,9 @@ export const users = {
     return {
       username,
       normalizedUsername,
+      /// friends,
+      /// reverseFriends,
+      hyphenated,
       muted,
     };
   },

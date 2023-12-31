@@ -1,10 +1,13 @@
 // The schema in this file corresponds to "database_schema.sql".
 
 import {
+  boolean,
+  doublePrecision,
   index,
   integer,
   pgTable,
   serial,
+  smallint,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -23,13 +26,85 @@ export const usersTable = pgTable("users", {
     .defaultNow(),
 });
 
-// TODO: user_settings
+export const userSettingsTable = pgTable("user_settings", {
+  userID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  desktopNotification: boolean("desktop_notification").notNull().default(false),
+  soundMove: boolean("sound_move").notNull().default(true),
+  soundTimer: boolean("sound_timer").notNull().default(true),
+  keldonMode: boolean("keldon_mode").notNull().default(false),
+  colorblindMode: boolean("colorblind_mode").notNull().default(false),
+  realLifeMode: boolean("real_life_mode").notNull().default(false),
+  reverseHands: boolean("reverse_hands").notNull().default(false),
+  styleNumbers: boolean("style_numbers").notNull().default(false),
+  showTimerInUntimed: boolean("show_timer_in_untimed").notNull().default(false),
+  speedrunPreplay: boolean("speedrun_preplay").notNull().default(false),
+  speedrunMode: boolean("speedrun_mode").notNull().default(false),
+  hyphenatedConventions: boolean("hyphenated_conventions")
+    .notNull()
+    .default(false),
+  volume: smallint("volume").notNull().default(50),
+  createTableVariant: text("create_table_variant")
+    .notNull()
+    .default("No Variant"),
+  createTableTimed: boolean("create_table_timed").notNull().default(false),
+  createTableTimeBaseMinutes: doublePrecision("create_table_time_base_minutes")
+    .notNull()
+    .default(2),
+  createTableTimePerTurnSeconds: integer("create_table_time_per_turn_seconds")
+    .notNull()
+    .default(20),
+  createTableSpeedrun: boolean("create_table_speedrun")
+    .notNull()
+    .default(false),
+  createTableCardCycle: boolean("create_table_card_cycle")
+    .notNull()
+    .default(false),
+  createTableDeckPlays: boolean("create_table_deck_plays")
+    .notNull()
+    .default(false),
+  createTableEmptyClues: boolean("create_table_empty_clues")
+    .notNull()
+    .default(false),
+  createTableOneExtraCard: boolean("create_table_one_extra_card")
+    .notNull()
+    .default(false),
+  createTableOneLessCard: boolean("create_table_one_less_card")
+    .notNull()
+    .default(false),
+  createTableAllOrNothing: boolean("create_table_all_or_nothing")
+    .notNull()
+    .default(false),
+  createTableDetrimentalCharacters: boolean(
+    "create_table_detrimental_characters",
+  )
+    .notNull()
+    .default(false),
+  createTableMaxPlayers: smallint("create_table_max_players")
+    .notNull()
+    .default(5),
+});
 
 // TODO: user_stats
 
-// TODO: user_friends
+export const userFriendsTable = pgTable("user_friends", {
+  userID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  friendID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+});
 
-// TODO: user_reverse_friends
+export const userReverseFriendsTable = pgTable("user_reverse_friends", {
+  userID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  friendID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+});
 
 // TODO: games
 

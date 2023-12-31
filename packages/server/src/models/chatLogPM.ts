@@ -1,4 +1,4 @@
-import type { UserID } from "../../../data/src/types/UserID";
+import type { UserID } from "@hanabi/data";
 import { chatLogPMTable } from "../databaseSchema";
 import { db } from "../db";
 
