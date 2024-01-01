@@ -20,7 +20,6 @@ export function colorClue(
   giver: PlayerIndex,
   list: readonly number[],
   target: PlayerIndex,
-  turn: number,
 ): ActionClue {
   return {
     type: "clue",
@@ -31,7 +30,6 @@ export function colorClue(
     giver,
     list: list as CardOrder[],
     target,
-    turn,
     ignoreNegative: false,
   };
 }
@@ -42,7 +40,6 @@ export function rankClue(
   giver: PlayerIndex,
   list: readonly number[],
   target: PlayerIndex,
-  turn: number,
 ): ActionClue {
   return {
     type: "clue",
@@ -53,7 +50,6 @@ export function rankClue(
     giver,
     list: list as CardOrder[],
     target,
-    turn,
     ignoreNegative: false,
   };
 }

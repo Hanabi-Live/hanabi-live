@@ -45,7 +45,7 @@ describe("gameReducer", () => {
       const initialState = getInitialGameState(DEFAULT_METADATA);
       let state = getInitialGameStateTest(DEFAULT_METADATA);
 
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameReducer(
         state,
         testClue,
@@ -64,7 +64,7 @@ describe("gameReducer", () => {
       const initialState = getInitialGameState(DEFAULT_METADATA);
       let state = getInitialGameStateTest(DEFAULT_METADATA);
 
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameReducer(
         state,
         testClue,
@@ -176,7 +176,7 @@ describe("gameReducer", () => {
       }
 
       // Give a 3-for-1 clue touching the 3 red cards.
-      const clueAction = colorClue(0, 1, [0, 1, 2], 0, 0);
+      const clueAction = colorClue(0, 1, [0, 1, 2], 0);
       state = gameReducer(
         state,
         clueAction,
@@ -219,7 +219,7 @@ describe("gameReducer", () => {
       );
 
       // Give a 1-for-1 clue.
-      const clueAction = colorClue(0, 0, [0], 1, 0);
+      const clueAction = colorClue(0, 0, [0], 1);
       state = gameReducer(
         state,
         clueAction,
@@ -339,7 +339,7 @@ describe("gameReducer", () => {
       );
 
       // Player 0 gives a 1-for-1 clue.
-      const clueAction = rankClue(1, 0, [3, 5], 1, 0);
+      const clueAction = rankClue(1, 0, [3, 5], 1);
       state = gameReducer(
         state,
         clueAction,
@@ -509,7 +509,7 @@ describe("gameReducer", () => {
         );
 
         // Player 0 gives a 1-for-1 clue.
-        const clueAction = rankClue(1, 0, [3, 5, 6], 1, 0);
+        const clueAction = rankClue(1, 0, [3, 5, 6], 1);
         state = gameReducer(
           state,
           clueAction,
@@ -619,7 +619,7 @@ describe("gameReducer", () => {
       let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Player 1 gives a random clue to player 0.
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameReducer(
         state,
         testClue,
@@ -662,7 +662,7 @@ describe("gameReducer", () => {
       }
 
       // Player 0 gives a clue that touches cards 0, 1, and 2.
-      const testClue = rankClue(5, 0, [0, 1, 2], 1, 2);
+      const testClue = rankClue(5, 0, [0, 1, 2], 1);
       state = gameReducer(
         state,
         testClue,
@@ -684,7 +684,7 @@ describe("gameReducer", () => {
       let state = getInitialGameStateTest(DEFAULT_METADATA);
 
       // Player 1 gives a random clue to player 0.
-      const testClue = rankClue(5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0);
       state = gameReducer(
         state,
         testClue,

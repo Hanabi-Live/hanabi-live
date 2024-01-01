@@ -54,7 +54,6 @@ function statsReducerFunction(
     }
 
     case "strike": {
-      // TODO: move this check to the play action when we have logic for knowing which cards play.
       // A strike is equivalent to losing a clue. But do not reveal that a strike has happened to
       // players in an ongoing "Throw It in a Hole" game.
       if (!variant.throwItInAHole || (!playing && !shadowing)) {

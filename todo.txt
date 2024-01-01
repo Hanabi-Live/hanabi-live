@@ -15,7 +15,6 @@
 - remove type assertions from lobby + views
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 - search for "This message is unnecessary"
-- search for "TODO: remove. This is unused"
 - delete UIGlobals.activePlayerIndex
 
 short term:

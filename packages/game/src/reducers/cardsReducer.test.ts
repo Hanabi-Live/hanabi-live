@@ -152,7 +152,7 @@ describe("cardsReducer", () => {
         turn: { ...GAME_STATE.turn, segment: clue1Segment },
       };
 
-      const testClue1 = rankClue(5, 1, [0], 0, gameStateFirstTurn.turn.turnNum);
+      const testClue1 = rankClue(5, 1, [0], 0);
       deck = cardsReducer(
         deck,
         testClue1,
@@ -167,7 +167,7 @@ describe("cardsReducer", () => {
         turn: { ...gameStateFirstTurn.turn, segment: clue2Segment },
       };
 
-      const testClue2 = colorClue(2, 2, [0], 0, gameStateNextTurn.turn.turnNum);
+      const testClue2 = colorClue(2, 2, [0], 0);
       deck = cardsReducer(deck, testClue2, gameStateNextTurn, DEFAULT_METADATA);
       expect(deck[0]!.segmentFirstClued).toEqual(clue1Segment);
     });
@@ -227,11 +227,11 @@ describe("cardsReducer", () => {
       let deck: readonly CardState[] = [FIRST_CARD];
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
-      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
+      const clueToCardZero = rankClue(1, 2, [0], 0);
       deck = cardsReducer(deck, clueToCardZero, GAME_STATE, DEFAULT_METADATA);
       expect(deck[0]!.numPositiveClues).toBe(1);
 
-      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
+      const anotherClueToCardZero = colorClue(0, 1, [0], 0);
       deck = cardsReducer(
         deck,
         anotherClueToCardZero,
@@ -246,11 +246,11 @@ describe("cardsReducer", () => {
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
       deck = cardsReducer(deck, draw(0, 1), GAME_STATE, DEFAULT_METADATA);
 
-      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
+      const clueToCardOne = rankClue(1, 2, [1], 0);
       deck = cardsReducer(deck, clueToCardOne, GAME_STATE, DEFAULT_METADATA);
       expect(deck[0]!.numPositiveClues).toBe(0);
 
-      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
+      const anotherClueToCardOne = colorClue(0, 1, [1], 0);
       deck = cardsReducer(
         deck,
         anotherClueToCardOne,
@@ -281,14 +281,14 @@ describe("cardsReducer", () => {
       );
 
       // Load up the negative clues so we can make inferences.
-      const redClue = colorClue(0, 1, [], 0, 0);
-      const yellowClue = colorClue(1, 1, [], 0, 0);
-      const greenClue = colorClue(2, 1, [], 0, 0);
+      const redClue = colorClue(0, 1, [], 0);
+      const yellowClue = colorClue(1, 1, [], 0);
+      const greenClue = colorClue(2, 1, [], 0);
       deck = cardsReducer(deck, redClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, yellowClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, greenClue, nextGameState, DEFAULT_METADATA);
 
-      const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+      const fivesClue = rankClue(5, 2, [0, 1], 0);
       deck = cardsReducer(deck, fivesClue, nextGameState, DEFAULT_METADATA);
 
       // The two fives in our hand must be blue/purple in some order. The other person will know
@@ -332,14 +332,14 @@ describe("cardsReducer", () => {
       );
 
       // Load up the negative clues so we can make inferences.
-      const greenClue = colorClue(2, 1, [], 0, 0);
-      const blueClue = colorClue(3, 1, [], 0, 0);
-      const purpleClue = colorClue(4, 1, [], 0, 0);
+      const greenClue = colorClue(2, 1, [], 0);
+      const blueClue = colorClue(3, 1, [], 0);
+      const purpleClue = colorClue(4, 1, [], 0);
       deck = cardsReducer(deck, greenClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, blueClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, purpleClue, nextGameState, DEFAULT_METADATA);
 
-      const foursClue = rankClue(4, 2, [0, 1], 0, 0);
+      const foursClue = rankClue(4, 2, [0, 1], 0);
       deck = cardsReducer(deck, foursClue, nextGameState, DEFAULT_METADATA);
 
       // The two fours in our hand must be red/yellow in some order. The other person will know
@@ -387,12 +387,12 @@ describe("cardsReducer", () => {
       );
 
       // Load up the negative clues so inferences can be made.
-      const greenClueToOther = colorClue(2, 0, [], 1, 0);
-      const blueClueToOther = colorClue(3, 0, [], 1, 0);
-      const purpleClueToOther = colorClue(4, 0, [], 1, 0);
-      const greenClueToUs = colorClue(2, 1, [], 0, 0);
-      const blueClueToUs = colorClue(3, 1, [], 0, 0);
-      const purpleClueToUs = colorClue(4, 1, [], 0, 0);
+      const greenClueToOther = colorClue(2, 0, [], 1);
+      const blueClueToOther = colorClue(3, 0, [], 1);
+      const purpleClueToOther = colorClue(4, 0, [], 1);
+      const greenClueToUs = colorClue(2, 1, [], 0);
+      const blueClueToUs = colorClue(3, 1, [], 0);
+      const purpleClueToUs = colorClue(4, 1, [], 0);
       deck = cardsReducer(
         deck,
         greenClueToOther,
@@ -431,8 +431,8 @@ describe("cardsReducer", () => {
         DEFAULT_METADATA,
       );
 
-      const foursClueToUs = rankClue(4, 2, [0, 1], 0, 0);
-      const foursClueToOther = rankClue(4, 2, [2, 3, 4], 1, 1);
+      const foursClueToUs = rankClue(4, 2, [0, 1], 0);
+      const foursClueToOther = rankClue(4, 2, [2, 3, 4], 1);
       deck = cardsReducer(deck, foursClueToUs, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(
         deck,
@@ -570,14 +570,14 @@ describe("cardsReducer", () => {
       ]);
 
       // Load up the negative clues so inferences can be made.
-      const greenClue = colorClue(2, 1, [], 0, 0);
-      const blueClue = colorClue(3, 1, [], 0, 0);
-      const purpleClue = colorClue(4, 1, [], 0, 0);
+      const greenClue = colorClue(2, 1, [], 0);
+      const blueClue = colorClue(3, 1, [], 0);
+      const purpleClue = colorClue(4, 1, [], 0);
       deck = cardsReducer(deck, greenClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, blueClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, purpleClue, nextGameState, DEFAULT_METADATA);
 
-      const foursClue = rankClue(4, 2, [0, 1], 0, 0);
+      const foursClue = rankClue(4, 2, [0, 1], 0);
       deck = cardsReducer(deck, foursClue, nextGameState, DEFAULT_METADATA);
       nextGameState = getGameStateWithHands(GAME_STATE, [[1], [2, 3]]);
 
@@ -744,13 +744,13 @@ describe("cardsReducer", () => {
       nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
 
-      const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+      const fivesClue = rankClue(5, 2, [0, 1], 0);
       deck = cardsReducer(deck, fivesClue, nextGameState, DEFAULT_METADATA);
 
       // Load up the negative clues so we can make inferences.
-      const redClue = colorClue(0, 1, [], 0, 0);
-      const yellowClue = colorClue(1, 1, [], 0, 0);
-      const greenClue = colorClue(2, 1, [], 0, 0);
+      const redClue = colorClue(0, 1, [], 0);
+      const yellowClue = colorClue(1, 1, [], 0);
+      const greenClue = colorClue(2, 1, [], 0);
       deck = cardsReducer(deck, redClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, yellowClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, greenClue, nextGameState, DEFAULT_METADATA);
@@ -774,13 +774,13 @@ describe("cardsReducer", () => {
       nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1], []]);
       deck = cardsReducer(deck, draw(0, 1), nextGameState, DEFAULT_METADATA);
 
-      const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+      const fivesClue = rankClue(5, 2, [0, 1], 0);
       deck = cardsReducer(deck, fivesClue, nextGameState, DEFAULT_METADATA);
 
       // Load up the negative clues so we can make inferences.
-      const redClue = colorClue(0, 1, [], 0, 0);
-      const yellowClue = colorClue(1, 1, [], 0, 0);
-      const greenClue = colorClue(2, 1, [], 0, 0);
+      const redClue = colorClue(0, 1, [], 0);
+      const yellowClue = colorClue(1, 1, [], 0);
+      const greenClue = colorClue(2, 1, [], 0);
       deck = cardsReducer(deck, redClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, yellowClue, nextGameState, DEFAULT_METADATA);
       deck = cardsReducer(deck, greenClue, nextGameState, DEFAULT_METADATA);
@@ -818,12 +818,12 @@ describe("cardsReducer", () => {
         nextGameState = getGameStateWithHands(GAME_STATE, [[0, 1, 2], []]);
         deck = cardsReducer(deck, draw(0, 2), nextGameState, DEFAULT_METADATA);
 
-        const fivesClue = rankClue(5, 2, [0, 1], 0, 0);
+        const fivesClue = rankClue(5, 2, [0, 1], 0);
         deck = cardsReducer(deck, fivesClue, nextGameState, DEFAULT_METADATA);
 
         // Load up the negative clues so we can make inferences.
-        const redClue = colorClue(0, 1, [], 0, 0);
-        const yellowClue = colorClue(1, 1, [], 0, 0);
+        const redClue = colorClue(0, 1, [], 0);
+        const yellowClue = colorClue(1, 1, [], 0);
         deck = cardsReducer(deck, redClue, nextGameState, DEFAULT_METADATA);
         deck = cardsReducer(deck, yellowClue, nextGameState, DEFAULT_METADATA);
 
@@ -870,12 +870,12 @@ describe("cardsReducer", () => {
         nextGameState = getGameStateWithHands(GAME_STATE, [[], [0, 1, 2]]);
         deck = cardsReducer(deck, draw(1, 2), nextGameState, bobMetadata);
 
-        const fivesClue = rankClue(5, 0, [0, 1], 1, 0);
+        const fivesClue = rankClue(5, 0, [0, 1], 1);
         deck = cardsReducer(deck, fivesClue, nextGameState, bobMetadata);
 
         // Load up the negative clues so we can make inferences.
-        const redClue = colorClue(0, 0, [], 1, 0);
-        const yellowClue = colorClue(1, 0, [], 1, 0);
+        const redClue = colorClue(0, 0, [], 1);
+        const yellowClue = colorClue(1, 0, [], 1);
         deck = cardsReducer(deck, redClue, nextGameState, bobMetadata);
         deck = cardsReducer(deck, yellowClue, nextGameState, bobMetadata);
 
@@ -952,7 +952,7 @@ describe("cardsReducer", () => {
       // P0 clued that both cards are red.
       deck = cardsReducer(
         deck,
-        colorClue(0, 1, [0, 1], 0, 1),
+        colorClue(0, 1, [0, 1], 0),
         gameStateDrawR2,
         metadata,
       );
@@ -985,7 +985,7 @@ describe("cardsReducer", () => {
       // P0 clued that both cards are red.
       deck = cardsReducer(
         deck,
-        colorClue(0, 1, [0, 1], 0, 1),
+        colorClue(0, 1, [0, 1], 0),
         gameStateDrawR2,
         metadata,
       );

@@ -57,7 +57,6 @@ export interface ActionClue {
   /** The player index of the person being clued. */
   readonly target: PlayerIndex;
 
-  readonly turn: number; // TODO: remove. This is unused.
   readonly ignoreNegative: boolean;
 }
 
