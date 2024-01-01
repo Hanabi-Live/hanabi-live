@@ -1,4 +1,5 @@
-import { Command } from "@hanabi/data";
+import type { ClientCommandChatPMData } from "@hanabi/data";
+import { ServerCommand } from "@hanabi/data";
 import { normalizeUsername } from "isaacscript-common-ts";
 import { sanitizeChatMsg } from "../chat";
 import { getCurrentDatetime } from "../date";
@@ -8,14 +9,12 @@ import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 import { getWSUserByNormalizedUsername } from "../wsUsers";
 
-// TODO: import
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function commandChatPM(
+export async function commandChatPM(
   wsUser: WSUser,
-  msg: string,
-  recipient: string,
+  data: ClientCommandChatPMData,
 ): Promise<void> {
   const { connection, normalizedUsername, muted } = wsUser;
+  const { msg, recipient } = data;
 
   if (muted) {
     wsWarning(connection, "You have been muted by an administrator.");
@@ -62,8 +61,8 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
   };
 
   // Echo the private message back to the person who sent it.
-  wsSend(wsUser.connection, Command.chat, data);
+  wsSend(wsUser.connection, ServerCommand.chat, data);
 
   // Send the private message to the recipient.
-  wsSend(wsUserRecipient.connection, Command.chat, data);
+  wsSend(wsUserRecipient.connection, ServerCommand.chat, data);
 }

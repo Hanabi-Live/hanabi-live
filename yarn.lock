@@ -6809,7 +6809,7 @@ __metadata:
     ioredis: "npm:^5.3.2"
     isaacscript: "npm:^3.37.0"
     isaacscript-common-node: "npm:^3.0.0"
-    isaacscript-common-ts: "npm:^14.2.0"
+    isaacscript-common-ts: "npm:^14.3.1"
     isaacscript-lint: "npm:^6.13.0"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -7710,12 +7710,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-ts@npm:^14.2.0":
-  version: 14.2.0
-  resolution: "isaacscript-common-ts@npm:14.2.0"
+"isaacscript-common-ts@npm:^14.3.1":
+  version: 14.3.1
+  resolution: "isaacscript-common-ts@npm:14.3.1"
   dependencies:
     unidecode: "npm:^0.1.8"
-  checksum: 223160cbe07d2730a5399dff600fc6785863f3fc780b760c2225bce7c44c614715b3942d6860304c9754a8030d3ccf3184ea262385f8e2cd181921342d125f81
+  checksum: 49ddc9a4212eccd09738160ccb430900aef818632f6e62640f298a27e71079d227c15830c43ec4598db6da320ae548edbbe39615fae94dead3c43cceaf89a107
   languageName: node
   linkType: hard
 

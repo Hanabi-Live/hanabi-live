@@ -20,11 +20,11 @@ import type { Logger } from "pino";
 import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
-import { httpLogin } from "./http/login";
-import { httpLogout } from "./http/logout";
-import { httpMain } from "./http/main";
-import { httpTestCookie } from "./http/testCookie";
-import { httpWS } from "./http/ws";
+import { httpLogin } from "./http/httpLogin";
+import { httpLogout } from "./http/httpLogout";
+import { httpMain } from "./http/httpMain";
+import { httpTestCookie } from "./http/httpTestCookie";
+import { httpWS } from "./http/httpWS";
 import { logger } from "./logger";
 
 type FastifyInstanceWithLogger = FastifyInstance<

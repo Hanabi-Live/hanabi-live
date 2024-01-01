@@ -1,7 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { CommandChatData } from "@hanabi/data";
+import type { ServerCommandChatData } from "@hanabi/data";
 import { PROJECT_NAME } from "@hanabi/data";
 import { eRange, trimPrefix } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
@@ -440,7 +440,7 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   }
 }
 
-export function add(data: CommandChatData, fast: boolean): void {
+export function add(data: ServerCommandChatData, fast: boolean): void {
   // If we are receiving a private message (PM), record who it is from.
   if (data.recipient === globals.username) {
     lastPM = data.who;
@@ -542,7 +542,7 @@ export function add(data: CommandChatData, fast: boolean): void {
 }
 
 /** Find out which chat box we should add the new chat message to. */
-function getChatBoxElement(data: CommandChatData): JQuery | undefined {
+function getChatBoxElement(data: ServerCommandChatData): JQuery | undefined {
   if (data.room === "lobby") {
     return $("#lobby-chat-text");
   }

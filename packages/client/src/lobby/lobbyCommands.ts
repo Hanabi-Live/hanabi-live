@@ -1,6 +1,9 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type { CommandUserData, CommandWelcomeData } from "@hanabi/data";
+import type {
+  ServerCommandUserData,
+  ServerCommandWelcomeData,
+} from "@hanabi/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";
@@ -242,7 +245,7 @@ lobbyCommands.set("pregameSpectators", (data: SpectatorsData) => {
 });
 
 // Received by the client when a user connects or has a new status.
-lobbyCommands.set("user", (data: CommandUserData) => {
+lobbyCommands.set("user", (data: ServerCommandUserData) => {
   globals.userMap.set(data.userID, data);
   if (
     globals.currentScreen === Screen.Lobby ||
@@ -252,7 +255,7 @@ lobbyCommands.set("user", (data: CommandUserData) => {
   }
 });
 
-lobbyCommands.set("userList", (dataList: readonly CommandUserData[]) => {
+lobbyCommands.set("userList", (dataList: readonly ServerCommandUserData[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }
@@ -306,7 +309,7 @@ lobbyCommands.set("userInactive", (data: UserInactiveData) => {
 });
 
 // Received by the client upon first connecting.
-lobbyCommands.set("welcome", (data: CommandWelcomeData) => {
+lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   // Store some variables (mostly relating to our user account).
   globals.userID = data.userID;
   globals.username = data.username; // We might have logged-in with a different stylization

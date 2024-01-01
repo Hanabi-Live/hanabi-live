@@ -1,6 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type { CommandChatData } from "@hanabi/data";
+import type { ServerCommandChatData } from "@hanabi/data";
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
@@ -44,7 +44,7 @@ commands.set("error", (data: ErrorData) => {
 });
 
 // Received by the client when a new chat message arrives.
-commands.set("chat", (data: CommandChatData) => {
+commands.set("chat", (data: ServerCommandChatData) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.room);
 });
@@ -112,7 +112,7 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
 // messages.
 interface ChatListData {
-  list: CommandChatData[];
+  list: ServerCommandChatData[];
   unread: number;
 }
 commands.set("chatList", (data: ChatListData) => {

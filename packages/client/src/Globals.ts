@@ -1,6 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { CommandUserData } from "@hanabi/data";
+import type { ServerCommandUserData } from "@hanabi/data";
 import { Settings } from "@hanabi/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
@@ -37,7 +37,7 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<number, CommandUserData>();
+  userMap = new Map<number, ServerCommandUserData>();
 
   /** Keys are IDs. */
   tableMap = new Map<number, Table>();

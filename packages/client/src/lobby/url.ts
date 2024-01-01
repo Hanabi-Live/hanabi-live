@@ -1,4 +1,4 @@
-import type { CommandWelcomeData } from "@hanabi/data";
+import type { ServerCommandWelcomeData } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi/game";
 import { parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
@@ -6,7 +6,7 @@ import { setBrowserAddressBarPath } from "../utils";
 import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";
 
-export function parseAndGoto(data: CommandWelcomeData): void {
+export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Disable custom path functionality for first time users.
   if (data.firstTimeUser) {
     return;

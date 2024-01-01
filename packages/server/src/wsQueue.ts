@@ -1,7 +1,7 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
 import type { UserID } from "@hanabi/data";
-import { Command } from "@hanabi/data";
+import { ServerCommand } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { enqueueSetPlayerConnected } from "./gameQueue";
@@ -27,7 +27,7 @@ const QUEUE_FUNCTIONS = {
   [WSQueueElementType.Logout]: logout,
 } as const satisfies Record<
   WSQueueElementType,
-  (wsUser: WSUser) => Promise<void>
+  (wsUser: WSUser) => void | Promise<void>
 >;
 
 const wsQueue: queueAsPromised<WSQueueElement, void> = fastq.promise(
@@ -40,7 +40,7 @@ async function processQueue(element: WSQueueElement) {
   await func(element);
 }
 
-async function login(wsUser: WSUser) {
+function login(wsUser: WSUser) {
   const {
     connection,
     userID,
@@ -70,12 +70,7 @@ async function login(wsUser: WSUser) {
   // login queue, which is the only place that this map should be mutable.
   (wsUsers as Map<UserID, WSUser>).set(userID, wsUser);
 
-  const games = await getRedisGamesWithUser(userID);
-  for (const game of games) {
-    enqueueSetPlayerConnected(game.id, userID, true);
-  }
-
-  wsSendAll(Command.user, {
+  wsSendAll(ServerCommand.user, {
     userID,
     name: username,
     status,
@@ -87,8 +82,11 @@ async function login(wsUser: WSUser) {
   });
 
   // Attach event handlers.
-  connection.socket.on("message", (data) => {
-    wsMessage(connection, data);
+  connection.socket.on("message", (rawData) => {
+    // WebSocket callbacks are supposed to be synchronous functions, so we do not bother awaiting
+    // the results of the command.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    wsMessage(wsUser, rawData);
   });
   connection.socket.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
@@ -137,7 +135,7 @@ async function logout(wsUser: WSUser) {
     enqueueSetPlayerConnected(game.id, userID, false);
   }
 
-  wsSendAll(Command.userLeft, {
+  wsSendAll(ServerCommand.userLeft, {
     userID,
   });
 }
