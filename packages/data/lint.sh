@@ -23,8 +23,6 @@ npx eslint --max-warnings 0 .
 
 # Check for unused exports.
 # "--error" makes it return an error code of 1 if unused exports are found.
-# TODO: Commented out while we have relative path imports. Refactor game logic into @game and then
-# use that.
-# npx ts-prune --error --ignore "index.ts"
+npx ts-prune --error --ignore "index.ts"
 
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."

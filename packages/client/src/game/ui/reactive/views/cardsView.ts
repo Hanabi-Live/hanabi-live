@@ -222,9 +222,6 @@ function subscribeToCardChanges(order: CardOrder) {
   return observeStore(globals.store!, subscriptions);
 }
 
-// TODO: these functions should pass the value of the changed properties,
-// and not let the UI query the whole state object
-
 function updateBorder(order: CardOrder) {
   const card = getCardOrStackBase(order);
   if (!card) {

@@ -1,4 +1,4 @@
-import { todo } from "isaacscript-common-ts";
+import { noop } from "isaacscript-common-ts";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import * as notes from "./notes";
@@ -85,7 +85,8 @@ export function clickRightCheckAddNote(
     return;
   }
 
-  todo(); // Do nothing in the default case. (We need a function to satisfy the early return pattern.)
+  // Do nothing in the default case. (We need a function to satisfy the early return pattern.)
+  noop();
 }
 
 export function preOpenNoteEditTooltip(card: HanabiCard): void {

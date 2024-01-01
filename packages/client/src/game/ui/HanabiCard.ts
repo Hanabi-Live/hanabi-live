@@ -1447,7 +1447,6 @@ function updatePip(
     }
   }
 
-  // TODO: Positive clues on suits should use the same API as rank pips.
   if (pip instanceof RankPip) {
     if (hasPositiveClues && pipState !== PipState.Hidden) {
       pip.showPositiveClue();
