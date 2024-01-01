@@ -49,7 +49,7 @@ func serializeTables() bool {
 		}
 
 		// t.Unlock()
-		// TODO: right now, we don ot acquire the table lock so that we can save games in case of a
+		// TODO: right now, we do not acquire the table lock so that we can save games in case of a
 		// deadlock
 	}
 

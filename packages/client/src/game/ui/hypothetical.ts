@@ -186,7 +186,6 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
         giver: gameState.turn.currentPlayerIndex,
         list,
         target: hypoAction.target as PlayerIndex,
-        turn: gameState.turn.turnNum,
         ignoreNegative: false,
       });
 

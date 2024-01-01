@@ -52,7 +52,7 @@ describe("replayReducer", () => {
       let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
       // Give a number 3 clue in the new hypothetical.
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, false, testState.metadata);
 
       const gameState = testState.replay.states[testState.replay.segment];
@@ -68,7 +68,7 @@ describe("replayReducer", () => {
     test("can go back on a hypothetical after giving a clue", () => {
       let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, false, metadata);
       state = replayReducer(state, hypoBack(), false, metadata);
 
@@ -79,7 +79,7 @@ describe("replayReducer", () => {
     test("can end hypothetical after giving a clue", () => {
       let state = replayReducer(testState.replay, hypoStart(), false, metadata);
 
-      const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
+      const hypoClue = hypoAction(rankClue(3, 0, [], 1));
       state = replayReducer(state, hypoClue, false, metadata);
       state = replayReducer(state, hypoEnd(), false, metadata);
       expect(state.hypothetical).toBeNull();
