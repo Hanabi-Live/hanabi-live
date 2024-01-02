@@ -5,7 +5,7 @@ import { VERSION } from "@hanabi/data";
 import { assertDefined } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
-import { FADE_TIME } from "../constants";
+import { FADE_TIME_MS } from "../constants";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import * as nav from "./nav";
@@ -210,7 +210,7 @@ export function hide(firstTimeUser: boolean): void {
   $("#login").hide();
 
   if (firstTimeUser) {
-    $("#tutorial").fadeIn(FADE_TIME);
+    $("#tutorial").fadeIn(FADE_TIME_MS);
     return;
   }
   $("#tutorial").hide();
@@ -252,7 +252,7 @@ function formError(msg: string) {
     $("#login-ajax").hide();
     $("#login-button").removeClass("disabled");
     $("#login-alert").html(msg);
-    $("#login-alert").fadeIn(FADE_TIME);
+    $("#login-alert").fadeIn(FADE_TIME_MS);
 
     const offset = $("#login-alert").offset();
     assertDefined(

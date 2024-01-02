@@ -1,5 +1,7 @@
 // Time constants
-export const FADE_TIME = 350; // In milliseconds
-export const SHUTDOWN_TIMEOUT = 30; // In minutes
 
+/** In milliseconds. */
+export const FADE_TIME_MS = 350;
+
+export const SHUTDOWN_TIMEOUT_MINUTES = 30;
 export const TYPED_HISTORY_MAX_LENGTH = 250;

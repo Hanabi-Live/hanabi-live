@@ -8,7 +8,7 @@ import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { globals } from "./Globals";
 import { chatCommands } from "./chatCommands";
-import { FADE_TIME, TYPED_HISTORY_MAX_LENGTH } from "./constants";
+import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
 import { Screen } from "./lobby/types/Screen";
@@ -508,7 +508,7 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
 
   // Add the new line and fade it in.
   chat.append(line);
-  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME).css("display", "block");
+  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
     $(element).on("click", () => {

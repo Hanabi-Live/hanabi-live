@@ -3,7 +3,7 @@
 import interact from "interactjs";
 import { assertNotNull, parseFloatSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
-import { FADE_TIME } from "../constants";
+import { FADE_TIME_MS } from "../constants";
 import { getHTMLElement } from "../utils";
 
 const gameChatText = getHTMLElement("#game-chat-text");
@@ -114,7 +114,7 @@ export function toggle(): void {
 
 export function show(): void {
   const modal = $("#game-chat-modal");
-  modal.fadeIn(FADE_TIME);
+  modal.fadeIn(FADE_TIME_MS);
 
   // Check to see if there are any unread chat messages.
   if (globals.chatUnread !== 0) {
@@ -184,7 +184,7 @@ export function show(): void {
 }
 
 export function hide(): void {
-  $("#game-chat-modal").fadeOut(FADE_TIME);
+  $("#game-chat-modal").fadeOut(FADE_TIME_MS);
 }
 
 /** Subroutine to move an element (using the "transform" CSS property). */

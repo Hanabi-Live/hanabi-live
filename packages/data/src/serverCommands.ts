@@ -77,7 +77,7 @@ const serverCommandWelcomeData = z
 
     randomTableName: z.string(),
     shuttingDown: z.boolean(),
-    datetimeShutdownInit: z.string(),
+    datetimeShutdownInit: z.string().optional(),
     maintenanceMode: z.boolean(),
   })
   .readonly();

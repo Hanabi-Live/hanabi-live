@@ -6,10 +6,13 @@ import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { SECOND_IN_MILLISECONDS } from "isaacscript-common-ts";
 import { logger } from "./logger";
+import { isMaintenanceMode } from "./maintenanceMode";
 import { models } from "./models";
 import { getRedisTablesWithUser } from "./redis";
+import { getShuttingDownMetadata } from "./shutdown";
 import { enqueueSetPlayerConnected } from "./tableQueue";
 import { getSpectatingMetadata, getTableIDsUserPlayingAt } from "./tables";
+import { getRandomTableName } from "./words";
 import { wsError, wsSend, wsSendAll } from "./wsHelpers";
 import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
@@ -127,10 +130,9 @@ async function sendWelcomeMessage(wsUser: WSUser) {
   const disconSpectatingTable = spectatingMetadata?.tableID;
   const disconShadowingSeat = spectatingMetadata?.shadowingPlayerIndex;
 
-  const randomTableName = ""; // TODO;
-  const shuttingDown = false; // TODO;
-  const datetimeShutdownInit = ""; // TODO
-  const maintenanceMode = false; // TODO
+  const randomTableName = getRandomTableName();
+  const { shuttingDown, datetimeShutdownInit } = getShuttingDownMetadata();
+  const maintenanceMode = isMaintenanceMode();
 
   wsSend(connection, ServerCommand.welcome, {
     userID,

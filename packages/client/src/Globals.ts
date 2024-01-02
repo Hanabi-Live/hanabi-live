@@ -29,7 +29,7 @@ export class Globals {
 
   friends: readonly string[] = [];
   shuttingDown = false;
-  datetimeShutdownInit = new Date();
+  datetimeShutdownInit: Date | undefined;
   maintenanceMode = false;
 
   // -----------------------

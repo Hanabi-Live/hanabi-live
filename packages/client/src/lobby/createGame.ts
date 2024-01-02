@@ -11,6 +11,7 @@ import {
   doesVariantExist,
 } from "@hanabi/game";
 import {
+  MINUTE_IN_MILLISECONDS,
   ReadonlySet,
   getRandomArrayElement,
   parseFloatSafe,
@@ -18,7 +19,7 @@ import {
 } from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
-import { SHUTDOWN_TIMEOUT } from "../constants";
+import { SHUTDOWN_TIMEOUT_MINUTES } from "../constants";
 import * as debug from "../debug";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -490,12 +491,12 @@ export function checkSettingChanged<T extends keyof Settings>(
 // This function is executed every time the "Create Game" button is clicked (before the tooltip is
 // added to the DOM).
 export function before(): boolean {
-  if (globals.shuttingDown) {
+  if (globals.shuttingDown && globals.datetimeShutdownInit !== undefined) {
     const now = new Date();
     const elapsedTimeMilliseconds =
       now.getTime() - globals.datetimeShutdownInit.getTime();
-    // SHUTDOWN_TIMEOUT is in minutes.
-    const shutdownTimeoutMilliseconds = SHUTDOWN_TIMEOUT * 60 * 1000;
+    const shutdownTimeoutMilliseconds =
+      SHUTDOWN_TIMEOUT_MINUTES * MINUTE_IN_MILLISECONDS;
     const millisecondsLeft =
       shutdownTimeoutMilliseconds - elapsedTimeMilliseconds;
     const minutesLeft = new Date(millisecondsLeft).getMinutes();

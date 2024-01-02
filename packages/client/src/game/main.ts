@@ -1,6 +1,6 @@
 // The Hanabi game UI.
 
-import { FADE_TIME } from "../constants";
+import { FADE_TIME_MS } from "../constants";
 import { globals } from "../Globals";
 import { tablesDraw } from "../lobby/tablesDraw";
 import { Screen } from "../lobby/types/Screen";
@@ -26,7 +26,7 @@ export function show(): void {
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
   $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
-  $("#game").fadeIn(FADE_TIME);
+  $("#game").fadeIn(FADE_TIME_MS);
 
   // Every time a new game is opened, the UI is rebuilt from scratch.
   globals.ui = new HanabiUI(globals, gameExports);
@@ -52,7 +52,7 @@ function hide() {
 
   $("#game").hide(); // We can't fade this out as it will overlap
   $("body").off("contextmenu"); // Enable the right-click context menu
-  $("#page-wrapper").fadeIn(FADE_TIME, () => {
+  $("#page-wrapper").fadeIn(FADE_TIME_MS, () => {
     // Also account that we could be going back to one of the history screens. (We could have
     // entered a solo replay from one of the history screens.)
     if ($("#lobby-history").is(":visible")) {

@@ -319,7 +319,10 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   globals.friends = data.friends;
   globals.randomTableName = data.randomTableName;
   globals.shuttingDown = data.shuttingDown;
-  globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
+  globals.datetimeShutdownInit =
+    data.datetimeShutdownInit === undefined
+      ? undefined
+      : new Date(data.datetimeShutdownInit);
   globals.maintenanceMode = data.maintenanceMode;
 
   // Update various elements of the UI to reflect our settings.
