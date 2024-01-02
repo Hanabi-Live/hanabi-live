@@ -44,6 +44,9 @@ export async function httpWS(
     return;
   }
 
+  // Record their successful login attempt in the database.
+  await models.users.setLastLogin(userID, ip);
+
   const { username, normalizedUsername, hyphenated, muted } = wsData;
 
   const wsUser: WSUser = {

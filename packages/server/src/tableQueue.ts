@@ -1,48 +1,48 @@
-import type { GameID, UserID } from "@hanabi/data";
+import type { TableID, UserID } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
-import { getRedisGame, setRedisGame } from "./redis";
+import { getRedisTable, setRedisTable } from "./redis";
 
-enum GameQueueElementType {
+enum TableQueueElementType {
   SetPlayerConnected,
 }
 
-type GameQueueElement = SetPlayerConnectedData;
+type TableQueueElement = SetPlayerConnectedData;
 
 type _Test = CompositionTypeSatisfiesEnum<
-  GameQueueElement,
-  GameQueueElementType
+  TableQueueElement,
+  TableQueueElementType
 >;
 
 interface SetPlayerConnectedData {
-  type: GameQueueElementType.SetPlayerConnected;
-  gameID: GameID;
+  type: TableQueueElementType.SetPlayerConnected;
+  tableID: TableID;
   userID: UserID;
   connected: boolean;
 }
 
 const QUEUE_FUNCTIONS = {
-  [GameQueueElementType.SetPlayerConnected]: setPlayerConnected,
+  [TableQueueElementType.SetPlayerConnected]: setPlayerConnected,
 } as const satisfies Record<
-  GameQueueElementType,
-  (element: GameQueueElement) => Promise<void>
+  TableQueueElementType,
+  (element: TableQueueElement) => Promise<void>
 >;
 
-const gameQueue: queueAsPromised<GameQueueElement, void> = fastq.promise(
+const tableQueue: queueAsPromised<TableQueueElement, void> = fastq.promise(
   processQueue,
   1,
 );
 
-async function processQueue(element: GameQueueElement) {
+async function processQueue(element: TableQueueElement) {
   const func = QUEUE_FUNCTIONS[element.type];
   await func(element);
 }
 
 async function setPlayerConnected(data: SetPlayerConnectedData) {
-  const { gameID, userID, connected } = data;
+  const { tableID, userID, connected } = data;
 
-  const game = await getRedisGame(gameID);
+  const game = await getRedisTable(tableID);
   if (game === undefined) {
     return;
   }
@@ -56,7 +56,7 @@ async function setPlayerConnected(data: SetPlayerConnectedData) {
 
   matchingPlayer.connected = connected;
 
-  await setRedisGame(game);
+  await setRedisTable(game);
 }
 
 // ------------------
@@ -64,14 +64,14 @@ async function setPlayerConnected(data: SetPlayerConnectedData) {
 // ------------------
 
 export function enqueueSetPlayerConnected(
-  gameID: GameID,
+  tableID: TableID,
   userID: UserID,
   connected: boolean,
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  gameQueue.push({
-    type: GameQueueElementType.SetPlayerConnected,
-    gameID,
+  tableQueue.push({
+    type: TableQueueElementType.SetPlayerConnected,
+    tableID,
     userID,
     connected,
   });

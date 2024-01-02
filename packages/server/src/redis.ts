@@ -1,11 +1,11 @@
-import type { GameID, UserID } from "@hanabi/data";
+import type { TableID, UserID } from "@hanabi/data";
 import { Redis } from "ioredis";
 import { IS_DEV } from "./env";
 import { logger } from "./logger";
-import type { Game } from "./types/Game";
-import { gameStringifyFunc } from "./types/Game";
+import type { Table } from "./types/Table";
+import { tableStringifyFunc } from "./types/Table";
 
-const REDIS_GAMES_KEY = "games";
+const REDIS_TABLES_KEY = "tables";
 const DEFAULT_REDIS_PORT = 6379;
 
 const redis = new Redis({
@@ -27,53 +27,66 @@ export async function redisInit(): Promise<void> {
 }
 
 /*
-export async function getRedisGames(): Promise<Map<GameID, Game>> {
-  const gamesHash = await redis.hgetall(REDIS_GAMES_KEY);
+export async function getRedisTables(): Promise<Map<TableID, Table>> {
+  const tablesHash = await redis.hgetall(REDIS_TABLES_KEY);
 
-  const games = new Map<GameID, Game>();
+  const tables = new Map<TableID, Table>();
 
-  for (const [gameIDString, gameJSON] of Object.entries(gamesHash)) {
-    const gameID = parseIntSafe(gameIDString) as GameID;
-    const game = JSON.parse(gameJSON) as Game;
+  // We want to avoid converting the object values to an array, so we iterate with the `in`
+  // operator.
+  for (for tableIDString in tablesHash) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tableJSON = tablesHash[tableIDString]!;
+    const tableID = parseIntSafe(tableIDString) as TableID;
+    const table = JSON.parse(tableJSON) as Table;
 
-    games.set(gameID, game);
+    tables.set(tableID, table);
   }
 
-  return games;
+  return tables;
 }
 */
 
-export async function getRedisGamesWithUser(userID: UserID): Promise<Game[]> {
-  const gamesHash = await redis.hgetall(REDIS_GAMES_KEY);
+export async function getRedisTablesWithUser(userID: UserID): Promise<Table[]> {
+  const tablesHash = await redis.hgetall(REDIS_TABLES_KEY);
 
-  const games: Game[] = [];
+  const tables: Table[] = [];
 
-  for (const gameJSON of Object.values(gamesHash)) {
-    const game = JSON.parse(gameJSON) as Game;
-    if (game.players.some((player) => player.userID === userID)) {
-      games.push(game);
+  // We want to avoid converting the object values to an array, so we iterate with the `in`
+  // operator.
+  // eslint-disable-next-line isaacscript/no-for-in
+  for (const tableIDString in tablesHash) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tableJSON = tablesHash[tableIDString]!;
+    const table = JSON.parse(tableJSON) as Table;
+    for (const player of table.players) {
+      if (player.userID === userID) {
+        tables.push(table);
+      }
     }
   }
 
-  return games;
+  return tables;
 }
 
-export async function getRedisGame(gameID: GameID): Promise<Game | undefined> {
-  const jsonString = await redis.hget(REDIS_GAMES_KEY, gameID.toString());
+export async function getRedisTable(
+  tableID: TableID,
+): Promise<Table | undefined> {
+  const jsonString = await redis.hget(REDIS_TABLES_KEY, tableID.toString());
   if (jsonString === null) {
     return undefined;
   }
 
-  return JSON.parse(jsonString) as Game;
+  return JSON.parse(jsonString) as Table;
 }
 
-export async function setRedisGame(game: Game): Promise<void> {
-  const gameJSON = gameStringifyFunc(game);
-  await redis.hset(REDIS_GAMES_KEY, game.id, gameJSON);
+export async function setRedisTable(table: Table): Promise<void> {
+  const tableJSON = tableStringifyFunc(table);
+  await redis.hset(REDIS_TABLES_KEY, table.id, tableJSON);
 }
 
 /*
-export async function deleteRedisGame(gameID: GameID): Promise<void> {
-  await redis.hdel(REDIS_GAMES_KEY, gameID.toString());
+export async function deleteRedisTable(tableID: TableID): Promise<void> {
+  await redis.hdel(REDIS_TABLES_KEY, tableID.toString());
 }
 */

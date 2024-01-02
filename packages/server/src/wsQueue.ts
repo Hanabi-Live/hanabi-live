@@ -1,14 +1,16 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
 import type { UserID } from "@hanabi/data";
-import { ServerCommand } from "@hanabi/data";
+import { ServerCommand, Settings } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
-import { enqueueSetPlayerConnected } from "./gameQueue";
+import { SECOND_IN_MILLISECONDS } from "isaacscript-common-ts";
 import { logger } from "./logger";
 import { models } from "./models";
-import { getRedisGamesWithUser } from "./redis";
-import { wsError, wsSendAll } from "./wsHelpers";
+import { getRedisTablesWithUser } from "./redis";
+import { enqueueSetPlayerConnected } from "./tableQueue";
+import { getSpectatingMetadata, getTableIDsUserPlayingAt } from "./tables";
+import { wsError, wsSend, wsSendAll } from "./wsHelpers";
 import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
@@ -41,16 +43,8 @@ async function processQueue(element: WSQueueElement) {
 }
 
 function login(wsUser: WSUser) {
-  const {
-    connection,
-    userID,
-    username,
-    ip,
-    status,
-    tableID,
-    hyphenated,
-    inactive,
-  } = wsUser;
+  const { userID, username, ip, status, tableID, hyphenated, inactive } =
+    wsUser;
 
   logger.info(
     `Logging in WebSocket user ${username} (${userID}) from IP: ${ip}`,
@@ -70,41 +64,92 @@ function login(wsUser: WSUser) {
   // login queue, which is the only place that this map should be mutable.
   (wsUsers as Map<UserID, WSUser>).set(userID, wsUser);
 
+  attachWebSocketEventHandlers(wsUser);
+
   wsSendAll(ServerCommand.user, {
     userID,
     name: username,
     status,
     tableID,
-    /// friends,
-    /// reverseFriends,
     hyphenated,
     inactive,
   });
 
-  // Attach event handlers.
+  // We intentionally do not await the sending of the initial messages because we want to do
+  // database-intensive work out of the critical path.
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  sendInitialWSMessages(wsUser);
+}
+
+function attachWebSocketEventHandlers(wsUser: WSUser) {
+  const { connection } = wsUser;
+
   connection.socket.on("message", (rawData) => {
     // WebSocket callbacks are supposed to be synchronous functions, so we do not bother awaiting
     // the results of the command.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     wsMessage(wsUser, rawData);
   });
+
   connection.socket.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
   });
-
-  // We intentionally do not await the sending of the "welcome" command because we want to do
-  // database-intensive work out of the critical path.
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  sendInitialWSMessages(wsUser);
 }
 
 async function sendInitialWSMessages(wsUser: WSUser) {
-  const { userID, ip } = wsUser;
+  await sendWelcomeMessage(wsUser);
 
-  // Update the database with "datetime_last_login" and "last_ip".
-  await models.users.setLastLogin(userID, ip);
+  /*
+  sendUserList()
+  sendTableList()
+  sendChat()
+  sendHistory()
+  sendFriendHistory();
+  */
+  // TODO
+}
 
-  // TODO: rest of "websocket_connect.go"
+async function sendWelcomeMessage(wsUser: WSUser) {
+  const { connection, userID, username, muted } = wsUser;
+
+  const totalGames = await models.games.getUserNumGames(userID, true);
+
+  const datetimeCreated =
+    (await models.users.getDatetimeCreated(userID)) ?? new Date();
+  const elapsedTime = Date.now() - datetimeCreated.getTime();
+  const firstTimeUser = elapsedTime > 10 * SECOND_IN_MILLISECONDS;
+
+  const settings = (await models.userSettings.get(userID)) ?? new Settings();
+  const friends = await models.userFriends.getList(userID);
+
+  const playingAtTables = getTableIDsUserPlayingAt(userID);
+  const spectatingMetadata = getSpectatingMetadata(userID);
+  const disconSpectatingTable = spectatingMetadata?.tableID;
+  const disconShadowingSeat = spectatingMetadata?.shadowingPlayerIndex;
+
+  const randomTableName = ""; // TODO;
+  const shuttingDown = false; // TODO;
+  const datetimeShutdownInit = ""; // TODO
+  const maintenanceMode = false; // TODO
+
+  wsSend(connection, ServerCommand.welcome, {
+    userID,
+    username,
+    totalGames,
+    muted,
+    firstTimeUser,
+    settings,
+    friends,
+
+    playingAtTables,
+    disconSpectatingTable,
+    disconShadowingSeat,
+
+    randomTableName,
+    shuttingDown,
+    datetimeShutdownInit,
+    maintenanceMode,
+  });
 }
 
 async function logout(wsUser: WSUser) {
@@ -130,9 +175,9 @@ async function logout(wsUser: WSUser) {
   // login queue, which is the only place that this map should be mutable.
   (wsUsers as Map<UserID, WSUser>).delete(userID);
 
-  const games = await getRedisGamesWithUser(userID);
-  for (const game of games) {
-    enqueueSetPlayerConnected(game.id, userID, false);
+  const tables = await getRedisTablesWithUser(userID);
+  for (const table of tables) {
+    enqueueSetPlayerConnected(table.id, userID, false);
   }
 
   wsSendAll(ServerCommand.userLeft, {

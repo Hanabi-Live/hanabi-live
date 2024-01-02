@@ -69,11 +69,11 @@ const serverCommandWelcomeData = z
     muted: z.boolean(),
     firstTimeUser: z.boolean(),
     settings: z.instanceof(Settings),
-    friends: z.string().array(),
+    friends: z.string().array().readonly(),
 
-    playingAtTables: z.number().int().array(),
-    disconSpectatingTable: tableID,
-    disconShadowingSeat: z.number().int(),
+    playingAtTables: tableID.array().readonly(),
+    disconSpectatingTable: tableID.optional(),
+    disconShadowingSeat: z.number().int().optional(),
 
     randomTableName: z.string(),
     shuttingDown: z.boolean(),

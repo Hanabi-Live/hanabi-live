@@ -196,7 +196,7 @@ export class Deck extends Konva.Group {
   }
 }
 
-function getTooltipContent() {
+function getTooltipContent(): string {
   // The tooltip will show the current game options.
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';

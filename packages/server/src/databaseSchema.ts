@@ -92,7 +92,7 @@ export const userFriendsTable = pgTable("user_friends", {
   userID: integer("user_id")
     .notNull()
     .references(() => usersTable.id),
-  friendID: integer("user_id")
+  friendID: integer("friend_id")
     .notNull()
     .references(() => usersTable.id),
 });
@@ -101,12 +101,54 @@ export const userReverseFriendsTable = pgTable("user_reverse_friends", {
   userID: integer("user_id")
     .notNull()
     .references(() => usersTable.id),
-  friendID: integer("user_id")
+  friendID: integer("friend_id")
     .notNull()
     .references(() => usersTable.id),
 });
 
-// TODO: games
+export const gamesTable = pgTable("games", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  numPlayers: smallint("num_players").notNull(),
+  startingPlayer: smallint("starting_player").notNull(),
+  variantID: smallint("variant_id").notNull(),
+
+  timed: boolean("timed").notNull(),
+  timeBase: integer("time_base").notNull(),
+  timePerTurn: integer("time_per_turn").notNull(),
+  speedrun: boolean("speedrun").notNull(),
+  cardCycle: boolean("card_cycle").notNull(),
+  deckPlays: boolean("deck_plays").notNull(),
+  emptyClues: boolean("empty_clues").notNull(),
+  oneExtraCard: boolean("one_extra_card").notNull(),
+  oneLessCard: boolean("one_less_card").notNull(),
+  allOrNothing: boolean("all_or_nothing").notNull(),
+  detrimentalCharacters: boolean("detrimental_characters").notNull(),
+
+  seed: text("seed").notNull(),
+  score: smallint("score").notNull(),
+  numTurns: smallint("num_turns").notNull(),
+  endCondition: smallint("end_condition").notNull(),
+  datetimeStarted: timestamp("datetime_started", {
+    withTimezone: true,
+  }).notNull(),
+  datetimeFinished: timestamp("datetime_finished", {
+    withTimezone: true,
+  }).notNull(),
+});
+
+export const gameParticipantsTable = pgTable("game_participants", {
+  id: serial("id").primaryKey(),
+  gameID: integer("game_id")
+    .notNull()
+    .references(() => gamesTable.id),
+  userID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  seat: smallint("seat").notNull(),
+  characterAssignment: smallint("character_assignment").notNull(),
+  characterMetadata: smallint("character_metadata").notNull(),
+});
 
 // TODO: game_participants
 

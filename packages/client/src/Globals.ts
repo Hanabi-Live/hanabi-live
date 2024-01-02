@@ -27,7 +27,7 @@ export class Globals {
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings: Settings = new Settings();
 
-  friends: string[] = [];
+  friends: readonly string[] = [];
   shuttingDown = false;
   datetimeShutdownInit = new Date();
   maintenanceMode = false;

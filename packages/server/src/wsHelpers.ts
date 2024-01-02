@@ -35,10 +35,10 @@ function getWSMsg<T extends ServerCommand>(
  */
 export function wsSend<T extends ServerCommand>(
   connection: SocketStream,
-  command: T,
+  serverCommand: T,
   data: ServerCommandData[T],
 ): void {
-  const msg = getWSMsg(command, data);
+  const msg = getWSMsg(serverCommand, data);
   connection.socket.send(msg);
 }
 
@@ -48,10 +48,10 @@ export function wsSend<T extends ServerCommand>(
  * Messages are sent using the Golem protocol.
  */
 export function wsSendAll<T extends ServerCommand>(
-  command: T,
+  serverCommand: T,
   data: ServerCommandData[T],
 ): void {
-  const msg = getWSMsg(command, data);
+  const msg = getWSMsg(serverCommand, data);
   for (const wsUser of wsUsers.values()) {
     wsUser.connection.socket.send(msg);
   }

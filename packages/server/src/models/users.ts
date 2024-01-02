@@ -164,6 +164,22 @@ export const users = {
     };
   },
 
+  getDatetimeCreated: async (userID: UserID): Promise<Date | undefined> => {
+    const rows = await db
+      .select({
+        datetimeCreated: usersTable.datetimeCreated,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userID));
+
+    const row = rows[0];
+    if (row === undefined) {
+      return undefined;
+    }
+
+    return row.datetimeCreated;
+  },
+
   setLastLogin: async (userID: number, ip: string): Promise<void> => {
     await db
       .update(usersTable)
