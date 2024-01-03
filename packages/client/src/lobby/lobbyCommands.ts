@@ -343,7 +343,10 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   // If the server has informed us that were previously spectating an ongoing shared replay,
   // automatically spectate that table (and ignore any specific custom path that the user has
   // entered).
-  if (data.disconSpectatingTable !== 0) {
+  if (
+    data.disconSpectatingTable !== undefined &&
+    data.disconSpectatingTable > 0
+  ) {
     globals.conn!.send("tableSpectate", {
       tableID: data.disconSpectatingTable,
       shadowingPlayerIndex: data.disconShadowingSeat,
