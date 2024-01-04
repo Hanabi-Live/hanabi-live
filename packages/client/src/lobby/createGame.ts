@@ -632,12 +632,18 @@ export function ready(): boolean {
 
 function readyVariant(value: string) {
   // Validate the variant name that we got from the server.
-  const variantName = doesVariantExist(value) ? value : DEFAULT_VARIANT_NAME;
+  let variantName: string;
+  if (doesVariantExist(value)) {
+    variantName = value;
+  } else {
+    variantName = DEFAULT_VARIANT_NAME;
 
-  globals.settings = {
-    ...globals.settings,
-    createTableVariant: variantName,
-  };
+    // Since the variant name is not valid, update our settings.
+    globals.settings = {
+      ...globals.settings,
+      createTableVariant: variantName,
+    };
+  }
 
   // Update the hidden field.
   $("#createTableVariant").text(variantName);
