@@ -36,8 +36,8 @@ export const settings = z
     createTableDetrimentalCharacters: z.boolean().default(false),
     createTableMaxPlayers: numPlayers.default(DEFAULT_CREATE_TABLE_MAX_PLAYERS),
   })
-  .strict();
-// This object cannot be read-only since we mutate it when a setting changes.
+  .strict()
+  .readonly();
 
 /**
  * These are per-user settings that are changed from the main lobby screen (in the "Settings" button

@@ -386,7 +386,7 @@ function submit() {
       options,
       password,
       gameJSON,
-      maxPlayers: maxPlayersInt,
+      maxPlayers,
     });
     $("#nav-buttons-lobby-create-game").addClass("disabled");
   } else {
@@ -394,7 +394,7 @@ function submit() {
       tableID: globals.tableID,
       name,
       options,
-      maxPlayers: maxPlayersInt,
+      maxPlayers,
     });
   }
 
@@ -575,7 +575,6 @@ export function ready(): boolean {
 
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
-
   for (const [key, value] of Object.entries(dialogOptions)) {
     const element = $(`#${key}`);
     if (key === "createTableVariant") {
@@ -633,13 +632,12 @@ export function ready(): boolean {
 
 function readyVariant(value: string) {
   // Validate the variant name that we got from the server.
-  let variantName: string;
-  if (doesVariantExist(value)) {
-    variantName = value;
-  } else {
-    variantName = DEFAULT_VARIANT_NAME;
-    globals.settings.createTableVariant = variantName;
-  }
+  const variantName = doesVariantExist(value) ? value : DEFAULT_VARIANT_NAME;
+
+  globals.settings = {
+    ...globals.settings,
+    createTableVariant: variantName,
+  };
 
   // Update the hidden field.
   $("#createTableVariant").text(variantName);

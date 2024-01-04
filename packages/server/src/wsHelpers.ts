@@ -38,7 +38,7 @@ function getWSMsg<T extends ServerCommand>(
   }
 
   const stringifyFunc = SERVER_COMMAND_STRINGIFY_FUNCS[command];
-  return packWSMessageOnServer(command, data, stringifyFunc);
+  return packWSMessageOnServer(command, result.data, stringifyFunc);
 }
 
 /**

@@ -5,9 +5,5 @@
   // We extend the TypeScript config for the monorepo.
   "extends": "../../tsconfig.json",
 
-  "compilerOptions": {
-    "noErrorTruncation": true,
-  },
-
   "include": ["./src/**/*.ts"],
 }

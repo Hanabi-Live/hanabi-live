@@ -22,7 +22,11 @@ export function init(): void {
       `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
     );
 
-    globals.settings.volume = volume;
+    globals.settings = {
+      ...globals.settings,
+      volume,
+    };
+
     $("#settings-volume-slider-value").html(`${volume}%`);
     globals.conn!.send("setting", {
       name: "volume",
