@@ -16,14 +16,21 @@ export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
  */
 export const DEFAULT_FINISHED_STACK_LENGTH = 5;
 
-/** The valid amount of players that can be in a game. */
-export const VALID_NUM_PLAYERS = [2, 3, 4, 5, 6] as const;
-
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
 
-const MAX_CARDS_IN_A_SUIT = 10;
+/** The valid amount of players that can be in a game. */
+export const VALID_NUM_PLAYERS = [2, 3, 4, 5, 6] as const;
+
+export const VALID_PLAYER_INDEXES = [0, 1, 2, 3, 4, 5] as const;
+
 export const MAX_SUITS_IN_A_VARIANT = 6;
+export const VALID_SUIT_INDEXES = [0, 1, 2, 3, 4, 5] as const;
+
+/** A variant can never have more colors than suits, so we repurpose the existing array. */
+export const VALID_CLUE_COLOR_INDEXES = VALID_SUIT_INDEXES;
+
+const MAX_CARDS_IN_A_SUIT = 10;
 export const MAX_CARDS_IN_A_DECK = MAX_CARDS_IN_A_SUIT * MAX_SUITS_IN_A_VARIANT;
 
 export const DEFAULT_PLAYER_NAMES = [

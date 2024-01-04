@@ -20,8 +20,9 @@ type Spectator struct {
 
 	// Spectators have the ability to watch a game from a specific player's perspective
 	// Equal to -1 if they are not shadowing a specific player
-	ShadowingPlayerIndex        int `json:"shadowingPlayerIndex"`
-	ShadowingPlayerPregameIndex int `json:"-"`
+	ShadowingPlayerIndex        int    `json:"shadowingPlayerIndex"`
+	ShadowingPlayerUsername     string `json:"shadowingPlayerUsername"`
+	ShadowingPlayerPregameIndex int    `json:"-"`
 
 	// Spectators can add notes to cards that other spectators can see
 	notes []string `json:"-"`

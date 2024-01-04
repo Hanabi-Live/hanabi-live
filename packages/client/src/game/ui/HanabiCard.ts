@@ -1,4 +1,5 @@
 import type {
+  CardIdentity,
   CardNote,
   CardOrder,
   CardState,
@@ -26,7 +27,6 @@ import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
 import Konva from "konva";
 import { includes } from "lodash";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
-import type { CardIdentity } from "../types/CardIdentity";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";

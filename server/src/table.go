@@ -34,7 +34,7 @@ type Table struct {
 	PasswordHash   string
 	Running        bool
 	Replay         bool
-	AutomaticStart int // See "chatTable.go"
+	AutomaticStart int // See "chatTable.go" (this will not be reimplemented in the TypeScript server)
 	Progress       int // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated      time.Time

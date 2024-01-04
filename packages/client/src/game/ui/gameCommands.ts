@@ -2,7 +2,9 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
+import type { Spectator } from "@hanabi/data";
 import type {
+  CardIdentity,
   CardOrder,
   GameAction,
   GameMetadata,
@@ -24,11 +26,9 @@ import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
-import type { CardIdentity } from "../types/CardIdentity";
 import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";
-import type { Spectator } from "../types/Spectator";
 import type { State } from "../types/State";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import { globals } from "./UIGlobals";

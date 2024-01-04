@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
+// This file is the only place that is allowed to import from the models directory.
 
 import { bannedIPs } from "./models/bannedIPs";
 import { chatLog } from "./models/chatLog";

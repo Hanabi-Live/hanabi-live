@@ -1,13 +1,14 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
 import type {
+  ServerCommandTableData,
   ServerCommandUserData,
   ServerCommandWelcomeData,
+  Spectator,
 } from "@hanabi/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";
-import type { Spectator } from "../game/types/Spectator";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as sounds from "../sounds";
 import * as history from "./history";
@@ -18,7 +19,6 @@ import { tablesDraw } from "./tablesDraw";
 import type { Game } from "./types/Game";
 import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
-import type { Table } from "./types/Table";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
@@ -176,7 +176,7 @@ lobbyCommands.set("soundLobby", (data: SoundLobbyData) => {
 });
 
 // Received by the client when a table is created or modified.
-lobbyCommands.set("table", (data: Table) => {
+lobbyCommands.set("table", (data: ServerCommandTableData) => {
   globals.tableMap.set(data.id, data);
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
@@ -196,14 +196,17 @@ lobbyCommands.set("tableGone", (data: TableGoneData) => {
 });
 
 // Received by the client upon initial connection.
-lobbyCommands.set("tableList", (dataList: readonly Table[]) => {
-  for (const data of dataList) {
-    globals.tableMap.set(data.id, data);
-  }
-  if (globals.currentScreen === Screen.Lobby) {
-    tablesDraw();
-  }
-});
+lobbyCommands.set(
+  "tableList",
+  (dataList: readonly ServerCommandTableData[]) => {
+    for (const data of dataList) {
+      globals.tableMap.set(data.id, data);
+    }
+    if (globals.currentScreen === Screen.Lobby) {
+      tablesDraw();
+    }
+  },
+);
 
 interface TableProgressData {
   tableID: number;
@@ -214,7 +217,12 @@ lobbyCommands.set("tableProgress", (data: TableProgressData) => {
   if (table === undefined) {
     return;
   }
-  table.progress = data.progress;
+
+  const newTable = {
+    ...table,
+    progress: data.progress,
+  };
+  globals.tableMap.set(data.tableID, newTable);
 
   if (globals.currentScreen === Screen.Lobby) {
     $(`#status-${data.tableID}`).html(data.progress.toString());

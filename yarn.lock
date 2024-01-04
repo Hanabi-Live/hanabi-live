@@ -2298,10 +2298,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/node-lts@npm:^20.1.0":
-  version: 20.1.0
-  resolution: "@tsconfig/node-lts@npm:20.1.0"
-  checksum: 1e8e16ce95f6fac33db355a382930019162519287dd0cf1b33045aa9715e1b62616c1a35e9f91eff3cac4a0b446cd5226c8c49c380fc95cc6943952cf7480212
+"@tsconfig/node-lts@npm:^20.1.1":
+  version: 20.1.1
+  resolution: "@tsconfig/node-lts@npm:20.1.1"
+  checksum: cd78a6680be8a4f38e60a3fccc1f940bdc420c1f27563268ebff87e64e425ce59a414272333474ca6b3b85304037b51ade71ae5fd58f6661ceaa3a8daf291838
   languageName: node
   linkType: hard
 
@@ -4845,9 +4845,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:^0.29.2":
-  version: 0.29.2
-  resolution: "drizzle-orm@npm:0.29.2"
+"drizzle-orm@npm:^0.29.3":
+  version: 0.29.3
+  resolution: "drizzle-orm@npm:0.29.3"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=3"
@@ -4888,6 +4888,8 @@ __metadata:
       optional: true
     "@types/pg":
       optional: true
+    "@types/react":
+      optional: true
     "@types/sql.js":
       optional: true
     "@vercel/postgres":
@@ -4895,6 +4897,8 @@ __metadata:
     better-sqlite3:
       optional: true
     bun-types:
+      optional: true
+    expo-sqlite:
       optional: true
     knex:
       optional: true
@@ -4906,11 +4910,13 @@ __metadata:
       optional: true
     postgres:
       optional: true
+    react:
+      optional: true
     sql.js:
       optional: true
     sqlite3:
       optional: true
-  checksum: 80e527db660adf4044f9a9e5999c1cfb12bd9e5e78818c8ca476811325b0d1244a00d7be724fd8d6d00f0c9649d7a013b21c55119d31debd7e011bc1f01376e7
+  checksum: a5a53e4599981f256e10bd0e6e4724f14ffe7c9f6bef963c5cc9d00c8379c2367324ae0c67abc52a319704fedba796a5583dac3d36fac0de19585f87844d3611
   languageName: node
   linkType: hard
 
@@ -6834,7 +6840,7 @@ __metadata:
     "@fastify/static": "npm:^6.12.0"
     "@fastify/view": "npm:^8.2.0"
     "@fastify/websocket": "npm:^8.3.1"
-    "@tsconfig/node-lts": "npm:^20.1.0"
+    "@tsconfig/node-lts": "npm:^20.1.1"
     "@types/jest": "npm:^29.5.11"
     "@types/jquery": "npm:^3.5.29"
     "@types/jsdom": "npm:^21.1.6"
@@ -6846,7 +6852,7 @@ __metadata:
     argon2: "npm:^0.31.2"
     bufferutil: "npm:^4.0.8"
     dotenv: "npm:^16.3.1"
-    drizzle-orm: "npm:^0.29.2"
+    drizzle-orm: "npm:^0.29.3"
     esbuild: "npm:^0.19.11"
     esbuild-plugin-pino: "npm:^2.1.0"
     eta: "npm:^3.2.0"
@@ -6867,7 +6873,7 @@ __metadata:
     ioredis: "npm:^5.3.2"
     isaacscript: "npm:^3.37.0"
     isaacscript-common-node: "npm:^3.0.0"
-    isaacscript-common-ts: "npm:^14.5.0"
+    isaacscript-common-ts: "npm:^15.1.1"
     isaacscript-lint: "npm:^6.14.0"
     isaacscript-tsconfig: "npm:^5.0.0"
     jest: "npm:^29.7.0"
@@ -7741,12 +7747,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isaacscript-common-ts@npm:^14.5.0":
-  version: 14.5.0
-  resolution: "isaacscript-common-ts@npm:14.5.0"
+"isaacscript-common-ts@npm:^15.1.1":
+  version: 15.1.1
+  resolution: "isaacscript-common-ts@npm:15.1.1"
   dependencies:
     unidecode: "npm:^0.1.8"
-  checksum: ba07f9165bcb99f82c654279cfeadad10c81dcad9d00f3786c95a637fcc9dc32672de0b287d62246e9895cbd135f0a009bd32244a640242ef8529c9d2a4d24ee
+  checksum: 57791ca1ba1331dc70bac157552b27bd2e7dd1462220530f6fa425beefa4960765df66720a7596d613a5e251112052e4c782cd75a9b1e79610176f295b74d11d
   languageName: node
   linkType: hard
 

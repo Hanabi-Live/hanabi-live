@@ -1,9 +1,9 @@
 import type { TableID, UserID } from "@hanabi/data";
 import { Redis } from "ioredis";
 import { IS_DEV } from "./env";
+import type { Table } from "./interfaces/Table";
+import { tableStringifyFunc } from "./interfaces/Table";
 import { logger } from "./logger";
-import type { Table } from "./types/Table";
-import { tableStringifyFunc } from "./types/Table";
 
 const REDIS_TABLES_KEY = "tables";
 const DEFAULT_REDIS_PORT = 6379;

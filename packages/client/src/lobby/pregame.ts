@@ -512,20 +512,11 @@ export function drawSpectators(tableID: number): void {
   for (const spectator of table.spectators) {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
-    if (spectator.shadowingPlayerIndex !== -1) {
-      const shadowingPlayer = table.players[spectator.shadowingPlayerIndex];
+    if (
+      spectator.shadowingPlayerIndex !== undefined &&
+      spectator.shadowingPlayerIndex !== -1
+    ) {
       if (spectator.name === globals.username) {
-        if (
-          spectator.shadowingPlayerIndex >= table.players.length || // Shadow index is out of range
-          spectator.shadowingPlayerIndex < -1 || // Shadow index is out of range
-          (spectator.shadowingPlayerName !== undefined &&
-            spectator.shadowingPlayerName !== "" &&
-            spectator.shadowingPlayerName !== shadowingPlayer) // The player we where going to shadow, has left.
-        ) {
-          spectator.shadowingPlayerName = "";
-          reattend(-1);
-          return;
-        }
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
           .addClass("unShadow")
@@ -535,9 +526,8 @@ export function drawSpectators(tableID: number): void {
           })
           .append(" 🕵️");
       }
-      spectator.shadowingPlayerName = shadowingPlayer!;
       item.html(
-        `${item.html()} (🕵️ <em>${spectator.shadowingPlayerName}</em>)`,
+        `${item.html()} (🕵️ <em>${spectator.shadowingPlayerUsername}</em>)`,
       );
     }
     list.append(item);

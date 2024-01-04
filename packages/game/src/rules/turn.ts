@@ -1,8 +1,8 @@
 /* eslint-disable unicorn/no-null */
 
-import type { Options } from "../classes/Options";
 import { getCharacter } from "../gameData";
 import type { GameMetadata } from "../interfaces/GameMetadata";
+import type { Options } from "../interfaces/Options";
 import type { Variant } from "../interfaces/Variant";
 import type { NumPlayers } from "../types/NumPlayers";
 import type { PlayerIndex } from "../types/PlayerIndex";

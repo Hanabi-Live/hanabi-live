@@ -1,7 +1,7 @@
 import type { Tuple } from "isaacscript-common-ts";
-import type { Options } from "../classes/Options";
 import type { NumPlayers } from "../types/NumPlayers";
 import type { PlayerIndex } from "../types/PlayerIndex";
+import type { Options } from "./Options";
 
 /** This is for data that does not change once a game starts. */
 export interface GameMetadata {

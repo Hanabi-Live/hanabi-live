@@ -8,19 +8,20 @@
 - make Connection.send on client type-safe
 - linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
 
+- test a field annotated as z.date() actually works on the client
+
 +-----+
 | OLD |
 +-----+
 
 - remove type assertions from lobby + views
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
-- search for "This message is unnecessary"
 - delete UIGlobals.activePlayerIndex
 
 short term:
 - move "build_client.sh" and "esbuild_dev.sh" out of "client" directory
 - get rid of all identity functions in "packages/client/src/game/rules/variant.ts"
-- refactor `ignoreNegative`, I don't think it should be created inside of the reducer
+- refactor `ignoreNegative`, I don't think it should be created inside of the reducer (?)
 
 long term once the server is rewritten in TypeScript:
 - remove all null in @hanabi/game (this might need server changes)
@@ -36,3 +37,12 @@ long term once the server is rewritten in TypeScript:
 - remove -1 type from activePlayerIndex (prefer undefined)
 - readonly turn: number; // TODO: remove. This is unused.
 - separate sign up and login into two separate forms
+- rename ServerCommandUserData.user --> ServerCommandUserData.username
+- rename serverCommandTableData.players --> serverCommandTableData.playerNames
+- change spectator.shadowingPlayerIndex from -1 to undefined
+- change spectator.shadowingPlayerPregameIndex from -1 to undefined
+- change spectator.name --> username
+- rename disconSpectatingTable + disconShadowingSeat
+- refactor location of CharacterAssignment interface
+- shadowingPlayerIndex: playerIndex.or(z.literal(-1)).optional(), --> get rid of -1
+- search for "=== -1" and "!== -1"

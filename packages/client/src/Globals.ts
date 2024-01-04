@@ -1,14 +1,16 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type { ServerCommandUserData } from "@hanabi/data";
-import { Settings } from "@hanabi/data";
+import type {
+  ServerCommandTableData,
+  ServerCommandUserData,
+} from "@hanabi/data";
+import { defaultSettings } from "@hanabi/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import type { Game } from "./lobby/types/Game";
 import type { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
-import type { Table } from "./lobby/types/Table";
 
 export class Globals {
   /** The WebSocket connection (set in "websocket.ts"). */
@@ -25,7 +27,7 @@ export class Globals {
   randomTableName = "";
 
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
-  settings: Settings = new Settings();
+  settings = defaultSettings;
 
   friends: readonly string[] = [];
   shuttingDown = false;
@@ -40,7 +42,7 @@ export class Globals {
   userMap = new Map<number, ServerCommandUserData>();
 
   /** Keys are IDs. */
-  tableMap = new Map<number, Table>();
+  tableMap = new Map<number, ServerCommandTableData>();
 
   /** Keys are IDs. */
   history = new Map<number, GameHistory>();

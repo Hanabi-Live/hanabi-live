@@ -1,6 +1,6 @@
 # Hanab Live Game Logic
 
-This package contains the rules for the game. These are exported as functions like `isCardTouchedByClue`, `isCardOnChop`, and so on.
+This package contains the rules for the game of Hanab. These are exported as functions like `isCardTouchedByClue`, `isCardOnChop`, and so on.
 
 You can see the full list of things that this library provides in the [auto-generated documentation](https://hanabi-live.github.io/hanabi-live/).
 
@@ -16,11 +16,10 @@ If you want to use the game logic in a bot or some other Hanab-related program, 
 npm install @hanabi-live/game --save
 ```
 
-If you want to use the reducer functions to compute new game states, then you also need to install [Immer](https://immerjs.github.io/immer/):
+The package also has some optional peer dependencies:
 
-```sh
-npm install immer --save
-```
+- If you need to import types (like e.g. `CardOrder`), then you need to install [Zod](https://zod.dev/): `npm install zod --save`
+- If you need to use the reducer functions to compute new game states, then you need to install [Immer](https://immerjs.github.io/immer/): `npm install immer --save`
 
 <br>
 

@@ -80,6 +80,11 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	tables.DeleteDisconSpectating(s.UserID)
 
 	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	shadowingPlayerUsername := ""
+	if d.ShadowingPlayerIndex >= 0 && d.ShadowingPlayerIndex < len(t.Players) {
+		shadowingPlayerUsername = t.Players[d.ShadowingPlayerIndex].Name
+	}
+
 	if spectatorIndex == -1 {
 		// Add them to the spectators object
 		sp := &Spectator{
@@ -89,6 +94,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			Typing:                      false,
 			LastTyped:                   time.Time{},
 			ShadowingPlayerIndex:        d.ShadowingPlayerIndex,
+			ShadowingPlayerUsername:     shadowingPlayerUsername,
 			ShadowingPlayerPregameIndex: -1,
 		}
 		t.Spectators = append(t.Spectators, sp)
@@ -96,6 +102,7 @@ func tableSpectate(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		t.Spectators[spectatorIndex].Session = s
 		t.Spectators[spectatorIndex].Typing = false
 		t.Spectators[spectatorIndex].ShadowingPlayerIndex = d.ShadowingPlayerIndex
+		t.Spectators[spectatorIndex].ShadowingPlayerUsername = shadowingPlayerUsername
 		t.Spectators[spectatorIndex].ShadowingPlayerPregameIndex = -1
 	}
 

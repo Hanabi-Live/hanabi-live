@@ -105,7 +105,7 @@ export function play(
 }
 
 /** Helper functions to build a `ActionCardIdentity` with a compact syntax. For use in tests. */
-export function cardIdentity(
+export function actionCardIdentity(
   playerIndex: PlayerIndex,
   order: number,
   suitIndex: SuitIndex,

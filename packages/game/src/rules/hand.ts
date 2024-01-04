@@ -1,7 +1,7 @@
 // Functions related to hand management.
 
-import type { Options } from "../classes/Options";
 import type { CardState } from "../interfaces/CardState";
+import type { Options } from "../interfaces/Options";
 import type { CardOrder } from "../types/CardOrder";
 import type { NumPlayers } from "../types/NumPlayers";
 import { isCardClued } from "./cardState";

@@ -1,10 +1,9 @@
-import type { GameMetadata, GameState } from "@hanabi/game";
-import type { CardIdentity } from "./CardIdentity";
+import type { Spectator } from "@hanabi/data";
+import type { CardIdentity, GameMetadata, GameState } from "@hanabi/game";
 import type { ClientAction } from "./ClientAction";
 import type { NotesState } from "./NotesState";
 import type { PauseState } from "./PauseState";
 import type { ReplayState } from "./ReplayState";
-import type { Spectator } from "./Spectator";
 import type { UIState } from "./UIState";
 
 export interface State {

@@ -1,7 +1,7 @@
+import type { Spectator } from "@hanabi/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { ReplayActionType } from "../../../types/ReplayActionType";
-import type { Spectator } from "../../../types/Spectator";
 import { globals } from "../../UIGlobals";
 import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";

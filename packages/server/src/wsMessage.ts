@@ -1,7 +1,7 @@
 import type { ClientCommandData } from "@hanabi/data";
 import {
+  CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
-  clientCommandSchemas,
   unpackWSMessage,
 } from "@hanabi/data";
 import { ReadonlySet, getEnumValues, isEnumValue } from "isaacscript-common-ts";
@@ -56,7 +56,7 @@ async function handleWSMessage(wsUser: WSUser, rawData: RawData) {
     return;
   }
 
-  const schema = clientCommandSchemas[command];
+  const schema = CLIENT_COMMAND_SCHEMAS[command];
   const result = schema.safeParse(data);
   if (!result.success) {
     logger.error(

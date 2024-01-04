@@ -1,9 +1,8 @@
-import type { SuitIndex } from "./SuitIndex";
+import { z } from "zod";
+import { VALID_CLUE_COLOR_INDEXES } from "../constants";
 
-/**
- * A variant can never have more colors than suits, so we simply borrow the existing type of
- * `SuitIndex` for this purpose.
- */
-// Adding `& number` makes the type opaque, which makes for cleaner mouseover tooltips.
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export type ColorIndex = SuitIndex & number;
+export const colorIndex = z.custom<ColorIndex>((data) =>
+  VALID_CLUE_COLOR_INDEXES.includes(data as ColorIndex),
+);
+
+export type ColorIndex = (typeof VALID_CLUE_COLOR_INDEXES)[number];

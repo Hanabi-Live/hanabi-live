@@ -7,6 +7,7 @@ export const httpLoginData = z
     newPassword: z.string().min(1).optional(),
     version: z.string().min(1),
   })
+  .strict()
   .readonly();
 
 export type HTTPLoginData = z.infer<typeof httpLoginData>;

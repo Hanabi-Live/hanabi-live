@@ -212,6 +212,8 @@ CREATE TABLE game_actions (
     turn     SMALLINT  NOT NULL,
 
     /**
+     * Corresponds to the "DatabaseGameActionType" enum.
+     *
      * - 0 - play
      * - 1 - discard
      * - 2 - color clue

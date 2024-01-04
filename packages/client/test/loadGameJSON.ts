@@ -5,6 +5,7 @@ import type {
   ActionDiscard,
   ActionDraw,
   ActionPlay,
+  CardIdentity,
   CardOrder,
   GameAction,
   GameState,
@@ -29,7 +30,6 @@ import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
 import { ActionType } from "../src/game/types/ActionType";
-import type { CardIdentity } from "../src/game/types/CardIdentity";
 import type { State } from "../src/game/types/State";
 import type testGame from "../test_data/up_or_down.json";
 
@@ -65,7 +65,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
    * The type of `number` in the JSON is too loose for the types of `SuitIndex` and `Rank`, so we
    * must use a type assertion.
    */
-  const deck = gameJSON.deck as unknown as CardIdentity[];
+  const deck = gameJSON.deck as CardIdentity[];
 
   const actions: GameAction[] = [];
   let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, deck);

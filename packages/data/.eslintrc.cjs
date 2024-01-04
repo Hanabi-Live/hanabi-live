@@ -68,12 +68,6 @@ module.exports = {
             message:
               "You cannot import from this package. Use a relative import import.",
           },
-
-          {
-            group: ["@hanabi/game"],
-            message:
-              "You cannot import from game --> data. Try refactoring it to this package instead.",
-          },
         ],
       },
     ],

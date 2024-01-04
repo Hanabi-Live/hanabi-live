@@ -1,7 +1,7 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
 import type { UserID } from "@hanabi/data";
-import { ServerCommand, Settings } from "@hanabi/data";
+import { ServerCommand, defaultSettings } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { SECOND_IN_MILLISECONDS } from "isaacscript-common-ts";
@@ -11,12 +11,16 @@ import { models } from "./models";
 import { getRedisTablesWithUser } from "./redis";
 import { getShuttingDownMetadata } from "./shutdown";
 import { enqueueSetPlayerConnected } from "./tableQueue";
-import { getSpectatingMetadata, getTableIDsUserPlayingAt } from "./tables";
+import {
+  getSpectatingMetadata,
+  getTableIDsUserPlayingAt,
+  getTableList,
+} from "./tables";
 import { getRandomTableName } from "./words";
 import { wsError, wsSend, wsSendAll } from "./wsHelpers";
 import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
-import { wsUsers } from "./wsUsers";
+import { getUserData, getUserList, wsUsers } from "./wsUsers";
 
 export enum WSQueueElementType {
   Login,
@@ -46,8 +50,7 @@ async function processQueue(element: WSQueueElement) {
 }
 
 function login(wsUser: WSUser) {
-  const { userID, username, ip, status, tableID, hyphenated, inactive } =
-    wsUser;
+  const { userID, username, ip } = wsUser;
 
   logger.info(
     `Logging in WebSocket user ${username} (${userID}) from IP: ${ip}`,
@@ -69,14 +72,8 @@ function login(wsUser: WSUser) {
 
   attachWebSocketEventHandlers(wsUser);
 
-  wsSendAll(ServerCommand.user, {
-    userID,
-    name: username,
-    status,
-    tableID,
-    hyphenated,
-    inactive,
-  });
+  const userData = getUserData(wsUser);
+  wsSendAll(ServerCommand.user, userData);
 
   // We intentionally do not await the sending of the initial messages because we want to do
   // database-intensive work out of the critical path.
@@ -101,13 +98,13 @@ function attachWebSocketEventHandlers(wsUser: WSUser) {
 
 async function sendInitialWSMessages(wsUser: WSUser) {
   await sendWelcomeMessage(wsUser);
+  sendUserList(wsUser);
+  sendTableList(wsUser);
 
   /*
-  sendUserList()
-  sendTableList()
-  sendChat()
-  sendHistory()
-  sendFriendHistory();
+  await sendChat()
+  await sendHistory()
+  await sendFriendHistory();
   */
   // TODO
 }
@@ -120,9 +117,9 @@ async function sendWelcomeMessage(wsUser: WSUser) {
   const datetimeCreated =
     (await models.users.getDatetimeCreated(userID)) ?? new Date();
   const elapsedTime = Date.now() - datetimeCreated.getTime();
-  const firstTimeUser = elapsedTime > 10 * SECOND_IN_MILLISECONDS;
+  const firstTimeUser = elapsedTime < 10 * SECOND_IN_MILLISECONDS;
 
-  const settings = (await models.userSettings.get(userID)) ?? new Settings();
+  const settings = (await models.userSettings.get(userID)) ?? defaultSettings;
   const friends = await models.userFriends.getList(userID);
 
   const playingAtTables = getTableIDsUserPlayingAt(userID);
@@ -152,6 +149,16 @@ async function sendWelcomeMessage(wsUser: WSUser) {
     datetimeShutdownInit,
     maintenanceMode,
   });
+}
+
+function sendUserList(loginWsUser: WSUser) {
+  const userList = getUserList();
+  wsSend(loginWsUser.connection, ServerCommand.userList, userList);
+}
+
+function sendTableList(wsUser: WSUser) {
+  const tableList = getTableList(wsUser.userID);
+  wsSend(wsUser.connection, ServerCommand.tableList, tableList);
 }
 
 async function logout(wsUser: WSUser) {

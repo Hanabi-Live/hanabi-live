@@ -385,14 +385,16 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 				Session:                     p.Session,
 				Typing:                      false,
 				LastTyped:                   time.Time{},
-				ShadowingPlayerIndex:        -1, // To indicate that they are not shadowing anyone
-				ShadowingPlayerPregameIndex: -1, // To indicate that they are not shadowing anyone
+				ShadowingPlayerIndex:        -1, // To indicate that they are not shadowing anyone.
+				ShadowingPlayerUsername:     "", // To indicate that they are not shadowing anyone.
+				ShadowingPlayerPregameIndex: -1, // To indicate that they are not shadowing anyone.
 			}
 			t.Spectators = append(t.Spectators, sp)
 		} else {
 			t.Spectators[spectatorIndex].Session = p.Session
 			t.Spectators[spectatorIndex].Typing = false
 			t.Spectators[spectatorIndex].ShadowingPlayerIndex = -1
+			t.Spectators[spectatorIndex].ShadowingPlayerUsername = ""
 		}
 
 		// Also, keep track of user to table relationships

@@ -1,4 +1,5 @@
 import type { Settings, UserID } from "@hanabi/data";
+import type { NumPlayers } from "@hanabi/game";
 import { eq, getTableColumns } from "drizzle-orm";
 import { userSettingsTable } from "../databaseSchema";
 import { db } from "../db";
@@ -22,6 +23,9 @@ export const userSettings = {
       return;
     }
 
-    return rows[0];
+    // A type assertion is necessary since the `createTableMaxPlayers` field is a number.
+    return row as Omit<typeof row, "createTableMaxPlayers"> & {
+      createTableMaxPlayers: NumPlayers;
+    };
   },
 };

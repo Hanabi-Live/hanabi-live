@@ -2,16 +2,16 @@
 // and the state reducers to fire.) All of the sub-actions from the "gameAction" command are listed
 // here.
 
+import type { Spectator } from "@hanabi/data";
 import type {
+  CardIdentity,
   CardOrder,
   GameAction,
   PlayerIndex,
   Rank,
   SuitIndex,
 } from "@hanabi/game";
-import type { CardIdentity } from "./CardIdentity";
 import type { ClientAction } from "./ClientAction";
-import type { Spectator } from "./Spectator";
 import type { UIAction } from "./UIAction";
 
 export type Action =

@@ -56,7 +56,6 @@ export function init(): void {
 export function setPlayerSettings(): void {
   // The server has delivered to us a list of all of our settings. Check the checkboxes for the
   // settings that we have enabled (and adjust the volume slider).
-  // eslint-disable-next-line isaacscript/no-object-any
   for (const [setting, value] of Object.entries(globals.settings)) {
     if (setting.startsWith("createTable")) {
       // Settings for the "Create Game" nav button are handled when the user clicks on it.

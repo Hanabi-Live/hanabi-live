@@ -1,5 +1,8 @@
-import type { ERange } from "isaacscript-common-ts";
-import type { MAX_SUITS_IN_A_VARIANT } from "../constants";
+import { z } from "zod";
+import { VALID_SUIT_INDEXES } from "../constants";
 
-/** The maximum number of suits in a variant is 6. Thus, the valid suit indexes are 0 through 5. */
-export type SuitIndex = ERange<0, typeof MAX_SUITS_IN_A_VARIANT>;
+export const suitIndex = z.custom<SuitIndex>((data) =>
+  VALID_SUIT_INDEXES.includes(data as SuitIndex),
+);
+
+export type SuitIndex = (typeof VALID_SUIT_INDEXES)[number];

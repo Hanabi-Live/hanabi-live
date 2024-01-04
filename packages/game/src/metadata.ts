@@ -2,10 +2,10 @@
 
 import type { Tuple } from "isaacscript-common-ts";
 import { newArray } from "isaacscript-common-ts";
-import { Options } from "./classes/Options";
 import { DEFAULT_PLAYER_NAMES, DEFAULT_VARIANT_NAME } from "./constants";
 import { getVariant } from "./gameData";
 import type { GameMetadata } from "./interfaces/GameMetadata";
+import { defaultOptions } from "./interfaces/Options";
 import { getCardsPerHand } from "./rules/hand";
 import { getMinEfficiency } from "./rules/stats";
 import { getEndGameLength } from "./rules/turn";
@@ -23,7 +23,7 @@ export function getDefaultMetadata(
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {
   const options = {
-    ...new Options(),
+    ...defaultOptions,
     numPlayers,
     variantName,
   };

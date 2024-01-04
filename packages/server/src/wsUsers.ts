@@ -1,5 +1,10 @@
 import type { SocketStream } from "@fastify/websocket";
-import type { Status, TableID, UserID } from "@hanabi/data";
+import type {
+  ServerCommandUserData,
+  Status,
+  TableID,
+  UserID,
+} from "@hanabi/data";
 import { ReadonlyMap } from "isaacscript-common-ts";
 import type { SessionID } from "./types/SessionID";
 
@@ -53,4 +58,29 @@ export function getWSUserByNormalizedUsername(
   }
 
   return undefined;
+}
+
+/** For the "user" and "userList" commands. */
+export function getUserData(wsUser: WSUser): ServerCommandUserData {
+  const { userID, username, status, tableID, hyphenated, inactive } = wsUser;
+
+  return {
+    userID,
+    name: username,
+    status,
+    tableID,
+    hyphenated,
+    inactive,
+  };
+}
+
+export function getUserList(): readonly ServerCommandUserData[] {
+  const userList: ServerCommandUserData[] = [];
+
+  for (const wsUser of wsUsers.values()) {
+    const userData = getUserData(wsUser);
+    userList.push(userData);
+  }
+
+  return userList;
 }

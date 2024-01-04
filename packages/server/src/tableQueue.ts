@@ -39,6 +39,7 @@ async function processQueue(element: TableQueueElement) {
   await func(element);
 }
 
+/** TODO: this is wrong, see "websocket_disconnect.go" */
 async function setPlayerConnected(data: SetPlayerConnectedData) {
   const { tableID, userID, connected } = data;
 
@@ -54,7 +55,7 @@ async function setPlayerConnected(data: SetPlayerConnectedData) {
     return;
   }
 
-  matchingPlayer.connected = connected;
+  matchingPlayer.present = connected;
 
   await setRedisTable(game);
 }

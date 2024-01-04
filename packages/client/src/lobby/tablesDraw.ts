@@ -1,5 +1,6 @@
 // The lobby area that shows all of the current tables.
 
+import type { ServerCommandTableData } from "@hanabi/data";
 import { MAX_PLAYERS } from "@hanabi/game";
 import { assertDefined, iRange } from "isaacscript-common-ts";
 import { globals } from "../Globals";
@@ -9,7 +10,6 @@ import { copyStringToClipboard, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
-import type { Table } from "./types/Table";
 
 export function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
@@ -259,7 +259,10 @@ export function tablesDraw(): void {
   }
 }
 
-export function tableSpectate(table: Table, shadowingPlayerIndex = -1): void {
+export function tableSpectate(
+  table: ServerCommandTableData,
+  shadowingPlayerIndex = -1,
+): void {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -271,7 +274,7 @@ export function tableSpectate(table: Table, shadowingPlayerIndex = -1): void {
   // (We will get a "tableStart" response back from the server.)
 }
 
-export function tableJoin(table: Table): void {
+export function tableJoin(table: ServerCommandTableData): void {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -289,7 +292,7 @@ export function tableJoin(table: Table): void {
   }
 }
 
-function tableReattend(table: Table) {
+function tableReattend(table: ServerCommandTableData) {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -301,7 +304,7 @@ function tableReattend(table: Table) {
   // the game has started or not.)
 }
 
-function tableHasFriends(table: Table) {
+function tableHasFriends(table: ServerCommandTableData) {
   if (!table.sharedReplay) {
     for (const player of table.players) {
       if (globals.friends.includes(player)) {

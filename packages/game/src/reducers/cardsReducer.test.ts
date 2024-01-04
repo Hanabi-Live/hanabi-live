@@ -8,7 +8,7 @@ import type { GameState } from "../interfaces/GameState";
 import { getDefaultMetadata } from "../metadata";
 import * as deckRules from "../rules/deck";
 import {
-  cardIdentity,
+  actionCardIdentity,
   colorClue,
   discard,
   draw,
@@ -922,7 +922,7 @@ describe("cardsReducer", () => {
 
       deck = cardsReducer(
         deck,
-        cardIdentity(1, 1, 0, 5),
+        actionCardIdentity(1, 1, 0, 5),
         gameStateDrawY2,
         metadata,
       );

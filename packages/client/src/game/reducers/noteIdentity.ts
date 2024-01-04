@@ -1,7 +1,12 @@
-import type { Rank, SuitIndex, SuitRankTuple, Variant } from "@hanabi/game";
+import type {
+  CardIdentity,
+  Rank,
+  SuitIndex,
+  SuitRankTuple,
+  Variant,
+} from "@hanabi/game";
 import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/game";
 import { eRange, newArray } from "isaacscript-common-ts";
-import type { CardIdentity } from "../types/CardIdentity";
 
 /**
  * Represents the card identities that a card could possibly be.

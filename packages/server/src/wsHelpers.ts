@@ -1,18 +1,19 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { ServerCommandData } from "@hanabi/data";
 import {
+  SERVER_COMMAND_SCHEMAS,
   ServerCommand,
   packWSMessageOnServer,
-  serverCommandSchemas,
 } from "@hanabi/data";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import type { ReadonlyRecord } from "isaacscript-common-ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import { logger } from "./logger";
 import { wsUsers } from "./wsUsers";
 
 const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
-  Object.entries(serverCommandSchemas).map(([key, value]) => {
+  Object.entries(SERVER_COMMAND_SCHEMAS).map(([key, value]) => {
     const jsonSchema = zodToJsonSchema(value, key) as AnySchema;
     const stringifyFunc = fastJSONStringify(jsonSchema);
     return [key, stringifyFunc];
@@ -23,7 +24,19 @@ const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
 function getWSMsg<T extends ServerCommand>(
   command: T,
   data: ServerCommandData[T],
-) {
+): string | undefined {
+  // First, validate that we are not sending data with excess properties to users. (TypeScript will
+  // not generate a compiler error when passing objects with additional properties, so we validate
+  // it at run-time with Zod.)
+  const schema = SERVER_COMMAND_SCHEMAS[command];
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    logger.error(
+      `Failed to parse the data for a ${command} command before sending it to a user: ${result.error}`,
+    );
+    return undefined;
+  }
+
   const stringifyFunc = SERVER_COMMAND_STRINGIFY_FUNCS[command];
   return packWSMessageOnServer(command, data, stringifyFunc);
 }
@@ -39,7 +52,9 @@ export function wsSend<T extends ServerCommand>(
   data: ServerCommandData[T],
 ): void {
   const msg = getWSMsg(serverCommand, data);
-  connection.socket.send(msg);
+  if (msg !== undefined) {
+    connection.socket.send(msg);
+  }
 }
 
 /**
@@ -52,6 +67,10 @@ export function wsSendAll<T extends ServerCommand>(
   data: ServerCommandData[T],
 ): void {
   const msg = getWSMsg(serverCommand, data);
+  if (msg === undefined) {
+    return;
+  }
+
   for (const wsUser of wsUsers.values()) {
     wsUser.connection.socket.send(msg);
   }

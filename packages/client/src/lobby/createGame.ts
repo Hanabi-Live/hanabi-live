@@ -9,6 +9,7 @@ import {
   MIN_PLAYERS,
   VARIANT_NAMES,
   doesVariantExist,
+  isValidNumPlayers,
 } from "@hanabi/game";
 import {
   MINUTE_IN_MILLISECONDS,
@@ -334,14 +335,10 @@ function submit() {
       'The value of the "createTableMaxPlayers" element was not a string.',
     );
   }
-  let maxPlayers = parseIntSafe(maxPlayersString);
-  if (
-    maxPlayers === undefined ||
-    maxPlayers < MIN_PLAYERS ||
-    maxPlayers > MAX_PLAYERS
-  ) {
-    maxPlayers = 5;
-  }
+  const maxPlayersInt = parseIntSafe(maxPlayersString);
+  const maxPlayers = isValidNumPlayers(maxPlayersInt)
+    ? maxPlayersInt
+    : DEFAULT_CREATE_TABLE_MAX_PLAYERS;
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
   // Game JSON is not saved.
@@ -389,7 +386,7 @@ function submit() {
       options,
       password,
       gameJSON,
-      maxPlayers,
+      maxPlayers: maxPlayersInt,
     });
     $("#nav-buttons-lobby-create-game").addClass("disabled");
   } else {
@@ -397,7 +394,7 @@ function submit() {
       tableID: globals.tableID,
       name,
       options,
-      maxPlayers,
+      maxPlayers: maxPlayersInt,
     });
   }
 
@@ -579,7 +576,6 @@ export function ready(): boolean {
   // Fill in the rest of form with the settings that we used last time (which is stored on the
   // server).
 
-  // eslint-disable-next-line isaacscript/no-object-any
   for (const [key, value] of Object.entries(dialogOptions)) {
     const element = $(`#${key}`);
     if (key === "createTableVariant") {

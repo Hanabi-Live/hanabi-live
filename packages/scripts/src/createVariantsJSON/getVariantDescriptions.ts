@@ -10,11 +10,11 @@ import type {
 import {
   COLORS_MAP,
   DEFAULT_CLUE_RANKS,
-  Options,
   SUITS_MAP,
   SUIT_REVERSED_SUFFIX,
   VALID_NUM_PLAYERS,
   createVariant,
+  defaultOptions,
   getCardsPerHand,
   getMinEfficiency,
   getStartingDeckSize,
@@ -1250,7 +1250,7 @@ function getSudokuVariants(
 function maxRequiredVariantEfficiency(variant: Variant): number {
   const requiredEfficiencies = VALID_NUM_PLAYERS.map((numPlayers) => {
     const options = {
-      ...new Options(),
+      ...defaultOptions,
       numPlayers,
     };
     const cardsPerHand = getCardsPerHand(options);
@@ -1264,7 +1264,7 @@ function maxRequiredVariantEfficiency(variant: Variant): number {
 function minVariantPace(variant: Variant): number {
   const startingPaces = VALID_NUM_PLAYERS.map((numPlayers) => {
     const options = {
-      ...new Options(),
+      ...defaultOptions,
       numPlayers,
     };
 

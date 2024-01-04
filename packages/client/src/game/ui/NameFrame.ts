@@ -195,15 +195,18 @@ export class NameFrame extends Konva.Group {
       // specific player's perspective).
 
       // Validate that we are not shifting to the perspective that we are already at.
-      let oldShadowingPlayerIndex: PlayerIndex | null = null;
-      for (const spectator of globals.state.spectators) {
-        if (spectator.name === globals.metadata.ourUsername) {
-          if (spectator.shadowingPlayerIndex !== -1) {
-            oldShadowingPlayerIndex = spectator.shadowingPlayerIndex;
-          }
-          break;
-        }
+      const ourSpectator = globals.state.spectators.find(
+        (spectator) => spectator.name === globals.metadata.ourUsername,
+      );
+      let oldShadowingPlayerIndex: PlayerIndex | undefined;
+      if (
+        ourSpectator !== undefined &&
+        ourSpectator.shadowingPlayerIndex !== undefined &&
+        ourSpectator.shadowingPlayerIndex !== -1
+      ) {
+        oldShadowingPlayerIndex = ourSpectator.shadowingPlayerIndex;
       }
+
       if (shadowingPlayerIndex === oldShadowingPlayerIndex) {
         modals.showWarning(
           "You are already viewing the game from this player's perspective.",
