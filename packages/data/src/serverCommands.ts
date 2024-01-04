@@ -1,3 +1,5 @@
+// Datetime properties are in the form: "2023-12-29T18:21:43.812446Z"
+
 import { options } from "@hanabi/game";
 import { interfaceSatisfiesEnum } from "isaacscript-common-ts";
 import { z } from "zod";
@@ -20,12 +22,16 @@ const serverCommandChatData = z
     server: z.boolean(),
     datetime: z.string().min(1),
     room: z.string().min(1).optional(),
-    recipient: z.string().min(1),
+    recipient: z.string().min(1).optional(),
   })
   .strict()
   .readonly();
 
 export type ServerCommandChatData = z.infer<typeof serverCommandChatData>;
+
+const serverCommandChatListData = serverCommandChatData.array().readonly();
+
+type ServerCommandChatListData = z.infer<typeof serverCommandChatListData>;
 
 const serverCommandErrorData = z
   .object({
@@ -131,6 +137,7 @@ export type ServerCommandWelcomeData = z.infer<typeof serverCommandWelcomeData>;
 
 export interface ServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
+  [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.error]: ServerCommandErrorData;
   [ServerCommand.table]: ServerCommandTableData;
   [ServerCommand.tableList]: ServerCommandTableListData;
@@ -145,6 +152,7 @@ interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chat]: serverCommandChatData,
+  [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.error]: serverCommandErrorData,
   [ServerCommand.table]: serverCommandTableData,
   [ServerCommand.tableList]: serverCommandTableListData,

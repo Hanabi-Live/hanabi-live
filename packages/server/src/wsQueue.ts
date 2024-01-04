@@ -5,9 +5,12 @@ import { ServerCommand, defaultSettings } from "@hanabi/data";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { SECOND_IN_MILLISECONDS } from "isaacscript-common-ts";
+import { getChatList } from "./chat";
+import { getCurrentDatetime } from "./date";
 import { logger } from "./logger";
 import { isMaintenanceMode } from "./maintenanceMode";
 import { models } from "./models";
+import { getMessageOfTheDay } from "./motd";
 import { getRedisTablesWithUser } from "./redis";
 import { getShuttingDownMetadata } from "./shutdown";
 import { enqueueSetPlayerConnected } from "./tableQueue";
@@ -38,6 +41,8 @@ const QUEUE_FUNCTIONS = {
   WSQueueElementType,
   (wsUser: WSUser) => void | Promise<void>
 >;
+
+const LOBBY_CHAT_HISTORY_LENGTH = 50;
 
 const wsQueue: queueAsPromised<WSQueueElement, void> = fastq.promise(
   processQueue,
@@ -100,9 +105,9 @@ async function sendInitialWSMessages(wsUser: WSUser) {
   await sendWelcomeMessage(wsUser);
   sendUserList(wsUser);
   sendTableList(wsUser);
+  await sendChat(wsUser);
 
   /*
-  await sendChat()
   await sendHistory()
   await sendFriendHistory();
   */
@@ -159,6 +164,45 @@ function sendUserList(loginWsUser: WSUser) {
 function sendTableList(wsUser: WSUser) {
   const tableList = getTableList(wsUser.userID);
   wsSend(wsUser.connection, ServerCommand.tableList, tableList);
+}
+
+async function sendChat(wsUser: WSUser) {
+  await sendChatLobbyPrevious(wsUser);
+  sendChatDiscordAdvertisement(wsUser);
+  await sendChatMessageOfTheDay(wsUser);
+}
+
+async function sendChatLobbyPrevious(wsUser: WSUser) {
+  const chatList = await getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH);
+  wsSend(wsUser.connection, ServerCommand.chatList, chatList);
+}
+
+function sendChatDiscordAdvertisement(wsUser: WSUser) {
+  const discordMsg =
+    'Find teammates and discuss strategy in the <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">Discord chat</a>.';
+  wsSend(wsUser.connection, ServerCommand.chat, {
+    msg: discordMsg,
+    who: "",
+    discord: false,
+    server: true,
+    datetime: getCurrentDatetime(),
+    room: "lobby",
+  });
+}
+
+async function sendChatMessageOfTheDay(wsUser: WSUser) {
+  const motd = await getMessageOfTheDay();
+  if (motd !== undefined && motd !== "") {
+    const motdMsg = `[Server Notice] ${motd}`;
+    wsSend(wsUser.connection, ServerCommand.chat, {
+      msg: motdMsg,
+      who: "",
+      discord: false,
+      server: true,
+      datetime: getCurrentDatetime(),
+      room: "lobby",
+    });
+  }
 }
 
 async function logout(wsUser: WSUser) {

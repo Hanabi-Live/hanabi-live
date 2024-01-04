@@ -463,13 +463,13 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
     fast ? "" : "hidden"
   }">`;
   line += `[${datetime}]&nbsp; `;
-  if (data.recipient !== "") {
+  if (data.recipient !== undefined && data.recipient !== "") {
     line +=
       data.recipient === globals.username
         ? `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
   }
-  if (data.server || data.recipient !== "") {
+  if (data.server || (data.recipient !== undefined && data.recipient !== "")) {
     line += msg;
   } else if (data.who === "") {
     line += msg;
