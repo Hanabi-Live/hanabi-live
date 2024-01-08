@@ -3,6 +3,7 @@
 import type {
   ServerCommandTableData,
   ServerCommandUserData,
+  UserID,
 } from "@hanabi/data";
 import { defaultSettings } from "@hanabi/data";
 import type { Connection } from "./Connection";
@@ -39,7 +40,7 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<number, ServerCommandUserData>();
+  userMap = new Map<UserID, ServerCommandUserData>();
 
   /** Keys are IDs. */
   tableMap = new Map<number, ServerCommandTableData>();

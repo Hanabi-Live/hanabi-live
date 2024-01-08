@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current logged-in users.
 
+import type { UserID } from "@hanabi/data";
 import { Status, StatusText } from "@hanabi/data";
-import { assertDefined } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";
@@ -22,7 +22,7 @@ export function draw(): void {
   }
 
   // Make a mapping of user names to IDs (and keep track of our friends).
-  const usernameMapping = new Map<string, number>();
+  const usernameMapping = new Map<string, UserID>();
   const onlineFriends: string[] = [];
   for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);
@@ -45,19 +45,19 @@ export function draw(): void {
   );
 
   // First, draw our username at the top.
-  const alreadyDrawnUsers: string[] = [];
+  const alreadyDrawnUsers = new Set<string>();
   drawUser(globals.username, usernameMapping, tbody, false);
-  alreadyDrawnUsers.push(globals.username);
+  alreadyDrawnUsers.add(globals.username);
 
   // Second, draw our currently online friends, if any.
   for (const friend of onlineFriends) {
     drawUser(friend, usernameMapping, tbody, true);
-    alreadyDrawnUsers.push(friend);
+    alreadyDrawnUsers.add(friend);
   }
 
   // Then, draw all of the other users in alphabetical order.
   for (const username of alphabeticalUsernames) {
-    if (!alreadyDrawnUsers.includes(username)) {
+    if (!alreadyDrawnUsers.has(username)) {
       drawUser(username, usernameMapping, tbody, false);
     }
   }
@@ -65,19 +65,20 @@ export function draw(): void {
 
 function drawUser(
   username: string,
-  usernameMapping: ReadonlyMap<string, number>,
+  usernameMapping: ReadonlyMap<string, UserID>,
   tbody: JQuery,
   friend: boolean,
 ) {
   // Find the status of this user from the "userList" map.
   const userID = usernameMapping.get(username);
-  assertDefined(
-    userID,
-    `Failed to get the ID for the username of: ${username}`,
-  );
+  if (userID === undefined) {
+    return;
+  }
 
   const user = globals.userMap.get(userID);
-  assertDefined(user, `Failed to get the user with the ID: ${userID}`);
+  if (user === undefined) {
+    return;
+  }
 
   let nameColumn = "";
   if (user.hyphenated) {
@@ -129,7 +130,7 @@ function drawUser(
   tooltips.create(`#hyphenated-tooltip-${userID}`, "default", content);
 }
 
-function setLink(userID: number) {
+function setLink(userID: UserID) {
   $(`#online-users-${userID}-link`).off("click");
   $(`#online-users-${userID}-link`).on("click", () => {
     // Get the user corresponding to this element.

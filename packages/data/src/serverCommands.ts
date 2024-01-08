@@ -92,11 +92,15 @@ const serverCommandUserLeftData = z
   .strict()
   .readonly();
 
-type ServerCommandUserLeftData = z.infer<typeof serverCommandUserLeftData>;
+export type ServerCommandUserLeftData = z.infer<
+  typeof serverCommandUserLeftData
+>;
 
 const serverCommandUserListData = serverCommandUserData.array().readonly();
 
-type ServerCommandUserListData = z.infer<typeof serverCommandUserListData>;
+export type ServerCommandUserListData = z.infer<
+  typeof serverCommandUserListData
+>;
 
 const serverCommandWarningData = z
   .object({

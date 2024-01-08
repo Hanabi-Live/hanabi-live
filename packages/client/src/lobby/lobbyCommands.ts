@@ -3,8 +3,11 @@
 import type {
   ServerCommandTableData,
   ServerCommandUserData,
+  ServerCommandUserLeftData,
+  ServerCommandUserListData,
   ServerCommandWelcomeData,
   Spectator,
+  UserID,
 } from "@hanabi/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
@@ -263,7 +266,7 @@ lobbyCommands.set("user", (data: ServerCommandUserData) => {
   }
 });
 
-lobbyCommands.set("userList", (dataList: readonly ServerCommandUserData[]) => {
+lobbyCommands.set("userList", (dataList: ServerCommandUserListData) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }
@@ -275,11 +278,7 @@ lobbyCommands.set("userList", (dataList: readonly ServerCommandUserData[]) => {
   }
 });
 
-// Received by the client when a user disconnects.
-interface UserLeftData {
-  userID: number;
-}
-lobbyCommands.set("userLeft", (data: UserLeftData) => {
+lobbyCommands.set("userLeft", (data: ServerCommandUserLeftData) => {
   globals.userMap.delete(data.userID);
 
   if (
@@ -291,7 +290,7 @@ lobbyCommands.set("userLeft", (data: UserLeftData) => {
 });
 
 interface UserInactiveData {
-  userID: number;
+  userID: UserID;
   inactive: boolean;
 }
 lobbyCommands.set("userInactive", (data: UserInactiveData) => {

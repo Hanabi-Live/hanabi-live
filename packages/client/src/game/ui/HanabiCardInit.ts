@@ -136,7 +136,7 @@ export function directionArrow(
   arrow.add(border);
 
   const edge = new Konva.Line({
-    points: [0 - pointerLength, 0, 0 + pointerLength, 0],
+    points: [-pointerLength, 0, pointerLength, 0],
     fill: "black",
     stroke: "black",
     strokeWidth: pointerLength * 0.75,
