@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- test if getting a database error disconnects other existing websocket users
 - test that a field annotated as z.date() actually works on the client
 - fix server disconnect in "wsQueue.ts" to match "websocket_disconnect.go"
 
@@ -31,7 +32,6 @@ long term once the server is rewritten in TypeScript:
 - refactor `order` --> `cardOrder`
 - stronger typing for `disconShadowingSeat` field
 - remove -1 type from activePlayerIndex (prefer undefined)
-- readonly turn: number; // TODO: remove. This is unused.
 - separate sign up and login into two separate forms
 - rename ServerCommandUserData.user --> ServerCommandUserData.username
 - rename serverCommandTableData.players --> serverCommandTableData.playerNames
@@ -43,3 +43,4 @@ long term once the server is rewritten in TypeScript:
 - shadowingPlayerIndex: playerIndex.or(z.literal(-1)).optional(), --> get rid of -1
 - search for "=== -1" and "!== -1"
 - remove incrementNumGames, make dedicated `gameHistorySingle` command
+- delete hanab.code-workspace

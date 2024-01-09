@@ -62,6 +62,10 @@ export const games = {
   getHistory: async (
     gameIDs: readonly GameID[],
   ): Promise<readonly GameHistory[]> => {
+    if (gameIDs.length === 0) {
+      return [];
+    }
+
     // TODO: Rewrite this function once we can do multi-select with Drizzle:
     // https://github.com/drizzle-team/drizzle-orm/pull/1405
 
@@ -95,7 +99,7 @@ export const games = {
       .from(gamesTable)
       .where(inArray(gamesTable.id, gameIDs as GameID[]))
       .orderBy(desc(gamesTable.id));
-      */
+    */
 
     const rows = await db.execute(
       sql`
@@ -124,11 +128,6 @@ export const games = {
           games1.datetime_finished AS datetimeFinished,
 
           (
-            /*
-            * We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
-            * does not exist
-            * This row should always exist, but check it just to be safe
-            */
             SELECT COALESCE((
               SELECT seeds.num_games
               FROM seeds
