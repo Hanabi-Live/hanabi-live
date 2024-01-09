@@ -391,9 +391,5 @@ function parseJSONAction(
         votes: [],
       };
     }
-
-    default: {
-      return null;
-    }
   }
 }
