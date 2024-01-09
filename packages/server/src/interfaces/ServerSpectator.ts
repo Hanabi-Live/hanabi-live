@@ -18,5 +18,4 @@ export const serverSpectator = z
   .strict()
   .readonly();
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ServerSpectator extends z.infer<typeof serverSpectator> {}
