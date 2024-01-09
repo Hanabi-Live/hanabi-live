@@ -442,7 +442,7 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
 
 export function add(data: ServerCommandChatData, fast: boolean): void {
   // If we are receiving a private message (PM), record who it is from.
-  if (data.recipient === globals.username) {
+  if (data.recipient === globals.username && data.who !== undefined) {
     lastPM = data.who;
   }
 
@@ -534,10 +534,12 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   }
 
   // Remove the person from the typing list, if present.
-  const index = globals.peopleTyping.indexOf(data.who);
-  if (index !== -1) {
-    globals.peopleTyping.splice(index, 1);
-    updatePeopleTyping();
+  if (data.who !== undefined) {
+    const index = globals.peopleTyping.indexOf(data.who);
+    if (index !== -1) {
+      globals.peopleTyping.splice(index, 1);
+      updatePeopleTyping();
+    }
   }
 }
 

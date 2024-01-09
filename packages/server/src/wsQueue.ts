@@ -78,7 +78,7 @@ function login(wsUser: WSUser) {
   attachWebSocketEventHandlers(wsUser);
 
   const userData = getUserData(wsUser);
-  wsSendAll(ServerCommand.user, userData);
+  wsSendAll(ServerCommand.user, userData, userID);
 
   // We intentionally do not await the sending of the initial messages because we want to do
   // database-intensive work out of the critical path.
@@ -106,9 +106,9 @@ async function sendInitialWSMessages(wsUser: WSUser) {
   sendUserList(wsUser);
   sendTableList(wsUser);
   await sendChat(wsUser);
+  await sendHistory(wsUser);
 
   /*
-  await sendHistory()
   await sendFriendHistory();
   */
   // TODO
@@ -117,7 +117,7 @@ async function sendInitialWSMessages(wsUser: WSUser) {
 async function sendWelcomeMessage(wsUser: WSUser) {
   const { connection, userID, username, muted } = wsUser;
 
-  const totalGames = await models.games.getUserNumGames(userID, true);
+  const totalGames = await models.games.getNumGamesForUser(userID, true);
 
   const datetimeCreated =
     (await models.users.getDatetimeCreated(userID)) ?? new Date();
@@ -173,8 +173,11 @@ async function sendChat(wsUser: WSUser) {
 }
 
 async function sendChatLobbyPrevious(wsUser: WSUser) {
-  const chatList = await getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH);
-  wsSend(wsUser.connection, ServerCommand.chatList, chatList);
+  const list = await getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH);
+  wsSend(wsUser.connection, ServerCommand.chatList, {
+    list,
+    unread: 0,
+  });
 }
 
 function sendChatDiscordAdvertisement(wsUser: WSUser) {
@@ -182,7 +185,6 @@ function sendChatDiscordAdvertisement(wsUser: WSUser) {
     'Find teammates and discuss strategy in the <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">Discord chat</a>.';
   wsSend(wsUser.connection, ServerCommand.chat, {
     msg: discordMsg,
-    who: "",
     discord: false,
     server: true,
     datetime: getCurrentDatetime(),
@@ -203,6 +205,12 @@ async function sendChatMessageOfTheDay(wsUser: WSUser) {
       room: "lobby",
     });
   }
+}
+
+async function sendHistory(wsUser: WSUser) {
+  const gameIDs = await models.games.getGameIDsForUser(wsUser.userID, 0, 10);
+  const history = await models.games.getHistory(gameIDs);
+  wsSend(wsUser.connection, ServerCommand.gameHistory, history);
 }
 
 async function logout(wsUser: WSUser) {

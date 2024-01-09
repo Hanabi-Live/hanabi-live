@@ -42,3 +42,4 @@ long term once the server is rewritten in TypeScript:
 - refactor location of CharacterAssignment interface
 - shadowingPlayerIndex: playerIndex.or(z.literal(-1)).optional(), --> get rid of -1
 - search for "=== -1" and "!== -1"
+- remove incrementNumGames, make dedicated `gameHistorySingle` command

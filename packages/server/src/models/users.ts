@@ -8,18 +8,18 @@ import {
 import { db } from "../db";
 
 interface DatabaseUser {
-  id: UserID;
-  username: string;
-  passwordHash: string;
+  readonly id: UserID;
+  readonly username: string;
+  readonly passwordHash: string;
 }
 
 interface WSData {
-  username: string;
-  normalizedUsername: string;
-  hyphenated: boolean;
-  /// friends: string[];
-  /// reverseFriends: string[];
-  muted: boolean;
+  readonly username: string;
+  readonly normalizedUsername: string;
+  readonly hyphenated: boolean;
+  /// readonly friends: readonly string[];
+  /// readonly reverseFriends: readonly string[];
+  readonly muted: boolean;
 }
 
 export const users = {

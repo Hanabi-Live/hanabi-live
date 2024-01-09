@@ -5,6 +5,7 @@ import { interfaceSatisfiesEnum } from "isaacscript-common-ts";
 import { z } from "zod";
 import { ServerCommand } from "./enums/ServerCommand";
 import { Status } from "./enums/Status";
+import { gameHistory } from "./interfaces/GameHistory";
 import { settings } from "./interfaces/Settings";
 import { spectator } from "./interfaces/Spectator";
 import { tableID } from "./types/TableID";
@@ -17,7 +18,7 @@ import { userID } from "./types/UserID";
 const serverCommandChatData = z
   .object({
     msg: z.string().min(1),
-    who: z.string().min(1),
+    who: z.string().min(1).optional(),
     discord: z.boolean(),
     server: z.boolean(),
     datetime: z.string().min(1),
@@ -27,11 +28,19 @@ const serverCommandChatData = z
   .strict()
   .readonly();
 
-export type ServerCommandChatData = z.infer<typeof serverCommandChatData>;
+export interface ServerCommandChatData
+  extends z.infer<typeof serverCommandChatData> {}
 
-const serverCommandChatListData = serverCommandChatData.array().readonly();
+const serverCommandChatListData = z
+  .object({
+    list: serverCommandChatData.array().readonly(),
+    unread: z.number().int(),
+  })
+  .strict()
+  .readonly();
 
-type ServerCommandChatListData = z.infer<typeof serverCommandChatListData>;
+interface ServerCommandChatListData
+  extends z.infer<typeof serverCommandChatListData> {}
 
 const serverCommandErrorData = z
   .object({
@@ -40,7 +49,13 @@ const serverCommandErrorData = z
   .strict()
   .readonly();
 
-type ServerCommandErrorData = z.infer<typeof serverCommandErrorData>;
+export interface ServerCommandErrorData
+  extends z.infer<typeof serverCommandErrorData> {}
+
+export const serverCommandGameHistoryData = gameHistory.array().readonly();
+
+interface ServerCommandGameHistoryData
+  extends z.infer<typeof serverCommandGameHistoryData> {}
 
 const serverCommandTableData = z
   .object({
@@ -65,11 +80,13 @@ const serverCommandTableData = z
   .strict()
   .readonly();
 
-export type ServerCommandTableData = z.infer<typeof serverCommandTableData>;
+export interface ServerCommandTableData
+  extends z.infer<typeof serverCommandTableData> {}
 
 const serverCommandTableListData = serverCommandTableData.array().readonly();
 
-type ServerCommandTableListData = z.infer<typeof serverCommandTableListData>;
+interface ServerCommandTableListData
+  extends z.infer<typeof serverCommandTableListData> {}
 
 const serverCommandUserData = z
   .object({
@@ -83,7 +100,8 @@ const serverCommandUserData = z
   .strict()
   .readonly();
 
-export type ServerCommandUserData = z.infer<typeof serverCommandUserData>;
+export interface ServerCommandUserData
+  extends z.infer<typeof serverCommandUserData> {}
 
 const serverCommandUserLeftData = z
   .object({
@@ -92,15 +110,13 @@ const serverCommandUserLeftData = z
   .strict()
   .readonly();
 
-export type ServerCommandUserLeftData = z.infer<
-  typeof serverCommandUserLeftData
->;
+export interface ServerCommandUserLeftData
+  extends z.infer<typeof serverCommandUserLeftData> {}
 
 const serverCommandUserListData = serverCommandUserData.array().readonly();
 
-export type ServerCommandUserListData = z.infer<
-  typeof serverCommandUserListData
->;
+export interface ServerCommandUserListData
+  extends z.infer<typeof serverCommandUserListData> {}
 
 const serverCommandWarningData = z
   .object({
@@ -109,7 +125,8 @@ const serverCommandWarningData = z
   .strict()
   .readonly();
 
-type ServerCommandWarningData = z.infer<typeof serverCommandWarningData>;
+export interface ServerCommandWarningData
+  extends z.infer<typeof serverCommandWarningData> {}
 
 const serverCommandWelcomeData = z
   .object({
@@ -133,7 +150,8 @@ const serverCommandWelcomeData = z
   .strict()
   .readonly();
 
-export type ServerCommandWelcomeData = z.infer<typeof serverCommandWelcomeData>;
+export interface ServerCommandWelcomeData
+  extends z.infer<typeof serverCommandWelcomeData> {}
 
 // -----------
 // Collections
@@ -143,6 +161,7 @@ export interface ServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.error]: ServerCommandErrorData;
+  [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
   [ServerCommand.table]: ServerCommandTableData;
   [ServerCommand.tableList]: ServerCommandTableListData;
   [ServerCommand.user]: ServerCommandUserData;
@@ -158,6 +177,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.error]: serverCommandErrorData,
+  [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.table]: serverCommandTableData,
   [ServerCommand.tableList]: serverCommandTableListData,
   [ServerCommand.user]: serverCommandUserData,

@@ -1,6 +1,10 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type { ServerCommandChatData } from "@hanabi/data";
+import type {
+  ServerCommandChatData,
+  ServerCommandErrorData,
+  ServerCommandWarningData,
+} from "@hanabi/data";
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
@@ -13,10 +17,7 @@ import * as modals from "./modals";
 type CommandCallback = (data: any) => void;
 export const commands = new Map<string, CommandCallback>();
 
-interface WarningData {
-  warning: string;
-}
-commands.set("warning", (data: WarningData) => {
+commands.set("warning", (data: ServerCommandWarningData) => {
   console.warn(data.warning);
   modals.closeModals(true);
   setTimeout(() => {
@@ -29,10 +30,7 @@ commands.set("warning", (data: WarningData) => {
   }, 100);
 });
 
-interface ErrorData {
-  error: string;
-}
-commands.set("error", (data: ErrorData) => {
+commands.set("error", (data: ServerCommandErrorData) => {
   console.error(data.error);
   modals.showError(data.error);
 

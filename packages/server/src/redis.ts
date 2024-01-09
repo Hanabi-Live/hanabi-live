@@ -47,7 +47,9 @@ export async function getRedisTables(): Promise<Map<TableID, Table>> {
 }
 */
 
-export async function getRedisTablesWithUser(userID: UserID): Promise<Table[]> {
+export async function getRedisTablesWithUser(
+  userID: UserID,
+): Promise<readonly Table[]> {
   const tablesHash = await redis.hgetall(REDIS_TABLES_KEY);
 
   const tables: Table[] = [];

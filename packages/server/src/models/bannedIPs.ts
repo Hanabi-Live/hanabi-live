@@ -2,7 +2,7 @@ import { bannedIPsTable } from "../databaseSchema";
 import { db } from "../db";
 
 export const bannedIPs = {
-  getAll: async (): Promise<string[]> => {
+  getAll: async (): Promise<readonly string[]> => {
     const rows = await db
       .select({
         ip: bannedIPsTable.ip,

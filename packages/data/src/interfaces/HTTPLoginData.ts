@@ -10,4 +10,4 @@ export const httpLoginData = z
   .strict()
   .readonly();
 
-export type HTTPLoginData = z.infer<typeof httpLoginData>;
+export interface HTTPLoginData extends z.infer<typeof httpLoginData> {}

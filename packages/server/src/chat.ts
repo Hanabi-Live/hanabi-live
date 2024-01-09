@@ -45,7 +45,7 @@ export function sanitizeChatMsg(
 export async function getChatList(
   room: string,
   count?: number,
-): Promise<ServerCommandChatData[]> {
+): Promise<readonly ServerCommandChatData[]> {
   const rows = await models.chatLog.get(room, count);
 
   // The chat messages were queried from the database in order from newest to oldest. We want to

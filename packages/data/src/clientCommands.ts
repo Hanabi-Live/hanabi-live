@@ -14,7 +14,8 @@ const clientCommandChatPMData = z
   .strict()
   .readonly();
 
-export type ClientCommandChatPMData = z.infer<typeof clientCommandChatPMData>;
+export interface ClientCommandChatPMData
+  extends z.infer<typeof clientCommandChatPMData> {}
 
 // -----------
 // Collections

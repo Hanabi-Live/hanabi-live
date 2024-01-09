@@ -1,5 +1,5 @@
 import type { SocketStream } from "@fastify/websocket";
-import type { ServerCommandData } from "@hanabi/data";
+import type { ServerCommandData, UserID } from "@hanabi/data";
 import {
   SERVER_COMMAND_SCHEMAS,
   ServerCommand,
@@ -32,7 +32,7 @@ function getWSMsg<T extends ServerCommand>(
   const result = schema.safeParse(data);
   if (!result.success) {
     logger.error(
-      `Failed to parse the data for a ${command} command before sending it to a user: ${result.error}`,
+      `Failed to parse the data for a "${command}" command before sending it to a user: ${result.error}`,
     );
     return undefined;
   }
@@ -65,6 +65,7 @@ export function wsSend<T extends ServerCommand>(
 export function wsSendAll<T extends ServerCommand>(
   serverCommand: T,
   data: ServerCommandData[T],
+  exceptionUserID?: UserID,
 ): void {
   const msg = getWSMsg(serverCommand, data);
   if (msg === undefined) {
@@ -72,7 +73,9 @@ export function wsSendAll<T extends ServerCommand>(
   }
 
   for (const wsUser of wsUsers.values()) {
-    wsUser.connection.socket.send(msg);
+    if (exceptionUserID !== wsUser.userID) {
+      wsUser.connection.socket.send(msg);
+    }
   }
 }
 

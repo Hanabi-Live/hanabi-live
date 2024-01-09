@@ -4,7 +4,7 @@ import { userFriendsTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
 
 export const userFriends = {
-  getList: async (userID: UserID): Promise<string[]> => {
+  getList: async (userID: UserID): Promise<readonly string[]> => {
     const friendsRows = await db
       .select({
         username: usersTable.username,
