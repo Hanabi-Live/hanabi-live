@@ -29,11 +29,6 @@ function getCardsPerHandNatural(numPlayers: NumPlayers): number {
     case 6: {
       return 3;
     }
-
-    default: {
-      // Default to 3 cards for non-standard player numbers.
-      return 3;
-    }
   }
 }
 

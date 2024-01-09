@@ -45,10 +45,6 @@ function shouldActionGenerateClueToken(
       // Discarding a card grants an extra clue. But misplayed cards do not grant extra clues.
       return !action.failed;
     }
-
-    default: {
-      return false;
-    }
   }
 }
 

@@ -33,7 +33,6 @@ export const options = z
   .strict()
   .readonly();
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Options extends z.infer<typeof options> {}
 
 export const defaultOptions: Options = options.parse({});
