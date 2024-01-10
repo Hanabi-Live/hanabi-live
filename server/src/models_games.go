@@ -395,7 +395,7 @@ func (*Games) GetGameIDsFriends(
 	SQLString := `
 		SELECT DISTINCT game_participants.game_id
 		FROM game_participants
-		WHERE game_participants.user_id IN ($1)
+		WHERE game_participants.user_id = ANY ($1)
 		EXCEPT
 		(
 			SELECT game_participants.game_id
