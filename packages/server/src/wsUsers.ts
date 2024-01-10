@@ -24,7 +24,7 @@ export interface WSUser {
   // Dynamic fields
   status: Status;
   tableID: TableID | undefined;
-  /// friends: Set<UserID>;
+  friends: Set<UserID>;
   /// reverseFriends: Set<UserID>;
   hyphenated: boolean;
   inactive: boolean;

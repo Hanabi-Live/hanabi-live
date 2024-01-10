@@ -47,7 +47,7 @@ export async function httpWS(
   // Record their successful login attempt in the database.
   await models.users.setLastLogin(userID, ip);
 
-  const { username, normalizedUsername, hyphenated, muted } = wsData;
+  const { username, normalizedUsername, hyphenated, friends, muted } = wsData;
 
   const wsUser: WSUser = {
     connection,
@@ -62,7 +62,7 @@ export async function httpWS(
 
     status: Status.Lobby,
     tableID: undefined,
-    /// friends,
+    friends,
     /// reverseFriends,
     hyphenated,
     inactive: false,

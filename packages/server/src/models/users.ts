@@ -2,6 +2,7 @@ import type { UserID } from "@hanabi/data";
 import { eq, sql } from "drizzle-orm";
 import {
   mutedIPsTable,
+  userFriendsTable,
   userSettingsTable,
   usersTable,
 } from "../databaseSchema";
@@ -17,7 +18,7 @@ interface WSData {
   readonly username: string;
   readonly normalizedUsername: string;
   readonly hyphenated: boolean;
-  /// readonly friends: readonly string[];
+  readonly friends: Set<UserID>;
   /// readonly reverseFriends: readonly string[];
   readonly muted: boolean;
 }
@@ -118,17 +119,17 @@ export const users = {
     const hyphenated =
       hyphenatedRow !== undefined && hyphenatedRow.hyphenatedConventions;
 
-    /*
     const friendsRows = await db
       .select({
-        username: usersTable.username,
+        friendID: userFriendsTable.friendID,
       })
       .from(userFriendsTable)
-      .innerJoin(usersTable, eq(userFriendsTable.friendID, usersTable.id))
       .where(eq(userFriendsTable.userID, userID));
 
-    const friends = friendsRows.map((friendsRow) => friendsRow.username);
+    const friendIDs = friendsRows.map((friendsRow) => friendsRow.friendID);
+    const friends = new Set<UserID>(friendIDs as UserID[]);
 
+    /*
     const reverseFriendsRows = await db
       .select({
         username: usersTable.username,
@@ -157,7 +158,7 @@ export const users = {
     return {
       username,
       normalizedUsername,
-      /// friends,
+      friends,
       /// reverseFriends,
       hyphenated,
       muted,

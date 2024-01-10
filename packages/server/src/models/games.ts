@@ -1,6 +1,7 @@
 import type { GameHistory, GameID, UserID } from "@hanabi/data";
 import { serverCommandGameHistoryData } from "@hanabi/data";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { except } from "drizzle-orm/pg-core";
 import { gameParticipantsTable, gamesTable } from "../databaseSchema";
 import { db } from "../db";
 
@@ -59,6 +60,43 @@ export const games = {
     return gameIDs as GameID[];
   },
 
+  getGameIDsForUserFriends: async (
+    userID: UserID,
+    friendsSet: Set<UserID>,
+    offset: number,
+    amount: number,
+  ): Promise<readonly GameID[]> => {
+    if (friendsSet.size === 0) {
+      return [];
+    }
+
+    const friendsUserIDs = [...friendsSet];
+
+    const friendGameIDs = db
+      .selectDistinct({
+        gameID: gameParticipantsTable.gameID,
+      })
+      .from(gameParticipantsTable)
+      .where(inArray(gameParticipantsTable.userID, friendsUserIDs));
+
+    const ourGameIDs = db
+      .select({
+        gameID: gameParticipantsTable.gameID,
+      })
+      .from(gameParticipantsTable)
+      .where(eq(gameParticipantsTable.userID, userID));
+
+    const rows = await except(friendGameIDs, ourGameIDs)
+      .orderBy(desc(gameParticipantsTable.gameID))
+      .limit(amount)
+      .offset(offset);
+
+    const gameIDs = rows.map((row) => row.gameID);
+
+    // A type assertion is necessary since we are branding the game ID.
+    return gameIDs as GameID[];
+  },
+
   getHistory: async (
     gameIDs: readonly GameID[],
   ): Promise<readonly GameHistory[]> => {
@@ -101,54 +139,52 @@ export const games = {
       .orderBy(desc(gamesTable.id));
     */
 
-    const rows = await db.execute(
-      sql`
-        SELECT
-          games1.id AS id,
-          games1.num_players AS numPlayers,
-          games1.variant_id AS variantID,
+    const rows = await db.execute(sql`
+      SELECT
+        games1.id AS id,
+        games1.num_players AS numPlayers,
+        games1.variant_id AS variantID,
 
-          games1.timed AS timed,
-          games1.time_base AS timeBase,
-          games1.time_per_turn AS timePerTurn,
-          games1.speedrun AS speedrun,
-          games1.card_cycle AS cardCycle,
-          games1.deck_plays AS deckPlays,
-          games1.empty_clues AS emptyClues,
-          games1.one_extra_card AS oneExtraCard,
-          games1.one_less_card AS oneLessCard,
-          games1.all_or_nothing AS allOrNothing,
-          games1.detrimental_characters AS detrimentalCharacters,
+        games1.timed AS timed,
+        games1.time_base AS timeBase,
+        games1.time_per_turn AS timePerTurn,
+        games1.speedrun AS speedrun,
+        games1.card_cycle AS cardCycle,
+        games1.deck_plays AS deckPlays,
+        games1.empty_clues AS emptyClues,
+        games1.one_extra_card AS oneExtraCard,
+        games1.one_less_card AS oneLessCard,
+        games1.all_or_nothing AS allOrNothing,
+        games1.detrimental_characters AS detrimentalCharacters,
 
-          games1.seed AS seed,
-          games1.score AS score,
-          games1.num_turns AS numTurns,
-          games1.end_condition AS endCondition,
-          games1.datetime_started AS datetimeStarted,
-          games1.datetime_finished AS datetimeFinished,
+        games1.seed AS seed,
+        games1.score AS score,
+        games1.num_turns AS numTurns,
+        games1.end_condition AS endCondition,
+        games1.datetime_started AS datetimeStarted,
+        games1.datetime_finished AS datetimeFinished,
 
-          (
-            SELECT COALESCE((
-              SELECT seeds.num_games
-              FROM seeds
-              WHERE seeds.seed = games1.seed
-            ), 0)
-          ) AS numGamesOnThisSeed,
-          (
-            SELECT STRING_AGG(users.username, ', ')
-            FROM game_participants
-              JOIN users ON users.id = game_participants.user_id
-            WHERE game_participants.game_id = games1.id
-          ) AS playerNames,
-          (
-            SELECT COALESCE(STRING_AGG(DISTINCT game_tags.tag, ', ' ORDER BY game_tags.tag), '')
-            FROM game_tags
-            WHERE game_tags.game_id = games1.id
-          ) AS tags
-        FROM games AS games1
-        WHERE games1.id IN (${gameIDs.join(",")})
-      `,
-    );
+        (
+          SELECT COALESCE((
+            SELECT seeds.num_games
+            FROM seeds
+            WHERE seeds.seed = games1.seed
+          ), 0)
+        ) AS numGamesOnThisSeed,
+        (
+          SELECT STRING_AGG(users.username, ', ')
+          FROM game_participants
+            JOIN users ON users.id = game_participants.user_id
+          WHERE game_participants.game_id = games1.id
+        ) AS playerNames,
+        (
+          SELECT COALESCE(STRING_AGG(DISTINCT game_tags.tag, ', ' ORDER BY game_tags.tag), '')
+          FROM game_tags
+          WHERE game_tags.game_id = games1.id
+        ) AS tags
+      FROM games AS games1
+      WHERE games1.id IN (${gameIDs.join(",")})
+    `);
 
     // We parse the input from the database as a safety layer to ensure that the untyped `SELECT`
     // call is correct.

@@ -107,11 +107,7 @@ async function sendInitialWSMessages(wsUser: WSUser) {
   sendTableList(wsUser);
   await sendChat(wsUser);
   await sendHistory(wsUser);
-
-  /*
-  await sendFriendHistory();
-  */
-  // TODO
+  await sendFriendHistory(wsUser);
 }
 
 async function sendWelcomeMessage(wsUser: WSUser) {
@@ -209,6 +205,17 @@ async function sendChatMessageOfTheDay(wsUser: WSUser) {
 
 async function sendHistory(wsUser: WSUser) {
   const gameIDs = await models.games.getGameIDsForUser(wsUser.userID, 0, 10);
+  const history = await models.games.getHistory(gameIDs);
+  wsSend(wsUser.connection, ServerCommand.gameHistory, history);
+}
+
+async function sendFriendHistory(wsUser: WSUser) {
+  const gameIDs = await models.games.getGameIDsForUserFriends(
+    wsUser.userID,
+    wsUser.friends,
+    0,
+    10,
+  );
   const history = await models.games.getHistory(gameIDs);
   wsSend(wsUser.connection, ServerCommand.gameHistory, history);
 }

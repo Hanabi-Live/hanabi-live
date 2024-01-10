@@ -395,18 +395,13 @@ func (*Games) GetGameIDsFriends(
 	SQLString := `
 		SELECT DISTINCT game_participants.game_id
 		FROM game_participants
-		/*
-		 * We must use the ANY operator for matching an array of IDs:
-		 * https://github.com/jackc/pgx/issues/334
-		 */
-		WHERE game_participants.user_id = ANY($1)
+		WHERE game_participants.user_id IN ($1)
 		EXCEPT
 		(
 			SELECT game_participants.game_id
 			FROM game_participants
 			WHERE game_participants.user_id = $2
 		)
-		/* We must get the results in descending order for the limit to work properly */
 		ORDER BY game_id DESC
 		LIMIT $3 OFFSET $4
 	`
