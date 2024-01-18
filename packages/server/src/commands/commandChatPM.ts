@@ -1,7 +1,7 @@
 import type { ClientCommandChatPMData } from "@hanabi/data";
 import { ServerCommand } from "@hanabi/data";
-import { normalizeUsername } from "isaacscript-common-ts";
-import { sanitizeChatMsg } from "../chat";
+import { escapeHTMLCharacters, normalizeUsername } from "isaacscript-common-ts";
+import { validateAndNormalizeChatMsg } from "../chat";
 import { getCurrentDatetime } from "../date";
 import { logger } from "../logger";
 import { models } from "../models";
@@ -21,10 +21,12 @@ export async function commandChatPM(
     return;
   }
 
-  const sanitizedMsg = sanitizeChatMsg(connection, msg, false);
-  if (sanitizedMsg === undefined) {
+  const normalizedMsg = validateAndNormalizeChatMsg(connection, msg);
+  if (normalizedMsg === undefined) {
     return;
   }
+
+  const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
 
   const normalizedRecipient = normalizeUsername(recipient);
   if (normalizedUsername === normalizedRecipient) {

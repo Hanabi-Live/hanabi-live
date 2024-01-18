@@ -6,12 +6,12 @@ export const chatLogPM = {
   insert: async (
     userID: UserID,
     recipientID: UserID,
-    msg: string,
+    message: string,
   ): Promise<void> => {
     await db.insert(chatLogPMTable).values({
       userID,
       recipientID,
-      message: msg,
+      message,
     });
   },
 };

@@ -1,27 +1,24 @@
 import type { SocketStream } from "@fastify/websocket";
 import type { ServerCommandChatData } from "@hanabi/data";
 import {
-  escapeHTMLCharacters,
   getNumConsecutiveDiacritics,
   normalizeString,
+  truncateString,
 } from "isaacscript-common-ts";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "./constants";
 import { models } from "./models";
 import { wsWarning } from "./wsHelpers";
 
 const MAX_CHAT_LENGTH = 300;
-const MAX_CHAT_LENGTH_SERVER = 600;
 
-/** This both validates and sanitizes a chat message. Returns undefined if validation fails. */
-export function sanitizeChatMsg(
+/** Returns undefined if validation fails. */
+export function validateAndNormalizeChatMsg(
   connection: SocketStream,
   msg: string,
-  server: boolean,
 ): string | undefined {
-  // Truncate long messages. (We do this first to prevent wasting CPU cycles on validating extremely
-  // long messages.)
-  const maxLength = server ? MAX_CHAT_LENGTH_SERVER : MAX_CHAT_LENGTH;
-  const normalizedMsg = normalizeString(msg, maxLength);
+  // We truncate first to prevent wasting CPU cycles on validating extremely long messages.
+  const truncatedMSg = truncateString(msg, MAX_CHAT_LENGTH);
+  const normalizedMsg = normalizeString(truncatedMSg);
 
   if (normalizedMsg === "") {
     wsWarning(connection, "Chat messages cannot be blank.");
@@ -39,7 +36,7 @@ export function sanitizeChatMsg(
     return undefined;
   }
 
-  return escapeHTMLCharacters(msg);
+  return normalizedMsg;
 }
 
 export async function getChatList(

@@ -1,3 +1,4 @@
+import type { UserID } from "@hanabi/data";
 import { desc, eq } from "drizzle-orm";
 import { chatLogTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
@@ -35,5 +36,13 @@ export const chatLog = {
     const rows = await queryWithLimit;
 
     return rows;
+  },
+
+  set: async (userID: UserID, message: string, room: string): Promise<void> => {
+    await db.insert(chatLogTable).values({
+      userID,
+      message,
+      room,
+    });
   },
 };

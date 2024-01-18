@@ -168,10 +168,6 @@ export const chatLogTable = pgTable(
     discordName: text("discord_name"),
     message: text("message").notNull(),
     room: text("room").notNull(),
-    username: text("username").notNull().unique(),
-    normalizedUsername: text("normalized_username").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
-    lastIP: text("last_ip").notNull(),
     datetimeSent: timestamp("datetime_sent", { withTimezone: true })
       .notNull()
       .defaultNow(),

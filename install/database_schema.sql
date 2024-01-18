@@ -278,10 +278,10 @@ CREATE TABLE variant_stats (
 DROP TABLE IF EXISTS chat_log CASCADE;
 CREATE TABLE chat_log (
     id             SERIAL       PRIMARY KEY,
-    user_id        INTEGER      NOT NULL, /* 0 is a Discord message */
+    user_id        INTEGER      NOT NULL, /* 0 is a Discord message. */
     discord_name   TEXT         NULL,     /* Only used if it is a Discord message. */
     message        TEXT         NOT NULL,
-    room           TEXT         NOT NULL, /* Either "lobby" or "table####" */
+    room           TEXT         NOT NULL, /* Either "lobby" or "table####". */
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
     /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
