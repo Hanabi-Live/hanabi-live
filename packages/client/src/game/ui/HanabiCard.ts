@@ -569,9 +569,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return `card-${bareNameSuit}-${bareNameRank}`;
   }
 
+  /**
+   * getBareNameRank is used to compute the card's "bare name", which is used to render the correct
+   * image (e.g. "card-${suit}-${bareNameRank}"). The "card" image when nothing is on the stacks has
+   * the special name "card-${suit}-${CARD_IMAGE_STACK_BASE_RANK_NAME}".
+   */
   getBareNameRank(rankToShow: Rank | null): string {
-    // If a non-null rank is provided, it should take the highest precedence.
-    // E.g. a note on a card (including a stack base in "Throw it in a Hole").
+    // If a non-null rank is provided, it should take the highest precedence
+    // (e.g. a card note, including on a stack base in "Throw it in a Hole").
     if (rankToShow !== null) {
       return rankToShow.toString();
     }

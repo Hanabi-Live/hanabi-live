@@ -224,8 +224,8 @@ function isBlindPlay(
 ): boolean {
   // In "Throw it in a Hole" variants, bombs should appear as successful plays.
   const possiblePlay =
-    action.type == "play" ||
-    (variant.throwItInAHole && action.type == "discard" && action.failed);
+    action.type === "play" ||
+    (variant.throwItInAHole && action.type === "discard" && action.failed);
 
   if (!possiblePlay) {
     return false;
