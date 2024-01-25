@@ -570,15 +570,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   getBareNameRank(rankToShow: Rank | null): string {
+    // If a non-null rank is provided, it should take the highest precedence.
+    // E.g. a note on a card (including a stack base in "Throw it in a Hole").
+    if (rankToShow !== null) {
+      return rankToShow.toString();
+    }
+
     if (this.isStackBase) {
       return CARD_IMAGE_STACK_BASE_RANK_NAME;
     }
 
-    if (rankToShow === null) {
-      return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
-    }
-
-    return rankToShow.toString();
+    return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
   }
 
   // --------------
