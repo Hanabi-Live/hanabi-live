@@ -34,9 +34,10 @@ export async function commandChat(
   await chat(wsUser, normalizedMsg, sanitizedMsg, room, false);
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function chat(
   wsUser: WSUser,
-  normalizedMsg: string,
+  _normalizedMsg: string,
   sanitizedMsg: string,
   room: string,
   discord: boolean,
@@ -53,6 +54,10 @@ async function chat(
   }
 }
 
-function chatTable() {}
+function chatTable() {
+  // TODO
+}
 
-function chatLobby() {}
+function chatLobby() {
+  // TODO
+}
