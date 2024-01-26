@@ -534,6 +534,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return morphedIdentity.rank === null && morphedIdentity.suitIndex === null;
   }
 
+  /**
+   * Used to compute the card's "bare name", which is used to render the correct image (e.g.
+   * "card-${suit}-${bareNameRank}"). The "card" image when nothing is on the stacks has the special
+   * name "card-${suit}-${CARD_IMAGE_STACK_BASE_RANK_NAME}".
+   */
   getBareName(
     morphedBlank: boolean,
     suitToShow: Suit | null,
@@ -570,15 +575,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   getBareNameRank(rankToShow: Rank | null): string {
+    // If a non-null rank is provided, it should take the highest precedence. (We want players to
+    // make notes on the stack bases in "Throw it in a Hole" variants.)
+    if (rankToShow !== null) {
+      return rankToShow.toString();
+    }
+
     if (this.isStackBase) {
       return CARD_IMAGE_STACK_BASE_RANK_NAME;
     }
 
-    if (rankToShow === null) {
-      return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
-    }
-
-    return rankToShow.toString();
+    return CARD_IMAGE_UNKNOWN_CARD_RANK_NAME;
   }
 
   // --------------

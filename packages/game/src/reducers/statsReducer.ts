@@ -12,6 +12,7 @@ import type { CardNote } from "../interfaces/CardNote";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import type { StatsState } from "../interfaces/StatsState";
+import type { Variant } from "../interfaces/Variant";
 import { isCardClued } from "../rules/cardState";
 import {
   getDiscardClueTokenValue,
@@ -202,7 +203,7 @@ function statsReducerFunction(
   }
 
   // Handle `numSubsequentBlindPlays`.
-  if (isBlindPlay(action, gameState)) {
+  if (isBlindPlay(action, gameState, variant)) {
     statsState.numSubsequentBlindPlays++;
   } else if (isOneOfThreeMainActions(action)) {
     statsState.numSubsequentBlindPlays = 0;
@@ -216,8 +217,17 @@ function statsReducerFunction(
   }
 }
 
-function isBlindPlay(action: GameAction, gameState: GameState): boolean {
-  if (action.type !== "play") {
+function isBlindPlay(
+  action: GameAction,
+  gameState: GameState,
+  variant: Variant,
+): boolean {
+  // In "Throw it in a Hole" variants, bombs should appear as successful plays.
+  const possiblePlay =
+    action.type === "play" ||
+    (variant.throwItInAHole && action.type === "discard" && action.failed);
+
+  if (!possiblePlay) {
     return false;
   }
 
