@@ -2,7 +2,9 @@
 
 import { assertDefined, isKeyOf, parseIntSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
+import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
+import { SOUNDS_PATH } from "../sounds";
 
 export function init(): void {
   $("#settings-volume-slider").change(function settingsVolumeSliderChange(
@@ -35,7 +37,7 @@ export function init(): void {
   });
 
   $("#settings-volume-test").click(() => {
-    const audio = new Audio("/public/sounds/turn_us.mp3");
+    const audio = new Audio(`${SOUNDS_PATH}/${SoundType.Us}`);
     const element = $("#settings-volume-slider");
     const volumeString = element.val();
     if (typeof volumeString !== "string") {

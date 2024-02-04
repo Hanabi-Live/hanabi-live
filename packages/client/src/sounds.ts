@@ -3,6 +3,8 @@
 import { globals } from "./Globals";
 import { SoundType } from "./game/types/SoundType";
 
+export const SOUNDS_PATH = "/public/sounds";
+
 const PRELOAD_SOUND_TYPES = [
   SoundType.Tone,
   SoundType.Blind1,
@@ -22,7 +24,7 @@ export function init(): void {
   // in the code, the server has not sent us the settings corresponding to this user account, so
   // just assume that they have sounds enabled.
   for (const soundType of PRELOAD_SOUND_TYPES) {
-    const audio = new Audio(`/public/sounds/${soundType}.mp3`);
+    const audio = new Audio(`${SOUNDS_PATH}/${soundType}.mp3`);
     audio.load();
   }
 }
