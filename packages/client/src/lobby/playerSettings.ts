@@ -37,7 +37,7 @@ export function init(): void {
   });
 
   $("#settings-volume-test").click(() => {
-    const audio = new Audio(`${SOUNDS_PATH}/${SoundType.Us}`);
+    const audio = new Audio(`${SOUNDS_PATH}/${SoundType.Us}.mp3`);
     const element = $("#settings-volume-slider");
     const volumeString = element.val();
     if (typeof volumeString !== "string") {
