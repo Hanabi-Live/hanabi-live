@@ -82,6 +82,9 @@ jobs:
       - name: Check "variants.json" and "variants.txt"
         run: npm run check-variant-files
 
+      - name: Check child dependencies
+        run: npm run check-child-dependencies
+
   deploy_docs_website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint]
