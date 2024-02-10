@@ -18,3 +18,8 @@ pull.rebase=true
 # https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
 .vscode/*.json linguist-language=JSON-with-Comments
 tsconfig*.json linguist-language=JSON-with-Comments
+
+# Suppress displaying changes on certain files to prevent cluttering commit diffs on GitHub.
+package-lock.json linguist-generated=true
+yarn.lock linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
