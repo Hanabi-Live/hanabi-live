@@ -50,7 +50,7 @@ jobs:
         run: bash ./packages/client/set_version.sh
 
       - name: Test the TypeScript code using Jest
-        run: yarn test
+        run: npm run test
 
   format:
     runs-on: ubuntu-latest
