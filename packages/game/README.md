@@ -16,11 +16,6 @@ If you want to use the game logic in a bot or some other Hanab-related program, 
 npm install @hanabi-live/game --save
 ```
 
-The package also has some optional peer dependencies:
-
-- If you need to import types (like e.g. `CardOrder`), then you need to install [Zod](https://zod.dev/): `npm install zod --save`
-- If you need to use the reducer functions to compute new game states, then you need to install [Immer](https://immerjs.github.io/immer/): `npm install immer --save`
-
 <br>
 
 ## Usage

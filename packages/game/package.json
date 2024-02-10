@@ -30,18 +30,8 @@
     "publish": "isaacscript publish-ts"
   },
   "dependencies": {
-    "isaacscript-common-ts": "^16.1.0"
-  },
-  "peerDependencies": {
-    "immer": ">= 10.0.0",
-    "zod": ">= 3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "immer": {
-      "optional": true
-    },
-    "zod": {
-      "optional": true
-    }
+    "immer": "^10.0.3",
+    "isaacscript-common-ts": "^16.1.0",
+    "zod": "^3.22.4"
   }
 }
