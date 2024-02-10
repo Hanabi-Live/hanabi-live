@@ -47,7 +47,7 @@ export class CheckButton extends Konva.Group {
       y: checkY,
       width: checkW,
       height: checkH,
-      image: globals.imageLoader!.get("checkbox-on")!,
+      image: globals.imageLoader!.get("checkbox-on"),
       listening: false,
       visible: false,
     });
@@ -58,7 +58,7 @@ export class CheckButton extends Konva.Group {
       y: checkY,
       width: checkW,
       height: checkH,
-      image: globals.imageLoader!.get("checkbox-off")!,
+      image: globals.imageLoader!.get("checkbox-off"),
       listening: false,
       visible: false,
     });
@@ -69,7 +69,7 @@ export class CheckButton extends Konva.Group {
       y: checkY,
       width: checkW,
       height: checkH,
-      image: globals.imageLoader!.get("checkbox-on-disabled")!,
+      image: globals.imageLoader!.get("checkbox-on-disabled"),
       listening: false,
       visible: false,
     });
@@ -80,7 +80,7 @@ export class CheckButton extends Konva.Group {
       y: checkY,
       width: checkW,
       height: checkH,
-      image: globals.imageLoader!.get("checkbox-off-disabled")!,
+      image: globals.imageLoader!.get("checkbox-off-disabled"),
       listening: false,
       visible: false,
     });

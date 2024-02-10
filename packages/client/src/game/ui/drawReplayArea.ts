@@ -134,8 +134,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         listening: true,
       },
       [
-        globals.imageLoader!.get("replay-back-full")!,
-        globals.imageLoader!.get("replay-back-full-disabled")!,
+        globals.imageLoader!.get("replay-back-full"),
+        globals.imageLoader!.get("replay-back-full-disabled"),
       ],
     );
     globals.elements.replayBackFullButton.on("click tap", replay.backFull);
@@ -153,8 +153,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-back")!,
-        globals.imageLoader!.get("replay-back-disabled")!,
+        globals.imageLoader!.get("replay-back"),
+        globals.imageLoader!.get("replay-back-disabled"),
       ],
     );
     globals.elements.replayBackButton.on("click tap", () => {
@@ -180,8 +180,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-forward")!,
-        globals.imageLoader!.get("replay-forward-disabled")!,
+        globals.imageLoader!.get("replay-forward"),
+        globals.imageLoader!.get("replay-forward-disabled"),
       ],
     );
     globals.elements.replayForwardButton.on("click tap", () => {
@@ -207,8 +207,8 @@ export function drawReplayArea(winW: number, winH: number): void {
         height: replayButtonValues.h * winH,
       },
       [
-        globals.imageLoader!.get("replay-forward-full")!,
-        globals.imageLoader!.get("replay-forward-full-disabled")!,
+        globals.imageLoader!.get("replay-forward-full"),
+        globals.imageLoader!.get("replay-forward-full-disabled"),
       ],
     );
     globals.elements.replayForwardFullButton.on(

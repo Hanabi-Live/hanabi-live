@@ -135,14 +135,12 @@ export function drawUI(): void {
 
 export function setSkullEnabled(): void {
   globals.elements.terminateButton?.setImage(
-    globals.imageLoader!.get("skull_vtk")!,
+    globals.imageLoader!.get("skull_vtk"),
   );
 }
 
 export function setSkullNormal(): void {
-  globals.elements.terminateButton?.setImage(
-    globals.imageLoader!.get("skull")!,
-  );
+  globals.elements.terminateButton?.setImage(globals.imageLoader!.get("skull"));
 }
 
 function drawBackground() {
@@ -152,7 +150,7 @@ function drawBackground() {
     y: 0,
     width: winW,
     height: winH,
-    image: globals.imageLoader!.get("background")!,
+    image: globals.imageLoader!.get("background"),
     listening: true,
   });
   background.on("mousemove", () => {
@@ -506,7 +504,7 @@ function drawBottomLeftButtons() {
       height: bottomLeftButtonValues.h! * winH,
       visible: !globals.state.finished,
     },
-    [globals.imageLoader!.get("replay")!],
+    [globals.imageLoader!.get("replay")],
   );
   replayButton.on("click tap", () => {
     if (globals.state.replay.active) {
@@ -649,7 +647,7 @@ function drawDeck() {
     y: (deckValues.y + 0.161) * winH,
     width: deckValues.w! * 0.15 * winW,
     height: deckValues.w! * 0.15 * winW,
-    image: globals.imageLoader!.get("question-mark")!,
+    image: globals.imageLoader!.get("question-mark"),
     shadowColor: "black",
     shadowBlur: 2,
     shadowOffset: {
@@ -996,6 +994,10 @@ function drawScoreArea() {
 
         break;
       }
+
+      default: {
+        break;
+      }
     }
   }
 
@@ -1024,7 +1026,7 @@ function drawScoreArea() {
         y: 0.125 * winH,
         width: 0.02 * winW,
         height: 0.036 * winH,
-        image: globals.imageLoader!.get("x")!,
+        image: globals.imageLoader!.get("x"),
         opacity: 0,
         listening: true,
       },
@@ -1082,7 +1084,7 @@ function drawScoreArea() {
         height: 0.053 * winH,
         visible: globals.state.playing,
       },
-      [globals.imageLoader!.get("skull")!],
+      [globals.imageLoader!.get("skull")],
     );
     globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
     terminateButton.on(
@@ -1132,7 +1134,7 @@ function drawSpectators() {
     height: imageSize * winW,
     // (This is not a typo; we want it to have the same width and height.)
     align: "center",
-    image: globals.imageLoader!.get("eyes")!,
+    image: globals.imageLoader!.get("eyes"),
     shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {
@@ -1199,7 +1201,7 @@ function drawSharedReplay() {
     y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
     width: size,
     height: size,
-    image: globals.imageLoader!.get("crown")!,
+    image: globals.imageLoader!.get("crown"),
     shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {
@@ -1590,7 +1592,7 @@ function drawDiscardArea() {
     width: 0.15 * winW,
     height: 0.33 * winH,
     opacity: 0.2,
-    image: globals.imageLoader!.get("trashcan")!,
+    image: globals.imageLoader!.get("trashcan"),
     listening: false,
   });
   globals.layers.UI.add(trashcan);
@@ -2389,7 +2391,7 @@ function drawPauseArea() {
       width: button2W * winW,
       height: 0.1 * winH,
     },
-    [globals.imageLoader!.get("home")!],
+    [globals.imageLoader!.get("home")],
   );
   globals.elements.pauseArea.add(pauseLobbyButton as unknown as Konva.Group);
   pauseLobbyButton.on("click tap", lobbyButtonClick);
@@ -2501,7 +2503,7 @@ function drawExtraAnimations() {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get("replay-forward-border")!,
+    image: globals.imageLoader!.get("replay-forward-border"),
     border: 100,
     visible: false,
     listening: false,
@@ -2513,7 +2515,7 @@ function drawExtraAnimations() {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get("replay-back-border")!,
+    image: globals.imageLoader!.get("replay-back-border"),
     visible: false,
     listening: false,
   });

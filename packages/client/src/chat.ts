@@ -610,8 +610,9 @@ function fillDiscordEmotes(message: string) {
     if (match === null) {
       break;
     }
+
     const emoteTag = `<img src="https://cdn.discordapp.com/emojis/${match[2]}.png" title="${match[1]}" height="28">`;
-    filledMessed = filledMessed.replace(match[0]!, emoteTag);
+    filledMessed = filledMessed.replace(match[0], emoteTag);
   }
 
   return filledMessed;

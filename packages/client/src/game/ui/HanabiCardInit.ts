@@ -398,7 +398,7 @@ export function note(
     x: (offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
     y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("note")!,
+    image: globals.imageLoader!.get("note"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: 180,
@@ -429,7 +429,7 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
     x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
     y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("critical")!,
+    image: globals.imageLoader!.get("critical"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: 180,
@@ -457,7 +457,7 @@ export function questionMark(): Konva.Image {
     y: 0.2 * CARD_H,
     width: 0.8 * CARD_W,
     height: 0.8 * CARD_W,
-    image: globals.imageLoader!.get("question-mark2")!,
+    image: globals.imageLoader!.get("question-mark2"),
     visible: false,
   });
 }
@@ -468,7 +468,7 @@ export function exclamationMark(): Konva.Image {
     y: 0.2 * CARD_H,
     width: 0.8 * CARD_W,
     height: 0.8 * CARD_W,
-    image: globals.imageLoader!.get("exclamation-mark")!,
+    image: globals.imageLoader!.get("exclamation-mark"),
     visible: false,
   });
 }
@@ -479,7 +479,7 @@ export function trashcan(): Konva.Image {
     y: 0.2 * CARD_H,
     width: 0.7 * CARD_W,
     height: 0.6 * CARD_H,
-    image: globals.imageLoader!.get("trashcan2")!,
+    image: globals.imageLoader!.get("trashcan2"),
     visible: false,
   });
 }
@@ -489,7 +489,7 @@ export function wrench(): Konva.Image {
     x: 0.1 * CARD_W,
     y: 0.33 * CARD_H,
     width: 0.8 * CARD_W,
-    image: globals.imageLoader!.get("wrench")!,
+    image: globals.imageLoader!.get("wrench"),
     visible: false,
     listening: false,
   });
@@ -501,7 +501,7 @@ export function ddaIndicatorTop(): Konva.Image {
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    image: globals.imageLoader!.get("dda")!,
+    image: globals.imageLoader!.get("dda"),
     visible: false,
     listening: false,
   });
@@ -514,7 +514,7 @@ export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
     x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
     y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("dda")!,
+    image: globals.imageLoader!.get("dda"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     visible: false,
@@ -529,7 +529,7 @@ export function trashMiniIndicatorTop(): Konva.Image {
     y: TOP_LEFT_Y,
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    image: globals.imageLoader!.get("wastebasket")!,
+    image: globals.imageLoader!.get("wastebasket"),
     visible: false,
     listening: false,
   });
@@ -544,7 +544,7 @@ export function trashMiniIndicatorBottom(
     x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
     y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
     align: "center",
-    image: globals.imageLoader!.get("wastebasket")!,
+    image: globals.imageLoader!.get("wastebasket"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     visible: false,

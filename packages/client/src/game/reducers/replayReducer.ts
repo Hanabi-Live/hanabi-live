@@ -209,7 +209,7 @@ function replayReducerFunction(
             // This is a sparse array, so we must delete it with the `delete` operator. (We are not
             // using a map because Immer state objects must be composed of primitives for
             // performance reasons.)
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
             delete state.hypothetical.morphedIdentities[order];
           } else {
             // Hide all cards drawn since the beginning of the hypothetical.
@@ -260,7 +260,7 @@ function hypoAction(
   } else if (action.type === "unmorph") {
     // This is a sparse array, so we must delete it with the `delete` operator. (We are not using a
     // map because Immer state objects must be composed of primitives for performance reasons.)
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
     delete state.hypothetical.morphedIdentities[action.order];
   }
 

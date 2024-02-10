@@ -49,6 +49,10 @@ export function HanabiCardClick(
       clickRight(this, mouseEvent);
       break;
     }
+
+    default: {
+      break;
+    }
   }
 }
 
