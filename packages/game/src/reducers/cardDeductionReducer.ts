@@ -320,7 +320,7 @@ function isPossibleCard(
     const [suitIndex, rank] = possibilities[0]!;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-    cardCountMap[suitIndex]![rank]!--;
+    cardCountMap[suitIndex]![rank]--;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (cardCountMap[suitIndex]![rank]! < 0) {
@@ -454,12 +454,12 @@ function possibilityValid(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (cardCountMap[suitIndex]![rank]! > 0) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-      cardCountMap[suitIndex]![rank]!--;
+      cardCountMap[suitIndex]![rank]--;
 
       updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-      cardCountMap[suitIndex]![rank]!++;
+      cardCountMap[suitIndex]![rank]++;
 
       return true;
     }
@@ -469,7 +469,7 @@ function possibilityValid(
 
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-  cardCountMap[suitIndex]![rank]!--;
+  cardCountMap[suitIndex]![rank]--;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (cardCountMap[suitIndex]![rank]! >= 0) {
@@ -496,14 +496,14 @@ function possibilityValid(
         )
       ) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-        cardCountMap[suitIndex]![rank]!++;
+        cardCountMap[suitIndex]![rank]++;
         return true;
       }
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-  cardCountMap[suitIndex]![rank]!++;
+  cardCountMap[suitIndex]![rank]++;
 
   return false;
 }
