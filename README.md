@@ -14,6 +14,7 @@
   - A lot of the code was originally taken from [Keldon Jones'](http://keldon.net/) implementation of the game. (His site no longer exists.)
 - The server is programmed in [Go](https://golang.org/). It is located in the `server` subdirectory.
   - It uses a [PostgreSQL](https://www.postgresql.org/) database to store information about the users and games.
+- The core game logic is located in the [`packages/game`](packages/game) directory.
 
 <br>
 
