@@ -1,6 +1,6 @@
 {
   "name": "@hanabi-live/game",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Functions for computing game states of Hanabi.",
   "keywords": [],
   "homepage": "https://github.com/Hanabi-Live/hanabi-live",
