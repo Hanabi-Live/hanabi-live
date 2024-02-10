@@ -20,7 +20,7 @@ npm install @hanabi-live/game --save
 
 ## Usage
 
-Here is an example of a JavaScript/TypeScript program using the `gameReducer` function to compute a game state:
+Here is an example of a TypeScript program using the `gameReducer` function to compute a game state:
 
 ```ts
 import {
