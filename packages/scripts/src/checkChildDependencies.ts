@@ -2,7 +2,7 @@ import { dirName, getPackageJSONDependencies } from "isaacscript-common-node";
 import path from "node:path";
 
 const __dirname = dirName();
-const REPO_ROOT = path.join(__dirname, "..", "..");
+const REPO_ROOT = path.join(__dirname, "..", "..", "..");
 const MAIN_PACKAGE_JSON = path.join(REPO_ROOT, "package.json");
 const CHILD_PACKAGE_JSON = path.join(
   REPO_ROOT,
