@@ -56,17 +56,13 @@ This library is currently published as CommonJS (CJS) due to technical limitatio
 
 ### JavaScript
 
-Using pure JavaScript to consume this library is not recommended. (Use TypeScript now and save yourself from pain later from having types in your program!) If you want to use pure JavaScript, then you have to use the legacy CJS import format like so:
+Using pure JavaScript to consume this library is not recommended. (Use TypeScript to save yourself from run-time error pain!) If you are some sort of masochist and want to use pure JavaScript, then you have to use the legacy CJS import format like so:
 
 ```js
 const hanabiLiveGame = require("@hanabi-live/game");
 
-const {
-  draw,
-  gameReducer,
-  getDefaultMetadata,
-  getInitialGameState,
-} = hanabiLiveGame;
+const { draw, gameReducer, getDefaultMetadata, getInitialGameState } =
+  hanabiLiveGame;
 
 const numPlayers = 2;
 const metadata = getDefaultMetadata(numPlayers);
