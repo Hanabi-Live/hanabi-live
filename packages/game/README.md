@@ -49,7 +49,7 @@ const nextGameState = gameReducer(
   metadata,
 );
 
-console.log(`First player now has ${initialGameState.hands[0].length} cards.`); // Should print 1.
+console.log(`First player now has ${nextGameState.hands[0].length} cards.`); // Should print 1.
 ```
 
 This library is currently published as CommonJS (CJS) due to technical limitations in the monorepo. (We have CJS dependencies.) Thus, the above ESM syntax will only work if you are using TypeScript. (We recommend using [`tsx`](https://github.com/privatenumber/tsx) to run your TypeScript, which skips the compilation step.)
@@ -81,5 +81,5 @@ const nextGameState = gameReducer(
   metadata,
 );
 
-console.log(`First player now has ${initialGameState.hands[0].length} cards.`); // Should print 1.
+console.log(`First player now has ${nextGameState.hands[0].length} cards.`); // Should print 1.
 ```
