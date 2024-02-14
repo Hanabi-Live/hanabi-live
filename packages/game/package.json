@@ -27,7 +27,7 @@
     "build": "rm -rf dist && tsc --project ./tsconfig.npm.json",
     "docs": "npx typedoc ./src/index.ts",
     "lint": "bash ./lint.sh",
-    "publish": "isaacscript publish-ts"
+    "publish": "isaacscript publish"
   },
   "dependencies": {
     "immer": "^10.0.3",

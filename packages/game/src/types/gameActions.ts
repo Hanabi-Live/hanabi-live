@@ -8,6 +8,11 @@ import type { PlayerIndex } from "./PlayerIndex";
 import type { Rank } from "./Rank";
 import type { SuitIndex } from "./SuitIndex";
 
+/**
+ * An in-game action that can mutate a game state. This includes the 3 in-game actions of cluing,
+ * playing, and discarding, but also includes things like drawing cards. (An action of e.g. playing
+ * a card will not automatically draw a card for the player.)
+ */
 export type GameAction =
   | ActionCardIdentity
   | ActionClue

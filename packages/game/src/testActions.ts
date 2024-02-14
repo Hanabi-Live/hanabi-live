@@ -18,7 +18,7 @@ import type {
 export function colorClue(
   value: ColorIndex,
   giver: PlayerIndex,
-  list: readonly number[],
+  list: readonly number[], // We do not want to force the consumer to brand their numbers.
   target: PlayerIndex,
 ): ActionClue {
   return {
@@ -38,7 +38,7 @@ export function colorClue(
 export function rankClue(
   value: RankClueNumber,
   giver: PlayerIndex,
-  list: readonly number[],
+  list: readonly number[], // We do not want to force the consumer to brand their numbers.
   target: PlayerIndex,
 ): ActionClue {
   return {
@@ -57,7 +57,7 @@ export function rankClue(
 /** Helper functions to build a `ActionDraw` with a compact syntax. For use in tests. */
 export function draw(
   playerIndex: PlayerIndex,
-  order: number,
+  order: number, // We do not want to force the consumer to brand their numbers.
   suitIndex: SuitIndex | -1 = -1,
   rank: Rank | -1 = -1,
 ): ActionDraw {
@@ -73,7 +73,7 @@ export function draw(
 /** Helper functions to build a `ActionDiscard` with a compact syntax. For use in tests. */
 export function discard(
   playerIndex: PlayerIndex,
-  order: number,
+  order: number, // We do not want to force the consumer to brand their numbers.
   suitIndex: SuitIndex | -1,
   rank: Rank | -1,
   failed: boolean,
@@ -91,7 +91,7 @@ export function discard(
 /** Helper functions to build a `ActionPlay` with a compact syntax. For use in tests. */
 export function play(
   playerIndex: PlayerIndex,
-  order: number,
+  order: number, // We do not want to force the consumer to brand their numbers.
   suitIndex: SuitIndex,
   rank: Rank,
 ): ActionPlay {
@@ -107,7 +107,7 @@ export function play(
 /** Helper functions to build a `ActionCardIdentity` with a compact syntax. For use in tests. */
 export function actionCardIdentity(
   playerIndex: PlayerIndex,
-  order: number,
+  order: number, // We do not want to force the consumer to brand their numbers.
   suitIndex: SuitIndex,
   rank: Rank,
 ): ActionCardIdentity {
@@ -123,7 +123,7 @@ export function actionCardIdentity(
 /** Helper functions to build a `ActionStrike` with a compact syntax. For use in tests. */
 export function strike(
   num: 1 | 2 | 3,
-  order: number,
+  order: number, // We do not want to force the consumer to brand their numbers.
   turn: number,
 ): ActionStrike {
   return {
