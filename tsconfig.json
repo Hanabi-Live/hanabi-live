@@ -1,5 +1,7 @@
 // This is a tsconfig.json intended to be used by packages in this monorepo.
 {
+  "$schema": "https://raw.githubusercontent.com/IsaacScript/isaacscript/main/packages/isaacscript-cli/schemas/tsconfig-strict-schema.json",
+
   // We extend the base IsaacScript config:
   // https://github.com/IsaacScript/isaacscript/blob/main/packages/isaacscript-tsconfig/configs/tsconfig.base.json
   "extends": "isaacscript-tsconfig/tsconfig.base.json",

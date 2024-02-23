@@ -119,13 +119,11 @@ jobs:
         lint_monorepo,
         deploy_docs_website,
       ]
-    if: always() # This is needed to always run this job, even if the other jobs fail.
+    if: failure()
     runs-on: ubuntu-latest
     steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-      - if: env.WORKFLOW_CONCLUSION != 'success' && env.WORKFLOW_CONCLUSION != 'cancelled'
-        uses: sarisia/actions-status-discord@v1
+      - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ env.WORKFLOW_CONCLUSION }}
+          status: failure
           title: ""
