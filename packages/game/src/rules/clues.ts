@@ -1,17 +1,19 @@
-// Functions related to the clue objects themselves: converting, getting names, etc
+// Functions related to the clue objects themselves: converting, getting names, etc.
 
 import { assertDefined } from "isaacscript-common-ts";
 import { START_CARD_RANK } from "../constants";
 import { ClueType } from "../enums/ClueType";
+import type { Color } from "../interfaces/Color";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Suit } from "../interfaces/Suit";
 import type { Variant } from "../interfaces/Variant";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
-import type { Clue, ColorClue, RankClue } from "../types/Clue";
+import type { Clue } from "../types/Clue";
 import { newColorClue, newRankClue } from "../types/Clue";
 import type { MsgClue } from "../types/MsgClue";
 import type { PlayerIndex } from "../types/PlayerIndex";
 import type { Rank } from "../types/Rank";
+import type { RankClueNumber } from "../types/RankClueNumber";
 import type { SuitIndex } from "../types/SuitIndex";
 
 export function getClueName(
@@ -95,18 +97,24 @@ export function isCardTouchedByClue(
 
   switch (clue.type) {
     case ClueType.Color: {
-      return isCardTouchedByColorClue(variant, clue, suit, rank);
+      return isCardTouchedByClueColor(variant, clue.value, suit, rank);
     }
 
     case ClueType.Rank: {
-      return isCardTouchedByRankClue(variant, clue, suitIndex, suit, rank);
+      return isCardTouchedByClueRank(
+        variant,
+        clue.value,
+        suitIndex,
+        suit,
+        rank,
+      );
     }
   }
 }
 
-function isCardTouchedByColorClue(
+export function isCardTouchedByClueColor(
   variant: Variant,
-  clue: ColorClue,
+  clueColor: Color,
   suit: Suit,
   rank: Rank,
 ): boolean {
@@ -126,7 +134,7 @@ function isCardTouchedByColorClue(
     // A card matches if it would match a prism card, in addition to normal color matches.
     const prismColorIndex = (rank - 1) % variant.clueColors.length;
     const color = variant.clueColors[prismColorIndex];
-    if (color !== undefined && clue.value.name === color.name) {
+    if (color !== undefined && clueColor.name === color.name) {
       return true;
     }
   }
@@ -142,25 +150,36 @@ function isCardTouchedByColorClue(
   }
 
   if (suit.prism) {
-    // The color that touches a prism card is contingent upon the card's rank.
-    let prismColorIndex = (rank - 1) % variant.clueColors.length;
-
-    // "START" cards count as rank 0, so they are touched by the final color.
-    if (rank === START_CARD_RANK) {
-      prismColorIndex = variant.clueColors.length - 1;
-    }
-
-    const prismColor = variant.clueColors[prismColorIndex];
-    return prismColor !== undefined && clue.value.name === prismColor.name;
+    const prismColor = getColorForPrismCard(variant, rank);
+    return clueColor.name === prismColor.name;
   }
 
-  const clueColorNames = suit.clueColors.map((clueColor) => clueColor.name);
-  return clueColorNames.includes(clue.value.name);
+  const suitClueColorNames = suit.clueColors.map(
+    (suitClueColor) => suitClueColor.name,
+  );
+  return suitClueColorNames.includes(clueColor.name);
 }
 
-function isCardTouchedByRankClue(
+/** The color that touches a prism card is contingent upon the card's rank. */
+export function getColorForPrismCard(variant: Variant, rank: Rank): Color {
+  // "START" cards count as rank 0, so they are touched by the final color.
+  const prismColorIndex =
+    rank === START_CARD_RANK
+      ? variant.clueColors.length - 1
+      : (rank - 1) % variant.clueColors.length;
+
+  const prismColor = variant.clueColors[prismColorIndex];
+  assertDefined(
+    prismColor,
+    `Failed to get the color corresponding to a prism card of rank ${rank} for variant: ${variant.name}`,
+  );
+
+  return prismColor;
+}
+
+export function isCardTouchedByClueRank(
   variant: Variant,
-  clue: RankClue,
+  clueRank: RankClueNumber,
   suitIndex: SuitIndex,
   suit: Suit,
   rank: Rank,
@@ -179,17 +198,17 @@ function isCardTouchedByRankClue(
 
   if (variant.funnels) {
     // Rank clues in Funnels touch also all lower ranked cards.
-    return rank <= clue.value;
+    return rank <= clueRank;
   }
 
   if (variant.chimneys) {
     // Rank clues in Chimneys touch also all lower ranked cards.
-    return rank >= clue.value;
+    return rank >= clueRank;
   }
 
   // Clue ranks in Odds And Evens can only be 1 or 2.
   if (variant.oddsAndEvens) {
-    if (clue.value === 1) {
+    if (clueRank === 1) {
       return [1, 3, 5].includes(rank);
     }
 
@@ -209,11 +228,11 @@ function isCardTouchedByRankClue(
     if (variant.specialRankDeceptive) {
       const deceptiveRank =
         variant.clueRanks[suitIndex % variant.clueRanks.length];
-      return clue.value === deceptiveRank;
+      return clueRank === deceptiveRank;
     }
   }
 
-  return clue.value === rank;
+  return clueRank === rank;
 }
 
 export function shouldApplyClue(

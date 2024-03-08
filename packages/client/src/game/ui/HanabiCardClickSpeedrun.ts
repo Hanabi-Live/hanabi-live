@@ -1,15 +1,16 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { Color } from "@hanabi/game";
+import type { CardState, Color } from "@hanabi/game";
 import {
   START_CARD_RANK,
   getAdjustedClueTokens,
+  getColorForPrismCard,
   isAtMaxClueTokens,
   isCardInPlayerHand,
+  isCardTouchedByClueColor,
 } from "@hanabi/game";
-import { assertDefined } from "isaacscript-common-ts";
 import { ActionType } from "../types/ActionType";
-import type { ColorButton } from "./ColorButton";
+import { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { clickRightCheckAddNote } from "./clickNotes";
@@ -55,63 +56,26 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     return;
   }
 
-  // Left-clicking on cards in other people's hands is a color clue action. (But if we are holding
-  // Ctrl, then we are using Empathy.)
+  // Left-clicking on cards in other people's hands is a color clue action.
   if (
     card.state.location !== globals.metadata.ourPlayerIndex &&
     isCardInPlayerHand(card.state) &&
-    card.state.suitIndex !== null &&
     // Ensure there is at least 1 clue token available.
     globals.state.ongoingGame.clueTokens >=
       getAdjustedClueTokens(1, globals.variant) &&
     !event.ctrlKey &&
     !event.shiftKey &&
     !event.altKey &&
-    !event.metaKey
+    !event.metaKey &&
+    typeof card.state.location === "number"
   ) {
-    // A card may be clueable by more than one color, so we need to figure out which color to use.
-    // First, find out if they have a clue color button selected.
-    const clueButton = globals.elements.clueTypeButtonGroup?.getPressed() as
-      | ColorButton
-      | null
-      | undefined;
-    let clueColor: Color | undefined;
-
-    const suit = globals.variant.suits[card.state.suitIndex];
-    assertDefined(
-      suit,
-      `Failed to find the suit at index: ${card.state.suitIndex}`,
-    );
-
-    if (clueButton === null || clueButton === undefined) {
-      // They have not clicked on a clue color button yet, so assume that they want to use the first
-      // possible color of the card.
-      clueColor = suit.clueColors[0];
-    } else if (typeof clueButton.clue.value === "number") {
-      // They have clicked on a number clue button, so assume that they want to use the first
-      // possible color of the card.
-      clueColor = suit.clueColors[0];
-    } else {
-      // They have clicked on a color button, so assume that they want to use that color.
-      clueColor = clueButton.clue.value;
-
-      // See if this is a valid color for the clicked card.
-      const clueColorIndex = suit.clueColors.indexOf(clueColor);
-      // Ignore clue validation if the suit has no clue colors.
-      if (suit.clueColors.length > 0 && clueColorIndex === -1) {
-        // It is not possible to clue this color to this card, so default to using the first valid
-        // color.
-        clueColor = suit.clueColors[0];
-      }
+    const clueColor = getClueColorForColorClueClick(card.state);
+    if (clueColor === undefined) {
+      return;
     }
 
-    // Use the first color as a default.
-    const colorIndex =
-      clueColor === undefined
-        ? 0
-        : colorToColorIndex(clueColor, globals.variant) ?? 0;
-
-    if (typeof card.state.location !== "number") {
+    const colorIndex = colorToColorIndex(clueColor, globals.variant);
+    if (colorIndex === undefined) {
       return;
     }
 
@@ -121,6 +85,51 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       value: colorIndex,
     });
   }
+}
+
+/** A card may be clueable by more than one color, so we need to figure out which color to use. */
+function getClueColorForColorClueClick(
+  cardState: CardState,
+): Color | undefined {
+  if (cardState.suitIndex === null || cardState.rank === null) {
+    return undefined;
+  }
+
+  const suit = globals.variant.suits[cardState.suitIndex];
+  if (suit === undefined) {
+    return undefined;
+  }
+
+  // If they have clicked on a clue color button, and that color touches the card, assume that they
+  // want to use that color.
+  const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
+  if (
+    clueButton !== null &&
+    clueButton !== undefined &&
+    clueButton instanceof ColorButton &&
+    typeof clueButton.clue.value !== "number" &&
+    isCardTouchedByClueColor(
+      globals.variant,
+      clueButton.clue.value,
+      suit,
+      cardState.rank,
+    )
+  ) {
+    return clueButton.clue.value;
+  }
+
+  // Otherwise, assume that they want to use the first possible color of the card.
+  const firstClueColor = suit.clueColors[0];
+  if (firstClueColor !== undefined) {
+    return firstClueColor;
+  }
+
+  // Handle the cases where the "suit.clueColors" array is empty.
+  if (suit.prism) {
+    return getColorForPrismCard(globals.variant, cardState.rank);
+  }
+
+  return undefined;
 }
 
 function clickRight(card: HanabiCard, event: MouseEvent) {
