@@ -87,26 +87,26 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
 export function isCardTouchedByClue(
   variant: Variant,
   clue: Clue,
-  suitIndex: SuitIndex,
-  rank: Rank,
+  cardSuitIndex: SuitIndex,
+  cardRank: Rank,
 ): boolean {
-  const suit = variant.suits[suitIndex];
+  const suit = variant.suits[cardSuitIndex];
   if (suit === undefined) {
     return false;
   }
 
   switch (clue.type) {
     case ClueType.Color: {
-      return isCardTouchedByClueColor(variant, clue.value, suit, rank);
+      return isCardTouchedByClueColor(variant, clue.value, suit, cardRank);
     }
 
     case ClueType.Rank: {
       return isCardTouchedByClueRank(
         variant,
         clue.value,
-        suitIndex,
+        cardSuitIndex,
         suit,
-        rank,
+        cardRank,
       );
     }
   }
@@ -115,31 +115,31 @@ export function isCardTouchedByClue(
 export function isCardTouchedByClueColor(
   variant: Variant,
   clueColor: Color,
-  suit: Suit,
-  rank: Rank,
+  cardSuit: Suit,
+  cardRank: Rank,
 ): boolean {
   if (variant.colorCluesTouchNothing) {
     return false;
   }
 
-  if (suit.allClueColors) {
+  if (cardSuit.allClueColors) {
     return true;
   }
 
-  if (suit.noClueColors) {
+  if (cardSuit.noClueColors) {
     return false;
   }
 
-  if (variant.synesthesia && !suit.noClueRanks) {
+  if (variant.synesthesia && !cardSuit.noClueRanks) {
     // A card matches if it would match a prism card, in addition to normal color matches.
-    const prismColorIndex = (rank - 1) % variant.clueColors.length;
+    const prismColorIndex = (cardRank - 1) % variant.clueColors.length;
     const color = variant.clueColors[prismColorIndex];
     if (color !== undefined && clueColor.name === color.name) {
       return true;
     }
   }
 
-  if (rank === variant.specialRank) {
+  if (cardRank === variant.specialRank) {
     if (variant.specialRankAllClueColors) {
       return true;
     }
@@ -149,12 +149,12 @@ export function isCardTouchedByClueColor(
     }
   }
 
-  if (suit.prism) {
-    const prismColor = getColorForPrismCard(variant, rank);
+  if (cardSuit.prism) {
+    const prismColor = getColorForPrismCard(variant, cardRank);
     return clueColor.name === prismColor.name;
   }
 
-  const suitClueColorNames = suit.clueColors.map(
+  const suitClueColorNames = cardSuit.clueColors.map(
     (suitClueColor) => suitClueColor.name,
   );
   return suitClueColorNames.includes(clueColor.name);
@@ -180,42 +180,42 @@ export function getColorForPrismCard(variant: Variant, rank: Rank): Color {
 export function isCardTouchedByClueRank(
   variant: Variant,
   clueRank: RankClueNumber,
-  suitIndex: SuitIndex,
-  suit: Suit,
-  rank: Rank,
+  cardSuitIndex: SuitIndex,
+  cardSuit: Suit,
+  cardRank: Rank,
 ): boolean {
   if (variant.rankCluesTouchNothing) {
     return false;
   }
 
-  if (suit.allClueRanks) {
+  if (cardSuit.allClueRanks) {
     return true;
   }
 
-  if (suit.noClueRanks) {
+  if (cardSuit.noClueRanks) {
     return false;
   }
 
   if (variant.funnels) {
     // Rank clues in Funnels touch also all lower ranked cards.
-    return rank <= clueRank;
+    return cardRank <= clueRank;
   }
 
   if (variant.chimneys) {
     // Rank clues in Chimneys touch also all lower ranked cards.
-    return rank >= clueRank;
+    return cardRank >= clueRank;
   }
 
   // Clue ranks in Odds And Evens can only be 1 or 2.
   if (variant.oddsAndEvens) {
     if (clueRank === 1) {
-      return [1, 3, 5].includes(rank);
+      return [1, 3, 5].includes(cardRank);
     }
 
-    return [2, 4].includes(rank);
+    return [2, 4].includes(cardRank);
   }
 
-  if (rank === variant.specialRank) {
+  if (cardRank === variant.specialRank) {
     if (variant.specialRankAllClueRanks) {
       return true;
     }
@@ -226,13 +226,13 @@ export function isCardTouchedByClueRank(
 
     // The rank that touches a deceptive card is contingent upon the card's suit.
     if (variant.specialRankDeceptive) {
-      const deceptiveRank =
-        variant.clueRanks[suitIndex % variant.clueRanks.length];
+      const deceptiveRankIndex = cardSuitIndex % variant.clueRanks.length;
+      const deceptiveRank = variant.clueRanks[deceptiveRankIndex];
       return clueRank === deceptiveRank;
     }
   }
 
-  return clueRank === rank;
+  return clueRank === cardRank;
 }
 
 export function shouldApplyClue(
