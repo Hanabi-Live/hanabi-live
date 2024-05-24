@@ -272,7 +272,7 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
   // with "#1", corresponding to the first turn).
   let specificTurnString: string | undefined;
   if (window.location.hash !== "") {
-    specificTurnString = window.location.hash.replace("#", ""); // Strip the trailing "#".
+    specificTurnString = window.location.hash.replace("#", ""); // Strip the leading "#".
   }
 
   // The server has sent us the list of the game actions that have occurred in the game thus far (in
