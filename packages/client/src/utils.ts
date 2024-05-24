@@ -64,7 +64,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     // e.g. "#123", which is used to show the current turn
     path += hash;
   }
-  window.history.replaceState({}, "", path);
+  window.history.replaceState(undefined, "", path);
 }
 
 export function timerFormatter(totalSeconds: number): string {

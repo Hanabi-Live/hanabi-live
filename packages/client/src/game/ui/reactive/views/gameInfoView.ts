@@ -22,8 +22,12 @@ export function onTurnChanged(data: {
   // Update the "Turn" label.
   globals.elements.turnNumberLabel?.text(friendlyTurn);
 
-  // Update the address bar.
-  setBrowserAddressBarPath(window.location.pathname, `#${friendlyTurn}`);
+  // Update the address bar if we are not in a hypothetical. (The turn number in the hypothetical
+  // will cause bugs if the user refreshes, since the hypothetical turn will not map on to the real
+  // game state.)
+  if (globals.state.replay.hypothetical === null) {
+    setBrowserAddressBarPath(window.location.pathname, `#${friendlyTurn}`);
+  }
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== null) {
