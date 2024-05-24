@@ -465,6 +465,13 @@ function gameReducerFunction(
     cardsReducer(originalDeck, action, gameState, metadata),
   );
 
+  // @ts-expect-error Debugging
+  if (gameState.deck.includes(undefined)) {
+    throw new Error(
+      'The "cardsReducer" function added an undefined element to the deck.',
+    );
+  }
+
   // Resolve the stack direction.
   if (
     action.type === "play" &&
@@ -555,6 +562,13 @@ function gameReducerFunction(
     ),
   );
 
+  // @ts-expect-error Debugging
+  if (gameState.deck.includes(undefined)) {
+    throw new Error(
+      'The "ddaReducer" function added an undefined element to the deck.',
+    );
+  }
+
   // Finally, mark cards as known-trash.
   gameState.deck = castDraft(
     knownTrashReducer(
@@ -565,6 +579,13 @@ function gameReducerFunction(
       variant,
     ),
   );
+
+  // @ts-expect-error Debugging
+  if (gameState.deck.includes(undefined)) {
+    throw new Error(
+      'The "knownTrashReducer" function added an undefined element to the deck.',
+    );
+  }
 }
 
 function cardCycle(
