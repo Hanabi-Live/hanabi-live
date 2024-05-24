@@ -1,6 +1,6 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { CardState, Color } from "@hanabi/game";
+import type { CardState, Color, RankClueNumber } from "@hanabi/game";
 import {
   START_CARD_RANK,
   getAdjustedClueTokens,
@@ -8,10 +8,13 @@ import {
   isAtMaxClueTokens,
   isCardInPlayerHand,
   isCardTouchedByClueColor,
+  isCardTouchedByClueRank,
+  isValidRankClueNumber,
 } from "@hanabi/game";
 import { ActionType } from "../types/ActionType";
 import { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
+import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import { clickRightCheckAddNote } from "./clickNotes";
 import { colorToColorIndex } from "./convert";
@@ -171,13 +174,58 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.altKey &&
     !event.metaKey
   ) {
+    const clueRank = getClueRankForRankClueClick(card.state);
+    if (clueRank === undefined) {
+      return;
+    }
+
     turn.end({
       type: ActionType.RankClue,
       target: card.state.location,
-      value: card.state.rank,
+      value: clueRank,
     });
     return;
   }
 
   clickRightCheckAddNote(event, card, true);
+}
+
+/** A card may be clueable by more than one rank, so we need to figure out which rank to use. */
+function getClueRankForRankClueClick(
+  cardState: CardState,
+): RankClueNumber | undefined {
+  if (cardState.suitIndex === null || cardState.rank === null) {
+    return undefined;
+  }
+
+  const suit = globals.variant.suits[cardState.suitIndex];
+  if (suit === undefined) {
+    return undefined;
+  }
+
+  // If they have clicked on a clue rank button, and that rank touches the card, assume that they
+  // want to use that rank.
+  const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
+  if (
+    clueButton !== null &&
+    clueButton !== undefined &&
+    clueButton instanceof RankButton &&
+    typeof clueButton.clue.value === "number" &&
+    isCardTouchedByClueRank(
+      globals.variant,
+      clueButton.clue.value,
+      cardState.suitIndex,
+      suit,
+      cardState.rank,
+    )
+  ) {
+    return clueButton.clue.value;
+  }
+
+  // Otherwise, assume that they want to use the real rank of the card.
+  if (isValidRankClueNumber(cardState.rank)) {
+    return cardState.rank;
+  }
+
+  return undefined;
 }
