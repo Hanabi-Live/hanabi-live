@@ -18,7 +18,7 @@ import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import type { Variant } from "../interfaces/Variant";
-import { getCardStatus } from "../rules/card";
+import { getCardStatus, isCardCritical } from "../rules/card";
 import { isCardClued } from "../rules/cardState";
 import {
   getAdjustedClueTokens,
@@ -216,10 +216,18 @@ function gameReducerFunction(
       );
 
       const touched = isCardClued(cardState);
+      const critical = isCardCritical(
+        action.suitIndex,
+        action.rank,
+        gameState.deck,
+        gameState.playStackDirections,
+        variant,
+      );
       const text = getDiscardText(
         action,
         slot,
         touched,
+        critical,
         playing,
         shadowing,
         hypothetical,

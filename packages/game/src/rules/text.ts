@@ -208,6 +208,7 @@ export function getDiscardText(
   action: ActionDiscard,
   slot: number | null,
   touched: boolean,
+  critical: boolean,
   playing: boolean,
   shadowing: boolean,
   hypothetical: boolean,
@@ -237,6 +238,9 @@ export function getDiscardText(
   }
   if (action.failed && slot !== null && !touched) {
     suffix = " (blind)";
+  }
+  if (critical) {
+    suffix = " (critical)";
   }
 
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";

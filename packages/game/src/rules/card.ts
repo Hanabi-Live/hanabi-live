@@ -126,13 +126,17 @@ export function getCardStatus(
 }
 
 /** This does not mirror any function on the server. */
-function isCardCritical(
-  suitIndex: SuitIndex,
-  rank: Rank,
+export function isCardCritical(
+  suitIndex: SuitIndex | -1,
+  rank: Rank | -1,
   deck: readonly CardState[],
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
+  if (suitIndex === -1 || rank === -1) {
+    return false;
+  }
+
   // "Up or Down" has some special cases for critical cards.
   if (hasReversedSuits(variant)) {
     return reversibleIsCardCritical(
