@@ -104,7 +104,7 @@ export function end(clientAction: ClientAction): void {
       ...clientAction,
     });
     hideArrowsAndDisableDragging();
-  } else {
+  } else if (globals.lobby.settings.speedrunPreplay) {
     globals.store!.dispatch({
       type: "premove",
       premove: clientAction,
