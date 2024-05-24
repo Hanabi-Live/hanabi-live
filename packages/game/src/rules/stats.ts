@@ -173,8 +173,12 @@ export function getCardsGotten(
 ): number {
   let currentCardsGotten = 0;
 
+  console.log("Debug 1:", deck);
+
   // Go through the deck and count the cards that are gotten.
   for (const cardState of deck) {
+    console.log("Debug 2:", cardState);
+
     if (
       cardState.location === "playStack" ||
       (cardState.location === "discard" &&
