@@ -75,7 +75,7 @@ export function getClueText(
     const slotWord = slots.length === 1 ? "slot" : "slots";
     const slotsText = slots.join("/");
 
-    return `${hypoPrefix}${giver} ${actionName} at ${targetSuffix} ${slotWord} ${slotsText}`;
+    return `${hypoPrefix}${giver} ${actionName} at ${target}${targetSuffix} ${slotWord} ${slotsText}`;
   }
 
   // Handle the default case of a normal clue.
