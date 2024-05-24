@@ -77,11 +77,14 @@ export function onSharedSegmentChanged(
     active: boolean;
     sharedSegment: number | undefined;
     useSharedSegments: boolean | undefined;
+    amLeader: boolean | undefined;
   },
   previousData:
     | {
+        active: boolean;
         sharedSegment: number | undefined;
         useSharedSegments: boolean | undefined;
+        amLeader: boolean | undefined;
       }
     | undefined,
 ): void {
@@ -94,7 +97,7 @@ export function onSharedSegmentChanged(
   }
 
   if (data.useSharedSegments) {
-    if (globals.state.replay.shared!.amLeader) {
+    if (data.amLeader === true && previousData !== undefined) {
       // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,

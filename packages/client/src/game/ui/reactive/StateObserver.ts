@@ -370,6 +370,7 @@ const replayObservers: Subscriptions = [
       active: s.replay.active,
       sharedSegment: s.replay.shared?.segment,
       useSharedSegments: s.replay.shared?.useSharedSegments,
+      amLeader: s.replay.shared?.amLeader,
     }),
     replayView.onSharedSegmentChanged,
   ),
