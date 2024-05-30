@@ -18,7 +18,11 @@ import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import type { Variant } from "../interfaces/Variant";
-import { getCardStatus, isCardCritical } from "../rules/card";
+import {
+  getCardStatus,
+  isCardCritical,
+  isCardNeededForMaxScore,
+} from "../rules/card";
 import { isCardClued } from "../rules/cardState";
 import {
   getAdjustedClueTokens,
@@ -216,13 +220,26 @@ function gameReducerFunction(
       );
 
       const touched = isCardClued(cardState);
-      const critical = isCardCritical(
-        action.suitIndex,
-        action.rank,
-        gameState.deck,
-        gameState.playStackDirections,
-        variant,
-      );
+
+      // We do not want include the "(critical)" text for dead suits.
+      const critical =
+        isCardCritical(
+          action.suitIndex,
+          action.rank,
+          gameState.deck,
+          gameState.playStackDirections,
+          variant,
+        ) &&
+        isCardNeededForMaxScore(
+          action.suitIndex,
+          action.rank,
+          gameState.deck,
+          gameState.playStacks,
+          gameState.playStackDirections,
+          gameState.playStackStarts,
+          variant,
+        );
+
       const text = getDiscardText(
         action,
         slot,

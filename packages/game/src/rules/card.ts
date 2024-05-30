@@ -38,14 +38,18 @@ export function getCardName(
  * maximum score. This mirrors the server function "Card.NeedsToBePlayed()".
  */
 export function isCardNeededForMaxScore(
-  suitIndex: SuitIndex,
-  rank: Rank,
+  suitIndex: SuitIndex | -1,
+  rank: Rank | -1,
   deck: readonly CardState[],
   playStacks: GameState["playStacks"],
   playStackDirections: GameState["playStackDirections"],
   playStackStarts: GameState["playStackStarts"],
   variant: Variant,
 ): boolean {
+  if (suitIndex === -1 || rank === -1) {
+    return false;
+  }
+
   // First, check to see if a copy of this card has already been played.
   const playStack = playStacks[suitIndex];
   if (playStack === undefined) {
