@@ -172,8 +172,27 @@ export function getGameOverText(
   return "Players lose!";
 }
 
+function getPlayerNames(
+  playerIndices: readonly PlayerIndex[] | null,
+  metadata: GameMetadata,
+): string {
+  if (playerIndices === null) {
+    return "The players";
+  }
+
+  const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
+  playerNames.sort();
+
+  if (playerNames.length === 2) {
+    return `${playerNames[0]} and ${playerNames[1]}`;
+  }
+
+  const playerNamesExceptLast = playerNames.slice(0, -1);
+  return `${playerNamesExceptLast.join(", ")}, and ${playerNames.at(-1)}`;
+}
+
 export function getPlayText(
-  action: ActionPlay,
+  action: ActionPlay | ActionDiscard,
   slot: number | null,
   touched: boolean,
   playing: boolean,
@@ -194,14 +213,14 @@ export function getPlayText(
     : getCardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
-
-  let suffix = "";
-  if (!touched) {
-    suffix = " (blind)";
-  }
-
+  const suffix = touched ? "" : " (blind)";
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
-  return `${hypoPrefix}${playerName} plays ${cardName} from ${location}${suffix}`;
+  const playText =
+    action.type === "discard" && action.failed && !cardIsHidden
+      ? "fails to play"
+      : "plays";
+
+  return `${hypoPrefix}${playerName} ${playText} ${cardName} from ${location}${suffix}`;
 }
 
 export function getDiscardText(
@@ -214,37 +233,48 @@ export function getDiscardText(
   hypothetical: boolean,
   metadata: GameMetadata,
 ): string {
+  if (action.failed) {
+    return getPlayText(
+      action,
+      slot,
+      touched,
+      playing,
+      shadowing,
+      hypothetical,
+      metadata,
+    );
+  }
+
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let verb = "discards";
-  if (action.failed) {
-    verb = "fails to play";
-    if (variant.throwItInAHole && (playing || shadowing)) {
-      verb = "plays";
-    }
-  }
+  const cardIsHidden =
+    action.suitIndex === -1 ||
+    action.rank === -1 ||
+    (variant.throwItInAHole && (playing || shadowing));
 
-  const cardName =
-    action.suitIndex === -1 || action.rank === -1
-      ? "a card"
-      : getCardName(action.suitIndex, action.rank, variant);
+  const cardName = cardIsHidden
+    ? "a card"
+    : getCardName(action.suitIndex, action.rank, variant);
 
   const location = slot === null ? "the deck" : `slot #${slot}`;
-
-  let suffix = "";
-  if (action.failed && touched && !variant.throwItInAHole) {
-    suffix = " (clued)";
-  }
-  if (action.failed && slot !== null && !touched) {
-    suffix = " (blind)";
-  }
-  if (critical) {
-    suffix = " (critical)";
-  }
-
+  const suffix = getDiscardTextSuffix(touched, critical);
   const hypoPrefix = hypothetical ? HYPO_PREFIX : "";
-  return `${hypoPrefix}${playerName} ${verb} ${cardName} from ${location}${suffix}`;
+
+  return `${hypoPrefix}${playerName} discards ${cardName} from ${location}${suffix}`;
+}
+
+function getDiscardTextSuffix(touched: boolean, critical: boolean): string {
+  // The critical suffix takes precedence over the clued suffix.
+  if (critical) {
+    return " (critical)";
+  }
+
+  if (touched) {
+    return " (clued)";
+  }
+
+  return "";
 }
 
 export function getPlayerName(
@@ -252,25 +282,6 @@ export function getPlayerName(
   metadata: GameMetadata,
 ): string {
   return metadata.playerNames[playerIndex] ?? "[unknown]";
-}
-
-function getPlayerNames(
-  playerIndices: readonly PlayerIndex[] | null,
-  metadata: GameMetadata,
-): string {
-  if (playerIndices === null) {
-    return "The players";
-  }
-
-  const playerNames = playerIndices.map((i) => getPlayerName(i, metadata));
-  playerNames.sort();
-
-  if (playerNames.length === 2) {
-    return `${playerNames[0]} and ${playerNames[1]}`;
-  }
-
-  const playerNamesExceptLast = playerNames.slice(0, -1);
-  return `${playerNamesExceptLast.join(", ")}, and ${playerNames.at(-1)}`;
 }
 
 export function millisecondsToClockString(milliseconds: number): string {
