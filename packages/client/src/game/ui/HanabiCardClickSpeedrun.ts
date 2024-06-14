@@ -1,6 +1,6 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { CardState, Color, RankClueNumber } from "@hanabi/game";
+import type { CardState, Color, RankClueNumber, Variant } from "@hanabi/game";
 import {
   START_CARD_RANK,
   getAdjustedClueTokens,
@@ -72,8 +72,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     typeof card.state.location === "number"
   ) {
-    const clueColor = getColorForSpeedrunClue(card.state);
-    console.log("XXXXXXXXXXXXXXXXXXXX", clueColor);
+    const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
     if (clueColor === undefined) {
       return;
     }
@@ -92,7 +91,10 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 }
 
 /** A card may be clueable by more than one color, so we need to figure out which color to use. */
-function getColorForSpeedrunClue(cardState: CardState): Color | undefined {
+function getColorForSpeedrunClue(
+  cardState: CardState,
+  variant: Variant,
+): Color | undefined {
   if (cardState.suitIndex === null || cardState.rank === null) {
     return undefined;
   }
@@ -127,6 +129,9 @@ function getColorForSpeedrunClue(cardState: CardState): Color | undefined {
   }
 
   // Handle the cases where the "suit.clueColors" array is empty.
+  if (suit.allClueColors) {
+    return variant.suits[0];
+  }
   if (suit.prism) {
     return getColorForPrismCard(globals.variant, cardState.rank);
   }

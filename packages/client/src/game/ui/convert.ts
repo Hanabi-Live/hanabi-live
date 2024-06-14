@@ -18,6 +18,13 @@ export function colorToColorIndex(
   color: Color,
   variant: Variant,
 ): ColorIndex | undefined {
-  const colorIndex = variant.clueColors.indexOf(color);
-  return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
+  // We can't use `variant.clueColors.indexOf` directly because the `Suit` objects may not match
+  // exactly in some contexts.
+  for (const [i, variantColor] of variant.clueColors.entries()) {
+    if (variantColor.name === color.name) {
+      return i as ColorIndex;
+    }
+  }
+
+  return undefined;
 }
