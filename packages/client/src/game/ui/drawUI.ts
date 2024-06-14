@@ -2526,5 +2526,3 @@ function lobbyButtonClick(this: Button) {
 
   backToLobby();
 }
-
-console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXX");

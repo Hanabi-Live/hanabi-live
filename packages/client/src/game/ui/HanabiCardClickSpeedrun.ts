@@ -72,7 +72,8 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     !event.metaKey &&
     typeof card.state.location === "number"
   ) {
-    const clueColor = getClueColorForColorClueClick(card.state);
+    const clueColor = getColorForSpeedrunClue(card.state);
+    console.log("XXXXXXXXXXXXXXXXXXXX", clueColor);
     if (clueColor === undefined) {
       return;
     }
@@ -91,9 +92,7 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 }
 
 /** A card may be clueable by more than one color, so we need to figure out which color to use. */
-function getClueColorForColorClueClick(
-  cardState: CardState,
-): Color | undefined {
+function getColorForSpeedrunClue(cardState: CardState): Color | undefined {
   if (cardState.suitIndex === null || cardState.rank === null) {
     return undefined;
   }
@@ -174,7 +173,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     !event.altKey &&
     !event.metaKey
   ) {
-    const clueRank = getClueRankForRankClueClick(card.state);
+    const clueRank = getRankForSpeedrunClue(card.state);
     if (clueRank === undefined) {
       return;
     }
@@ -191,7 +190,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 }
 
 /** A card may be clueable by more than one rank, so we need to figure out which rank to use. */
-function getClueRankForRankClueClick(
+function getRankForSpeedrunClue(
   cardState: CardState,
 ): RankClueNumber | undefined {
   if (cardState.suitIndex === null || cardState.rank === null) {
