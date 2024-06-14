@@ -11,7 +11,9 @@ import {
   isCardTouchedByClueRank,
   isValidRankClueNumber,
 } from "@hanabi/game";
+import * as sounds from "../../sounds";
 import { ActionType } from "../types/ActionType";
+import { SoundType } from "../types/SoundType";
 import { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
 import { RankButton } from "./RankButton";
@@ -150,6 +152,8 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     if (
       isAtMaxClueTokens(globals.state.ongoingGame.clueTokens, globals.variant)
     ) {
+      sounds.play(SoundType.Error);
+      globals.elements.cluesNumberLabelPulse!.play();
       return;
     }
 
