@@ -35,10 +35,8 @@ export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
   }
 
   if (event.button === 0) {
-    // Left-click
     clickLeft(card, event);
   } else if (event.button === 2) {
-    // Right-click
     clickRight(card, event);
   }
 }
