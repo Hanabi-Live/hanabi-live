@@ -57,12 +57,16 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Automatically join a pre-game if we are using a "/pre-game/123" URL.
   const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
   if (preGameMatch !== null) {
-    // The server expects the game ID as an integer.
-    const tableID = parseIntSafe(preGameMatch[1]!);
-    globals.conn!.send("tableJoin", {
-      tableID,
-    });
-    return;
+    const tableIDString = preGameMatch[1];
+    if (tableIDString !== undefined) {
+      const tableID = parseIntSafe(tableIDString);
+      if (tableID !== undefined && tableID > 0) {
+        globals.conn!.send("tableJoin", {
+          tableID,
+        });
+        return;
+      }
+    }
   }
 
   // Automatically spectate a game if we are using a "/game/123" URL. We can also shadow a player in
@@ -71,14 +75,33 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // tried to join it.)
   const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
   if (gameMatch !== null) {
-    const tableID = parseIntSafe(gameMatch[1]!); // The server expects the game ID as an integer.
-    const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
-    const shadowID = shadowMatch === null ? -1 : parseIntSafe(shadowMatch[1]!); // The server expects the game ID as an integer.
-    globals.conn!.send("tableSpectate", {
-      tableID,
-      shadowingPlayerIndex: shadowID,
-    });
-    return;
+    const tableIDString = gameMatch[1];
+    if (tableIDString !== undefined) {
+      const tableID = parseIntSafe(tableIDString);
+      if (tableID !== undefined && tableID > 0) {
+        const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
+        let shadowingPlayerIndex = -1;
+        if (shadowMatch !== null) {
+          const shadowingPlayerIndexString = shadowMatch[1];
+          if (shadowingPlayerIndexString !== undefined) {
+            const shadowingPlayerIndexInt = parseIntSafe(
+              shadowingPlayerIndexString,
+            );
+            if (
+              shadowingPlayerIndexInt !== undefined &&
+              shadowingPlayerIndex >= 0
+            ) {
+              shadowingPlayerIndex = shadowingPlayerIndexInt;
+            }
+          }
+        }
+        globals.conn!.send("tableSpectate", {
+          tableID,
+          shadowingPlayerIndex,
+        });
+        return;
+      }
+    }
   }
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
@@ -86,18 +109,22 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     window.location.pathname,
   );
   if (replayMatch !== null) {
-    const visibility = window.location.pathname.includes("shared-")
-      ? "shared"
-      : "solo";
-    // The server expects the game ID as an integer.
-    const databaseID = parseIntSafe(replayMatch[1]!);
-    globals.conn!.send("replayCreate", {
-      databaseID,
-      source: "id",
-      visibility,
-      shadowingPlayerIndex: -1,
-    });
-    return;
+    const databaseIDString = replayMatch[1];
+    if (databaseIDString !== undefined) {
+      const databaseID = parseIntSafe(databaseIDString);
+      if (databaseID !== undefined && databaseID > 0) {
+        const visibility = window.location.pathname.includes("shared-")
+          ? "shared"
+          : "solo";
+        globals.conn!.send("replayCreate", {
+          databaseID,
+          source: "id",
+          visibility,
+          shadowingPlayerIndex: -1,
+        });
+        return;
+      }
+    }
   }
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
@@ -106,36 +133,43 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     window.location.pathname,
   );
   if (replayJSONMatch !== null) {
-    const visibility = window.location.pathname.includes("shared-")
-      ? "solo"
-      : "shared";
-    // The server expects the uncompressed JSON.
-    const gameJSONString = expand(replayJSONMatch[1]!);
-    if (gameJSONString === undefined) {
-      setBrowserAddressBarPath("/lobby");
+    const gameJSONStringCompressed = replayJSONMatch[1];
+    if (gameJSONStringCompressed !== undefined) {
+      // The server expects the uncompressed JSON.
+      const gameJSONString = expand(gameJSONStringCompressed);
+      if (gameJSONString === undefined) {
+        setBrowserAddressBarPath("/lobby");
+        return;
+      }
+
+      let gameJSON: GameJSON;
+      try {
+        gameJSON = JSON.parse(gameJSONString) as GameJSON;
+      } catch {
+        setBrowserAddressBarPath("/lobby");
+        return;
+      }
+      if (typeof gameJSON !== "object") {
+        setBrowserAddressBarPath("/lobby");
+        return;
+      }
+
+      const visibility = window.location.pathname.includes("shared-")
+        ? "solo"
+        : "shared";
+
+      const source = "json";
+      localStorage.setItem("watchReplayJSON", gameJSONString);
+      localStorage.setItem("watchReplayVisibility", visibility);
+
+      globals.conn!.send("replayCreate", {
+        source,
+        gameJSON,
+        visibility,
+        shadowingPlayerIndex: -1,
+      });
       return;
     }
-    let gameJSON: GameJSON;
-    try {
-      gameJSON = JSON.parse(gameJSONString) as GameJSON;
-    } catch {
-      setBrowserAddressBarPath("/lobby");
-      return;
-    }
-    if (typeof gameJSON !== "object") {
-      setBrowserAddressBarPath("/lobby");
-      return;
-    }
-    const source = "json";
-    localStorage.setItem("watchReplayJSON", gameJSONString);
-    localStorage.setItem("watchReplayVisibility", visibility);
-    globals.conn!.send("replayCreate", {
-      source,
-      gameJSON,
-      visibility,
-      shadowingPlayerIndex: -1,
-    });
-    return;
   }
 
   // Otherwise, we will stay in the lobby.
