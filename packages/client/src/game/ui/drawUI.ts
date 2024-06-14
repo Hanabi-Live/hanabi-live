@@ -10,7 +10,6 @@ import type {
 import { getTotalCardsInDeck, newColorClue, newRankClue } from "@hanabi/game";
 import { assertDefined, eRange, repeat } from "isaacscript-common-ts";
 import Konva from "konva";
-import * as debug from "../../debug";
 import * as modals from "../../modals";
 import { getHTMLElement } from "../../utils";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
@@ -531,10 +530,7 @@ function drawBottomLeftButtons() {
   });
   globals.layers.UI.add(restartButton as unknown as Konva.Group);
   restartButton.on("click tap", () => {
-    if (
-      globals.options.speedrun ||
-      debug.amTestUser(globals.metadata.ourUsername)
-    ) {
+    if (globals.options.speedrun) {
       globals.lobby.conn!.send("tableRestart", {
         tableID: globals.lobby.tableID,
         hidePregame: true,
