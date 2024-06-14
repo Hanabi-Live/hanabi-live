@@ -520,7 +520,7 @@ function drawBottomLeftButtons() {
   initKonvaTooltips(replayButton, true, false);
   globals.elements.replayButton = replayButton;
 
-  // The restart button (to go into a new game with the same settings as the current shared replay).
+  // The restart button (to bring up the restart menu).
   const restartButton = new Button({
     x: bottomLeftButtonValues.x * winW,
     y: bottomLeftButtonValues.y * winH,
