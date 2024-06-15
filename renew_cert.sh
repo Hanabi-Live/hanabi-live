@@ -26,5 +26,8 @@ certbot renew --webroot --webroot-path "$DIR/letsencrypt"
 CERT_HASH_AFTER=$(md5sum $TLS_CERT_FILE | awk '{ print $1 }')
 
 if [[ "$CERT_HASH_BEFORE" != "$CERT_HASH_AFTER" ]]; then
+  echo "The certificate has changed. Gracefully restarting the server."
   bash "$DIR/admin/gracefulRestart.sh"
+else
+  echo "The certificate has not changed."
 fi
