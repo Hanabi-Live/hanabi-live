@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail # Exit on errors and undefined variables.
+
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -12,7 +14,7 @@ REPO_NAME="$(basename "$DIR")"
 # (If it does not exist, Supervisor will fail to start the service.)
 mkdir -p "$DIR/logs"
 
-"$DIR/server/build_server.sh"
+bash "$DIR/server/build_server.sh"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi
