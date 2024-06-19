@@ -151,7 +151,7 @@ export function tablesDraw(): void {
       const span = $("<span>").html(player);
       if (player === globals.username) {
         span.addClass("name-me");
-      } else if (globals.friends.includes(player)) {
+      } else if (globals.friends.includes(player) && !table.sharedReplay) {
         span.addClass("friend");
       }
       if (!table.joined && !table.sharedReplay) {
