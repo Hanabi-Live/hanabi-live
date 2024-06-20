@@ -6,7 +6,11 @@ import {
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi/game";
-import { assertDefined, eRange } from "isaacscript-common-ts";
+import {
+  SECOND_IN_MILLISECONDS,
+  assertDefined,
+  eRange,
+} from "isaacscript-common-ts";
 import { ActionType } from "../types/ActionType";
 import type {
   ClientActionColorClue,
@@ -228,15 +232,22 @@ function shouldGiveClue() {
     globals.state.replay.hypothetical === null
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
+  const ourTurn =
+    currentPlayerIndex === ourPlayerIndex ||
+    globals.state.replay.hypothetical !== null;
+  const clueTokenAvailable =
+    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant);
+  const recentlyClicked =
+    Date.now() - globals.UIClickTime <= SECOND_IN_MILLISECONDS;
 
   return (
     // We can only give clues on our turn.
-    (currentPlayerIndex === ourPlayerIndex ||
-      globals.state.replay.hypothetical !== null) &&
+    ourTurn &&
     // We can only give a clue if there is a clue token available.
-    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant) &&
+    clueTokenAvailable &&
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
     globals.elements.giveClueButton!.enabled &&
-    Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue.
+    // Prevent the user from accidentally giving a clue.
+    !recentlyClicked
   );
 }

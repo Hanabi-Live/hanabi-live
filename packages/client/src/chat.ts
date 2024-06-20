@@ -3,7 +3,11 @@
 
 import type { ServerCommandChatData } from "@hanabi/data";
 import { PROJECT_NAME } from "@hanabi/data";
-import { eRange, trimPrefix } from "isaacscript-common-ts";
+import {
+  SECOND_IN_MILLISECONDS,
+  eRange,
+  trimPrefix,
+} from "isaacscript-common-ts";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { globals } from "./Globals";
@@ -99,7 +103,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
   // the server with more than one message a second.)
   if (this.id !== "lobby-chat-input") {
     const datetimeNow = Date.now();
-    if (datetimeNow - datetimeLastChatInput >= 1000) {
+    if (datetimeNow - datetimeLastChatInput >= SECOND_IN_MILLISECONDS) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {
         tableID: globals.tableID,

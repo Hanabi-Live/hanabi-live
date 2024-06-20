@@ -1,5 +1,5 @@
 import type { Tuple } from "isaacscript-common-ts";
-import { assertDefined } from "isaacscript-common-ts";
+import { SECOND_IN_MILLISECONDS, assertDefined } from "isaacscript-common-ts";
 import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
@@ -287,8 +287,11 @@ export function getPlayerName(
 export function millisecondsToClockString(milliseconds: number): string {
   // Non timed games measure time in negative values.
   const time = Math.abs(milliseconds);
-  const seconds = Math.ceil(time / 1000);
-  return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
+  const seconds = Math.ceil(time / SECOND_IN_MILLISECONDS);
+  const minutes = Math.floor(seconds / 60);
+  const paddedSeconds = pad2(seconds % 60);
+
+  return `${minutes}:${paddedSeconds}`;
 }
 
 function pad2(num: number) {

@@ -1,3 +1,4 @@
+import { MINUTE_IN_MILLISECONDS } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 
 // Constants
@@ -6,7 +7,7 @@ const minutesToTriggerIdle = 15;
 // From: https://stackoverflow.com/questions/667555/how-to-detect-idle-time-in-javascript-elegantly
 export function lobbyIdleInit(): void {
   // Increment the global idle variable every minute.
-  setInterval(timerIncrement, 60_000); // 1 minute
+  setInterval(timerIncrement, MINUTE_IN_MILLISECONDS);
 
   // Zero the idle timer on mouse movement or keyboard inputs.
   $(document).mousemove(mousemoveOrKeypress);

@@ -2,7 +2,11 @@
 
 import type { ServerCommandTableData } from "@hanabi/data";
 import { MAX_PLAYERS } from "@hanabi/game";
-import { assertDefined, iRange } from "isaacscript-common-ts";
+import {
+  SECOND_IN_MILLISECONDS,
+  assertDefined,
+  iRange,
+} from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -331,5 +335,5 @@ function copyURLToClipboard(path: string, selector: string) {
   tooltips.openInstance(selector);
   setTimeout(() => {
     tooltips.closeInstance(selector);
-  }, 1000); // 1 second
+  }, SECOND_IN_MILLISECONDS);
 }
