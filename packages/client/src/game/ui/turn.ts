@@ -90,10 +90,6 @@ export function resetSelectedClue(): void {
 }
 
 export function end(clientAction: ClientAction): void {
-  globals.elements.clueArea!.hide();
-  globals.elements.waitingOnServer!.show();
-  globals.elements.waitingOnServerAnimation!.start();
-
   if (globals.state.replay.hypothetical !== null) {
     hypothetical.sendHypotheticalAction(clientAction);
     return;
@@ -101,19 +97,30 @@ export function end(clientAction: ClientAction): void {
 
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
+
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
+    showWaitingOnServerAnimation();
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       ...clientAction,
     });
     hideArrowsAndDisableDragging();
-  } else if (globals.lobby.settings.speedrunPreplay) {
+    return;
+  }
+
+  if (globals.lobby.settings.speedrunPreplay) {
     globals.store!.dispatch({
       type: "premove",
       premove: clientAction,
     });
   }
+}
+
+function showWaitingOnServerAnimation() {
+  globals.elements.clueArea!.hide();
+  globals.elements.waitingOnServer!.show();
+  globals.elements.waitingOnServerAnimation!.start();
 }
 
 export function hideArrowsAndDisableDragging(): void {
