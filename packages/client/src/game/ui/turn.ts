@@ -99,13 +99,13 @@ export function end(clientAction: ClientAction): void {
   const { ourPlayerIndex } = globals.metadata;
 
   if (currentPlayerIndex === ourPlayerIndex) {
-    replay.exit(); // Close the in-game replay if we preplayed a card in the replay
+    replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
+    hideArrowsAndDisableDragging();
     showWaitingOnServerAnimation();
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       ...clientAction,
     });
-    hideArrowsAndDisableDragging();
     return;
   }
 
@@ -117,8 +117,10 @@ export function end(clientAction: ClientAction): void {
   }
 }
 
-function showWaitingOnServerAnimation() {
+export function showWaitingOnServerAnimation(): void {
   globals.elements.clueArea!.hide();
+  globals.elements.hypoButtonsArea!.hide();
+
   globals.elements.waitingOnServer!.show();
   globals.elements.waitingOnServerAnimation!.start();
 }

@@ -19,6 +19,7 @@ import { setEmpathyOnHand } from "./HanabiCardMouse";
 import { globals } from "./UIGlobals";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
+import { showWaitingOnServerAnimation } from "./turn";
 
 export function startHypothetical(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -72,7 +73,7 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
     return;
   }
 
-  let type: string;
+  let type: "play" | "discard" | "clue";
   switch (hypoAction.type) {
     case ActionType.Play: {
       type = "play";
@@ -191,10 +192,6 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
 
       break;
     }
-
-    default: {
-      throw new Error(`Unknown hypothetical type of: ${type}`);
-    }
   }
 
   // Finally, send a turn action. Even though this action is unnecessary from the point of the
@@ -238,6 +235,8 @@ export function sendHypotheticalActionToServer(
       action: hypoAction,
     });
   } else {
+    showWaitingOnServerAnimation();
+
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoAction,

@@ -66,6 +66,7 @@ export function shouldShowHypoControls(state: State): boolean {
 
 export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
   globals.elements.hypoButtonsArea?.visible(shouldShow);
+
   if (shouldShow) {
     // The lower part of the clue area and the "no clues" indicators slide left during
     // hypotheticals.
@@ -75,6 +76,7 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
     globals.elements.lowerClueArea?.setCenter();
     globals.elements.clueAreaDisabled?.setCenter();
   }
+
   // We might need to change the draggable property of a hand.
   checkSetDraggableAllHands();
   globals.layers.UI.batchDraw();
@@ -112,9 +114,15 @@ export function onActiveOrAmLeaderChanged(data: {
   globals.layers.UI.batchDraw();
 }
 
-// Either we have entered a hypothetical, gone forward one action in a hypothetical, or gone back
-// one action in a hypothetical. Prepare the UI elements for the new turn.
+/**
+ * Either we have entered a hypothetical, gone forward one action in a hypothetical, or gone back
+ * one action in a hypothetical. Prepare the UI elements for the new turn.
+ */
 export function onStatesLengthChanged(): void {
+  globals.elements.waitingOnServer!.hide();
+  globals.elements.waitingOnServerAnimation!.stop();
+  globals.elements.hypoButtonsArea!.show();
+
   turn.resetSelectedClue();
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is.
