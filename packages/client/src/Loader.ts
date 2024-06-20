@@ -5,7 +5,7 @@ type FinishedCallback = () => void;
 
 // The list of all game-related images to preload. All of these files should have a ".png"
 // extension.
-const fileIDs = [
+const FILE_IDS = [
   "checkbox-on",
   "checkbox-off",
   "checkbox-on-disabled",
@@ -37,7 +37,7 @@ const fileIDs = [
   "x",
   "wastebasket",
   "wrench",
-];
+] as const;
 
 export class Loader {
   filePathMap = new Map<string, string>();
@@ -49,10 +49,11 @@ export class Loader {
 
   constructor() {
     // Build a map of image identifiers to URL paths.
-    for (const fileID of fileIDs) {
+    for (const fileID of FILE_IDS) {
       this.filePathMap.set(fileID, `/public/img/${fileID}.png`);
     }
-    // This is the only file with a non ".png" extension.
+
+    // Add files to the map that do not have a ".png" extension.
     this.filePathMap.set("background", "/public/img/background.jpg");
 
     this.start();

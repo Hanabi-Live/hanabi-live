@@ -181,15 +181,12 @@ export function give(): void {
     clueOrRankButton === null
   ) {
     // They have not selected a player or a clue type.
-    globals.elements.giveClueButton!.setEnabled(false);
     return;
   }
 
   if (!shouldGiveClue()) {
     return;
   }
-
-  globals.elements.giveClueButton!.setEnabled(false);
 
   switch (clueOrRankButton.clue.type) {
     case ClueType.Color: {

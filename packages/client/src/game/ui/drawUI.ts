@@ -8,7 +8,12 @@ import type {
   SuitIndex,
 } from "@hanabi/game";
 import { getTotalCardsInDeck, newColorClue, newRankClue } from "@hanabi/game";
-import { assertDefined, eRange, repeat } from "isaacscript-common-ts";
+import {
+  SECOND_IN_MILLISECONDS,
+  assertDefined,
+  eRange,
+  repeat,
+} from "isaacscript-common-ts";
 import Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement } from "../../utils";
@@ -1982,7 +1987,11 @@ function drawClueArea() {
 
   globals.layers.UI.add(globals.elements.clueArea);
 
+  // The clue area is disabled when there are 0 clue tokens.
   drawClueAreaDisabled(offsetX);
+
+  // The "waiting" animation that will display until the server acknowledges the player's action.
+  drawClueAreaWaitingForServer();
 }
 
 function rankTextFromVariant(rank: RankClueNumber): string {
@@ -2074,6 +2083,53 @@ function drawClueAreaDisabled(offsetX: number) {
   globals.layers.UI.add(
     globals.elements.clueAreaDisabled as unknown as Konva.Group,
   );
+}
+
+function drawClueAreaWaitingForServer() {
+  const waitingOnServer = new Konva.Group({
+    x: clueAreaValues.x * winW,
+    y: clueAreaValues.y * winH,
+    width: clueAreaValues.w! * winW,
+    height: clueAreaValues.h! * winH,
+    visible: false,
+    listening: false,
+  });
+
+  const blueCircle = new Konva.Circle({
+    x: waitingOnServer.width() / 2,
+    y: waitingOnServer.height() / 2,
+    radius: 50,
+    stroke: "blue",
+    strokeWidth: 5,
+  });
+
+  waitingOnServer.add(blueCircle);
+
+  const redCircle = new Konva.Circle({
+    x: waitingOnServer.width() / 2,
+    y: waitingOnServer.height() / 2,
+    radius: 50,
+    stroke: "red",
+    strokeWidth: 5,
+  });
+
+  waitingOnServer.add(redCircle);
+
+  const period = SECOND_IN_MILLISECONDS;
+  const animation = new Konva.Animation((frame: Konva.Animation["frame"]) => {
+    const scale = (frame.time % period) / period;
+    blueCircle.scale({ x: scale, y: scale });
+    blueCircle.opacity(1 - scale);
+
+    const redScale = ((frame.time + period / 2) % period) / period;
+    redCircle.scale({ x: redScale, y: redScale });
+    redCircle.opacity(1 - redScale);
+  }, globals.layers.UI);
+
+  globals.layers.UI.add(waitingOnServer);
+
+  globals.elements.waitingOnServer = waitingOnServer;
+  globals.elements.waitingOnServerAnimation = animation;
 }
 
 function drawCurrentPlayerArea() {

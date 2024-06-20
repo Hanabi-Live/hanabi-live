@@ -31,6 +31,10 @@ export function shouldShowTurnUI(state: State): boolean {
 
 export function shouldShowTurnUIChanged(shouldShow: boolean): void {
   globals.elements.clueArea?.visible(shouldShow);
+
+  globals.elements.waitingOnServer?.hide();
+  globals.elements.waitingOnServerAnimation?.stop();
+
   globals.layers.UI.batchDraw();
 }
 

@@ -90,6 +90,10 @@ export function resetSelectedClue(): void {
 }
 
 export function end(clientAction: ClientAction): void {
+  globals.elements.clueArea!.hide();
+  globals.elements.waitingOnServer!.show();
+  globals.elements.waitingOnServerAnimation!.start();
+
   if (globals.state.replay.hypothetical !== null) {
     hypothetical.sendHypotheticalAction(clientAction);
     return;

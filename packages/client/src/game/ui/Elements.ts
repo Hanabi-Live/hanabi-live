@@ -37,6 +37,7 @@ export class Elements {
    * in Sudoku variants.
    */
   suitLabelTexts: FitText[] = [];
+
   discardArea: Konva.Rect | null = null;
   discardStacks = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
@@ -100,6 +101,8 @@ export class Elements {
   colorClueButtons: ColorButton[] = [];
   giveClueButton: Button | null = null;
   clueAreaDisabled: SlidableGroup | null = null;
+  waitingOnServer: Konva.Group | null = null;
+  waitingOnServerAnimation: Konva.Animation | null = null;
 
   // The current turn UI.
   currentPlayerArea: CurrentPlayerArea | null = null;
