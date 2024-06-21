@@ -8,6 +8,7 @@ import { getCardOrStackBase } from "../../getCardOrStackBase";
 import { changeStartingHandVisibility } from "../../hypothetical";
 import type { Listener, Selector, Subscription } from "../observeStore";
 import { observeStore } from "../observeStore";
+import { hideWaitingOnServerAnimationInHypo } from "./hypotheticalView";
 
 export function onCardsPossiblyAdded(length: number): void {
   const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
@@ -65,6 +66,7 @@ export function onMorphedIdentitiesChanged(
       }
     | undefined,
 ): void {
+  hideWaitingOnServerAnimationInHypo();
   changeStartingHandVisibility();
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing or entering a hypothetical. Hide the starting player's hand.

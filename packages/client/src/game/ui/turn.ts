@@ -117,9 +117,8 @@ export function end(clientAction: ClientAction): void {
   }
 }
 
-export function showWaitingOnServerAnimation(): void {
+function showWaitingOnServerAnimation() {
   globals.elements.clueArea!.hide();
-  globals.elements.hypoButtonsArea!.hide();
 
   globals.elements.waitingOnServer!.show();
   globals.elements.waitingOnServerAnimation!.start();
