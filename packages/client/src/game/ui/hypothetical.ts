@@ -19,7 +19,6 @@ import { setEmpathyOnHand } from "./HanabiCardMouse";
 import { globals } from "./UIGlobals";
 import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
-import { showWaitingOnServerAnimationInHypo } from "./reactive/views/hypotheticalView";
 
 export function startHypothetical(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -235,8 +234,6 @@ export function sendHypotheticalActionToServer(
       action: hypoAction,
     });
   } else {
-    showWaitingOnServerAnimationInHypo();
-
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoAction,

@@ -119,7 +119,6 @@ export function onActiveOrAmLeaderChanged(data: {
  * one action in a hypothetical. Prepare the UI elements for the new turn.
  */
 export function onStatesLengthChanged(): void {
-  hideWaitingOnServerAnimationInHypo();
   turn.resetSelectedClue();
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is.
@@ -139,28 +138,6 @@ export function onStatesLengthChanged(): void {
 
   // Set the current player's hand to be draggable.
   checkSetDraggableAllHands();
-
-  globals.layers.UI.batchDraw();
-}
-
-export function showWaitingOnServerAnimationInHypo(): void {
-  globals.elements.clueArea!.hide();
-  globals.elements.hypoButtonsArea!.hide();
-
-  globals.elements.waitingOnServer!.show();
-  globals.elements.waitingOnServerAnimation!.start();
-
-  globals.layers.UI.batchDraw();
-}
-
-export function hideWaitingOnServerAnimationInHypo(): void {
-  globals.elements.waitingOnServerAnimation!.stop();
-  globals.elements.waitingOnServer!.hide();
-
-  if (globals.state.replay.hypothetical !== null) {
-    globals.elements.hypoButtonsArea!.show();
-    globals.elements.clueArea!.show();
-  }
 
   globals.layers.UI.batchDraw();
 }
