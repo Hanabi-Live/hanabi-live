@@ -44,11 +44,16 @@ commands.set("error", (data: ServerCommandErrorData) => {
 // Received by the client when a new chat message arrives.
 commands.set("chat", (data: ServerCommandChatData) => {
   chat.add(data, false); // The second argument is "fast".
-  acknowledgeChatRead(data.room);
+  acknowledgeChatRead(data.room, data.recipient);
 });
 
-function acknowledgeChatRead(room: string | undefined) {
-  if (room === undefined || !room.startsWith("table")) {
+function acknowledgeChatRead(
+  room: string | undefined,
+  recipient: string | undefined,
+) {
+  const isPM = recipient !== undefined && recipient !== "";
+  const isTableRoom = room !== undefined && room.startsWith("table");
+  if (!isPM && !isTableRoom) {
     return;
   }
 
