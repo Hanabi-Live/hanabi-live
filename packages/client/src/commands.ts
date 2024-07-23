@@ -53,7 +53,8 @@ function acknowledgeChatRead(
 ) {
   const isPM = recipient !== undefined && recipient !== "";
   const isTableRoom = room !== undefined && room.startsWith("table");
-  if (!isPM && !isTableRoom) {
+  const isLobbyChat = !isPM && !isTableRoom;
+  if (isLobbyChat) {
     return;
   }
 
