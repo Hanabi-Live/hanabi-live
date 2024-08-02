@@ -72,7 +72,7 @@
     "name": "Brown",
     "id": "Br",
     "createVariants": true,
-    "pip": "kanji",
+    "pip": "katakanaNu",
     "noClueRanks": true
   },
   {
@@ -171,7 +171,7 @@
     "abbreviation": "N",
     "createVariants": true,
     "fill": "#271a0c",
-    "pip": "kanji",
+    "pip": "katakanaNu",
     "oneOfEach": true,
     "clueColors": ["Brown"],
     "noClueRanks": true

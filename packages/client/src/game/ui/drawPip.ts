@@ -5,12 +5,14 @@ type DrawFunction = (
   ctx: CanvasRenderingContext2D,
   colors?: readonly string[],
 ) => void;
+
+const SCALE_FACTOR = 3;
+
 const shapeFunctions = new Map<string, DrawFunction>();
-const scaleFactor = 3;
 
 shapeFunctions.set("hanabiRed", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-40.903_844, -80.253_155);
   ctx.moveTo(47.530_531, 88.392_69);
   ctx.bezierCurveTo(
@@ -62,13 +64,13 @@ shapeFunctions.set("hanabiRed", (ctx: CanvasRenderingContext2D) => {
     38.201_088,
     59.405_974,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("hanabiYellow", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-58.029_065, -70.265_748);
   ctx.moveTo(48.471_374, 76.245_007);
   ctx.bezierCurveTo(
@@ -216,13 +218,13 @@ shapeFunctions.set("hanabiYellow", (ctx: CanvasRenderingContext2D) => {
     78.213_916,
     83.017_049,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("hanabiGreen", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-37.891_88, -52.702_171);
   ctx.moveTo(56.910_015, 58.292_302);
   ctx.bezierCurveTo(
@@ -417,13 +419,13 @@ shapeFunctions.set("hanabiGreen", (ctx: CanvasRenderingContext2D) => {
     56.910_015,
     58.292_302,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("hanabiBlue", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-99.694_341, -76.779_331);
   ctx.moveTo(56.910_015, 58.292_302);
   ctx.moveTo(115.297_82, 63.128_745);
@@ -531,14 +533,14 @@ shapeFunctions.set("hanabiBlue", (ctx: CanvasRenderingContext2D) => {
     115.298_22,
     63.130_56,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("hanabiWhite", (ctx: CanvasRenderingContext2D) => {
   ctx.scale(0.25, 0.25);
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-240.369_51, -310.428_58);
   ctx.moveTo(209.327_83, 329.846_36);
   ctx.bezierCurveTo(
@@ -742,14 +744,14 @@ shapeFunctions.set("hanabiWhite", (ctx: CanvasRenderingContext2D) => {
     304.8808,
     333.6619,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
   ctx.scale(4, 4);
 });
 
 shapeFunctions.set("hanabiAltWhite", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-74.155_39, -82.208_377);
   ctx.transform(
     -3.299_668,
@@ -1051,13 +1053,13 @@ shapeFunctions.set("hanabiAltWhite", (ctx: CanvasRenderingContext2D) => {
     23.660_156,
     14.164_062,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("hanabiAltBlue", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-110.389_02, -72.869_975);
   ctx.moveTo(110.591_25, 92.432_703);
   ctx.bezierCurveTo(
@@ -1316,14 +1318,14 @@ shapeFunctions.set("hanabiAltBlue", (ctx: CanvasRenderingContext2D) => {
     110.591_46,
     92.432_703,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("moon", (ctx: CanvasRenderingContext2D) => {
   ctx.scale(0.25, 0.25);
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.translate(-414.893_82, -203.536_19);
   ctx.moveTo(374.946_29, 141.086_53);
   ctx.bezierCurveTo(
@@ -1390,7 +1392,7 @@ shapeFunctions.set("moon", (ctx: CanvasRenderingContext2D) => {
     374.943_62,
     141.0852,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
   ctx.scale(4, 4);
 });
@@ -1399,7 +1401,7 @@ shapeFunctions.set("hashtag", (ctx: CanvasRenderingContext2D) => {
   ctx.translate(0, 6);
   ctx.scale(1 / 3, 1 / 3);
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.moveTo(66.660_601, 59.539_431);
   ctx.moveTo(-15.043_961, -67.114_874);
   ctx.bezierCurveTo(
@@ -1755,14 +1757,14 @@ shapeFunctions.set("hashtag", (ctx: CanvasRenderingContext2D) => {
     -9.834_935,
     -22.679_328,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
   ctx.scale(3, 3);
 });
 
-shapeFunctions.set("kanji", (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set("katakanaNu", (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.transform(1, 0, 0, 1, -9.007_581, -241.9803);
   ctx.moveTo(-3, 222);
   ctx.bezierCurveTo(
@@ -1949,14 +1951,14 @@ shapeFunctions.set("kanji", (ctx: CanvasRenderingContext2D) => {
     -3.199_645,
     221.202_73,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });
 
 shapeFunctions.set("emptySet", (ctx: CanvasRenderingContext2D) => {
   ctx.scale(2 / 7, 2 / 7);
   ctx.beginPath();
-  ctx.scale(scaleFactor, scaleFactor);
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   ctx.moveTo(18.066_96, -33.593_032);
   ctx.bezierCurveTo(
     17.937_116,
@@ -2240,9 +2242,8 @@ shapeFunctions.set("emptySet", (ctx: CanvasRenderingContext2D) => {
     -70.961_668,
     72.098_364,
   );
-  ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
-  ctx.scale(3.5, 3.5);
 });
 
 shapeFunctions.set(
@@ -2250,7 +2251,7 @@ shapeFunctions.set(
   (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
     ctx.scale(1.2, 1.2);
     ctx.beginPath();
-    ctx.scale(scaleFactor, scaleFactor);
+    ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
     ctx.translate(-91.082_135, -80.110_718);
     ctx.transform(2.128_652, 0, 0, 2.476_848, -78.229_708, -213.117_53);
     ctx.moveTo(84.443_554, 124.560_58);
@@ -2361,7 +2362,7 @@ shapeFunctions.set(
       120.896_22,
     );
     ctx.transform(1 / 2.128_652, 0, 0, 1 / 2.476_848, 0, 0);
-    ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+    ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
     ctx.closePath();
     ctx.scale(5 / 6, 5 / 6);
     if (colors !== undefined) {
@@ -2379,7 +2380,7 @@ shapeFunctions.set(
 shapeFunctions.set(
   "rainbow",
   (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
-    ctx.scale(scaleFactor, scaleFactor);
+    ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
     ctx.translate(-122.267_24, -111.175_04);
 
     // Yellow
@@ -3339,7 +3340,7 @@ shapeFunctions.set(
       111.197_17,
     );
     ctx.closePath();
-    ctx.scale(1 / scaleFactor, 1 / scaleFactor);
+    ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   },
 );
 
