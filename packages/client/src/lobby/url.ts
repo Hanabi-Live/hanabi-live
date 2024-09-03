@@ -64,7 +64,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
         const password = localStorage.getItem("joinTablePassword");
         globals.conn!.send("tableJoin", {
           tableID,
-          password
+          password,
         });
         return;
       }
