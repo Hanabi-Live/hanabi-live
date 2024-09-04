@@ -61,8 +61,12 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     if (tableIDString !== undefined) {
       const tableID = parseIntSafe(tableIDString);
       if (tableID !== undefined && tableID > 0) {
+        // Here we unconditionally send password from cookies. If the game has no password, the
+        // server will ignore it.
+        const password = localStorage.getItem("joinTablePassword");
         globals.conn!.send("tableJoin", {
           tableID,
+          password,
         });
         return;
       }
