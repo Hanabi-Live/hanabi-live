@@ -17026,5 +17026,17 @@
     "name": "Sudoku & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
     "sudoku": true
+  },
+  {
+    "id": 2127,
+    "newID": "R+Y+G+B+P+Inv",
+    "name": "Inverted (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Inverted"]
+  },
+  {
+    "id": 2128,
+    "newID": "R+Y+G+B+Inv",
+    "name": "Inverted (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Inverted"]
   }
 ]
