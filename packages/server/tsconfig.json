@@ -1,19 +1,9 @@
-// The configuration file for TypeScript.
 {
-  "$schema": "https://raw.githubusercontent.com/IsaacScript/isaacscript/main/packages/isaacscript-cli/schemas/tsconfig-strict-schema.json",
+  "$schema": "https://raw.githubusercontent.com/complete-ts/complete/main/packages/complete-tsconfig/schemas/tsconfig-strict-schema.json",
 
   "extends": [
-    // We extend the TypeScript config for the monorepo.
-    "../../tsconfig.json",
-
-    // We also extend the recommended Node.js config:
-    // https://github.com/tsconfig/bases/blob/main/bases/node-lts.json
-    "@tsconfig/node-lts/tsconfig.json",
+    "complete-tsconfig/tsconfig.base.json",
+    "../../tsconfig.monorepo.json",
+    "complete-tsconfig/tsconfig.node.json",
   ],
-
-  "compilerOptions": {
-    "outDir": "dist",
-  },
-
-  "include": ["./src/**/*.ts"],
 }

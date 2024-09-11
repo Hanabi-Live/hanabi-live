@@ -1,6 +1,6 @@
 import type { NumPlayers } from "@hanabi/game";
 import { PaceRisk, getEfficiency } from "@hanabi/game";
-import { assertNotNull } from "isaacscript-common-ts";
+import { assertNotNull } from "complete-common";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";

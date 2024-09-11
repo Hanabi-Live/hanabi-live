@@ -10,4 +10,5 @@ export const httpLoginData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HTTPLoginData extends z.infer<typeof httpLoginData> {}

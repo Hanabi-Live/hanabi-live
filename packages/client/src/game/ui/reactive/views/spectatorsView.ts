@@ -1,5 +1,5 @@
 import type { Spectator } from "@hanabi/data";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import * as tooltips from "../../../../tooltips";
 import { globals } from "../../UIGlobals";
 

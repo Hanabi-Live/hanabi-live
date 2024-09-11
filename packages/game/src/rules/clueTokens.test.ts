@@ -1,4 +1,4 @@
-import { eRange } from "isaacscript-common-ts";
+import { eRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { getDefaultVariant, getVariant } from "../gameData";
 import { discard, play } from "../testActions";

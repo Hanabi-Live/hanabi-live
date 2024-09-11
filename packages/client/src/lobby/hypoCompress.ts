@@ -6,7 +6,7 @@ import {
   getVariant,
   getVariantByID,
 } from "@hanabi/game";
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe } from "complete-common";
 import { isEqual } from "lodash";
 
 interface DeckCard {

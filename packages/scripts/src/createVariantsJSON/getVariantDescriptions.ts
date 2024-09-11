@@ -21,15 +21,15 @@ import {
   getStartingPace,
   getTotalCardsInDeck,
 } from "@hanabi/game";
-import type { Subtract } from "isaacscript-common-ts";
-import { ReadonlySet } from "isaacscript-common-ts";
+import type { Subtract } from "complete-common";
+import { ReadonlySet } from "complete-common";
 
 type BasicVariantSuits = ReturnType<typeof getBasicVariantSuits>;
 
 const STANDARD_VARIANT_SUIT_AMOUNTS = [6, 5, 4, 3] as const;
 const SPECIAL_RANKS_TO_USE = [1, 5] as const;
-const MAX_ALLOWED_EFFICIENCY_THRESHOLD = 1.79 as const;
-const MINIMUM_CARD_COUNT = 25 as const;
+const MAX_ALLOWED_EFFICIENCY_THRESHOLD = 1.79;
+const MINIMUM_CARD_COUNT = 25;
 
 /** These are suit properties that are transferred to special ranks. */
 const SUIT_SPECIAL_PROPERTIES = [
@@ -1023,7 +1023,8 @@ function getReversedVariants(
     const variantSuits = [...basicSuits];
 
     // Change the final suit to be a reversed suit.
-    variantSuits[variantSuits.length - 1] += SUIT_REVERSED_SUFFIX;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, unicorn/prefer-at
+    variantSuits[variantSuits.length - 1]! += SUIT_REVERSED_SUFFIX;
 
     variantDescriptions.push({
       name: variantName,

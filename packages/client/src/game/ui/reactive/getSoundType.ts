@@ -1,7 +1,4 @@
 import type {
-  ActionClue,
-  ActionDiscard,
-  ActionGameOver,
   ActionPlay,
   CardState,
   GameAction,
@@ -17,7 +14,7 @@ import {
   isCardClued,
   isHandLocked,
 } from "@hanabi/game";
-import { includes } from "isaacscript-common-ts";
+import { includes } from "complete-common";
 import { SoundType } from "../../types/SoundType";
 
 export const SOUND_TYPE_ACTIONS = [
@@ -57,15 +54,11 @@ export function getSoundType(
     return standardSoundType;
   }
 
-  const actionType = action.type as (typeof SOUND_TYPE_ACTIONS)[number];
-
-  switch (actionType) {
+  switch (action.type) {
     case "clue": {
-      const actionClue = action as ActionClue;
-
       if (metadata.options.detrimentalCharacters) {
         const giverCharacterName = getCharacterNameForPlayer(
-          actionClue.giver,
+          action.giver,
           metadata.characterAssignments,
         );
 
@@ -75,7 +68,7 @@ export function getSoundType(
       }
 
       if (variant.cowAndPig) {
-        switch (actionClue.clue.type) {
+        switch (action.clue.type) {
           case ClueType.Color: {
             return SoundType.Moo;
           }
@@ -94,9 +87,7 @@ export function getSoundType(
     }
 
     case "discard": {
-      const actionDiscard = action as ActionDiscard;
-
-      if (actionDiscard.failed) {
+      if (action.failed) {
         return gameState.stats.numSubsequentMisplays === 2
           ? SoundType.Fail2
           : SoundType.Fail1;
@@ -109,14 +100,14 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const previousCardState = previousGameState.deck[actionDiscard.order];
+      const previousCardState = previousGameState.deck[action.order];
       const touchedBeforeDiscarding =
         previousCardState !== undefined && isCardClued(previousCardState);
       if (touchedBeforeDiscarding) {
         return SoundType.DiscardClued;
       }
 
-      const nextPlayerHand = gameState.hands[actionDiscard.playerIndex];
+      const nextPlayerHand = gameState.hands[action.playerIndex];
       if (
         nextPlayerHand !== undefined &&
         !isHandLocked(nextPlayerHand, gameState.deck) &&
@@ -148,9 +139,7 @@ export function getSoundType(
     }
 
     case "gameOver": {
-      const actionGameOver = action as ActionGameOver;
-
-      if (actionGameOver.endCondition > EndCondition.Normal) {
+      if (action.endCondition > EndCondition.Normal) {
         return SoundType.FinishedFail;
       }
 
@@ -162,8 +151,6 @@ export function getSoundType(
     }
 
     case "play": {
-      const actionPlay = action as ActionPlay;
-
       if (
         gameState.stats.maxScore < previousGameState.stats.maxScore &&
         !variant.throwItInAHole
@@ -171,7 +158,7 @@ export function getSoundType(
         return SoundType.Sad;
       }
 
-      const cardState = gameState.deck[actionPlay.order];
+      const cardState = gameState.deck[action.order];
       const touched = cardState !== undefined && isCardClued(cardState);
       if (!touched) {
         switch (gameState.stats.numSubsequentBlindPlays) {
@@ -211,7 +198,7 @@ export function getSoundType(
         }
       }
 
-      if (isOrderChopMove(previousGameState, gameState, actionPlay, metadata)) {
+      if (isOrderChopMove(previousGameState, gameState, action, metadata)) {
         return SoundType.OrderChopMove;
       }
 

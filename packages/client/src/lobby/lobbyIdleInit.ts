@@ -1,4 +1,4 @@
-import { MINUTE_IN_MILLISECONDS } from "isaacscript-common-ts";
+import { MINUTE_IN_MILLISECONDS } from "complete-common";
 import { globals } from "../Globals";
 
 // Constants

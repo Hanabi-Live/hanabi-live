@@ -56,7 +56,7 @@ export async function getRedisTablesWithUser(
 
   // We want to avoid converting the object values to an array, so we iterate with the `in`
   // operator.
-  // eslint-disable-next-line isaacscript/no-for-in
+  // eslint-disable-next-line complete/no-for-in
   for (const tableIDString in tablesHash) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const tableJSON = tablesHash[tableIDString]!;

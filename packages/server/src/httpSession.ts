@@ -1,8 +1,15 @@
+import type { SessionData } from "@fastify/secure-session";
 import type { UserID } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
 
-interface HTTPSessionData {
-  userID?: UserID;
+/**
+ * @see https://github.com/fastify/fastify-secure-session?tab=readme-ov-file#add-typescript-types
+ */
+declare module "@fastify/secure-session" {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  interface SessionData {
+    userID?: UserID;
+  }
 }
 
 /** Delete the session cookie server-side (which will invalidate the cookie going forward). */
@@ -10,19 +17,17 @@ export function deleteCookie(request: FastifyRequest): void {
   request.session.delete();
 }
 
-export function getCookieValue<T extends keyof HTTPSessionData>(
+export function getCookieValue<T extends keyof SessionData>(
   request: FastifyRequest,
   key: T,
-): HTTPSessionData[T] {
-  // By default, the secure session library is typed to return `any`.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+): SessionData[T] | undefined {
   return request.session.get(key);
 }
 
-export function setCookieValue<T extends keyof HTTPSessionData>(
+export function setCookieValue<T extends keyof SessionData>(
   request: FastifyRequest,
   key: T,
-  value: HTTPSessionData[T],
+  value: SessionData[T],
 ): void {
   request.session.set(key, value);
 }

@@ -24,7 +24,7 @@ export class LayoutChild extends Konva.Group {
     return this._card;
   }
 
-  constructor(child: HanabiCard, config?: Konva.ContainerConfig | undefined) {
+  constructor(child: HanabiCard, config?: Konva.ContainerConfig) {
     super(config);
     this.listening(true);
     this._card = child;

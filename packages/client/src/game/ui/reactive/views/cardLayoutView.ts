@@ -5,12 +5,8 @@ import {
   getTotalCardsInDeck,
   hasReversedSuits,
 } from "@hanabi/game";
+import { ReadonlyMap, assertDefined, assertNotNull } from "complete-common";
 import equal from "fast-deep-equal";
-import {
-  ReadonlyMap,
-  assertDefined,
-  assertNotNull,
-} from "isaacscript-common-ts";
 import type Konva from "konva";
 import type { HanabiCard } from "../../HanabiCard";
 import type { LayoutChild } from "../../LayoutChild";
@@ -171,7 +167,7 @@ export function onPlayStacksChanged(
     // Now, add the suit label texts, showing current progress or the possible remaining starting
     // values.
     for (const [suitIndex, playStack] of playStacks.entries()) {
-      let text = "";
+      let text: string;
       if (playStack.length === globals.variant.ranks.length) {
         text = "Finished";
       } else if (playStack.length > 0) {

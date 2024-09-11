@@ -16,7 +16,7 @@ fi
 
 # Install the JavaScript/TypeScript dependencies and build the client.
 cd "$REPO_ROOT"
-yarn install
+npm ci
 npm run prepare
 bash "$REPO_ROOT/packages/client/build_client.sh"
 

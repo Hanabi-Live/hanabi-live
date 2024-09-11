@@ -5,7 +5,7 @@ import {
   isFile,
   isMain,
   readFile,
-} from "isaacscript-common-node";
+} from "complete-node";
 import path from "node:path";
 import { createVariantsJSON } from "./createVariantsJSON";
 
@@ -21,7 +21,7 @@ const VARIANTS_JSON_PATH = path.join(
 const VARIANTS_TXT_PATH = path.join(REPO_ROOT, "misc", "variants.txt");
 
 if (isMain()) {
-  main().catch((error) => {
+  main().catch((error: unknown) => {
     throw new Error(`The script encountered an error: ${error}`);
   });
 }

@@ -1,4 +1,4 @@
-import { getRandomArrayElement, repeat } from "isaacscript-common-ts";
+import { getRandomArrayElement, repeat } from "complete-common";
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";

@@ -4,7 +4,7 @@ import {
   getAdjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";

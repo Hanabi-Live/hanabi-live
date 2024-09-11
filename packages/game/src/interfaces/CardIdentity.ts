@@ -13,4 +13,5 @@ export const cardIdentity = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CardIdentity extends z.infer<typeof cardIdentity> {}

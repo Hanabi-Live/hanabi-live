@@ -11,14 +11,14 @@ import {
   MAX_PLAYERS,
   MAX_SUITS_IN_A_VARIANT,
 } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
-import "tooltipster"; // eslint-disable-line import/no-unassigned-import
-import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import/no-unassigned-import
+import { eRange } from "complete-common";
+import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
+import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import-x/no-unassigned-import
 import { getHTMLElement } from "./utils";
 
 // Constants
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
-// eslint-disable-next-line isaacscript/require-capital-const-assertions, isaacscript/require-capital-read-only
+// eslint-disable-next-line complete/require-capital-const-assertions, complete/require-capital-read-only
 const TOOLTIP_THEME = ["tooltipster-shadow", "tooltipster-shadow-big"];
 const TOOLTIP_THEME_CENTERED = [...TOOLTIP_THEME, "align-center"] as const;
 

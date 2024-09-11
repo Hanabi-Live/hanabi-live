@@ -6,7 +6,7 @@ import {
   reversibleIsCardCritical,
   START_CARD_RANK,
 } from "@hanabi/game";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";
 import type { State } from "../types/State";

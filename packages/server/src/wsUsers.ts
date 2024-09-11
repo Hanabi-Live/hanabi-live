@@ -1,16 +1,16 @@
-import type { SocketStream } from "@fastify/websocket";
 import type {
   ServerCommandUserData,
   Status,
   TableID,
   UserID,
 } from "@hanabi/data";
-import { ReadonlyMap } from "isaacscript-common-ts";
+import { ReadonlyMap } from "complete-common";
+import type { WebSocket } from "ws";
 import type { SessionID } from "./types/SessionID";
 
 export interface WSUser {
-  /** We need to store the `SocketStream` instead of the `WebSocket` for destruction purposes. */
-  connection: SocketStream;
+  /** We need to the `WebSocket` for destruction purposes. */
+  connection: WebSocket;
 
   // Static fields
   sessionID: SessionID;

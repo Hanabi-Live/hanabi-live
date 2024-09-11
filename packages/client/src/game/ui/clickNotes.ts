@@ -1,4 +1,4 @@
-import { noop } from "isaacscript-common-ts";
+import { noop } from "complete-common";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import * as notes from "./notes";

@@ -1,6 +1,6 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi/game";
 import { getCardsPerHand, getCharacter } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+import { eRange } from "complete-common";
 import Konva from "konva";
 import { CardLayout } from "./CardLayout";
 import { NameFrame } from "./NameFrame";
@@ -162,7 +162,7 @@ export function drawHands(winW: number, winH: number): void {
 
     handPosBGA[numPlayers] = [];
     for (const j of eRange(numPlayers)) {
-      handPosBGA[numPlayers]!.push({
+      handPosBGA[numPlayers].push({
         x: handX,
         y: handY + handH * (1 + handSpacing) * j,
         w: handW,
@@ -271,7 +271,7 @@ export function drawHands(winW: number, winH: number): void {
     };
     namePosBGA[i] = [];
     for (const j of eRange(i)) {
-      namePosBGA[i]!.push({
+      namePosBGA[i].push({
         x: handPosBGA[i]![j]!.x - namePosBGAMod.x,
         y: handPosBGA[i]![j]!.y + handPosBGA[i]![j]!.h + namePosBGAMod.y,
         h: namePosValues.h,

@@ -4,7 +4,7 @@ import {
   getTotalCardsInDeck,
   getVariant,
 } from "@hanabi/game";
-import { newArray } from "isaacscript-common-ts";
+import { newArray } from "complete-common";
 import type { State } from "../../types/State";
 
 export function initialState(metadata: GameMetadata): State {

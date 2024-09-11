@@ -4,9 +4,9 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable unicorn/no-null */
 
+import { sumArray } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { sumArray } from "isaacscript-common-ts";
 import { getVariant } from "../gameData";
 import type { CardNote } from "../interfaces/CardNote";
 import type { GameMetadata } from "../interfaces/GameMetadata";

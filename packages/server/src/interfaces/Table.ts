@@ -50,6 +50,7 @@ const table = z
   })
   .strict();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Table extends z.infer<typeof table> {}
 
 const jsonSchema = zodToJsonSchema(table, "Game") as AnySchema;

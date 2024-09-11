@@ -1,19 +1,19 @@
 import { httpLoginData, PROJECT_NAME } from "@hanabi/data";
 import * as argon2 from "argon2";
-import type { FastifyReply, FastifyRequest } from "fastify";
-import { StatusCodes } from "http-status-codes";
 import {
   getNumConsecutiveDiacritics,
   hasEmoji,
   hasWhitespace,
-  normalizeUsername,
   parseIntSafe,
   ReadonlySet,
-} from "isaacscript-common-ts";
+} from "complete-common";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { StatusCodes } from "http-status-codes";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "../constants";
 import { setCookieValue } from "../httpSession";
 import { logger } from "../logger";
 import { models } from "../models";
+import { normalizeUsername } from "../utils";
 import { getClientVersion } from "../version";
 
 const MIN_USERNAME_LENGTH = 2;

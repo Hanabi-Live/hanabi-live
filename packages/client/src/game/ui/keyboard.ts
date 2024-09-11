@@ -6,7 +6,7 @@ import {
   getTotalCardsInDeck,
   isAtMaxClueTokens,
 } from "@hanabi/game";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";

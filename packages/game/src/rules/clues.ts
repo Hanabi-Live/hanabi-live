@@ -1,6 +1,6 @@
 // Functions related to the clue objects themselves: converting, getting names, etc.
 
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import { START_CARD_RANK } from "../constants";
 import { ClueType } from "../enums/ClueType";
 import type { Color } from "../interfaces/Color";

@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import type { Tuple } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
@@ -264,7 +264,7 @@ describe("cardsReducer", () => {
   describe("clue", () => {
     test("removes inferred negative possibilities on clued cards in other hand", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -304,7 +304,7 @@ describe("cardsReducer", () => {
         THIRD_CARD,
         FOURTH_CARD,
       ];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -359,7 +359,7 @@ describe("cardsReducer", () => {
         FOURTH_CARD,
         FIFTH_CARD,
       ];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -541,7 +541,7 @@ describe("cardsReducer", () => {
         THIRD_CARD,
         FOURTH_CARD,
       ];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       deck = cardsReducer(deck, draw(0, 0), GAME_STATE, DEFAULT_METADATA);
 
@@ -736,7 +736,7 @@ describe("cardsReducer", () => {
 
     test("removes inferred negative possibilities on newly drawn card in own hand", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -766,7 +766,7 @@ describe("cardsReducer", () => {
 
     test("removes inferred negative possibilities on newly drawn card in other hand", () => {
       let deck: readonly CardState[] = [FIRST_CARD, SECOND_CARD, THIRD_CARD];
-      let nextGameState = GAME_STATE;
+      let nextGameState: GameState;
 
       nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
       deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -807,7 +807,7 @@ describe("cardsReducer", () => {
           THIRD_CARD,
           FOURTH_CARD,
         ];
-        let nextGameState = GAME_STATE;
+        let nextGameState: GameState;
 
         nextGameState = getGameStateWithHands(GAME_STATE, [[0], []]);
         deck = cardsReducer(deck, draw(0, 0), nextGameState, DEFAULT_METADATA);
@@ -859,7 +859,7 @@ describe("cardsReducer", () => {
           THIRD_CARD,
           FOURTH_CARD,
         ];
-        let nextGameState = GAME_STATE;
+        let nextGameState: GameState;
 
         nextGameState = getGameStateWithHands(GAME_STATE, [[], [0]]);
         deck = cardsReducer(deck, draw(1, 0), nextGameState, bobMetadata);

@@ -17,7 +17,7 @@ import {
   getRandomArrayElement,
   parseFloatSafe,
   parseIntSafe,
-} from "isaacscript-common-ts";
+} from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT_MINUTES } from "../constants";
@@ -528,8 +528,8 @@ export function ready(): boolean {
   // Change the UI if we are in a pre-game screen.
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
-  let gameName = "";
-  let dialogOptions: Options | Settings | null = null;
+  let gameName: string;
+  let dialogOptions: Options | Settings;
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game

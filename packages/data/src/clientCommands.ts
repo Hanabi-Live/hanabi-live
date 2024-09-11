@@ -2,7 +2,7 @@
 // Data definitions
 // ----------------
 
-import { interfaceSatisfiesEnum } from "isaacscript-common-ts";
+import { interfaceSatisfiesEnum } from "complete-common";
 import { z } from "zod";
 import { ClientCommand } from "./enums/ClientCommand";
 
@@ -14,6 +14,7 @@ const clientCommandChatData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatData
   extends z.infer<typeof clientCommandChatData> {}
 
@@ -25,6 +26,7 @@ const clientCommandChatPMData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatPMData
   extends z.infer<typeof clientCommandChatPMData> {}
 

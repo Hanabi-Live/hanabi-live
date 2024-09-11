@@ -1,7 +1,7 @@
 // In-game chat
 
+import { assertNotNull, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
-import { assertNotNull, parseFloatSafe } from "isaacscript-common-ts";
 import { globals } from "../Globals";
 import { FADE_TIME_MS } from "../constants";
 import { getHTMLElement } from "../utils";

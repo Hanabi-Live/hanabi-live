@@ -40,7 +40,7 @@ function handlePremove() {
     premove: null,
   });
 
-  // Perform some validation
+  // Perform some validation.
   switch (oldPremove.type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {

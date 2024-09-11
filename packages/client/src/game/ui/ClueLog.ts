@@ -1,7 +1,7 @@
 // This is the list of clues in the top-right-hand corner of the UI.
 
 import type { CardOrder } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+import { eRange } from "complete-common";
 import Konva from "konva";
 import type { ClueEntry } from "./ClueEntry";
 import { globals } from "./UIGlobals";

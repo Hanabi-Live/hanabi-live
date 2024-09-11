@@ -137,7 +137,7 @@ function setTickingDownTime(timer: TimerDisplay) {
   }
 
   // Update the time in local array to approximate server times.
-  globals.playerTimes[globals.activePlayerIndex] -= elapsedTime;
+  globals.playerTimes[globals.activePlayerIndex]! -= elapsedTime;
   if (
     globals.options.timed &&
     globals.playerTimes[globals.activePlayerIndex]! < 0

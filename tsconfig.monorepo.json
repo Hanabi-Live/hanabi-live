@@ -1,0 +1,29 @@
+// This is a TypeScript configuration intended to be used by packages in this monorepo.
+{
+  "$schema": "https://raw.githubusercontent.com/complete-ts/complete/main/packages/complete-tsconfig/schemas/tsconfig-strict-schema.json",
+
+  // https://www.typescriptlang.org/docs/handbook/compiler-options.html
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+
+    // Performance optimization; see: https://www.npmjs.com/package/tslib
+    "importHelpers": true,
+
+    // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
+    // conservative; the project targets browsers / Node.js within a 2 year time-frame.
+    "target": "ES2021",
+
+    // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is
+    // false.
+    "resolveJsonModule": true,
+
+    // Specifying "Node" is necessary in order for JSON files to be imported without erroring.
+    "moduleResolution": "Node",
+
+    "paths": {
+      "@hanabi/data": ["./packages/data/src/index.ts"],
+      "@hanabi/game": ["./packages/game/src/index.ts"],
+    },
+  },
+}

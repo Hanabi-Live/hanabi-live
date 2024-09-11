@@ -1,4 +1,4 @@
-import { assertNotNull } from "isaacscript-common-ts";
+import { assertNotNull } from "complete-common";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { LABEL_COLOR } from "./constants";

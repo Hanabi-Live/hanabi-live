@@ -30,8 +30,8 @@
     "publish": "isaacscript publish"
   },
   "dependencies": {
+    "complete-common": "^1.0.0",
     "immer": "^10.0.3",
-    "isaacscript-common-ts": "^16.1.0",
     "tslib": "^2.6.2",
     "zod": "^3.22.4"
   }

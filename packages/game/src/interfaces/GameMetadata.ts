@@ -1,4 +1,4 @@
-import type { Tuple } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
 import type { NumPlayers } from "../types/NumPlayers";
 import type { PlayerIndex } from "../types/PlayerIndex";
 import type { Options } from "./Options";

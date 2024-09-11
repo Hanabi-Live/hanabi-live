@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 
+import { assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { assertNotNull } from "isaacscript-common-ts";
 import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
 import type { GameMetadata } from "../interfaces/GameMetadata";

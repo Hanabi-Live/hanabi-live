@@ -1,4 +1,4 @@
-/* eslint-disable isaacscript/consistent-enum-values */
+/* eslint-disable complete/consistent-enum-values */
 
 /**
  * Represents the type of sound that should play, depending on what the last action of the game was.

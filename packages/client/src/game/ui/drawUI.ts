@@ -13,7 +13,7 @@ import {
   assertDefined,
   eRange,
   repeat,
-} from "isaacscript-common-ts";
+} from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement } from "../../utils";

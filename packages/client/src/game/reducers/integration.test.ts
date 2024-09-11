@@ -6,7 +6,7 @@ import {
   getEfficiencyFromGameState,
   getFutureEfficiency,
 } from "@hanabi/game";
-import { assertDefined, eRange } from "isaacscript-common-ts";
+import { assertDefined, eRange } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";

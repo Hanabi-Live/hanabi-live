@@ -15,7 +15,7 @@ const cssDir = path.join(repoRoot, "public", "css");
 const cssLibDir = path.join(cssDir, "lib");
 const gruntOutputDir = path.join(__dirname, "grunt_output");
 
-module.exports = (grunt) => {
+module.exports = function Gruntfile(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON(packageJSON),
 

@@ -2,8 +2,8 @@
 
 /* eslint-disable unicorn/no-null */
 
-import type { Tuple } from "isaacscript-common-ts";
-import { assertNotNull, newArray, sumArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { assertNotNull, newArray, sumArray } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { PaceRisk } from "../enums/PaceRisk";
 import type { CardNote } from "../interfaces/CardNote";

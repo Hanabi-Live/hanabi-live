@@ -6,7 +6,7 @@ import type {
   Variant,
 } from "@hanabi/game";
 import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/game";
-import { eRange, newArray } from "isaacscript-common-ts";
+import { eRange, newArray } from "complete-common";
 
 /**
  * Represents the card identities that a card could possibly be.

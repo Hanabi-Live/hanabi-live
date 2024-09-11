@@ -26,7 +26,7 @@ import {
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi/game";
-import { assertDefined, assertNotNull, eRange } from "isaacscript-common-ts";
+import { assertDefined, assertNotNull, eRange } from "complete-common";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
 import { ActionType } from "../src/game/types/ActionType";

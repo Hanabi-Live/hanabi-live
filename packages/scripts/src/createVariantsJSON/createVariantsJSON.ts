@@ -1,13 +1,13 @@
 import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/game";
-import { findPackageRoot, isMain } from "isaacscript-common-node";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { findPackageRoot, isMain } from "complete-node";
+import fs from "node:fs";
+import path from "node:path";
 import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
 if (isMain()) {
-  main().catch((error) => {
+  main().catch((error: unknown) => {
     throw new Error(`The script encountered an error: ${error}`);
   });
 }

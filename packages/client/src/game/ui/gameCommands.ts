@@ -19,8 +19,8 @@ import {
   getVariant,
   isHardVariant,
 } from "@hanabi/game";
-import type { Tuple } from "isaacscript-common-ts";
-import { iRange, newArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import { setBrowserAddressBarPath } from "../../utils";

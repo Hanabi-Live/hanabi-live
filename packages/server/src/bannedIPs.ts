@@ -1,7 +1,7 @@
 // We store banned IPs both in memory (for speed) and in the database (for persistence). When a new
 // IP is banned, it must be added to both places.
 
-import { setAdd } from "isaacscript-common-ts";
+import { setAdd } from "complete-common";
 import { models } from "./models";
 
 const bannedIPsSet = new Set<string>();

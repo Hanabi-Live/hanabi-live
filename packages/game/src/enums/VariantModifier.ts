@@ -1,6 +1,6 @@
-/* eslint-disable isaacscript/consistent-enum-values */
+/* eslint-disable complete/consistent-enum-values */
 
-import { ReadonlySet } from "isaacscript-common-ts";
+import { ReadonlySet } from "complete-common";
 
 /**
  * These correspond to values in the database. We want them to be as short as possible in order to

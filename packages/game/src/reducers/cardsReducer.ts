@@ -8,7 +8,7 @@ import {
   eRange,
   newArray,
   tupleKeys,
-} from "isaacscript-common-ts";
+} from "complete-common";
 import { MAX_PLAYERS } from "../constants";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";

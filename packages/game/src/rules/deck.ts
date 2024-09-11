@@ -1,6 +1,6 @@
 // Functions related to deck information: total cards, drawing cards
 
-import { sumArray } from "isaacscript-common-ts";
+import { sumArray } from "complete-common";
 import { START_CARD_RANK } from "../constants";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";

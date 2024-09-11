@@ -6,11 +6,7 @@ import {
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi/game";
-import {
-  SECOND_IN_MILLISECONDS,
-  assertDefined,
-  eRange,
-} from "isaacscript-common-ts";
+import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
 import type {
   ClientActionColorClue,

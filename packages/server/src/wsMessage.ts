@@ -4,7 +4,7 @@ import {
   ClientCommand,
   unpackWSMessage,
 } from "@hanabi/data";
-import { ReadonlySet, getEnumValues, isEnumValue } from "isaacscript-common-ts";
+import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";

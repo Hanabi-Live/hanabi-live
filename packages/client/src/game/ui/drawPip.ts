@@ -1,5 +1,5 @@
 import type { Suit } from "@hanabi/game";
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 
 type DrawFunction = (
   ctx: CanvasRenderingContext2D,
@@ -1951,6 +1951,25 @@ shapeFunctions.set("katakanaNu", (ctx: CanvasRenderingContext2D) => {
     -3.199_645,
     221.202_73,
   );
+  ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
+  ctx.closePath();
+});
+
+/** TODO */
+shapeFunctions.set("katakanaHe", (ctx: CanvasRenderingContext2D) => {
+  ctx.beginPath();
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
+
+  // Draw the curve for "ヘ" using bezierCurveTo.
+  ctx.bezierCurveTo(-10, 200, 10, 240, -10, 260);
+
+  /*
+  ctx.lineTo(10, 260);
+  ctx.bezierCurveTo(0, 240, -20, 200, 20, 220);
+
+  ctx.lineTo(0, 220);
+  */
+
   ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
   ctx.closePath();
 });

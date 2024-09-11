@@ -1,4 +1,4 @@
-import type { ERange } from "isaacscript-common-ts";
+import type { ERange } from "complete-common";
 import { z } from "zod";
 import type { MAX_PLAYERS } from "../constants";
 import { VALID_PLAYER_INDEXES } from "../constants";

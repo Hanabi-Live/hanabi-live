@@ -1,13 +1,13 @@
-import type { SocketStream } from "@fastify/websocket";
 import type { ServerCommandData, UserID } from "@hanabi/data";
 import {
   SERVER_COMMAND_SCHEMAS,
   ServerCommand,
   packWSMessageOnServer,
 } from "@hanabi/data";
+import type { ReadonlyRecord } from "complete-common";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
-import type { ReadonlyRecord } from "isaacscript-common-ts";
+import type { WebSocket } from "ws";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { logger } from "./logger";
 import { wsUsers } from "./wsUsers";
@@ -47,13 +47,13 @@ function getWSMsg<T extends ServerCommand>(
  * Messages are sent using the Golem protocol.
  */
 export function wsSend<T extends ServerCommand>(
-  connection: SocketStream,
+  connection: WebSocket,
   serverCommand: T,
   data: ServerCommandData[T],
 ): void {
   const msg = getWSMsg(serverCommand, data);
   if (msg !== undefined) {
-    connection.socket.send(msg);
+    connection.send(msg);
   }
 }
 
@@ -74,20 +74,20 @@ export function wsSendAll<T extends ServerCommand>(
 
   for (const wsUser of wsUsers.values()) {
     if (exceptionUserID !== wsUser.userID) {
-      wsUser.connection.socket.send(msg);
+      wsUser.connection.send(msg);
     }
   }
 }
 
 /** Helper function to send an error to a WebSocket connection. */
-export function wsError(connection: SocketStream, msg: string): void {
+export function wsError(connection: WebSocket, msg: string): void {
   wsSend(connection, ServerCommand.error, {
     error: msg,
   });
 }
 
 /** Helper function to send a warning to a WebSocket connection. */
-export function wsWarning(connection: SocketStream, msg: string): void {
+export function wsWarning(connection: WebSocket, msg: string): void {
   wsSend(connection, ServerCommand.warning, {
     warning: msg,
   });

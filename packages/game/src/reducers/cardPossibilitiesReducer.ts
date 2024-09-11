@@ -2,7 +2,7 @@
 
 /* eslint-disable unicorn/no-null */
 
-import { newArray } from "isaacscript-common-ts";
+import { newArray } from "complete-common";
 import { MAX_PLAYERS } from "../constants";
 import { ClueType } from "../enums/ClueType";
 import { getVariant } from "../gameData";

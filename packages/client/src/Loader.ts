@@ -1,4 +1,4 @@
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;

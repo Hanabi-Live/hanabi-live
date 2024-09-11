@@ -1,4 +1,4 @@
-import { ReadonlySet } from "isaacscript-common-ts";
+import { ReadonlySet } from "complete-common";
 
 export const START_CARD_RANK = 7;
 

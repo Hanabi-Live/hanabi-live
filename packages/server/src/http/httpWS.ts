@@ -1,6 +1,6 @@
-import type { SocketStream } from "@fastify/websocket";
 import { Status } from "@hanabi/data";
 import type { FastifyRequest } from "fastify";
+import type { WebSocket } from "ws";
 import { deleteCookie, getCookieValue } from "../httpSession";
 import { models } from "../models";
 import { wsError } from "../wsHelpers";
@@ -20,7 +20,7 @@ import { getSessionID } from "../wsUsers";
  * @see https://github.com/fastify/fastify-websocket
  */
 export async function httpWS(
-  connection: SocketStream,
+  connection: WebSocket,
   request: FastifyRequest,
 ): Promise<void> {
   // If they have a valid cookie, it should have the "userID" value.
@@ -76,11 +76,11 @@ export async function httpWS(
  * and delete the user's cookie in order to force them to start authentication from the beginning.
  */
 function httpWSError(
-  connection: SocketStream,
+  connection: WebSocket,
   request: FastifyRequest,
   msg: string,
 ) {
   wsError(connection, msg);
-  connection.destroy();
+  connection.close();
   deleteCookie(request);
 }

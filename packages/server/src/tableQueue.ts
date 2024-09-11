@@ -1,7 +1,7 @@
 import type { TableID, UserID } from "@hanabi/data";
+import type { CompositionTypeSatisfiesEnum } from "complete-common";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
-import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
 import { getRedisTable, setRedisTable } from "./redis";
 
 enum TableQueueElementType {

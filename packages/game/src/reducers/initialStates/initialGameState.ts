@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 
-import type { Tuple } from "isaacscript-common-ts";
-import { newArray, sumArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { newArray, sumArray } from "complete-common";
 import { MAX_CLUE_NUM } from "../../constants";
 import type { CardStatus } from "../../enums/CardStatus";
 import type { StackDirection } from "../../enums/StackDirection";

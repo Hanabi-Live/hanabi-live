@@ -23,7 +23,7 @@ import {
   isCardDiscarded,
   isCardPlayed,
 } from "@hanabi/game";
-import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
+import { assertDefined, assertNotNull, iRange } from "complete-common";
 import Konva from "konva";
 import { includes } from "lodash";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -1433,7 +1433,7 @@ function updatePip(
   hasPositiveClues: boolean,
   pip: Konva.Shape | RankPip,
   x: Konva.Shape,
-  pipPositive?: Konva.Shape | undefined,
+  pipPositive?: Konva.Shape,
 ) {
   if (pipState === PipState.Hidden) {
     pip.hide();

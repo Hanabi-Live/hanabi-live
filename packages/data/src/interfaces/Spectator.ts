@@ -10,4 +10,5 @@ export const spectator = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Spectator extends z.infer<typeof spectator> {}

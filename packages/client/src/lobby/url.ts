@@ -1,6 +1,6 @@
 import type { ServerCommandWelcomeData } from "@hanabi/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi/game";
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
 import type { GameJSON } from "./hypoCompress";

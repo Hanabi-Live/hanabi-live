@@ -6,7 +6,7 @@ import type {
 } from "@hanabi/data";
 import type { PlayerIndex } from "@hanabi/game";
 import { isValidPlayerIndex } from "@hanabi/game";
-import { mapFilter } from "isaacscript-common-ts";
+import { mapFilter } from "complete-common";
 import type { ServerSpectator } from "./interfaces/ServerSpectator";
 import type { Table } from "./interfaces/Table";
 

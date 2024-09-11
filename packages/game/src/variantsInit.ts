@@ -1,4 +1,4 @@
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe } from "complete-common";
 import { getUppercaseSuitAbbreviationsForVariant } from "./abbreviations";
 import {
   DEFAULT_CARD_RANKS,

@@ -1,6 +1,8 @@
 // This is the configuration file for Prettier, the auto-formatter:
 // https://prettier.io/docs/en/configuration.html
 
+// @ts-check
+
 /** @type {import("prettier").Config} */
 const config = {
   plugins: [

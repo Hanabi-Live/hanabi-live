@@ -1,4 +1,4 @@
-import { ReadonlySet, trimPrefix } from "isaacscript-common-ts";
+import { ReadonlySet, trimPrefix } from "complete-common";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";
 

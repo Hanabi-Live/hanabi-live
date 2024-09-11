@@ -3,13 +3,9 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable unicorn/no-null */
 
+import { assertDefined, assertNotNull, tupleEntries } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import {
-  assertDefined,
-  assertNotNull,
-  tupleEntries,
-} from "isaacscript-common-ts";
 import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
@@ -593,7 +589,7 @@ function gameReducerFunction(
 }
 
 function cardCycle(
-  // eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   hand: number[],
   deck: readonly CardState[],
   metadata: GameMetadata,

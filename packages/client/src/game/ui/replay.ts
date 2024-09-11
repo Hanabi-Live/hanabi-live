@@ -1,7 +1,7 @@
 // Functions for progressing forward and backward through time.
 
 import type { CardOrder } from "@hanabi/game";
-import { clamp, parseIntSafe } from "isaacscript-common-ts";
+import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
@@ -192,7 +192,7 @@ export function barScroll(
   this: Konva.Rect,
   e: Konva.KonvaEventObject<WheelEvent>,
 ): void {
-  let delta = 0;
+  let delta: number;
   if (e.evt.deltaY > 0) {
     delta = 1;
   } else if (e.evt.deltaY < 0) {
