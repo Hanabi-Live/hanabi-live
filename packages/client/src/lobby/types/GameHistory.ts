@@ -1,4 +1,4 @@
-import type { Options } from "@hanabi/game";
+import type { Options } from "@hanabi-live/game";
 
 export interface GameHistory {
   id: number;

@@ -1,4 +1,4 @@
-import type { Suit } from "@hanabi/game";
+import type { Suit } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 
 type DrawFunction = (

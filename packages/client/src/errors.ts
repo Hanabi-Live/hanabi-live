@@ -1,4 +1,4 @@
-import { PROJECT_NAME } from "@hanabi/data";
+import { PROJECT_NAME } from "@hanabi-live/data";
 import { showError } from "./modals";
 
 /** Initialize a global error handler that will show errors to the end-user. */

@@ -6,7 +6,7 @@ import type {
   SuitJSON,
   Variant,
   VariantDescription,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   COLORS_MAP,
   DEFAULT_CLUE_RANKS,
@@ -20,7 +20,7 @@ import {
   getStartingDeckSize,
   getStartingPace,
   getTotalCardsInDeck,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import type { Subtract } from "complete-common";
 import { ReadonlySet } from "complete-common";
 

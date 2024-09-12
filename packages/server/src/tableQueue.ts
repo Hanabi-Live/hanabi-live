@@ -1,4 +1,4 @@
-import type { TableID, UserID } from "@hanabi/data";
+import type { TableID, UserID } from "@hanabi-live/data";
 import type { CompositionTypeSatisfiesEnum } from "complete-common";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";

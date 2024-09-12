@@ -1,7 +1,7 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
-import type { Options, PlayerIndex } from "@hanabi/game";
-import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi/game";
+import type { Options, PlayerIndex } from "@hanabi-live/game";
+import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";

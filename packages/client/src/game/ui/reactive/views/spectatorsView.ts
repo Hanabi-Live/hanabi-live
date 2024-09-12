@@ -1,4 +1,4 @@
-import type { Spectator } from "@hanabi/data";
+import type { Spectator } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import * as tooltips from "../../../../tooltips";
 import { globals } from "../../UIGlobals";

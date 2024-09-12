@@ -3,7 +3,7 @@ import type {
   PlayerIndex,
   RankClueNumber,
   SuitIndex,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import type { CompositionTypeSatisfiesEnum } from "complete-common";
 import type { ActionType } from "./ActionType";
 

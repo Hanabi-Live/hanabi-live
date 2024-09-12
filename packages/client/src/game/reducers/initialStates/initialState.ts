@@ -1,9 +1,9 @@
-import type { GameMetadata } from "@hanabi/game";
+import type { GameMetadata } from "@hanabi-live/game";
 import {
   getInitialGameState,
   getTotalCardsInDeck,
   getVariant,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { newArray } from "complete-common";
 import type { State } from "../../types/State";
 

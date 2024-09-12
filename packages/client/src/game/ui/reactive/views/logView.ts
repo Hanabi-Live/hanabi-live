@@ -1,4 +1,4 @@
-import type { LogEntry } from "@hanabi/game";
+import type { LogEntry } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { globals } from "../../UIGlobals";
 

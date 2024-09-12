@@ -1,4 +1,4 @@
-import type { TableID, UserID } from "@hanabi/data";
+import type { TableID, UserID } from "@hanabi-live/data";
 import { Redis } from "ioredis";
 import { IS_DEV } from "./env";
 import type { Table } from "./interfaces/Table";

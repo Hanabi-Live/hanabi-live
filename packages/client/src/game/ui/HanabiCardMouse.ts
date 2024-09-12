@@ -1,4 +1,4 @@
-import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
+import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as tooltips from "../../tooltips";
 import type { CardLayout } from "./CardLayout";

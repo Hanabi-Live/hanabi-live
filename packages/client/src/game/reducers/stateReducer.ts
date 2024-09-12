@@ -5,8 +5,8 @@ import type {
   GameAction,
   GameMetadata,
   GameState,
-} from "@hanabi/game";
-import { gameReducer, getInitialGameState } from "@hanabi/game";
+} from "@hanabi-live/game";
+import { gameReducer, getInitialGameState } from "@hanabi-live/game";
 import { assertDefined, assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";

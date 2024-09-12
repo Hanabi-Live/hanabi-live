@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables.
 
-import type { ServerCommandTableData } from "@hanabi/data";
-import { MAX_PLAYERS } from "@hanabi/game";
+import type { ServerCommandTableData } from "@hanabi-live/data";
+import { MAX_PLAYERS } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as modals from "../modals";

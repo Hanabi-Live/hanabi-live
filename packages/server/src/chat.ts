@@ -1,4 +1,4 @@
-import type { ServerCommandChatData } from "@hanabi/data";
+import type { ServerCommandChatData } from "@hanabi-live/data";
 import {
   getNumConsecutiveDiacritics,
   normalizeString,

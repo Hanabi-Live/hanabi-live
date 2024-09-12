@@ -1,8 +1,8 @@
 // The "Create Game" nav button.
 
-import type { Settings } from "@hanabi/data";
-import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi/data";
-import type { Options } from "@hanabi/game";
+import type { Settings } from "@hanabi-live/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
+import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
@@ -10,7 +10,7 @@ import {
   VARIANT_NAMES,
   doesVariantExist,
   isValidNumPlayers,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   MINUTE_IN_MILLISECONDS,
   ReadonlySet,

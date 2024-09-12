@@ -3,12 +3,11 @@
 
 // @ts-check
 
-// eslint-disable-next-line import-x/no-extraneous-dependencies
 import {
   completeConfigBase,
   completeConfigMonorepo,
 } from "eslint-config-complete";
-import tseslint from "typescript-eslint"; // eslint-disable-line import-x/no-extraneous-dependencies
+import tseslint from "typescript-eslint";
 
 export const hanabiConfigBase = tseslint.config(
   ...completeConfigBase,
@@ -44,6 +43,24 @@ export const hanabiConfigBase = tseslint.config(
        * always safe with the `isaacscript/strict-enums` rule.
        */
       "complete/no-number-enums": "off",
+
+      /**
+       * Documentation:
+       * https://github.com/un-ts/eslint-plugin-import-x/blob/master/docs/rules/no-extraneous-dependencies.md
+       *
+       * We need to whitelist the monorepo packages.
+       */
+      "import-x/no-extraneous-dependencies": [
+        "warn",
+        {
+          whitelist: [
+            "@hanabi-live/data",
+            "@hanabi-live/game",
+            "eslint-config-complete",
+            "typescript-eslint",
+          ],
+        },
+      ],
 
       // BEGIN ESM EXCEPTIONS
 

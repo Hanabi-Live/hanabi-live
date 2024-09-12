@@ -1,4 +1,4 @@
-import { DEFAULT_VARIANT_NAME, numPlayers } from "@hanabi/game";
+import { DEFAULT_VARIANT_NAME, numPlayers } from "@hanabi-live/game";
 import { z } from "zod";
 
 export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;

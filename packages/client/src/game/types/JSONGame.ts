@@ -1,4 +1,4 @@
-import type { CardIdentity, Character } from "@hanabi/game";
+import type { CardIdentity, Character } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction";
 
 /**

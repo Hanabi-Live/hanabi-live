@@ -1,4 +1,4 @@
-import { Status } from "@hanabi/data";
+import { Status } from "@hanabi-live/data";
 import type { FastifyRequest } from "fastify";
 import type { WebSocket } from "ws";
 import { deleteCookie, getCookieValue } from "../httpSession";

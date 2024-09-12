@@ -3,7 +3,7 @@ import type {
   Status,
   TableID,
   UserID,
-} from "@hanabi/data";
+} from "@hanabi-live/data";
 import { ReadonlyMap } from "complete-common";
 import type { WebSocket } from "ws";
 import type { SessionID } from "./types/SessionID";

@@ -6,8 +6,12 @@ import type {
   RankClueNumber,
   Suit,
   SuitIndex,
-} from "@hanabi/game";
-import { getTotalCardsInDeck, newColorClue, newRankClue } from "@hanabi/game";
+} from "@hanabi-live/game";
+import {
+  getTotalCardsInDeck,
+  newColorClue,
+  newRankClue,
+} from "@hanabi-live/game";
 import {
   SECOND_IN_MILLISECONDS,
   assertDefined,

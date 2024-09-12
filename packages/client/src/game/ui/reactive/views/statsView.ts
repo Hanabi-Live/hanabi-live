@@ -1,5 +1,5 @@
-import type { NumPlayers } from "@hanabi/game";
-import { PaceRisk, getEfficiency } from "@hanabi/game";
+import type { NumPlayers } from "@hanabi-live/game";
+import { PaceRisk, getEfficiency } from "@hanabi-live/game";
 import { assertNotNull } from "complete-common";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR } from "../../constants";

@@ -1,5 +1,5 @@
-import { tableID, userID } from "@hanabi/data";
-import { numPlayers, options } from "@hanabi/game";
+import { tableID, userID } from "@hanabi-live/data";
+import { numPlayers, options } from "@hanabi-live/game";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import z from "zod";

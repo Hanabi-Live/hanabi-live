@@ -1,4 +1,4 @@
-import { httpLoginData, PROJECT_NAME } from "@hanabi/data";
+import { httpLoginData, PROJECT_NAME } from "@hanabi-live/data";
 import * as argon2 from "argon2";
 import {
   getNumConsecutiveDiacritics,

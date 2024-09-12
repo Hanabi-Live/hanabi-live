@@ -1,4 +1,4 @@
-import type { Rank } from "@hanabi/game";
+import type { Rank } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 
 type DrawFunction = (ctx: CanvasRenderingContext2D) => void;

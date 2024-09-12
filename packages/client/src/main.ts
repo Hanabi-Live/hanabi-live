@@ -1,7 +1,7 @@
 // This is the main entry point for the client code. The client code is split up into multiple files
 // and then bundled together as a single JavaScript file to serve to end-users.
 
-import { DOMAIN, OLD_DOMAIN } from "@hanabi/data";
+import { DOMAIN, OLD_DOMAIN } from "@hanabi-live/data";
 import jquery from "jquery";
 import { globals } from "./Globals";
 import { Loader } from "./Loader";

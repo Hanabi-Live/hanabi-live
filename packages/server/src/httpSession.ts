@@ -1,5 +1,5 @@
 import type { SessionData } from "@fastify/secure-session";
-import type { UserID } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
 import type { FastifyRequest } from "fastify";
 
 /**

@@ -1,10 +1,10 @@
-import type { CardOrder, GameState, SuitIndex } from "@hanabi/game";
+import type { CardOrder, GameState, SuitIndex } from "@hanabi-live/game";
 import {
   StackDirection,
   getStackStartRank,
   getTotalCardsInDeck,
   hasReversedSuits,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { ReadonlyMap, assertDefined, assertNotNull } from "complete-common";
 import equal from "fast-deep-equal";
 import type Konva from "konva";

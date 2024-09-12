@@ -1,7 +1,7 @@
 // Click functions for the HanabiCard object.
 
-import type { CardIdentity } from "@hanabi/game";
-import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
+import type { CardIdentity } from "@hanabi-live/game";
+import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import type { HanabiCard } from "./HanabiCard";

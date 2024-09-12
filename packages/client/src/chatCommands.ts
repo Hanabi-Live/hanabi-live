@@ -1,5 +1,5 @@
-import { VERSION } from "@hanabi/data";
-import { VARIANT_NAMES } from "@hanabi/game";
+import { VERSION } from "@hanabi-live/data";
+import { VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals";
 import { SelfChatMessageType, sendSelfPMFromServer } from "./chat";

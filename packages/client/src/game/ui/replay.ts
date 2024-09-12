@@ -1,6 +1,6 @@
 // Functions for progressing forward and backward through time.
 
-import type { CardOrder } from "@hanabi/game";
+import type { CardOrder } from "@hanabi-live/game";
 import { clamp, parseIntSafe } from "complete-common";
 import Konva from "konva";
 import { closeModals, showPrompt } from "../../modals";

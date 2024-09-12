@@ -1,4 +1,4 @@
-import type { Spectator } from "@hanabi/data";
+import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { ReplayActionType } from "../../../types/ReplayActionType";

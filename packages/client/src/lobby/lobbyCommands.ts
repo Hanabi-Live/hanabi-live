@@ -8,7 +8,7 @@ import type {
   ServerCommandWelcomeData,
   Spectator,
   UserID,
-} from "@hanabi/data";
+} from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";

@@ -1,9 +1,9 @@
-import type { ServerCommandData, UserID } from "@hanabi/data";
+import type { ServerCommandData, UserID } from "@hanabi-live/data";
 import {
   SERVER_COMMAND_SCHEMAS,
   ServerCommand,
   packWSMessageOnServer,
-} from "@hanabi/data";
+} from "@hanabi-live/data";
 import type { ReadonlyRecord } from "complete-common";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";

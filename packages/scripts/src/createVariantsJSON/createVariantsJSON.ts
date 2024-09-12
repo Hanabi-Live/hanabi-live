@@ -1,4 +1,8 @@
-import type { SuitJSON, VariantDescription, VariantJSON } from "@hanabi/game";
+import type {
+  SuitJSON,
+  VariantDescription,
+  VariantJSON,
+} from "@hanabi-live/game";
 import { findPackageRoot, isMain } from "complete-node";
 import fs from "node:fs";
 import path from "node:path";

@@ -1,5 +1,5 @@
-import { gameID } from "@hanabi/data";
-import { cardIdentity, numPlayers } from "@hanabi/game";
+import { gameID } from "@hanabi-live/data";
+import { cardIdentity, numPlayers } from "@hanabi-live/game";
 import z from "zod";
 import { characterAssignment } from "./CharacterAssignment";
 import { databaseGameAction } from "./DatabaseGameAction";

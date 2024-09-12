@@ -1,8 +1,8 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandChatData } from "@hanabi/data";
-import { PROJECT_NAME } from "@hanabi/data";
+import type { ServerCommandChatData } from "@hanabi-live/data";
+import { PROJECT_NAME } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS, eRange, trimPrefix } from "complete-common";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";

@@ -1,5 +1,5 @@
-import type { Settings, UserID } from "@hanabi/data";
-import type { NumPlayers } from "@hanabi/game";
+import type { Settings, UserID } from "@hanabi-live/data";
+import type { NumPlayers } from "@hanabi-live/game";
 import { eq, getTableColumns } from "drizzle-orm";
 import { userSettingsTable } from "../databaseSchema";
 import { db } from "../db";

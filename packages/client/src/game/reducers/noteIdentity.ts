@@ -4,8 +4,8 @@ import type {
   SuitIndex,
   SuitRankTuple,
   Variant,
-} from "@hanabi/game";
-import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi/game";
+} from "@hanabi-live/game";
+import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi-live/game";
 import { eRange, newArray } from "complete-common";
 
 /**

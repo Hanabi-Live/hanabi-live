@@ -1,8 +1,8 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import type { CardOrder, MsgClue, PlayerIndex } from "@hanabi/game";
-import { ClueType, getNextPlayableRanks } from "@hanabi/game";
+import type { CardOrder, MsgClue, PlayerIndex } from "@hanabi-live/game";
+import { ClueType, getNextPlayableRanks } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction, ClientActionClue } from "../types/ClientAction";

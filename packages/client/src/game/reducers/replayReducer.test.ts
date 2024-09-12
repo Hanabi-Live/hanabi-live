@@ -1,5 +1,5 @@
-import type { GameMetadata } from "@hanabi/game";
-import { rankClue } from "@hanabi/game";
+import type { GameMetadata } from "@hanabi-live/game";
+import { rankClue } from "@hanabi-live/game";
 import { assertDefined, assertNotNull } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {

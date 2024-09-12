@@ -1,4 +1,4 @@
-import { EndCondition, options } from "@hanabi/game";
+import { EndCondition, options } from "@hanabi-live/game";
 import { z } from "zod";
 import { gameID } from "../types/GameID";
 

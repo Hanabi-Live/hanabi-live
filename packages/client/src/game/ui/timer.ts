@@ -1,7 +1,7 @@
 // Functions for timed games (and the timer that ticks up in untimed games).
 
-import type { PlayerIndex } from "@hanabi/game";
-import { millisecondsToClockString } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
+import { millisecondsToClockString } from "@hanabi-live/game";
 import * as tooltips from "../../tooltips";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";

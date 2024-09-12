@@ -1,10 +1,10 @@
-import type { PlayerIndex } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
 import {
   getAdjustedClueTokens,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
   isHandLocked,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { State } from "../../../types/State";

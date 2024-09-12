@@ -1,4 +1,4 @@
-import type { PlayerIndex } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";

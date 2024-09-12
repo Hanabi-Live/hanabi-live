@@ -4,7 +4,7 @@ import type {
   ServerCommandChatData,
   ServerCommandErrorData,
   ServerCommandWarningData,
-} from "@hanabi/data";
+} from "@hanabi-live/data";
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";

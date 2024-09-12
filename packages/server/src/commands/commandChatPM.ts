@@ -1,5 +1,5 @@
-import type { ClientCommandChatPMData } from "@hanabi/data";
-import { ServerCommand } from "@hanabi/data";
+import type { ClientCommandChatPMData } from "@hanabi-live/data";
+import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
 import { getCurrentDatetime } from "../date";

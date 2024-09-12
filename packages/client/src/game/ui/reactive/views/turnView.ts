@@ -1,4 +1,4 @@
-import { ClueType, getAdjustedClueTokens } from "@hanabi/game";
+import { ClueType, getAdjustedClueTokens } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { isOurTurn } from "../../isOurTurn";

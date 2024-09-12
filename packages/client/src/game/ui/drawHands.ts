@@ -1,5 +1,5 @@
-import type { NumPlayers, PlayerIndex } from "@hanabi/game";
-import { getCardsPerHand, getCharacter } from "@hanabi/game";
+import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
+import { getCardsPerHand, getCharacter } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
 import { CardLayout } from "./CardLayout";

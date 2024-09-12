@@ -1,4 +1,4 @@
-import { SITE_URL } from "@hanabi/data";
+import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -6,8 +6,12 @@ import type {
   PlayerIndex,
   RankClueNumber,
   Variant,
-} from "@hanabi/game";
-import { ClueType, DEFAULT_PLAYER_NAMES, getCardsPerHand } from "@hanabi/game";
+} from "@hanabi-live/game";
+import {
+  ClueType,
+  DEFAULT_PLAYER_NAMES,
+  getCardsPerHand,
+} from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";

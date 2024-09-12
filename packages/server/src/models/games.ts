@@ -1,5 +1,5 @@
-import type { GameHistory, GameID, UserID } from "@hanabi/data";
-import { serverCommandGameHistoryData } from "@hanabi/data";
+import type { GameHistory, GameID, UserID } from "@hanabi-live/data";
+import { serverCommandGameHistoryData } from "@hanabi-live/data";
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { except } from "drizzle-orm/pg-core";
 import { gameParticipantsTable, gamesTable } from "../databaseSchema";

@@ -1,4 +1,4 @@
-import type { GameState } from "@hanabi/game";
+import type { GameState } from "@hanabi-live/game";
 import type { Store, Unsubscribe } from "redux";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";

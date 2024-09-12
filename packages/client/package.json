@@ -1,0 +1,9 @@
+{
+  "name": "@hanabi-live/client",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "jsonc-parser": "^3.3.1",
+    "ts-jest": "^29.2.5"
+  }
+}

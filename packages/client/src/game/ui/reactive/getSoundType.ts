@@ -4,7 +4,7 @@ import type {
   GameAction,
   GameMetadata,
   GameState,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   ClueType,
   EndCondition,
@@ -13,7 +13,7 @@ import {
   getVariant,
   isCardClued,
   isHandLocked,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../types/SoundType";
 

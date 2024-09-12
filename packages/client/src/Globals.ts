@@ -4,8 +4,8 @@ import type {
   ServerCommandTableData,
   ServerCommandUserData,
   UserID,
-} from "@hanabi/data";
-import { defaultSettings } from "@hanabi/data";
+} from "@hanabi-live/data";
+import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import type { HanabiUI } from "./game/ui/HanabiUI";

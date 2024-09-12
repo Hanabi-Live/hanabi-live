@@ -1,4 +1,4 @@
-import type { NumPlayers } from "@hanabi/game";
+import type { NumPlayers } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { assertNotNull, eRange, newArray } from "complete-common";
 import Konva from "konva";

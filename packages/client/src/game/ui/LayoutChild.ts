@@ -1,5 +1,8 @@
-import type { PlayerIndex } from "@hanabi/game";
-import { isAtMaxClueTokens, isCardPotentiallyPlayable } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
+import {
+  isAtMaxClueTokens,
+  isCardPotentiallyPlayable,
+} from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";

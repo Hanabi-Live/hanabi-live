@@ -1,6 +1,6 @@
 // Datetime properties are in the form: "2023-12-29T18:21:43.812446Z"
 
-import { options } from "@hanabi/game";
+import { options } from "@hanabi-live/game";
 import { interfaceSatisfiesEnum } from "complete-common";
 import { z } from "zod";
 import { ServerCommand } from "./enums/ServerCommand";

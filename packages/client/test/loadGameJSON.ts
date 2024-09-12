@@ -13,7 +13,7 @@ import type {
   PlayerIndex,
   Rank,
   SuitIndex,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   ClueType,
   MAX_PLAYERS,
@@ -25,7 +25,7 @@ import {
   getVariant,
   isCardTouchedByClue,
   msgClueToClue,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { assertDefined, assertNotNull, eRange } from "complete-common";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";

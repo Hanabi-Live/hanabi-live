@@ -1,7 +1,7 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
-import type { UserID } from "@hanabi/data";
-import { ServerCommand, defaultSettings } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
+import { ServerCommand, defaultSettings } from "@hanabi-live/data";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";

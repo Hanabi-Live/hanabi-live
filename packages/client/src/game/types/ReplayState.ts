@@ -1,4 +1,4 @@
-import type { GameAction, GameState } from "@hanabi/game";
+import type { GameAction, GameState } from "@hanabi-live/game";
 import type { HypotheticalState } from "./HypotheticalState";
 import type { SharedReplayState } from "./SharedReplayState";
 

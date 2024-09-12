@@ -10,7 +10,7 @@ import {
   MAX_CARDS_IN_A_DECK,
   MAX_PLAYERS,
   MAX_SUITS_IN_A_VARIANT,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import-x/no-unassigned-import

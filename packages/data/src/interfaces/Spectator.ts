@@ -1,4 +1,4 @@
-import { playerIndex } from "@hanabi/game";
+import { playerIndex } from "@hanabi-live/game";
 import { z } from "zod";
 
 export const spectator = z

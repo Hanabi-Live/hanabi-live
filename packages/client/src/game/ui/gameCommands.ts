@@ -2,7 +2,7 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { Spectator } from "@hanabi/data";
+import type { Spectator } from "@hanabi-live/data";
 import type {
   CardIdentity,
   CardOrder,
@@ -11,14 +11,14 @@ import type {
   NumPlayers,
   PlayerIndex,
   SpectatorNote,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getEndGameLength,
   getMinEfficiency,
   getVariant,
   isHardVariant,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";

@@ -1,4 +1,4 @@
-import tseslint from "typescript-eslint"; // eslint-disable-line import-x/no-extraneous-dependencies
+import tseslint from "typescript-eslint";
 import { hanabiConfigBase } from "../../eslint.config.mjs";
 
 export default tseslint.config(

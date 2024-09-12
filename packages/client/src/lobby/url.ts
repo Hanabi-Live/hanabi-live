@@ -1,5 +1,5 @@
-import type { ServerCommandWelcomeData } from "@hanabi/data";
-import { DEFAULT_VARIANT_NAME } from "@hanabi/game";
+import type { ServerCommandWelcomeData } from "@hanabi-live/data";
+import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";

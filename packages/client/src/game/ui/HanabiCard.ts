@@ -10,7 +10,7 @@ import type {
   SuitIndex,
   SuitRankTuple,
   Variant,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   CardStatus,
   StackDirection,
@@ -22,7 +22,7 @@ import {
   isCardClued,
   isCardDiscarded,
   isCardPlayed,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { assertDefined, assertNotNull, iRange } from "complete-common";
 import Konva from "konva";
 import { includes } from "lodash";

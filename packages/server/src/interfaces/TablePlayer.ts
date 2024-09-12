@@ -1,4 +1,4 @@
-import { userID } from "@hanabi/data";
+import { userID } from "@hanabi-live/data";
 import z from "zod";
 
 const pregameStats = z

@@ -1,5 +1,5 @@
-import { userID } from "@hanabi/data";
-import { playerIndex } from "@hanabi/game";
+import { userID } from "@hanabi-live/data";
+import { playerIndex } from "@hanabi-live/game";
 import z from "zod";
 
 export const serverSpectator = z

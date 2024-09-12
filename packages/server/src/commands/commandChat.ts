@@ -1,6 +1,6 @@
 // TODO: implement d.Discord, d.Username
 
-import type { ClientCommandChatData } from "@hanabi/data";
+import type { ClientCommandChatData } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
 import { logger } from "../logger";

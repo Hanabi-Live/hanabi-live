@@ -1,4 +1,4 @@
-import type { NumPlayers, Options, PlayerIndex } from "@hanabi/game";
+import type { NumPlayers, Options, PlayerIndex } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 
 export interface InitData {
