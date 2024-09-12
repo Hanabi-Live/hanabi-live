@@ -66,6 +66,7 @@
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
     "postgres": "^3.4.4",
+    "prettier": "^3.3.3",
     "redux": "^5.0.1",
     "tooltipster": "^4.2.8",
     "ts-jest": "^29.2.5",
