@@ -251,7 +251,7 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		return false
 	}
 
-	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) {
+	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
 		if !variant.AtMaxClueTokens(g.ClueTokens) {
 			g.ClueTokens++
 		}
@@ -291,7 +291,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		return false
 	}
 
-	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) {
+	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
 		c := p.RemoveCard(d.Target)
 		p.PlayCard(c)
 		p.DrawCard()
