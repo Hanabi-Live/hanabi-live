@@ -1,0 +1,7 @@
+{
+  "name": "@hanabi-live/scripts",
+  "private": true,
+  "dependencies": {
+    "complete-node": "^1.5.0"
+  }
+}

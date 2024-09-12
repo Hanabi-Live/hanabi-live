@@ -59,13 +59,13 @@ export default tseslint.config(
             },
 
             {
-              group: ["@hanabi/game"],
+              group: ["@hanabi-live/game"],
               message:
                 "You cannot import from this package. Use a relative import import.",
             },
 
             {
-              group: ["@hanabi/data"],
+              group: ["@hanabi-live/data"],
               message:
                 "You cannot import from data --> game. Try refactoring it to this package instead.",
             },

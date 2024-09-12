@@ -59,7 +59,7 @@ export default tseslint.config(
             },
 
             {
-              group: ["@hanabi/data"],
+              group: ["@hanabi-live/data"],
               message:
                 "You cannot import from this package. Use a relative import import.",
             },

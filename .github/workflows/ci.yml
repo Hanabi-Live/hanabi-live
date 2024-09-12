@@ -49,7 +49,7 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
-      - name: Test the TypeScript code using Jest
+      - name: Test the TypeScript code
         run: npm run test
 
   format:

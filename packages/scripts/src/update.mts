@@ -5,5 +5,9 @@
 // https://github.com/typescript-eslint/typescript-eslint/issues/9653
 
 import { updatePackageJSONDependenciesMonorepo } from "complete-node";
+import path from "node:path";
 
-await updatePackageJSONDependenciesMonorepo();
+const PACKAGE_ROOT = path.join(import.meta.dirname, "..");
+const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
+
+await updatePackageJSONDependenciesMonorepo(REPO_ROOT);
