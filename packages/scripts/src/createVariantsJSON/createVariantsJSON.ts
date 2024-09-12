@@ -3,16 +3,19 @@ import type {
   VariantDescription,
   VariantJSON,
 } from "@hanabi-live/game";
-import { findPackageRoot, isMain } from "complete-node";
+import { isMain } from "complete-node";
 import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
+const PACKAGE_ROOT = path.join(__dirname, "..", "..");
+const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
+
 if (isMain()) {
   main().catch((error: unknown) => {
-    throw new Error(`The script encountered an error: ${error}`);
+    throw new Error(`${error}`);
   });
 }
 
@@ -58,9 +61,8 @@ function getPaths(): {
   readonly variantsPath: string;
   readonly textPath: string;
 } {
-  const packageRoot = findPackageRoot();
   const jsonDirectoryPath = path.join(
-    packageRoot,
+    REPO_ROOT,
     "packages",
     "game",
     "src",
@@ -68,7 +70,7 @@ function getPaths(): {
   );
   const suitsPath = path.join(jsonDirectoryPath, "suits.json");
   const variantsPath = path.join(jsonDirectoryPath, "variants.json");
-  const textPath = path.join(packageRoot, "misc", "variants.txt");
+  const textPath = path.join(REPO_ROOT, "misc", "variants.txt");
 
   return { suitsPath, variantsPath, textPath };
 }

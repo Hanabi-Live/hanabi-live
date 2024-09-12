@@ -1,15 +1,9 @@
-import {
-  diff,
-  fatalError,
-  findPackageRoot,
-  isFile,
-  isMain,
-  readFile,
-} from "complete-node";
+import { diff, isFile, isMain, readFile } from "complete-node";
 import path from "node:path";
 import { createVariantsJSON } from "./createVariantsJSON";
 
-const REPO_ROOT = findPackageRoot();
+const PACKAGE_ROOT = path.join(__dirname, "..", "..");
+const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
 const VARIANTS_JSON_PATH = path.join(
   REPO_ROOT,
   "packages",
@@ -22,7 +16,7 @@ const VARIANTS_TXT_PATH = path.join(REPO_ROOT, "misc", "variants.txt");
 
 if (isMain()) {
   main().catch((error: unknown) => {
-    throw new Error(`The script encountered an error: ${error}`);
+    throw new Error(`${error}`);
   });
 }
 
@@ -32,7 +26,7 @@ async function main() {
 
 async function checkVariantFiles() {
   if (!isFile(VARIANTS_JSON_PATH)) {
-    fatalError(
+    throw new Error(
       `Failed to find the "variants.json" file at: ${VARIANTS_JSON_PATH}`,
     );
   }
@@ -48,11 +42,11 @@ async function checkVariantFiles() {
   // Compare the text file first since the diff will be cleaner.
   if (oldVariantsTXT !== newVariantsTXT) {
     diff(oldVariantsTXT, newVariantsTXT);
-    fatalError('The "variants.txt" file is not up to date.');
+    throw new Error('The "variants.txt" file is not up to date.');
   }
 
   if (oldVariantsJSON !== newVariantsJSON) {
     diff(oldVariantsTXT, newVariantsTXT);
-    fatalError('The "variants.json" file is not up to date.');
+    throw new Error('The "variants.json" file is not up to date.');
   }
 }
