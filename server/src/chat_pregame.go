@@ -263,6 +263,24 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	msg := "Here is a random variant that everyone needs the " +
 		strconv.Itoa(len(userIDs)) + "-player max score in: " + randomVariant
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+	out := strings.ReplaceAll(string(jsonOptions), "\"", "'")
+		message = span + "<button class=\"new-options\" data-new-options=\"" +
+			out +
+			"\">click to apply the suggestion</button></span>"
+		for _, p := range t.Players {
+			if p.UserID == t.OwnerID {
+				p.Session.Emit("chat", &ChatMessage{
+					Msg:       message,
+					Who:       WebsiteName,
+					Discord:   false,
+					Server:    true,
+					Datetime:  time.Now(),
+					Room:      room,
+					Recipient: p.Name,
+				})
+				break
+			}
+		}
 }
 
 /*
