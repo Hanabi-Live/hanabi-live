@@ -196,6 +196,11 @@ function keydown(event: JQuery.KeyDownEvent) {
       globals.game!.sounds.play(SoundType.Us);
       return;
     }
+    if (event.which === KeyCode.KEY_A) {
+      // Alt + a. This is used for fun in shared replays.
+      sharedReplaySendSound("clap");
+      return;
+    }
 
     // Other
     if (event.which === KeyCode.KEY_C) {
