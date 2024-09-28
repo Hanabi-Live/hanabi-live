@@ -9,6 +9,7 @@ type Suit struct {
 	Pip          string   `json:"pip"`
 	Prism        bool     `json:"prism"`
 	Reversed     bool     `json:"reversed"`
+	Inverted     bool     `json:"inverted"`
 
 	AllClueColors bool `json:"allClueColors"`
 	AllClueRanks  bool `json:"allClueRanks"`
