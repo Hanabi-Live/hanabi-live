@@ -19,7 +19,7 @@
     "lint": "bash ./lint.sh",
     "lint-package-json": "tsx ./packages/scripts/src/lintPackageJSON.mts",
     "nuke": "isaacscript nuke",
-    "prepare": "husky install",
+    "prepare": "husky",
     "test": "jest",
     "update": "tsx ./packages/scripts/src/update.mts"
   },
