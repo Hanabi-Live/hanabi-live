@@ -2,9 +2,9 @@
 
 If you just want to install the website without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
 
-Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
+Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. Specifically, we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
 
-The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
+The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice code editor. Some adjustments will be needed if you are using a different editor.
 
 <br />
 
@@ -156,18 +156,6 @@ Building the client code can be memory intensive. Make sure that your system has
 - See [Running the Server](#running-the-server).
 
 <br />
-
-## Automate test running in VSCode
-
-To have VSCode automatically run tests you need to perform the following steps:
-
-- Windows:
-  - Open a Command Prompt as an administrator
-  - Go to `cd [code path]\package\client`
-  - Create a symbolic link to the `node_modules` directory of the root path: `mklink /D node_modules ..\..\node_modules`
-- Mac / Linux:
-  - Go to `cd [code path root]/package/client`
-  - Create a symbolic link to the `node_modules` directory of the root path: `ln -s ..\..\node_modules node_modules`
 
 ## Installation for Production (Linux)
 
