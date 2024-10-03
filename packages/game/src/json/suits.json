@@ -40,7 +40,7 @@
     "name": "Black",
     "id": "Bk",
     "createVariants": true,
-    "pip": "katakanaHe",
+    "pip": "katakanaNu",
     "oneOfEach": true
   },
   {
