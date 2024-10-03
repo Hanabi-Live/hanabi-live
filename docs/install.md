@@ -32,12 +32,12 @@ Building the client code can be memory intensive. Make sure that your system has
 - Install [Golang](https://golang.org/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id "GoLang.Go"`
 - Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "PostgreSQL.PostgreSQL"`
+  - `manually download version 16.4 Windows x86-64 from [the PostgreSQL downloads page](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and follow the prompts, using postgres as the default password to postgreSQL`
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id "OpenJS.NodeJS.LTS"`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id "Microsoft.VisualStudioCode"`
-- By default, the `winget` installer for PostgreSQL will not automatically add the exe files to the PATH variable, so we must add "C:\Program Files\PostgreSQL\16\bin" to the PATH variable manually. If you don't know how to do that, [follow this guide](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
+- By default, the downloaded installer for PostgreSQL will not automatically add the exe files to the PATH variable, so we must add "C:\Program Files\PostgreSQL\16\bin" to the PATH variable manually. If you don't know how to do that, [follow this guide](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
 - Exit your Command Prompt and reopen another one as an administrator (in order to load the new PATH variable).
 - Configure Git (if you do not already have it configured):
   - `git config --global user.name "Your_GitHub_Username"`
@@ -311,7 +311,10 @@ Adjust the "certbot" command below according to what domain names you want to re
 ## Running the Server
 
 - The "run.sh" script in the root of the repository will build and run the server.
-  - If you are on Windows, you should run this script from a Git Bash window.
+  - If you are on Windows, you should run this script from a Git Bash window by running `./run.sh.` If this is your first time running the server or you have changed some lines of code you have to recompile the program for it to load properly using the below 3 lines instead.
+  - `npm i`
+  - `cd packages/client/ ; ./build_client.sh ; ./esbuild_dev.sh` wait until the window ends with "waiting for changes..." before killing with ctrl-c
+  - `cd ../../ ; ./server/build_server.sh ; ./run.sh`
   - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
   - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restart the server.
 - If you are running the server in development, then you also have to run the `packages/client/esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
