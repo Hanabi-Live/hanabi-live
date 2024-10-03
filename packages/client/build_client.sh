@@ -78,7 +78,6 @@ if [[ ${1-} == "crit" ]]; then
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npm init --yes # Grunt needs a package.json to exist for some reason.
   npx grunt
   rm -f "$DIR/package.json"
   echo
