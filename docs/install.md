@@ -32,7 +32,7 @@ Building the client code can be memory intensive. Make sure that your system has
 - Install [Golang](https://golang.org/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id "GoLang.Go"`
 - Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
-  - `manually download version 16.4 Windows x86-64 from [the PostgreSQL downloads page](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and follow the prompts, using postgres as the default password to postgreSQL`
+  - Do not install this from `winget`, since that will install an older version. Instead, manually download and install the latest version from [the official downloads page](https://www.postgresql.org/download/windows/).
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id "OpenJS.NodeJS.LTS"`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
