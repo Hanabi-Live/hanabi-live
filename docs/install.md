@@ -224,8 +224,8 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - Open a second shell/terminal. (We need to leave the first one open, since it is running the server.)
 - Run the TypeScript listener:
   - `./packages/client/esbuild_dev.sh`
-  - This will run ESBuild forever until you either close the terminal window or cancel it with Ctrl + C.
-  - ESBuild will scan for any changes to TypeScript files and automatically update the `main.min.js` file.
+  - This will run `esbuild` forever until you either close the terminal window or cancel it with Ctrl + C.
+  - `esbuild` will scan for any changes to TypeScript files and automatically update the `main.min.js` file.
 - Open a browser and go to: http://localhost/
   - If it does not work or is stuck loading, press F12 to open the JavaScript console for hints as to what went wrong.
 - If you update any Golang files, you will have to manually stop and start the server.
