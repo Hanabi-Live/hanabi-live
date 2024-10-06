@@ -40,7 +40,7 @@ Building the client code can be memory intensive. Make sure that your system has
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\16\data\postgresql.conf"`
+  - `notepad "C:\Program Files\PostgreSQL\14\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
     - Save the file.
   - `net stop postgresql-x64-14`
