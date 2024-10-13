@@ -1,4 +1,4 @@
-import type { UserID } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
 import { eq, sql } from "drizzle-orm";
 import {
   mutedIPsTable,

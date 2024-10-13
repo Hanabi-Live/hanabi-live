@@ -1,6 +1,6 @@
-import type { NumPlayers } from "@hanabi/game";
-import type { Tuple } from "isaacscript-common-ts";
-import { assertNotNull, eRange, newArray } from "isaacscript-common-ts";
+import type { NumPlayers } from "@hanabi-live/game";
+import type { Tuple } from "complete-common";
+import { assertNotNull, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
 import { MultiFitText } from "./MultiFitText";

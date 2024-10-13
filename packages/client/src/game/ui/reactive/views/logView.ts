@@ -1,5 +1,5 @@
-import type { LogEntry } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+import type { LogEntry } from "@hanabi-live/game";
+import { eRange } from "complete-common";
 import { globals } from "../../UIGlobals";
 
 export function onLogChanged(log: readonly LogEntry[]): void {
@@ -18,7 +18,7 @@ function updateActionLog(log: readonly LogEntry[]) {
     const line =
       startingIndex + i > log.length - 1
         ? ""
-        : log[startingIndex + i]?.text ?? "";
+        : (log[startingIndex + i]?.text ?? "");
     if (line !== actionLog.smallHistory[i]) {
       actionLog.smallHistory[i] = line;
     }

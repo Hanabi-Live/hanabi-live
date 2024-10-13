@@ -1,4 +1,4 @@
-import { eRange } from "isaacscript-common-ts";
+import { eRange } from "complete-common";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";

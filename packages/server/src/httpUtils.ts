@@ -1,4 +1,4 @@
-import { PROJECT_NAME } from "@hanabi/data";
+import { PROJECT_NAME } from "@hanabi-live/data";
 import { IS_DEV } from "./env";
 import { getClientVersion } from "./version";
 

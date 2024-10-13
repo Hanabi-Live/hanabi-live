@@ -1,5 +1,5 @@
-import type { CardOrder } from "@hanabi/game";
-import { getTotalCardsInDeck } from "@hanabi/game";
+import type { CardOrder } from "@hanabi-live/game";
+import { getTotalCardsInDeck } from "@hanabi-live/game";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 

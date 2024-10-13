@@ -1,4 +1,4 @@
-import { EndCondition, options } from "@hanabi/game";
+import { EndCondition, options } from "@hanabi-live/game";
 import { z } from "zod";
 import { gameID } from "../types/GameID";
 
@@ -20,4 +20,5 @@ export const gameHistory = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface GameHistory extends z.infer<typeof gameHistory> {}

@@ -1,8 +1,8 @@
 import fastifyFormBody from "@fastify/formbody";
 import type { SecureSessionPluginOptions } from "@fastify/secure-session";
-import fastifySecureSession from "@fastify/secure-session";
-import fastifyStatic from "@fastify/static";
-import fastifyView from "@fastify/view";
+import { fastifySecureSession } from "@fastify/secure-session";
+import { fastifyStatic } from "@fastify/static";
+import { fastifyView } from "@fastify/view";
 import fastifyWebSocket from "@fastify/websocket";
 import { Eta } from "eta";
 import type {
@@ -12,7 +12,7 @@ import type {
   RawServerDefault,
 } from "fastify";
 import { fastify } from "fastify";
-import fastifyFavicon from "fastify-favicon";
+import { fastifyFavicon } from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";

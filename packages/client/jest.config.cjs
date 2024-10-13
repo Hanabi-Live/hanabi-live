@@ -5,7 +5,7 @@ const { pathsToModuleNameMapper } = require("ts-jest");
 
 // Read and parse the compiler options from the "tsconfig.json" file.
 const REPO_ROOT = path.join(__dirname, "..", "..");
-const MONOREPO_TS_CONFIG = path.join(REPO_ROOT, "tsconfig.json");
+const MONOREPO_TS_CONFIG = path.join(REPO_ROOT, "tsconfig.monorepo.json");
 if (!fs.existsSync(MONOREPO_TS_CONFIG)) {
   throw new Error(`The "${MONOREPO_TS_CONFIG}" file does not exist.`);
 }

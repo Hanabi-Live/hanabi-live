@@ -10,7 +10,7 @@ import type {
   SuitIndex,
   SuitRankTuple,
   Variant,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   CardStatus,
   StackDirection,
@@ -22,8 +22,8 @@ import {
   isCardClued,
   isCardDiscarded,
   isCardPlayed,
-} from "@hanabi/game";
-import { assertDefined, assertNotNull, iRange } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { assertDefined, assertNotNull, iRange } from "complete-common";
 import Konva from "konva";
 import { includes } from "lodash";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -1433,7 +1433,7 @@ function updatePip(
   hasPositiveClues: boolean,
   pip: Konva.Shape | RankPip,
   x: Konva.Shape,
-  pipPositive?: Konva.Shape | undefined,
+  pipPositive?: Konva.Shape,
 ) {
   if (pipState === PipState.Hidden) {
     pip.hide();

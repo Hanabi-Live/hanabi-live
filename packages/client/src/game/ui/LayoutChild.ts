@@ -1,5 +1,8 @@
-import type { PlayerIndex } from "@hanabi/game";
-import { isAtMaxClueTokens, isCardPotentiallyPlayable } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
+import {
+  isAtMaxClueTokens,
+  isCardPotentiallyPlayable,
+} from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
@@ -24,7 +27,7 @@ export class LayoutChild extends Konva.Group {
     return this._card;
   }
 
-  constructor(child: HanabiCard, config?: Konva.ContainerConfig | undefined) {
+  constructor(child: HanabiCard, config?: Konva.ContainerConfig) {
     super(config);
     this.listening(true);
     this._card = child;

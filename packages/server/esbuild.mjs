@@ -2,10 +2,8 @@ import { build } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import fs from "node:fs";
 import path from "node:path";
-import url from "node:url";
 
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
-const PACKAGE_NAME = path.basename(__dirname);
+const PACKAGE_NAME = path.basename(import.meta.dirname);
 const CWD = process.cwd();
 
 /**
@@ -66,8 +64,8 @@ build({
 }).catch(() => process.exit(1));
 
 // Copy the template files, which are not included in the bundle.
-const TEMPLATES_DIR_SRC = path.join(__dirname, "src", "templates");
-const TEMPLATES_DIR_DST = path.join(__dirname, "dist", "templates");
+const TEMPLATES_DIR_SRC = path.join(import.meta.dirname, "src", "templates");
+const TEMPLATES_DIR_DST = path.join(import.meta.dirname, "dist", "templates");
 fs.cpSync(TEMPLATES_DIR_SRC, TEMPLATES_DIR_DST, {
   recursive: true,
 });

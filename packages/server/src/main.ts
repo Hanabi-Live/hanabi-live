@@ -1,4 +1,4 @@
-import { PROJECT_NAME } from "@hanabi/data";
+import { PROJECT_NAME } from "@hanabi-live/data";
 import { bannedIPsInit } from "./bannedIPs";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";

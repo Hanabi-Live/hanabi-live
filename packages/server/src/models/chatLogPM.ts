@@ -1,4 +1,4 @@
-import type { UserID } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
 import { chatLogPMTable } from "../databaseSchema";
 import { db } from "../db";
 

@@ -1,5 +1,5 @@
-import type { Tuple } from "isaacscript-common-ts";
-import { SECOND_IN_MILLISECONDS, assertDefined } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
 import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
@@ -36,7 +36,7 @@ export function getGoesFirstText(
   const playerName =
     playerIndex === null
       ? "[unknown]"
-      : playerNames[playerIndex] ?? "[unknown]";
+      : (playerNames[playerIndex] ?? "[unknown]");
 
   return `${playerName} goes first`;
 }

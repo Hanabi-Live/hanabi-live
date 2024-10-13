@@ -1,4 +1,4 @@
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import type { Suit } from "./interfaces/Suit";
 
 /**

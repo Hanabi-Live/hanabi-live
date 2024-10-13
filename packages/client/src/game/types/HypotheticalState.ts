@@ -1,4 +1,4 @@
-import type { CardIdentity, GameState, PlayerIndex } from "@hanabi/game";
+import type { CardIdentity, GameState, PlayerIndex } from "@hanabi-live/game";
 
 export interface HypotheticalState {
   readonly ongoing: GameState;

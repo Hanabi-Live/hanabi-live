@@ -1,5 +1,5 @@
-import type { Spectator } from "@hanabi/data";
-import type { CardIdentity, GameMetadata, GameState } from "@hanabi/game";
+import type { Spectator } from "@hanabi-live/data";
+import type { CardIdentity, GameMetadata, GameState } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction";
 import type { NotesState } from "./NotesState";
 import type { PauseState } from "./PauseState";

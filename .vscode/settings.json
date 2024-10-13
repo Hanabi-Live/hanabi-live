@@ -30,7 +30,11 @@
     "**/.yarn/": true,
     "**/dist/": true,
     "**/node_modules/": true,
+    "bun.lockb": true,
     "LICENSE": true,
+    "package-lock.json": true,
+    "pnpm-lock.yaml": true,
+    "yarn.lock": true,
     // @template-customization-start
     "**/*.min.js*": true,
     "**/misc/keldon/": true,
@@ -44,7 +48,7 @@
   // Extension settings
   // ------------------
 
-  // Use Prettier to format "cspell.jsonc".
+  // Use Prettier to format "cspell.config.jsonc".
   "cSpell.autoFormatConfigFile": true,
 
   // -----------------
@@ -81,12 +85,10 @@
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.tabSize": 2,
   },
   "[css][html][json][jsonc][markdown][postcss][yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.tabSize": 2,
   },
   // @template-customization-start
   "[go]": {

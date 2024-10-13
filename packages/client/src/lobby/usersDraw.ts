@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current logged-in users.
 
-import type { UserID } from "@hanabi/data";
-import { Status, StatusText } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
+import { Status, StatusText } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import * as tablesDraw from "./tablesDraw";

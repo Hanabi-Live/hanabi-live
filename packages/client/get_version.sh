@@ -14,4 +14,3 @@ cd "$REPO_ROOT"
 # git repository). This is "baked" into the JavaScript bundle and self-reported when connecting to
 # the server so that the server can deny clients on old versions of the code.
 VERSION=$(git rev-list --count HEAD)
-export VERSION

@@ -3,10 +3,10 @@ import type {
   Spectator,
   TableID,
   UserID,
-} from "@hanabi/data";
-import type { PlayerIndex } from "@hanabi/game";
-import { isValidPlayerIndex } from "@hanabi/game";
-import { mapFilter } from "isaacscript-common-ts";
+} from "@hanabi-live/data";
+import type { PlayerIndex } from "@hanabi-live/game";
+import { isValidPlayerIndex } from "@hanabi-live/game";
+import { mapFilter } from "complete-common";
 import type { ServerSpectator } from "./interfaces/ServerSpectator";
 import type { Table } from "./interfaces/Table";
 

@@ -1,12 +1,12 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
-import type { CardState, GameState } from "@hanabi/game";
+import type { CardState, GameState } from "@hanabi-live/game";
 import {
   StackDirection,
   getEfficiencyFromGameState,
   getFutureEfficiency,
-} from "@hanabi/game";
-import { assertDefined, eRange } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { assertDefined, eRange } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";

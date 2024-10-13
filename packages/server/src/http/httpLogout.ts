@@ -15,6 +15,6 @@ export async function httpLogout(
       // Otherwise, after the first logout, the redirect would be cached, and then on the second
       // logout and beyond, the browser would not actually send a GET request to "/logout"
       .header("Cache-Control", "no-store")
-      .redirect(StatusCodes.MOVED_PERMANENTLY, "/")
+      .redirect("/", StatusCodes.MOVED_PERMANENTLY)
   );
 }

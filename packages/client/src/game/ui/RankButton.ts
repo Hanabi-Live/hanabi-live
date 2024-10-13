@@ -1,4 +1,4 @@
-import type { Clue } from "@hanabi/game";
+import type { Clue } from "@hanabi-live/game";
 import Konva from "konva";
 import { drawLayer } from "./konvaHelpers";
 

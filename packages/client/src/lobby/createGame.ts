@@ -1,8 +1,8 @@
 // The "Create Game" nav button.
 
-import type { Settings } from "@hanabi/data";
-import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi/data";
-import type { Options } from "@hanabi/game";
+import type { Settings } from "@hanabi-live/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
+import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
   MAX_PLAYERS,
@@ -10,14 +10,14 @@ import {
   VARIANT_NAMES,
   doesVariantExist,
   isValidNumPlayers,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   MINUTE_IN_MILLISECONDS,
   ReadonlySet,
   getRandomArrayElement,
   parseFloatSafe,
   parseIntSafe,
-} from "isaacscript-common-ts";
+} from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT_MINUTES } from "../constants";
@@ -528,8 +528,8 @@ export function ready(): boolean {
   // Change the UI if we are in a pre-game screen.
   let dialogTitle = "Create a New Game";
   let buttonTitle = "Create";
-  let gameName = "";
-  let dialogOptions: Options | Settings | null = null;
+  let gameName: string;
+  let dialogOptions: Options | Settings;
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game

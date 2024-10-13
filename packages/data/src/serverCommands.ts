@@ -1,7 +1,7 @@
 // Datetime properties are in the form: "2023-12-29T18:21:43.812446Z"
 
-import { options } from "@hanabi/game";
-import { interfaceSatisfiesEnum } from "isaacscript-common-ts";
+import { options } from "@hanabi-live/game";
+import { interfaceSatisfiesEnum } from "complete-common";
 import { z } from "zod";
 import { ServerCommand } from "./enums/ServerCommand";
 import { Status } from "./enums/Status";
@@ -28,6 +28,7 @@ const serverCommandChatData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandChatData
   extends z.infer<typeof serverCommandChatData> {}
 
@@ -39,6 +40,7 @@ const serverCommandChatListData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandChatListData
   extends z.infer<typeof serverCommandChatListData> {}
 
@@ -49,11 +51,13 @@ const serverCommandErrorData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandErrorData
   extends z.infer<typeof serverCommandErrorData> {}
 
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandGameHistoryData
   extends z.infer<typeof serverCommandGameHistoryData> {}
 
@@ -80,11 +84,13 @@ const serverCommandTableData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandTableData
   extends z.infer<typeof serverCommandTableData> {}
 
 const serverCommandTableListData = serverCommandTableData.array().readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandTableListData
   extends z.infer<typeof serverCommandTableListData> {}
 
@@ -100,6 +106,7 @@ const serverCommandUserData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandUserData
   extends z.infer<typeof serverCommandUserData> {}
 
@@ -110,11 +117,13 @@ const serverCommandUserLeftData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandUserLeftData
   extends z.infer<typeof serverCommandUserLeftData> {}
 
 const serverCommandUserListData = serverCommandUserData.array().readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandUserListData
   extends z.infer<typeof serverCommandUserListData> {}
 
@@ -125,6 +134,7 @@ const serverCommandWarningData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandWarningData
   extends z.infer<typeof serverCommandWarningData> {}
 
@@ -150,6 +160,7 @@ const serverCommandWelcomeData = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandWelcomeData
   extends z.infer<typeof serverCommandWelcomeData> {}
 

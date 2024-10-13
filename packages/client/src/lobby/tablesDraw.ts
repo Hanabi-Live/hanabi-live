@@ -1,12 +1,8 @@
 // The lobby area that shows all of the current tables.
 
-import type { ServerCommandTableData } from "@hanabi/data";
-import { MAX_PLAYERS } from "@hanabi/game";
-import {
-  SECOND_IN_MILLISECONDS,
-  assertDefined,
-  iRange,
-} from "isaacscript-common-ts";
+import type { ServerCommandTableData } from "@hanabi-live/data";
+import { MAX_PLAYERS } from "@hanabi-live/game";
+import { SECOND_IN_MILLISECONDS, assertDefined, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -172,7 +168,6 @@ export function tablesDraw(): void {
     td.appendTo(row);
 
     // Column 7 - Spectators.
-    let spectatorsString = "";
     const spectatorsArray: string[] = [];
     for (const spectator of table.spectators) {
       if (globals.friends.includes(spectator.name)) {
@@ -181,7 +176,7 @@ export function tablesDraw(): void {
         spectatorsArray.push(spectator.name);
       }
     }
-    spectatorsString = spectatorsArray.join(", ");
+    const spectatorsString = spectatorsArray.join(", ");
     // Change click behavior on the spectators cell.
     if (table.joined) {
       $("<td>").html(spectatorsString).appendTo(row);

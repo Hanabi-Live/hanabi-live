@@ -3,8 +3,8 @@ import type {
   PlayerIndex,
   RankClueNumber,
   SuitIndex,
-} from "@hanabi/game";
-import type { CompositionTypeSatisfiesEnum } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import type { CompositionTypeSatisfiesEnum } from "complete-common";
 import type { ActionType } from "./ActionType";
 
 /** A message sent to the server that represents the in-game action that we just took. */

@@ -4,8 +4,11 @@ import type {
   Rank,
   SuitRankTuple,
   Variant,
-} from "@hanabi/game";
-import { START_CARD_RANK, canCardPossiblyBeFromEmpathy } from "@hanabi/game";
+} from "@hanabi-live/game";
+import {
+  START_CARD_RANK,
+  canCardPossiblyBeFromEmpathy,
+} from "@hanabi-live/game";
 import * as modals from "../../modals";
 import { globals } from "./UIGlobals";
 

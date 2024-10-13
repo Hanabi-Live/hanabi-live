@@ -1,4 +1,4 @@
-import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi/game";
+import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
@@ -40,7 +40,7 @@ function handlePremove() {
     premove: null,
   });
 
-  // Perform some validation
+  // Perform some validation.
   switch (oldPremove.type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {

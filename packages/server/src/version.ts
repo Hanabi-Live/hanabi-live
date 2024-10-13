@@ -1,4 +1,4 @@
-import { parseIntSafe } from "isaacscript-common-ts";
+import { parseIntSafe } from "complete-common";
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";

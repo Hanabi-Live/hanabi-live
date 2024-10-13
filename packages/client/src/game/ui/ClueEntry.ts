@@ -1,8 +1,8 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI).
 
-import type { CardOrder, StateClue } from "@hanabi/game";
-import { getCharacterNameForPlayer, getClueName } from "@hanabi/game";
-import { assertDefined } from "isaacscript-common-ts";
+import type { CardOrder, StateClue } from "@hanabi-live/game";
+import { getCharacterNameForPlayer, getClueName } from "@hanabi-live/game";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";

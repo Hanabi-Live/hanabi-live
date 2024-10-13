@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 
-import type { Tuple } from "isaacscript-common-ts";
-import { newArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { newArray } from "complete-common";
 import { DEFAULT_PLAYER_NAMES, DEFAULT_VARIANT_NAME } from "./constants";
 import { getVariant } from "./gameData";
 import type { GameMetadata } from "./interfaces/GameMetadata";

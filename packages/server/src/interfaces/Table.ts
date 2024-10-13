@@ -1,5 +1,5 @@
-import { tableID, userID } from "@hanabi/data";
-import { numPlayers, options } from "@hanabi/game";
+import { tableID, userID } from "@hanabi-live/data";
+import { numPlayers, options } from "@hanabi-live/game";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import z from "zod";
@@ -50,6 +50,7 @@ const table = z
   })
   .strict();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Table extends z.infer<typeof table> {}
 
 const jsonSchema = zodToJsonSchema(table, "Game") as AnySchema;

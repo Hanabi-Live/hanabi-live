@@ -1,10 +1,8 @@
 # Hanab Live Installation
 
-If you just want to install the website without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
+Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. Specifically, we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
 
-Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
-
-The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice text editor that happens to be better than [Atom](https://atom.io/), [Notepad++](https://notepad-plus-plus.org/), etc. Some adjustments will be needed if you are using a different editor.
+The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice code editor. Some adjustments will be needed if you are using a different editor.
 
 <br />
 
@@ -13,8 +11,8 @@ The following instructions will set up the server as well as the linters. We ass
 1. [Hardware Prerequisites](#hardware-prerequisites)
 1. [Installation for Development (Windows)](#installation-for-development-windows)
 1. [Installation for Development (MacOS)](#installation-for-development-macos)
-1. [Installation for Production (Linux)](#installation-for-production-linux)
-1. [Running the Server](#running-the-server)
+1. [Installation for Development/Production (Linux)](#installation-for-developmentproduction-linux)
+1. [Running the Server in Development](#running-the-server-in-development)
 
 <br />
 
@@ -28,33 +26,28 @@ Building the client code can be memory intensive. Make sure that your system has
 
 - Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 - Install [Git](https://git-scm.com/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "Git.Git"`
+  - `winget install --accept-source-agreements --silent --exact --id Git.Git`
 - Install [Golang](https://golang.org/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "GoLang.Go"`
-- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "PostgreSQL.PostgreSQL"`
+  - `winget install --accept-source-agreements --silent --exact --id GoLang.Go`
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "OpenJS.NodeJS.LTS"`
+  - `winget install --accept-source-agreements --silent --exact --id OpenJS.NodeJS.LTS`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id "Microsoft.VisualStudioCode"`
-- By default, the `winget` installer for PostgreSQL will not automatically add the exe files to the PATH variable, so we must add "C:\Program Files\PostgreSQL\16\bin" to the PATH variable manually. If you don't know how to do that, [follow this guide](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
-- Exit your Command Prompt and reopen another one as an administrator (in order to load the new PATH variable).
+  - `winget install --accept-source-agreements --silent --exact --id Microsoft.VisualStudioCode`
+- Install [PostgreSQL v14](https://www.postgresql.org/) (if you do not already have it installed):
+  - `winget install --accept-source-agreements --silent --exact --id PostgreSQL.PostgreSQL.14`
+  - Note that versions other than 14 will probably work fine, if you already have a separate version installed.
 - Configure Git (if you do not already have it configured):
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
-  - `git config --global core.autocrlf false` <br />
-    (so that Git does not convert LF to CRLF when cloning repositories)
-  - `git config --global pull.rebase true` <br />
-    (so that Git automatically rebases when pulling)
 - Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\16\data\postgresql.conf"`
+  - `notepad "C:\Program Files\PostgreSQL\14\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
     - Save the file.
-  - `net stop postgresql-x64-16`
-  - `net start postgresql-x64-16`
+  - `net stop postgresql-x64-14`
+  - `net start postgresql-x64-14`
 - Create a new database and set up a database user:
   - `set PGPASSWORD=postgres`
-  - `"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres`
+  - `"C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres`
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
@@ -69,51 +62,50 @@ Building the client code can be memory intensive. Make sure that your system has
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
-    - `git clone https://github.com/[Your_GitHub_Username]/hanabi-live.git`
+    - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
-- Change from the Windows Command Prompt to Git Bash
+- Change from the Windows Command Prompt to Git Bash:
   - `"%PROGRAMFILES%\Git\bin\sh.exe"`
-- Install [Yarn](https://yarnpkg.com/):
-  - `corepack enable`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`
 - Set up environment variables:
-  - `notepad .env` <br />
-    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
+  - `notepad .env`
+    - Enter a random 128 character alphanumeric string for "SESSION_SECRET".
+    - Verify that "DOMAIN" and "DB_PASSWORD" are correct.
+    - Save and exit.
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
   - `code .`
-- In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
-- Test the Golang linter:
-  - On the left pane, navigate to and open "src\main.go".
-  - If you get a pop-up asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
-  - Add a new line of "test" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
-  - Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 - Test the TypeScript linter:
   - On the left pane, navigate to and open "packages/client/src/main.ts".
-  - Add a new line of "test" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
-- See [Running the Server](#running-the-server).
+  - Open the "Problems Pane", if it is not already open. (You can use the "Ctrl + Shift + M" hotkey to do this, or "View" --> "Problems" from the menu.)
+  - Add a new line of "test" somewhere and watch as an ESLint warning appears in the bottom pane. (There is no need to save the file.)
+- See [Running the Server in Development](#running-the-server-in-development).
 
 <br />
 
 ## Installation for Development (MacOS)
 
-- Install the [Homebrew](https://brew.sh/) package manager:
-  - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
-- Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
-  - `brew install git golang node`
+- Install the [Homebrew](https://brew.sh/) package manager (if you do not already have it installed):
+  - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+- Install [Git](https://git-scm.com/) (if you do not already have it installed):
+  - `brew install git`
+- Install [Golang](https://golang.org/) (if you do not already have it installed):
+  - `brew install golang`
+- Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
+  - `brew install node`
+- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
   - `brew cask install visual-studio-code`
+- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
+  - `brew install postgresql`
 - Configure Git:
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
-  - `git config --global pull.rebase true` <br />
-    (so that Git automatically rebases when pulling)
 - Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
-- Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
-  - `brew install postgresql`
+- Create a new database, and set up a database user:
   - `brew services start postgresql`
   - `psql postgres` <br />
     (on MacOS, there is no password by default)
@@ -133,19 +125,21 @@ Building the client code can be memory intensive. Make sure that your system has
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
   - Or, if you are doing development work, then clone your forked version of the repository. For example:
-    - `git clone https://github.com/[Your_GitHub_Username]/hanabi-live.git`
+    - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
 - Install some dependencies:
   - `./install/install_dependencies.sh`
   - `./install/install_development_dependencies.sh`
 - Set up environment variables (optional):
-  - `open -t .env` <br />
-    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
+  - `open -t .env`
+    - Enter a random 128 character alphanumeric string for "SESSION_SECRET".
+    - Verify that "DOMAIN" and "DB_PASSWORD" are correct.
+    - Save and exit.
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
-  - `code hanab.code-workspace`
+  - `code .`
 - In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 - Test the Golang linter:
   - On the left pane, navigate to and open "src\main.go".
@@ -155,35 +149,19 @@ Building the client code can be memory intensive. Make sure that your system has
 - Test the TypeScript linter:
   - On the left pane, navigate to and open "packages/client/src/main.ts".
   - Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
-- See [Running the Server](#running-the-server).
+- See [Running the Server in Development](#running-the-server-in-development).
 
 <br />
 
-## Automate test running in VSCode
+## Installation for Development/Production (Linux)
 
-To have VSCode automatically run tests you need to perform the following steps:
-
-- Windows:
-  - Open a Command Prompt as an administrator
-  - Go to `cd [code path]\package\client`
-  - Create a symbolic link to the `node_modules` directory of the root path: `mklink /D node_modules ..\..\node_modules`
-- Mac / Linux:
-  - Go to `cd [code path root]/package/client`
-  - Create a symbolic link to the `node_modules` directory of the root path: `ln -s ..\..\node_modules node_modules`
-
-## Installation for Production (Linux)
-
-These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
+These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
 
 - Make sure the package manager is up to date:
   - `sudo apt update`
   - `sudo apt upgrade -y`
-- Install and configure [Git](https://git-scm.com/):
+- Install [Git](https://git-scm.com/):
   - `sudo apt install git -y`
-  - `git config --global user.name "Your_GitHub_Username"`
-  - `git config --global user.email "your@email.com"`
-  - `git config --global pull.rebase true` <br />
-    (so that Git automatically rebases when pulling)
 - Install [Golang](https://golang.org/):
   - `sudo apt install golang -y`
 - Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
@@ -205,23 +183,55 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   - `[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"`
   - `nvm install node` <br />
     (this installs the latest version)
+- Configure Git:
+  - `git config --global user.name "Your_GitHub_Username"`
+  - `git config --global user.email "your@email.com"`
 - Clone the server:
   - `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
   - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
     - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
   - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
+  - Or, if you are doing development work, then clone your forked version of the repository. For example:
+    - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
+- Enter the cloned repository:
   - `cd hanabi-live`
 - Install the project dependencies:
   - `./install/install_dependencies.sh`
-- Install the project development dependencies (but only if this is not a production installation):
+- Install the project development dependencies (but only in non-production environments):
   - `./install/install_development_dependencies.sh`
 - Set up environment variables:
-  - `nano .env`
-    (enter a random 128 character alphanumeric string for "SESSION_SECRET", and then verify "DOMAIN" and "DB_PASSWORD")
+  - `vim .env`
+    - Enter a random 128 character alphanumeric string for "SESSION_SECRET".
+    - Verify that "DOMAIN" and "DB_PASSWORD" are correct.
+    - Save and exit.
 - Install the database schema:
   - `./install/install_database_schema.sh`
-- See [Running the Server](#running-the-server).
+- If you are in development, see [Running the Server in Development](#running-the-server-in-development).
+- If you are in production, see [Install as a Service](#install-as-a-service-optional).
+
+<br />
+
+## Running the Server in Development
+
+- Open a shell/terminal, if you do not already have one open.
+  - On Windows, you should use Git Bash.
+- Run the server:
+  - `./run.sh`
+  - This will run the server forever until you either close the terminal window or cancel it with Ctrl + C.
+  - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
+  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restarting the server.
+- Open a second shell/terminal. (We need to leave the first one open, since it is running the server.)
+- Run the TypeScript listener:
+  - `./packages/client/esbuild_dev.sh`
+  - This will run `esbuild` forever until you either close the terminal window or cancel it with Ctrl + C.
+  - `esbuild` will scan for any changes to TypeScript files and automatically update the `main.min.js` file.
+- Open a browser and go to: http://localhost/
+  - If it does not work or is stuck loading, press F12 to open the JavaScript console for hints as to what went wrong.
+- If you update any Golang files, you will have to manually stop and start the server.
+- If you update any TypeScript files, you will have to manually refresh the page to pick up the new changes.
+- If you update any CSS files, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes a long time, but you only need to run it once before committing your changes.
+- You can also go to "http://localhost/login=test1" to automatically log in as "test1", "http://localhost/login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
 
 <br />
 
@@ -242,7 +252,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 <br />
 
-### Install as a service (optional)
+### Install as a Service (optional)
 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
@@ -309,18 +319,3 @@ Adjust the "certbot" command below according to what domain names you want to re
 ```
 
 <br />
-
-## Running the Server
-
-- The "run.sh" script in the root of the repository will build and run the server.
-  - If you are on Windows, you should run this script from a Git Bash window.
-  - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
-  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restart the server.
-- If you are running the server in development, then you also have to run the `packages/client/esbuild_dev.sh` script. This will automatically create a new version of `main.min.js` whenever you change a file. (You will still have to manually refresh the page though in order to pick up the new changes.)
-- Once the server is running, you can go to "http://localhost/" to view the site.
-  - By default, the server runs on port 80 (the default HTTP port).
-  - Viewing the page will only work if the prerequisites were installed properly, which is covered previously in this document.
-  - If it does not work or is stuck loading, look at the JavaScript console for hints as to what went wrong.
-- If you change any of the Golang code, then you must restart the server for the changes to take effect.
-- You can also go to "http://localhost/login=test1" to automatically log in as "test1", "http://localhost/login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
-- If you change any CSS, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes longer than `build_client.sh`, so you only need to run it once before committing your changes.

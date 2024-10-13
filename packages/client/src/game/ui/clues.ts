@@ -1,16 +1,12 @@
-import type { CardOrder, Clue, MsgClue } from "@hanabi/game";
+import type { CardOrder, Clue, MsgClue } from "@hanabi-live/game";
 import {
   ClueType,
   getAdjustedClueTokens,
   getCharacterNameForPlayer,
   isCardTouchedByClue,
   msgClueToClue,
-} from "@hanabi/game";
-import {
-  SECOND_IN_MILLISECONDS,
-  assertDefined,
-  eRange,
-} from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
 import type {
   ClientActionColorClue,

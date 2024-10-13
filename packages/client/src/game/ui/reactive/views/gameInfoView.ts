@@ -1,10 +1,10 @@
-import type { PlayerIndex, StateStrike } from "@hanabi/game";
+import type { PlayerIndex, StateStrike } from "@hanabi-live/game";
 import {
   MAX_STRIKES,
   getAdjustedClueTokens,
   isAtMaxClueTokens,
-} from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";

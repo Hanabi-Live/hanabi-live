@@ -1,4 +1,4 @@
-import type { Tuple } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
 import type { EndCondition } from "../enums/EndCondition";
 import type { SpectatorNote } from "../interfaces/SpectatorNote";
 import type { CardOrder } from "./CardOrder";

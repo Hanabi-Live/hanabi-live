@@ -1,10 +1,10 @@
-import type { ClientCommandData } from "@hanabi/data";
+import type { ClientCommandData } from "@hanabi-live/data";
 import {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
   unpackWSMessage,
-} from "@hanabi/data";
-import { ReadonlySet, getEnumValues, isEnumValue } from "isaacscript-common-ts";
+} from "@hanabi-live/data";
+import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";

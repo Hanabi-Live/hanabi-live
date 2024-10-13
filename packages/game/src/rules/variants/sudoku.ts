@@ -1,5 +1,5 @@
-import type { Tuple } from "isaacscript-common-ts";
-import { assertDefined, eRange, iRange, newArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { assertDefined, eRange, iRange, newArray } from "complete-common";
 import type { CardState } from "../../interfaces/CardState";
 import type { GameState } from "../../interfaces/GameState";
 import type { Variant } from "../../interfaces/Variant";
@@ -362,7 +362,7 @@ export function sudokuGetMaxScorePerStack(
   // stack start.
   const assigned: Tuple<boolean, 5> = [false, false, false, false, false];
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     // The goal of each iteration is to increase the assignment of 'localSuitIndex' to the next free
     // stack start. (Specifically, the next number available and not yet assigned to some other

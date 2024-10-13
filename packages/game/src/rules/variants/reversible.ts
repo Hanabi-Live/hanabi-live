@@ -1,8 +1,8 @@
 // Helper methods for variants where suits may have a different direction than up. This is currently
 // used for "Up Or Down" and "Reversed" variants.
 
-import type { Tuple } from "isaacscript-common-ts";
-import { eRange, iRange, newArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { eRange, iRange, newArray } from "complete-common";
 import { START_CARD_RANK } from "../../constants";
 import { StackDirection } from "../../enums/StackDirection";
 import type { CardState } from "../../interfaces/CardState";

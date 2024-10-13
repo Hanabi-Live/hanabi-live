@@ -1,6 +1,6 @@
 // Miscellaneous helpers used by several reducers.
 
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import { getCharacter } from "../gameData";
 import type { GameState } from "../interfaces/GameState";
 import { getEfficiency } from "../rules/stats";

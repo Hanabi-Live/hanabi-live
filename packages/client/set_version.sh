@@ -9,4 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1091
 source "$DIR/get_version.sh"
 
-echo "module.exports = { VERSION: \"$VERSION\" };" > "$REPO_ROOT/packages/data/src/version.js"
+VERSION_PATH="$REPO_ROOT/packages/data/src/version.js"
+echo "// @ts-nocheck" > "$VERSION_PATH"
+echo >> "$VERSION_PATH"
+echo "module.exports = { VERSION: \"$VERSION\" };" >> "$VERSION_PATH"

@@ -1,6 +1,6 @@
 // Touch actions for the HanabiCard object. These are a subset of the actions in HanabiCardClick.ts.
 
-import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
+import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type { HanabiCard } from "./HanabiCard";
 import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as notes from "./notes";

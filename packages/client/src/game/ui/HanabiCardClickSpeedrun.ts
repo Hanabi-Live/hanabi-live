@@ -1,6 +1,11 @@
 // Speedrun click functions for the HanabiCard object.
 
-import type { CardState, Color, RankClueNumber, Variant } from "@hanabi/game";
+import type {
+  CardState,
+  Color,
+  RankClueNumber,
+  Variant,
+} from "@hanabi-live/game";
 import {
   START_CARD_RANK,
   getAdjustedClueTokens,
@@ -10,7 +15,7 @@ import {
   isCardTouchedByClueColor,
   isCardTouchedByClueRank,
   isValidRankClueNumber,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import * as sounds from "../../sounds";
 import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";

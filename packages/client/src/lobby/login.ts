@@ -1,8 +1,8 @@
 // The initial login page.
 
-import type { HTTPLoginData } from "@hanabi/data";
-import { VERSION } from "@hanabi/data";
-import { assertDefined } from "isaacscript-common-ts";
+import type { HTTPLoginData } from "@hanabi-live/data";
+import { VERSION } from "@hanabi-live/data";
+import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { FADE_TIME_MS } from "../constants";
@@ -108,7 +108,7 @@ function send(
     version: VERSION,
   } satisfies HTTPLoginData;
 
-  // eslint-disable-next-line isaacscript/no-object-any
+  // eslint-disable-next-line complete/no-object-any
   const request = $.ajax({
     url,
     type: "POST",
@@ -124,6 +124,7 @@ function send(
     .fail((jqXHR) => {
       formError(`Login failed: ${getAjaxError(jqXHR)}`);
     })
+    // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
     .catch((error) => {
       formError(`Login failed: ${getAjaxError(error)}`);
     });
@@ -185,7 +186,7 @@ export function automaticLogin(): void {
       }
       show();
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       console.error(`Failed to fetch "${testCookiePath}":`, error);
     });
 }

@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 
-import type { Tuple } from "isaacscript-common-ts";
-import { eRange, newArray } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
+import { eRange, newArray } from "complete-common";
 import { START_CARD_RANK } from "../constants";
 import { StackDirection } from "../enums/StackDirection";
 import { getDefaultVariant, getVariant } from "../gameData";

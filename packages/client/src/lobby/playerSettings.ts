@@ -1,6 +1,6 @@
 // The "Settings" nav button.
 
-import { assertDefined, isKeyOf, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, isKeyOf, parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
@@ -53,7 +53,7 @@ export function init(): void {
     );
 
     audio.volume = volume / 100;
-    audio.play().catch((error) => {
+    audio.play().catch((error: unknown) => {
       console.error("Failed to play the test sound:", error);
     });
   });

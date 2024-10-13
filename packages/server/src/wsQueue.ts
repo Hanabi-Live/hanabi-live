@@ -1,10 +1,10 @@
 // We handle all WebSocket logins and logouts using a queue to prevent race conditions.
 
-import type { UserID } from "@hanabi/data";
-import { ServerCommand, defaultSettings } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
+import { ServerCommand, defaultSettings } from "@hanabi-live/data";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
-import { SECOND_IN_MILLISECONDS } from "isaacscript-common-ts";
 import { getChatList } from "./chat";
 import { getCurrentDatetime } from "./date";
 import { logger } from "./logger";
@@ -68,7 +68,7 @@ function login(wsUser: WSUser) {
       existingUser.connection,
       "You have logged on from somewhere else, so you have been disconnected here.",
     );
-    existingUser.connection.destroy();
+    existingUser.connection.close();
   }
 
   // We perform a type assertion to a readable map to represent that we are inside of the WebSocket
@@ -89,14 +89,14 @@ function login(wsUser: WSUser) {
 function attachWebSocketEventHandlers(wsUser: WSUser) {
   const { connection } = wsUser;
 
-  connection.socket.on("message", (rawData) => {
+  connection.on("message", (rawData) => {
     // WebSocket callbacks are supposed to be synchronous functions, so we do not bother awaiting
     // the results of the command.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     wsMessage(wsUser, rawData);
   });
 
-  connection.socket.on("close", () => {
+  connection.on("close", () => {
     enqueueWSMsg(WSQueueElementType.Logout, wsUser);
   });
 }

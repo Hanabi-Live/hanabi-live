@@ -1,4 +1,4 @@
-import { assertNotNull } from "isaacscript-common-ts";
+import { assertNotNull } from "complete-common";
 import Konva from "konva";
 import { drawLayer } from "../konvaHelpers";
 import { FitText } from "./FitText";

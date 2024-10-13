@@ -1,5 +1,8 @@
-import type { CardOrder } from "@hanabi/game";
-import { getTotalCardsInDeck, millisecondsToClockString } from "@hanabi/game";
+import type { CardOrder } from "@hanabi-live/game";
+import {
+  getTotalCardsInDeck,
+  millisecondsToClockString,
+} from "@hanabi-live/game";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { OptionIcons } from "../../types/OptionIcons";

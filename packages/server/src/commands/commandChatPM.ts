@@ -1,10 +1,11 @@
-import type { ClientCommandChatPMData } from "@hanabi/data";
-import { ServerCommand } from "@hanabi/data";
-import { escapeHTMLCharacters, normalizeUsername } from "isaacscript-common-ts";
+import type { ClientCommandChatPMData } from "@hanabi-live/data";
+import { ServerCommand } from "@hanabi-live/data";
+import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
 import { getCurrentDatetime } from "../date";
 import { logger } from "../logger";
 import { models } from "../models";
+import { normalizeUsername } from "../utils";
 import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 import { getWSUserByNormalizedUsername } from "../wsUsers";

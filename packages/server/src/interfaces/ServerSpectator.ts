@@ -1,5 +1,5 @@
-import { userID } from "@hanabi/data";
-import { playerIndex } from "@hanabi/game";
+import { userID } from "@hanabi-live/data";
+import { playerIndex } from "@hanabi-live/game";
 import z from "zod";
 
 export const serverSpectator = z
@@ -18,4 +18,5 @@ export const serverSpectator = z
   .strict()
   .readonly();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerSpectator extends z.infer<typeof serverSpectator> {}

@@ -13,7 +13,6 @@ export function unpackWSMessage(
 
   const argsString = data.slice(
     command.length + WEBSOCKET_COMMAND_SEPARATOR.length,
-    data.length,
   );
 
   if (argsString === "") {

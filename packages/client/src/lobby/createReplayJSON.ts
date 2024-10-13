@@ -1,4 +1,4 @@
-import { SITE_URL } from "@hanabi/data";
+import { SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -6,9 +6,13 @@ import type {
   PlayerIndex,
   RankClueNumber,
   Variant,
-} from "@hanabi/game";
-import { ClueType, DEFAULT_PLAYER_NAMES, getCardsPerHand } from "@hanabi/game";
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import {
+  ClueType,
+  DEFAULT_PLAYER_NAMES,
+  getCardsPerHand,
+} from "@hanabi-live/game";
+import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
 import { ActionType } from "../game/types/ActionType";
@@ -116,7 +120,7 @@ export function createJSONFromReplay(room: string): void {
         room,
         SelfChatMessageType.Info,
       );
-      const urlFix = json.replaceAll('"', "\\'");
+      const urlFix = json.replaceAll('"', String.raw`\'`);
       const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
       sendSelfPMFromServer(
         `Click ${here} to copy the raw JSON data to your clipboard.`,
@@ -124,7 +128,7 @@ export function createJSONFromReplay(room: string): void {
         SelfChatMessageType.Info,
       );
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       sendSelfPMFromServer(
         `Failed to copy the URL to your clipboard: ${error}`,
         room,

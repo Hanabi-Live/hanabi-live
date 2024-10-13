@@ -2,6 +2,7 @@
 | TODO |
 +------+
 
+- see "function httpWSError" - will this leak memory? test it
 - test if getting a database error disconnects other existing websocket users
 - test that a field annotated as z.date() actually works on the client
 - fix server disconnect in "wsQueue.ts" to match "websocket_disconnect.go"
@@ -21,7 +22,7 @@ short term:
 long term once the server is rewritten in TypeScript:
 - linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
 - make Connection.send on client type-safe
-- remove all null in @hanabi/game (this might need server changes)
+- remove all null in @hanabi-live/game (this might need server changes)
 - server should send message about if this is the player's first initial load, then we can use that in the soundView.ts to not play the initial sound effect on first turn refresh
 - change server WebSocket authentication style: https://github.com/Hanabi-Live/hanabi-live/issues/2845
   - once this is done, we don't have to use client-side cookies anymore, can remove `@fastify/secure-session` dep entirely

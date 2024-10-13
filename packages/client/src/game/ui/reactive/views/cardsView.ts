@@ -1,6 +1,6 @@
-import type { CardIdentity, CardOrder, CardState } from "@hanabi/game";
-import { getTotalCardsInDeck } from "@hanabi/game";
-import { eRange } from "isaacscript-common-ts";
+import type { CardIdentity, CardOrder, CardState } from "@hanabi-live/game";
+import { getTotalCardsInDeck } from "@hanabi-live/game";
+import { eRange } from "complete-common";
 import type { State } from "../../../types/State";
 import { HanabiCard } from "../../HanabiCard";
 import { globals } from "../../UIGlobals";

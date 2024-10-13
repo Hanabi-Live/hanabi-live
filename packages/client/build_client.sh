@@ -71,16 +71,13 @@ echo
 if [[ ${1-} == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
-  npm init --yes # Grunt needs a package.json to exist for some reason.
   npx grunt critical --url="http://localhost:$PORT"
-  rm -f "$DIR/package.json"
   echo
-  echo "Remember to commit critical.min.css if it had any changes."
+  echo "Remember to commit the \"critical.min.css\" file if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npm init --yes # Grunt needs a package.json to exist for some reason.
   npx grunt
   rm -f "$DIR/package.json"
   echo

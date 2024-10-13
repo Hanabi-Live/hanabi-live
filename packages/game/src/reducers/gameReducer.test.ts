@@ -1,4 +1,4 @@
-import { assertDefined, eRange, iRange } from "isaacscript-common-ts";
+import { assertDefined, eRange, iRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { getDefaultMetadata } from "../metadata";
 import {

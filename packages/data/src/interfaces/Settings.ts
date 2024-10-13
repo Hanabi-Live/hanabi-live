@@ -1,4 +1,4 @@
-import { DEFAULT_VARIANT_NAME, numPlayers } from "@hanabi/game";
+import { DEFAULT_VARIANT_NAME, numPlayers } from "@hanabi-live/game";
 import { z } from "zod";
 
 export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
@@ -43,6 +43,7 @@ export const settings = z
  * These are per-user settings that are changed from the main lobby screen (in the "Settings" button
  * tooltip).
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Settings extends z.infer<typeof settings> {}
 
 export const defaultSettings: Settings = settings.parse({});

@@ -1,4 +1,4 @@
-import { packWSMessageOnClient, unpackWSMessage } from "@hanabi/data";
+import { packWSMessageOnClient, unpackWSMessage } from "@hanabi-live/data";
 
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 

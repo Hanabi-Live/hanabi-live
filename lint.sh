@@ -26,6 +26,7 @@ bash "$DIR/packages/server/lint.sh" &
 bash "$DIR/spell_check.sh" &
 bash "$DIR/check_templates.sh" &
 npm run check-variant-files &
+npm run lint-package-json &
 wait
 
 # TODO: https://stackoverflow.com/questions/49513335/bash-wait-exit-on-error-code

@@ -1,4 +1,4 @@
-import { ReadonlySet } from "isaacscript-common-ts";
+import { ReadonlySet } from "complete-common";
 
 const TEST_USERNAMES = new ReadonlySet([
   "test",

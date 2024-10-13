@@ -1,11 +1,11 @@
-import type { PlayerIndex } from "@hanabi/game";
+import type { PlayerIndex } from "@hanabi-live/game";
 import {
   getAdjustedClueTokens,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
   isHandLocked,
-} from "@hanabi/game";
-import { assertDefined, eRange } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";

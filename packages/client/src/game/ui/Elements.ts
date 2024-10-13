@@ -1,4 +1,4 @@
-import type { Suit } from "@hanabi/game";
+import type { Suit } from "@hanabi-live/game";
 import type Konva from "konva";
 import type { ButtonGroup } from "./ButtonGroup";
 import type { CardLayout } from "./CardLayout";

@@ -1,4 +1,4 @@
-import type { UserID } from "@hanabi/data";
+import type { UserID } from "@hanabi-live/data";
 import { eq } from "drizzle-orm";
 import { userFriendsTable, usersTable } from "../databaseSchema";
 import { db } from "../db";

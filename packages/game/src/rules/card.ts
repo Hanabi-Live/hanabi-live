@@ -1,4 +1,4 @@
-import { eRange, filterMap } from "isaacscript-common-ts";
+import { eRange, filterMap } from "complete-common";
 import { START_CARD_RANK } from "../constants";
 import { CardStatus } from "../enums/CardStatus";
 import type { CardState } from "../interfaces/CardState";

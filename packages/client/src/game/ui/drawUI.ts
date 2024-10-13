@@ -6,14 +6,18 @@ import type {
   RankClueNumber,
   Suit,
   SuitIndex,
-} from "@hanabi/game";
-import { getTotalCardsInDeck, newColorClue, newRankClue } from "@hanabi/game";
+} from "@hanabi-live/game";
+import {
+  getTotalCardsInDeck,
+  newColorClue,
+  newRankClue,
+} from "@hanabi-live/game";
 import {
   SECOND_IN_MILLISECONDS,
   assertDefined,
   eRange,
   repeat,
-} from "isaacscript-common-ts";
+} from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement } from "../../utils";

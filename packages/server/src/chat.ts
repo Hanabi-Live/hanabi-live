@@ -1,10 +1,10 @@
-import type { SocketStream } from "@fastify/websocket";
-import type { ServerCommandChatData } from "@hanabi/data";
+import type { ServerCommandChatData } from "@hanabi-live/data";
 import {
   getNumConsecutiveDiacritics,
   normalizeString,
   truncateString,
-} from "isaacscript-common-ts";
+} from "complete-common";
+import type { WebSocket } from "ws";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "./constants";
 import { models } from "./models";
 import { wsWarning } from "./wsHelpers";
@@ -13,7 +13,7 @@ const MAX_CHAT_LENGTH = 300;
 
 /** Returns undefined if validation fails. */
 export function validateAndNormalizeChatMsg(
-  connection: SocketStream,
+  connection: WebSocket,
   msg: string,
 ): string | undefined {
   // We truncate first to prevent wasting CPU cycles on validating extremely long messages.

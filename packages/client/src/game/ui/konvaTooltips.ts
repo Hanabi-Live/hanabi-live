@@ -1,4 +1,4 @@
-import { assertDefined } from "isaacscript-common-ts";
+import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { Screen } from "../../lobby/types/Screen";
 import * as tooltips from "../../tooltips";

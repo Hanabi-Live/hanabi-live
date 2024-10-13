@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-null */
 
-import { newArray } from "isaacscript-common-ts";
+import { newArray } from "complete-common";
 import type { CardState } from "../../interfaces/CardState";
 import type { Variant } from "../../interfaces/Variant";
 import { getTotalCardsInDeck } from "../../rules/deck";

@@ -49,7 +49,7 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
-      - name: Test the TypeScript code using Jest
+      - name: Test the TypeScript code
         run: npm run test
 
   format:
@@ -82,8 +82,8 @@ jobs:
       - name: Check "variants.json" and "variants.txt"
         run: npm run check-variant-files
 
-      - name: Check child dependencies
-        run: npm run check-child-dependencies
+      - name: Check "package.json" files
+        run: npm run lint-package-json
 
   deploy_docs_website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

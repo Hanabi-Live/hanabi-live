@@ -1,11 +1,11 @@
 // The card graphics are various HTML5 canvas drawings.
 
-import type { Color, Rank, Suit, Variant } from "@hanabi/game";
+import type { Color, Rank, Suit, Variant } from "@hanabi-live/game";
 import {
   START_CARD_RANK,
   getSuit,
   getSuitAbbreviationForVariant,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import { CARD_H, CARD_W } from "./constants";
 import { drawPip } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";

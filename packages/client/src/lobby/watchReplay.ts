@@ -1,6 +1,6 @@
 // The "Watch Specific Replay" nav button.
 
-import { assertDefined, parseIntSafe } from "isaacscript-common-ts";
+import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";

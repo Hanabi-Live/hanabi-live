@@ -1,4 +1,4 @@
-import { isCardDiscarded, isCardPlayed } from "@hanabi/game";
+import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type Konva from "konva";
 import * as tooltips from "../../tooltips";
 import type { CardLayout } from "./CardLayout";
@@ -381,11 +381,11 @@ function checkForHypoEmpathy(card: HanabiCard): boolean {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (
       let i = 0;
-      i < globals.elements.playerHands[startingPlayerIndex]!.children.length;
+      i < globals.elements.playerHands[startingPlayerIndex].children.length;
       i++
     ) {
       const child =
-        globals.elements.playerHands[startingPlayerIndex]!.children[i]!;
+        globals.elements.playerHands[startingPlayerIndex].children[i]!;
       const currentCard: HanabiCard = child.children[0] as HanabiCard;
       if (currentCard._id === card._id) {
         return true;

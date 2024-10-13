@@ -1,4 +1,4 @@
-import type { Tuple } from "isaacscript-common-ts";
+import type { Tuple } from "complete-common";
 import type { CardStatus } from "../enums/CardStatus";
 import type { StackDirection } from "../enums/StackDirection";
 import type { CardOrder } from "../types/CardOrder";

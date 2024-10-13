@@ -1,4 +1,4 @@
-import type { ReadonlyRecord } from "isaacscript-common-ts";
+import type { ReadonlyRecord } from "complete-common";
 import type { Rank } from "./Rank";
 import type { SuitIndex } from "./SuitIndex";
 

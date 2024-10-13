@@ -1,7 +1,13 @@
 // These are helper functions that convert objects to the integers that the server expects and vice
 // versa.
 
-import type { Color, ColorIndex, Suit, SuitIndex, Variant } from "@hanabi/game";
+import type {
+  Color,
+  ColorIndex,
+  Suit,
+  SuitIndex,
+  Variant,
+} from "@hanabi-live/game";
 
 export function suitIndexToSuit(
   suitIndex: SuitIndex | null,

@@ -3,7 +3,7 @@ import type {
   SuitJSON,
   VariantDescription,
   VariantJSON,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import {
   DEFAULT_CLUE_RANKS,
   REVERSE_MODIFIER,
@@ -15,8 +15,8 @@ import {
   VARIANT_DELIMITER,
   VARIANT_MODIFIER_SET,
   VariantModifier,
-} from "@hanabi/game";
-import { assertDefined, parseIntSafe, trimSuffix } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { assertDefined, parseIntSafe, trimSuffix } from "complete-common";
 import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 

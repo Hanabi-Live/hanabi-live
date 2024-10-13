@@ -1,13 +1,9 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandChatData } from "@hanabi/data";
-import { PROJECT_NAME } from "@hanabi/data";
-import {
-  SECOND_IN_MILLISECONDS,
-  eRange,
-  trimPrefix,
-} from "isaacscript-common-ts";
+import type { ServerCommandChatData } from "@hanabi-live/data";
+import { PROJECT_NAME } from "@hanabi-live/data";
+import { SECOND_IN_MILLISECONDS, eRange, trimPrefix } from "complete-common";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { globals } from "./Globals";
@@ -119,7 +115,7 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // /shrug
   if (text === "/shrug") {
-    element.val("¯\\_(ツ)_/¯");
+    element.val(String.raw`¯\_(ツ)_/¯`);
     return;
   }
 
@@ -405,7 +401,7 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
     event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
 }
 
-// eslint-disable-next-line isaacscript/prefer-readonly-parameter-types
+// eslint-disable-next-line complete/prefer-readonly-parameter-types
 function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   // Prioritize the more commonly used NotLikeThis over NootLikeThis.
   const notLikeThisIndex = usersAndEmotesList.indexOf("NotLikeThis");
@@ -608,7 +604,7 @@ function getPreparedMessage(rawMsg: string) {
 function fillDiscordEmotes(message: string) {
   let filledMessed = message;
 
-  // eslint-disable-next-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
     if (match === null) {

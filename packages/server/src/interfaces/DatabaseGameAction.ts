@@ -3,7 +3,7 @@ import {
   colorIndex,
   playerIndex,
   rankClueNumber,
-} from "@hanabi/game";
+} from "@hanabi-live/game";
 import z from "zod";
 import { DatabaseGameActionType } from "../enums/DatabaseGameActionType";
 

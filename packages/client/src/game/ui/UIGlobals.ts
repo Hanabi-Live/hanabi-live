@@ -4,9 +4,9 @@ import type {
   GameMetadata,
   Options,
   PlayerIndex,
-} from "@hanabi/game";
-import { getDefaultVariant } from "@hanabi/game";
-import { ReadonlyMap } from "isaacscript-common-ts";
+} from "@hanabi-live/game";
+import { getDefaultVariant } from "@hanabi-live/game";
+import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
 import type * as Redux from "redux";
 import { Globals as LobbyGlobals } from "../../Globals";

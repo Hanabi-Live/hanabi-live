@@ -1,6 +1,6 @@
-import type { GameMetadata } from "@hanabi/game";
-import { rankClue } from "@hanabi/game";
-import { assertDefined, assertNotNull } from "isaacscript-common-ts";
+import type { GameMetadata } from "@hanabi-live/game";
+import { rankClue } from "@hanabi-live/game";
+import { assertDefined, assertNotNull } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {
   hypoAction,

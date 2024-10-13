@@ -1,10 +1,10 @@
 // The reducer for replays and hypotheticals.
 
-import type { GameMetadata } from "@hanabi/game";
-import { gameReducer } from "@hanabi/game";
+import type { GameMetadata } from "@hanabi-live/game";
+import { gameReducer } from "@hanabi-live/game";
+import { assertDefined, assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
-import { assertDefined, assertNotNull } from "isaacscript-common-ts";
 import type { ReplayState } from "../types/ReplayState";
 import type {
   ActionIncludingHypothetical,

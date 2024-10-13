@@ -1,7 +1,7 @@
 // Users can right-click cards to record information on them.
 
-import type { CardOrder } from "@hanabi/game";
-import { ReadonlySet, trimSuffix } from "isaacscript-common-ts";
+import type { CardOrder } from "@hanabi-live/game";
+import { ReadonlySet, trimSuffix } from "complete-common";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
