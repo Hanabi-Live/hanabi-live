@@ -55,4 +55,5 @@ export interface SuitJSON {
   readonly allClueRanks?: boolean;
   readonly noClueRanks?: boolean;
   readonly prism?: boolean;
+  readonly inverted?: boolean;
 }
