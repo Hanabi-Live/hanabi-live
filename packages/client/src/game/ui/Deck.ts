@@ -73,7 +73,23 @@ export class Deck extends Konva.Group {
   dragEnd(): void {
     const draggedTo = cursor.getElementDragLocation(this);
 
-    if (draggedTo === null) {
+    if (draggedTo === "playArea") {
+      // Card orders start at 0, so the final card order is the length of the deck - 1.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end({
+        type: ActionType.Play,
+        target: cardOrder,
+      });
+    } else if (draggedTo === "discardArea") {
+      // Inverted suit needs discard whenever play is available.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end({
+        type: ActionType.Discard,
+        target: cardOrder,
+      });
+    } else {
       // The card was dragged to an invalid location; tween it back to the hand.
       this.to({
         // Tween
@@ -89,14 +105,6 @@ export class Deck extends Konva.Group {
             layer.batchDraw();
           }
         },
-      });
-    } else if (draggedTo === "playArea") {
-      // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
-      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
-      turn.end({
-        type: ActionType.Play,
-        target: cardOrder,
       });
     }
   }
