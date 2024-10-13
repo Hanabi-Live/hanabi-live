@@ -113,7 +113,7 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getInvertedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getInvertedVariants(),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -1254,10 +1254,7 @@ function getSudokuVariants(
   return variantDescriptions;
 }
 
-function getInvertedVariants(
-  suitsToCreateVariantsFor: readonly SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
-): readonly VariantDescription[] {
+function getInvertedVariants(): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
   variantDescriptions.push(
