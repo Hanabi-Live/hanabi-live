@@ -324,8 +324,9 @@ chatCommands.set("tagsdeleteall", (room: string) => {
   });
 });
 
-// /terminate terminates the ongoing game. This is the same as right-clicking the VTK button.
+// /terminate
 chatCommands.set("terminate", (room: string) => {
+  // Terminates the ongoing game. This is the same as right-clicking the skull button.
   if (globals.tableID === -1) {
     sendSelfPMFromServer(
       "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
@@ -398,6 +399,22 @@ chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
 chatCommands.set("version", (room: string) => {
   const msg = `You are running version <strong>${VERSION}</strong> of the client.`;
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
+});
+
+// /vote
+chatCommands.set("vote", (room: string) => {
+  // Votes to terminate the ongoing game. This is the same as left-clicking the skull button.
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/vote</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  globals.conn!.send("tableVoteForTermination", {
+    tableID: globals.tableID,
+  });
 });
 
 export function getVariantFromArgs(args: readonly string[]): string {
