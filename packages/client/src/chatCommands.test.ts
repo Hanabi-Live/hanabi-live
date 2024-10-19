@@ -1,4 +1,4 @@
-import { getVariantFromArgs, getVariantFromPartial } from "./chatCommands";
+import { getVariantFromArgs, getVariantNameFromPartial } from "./chatCommands";
 
 jest.mock("./chat", () => ({}));
 jest.mock("./Globals", () => ({}));
@@ -16,17 +16,17 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "Brown-Fives & Prism (6 Suits)".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("partial input", () => {
       test("is valid", () => {
         const partial = getVariantFromArgs("Brown-Fives & Pri".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
       test("is valid", () => {
         const partial = getVariantFromArgs("Brown-Fives".split(" "));
-        expect(getVariantFromPartial(partial)).toBe(brownFives);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFives);
       });
     });
     describe("double spaces", () => {
@@ -34,7 +34,7 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "   Brown-Fives   &  Prism   (6   Suits)    ".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("spaces before or after -, &, (, )", () => {
@@ -42,7 +42,7 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "   Brown -Fives& Prism(  6 Suits   )  ".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("capitalize", () => {
@@ -50,7 +50,7 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "bROWN-FivES & prism (6 SUITS)".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
     describe("all possible cases", () => {
@@ -58,7 +58,7 @@ describe("functions", () => {
         const partial = getVariantFromArgs(
           "  bROWN -FivES   &prism(6 suits )".split(" "),
         );
-        expect(getVariantFromPartial(partial)).toBe(brownFivesPrism6Suits);
+        expect(getVariantNameFromPartial(partial)).toBe(brownFivesPrism6Suits);
       });
     });
   });

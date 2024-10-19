@@ -11,6 +11,11 @@ import { createJSONFromReplay } from "./lobby/createReplayJSON";
 type Callback = (...args: any) => void;
 export const chatCommands = new Map<string, Callback>();
 
+// /copy
+chatCommands.set("copy", (room: string) => {
+  createJSONFromReplay(room);
+});
+
 // /friend [username]
 function friend(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.
@@ -191,7 +196,7 @@ function setVariant(room: string, args: readonly string[]) {
   // Sanitize the variant name.
   let variantName = getVariantFromArgs(args);
   // Get the first match.
-  variantName = getVariantFromPartial(variantName);
+  variantName = getVariantNameFromPartial(variantName);
   if (variantName === "") {
     sendSelfPMFromServer(
       `The variant of "${args.join(" ")}" is not valid.`,
@@ -319,6 +324,21 @@ chatCommands.set("tagsdeleteall", (room: string) => {
   });
 });
 
+// /terminate terminates the ongoing game. This is the same as right-clicking the VTK button.
+chatCommands.set("terminate", (room: string) => {
+  if (globals.tableID === -1) {
+    sendSelfPMFromServer(
+      "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
+  globals.conn!.send("tableTerminate", {
+    tableID: globals.tableID,
+  });
+});
+
 // /playerinfo (username)
 function playerinfo(_room: string, args: readonly string[]) {
   let usernames: readonly string[];
@@ -380,26 +400,6 @@ chatCommands.set("version", (room: string) => {
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
 });
 
-// /copy
-chatCommands.set("copy", (room: string) => {
-  createJSONFromReplay(room);
-});
-
-// /terminate terminates the ongoing game. This is the same as right-clicking the VTK button.
-chatCommands.set("terminate", (room: string) => {
-  if (globals.tableID === -1) {
-    sendSelfPMFromServer(
-      "You are not currently at a table, so you cannot use the <code>/terminate</code> command.",
-      room,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-  globals.conn!.send("tableTerminate", {
-    tableID: globals.tableID,
-  });
-});
-
 export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
     doubleSpaces: / {2,}/g,
@@ -434,7 +434,7 @@ function capitalize(input: string) {
   return input.toLowerCase().replaceAll(pattern, (x) => x.toUpperCase());
 }
 
-export function getVariantFromPartial(search: string): string {
+export function getVariantNameFromPartial(search: string): string {
   const firstVariant = VARIANT_NAMES.find((variantName) =>
     variantName.startsWith(search),
   );
