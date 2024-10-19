@@ -124,21 +124,19 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Log the message
 	logger.Info("[D#" + channel.Name + "] " +
-		"<" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
+		"<" + m.Author.Username + "> " + m.Content)
 
 	// Ignore all messages created by the bot itself
 	if m.Author.ID == discordBotID {
 		return
 	}
 
-	// Handle specific Discord commands in channels other than the lobby
-	// (to replicate some lobby functionality to the Discord server more generally)
+	// Ignore all messages not in the lobby
 	if m.ChannelID != discordChannelSyncWithLobby {
-		discordCheckNonLobbyCommands(ctx, m)
 		return
 	}
 
-	// Handle command specific for lobby
+	// Handle commands
 	if discordCheckLobbyCommands(ctx, m) {
 		return
 	}
@@ -221,25 +219,6 @@ func discordGetChannel(discordID string) string {
 		return "[error]"
 	} else {
 		return channel.Name
-	}
-}
-
-// We need to check for special commands that occur in Discord channels other than #general
-// (because the messages will not flow to the normal "chatCommandMap")
-func discordCheckNonLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) {
-	// There could be a command on any line
-	for _, line := range strings.Split(m.Content, "\n") {
-		var command string
-		var args []string
-
-		if cmd, a := chatParseCommand(line); cmd == "" {
-			continue
-		} else {
-			command = cmd
-			args = a
-		}
-
-		discordCommand(ctx, m, command, args)
 	}
 }
 
