@@ -212,6 +212,12 @@ function getTooltipContent(): string {
     globals.state.datetimeStarted !== null &&
     globals.state.datetimeFinished !== null
   ) {
+    if (globals.state.replay.databaseID !== null) {
+      content +=
+        '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
+      content += `&nbsp; Database ID: &nbsp;<strong>${globals.state.replay.databaseID}</strong></li>`;
+    }
+
     const formattedDatetimeFinished = dateTimeFormatter.format(
       new Date(globals.state.datetimeFinished),
     );
