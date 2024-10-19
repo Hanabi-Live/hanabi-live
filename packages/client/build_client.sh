@@ -79,7 +79,6 @@ else
   echo "Packing the CSS using Grunt..."
   echo
   npx grunt
-  rm -f "$DIR/package.json"
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"
