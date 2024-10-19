@@ -9,8 +9,14 @@ import (
 
 // /replay
 func discordCommandReplay(ctx context.Context, m *discordgo.MessageCreate, args []string) {
-	url := getReplayURL(args)
+	if len(args) == 0 {
+		msg := "The format of the /replay command is: /replay [game ID] [turn number]"
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
 	// We enclose the link in "<>" to prevent Discord from generating a link preview
+	url := getReplayURL(args)
 	msg := "<" + url + ">"
 	discordSend(m.ChannelID, "", msg)
 }
