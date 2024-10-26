@@ -9,9 +9,6 @@ import * as pregame from "./pregame";
 import * as watchReplay from "./watchReplay";
 
 export function init(): void {
-  // Remove the recursive link to prevent confusion.
-  $("#logo-link").removeAttr("href");
-
   // The "Create Game" and "Change Options" buttons.
   initModal(
     "#nav-buttons-lobby-create-game",
