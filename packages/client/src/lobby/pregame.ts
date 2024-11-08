@@ -5,8 +5,8 @@ import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
+import { OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
-import { OptionIcons } from "../types/OptionIcons";
 import {
   getHTMLElement,
   setBrowserAddressBarPath,
@@ -178,7 +178,7 @@ export function getOptionIcons(
   let html = "";
 
   if (options.timed) {
-    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.TIMED}" `;
+    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.Timed}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>&nbsp; (`;
     html += timerFormatter(options.timeBase);
     html += " + ";
@@ -198,7 +198,7 @@ export function getOptionIcons(
   }
 
   if (options.speedrun) {
-    html += `<li><i id="${idPrefix}-options-speedrun-${rowId}" class="${OptionIcons.SPEEDRUN}" `;
+    html += `<li><i id="${idPrefix}-options-speedrun-${rowId}" class="${OptionIcons.Speedrun}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-speedrun-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -210,7 +210,7 @@ export function getOptionIcons(
   }
 
   if (options.cardCycle) {
-    html += `<li><i id="${idPrefix}-options-card-cycle-${rowId}" class="${OptionIcons.CARD_CYCLE}" `;
+    html += `<li><i id="${idPrefix}-options-card-cycle-${rowId}" class="${OptionIcons.CardCycle}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-card-cycle-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -222,7 +222,7 @@ export function getOptionIcons(
   }
 
   if (options.deckPlays) {
-    html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DECK_PLAYS}" `;
+    html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DeckPlays}" `;
     html += 'style="position: relative; left: 0.2em;" ';
     html += `data-tooltip-content="#${idPrefix}-tooltip-deck-plays-${rowId}"></i></li>`;
     html += `
@@ -235,7 +235,7 @@ export function getOptionIcons(
   }
 
   if (options.emptyClues) {
-    html += `<li><i id="${idPrefix}-options-empty-clues-${rowId}" class="${OptionIcons.EMPTY_CLUES}" `;
+    html += `<li><i id="${idPrefix}-options-empty-clues-${rowId}" class="${OptionIcons.EmptyClues}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-empty-clues-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -247,7 +247,7 @@ export function getOptionIcons(
   }
 
   if (options.oneExtraCard) {
-    html += `<li><i id="${idPrefix}-options-one-extra-card-${rowId}" class="${OptionIcons.ONE_EXTRA_CARD}" `;
+    html += `<li><i id="${idPrefix}-options-one-extra-card-${rowId}" class="${OptionIcons.OneExtraCard}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-one-extra-card-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -259,7 +259,7 @@ export function getOptionIcons(
   }
 
   if (options.oneLessCard) {
-    html += `<li><i id="${idPrefix}-options-one-less-card-${rowId}" class="${OptionIcons.ONE_LESS_CARD}" `;
+    html += `<li><i id="${idPrefix}-options-one-less-card-${rowId}" class="${OptionIcons.OneLessCard}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-one-less-card-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -271,7 +271,7 @@ export function getOptionIcons(
   }
 
   if (options.allOrNothing) {
-    html += `<li><i id="${idPrefix}-options-all-or-nothing-${rowId}" class="${OptionIcons.ALL_OR_NOTHING}" `;
+    html += `<li><i id="${idPrefix}-options-all-or-nothing-${rowId}" class="${OptionIcons.AllOrNothing}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-all-or-nothing-${rowId}"></i></li>`;
     html += `
       <div class="hidden">
@@ -283,7 +283,7 @@ export function getOptionIcons(
   }
 
   if (options.detrimentalCharacters) {
-    html += `<li><i id="${idPrefix}-options-characters-${rowId}" class="${OptionIcons.DETRIMENTAL_CHARACTERS}" `;
+    html += `<li><i id="${idPrefix}-options-characters-${rowId}" class="${OptionIcons.DetrimentalCharacters}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-characters-${rowId}"></i></li>`;
     html += `
       <div class="hidden">

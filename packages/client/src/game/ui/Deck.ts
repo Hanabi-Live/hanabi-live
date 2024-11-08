@@ -4,8 +4,8 @@ import {
   millisecondsToClockString,
 } from "@hanabi-live/game";
 import Konva from "konva";
+import { OptionIcons } from "../../enums/OptionIcons";
 import * as tooltips from "../../tooltips";
-import { OptionIcons } from "../../types/OptionIcons";
 import { dateTimeFormatter, timerFormatter } from "../../utils";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
@@ -259,7 +259,7 @@ function getTooltipContent(): string {
   content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 
   if (globals.options.timed) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.TIMED}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.Timed}"></i></span>`;
     content += "&nbsp; Timed: ";
     content += timerFormatter(globals.options.timeBase);
     content += " + ";
@@ -268,44 +268,44 @@ function getTooltipContent(): string {
   }
 
   if (globals.options.speedrun) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.SPEEDRUN}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.Speedrun}"></i></span>`;
     content += "&nbsp; Speedrun</li>";
   }
 
   if (globals.options.cardCycle) {
     content += '<li><span class="game-tooltips-icon">';
-    content += `<i class="${OptionIcons.CARD_CYCLE}"></i></span>`;
+    content += `<i class="${OptionIcons.CardCycle}"></i></span>`;
     content += "&nbsp; Card Cycling</li>";
   }
 
   if (globals.options.deckPlays) {
     content += '<li><span class="game-tooltips-icon">';
-    content += `<i class="${OptionIcons.DECK_PLAYS}" style="position: relative; left: 0.2em;"></i></span>`;
+    content += `<i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i></span>`;
     content += "&nbsp; Bottom-Deck Blind Plays</li>";
   }
 
   if (globals.options.emptyClues) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.EMPTY_CLUES}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.EmptyClues}"></i></span>`;
     content += "&nbsp; Empty Clues</li>";
   }
 
   if (globals.options.oneExtraCard) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ONE_EXTRA_CARD}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.OneExtraCard}"></i></span>`;
     content += "&nbsp; One Extra Card</li>";
   }
 
   if (globals.options.oneLessCard) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ONE_LESS_CARD}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.OneLessCard}"></i></span>`;
     content += "&nbsp; One Less Card</li>";
   }
 
   if (globals.options.allOrNothing) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.ALL_OR_NOTHING}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.AllOrNothing}"></i></span>`;
     content += "&nbsp; All or Nothing</li>";
   }
 
   if (globals.options.detrimentalCharacters) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.DETRIMENTAL_CHARACTERS}"></i></span>`;
+    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.DetrimentalCharacters}"></i></span>`;
     content += "&nbsp; Detrimental Characters</li>";
   }
 
