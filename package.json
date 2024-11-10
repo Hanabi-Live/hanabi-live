@@ -81,7 +81,7 @@
     "complete-lint": "^1.9.0",
     "git-pull-run": "^1.4.0",
     "husky": "^9.1.6",
-    "isaacscript": "^5.2.3",
+    "isaacscript": "^5.0.3",
     "jest": "^29.7.0",
     "prettier-plugin-go-template": "^0.0.15",
     "stacktracify": "^1.0.4",
