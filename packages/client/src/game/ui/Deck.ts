@@ -203,46 +203,27 @@ export class Deck extends Konva.Group {
   }
 }
 
+/** The tooltip will show information about the game and the current options. */
 function getTooltipContent(): string {
-  // The tooltip will show the current game options.
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
+  const currentTable = globals.lobby.tableMap.get(globals.lobby.tableID);
+  if (currentTable !== undefined) {
+    content +=
+      '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
+    content += `&nbsp; Table name: &nbsp;${currentTable.name}</li>`;
+  }
+
   if (
     globals.state.finished &&
+    globals.state.replay.databaseID !== null &&
     // JSON replays are hard-coded to have a database ID of 0.
-    globals.state.replay.databaseID !== 0 &&
-    globals.state.replay.databaseID !== null
+    globals.state.replay.databaseID !== 0
   ) {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
     content += `&nbsp; Database ID: &nbsp;<strong>${globals.state.replay.databaseID}</strong></li>`;
-  }
-
-  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
-  // so they should never be null.
-  if (
-    globals.state.datetimeStarted !== null &&
-    globals.state.datetimeFinished !== null
-  ) {
-    if (globals.state.finished) {
-      const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
-      const formattedDatetimeFinished =
-        dateTimeFormatter.format(datetimeFinishedDate);
-      content +=
-        '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
-      content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
-    }
-
-    const startedDate = new Date(globals.state.datetimeStarted);
-    const finishedDate = globals.state.finished
-      ? new Date(globals.state.datetimeFinished)
-      : new Date();
-    const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
-    const clockString = millisecondsToClockString(elapsedMilliseconds);
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
-    content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
   }
 
   if (globals.state.finished || globals.metadata.hasCustomSeed) {
@@ -257,12 +238,30 @@ function getTooltipContent(): string {
     content += "</li>";
   }
 
-  if (globals.lobby.tableMap.get(globals.lobby.tableID)?.name !== undefined) {
+  if (globals.state.finished && globals.state.datetimeFinished !== null) {
+    const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
+    const formattedDatetimeFinished =
+      dateTimeFormatter.format(datetimeFinishedDate);
     content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
-    const name =
-      globals.lobby.tableMap.get(globals.lobby.tableID)?.name ?? "[unknown]";
-    content += `&nbsp; Table name: &nbsp;${name}</li>`;
+      '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
+    content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
+  }
+
+  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
+  // so they should never be null.
+  if (
+    globals.state.datetimeStarted !== null &&
+    globals.state.datetimeFinished !== null
+  ) {
+    const startedDate = new Date(globals.state.datetimeStarted);
+    const finishedDate = globals.state.finished
+      ? new Date(globals.state.datetimeFinished)
+      : new Date();
+    const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
+    const clockString = millisecondsToClockString(elapsedMilliseconds);
+    content +=
+      '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
+    content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
   }
 
   content +=
