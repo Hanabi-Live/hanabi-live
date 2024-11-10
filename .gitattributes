@@ -1,7 +1,18 @@
-# Prevent Windows systems from cloning this repository with "\r\n" line endings.
+# https://git-scm.com/docs/git-config/#Documentation/git-config.txt-coreautocrlf
+# Default value: input
+# Explicitly setting it to false prevents Git from changing line endings at any point, which can
+# prevent issues when Windows users collaborate with MacOS/Linus users.
 core.autocrlf=false
 
-# Prevent people from making merge commits:
+# https://git-scm.com/docs/git-config/#Documentation/git-config.txt-coreignoreCase
+# Default value: false (on Linux machines) or true (on Windows machines)
+# Explicitly setting it to false prevents the issue where Windows users cannot pull down
+# casing-related file renames.
+core.ignoreCase=false
+
+# https://git-scm.com/docs/git-config/#Documentation/git-config.txt-pullrebase
+# Default value: false
+# Setting this prevents spurious merge commits:
 # https://www.endoflineblog.com/gitflow-considered-harmful
 pull.rebase=true
 
