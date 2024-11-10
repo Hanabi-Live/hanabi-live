@@ -123,6 +123,10 @@ export class Deck extends Konva.Group {
       tooltips.close("#tooltip-deck");
     });
 
+    this.updateDeckTooltip();
+  }
+
+  updateDeckTooltip(): void {
     // We store the content as a class variable so that it can be reused for the faded background
     // rectangle behind the card (so that the tooltip will work when there are 0 cards left in the
     // deck).
@@ -204,29 +208,36 @@ function getTooltipContent(): string {
   let content = "<strong>Game Info:</strong>";
   content += '<ul class="game-tooltips-ul">';
 
-  // Disable this row in JSON replays.
   if (
     globals.state.finished &&
     // JSON replays are hard-coded to have a database ID of 0.
     globals.state.replay.databaseID !== 0 &&
+    globals.state.replay.databaseID !== null
+  ) {
+    content +=
+      '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
+    content += `&nbsp; Database ID: &nbsp;<strong>${globals.state.replay.databaseID}</strong></li>`;
+  }
+
+  // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
+  // so they should never be null.
+  if (
     globals.state.datetimeStarted !== null &&
     globals.state.datetimeFinished !== null
   ) {
-    if (globals.state.replay.databaseID !== null) {
+    if (globals.state.finished) {
+      const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
+      const formattedDatetimeFinished =
+        dateTimeFormatter.format(datetimeFinishedDate);
       content +=
-        '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
-      content += `&nbsp; Database ID: &nbsp;<strong>${globals.state.replay.databaseID}</strong></li>`;
+        '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
+      content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
     }
 
-    const formattedDatetimeFinished = dateTimeFormatter.format(
-      new Date(globals.state.datetimeFinished),
-    );
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
-    content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
-
     const startedDate = new Date(globals.state.datetimeStarted);
-    const finishedDate = new Date(globals.state.datetimeFinished);
+    const finishedDate = globals.state.finished
+      ? new Date(globals.state.datetimeFinished)
+      : new Date();
     const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
     content +=

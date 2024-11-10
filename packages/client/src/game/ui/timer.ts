@@ -96,9 +96,9 @@ export function update(data: ClockData): void {
   // Update the timer tooltips for each player.
   for (const i of globals.playerTimes.keys()) {
     const playerIndex = i as PlayerIndex;
-    setTickingDownTimeTooltip(playerIndex);
+    setTickingDownTimePlayerNameTooltip(playerIndex);
   }
-  setTickingDownTimeCPTooltip();
+  setTickingDownTimeCurrentPlayerTooltip();
 
   // The server will send an active player index of -1 when the game is over.
   if (data.activePlayerIndex === -1) {
@@ -115,8 +115,9 @@ export function update(data: ClockData): void {
     : globals.elements.timer2;
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
-    setTickingDownTimeTooltip(data.activePlayerIndex);
-    setTickingDownTimeCPTooltip();
+    setTickingDownTimePlayerNameTooltip(data.activePlayerIndex);
+    setTickingDownTimeCurrentPlayerTooltip();
+    globals.elements.deck?.updateDeckTooltip();
   }, 1000);
 }
 
@@ -175,7 +176,7 @@ function setTickingDownTime(timer: TimerDisplay) {
 }
 
 /** Update the tooltip that appears when you hover over a player's name. */
-function setTickingDownTimeTooltip(playerIndex: PlayerIndex | -1) {
+function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex | -1) {
   if (playerIndex === -1) {
     return;
   }
@@ -201,7 +202,7 @@ function setTickingDownTimeTooltip(playerIndex: PlayerIndex | -1) {
   tooltips.setInstanceContent(`#tooltip-player-${playerIndex}`, content);
 }
 
-function setTickingDownTimeCPTooltip() {
+function setTickingDownTimeCurrentPlayerTooltip() {
   // This tooltip is disabled in non-timed games.
   if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
     return;
