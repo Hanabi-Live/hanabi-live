@@ -117,6 +117,7 @@ export function update(data: ClockData): void {
     setTickingDownTime(activeTimer);
     setTickingDownTimePlayerNameTooltip(data.activePlayerIndex);
     setTickingDownTimeCurrentPlayerTooltip();
+    globals.elements.deck?.updateDeckTooltip();
   }, 1000);
 }
 
