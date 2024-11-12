@@ -13,22 +13,6 @@ var (
 
 // Note that Discord commands only work in channels outside of the lobby-replication channel
 func discordCommandInit() {
-	// Info commands for the #convention-questions channel
-	discordCommandMap["2p"] = discordCommand2P
-	discordCommandMap["2player"] = discordCommand2P
-	discordCommandMap["2pquestion"] = discordCommand2P
-	discordCommandMap["badquestion"] = discordCommandBadQuestion
-	discordCommandMap["github"] = discordCommandGithub
-	discordCommandMap["issues"] = discordCommandGithub
-	discordCommandMap["level"] = discordCommandLevel
-	discordCommandMap["loweffort"] = discordCommandLowEffort
-	discordCommandMap["noreplay"] = discordCommandScreenshot
-	discordCommandMap["notation"] = discordCommandNotation
-	discordCommandMap["oop"] = discordCommandOOP
-	discordCommandMap["screenshot"] = discordCommandScreenshot
-	discordCommandMap["undefined"] = discordCommandUndefined
-	discordCommandMap["rtfm"] = discordCommandRTFM
-
 	// Duplicated commands (e.g. commands that also work in the lobby)
 	discordCommandMap["replay"] = discordCommandReplay
 	discordCommandMap["link"] = discordCommandReplay

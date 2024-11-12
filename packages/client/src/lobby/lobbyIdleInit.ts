@@ -1,8 +1,7 @@
 import { MINUTE_IN_MILLISECONDS } from "complete-common";
 import { globals } from "../Globals";
 
-// Constants
-const minutesToTriggerIdle = 15;
+const MINUTES_TO_TRIGGER_IDLE = 15;
 
 // From: https://stackoverflow.com/questions/667555/how-to-detect-idle-time-in-javascript-elegantly
 export function lobbyIdleInit(): void {
@@ -19,7 +18,7 @@ function mousemoveOrKeypress() {
     return;
   }
 
-  if (globals.idleMinutes >= minutesToTriggerIdle) {
+  if (globals.idleMinutes >= MINUTES_TO_TRIGGER_IDLE) {
     globals.conn.send("inactive", {
       inactive: false,
     });
@@ -33,7 +32,7 @@ function timerIncrement() {
   }
 
   globals.idleMinutes++;
-  if (globals.idleMinutes === minutesToTriggerIdle) {
+  if (globals.idleMinutes === MINUTES_TO_TRIGGER_IDLE) {
     // We do not want to keep sending "inactive" messages every minute, so we check for being
     // exactly at the cutoff.
     globals.conn.send("inactive", {

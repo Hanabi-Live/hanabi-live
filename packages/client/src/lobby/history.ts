@@ -2,9 +2,9 @@
 
 import type { Options } from "@hanabi-live/game";
 import { getVariant } from "@hanabi-live/game";
+import { OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
-import { OptionIcons } from "../types/OptionIcons";
 import { dateTimeFormatter, timerFormatter } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
@@ -349,8 +349,8 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   const icons: string[] = [];
 
   if (options.timed) {
-    icons.push(OptionIcons.TIMED);
-    tooltipHTML += `<li><i class="${OptionIcons.TIMED}"></i>&nbsp; `;
+    icons.push(OptionIcons.Timed);
+    tooltipHTML += `<li><i class="${OptionIcons.Timed}"></i>&nbsp; `;
     tooltipHTML += `Timed (${timerFormatter(
       options.timeBase,
     )} + ${timerFormatter(options.timePerTurn)})`;
@@ -358,50 +358,50 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   }
 
   if (options.speedrun) {
-    icons.push(OptionIcons.SPEEDRUN);
-    tooltipHTML += `<li><i class="${OptionIcons.SPEEDRUN}"></i>&nbsp; `;
+    icons.push(OptionIcons.Speedrun);
+    tooltipHTML += `<li><i class="${OptionIcons.Speedrun}"></i>&nbsp; `;
     tooltipHTML += "Speedrun</li>";
   }
 
   if (options.cardCycle) {
-    icons.push(OptionIcons.CARD_CYCLE);
-    tooltipHTML += `<li><i class="${OptionIcons.CARD_CYCLE}"></i>&nbsp; `;
+    icons.push(OptionIcons.CardCycle);
+    tooltipHTML += `<li><i class="${OptionIcons.CardCycle}"></i>&nbsp; `;
     tooltipHTML += "Card Cycling</li>";
   }
 
   if (options.deckPlays) {
-    icons.push(OptionIcons.DECK_PLAYS);
-    tooltipHTML += `<li><i class="${OptionIcons.DECK_PLAYS}" style="position: relative; left: 0.2em;"></i>&nbsp; `;
+    icons.push(OptionIcons.DeckPlays);
+    tooltipHTML += `<li><i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i>&nbsp; `;
     tooltipHTML += "Bottom-Deck Blind-Plays</li>";
   }
 
   if (options.emptyClues) {
-    icons.push(OptionIcons.EMPTY_CLUES);
-    tooltipHTML += `<li><i class="${OptionIcons.EMPTY_CLUES}"></i>&nbsp; `;
+    icons.push(OptionIcons.EmptyClues);
+    tooltipHTML += `<li><i class="${OptionIcons.EmptyClues}"></i>&nbsp; `;
     tooltipHTML += "Empty Clues</li>";
   }
 
   if (options.oneExtraCard) {
-    icons.push(OptionIcons.ONE_EXTRA_CARD);
-    tooltipHTML += `<li><i class="${OptionIcons.ONE_EXTRA_CARD}"></i>&nbsp; `;
+    icons.push(OptionIcons.OneExtraCard);
+    tooltipHTML += `<li><i class="${OptionIcons.OneExtraCard}"></i>&nbsp; `;
     tooltipHTML += "One Extra Card</li>";
   }
 
   if (options.oneLessCard) {
-    icons.push(OptionIcons.ONE_LESS_CARD);
-    tooltipHTML += `<li><i class="${OptionIcons.ONE_LESS_CARD}"></i>&nbsp; `;
+    icons.push(OptionIcons.OneLessCard);
+    tooltipHTML += `<li><i class="${OptionIcons.OneLessCard}"></i>&nbsp; `;
     tooltipHTML += "One Less Card</li>";
   }
 
   if (options.allOrNothing) {
-    icons.push(OptionIcons.ALL_OR_NOTHING);
-    tooltipHTML += `<li><i class="${OptionIcons.ALL_OR_NOTHING}"></i>&nbsp; `;
+    icons.push(OptionIcons.AllOrNothing);
+    tooltipHTML += `<li><i class="${OptionIcons.AllOrNothing}"></i>&nbsp; `;
     tooltipHTML += "All or Nothing</li>";
   }
 
   if (options.detrimentalCharacters) {
-    icons.push(OptionIcons.DETRIMENTAL_CHARACTERS);
-    tooltipHTML += `<li><i class="${OptionIcons.DETRIMENTAL_CHARACTERS}"></i>&nbsp; `;
+    icons.push(OptionIcons.DetrimentalCharacters);
+    tooltipHTML += `<li><i class="${OptionIcons.DetrimentalCharacters}"></i>&nbsp; `;
     tooltipHTML += "Detrimental Characters</li>";
   }
 
