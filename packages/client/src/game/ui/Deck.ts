@@ -81,7 +81,7 @@ export class Deck extends Konva.Group {
         type: ActionType.Play,
         target: cardOrder,
       });
-    } else if (draggedTo === "discardArea") {
+    } else if (draggedTo === "discardArea" && variant.hasInverted() ) {
       // Inverted suit needs discard whenever play is available.
       const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
       const cardOrder = (totalCardsInDeck - 1) as CardOrder;

@@ -113,7 +113,7 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getInvertedVariants(),
+    ...getInvertedVariants(basicVariantSuits),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -1254,21 +1254,35 @@ function getSudokuVariants(
   return variantDescriptions;
 }
 
-function getInvertedVariants(): readonly VariantDescription[] {
+function getInvertedVariants(
+  basicVariantSuits: BasicVariantSuits,
+): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  variantDescriptions.push(
-    {
-      name: "Inverted (6 Suits)",
-      suits: ["Red", "Yellow", "Green", "Blue", "Purple", "Inverted"],
-    },
-    {
-      name: "Inverted (5 Suits)",
-      suits: ["Red", "Yellow", "Green", "Blue", "Inverted"],
-    },
-  );
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Inverted (${numSuits} Suits)`;
+    const basicSuits = basicVariantSuits[numSuits - 1];
+    if (basicSuits === undefined) {
+      continue;
+    }
+    const variantSuits = [...basicSuits, "Inverted"];
+
+    variantDescriptions.push({
+      name: variantName,
+      suits: variantSuits,
+    });
+  }
+
+  // // Create combinations with special suits. for (const suit of suitsToCreateVariantsFor) { }
 
   return variantDescriptions;
+
+  // variantDescriptions.push( { name: "Inverted (6 Suits)", suits: ["Red", "Yellow", "Green",
+  // "Blue", "Purple", "Inverted"], }, { name: "Inverted (5 Suits)", suits: ["Red", "Yellow",
+  // "Green", "Blue", "Inverted"], }, );
+
+  // return variantDescriptions;
 }
 
 function maxRequiredVariantEfficiency(variant: Variant): number {

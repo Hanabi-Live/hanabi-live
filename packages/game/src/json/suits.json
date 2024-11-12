@@ -581,6 +581,7 @@
     "fill": "#999999",
     "pip": "triangle",
     "inverted": true,
-    "clueColors": ["Black"]
+    "createVariants": true,
+    "clueColors": ["Inverted"]
   }
 ]
