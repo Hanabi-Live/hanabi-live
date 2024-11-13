@@ -17026,5 +17026,41 @@
     "name": "Sudoku & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
     "sudoku": true
+  },
+  {
+    "id": 2127,
+    "newID": "SRN+SYN+SGN+SBN+SPN+Br",
+    "name": "Sticky Brown (6 suits)",
+    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Purple N", "Brown"]
+  },
+  {
+    "id": 2128,
+    "newID": "SRN+SYN+SGN+SBN+Br",
+    "name": "Sticky Brown (5 suits)",
+    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Brown"]
+  },
+  {
+    "id": 2129,
+    "newID": "SRN+SGN+SBN+Br",
+    "name": "Sticky Brown (4 suits)",
+    "suits": ["Red N", "Green N", "Blue N", "Brown"]
+  },
+  {
+    "id": 2130,
+    "newID": "SRN+SBN+Br",
+    "name": "Sticky Brown (3 suits)",
+    "suits": ["Red N", "Blue N", "Brown"]
+  },
+  {
+    "id": 2131,
+    "newID": "SRN+SYN+SGN+SBN+SPN+DBr",
+    "name": "Sticky Dark Brown (6 suits)",
+    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Purple N", "Dark Brown"]
+  },
+  {
+    "id": 2132,
+    "newID": "SRN+SYN+SGN+SBN+DBr",
+    "name": "Sticky Dark Brown (5 suits)",
+    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Dark Brown"]
   }
 ]
