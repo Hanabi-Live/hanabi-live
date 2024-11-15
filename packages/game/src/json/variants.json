@@ -17029,38 +17029,38 @@
   },
   {
     "id": 2127,
-    "newID": "SRN+SYN+SGN+SBN+SPN+Br",
+    "newID": "Br+SRN+SYN+SGN+SBN+SPN",
     "name": "Sticky Brown (6 suits)",
-    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Purple N", "Brown"]
+    "suits": ["Brown","Red N", "Yellow N", "Green N", "Blue N", "Purple N"]
   },
   {
     "id": 2128,
-    "newID": "SRN+SYN+SGN+SBN+Br",
+    "newID": "Br+SRN+SYN+SGN+SBN",
     "name": "Sticky Brown (5 suits)",
-    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Brown"]
+    "suits": ["Brown","Red N", "Yellow N", "Green N", "Blue N"]
   },
   {
     "id": 2129,
-    "newID": "SRN+SGN+SBN+Br",
+    "newID": "Br+SRN+SGN+SBN",
     "name": "Sticky Brown (4 suits)",
-    "suits": ["Red N", "Green N", "Blue N", "Brown"]
+    "suits": ["Brown","Red N", "Green N", "Blue N"]
   },
   {
     "id": 2130,
-    "newID": "SRN+SBN+Br",
+    "newID": "Br+SRN+SBN",
     "name": "Sticky Brown (3 suits)",
-    "suits": ["Red N", "Blue N", "Brown"]
+    "suits": ["Brown","Red N", "Blue N"]
   },
   {
     "id": 2131,
-    "newID": "SRN+SYN+SGN+SBN+SPN+DBr",
+    "newID": "DBr+SRN+SYN+SGN+SBN+SPN",
     "name": "Sticky Dark Brown (6 suits)",
-    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Purple N", "Dark Brown"]
+    "suits": ["Dark Brown","Red N", "Yellow N", "Green N", "Blue N", "Purple N"]
   },
   {
     "id": 2132,
-    "newID": "SRN+SYN+SGN+SBN+DBr",
+    "newID": "DBr+SRN+SYN+SGN+SBN",
     "name": "Sticky Dark Brown (5 suits)",
-    "suits": ["Red N", "Yellow N", "Green N", "Blue N", "Dark Brown"]
+    "suits": ["Dark Brown","Red N", "Yellow N", "Green N", "Blue N"]
   }
 ]
