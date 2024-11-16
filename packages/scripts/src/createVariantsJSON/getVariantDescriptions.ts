@@ -113,6 +113,8 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getStickyBrownVariants(),
+    ...getStickyDarkBrownVariants(),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -1246,6 +1248,40 @@ function getSudokuVariants(
   }
 
   return variantDescriptions;
+}
+
+function getStickyBrownVariants(): readonly VariantDescription[] {
+  return [
+    {
+      name: "Sticky Brown (6 Suits)",
+      suits: ["Brown", "Red N", "Yellow N", "Green N", "Blue N", "Purple N"],
+    },
+    {
+      name: "Sticky Brown (5 Suits)",
+      suits: ["Brown", "Red N", "Yellow N", "Green N", "Blue N"],
+    },
+    {
+      name: "Sticky Brown (4 Suits)",
+      suits: ["Brown", "Red N", "Green N", "Blue N"],
+    },
+    {
+      name: "Sticky Brown (3 Suits)",
+      suits: ["Brown", "Red N", "Blue N"],
+    },
+  ];
+}
+
+function getStickyDarkBrownVariants(): readonly VariantDescription[] {
+  return [
+    {
+      name: "Sticky Dark Brown (6 Suits)",
+      suits: ["Red", "Orange D2", "Yellow", "White", "Brown"],
+    },
+    {
+      name: "Sticky Dark Brown (5 Suits)",
+      suits: ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"],
+    },
+  ];
 }
 
 function maxRequiredVariantEfficiency(variant: Variant): number {
