@@ -1275,7 +1275,14 @@ function getStickyDarkBrownVariants(): readonly VariantDescription[] {
   return [
     {
       name: "Sticky Dark Brown (6 Suits)",
-      suits: ["Dark Brown", "Red N", "Yellow N", "Green N", "Blue N","Purple N"],
+      suits: [
+        "Dark Brown",
+        "Red N",
+        "Yellow N",
+        "Green N",
+        "Blue N",
+        "Purple N",
+      ],
     },
     {
       name: "Sticky Dark Brown (5 Suits)",
