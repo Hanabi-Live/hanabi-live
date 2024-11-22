@@ -17050,24 +17050,5 @@
     "newID": "Br+SRN+SBN",
     "name": "Sticky Brown (3 Suits)",
     "suits": ["Brown", "Red N", "Blue N"]
-  },
-  {
-    "id": 2131,
-    "newID": "DBr+SRN+SYN+SGN+SBN+SPN",
-    "name": "Sticky Dark Brown (6 Suits)",
-    "suits": [
-      "Dark Brown",
-      "Red N",
-      "Yellow N",
-      "Green N",
-      "Blue N",
-      "Purple N"
-    ]
-  },
-  {
-    "id": 2132,
-    "newID": "DBr+SRN+SYN+SGN+SBN",
-    "name": "Sticky Dark Brown (5 Suits)",
-    "suits": ["Dark Brown", "Red N", "Yellow N", "Green N", "Blue N"]
   }
 ]
