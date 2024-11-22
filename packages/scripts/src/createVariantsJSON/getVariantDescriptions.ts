@@ -114,7 +114,6 @@ export function getVariantDescriptions(
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getStickyBrownVariants(),
-    ...getStickyDarkBrownVariants(),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -1267,26 +1266,6 @@ function getStickyBrownVariants(): readonly VariantDescription[] {
     {
       name: "Sticky Brown (3 Suits)",
       suits: ["Brown", "Red N", "Blue N"],
-    },
-  ];
-}
-
-function getStickyDarkBrownVariants(): readonly VariantDescription[] {
-  return [
-    {
-      name: "Sticky Dark Brown (6 Suits)",
-      suits: [
-        "Dark Brown",
-        "Red N",
-        "Yellow N",
-        "Green N",
-        "Blue N",
-        "Purple N",
-      ],
-    },
-    {
-      name: "Sticky Dark Brown (5 Suits)",
-      suits: ["Dark Brown", "Red N", "Yellow N", "Green N", "Blue N"],
     },
   ];
 }
