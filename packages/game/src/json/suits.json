@@ -573,5 +573,40 @@
     "displayName": "Teal",
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
+  },
+  {
+    "name": "Red N",
+    "id": "SRN",
+    "displayName": "Red",
+    "pip": "hanabiRed",
+    "clueColors": ["Red", "Brown"]
+  },
+  {
+    "name": "Yellow N",
+    "id": "SYN",
+    "displayName": "Yellow",
+    "pip": "hanabiYellow",
+    "clueColors": ["Yellow", "Brown"]
+  },
+  {
+    "name": "Green N",
+    "id": "SGN",
+    "displayName": "Green",
+    "pip": "hanabiGreen",
+    "clueColors": ["Green", "Brown"]
+  },
+  {
+    "name": "Blue N",
+    "id": "SBN",
+    "displayName": "Blue",
+    "pip": "hanabiBlue",
+    "clueColors": ["Blue", "Brown"]
+  },
+  {
+    "name": "Purple N",
+    "id": "SPN",
+    "displayName": "Purple",
+    "pip": "hanabiWhite",
+    "clueColors": ["Purple", "Brown"]
   }
 ]
