@@ -33,10 +33,11 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     const detrimentalCharacters =
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
-    const maxPlayers =
-      parseIntSafe(
-        urlParams.get("maxPlayers") ?? urlParams.get("numPlayers")
-      ) ?? DEFAULT_CREATE_TABLE_MAX_PLAYERS;
+    const maxPlayers = parseIntSafe(
+      urlParams.get("maxPlayers") ??
+        urlParams.get("numPlayers") ??
+        DEFAULT_CREATE_TABLE_MAX_PLAYERS.toString()
+    );
 
     globals.conn!.send("tableCreate", {
       name,
@@ -95,7 +96,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
           const shadowingPlayerIndexString = shadowMatch[1];
           if (shadowingPlayerIndexString !== undefined) {
             const shadowingPlayerIndexInt = parseIntSafe(
-              shadowingPlayerIndexString
+              shadowingPlayerIndexString,
             );
             if (
               shadowingPlayerIndexInt !== undefined &&
@@ -116,7 +117,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
   const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
-    window.location.pathname
+    window.location.pathname,
   );
   if (replayMatch !== null) {
     const databaseIDString = replayMatch[1];
@@ -140,7 +141,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
   const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
-    window.location.pathname
+    window.location.pathname,
   );
   if (replayJSONMatch !== null) {
     const gameJSONStringCompressed = replayJSONMatch[1];
