@@ -33,10 +33,11 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     const detrimentalCharacters =
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
-    const maxPlayers =
-      parseIntSafe(
-        urlParams.get("maxPlayers") ?? urlParams.get("numPlayers")
-      ) ?? DEFAULT_CREATE_TABLE_MAX_PLAYERS;
+    const maxPlayers = parseIntSafe(
+      urlParams.get("maxPlayers") ??
+        urlParams.get("numPlayers") ??
+        DEFAULT_CREATE_TABLE_MAX_PLAYERS.toString()
+    );
 
     globals.conn!.send("tableCreate", {
       name,
