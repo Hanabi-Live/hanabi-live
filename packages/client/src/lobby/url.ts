@@ -1,7 +1,5 @@
-import {
-  DEFAULT_CREATE_TABLE_MAX_PLAYERS,
-  type ServerCommandWelcomeData,
-} from "@hanabi-live/data";
+import type { ServerCommandWelcomeData } from "@hanabi-live/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
