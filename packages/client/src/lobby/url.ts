@@ -55,7 +55,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
         detrimentalCharacters,
       },
       password,
-      maxPlayers: maxPlayers,
+      maxPlayers,
     });
     return;
   }
