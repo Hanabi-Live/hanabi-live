@@ -1,4 +1,5 @@
 import type { ServerCommandWelcomeData } from "@hanabi-live/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
@@ -32,6 +33,10 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
     const detrimentalCharacters =
       urlParams.get("detrimentalCharacters") === "true";
     const password = urlParams.get("password") ?? "";
+    const maxPlayers =
+      urlParams.get("maxPlayers") ??
+      urlParams.get("numPlayers") ??
+      DEFAULT_CREATE_TABLE_MAX_PLAYERS;
 
     globals.conn!.send("tableCreate", {
       name,
@@ -50,6 +55,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
         detrimentalCharacters,
       },
       password,
+      maxPlayers: maxPlayers,
     });
     return;
   }
@@ -89,7 +95,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
           const shadowingPlayerIndexString = shadowMatch[1];
           if (shadowingPlayerIndexString !== undefined) {
             const shadowingPlayerIndexInt = parseIntSafe(
-              shadowingPlayerIndexString,
+              shadowingPlayerIndexString
             );
             if (
               shadowingPlayerIndexInt !== undefined &&
@@ -110,7 +116,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
   const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
-    window.location.pathname,
+    window.location.pathname
   );
   if (replayMatch !== null) {
     const databaseIDString = replayMatch[1];
@@ -134,7 +140,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
   const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
-    window.location.pathname,
+    window.location.pathname
   );
   if (replayJSONMatch !== null) {
     const gameJSONStringCompressed = replayJSONMatch[1];
