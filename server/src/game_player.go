@@ -296,3 +296,16 @@ func (p *GamePlayer) PlayDeck() {
 	c.Slot = -1
 	p.PlayCard(c)
 }
+
+func (p *GamePlayer) DiscardDeck() {
+	// Local variables
+	g := p.Game
+
+	// Make the player draw the final card in the deck
+	p.DrawCard()
+
+	// Discard the card freshly drawn
+	c := p.RemoveCard(len(g.Deck) - 1) // The final card
+	c.Slot = -1
+	p.DiscardCard(c)
+}
