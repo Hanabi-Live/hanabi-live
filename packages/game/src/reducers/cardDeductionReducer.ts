@@ -80,10 +80,12 @@ function makeDeductions(
   return newDeck;
 }
 
+/** Mutates the deck in-place. */
 function updateAllCardPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
   oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
@@ -171,6 +173,7 @@ function updateCardPossibilities(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
@@ -442,12 +445,13 @@ function hasPossibility(
   );
 }
 
-/** Mutates the `countCountMap` in-place. */
+/** Mutates the `countCountMap` and `possibilitiesToValidate` in-place. */
 function possibilityValid(
   [suitIndex, rank]: readonly [SuitIndex, Rank],
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ): boolean {
   if (deckPossibilities.length === index) {
@@ -511,6 +515,7 @@ function possibilityValid(
 /** Mutates the `possibilitiesToValidate` in-place. */
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;

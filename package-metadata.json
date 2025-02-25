@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "konva": {
+      "lock-version": true,
+      "lock-reason": "Stuck on 3.4.1 until the front-end client can be rewritten. (Upgrading the version causes weird graphical glitches.)"
+    }
+  }
+}

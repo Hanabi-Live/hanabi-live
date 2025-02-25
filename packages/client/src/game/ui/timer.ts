@@ -113,6 +113,7 @@ export function update(data: ClockData): void {
   const activeTimer = ourTurn
     ? globals.elements.timer1
     : globals.elements.timer2;
+  // eslint-disable-next-line unicorn/prefer-global-this
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
     setTickingDownTimePlayerNameTooltip(data.activePlayerIndex);
@@ -123,7 +124,7 @@ export function update(data: ClockData): void {
 
 export function stop(): void {
   if (globals.timerID !== null) {
-    window.clearInterval(globals.timerID);
+    globalThis.clearInterval(globals.timerID);
     globals.timerID = null;
   }
 }

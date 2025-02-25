@@ -181,7 +181,7 @@ export class LayoutChild extends Konva.Group {
       text +=
         "available to you. (e.g. positive clues, negative clues, cards seen, etc.)";
       // eslint-disable-next-line no-alert
-      return !window.confirm(text);
+      return !globalThis.confirm(text);
     }
 
     return false;
@@ -193,7 +193,12 @@ export class LayoutChild extends Konva.Group {
       return true; // Known card
     }
 
-    modals.askForMorph(this.card, globals.variant, draggedTo);
+    modals.askForMorph(
+      this.card,
+      globals.variant,
+      globals.cardImages,
+      draggedTo,
+    );
     return false; // Unknown card
   }
 

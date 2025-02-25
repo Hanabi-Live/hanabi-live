@@ -143,7 +143,7 @@ function getAjaxError(jqXHR: JQuery.jqXHR) {
 export function automaticLogin(): void {
   // Automatically sign in to the WebSocket server if a query string of "?login" is present (which
   // is intended to be used with test accounts).
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(globalThis.location.search);
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);

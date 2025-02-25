@@ -2,12 +2,12 @@
   "name": "@hanabi-live/scripts",
   "private": true,
   "dependencies": {
-    "complete-common": "^1.0.0",
-    "complete-node": "^1.5.0",
-    "lodash": "^4.17.21",
-    "prettier": "^3.3.3"
+    "complete-common": "1.1.2",
+    "complete-node": "3.1.6",
+    "lodash": "4.17.21",
+    "prettier": "3.5.2"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.7"
+    "@types/lodash": "4.17.15"
   }
 }

@@ -13,8 +13,8 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   }
 
   // Automatically create a table if we are using a "/create-table" URL.
-  if (window.location.pathname === "/create-table") {
-    const urlParams = new URLSearchParams(window.location.search);
+  if (globalThis.location.pathname === "/create-table") {
+    const urlParams = new URLSearchParams(globalThis.location.search);
     const name = urlParams.get("name") ?? globals.randomTableName;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get("timed") === "true";
@@ -55,7 +55,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   }
 
   // Automatically join a pre-game if we are using a "/pre-game/123" URL.
-  const preGameMatch = /\/pre-game\/(\d+)/.exec(window.location.pathname);
+  const preGameMatch = /\/pre-game\/(\d+)/.exec(globalThis.location.pathname);
   if (preGameMatch !== null) {
     const tableIDString = preGameMatch[1];
     if (tableIDString !== undefined) {
@@ -77,13 +77,15 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // a seat with "/game/123/shadow/0" (We want to spectate it instead of reattend it because if we
   // are at this point, it is assumed that if we were in the respective game, we would have already
   // tried to join it.)
-  const gameMatch = /\/game\/(\d+)/.exec(window.location.pathname);
+  const gameMatch = /\/game\/(\d+)/.exec(globalThis.location.pathname);
   if (gameMatch !== null) {
     const tableIDString = gameMatch[1];
     if (tableIDString !== undefined) {
       const tableID = parseIntSafe(tableIDString);
       if (tableID !== undefined && tableID > 0) {
-        const shadowMatch = /\/shadow\/(\d+)/.exec(window.location.pathname);
+        const shadowMatch = /\/shadow\/(\d+)/.exec(
+          globalThis.location.pathname,
+        );
         let shadowingPlayerIndex = -1;
         if (shadowMatch !== null) {
           const shadowingPlayerIndexString = shadowMatch[1];
@@ -110,14 +112,14 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
   const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
-    window.location.pathname,
+    globalThis.location.pathname,
   );
   if (replayMatch !== null) {
     const databaseIDString = replayMatch[1];
     if (databaseIDString !== undefined) {
       const databaseID = parseIntSafe(databaseIDString);
       if (databaseID !== undefined && databaseID > 0) {
-        const visibility = window.location.pathname.includes("shared-")
+        const visibility = globalThis.location.pathname.includes("shared-")
           ? "shared"
           : "solo";
         globals.conn!.send("replayCreate", {
@@ -134,7 +136,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
   const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
-    window.location.pathname,
+    globalThis.location.pathname,
   );
   if (replayJSONMatch !== null) {
     const gameJSONStringCompressed = replayJSONMatch[1];
@@ -158,7 +160,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
         return;
       }
 
-      const visibility = window.location.pathname.includes("shared-")
+      const visibility = globalThis.location.pathname.includes("shared-")
         ? "solo"
         : "shared";
 

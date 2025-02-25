@@ -623,7 +623,7 @@ export function ready(): boolean {
   }
 
   // Hide the JSON field if we are not in a development environment.
-  if (window.location.hostname !== "localhost") {
+  if (globalThis.location.hostname !== "localhost") {
     $("#create-game-json-row").hide();
   }
 

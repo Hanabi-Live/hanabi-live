@@ -197,7 +197,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
 /** Morphing cards allows for creation of hypothetical situations. */
 function clickMorph(card: HanabiCard) {
-  modals.askForMorph(card, globals.variant);
+  modals.askForMorph(card, globals.variant, globals.cardImages);
 }
 
 export function morphReplayFromModal(

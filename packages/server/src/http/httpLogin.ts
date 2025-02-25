@@ -21,7 +21,37 @@ const MAX_USERNAME_LENGTH = 15;
 
 /** Every special character other than hyphens, underscores, and periods. */
 const ILLEGAL_SPECIAL_CHARACTERS = [
-  ..."`~!@#$%^&*()=+[{]}\\|;:'\",<>/?",
+  "`",
+  "~",
+  "!", // 1
+  "@", // 2
+  "#", // 3
+  "$", // 4
+  "%", // 5
+  "^", // 6
+  "&", // 7
+  "*", // 8
+  "(", // 9
+  ")", // 0
+  // Hyphens and underscores are exempt.
+  "=",
+  "+",
+  "[",
+  "{",
+  "]",
+  "}",
+  "\\",
+  "|",
+  ";",
+  ":",
+  "'",
+  '"',
+  ",",
+  "<",
+  // Periods are exempt.
+  ">",
+  "/",
+  "?",
 ] as const;
 
 const RESERVED_USERNAMES = new ReadonlySet([
@@ -52,14 +82,14 @@ export async function httpLogin(
 ): Promise<FastifyReply> {
   const result = httpLoginData.safeParse(request.body);
   if (!result.success) {
-    return reply.code(StatusCodes.UNAUTHORIZED).send(result.error);
+    return await reply.code(StatusCodes.UNAUTHORIZED).send(result.error);
   }
 
   const { username, password, version, newPassword } = result.data;
 
   const versionError = validateVersion(version);
   if (versionError !== undefined) {
-    return reply.code(StatusCodes.UNAUTHORIZED).send(versionError);
+    return await reply.code(StatusCodes.UNAUTHORIZED).send(versionError);
   }
 
   let user = await models.users.get(username);
@@ -72,7 +102,7 @@ export async function httpLogin(
       newPassword,
     );
     if (newUserError !== undefined) {
-      return reply.code(StatusCodes.UNAUTHORIZED).send(newUserError);
+      return await reply.code(StatusCodes.UNAUTHORIZED).send(newUserError);
     }
 
     const passwordHash = await argon2.hash(password);
@@ -83,7 +113,7 @@ export async function httpLogin(
       request.ip,
     );
     if (newUser === undefined) {
-      return reply
+      return await reply
         .code(StatusCodes.INTERNAL_SERVER_ERROR)
         .send(
           `Failed to create a new user with a username of "${username}". Please try again.`,
@@ -94,7 +124,7 @@ export async function httpLogin(
   } else {
     const isValidPassword = await argon2.verify(user.passwordHash, password);
     if (!isValidPassword) {
-      return reply
+      return await reply
         .code(StatusCodes.UNAUTHORIZED)
         .send("That is not the correct password.");
     }
@@ -114,7 +144,7 @@ export async function httpLogin(
 
   // Return a "200 OK" HTTP code. (Returning a code is not actually necessary but Firefox will
   // complain otherwise.)
-  return reply.send(); // An empty reply will have `StatusCodes.OK`.
+  return await reply.send(); // An empty reply will have `StatusCodes.OK`.
 
   // Next, the client will attempt to establish a WebSocket connection, which is handled in
   // "websocket.ts".

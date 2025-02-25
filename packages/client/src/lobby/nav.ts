@@ -51,7 +51,7 @@ export function init(): void {
   // The "Sign Out" button.
   $(".signout").on("click", () => {
     // Add the query parameters to the end to preserve using "?dev".
-    window.location.href = `/logout${window.location.search}`;
+    globalThis.location.href = `/logout${globalThis.location.search}`;
   });
 
   // The "Games" bottom screen toggle button.

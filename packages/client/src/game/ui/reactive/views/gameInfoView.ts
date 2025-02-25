@@ -26,7 +26,7 @@ export function onTurnChanged(data: {
   // will cause bugs if the user refreshes, since the hypothetical turn will not map on to the real
   // game state.)
   if (globals.state.replay.hypothetical === null) {
-    setBrowserAddressBarPath(window.location.pathname, `#${friendlyTurn}`);
+    setBrowserAddressBarPath(globalThis.location.pathname, `#${friendlyTurn}`);
   }
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck

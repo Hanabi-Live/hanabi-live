@@ -3,7 +3,7 @@ import { showError } from "./modals";
 
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
-  window.addEventListener("error", (errorEvent) => {
+  globalThis.addEventListener("error", (errorEvent) => {
     const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
     const formattedStackTrace = `<pre>${stackTrace}</pre>`;
 

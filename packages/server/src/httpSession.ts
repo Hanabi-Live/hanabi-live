@@ -6,7 +6,6 @@ import type { FastifyRequest } from "fastify";
  * @see https://github.com/fastify/fastify-secure-session?tab=readme-ov-file#add-typescript-types
  */
 declare module "@fastify/secure-session" {
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   interface SessionData {
     userID?: UserID;
   }

@@ -30,7 +30,7 @@
     "**/.yarn/": true,
     "**/dist/": true,
     "**/node_modules/": true,
-    "bun.lockb": true,
+    "bun.lock": true,
     "LICENSE": true,
     "package-lock.json": true,
     "pnpm-lock.yaml": true,
@@ -92,11 +92,11 @@
   },
   // @template-customization-start
   "[go]": {
+    "editor.formatOnSave": true,
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },

@@ -62,7 +62,7 @@ export const games = {
 
   getGameIDsForUserFriends: async (
     userID: UserID,
-    friendsSet: Set<UserID>,
+    friendsSet: ReadonlySet<UserID>,
     offset: number,
     amount: number,
   ): Promise<readonly GameID[]> => {

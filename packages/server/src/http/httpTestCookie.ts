@@ -9,6 +9,6 @@ export async function httpTestCookie(
   const userID = getCookieValue(request, "userID");
 
   return userID === undefined
-    ? reply.code(StatusCodes.NO_CONTENT).send() // An empty reply will have `StatusCodes.OK`.
-    : reply.send();
+    ? await reply.code(StatusCodes.NO_CONTENT).send() // An empty reply will have `StatusCodes.OK`.
+    : await reply.send();
 }

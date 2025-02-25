@@ -67,7 +67,7 @@ export function init(): void {
 
   // Error modal setup.
   errorModalButton.addEventListener("pointerdown", () => {
-    window.location.reload();
+    globalThis.location.reload();
   });
 
   // Create Game modal setup.
@@ -140,6 +140,7 @@ export function askForPassword(tableID: number): void {
 export function askForMorph(
   card: HanabiCard | null,
   variant: Variant,
+  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
   draggedTo: DragAreaType = null,
 ): void {
   morphDragArea = draggedTo;
@@ -165,6 +166,7 @@ export function askForMorph(
     startSuit,
     startRank,
     possibilities,
+    cardImages,
   );
 
   showModal("#morph-modal", false);
@@ -443,6 +445,7 @@ function fillMorphModalWithRadios(
   startSuit: Suit,
   startRank: Rank,
   possibilities: readonly SuitRankTuple[],
+  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
 ) {
   const placeHolder = getHTMLElement(element);
   placeHolder.innerHTML = "";
@@ -472,9 +475,12 @@ function fillMorphModalWithRadios(
 
       const label = document.createElement("label");
       label.setAttribute("for", radioId);
-      const image: HTMLCanvasElement = window.globals.cardImages.get(
-        `card-${suit.name}-${rank}`,
-      )!;
+      const cardImageLabel = `card-${suit.name}-${rank}`;
+      const image = cardImages.get(cardImageLabel);
+      assertDefined(
+        image,
+        `Failed to get the card image with label: ${cardImageLabel}`,
+      );
       label.append(image);
       cell.append(label);
 

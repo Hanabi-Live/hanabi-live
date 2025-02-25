@@ -315,10 +315,15 @@ function drawCard(
   };
 }
 
-/** @returns The order of the top of the deck. */
+/**
+ * This function mutates the `actions` array.
+ *
+ * @returns The order of the top of the deck.
+ */
 function dealInitialCards(
   numPlayers: NumPlayers,
   cardsPerHand: number,
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   actions: GameAction[],
   deck: readonly CardIdentity[],
 ): CardOrder {

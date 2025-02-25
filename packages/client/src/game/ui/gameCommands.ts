@@ -271,8 +271,8 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
   let specificTurnString: string | undefined;
-  if (window.location.hash !== "") {
-    specificTurnString = window.location.hash.replace("#", ""); // Strip the leading "#".
+  if (globalThis.location.hash !== "") {
+    specificTurnString = globalThis.location.hash.replace("#", ""); // Strip the leading "#".
   }
 
   // The server has sent us the list of the game actions that have occurred in the game thus far (in
@@ -465,7 +465,9 @@ function suggestTurn(who: string, room: string, segment: number) {
       leaderSuggested ||
       internalSegment === globals.state.replay.shared.segment ||
       // eslint-disable-next-line no-alert
-      window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
+      globalThis.confirm(
+        `${who} suggests that we go to turn ${segment}. Agree?`,
+      )
     ) {
       replay.goToSegment(internalSegment);
     }
@@ -489,7 +491,7 @@ function setURL(data: InitData) {
       data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
     }`;
   }
-  setBrowserAddressBarPath(path, window.location.hash);
+  setBrowserAddressBarPath(path, globalThis.location.hash);
 }
 
 function initStateStore(data: InitData) {
@@ -541,6 +543,7 @@ function initStateStore(data: InitData) {
 
   // Make the current state available from the JavaScript console (for debugging purposes).
   globals.store.subscribe(() => {
+    // eslint-disable-next-line unicorn/prefer-global-this
     window.state = globals.state;
   });
 

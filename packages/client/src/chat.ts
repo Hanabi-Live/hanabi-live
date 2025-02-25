@@ -199,8 +199,8 @@ function sendText(room: string, msgRaw: string) {
 
   // Add the chat message to the typed history so that we can use the up arrow later. (But only if
   // it isn't in the history already.)
-  const index = typedChatHistory.indexOf(msg, 0);
-  if (index > -1) {
+  const index = typedChatHistory.indexOf(msg);
+  if (index !== -1) {
     typedChatHistory.splice(index, 1);
   }
   const newLength = typedChatHistory.unshift(msg);
