@@ -3,7 +3,6 @@ import type {
   VariantDescription,
   VariantJSON,
 } from "@hanabi-live/game";
-import { isMain } from "complete-node";
 import fs from "node:fs";
 import path from "node:path";
 import * as prettier from "prettier";
@@ -12,16 +11,6 @@ import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
 const PACKAGE_ROOT = path.join(__dirname, "..", "..");
 const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
-
-if (isMain()) {
-  main().catch((error: unknown) => {
-    throw new Error(`${error}`);
-  });
-}
-
-async function main() {
-  await createVariantsJSON(false);
-}
 
 export async function createVariantsJSON(quiet: boolean): Promise<void> {
   const { suitsPath, variantsPath, textPath } = getPaths();
