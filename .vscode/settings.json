@@ -12,6 +12,7 @@
     ".env*": "shellscript", // e.g. ".env.example" is the same as ".env".
     // @template-customization-start
     "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
+    "post-merge": "shellscript",
     // @template-customization-end
   },
 
