@@ -1,38 +1,94 @@
 import { START_CARD_RANK } from "../../constants";
 import { StackDirection } from "../../enums/StackDirection";
-import { getVariant } from "../../gameData";
 import type { Rank } from "../../types/Rank";
-import { reversibleIsCardDead } from "./reversible";
+import { reversibleGetRanksUsefulForMaxScore } from "./reversible";
 
 describe("upOrDownDeadCardsDirectionUndecided", () => {
-  test("Handles discarded 2 and 4", () => {
-    const variant = getVariant("Up or Down (5 Suits)");
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 4]);
-    // eslint-disable-next-line func-style
-    const isDead = (rank: number) =>
-      reversibleIsCardDead(
-        rank as Rank,
-        allDiscardedSet,
-        StackDirection.Undecided,
-      );
-    expect(isDead(3)).toBe(true);
-    expect(isDead(1)).toBe(false);
-    expect(isDead(5)).toBe(false);
-    expect(isDead(START_CARD_RANK)).toBe(false);
+  test("Handles no discard, no play", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      // eslint-disable-next-line unicorn/no-null
+      null,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([1, 2, 3, 4, 5, START_CARD_RANK]));
   });
-
-  test("Handles discarded 3 and 5", () => {
-    const variant = getVariant("Up or Down (5 Suits)");
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([START_CARD_RANK, 3, 5]);
-    // eslint-disable-next-line func-style
-    const isDead = (rank: number) =>
-      reversibleIsCardDead(
-        rank as Rank,
+  test("Handles ok discards, no play", () => {
+    for (const discardedRank of [1, 5, START_CARD_RANK]) {
+      const allDiscardedSet: Set<Rank> = new Set<Rank>([discardedRank as Rank]);
+      const ranks = reversibleGetRanksUsefulForMaxScore(
+        // eslint-disable-next-line unicorn/no-null
+        null,
         allDiscardedSet,
         StackDirection.Undecided,
       );
-    expect(isDead(4)).toBe(true);
-    expect(isDead(1)).toBe(false);
-    expect(isDead(2)).toBe(false);
+      expect(ranks).toEqual(new Set([1, 2, 3, 4, 5, START_CARD_RANK]));
+    }
+  });
+  test("Handles play 1, 2, 3", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      3 as Rank,
+      allDiscardedSet,
+      StackDirection.Up,
+    );
+    expect(ranks).toEqual(new Set([4, 5]));
+  });
+  test("Handles play 5, discard 2", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([2]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      5 as Rank,
+      allDiscardedSet,
+      StackDirection.Down,
+    );
+    expect(ranks).toEqual(new Set([3, 4]));
+  });
+  test("Handles discard 2 and 4", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 4]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      // eslint-disable-next-line unicorn/no-null
+      null,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([1, 5, START_CARD_RANK]));
+  });
+  test("Handles play S, discard 2 and 4", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 4]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      START_CARD_RANK,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([]));
+  });
+  test("Handles play S discard 2", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([2]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      START_CARD_RANK,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([3, 4]));
+  });
+  test("Handles play S, discard 3", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([3]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      START_CARD_RANK,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([2, 4]));
+  });
+  test("Handles discard 2, 5 and Start", () => {
+    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 5, START_CARD_RANK]);
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      // eslint-disable-next-line unicorn/no-null
+      null,
+      allDiscardedSet,
+      StackDirection.Undecided,
+    );
+    expect(ranks).toEqual(new Set([1, START_CARD_RANK]));
   });
 });

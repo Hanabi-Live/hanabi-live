@@ -2,7 +2,7 @@
 // used for "Up Or Down" and "Reversed" variants.
 
 import type { Tuple } from "complete-common";
-import { eRange, iRange, newArray } from "complete-common";
+import { iRange, newArray } from "complete-common";
 import { START_CARD_RANK } from "../../constants";
 import { StackDirection } from "../../enums/StackDirection";
 import type { CardState } from "../../interfaces/CardState";
@@ -12,6 +12,7 @@ import type { NumSuits } from "../../types/NumSuits";
 import type { Rank } from "../../types/Rank";
 import type { SuitIndex } from "../../types/SuitIndex";
 import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck";
+import { getLastPlayedRank } from "../playStacks";
 
 /**
  * Returns true if this card still needs to be played in order to get the maximum score (taking the
@@ -27,110 +28,87 @@ export function reversibleIsCardNeededForMaxScore(
   playStackDirections: GameState["playStackDirections"],
   variant: Variant,
 ): boolean {
-  const direction = playStackDirections[suitIndex];
-  // First, check to see if the stack is already finished.
-  if (direction === StackDirection.Finished) {
+  const playStack = playStacks[suitIndex];
+  if (playStack === undefined) {
     return false;
   }
-
-  // Second, check to see if this card is dead. (Meaning that all of a previous card in the suit
-  // have been discarded already.)
+  const lastPlayedRank = getLastPlayedRank(playStack, deck);
   const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
-  if (reversibleIsCardDead(rank, allDiscardedSet, direction)) {
-    return false;
-  }
-
-  // The "Up or Down" variants have specific requirements to start the pile.
-  if (variant.upOrDown) {
-    switch (rank) {
-      case 1: {
-        // 1's do not need to be played if the stack is going up.
-        return direction !== StackDirection.Up;
-      }
-
-      case 2:
-      case 3:
-      case 4: {
-        // All 2's, 3's, and 4's must be played.
-        return true;
-      }
-
-      case 5: {
-        // 5's do not need to be played if the stack is going down.
-        return direction !== StackDirection.Down;
-      }
-
-      case START_CARD_RANK: {
-        // START cards only need to be played if there 0 cards the stack.
-        const playStack = playStacks[suitIndex];
-        if (playStack === undefined) {
-          return false;
-        }
-
-        return playStack.length === 0;
-      }
-    }
-  }
-
-  return true;
+  const direction = playStackDirections[suitIndex];
+  const usefulRanks = reversibleGetRanksUsefulForMaxScore(
+    lastPlayedRank,
+    allDiscardedSet,
+    direction,
+  );
+  return usefulRanks.has(rank);
 }
 
-/**
- * Returns true if it is no longer possible to play this card by looking to see if all of the
- * previous cards in the stack have been discarded (taking into account the stack direction). This
- * function mirrors the server function "variantReversibleIsDeadIsDead()".
- * FIXME: this function logic has been fixed, the changes needs to be back-ported to the server
- * function.
- */
-export function reversibleIsCardDead(
-  rank: Rank,
+export function reversibleGetRanksUsefulForMaxScore(
+  lastPlayed: Rank | null,
   allDiscardedSet: ReadonlySet<Rank>,
-  playStackDirection: StackDirection | undefined,
-): boolean {
-  // In "Up Or Down" variant, when no cards are played, or only the Start card then the direction is
-  // Undecided and a card is dead iff it's dead in both directions.
-  if (playStackDirection === StackDirection.Undecided) {
-    return (
-      reversibleIsCardDead(rank, allDiscardedSet, StackDirection.Down) &&
-      reversibleIsCardDead(rank, allDiscardedSet, StackDirection.Up)
+  direction: StackDirection | undefined,
+): ReadonlySet<Rank> {
+  if (direction === StackDirection.Undecided) {
+    const upSet = reversibleGetRanksUsefulForMaxScore(
+      lastPlayed,
+      allDiscardedSet,
+      StackDirection.Up,
     );
+    const downSet = reversibleGetRanksUsefulForMaxScore(
+      lastPlayed,
+      allDiscardedSet,
+      StackDirection.Down,
+    );
+    return new Set<Rank>([...upSet, ...downSet]);
   }
-
-  // eslint-disable-next-line func-style
-  const areRanksAfterDead = (rank_value: number) => {
-    if (
-      (rank_value === 1 || rank_value === 5) &&
-      !allDiscardedSet.has(START_CARD_RANK)
-    ) {
-      // In "Up Or Down" variant, if Start is not discarded then 1 (or 5) are not needed to start a
-      // stack, and hence ranks after 1 (or 5) are not dead.
-      return false;
+  const ranksSet = new Set<Rank>();
+  if (direction === StackDirection.Finished) {
+    return ranksSet;
+  }
+  if (direction === StackDirection.Up) {
+    // We first deal with S and 1, if both are discarded then no other cards can be played:
+    if (allDiscardedSet.has(START_CARD_RANK) && allDiscardedSet.has(1)) {
+      return ranksSet;
     }
-    return allDiscardedSet.has(rank_value as Rank);
-  };
-
-  // Now we can handle both the regular / reversed and the easy "Up or Down" cases.
-  if (playStackDirection === StackDirection.Up) {
-    for (const nextRank of eRange(1, rank)) {
-      if (areRanksAfterDead(nextRank)) {
-        console.log("up", nextRank);
-        return true;
+    let nextToPlay = 2;
+    if (lastPlayed === null) {
+      ranksSet.add(1);
+      ranksSet.add(START_CARD_RANK);
+    } else if (lastPlayed !== START_CARD_RANK) {
+      nextToPlay = lastPlayed + 1;
+    }
+    // Then we walk up from `nextToPlay` (at least 2 as we dealt with S and 1 already):
+    for (let rank = nextToPlay; rank <= 5; rank++) {
+      if (allDiscardedSet.has(rank as Rank)) {
+        break;
+      } else {
+        ranksSet.add(rank as Rank);
       }
     }
-    return false;
   }
 
-  if (playStackDirection === StackDirection.Down) {
-    for (let nextRank = 5; nextRank > rank; nextRank--) {
-      if (areRanksAfterDead(nextRank)) {
-        console.log("down", nextRank);
-        return true;
+  // Same logic than Up, but reversed.
+  if (direction === StackDirection.Down) {
+    if (allDiscardedSet.has(START_CARD_RANK) && allDiscardedSet.has(5)) {
+      return ranksSet;
+    }
+    let nextToPlay = 4;
+    if (lastPlayed === null) {
+      ranksSet.add(5);
+      ranksSet.add(START_CARD_RANK);
+    } else if (lastPlayed !== START_CARD_RANK) {
+      nextToPlay = lastPlayed - 1;
+    }
+    for (let rank = nextToPlay; rank >= 1; rank--) {
+      if (allDiscardedSet.has(rank as Rank)) {
+        break;
+      } else {
+        ranksSet.add(rank as Rank);
       }
     }
-    return false;
   }
 
-  return false;
+  return ranksSet;
 }
 
 /**
