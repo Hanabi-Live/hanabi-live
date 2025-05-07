@@ -35,7 +35,8 @@ export function reversibleIsCardNeededForMaxScore(
 
   // Second, check to see if this card is dead. (Meaning that all of a previous card in the suit
   // have been discarded already.)
-  if (isCardDead(suitIndex, rank, deck, playStackDirections, variant)) {
+  const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
+  if (reversibleIsCardDead(rank, variant, allDiscardedSet, direction)) {
     return false;
   }
 
@@ -79,18 +80,15 @@ export function reversibleIsCardNeededForMaxScore(
  * previous cards in the stack have been discarded (taking into account the stack direction). This
  * function mirrors the server function "variantReversibleIsDeadIsDead()".
  */
-function isCardDead(
-  suitIndex: SuitIndex,
+export function reversibleIsCardDead(
   rank: Rank,
-  deck: readonly CardState[],
-  playStackDirections: GameState["playStackDirections"],
   variant: Variant,
-) {
-  const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
-
+  allDiscardedSet: ReadonlySet<Rank>,
+  stackDirection: StackDirection | undefined,
+): boolean {
   // We denote by this either the true direction or the only remaining direction in case we already
   // lost the necessary cards for the other direction in "Up or Down".
-  let impliedDirection = playStackDirections[suitIndex];
+  let impliedDirection = stackDirection;
 
   if (
     impliedDirection === StackDirection.Undecided &&
