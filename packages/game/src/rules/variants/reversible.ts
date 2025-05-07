@@ -36,7 +36,7 @@ export function reversibleIsCardNeededForMaxScore(
   // Second, check to see if this card is dead. (Meaning that all of a previous card in the suit
   // have been discarded already.)
   const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
-  if (reversibleIsCardDead(rank, variant, allDiscardedSet, direction)) {
+  if (reversibleIsCardDead(rank, allDiscardedSet, direction)) {
     return false;
   }
 
@@ -79,69 +79,58 @@ export function reversibleIsCardNeededForMaxScore(
  * Returns true if it is no longer possible to play this card by looking to see if all of the
  * previous cards in the stack have been discarded (taking into account the stack direction). This
  * function mirrors the server function "variantReversibleIsDeadIsDead()".
+ * FIXME: this function logic has been fixed, the changes needs to be back-ported to the server
+ * function.
  */
 export function reversibleIsCardDead(
   rank: Rank,
-  variant: Variant,
   allDiscardedSet: ReadonlySet<Rank>,
-  stackDirection: StackDirection | undefined,
+  playStackDirection: StackDirection | undefined,
 ): boolean {
-  // We denote by this either the true direction or the only remaining direction in case we already
-  // lost the necessary cards for the other direction in "Up or Down".
-  let impliedDirection = stackDirection;
-
-  if (
-    impliedDirection === StackDirection.Undecided &&
-    allDiscardedSet.has(START_CARD_RANK)
-  ) {
-    // Get rid of the trivial case where the whole suit is dead.
-    if (
-      allDiscardedSet.has(START_CARD_RANK) &&
-      allDiscardedSet.has(1) &&
-      allDiscardedSet.has(5)
-    ) {
-      return true;
-    }
-    if (allDiscardedSet.has(5)) {
-      impliedDirection = StackDirection.Up;
-    } else if (allDiscardedSet.has(1)) {
-      impliedDirection = StackDirection.Down;
-    }
+  // In "Up Or Down" variant, when no cards are played, or only the Start card then the direction is
+  // Undecided and a card is dead iff it's dead in both directions.
+  if (playStackDirection === StackDirection.Undecided) {
+    return (
+      reversibleIsCardDead(rank, allDiscardedSet, StackDirection.Down) &&
+      reversibleIsCardDead(rank, allDiscardedSet, StackDirection.Up)
+    );
   }
+
+  // eslint-disable-next-line func-style
+  const areRanksAfterDead = (rank_value: number) => {
+    if (
+      (rank_value === 1 || rank_value === 5) &&
+      !allDiscardedSet.has(START_CARD_RANK)
+    ) {
+      // In "Up Or Down" variant, if Start is not discarded then 1 (or 5) are not needed to start a
+      // stack, and hence ranks after 1 (or 5) are not dead.
+      return false;
+    }
+    return allDiscardedSet.has(rank_value as Rank);
+  };
 
   // Now we can handle both the regular / reversed and the easy "Up or Down" cases.
-  if (impliedDirection === StackDirection.Up) {
-    // Note that in Up or Down, having `impliedDirection === StackDirection.Up` also proves that one
-    // of Start or 1 is still alive, since we filtered out the case where all of 1, 5, and Start are
-    // dead already.
-    const lowestNextRank = variant.upOrDown ? 2 : 1;
-    for (const nextRank of eRange(lowestNextRank, rank)) {
-      if (allDiscardedSet.has(nextRank as Rank)) {
+  if (playStackDirection === StackDirection.Up) {
+    for (const nextRank of eRange(1, rank)) {
+      if (areRanksAfterDead(nextRank)) {
+        console.log("up", nextRank);
         return true;
       }
     }
-
     return false;
   }
 
-  if (impliedDirection === StackDirection.Down) {
-    // The above comment also applies for `StackDirection.Down`.
-    const highestNextRank = variant.upOrDown ? 4 : 5;
-    for (let nextRank = highestNextRank; nextRank > rank; nextRank--) {
-      if (allDiscardedSet.has(nextRank as Rank)) {
+  if (playStackDirection === StackDirection.Down) {
+    for (let nextRank = 5; nextRank > rank; nextRank--) {
+      if (areRanksAfterDead(nextRank)) {
+        console.log("down", nextRank);
         return true;
       }
     }
-
     return false;
   }
 
-  // If we got this far, the stack direction is undecided and we could still start the stack from
-  // both directions. (The previous function handles the case where the stack is finished.)
-  // Therefore, 2's and 4's can both be played by starting the stack in the corresponding direction.
-  // The only possible card that could still be dead is a 3, which only happens if we lost all 2's
-  // and 4's.
-  return allDiscardedSet.has(2) && allDiscardedSet.has(4) && rank === 3;
+  return false;
 }
 
 /**

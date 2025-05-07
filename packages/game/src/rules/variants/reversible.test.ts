@@ -12,7 +12,6 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
     const isDead = (rank: number) =>
       reversibleIsCardDead(
         rank as Rank,
-        variant,
         allDiscardedSet,
         StackDirection.Undecided,
       );
@@ -29,7 +28,6 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
     const isDead = (rank: number) =>
       reversibleIsCardDead(
         rank as Rank,
-        variant,
         allDiscardedSet,
         StackDirection.Undecided,
       );
