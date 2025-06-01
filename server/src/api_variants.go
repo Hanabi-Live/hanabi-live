@@ -27,15 +27,30 @@ type APIVariantAnswer struct {
 // List of variants
 //   /api/v1/variants
 //
-//   Columns
-//   id   int
-//   name string
+//   A map from variant id to variant name (string)
 func apiVariants(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return
 	}
 
 	c.JSON(http.StatusOK, variantIDMap)
+}
+
+// List of variants, with more info
+//   /api/v1/variants-full
+//
+//   A map from variant id to variant info. Variant info has these columns:
+//
+//   name       string
+//   suits      string[]
+//   stackSize  int
+//   maxScore   int
+func apiVariantsFull(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
+	c.JSON(http.StatusOK, variantIDFullMap)
 }
 
 // Returns list of games of given variant
