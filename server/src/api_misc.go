@@ -161,6 +161,9 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	// List of variants available
 	httpRouter.GET(api+"/variants", apiVariants)
 
+	// List of variants available, with more info
+	httpRouter.GET(api+"/variants-full", apiVariantsFull)
+
 	// List of games by variant
 	httpRouter.GET(api+"/variants/:id", apiVariantsSingle)
 

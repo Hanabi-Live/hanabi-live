@@ -9,11 +9,12 @@ import (
 )
 
 var (
-	variants     map[string]*Variant
-	variantIDMap map[int]string
-	variantNames []string
-	oddClues     []int
-	evenClues    []int
+	variants         map[string]*Variant
+	variantIDMap     map[int]string
+	variantIDFullMap map[int]VariantInfoJSON
+	variantNames     []string
+	oddClues         []int
+	evenClues        []int
 )
 
 // VariantJSON is very similar to Variant,
@@ -41,6 +42,14 @@ type VariantJSON struct {
 	UpOrDown                 bool      `json:"upOrDown"`
 }
 
+// VariantInfoJSON contains limited information about a variant, returned in /api/v1/variants-full
+type VariantInfoJSON struct {
+	Name      string   `json:"name"`
+	Suits     []string `json:"suits"`
+	StackSize int      `json:"stackSize"`
+	MaxScore  int      `json:"maxScore"`
+}
+
 func variantsInit() {
 	// Import the JSON file
 	filePath := path.Join(jsonPath, "variants.json")
@@ -60,6 +69,7 @@ func variantsInit() {
 	// Convert the array to a map
 	variants = make(map[string]*Variant)
 	variantIDMap = make(map[int]string)
+	variantIDFullMap = make(map[int]VariantInfoJSON)
 	variantNames = make([]string, 0)
 	for _, variant := range variantsArray {
 		// Validate the name
@@ -189,6 +199,12 @@ func variantsInit() {
 			return
 		}
 		variantIDMap[variant.ID] = variant.Name
+		variantIDFullMap[variant.ID] = VariantInfoJSON{
+			Name:      variant.Name,
+			Suits:     variant.Suits,
+			StackSize: stackSize,
+			MaxScore:  len(variantSuits) * stackSize,
+		}
 
 		// Create an array with every variant name
 		variantNames = append(variantNames, variant.Name)
