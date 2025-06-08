@@ -41,12 +41,11 @@ export function send(msg: string, tag: string | undefined): void {
     return;
   }
 
-  // eslint-disable-next-line no-new
   const notification = new Notification(`Hanab Live: ${msg}`, {
     tag,
   });
 
-  notification.onclick = () => {
+  notification.addEventListener("click", () => {
     window.focus();
-  };
+  });
 }
