@@ -42,7 +42,11 @@ export function send(msg: string, tag: string | undefined): void {
   }
 
   // eslint-disable-next-line no-new
-  new Notification(`Hanab Live: ${msg}`, {
+  const notification = new Notification(`Hanab Live: ${msg}`, {
     tag,
   });
+
+  notification.onclick = () => {
+    window.focus();
+  };
 }
