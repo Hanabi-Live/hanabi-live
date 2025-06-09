@@ -42,6 +42,7 @@ export function send(msg: string, tag: string | undefined): void {
   }
 
   const notification = new Notification(`Hanab Live: ${msg}`, {
+    icon: "/public/img/favicon-32x32.png",
     tag,
   });
 
