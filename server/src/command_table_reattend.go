@@ -10,9 +10,10 @@ import (
 // commandTableReattend is sent when the user clicks on the "Resume" button in the lobby
 //
 // Example data:
-// {
-//   tableID: 31,
-// }
+//
+//	{
+//	  tableID: 31,
+//	}
 func commandTableReattend(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -59,6 +60,9 @@ func tableReattend(s *Session, t *Table, playerIndex int) {
 
 		// Let the client know they successfully joined the table
 		s.NotifyTableJoined(t)
+
+		// Send them the list of spectators
+		s.NotifySpectators(t)
 
 		// Send them the chat history for this game
 		// (if the game is running, this is handled in the "getGameInfo2()" function)
