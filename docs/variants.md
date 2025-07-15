@@ -127,7 +127,7 @@ One of each card per suit (e.g. 5 in total):
 - Ones have the property that they are only touched by certain rank clues:
   - The first suit is touched by a rank 2 clue
   - The second suit is touched by a rank 3 clue
-  - The third suit is touched by a rank 4 clue,
+  - The third suit is touched by a rank 4 clue
   - The fourth suit is touched by a rank 5 clue
   - The fifth suit is touched by a rank 2 clue (wrapping around)
 
@@ -136,7 +136,7 @@ One of each card per suit (e.g. 5 in total):
 - Fives have the property that they are only touched by certain rank clues:
   - The first suit is touched by a rank 1 clue
   - The second suit is touched by a rank 2 clue
-  - The third suit is touched by a rank 3 clue,
+  - The third suit is touched by a rank 3 clue
   - The fourth suit is touched by a rank 4 clue
   - The fifth suit is touched by a rank 1 clue (wrapping around)
 
@@ -193,7 +193,7 @@ One of each card per suit (e.g. 5 in total):
   - Teal (green / blue)
   - Indigo (blue / purple)
   - Cardinal (purple / red)
-- In the 3-suit version, there are 4 different colors:
+- In the 3-suit version, there are 3 different colors:
   - Orange (red / yellow)
   - Green (yellow / blue)
   - Purple (blue / red)
