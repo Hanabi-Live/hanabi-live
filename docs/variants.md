@@ -193,7 +193,7 @@ One of each card per suit (e.g. 5 in total):
   - Teal (green / blue)
   - Indigo (blue / purple)
   - Cardinal (purple / red)
-- In the 3-suit version, there are 4 different colors:
+- In the 3-suit version, there are 3 different colors:
   - Orange (red / yellow)
   - Green (yellow / blue)
   - Purple (blue / red)
