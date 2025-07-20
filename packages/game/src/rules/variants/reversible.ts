@@ -11,6 +11,7 @@ import type { Variant } from "../../interfaces/Variant";
 import type { NumSuits } from "../../types/NumSuits";
 import type { Rank } from "../../types/Rank";
 import type { SuitIndex } from "../../types/SuitIndex";
+import { isCardPlayed } from "../cardState";
 import { getAllDiscardedSetForSuit, getDiscardHelpers } from "../deck";
 
 /**
@@ -88,8 +89,9 @@ function isCardDead(
 ) {
   const allDiscardedSet = getAllDiscardedSetForSuit(variant, deck, suitIndex);
 
-  // We denote by this either the true direction or the only remaining direction in case we already
-  // lost the necessary cards for the other direction in "Up or Down".
+  // We denote by this either the true direction or the only remaining direction that could allow us
+  // to play the asked card (in case we already lost the necessary cards for the other direction) in
+  // "Up or Down".
   let impliedDirection = playStackDirections[suitIndex];
 
   if (
@@ -108,6 +110,25 @@ function isCardDead(
       impliedDirection = StackDirection.Up;
     } else if (allDiscardedSet.has(1)) {
       impliedDirection = StackDirection.Down;
+    }
+  }
+
+  // In "Up or Down", check if start card has been played.
+  // In this case, the direction might be forced if we are checking for a 1 or 5, since we cannot
+  // start with the 1 or 5 itself.
+  if (impliedDirection === StackDirection.Undecided) {
+    for (const cardState of deck) {
+      if (
+        cardState.suitIndex === suitIndex &&
+        cardState.rank === START_CARD_RANK &&
+        isCardPlayed(cardState)
+      ) {
+        if (rank === 1) {
+          impliedDirection = StackDirection.Down;
+        } else if (rank === 5) {
+          impliedDirection = StackDirection.Up;
+        }
+      }
     }
   }
 
