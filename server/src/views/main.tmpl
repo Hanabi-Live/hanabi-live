@@ -770,12 +770,17 @@
               >
             </h3>
             <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
-            <input
-              id="lobby-chat-input"
-              type="text"
-              placeholder="Chat"
-              autocomplete="off"
-            />
+            <div class="chat-input-container">
+              <input
+                id="lobby-chat-input"
+                type="text"
+                placeholder="Chat"
+                autocomplete="off"
+              />
+              <button class="emoji-button" data-target="lobby-chat-input">
+                <i class="fas fa-smile"></i>
+              </button>
+            </div>
           </section>
         </div>
 
@@ -784,12 +789,20 @@
           <section id="lobby-chat-pregame" class="box">
             <h3 class="lobby-title">Pre-game Chat</h3>
             <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
-            <input
-              id="lobby-chat-pregame-input"
-              type="text"
-              placeholder="Chat"
-              autocomplete="off"
-            />
+            <div class="chat-input-container">
+              <input
+                id="lobby-chat-pregame-input"
+                type="text"
+                placeholder="Chat"
+                autocomplete="off"
+              />
+              <button
+                class="emoji-button"
+                data-target="lobby-chat-pregame-input"
+              >
+                <i class="fas fa-smile"></i>
+              </button>
+            </div>
             <div id="lobby-chat-pregame-istyping" class="istyping"></div>
           </section>
         </div>
@@ -1838,6 +1851,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Emoji modal -->
+    <div id="emoji-modal" class="modal">
+      <h2>Select Emoji</h2>
+      <div id="emoji-picker"></div>
+    </div>
   </div>
 
   <!-- Game (the UI when playing a game) -->
@@ -1856,12 +1875,17 @@
     </div>
     <section id="game-chat-modal-white" class="box">
       <div id="game-chat-text" class="lobby-chat-text-box"></div>
-      <input
-        id="game-chat-input"
-        type="text"
-        placeholder="Chat"
-        autocomplete="off"
-      />
+      <div class="chat-input-container">
+        <input
+          id="game-chat-input"
+          type="text"
+          placeholder="Chat"
+          autocomplete="off"
+        />
+        <button class="emoji-button" data-target="game-chat-input">
+          <i class="fas fa-smile"></i>
+        </button>
+      </div>
       <div id="game-chat-istyping" class="istyping"></div>
     </section>
   </div>

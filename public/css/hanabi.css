@@ -517,6 +517,34 @@ table td {
   height: 1.6em; /* This is derived from how Twitch does it */
 }
 
+.chat-input-container {
+  position: relative;
+}
+
+.chat-input-container > input[type="text"] {
+  padding-right: 2.5em;
+}
+
+.emoji-button {
+  position: absolute;
+  top: 50%;
+  right: 1em;
+  padding: 0;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+}
+
+.emoji-button:hover {
+  color: #646464;
+}
+
+.emoji-button > .fas {
+  font-size: 1.6em;
+}
+
 .istyping {
   font-size: 0.75em;
   position: relative;
@@ -1046,6 +1074,27 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 #morph-modal .input-text {
   top: 1.5em;
+}
+
+#emoji-modal {
+  min-width: unset;
+}
+
+#emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+#emoji-picker > .emoji-item {
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+#emoji-picker > .chat-emote {
+  cursor: pointer;
 }
 
 /*
