@@ -13,6 +13,7 @@ import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
+import { getHTMLInputElement } from "./utils";
 
 export enum SelfChatMessageType {
   Normal,
@@ -32,6 +33,7 @@ let typedChatHistoryPrefix = "";
 let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
+let activeChatInput: HTMLInputElement | null = null;
 
 export function init(): void {
   $("#lobby-chat-input").on("input", input);
@@ -43,6 +45,7 @@ export function init(): void {
   $("#game-chat-input").on("input", input);
   $("#game-chat-input").on("keypress", keypress("table"));
   $("#game-chat-input").on("keydown", keydown);
+  $(".emoji-button").on("click", emojiClick);
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
   for (const [emojiName, emoji] of Object.entries(emojis)) {
@@ -66,6 +69,29 @@ export function init(): void {
     }
   }
 
+  // Populate the emote/emoji picker.
+  const picker = $("#emoji-picker");
+  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
+    const emoteArray = [...emotesInCategory];
+    for (const emote of emoteArray) {
+      const emoteImg = $("<img>")
+        .addClass("chat-emote")
+        .attr("src", `/public/img/emotes/${categoryName}/${emote}.png`)
+        .attr("title", emote)
+        .on("click", pickEmote);
+      picker.append(emoteImg);
+    }
+  }
+
+  for (const [emojiName, emoji] of emojiMap) {
+    const emojiSpan = $("<span>")
+      .addClass("emoji-item")
+      .attr("title", `:${emojiName}:`)
+      .text(emoji)
+      .on("click", pickEmoji);
+    picker.append(emojiSpan);
+  }
+
   // Retrieve the contents of the typed chat list from local storage (cookie).
   const typedChatHistoryString = localStorage.getItem("typedChatHistory");
   if (
@@ -84,6 +110,28 @@ export function init(): void {
       typedChatHistory = potentialArray as string[];
     }
   }
+}
+
+function pickEmote(this: HTMLElement) {
+  if (activeChatInput) {
+    activeChatInput.value += `${this.title} `;
+    activeChatInput.focus();
+  }
+  modals.closeModals();
+}
+
+function pickEmoji(this: HTMLElement) {
+  if (activeChatInput) {
+    activeChatInput.value += this.textContent ?? "";
+    activeChatInput.focus();
+  }
+  modals.closeModals();
+}
+
+function emojiClick(this: HTMLElement) {
+  const targetInputId = this.dataset["target"];
+  activeChatInput = getHTMLInputElement(`#${targetInputId}`);
+  modals.showPrompt("#emoji-modal");
 }
 
 function input(this: HTMLElement, event: JQuery.Event) {
