@@ -113,9 +113,8 @@ function isCardDead(
     }
   }
 
-  // In "Up or Down", check if start card has been played.
-  // In this case, the direction might be forced if we are checking for a 1 or 5, since we cannot
-  // start with the 1 or 5 itself.
+  // In "Up or Down", check if start card has been played. In this case, the direction might be
+  // forced if we are checking for a 1 or 5, since we cannot start with the 1 or 5 itself.
   if (impliedDirection === StackDirection.Undecided) {
     for (const cardState of deck) {
       if (
