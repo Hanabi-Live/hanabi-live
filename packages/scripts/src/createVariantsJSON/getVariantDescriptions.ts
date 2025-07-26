@@ -1056,6 +1056,12 @@ function getReversedVariants(
   return variantDescriptions;
 }
 
+/**
+ * Normally, we do not mix variants with more than one special suit at a time. However, we make an
+ * exception since this is an official variant.
+ *
+ * @see https://boardgamegeek.com/boardgame/290357/hanabi-deluxe-what-a-show
+ */
 function getWhiteReversedAndRainbowVariants(): readonly VariantDescription[] {
   return [
     {
