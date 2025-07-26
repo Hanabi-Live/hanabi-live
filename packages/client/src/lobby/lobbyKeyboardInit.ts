@@ -32,9 +32,13 @@ export function lobbyKeyboardInit(): void {
     // We also account for MacOS special characters that are inserted when you hold down the option
     // key.
     if (event.altKey && event.which === KeyCode.KEY_J) {
-      // Alt + j. Click on the first "Join" button in the table list.
+      // Alt + j.
       if (globals.currentScreen === Screen.Lobby) {
+        // Click on the first "Join" button in the table list.
         $(".lobby-games-join-first-table-button").trigger("click");
+      } else if (globals.currentScreen === Screen.PreGame) {
+        // Click on the "Join Game" / "Join Spectate" button.
+        $("#nav-buttons-pregame-join").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
       // Alt + n. Click the "Create Game" button.

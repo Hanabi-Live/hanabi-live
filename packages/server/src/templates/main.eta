@@ -97,6 +97,30 @@
           </a>
         </li>
         <li>
+          <a id="nav-buttons-pregame-join" class="button disabled">
+            <div id="nav-buttons-pregame-join-game">
+              <i class="fas fa-sign-in-alt nav-icon"></i>
+              <span class="hidden-xs">
+                <span class="nav-hotkey-indicator">J</span>oin<span
+                  class="hidden-md"
+                >
+                  Game</span
+                >
+              </span>
+            </div>
+            <div id="nav-buttons-pregame-join-spectate" class="hidden">
+              <i class="fas fa-ghost nav-icon"></i>
+              <span class="hidden-xs">
+                <span class="nav-hotkey-indicator">J</span>oin<span
+                  class="hidden-md"
+                >
+                  Spectate</span
+                >
+              </span>
+            </div>
+          </a>
+        </li>
+        <li>
           <a id="nav-buttons-pregame-change-options" class="button">
             <i class="fas fa-rainbow nav-icon"></i>
             <span class="hidden-xs">

@@ -62,6 +62,7 @@ export function show(): void {
   // Adjust the top navigation bar.
   nav.show("pregame");
   toggleStartGameButton();
+  toggleJoinGameSpectateButton();
 
   // Set the browser address bar.
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -128,6 +129,7 @@ export function draw(): void {
   }
 
   toggleStartGameButton();
+  toggleJoinGameSpectateButton();
 }
 
 function drawOptions() {
@@ -553,11 +555,33 @@ export function toggleStartGameButton(): void {
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
+}
 
-  if (globals.game.owner === globals.userID) {
-    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
+export function toggleJoinGameSpectateButton(): void {
+  if (globals.game === null) {
+    return;
+  }
+
+  const button = $("#nav-buttons-pregame-join");
+  const joinGame = $("#nav-buttons-pregame-join-game");
+  const joinSpectate = $("#nav-buttons-pregame-join-spectate");
+
+  button.addClass("disabled");
+
+  if (isSpectator()) {
+    joinSpectate.addClass("hidden");
+    joinGame.removeClass("hidden");
+
+    if (globals.game.players.length < globals.game.maxPlayers) {
+      button.removeClass("disabled");
+    }
   } else {
-    $("#nav-buttons-pregame-change-variant").addClass("disabled");
+    joinGame.addClass("hidden");
+    joinSpectate.removeClass("hidden");
+
+    if (globals.game.players.length >= MIN_PLAYERS) {
+      button.removeClass("disabled");
+    }
   }
 }
 

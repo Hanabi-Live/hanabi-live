@@ -6,6 +6,7 @@ import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as pregame from "./pregame";
+import * as tablesDraw from "./tablesDraw";
 import * as watchReplay from "./watchReplay";
 
 export function init(): void {
@@ -135,6 +136,30 @@ export function init(): void {
         intendedPlayers: globals.game?.players.map((player) => player.name),
       });
       $("#nav-buttons-pregame-start").addClass("disabled");
+    }
+  });
+
+  // The "Join Game" / "Join Spectate" button.
+  $("#nav-buttons-pregame-join").on("click", () => {
+    if (!$("#nav-buttons-pregame-join").hasClass("disabled")) {
+      const table = globals.tableMap.get(globals.tableID);
+      if (table === undefined) {
+        return;
+      }
+
+      $("#nav-buttons-pregame-join").addClass("disabled");
+      if (
+        table.spectators.some(
+          (spectator) => spectator.name === globals.username,
+        )
+      ) {
+        // We are a spectator. We can join table without unattending it.
+        tablesDraw.tableJoin(table);
+      } else {
+        // We are a player. We cannot spectate table without leaving it.
+        globals.conn!.send("tableLeave", { tableID: globals.tableID });
+        tablesDraw.tableSpectate(table);
+      }
     }
   });
 
