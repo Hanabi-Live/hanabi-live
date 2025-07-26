@@ -147,7 +147,6 @@ export function init(): void {
         return;
       }
 
-      $("#nav-buttons-pregame-join").addClass("disabled");
       if (
         table.spectators.some(
           (spectator) => spectator.name === globals.username,
