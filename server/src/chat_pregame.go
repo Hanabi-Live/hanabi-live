@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"math"
 	"math/rand"
 	"strconv"
@@ -263,6 +264,29 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	msg := "Here is a random variant that everyone needs the " +
 		strconv.Itoa(len(userIDs)) + "-player max score in: " + randomVariant
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+
+	// If we are in pregame
+	if !t.Running && !t.Replay {
+		// Copy the options
+		newOptions := *t.Options
+		newOptions.VariantName = randomVariant
+		jsonOptions, err := json.Marshal(newOptions)
+		if err != nil {
+			return
+		}
+
+		// Send a hyperlink to the table owner to apply the changes
+		out := strings.ReplaceAll(string(jsonOptions), "\"", "'")
+		message := "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"" +
+			out +
+			"\">click to apply the suggestion</button></span>"
+		for _, p := range t.Players {
+			if p.UserID == t.OwnerID {
+				chatServerSendPM(p.Session, message, t.GetRoomName())
+				break
+			}
+		}
+	}
 }
 
 /*
