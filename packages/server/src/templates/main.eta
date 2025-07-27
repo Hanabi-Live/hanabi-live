@@ -113,20 +113,21 @@
             ><i class="fas fa-ghost nav-icon"></i>
             <span class="hidden-xs">
               S<span class="nav-hotkey-indicator">p</span
-              >ectate<!-- cspell:disable-line --><span class="hidden-md">
-                Game</span
-              >
+              >ectate<!-- cspell:disable-line -->
+              <span class="hidden-md"> Game</span>
             </span>
           </a>
         </li>
         <li>
-          <a id="nav-buttons-pregame-spectate" class="button disabled"
-            ><i class="fas fa-ghost nav-icon"></i>
+          <a id="nav-buttons-pregame-change-options" class="button">
+            <i class="fas fa-rainbow nav-icon"></i>
             <span class="hidden-xs">
-              S<span class="nav-hotkey-indicator">p</span
-              >ectate<!-- cspell:disable-line -->
-              <span class="hidden-md"> Game</span>
-            </span>
+              <span class="hidden-md"
+                ><span class="nav-hotkey-indicator">C</span
+                >hange<!-- cspell:disable-line -->
+                Options
+              </span></span
+            >
           </a>
         </li>
         <li>
