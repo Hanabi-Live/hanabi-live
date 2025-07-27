@@ -262,6 +262,13 @@ export function tableSpectate(
   table: ServerCommandTableData,
   shadowingPlayerIndex = -1,
 ): void {
+  if (
+    globals.currentScreen !== Screen.Lobby &&
+    globals.currentScreen !== Screen.PreGame
+  ) {
+    return;
+  }
+
   globals.conn!.send("tableSpectate", {
     tableID: table.id,
     shadowingPlayerIndex,
@@ -270,6 +277,13 @@ export function tableSpectate(
 }
 
 export function tableJoin(table: ServerCommandTableData): void {
+  if (
+    globals.currentScreen !== Screen.Lobby &&
+    globals.currentScreen !== Screen.PreGame
+  ) {
+    return;
+  }
+
   if (table.passwordProtected) {
     modals.askForPassword(table.id);
   } else {
