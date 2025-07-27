@@ -62,7 +62,7 @@ export function show(): void {
   // Adjust the top navigation bar.
   nav.show("pregame");
   toggleStartGameButton();
-  toggleJoinGameSpectateButton();
+  toggleJoinSpectateButtons();
 
   // Set the browser address bar.
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -129,7 +129,7 @@ export function draw(): void {
   }
 
   toggleStartGameButton();
-  toggleJoinGameSpectateButton();
+  toggleJoinSpectateButtons();
 }
 
 function drawOptions() {
@@ -557,30 +557,30 @@ export function toggleStartGameButton(): void {
   }
 }
 
-export function toggleJoinGameSpectateButton(): void {
+export function toggleJoinSpectateButtons(): void {
   if (globals.game === null) {
     return;
   }
 
-  const button = $("#nav-buttons-pregame-join");
-  const joinGame = $("#nav-buttons-pregame-join-game");
-  const joinSpectate = $("#nav-buttons-pregame-join-spectate");
+  const joinGame = $("#nav-buttons-pregame-join");
+  const joinSpectate = $("#nav-buttons-pregame-spectate");
 
-  button.addClass("disabled");
+  joinGame.addClass("disabled");
+  joinSpectate.addClass("disabled");
 
   if (isSpectator()) {
-    joinSpectate.addClass("hidden");
-    joinGame.removeClass("hidden");
+    joinSpectate.hide();
+    joinGame.show();
 
     if (globals.game.players.length < globals.game.maxPlayers) {
-      button.removeClass("disabled");
+      joinGame.removeClass("disabled");
     }
   } else {
-    joinGame.addClass("hidden");
-    joinSpectate.removeClass("hidden");
+    joinGame.hide();
+    joinSpectate.show();
 
     if (globals.game.players.length >= MIN_PLAYERS) {
-      button.removeClass("disabled");
+      joinSpectate.removeClass("disabled");
     }
   }
 }

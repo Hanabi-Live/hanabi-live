@@ -1,7 +1,7 @@
 // The navigation bar at the top of the lobby.
 
 import { globals } from "../Globals";
-import { initModal } from "../modals";
+import { initModal, showWarning } from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
@@ -139,27 +139,47 @@ export function init(): void {
     }
   });
 
-  // The "Join Game" / "Join Spectate" button.
+  // The "Join Game" button.
   $("#nav-buttons-pregame-join").on("click", () => {
-    if (!$("#nav-buttons-pregame-join").hasClass("disabled")) {
-      const table = globals.tableMap.get(globals.tableID);
-      if (table === undefined) {
+    if ($("#nav-buttons-pregame-join").hasClass("disabled")) {
+      return;
+    }
+
+    const table = globals.tableMap.get(globals.tableID);
+    if (table === undefined) {
+      return;
+    }
+
+    const tables = [...globals.tableMap.values()];
+    const oldTable = tables.find(
+      (value) => value.joined && !value.sharedReplay,
+    );
+    if (oldTable !== undefined) {
+      if (oldTable.running) {
+        showWarning(
+          "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
+        );
         return;
       }
-
-      if (
-        table.spectators.some(
-          (spectator) => spectator.name === globals.username,
-        )
-      ) {
-        // We are a spectator. We can join table without unattending it.
-        tablesDraw.tableJoin(table);
-      } else {
-        // We are a player. We cannot spectate table without leaving it.
-        globals.conn!.send("tableLeave", { tableID: globals.tableID });
-        tablesDraw.tableSpectate(table);
-      }
+      globals.conn!.send("tableLeave", { tableID: oldTable.id });
+      globals.conn!.send("tableUnattend", { tableID: globals.tableID });
     }
+    tablesDraw.tableJoin(table);
+  });
+
+  // The "Spectate Game" button.
+  $("#nav-buttons-pregame-spectate").on("click", () => {
+    if ($("#nav-buttons-pregame-spectate").hasClass("disabled")) {
+      return;
+    }
+
+    const table = globals.tableMap.get(globals.tableID);
+    if (table === undefined) {
+      return;
+    }
+
+    globals.conn!.send("tableLeave", { tableID: globals.tableID });
+    tablesDraw.tableSpectate(table);
   });
 
   // The "Change Options" button. (Also initialized in the "initTooltips()" function.)

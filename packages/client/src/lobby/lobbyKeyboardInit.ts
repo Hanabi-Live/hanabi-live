@@ -37,7 +37,7 @@ export function lobbyKeyboardInit(): void {
         // Click on the first "Join" button in the table list.
         $(".lobby-games-join-first-table-button").trigger("click");
       } else if (globals.currentScreen === Screen.PreGame) {
-        // Click on the "Join Game" / "Join Spectate" button.
+        // Click on the "Join Game" button.
         $("#nav-buttons-pregame-join").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
@@ -66,7 +66,13 @@ export function lobbyKeyboardInit(): void {
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-start").trigger("click");
       }
+    } else if (event.altKey && event.which === KeyCode.KEY_P) {
+      // Alt + p. Click on the "Spectate Game" button.
+      if (globals.currentScreen === Screen.PreGame) {
+        $("#nav-buttons-pregame-spectate").trigger("click");
+      }
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
+      // Alt + c. Click on the "Change Options" button.
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-change-options").trigger("click");
       }
