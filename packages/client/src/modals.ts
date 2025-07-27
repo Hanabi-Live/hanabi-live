@@ -120,21 +120,19 @@ export function askForPassword(tableID: number): void {
   allowCloseModal = true;
 
   passwordModalID.setAttribute("value", tableID.toString());
-  passwordModalPassword.focus();
 
   // We want to fill in the text field with the player's last typed-in password.
   const password = localStorage.getItem("joinTablePassword");
   if (password !== null && password !== "") {
     passwordModalPassword.value = password;
-    passwordModalPassword.select();
   }
 
-  // eslint-disable-next-line func-style
-  const before = () => {
+  // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
+  const ready = () => {
+    passwordModalPassword.focus();
     passwordModalPassword.select();
-    return true;
   };
-  showModal("#password-modal", true, before);
+  showModal("#password-modal", true, undefined, ready);
 }
 
 export function askForMorph(
@@ -268,11 +266,10 @@ export function showWarning(msg: string): void {
 
   // Show the modal and focus the close button.
   // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
-  const before = () => {
+  const ready = () => {
     warningModalButton.focus();
-    return true;
   };
-  showModal("#warning-modal", true, before);
+  showModal("#warning-modal", true, undefined, ready);
 }
 
 export function showError(msg: string): void {
