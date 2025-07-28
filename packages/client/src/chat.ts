@@ -169,19 +169,10 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // Check for emoji substitution.
   // e.g. :100: --> 💯
-  const matches = text.match(/:\S+:/g); // "\S" is a non-whitespace character.
-  if (matches !== null) {
-    for (const match of matches) {
-      const emojiName = match.slice(1, -1); // Strip off the colons
-
-      const emoji = emojiMap.get(emojiName);
-      if (emoji !== undefined) {
-        const newText = text.replace(match, emoji);
-        element.val(newText);
-        event.preventDefault();
-        return;
-      }
-    }
+  const newText = substituteEmoji(text);
+  if (newText !== null) {
+    element.val(newText);
+    event.preventDefault();
   }
 }
 
@@ -192,8 +183,7 @@ const keypress = (room: string) =>
     const element = $(this);
 
     // We have typed a new character, so reset the tab-complete variables.
-    tabCompleteWordList = [];
-    tabCompleteWordListIndex = null;
+    tabResetAutoCompleteList();
     typedChatHistoryIndex = null;
 
     if (event.which === KeyCode.KEY_RETURN) {
@@ -368,7 +358,7 @@ function arrowDown(element: JQuery) {
   element.val(retrievedHistory ?? "");
 }
 
-function tab(element: JQuery, event: JQuery.Event) {
+export function tab(element: JQuery, event: JQuery.Event): void {
   // Parse the final word from what we have typed so far.
   let message = element.val();
   if (typeof message !== "string") {
@@ -447,6 +437,11 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   // - Tab goes forwards.
   tabCompleteWordListIndex =
     event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
+}
+
+export function tabResetAutoCompleteList(): void {
+  tabCompleteWordList = [];
+  tabCompleteWordListIndex = null;
 }
 
 // eslint-disable-next-line complete/prefer-readonly-parameter-types
@@ -628,7 +623,7 @@ function getChatBoxElement(data: ServerCommandChatData): JQuery | undefined {
 }
 
 /** Add links, Discord emotes, and Twitch emotes. */
-function getPreparedMessage(rawMsg: string) {
+export function getPreparedMessage(rawMsg: string): string {
   let msg = rawMsg;
 
   // Automatically generate links from any URLs that are present in the message. (We must use
@@ -666,7 +661,7 @@ function fillDiscordEmotes(message: string) {
   return filledMessed;
 }
 
-function fillEmojis(message: string) {
+export function fillEmojis(message: string): string {
   let filledMessage = message;
 
   // Search through the text for each emoji.
@@ -679,6 +674,24 @@ function fillEmojis(message: string) {
   }
 
   return filledMessage;
+}
+
+export function substituteEmoji(text: string): string | null {
+  const matches = text.match(/:\S+:/g); // "\S" is a non-whitespace character.
+  if (matches === null) {
+    return null;
+  }
+
+  for (const match of matches) {
+    const emojiName = match.slice(1, -1); // Strip off the colons
+    const emoji = emojiMap.get(emojiName);
+    if (emoji !== undefined) {
+      const newText = text.replace(match, emoji);
+      return newText;
+    }
+  }
+
+  return null;
 }
 
 function fillTwitchEmotes(message: string) {
