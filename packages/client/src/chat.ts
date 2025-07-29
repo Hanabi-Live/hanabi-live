@@ -271,7 +271,7 @@ function sendText(room: string, msgRaw: string) {
     }
   }
 
-  // This is not a command, so send a the chat message to the server.
+  // This is not a command, so send a chat message to the server.
   globals.conn!.send("chat", {
     msg,
     room: roomID,
