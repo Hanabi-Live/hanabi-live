@@ -350,6 +350,7 @@ There are also some keyboard shortcuts for making notes:
 - Ctrl + shift + right-click --> Repeat the previously entered note
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 - Ctrl + shift + alt + right-click --> [kt]
+- Hover + delete --> Deletes the note on the card cursor is pointed at
 
 <br />
 
@@ -466,6 +467,11 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
   - Go to the end: `End`
 - In a shared replay:
   - Toggle shared turns: `Up` or `Down`
+  - Suggest turn to leader: `/suggest [turn #]`
+- In a game or replay:
+  - Open/close chat window: `Alt + c` 
+
+
 
 <br />
 
