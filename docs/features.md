@@ -66,6 +66,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 - An orange border around a card signifies that it has been "touched" by one or more positive clues. The card will also be raised slightly.
 - The game will keep track of the clues that accumulate on cards, "filling them in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
+- Holding `Space` will show you the "empathy" for all players in the game
 
 ### Pips
 
@@ -86,7 +87,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 ### Termination
 
 - Games will be automatically terminated by the server if no move is performed in 30 minutes. (This helps to clean the lobby of games that will never be finished.)
-- Players can vote to terminate a game by clicking on the X button where the strike indicators are (near the bottom of the screen).
+- Players can vote to terminate a game by right clicking on the X button where the strike indicators are (near the bottom of the screen), or by using the chat command `/vote`.
 
 ### Spectators
 
@@ -100,13 +101,13 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - In the middle of a game, players can click on the arrow button in the bottom-left-hand corner to open the in-game replay feature.
 - Using this feature, players can go back in time to see the exact game state at a specific turn.
 - There are some helpful shortcuts for going to a specific turn:
-  - You can Alt + click on a card to go to the turn it was drawn.
-  - You can middle-click on a card go to the turn it was first positively clued.
+  - You can `Alt + click` on a card to go to the turn it was drawn.
+  - You can `middle-click` on a card go to the turn it was first positively clued.
   - You can click on a card in the play stacks to go to the turn before the card was played.
   - You can click on a card in the discard pile to go to the turn before the card was discarded.
   - You can click on an entry in the clue log to go to the turn when the clue was given.
   - You can click on the three strike squares to go to the turn before the strike happened, if any.
-  - You can right-click on the "Turn" label to go to an arbitrary turn.
+  - You can `right-click` on the "Turn" label to go to an arbitrary turn.
 
 ### Game History and Profiles
 
@@ -126,9 +127,9 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
 - Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resynchronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
 - The leader can right-click on a card to highlight it with an arrow (to point out things to the other players).
-  - Other players can create "local" arrows by Ctrl + right-clicking. These arrows won't be shown to anyone else.
+  - Other players can create "local" arrows by `Ctrl + right-clicking`. These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-- The leader role can be transferred by clicking or double-tapping the crown.
+- The leader role can be transferred by clicking or double-tapping the crown, or by using `/setleader [username]` in chat
 
 ### Hypotheticals
 
@@ -136,7 +137,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - In a hypothetical, the leader can perform actions for all of the players, playing the game forward for as long as desired.
 - Hypotheticals are useful to show what would happen if a player decided to do a different move than they really did in the game.
 - When a hypothetical is active, other players cannot "break free" or return to previous turns.
-- The leader can Alt + right-click on a card to morph it into an arbitrary card. This can be useful for showing how players have to account for different kinds of situations or to create specific game states.
+- The leader can `Alt + right-click` on a card to morph it into an arbitrary card. This can be useful for showing how players have to account for different kinds of situations or to create specific game states.
 
 ### In-Game Statistics
 
@@ -322,18 +323,18 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 ### Special Note Borders
 
-- A note of "f" can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
-- A note of "cm" can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
+- A note of `"f"` can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
+- A note of `"cm"` can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
 
 ### Other Special Notes
 
-- A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
-- A note of "fix", "fixme", or "needs fix" can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
-- A note of "?" can be written to indicate that the card have uncertain information written on it. This will draw a special image on the card.
-- A note of "!" can be written to indicate that the card have certain information written on it. This will draw a special image on the card.
-- A note of "blank" can be written on a card to make it look like the deck back.
-- A note of "unclued" or "x" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
-- A note of "clued" can be written to manually raise a card and add the border that normally appear on a card when it is touched by one or more clues.
+- A note of `"kt"`, `"trash"`, `"stale"`, or `"bad"` can be written to indicate that the card is "Trash". This will draw a special image on the card.
+- A note of `"fix"`, `"fixme"`, or `"needs fix"` can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
+- A note of `"?"` can be written to indicate that the card have uncertain information written on it. This will draw a special image on the card.
+- A note of `"!"` can be written to indicate that the card have certain information written on it. This will draw a special image on the card.
+- A note of `"blank"` can be written on a card to make it look like the deck back.
+- A note of `"unclued"` or `"x"` can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
+- A note of `"clued"` can be written to manually raise a card and add the border that normally appear on a card when it is touched by one or more clues.
 
 ### Adding Context to Special Notes
 
