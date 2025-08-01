@@ -66,7 +66,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 - An orange border around a card signifies that it has been "touched" by one or more positive clues. The card will also be raised slightly.
 - The game will keep track of the clues that accumulate on cards, "filling them in" when appropriate.
 - You can hold down the left mouse button or tap and hold on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
-- Holding `Space` will show you the "empathy" for all players in the game
+- Holding `Space` will show you the "empathy" for all players in the game.
 
 ### Pips
 
@@ -129,7 +129,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - The leader can right-click on a card to highlight it with an arrow (to point out things to the other players).
   - Other players can create "local" arrows by `Ctrl + right-clicking`. These arrows won't be shown to anyone else.
 - The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-- The leader role can be transferred by clicking or double-tapping the crown, or by using `/setleader [username]` in chat
+- The leader role can be transferred by clicking or double-tapping the crown, or by using `/setleader [username]` in chat.
 
 ### Hypotheticals
 
@@ -323,23 +323,23 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 ### Special Note Borders
 
-- A note of `"f"` can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
-- A note of `"cm"` can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
+- A note of `f` can be written to indicate that the card is _Finessed_. This will draw a special border around the card.
+- A note of `cm` can be written to indicate that the card is _Chop Moved_. This will draw a special border around the card.
 
 ### Other Special Notes
 
-- A note of `"kt"`, `"trash"`, `"stale"`, or `"bad"` can be written to indicate that the card is "Trash". This will draw a special image on the card.
-- A note of `"fix"`, `"fixme"`, or `"needs fix"` can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
-- A note of `"?"` can be written to indicate that the card have uncertain information written on it. This will draw a special image on the card.
-- A note of `"!"` can be written to indicate that the card have certain information written on it. This will draw a special image on the card.
-- A note of `"blank"` can be written on a card to make it look like the deck back.
-- A note of `"unclued"` or `"x"` can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
-- A note of `"clued"` can be written to manually raise a card and add the border that normally appear on a card when it is touched by one or more clues.
+- A note of `kt`, `trash`, `stale`, or `bad` can be written to indicate that the card is "Trash". This will draw a special image on the card.
+- A note of `fix`, `fixme`, or `needs fix` can be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
+- A note of `?` can be written to indicate that the card have uncertain information written on it. This will draw a special image on the card.
+- A note of `!` can be written to indicate that the card have certain information written on it. This will draw a special image on the card.
+- A note of `blank` can be written on a card to make it look like the deck back.
+- A note of `unclued` or `x` can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
+- A note of `clued` can be written to manually raise a card and add the border that normally appear on a card when it is touched by one or more clues.
 
 ### Adding Context to Special Notes
 
-- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3")
-- This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_ border)
+- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets (e.g. "[r2] known from turn 3").
+- This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the _Finesse_ border).
 
 ### Note Shortcuts
 
@@ -351,7 +351,7 @@ There are also some keyboard shortcuts for making notes:
 - Ctrl + shift + right-click --> Repeat the previously entered note
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 - Ctrl + shift + alt + right-click --> [kt]
-- Hover + delete --> Deletes the note on the card cursor is pointed at
+- Hover + delete --> Deletes the note on the card cursor is pointed at.
 
 <br />
 
@@ -401,7 +401,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 #### 1) Future Required Efficiency
 
 - The left number shows the efficiency needed to get the maximum score based on how well things are going so far. This is calculated with the following formula:
-  - `cards not gotten yet / maximum clues that it is possible to give before the game ends`
+  - `cards not gotten yet / maximum clues that it is possible to give before the game ends`.
   - `cards not gotten yet` is simply `maximum possible score - cards gotten`.
 - Players can mouse over the _Future Required Efficiency_ number in order to see how it is being calculated.
 
