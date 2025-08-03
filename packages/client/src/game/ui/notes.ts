@@ -2,6 +2,7 @@
 
 import type { CardOrder } from "@hanabi-live/game";
 import { ReadonlySet, trimSuffix } from "complete-common";
+import * as chat from "../../chat";
 import * as tooltips from "../../tooltips";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
@@ -29,14 +30,19 @@ function escapeHtml(unsafe: string): string {
     .replaceAll("'", "&#039;");
 }
 
+function prepareContent(rawNote: string): string {
+  const safe = escapeHtml(rawNote);
+  return chat.getPreparedMessage(safe);
+}
+
 /** Get the contents of the note tooltip. */
-function get(order: CardOrder, our: boolean, escape = false) {
+function get(order: CardOrder, our: boolean, process = false) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note.
   // eslint-disable-next-line func-style
-  const escapeFunc = (text: string) => (escape ? escapeHtml(text) : text);
+  const processFunc = (text: string) => (process ? prepareContent(text) : text);
   if (our || globals.state.playing) {
-    return escapeFunc(globals.state.notes.ourNotes[order]?.text ?? "");
+    return processFunc(globals.state.notes.ourNotes[order]?.text ?? "");
   }
 
   // Build a string that shows the combined notes from the players & spectators.
@@ -44,8 +50,7 @@ function get(order: CardOrder, our: boolean, escape = false) {
   const noteObjectArray = globals.state.notes.allNotes[order]!;
   let firstSpectator = false;
   for (const noteObject of noteObjectArray) {
-    const name = escapeFunc(noteObject.name);
-    const text = escapeFunc(noteObject.text);
+    const text = processFunc(noteObject.text);
     const { isSpectator } = noteObject;
     if (noteObject.text !== "") {
       if (!firstSpectator && isSpectator) {
@@ -55,7 +60,7 @@ function get(order: CardOrder, our: boolean, escape = false) {
         }
         content += "<div class='noteTitle'><span>Spectators</span></div>";
       }
-      content += `<strong>${name}:</strong> ${text}<br />`;
+      content += `<strong>${noteObject.name}:</strong> ${text}<br />`;
     }
   }
 
@@ -98,8 +103,9 @@ export function set(order: CardOrder, text: string): void {
 
 export function update(card: HanabiCard, text: string): void {
   // Update the tooltip.
+  const filledText = prepareContent(text);
   const tooltip = `#tooltip-${card.tooltipName}`;
-  tooltips.setInstanceContent(tooltip, text);
+  tooltips.setInstanceContent(tooltip, filledText);
   if (text === "") {
     tooltips.close(tooltip);
     globals.editingNote = null;
@@ -201,6 +207,12 @@ export function openEditTooltip(
       shouldRemovePipe = false;
     }
 
+    if (key === "Tab") {
+      event.preventDefault();
+      chat.tab(noteTextbox, event);
+      return;
+    }
+
     if (!CLOSE_NOTE_KEYS.has(key)) {
       return;
     }
@@ -224,6 +236,9 @@ export function openEditTooltip(
 
       // Remove the last pipe.
       newNote = trimSuffix(newNote, " | ");
+
+      newNote = chat.fillEmojis(newNote);
+
       set(card.state.order, newNote);
     }
 
@@ -236,9 +251,31 @@ export function openEditTooltip(
     update(card, newNote);
   });
 
+  // Reset the tab-complete variables after we have typed a new character.
+  noteTextbox.on("keypress", () => {
+    chat.tabResetAutoCompleteList();
+  });
+
+  noteTextbox.on("input", (event) => {
+    const text = noteTextbox.val();
+    if (typeof text !== "string") {
+      throw new TypeError(
+        "The value of the element in the input function is not a string.",
+      );
+    }
+
+    // Check for emoji substitution.
+    const newText = chat.substituteEmoji(text);
+    if (newText !== null) {
+      noteTextbox.val(newText);
+      event.preventDefault();
+    }
+  });
+
   // Automatically close the tooltip if we click elsewhere on the screen.
   noteTextbox.on("focusout", () => {
     globals.editingNote = null;
+    chat.tabResetAutoCompleteList();
     tooltips.close(tooltip);
   });
 
@@ -257,6 +294,8 @@ export function openEditTooltip(
     if (newNote !== oldNote) {
       $(this).val(newNote);
     }
+
+    chat.tabResetAutoCompleteList();
   });
 
   // Remove the pipe if the user clicks with the mouse buttons.

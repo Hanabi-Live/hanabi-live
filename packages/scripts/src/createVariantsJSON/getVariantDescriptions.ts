@@ -108,6 +108,7 @@ export function getVariantDescriptions(
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getReversedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getWhiteReversedAndRainbowVariants(),
     ...getUpOrDownVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
@@ -1053,6 +1054,29 @@ function getReversedVariants(
   }
 
   return variantDescriptions;
+}
+
+/**
+ * Normally, we do not mix variants with more than one special suit at a time. However, we make an
+ * exception since this is an official variant.
+ *
+ * @see https://boardgamegeek.com/boardgame/290357/hanabi-deluxe-what-a-show
+ */
+function getWhiteReversedAndRainbowVariants(): readonly VariantDescription[] {
+  return [
+    {
+      name: "White Reversed & Rainbow (6 Suits)",
+      suits: ["Red", "Yellow", "Green", "Blue", "White Reversed", "Rainbow"],
+    },
+    {
+      name: "White Reversed & Rainbow (5 Suits)",
+      suits: ["Red", "Green", "Blue", "White Reversed", "Rainbow"],
+    },
+    {
+      name: "White Reversed & Rainbow (4 Suits)",
+      suits: ["Red", "Blue", "White Reversed", "Rainbow"],
+    },
+  ];
 }
 
 function getUpOrDownVariants(
