@@ -323,6 +323,10 @@ One of each card per suit (e.g. 5 in total):
 
 - One 4 is removed from each suit.
 
+### Scarce Ones
+
+- One 1 is removed from each suit.
+
 ### Clue Starved
 
 - Each discard or 5 played only generates 0.5 clues. (The team still starts with 8 clues.)

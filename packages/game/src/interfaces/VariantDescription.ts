@@ -21,6 +21,7 @@ export interface VariantDescription {
   specialRankNoClueRanks?: boolean;
   specialRankDeceptive?: boolean;
   criticalRank?: Rank;
+  scarceOnes?: boolean;
 
   clueStarved?: boolean;
   colorCluesTouchNothing?: boolean;
