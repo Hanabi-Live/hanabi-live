@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/Hanabi-Live/hanabi-live/logger"
 	"strconv"
 	"strings"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 type Variant struct {
@@ -60,6 +61,10 @@ func (v *Variant) IsSynesthesia() bool {
 
 func (v *Variant) IsCriticalFours() bool {
 	return strings.HasPrefix(v.Name, "Critical Fours")
+}
+
+func (v *Variant) IsScarceOnes() bool {
+	return strings.HasPrefix(v.Name, "Scarce Ones")
 }
 
 func (v *Variant) IsSudoku() bool {
