@@ -458,6 +458,7 @@ One of each card per suit (e.g. 5 in total):
 - Dual-Color
 - Mixes
 - Critical Fours
+- Scarce Ones
 - Clue Starved
 - Color Blind
 - Number Blind
