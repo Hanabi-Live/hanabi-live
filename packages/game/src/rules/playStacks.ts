@@ -71,7 +71,7 @@ export function getNextPlayableRanks(
 }
 
 /** @returns `undefined` if there are no cards played on the stack. */
-function getLastPlayedRank(
+export function getLastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
 ): Rank | null {
