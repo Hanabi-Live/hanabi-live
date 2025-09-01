@@ -560,7 +560,8 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 | URL                                           | Description                                                                                                 |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `/export/[game ID]`                           | Provides the data for an arbitrary game from the database.                                                  |
-| `/api/v1/variants`                            | Displays a paginated list of variants and their IDs.                                                        |
+| `/api/v1/variants`                            | Displays a list of variants and their IDs.                                                                  |
+| `/api/v1/variants-full`                       | Displays a list of variants information and their IDs.                                                      |
 | `/api/v1/variants/[variant ID]`               | Displays a paginated list of games played in that specific variant.                                         |
 | `/api/v1/history/[username]`                  | Lists a paginated list of the player's past games.                                                          |
 | `/api/v1/history/[username]/[username2]`      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |

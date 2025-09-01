@@ -26,6 +26,7 @@ commands.set("warning", (data: ServerCommandWarningData) => {
     $("#nav-buttons-lobby-create-game").removeClass("disabled");
     if (globals.currentScreen === Screen.PreGame) {
       pregame.toggleStartGameButton();
+      pregame.toggleJoinSpectateButtons();
     }
   }, 100);
 });

@@ -262,7 +262,10 @@ export function tableSpectate(
   table: ServerCommandTableData,
   shadowingPlayerIndex = -1,
 ): void {
-  if (globals.currentScreen !== Screen.Lobby) {
+  if (
+    globals.currentScreen !== Screen.Lobby &&
+    globals.currentScreen !== Screen.PreGame
+  ) {
     return;
   }
 
@@ -274,7 +277,10 @@ export function tableSpectate(
 }
 
 export function tableJoin(table: ServerCommandTableData): void {
-  if (globals.currentScreen !== Screen.Lobby) {
+  if (
+    globals.currentScreen !== Screen.Lobby &&
+    globals.currentScreen !== Screen.PreGame
+  ) {
     return;
   }
 

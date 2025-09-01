@@ -41,8 +41,12 @@ export function send(msg: string, tag: string | undefined): void {
     return;
   }
 
-  // eslint-disable-next-line no-new
-  new Notification(`Hanab Live: ${msg}`, {
+  const notification = new Notification(`Hanab Live: ${msg}`, {
+    icon: "/public/img/favicon-32x32.png",
     tag,
+  });
+
+  notification.addEventListener("click", () => {
+    window.focus();
   });
 }

@@ -15468,6 +15468,24 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism Reversed"]
   },
   {
+    "id": 2127,
+    "newID": "R+Y+G+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
+    "id": 2128,
+    "newID": "R+G+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
+    "id": 2129,
+    "newID": "R+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (4 Suits)",
+    "suits": ["Red", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
     "id": 40,
     "newID": "R+Y+G+B+P+T,UD",
     "name": "Up or Down (6 Suits)",

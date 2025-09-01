@@ -208,7 +208,7 @@ func tableRestart(
 
 	// If passwordHash was nonempty, preserve old value
 	passwordHash := ""
-	if (t.PasswordHash != "") {
+	if t.PasswordHash != "" {
 		passwordHash = t.PasswordHash
 	}
 
@@ -255,6 +255,24 @@ func tableRestart(
 	t2.Lock(ctx)
 	defer t2.Unlock(ctx)
 
+	// Copy over the old chat
+	t2.Chat = make([]*TableChatMessage, len(oldChat))
+	copy(t2.Chat, oldChat)
+
+	// Copy over the old ChatRead map
+	// (this has to be done after the players join the game)
+	t2.ChatRead = make(map[int]int)
+	for k, v := range oldChatRead {
+		t2.ChatRead[k] = v
+	}
+
+	t2.ExtraOptions.Restarted = true
+
+	// Send the creator of the game the chat history
+	s.NotifyTableJoined(t2)
+	chatSendPastFromTable(s, t2)
+	t2.ChatRead[s.UserID] = len(t2.Chat)
+
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
 		if s2.UserID == s.UserID {
@@ -268,19 +286,6 @@ func tableRestart(
 			BypassPassword: true,
 		})
 	}
-
-	// Copy over the old chat
-	t2.Chat = make([]*TableChatMessage, len(oldChat))
-	copy(t2.Chat, oldChat)
-
-	// Copy over the old ChatRead map
-	// (this has to be done after the players join the game)
-	t2.ChatRead = make(map[int]int)
-	for k, v := range oldChatRead {
-		t2.ChatRead[k] = v
-	}
-
-	t2.ExtraOptions.Restarted = true
 
 	if d.HidePregame {
 		// Emulate the game owner clicking on the "Start Game" button
