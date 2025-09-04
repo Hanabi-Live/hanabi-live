@@ -59,6 +59,11 @@ func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 		if variant.IsUpOrDown() || suit.Reversed {
 			return 1
 		}
+
+		if variant.IsScarceOnes() {
+			return 2
+		}
+
 		return 3
 	}
 
