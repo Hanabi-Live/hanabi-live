@@ -269,6 +269,10 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	if !t.Running && !t.Replay {
 		// Copy the options
 		newOptions := *t.Options
+		// These values in t.Options are omitted, so fill them in
+		newOptions.TableName = t.Name
+		newOptions.MaxPlayers = t.MaxPlayers
+
 		newOptions.VariantName = randomVariant
 		jsonOptions, err := json.Marshal(newOptions)
 		if err != nil {
