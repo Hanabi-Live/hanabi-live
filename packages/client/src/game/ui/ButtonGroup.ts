@@ -67,22 +67,21 @@ export class ButtonGroup extends Konva.Group {
       buttonIndex = -1;
     }
 
-    // Find the next button in the group. As a guard against an infinite loop, only loop as many
-    // times as needed to go through every button.
+    // Find the next enabled button in the group.
+    const total = this.list.length;
     let nextButton: ClueButton | undefined;
-    for (const clueButton of this.list) {
-      buttonIndex++;
-      if (buttonIndex > this.list.length - 1) {
-        buttonIndex = 0;
-      }
 
-      nextButton = clueButton;
-      if ("enabled" in nextButton && nextButton.enabled) {
+    for (let i = 1; i <= total; i++) {
+      const candidateIndex = (buttonIndex + i) % total;
+      const candidate = this.list[candidateIndex];
+
+      if (candidate && "enabled" in candidate && candidate.enabled) {
+        nextButton = candidate;
         break;
       }
     }
 
-    if (nextButton !== undefined) {
+    if (nextButton) {
       nextButton.dispatchEvent(new MouseEvent("click"));
     }
   }
