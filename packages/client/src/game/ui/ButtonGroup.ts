@@ -46,6 +46,16 @@ export class ButtonGroup extends Konva.Group {
     return null;
   }
 
+  getPressedIndex(): number | null {
+    for (const [i, button] of this.list.entries()) {
+      if (button.pressed) {
+        return i;
+      }
+    }
+
+    return null;
+  }
+
   clearPressed(): void {
     for (const clueButton of this.list) {
       clueButton.setPressed(false);
@@ -54,18 +64,7 @@ export class ButtonGroup extends Konva.Group {
 
   /** This is only used for groups of "PlayerButton". */
   selectNextTarget(): void {
-    let buttonIndex: number | undefined;
-    for (const [i, clueButton] of this.list.entries()) {
-      if (clueButton.pressed) {
-        buttonIndex = i;
-        break;
-      }
-    }
-
-    // It is possible that no buttons are currently pressed.
-    if (buttonIndex === undefined) {
-      buttonIndex = -1;
-    }
+    const buttonIndex = this.getPressedIndex() ?? -1;
 
     // Find the next enabled button in the group.
     const total = this.list.length;
