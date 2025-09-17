@@ -72,15 +72,19 @@ export class ButtonGroup extends Konva.Group {
 
     for (let i = 1; i <= total; i++) {
       const candidateIndex = (buttonIndex + i) % total;
-      const candidate = this.list[candidateIndex];
+      const candidateButton = this.list[candidateIndex];
 
-      if (candidate && "enabled" in candidate && candidate.enabled) {
-        nextButton = candidate;
+      if (
+        candidateButton !== undefined &&
+        "enabled" in candidateButton &&
+        candidateButton.enabled
+      ) {
+        nextButton = candidateButton;
         break;
       }
     }
 
-    if (nextButton) {
+    if (nextButton !== undefined) {
       nextButton.dispatchEvent(new MouseEvent("click"));
     }
   }
