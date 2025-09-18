@@ -95,9 +95,9 @@ export function init(): void {
   // Retrieve the contents of the typed chat list from local storage (cookie).
   const typedChatHistoryString = localStorage.getItem("typedChatHistory");
   if (
-    typedChatHistoryString !== null &&
-    typedChatHistoryString !== "" &&
-    typedChatHistoryString !== "[]"
+    typedChatHistoryString !== null
+    && typedChatHistoryString !== ""
+    && typedChatHistoryString !== "[]"
   ) {
     let potentialArray: unknown;
     try {
@@ -122,7 +122,7 @@ function pickEmote(this: HTMLElement) {
 
 function pickEmoji(this: HTMLElement) {
   if (activeChatInput) {
-    activeChatInput.value += this.textContent ?? "";
+    activeChatInput.value += this.textContent;
     activeChatInput.focus();
   }
   modals.closeModals();
@@ -555,9 +555,7 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
     $(element).on("click", () => {
-      if (element.textContent !== null) {
-        chatInput.val(element.textContent);
-      }
+      chatInput.val(element.textContent);
       chatInput.trigger("focus");
     });
   });

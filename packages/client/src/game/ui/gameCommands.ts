@@ -310,9 +310,9 @@ interface ReplayEfficiencyModData {
 }
 gameCommands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
   if (
-    globals.state.replay.shared === null ||
+    globals.state.replay.shared === null
     // Shared replay leaders already set the efficiency after sending the "replayAction" message.
-    globals.state.replay.shared.amLeader
+    || globals.state.replay.shared.amLeader
   ) {
     return;
   }
@@ -337,12 +337,12 @@ interface ReplayIndicatorData {
 }
 gameCommands.set("replayIndicator", (data: ReplayIndicatorData) => {
   if (
-    globals.state.replay.shared === null ||
+    globals.state.replay.shared === null
     // Shared replay leaders already drew the arrow after sending the "replayAction" message.
-    globals.state.replay.shared.amLeader ||
+    || globals.state.replay.shared.amLeader
     // If we are not currently using the shared segments, the arrow that the shared replay leader is
     // highlighting will not be applicable.
-    !globals.state.replay.shared.useSharedSegments
+    || !globals.state.replay.shared.useSharedSegments
   ) {
     return;
   }
@@ -390,8 +390,8 @@ gameCommands.set("replaySegment", (data: ReplaySegmentData) => {
   // If we are the replay leader, we will already have the shared segment set to be equal to what
   // the server is broadcasting.
   if (
-    globals.state.replay.shared === null ||
-    globals.state.replay.shared.amLeader
+    globals.state.replay.shared === null
+    || globals.state.replay.shared.amLeader
   ) {
     return;
   }
@@ -455,17 +455,17 @@ function suggestTurn(who: string, room: string, segment: number) {
   // We minus one to account for the fact that turns are presented to the user starting from 1.
   const internalSegment = segment - 1;
   if (
-    globals.state.finished &&
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.hypothetical === null
+    globals.state.finished
+    && globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.hypothetical === null
   ) {
     const leaderSuggested = who === globals.metadata.ourUsername;
     if (
-      leaderSuggested ||
-      internalSegment === globals.state.replay.shared.segment ||
+      leaderSuggested
+      || internalSegment === globals.state.replay.shared.segment
       // eslint-disable-next-line no-alert
-      globalThis.confirm(
+      || globalThis.confirm(
         `${who} suggests that we go to turn ${segment}. Agree?`,
       )
     ) {
@@ -551,8 +551,8 @@ function initStateStore(data: InitData) {
     type: "init",
     spectating: data.spectating,
     shadowing: data.shadowing,
-    datetimeStarted: data.datetimeStarted.toString(),
-    datetimeFinished: data.datetimeFinished.toString(),
+    datetimeStarted: data.datetimeStarted,
+    datetimeFinished: data.datetimeFinished,
     replay: data.replay,
     sharedReplay: data.sharedReplay,
     databaseID: data.databaseID,

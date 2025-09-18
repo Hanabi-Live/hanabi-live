@@ -4,7 +4,7 @@ import {
   playerIndex,
   rankClueNumber,
 } from "@hanabi-live/game";
-import z from "zod";
+import { z } from "zod";
 import { DatabaseGameActionType } from "../enums/DatabaseGameActionType";
 
 const databaseGameActionPlay = z

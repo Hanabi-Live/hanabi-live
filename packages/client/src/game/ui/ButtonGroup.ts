@@ -75,9 +75,9 @@ export class ButtonGroup extends Konva.Group {
       const candidateButton = this.list[candidateIndex];
 
       if (
-        candidateButton !== undefined &&
-        "enabled" in candidateButton &&
-        candidateButton.enabled
+        candidateButton !== undefined
+        && "enabled" in candidateButton
+        && candidateButton.enabled
       ) {
         nextButton = candidateButton;
         break;

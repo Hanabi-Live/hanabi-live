@@ -12,7 +12,7 @@
 
     // "target" specifies the ECMAScript target version. By default, it is "ES3". This is too
     // conservative; the project targets browsers / Node.js within a 2 year time-frame.
-    "target": "ES2021",
+    "target": "ES2022",
 
     // "resolveJsonModule" is required to import files with ".json" extensions. By default, it is
     // false.

@@ -17,7 +17,7 @@ import type { SuitRankTuple } from "../types/SuitRankTuple";
 import type { GameAction } from "../types/gameActions";
 
 let cachedVariantID: number | undefined;
-let cachedCardCountMap: number[][] = [];
+let cachedCardCountMap: readonly number[][] = [];
 
 export function cardDeductionReducer(
   deck: readonly CardState[],
@@ -538,7 +538,7 @@ function updatePossibilitiesToValidate(
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): readonly number[][] {
   if (variant.id === cachedVariantID) {
-    return arrayCopyTwoDimensional(cachedCardCountMap);
+    return arrayCopyTwoDimensional(cachedCardCountMap) as readonly number[][];
   }
 
   const possibleCardMap: number[][] = [];
@@ -551,7 +551,9 @@ function getCardCountMap(variant: Variant): readonly number[][] {
   }
 
   cachedVariantID = variant.id;
-  cachedCardCountMap = arrayCopyTwoDimensional(possibleCardMap);
+  cachedCardCountMap = arrayCopyTwoDimensional(
+    possibleCardMap,
+  ) as readonly number[][];
 
   return possibleCardMap;
 }

@@ -17,9 +17,9 @@ export class CardLayout extends Konva.Group {
     super(config);
 
     // Class variables.
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
     this.align = (config["align"] || "left") as string;
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
     this.reverse = (config["reverse"] || false) as boolean;
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;
@@ -192,8 +192,8 @@ export class CardLayout extends Konva.Group {
       }
 
       x +=
-        (scale * layoutChild.width() + spacingBetweenCards) *
-        (this.reverse ? -1 : 1);
+        (scale * layoutChild.width() + spacingBetweenCards)
+        * (this.reverse ? -1 : 1);
     }
   }
 
