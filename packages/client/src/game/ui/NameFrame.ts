@@ -200,9 +200,9 @@ export class NameFrame extends Konva.Group {
       );
       let oldShadowingPlayerIndex: PlayerIndex | undefined;
       if (
-        ourSpectator !== undefined &&
-        ourSpectator.shadowingPlayerIndex !== undefined &&
-        ourSpectator.shadowingPlayerIndex !== -1
+        ourSpectator !== undefined
+        && ourSpectator.shadowingPlayerIndex !== undefined
+        && ourSpectator.shadowingPlayerIndex !== -1
       ) {
         oldShadowingPlayerIndex = ourSpectator.shadowingPlayerIndex;
       }

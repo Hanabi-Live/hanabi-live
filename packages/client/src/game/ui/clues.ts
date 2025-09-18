@@ -39,10 +39,10 @@ export function checkLegal(): void {
     | undefined;
 
   if (
-    target === undefined ||
-    target === null ||
-    clueButton === undefined ||
-    clueButton === null
+    target === undefined
+    || target === null
+    || clueButton === undefined
+    || clueButton === null
   ) {
     // They have not selected a player or a clue type.
     globals.elements.giveClueButton!.setEnabled(false);
@@ -70,23 +70,23 @@ export function checkLegal(): void {
   // By default, only enable the "Give Clue" button if the clue "touched" one or more cards in the
   // hand.
   const enabled =
-    touchedAtLeastOneCard ||
+    touchedAtLeastOneCard
     // Make an exception if they have the optional setting for "Empty Clues" turned on.
-    globals.options.emptyClues ||
+    || globals.options.emptyClues
     // Make an exception for variants where color clues are always allowed.
-    (globals.variant.colorCluesTouchNothing &&
-      clueButton.clue.type === ClueType.Color) ||
+    || (globals.variant.colorCluesTouchNothing
+      && clueButton.clue.type === ClueType.Color)
     // Make an exception for variants where number clues are always allowed.
-    (globals.variant.rankCluesTouchNothing &&
-      clueButton.clue.type === ClueType.Rank) ||
+    || (globals.variant.rankCluesTouchNothing
+      && clueButton.clue.type === ClueType.Rank)
     // Make an exception for certain characters.
-    (ourCharacterName === "Blind Spot" &&
-      who ===
-        (globals.metadata.ourPlayerIndex + 1) % globals.options.numPlayers) ||
-    (ourCharacterName === "Oblivious" &&
-      who ===
-        (globals.metadata.ourPlayerIndex - 1 + globals.options.numPlayers) %
-          globals.options.numPlayers);
+    || (ourCharacterName === "Blind Spot"
+      && who
+        === (globals.metadata.ourPlayerIndex + 1) % globals.options.numPlayers)
+    || (ourCharacterName === "Oblivious"
+      && who
+        === (globals.metadata.ourPlayerIndex - 1 + globals.options.numPlayers)
+          % globals.options.numPlayers);
 
   globals.elements.giveClueButton!.setEnabled(enabled);
 }
@@ -147,9 +147,9 @@ function isTouched(card: HanabiCard, clue: Clue): boolean {
   const morphedPossibilities = card.getMorphedPossibilities();
   return morphedPossibilities.every(
     ([suitIndex, rank]) =>
-      isCardTouchedByClue(globals.variant, clue, suitIndex, rank) &&
-      ((clue.type === ClueType.Rank && card.visibleRank !== null) ||
-        (clue.type === ClueType.Color && card.visibleSuitIndex !== null)),
+      isCardTouchedByClue(globals.variant, clue, suitIndex, rank)
+      && ((clue.type === ClueType.Rank && card.visibleRank !== null)
+        || (clue.type === ClueType.Color && card.visibleSuitIndex !== null)),
   );
 }
 
@@ -171,10 +171,10 @@ export function give(): void {
     | undefined;
 
   if (
-    playerButton === undefined ||
-    playerButton === null ||
-    clueOrRankButton === undefined ||
-    clueOrRankButton === null
+    playerButton === undefined
+    || playerButton === null
+    || clueOrRankButton === undefined
+    || clueOrRankButton === null
   ) {
     // They have not selected a player or a clue type.
     return;
@@ -226,8 +226,8 @@ function shouldGiveClue() {
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
   const ourTurn =
-    currentPlayerIndex === ourPlayerIndex ||
-    globals.state.replay.hypothetical !== null;
+    currentPlayerIndex === ourPlayerIndex
+    || globals.state.replay.hypothetical !== null;
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant);
   const recentlyClicked =
@@ -235,12 +235,12 @@ function shouldGiveClue() {
 
   return (
     // We can only give clues on our turn.
-    ourTurn &&
+    ourTurn
     // We can only give a clue if there is a clue token available.
-    clueTokenAvailable &&
+    && clueTokenAvailable
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
-    globals.elements.giveClueButton!.enabled &&
+    && globals.elements.giveClueButton!.enabled
     // Prevent the user from accidentally giving a clue.
-    !recentlyClicked
+    && !recentlyClicked
   );
 }

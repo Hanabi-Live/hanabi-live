@@ -208,9 +208,9 @@ function getSuitClueColors(
 
   // Some special suits do not have clue colors explicitly assigned to them.
   if (
-    suitJSON.allClueColors === true ||
-    suitJSON.noClueColors === true ||
-    suitJSON.prism === true
+    suitJSON.allClueColors === true
+    || suitJSON.noClueColors === true
+    || suitJSON.prism === true
   ) {
     return [];
   }

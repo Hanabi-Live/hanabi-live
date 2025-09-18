@@ -211,18 +211,18 @@ function getVariantsForEachSpecialSuitCombination(
       // Disallow combining suits that are too similar to each other
       // (e.g. Rainbow and Dark Rainbow)
       if (
-        suit.allClueColors === suit2.allClueColors &&
-        suit.allClueRanks === suit2.allClueRanks &&
-        suit.noClueColors === suit2.noClueColors &&
-        suit.noClueRanks === suit2.noClueRanks &&
-        suit.prism === suit2.prism
+        suit.allClueColors === suit2.allClueColors
+        && suit.allClueRanks === suit2.allClueRanks
+        && suit.noClueColors === suit2.noClueColors
+        && suit.noClueRanks === suit2.noClueRanks
+        && suit.prism === suit2.prism
       ) {
         continue;
       }
 
       if (
-        combinationVariantNames.has(suit.name + suit2.name) ||
-        combinationVariantNames.has(suit2.name + suit.name)
+        combinationVariantNames.has(suit.name + suit2.name)
+        || combinationVariantNames.has(suit2.name + suit.name)
       ) {
         continue;
       }
@@ -232,11 +232,11 @@ function getVariantsForEachSpecialSuitCombination(
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
         // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red.
         if (
-          numSuits === 3 &&
-          ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) &&
-            (suit2.noClueColors === true || suit2.allClueColors === true)) ||
-            ((suit.noClueColors === true || suit.allClueColors === true) &&
-              SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
+          numSuits === 3
+          && ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name)
+            && (suit2.noClueColors === true || suit2.allClueColors === true))
+            || ((suit.noClueColors === true || suit.allClueColors === true)
+              && SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
         ) {
           continue;
         }
@@ -451,8 +451,8 @@ function getAmbiguousVariants(
 
       // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)".
       if (
-        incrementedNumSuits === 3 &&
-        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)
+        incrementedNumSuits === 3
+        && SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)
       ) {
         continue;
       }

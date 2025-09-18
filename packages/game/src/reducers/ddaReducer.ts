@@ -28,8 +28,8 @@ export function ddaReducer(
 
   for (const [order, card] of newDeck.entries()) {
     const inDoubleDiscard =
-      card.location === currentPlayerIndex &&
-      canCardPossiblyBeFromCluesOnly(card, suitIndex, rank);
+      card.location === currentPlayerIndex
+      && canCardPossiblyBeFromCluesOnly(card, suitIndex, rank);
 
     newDeck[order] = {
       ...card,

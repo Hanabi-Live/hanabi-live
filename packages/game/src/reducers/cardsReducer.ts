@@ -65,9 +65,9 @@ export function cardsReducer(
       }
 
       if (
-        action.playerIndex === metadata.ourPlayerIndex ||
-        action.suitIndex === -1 ||
-        action.rank === -1
+        action.playerIndex === metadata.ourPlayerIndex
+        || action.suitIndex === -1
+        || action.rank === -1
       ) {
         // The server scrubs the identity from cards that slide from slot 1 to slot 2 in our own
         // hand in order to prevent leaking information.
@@ -204,10 +204,10 @@ export function cardsReducer(
     case "draw": {
       // Validate that the client is on the correct turn.
       if (
-        game.turn.currentPlayerIndex !== action.playerIndex &&
+        game.turn.currentPlayerIndex !== action.playerIndex
         // Prevent validation during the initial draw; during this phase of the game, the person
         // drawing cards will not necessarily correspond to the person whose turn it is.
-        game.turn.turnNum > 0
+        && game.turn.turnNum > 0
       ) {
         console.warn(
           `The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn.turnNum}`,
@@ -268,9 +268,9 @@ export function cardsReducer(
   }
 
   if (
-    game.turn.turnNum === 0 &&
-    action.type === "draw" &&
-    !isInitialDealFinished(newDeck.length, metadata)
+    game.turn.turnNum === 0
+    && action.type === "draw"
+    && !isInitialDealFinished(newDeck.length, metadata)
   ) {
     // No need to do deduction while cards are being drawn.
     return newDeck;

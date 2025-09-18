@@ -249,13 +249,13 @@ export function reversibleIsCardCritical(
   // The START, 1's and 5's are critical if all copies of either of the other two cards are
   // discarded in an Undecided direction.
   if (
-    (rank === 1 || rank === 5 || rank === START_CARD_RANK) &&
-    direction === StackDirection.Undecided
+    (rank === 1 || rank === 5 || rank === START_CARD_RANK)
+    && direction === StackDirection.Undecided
   ) {
     return (
-      isAllDiscarded(suitIndex, START_CARD_RANK) ||
-      isAllDiscarded(suitIndex, 1) ||
-      isAllDiscarded(suitIndex, 5)
+      isAllDiscarded(suitIndex, START_CARD_RANK)
+      || isAllDiscarded(suitIndex, 1)
+      || isAllDiscarded(suitIndex, 5)
     );
   }
 

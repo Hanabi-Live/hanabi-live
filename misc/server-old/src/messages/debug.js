@@ -12,8 +12,8 @@ exports.step1 = (socket, data) => {
   // Get the IP of the client
   // (same as in the "login.js" file)
   let ip =
-    socket.handshake.headers["x-forwarded-for"] ||
-    socket.request.connection.remoteAddress;
+    socket.handshake.headers["x-forwarded-for"]
+    || socket.request.connection.remoteAddress;
   if (ip.startsWith("::ffff:")) {
     // Chop off the useless prefix
     ip = ip.substr(7);

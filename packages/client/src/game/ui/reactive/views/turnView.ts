@@ -7,9 +7,9 @@ import * as turn from "../../turn";
 
 export function shouldShowYourTurnIndicator(state: State): boolean {
   return (
-    state.playing &&
-    state.ongoingGame.turn.currentPlayerIndex ===
-      globals.metadata.ourPlayerIndex
+    state.playing
+    && state.ongoingGame.turn.currentPlayerIndex
+      === globals.metadata.ourPlayerIndex
   );
 }
 
@@ -20,12 +20,12 @@ export function shouldShowYourTurnIndicatorChanged(shouldShow: boolean): void {
 
 export function shouldShowTurnUI(state: State): boolean {
   return (
-    (state.replay.hypothetical !== null &&
-      (state.replay.shared === null || state.replay.shared.amLeader)) ||
-    (state.playing &&
-      !state.replay.active &&
-      state.ongoingGame.turn.currentPlayerIndex ===
-        state.metadata.ourPlayerIndex)
+    (state.replay.hypothetical !== null
+      && (state.replay.shared === null || state.replay.shared.amLeader))
+    || (state.playing
+      && !state.replay.active
+      && state.ongoingGame.turn.currentPlayerIndex
+        === state.metadata.ourPlayerIndex)
   );
 }
 
@@ -41,8 +41,9 @@ export function shouldShowTurnUIChanged(shouldShow: boolean): void {
 /** Fade the clue UI if there is not a clue available. */
 export function shouldIndicateNoClues(state: State): boolean {
   return (
-    shouldShowTurnUI(state) &&
-    state.visibleState!.clueTokens < getAdjustedClueTokens(1, globals.variant)
+    shouldShowTurnUI(state)
+    && state.visibleState!.clueTokens
+      < getAdjustedClueTokens(1, globals.variant)
   );
 }
 
@@ -55,9 +56,9 @@ export function shouldIndicateNoCluesChanged(shouldIndicate: boolean): void {
 
 export function shouldEnableBottomDeckBlindPlay(state: State): boolean {
   return (
-    state.metadata.options.deckPlays &&
-    shouldShowTurnUI(state) &&
-    state.visibleState!.cardsRemainingInTheDeck === 1
+    state.metadata.options.deckPlays
+    && shouldShowTurnUI(state)
+    && state.visibleState!.cardsRemainingInTheDeck === 1
   );
 }
 

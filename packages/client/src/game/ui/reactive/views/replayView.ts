@@ -58,9 +58,9 @@ export function onSegmentChanged(
   globals.elements.replayForwardFullButton?.setEnabled(onFinalSegment);
 
   if (
-    previousData === undefined ||
-    !data.active ||
-    data.ongoingGameSegment === null
+    previousData === undefined
+    || !data.active
+    || data.ongoingGameSegment === null
   ) {
     return;
   }
@@ -89,9 +89,9 @@ export function onSharedSegmentChanged(
     | undefined,
 ): void {
   if (
-    !data.active ||
-    data.sharedSegment === undefined ||
-    data.useSharedSegments === undefined
+    !data.active
+    || data.sharedSegment === undefined
+    || data.useSharedSegments === undefined
   ) {
     return;
   }
@@ -111,9 +111,9 @@ export function onSharedSegmentChanged(
       replay.goToSegment(data.sharedSegment, false, true);
 
       if (
-        previousData !== undefined &&
-        previousData.sharedSegment !== undefined &&
-        data.useSharedSegments === previousData.useSharedSegments
+        previousData !== undefined
+        && previousData.sharedSegment !== undefined
+        && data.useSharedSegments === previousData.useSharedSegments
       ) {
         playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
       }

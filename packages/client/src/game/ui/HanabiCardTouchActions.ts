@@ -41,8 +41,8 @@ function HanabiCardTapAction(this: HanabiCard) {
       this.state.order,
     );
   } else if (
-    isCardDiscarded(this.state) &&
-    this.state.segmentDiscarded !== null
+    isCardDiscarded(this.state)
+    && this.state.segmentDiscarded !== null
   ) {
     // Tapping on discarded cards goes to the turn immediately before they were discarded.
     replay.goToSegmentAndIndicateCard(

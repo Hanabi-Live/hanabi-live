@@ -41,9 +41,9 @@ export function getSoundType(
 
   // In some variants, failed plays are treated as normal plays.
   const action: GameAction =
-    originalAction.type === "discard" &&
-    originalAction.failed &&
-    variant.throwItInAHole
+    originalAction.type === "discard"
+    && originalAction.failed
+    && variant.throwItInAHole
       ? {
           ...originalAction,
           type: "play",
@@ -94,8 +94,8 @@ export function getSoundType(
       }
 
       if (
-        gameState.stats.maxScore < previousGameState.stats.maxScore &&
-        !variant.throwItInAHole
+        gameState.stats.maxScore < previousGameState.stats.maxScore
+        && !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
@@ -109,17 +109,17 @@ export function getSoundType(
 
       const nextPlayerHand = gameState.hands[action.playerIndex];
       if (
-        nextPlayerHand !== undefined &&
-        !isHandLocked(nextPlayerHand, gameState.deck) &&
-        previousGameState.stats.doubleDiscardCard !== null &&
-        !metadata.hardVariant
+        nextPlayerHand !== undefined
+        && !isHandLocked(nextPlayerHand, gameState.deck)
+        && previousGameState.stats.doubleDiscardCard !== null
+        && !metadata.hardVariant
       ) {
         const previouslyDiscardedCard =
           previousGameState.deck[previousGameState.stats.doubleDiscardCard];
         if (
-          previousCardState !== undefined &&
-          previouslyDiscardedCard !== undefined &&
-          canCardPossiblyBeFromCluesOnly(
+          previousCardState !== undefined
+          && previouslyDiscardedCard !== undefined
+          && canCardPossiblyBeFromCluesOnly(
             previousCardState,
             previouslyDiscardedCard.suitIndex,
             previouslyDiscardedCard.rank,
@@ -152,8 +152,8 @@ export function getSoundType(
 
     case "play": {
       if (
-        gameState.stats.maxScore < previousGameState.stats.maxScore &&
-        !variant.throwItInAHole
+        gameState.stats.maxScore < previousGameState.stats.maxScore
+        && !variant.throwItInAHole
       ) {
         return SoundType.Sad;
       }
@@ -309,8 +309,8 @@ function isOrderChopMove(
     );
     for (const startingHandCard of startingHandCards) {
       if (
-        startingHandCard.segmentFirstClued === newestOne.segmentFirstClued &&
-        startingHandCard.firstCluedWhileOnChop === true
+        startingHandCard.segmentFirstClued === newestOne.segmentFirstClued
+        && startingHandCard.firstCluedWhileOnChop === true
       ) {
         // Playing Multiple 1's - The Chop Focus Exception (Part 3). They were clued at the same
         // time and the card in the starting was on chop, so the Chop Focus Exception applies.
@@ -332,11 +332,11 @@ function isCandidateOneForOCM(card: CardState): boolean {
   return (
     // Order Chop Moves are only performed when a player plays a card that they think is a 1
     // (e.g. a card having a positive rank 1 clue on it)
-    card.positiveRankClues.includes(1) &&
+    card.positiveRankClues.includes(1)
     // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example.
-    card.positiveRankClues.length === 1 &&
+    && card.positiveRankClues.length === 1
     // It is technically possible to perform an Order Chop Move with two 1s that have an equal
     // number of positive color clues on them, but ignore this for simplicity.
-    card.positiveColorClues.length === 0
+    && card.positiveColorClues.length === 0
   );
 }

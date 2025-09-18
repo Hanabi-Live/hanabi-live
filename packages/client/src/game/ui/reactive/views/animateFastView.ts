@@ -24,18 +24,18 @@ export function onObserversStarted(
 
   globals.animateFast =
     // Converting a game to a shared replay should always be fast.
-    (!state.playing && previousState.playing) ||
-    (state.replay.shared !== null && previousState.replay.shared === null) ||
+    (!state.playing && previousState.playing)
+    || (state.replay.shared !== null && previousState.replay.shared === null)
     // Jumping ahead or behind in a replay by 2 or more segments should always be fast.
-    segmentDifference >= 2 ||
+    || segmentDifference >= 2
     // If the replay shuttle is being dragged, always animate fast. (Note that it can be null.)
-    globals.elements.replayShuttle?.isDragging() === true ||
+    || globals.elements.replayShuttle?.isDragging() === true
     // Entering a hypothetical should always be fast.
-    (state.replay.hypothetical !== null &&
-      previousState.replay.hypothetical === null) ||
+    || (state.replay.hypothetical !== null
+      && previousState.replay.hypothetical === null)
     // Exiting a hypothetical should always be fast.
-    (state.replay.hypothetical === null &&
-      previousState.replay.hypothetical !== null);
+    || (state.replay.hypothetical === null
+      && previousState.replay.hypothetical !== null);
 }
 
 export function onObserversFinished(

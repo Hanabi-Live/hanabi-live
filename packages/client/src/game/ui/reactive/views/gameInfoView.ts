@@ -105,9 +105,9 @@ export function onScoreOrMaxScoreChanged(data: {
       ? "cyan"
       : LABEL_COLOR;
   const scoreLabelStyle =
-    lowScorePhase &&
-    globals.lobby.settings.hyphenatedConventions &&
-    globals.lobby.settings.colorblindMode
+    lowScorePhase
+    && globals.lobby.settings.hyphenatedConventions
+    && globals.lobby.settings.colorblindMode
       ? "bold"
       : "normal";
   scoreLabel.fontStyle(scoreLabelStyle);
@@ -207,9 +207,9 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   // Show a yellow border around the discard pile (to reinforce that this is a "Double Discard"
   // situation).
   globals.elements.noDoubleDiscardBorder?.visible(
-    globals.lobby.settings.hyphenatedConventions &&
-      !noDiscard &&
-      data.doubleDiscard !== null,
+    globals.lobby.settings.hyphenatedConventions
+      && !noDiscard
+      && data.doubleDiscard !== null,
   );
 
   globals.layers.UI.batchDraw();
@@ -221,8 +221,8 @@ export function onOngoingOrVisibleStrikesChanged(data: {
 }): void {
   // Strikes are hidden from the players in "Throw It in a Hole" variants.
   if (
-    globals.variant.throwItInAHole &&
-    (globals.state.playing || globals.state.shadowing)
+    globals.variant.throwItInAHole
+    && (globals.state.playing || globals.state.shadowing)
   ) {
     return;
   }

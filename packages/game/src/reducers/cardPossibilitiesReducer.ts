@@ -41,18 +41,18 @@ export function cardPossibilitiesReducer(
 
   let { positiveColorClues } = state;
   if (
-    positive &&
-    clue.type === ClueType.Color &&
-    !positiveColorClues.includes(clue.value)
+    positive
+    && clue.type === ClueType.Color
+    && !positiveColorClues.includes(clue.value)
   ) {
     positiveColorClues = [...positiveColorClues, clue.value];
   }
 
   let { positiveRankClues } = state;
   if (
-    positive &&
-    clue.type === ClueType.Rank &&
-    !positiveRankClues.includes(clue.value)
+    positive
+    && clue.type === ClueType.Rank
+    && !positiveRankClues.includes(clue.value)
   ) {
     if (variant.oddsAndEvens) {
       positiveRankClues =

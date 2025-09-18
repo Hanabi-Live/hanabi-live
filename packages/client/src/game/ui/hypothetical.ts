@@ -20,8 +20,8 @@ export function startHypothetical(): void {
   }
 
   if (
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
@@ -44,8 +44,8 @@ export function endHypothetical(): void {
   }
 
   if (
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
@@ -238,8 +238,8 @@ export function sendHypotheticalActionToServer(
 
 export function sendHypotheticalBack(): void {
   if (
-    globals.state.replay.hypothetical === null ||
-    globals.state.replay.hypothetical.states.length <= 1
+    globals.state.replay.hypothetical === null
+    || globals.state.replay.hypothetical.states.length <= 1
   ) {
     return;
   }
@@ -324,9 +324,9 @@ export function changeStartingHandVisibility(): void {
     globals.state.replay.hypothetical?.startingPlayerIndex;
 
   if (
-    startingPlayerIndex === undefined ||
-    startingPlayerIndex === null ||
-    globals.elements.playerHands[startingPlayerIndex] === undefined
+    startingPlayerIndex === undefined
+    || startingPlayerIndex === null
+    || globals.elements.playerHands[startingPlayerIndex] === undefined
   ) {
     // Remove all empathy visibility, no longer in hypo.
     for (const i of eRange(globals.options.numPlayers)) {

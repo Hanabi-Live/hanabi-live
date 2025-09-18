@@ -9,9 +9,9 @@ export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {
     // On the "Create Game" tooltip, submit the form if enter is pressed.
     if (
-      event.which === KeyCode.KEY_RETURN &&
-      $("#create-game-modal-title").is(":visible") &&
-      !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
+      event.which === KeyCode.KEY_RETURN
+      && $("#create-game-modal-title").is(":visible")
+      && !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
     ) {
       event.preventDefault();
       $("#create-game-submit").trigger("click");

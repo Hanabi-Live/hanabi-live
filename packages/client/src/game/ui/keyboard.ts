@@ -161,10 +161,10 @@ function keydown(event: JQuery.KeyDownEvent) {
 
     // Ctrl + c = Copy the current game ID.
     if (
-      event.which === KeyCode.KEY_C &&
-      globals.state.finished &&
+      event.which === KeyCode.KEY_C
+      && globals.state.finished
       // Account for users copying text from the chat window.
-      !$("#game-chat-modal").is(":visible")
+      && !$("#game-chat-modal").is(":visible")
     ) {
       if (globals.state.replay.databaseID !== null) {
         copyStringToClipboard(globals.state.replay.databaseID.toString());
@@ -223,20 +223,20 @@ function keydown(event: JQuery.KeyDownEvent) {
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat or if a
   // modifier key is pressed.
   if (
-    $("#game-chat-input").is(":focus") ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey ||
-    event.metaKey
+    $("#game-chat-input").is(":focus")
+    || event.ctrlKey
+    || event.shiftKey
+    || event.altKey
+    || event.metaKey
   ) {
     return;
   }
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any.
   if (
-    event.which === KeyCode.KEY_DELETE &&
-    globals.activeHover !== null &&
-    globals.activeHover instanceof HanabiCard
+    event.which === KeyCode.KEY_DELETE
+    && globals.activeHover !== null
+    && globals.activeHover instanceof HanabiCard
   ) {
     const card: HanabiCard = globals.activeHover;
     card.setNote("");
@@ -319,9 +319,9 @@ function getNormalGameplayHotkeyFunction(
   const ourTurnInOngoingGame =
     !globals.state.replay.active && currentPlayerIndex === ourPlayerIndex;
   const amSharedReplayLeaderInHypothetical =
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.hypothetical !== null;
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.hypothetical !== null;
   const shouldHaveKeyboardHotkeysForActions =
     ourTurnInOngoingGame || amSharedReplayLeaderInHypothetical;
   if (!shouldHaveKeyboardHotkeysForActions) {
@@ -369,9 +369,9 @@ function keyup(event: JQuery.KeyUpEvent) {
 function sharedReplaySendSound(sound: string) {
   if (
     // Only send sound effects in shared replays.
-    globals.state.replay.shared === null ||
+    globals.state.replay.shared === null
     // Only send sound effects for shared replay leaders.
-    !globals.state.replay.shared.amLeader
+    || !globals.state.replay.shared.amLeader
   ) {
     return;
   }
