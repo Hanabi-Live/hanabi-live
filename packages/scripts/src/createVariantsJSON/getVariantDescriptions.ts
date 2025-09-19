@@ -1277,12 +1277,6 @@ function getInvertedVariants(
   // // Create combinations with special suits. for (const suit of suitsToCreateVariantsFor) { }
 
   return variantDescriptions;
-
-  // variantDescriptions.push( { name: "Inverted (6 Suits)", suits: ["Red", "Yellow", "Green",
-  // "Blue", "Purple", "Inverted"], }, { name: "Inverted (5 Suits)", suits: ["Red", "Yellow",
-  // "Green", "Blue", "Inverted"], }, );
-
-  // return variantDescriptions;
 }
 
 function maxRequiredVariantEfficiency(variant: Variant): number {
