@@ -85,8 +85,8 @@ export function animate(
         // something important being undefined.
         if (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          node === undefined ||
-          globals.store === null
+          node === undefined
+          || globals.store === null
         ) {
           return;
         }

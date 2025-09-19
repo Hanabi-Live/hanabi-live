@@ -38,9 +38,9 @@ export function getHTMLInputElement(selectors: string): HTMLInputElement {
 }
 
 export function getURLFromPath(path: string): string {
-  let url = `${window.location.protocol}//${window.location.hostname}`;
-  if (window.location.port !== "") {
-    url += `:${window.location.port}`;
+  let url = `${globalThis.location.protocol}//${globalThis.location.hostname}`;
+  if (globalThis.location.port !== "") {
+    url += `:${globalThis.location.port}`;
   }
   url += path;
 
@@ -49,7 +49,7 @@ export function getURLFromPath(path: string): string {
 
 export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
-  const queryParameters = new URLSearchParams(window.location.search);
+  const queryParameters = new URLSearchParams(globalThis.location.search);
   const modifiedQueryParameters = queryParameters
     .toString()
     // "URLSearchParams.toString()" will convert "?dev" to "?dev=", which is undesirable.
@@ -64,7 +64,7 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     // e.g. "#123", which is used to show the current turn
     path += hash;
   }
-  window.history.replaceState(undefined, "", path);
+  globalThis.history.replaceState(undefined, "", path);
 }
 
 export function timerFormatter(totalSeconds: number): string {

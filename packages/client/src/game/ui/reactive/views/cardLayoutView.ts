@@ -38,8 +38,8 @@ export function onPlayStackDirectionsChanged(
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants).
   for (const [i, direction] of directions.entries()) {
     if (
-      previousDirections !== undefined &&
-      direction === previousDirections[i]
+      previousDirections !== undefined
+      && direction === previousDirections[i]
     ) {
       continue;
     }
@@ -127,8 +127,8 @@ export function onPlayStacksChanged(
 
   for (const [suitIndex, stack] of playStacks.entries()) {
     if (
-      previousPlayStacks === undefined ||
-      !equal(stack, previousPlayStacks[suitIndex])
+      previousPlayStacks === undefined
+      || !equal(stack, previousPlayStacks[suitIndex])
     ) {
       const suit = globals.variant.suits[suitIndex]!;
       const playStack = globals.elements.playStacks.get(suit)!;
@@ -188,12 +188,12 @@ export function onPlayStacksChanged(
         );
         const playedRanks = playStack.map(
           (_stack, rankOffset) =>
-            ((rankOffset + firstPlayedRank - 1) % globals.variant.stackSize) +
-            1,
+            ((rankOffset + firstPlayedRank - 1) % globals.variant.stackSize)
+            + 1,
         );
         const ranksText =
-          playedRanks.join(" ") +
-          " _".repeat(globals.variant.stackSize - playStack.length);
+          playedRanks.join(" ")
+          + " _".repeat(globals.variant.stackSize - playStack.length);
         text = `[ ${ranksText} ]`;
       } else {
         const bracketText =

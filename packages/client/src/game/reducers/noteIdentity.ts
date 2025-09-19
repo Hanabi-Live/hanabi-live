@@ -215,7 +215,7 @@ function getPossibilitiesFromKeyword(
   for (const rank of variant.ranks) {
     const identityArrayValue = positiveRanks.has(rank);
     const identityArray = newArray(variant.suits.length, identityArrayValue);
-    identityMap[rank] = identityArray;
+    identityMap[rank] = identityArray as boolean[];
   }
 
   // Add positive items and remove negatives items.

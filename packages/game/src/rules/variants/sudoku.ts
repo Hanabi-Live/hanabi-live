@@ -229,8 +229,8 @@ function isAssignmentBetter(
   bestAssignmentSorted: readonly number[],
 ): boolean {
   if (
-    assignmentValue > bestAssignmentSum ||
-    bestAssignmentSorted.length === 0
+    assignmentValue > bestAssignmentSum
+    || bestAssignmentSorted.length === 0
   ) {
     return true;
   }

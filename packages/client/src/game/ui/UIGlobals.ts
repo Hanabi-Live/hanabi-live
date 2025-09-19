@@ -185,4 +185,4 @@ declare global {
     globals: UIGlobals;
   }
 }
-window.globals = globals;
+window.globals = globals; // eslint-disable-line unicorn/prefer-global-this

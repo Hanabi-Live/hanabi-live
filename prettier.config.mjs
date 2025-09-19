@@ -22,6 +22,11 @@ const config = {
       },
     },
   ],
+
+  // We break from the default Prettier config for only a single option: operator position. There
+  // are no known arguments for placing operators at the end of the line, as outlined in this
+  // thread: https://github.com/prettier/prettier/issues/3806
+  experimentalOperatorPosition: "start",
 };
 
 export default config;

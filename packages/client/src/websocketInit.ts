@@ -12,7 +12,7 @@ import * as modals from "./modals";
 export function websocketInit(): void {
   // Ensure that we are connecting to the right URL.
   const domain = $("#domain").html();
-  if (window.location.hostname !== domain) {
+  if (globalThis.location.hostname !== domain) {
     modals.showError(`You are supposed to connect using the URL of: ${domain}`);
     return;
   }
@@ -20,10 +20,10 @@ export function websocketInit(): void {
   // Prepare the URL of the WebSocket server
   // e.g. "ws://localhost/ws"
   const websocketProtocol =
-    window.location.protocol === "https:" ? "wss" : "ws";
-  let websocketHost = window.location.hostname;
-  if (window.location.port !== "") {
-    websocketHost += `:${window.location.port}`;
+    globalThis.location.protocol === "https:" ? "wss" : "ws";
+  let websocketHost = globalThis.location.hostname;
+  if (globalThis.location.port !== "") {
+    websocketHost += `:${globalThis.location.port}`;
   }
   const websocketURL = `${websocketProtocol}://${websocketHost}/ws`;
 
@@ -82,9 +82,9 @@ function initCommands(conn: Connection) {
       // 1) "init" (in response to a "getGameInfo1") and
       // 2) "gameActionList" (in response to a "getGameInfo2")
       if (
-        globals.ui.globals.loading &&
-        commandName !== "init" &&
-        commandName !== "gameActionList"
+        globals.ui.globals.loading
+        && commandName !== "init"
+        && commandName !== "gameActionList"
       ) {
         return;
       }

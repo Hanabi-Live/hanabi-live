@@ -23,8 +23,8 @@ export function setEfficiencyMod(mod: number): void {
   }
 
   if (
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
@@ -56,9 +56,9 @@ export function askForEfficiency(): void {
   }
 
   if (
-    globals.state.finished &&
-    globals.state.replay.shared !== null &&
-    !globals.state.replay.shared.amLeader
+    globals.state.finished
+    && globals.state.replay.shared !== null
+    && !globals.state.replay.shared.amLeader
   ) {
     modals.showWarning(
       "Only the shared replay leader can modify the efficiency.",

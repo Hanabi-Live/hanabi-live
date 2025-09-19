@@ -225,8 +225,8 @@ function gameReducerFunction(
           gameState.deck,
           gameState.playStackDirections,
           variant,
-        ) &&
-        isCardNeededForMaxScore(
+        )
+        && isCardNeededForMaxScore(
           action.suitIndex,
           action.rank,
           gameState.deck,
@@ -488,9 +488,9 @@ function gameReducerFunction(
 
   // Resolve the stack direction.
   if (
-    action.type === "play" &&
-    (hasReversedSuits(variant) || variant.sudoku) &&
-    action.suitIndex !== -1
+    action.type === "play"
+    && (hasReversedSuits(variant) || variant.sudoku)
+    && action.suitIndex !== -1
   ) {
     // We have to wait until the deck is updated with the information of the card that we played
     // before the `direction` function will work.
@@ -526,9 +526,9 @@ function gameReducerFunction(
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
   // make other cards critical.
   if (
-    (action.type === "play" || action.type === "discard") &&
-    action.suitIndex !== -1 &&
-    action.rank !== -1
+    (action.type === "play" || action.type === "discard")
+    && action.suitIndex !== -1
+    && action.rank !== -1
   ) {
     for (const rank of variant.ranks) {
       gameState.cardStatus[action.suitIndex][rank] = getCardStatus(

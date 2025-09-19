@@ -101,4 +101,5 @@ declare global {
   }
 }
 // We set the UI globals to `globals`, so the lobby globals take `globals2`.
+// eslint-disable-next-line unicorn/prefer-global-this
 window.globals2 = globals;

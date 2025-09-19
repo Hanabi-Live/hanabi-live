@@ -108,6 +108,7 @@ export function getVariantDescriptions(
     ...getOddsAndEvensVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSynesthesiaVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getReversedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getWhiteReversedAndRainbowVariants(),
     ...getUpOrDownVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getThrowItInAHoleVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
@@ -211,18 +212,18 @@ function getVariantsForEachSpecialSuitCombination(
       // Disallow combining suits that are too similar to each other
       // (e.g. Rainbow and Dark Rainbow)
       if (
-        suit.allClueColors === suit2.allClueColors &&
-        suit.allClueRanks === suit2.allClueRanks &&
-        suit.noClueColors === suit2.noClueColors &&
-        suit.noClueRanks === suit2.noClueRanks &&
-        suit.prism === suit2.prism
+        suit.allClueColors === suit2.allClueColors
+        && suit.allClueRanks === suit2.allClueRanks
+        && suit.noClueColors === suit2.noClueColors
+        && suit.noClueRanks === suit2.noClueRanks
+        && suit.prism === suit2.prism
       ) {
         continue;
       }
 
       if (
-        combinationVariantNames.has(suit.name + suit2.name) ||
-        combinationVariantNames.has(suit2.name + suit.name)
+        combinationVariantNames.has(suit.name + suit2.name)
+        || combinationVariantNames.has(suit2.name + suit.name)
       ) {
         continue;
       }
@@ -232,11 +233,11 @@ function getVariantsForEachSpecialSuitCombination(
       for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
         // Prism and Rainbow require 2 clueable suits, else they are just ambiguous red.
         if (
-          numSuits === 3 &&
-          ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name) &&
-            (suit2.noClueColors === true || suit2.allClueColors === true)) ||
-            ((suit.noClueColors === true || suit.allClueColors === true) &&
-              SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
+          numSuits === 3
+          && ((SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit.name)
+            && (suit2.noClueColors === true || suit2.allClueColors === true))
+            || ((suit.noClueColors === true || suit.allClueColors === true)
+              && SUITS_THAT_REQUIRE_TWO_CLUEABLE_SUITS.has(suit2.name)))
         ) {
           continue;
         }
@@ -456,8 +457,8 @@ function getAmbiguousVariants(
 
       // "Ambiguous & X (3 Suit)" is the same as "Very Ambiguous (3 Suit)".
       if (
-        incrementedNumSuits === 3 &&
-        SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)
+        incrementedNumSuits === 3
+        && SUITS_THAT_CAUSE_DUPLICATED_VARIANTS_WITH_AMBIGUOUS.has(suit.name)
       ) {
         continue;
       }
@@ -1059,6 +1060,29 @@ function getReversedVariants(
   }
 
   return variantDescriptions;
+}
+
+/**
+ * Normally, we do not mix variants with more than one special suit at a time. However, we make an
+ * exception since this is an official variant.
+ *
+ * @see https://boardgamegeek.com/boardgame/290357/hanabi-deluxe-what-a-show
+ */
+function getWhiteReversedAndRainbowVariants(): readonly VariantDescription[] {
+  return [
+    {
+      name: "White Reversed & Rainbow (6 Suits)",
+      suits: ["Red", "Yellow", "Green", "Blue", "White Reversed", "Rainbow"],
+    },
+    {
+      name: "White Reversed & Rainbow (5 Suits)",
+      suits: ["Red", "Green", "Blue", "White Reversed", "Rainbow"],
+    },
+    {
+      name: "White Reversed & Rainbow (4 Suits)",
+      suits: ["Red", "Blue", "White Reversed", "Rainbow"],
+    },
+  ];
 }
 
 function getUpOrDownVariants(

@@ -4,7 +4,7 @@ import * as modals from "./modals";
 
 export function test(): void {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available
-  if (!("Notification" in window)) {
+  if (!("Notification" in globalThis)) {
     return;
   }
 
@@ -33,7 +33,7 @@ export function test(): void {
 
 export function send(msg: string, tag: string | undefined): void {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available
-  if (!("Notification" in window)) {
+  if (!("Notification" in globalThis)) {
     return;
   }
 
@@ -41,8 +41,12 @@ export function send(msg: string, tag: string | undefined): void {
     return;
   }
 
-  // eslint-disable-next-line no-new
-  new Notification(`Hanab Live: ${msg}`, {
+  const notification = new Notification(`Hanab Live: ${msg}`, {
+    icon: "/public/img/favicon-32x32.png",
     tag,
+  });
+
+  notification.addEventListener("click", () => {
+    window.focus();
   });
 }

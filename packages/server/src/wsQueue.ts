@@ -229,8 +229,8 @@ async function logout(wsUser: WSUser) {
   // connected.)
   const existingWSUser = wsUsers.get(userID);
   if (
-    existingWSUser !== undefined &&
-    existingWSUser.sessionID > wsUser.sessionID
+    existingWSUser !== undefined
+    && existingWSUser.sessionID > wsUser.sessionID
   ) {
     return;
   }

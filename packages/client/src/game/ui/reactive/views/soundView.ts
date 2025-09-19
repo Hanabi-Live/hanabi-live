@@ -22,14 +22,14 @@ export function onNewSoundEffect(
 ): void {
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
-    (previousData === undefined && data.gameState.turn.turnNum !== 0) ||
+    (previousData === undefined && data.gameState.turn.turnNum !== 0)
     // Only make a sound when the game starts or when it is a new player's turn.
-    data.gameState.turn.currentPlayerIndex ===
-      previousData?.gameState.turn.currentPlayerIndex ||
+    || data.gameState.turn.currentPlayerIndex
+      === previousData?.gameState.turn.currentPlayerIndex
     // Do not play sounds in replays or hypotheticals.
-    globals.state.finished ||
+    || globals.state.finished
     // Do not play sounds if the user does not have sound effects enabled.
-    !globals.lobby.settings.soundMove
+    || !globals.lobby.settings.soundMove
   ) {
     return;
   }
@@ -63,7 +63,7 @@ export function onNewSoundEffect(
  * matching action types.
  */
 function getLastAction(actions: readonly GameAction[]): GameAction | undefined {
-  const reversedActions = [...actions].reverse();
+  const reversedActions = [...actions].toReversed();
   return reversedActions.find((action) =>
     includes(SOUND_TYPE_ACTIONS, action.type),
   );
@@ -77,13 +77,13 @@ function getAdjustedSoundType(
 
   return (
     // Only play certain sound effects for people in the H-Group.
-    (soundType === SoundType.OrderChopMove ||
-      soundType === SoundType.DiscardClued ||
-      soundType === SoundType.DoubleDiscard ||
-      soundType === SoundType.DoubleDiscardCause) &&
-      !globals.lobby.settings.hyphenatedConventions &&
+    (soundType === SoundType.OrderChopMove
+      || soundType === SoundType.DiscardClued
+      || soundType === SoundType.DoubleDiscard
+      || soundType === SoundType.DoubleDiscardCause)
+      && !globals.lobby.settings.hyphenatedConventions
       // Disable special sounds in "Throw It in a Hole" variants because they leak information.
-      !globals.variant.throwItInAHole
+      && !globals.variant.throwItInAHole
       ? standardSoundType
       : soundType
   );

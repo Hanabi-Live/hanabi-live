@@ -13,6 +13,7 @@ import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
+import { getHTMLInputElement } from "./utils";
 
 export enum SelfChatMessageType {
   Normal,
@@ -32,6 +33,7 @@ let typedChatHistoryPrefix = "";
 let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
+let activeChatInput: HTMLInputElement | null = null;
 
 export function init(): void {
   $("#lobby-chat-input").on("input", input);
@@ -43,6 +45,7 @@ export function init(): void {
   $("#game-chat-input").on("input", input);
   $("#game-chat-input").on("keypress", keypress("table"));
   $("#game-chat-input").on("keydown", keydown);
+  $(".emoji-button").on("click", emojiClick);
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
   for (const [emojiName, emoji] of Object.entries(emojis)) {
@@ -66,12 +69,35 @@ export function init(): void {
     }
   }
 
+  // Populate the emote/emoji picker.
+  const picker = $("#emoji-picker");
+  for (const [categoryName, emotesInCategory] of Object.entries(emotes)) {
+    const emoteArray = [...emotesInCategory];
+    for (const emote of emoteArray) {
+      const emoteImg = $("<img>")
+        .addClass("chat-emote")
+        .attr("src", `/public/img/emotes/${categoryName}/${emote}.png`)
+        .attr("title", emote)
+        .on("click", pickEmote);
+      picker.append(emoteImg);
+    }
+  }
+
+  for (const [emojiName, emoji] of emojiMap) {
+    const emojiSpan = $("<span>")
+      .addClass("emoji-item")
+      .attr("title", `:${emojiName}:`)
+      .text(emoji)
+      .on("click", pickEmoji);
+    picker.append(emojiSpan);
+  }
+
   // Retrieve the contents of the typed chat list from local storage (cookie).
   const typedChatHistoryString = localStorage.getItem("typedChatHistory");
   if (
-    typedChatHistoryString !== null &&
-    typedChatHistoryString !== "" &&
-    typedChatHistoryString !== "[]"
+    typedChatHistoryString !== null
+    && typedChatHistoryString !== ""
+    && typedChatHistoryString !== "[]"
   ) {
     let potentialArray: unknown;
     try {
@@ -84,6 +110,28 @@ export function init(): void {
       typedChatHistory = potentialArray as string[];
     }
   }
+}
+
+function pickEmote(this: HTMLElement) {
+  if (activeChatInput) {
+    activeChatInput.value += `${this.title} `;
+    activeChatInput.focus();
+  }
+  modals.closeModals();
+}
+
+function pickEmoji(this: HTMLElement) {
+  if (activeChatInput) {
+    activeChatInput.value += this.textContent;
+    activeChatInput.focus();
+  }
+  modals.closeModals();
+}
+
+function emojiClick(this: HTMLElement) {
+  const targetInputId = this.dataset["target"];
+  activeChatInput = getHTMLInputElement(`#${targetInputId}`);
+  modals.showPrompt("#emoji-modal");
 }
 
 function input(this: HTMLElement, event: JQuery.Event) {
@@ -121,19 +169,10 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // Check for emoji substitution.
   // e.g. :100: --> 💯
-  const matches = text.match(/:\S+:/g); // "\S" is a non-whitespace character.
-  if (matches !== null) {
-    for (const match of matches) {
-      const emojiName = match.slice(1, -1); // Strip off the colons
-
-      const emoji = emojiMap.get(emojiName);
-      if (emoji !== undefined) {
-        const newText = text.replace(match, emoji);
-        element.val(newText);
-        event.preventDefault();
-        return;
-      }
-    }
+  const newText = substituteEmoji(text);
+  if (newText !== null) {
+    element.val(newText);
+    event.preventDefault();
   }
 }
 
@@ -144,8 +183,7 @@ const keypress = (room: string) =>
     const element = $(this);
 
     // We have typed a new character, so reset the tab-complete variables.
-    tabCompleteWordList = [];
-    tabCompleteWordListIndex = null;
+    tabResetAutoCompleteList();
     typedChatHistoryIndex = null;
 
     if (event.which === KeyCode.KEY_RETURN) {
@@ -199,8 +237,8 @@ function sendText(room: string, msgRaw: string) {
 
   // Add the chat message to the typed history so that we can use the up arrow later. (But only if
   // it isn't in the history already.)
-  const index = typedChatHistory.indexOf(msg, 0);
-  if (index > -1) {
+  const index = typedChatHistory.indexOf(msg);
+  if (index !== -1) {
     typedChatHistory.splice(index, 1);
   }
   const newLength = typedChatHistory.unshift(msg);
@@ -320,7 +358,7 @@ function arrowDown(element: JQuery) {
   element.val(retrievedHistory ?? "");
 }
 
-function tab(element: JQuery, event: JQuery.Event) {
+export function tab(element: JQuery, event: JQuery.Event): void {
   // Parse the final word from what we have typed so far.
   let message = element.val();
   if (typeof message !== "string") {
@@ -399,6 +437,11 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   // - Tab goes forwards.
   tabCompleteWordListIndex =
     event.shiftKey === true ? tabCompleteWordList.length - 1 : 0;
+}
+
+export function tabResetAutoCompleteList(): void {
+  tabCompleteWordList = [];
+  tabCompleteWordListIndex = null;
 }
 
 // eslint-disable-next-line complete/prefer-readonly-parameter-types
@@ -512,9 +555,7 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
     $(element).on("click", () => {
-      if (element.textContent !== null) {
-        chatInput.val(element.textContent);
-      }
+      chatInput.val(element.textContent);
       chatInput.trigger("focus");
     });
   });
@@ -580,7 +621,7 @@ function getChatBoxElement(data: ServerCommandChatData): JQuery | undefined {
 }
 
 /** Add links, Discord emotes, and Twitch emotes. */
-function getPreparedMessage(rawMsg: string) {
+export function getPreparedMessage(rawMsg: string): string {
   let msg = rawMsg;
 
   // Automatically generate links from any URLs that are present in the message. (We must use
@@ -618,7 +659,7 @@ function fillDiscordEmotes(message: string) {
   return filledMessed;
 }
 
-function fillEmojis(message: string) {
+export function fillEmojis(message: string): string {
   let filledMessage = message;
 
   // Search through the text for each emoji.
@@ -631,6 +672,24 @@ function fillEmojis(message: string) {
   }
 
   return filledMessage;
+}
+
+export function substituteEmoji(text: string): string | null {
+  const matches = text.match(/:\S+:/g); // "\S" is a non-whitespace character.
+  if (matches === null) {
+    return null;
+  }
+
+  for (const match of matches) {
+    const emojiName = match.slice(1, -1); // Strip off the colons
+    const emoji = emojiMap.get(emojiName);
+    if (emoji !== undefined) {
+      const newText = text.replace(match, emoji);
+      return newText;
+    }
+  }
+
+  return null;
 }
 
 function fillTwitchEmotes(message: string) {

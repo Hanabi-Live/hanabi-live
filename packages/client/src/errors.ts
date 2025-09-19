@@ -3,7 +3,7 @@ import { showError } from "./modals";
 
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
-  window.addEventListener("error", (errorEvent) => {
+  globalThis.addEventListener("error", (errorEvent) => {
     const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
     const formattedStackTrace = `<pre>${stackTrace}</pre>`;
 
@@ -27,10 +27,10 @@ export function initErrorListener(): void {
 
 function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
   const error = errorEvent.error as unknown; // Cast from `any` to `unknown`.
-  return typeof error === "object" &&
-    error !== null &&
-    "stack" in error &&
-    typeof error.stack === "string"
+  return typeof error === "object"
+    && error !== null
+    && "stack" in error
+    && typeof error.stack === "string"
     ? error.stack
     : undefined;
 }
@@ -44,7 +44,7 @@ function isIoS() {
     "standalone"
   ];
   return (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && standaloneProp !== undefined)
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && standaloneProp !== undefined)
   );
 }

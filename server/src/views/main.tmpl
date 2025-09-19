@@ -96,6 +96,28 @@
             </a>
           </li>
           <li>
+            <a id="nav-buttons-pregame-join" class="button disabled">
+              <i class="fas fa-sign-in-alt nav-icon"></i>
+              <span class="hidden-xs">
+                <span class="nav-hotkey-indicator">J</span>oin<span
+                  class="hidden-md"
+                >
+                  Game</span
+                >
+              </span>
+            </a>
+          </li>
+          <li>
+            <a id="nav-buttons-pregame-spectate" class="button disabled"
+              ><i class="fas fa-ghost nav-icon"></i>
+              <span class="hidden-xs">
+                S<span class="nav-hotkey-indicator">p</span
+                >ectate<!-- cspell:disable-line -->
+                <span class="hidden-md"> Game</span>
+              </span>
+            </a>
+          </li>
+          <li>
             <a id="nav-buttons-pregame-change-options" class="button">
               <i class="fas fa-rainbow nav-icon"></i>
               <span class="hidden-xs">
@@ -770,12 +792,17 @@
               >
             </h3>
             <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
-            <input
-              id="lobby-chat-input"
-              type="text"
-              placeholder="Chat"
-              autocomplete="off"
-            />
+            <div class="chat-input-container">
+              <input
+                id="lobby-chat-input"
+                type="text"
+                placeholder="Chat"
+                autocomplete="off"
+              />
+              <button class="emoji-button" data-target="lobby-chat-input">
+                <i class="fas fa-smile"></i>
+              </button>
+            </div>
           </section>
         </div>
 
@@ -784,12 +811,20 @@
           <section id="lobby-chat-pregame" class="box">
             <h3 class="lobby-title">Pre-game Chat</h3>
             <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
-            <input
-              id="lobby-chat-pregame-input"
-              type="text"
-              placeholder="Chat"
-              autocomplete="off"
-            />
+            <div class="chat-input-container">
+              <input
+                id="lobby-chat-pregame-input"
+                type="text"
+                placeholder="Chat"
+                autocomplete="off"
+              />
+              <button
+                class="emoji-button"
+                data-target="lobby-chat-pregame-input"
+              >
+                <i class="fas fa-smile"></i>
+              </button>
+            </div>
             <div id="lobby-chat-pregame-istyping" class="istyping"></div>
           </section>
         </div>
@@ -1392,7 +1427,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            The Discord Server </a
+            The H-Group Discord Server </a
           ><br />
           A place to find teammates and discuss strategy.
         </li>
@@ -1407,6 +1442,16 @@
           This is a document that lists the strategies and conventions used by
           the H-Group.<br />
           (You don't have to use them if you don't want to.)
+        </li>
+        <li>
+          <a
+            href="https://hanabi.wiki/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Hanabi Central Wiki </a
+          ><br />
+          This wiki contains even more convention systems.
         </li>
         <li>
           <a
@@ -1451,7 +1496,8 @@
           {{ .WebsiteName }} is hosted free of charge and does not have any
           advertisements.<br />
           If you enjoy the website and want to help out, consider donating a
-          portion of your income to the<br />
+          <a href="https://www.givingwhatwecan.org/">portion of your income></a>
+          to the<br />
           top-rated charities in the world. (<a
             href="https://en.wikipedia.org/wiki/GiveWell"
             target="_blank"
@@ -1837,6 +1883,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Emoji modal -->
+    <div id="emoji-modal" class="modal">
+      <h2>Select Emote / Emoji</h2>
+      <div id="emoji-picker"></div>
+    </div>
   </div>
 
   <!-- Game (the UI when playing a game) -->
@@ -1855,12 +1907,17 @@
     </div>
     <section id="game-chat-modal-white" class="box">
       <div id="game-chat-text" class="lobby-chat-text-box"></div>
-      <input
-        id="game-chat-input"
-        type="text"
-        placeholder="Chat"
-        autocomplete="off"
-      />
+      <div class="chat-input-container">
+        <input
+          id="game-chat-input"
+          type="text"
+          placeholder="Chat"
+          autocomplete="off"
+        />
+        <button class="emoji-button" data-target="game-chat-input">
+          <i class="fas fa-smile"></i>
+        </button>
+      </div>
       <div id="game-chat-istyping" class="istyping"></div>
     </section>
   </div>

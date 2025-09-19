@@ -199,10 +199,10 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         state.premove = null;
       } else if (
         // Only allow premoves in ongoing games.
-        !state.finished &&
+        !state.finished
         // Only allow premoves when it is not our turn.
-        state.ongoingGame.turn.currentPlayerIndex !==
-          state.metadata.ourPlayerIndex
+        && state.ongoingGame.turn.currentPlayerIndex
+          !== state.metadata.ourPlayerIndex
       ) {
         state.premove = action.premove;
       }
@@ -301,8 +301,8 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
           state.ongoingGame.turn.segment,
           previousSegment,
           action,
-        ) &&
-        state.ongoingGame.turn.segment !== null
+        )
+        && state.ongoingGame.turn.segment !== null
       ) {
         state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
       }
@@ -343,8 +343,8 @@ function reduceGameActions(
     );
 
     if (
-      shouldStoreSegment(nextState.turn.segment, s.turn.segment, a) &&
-      nextState.turn.segment !== null
+      shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)
+      && nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;
     }
@@ -377,12 +377,8 @@ function updateCardIdentities(state: Draft<State>) {
         `Failed to find the existing card identity at index: ${i}`,
       );
 
-      if (existingCardIdentity.suitIndex === null) {
-        existingCardIdentity.suitIndex = newCardIdentity.suitIndex;
-      }
-      if (existingCardIdentity.rank === null) {
-        existingCardIdentity.rank = newCardIdentity.rank;
-      }
+      existingCardIdentity.suitIndex ??= newCardIdentity.suitIndex;
+      existingCardIdentity.rank ??= newCardIdentity.rank;
     }
   }
 }
@@ -433,10 +429,10 @@ function rehydrateScrubbedActions(
 ): readonly GameAction[] {
   return state.replay.actions.map((action) => {
     if (
-      (action.type === "play" ||
-        action.type === "discard" ||
-        action.type === "draw") &&
-      (action.suitIndex === -1 || action.rank === -1)
+      (action.type === "play"
+        || action.type === "discard"
+        || action.type === "draw")
+      && (action.suitIndex === -1 || action.rank === -1)
     ) {
       const cardIdentity = cardIdentities[action.order];
       assertDefined(

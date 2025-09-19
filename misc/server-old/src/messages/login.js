@@ -74,8 +74,8 @@ function step2(error, socket, data) {
   // Get the IP of the client
   // https://stackoverflow.com/questions/6458083/get-the-clients-ip-address-in-socket-io
   data.ip =
-    socket.handshake.headers["x-forwarded-for"] ||
-    socket.request.connection.remoteAddress;
+    socket.handshake.headers["x-forwarded-for"]
+    || socket.request.connection.remoteAddress;
   // "socket.handshake.address.address" doesn't work
   // "socket.conn.transport.socket._socket.remoteAddress" doesn't work
   // "socket.request.connection.remoteAddress" gives a 10.X.X.X address on Heroku

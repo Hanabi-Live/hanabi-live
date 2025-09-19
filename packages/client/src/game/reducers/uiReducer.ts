@@ -18,8 +18,8 @@ export function uiReducer(uiState: UIState, uiAction: UIAction): UIState {
 
     case "dragReset": {
       if (
-        uiState.cardDragged !== null &&
-        uiState.cardDragged instanceof HanabiCard
+        uiState.cardDragged !== null
+        && uiState.cardDragged instanceof HanabiCard
       ) {
         uiState.cardDragged.setShadowOffset();
       }

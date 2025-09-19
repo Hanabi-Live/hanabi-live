@@ -224,10 +224,10 @@ function getTooltipContent(): string {
   }
 
   if (
-    globals.state.finished &&
-    globals.state.replay.databaseID !== null &&
+    globals.state.finished
+    && globals.state.replay.databaseID !== null
     // JSON replays are hard-coded to have a database ID of 0.
-    globals.state.replay.databaseID !== 0
+    && globals.state.replay.databaseID !== 0
   ) {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
@@ -258,8 +258,8 @@ function getTooltipContent(): string {
   // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
   // so they should never be null.
   if (
-    globals.state.datetimeStarted !== null &&
-    globals.state.datetimeFinished !== null
+    globals.state.datetimeStarted !== null
+    && globals.state.datetimeFinished !== null
   ) {
     const startedDate = new Date(globals.state.datetimeStarted);
     const finishedDate = globals.state.finished

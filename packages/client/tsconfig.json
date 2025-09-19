@@ -5,4 +5,8 @@
     "complete-tsconfig/tsconfig.base.json",
     "../../tsconfig.monorepo.json",
   ],
+
+  "compilerOptions": {
+    "lib": ["DOM", "ES2023"],
+  },
 }

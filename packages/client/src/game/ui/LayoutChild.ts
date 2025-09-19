@@ -89,29 +89,29 @@ export class LayoutChild extends Konva.Group {
     // First, handle the special case of a hypothetical.
     if (globals.state.replay.hypothetical !== null) {
       return (
-        (globals.state.replay.shared === null ||
-          globals.state.replay.shared.amLeader) &&
-        currentPlayerIndex === this.card.state.location &&
-        !this.blank
+        (globals.state.replay.shared === null
+          || globals.state.replay.shared.amLeader)
+        && currentPlayerIndex === this.card.state.location
+        && !this.blank
       );
     }
 
     return (
       // If it is not our turn, then the card should not need to be draggable yet (unless we have
       // the "Enable pre-playing cards" feature enabled).
-      (isOurTurn() || globals.lobby.settings.speedrunPreplay) &&
+      (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move.
-      globals.state.premove === null &&
-      !globals.options.speedrun && // Cards should never be draggable while speedrunning
-      !globals.lobby.settings.speedrunMode && // Cards should never be draggable while speedrunning
+      && globals.state.premove === null
+      && !globals.options.speedrun // Cards should never be draggable while speedrunning
+      && !globals.lobby.settings.speedrunMode  // Cards should never be draggable while speedrunning
       // Only our cards should be draggable.
-      this.card.state.location === globals.metadata.ourPlayerIndex &&
+      && this.card.state.location === globals.metadata.ourPlayerIndex
       // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
       // replay, or in a shared replay.
-      globals.state.playing &&
+      && globals.state.playing
       // Cards should not be draggable if they are currently playing an animation. (This function
       // will be called again upon the completion of the animation.)
-      !this.card.tweening
+      && !this.card.tweening
     );
   }
 
@@ -132,16 +132,16 @@ export class LayoutChild extends Konva.Group {
 
     let draggedTo = cursor.getElementDragLocation(this);
     if (
-      draggedTo === "discardArea" &&
-      isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)
+      draggedTo === "discardArea"
+      && isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)
     ) {
       sounds.play(SoundType.Error);
       globals.elements.cluesNumberLabelPulse!.play();
       draggedTo = null;
     }
     if (
-      globals.state.replay.hypothetical !== null &&
-      (draggedTo === "playArea" || draggedTo === "discardArea")
+      globals.state.replay.hypothetical !== null
+      && (draggedTo === "playArea" || draggedTo === "discardArea")
     ) {
       const knownCard = this.checkHypoUnknown(draggedTo);
       if (!knownCard) {
@@ -161,13 +161,13 @@ export class LayoutChild extends Konva.Group {
     const { ongoingGame } = globals.state;
 
     if (
-      globals.state.replay.hypothetical === null &&
-      !globals.options.speedrun &&
-      !globals.variant.throwItInAHole &&
+      globals.state.replay.hypothetical === null
+      && !globals.options.speedrun
+      && !globals.variant.throwItInAHole
       // Do not use warnings for preplays unless we are at 2 strikes.
-      (currentPlayerIndex === ourPlayerIndex ||
-        ongoingGame.strikes.length === 2) &&
-      !isCardPotentiallyPlayable(
+      && (currentPlayerIndex === ourPlayerIndex
+        || ongoingGame.strikes.length === 2)
+      && !isCardPotentiallyPlayable(
         this.card.state,
         ongoingGame.deck,
         ongoingGame.playStacks,
@@ -181,7 +181,7 @@ export class LayoutChild extends Konva.Group {
       text +=
         "available to you. (e.g. positive clues, negative clues, cards seen, etc.)";
       // eslint-disable-next-line no-alert
-      return !window.confirm(text);
+      return !globalThis.confirm(text);
     }
 
     return false;
@@ -193,7 +193,12 @@ export class LayoutChild extends Konva.Group {
       return true; // Known card
     }
 
-    modals.askForMorph(this.card, globals.variant, draggedTo);
+    modals.askForMorph(
+      this.card,
+      globals.variant,
+      globals.cardImages,
+      draggedTo,
+    );
     return false; // Unknown card
   }
 

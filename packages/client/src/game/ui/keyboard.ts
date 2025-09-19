@@ -161,10 +161,10 @@ function keydown(event: JQuery.KeyDownEvent) {
 
     // Ctrl + c = Copy the current game ID.
     if (
-      event.which === KeyCode.KEY_C &&
-      globals.state.finished &&
+      event.which === KeyCode.KEY_C
+      && globals.state.finished
       // Account for users copying text from the chat window.
-      !$("#game-chat-modal").is(":visible")
+      && !$("#game-chat-modal").is(":visible")
     ) {
       if (globals.state.replay.databaseID !== null) {
         copyStringToClipboard(globals.state.replay.databaseID.toString());
@@ -223,20 +223,20 @@ function keydown(event: JQuery.KeyDownEvent) {
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat or if a
   // modifier key is pressed.
   if (
-    $("#game-chat-input").is(":focus") ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey ||
-    event.metaKey
+    $("#game-chat-input").is(":focus")
+    || event.ctrlKey
+    || event.shiftKey
+    || event.altKey
+    || event.metaKey
   ) {
     return;
   }
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any.
   if (
-    event.which === KeyCode.KEY_DELETE &&
-    globals.activeHover !== null &&
-    globals.activeHover instanceof HanabiCard
+    event.which === KeyCode.KEY_DELETE
+    && globals.activeHover !== null
+    && globals.activeHover instanceof HanabiCard
   ) {
     const card: HanabiCard = globals.activeHover;
     card.setNote("");
@@ -301,38 +301,59 @@ function keydown(event: JQuery.KeyDownEvent) {
     return;
   }
 
-  // Check for other keyboard hotkeys.
-  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-  const { ourPlayerIndex } = globals.metadata;
-  const shouldHaveKeyboardHotkeysForActions =
-    // If it is our turn in an ongoing-game.
-    (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex) ||
-    // If we are in a hypothetical and we are the shared replay leader.
-    (globals.state.replay.hypothetical !== null &&
-      (globals.state.replay.shared === null ||
-        globals.state.replay.shared.amLeader));
-  const ongoingGameState =
-    globals.state.replay.hypothetical === null
-      ? globals.state.ongoingGame
-      : globals.state.replay.hypothetical.ongoing;
-  if (!shouldHaveKeyboardHotkeysForActions) {
-    return;
-  }
-
-  let hotkeyFunction: Callback | undefined;
-  if (
-    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant)
-  ) {
-    hotkeyFunction = hotkeyClueMap.get(event.which);
-  }
-  if (!isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)) {
-    hotkeyFunction ||= hotkeyDiscardMap.get(event.which);
-  }
-  hotkeyFunction ||= hotkeyPlayMap.get(event.which);
+  // Normal gameplay hotkeys
+  const hotkeyFunction = getNormalGameplayHotkeyFunction(event.which);
   if (hotkeyFunction !== undefined) {
     event.preventDefault();
     hotkeyFunction();
   }
+}
+
+/** The "normal" hotkeys include hotkeys for playing cards, discarding cards, and giving clues. */
+function getNormalGameplayHotkeyFunction(
+  keyCode: number,
+): Callback | undefined {
+  // Do nothing if we are not in a normal game situation.
+  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
+  const { ourPlayerIndex } = globals.metadata;
+  const ourTurnInOngoingGame =
+    !globals.state.replay.active && currentPlayerIndex === ourPlayerIndex;
+  const amSharedReplayLeaderInHypothetical =
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.hypothetical !== null;
+  const shouldHaveKeyboardHotkeysForActions =
+    ourTurnInOngoingGame || amSharedReplayLeaderInHypothetical;
+  if (!shouldHaveKeyboardHotkeysForActions) {
+    return undefined;
+  }
+
+  const ongoingGameState =
+    globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
+
+  const oneClueToken = getAdjustedClueTokens(1, globals.variant);
+  const isClueAvailable = ongoingGameState.clueTokens >= oneClueToken;
+  if (isClueAvailable) {
+    const hotkeyFunction = hotkeyClueMap.get(keyCode);
+    if (hotkeyFunction !== undefined) {
+      return hotkeyFunction;
+    }
+  }
+
+  const atMaxClueTokens = isAtMaxClueTokens(
+    ongoingGameState.clueTokens,
+    globals.variant,
+  );
+  if (!atMaxClueTokens) {
+    const hotkeyFunction = hotkeyDiscardMap.get(keyCode);
+    if (hotkeyFunction !== undefined) {
+      return hotkeyFunction;
+    }
+  }
+
+  return hotkeyPlayMap.get(keyCode);
 }
 
 function keyup(event: JQuery.KeyUpEvent) {
@@ -348,9 +369,9 @@ function keyup(event: JQuery.KeyUpEvent) {
 function sharedReplaySendSound(sound: string) {
   if (
     // Only send sound effects in shared replays.
-    globals.state.replay.shared === null ||
+    globals.state.replay.shared === null
     // Only send sound effects for shared replay leaders.
-    !globals.state.replay.shared.amLeader
+    || !globals.state.replay.shared.amLeader
   ) {
     return;
   }

@@ -1,11 +1,12 @@
 // The navigation bar at the top of the lobby.
 
 import { globals } from "../Globals";
-import { initModal } from "../modals";
+import { initModal, showWarning } from "../modals";
 import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as pregame from "./pregame";
+import * as tablesDraw from "./tablesDraw";
 import * as watchReplay from "./watchReplay";
 
 export function init(): void {
@@ -51,7 +52,7 @@ export function init(): void {
   // The "Sign Out" button.
   $(".signout").on("click", () => {
     // Add the query parameters to the end to preserve using "?dev".
-    window.location.href = `/logout${window.location.search}`;
+    globalThis.location.href = `/logout${globalThis.location.search}`;
   });
 
   // The "Games" bottom screen toggle button.
@@ -136,6 +137,49 @@ export function init(): void {
       });
       $("#nav-buttons-pregame-start").addClass("disabled");
     }
+  });
+
+  // The "Join Game" button.
+  $("#nav-buttons-pregame-join").on("click", () => {
+    if ($("#nav-buttons-pregame-join").hasClass("disabled")) {
+      return;
+    }
+
+    const table = globals.tableMap.get(globals.tableID);
+    if (table === undefined) {
+      return;
+    }
+
+    const tables = [...globals.tableMap.values()];
+    const oldTable = tables.find(
+      (value) => value.joined && !value.sharedReplay,
+    );
+    if (oldTable !== undefined) {
+      if (oldTable.running) {
+        showWarning(
+          "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
+        );
+        return;
+      }
+      globals.conn!.send("tableLeave", { tableID: oldTable.id });
+      globals.conn!.send("tableUnattend", { tableID: globals.tableID });
+    }
+    tablesDraw.tableJoin(table);
+  });
+
+  // The "Spectate Game" button.
+  $("#nav-buttons-pregame-spectate").on("click", () => {
+    if ($("#nav-buttons-pregame-spectate").hasClass("disabled")) {
+      return;
+    }
+
+    const table = globals.tableMap.get(globals.tableID);
+    if (table === undefined) {
+      return;
+    }
+
+    globals.conn!.send("tableLeave", { tableID: globals.tableID });
+    tablesDraw.tableSpectate(table);
   });
 
   // The "Change Options" button. (Also initialized in the "initTooltips()" function.)

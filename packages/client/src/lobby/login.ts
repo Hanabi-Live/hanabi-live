@@ -143,7 +143,7 @@ function getAjaxError(jqXHR: JQuery.jqXHR) {
 export function automaticLogin(): void {
   // Automatically sign in to the WebSocket server if a query string of "?login" is present (which
   // is intended to be used with test accounts).
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(globalThis.location.search);
   const username = urlParams.get("login");
   if (username !== null && username !== "") {
     console.log(`Automatically logging in as "${username}".`);
@@ -158,8 +158,8 @@ export function automaticLogin(): void {
     .then((response) => {
       // Check to see if we have accepted the Firefox warning.
       if (
-        isBrowserFirefox() &&
-        localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
+        isBrowserFirefox()
+        && localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
       ) {
         $("#loading").hide();
         $("#firefox-warning").show();

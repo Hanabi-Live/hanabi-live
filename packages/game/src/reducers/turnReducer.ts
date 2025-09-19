@@ -158,10 +158,10 @@ function turnReducerFunction(
       // on the same segment as the final action. Any new end conditions must also be updated in the
       // "shouldStoreSegment()" function in "stateReducer.ts".
       if (
-        action.endCondition === EndCondition.Timeout ||
-        action.endCondition === EndCondition.TerminatedByPlayer ||
-        action.endCondition === EndCondition.TerminatedByVote ||
-        action.endCondition === EndCondition.IdleTimeout
+        action.endCondition === EndCondition.Timeout
+        || action.endCondition === EndCondition.TerminatedByPlayer
+        || action.endCondition === EndCondition.TerminatedByVote
+        || action.endCondition === EndCondition.IdleTimeout
       ) {
         turn.segment++;
       }

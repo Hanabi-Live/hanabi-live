@@ -15468,6 +15468,24 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism Reversed"]
   },
   {
+    "id": 2127,
+    "newID": "R+Y+G+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
+    "id": 2128,
+    "newID": "R+G+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
+    "id": 2129,
+    "newID": "R+B+Wh:R+Ra",
+    "name": "White Reversed & Rainbow (4 Suits)",
+    "suits": ["Red", "Blue", "White Reversed", "Rainbow"]
+  },
+  {
     "id": 40,
     "newID": "R+Y+G+B+P+T,UD",
     "name": "Up or Down (6 Suits)",
@@ -17028,25 +17046,25 @@
     "sudoku": true
   },
   {
-    "id": 2127,
+    "id": 2130,
     "newID": "R+Y+G+B+P+Inv",
     "name": "Inverted (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Inverted"]
   },
   {
-    "id": 2128,
+    "id": 2131,
     "newID": "R+Y+G+B+Inv",
     "name": "Inverted (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Inverted"]
   },
   {
-    "id": 2129,
+    "id": 2132,
     "newID": "R+G+B+Inv",
     "name": "Inverted (4 Suits)",
     "suits": ["Red", "Green", "Blue", "Inverted"]
   },
   {
-    "id": 2130,
+    "id": 2133,
     "newID": "R+B+Inv",
     "name": "Inverted (3 Suits)",
     "suits": ["Red", "Blue", "Inverted"]

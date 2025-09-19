@@ -67,8 +67,9 @@ async function handleWSMessage(wsUser: WSUser, rawData: RawData) {
   const schema = CLIENT_COMMAND_SCHEMAS[command];
   const result = schema.safeParse(data);
   if (!result.success) {
+    const issues = JSON.stringify(result.error.issues, undefined, 2);
     logger.error(
-      `Received a WebSocket command of "${command}" with invalid data: ${result.error}`,
+      `Received a WebSocket command of "${command}" with invalid data: ${issues}`,
     );
     return;
   }

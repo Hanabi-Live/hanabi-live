@@ -12,6 +12,7 @@
     ".env*": "shellscript", // e.g. ".env.example" is the same as ".env".
     // @template-customization-start
     "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
+    "post-merge": "shellscript",
     // @template-customization-end
   },
 
@@ -30,7 +31,7 @@
     "**/.yarn/": true,
     "**/dist/": true,
     "**/node_modules/": true,
-    "bun.lockb": true,
+    "bun.lock": true,
     "LICENSE": true,
     "package-lock.json": true,
     "pnpm-lock.yaml": true,
@@ -60,16 +61,8 @@
   "typescript.suggest.completeFunctionCalls": true,
 
   // By default, VSCode will prefer non-relative paths for deeply nested files.
-  // @template-ignore-block-start
-  // "javascript.preferences.importModuleSpecifier": "relative",
-  // "typescript.preferences.importModuleSpecifier": "relative",
-  // @template-ignore-block-end
-
-  // @template-customization-start
-  // Using a value of "relative" prevents "@hanabi"-style imports.
   "javascript.preferences.importModuleSpecifier": "project-relative",
   "typescript.preferences.importModuleSpecifier": "project-relative",
-  // @template-customization-end
 
   // By default, VSCode will not add `import type` automatically.
   "typescript.preferences.preferTypeOnlyAutoImports": true,
@@ -92,11 +85,11 @@
   },
   // @template-customization-start
   "[go]": {
+    "editor.formatOnSave": true,
     "editor.tabSize": 4,
     "editor.insertSpaces": false,
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },

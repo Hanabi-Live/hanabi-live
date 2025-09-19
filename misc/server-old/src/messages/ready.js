@@ -88,9 +88,9 @@ function step3(error, socket, data) {
 
   // If it is their turn, send an "action" message
   if (
-    socket.status !== "Replay" &&
-    socket.status !== "Shared Replay" &&
-    game.turnPlayerIndex === index
+    socket.status !== "Replay"
+    && socket.status !== "Shared Replay"
+    && game.turnPlayerIndex === index
   ) {
     notify.playerAction(socket, data);
   }
@@ -186,9 +186,9 @@ function sendAllNotes(socket, data) {
   // Chop off all of the trailing newlines
   for (let i = 0; i < notes.length; i++) {
     if (
-      typeof notes[i] !== "undefined" &&
-      notes[i] !== null &&
-      notes[i].length > 0
+      typeof notes[i] !== "undefined"
+      && notes[i] !== null
+      && notes[i].length > 0
     ) {
       notes[i] = notes[i].slice(0, -1);
     }

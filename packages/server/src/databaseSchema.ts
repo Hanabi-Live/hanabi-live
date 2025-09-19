@@ -172,14 +172,11 @@ export const chatLogTable = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => ({
-    chatLogIndexUserID: index("chat_log_index_user_id").on(table.userID),
-    chatLogIndexRoom: index("chat_log_index_room").on(table.room),
-    chatLogDatetimeSentID: index("chat_log_datetime_sent_id").on(
-      table.datetimeSent,
-      table.id,
-    ),
-  }),
+  (table) => [
+    index("chat_log_index_user_id").on(table.userID),
+    index("chat_log_index_room").on(table.room),
+    index("chat_log_datetime_sent_id").on(table.datetimeSent, table.id),
+  ],
 );
 
 export const chatLogPMTable = pgTable(
@@ -195,15 +192,14 @@ export const chatLogPMTable = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => ({
-    chatLogPMIndexUserID: index("chat_log_pm_index_user_id").on(table.userID),
-    chatLogPMIndexRecipientID: index("chat_log_pm_index_recipient_id").on(
-      table.recipientID,
+  (table) => [
+    index("chat_log_pm_index_user_id").on(table.userID),
+    index("chat_log_pm_index_recipient_id").on(table.recipientID),
+    index("chat_log_pm_index_datetime_sent_id").on(
+      table.datetimeSent,
+      table.id,
     ),
-    chatLogPMIndexDatetimeSentID: index(
-      "chat_log_pm_index_datetime_sent_id",
-    ).on(table.datetimeSent, table.id),
-  }),
+  ],
 );
 
 export const bannedIPsTable = pgTable("banned_ips", {

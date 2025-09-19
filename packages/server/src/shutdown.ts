@@ -1,4 +1,5 @@
 const shuttingDown = false;
+// eslint-disable-next-line no-unassigned-vars
 let datetimeShutdownInit: string | undefined;
 
 interface ShuttingDownMetadata {

@@ -69,10 +69,10 @@ function statsReducerFunction(
         const playStack = gameState.playStacks[action.suitIndex];
 
         if (
-          playStack !== undefined &&
-          playStack.length === variant.stackSize &&
-          previousGameState.clueTokens === gameState.clueTokens &&
-          !variant.throwItInAHole // We do not get an extra clue in some variants.
+          playStack !== undefined
+          && playStack.length === variant.stackSize
+          && previousGameState.clueTokens === gameState.clueTokens
+          && !variant.throwItInAHole // We do not get an extra clue in some variants.
         ) {
           // If we finished a stack while at max clues, then the extra clue is "wasted", similar to
           // what happens when the team gets a strike.
@@ -187,9 +187,9 @@ function statsReducerFunction(
   // Check if final round has effectively started because it is guaranteed to start in a fixed
   // number of turns.
   statsState.finalRoundEffectivelyStarted =
-    gameState.cardsRemainingInTheDeck <= 0 ||
-    statsState.cluesStillUsable === null ||
-    statsState.cluesStillUsable < 1;
+    gameState.cardsRemainingInTheDeck <= 0
+    || statsState.cluesStillUsable === null
+    || statsState.cluesStillUsable < 1;
 
   // Handle double discard calculation.
   if (action.type === "discard") {
@@ -224,8 +224,8 @@ function isBlindPlay(
 ): boolean {
   // In "Throw it in a Hole" variants, bombs should appear as successful plays.
   const possiblePlay =
-    action.type === "play" ||
-    (variant.throwItInAHole && action.type === "discard" && action.failed);
+    action.type === "play"
+    || (variant.throwItInAHole && action.type === "discard" && action.failed);
 
   if (!possiblePlay) {
     return false;
@@ -240,8 +240,8 @@ function isBlindPlay(
 /** Whether the action was a clue, a discard, or a play. */
 function isOneOfThreeMainActions(action: GameAction) {
   return (
-    action.type === "clue" ||
-    action.type === "discard" ||
-    action.type === "play"
+    action.type === "clue"
+    || action.type === "discard"
+    || action.type === "play"
   );
 }

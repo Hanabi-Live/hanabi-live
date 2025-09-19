@@ -67,7 +67,7 @@ export function init(): void {
 
   // Error modal setup.
   errorModalButton.addEventListener("pointerdown", () => {
-    window.location.reload();
+    globalThis.location.reload();
   });
 
   // Create Game modal setup.
@@ -120,26 +120,25 @@ export function askForPassword(tableID: number): void {
   allowCloseModal = true;
 
   passwordModalID.setAttribute("value", tableID.toString());
-  passwordModalPassword.focus();
 
   // We want to fill in the text field with the player's last typed-in password.
   const password = localStorage.getItem("joinTablePassword");
   if (password !== null && password !== "") {
     passwordModalPassword.value = password;
-    passwordModalPassword.select();
   }
 
-  // eslint-disable-next-line func-style
-  const before = () => {
+  // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
+  const ready = () => {
+    passwordModalPassword.focus();
     passwordModalPassword.select();
-    return true;
   };
-  showModal("#password-modal", true, before);
+  showModal("#password-modal", true, undefined, ready);
 }
 
 export function askForMorph(
   card: HanabiCard | null,
   variant: Variant,
+  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
   draggedTo: DragAreaType = null,
 ): void {
   morphDragArea = draggedTo;
@@ -165,6 +164,7 @@ export function askForMorph(
     startSuit,
     startRank,
     possibilities,
+    cardImages,
   );
 
   showModal("#morph-modal", false);
@@ -266,11 +266,10 @@ export function showWarning(msg: string): void {
 
   // Show the modal and focus the close button.
   // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
-  const before = () => {
+  const ready = () => {
     warningModalButton.focus();
-    return true;
   };
-  showModal("#warning-modal", true, before);
+  showModal("#warning-modal", true, undefined, ready);
 }
 
 export function showError(msg: string): void {
@@ -443,6 +442,7 @@ function fillMorphModalWithRadios(
   startSuit: Suit,
   startRank: Rank,
   possibilities: readonly SuitRankTuple[],
+  cardImages: ReadonlyMap<string, HTMLCanvasElement>,
 ) {
   const placeHolder = getHTMLElement(element);
   placeHolder.innerHTML = "";
@@ -472,9 +472,12 @@ function fillMorphModalWithRadios(
 
       const label = document.createElement("label");
       label.setAttribute("for", radioId);
-      const image: HTMLCanvasElement = window.globals.cardImages.get(
-        `card-${suit.name}-${rank}`,
-      )!;
+      const cardImageLabel = `card-${suit.name}-${rank}`;
+      const image = cardImages.get(cardImageLabel);
+      assertDefined(
+        image,
+        `Failed to get the card image with label: ${cardImageLabel}`,
+      );
       label.append(image);
       cell.append(label);
 

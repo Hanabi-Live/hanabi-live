@@ -62,6 +62,7 @@ export function show(): void {
   // Adjust the top navigation bar.
   nav.show("pregame");
   toggleStartGameButton();
+  toggleJoinSpectateButtons();
 
   // Set the browser address bar.
   setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
@@ -128,6 +129,7 @@ export function draw(): void {
   }
 
   toggleStartGameButton();
+  toggleJoinSpectateButtons();
 }
 
 function drawOptions() {
@@ -513,8 +515,8 @@ export function drawSpectators(tableID: number): void {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
     if (
-      spectator.shadowingPlayerIndex !== undefined &&
-      spectator.shadowingPlayerIndex !== -1
+      spectator.shadowingPlayerIndex !== undefined
+      && spectator.shadowingPlayerIndex !== -1
     ) {
       if (spectator.name === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
@@ -544,20 +546,42 @@ export function toggleStartGameButton(): void {
   }
 
   if (
-    globals.game.owner === globals.userID &&
-    globals.game.players.length >= MIN_PLAYERS &&
-    globals.game.players.length <= MAX_PLAYERS &&
+    globals.game.owner === globals.userID
+    && globals.game.players.length >= MIN_PLAYERS
+    && globals.game.players.length <= MAX_PLAYERS
     // If this field is not equal to null it means that we are waiting a short time to re-enable the
     // button after a player joined.
-    globals.enableStartGameButtonTimeout === null
+    && globals.enableStartGameButtonTimeout === null
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }
+}
 
-  if (globals.game.owner === globals.userID) {
-    $("#nav-buttons-pregame-change-variant").removeClass("disabled");
+export function toggleJoinSpectateButtons(): void {
+  if (globals.game === null) {
+    return;
+  }
+
+  const joinGame = $("#nav-buttons-pregame-join");
+  const joinSpectate = $("#nav-buttons-pregame-spectate");
+
+  joinGame.addClass("disabled");
+  joinSpectate.addClass("disabled");
+
+  if (isSpectator()) {
+    joinSpectate.hide();
+    joinGame.show();
+
+    if (globals.game.players.length < globals.game.maxPlayers) {
+      joinGame.removeClass("disabled");
+    }
   } else {
-    $("#nav-buttons-pregame-change-variant").addClass("disabled");
+    joinGame.hide();
+    joinSpectate.show();
+
+    if (globals.game.players.length >= MIN_PLAYERS) {
+      joinSpectate.removeClass("disabled");
+    }
   }
 }
 

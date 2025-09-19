@@ -5,18 +5,12 @@ import { fastifyStatic } from "@fastify/static";
 import { fastifyView } from "@fastify/view";
 import fastifyWebSocket from "@fastify/websocket";
 import { Eta } from "eta";
-import type {
-  FastifyInstance,
-  RawReplyDefaultExpression,
-  RawRequestDefaultExpression,
-  RawServerDefault,
-} from "fastify";
+import type { FastifyInstance } from "fastify";
 import { fastify } from "fastify";
 import { fastifyFavicon } from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
-import type { Logger } from "pino";
 import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
@@ -26,13 +20,6 @@ import { httpMain } from "./http/httpMain";
 import { httpTestCookie } from "./http/httpTestCookie";
 import { httpWS } from "./http/httpWS";
 import { logger } from "./logger";
-
-type FastifyInstanceWithLogger = FastifyInstance<
-  RawServerDefault,
-  RawRequestDefaultExpression,
-  RawReplyDefaultExpression,
-  Logger
->;
 
 const COOKIE_NAME = "hanabi.sid";
 
@@ -150,7 +137,7 @@ export async function httpInit(): Promise<void> {
       logger.info(
         `IP "${request.ip}" tried to send an HTTP request, but they are banned.`,
       );
-      return reply
+      return await reply
         .code(StatusCodes.UNAUTHORIZED)
         .send(
           "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
@@ -167,7 +154,7 @@ export async function httpInit(): Promise<void> {
 
 /** Plugins are registered in alphabetical order. */
 async function registerFastifyPlugins(
-  httpServer: FastifyInstanceWithLogger,
+  httpServer: FastifyInstance,
   useTLS: boolean,
 ) {
   // `fastify-favicon` - Needed for the favicon:
@@ -228,7 +215,7 @@ async function registerFastifyPlugins(
   });
 }
 
-function registerPathHandlers(httpServer: FastifyInstanceWithLogger) {
+function registerPathHandlers(httpServer: FastifyInstance) {
   // For cookies and logging in.
   httpServer.post("/login", httpLogin);
   httpServer.get("/logout", httpLogout);

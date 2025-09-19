@@ -1,0 +1,13 @@
+{
+  "@schema": "https://raw.githubusercontent.com/complete-ts/complete/refs/heads/main/packages/complete-cli/schemas/package-metadata-schema.json",
+  "dependencies": {
+    "eta": {
+      "lock-version": true,
+      "lock-reason": "https://github.com/bgub/eta/issues/330"
+    },
+    "konva": {
+      "lock-version": true,
+      "lock-reason": "Stuck on 3.4.1 until the front-end client can be rewritten. (Upgrading the version causes weird graphical glitches.)"
+    }
+  }
+}

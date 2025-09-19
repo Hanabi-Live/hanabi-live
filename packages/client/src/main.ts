@@ -30,22 +30,24 @@ declare global {
     $: JQueryStatic;
   }
 }
-window.$ = jquery;
+window.$ = jquery; // eslint-disable-line unicorn/prefer-global-this
 
 // Manually redirect users that are going to wrong URLs.
 if (
-  window.location.hostname === OLD_DOMAIN ||
-  window.location.hostname === `www.${OLD_DOMAIN}` ||
-  window.location.hostname === `www.${DOMAIN}`
+  globalThis.location.hostname === OLD_DOMAIN
+  || globalThis.location.hostname === `www.${OLD_DOMAIN}`
+  || globalThis.location.hostname === `www.${DOMAIN}`
 ) {
-  window.location.replace(`https://${DOMAIN}${window.location.pathname}`);
+  globalThis.location.replace(
+    `https://${DOMAIN}${globalThis.location.pathname}`,
+  );
 }
 
 initErrorListener();
 
 $(document).ready(() => {
   // Set an event handler for when the entire window loses focus.
-  $(window).blur(() => {
+  $(globalThis).blur(() => {
     if (globals.currentScreen === Screen.Game && globals.ui !== null) {
       globals.ui.focusLost();
     }

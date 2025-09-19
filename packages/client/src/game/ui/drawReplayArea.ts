@@ -231,9 +231,9 @@ export function drawReplayArea(winW: number, winH: number): void {
   const bottomCenterReplayButtonX =
     replayButtonValues.x + (totalWidth - bottomButtonValues.w) / 2;
   const bottomRightReplayButtonX =
-    replayButtonValues.x +
-    replayButtonValues.w * 2 +
-    replayButtonValues.spacing * 2;
+    replayButtonValues.x
+    + replayButtonValues.w * 2
+    + replayButtonValues.spacing * 2;
   // The "Exit Replay" button.
   globals.elements.replayExitButton = new Button({
     x: bottomRightReplayButtonX * winW,

@@ -25,8 +25,10 @@ export function checkNoteImpossibility(
 
   // Prevent players from accidentally mixing up which stack base is which.
   if (
-    cardIsStackBase &&
-    possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
+    cardIsStackBase
+    && possibilities.every(
+      (possibility) => possibility[0] !== cardState.suitIndex,
+    )
   ) {
     modals.showWarning(
       "You cannot morph a stack base to have a different suit.",
@@ -36,8 +38,8 @@ export function checkNoteImpossibility(
 
   // Only validate cards in our own hand.
   if (
-    !(cardState.location === globals.metadata.ourPlayerIndex) ||
-    possibilities.some((possibility) =>
+    !(cardState.location === globals.metadata.ourPlayerIndex)
+    || possibilities.some((possibility) =>
       canCardPossiblyBeFromEmpathy(cardState, possibility[0], possibility[1]),
     )
   ) {

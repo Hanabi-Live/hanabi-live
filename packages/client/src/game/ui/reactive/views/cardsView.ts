@@ -90,8 +90,8 @@ export function onMorphedIdentitiesChanged(
   const previousLength = previousData.morphedIdentities!.length;
   const maxLength = Math.max(currentLength, previousLength);
   if (
-    data.morphedIdentities !== undefined &&
-    previousData.morphedIdentities !== undefined
+    data.morphedIdentities !== undefined
+    && previousData.morphedIdentities !== undefined
   ) {
     for (const i of eRange(maxLength)) {
       if (data.morphedIdentities[i] !== previousData.morphedIdentities[i]) {

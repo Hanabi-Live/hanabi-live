@@ -17,7 +17,7 @@ import type { SuitRankTuple } from "../types/SuitRankTuple";
 import type { GameAction } from "../types/gameActions";
 
 let cachedVariantID: number | undefined;
-let cachedCardCountMap: number[][] = [];
+let cachedCardCountMap: readonly number[][] = [];
 
 export function cardDeductionReducer(
   deck: readonly CardState[],
@@ -80,10 +80,12 @@ function makeDeductions(
   return newDeck;
 }
 
+/** Mutates the deck in-place. */
 function updateAllCardPossibilities(
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
   hands: GameState["hands"],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
   oldDeck: readonly CardState[],
   cardCountMap: readonly number[][],
@@ -171,6 +173,7 @@ function updateCardPossibilities(
   card: CardState,
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   deck: CardState[],
   cardCountMap: readonly number[][],
   metadata: GameMetadata,
@@ -337,11 +340,11 @@ function canBeUsedToDisprovePossibility(
   playerIndex: PlayerIndex,
 ): boolean {
   return (
-    card !== undefined &&
-    card.order !== excludeCardOrder &&
+    card !== undefined
+    && card.order !== excludeCardOrder
     // It's revealed to the player / we know more than nothing about it, so it could be useful
     // disproving a possibility in the players hand.
-    (card.revealedToPlayer[playerIndex] === true || card.hasClueApplied)
+    && (card.revealedToPlayer[playerIndex] === true || card.hasClueApplied)
   );
 }
 
@@ -442,12 +445,13 @@ function hasPossibility(
   );
 }
 
-/** Mutates the `countCountMap` in-place. */
+/** Mutates the `countCountMap` and `possibilitiesToValidate` in-place. */
 function possibilityValid(
   [suitIndex, rank]: readonly [SuitIndex, Rank],
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   index: number,
   cardCountMap: readonly number[][],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ): boolean {
   if (deckPossibilities.length === index) {
@@ -511,6 +515,7 @@ function possibilityValid(
 /** Mutates the `possibilitiesToValidate` in-place. */
 function updatePossibilitiesToValidate(
   cardCountMap: readonly number[][],
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
   possibilitiesToValidate: SuitRankTuple[],
 ) {
   let j = 0;
@@ -533,7 +538,7 @@ function updatePossibilitiesToValidate(
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
 function getCardCountMap(variant: Variant): readonly number[][] {
   if (variant.id === cachedVariantID) {
-    return arrayCopyTwoDimensional(cachedCardCountMap);
+    return arrayCopyTwoDimensional(cachedCardCountMap) as readonly number[][];
   }
 
   const possibleCardMap: number[][] = [];
@@ -546,7 +551,9 @@ function getCardCountMap(variant: Variant): readonly number[][] {
   }
 
   cachedVariantID = variant.id;
-  cachedCardCountMap = arrayCopyTwoDimensional(possibleCardMap);
+  cachedCardCountMap = arrayCopyTwoDimensional(
+    possibleCardMap,
+  ) as readonly number[][];
 
   return possibleCardMap;
 }

@@ -165,7 +165,7 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	// Send them the list of spectators
-	t.NotifySpectators()
+	s.NotifySpectators(t)
 
 	// Send them messages for people typing, if any
 	for _, p := range t.Players {

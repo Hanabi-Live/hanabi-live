@@ -9,9 +9,9 @@ export function lobbyKeyboardInit(): void {
   $(document).keydown((event) => {
     // On the "Create Game" tooltip, submit the form if enter is pressed.
     if (
-      event.which === KeyCode.KEY_RETURN &&
-      $("#create-game-modal-title").is(":visible") &&
-      !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
+      event.which === KeyCode.KEY_RETURN
+      && $("#create-game-modal-title").is(":visible")
+      && !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
     ) {
       event.preventDefault();
       $("#create-game-submit").trigger("click");
@@ -32,9 +32,13 @@ export function lobbyKeyboardInit(): void {
     // We also account for MacOS special characters that are inserted when you hold down the option
     // key.
     if (event.altKey && event.which === KeyCode.KEY_J) {
-      // Alt + j. Click on the first "Join" button in the table list.
+      // Alt + j.
       if (globals.currentScreen === Screen.Lobby) {
+        // Click on the first "Join" button in the table list.
         $(".lobby-games-join-first-table-button").trigger("click");
+      } else if (globals.currentScreen === Screen.PreGame) {
+        // Click on the "Join Game" button.
+        $("#nav-buttons-pregame-join").trigger("click");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
       // Alt + n. Click the "Create Game" button.
@@ -62,7 +66,13 @@ export function lobbyKeyboardInit(): void {
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-start").trigger("click");
       }
+    } else if (event.altKey && event.which === KeyCode.KEY_P) {
+      // Alt + p. Click on the "Spectate Game" button.
+      if (globals.currentScreen === Screen.PreGame) {
+        $("#nav-buttons-pregame-spectate").trigger("click");
+      }
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
+      // Alt + c. Click on the "Change Options" button.
       if (globals.currentScreen === Screen.PreGame) {
         $("#nav-buttons-pregame-change-options").trigger("click");
       }

@@ -6,7 +6,7 @@ jobs:
   client_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
 
@@ -16,10 +16,10 @@ jobs:
       working-directory: ./server
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install Golang
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
 
       - name: Compile the Golang code
         run: bash build_server.sh
@@ -31,7 +31,7 @@ jobs:
       matrix:
         packageName: [client, data, game, scripts, server]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Create the "version.js" file
@@ -43,7 +43,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Create the "version.js" file
@@ -55,7 +55,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Check that the entire repository is formatted with Prettier
@@ -64,7 +64,7 @@ jobs:
   spell_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Spell check the entire repository
@@ -73,7 +73,7 @@ jobs:
   lint_monorepo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Check templates
@@ -93,18 +93,18 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
 
       - name: Use TypeDoc to automatically generate documentation
         run: npm run docs
         working-directory: ./packages/game
 
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: ./packages/game/docs
 
-      - uses: actions/deploy-pages@v2
+      - uses: actions/deploy-pages@v4
 
   discord:
     name: Discord Failure Notification

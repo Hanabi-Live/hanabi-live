@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import esbuildPluginPino from "esbuild-plugin-pino";
+import { esbuildPluginPino } from "esbuild-plugin-pino";
 import fs from "node:fs";
 import path from "node:path";
 

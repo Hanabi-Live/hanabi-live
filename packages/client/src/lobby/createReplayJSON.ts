@@ -58,9 +58,9 @@ export function createJSONFromReplay(room: string): void {
   for (const [i, cardIdentity] of globals.state.cardIdentities.entries()) {
     const morph = globals.state.replay.hypothetical?.morphedIdentities[i];
     if (
-      morph !== undefined &&
-      morph.suitIndex !== null &&
-      morph.rank !== null
+      morph !== undefined
+      && morph.suitIndex !== null
+      && morph.rank !== null
     ) {
       game.deck.push({
         suitIndex: morph.suitIndex,
