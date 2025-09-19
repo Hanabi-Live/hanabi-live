@@ -99,6 +99,7 @@ export function getVariantDescriptions(
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getScarceOnesVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getBlindVariants(basicVariantSuits),
     ...getMuteVariants(basicVariantSuits),
@@ -762,6 +763,40 @@ function getCriticalFoursVariants(
         name: variantName,
         suits: variantSuits,
         criticalRank: 4,
+      });
+    }
+  }
+
+  return variantDescriptions;
+}
+
+function getScarceOnesVariants(
+  suitsToCreateVariantsFor: readonly SuitJSON[],
+  basicVariantSuits: BasicVariantSuits,
+): readonly VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Scarce Ones (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits],
+      scarceOnes: true,
+    });
+  }
+
+  // Create combinations with special suits.
+  for (const suit of suitsToCreateVariantsFor) {
+    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+      const variantName = `Scarce Ones & ${suit.name} (${numSuits} Suits)`;
+      const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
+      const basicSuits = basicVariantSuits[numBasicSuits];
+      const variantSuits = [...basicSuits, suit.name];
+      variantDescriptions.push({
+        name: variantName,
+        suits: variantSuits,
+        scarceOnes: true,
       });
     }
   }
