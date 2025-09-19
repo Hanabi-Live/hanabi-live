@@ -573,5 +573,14 @@
     "displayName": "Teal",
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
+  },
+  {
+    "name": "Inverted",
+    "id": "Inv",
+    "abbreviation": "I",
+    "fill": "#999999",
+    "pip": "triangle",
+    "inverted": true,
+    "clueColors": ["Inverted"]
   }
 ]

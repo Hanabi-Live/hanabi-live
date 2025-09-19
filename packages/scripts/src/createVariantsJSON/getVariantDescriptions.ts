@@ -114,6 +114,7 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getInvertedVariants(basicVariantSuits),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -275,6 +276,11 @@ function getVariantsForSpecialRanks(
 
       // There are no prism special ranks (e.g. Prism-Ones)
       if (suit.prism === true) {
+        continue;
+      }
+
+      // There are no inverted special ranks... Yet. (e.g. Inverted-Ones)
+      if (suit.inverted === true) {
         continue;
       }
 
@@ -1267,6 +1273,29 @@ function getSudokuVariants(
         });
       }
     }
+  }
+
+  return variantDescriptions;
+}
+
+function getInvertedVariants(
+  basicVariantSuits: BasicVariantSuits,
+): readonly VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // Create the basic variants.
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Inverted (${numSuits} Suits)`;
+    const basicSuits = basicVariantSuits[numSuits - 1];
+    if (basicSuits === undefined) {
+      continue;
+    }
+    const variantSuits = [...basicSuits, "Inverted"];
+
+    variantDescriptions.push({
+      name: variantName,
+      suits: variantSuits,
+    });
   }
 
   return variantDescriptions;

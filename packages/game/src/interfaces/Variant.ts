@@ -27,4 +27,5 @@ export interface Variant extends VariantJSONModified {
   readonly suitAbbreviations: readonly string[];
   readonly showSuitNames: boolean;
   readonly identityNotePattern: string;
+  readonly hasInverted: boolean;
 }

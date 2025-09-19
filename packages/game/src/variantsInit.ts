@@ -349,6 +349,8 @@ export function createVariant(
     isUpOrDown,
   );
 
+  const hasInverted = suits.some((suit: Suit) => suit.inverted);
+
   // Add it to the map.
   const variant: Variant = {
     name,
@@ -380,6 +382,7 @@ export function createVariant(
     funnels,
     chimneys,
     sudoku,
+    hasInverted,
 
     id,
     newID,
