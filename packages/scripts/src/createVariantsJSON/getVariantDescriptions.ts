@@ -1274,8 +1274,6 @@ function getInvertedVariants(
     });
   }
 
-  // // Create combinations with special suits. for (const suit of suitsToCreateVariantsFor) { }
-
   return variantDescriptions;
 }
 
