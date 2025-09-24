@@ -98,7 +98,7 @@ const serverCommandUserData = z
   .object({
     userID,
     name: z.string().min(1),
-    status: z.nativeEnum(Status),
+    status: z.enum(Status),
     tableID: tableID.optional(),
     hyphenated: z.boolean(),
     inactive: z.boolean(),

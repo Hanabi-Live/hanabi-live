@@ -2,7 +2,7 @@ import { tableID, userID } from "@hanabi-live/data";
 import { numPlayers, options } from "@hanabi-live/game";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
-import z from "zod";
+import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { extraOptions } from "./ExtraOptions";
 import { game } from "./Game";

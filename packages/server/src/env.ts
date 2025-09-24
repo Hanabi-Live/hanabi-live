@@ -44,7 +44,7 @@ const envSchema = z.object({
 export const env = envSchema.parse(process.env);
 
 export const IS_DEV =
-  env.DOMAIN === "localhost" ||
-  env.DOMAIN === "127.0.0.1" ||
-  env.DOMAIN.startsWith("192.168.") ||
-  env.DOMAIN.startsWith("10.");
+  env.DOMAIN === "localhost"
+  || env.DOMAIN === "127.0.0.1"
+  || env.DOMAIN.startsWith("192.168.")
+  || env.DOMAIN.startsWith("10.");

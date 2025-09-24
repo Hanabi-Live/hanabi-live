@@ -50,26 +50,26 @@ export function tablesDraw(): void {
         }
 
         if (
-          i === 2 &&
-          !table.running &&
-          !table.passwordProtected &&
-          !table.joined
+          i === 2
+          && !table.running
+          && !table.passwordProtected
+          && !table.joined
         ) {
           // Unstarted tables
           tableIDsOfThisType.push(id);
         } else if (
-          i === 3 &&
-          !table.running &&
-          table.passwordProtected &&
-          !table.joined
+          i === 3
+          && !table.running
+          && table.passwordProtected
+          && !table.joined
         ) {
           // Unstarted & password-protected tables.
           tableIDsOfThisType.push(id);
         } else if (
-          i === 4 &&
-          table.running &&
-          !table.sharedReplay &&
-          !table.joined
+          i === 4
+          && table.running
+          && !table.sharedReplay
+          && !table.joined
         ) {
           // Ongoing tables
           tableIDsOfThisType.push(id);
@@ -195,10 +195,10 @@ export function tablesDraw(): void {
     // There is a keyboard shortcut to join the first table available. Add a class to the first
     // relevant row to facilitate this.
     if (
-      !table.running &&
-      !table.joined &&
-      table.numPlayers < MAX_PLAYERS &&
-      !addedJoinFirstTableButton
+      !table.running
+      && !table.joined
+      && table.numPlayers < MAX_PLAYERS
+      && !addedJoinFirstTableButton
     ) {
       addedJoinFirstTableButton = true;
       row.addClass("lobby-games-join-first-table-button");
@@ -263,8 +263,8 @@ export function tableSpectate(
   shadowingPlayerIndex = -1,
 ): void {
   if (
-    globals.currentScreen !== Screen.Lobby &&
-    globals.currentScreen !== Screen.PreGame
+    globals.currentScreen !== Screen.Lobby
+    && globals.currentScreen !== Screen.PreGame
   ) {
     return;
   }
@@ -278,8 +278,8 @@ export function tableSpectate(
 
 export function tableJoin(table: ServerCommandTableData): void {
   if (
-    globals.currentScreen !== Screen.Lobby &&
-    globals.currentScreen !== Screen.PreGame
+    globals.currentScreen !== Screen.Lobby
+    && globals.currentScreen !== Screen.PreGame
   ) {
     return;
   }

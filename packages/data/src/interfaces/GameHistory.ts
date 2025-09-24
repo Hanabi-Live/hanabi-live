@@ -9,7 +9,7 @@ export const gameHistory = z
     seed: z.string(),
     score: z.number().int(),
     numTurns: z.number().int(),
-    endCondition: z.nativeEnum(EndCondition),
+    endCondition: z.enum(EndCondition),
     datetimeStarted: z.date(),
     datetimeFinished: z.date(),
     numGamesOnThisSeed: z.number().int(),

@@ -24,8 +24,8 @@ export function set(cursorType: CursorType): void {
 
   // Do not show any custom cursors if we are an active player in a speedrun.
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
-    globals.state.playing
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.playing
   ) {
     return;
   }
@@ -51,14 +51,14 @@ export function getElementDragLocation(
   pos.y += (element.height() * element.scaleY()) / 2;
 
   if (
-    globals.elements.playArea !== null &&
-    posOverlaps(pos, globals.elements.playArea)
+    globals.elements.playArea !== null
+    && posOverlaps(pos, globals.elements.playArea)
   ) {
     return "playArea";
   }
   if (
-    globals.elements.discardArea !== null &&
-    posOverlaps(pos, globals.elements.discardArea)
+    globals.elements.discardArea !== null
+    && posOverlaps(pos, globals.elements.discardArea)
   ) {
     return "discardArea";
   }
@@ -84,9 +84,9 @@ export function elementOverlaps(element: LayoutChild): boolean {
 function posOverlaps(pos: Konva.Vector2d, element: Konva.Rect | LayoutChild) {
   const elementPos = element.getAbsolutePosition();
   return (
-    pos.x >= elementPos.x &&
-    pos.y >= elementPos.y &&
-    pos.x <= elementPos.x + element.width() &&
-    pos.y <= elementPos.y + element.height()
+    pos.x >= elementPos.x
+    && pos.y >= elementPos.y
+    && pos.x <= elementPos.x + element.width()
+    && pos.y <= elementPos.y + element.height()
   );
 }

@@ -282,9 +282,9 @@ function hypoAction(
   }
 
   const isClueActionThatShouldIgnoreNegative =
-    action.type === "clue" &&
-    !state.hypothetical.showDrawnCards &&
-    state.hypothetical.startingPlayerIndex === action.target;
+    action.type === "clue"
+    && !state.hypothetical.showDrawnCards
+    && state.hypothetical.startingPlayerIndex === action.target;
   const newAction = isClueActionThatShouldIgnoreNegative
     ? {
         ...action,

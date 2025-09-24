@@ -23,19 +23,20 @@ async function main() {
 }
 
 async function checkVariantFiles() {
-  if (!isFile(VARIANTS_JSON_PATH)) {
+  const exists = await isFile(VARIANTS_JSON_PATH);
+  if (!exists) {
     throw new Error(
       `Failed to find the "variants.json" file at: ${VARIANTS_JSON_PATH}`,
     );
   }
 
-  const oldVariantsJSON = readFile(VARIANTS_JSON_PATH);
-  const oldVariantsTXT = readFile(VARIANTS_TXT_PATH);
+  const oldVariantsJSON = await readFile(VARIANTS_JSON_PATH);
+  const oldVariantsTXT = await readFile(VARIANTS_TXT_PATH);
 
   await createVariantsJSON(true);
 
-  const newVariantsJSON = readFile(VARIANTS_JSON_PATH);
-  const newVariantsTXT = readFile(VARIANTS_TXT_PATH);
+  const newVariantsJSON = await readFile(VARIANTS_JSON_PATH);
+  const newVariantsTXT = await readFile(VARIANTS_TXT_PATH);
 
   // Compare the text file first since the diff will be cleaner.
   if (oldVariantsTXT !== newVariantsTXT) {

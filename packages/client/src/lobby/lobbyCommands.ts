@@ -40,8 +40,8 @@ lobbyCommands.set("friends", (data: FriendsData) => {
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
   // happen to be our friend will be shown in the correct color.
   if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
+    globals.currentScreen === Screen.Lobby
+    || globals.currentScreen === Screen.PreGame
   ) {
     usersDraw.draw();
   }
@@ -259,8 +259,8 @@ lobbyCommands.set("pregameSpectators", (data: SpectatorsData) => {
 lobbyCommands.set("user", (data: ServerCommandUserData) => {
   globals.userMap.set(data.userID, data);
   if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
+    globals.currentScreen === Screen.Lobby
+    || globals.currentScreen === Screen.PreGame
   ) {
     usersDraw.draw();
   }
@@ -271,8 +271,8 @@ lobbyCommands.set("userList", (dataList: ServerCommandUserListData) => {
     globals.userMap.set(data.userID, data);
   }
   if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
+    globals.currentScreen === Screen.Lobby
+    || globals.currentScreen === Screen.PreGame
   ) {
     usersDraw.draw();
   }
@@ -282,8 +282,8 @@ lobbyCommands.set("userLeft", (data: ServerCommandUserLeftData) => {
   globals.userMap.delete(data.userID);
 
   if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
+    globals.currentScreen === Screen.Lobby
+    || globals.currentScreen === Screen.PreGame
   ) {
     usersDraw.draw();
   }
@@ -308,8 +308,8 @@ lobbyCommands.set("userInactive", (data: UserInactiveData) => {
   globals.userMap.set(userID, newUser);
 
   if (
-    globals.currentScreen === Screen.Lobby ||
-    globals.currentScreen === Screen.PreGame
+    globals.currentScreen === Screen.Lobby
+    || globals.currentScreen === Screen.PreGame
   ) {
     usersDraw.setInactive(user.userID, user.inactive);
   }
@@ -351,8 +351,8 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   // automatically spectate that table (and ignore any specific custom path that the user has
   // entered).
   if (
-    data.disconSpectatingTable !== undefined &&
-    data.disconSpectatingTable > 0
+    data.disconSpectatingTable !== undefined
+    && data.disconSpectatingTable > 0
   ) {
     globals.conn!.send("tableSpectate", {
       tableID: data.disconSpectatingTable,

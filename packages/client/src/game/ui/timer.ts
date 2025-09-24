@@ -68,8 +68,8 @@ export function update(data: ClockData): void {
   }
 
   const ourTurn =
-    globals.state.playing &&
-    data.activePlayerIndex === globals.metadata.ourPlayerIndex;
+    globals.state.playing
+    && data.activePlayerIndex === globals.metadata.ourPlayerIndex;
   if (!ourTurn) {
     // Update the UI with the value of the timer for the active player.
     let time = globals.playerTimes[data.activePlayerIndex]!;
@@ -141,8 +141,8 @@ function setTickingDownTime(timer: TimerDisplay) {
   // Update the time in local array to approximate server times.
   globals.playerTimes[globals.activePlayerIndex]! -= elapsedTime;
   if (
-    globals.options.timed &&
-    globals.playerTimes[globals.activePlayerIndex]! < 0
+    globals.options.timed
+    && globals.playerTimes[globals.activePlayerIndex]! < 0
   ) {
     // Do not let the timer go into negative values, or else it will mess up the display. (But in
     // non-timed games, we want this to happen.)
@@ -161,14 +161,14 @@ function setTickingDownTime(timer: TimerDisplay) {
   // Play a sound to indicate that the current player is almost out of time. Do not play it more
   // frequently than about once per second.
   if (
-    globals.options.timed &&
-    globals.lobby.settings.soundTimer &&
-    millisecondsLeft > 0 && // Between 0 and 10 seconds
-    millisecondsLeft <= 10_000 &&
-    elapsedTime > 900 &&
-    elapsedTime < 1100 &&
-    !globals.state.pause.active &&
-    !globals.lobby.errorOccurred
+    globals.options.timed
+    && globals.lobby.settings.soundTimer
+    && millisecondsLeft > 0 // Between 0 and 10 seconds
+    && millisecondsLeft <= 10_000
+    && elapsedTime > 900
+    && elapsedTime < 1100
+    && !globals.state.pause.active
+    && !globals.lobby.errorOccurred
   ) {
     timer.oval.opacity(timer.oval.fill() === "black" ? 0.7 : 0.2);
     timer.oval.fill(timer.oval.fill() === "black" ? "red" : "black");
@@ -212,8 +212,8 @@ function setTickingDownTimeCurrentPlayerTooltip() {
   // Update the tooltip that appears when you hover over the current player's timer. Use absolute
   // values because time is measured in negative values in non-timed games.
   let time =
-    Math.abs(globals.startingTurnTime) -
-    Math.abs(globals.playerTimes[globals.activePlayerIndex]!);
+    Math.abs(globals.startingTurnTime)
+    - Math.abs(globals.playerTimes[globals.activePlayerIndex]!);
 
   // We subtract the amount of time that passed since the beginning of the turn (as reported by the
   // server in the "clock" message). This is necessary since the client will not know how much time

@@ -28,8 +28,8 @@ export function onEfficiencyChanged(data: {
   //   applicable.
   // - Do not use the efficiency modifier during in-game replays.
   const shouldModifyEff = globals.state.finished
-    ? globals.state.replay.shared !== null &&
-      globals.state.replay.shared.useSharedSegments
+    ? globals.state.replay.shared !== null
+      && globals.state.replay.shared.useSharedSegments
     : globals.state.visibleState === globals.state.ongoingGame;
 
   let { cardsGotten, cardsGottenByNotes } = data;
@@ -152,9 +152,9 @@ export function onPaceOrPaceRiskChanged(data: {
   // Update the pace. (Part of the efficiency statistics on the right-hand side of the screen.) If
   // there are no cards left in the deck, pace is meaningless.
   if (
-    data.pace === null ||
-    data.finalRoundEffectivelyStarted ||
-    globals.options.allOrNothing
+    data.pace === null
+    || data.finalRoundEffectivelyStarted
+    || globals.options.allOrNothing
   ) {
     label.text("-");
     label.fill(LABEL_COLOR);

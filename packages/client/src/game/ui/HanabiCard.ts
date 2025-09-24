@@ -126,8 +126,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private _state: CardState;
   get state(): CardState {
     return (
-      globals.store?.getState().visibleState?.deck[this._state.order] ??
-      this._state
+      globals.store?.getState().visibleState?.deck[this._state.order]
+      ?? this._state
     );
   }
 
@@ -393,8 +393,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       if (this.isMorphed()) {
         const morphedIdentity = this.getMorph()!;
         if (
-          morphedIdentity.rank !== null &&
-          morphedIdentity.suitIndex !== null
+          morphedIdentity.rank !== null
+          && morphedIdentity.suitIndex !== null
         ) {
           return suitIndexToSuit(morphedIdentity.suitIndex, this.variant)!;
         }
@@ -429,8 +429,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       if (this.isMorphed()) {
         const morphedIdentity = this.getMorph()!;
         if (
-          morphedIdentity.rank !== null &&
-          morphedIdentity.suitIndex !== null
+          morphedIdentity.rank !== null
+          && morphedIdentity.suitIndex !== null
         ) {
           return morphedIdentity.rank;
         }
@@ -446,9 +446,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // For stack bases in ongoing games, we want notes to have precedence over the real identity so
     // that players can morph the stack in "Throw It in a Hole" variants.
     if (
-      rankFromNote !== undefined &&
-      this.isStackBase &&
-      !globals.state.finished
+      rankFromNote !== undefined
+      && this.isStackBase
+      && !globals.state.finished
     ) {
       return rankFromNote;
     }
@@ -551,19 +551,19 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // If a card has a "blank" note on it, the user wants to force the card to appear blank.
     if (
-      this.note.blank &&
-      !this.empathy &&
-      !isCardPlayed(this.state) &&
-      !isCardDiscarded(this.state)
+      this.note.blank
+      && !this.empathy
+      && !isCardPlayed(this.state)
+      && !isCardDiscarded(this.state)
     ) {
       return DECK_BACK_IMAGE;
     }
 
     // In Real-Life mode, always show the vanilla card back if the card is not fully revealed.
     if (
-      globals.lobby.settings.realLifeMode &&
-      (suitToShow === null || rankToShow === null) &&
-      !this.isStackBase
+      globals.lobby.settings.realLifeMode
+      && (suitToShow === null || rankToShow === null)
+      && !this.isStackBase
     ) {
       return DECK_BACK_IMAGE;
     }
@@ -604,30 +604,30 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private shouldShowClueBorder() {
     return (
-      this.shouldShowAnyBorder() &&
-      !this.note.unclued &&
-      (isCardClued(this.state) || this.note.clued)
+      this.shouldShowAnyBorder()
+      && !this.note.unclued
+      && (isCardClued(this.state) || this.note.clued)
     );
   }
 
   private shouldShowChopMoveBorder() {
     return (
-      this.note.chopMoved &&
-      this.shouldShowAnyBorder() &&
+      this.note.chopMoved
+      && this.shouldShowAnyBorder()
       // The clue border and the finesse border have precedence over the chop move border
-      !this.shouldShowClueBorder() &&
-      !this.shouldShowFinesseBorder() &&
-      !globals.state.finished
+      && !this.shouldShowClueBorder()
+      && !this.shouldShowFinesseBorder()
+      && !globals.state.finished
     );
   }
 
   private shouldShowFinesseBorder() {
     return (
-      this.note.finessed &&
-      this.shouldShowAnyBorder() &&
+      this.note.finessed
+      && this.shouldShowAnyBorder()
       // The clue border has precedence over the finesse border.
-      !this.shouldShowClueBorder() &&
-      !globals.state.finished
+      && !this.shouldShowClueBorder()
+      && !globals.state.finished
     );
   }
 
@@ -725,38 +725,38 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // Show or hide the "question mark" image.
     this.questionMark.visible(
-      this.note.questionMark &&
-        !this.empathy &&
-        !isCardPlayed(this.state) &&
-        !isCardDiscarded(this.state) &&
-        !globals.state.finished,
+      this.note.questionMark
+        && !this.empathy
+        && !isCardPlayed(this.state)
+        && !isCardDiscarded(this.state)
+        && !globals.state.finished,
     );
 
     // Show or hide the "exclamation mark" image.
     this.exclamationMark.visible(
-      this.note.exclamationMark &&
-        !this.empathy &&
-        !isCardPlayed(this.state) &&
-        !isCardDiscarded(this.state) &&
-        !globals.state.finished,
+      this.note.exclamationMark
+        && !this.empathy
+        && !isCardPlayed(this.state)
+        && !isCardDiscarded(this.state)
+        && !globals.state.finished,
     );
 
     // Show or hide the "trash" image.
     this.trashcan.visible(
-      this.note.knownTrash &&
-        !this.empathy &&
-        !isCardPlayed(this.state) &&
-        !isCardDiscarded(this.state) &&
-        !globals.state.finished,
+      this.note.knownTrash
+        && !this.empathy
+        && !isCardPlayed(this.state)
+        && !isCardDiscarded(this.state)
+        && !globals.state.finished,
     );
 
     // Show or hide the "fix" image.
     this.wrench.visible(
-      this.note.needsFix &&
-        !this.empathy &&
-        !isCardPlayed(this.state) &&
-        !isCardDiscarded(this.state) &&
-        !globals.state.finished,
+      this.note.needsFix
+        && !this.empathy
+        && !isCardPlayed(this.state)
+        && !isCardDiscarded(this.state)
+        && !globals.state.finished,
     );
 
     // Show or hide the direction arrows.
@@ -846,15 +846,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.setCritical(status === CardStatus.Critical);
 
     const isKnownTrash =
-      !isCardPlayed(this.state) &&
-      !isCardDiscarded(this.state) &&
-      this.state.isKnownTrashFromEmpathy;
+      !isCardPlayed(this.state)
+      && !isCardDiscarded(this.state)
+      && this.state.isKnownTrashFromEmpathy;
     this.setTrashMiniIndicator(isKnownTrash);
 
     this.setDDA(
-      this.state.inDoubleDiscard &&
-        status !== CardStatus.Critical &&
-        !isKnownTrash,
+      this.state.inDoubleDiscard
+        && status !== CardStatus.Critical
+        && !isKnownTrash,
     );
   }
 
@@ -883,11 +883,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   private shouldSetDDA(dda: boolean) {
     return (
-      dda &&
-      !this.shouldShowClueBorder() &&
-      this.trashcan.isVisible() === false &&
-      globals.lobby.settings.hyphenatedConventions &&
-      !globals.metadata.hardVariant
+      dda
+      && !this.shouldShowClueBorder()
+      && this.trashcan.isVisible() === false
+      && globals.lobby.settings.hyphenatedConventions
+      && !globals.metadata.hardVariant
     );
   }
 
@@ -899,21 +899,21 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private shouldSetFade(isTrash: boolean) {
     // Override any logic and always fade the card if it is explicitly marked as known trash.
     if (
-      this.trashcan.isVisible() === true &&
-      this.state.numPositiveClues === 0
+      this.trashcan.isVisible() === true
+      && this.state.numPositiveClues === 0
     ) {
       return true;
     }
 
     return (
-      isTrash &&
-      !isCardClued(this.state) &&
-      !isCardPlayed(this.state) &&
-      !isCardDiscarded(this.state) &&
-      !this.note.blank &&
-      !this.note.chopMoved &&
-      !this.variant.throwItInAHole &&
-      !globals.options.speedrun
+      isTrash
+      && !isCardClued(this.state)
+      && !isCardPlayed(this.state)
+      && !isCardDiscarded(this.state)
+      && !this.note.blank
+      && !this.note.chopMoved
+      && !this.variant.throwItInAHole
+      && !globals.options.speedrun
     );
   }
 
@@ -982,13 +982,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private shouldBeRaisedFromClues() {
     // On Keldon mode, only the player should see the cards raised on their own hand.
     const shouldShowOnKeldonMode =
-      this.state.location === globals.metadata.ourPlayerIndex &&
-      !globals.state.finished;
+      this.state.location === globals.metadata.ourPlayerIndex
+      && !globals.state.finished;
 
     return (
-      this.shouldShowClueBorder() &&
-      !this.layout.isDragging() &&
-      (!globals.lobby.settings.keldonMode || shouldShowOnKeldonMode)
+      this.shouldShowClueBorder()
+      && !this.layout.isDragging()
+      && (!globals.lobby.settings.keldonMode || shouldShowOnKeldonMode)
     );
   }
 
@@ -998,10 +998,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
     // Spectators
     if (
-      visible &&
-      !globals.state.playing &&
-      !globals.state.finished &&
-      !this.noteIndicator.rotated
+      visible
+      && !globals.state.playing
+      && !globals.state.finished
+      && !this.noteIndicator.rotated
     ) {
       this.noteIndicator.rotate(15);
       this.noteIndicator.rotated = true;
@@ -1068,11 +1068,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const layoutChild = this.layout;
     if (
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      layoutChild === undefined ||
-      layoutChild.parent === null ||
+      layoutChild === undefined
+      || layoutChild.parent === null
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      layoutChild.parent === undefined ||
-      globals.elements.deck === null
+      || layoutChild.parent === undefined
+      || globals.elements.deck === null
     ) {
       // Do not do anything on first initialization.
       return;
@@ -1243,8 +1243,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const bracketNoteString = `[${noteString}]`;
     // Protect notes like 'k3' whose meaning is preserved by bracketing: '[k3]'
     if (
-      noteHasMeaning(this.variant, currentNote) &&
-      noteEqual(currentNote, parseNote(this.variant, bracketNoteString))
+      noteHasMeaning(this.variant, currentNote)
+      && noteEqual(currentNote, parseNote(this.variant, bracketNoteString))
     ) {
       return bracketNoteString;
     }
@@ -1271,8 +1271,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       : noteText.slice(0, Math.max(lastPipe, 0)).trim();
     // Case of: updating note does not change note meaning.
     if (
-      noteHasMeaning(this.variant, parseNote(this.variant, note)) &&
-      noteEqual(currentNote, parseNote(this.variant, newNoteString))
+      noteHasMeaning(this.variant, parseNote(this.variant, note))
+      && noteEqual(currentNote, parseNote(this.variant, newNoteString))
     ) {
       return;
     }

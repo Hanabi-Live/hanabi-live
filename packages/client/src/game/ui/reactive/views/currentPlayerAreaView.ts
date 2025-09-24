@@ -14,15 +14,15 @@ import { LABEL_COLOR } from "../../constants";
 export function isVisible(state: State): boolean {
   return (
     // Do not show it we happen to have the in-game replay open.
-    !state.replay.active &&
+    !state.replay.active
     // The clue UI should take precedence over the "Current Player" area.
-    (state.ongoingGame.turn.currentPlayerIndex !==
-      state.metadata.ourPlayerIndex ||
-      !state.playing) &&
+    && (state.ongoingGame.turn.currentPlayerIndex
+      !== state.metadata.ourPlayerIndex
+      || !state.playing)
     // The premove cancel button should take precedence over the "Current Player" area.
-    state.premove === null &&
+    && state.premove === null
     // Do not show it if the game is over.
-    state.ongoingGame.turn.currentPlayerIndex !== null
+    && state.ongoingGame.turn.currentPlayerIndex !== null
   );
 }
 
@@ -81,14 +81,14 @@ export function onChanged(
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.lobby.settings.hyphenatedConventions &&
-      isHandLocked(currentPlayerHand, globals.state.ongoingGame.deck)
+      globals.lobby.settings.hyphenatedConventions
+      && isHandLocked(currentPlayerHand, globals.state.ongoingGame.deck)
     ) {
       specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.state.ongoingGame.stats.doubleDiscardCard !== null &&
-      globals.lobby.settings.hyphenatedConventions
+      globals.state.ongoingGame.stats.doubleDiscardCard !== null
+      && globals.lobby.settings.hyphenatedConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill("yellow");
@@ -149,9 +149,9 @@ export function onChanged(
   );
 
   if (
-    globals.animateFast ||
-    previousData === undefined ||
-    !previousData.visible
+    globals.animateFast
+    || previousData === undefined
+    || !previousData.visible
   ) {
     // Immediately snap the arrow in position and do not tween if:
     // 1) we performed an action on our turn and now the "Current Player" area is now visible again
@@ -190,9 +190,9 @@ export function onChanged(
       onFinish: () => {
         if (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          currentPlayerArea.arrow !== undefined &&
+          currentPlayerArea.arrow !== undefined
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          currentPlayerArea.arrow !== null
+          && currentPlayerArea.arrow !== null
         ) {
           currentPlayerArea.arrow.rotation(unmodifiedRotation);
         }

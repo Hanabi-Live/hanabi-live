@@ -176,19 +176,19 @@ export function getCardsGotten(
   // Go through the deck and count the cards that are gotten.
   for (const cardState of deck) {
     if (
-      cardState.location === "playStack" ||
-      (cardState.location === "discard" &&
-        cardState.isMisplayed &&
-        variant.throwItInAHole &&
-        (playing || shadowing))
+      cardState.location === "playStack"
+      || (cardState.location === "discard"
+        && cardState.isMisplayed
+        && variant.throwItInAHole
+        && (playing || shadowing))
     ) {
       // A card is considered to be gotten if it is already played (and failed discards count as
       // played for the purposes of "Throw It in a Hole" variants).
       currentCardsGotten++;
     } else if (
-      isCardInPlayerHand(cardState) &&
-      isCardClued(cardState) &&
-      !isAllCardPossibilitiesTrash(
+      isCardInPlayerHand(cardState)
+      && isCardClued(cardState)
+      && !isAllCardPossibilitiesTrash(
         cardState,
         deck,
         playStacks,
@@ -226,8 +226,8 @@ export function getCardsGottenByNotes(
     const order = i as CardOrder;
 
     if (
-      isCardInPlayerHand(cardState) &&
-      !isAllCardPossibilitiesTrash(
+      isCardInPlayerHand(cardState)
+      && !isAllCardPossibilitiesTrash(
         cardState,
         deck,
         playStacks,
@@ -349,8 +349,8 @@ export function getCluesStillUsableNotRounded(
       endGameLength,
     );
     const minPlaysBeforeFinalRound =
-      getMaxPlays(missingScore, deckSize, endGameLength) -
-      playsDuringFinalRound;
+      getMaxPlays(missingScore, deckSize, endGameLength)
+      - playsDuringFinalRound;
     const missingCardsPerCompletableSuit: number[] = [];
 
     for (const [suitIndex, stackScore] of scorePerStack.entries()) {
@@ -516,11 +516,11 @@ export function getDoubleDiscardCard(
   // that happens to be fully "fill-in" from clues.
   for (const cardInDeck of gameState.deck) {
     if (
-      cardInDeck.order !== cardDiscarded.order &&
-      cardInDeck.suitIndex === cardDiscarded.suitIndex &&
-      cardInDeck.rank === cardDiscarded.rank &&
-      typeof cardInDeck.location === "number" && // The card is in a player's hand
-      cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
+      cardInDeck.order !== cardDiscarded.order
+      && cardInDeck.suitIndex === cardDiscarded.suitIndex
+      && cardInDeck.rank === cardDiscarded.rank
+      && typeof cardInDeck.location === "number" // The card is in a player's hand
+      && cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
     ) {
       return null;
     }

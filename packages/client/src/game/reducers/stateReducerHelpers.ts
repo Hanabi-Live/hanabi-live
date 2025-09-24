@@ -19,11 +19,11 @@ export function shouldStoreSegment(
   // segment of the previous action. Any new end conditions must also be updated in the "gameOver"
   // block in "turnReducer.ts".
   if (
-    action.type === "gameOver" &&
-    action.endCondition !== EndCondition.Timeout &&
-    action.endCondition !== EndCondition.TerminatedByPlayer &&
-    action.endCondition !== EndCondition.TerminatedByVote &&
-    action.endCondition !== EndCondition.IdleTimeout
+    action.type === "gameOver"
+    && action.endCondition !== EndCondition.Timeout
+    && action.endCondition !== EndCondition.TerminatedByPlayer
+    && action.endCondition !== EndCondition.TerminatedByVote
+    && action.endCondition !== EndCondition.IdleTimeout
   ) {
     return true;
   }

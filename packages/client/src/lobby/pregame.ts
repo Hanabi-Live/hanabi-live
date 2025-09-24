@@ -515,8 +515,8 @@ export function drawSpectators(tableID: number): void {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
     if (
-      spectator.shadowingPlayerIndex !== undefined &&
-      spectator.shadowingPlayerIndex !== -1
+      spectator.shadowingPlayerIndex !== undefined
+      && spectator.shadowingPlayerIndex !== -1
     ) {
       if (spectator.name === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
@@ -546,12 +546,12 @@ export function toggleStartGameButton(): void {
   }
 
   if (
-    globals.game.owner === globals.userID &&
-    globals.game.players.length >= MIN_PLAYERS &&
-    globals.game.players.length <= MAX_PLAYERS &&
+    globals.game.owner === globals.userID
+    && globals.game.players.length >= MIN_PLAYERS
+    && globals.game.players.length <= MAX_PLAYERS
     // If this field is not equal to null it means that we are waiting a short time to re-enable the
     // button after a player joined.
-    globals.enableStartGameButtonTimeout === null
+    && globals.enableStartGameButtonTimeout === null
   ) {
     $("#nav-buttons-pregame-start").removeClass("disabled");
   }

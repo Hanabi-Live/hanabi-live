@@ -18,8 +18,8 @@ export function HanabiCardClick(
   // Speedrunning overrides the normal card clicking behavior. (But only use the speedrunning
   // behavior if we are an active player.)
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
-    globals.state.playing
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.playing
   ) {
     return;
   }
@@ -61,9 +61,9 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 
   // If we are in "edit cards" mode, left clicking a card morphs it.
   if (
-    globals.elements.editCardsButton !== null &&
-    globals.elements.editCardsButton.pressed &&
-    globals.state.replay.hypothetical !== null
+    globals.elements.editCardsButton !== null
+    && globals.elements.editCardsButton.pressed
+    && globals.state.replay.hypothetical !== null
   ) {
     clickMorph(card);
     return;
@@ -72,23 +72,23 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   // A Ctrl + left-click also opens the node tooltip, since on some mac devices, right-click is not
   // available.
   if (
-    event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    !globals.state.finished
+    event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && !globals.state.finished
   ) {
     preOpenNoteEditTooltip(card);
     return;
   }
 
   if (
-    event.ctrlKey || // No actions in this function use modifiers other than alt.
-    event.shiftKey ||
-    event.metaKey ||
-    card.isStackBase || // Disable clicking on the stack base
+    event.ctrlKey // No actions in this function use modifiers other than alt.
+    || event.shiftKey
+    || event.metaKey
+    || card.isStackBase  // Disable clicking on the stack base
     // No replay actions should happen in a hypothetical.
-    globals.state.replay.hypothetical !== null
+    || globals.state.replay.hypothetical !== null
   ) {
     return;
   }
@@ -114,8 +114,8 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
       card.state.order,
     );
   } else if (
-    isCardDiscarded(card.state) &&
-    card.state.segmentDiscarded !== null
+    isCardDiscarded(card.state)
+    && card.state.segmentDiscarded !== null
   ) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded.
     replay.goToSegmentAndIndicateCard(
@@ -133,8 +133,8 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
 
   // Middle clicking on a card goes to the turn it was first clued.
   if (
-    card.state.segmentFirstClued !== null &&
-    !card.isStackBase // Disable this functionality for the stack base
+    card.state.segmentFirstClued !== null
+    && !card.isStackBase // Disable this functionality for the stack base
   ) {
     // We add one to the segment so that the clue is visible. (If we go to the turn that the card
     // was clued, then the actual clue has not happened yet.)
@@ -145,13 +145,13 @@ function clickMiddle(card: HanabiCard, event: MouseEvent) {
 function clickRight(card: HanabiCard, event: MouseEvent) {
   // Alt + right-click is a card morph (in a hypothetical).
   if (
-    globals.state.replay.hypothetical !== null &&
-    (globals.state.replay.shared === null ||
-      globals.state.replay.shared.amLeader) &&
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    event.altKey &&
-    !event.metaKey
+    globals.state.replay.hypothetical !== null
+    && (globals.state.replay.shared === null
+      || globals.state.replay.shared.amLeader)
+    && !event.ctrlKey
+    && !event.shiftKey
+    && event.altKey
+    && !event.metaKey
   ) {
     clickMorph(card);
     return;
@@ -162,10 +162,10 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // work no matter what modifiers are being pressed, in case someone is pushing their push-to-talk
   // hotkey while highlighting cards.)
   if (
-    globals.state.finished &&
-    (globals.state.replay.shared === null ||
-      (globals.state.replay.shared.amLeader &&
-        globals.state.replay.shared.useSharedSegments))
+    globals.state.finished
+    && (globals.state.replay.shared === null
+      || (globals.state.replay.shared.amLeader
+        && globals.state.replay.shared.useSharedSegments))
   ) {
     arrows.toggle(card.state.order);
     return;
@@ -182,11 +182,11 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   // to enable this functionality in shared replays because it could be misleading as to who the
   // real replay leader is.
   if (
-    event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    globals.state.replay.shared === null
+    event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && globals.state.replay.shared === null
   ) {
     arrows.toggle(card.state.order);
     return;

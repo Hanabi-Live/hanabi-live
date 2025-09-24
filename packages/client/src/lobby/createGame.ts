@@ -58,9 +58,9 @@ export function init(): void {
 
     const maxPlayers = parseIntSafe(value);
     if (
-      maxPlayers === undefined ||
-      maxPlayers < MIN_PLAYERS ||
-      maxPlayers > MAX_PLAYERS
+      maxPlayers === undefined
+      || maxPlayers < MIN_PLAYERS
+      || maxPlayers > MAX_PLAYERS
     ) {
       element.val(DEFAULT_CREATE_TABLE_MAX_PLAYERS);
     }
@@ -606,14 +606,14 @@ export function ready(): boolean {
 
   // Hide the extra options if we do not have any selected.
   if (
-    !globals.settings.createTableSpeedrun &&
-    !globals.settings.createTableCardCycle &&
-    !globals.settings.createTableDeckPlays &&
-    !globals.settings.createTableEmptyClues &&
-    !globals.settings.createTableOneExtraCard &&
-    !globals.settings.createTableOneLessCard &&
-    !globals.settings.createTableAllOrNothing &&
-    !globals.settings.createTableDetrimentalCharacters
+    !globals.settings.createTableSpeedrun
+    && !globals.settings.createTableCardCycle
+    && !globals.settings.createTableDeckPlays
+    && !globals.settings.createTableEmptyClues
+    && !globals.settings.createTableOneExtraCard
+    && !globals.settings.createTableOneLessCard
+    && !globals.settings.createTableAllOrNothing
+    && !globals.settings.createTableDetrimentalCharacters
   ) {
     $("#create-game-extra-options").hide();
     $("#create-game-show-extra-options-row").show();

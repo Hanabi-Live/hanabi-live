@@ -37,9 +37,9 @@ export function onSpectatorsChanged(data: {
       // Spectators can also be shadowing a specific player. However, only show this in ongoing
       // games. (Perspective shifts in replays are inconsequential.)
       if (
-        spectator.shadowingPlayerIndex !== undefined &&
-        spectator.shadowingPlayerIndex !== -1 &&
-        !data.finished
+        spectator.shadowingPlayerIndex !== undefined
+        && spectator.shadowingPlayerIndex !== -1
+        && !data.finished
       ) {
         const playerName =
           globals.metadata.playerNames[spectator.shadowingPlayerIndex];

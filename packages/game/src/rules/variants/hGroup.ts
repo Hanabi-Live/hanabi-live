@@ -11,12 +11,12 @@ export function isHardVariant(
 ): boolean {
   // Some variants are defined as always being hard, regardless of what the efficiency is.
   if (
-    isColorMute(variant) ||
-    isNumberMute(variant) ||
-    variant.throwItInAHole ||
-    variant.cowAndPig ||
-    variant.duck ||
-    variant.upOrDown
+    isColorMute(variant)
+    || isNumberMute(variant)
+    || variant.throwItInAHole
+    || variant.cowAndPig
+    || variant.duck
+    || variant.upOrDown
   ) {
     return true;
   }

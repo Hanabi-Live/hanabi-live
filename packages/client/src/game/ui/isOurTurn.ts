@@ -9,15 +9,15 @@ export function isOurTurn(): boolean {
   if (globals.state.replay.hypothetical !== null) {
     // It is always the replay leader's turn in a hypothetical.
     return (
-      globals.state.replay.shared === null ||
-      globals.state.replay.shared.amLeader
+      globals.state.replay.shared === null
+      || globals.state.replay.shared.amLeader
     );
   }
 
   // Handle the case of an ongoing game.
   return (
-    globals.state.playing &&
-    globals.state.ongoingGame.turn.currentPlayerIndex ===
-      globals.metadata.ourPlayerIndex
+    globals.state.playing
+    && globals.state.ongoingGame.turn.currentPlayerIndex
+      === globals.metadata.ourPlayerIndex
   );
 }

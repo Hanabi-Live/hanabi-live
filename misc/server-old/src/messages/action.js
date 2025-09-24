@@ -83,10 +83,10 @@ const step1 = (socket, data) => {
     game.discardSignalOutstanding = false;
   }
   if (
-    game.reorderCards &&
-    game.discardSignalOutstanding &&
-    data.type !== 1 && // (it doesn't happen on a play or a deck-play)
-    data.type !== 3
+    game.reorderCards
+    && game.discardSignalOutstanding
+    && data.type !== 1 // (it doesn't happen on a play or a deck-play)
+    && data.type !== 3
   ) {
     // Find the chop card
     const chopIndex = getChopIndex(data);
@@ -720,10 +720,10 @@ function checkEnd(data) {
 
   // Check to see if the maximum score has been reached
   if (
-    (game.variant === 0 && game.score === 25) ||
-    (game.variant === 1 && game.score === 30) ||
-    (game.variant === 2 && game.score === 30) ||
-    (game.variant === 3 && game.score === 30)
+    (game.variant === 0 && game.score === 25)
+    || (game.variant === 1 && game.score === 30)
+    || (game.variant === 2 && game.score === 30)
+    || (game.variant === 3 && game.score === 30)
   ) {
     logger.info("Maximum score reached; ending the game.");
     data.end = true;
@@ -741,9 +741,9 @@ function checkEnd(data) {
       const card = game.deck[j];
       // logger.info(`Card #${j} in the deck is: ${globals.suits[card.suit]} ${card.rank} (discarded: ${card.discarded})`);
       if (
-        card.suit === neededSuit &&
-        card.rank === neededRank &&
-        !card.discarded
+        card.suit === neededSuit
+        && card.rank === neededRank
+        && !card.discarded
       ) {
         return;
       }
