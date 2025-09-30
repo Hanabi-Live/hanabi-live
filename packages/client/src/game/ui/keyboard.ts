@@ -39,20 +39,23 @@ const playDiscardCard = getHTMLInputElement("#play-discard-card");
 const playDiscardMessage = getHTMLElement("#play-discard-message");
 const playDiscardTitle = getHTMLElement("#play-discard-title");
 
+function selectNextPlayerTarget() {
+  if (globals.state.replay.hypothetical === null) {
+    globals.elements.clueTargetButtonGroup!.selectNextTarget();
+  } else {
+    globals.elements.clueTargetButtonGroup2!.selectNextTarget();
+  }
+}
+
 // Build a mapping of hotkeys to functions.
 export function init(): void {
   hotkeyClueMap.clear();
   hotkeyPlayMap.clear();
   hotkeyDiscardMap.clear();
 
-  // Add "Tab" for player selection.
-  hotkeyClueMap.set(KeyCode.KEY_TAB, () => {
-    if (globals.state.replay.hypothetical === null) {
-      globals.elements.clueTargetButtonGroup!.selectNextTarget();
-    } else {
-      globals.elements.clueTargetButtonGroup2!.selectNextTarget();
-    }
-  });
+  // Add Tab and semicolon for player selection.
+  hotkeyClueMap.set(KeyCode.KEY_TAB, selectNextPlayerTarget);
+  hotkeyClueMap.set(KeyCode.KEY_SEMICOLON, selectNextPlayerTarget);
 
   // Add "1", "2", "3", "4", and "5" (for rank clues).
   for (const [
