@@ -453,7 +453,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
   - Play a card: `a` or `+` (will prompt for the slot number)
   - Discard a card: `d` or `-` (will prompt for the slot number)
   - Clue:
-    - `Tab` to select a player
+    - `Tab` or semicolon `;` to select a player
     - `1`, `2`, `3`, `4`, `5` for a rank clue
     - Or `q`, `w`, `e`, `r`, `t` for a color clue
     - Then `Ctrl + Enter` to submit
