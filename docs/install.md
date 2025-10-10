@@ -208,7 +208,7 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - If you are in development, see [Running the Server in Development](#running-the-server-in-development).
-- If you are in production, see [Install as a Service](#install-as-a-service-optional).
+- If you are in production, see [Running the Server in Production](#running-the-server-in-production).
 
 <br />
 
@@ -235,6 +235,23 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 
 <br />
 
+## Running the Server in Production
+
+### Install as a Service (optional)
+
+This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
+
+- Install Supervisor and install the service:
+  - `./install/install_supervisor.sh`
+
+To manage the service:
+
+- Start it: `supervisorctl start hanabi-live`
+- Stop it: `supervisorctl stop hanabi-live`
+- Restart it: `supervisorctl restart hanabi-live`
+
+<br />
+
 ### Set up `iptables` (Optional)
 
 - `sudo apt install iptables-persistent -y`
@@ -249,21 +266,6 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - `sudo iptables -A INPUT -p tcp --dport 8081 -s localhost -j ACCEPT`
 - `sudo iptables -A INPUT -j DROP`
 - `sudo iptables-save > /etc/iptables/rules.v4`
-
-<br />
-
-### Install as a Service (optional)
-
-This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
-
-- Install Supervisor and install the service:
-  - `./install/install_supervisor.sh`
-
-To manage the service:
-
-- Start it: `supervisorctl start hanabi-live`
-- Stop it: `supervisorctl stop hanabi-live`
-- Restart it: `supervisorctl restart hanabi-live`
 
 <br />
 
