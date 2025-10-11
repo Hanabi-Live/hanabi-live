@@ -225,7 +225,7 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - If you update any Golang files, you will have to manually stop and start the server.
 - If you update any TypeScript files, you will have to manually refresh the page to pick up the new changes.
 - If you update any CSS files, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes a long time, but you only need to run it once before committing your changes.
-- You can also go to "http://localhost/login=test1" to automatically log in as "test1", "http://localhost/login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
+- You can also go to "http://localhost/?login=test1" to automatically log in as "test1", "http://localhost/?login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
 
 <br />
 
