@@ -189,7 +189,6 @@ func main() {
 
 	// Record the time that the server started
 	datetimeStarted = time.Now()
-
 	// Restore tables that were ongoing at the time of the last server restart
 	restoreTables()
 

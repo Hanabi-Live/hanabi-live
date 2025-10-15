@@ -11,6 +11,10 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { z } from "zod";
+
+export const SoundMoveSchema = z.enum(["every_move", "my_move", "disabled"]);
+export type SoundMove = z.infer<typeof SoundMoveSchema>;
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -31,7 +35,7 @@ export const userSettingsTable = pgTable("user_settings", {
     .notNull()
     .references(() => usersTable.id),
   desktopNotification: boolean("desktop_notification").notNull().default(false),
-  soundMove: boolean("sound_move").notNull().default(true),
+  soundMove: text("sound_move").notNull().default("every_move"),
   soundTimer: boolean("sound_timer").notNull().default(true),
   keldonMode: boolean("keldon_mode").notNull().default(false),
   colorblindMode: boolean("colorblind_mode").notNull().default(false),

@@ -23,9 +23,11 @@ export const userSettings = {
       return;
     }
 
-    // A type assertion is necessary since the `createTableMaxPlayers` field is a number.
-    return row as Omit<typeof row, "createTableMaxPlayers"> & {
-      createTableMaxPlayers: NumPlayers;
+    // Convert database row to match Settings type
+    return {
+      ...row,
+      createTableMaxPlayers: row.createTableMaxPlayers as NumPlayers,
+      soundMove: row.soundMove as Settings["soundMove"],
     };
   },
 };
