@@ -1528,7 +1528,7 @@
         </p>
         <p>
             <select id="soundMove">
-              <option value="every-move">Play a sound when a move is made</option>
+              <option value="every-move">Play a sound when a move is lo</option>
               <option value="own-move">Play a sound when it's my turn</option>
               <option value="disabled">No Sound</option>
             </select>

@@ -22,7 +22,7 @@ export function onNewSoundEffect(
     | undefined,
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const soundMove = globals.lobby.settings.soundMove ?? "every_move";
+  const soundMove = globals.lobby.settings.soundMove ?? "2";
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
     (previousData === undefined && data.gameState.turn.turnNum !== 0)
@@ -33,9 +33,9 @@ export function onNewSoundEffect(
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.
-    || (soundMove === "my_move" && !isOurTurn())
+    || (soundMove === 1 && !isOurTurn())
     // Do not play sounds if the user does not have sound effects enabled.
-    || soundMove === "disabled"
+    || soundMove === 0
   ) {
     return;
   }

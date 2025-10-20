@@ -61,23 +61,21 @@ export function init(): void {
 
   $("#soundMove").change(function settingsSoundMoveChange(this: HTMLElement) {
     const element = $(this);
-    const soundMove = element.val();
+    const soundMove = Number(element.val());
 
-    console.log("Dropdown changed to:", soundMove);
-
-    if (typeof soundMove !== "string") {
+    if (typeof soundMove !== "number") {
       throw new TypeError(
-        `The value of the "#soundMove" element is not a string: ${soundMove}`,
+        `The value of the "#soundMove" element is not a number: ${soundMove}`,
       );
     }
 
     globals.settings = {
       ...globals.settings,
-      soundMove: soundMove as "every_move" | "my_move" | "disabled",
+      soundMove,
     };
     globals.conn!.send("setting", {
       name: "soundMove",
-      setting: soundMove, // The server expects all setting values as strings
+      setting: soundMove.toString(), // The server expects all setting values as strings
     });
   });
 }
@@ -96,17 +94,19 @@ export function setPlayerSettings(): void {
       $("#settings-volume-slider").val(value);
       $("#settings-volume-slider-value").html(`${value}%`);
     } else if (setting === "soundMove") {
-      let stringValue: string;
+      let intValue: number;
 
-      if (typeof value === "string") {
-        stringValue = value;
+      if (typeof value === "number") {
+        intValue = value;
+      } else if (typeof value === "string") {
+        intValue = Number.parseInt(value, 10);
       } else if (typeof value === "boolean") {
-        stringValue = value ? "every_move" : "disabled";
+        intValue = value ? 2 : 0;
       } else {
-        throw new TypeError("The soundMove setting is not stored as a string.");
+        throw new TypeError("The soundMove setting is not stored as a number.");
       }
 
-      $("#soundMove").val(stringValue);
+      $("#soundMove").val(intValue);
     } else {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
@@ -119,6 +119,7 @@ export function setPlayerSettings(): void {
 }
 
 function changeSetting(this: HTMLElement) {
+  console.log("Changing a setting.");
   const element = $(this);
   const settingName = element.attr("id");
   if (settingName === undefined || settingName === "") {

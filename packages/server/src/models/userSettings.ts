@@ -27,7 +27,6 @@ export const userSettings = {
     return {
       ...row,
       createTableMaxPlayers: row.createTableMaxPlayers as NumPlayers,
-      soundMove: row.soundMove as Settings["soundMove"],
     };
   },
 };

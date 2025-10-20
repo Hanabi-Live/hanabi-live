@@ -10,10 +10,7 @@ export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
 export const settings = z
   .object({
     desktopNotification: z.boolean().default(false),
-
-    soundMove: z
-      .enum(["every_move", "my_move", "disabled"])
-      .default("every_move"),
+    soundMove: z.int().min(0).max(3).default(2),
     soundTimer: z.boolean().default(true),
     keldonMode: z.boolean().default(false),
     colorblindMode: z.boolean().default(false),

@@ -16,6 +16,9 @@ import (
 //	  name: 'soundMove',
 //	  setting: 'false', // All setting values must be strings
 //	}
+
+// I turned all logger.Debug calls into comments because they weren't
+// returning anything anyway for some reason, can't figure out why.
 func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	// Validate the setting name
 	if d.Name == "" {
@@ -27,8 +30,11 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	valid := false
 	for i := 0; i < settings.NumField(); i++ {
 		field := settings.Type().Field(i)
+		// logger.Debug("Checking field: " + field.Name + ", i: " + strconv.Itoa(i))
 		fieldTag := string(field.Tag)            // e.g. json:"desktopNotification"
 		fieldTag = fieldTag[6 : len(fieldTag)-1] // e.g. desktopNotification
+		// logger.Debug("Field tag: " + fieldTag)
+		// logger.Debug("d.Name :" + fieldTag)
 		if fieldTag == d.Name {
 			fieldType = field.Type.String()
 			valid = true
@@ -42,8 +48,9 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 
 	// Validate the setting value
 	if d.Name == "soundMove" {
-		if d.Setting == "" {
-			s.Warning("The setting of \"" + d.Name + "\" cannot be blank.")
+		// logger.Debug("Validating soundMove setting: " + d.Setting)
+		if d.Setting != "1" && d.Setting != "2" && d.Setting != "0" {
+			s.Warning("The setting of \"" + d.Name + "\" is invalid.")
 			return
 		}
 	} else if fieldType == "bool" {

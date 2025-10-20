@@ -11,7 +11,7 @@ type UserSettings struct{}
 
 type Settings struct {
 	DesktopNotification              bool    `json:"desktopNotification"`
-	SoundMove                        string  `json:"soundMove"`
+	SoundMove                        int     `json:"soundMove"`
 	SoundTimer                       bool    `json:"soundTimer"`
 	KeldonMode                       bool    `json:"keldonMode"`
 	ColorblindMode                   bool    `json:"colorblindMode"`
@@ -42,7 +42,7 @@ var (
 	// The database schema must also be configured with any default settings
 	// This cannot be a pointer because we need to copy it
 	defaultSettings = Settings{ // nolint: exhaustivestruct
-		SoundMove:                     "every-move",
+		//SoundMove:                     2,
 		SoundTimer:                    true,
 		Volume:                        50,
 		CreateTableVariant:            DefaultVariantName,
@@ -53,11 +53,10 @@ var (
 
 func (*UserSettings) Get(userID int) (Settings, error) {
 	settings := Settings{}
-
+	//remember to add sound_move back later
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			desktop_notification,
-			sound_move,
 			sound_timer,
 			keldon_mode,
 			colorblind_mode,
@@ -86,7 +85,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		WHERE user_id = $1
 	`, userID).Scan(
 		&settings.DesktopNotification,
-		&settings.SoundMove,
+		//&settings.SoundMove,
 		&settings.SoundTimer,
 		&settings.KeldonMode,
 		&settings.ColorblindMode,
