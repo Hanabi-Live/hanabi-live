@@ -79,8 +79,8 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     if (action !== null) {
       actions.push(action);
       if (
-        topOfDeck < gameJSON.deck.length &&
-        (action.type === "discard" || action.type === "play")
+        topOfDeck < gameJSON.deck.length
+        && (action.type === "discard" || action.type === "play")
       ) {
         actions.push(drawCard(currentPlayerIndex, topOfDeck, deck));
         topOfDeck++;
@@ -208,12 +208,8 @@ export function loadGameJSON(gameJSON: JSONGame): State {
           );
 
           if (
-            shouldStoreSegment(
-              nextState.turn.segment,
-              s.turn.segment,
-              action,
-            ) &&
-            nextState.turn.segment !== null
+            shouldStoreSegment(nextState.turn.segment, s.turn.segment, action)
+            && nextState.turn.segment !== null
           ) {
             states[nextState.turn.segment] = nextState;
           }
@@ -246,8 +242,8 @@ export function loadGameJSON(gameJSON: JSONGame): State {
     );
 
     if (
-      shouldStoreSegment(nextState.turn.segment, previousSegment, action) &&
-      nextState.turn.segment !== null
+      shouldStoreSegment(nextState.turn.segment, previousSegment, action)
+      && nextState.turn.segment !== null
     ) {
       states[nextState.turn.segment] = nextState;
     }

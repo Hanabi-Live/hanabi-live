@@ -63,9 +63,9 @@ export function goToSegment(
   const newSegment = clamp(segment, 0, finalSegment);
   if (currentSegment === newSegment) {
     if (
-      newSegment === finalSegment &&
-      globals.state.replay.hypothetical === null &&
-      !globals.state.finished
+      newSegment === finalSegment
+      && globals.state.replay.hypothetical === null
+      && !globals.state.finished
     ) {
       exit();
     }
@@ -85,10 +85,10 @@ export function goToSegment(
   // allow users to go off on their own side adventure through the game. However, if we are
   // navigating to a new segment as the shared replay leader, do not disable shared segments.
   if (
-    breakFree &&
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.useSharedSegments &&
-    !globals.state.replay.shared.amLeader
+    breakFree
+    && globals.state.replay.shared !== null
+    && globals.state.replay.shared.useSharedSegments
+    && !globals.state.replay.shared.amLeader
   ) {
     globals.store!.dispatch({
       type: "replayUseSharedSegments",
@@ -102,9 +102,9 @@ export function goToSegment(
   });
 
   if (
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.shared.useSharedSegments
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.shared.useSharedSegments
   ) {
     globals.store!.dispatch({
       type: "replaySharedSegment",
@@ -246,8 +246,8 @@ function positionReplayShuttle(
 ) {
   let finalSegment = globals.state.ongoingGame.turn.segment;
   if (
-    finalSegment === null || // The final segment is null during initialization
-    finalSegment === 0 // The final segment is 0 before a move is made
+    finalSegment === null // The final segment is null during initialization
+    || finalSegment === 0 // The final segment is 0 before a move is made
   ) {
     // For the purposes of the replay shuttle calculation, we need to assume that there are at least
     // two possible locations.
@@ -256,9 +256,9 @@ function positionReplayShuttle(
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
   const x =
-    globals.elements.replayBar!.x() +
-    (sliderW / finalSegment) * targetSegment +
-    shuttle.width() / 2;
+    globals.elements.replayBar!.x()
+    + (sliderW / finalSegment) * targetSegment
+    + shuttle.width() / 2;
   let y = globals.elements.replayBar!.y() + shuttle.height() * 0.55;
   if (smaller) {
     y -= 0.003 * winH;
@@ -283,9 +283,9 @@ export function adjustShuttles(fast: boolean): void {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller.
   let smaller = false;
   if (
-    globals.state.replay.shared !== null &&
-    !globals.state.replay.shared.useSharedSegments &&
-    globals.state.replay.segment === globals.state.replay.shared.segment
+    globals.state.replay.shared !== null
+    && !globals.state.replay.shared.useSharedSegments
+    && globals.state.replay.segment === globals.state.replay.shared.segment
   ) {
     smaller = true;
   }
@@ -310,9 +310,10 @@ export function adjustShuttles(fast: boolean): void {
       globals.elements.replayShuttleShared!,
       globals.state.replay.shared.segment,
       false,
-      fast ||
-        (draggingShuttle &&
-          globals.state.replay.shared.segment === globals.state.replay.segment),
+      fast
+        || (draggingShuttle
+          && globals.state.replay.shared.segment
+            === globals.state.replay.segment),
     );
   }
 }

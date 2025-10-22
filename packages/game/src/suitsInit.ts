@@ -145,6 +145,13 @@ export function suitsInit(
     }
     const prism = suitJSON.prism ?? false;
 
+    if (suitJSON.inverted === false) {
+      throw new Error(
+        `The "inverted" property for the suit "${suitJSON.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+      );
+    }
+    const inverted = suitJSON.inverted ?? false;
+
     // Construct the suit object and add it to the map.
     const suit: Suit = {
       // Mandatory properties
@@ -168,6 +175,7 @@ export function suitsInit(
       allClueRanks,
       noClueRanks,
       prism,
+      inverted,
 
       reversed: false,
     };
@@ -208,9 +216,9 @@ function getSuitClueColors(
 
   // Some special suits do not have clue colors explicitly assigned to them.
   if (
-    suitJSON.allClueColors === true ||
-    suitJSON.noClueColors === true ||
-    suitJSON.prism === true
+    suitJSON.allClueColors === true
+    || suitJSON.noClueColors === true
+    || suitJSON.prism === true
   ) {
     return [];
   }

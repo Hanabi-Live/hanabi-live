@@ -84,6 +84,19 @@ func (v *Variant) HasReversedSuits() bool {
 	return false
 }
 
+func (v *Variant) HasInvertedSuits() bool {
+	for _, s := range v.Suits {
+		if s.Inverted {
+			return true
+		}
+	}
+	return false
+}
+
+func (v *Variant) IsSuitInverted(suitIndex int) bool {
+	return v.Suits[suitIndex].Inverted
+}
+
 func (v *Variant) GetDeckSize() int {
 	deckSize := 0
 	for _, s := range v.Suits {

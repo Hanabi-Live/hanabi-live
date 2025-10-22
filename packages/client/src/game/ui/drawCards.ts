@@ -69,8 +69,8 @@ export function drawCards(
     ] as const) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card.
       if (
-        suit.name === "Unknown" &&
-        (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
+        suit.name === "Unknown"
+        && (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
       ) {
         continue;
       }
@@ -132,10 +132,10 @@ export function drawCards(
           drawText(ctx, textYPos, rankLabel, enableShadows);
         }
         if (
-          variant.specialRankDeceptive &&
-          rank === variant.specialRank &&
-          suit.name !== "Unknown" &&
-          !suit.noClueRanks
+          variant.specialRankDeceptive
+          && rank === variant.specialRank
+          && suit.name !== "Unknown"
+          && !suit.noClueRanks
         ) {
           const deceptiveRank =
             variant.clueRanks[suitIndex % variant.clueRanks.length]!;
@@ -403,13 +403,13 @@ function makeDeckBack(
 
     // Transform polar to cartesian coordinates.
     const x =
-      -1.05 *
-      Math.floor(
+      -1.05
+      * Math.floor(
         CARD_W * 0.7 * Math.cos((-suitIndex / nSuits + 0.25) * Math.PI * 2),
       );
     const y =
-      -1.05 *
-      Math.floor(
+      -1.05
+      * Math.floor(
         CARD_W * 0.7 * Math.sin((-suitIndex / nSuits + 0.25) * Math.PI * 2),
       );
 
@@ -632,17 +632,17 @@ function getSuitStyle(
 
     if (rank === variant.specialRank) {
       const allClueColors =
-        suit.allClueColors ||
-        (variant.specialRankAllClueColors && !suit.noClueColors);
+        suit.allClueColors
+        || (variant.specialRankAllClueColors && !suit.noClueColors);
       const noClueColors =
-        suit.noClueColors ||
-        (variant.specialRankNoClueColors && !suit.allClueColors);
+        suit.noClueColors
+        || (variant.specialRankNoClueColors && !suit.allClueColors);
       const allClueRanks =
-        suit.allClueRanks ||
-        (variant.specialRankAllClueRanks && !suit.noClueRanks);
+        suit.allClueRanks
+        || (variant.specialRankAllClueRanks && !suit.noClueRanks);
       const noClueRanks =
-        suit.noClueRanks ||
-        (variant.specialRankNoClueRanks && !suit.allClueRanks);
+        suit.noClueRanks
+        || (variant.specialRankNoClueRanks && !suit.allClueRanks);
       const dark = suit.oneOfEach;
 
       if (allClueColors) {

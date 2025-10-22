@@ -113,15 +113,15 @@ function mouseDown(
   }
 
   const editMode =
-    globals.elements.editCardsButton !== null &&
-    globals.elements.editCardsButton.pressed &&
-    globals.state.replay.hypothetical !== null;
+    globals.elements.editCardsButton !== null
+    && globals.elements.editCardsButton.pressed
+    && globals.state.replay.hypothetical !== null;
   // Empathy
   if (
-    event.evt.buttons === 1 && // Only enable Empathy for left-clicks
-    shouldShowEmpathy(this, event) &&
-    !editMode &&
-    !checkForHypoEmpathy(this)
+    event.evt.buttons === 1 // Only enable Empathy for left-clicks
+    && shouldShowEmpathy(this, event)
+    && !editMode
+    && !checkForHypoEmpathy(this)
   ) {
     setEmpathyOnHand(this, true);
   }
@@ -158,8 +158,8 @@ function checkShowNoteTooltip(card: HanabiCard) {
   }
 
   if (
-    card.noteIndicator.isVisible() === false &&
-    card.state.location !== "playStack"
+    card.noteIndicator.isVisible() === false
+    && card.state.location !== "playStack"
   ) {
     // Do not do anything if there is not a note on this card in hand.
     return;
@@ -186,9 +186,9 @@ function getCursorType(card: HanabiCard) {
   }
 
   if (
-    globals.elements.editCardsButton !== null &&
-    globals.elements.editCardsButton.pressed &&
-    globals.state.replay.hypothetical !== null
+    globals.elements.editCardsButton !== null
+    && globals.elements.editCardsButton.pressed
+    && globals.state.replay.hypothetical !== null
   ) {
     return "edit";
   }
@@ -219,8 +219,8 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // For ongoing games, always show the cursor for other people's hands.
   if (
-    typeof card.state.location === "number" &&
-    card.state.location !== globals.metadata.ourPlayerIndex
+    typeof card.state.location === "number"
+    && card.state.location !== globals.metadata.ourPlayerIndex
   ) {
     return true;
   }
@@ -229,8 +229,8 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // Check if there exists a possibility from clues that the note declares impossible.
   const noteNarrowsPossibilities =
-    card.note.possibilities.length > 0 &&
-    card.state.possibleCardsFromClues.some(
+    card.note.possibilities.length > 0
+    && card.state.possibleCardsFromClues.some(
       ([suitIndexA, rankA]) =>
         !card.note.possibilities.some(
           ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
@@ -254,8 +254,8 @@ function checkHideNoteTooltip(card: HanabiCard) {
 
 function useSpeedrunClickHandlers() {
   return (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
-    globals.state.playing
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.playing
   );
 }
 
@@ -265,17 +265,17 @@ function shouldShowEmpathy(
 ) {
   return (
     // Disable Empathy if a modifier key is pressed.
-    !event.evt.shiftKey &&
-    !event.evt.altKey &&
-    !event.evt.metaKey &&
+    !event.evt.shiftKey
+    && !event.evt.altKey
+    && !event.evt.metaKey
     // Disable Empathy if the card is tweening (e.g. moving)
-    !card.tweening &&
+    && !card.tweening
     // Disable empathy for the stack bases.
-    !card.isStackBase &&
+    && !card.isStackBase
     // Clicking on a played card goes to the turn that it was played.
-    !isCardPlayed(card.state) &&
+    && !isCardPlayed(card.state)
     // Clicking on a discarded card goes to the turn that it was discarded.
-    !isCardDiscarded(card.state)
+    && !isCardDiscarded(card.state)
   );
 }
 
@@ -319,9 +319,9 @@ function dragStart(card: HanabiCard) {
   // temporarily remove all rotation (for the duration of the drag). The rotation will be
   // automatically reset if the card tweens back to the hand.
   if (
-    globals.state.replay.hypothetical !== null &&
-    card.layout.parent !== null &&
-    globals.lobby.settings.keldonMode
+    globals.state.replay.hypothetical !== null
+    && card.layout.parent !== null
+    && globals.lobby.settings.keldonMode
   ) {
     card.layout.rotation(card.layout.parent.rotation() * -1);
   }
@@ -372,9 +372,9 @@ function checkForHypoEmpathy(card: HanabiCard): boolean {
   if (globals.state.replay.hypothetical !== null) {
     const { startingPlayerIndex } = globals.state.replay.hypothetical;
     if (
-      startingPlayerIndex === null ||
-      startingPlayerIndex >= globals.elements.playerHands.length ||
-      globals.elements.playerHands[startingPlayerIndex] === undefined
+      startingPlayerIndex === null
+      || startingPlayerIndex >= globals.elements.playerHands.length
+      || globals.elements.playerHands[startingPlayerIndex] === undefined
     ) {
       return false;
     }

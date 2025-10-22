@@ -226,6 +226,9 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 }
 
 func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// Validate "Detrimental Character Assignment" restrictions
 	if characterCheckPlay(s, d, g, p) {
 		g.InvalidActionOccurred = true
@@ -237,7 +240,14 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		g.DeckIndex == len(g.Deck)-1 && // There is 1 card left in the deck
 		d.Target == g.DeckIndex { // The target is the last card left in the deck
 
-		p.PlayDeck()
+		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+			if !variant.AtMaxClueTokens(g.ClueTokens) {
+				g.ClueTokens++
+			}
+			p.DiscardDeck()
+		} else {
+			p.PlayDeck()
+		}
 		return true
 	}
 
@@ -248,9 +258,18 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		return false
 	}
 
-	c := p.RemoveCard(d.Target)
-	p.PlayCard(c)
-	p.DrawCard()
+	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+		if !variant.AtMaxClueTokens(g.ClueTokens) {
+			g.ClueTokens++
+		}
+		c := p.RemoveCard(d.Target)
+		p.DiscardCard(c)
+		p.DrawCard()
+	} else {
+		c := p.RemoveCard(d.Target)
+		p.PlayCard(c)
+		p.DrawCard()
+	}
 
 	return true
 }
@@ -259,15 +278,35 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	// Local variables
 	variant := variants[g.Options.VariantName]
 
+	// Validate deck plays
+	if g.Options.DeckPlays &&
+		g.DeckIndex == len(g.Deck)-1 && // There is 1 card left in the deck
+		d.Target == g.DeckIndex { // The target is the last card left in the deck
+
+		if !variant.HasInvertedSuits() {
+			s.Warning("You cannot discard the last card in non-Inverted games")
+		}
+
+		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+			p.PlayDeck()
+		} else {
+			if !variant.AtMaxClueTokens(g.ClueTokens) {
+				g.ClueTokens++
+			}
+			p.DiscardDeck()
+		}
+		return true
+	}
+
 	// Validate that the card is in their hand
 	if !p.InHand(d.Target) {
-		s.Warning("You cannot play a card that is not in your hand.")
+		s.Warning("You cannot discard a card that is not in your hand.")
 		g.InvalidActionOccurred = true
 		return false
 	}
 
 	// Validate that the team is not at the maximum amount of clues
-	if variant.AtMaxClueTokens(g.ClueTokens) {
+	if variant.AtMaxClueTokens(g.ClueTokens) && !variant.HasInvertedSuits() {
 		s.Warning("You cannot discard while the team has " + strconv.Itoa(MaxClueNum) + " clues.")
 		g.InvalidActionOccurred = true
 		return false
@@ -279,10 +318,18 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		return false
 	}
 
-	g.ClueTokens++
-	c := p.RemoveCard(d.Target)
-	p.DiscardCard(c)
-	p.DrawCard()
+	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+		c := p.RemoveCard(d.Target)
+		p.PlayCard(c)
+		p.DrawCard()
+	} else {
+		if !variant.AtMaxClueTokens(g.ClueTokens) {
+			g.ClueTokens++
+		}
+		c := p.RemoveCard(d.Target)
+		p.DiscardCard(c)
+		p.DrawCard()
+	}
 
 	return true
 }

@@ -30,13 +30,13 @@ import * as turn from "./turn";
 export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
   if (
     // Do nothing if we are clicking on a card that is not in a hand. (This is likely a misclick.)
-    card.layout.parent === null ||
-    typeof card.state.location !== "number" ||
+    card.layout.parent === null
+    || typeof card.state.location !== "number"
     // Unlike the "click()" function, we do not want to disable all clicks if the card is tweening
     // because we want to be able to click on cards as they are sliding down. However, make an
     // exception for the first card in the hand (as it is sliding in from the deck).
-    (card.tweening &&
-      card.layout.index === card.layout.parent.children.length - 1)
+    || (card.tweening
+      && card.layout.index === card.layout.parent.children.length - 1)
   ) {
     return;
   }
@@ -51,11 +51,11 @@ export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
 function clickLeft(card: HanabiCard, event: MouseEvent) {
   // Left-clicking on cards in our own hand is a play action.
   if (
-    card.state.location === globals.metadata.ourPlayerIndex &&
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey
+    card.state.location === globals.metadata.ourPlayerIndex
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     turn.end({
       type: ActionType.Play,
@@ -66,16 +66,16 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
 
   // Left-clicking on cards in other people's hands is a color clue action.
   if (
-    card.state.location !== globals.metadata.ourPlayerIndex &&
-    isCardInPlayerHand(card.state) &&
+    card.state.location !== globals.metadata.ourPlayerIndex
+    && isCardInPlayerHand(card.state)
     // Ensure there is at least 1 clue token available.
-    globals.state.ongoingGame.clueTokens >=
-      getAdjustedClueTokens(1, globals.variant) &&
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    typeof card.state.location === "number"
+    && globals.state.ongoingGame.clueTokens
+      >= getAdjustedClueTokens(1, globals.variant)
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && typeof card.state.location === "number"
   ) {
     const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
     if (clueColor === undefined) {
@@ -113,11 +113,11 @@ function getColorForSpeedrunClue(
   // want to use that color.
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
   if (
-    clueButton !== null &&
-    clueButton !== undefined &&
-    clueButton instanceof ColorButton &&
-    typeof clueButton.clue.value !== "number" &&
-    isCardTouchedByClueColor(
+    clueButton !== null
+    && clueButton !== undefined
+    && clueButton instanceof ColorButton
+    && typeof clueButton.clue.value !== "number"
+    && isCardTouchedByClueColor(
       globals.variant,
       clueButton.clue.value,
       suit,
@@ -147,11 +147,11 @@ function getColorForSpeedrunClue(
 function clickRight(card: HanabiCard, event: MouseEvent) {
   // Right-clicking on cards in our own hand is a discard action.
   if (
-    card.state.location === globals.metadata.ourPlayerIndex &&
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey
+    card.state.location === globals.metadata.ourPlayerIndex
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     // Prevent discarding while at the maximum amount of clues.
     if (
@@ -171,19 +171,19 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 
   // Right-clicking on cards in other people's hands is a rank clue action.
   if (
-    typeof card.state.location === "number" &&
-    card.state.location !== globals.metadata.ourPlayerIndex &&
-    isCardInPlayerHand(card.state) &&
-    card.state.rank !== null &&
+    typeof card.state.location === "number"
+    && card.state.location !== globals.metadata.ourPlayerIndex
+    && isCardInPlayerHand(card.state)
+    && card.state.rank !== null
     // It is not possible to clue a START card with a rank clue.
-    card.state.rank !== START_CARD_RANK &&
+    && card.state.rank !== START_CARD_RANK
     // Ensure there is at least 1 clue token available.
-    globals.state.ongoingGame.clueTokens >=
-      getAdjustedClueTokens(1, globals.variant) &&
-    !event.ctrlKey &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey
+    && globals.state.ongoingGame.clueTokens
+      >= getAdjustedClueTokens(1, globals.variant)
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     const clueRank = getRankForSpeedrunClue(card.state);
     if (clueRank === undefined) {
@@ -218,11 +218,11 @@ function getRankForSpeedrunClue(
   // want to use that rank.
   const clueButton = globals.elements.clueTypeButtonGroup?.getPressed();
   if (
-    clueButton !== null &&
-    clueButton !== undefined &&
-    clueButton instanceof RankButton &&
-    typeof clueButton.clue.value === "number" &&
-    isCardTouchedByClueRank(
+    clueButton !== null
+    && clueButton !== undefined
+    && clueButton instanceof RankButton
+    && typeof clueButton.clue.value === "number"
+    && isCardTouchedByClueRank(
       globals.variant,
       clueButton.clue.value,
       cardState.suitIndex,

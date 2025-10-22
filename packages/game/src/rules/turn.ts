@@ -19,9 +19,9 @@ export function shouldEndTurnAfterDraw(
 
   // Panicky - After discarding, discards again if there are 4 clues or less.
   const panickyFirstDiscard =
-    cardsDiscardedThisTurn === 1 &&
-    clueTokens <= getAdjustedClueTokens(4, variant) &&
-    characterName === "Panicky";
+    cardsDiscardedThisTurn === 1
+    && clueTokens <= getAdjustedClueTokens(4, variant)
+    && characterName === "Panicky";
 
   // Otherwise, the turn always increments when:
   // 1) a play or discard happens and

@@ -204,9 +204,9 @@ function isOffscreen(element: JQuery) {
   const domElement = element[0]!;
   const rect = domElement.getBoundingClientRect();
   return (
-    rect.top < 0 || // Above the top
-    rect.bottom > window.innerHeight || // Below the bottom
-    rect.left < 0 || // Left of the left edge
-    rect.right > window.innerWidth // Right of the right edge
+    rect.top < 0 // Above the top
+    || rect.bottom > window.innerHeight // Below the bottom
+    || rect.left < 0 // Left of the left edge
+    || rect.right > window.innerWidth // Right of the right edge
   );
 }

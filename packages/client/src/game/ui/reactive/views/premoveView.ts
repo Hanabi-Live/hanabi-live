@@ -27,8 +27,8 @@ export function onChanged(
 
     // If we dragged a card, we have to make the card tween back to the hand.
     if (
-      previousAction.type === ActionType.Play ||
-      previousAction.type === ActionType.Discard
+      previousAction.type === ActionType.Play
+      || previousAction.type === ActionType.Discard
     ) {
       ourHand.get().doLayout();
       globals.layers.card.draw();

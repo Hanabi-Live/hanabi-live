@@ -110,9 +110,9 @@ function drawUser(
 
   const statusText = StatusText[user.status];
   const statusColumn =
-    globals.currentScreen === Screen.PreGame ||
-    user.status === Status.Lobby ||
-    user.status === Status.Replay
+    globals.currentScreen === Screen.PreGame
+    || user.status === Status.Lobby
+    || user.status === Status.Replay
       ? statusText
       : `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
 

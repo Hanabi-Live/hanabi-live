@@ -31,8 +31,9 @@ function getWSMsg<T extends ServerCommand>(
   const schema = SERVER_COMMAND_SCHEMAS[command];
   const result = schema.safeParse(data);
   if (!result.success) {
+    const issues = JSON.stringify(result.error.issues, undefined, 2);
     logger.error(
-      `Failed to parse the data for a "${command}" command before sending it to a user: ${result.error}`,
+      `Failed to parse the data for a "${command}" command before sending it to a user: ${issues}`,
     );
     return undefined;
   }

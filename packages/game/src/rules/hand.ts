@@ -8,9 +8,9 @@ import { isCardClued } from "./cardState";
 
 export function getCardsPerHand(options: Options): number {
   return (
-    getCardsPerHandNatural(options.numPlayers) +
-    (options.oneExtraCard ? 1 : 0) -
-    (options.oneLessCard ? 1 : 0)
+    getCardsPerHandNatural(options.numPlayers)
+    + (options.oneExtraCard ? 1 : 0)
+    - (options.oneLessCard ? 1 : 0)
   );
 }
 

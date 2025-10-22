@@ -19,8 +19,8 @@ export function colorsInit(): ReadonlyMap<string, Color> {
 
     // Validate the abbreviation.
     if (
-      colorJSON.abbreviation !== undefined &&
-      colorJSON.abbreviation.length !== 1
+      colorJSON.abbreviation !== undefined
+      && colorJSON.abbreviation.length !== 1
     ) {
       throw new Error(
         `The "${colorJSON.name}" color has an abbreviation that is not one letter long.`,

@@ -120,9 +120,9 @@ export function getNumDiscardedCopiesOfCard(
 
   for (const cardState of deck) {
     if (
-      cardState.suitIndex === suitIndex &&
-      cardState.rank === rank &&
-      isCardDiscarded(cardState)
+      cardState.suitIndex === suitIndex
+      && cardState.rank === rank
+      && isCardDiscarded(cardState)
     ) {
       numDiscardedCopiesOfCard++;
     }
@@ -139,8 +139,8 @@ export function isInitialDealFinished(
   const totalCardsInDeck = getTotalCardsInDeck(variant);
   const numCardsPerHand = getCardsPerHand(metadata.options);
   return (
-    currentDeckSize ===
-    totalCardsInDeck - metadata.options.numPlayers * numCardsPerHand
+    currentDeckSize
+    === totalCardsInDeck - metadata.options.numPlayers * numCardsPerHand
   );
 }
 

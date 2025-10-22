@@ -26,8 +26,8 @@ export function validateAndNormalizeChatMsg(
   }
 
   if (
-    getNumConsecutiveDiacritics(normalizedMsg) >
-    NUM_CONSECUTIVE_DIACRITICS_ALLOWED
+    getNumConsecutiveDiacritics(normalizedMsg)
+    > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
   ) {
     wsWarning(
       connection,

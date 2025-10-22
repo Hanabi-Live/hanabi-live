@@ -60,24 +60,24 @@ export function set(
   // Figure out whether the arrow should be inverted or not.
   let rot = 0;
   if (
-    element instanceof HanabiCard &&
-    !isCardPlayed(element.state) &&
-    !isCardDiscarded(element.state) &&
-    !element.isStackBase
+    element instanceof HanabiCard
+    && !isCardPlayed(element.state)
+    && !isCardDiscarded(element.state)
+    && !element.isStackBase
   ) {
     if (
-      element.parent !== null &&
-      element.parent.parent !== null &&
-      element.parent.parent instanceof CardLayout
+      element.parent !== null
+      && element.parent.parent !== null
+      && element.parent.parent instanceof CardLayout
     ) {
       rot = element.parent.parent.origRotation;
     }
     if (
-      (!globals.lobby.settings.keldonMode &&
-        element.state.location === globals.metadata.ourPlayerIndex) ||
-      (globals.lobby.settings.keldonMode &&
-        element.state.location !== globals.metadata.ourPlayerIndex &&
-        isCardInPlayerHand(element.state))
+      (!globals.lobby.settings.keldonMode
+        && element.state.location === globals.metadata.ourPlayerIndex)
+      || (globals.lobby.settings.keldonMode
+        && element.state.location !== globals.metadata.ourPlayerIndex
+        && isCardInPlayerHand(element.state))
     ) {
       // In BGA mode, invert the arrows on our hand (so that it doesn't get cut off by the top of
       // the screen). In Keldon mode, invert the arrows for all other players.
@@ -102,9 +102,9 @@ export function set(
   } else {
     // This is a clue arrow.
     const color =
-      element instanceof HanabiCard &&
-      (element.state.numPositiveClues >= 2 ||
-        (element.state.numPositiveClues >= 1 && preview))
+      element instanceof HanabiCard
+      && (element.state.numPositiveClues >= 2
+        || (element.state.numPositiveClues >= 1 && preview))
         ? ARROW_COLOR.RETOUCHED // Cards that are re-clued use a different color.
         : ARROW_COLOR.DEFAULT; // Freshly touched cards use the default color.
 
@@ -117,8 +117,8 @@ export function set(
       globals.metadata.characterAssignments,
     );
     if (
-      globals.variant.duck ||
-      (giverCharacterName === "Quacker" && !globals.state.finished)
+      globals.variant.duck
+      || (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
       // Do not show the circle in variants where the clue types are supposed to be hidden.
       arrow.circle.hide();
@@ -352,8 +352,8 @@ export function click(
   // Do not allow followers in a shared replay to summon arrows because it could be misleading as to
   // who the real replay leader is.
   if (
-    globals.state.replay.shared !== null &&
-    !globals.state.replay.shared.amLeader
+    globals.state.replay.shared !== null
+    && !globals.state.replay.shared.amLeader
   ) {
     return;
   }
@@ -361,8 +361,8 @@ export function click(
   // Do not allow shared replay leaders to summon arrows when they are not in shared turns because
   // it could be misleading as to whether or not the arrows are being shown to the other players.
   if (
-    globals.state.replay.shared !== null &&
-    !globals.state.replay.shared.useSharedSegments
+    globals.state.replay.shared !== null
+    && !globals.state.replay.shared.useSharedSegments
   ) {
     return;
   }
@@ -393,9 +393,9 @@ export function toggle(
   // Use the first arrow for highlighting a specific thing.
   const arrow = globals.elements.arrows[0]!;
   const show =
-    alwaysShow ||
-    arrow.pointingTo !== element ||
-    arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
+    alwaysShow
+    || arrow.pointingTo !== element
+    || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
 
   hideAll();
   if (show) {
@@ -408,9 +408,9 @@ export function toggle(
   }
 
   if (
-    globals.state.replay.shared !== null &&
-    globals.state.replay.shared.amLeader &&
-    globals.state.replay.shared.useSharedSegments
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.shared.useSharedSegments
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,

@@ -337,25 +337,25 @@ function drawPlayStacks() {
   // Variants with less than 5 stacks will be left-aligned instead of centered unless we manually
   // adjust them.
   if (
-    (globals.variant.suits.length === 4 && !globals.variant.showSuitNames) ||
-    (globals.variant.suits.length === 5 &&
-      globals.variant.showSuitNames &&
-      globals.lobby.settings.keldonMode)
+    (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
+    || (globals.variant.suits.length === 5
+      && globals.variant.showSuitNames
+      && globals.lobby.settings.keldonMode)
   ) {
     playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
   } else if (
-    globals.variant.suits.length === 4 &&
-    globals.variant.showSuitNames
+    globals.variant.suits.length === 4
+    && globals.variant.showSuitNames
   ) {
     playStackValues.x += cardWidth + playStackValues.spacing;
   } else if (
-    globals.variant.suits.length === 3 &&
-    !globals.variant.showSuitNames
+    globals.variant.suits.length === 3
+    && !globals.variant.showSuitNames
   ) {
     playStackValues.x += ((cardWidth + playStackValues.spacing) / 2) * 2;
   } else if (
-    globals.variant.suits.length === 3 &&
-    globals.variant.showSuitNames
+    globals.variant.suits.length === 3
+    && globals.variant.showSuitNames
   ) {
     playStackValues.x += (cardWidth + playStackValues.spacing) * 1.5;
   }
@@ -363,8 +363,8 @@ function drawPlayStacks() {
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
   // of the rest of the stacks).
   if (
-    globals.variant.throwItInAHole &&
-    (globals.state.playing || globals.state.shadowing)
+    globals.variant.throwItInAHole
+    && (globals.state.playing || globals.state.shadowing)
   ) {
     const playStackX =
       playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
@@ -416,8 +416,8 @@ function drawPlayStacks() {
       let text = suit.displayName;
 
       if (
-        globals.lobby.settings.colorblindMode &&
-        suit.clueColors.length === 2
+        globals.lobby.settings.colorblindMode
+        && suit.clueColors.length === 2
       ) {
         const colorList = suit.clueColors
           .map((color) => color.abbreviation)
@@ -437,10 +437,8 @@ function drawPlayStacks() {
 
       const suitLabelText = new FitText({
         x:
-          (playStackValues.x -
-            0.01 +
-            (cardWidth + playStackValues.spacing) * i) *
-          winW,
+          (playStackValues.x - 0.01 + (cardWidth + playStackValues.spacing) * i)
+          * winW,
         y: (playStackValues.y + 0.155) * winH,
         width: 0.08 * winW,
         height: 0.051 * winH,
@@ -816,8 +814,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !globals.variant.throwItInAHole ||
-      (!globals.state.playing && !globals.state.shadowing),
+      !globals.variant.throwItInAHole
+      || (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel);
   globals.elements.scoreTextLabel.on(
@@ -833,8 +831,8 @@ function drawScoreArea() {
     y: 0.045 * winH,
     listening: true,
     visible:
-      !globals.variant.throwItInAHole ||
-      (!globals.state.playing && !globals.state.shadowing),
+      !globals.variant.throwItInAHole
+      || (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel);
   globals.elements.scoreNumberLabel.on(
@@ -851,8 +849,8 @@ function drawScoreArea() {
     fontSize: 0.017 * winH,
     listening: true,
     visible:
-      !globals.variant.throwItInAHole ||
-      (!globals.state.playing && !globals.state.shadowing),
+      !globals.variant.throwItInAHole
+      || (!globals.state.playing && !globals.state.shadowing),
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel);
   globals.elements.maxScoreNumberLabel.on(
@@ -863,8 +861,8 @@ function drawScoreArea() {
   );
 
   if (
-    globals.variant.throwItInAHole &&
-    (globals.state.playing || globals.state.shadowing)
+    globals.variant.throwItInAHole
+    && (globals.state.playing || globals.state.shadowing)
   ) {
     globals.elements.playsTextLabel = basicTextLabel.clone({
       text: "Plays",
@@ -1042,8 +1040,8 @@ function drawScoreArea() {
 
     // For variants where the strikes are hidden, draw a "?".
     if (
-      globals.variant.throwItInAHole &&
-      (globals.state.playing || globals.state.shadowing)
+      globals.variant.throwItInAHole
+      && (globals.state.playing || globals.state.shadowing)
     ) {
       const questionMarkLabel = basicTextLabel.clone({
         text: "?",
@@ -1525,15 +1523,15 @@ function drawStatistics() {
     // - "Easy" variants use the default color (off-white).
     // - "Hard" variants use pink.
     fill:
-      globals.metadata.hardVariant &&
-      globals.lobby.settings.hyphenatedConventions
+      globals.metadata.hardVariant
+      && globals.lobby.settings.hyphenatedConventions
         ? "#ffb2b2"
         : LABEL_COLOR,
     // If colorblindMode is activated, indicate make font bold if "Hard".
     fontStyle:
-      globals.metadata.hardVariant &&
-      globals.lobby.settings.hyphenatedConventions &&
-      globals.lobby.settings.colorblindMode
+      globals.metadata.hardVariant
+      && globals.lobby.settings.hyphenatedConventions
+      && globals.lobby.settings.colorblindMode
         ? "bold"
         : "normal",
     listening: true,
@@ -1627,8 +1625,8 @@ function drawTimers() {
   // We do not want the timer to show in replays or untimed games (unless they have the optional
   // setting turned on).
   if (
-    globals.state.finished ||
-    (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
+    globals.state.finished
+    || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;
   }
@@ -1715,8 +1713,8 @@ function drawTimers() {
 
 function timerClick() {
   if (
-    !globals.options.timed || // We do not need to pause if this is not a timed game.
-    globals.state.pause.active // We do not need to pause if the game is already paused.
+    !globals.options.timed // We do not need to pause if this is not a timed game.
+    || globals.state.pause.active // We do not need to pause if the game is already paused.
   ) {
     return;
   }
@@ -1792,8 +1790,8 @@ function drawClueArea() {
     const playerButtonW = totalPlayerW / totalPlayerButtons;
 
     for (const i of eRange(totalPlayerButtons)) {
-      const playerIndex = ((globals.metadata.ourPlayerIndex + i + 1) %
-        numPlayers) as PlayerIndex;
+      const playerIndex = ((globals.metadata.ourPlayerIndex + i + 1)
+        % numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {
           x: (playerButtonW + playerButtonSpacing) * i * winW,
@@ -1834,8 +1832,8 @@ function drawClueArea() {
     for (const i of eRange(totalPlayerButtons)) {
       // We change the calculation of `playerIndex` from the above code block because we want the
       // buttons to follow the order of players from top to bottom (in BGA mode).
-      const playerIndex = ((globals.metadata.ourPlayerIndex + i) %
-        numPlayers) as PlayerIndex;
+      const playerIndex = ((globals.metadata.ourPlayerIndex + i)
+        % numPlayers) as PlayerIndex;
       const button = new PlayerButton(
         {
           x: (playerButtonW + playerButtonSpacing) * i * winW,
@@ -2232,11 +2230,11 @@ function drawHypotheticalArea() {
   // The "Back 1 Turn" button (to the right of the give clue button).
   const hypoBackButtonValues = {
     x:
-      clueAreaValues.x +
-      lowerClueAreaValues.x +
-      giveClueValues.x +
-      giveClueValues.w! -
-      0.05,
+      clueAreaValues.x
+      + lowerClueAreaValues.x
+      + giveClueValues.x
+      + giveClueValues.w!
+      - 0.05,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
     w: 0.035,
     h: 0.051,

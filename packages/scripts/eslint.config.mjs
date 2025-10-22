@@ -1,6 +1,6 @@
 // @ts-check
 
-import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
 import { hanabiConfigBase } from "../../eslint.config.mjs";
 
-export default tseslint.config(...hanabiConfigBase);
+export default defineConfig(...hanabiConfigBase);

@@ -54,10 +54,10 @@ export function clickRightCheckAddNote(
 
   // A normal right-click is edit a note. (But in speedruns, this is ctrl + right-click.)
   if (
-    event.ctrlKey === isSpeedrun &&
-    !event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey
+    event.ctrlKey === isSpeedrun
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     preOpenNoteEditTooltip(card);
     return;

@@ -140,12 +140,6 @@ Building the client code can be memory intensive. Make sure that your system has
   - `./install/install_database_schema.sh`
 - Open VSCode using the cloned repository as the project folder:
   - `code .`
-- In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
-- Test the Golang linter:
-  - On the left pane, navigate to and open "src\main.go".
-  - If you get a pop-up asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
-  - Add a new line of "testing" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
-  - Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 - Test the TypeScript linter:
   - On the left pane, navigate to and open "packages/client/src/main.ts".
   - Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
@@ -208,7 +202,7 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - Install the database schema:
   - `./install/install_database_schema.sh`
 - If you are in development, see [Running the Server in Development](#running-the-server-in-development).
-- If you are in production, see [Install as a Service](#install-as-a-service-optional).
+- If you are in production, see [Running the Server in Production](#running-the-server-in-production).
 
 <br />
 
@@ -231,7 +225,24 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - If you update any Golang files, you will have to manually stop and start the server.
 - If you update any TypeScript files, you will have to manually refresh the page to pick up the new changes.
 - If you update any CSS files, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes a long time, but you only need to run it once before committing your changes.
-- You can also go to "http://localhost/login=test1" to automatically log in as "test1", "http://localhost/login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
+- You can also go to "http://localhost/?login=test1" to automatically log in as "test1", "http://localhost/?login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
+
+<br />
+
+## Running the Server in Production
+
+### Install as a Service (optional)
+
+This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
+
+- Install Supervisor and install the service:
+  - `./install/install_supervisor.sh`
+
+To manage the service:
+
+- Start it: `supervisorctl start hanabi-live`
+- Stop it: `supervisorctl stop hanabi-live`
+- Restart it: `supervisorctl restart hanabi-live`
 
 <br />
 
@@ -249,21 +260,6 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
 - `sudo iptables -A INPUT -p tcp --dport 8081 -s localhost -j ACCEPT`
 - `sudo iptables -A INPUT -j DROP`
 - `sudo iptables-save > /etc/iptables/rules.v4`
-
-<br />
-
-### Install as a Service (optional)
-
-This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
-
-- Install Supervisor and install the service:
-  - `./install/install_supervisor.sh`
-
-To manage the service:
-
-- Start it: `supervisorctl start hanabi-live`
-- Stop it: `supervisorctl stop hanabi-live`
-- Restart it: `supervisorctl restart hanabi-live`
 
 <br />
 

@@ -73,7 +73,23 @@ export class Deck extends Konva.Group {
   dragEnd(): void {
     const draggedTo = cursor.getElementDragLocation(this);
 
-    if (draggedTo === null) {
+    if (draggedTo === "playArea") {
+      // Card orders start at 0, so the final card order is the length of the deck - 1.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end({
+        type: ActionType.Play,
+        target: cardOrder,
+      });
+    } else if (draggedTo === "discardArea" && globals.variant.hasInverted) {
+      // Inverted suit needs discard whenever play is available.
+      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
+      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
+      turn.end({
+        type: ActionType.Discard,
+        target: cardOrder,
+      });
+    } else {
       // The card was dragged to an invalid location; tween it back to the hand.
       this.to({
         // Tween
@@ -89,14 +105,6 @@ export class Deck extends Konva.Group {
             layer.batchDraw();
           }
         },
-      });
-    } else if (draggedTo === "playArea") {
-      // Card orders start at 0, so the final card order is the length of the deck - 1.
-      const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
-      const cardOrder = (totalCardsInDeck - 1) as CardOrder;
-      turn.end({
-        type: ActionType.Play,
-        target: cardOrder,
       });
     }
   }
@@ -216,10 +224,10 @@ function getTooltipContent(): string {
   }
 
   if (
-    globals.state.finished &&
-    globals.state.replay.databaseID !== null &&
+    globals.state.finished
+    && globals.state.replay.databaseID !== null
     // JSON replays are hard-coded to have a database ID of 0.
-    globals.state.replay.databaseID !== 0
+    && globals.state.replay.databaseID !== 0
   ) {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
@@ -250,8 +258,8 @@ function getTooltipContent(): string {
   // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
   // so they should never be null.
   if (
-    globals.state.datetimeStarted !== null &&
-    globals.state.datetimeFinished !== null
+    globals.state.datetimeStarted !== null
+    && globals.state.datetimeFinished !== null
   ) {
     const startedDate = new Date(globals.state.datetimeStarted);
     const finishedDate = globals.state.finished

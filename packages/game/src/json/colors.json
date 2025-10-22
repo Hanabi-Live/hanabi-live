@@ -40,5 +40,10 @@
     "name": "Brown",
     "abbreviation": "N",
     "fill": "#654321"
+  },
+  {
+    "name": "Inverted",
+    "abbreviation": "I",
+    "fill": "#111111"
   }
 ]

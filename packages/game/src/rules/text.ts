@@ -204,9 +204,9 @@ export function getPlayText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === -1 ||
-    action.rank === -1 ||
-    (variant.throwItInAHole && (playing || shadowing));
+    action.suitIndex === -1
+    || action.rank === -1
+    || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden
     ? "a card"
@@ -249,9 +249,9 @@ export function getDiscardText(
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   const cardIsHidden =
-    action.suitIndex === -1 ||
-    action.rank === -1 ||
-    (variant.throwItInAHole && (playing || shadowing));
+    action.suitIndex === -1
+    || action.rank === -1
+    || (variant.throwItInAHole && (playing || shadowing));
 
   const cardName = cardIsHidden
     ? "a card"

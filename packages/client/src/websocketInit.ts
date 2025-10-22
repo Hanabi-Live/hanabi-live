@@ -82,9 +82,9 @@ function initCommands(conn: Connection) {
       // 1) "init" (in response to a "getGameInfo1") and
       // 2) "gameActionList" (in response to a "getGameInfo2")
       if (
-        globals.ui.globals.loading &&
-        commandName !== "init" &&
-        commandName !== "gameActionList"
+        globals.ui.globals.loading
+        && commandName !== "init"
+        && commandName !== "gameActionList"
       ) {
         return;
       }

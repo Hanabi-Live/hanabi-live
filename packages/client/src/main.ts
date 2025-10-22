@@ -34,9 +34,9 @@ window.$ = jquery; // eslint-disable-line unicorn/prefer-global-this
 
 // Manually redirect users that are going to wrong URLs.
 if (
-  globalThis.location.hostname === OLD_DOMAIN ||
-  globalThis.location.hostname === `www.${OLD_DOMAIN}` ||
-  globalThis.location.hostname === `www.${DOMAIN}`
+  globalThis.location.hostname === OLD_DOMAIN
+  || globalThis.location.hostname === `www.${OLD_DOMAIN}`
+  || globalThis.location.hostname === `www.${DOMAIN}`
 ) {
   globalThis.location.replace(
     `https://${DOMAIN}${globalThis.location.pathname}`,

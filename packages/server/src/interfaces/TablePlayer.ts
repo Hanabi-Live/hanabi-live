@@ -1,5 +1,5 @@
 import { userID } from "@hanabi-live/data";
-import z from "zod";
+import { z } from "zod";
 
 const pregameStats = z
   .object({

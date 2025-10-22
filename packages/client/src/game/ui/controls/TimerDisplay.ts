@@ -55,7 +55,7 @@ export class TimerDisplay extends Konva.Group {
       y: 6 * config["spaceH"],
       width: config.width,
       height: config.height,
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
       fontSize: (config["labelFontSize"] || config["fontSize"]) as
         | number
         | undefined,

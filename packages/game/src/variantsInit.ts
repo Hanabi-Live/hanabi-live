@@ -250,8 +250,8 @@ export function createVariant(
   // Validate the "specialRank" property (e.g. for "Rainbow-Ones"). If it is not specified, assume
   // `undefined` (e.g. there are no special ranks).
   if (
-    variantDescription.specialRank !== undefined &&
-    !ranks.includes(variantDescription.specialRank)
+    variantDescription.specialRank !== undefined
+    && !ranks.includes(variantDescription.specialRank)
   ) {
     throw new Error(
       `The "specialRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.specialRank}`,
@@ -311,8 +311,8 @@ export function createVariant(
   // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
   // are no critical ranks).
   if (
-    variantDescription.criticalRank !== undefined &&
-    !ranks.includes(variantDescription.criticalRank)
+    variantDescription.criticalRank !== undefined
+    && !ranks.includes(variantDescription.criticalRank)
   ) {
     throw new Error(
       `The "criticalRank" property for the variant "${variantDescription.name}" is invalid: ${variantDescription.criticalRank}`,
@@ -358,6 +358,8 @@ export function createVariant(
     isUpOrDown,
   );
 
+  const hasInverted = suits.some((suit: Suit) => suit.inverted);
+
   // Add it to the map.
   const variant: Variant = {
     name,
@@ -390,6 +392,7 @@ export function createVariant(
     funnels,
     chimneys,
     sudoku,
+    hasInverted,
 
     id,
     newID,

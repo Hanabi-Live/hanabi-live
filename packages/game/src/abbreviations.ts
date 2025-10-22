@@ -123,8 +123,8 @@ function getLowercaseSuitAbbreviationToUse(
 
     const suitLetterLowercase = suitCharacter.toLowerCase();
     if (
-      !lowercaseAbbreviationsUsedSoFar.includes(suitLetterLowercase) &&
-      !ALL_RESERVED_NOTES.has(suitLetterLowercase) // e.g. Ban "f"
+      !lowercaseAbbreviationsUsedSoFar.includes(suitLetterLowercase)
+      && !ALL_RESERVED_NOTES.has(suitLetterLowercase) // e.g. Ban "f"
     ) {
       return suitLetterLowercase;
     }

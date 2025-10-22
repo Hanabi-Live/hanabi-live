@@ -158,8 +158,8 @@ export function automaticLogin(): void {
     .then((response) => {
       // Check to see if we have accepted the Firefox warning.
       if (
-        isBrowserFirefox() &&
-        localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
+        isBrowserFirefox()
+        && localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
       ) {
         $("#loading").hide();
         $("#firefox-warning").show();

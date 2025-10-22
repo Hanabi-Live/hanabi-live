@@ -30,8 +30,8 @@ export class FitText extends Konva.Text {
     const minimumFontSize = 5;
 
     if (
-      !this.textFits(this.origFontSize) &&
-      this.origFontSize > minimumFontSize
+      !this.textFits(this.origFontSize)
+      && this.origFontSize > minimumFontSize
     ) {
       // Binary search the maximum font size that fits within a tolerance.
       let low = minimumFontSize;
