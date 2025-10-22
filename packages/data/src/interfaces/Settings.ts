@@ -7,10 +7,11 @@ export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
  * We use a Zod object instead of a class because this is sent over the wire and Zod cannot validate
  * class shapes.
  */
+
 export const settings = z
   .object({
     desktopNotification: z.boolean().default(false),
-    soundMove: z.int().min(0).max(3).default(2),
+    soundMove: z.int().default(0),
     soundTimer: z.boolean().default(true),
     keldonMode: z.boolean().default(false),
     colorblindMode: z.boolean().default(false),
