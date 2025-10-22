@@ -21,9 +21,11 @@ export function onNewSoundEffect(
       }
     | undefined,
 ): void {
-  const soundMove = globals.lobby.settings.soundMove ?? 0;
+  const SoundMoveAll = 0;
   const SoundMoveOnlyOwn = 1;
   const SoundMoveNone = 2;
+
+  const soundMove = globals.lobby.settings.soundMove ?? SoundMoveAll;
 
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
