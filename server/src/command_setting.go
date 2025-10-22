@@ -10,11 +10,12 @@ import (
 
 // commandSetting is sent when the user modifies a setting
 //
-// 	Example data:
-// {
-//   name: 'soundMove',
-//   setting: 'false', // All setting values must be strings
-// }
+//	Example data:
+//
+//	{
+//	  name: 'soundMove',
+//	  setting: 'false', // All setting values must be strings
+//	}
 func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	// Validate the setting name
 	if d.Name == "" {
@@ -64,7 +65,7 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 		}
 	} else if fieldType == "float64" {
 		if v, err := strconv.ParseFloat(d.Setting, 64); err != nil {
-			s.Warning("The setting of \"" + d.Name + "\" must be a float64.")
+			s.Warning("The setting of \"" + d.Name + "\" must be an float64.")
 			return
 		} else if v <= 0 || v > 86400 { // 1 day in seconds
 			s.Warning("The setting of \"" + d.Name + "\" is too large.")

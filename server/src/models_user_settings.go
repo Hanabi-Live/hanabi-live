@@ -42,7 +42,6 @@ var (
 	// The database schema must also be configured with any default settings
 	// This cannot be a pointer because we need to copy it
 	defaultSettings = Settings{ // nolint: exhaustivestruct
-		SoundMove:                     0,
 		SoundTimer:                    true,
 		Volume:                        50,
 		CreateTableVariant:            DefaultVariantName,
