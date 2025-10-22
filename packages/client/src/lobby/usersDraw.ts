@@ -26,7 +26,7 @@ export function draw(): void {
   const onlineFriends: string[] = [];
   for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);
-    if (globals.friends?.includes(user.name)) {
+    if (globals.friends.includes(user.name)) {
       onlineFriends.push(user.name);
     }
   }

@@ -11,16 +11,10 @@ import (
 // commandSetting is sent when the user modifies a setting
 //
 //	Example data:
-//
 //	{
 //	  name: 'soundMove',
 //	  setting: 'false', // All setting values must be strings
 //	}
-
-const SoundMoveAll = "0"
-const SoundMoveOnlyOwn = "1"
-const SoundMoveNone = "2"
-
 func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	// Validate the setting name
 	if d.Name == "" {
@@ -46,12 +40,7 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Validate the setting value
-	if d.Name == "soundMove" {
-		if d.Setting != SoundMoveAll && d.Setting != SoundMoveOnlyOwn && d.Setting != SoundMoveNone {
-			s.Warning("The setting of \"" + d.Name + "\" is invalid.")
-			return
-		}
-	} else if fieldType == "bool" {
+	if fieldType == "bool" {
 		// Booleans are stored in the database as 0s and 1s
 		if d.Setting == "true" {
 			d.Setting = "1"

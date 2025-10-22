@@ -52,7 +52,7 @@ DROP TABLE IF EXISTS user_settings CASCADE;
 CREATE TABLE user_settings (
     user_id                              INTEGER   NOT NULL,
     desktop_notification                 BOOLEAN   NOT NULL  DEFAULT FALSE,
-    sound_move                           SMALLINT  NOT NULL  DEFAULT 0, /* 0=every-move, 1=own-move, 2=disabled */
+    sound_move                           SMALLINT  NOT NULL  DEFAULT 0, /* 0=all, 1=onlyOwn, 2=none */
     sound_timer                          BOOLEAN   NOT NULL  DEFAULT TRUE,
     keldon_mode                          BOOLEAN   NOT NULL  DEFAULT FALSE,
     colorblind_mode                      BOOLEAN   NOT NULL  DEFAULT FALSE,

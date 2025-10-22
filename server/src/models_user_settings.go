@@ -53,6 +53,7 @@ var (
 
 func (*UserSettings) Get(userID int) (Settings, error) {
 	settings := Settings{}
+
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			desktop_notification,

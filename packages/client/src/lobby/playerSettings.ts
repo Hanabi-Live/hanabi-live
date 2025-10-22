@@ -6,7 +6,6 @@ import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
 import { SOUNDS_PATH } from "../sounds";
 
-// This function lets the user change their volume setting and test the sound.
 export function init(): void {
   $("#settings-volume-slider").change(function settingsVolumeSliderChange(
     this: HTMLElement,
@@ -73,6 +72,7 @@ export function init(): void {
       ...globals.settings,
       soundMove,
     };
+
     globals.conn!.send("setting", {
       name: "soundMove",
       setting: soundMove.toString(), // The server expects all setting values as strings

@@ -9,10 +9,6 @@ import {
   getStandardSoundType,
 } from "../getSoundType";
 
-const SoundMoveAll = 0;
-const SoundMoveOnlyOwn = 1;
-const SoundMoveNone = 2;
-
 export function onNewSoundEffect(
   data: {
     gameState: GameState;
@@ -27,6 +23,9 @@ export function onNewSoundEffect(
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const soundMove = globals.lobby.settings.soundMove ?? 0;
+  const SoundMoveOnlyOwn = 1;
+  const SoundMoveNone = 2;
+
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
     (previousData === undefined && data.gameState.turn.turnNum !== 0)
