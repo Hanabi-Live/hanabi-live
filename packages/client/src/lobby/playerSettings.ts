@@ -119,7 +119,6 @@ export function setPlayerSettings(): void {
 }
 
 function changeSetting(this: HTMLElement) {
-  console.log("Changing a setting.");
   const element = $(this);
   const settingName = element.attr("id");
   if (settingName === undefined || settingName === "") {

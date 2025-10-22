@@ -11,9 +11,10 @@ import (
 // commandSetting is sent when the user modifies a setting
 //
 //	Example data:
+//
 //	{
-//	  name: 'soundMove',
-//	  setting: 'false', // All setting values must be strings
+//	 name: 'soundMove',
+//	 setting: 'false', // All setting values must be strings
 //	}
 func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 	// Validate the setting name

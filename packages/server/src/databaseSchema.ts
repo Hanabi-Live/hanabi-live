@@ -11,10 +11,6 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { z } from "zod";
-
-export const SoundMoveSchema = z.enum(["every_move", "my_move", "disabled"]);
-export type SoundMove = z.infer<typeof SoundMoveSchema>;
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),

@@ -21,7 +21,6 @@ export function onNewSoundEffect(
       }
     | undefined,
 ): void {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const soundMove = globals.lobby.settings.soundMove ?? 0;
   const SoundMoveOnlyOwn = 1;
   const SoundMoveNone = 2;
