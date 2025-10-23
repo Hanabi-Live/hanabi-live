@@ -32,7 +32,7 @@ export function init(): void {
     $("#settings-volume-slider-value").html(`${volume}%`);
     globals.conn!.send("setting", {
       name: "volume",
-      setting: volumeString, // The server expects all setting values as strings
+      setting: volumeString, // The server expects all setting values as strings.
     });
   });
 
@@ -75,7 +75,7 @@ export function init(): void {
 
     globals.conn!.send("setting", {
       name: "soundMove",
-      setting: soundMove.toString(), // The server expects all setting values as strings
+      setting: soundMove.toString(), // The server expects all setting values as strings.
     });
   });
 }
