@@ -1,6 +1,12 @@
 // The "Settings" nav button.
 
-import { assertDefined, isKeyOf, parseIntSafe } from "complete-common";
+import { SoundMove } from "@hanabi-live/data";
+import {
+  assertDefined,
+  assertEnumValue,
+  isKeyOf,
+  parseIntSafe,
+} from "complete-common";
 import { globals } from "../Globals";
 import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
@@ -60,13 +66,24 @@ export function init(): void {
 
   $("#soundMove").change(function settingsSoundMoveChange(this: HTMLElement) {
     const element = $(this);
-    const soundMove = Number(element.val());
-
-    if (typeof soundMove !== "number") {
+    const soundMoveString = element.val();
+    if (typeof soundMoveString !== "string") {
       throw new TypeError(
-        `The value of the "#soundMove" element is not a number: ${soundMove}`,
+        `The value of the "#soundMove" element is not a string: ${soundMoveString}`,
       );
     }
+
+    const soundMove = parseIntSafe(soundMoveString);
+    assertDefined(
+      soundMove,
+      `The value of the "#soundMove" element could not be converted to a number: ${soundMoveString}`,
+    );
+
+    assertEnumValue(
+      soundMove,
+      SoundMove,
+      `The value of "#soundMove" element was not a valid SoundMove enum: ${soundMove}`,
+    );
 
     globals.settings = {
       ...globals.settings,
