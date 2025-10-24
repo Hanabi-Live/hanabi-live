@@ -119,7 +119,7 @@ export function setPlayerSettings(): void {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
         throw new TypeError(
-          `The ${setting} setting is not stored as a boolean.`,
+          `The "${setting}" setting is not stored as a boolean.`,
         );
       }
       element.prop("checked", value);
