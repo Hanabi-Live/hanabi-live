@@ -94,23 +94,17 @@ export function setPlayerSettings(): void {
       $("#settings-volume-slider").val(value);
       $("#settings-volume-slider-value").html(`${value}%`);
     } else if (setting === "soundMove") {
-      let intValue: number;
-
-      if (typeof value === "number") {
-        intValue = value;
-      } else if (typeof value === "string") {
-        intValue = Number.parseInt(value, 10);
-      } else if (typeof value === "boolean") {
-        intValue = value ? 2 : 0;
-      } else {
+      if (typeof value !== "number") {
         throw new TypeError("The soundMove setting is not stored as a number.");
       }
 
-      $("#soundMove").val(intValue);
+      $("#soundMove").val(value);
     } else {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
-        throw new TypeError("The volume setting is not stored as a string.");
+        throw new TypeError(
+          `The ${setting} setting is not stored as a boolean.`,
+        );
       }
       element.prop("checked", value);
       element.change(changeSetting);

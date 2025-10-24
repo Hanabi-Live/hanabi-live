@@ -1,3 +1,4 @@
+import { SoundMove } from "@hanabi-live/data";
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../../types/SoundType";
@@ -21,12 +22,7 @@ export function onNewSoundEffect(
       }
     | undefined,
 ): void {
-  const SoundMoveAll = 0;
-  const SoundMoveOnlyOwn = 1;
-  const SoundMoveNone = 2;
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const soundMove = globals.lobby.settings.soundMove ?? SoundMoveAll;
+  const { soundMove } = globals.lobby.settings;
 
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
@@ -38,9 +34,9 @@ export function onNewSoundEffect(
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.
-    || (soundMove === SoundMoveOnlyOwn && !isOurTurn())
+    || (soundMove === SoundMove.OnlyOwn && !isOurTurn())
     // Do not play sounds if the user does not have sound effects enabled.
-    || soundMove === SoundMoveNone
+    || soundMove === SoundMove.None
   ) {
     return;
   }

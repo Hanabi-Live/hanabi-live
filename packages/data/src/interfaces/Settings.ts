@@ -1,5 +1,6 @@
 import { DEFAULT_VARIANT_NAME, numPlayers } from "@hanabi-live/game";
 import { z } from "zod";
+import { SoundMove } from "../enums/SoundMove";
 
 export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
 
@@ -10,7 +11,7 @@ export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
 export const settings = z
   .object({
     desktopNotification: z.boolean().default(false),
-    soundMove: z.int().max(2).default(0),
+    soundMove: z.enum(SoundMove).default(SoundMove.All),
     soundTimer: z.boolean().default(true),
     keldonMode: z.boolean().default(false),
     colorblindMode: z.boolean().default(false),
