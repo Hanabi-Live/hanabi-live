@@ -34,7 +34,7 @@ export function onNewSoundEffect(
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.
-    || (soundMove === SoundMove.OnlyOwn && !isOurTurn())
+    || (!isOurTurn() && soundMove === SoundMove.OnlyOwn)
     // Do not play sounds if the user does not have sound effects enabled.
     || soundMove === SoundMove.None
   ) {
