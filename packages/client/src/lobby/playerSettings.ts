@@ -114,7 +114,6 @@ export function setPlayerSettings(): void {
       if (typeof value !== "number") {
         throw new TypeError("The soundMove setting is not stored as a number.");
       }
-
       $("#soundMove").val(value);
     } else {
       const element = $(`#${setting}`);
