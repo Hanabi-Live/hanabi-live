@@ -80,7 +80,8 @@
                 {{ end }}"
               >
                 {{ range $index2, $results2 := .PlayerNames }}
-                  {{- if $index2 }}, {{ end }}{{ $results2 -}}
+                  {{- if $index2 }},{{ end }}
+                  {{ $results2 -}}
                 {{ end }}
               </a>
             </td>
