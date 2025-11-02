@@ -420,6 +420,12 @@ One of each card per suit (e.g. 5 in total):
 - Cards of rank 5 are removed from the game. Therefore, stacks only consist of 4 cards each and will wrap around from 4 to 1.
 - Playing the fourth card of a suit gives back a clue.
 
+### Inverted
+
+- One of the suits is replaced with an inverted suit.
+- When one tries to discard a card from the inverted suit, it is played instead.
+- When one tries to play a card from the inverted suit, it is discarded instead.
+
 <br />
 
 ## Full Variant Listing
@@ -471,3 +477,4 @@ One of each card per suit (e.g. 5 in total):
 - Funnels
 - Chimneys
 - Sudoku
+- Inverted
