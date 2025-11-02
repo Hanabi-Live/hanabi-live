@@ -30,9 +30,9 @@ function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
   }
 
   if (
-    variant.upOrDown ||
-    variant.criticalRank !== undefined ||
-    variant.scarceOnes
+    variant.upOrDown
+    || variant.criticalRank !== undefined
+    || variant.scarceOnes
   ) {
     // The normal amount minus one because there is one fewer card.
     return variant.stackSize * 2 - 1;
