@@ -178,6 +178,11 @@ function setTickingDownTime(timer: TimerDisplay) {
 
 /** Update the tooltip that appears when you hover over a player's name. */
 function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex | -1) {
+  // This tooltip is disabled in non-timed games, but only if the setting is also false
+  if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
+    return;
+  }
+
   if (playerIndex === -1) {
     return;
   }
