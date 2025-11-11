@@ -11,7 +11,7 @@ type UserSettings struct{}
 
 type Settings struct {
 	DesktopNotification              bool    `json:"desktopNotification"`
-	SoundMove                        bool    `json:"soundMove"`
+	SoundMove                        int     `json:"soundMove"`
 	SoundTimer                       bool    `json:"soundTimer"`
 	KeldonMode                       bool    `json:"keldonMode"`
 	ColorblindMode                   bool    `json:"colorblindMode"`
@@ -42,7 +42,6 @@ var (
 	// The database schema must also be configured with any default settings
 	// This cannot be a pointer because we need to copy it
 	defaultSettings = Settings{ // nolint: exhaustivestruct
-		SoundMove:                     true,
 		SoundTimer:                    true,
 		Volume:                        50,
 		CreateTableVariant:            DefaultVariantName,

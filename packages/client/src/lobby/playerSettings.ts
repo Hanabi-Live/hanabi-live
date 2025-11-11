@@ -1,6 +1,12 @@
 // The "Settings" nav button.
 
-import { assertDefined, isKeyOf, parseIntSafe } from "complete-common";
+import { SoundMove } from "@hanabi-live/data";
+import {
+  assertDefined,
+  assertEnumValue,
+  isKeyOf,
+  parseIntSafe,
+} from "complete-common";
 import { globals } from "../Globals";
 import { SoundType } from "../game/types/SoundType";
 import * as notifications from "../notifications";
@@ -32,7 +38,7 @@ export function init(): void {
     $("#settings-volume-slider-value").html(`${volume}%`);
     globals.conn!.send("setting", {
       name: "volume",
-      setting: volumeString, // The server expects all setting values as strings
+      setting: volumeString, // The server expects all setting values as strings.
     });
   });
 
@@ -57,6 +63,38 @@ export function init(): void {
       console.error("Failed to play the test sound:", error);
     });
   });
+
+  $("#soundMove").change(function settingsSoundMoveChange(this: HTMLElement) {
+    const element = $(this);
+    const soundMoveString = element.val();
+    if (typeof soundMoveString !== "string") {
+      throw new TypeError(
+        `The value of the "#soundMove" element is not a string: ${soundMoveString}`,
+      );
+    }
+
+    const soundMove = parseIntSafe(soundMoveString);
+    assertDefined(
+      soundMove,
+      `The value of the "#soundMove" element could not be converted to a number: ${soundMoveString}`,
+    );
+
+    assertEnumValue(
+      soundMove,
+      SoundMove,
+      `The value of "#soundMove" element was not a valid SoundMove enum: ${soundMove}`,
+    );
+
+    globals.settings = {
+      ...globals.settings,
+      soundMove,
+    };
+
+    globals.conn!.send("setting", {
+      name: "soundMove",
+      setting: soundMove.toString(), // The server expects all setting values as strings.
+    });
+  });
 }
 
 export function setPlayerSettings(): void {
@@ -72,10 +110,17 @@ export function setPlayerSettings(): void {
       }
       $("#settings-volume-slider").val(value);
       $("#settings-volume-slider-value").html(`${value}%`);
+    } else if (setting === "soundMove") {
+      if (typeof value !== "number") {
+        throw new TypeError("The soundMove setting is not stored as a number.");
+      }
+      $("#soundMove").val(value);
     } else {
       const element = $(`#${setting}`);
       if (typeof value !== "boolean") {
-        throw new TypeError("The volume setting is not stored as a string.");
+        throw new TypeError(
+          `The "${setting}" setting is not stored as a boolean.`,
+        );
       }
       element.prop("checked", value);
       element.change(changeSetting);

@@ -1,6 +1,8 @@
+import { SoundMove } from "@hanabi-live/data";
 import type { GameAction, GameState } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../../types/SoundType";
+import { isOurTurn } from "../../isOurTurn";
 import { globals } from "../../UIGlobals";
 import {
   SOUND_TYPE_ACTIONS,
@@ -20,6 +22,8 @@ export function onNewSoundEffect(
       }
     | undefined,
 ): void {
+  const { soundMove } = globals.lobby.settings;
+
   if (
     // Do not play sounds on the initial load (unless it is the first turn).
     (previousData === undefined && data.gameState.turn.turnNum !== 0)
@@ -28,8 +32,11 @@ export function onNewSoundEffect(
       === previousData?.gameState.turn.currentPlayerIndex
     // Do not play sounds in replays or hypotheticals.
     || globals.state.finished
+    // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
+    // moves.
+    || (!isOurTurn() && soundMove === SoundMove.OnlyOwn)
     // Do not play sounds if the user does not have sound effects enabled.
-    || !globals.lobby.settings.soundMove
+    || soundMove === SoundMove.None
   ) {
     return;
   }
