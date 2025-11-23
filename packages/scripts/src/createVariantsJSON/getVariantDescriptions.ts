@@ -99,7 +99,13 @@ export function getVariantDescriptions(
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getClueStarvedVariants(
+      [
+        ...suitsToCreateVariantsFor,
+        ...suits.filter((suit) => suit.inverted === true),
+      ],
+      basicVariantSuits,
+    ),
     ...getBlindVariants(basicVariantSuits),
     ...getMuteVariants(basicVariantSuits),
     ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),

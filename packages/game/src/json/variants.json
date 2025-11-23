@@ -13977,6 +13977,20 @@
     "clueStarved": true
   },
   {
+    "id": 2134,
+    "newID": "R+Y+G+B+P+Inv,CS",
+    "name": "Clue Starved & Inverted (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Inverted"],
+    "clueStarved": true
+  },
+  {
+    "id": 2135,
+    "newID": "R+Y+G+B+Inv,CS",
+    "name": "Clue Starved & Inverted (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Inverted"],
+    "clueStarved": true
+  },
+  {
     "id": 10,
     "newID": "R+Y+G+B+P+T,CB",
     "name": "Color Blind (6 Suits)",
