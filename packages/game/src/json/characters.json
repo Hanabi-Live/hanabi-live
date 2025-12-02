@@ -90,12 +90,6 @@
     "emoji": "😣"
   },
   {
-    "name": "Quacker",
-    "id": 34,
-    "description": "Can only quack instead of clue",
-    "emoji": "🦆"
-  },
-  {
     "name": "Vulnerable",
     "id": 14,
     "description": "Cannot receive a number 2 or number 5 clue",
@@ -106,12 +100,6 @@
     "id": 15,
     "description": "Cannot receive a color clue",
     "emoji": "👓"
-  },
-  {
-    "name": "Follower",
-    "id": 31,
-    "description": "Cannot play a card unless two cards of that same rank have already been played",
-    "emoji": "👁️"
   },
   {
     "name": "Impulsive",
@@ -134,13 +122,13 @@
   {
     "name": "Anxious",
     "id": 21,
-    "description": "Cannot discard if there is an even number of clues available (including 0)",
+    "description": "Cannot discard if there are an even number of clues available (including 0)",
     "emoji": "😰"
   },
   {
     "name": "Traumatized",
     "id": 22,
-    "description": "Cannot discard if there is an odd number of clues available",
+    "description": "Cannot discard if there are an odd number of clues available",
     "emoji": "😨"
   },
   {
@@ -189,9 +177,21 @@
     "not2P": true
   },
   {
+    "name": "Follower",
+    "id": 31,
+    "description": "Cannot play a card unless two cards of that same rank have already been played",
+    "emoji": "👁️"
+  },
+  {
     "name": "Slow-Witted",
     "id": 33,
     "description": "Cannot see cards in slot 1",
     "emoji": "🤪"
+  },
+  {
+    "name": "Quacker",
+    "id": 34,
+    "description": "Can only quack instead of clue",
+    "emoji": "🦆"
   }
 ]
