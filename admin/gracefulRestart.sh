@@ -7,5 +7,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Get the name of the script and trim the ".sh".
 COMMAND=$(basename "$0" | cut -f 1 -d '.')
 
+echo "Doing a \"git pull\" first before restarting the server."
+git pull --rebase
+
+# shellcheck source=/dev/null
 source "$DIR/common.sh"
 admin_command "$COMMAND"
