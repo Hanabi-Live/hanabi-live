@@ -20,7 +20,12 @@ func incrementSeedName(name string) string {
 		// m[1] = base (everything before the digits)
 		// m[2] = trailing digits
 		n, _ := strconv.Atoi(m[2])
-		return m[1] + strconv.Itoa(n+1)
+		newNum := strconv.Itoa(n + 1)
+		// Preserve leading zeros
+		for len(newNum) < len(m[2]) {
+			newNum = "0" + newNum
+		}
+		return m[1] + newNum
 	}
 
 	// no trailing number → append 1
