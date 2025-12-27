@@ -464,9 +464,9 @@
     "clueColors": ["Purple", "Red"]
   },
   {
-    "name": "Tangelo AD",
+    "name": "Tangerine AD",
     "id": "DRY3",
-    "displayName": "Tangelo",
+    "displayName": "Tangerine",
     "fill": "#ffac4d",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]

@@ -702,7 +702,7 @@ function getMixVariants(): readonly VariantDescription[] {
     {
       name: "Ambiguous & Dual-Color",
       suits: [
-        "Tangelo AD",
+        "Tangerine AD",
         "Peach AD",
         "Orchid AD",
         "Violet AD",
