@@ -208,8 +208,7 @@ One of each card per suit (e.g. 5 in total):
   - Teal (green / blue)
   - Blue
   - Purple (blue / red)
-- The color names are taken from the
-  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
+- The color names are taken from the [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
 
 ### Special Mix (5 Suits)
 
