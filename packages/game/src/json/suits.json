@@ -578,7 +578,7 @@
     "name": "Inverted",
     "id": "Inv",
     "abbreviation": "I",
-    "fill": "#999999",
+    "fill": "#ff8800",
     "pip": "unoReverse",
     "inverted": true,
     "clueColors": ["Inverted"]

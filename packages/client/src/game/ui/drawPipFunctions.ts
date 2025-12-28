@@ -3447,20 +3447,41 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   [
     "unoReverse",
     (ctx: CanvasRenderingContext2D) => {
-      const topRightArrow = new Path2D(
-        "m 0,-8.125 1.25,1.25 -5,5 c -1.25,1.25 -1.25,3.75 0,5 l 2.5,-2.5 5,-5 1.25,1.25 0,-5 z",
-      );
-      const bottomLeftArrow = new Path2D(
-        "m 0,8.125 -1.25,-1.25 5,-5 c 1.25,-1.25 1.25,-3.75 0,-5 l -2.5,2.5 -5,5 -1.25,-1.25 0,5 z",
-      );
-
+      ctx.save(); // Save state to prevent scale accumulation
+      ctx.scale(7, 7);
       ctx.strokeStyle = "black";
       ctx.lineWidth = 0.45;
 
-      ctx.scale(7, 7);
+      ctx.beginPath();
 
-      ctx.stroke(topRightArrow);
-      ctx.stroke(bottomLeftArrow);
+      // Top Right Arrow SVG: m 0,-8.125 1.25,1.25 -5,5 c -1.25,1.25 -1.25,3.75 0,5 l 2.5,-2.5 5,-5
+      // 1.25,1.25 0,-5 z
+      ctx.moveTo(0, -8.125);
+      ctx.lineTo(1.25, -6.875);
+      ctx.lineTo(-3.75, -1.875);
+      // c -1.25,1.25 -1.25,3.75 0,5 (Relative cubic bezier)
+      ctx.bezierCurveTo(-5, -0.625, -5, 1.875, -3.75, 3.125);
+      ctx.lineTo(-1.25, 0.625);
+      ctx.lineTo(3.75, -4.375);
+      ctx.lineTo(5, -3.125);
+      ctx.lineTo(5, -8.125);
+      ctx.closePath();
+
+      // Bottom Left Arrow SVG: m 0,8.125 -1.25,-1.25 5,-5 c 1.25,-1.25 1.25,-3.75 0,-5 l -2.5,2.5
+      // -5,5 -1.25,-1.25 0,5 z
+      ctx.moveTo(0, 8.125);
+      ctx.lineTo(-1.25, 6.875);
+      ctx.lineTo(3.75, 1.875);
+      // c 1.25,-1.25 1.25,-3.75 0,-5 (Relative cubic bezier)
+      ctx.bezierCurveTo(5, 0.625, 5, -1.875, 3.75, -3.125);
+      ctx.lineTo(1.25, -0.625);
+      ctx.lineTo(-3.75, 4.375);
+      ctx.lineTo(-5, 3.125);
+      ctx.lineTo(-5, 8.125);
+      ctx.closePath();
+
+      ctx.stroke();
+      ctx.restore();
     },
   ],
 ]);
