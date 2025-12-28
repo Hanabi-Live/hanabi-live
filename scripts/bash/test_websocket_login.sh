@@ -11,9 +11,10 @@ HANABI_PASSWORD="test"
 
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Import the website information.
+# shellcheck source=/dev/null
 source "$DIR/../../.env"
 
 URL_PREFIX="https"

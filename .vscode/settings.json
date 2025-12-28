@@ -146,5 +146,9 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
   },
+  "[shellscript]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
   // @template-customization-end
 }

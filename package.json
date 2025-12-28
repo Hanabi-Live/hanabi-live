@@ -82,6 +82,7 @@
     "husky": "9.1.7",
     "jest": "30.2.0",
     "prettier-plugin-go-template": "0.0.15",
+    "prettier-plugin-sh": "0.18.0",
     "stacktracify": "1.0.4",
     "ts-prune-2": "0.10.7",
     "typescript": "5.9.3"
