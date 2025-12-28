@@ -33,21 +33,21 @@ Building the client code can be memory intensive. Make sure that your system has
   - `winget install --accept-source-agreements --silent --exact --id OpenJS.NodeJS.LTS`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id Microsoft.VisualStudioCode`
-- Install [PostgreSQL v14](https://www.postgresql.org/) (if you do not already have it installed):
-  - `winget install --accept-source-agreements --silent --exact --id PostgreSQL.PostgreSQL.14`
-  - Note that versions other than 14 will probably work fine, if you already have a separate version installed.
+- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed).
+  - You should use the latest version, which is not available on `winget`, so you have to download the installer manually. (Older versions will probably work fine too, if you already have an older version installed.)
 - Configure Git (if you do not already have it configured):
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
-- Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
-  - `notepad "C:\Program Files\PostgreSQL\14\data\postgresql.conf"`
+- Make it so that PostgreSQL only listens on "localhost" instead of on all interfaces:
+  - `notepad "C:\Program Files\PostgreSQL\18\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
     - Save the file.
-  - `net stop postgresql-x64-14`
-  - `net start postgresql-x64-14`
+  - `net stop postgresql-x64-18`
+  - `net start postgresql-x64-18`
 - Create a new database and set up a database user:
-  - `set PGPASSWORD=postgres`
-  - `"C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres`
+  - `set PGPASSWORD=1234567890` <br />
+    (replace "1234567890" with the root password that you entered when installing PostgreSQL)
+  - `"C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres`
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
   - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
