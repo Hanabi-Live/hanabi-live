@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pips Reference</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      #pips-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px;
+        padding: 20px;
+      }
+
+      .pip-wrapper {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .pip-wrapper:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .pip-canvas {
+        display: block;
+        margin-bottom: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+      }
+
+      .pip-label {
+        text-align: center;
+        width: 100%;
+      }
+
+      .pip-name {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .pip-id {
+        font-size: 0.9em;
+        color: #666;
+        font-family: "Courier New", monospace;
+        background: #f5f5f5;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+
+      .pip-count {
+        grid-column: 1 / -1;
+        text-align: center;
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .loading {
+        text-align: center;
+        color: white;
+        font-size: 1.5em;
+        padding: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Pips Reference</h1>
+      <p>All unique suit symbols</p>
+    </div>
+
+    <div id="pips-container">
+      <div class="loading">Loading pips...</div>
+    </div>
+
+    <script src="js/bundles/pips-reference.min.js"></script>
+  </body>
+</html>
