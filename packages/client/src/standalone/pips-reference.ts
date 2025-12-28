@@ -32,13 +32,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.querySelector("#pips-container");
   assertNotNull(container, "Container element not found.");
 
-  // Clear loading message.
+  // Clear the loading message.
   container.innerHTML = "";
 
   // Create a canvas for each unique pip.
   let index = 0;
   for (const [pipName, info] of uniquePips) {
-    // Skip empty pip (Unknown suit).
+    // Skip the unknown suit.
     if (pipName === "") {
       continue;
     }
@@ -54,18 +54,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const ctx = canvas.getContext("2d");
     assertNotNull(ctx, "Failed to get the canvas.");
 
-    // Center the drawing
+    // Center the drawing.
     ctx.save();
     ctx.translate(100, 100);
 
-    // Create a mock suit object for drawing.
     const mockSuit: Partial<Suit> = {
       pip: pipName,
       fill: info.fill ?? "#cccccc",
       fillColors: info.fillColors ?? [],
     };
 
-    // Draw the pip
     try {
       drawPip(ctx, mockSuit as Suit, false, false);
     } catch (error) {
@@ -74,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ctx.restore();
 
-    // Create label
     const label = document.createElement("div");
     label.className = "pip-label";
     label.innerHTML = `
@@ -89,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     index++;
   }
 
-  // Add count
   const count = document.createElement("div");
   count.className = "pip-count";
   count.textContent = `Total unique pips: ${index}`;
