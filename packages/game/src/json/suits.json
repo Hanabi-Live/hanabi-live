@@ -575,12 +575,9 @@
     "clueColors": ["Green", "Blue"]
   },
   {
-    "name": "Inverted",
+    "name": "Orange",
     "id": "Or",
-    "abbreviation": "I",
-    "fill": "#ff8800",
     "pip": "unoReverse",
-    "inverted": true,
-    "clueColors": ["Inverted"]
+    "inverted": true
   }
 ]

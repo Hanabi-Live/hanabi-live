@@ -87,6 +87,7 @@ export function getVariantDescriptions(
   const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
+    ...getInvertedVariants(basicVariantSuits),
     ...getVariantsForEachSpecialSuitCombination(
       suitsToCreateVariantsFor,
       basicVariantSuits,
@@ -114,7 +115,6 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getInvertedVariants(basicVariantSuits),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -1299,12 +1299,12 @@ function getInvertedVariants(
 
   // Create the basic variants.
   for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Inverted (${numSuits} Suits)`;
+    const variantName = `Orange (${numSuits} Suits)`;
     const basicSuits = basicVariantSuits[numSuits - 1];
     if (basicSuits === undefined) {
       continue;
     }
-    const variantSuits = [...basicSuits, "Inverted"];
+    const variantSuits = [...basicSuits, "Orange"];
 
     variantDescriptions.push({
       name: variantName,
