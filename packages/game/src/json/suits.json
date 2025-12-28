@@ -576,7 +576,7 @@
   },
   {
     "name": "Inverted",
-    "id": "Inv",
+    "id": "Or",
     "abbreviation": "I",
     "fill": "#ff8800",
     "pip": "unoReverse",
