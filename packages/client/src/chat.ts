@@ -703,7 +703,7 @@ function fillTwitchEmotes(message: string) {
       // replace Discord emotes.
       const index = message.indexOf(emote);
       if (index !== -1 && message[index + emote.length] !== '"') {
-        const re = new RegExp(`\\b${emote}\\b`, "g"); // "\b" is a word boundary in regex.
+        const re = new RegExp(String.raw`\b${emote}\b`, "g"); // "\b" is a word boundary in regex.
         const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${categoryName}/${emote}.png" title="${emote}" />`;
         filledMessage = filledMessage.replace(re, emoteTag);
       }

@@ -2,8 +2,8 @@
 // repository: https://go.microsoft.com/fwlink/?LinkId=827846
 {
   "recommendations": [
-    "esbenp.prettier-vscode", // The TypeScript formatter
     "dbaeumer.vscode-eslint", // The TypeScript linter
+    "prettier.prettier-vscode", // The TypeScript formatter
     "streetsidesoftware.code-spell-checker", // A spell-checker extension based on CSpell
 
     // @template-customization-start

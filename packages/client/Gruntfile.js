@@ -9,7 +9,7 @@ const { VERSION } = require("../data/src/version");
 const bundleFilename = `main.${VERSION}.min.css`;
 
 // Constants
-const repoRoot = path.join(__dirname, "..", "..");
+const repoRoot = path.resolve(__dirname, "..", "..");
 const packageJSON = path.join(repoRoot, "package.json");
 const cssDir = path.join(repoRoot, "public", "css");
 const cssLibDir = path.join(cssDir, "lib");

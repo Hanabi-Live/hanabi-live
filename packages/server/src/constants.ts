@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
 
-export const REPO_ROOT = path.join(__dirname, "..", "..", "..");
+export const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 
 /**
  * The Git commit that corresponds with when the server was started. (This is useful to know what

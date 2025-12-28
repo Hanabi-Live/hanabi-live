@@ -4,9 +4,9 @@
   "dependencies": {
     "@hanabi-live/data": "file:../data",
     "@hanabi-live/game": "file:../game",
-    "complete-common": "2.5.0",
+    "complete-common": "2.11.0",
     "fast-deep-equal": "3.1.3",
-    "immer": "10.1.3",
+    "immer": "11.1.0",
     "interactjs": "1.10.27",
     "jquery": "3.7.1",
     "keycode-js": "3.1.0",
@@ -20,13 +20,13 @@
   "devDependencies": {
     "@types/jquery": "3.5.33",
     "@types/linkifyjs": "2.1.7",
-    "@types/lodash": "4.17.20",
+    "@types/lodash": "4.17.21",
     "@types/tooltipster": "0.0.35",
     "grunt": "1.6.1",
     "grunt-contrib-concat": "2.1.0",
     "grunt-contrib-cssmin": "5.0.0",
     "grunt-criticalcss": "2.1.0",
     "jsonc-parser": "3.3.1",
-    "ts-jest": "29.4.3"
+    "ts-jest": "29.4.6"
   }
 }

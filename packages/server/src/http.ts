@@ -4,6 +4,7 @@ import { fastifySecureSession } from "@fastify/secure-session";
 import { fastifyStatic } from "@fastify/static";
 import { fastifyView } from "@fastify/view";
 import fastifyWebSocket from "@fastify/websocket";
+import { isObject } from "complete-common";
 import { Eta } from "eta";
 import type { FastifyInstance } from "fastify";
 import { fastify } from "fastify";
@@ -120,9 +121,16 @@ export async function httpInit(): Promise<void> {
   });
 
   httpServer.setErrorHandler(async (error, _request, reply) => {
-    // Use "||" to handle undefined and an empty string at the same time.
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
-    const text = error.stack || error.message || "unknown error";
+    let text: string | undefined;
+    if (isObject(error)) {
+      const { stack, message } = error;
+      if (typeof stack === "string" && stack !== "") {
+        text = stack;
+      } else if (typeof message === "string" && message !== "") {
+        text = message;
+      }
+    }
+    text ??= "unknown error";
 
     await reply
       .code(StatusCodes.INTERNAL_SERVER_ERROR)

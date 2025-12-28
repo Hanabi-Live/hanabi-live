@@ -5,7 +5,7 @@ import { sudokuWalkUpAll } from "./sudoku";
 describe("sudokuWalkUpAll5", () => {
   const variant = getVariant("Sudoku (5 Suits)");
   test("Handles single discarded 1", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1]);
+    const allDiscardedSet = new Set<Rank>([1]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -15,7 +15,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles single discarded 2", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([2]);
+    const allDiscardedSet = new Set<Rank>([2]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -25,7 +25,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles single discarded 3", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([3]);
+    const allDiscardedSet = new Set<Rank>([3]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -35,7 +35,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles single discarded 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([4]);
+    const allDiscardedSet = new Set<Rank>([4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -45,7 +45,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles single discarded 5", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([5]);
+    const allDiscardedSet = new Set<Rank>([5]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -55,7 +55,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles discarded 2 and 5", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 5]);
+    const allDiscardedSet = new Set<Rank>([2, 5]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -65,7 +65,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles discarded 1 and 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1, 4]);
+    const allDiscardedSet = new Set<Rank>([1, 4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -75,7 +75,7 @@ describe("sudokuWalkUpAll5", () => {
   });
 
   test("Handles discarded 1, 2, and 5", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1, 2, 5]);
+    const allDiscardedSet = new Set<Rank>([1, 2, 5]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -88,7 +88,7 @@ describe("sudokuWalkUpAll5", () => {
 describe("sudokuWalkUpAll4", () => {
   const variant = getVariant("Sudoku (4 Suits)");
   test("Handles single discarded 1", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1]);
+    const allDiscardedSet = new Set<Rank>([1]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -98,7 +98,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles single discarded 2", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([2]);
+    const allDiscardedSet = new Set<Rank>([2]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -108,7 +108,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles single discarded 3", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([3]);
+    const allDiscardedSet = new Set<Rank>([3]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -118,7 +118,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles single discarded 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([4]);
+    const allDiscardedSet = new Set<Rank>([4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -128,7 +128,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles discarded 2 and 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([2, 4]);
+    const allDiscardedSet = new Set<Rank>([2, 4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -138,7 +138,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles discarded 1 and 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1, 4]);
+    const allDiscardedSet = new Set<Rank>([1, 4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,
@@ -148,7 +148,7 @@ describe("sudokuWalkUpAll4", () => {
   });
 
   test("Handles discarded 1, 2, and 4", () => {
-    const allDiscardedSet: Set<Rank> = new Set<Rank>([1, 2, 4]);
+    const allDiscardedSet = new Set<Rank>([1, 2, 4]);
     const { allMax, maxScoresForEachStartingValueOfSuit } = sudokuWalkUpAll(
       allDiscardedSet,
       variant,

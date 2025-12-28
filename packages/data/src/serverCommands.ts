@@ -29,8 +29,9 @@ const serverCommandChatData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandChatData
-  extends z.infer<typeof serverCommandChatData> {}
+export interface ServerCommandChatData extends z.infer<
+  typeof serverCommandChatData
+> {}
 
 const serverCommandChatListData = z
   .object({
@@ -41,8 +42,9 @@ const serverCommandChatListData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ServerCommandChatListData
-  extends z.infer<typeof serverCommandChatListData> {}
+interface ServerCommandChatListData extends z.infer<
+  typeof serverCommandChatListData
+> {}
 
 const serverCommandErrorData = z
   .object({
@@ -52,14 +54,16 @@ const serverCommandErrorData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandErrorData
-  extends z.infer<typeof serverCommandErrorData> {}
+export interface ServerCommandErrorData extends z.infer<
+  typeof serverCommandErrorData
+> {}
 
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ServerCommandGameHistoryData
-  extends z.infer<typeof serverCommandGameHistoryData> {}
+interface ServerCommandGameHistoryData extends z.infer<
+  typeof serverCommandGameHistoryData
+> {}
 
 const serverCommandTableData = z
   .object({
@@ -85,14 +89,16 @@ const serverCommandTableData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandTableData
-  extends z.infer<typeof serverCommandTableData> {}
+export interface ServerCommandTableData extends z.infer<
+  typeof serverCommandTableData
+> {}
 
 const serverCommandTableListData = serverCommandTableData.array().readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ServerCommandTableListData
-  extends z.infer<typeof serverCommandTableListData> {}
+interface ServerCommandTableListData extends z.infer<
+  typeof serverCommandTableListData
+> {}
 
 const serverCommandUserData = z
   .object({
@@ -107,8 +113,9 @@ const serverCommandUserData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserData
-  extends z.infer<typeof serverCommandUserData> {}
+export interface ServerCommandUserData extends z.infer<
+  typeof serverCommandUserData
+> {}
 
 const serverCommandUserLeftData = z
   .object({
@@ -118,14 +125,16 @@ const serverCommandUserLeftData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserLeftData
-  extends z.infer<typeof serverCommandUserLeftData> {}
+export interface ServerCommandUserLeftData extends z.infer<
+  typeof serverCommandUserLeftData
+> {}
 
 const serverCommandUserListData = serverCommandUserData.array().readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserListData
-  extends z.infer<typeof serverCommandUserListData> {}
+export interface ServerCommandUserListData extends z.infer<
+  typeof serverCommandUserListData
+> {}
 
 const serverCommandWarningData = z
   .object({
@@ -135,8 +144,9 @@ const serverCommandWarningData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandWarningData
-  extends z.infer<typeof serverCommandWarningData> {}
+export interface ServerCommandWarningData extends z.infer<
+  typeof serverCommandWarningData
+> {}
 
 const serverCommandWelcomeData = z
   .object({
@@ -161,8 +171,9 @@ const serverCommandWelcomeData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandWelcomeData
-  extends z.infer<typeof serverCommandWelcomeData> {}
+export interface ServerCommandWelcomeData extends z.infer<
+  typeof serverCommandWelcomeData
+> {}
 
 // -----------
 // Collections
