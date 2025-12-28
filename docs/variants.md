@@ -181,20 +181,20 @@ One of each card per suit (e.g. 5 in total):
 
 - Each suit is touched by 2 separate colors.
 - In the 6-suit version, there are 4 different colors:
-  - Orange (red / yellow)
+  - Tangerine (red / yellow)
   - Purple (red / blue)
   - Mahogany (red / black)
   - Green (yellow / blue)
   - Tan (yellow / black)
   - Navy (blue / black)
 - In the 5-suit version, there are 5 different colors:
-  - Orange (red / yellow)
+  - Tangerine (red / yellow)
   - Lime (yellow / green)
   - Teal (green / blue)
   - Indigo (blue / purple)
   - Cardinal (purple / red)
 - In the 3-suit version, there are 3 different colors:
-  - Orange (red / yellow)
+  - Tangerine (red / yellow)
   - Green (yellow / blue)
   - Purple (blue / red)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
@@ -244,7 +244,7 @@ One of each card per suit (e.g. 5 in total):
 - This is a mix of several variants. The suits are as follows:
   1. Green (blue / yellow)
   2. Purple (blue / red)
-  3. Orange (yellow / red)
+  3. Tangerine (yellow / red)
   4. Black (one of each)
   5. Rainbow (all colors)
   6. White (colorless)
@@ -263,7 +263,7 @@ One of each card per suit (e.g. 5 in total):
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Orange (red / yellow)
+  2. Tangerine (red / yellow)
   3. Yellow
   4. White (colorless)
   5. Brown (rankless)
@@ -272,7 +272,7 @@ One of each card per suit (e.g. 5 in total):
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Orange (red / yellow)
+  2. Tangerine (red / yellow)
   3. Yellow
   4. White (colorless)
   5. Brown (rankless)

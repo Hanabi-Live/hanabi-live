@@ -379,9 +379,9 @@
     "clueColors": ["Blue"]
   },
   {
-    "name": "Orange D",
+    "name": "Tangerine D",
     "id": "DRY",
-    "displayName": "Orange",
+    "displayName": "Tangerine",
     "fill": "#ff8800",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow"]
@@ -425,9 +425,9 @@
     "clueColors": ["Blue", "Black"]
   },
   {
-    "name": "Orange D2",
+    "name": "Tangerine D2",
     "id": "DRY2",
-    "displayName": "Orange",
+    "displayName": "Tangerine",
     "fill": "#ff8800",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]

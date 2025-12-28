@@ -17,8 +17,8 @@ export interface SuitJSON {
    *   VA")
    * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
    *   EA")
-   * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Orange D", "DRB" for "Purple D",
-   *   and "DRY2" for "Orange D2")
+   * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D", "DRB" for "Purple
+   *   D", and "DRY2" for "Tangerine D2")
    */
   readonly id: string;
 
