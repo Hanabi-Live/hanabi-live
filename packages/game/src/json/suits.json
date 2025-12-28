@@ -249,6 +249,7 @@
   {
     "name": "Dark Orange",
     "id": "DOr",
+    "fill": "#623500",
     "pip": "unoReverse",
     "oneOfEach": true,
     "clueColors": ["Orange"],
