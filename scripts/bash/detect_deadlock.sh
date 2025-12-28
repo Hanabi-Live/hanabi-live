@@ -31,7 +31,7 @@ echo "Detecting a server deadlock..."
 
 while true; do
   COOKIE_FILENAME="cookie.txt"
-  curl --silent --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
+  curl --silent --fail --show-error --location --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
   COOKIE=$(grep -i 'Set-Cookie' "$COOKIE_FILENAME" | awk '/hanabi.sid=/{print $2}')
   HTTP_HEADER="Cookie: $COOKIE"
   rm -f "$COOKIE_FILENAME"

@@ -1,9 +1,12 @@
 #!/bin/bash
 
+set -euo pipefail # Exit on errors and undefined variables.
+
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Import the database information.
+# shellcheck source=/dev/null
 source "$DIR/../.env"
 
 if [[ -z ${DB_HOST-} ]]; then
@@ -22,6 +25,4 @@ PGPASSWORD="$DB_PASSWORD" psql \
   --dbname="$DB_NAME" \
   < "$DIR/database_schema.sql"
 
-if [[ $? -eq 0 ]]; then
-  echo "Successfully installed the database schema."
-fi
+echo "Successfully installed the database schema."

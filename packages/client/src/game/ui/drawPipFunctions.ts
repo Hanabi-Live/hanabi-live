@@ -8,6 +8,10 @@ type DrawFunction = (
 const SCALE_FACTOR = 3;
 
 export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
+  // ------------
+  // Vanilla pips
+  // ------------
+
   [
     "hanabiRed",
     (ctx: CanvasRenderingContext2D) => {
@@ -68,6 +72,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
     "hanabiYellow",
     (ctx: CanvasRenderingContext2D) => {
@@ -224,6 +229,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
     "hanabiGreen",
     (ctx: CanvasRenderingContext2D) => {
@@ -427,6 +433,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
     "hanabiBlue",
     (ctx: CanvasRenderingContext2D) => {
@@ -543,6 +550,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
     "hanabiWhite",
     (ctx: CanvasRenderingContext2D) => {
@@ -757,6 +765,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.scale(4, 4);
     },
   ],
+
   [
     "hanabiAltWhite",
     (ctx: CanvasRenderingContext2D) => {
@@ -1067,6 +1076,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
     "hanabiAltBlue",
     (ctx: CanvasRenderingContext2D) => {
@@ -1334,83 +1344,308 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
+  // -----------
+  // Custom pips
+  // -----------
+
   [
-    "moon",
+    "emptySet",
     (ctx: CanvasRenderingContext2D) => {
-      ctx.scale(0.25, 0.25);
+      ctx.scale(2 / 7, 2 / 7);
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
-      ctx.translate(-414.893_82, -203.536_19);
-      ctx.moveTo(374.946_29, 141.086_53);
+      ctx.moveTo(18.066_96, -33.593_032);
       ctx.bezierCurveTo(
-        340.464_47,
-        163.1565,
-        330.404_13,
-        209.013_71,
-        352.476_55,
-        243.488_28,
+        17.937_116,
+        -34.945_908,
+        17.624_489,
+        -35.265_144,
+        15.303_533,
+        -36.414_909,
       );
       ctx.bezierCurveTo(
-        374.549_45,
-        277.965_45,
-        420.410_39,
-        288.024_39,
-        454.892_22,
-        265.955_19,
+        13.864_187,
+        -37.127_948,
+        10.308_861,
+        -38.313_716,
+        7.402_817,
+        -39.049_953,
       );
       ctx.bezierCurveTo(
-        477.025_72,
-        251.7884,
-        489.042_88,
-        227.834_33,
-        489.011_38,
-        203.371_39,
+        -6.425_702,
+        -42.553_351,
+        -19.453_999,
+        -39.314_305,
+        -29.359_582,
+        -29.910_263,
       );
       ctx.bezierCurveTo(
-        485.2623,
-        214.509_46,
-        477.9108,
-        224.512_67,
-        467.2415,
-        231.3414,
+        -37.501_128,
+        -22.180_935,
+        -42.050_267,
+        -10.684,
+        -41.347_053,
+        0.385_397,
       );
       ctx.bezierCurveTo(
-        442.362_79,
-        247.265_42,
-        409.218_42,
-        239.994_58,
-        393.293_88,
-        215.119_47,
+        -41.013_532,
+        5.635_746,
+        -39.972_946,
+        9.549_568,
+        -37.152_261,
+        16.163_069,
+      );
+      ctx.lineTo(-34.942_449, 21.344_279);
+      ctx.lineTo(-8.364_535, -5.361_649);
+      ctx.bezierCurveTo(
+        17.139_857,
+        -30.988_877,
+        18.207_467,
+        -32.129_19,
+        18.066_96,
+        -33.593_032,
+      );
+      ctx.moveTo(5.603_533, 40.114_884);
+      ctx.bezierCurveTo(
+        18.443_087,
+        38.252_884,
+        30.195_076,
+        29.803_314,
+        35.721_066,
+        18.460_658,
       );
       ctx.bezierCurveTo(
-        377.367_61,
-        190.244_11,
-        384.683_48,
-        157.175_02,
-        409.562_19,
-        141.249_94,
+        38.275_666,
+        13.217_072,
+        38.869_516,
+        10.218_417,
+        38.842_216,
+        2.700_461,
       );
       ctx.bezierCurveTo(
-        418.141_55,
-        135.758_65,
-        427.650_37,
-        133.064_36,
-        437.139_06,
-        132.858_39,
+        38.812_316,
+        -5.501_334,
+        37.619_886,
+        -11.694_394,
+        34.983_536,
+        -17.338_568,
+      );
+      ctx.lineTo(33.192_096, -21.173_866);
+      ctx.lineTo(19.886_003, -7.949_57);
+      ctx.bezierCurveTo(
+        5.092_643,
+        6.752_854,
+        -12.4197,
+        24.558_808,
+        -16.754_248,
+        29.304_984,
       );
       ctx.bezierCurveTo(
-        416.929_67,
-        126.511_22,
-        394.181_38,
-        128.772_83,
-        374.943_62,
-        141.0852,
+        -18.576_124,
+        31.299_864,
+        -19.583_283,
+        32.791_904,
+        -19.583_283,
+        33.495_994,
+      );
+      ctx.bezierCurveTo(
+        -19.583_283,
+        34.804_184,
+        -18.010_991,
+        36.027_254,
+        -14.540_973,
+        37.418_404,
+      );
+      ctx.bezierCurveTo(
+        -7.406_745,
+        40.278_564,
+        -1.228_098,
+        41.105_614,
+        5.603_533,
+        40.114_884,
+      );
+      ctx.moveTo(-70.961_668, 72.098_354);
+      ctx.bezierCurveTo(
+        -72.007_521,
+        71.215_564,
+        -72.848_172,
+        69.767_224,
+        -73.254_683,
+        68.147_744,
+      );
+      ctx.bezierCurveTo(
+        -74.310_054,
+        63.943_354,
+        -73.110_785,
+        62.108_514,
+        -61.628_224,
+        50.359_954,
+      );
+      ctx.bezierCurveTo(
+        -56.064_325,
+        44.667_154,
+        -51.512_034,
+        39.823_104,
+        -51.512_034,
+        39.595_414,
+      );
+      ctx.bezierCurveTo(
+        -51.512_034,
+        39.367_754,
+        -52.884_405,
+        36.746_844,
+        -54.561_735,
+        33.771_244,
+      );
+      ctx.bezierCurveTo(
+        -58.102_513,
+        27.489_874,
+        -61.680_206,
+        17.244_693,
+        -63.009_578,
+        9.579_806,
+      );
+      ctx.bezierCurveTo(
+        -65.363_319,
+        -3.991_429,
+        -61.413_282,
+        -22.264_582,
+        -53.589_285,
+        -33.999_13,
+      );
+      ctx.bezierCurveTo(
+        -50.286_636,
+        -38.952_503,
+        -42.060_615,
+        -47.482_443,
+        -36.981_141,
+        -51.220_879,
+      );
+      ctx.bezierCurveTo(
+        -21.607_703,
+        -62.535_576,
+        0.534_45,
+        -65.806_397,
+        19.745_235,
+        -59.600_455,
+      );
+      ctx.bezierCurveTo(
+        22.204_314,
+        -58.806_068,
+        27.589_996,
+        -56.396_781,
+        31.713_436,
+        -54.246_479,
+      );
+      ctx.lineTo(39.210_586, -50.336_856);
+      ctx.lineTo(44.284_316, -55.795_686);
+      ctx.bezierCurveTo(
+        50.534_776,
+        -62.520_561,
+        59.178_086,
+        -70.298_349,
+        62.013_226,
+        -71.749_269,
+      );
+      ctx.bezierCurveTo(
+        63.178_396,
+        -72.345_549,
+        64.837_846,
+        -72.833_439,
+        65.700_876,
+        -72.833_439,
+      );
+      ctx.bezierCurveTo(
+        69.748_316,
+        -72.833_439,
+        73.929_256,
+        -67.197_129,
+        72.560_576,
+        -63.585_937,
+      );
+      ctx.bezierCurveTo(
+        71.640_246,
+        -61.157_693,
+        66.840_296,
+        -55.429_127,
+        58.367_846,
+        -46.647_432,
+      );
+      ctx.lineTo(50.817_656, -38.821_666);
+      ctx.lineTo(54.663_266, -30.728_187);
+      ctx.bezierCurveTo(
+        59.200_806,
+        -21.178_501,
+        61.029_016,
+        -15.9635,
+        62.199_266,
+        -9.231_772,
+      );
+      ctx.bezierCurveTo(
+        64.012_526,
+        1.198_819,
+        62.785_926,
+        11.912_655,
+        58.527_336,
+        22.841_222,
+      );
+      ctx.bezierCurveTo(
+        48.469_396,
+        48.652_304,
+        26.793_386,
+        63.400_694,
+        -1.083_752,
+        63.400_694,
+      );
+      ctx.bezierCurveTo(
+        -12.913_562,
+        63.400_694,
+        -21.748_215,
+        61.004_524,
+        -33.291_158,
+        54.665_244,
+      );
+      ctx.bezierCurveTo(
+        -36.333_509,
+        52.994_414,
+        -39.085_355,
+        51.627_384,
+        -39.406_377,
+        51.627_384,
+      );
+      ctx.bezierCurveTo(
+        -39.727_406,
+        51.627_384,
+        -44.405_839,
+        56.008_504,
+        -49.802_924,
+        61.363_214,
+      );
+      ctx.bezierCurveTo(
+        -55.311_645,
+        66.828_704,
+        -60.647_873,
+        71.623_884,
+        -61.968_783,
+        72.295_584,
+      );
+      ctx.bezierCurveTo(
+        -65.257_998,
+        73.968_204,
+        -68.839_478,
+        73.889_654,
+        -70.961_668,
+        72.098_364,
       );
       ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
       ctx.closePath();
-      ctx.scale(4, 4);
+
+      ctx.lineWidth = 20;
+      ctx.stroke();
     },
   ],
+
   [
     "hashtag",
     (ctx: CanvasRenderingContext2D) => {
@@ -1778,8 +2013,179 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.scale(3, 3);
     },
   ],
+
   [
-    "katakanaNu",
+    "infinity",
+    (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
+      ctx.scale(1.2, 1.2);
+      ctx.beginPath();
+      ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
+      ctx.translate(-91.082_135, -80.110_718);
+      ctx.transform(2.128_652, 0, 0, 2.476_848, -78.229_708, -213.117_53);
+      ctx.moveTo(84.443_554, 124.560_58);
+      ctx.bezierCurveTo(
+        86.918_78,
+        124.464_38,
+        89.392_846,
+        122.020_23,
+        89.392_11,
+        117.589_85,
+      );
+      ctx.bezierCurveTo(
+        89.392_11,
+        117.082_88,
+        88.432_933,
+        116.691_02,
+        87.515_841,
+        116.429_29,
+      );
+      ctx.bezierCurveTo(
+        86.129_485,
+        111.085_71,
+        80.894_815,
+        111.014_25,
+        78.815_855,
+        115.1772,
+      );
+      ctx.bezierCurveTo(
+        76.486_172,
+        109.953_16,
+        69.685_595,
+        111.837_18,
+        69.686_815,
+        119.181_05,
+      );
+      ctx.bezierCurveTo(
+        69.686_815,
+        119.688_13,
+        70.646_062,
+        120.081_25,
+        71.562_529,
+        120.342_24,
+      );
+      ctx.bezierCurveTo(
+        72.949_924,
+        125.686_47,
+        78.184_271,
+        125.757_92,
+        80.263_07,
+        121.594_34,
+      );
+      ctx.bezierCurveTo(
+        81.188_027,
+        123.667_36,
+        82.815_125,
+        124.623_69,
+        84.443_554,
+        124.560_58,
+      );
+      ctx.moveTo(83.404_271, 120.906_82);
+      ctx.bezierCurveTo(
+        82.731_479,
+        120.875_12,
+        82.029_116,
+        120.638_01,
+        81.439_628,
+        120.352_81,
+      );
+      ctx.bezierCurveTo(
+        80.979_448,
+        115.091_15,
+        84.019_975,
+        115.515_67,
+        85.906_337,
+        116.429_29,
+      );
+      ctx.bezierCurveTo(
+        86.222_708,
+        120.046_69,
+        84.884_415,
+        120.975_85,
+        83.404_271,
+        120.906_82,
+      );
+      ctx.moveTo(75.136_667, 120.896_22);
+      ctx.bezierCurveTo(
+        74.463_876,
+        120.864_52,
+        73.761_523,
+        120.627_41,
+        73.172_033,
+        120.342_21,
+      );
+      ctx.bezierCurveTo(
+        72.711_854,
+        115.080_55,
+        75.752_37,
+        115.504_43,
+        77.638_733,
+        116.418_06,
+      );
+      ctx.bezierCurveTo(
+        77.955_104,
+        120.035_45,
+        76.616_822,
+        120.965_25,
+        75.136_667,
+        120.896_22,
+      );
+      ctx.transform(1 / 2.128_652, 0, 0, 1 / 2.476_848, 0, 0);
+      ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
+      ctx.closePath();
+      ctx.scale(5 / 6, 5 / 6);
+      if (colors !== undefined) {
+        // When multiple colors are passed, create a gradient.
+        const gradient = ctx.createLinearGradient(500, 0, 700, 0);
+        for (const [i, color] of colors.entries()) {
+          gradient.addColorStop(i / (colors.length - 1), color);
+        }
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
+    },
+  ],
+
+  [
+    // https://en.wikipedia.org/wiki/He_(kana)
+    "katakanaHe", // ヘ
+    (ctx: CanvasRenderingContext2D) => {
+      ctx.translate(-90, -85);
+      ctx.scale(0.7, 0.7);
+
+      ctx.beginPath();
+
+      // 1. Start at the "bottom-inner" corner of the starting stroke
+      ctx.moveTo(68, 165);
+
+      // 2. Draw the blunt starting edge up to the "top-outer" corner
+      ctx.lineTo(52, 152);
+
+      // 3. Curve up to the "outer elbow" (the highest, thickest point outside) The first pair (70,
+      //    100) is the control point determining the curve shape.
+      ctx.quadraticCurveTo(70, 100, 85, 45);
+
+      // 4. The long taper down to the sharp tip. Control point (160, 60) keeps the upper edge
+      //    smooth before diving down.
+      ctx.quadraticCurveTo(160, 60, 228, 198); // Ends at sharp tip
+
+      // 5. Curve back up to the "inner elbow" (the thickest point inside) Control point (170, 150)
+      //    creates the "belly" of the bottom stroke.
+      ctx.quadraticCurveTo(170, 150, 115, 92);
+
+      // 6. Curve back to the start point to close the loop.
+      ctx.quadraticCurveTo(90, 130, 68, 165);
+
+      ctx.closePath();
+      ctx.lineWidth = 5;
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+    },
+  ],
+
+  [
+    // https://en.wikipedia.org/wiki/Nu_(kana)
+    "katakanaNu", // ヌ
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -1973,449 +2379,85 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.closePath();
     },
   ],
+
   [
-    "katakanaHe",
+    "moon",
     (ctx: CanvasRenderingContext2D) => {
+      ctx.scale(0.25, 0.25);
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
-
-      // Draw the curve for "ヘ" using bezierCurveTo.
-      ctx.bezierCurveTo(-10, 200, 10, 240, -10, 260);
-
-      /*
-  ctx.lineTo(10, 260);
-  ctx.bezierCurveTo(0, 240, -20, 200, 20, 220);
-
-  ctx.lineTo(0, 220);
-  */
-
-      ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
-      ctx.closePath();
-    },
-  ],
-  [
-    "emptySet",
-    (ctx: CanvasRenderingContext2D) => {
-      ctx.scale(2 / 7, 2 / 7);
-      ctx.beginPath();
-      ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
-      ctx.moveTo(18.066_96, -33.593_032);
+      ctx.translate(-414.893_82, -203.536_19);
+      ctx.moveTo(374.946_29, 141.086_53);
       ctx.bezierCurveTo(
-        17.937_116,
-        -34.945_908,
-        17.624_489,
-        -35.265_144,
-        15.303_533,
-        -36.414_909,
+        340.464_47,
+        163.1565,
+        330.404_13,
+        209.013_71,
+        352.476_55,
+        243.488_28,
       );
       ctx.bezierCurveTo(
-        13.864_187,
-        -37.127_948,
-        10.308_861,
-        -38.313_716,
-        7.402_817,
-        -39.049_953,
+        374.549_45,
+        277.965_45,
+        420.410_39,
+        288.024_39,
+        454.892_22,
+        265.955_19,
       );
       ctx.bezierCurveTo(
-        -6.425_702,
-        -42.553_351,
-        -19.453_999,
-        -39.314_305,
-        -29.359_582,
-        -29.910_263,
+        477.025_72,
+        251.7884,
+        489.042_88,
+        227.834_33,
+        489.011_38,
+        203.371_39,
       );
       ctx.bezierCurveTo(
-        -37.501_128,
-        -22.180_935,
-        -42.050_267,
-        -10.684,
-        -41.347_053,
-        0.385_397,
+        485.2623,
+        214.509_46,
+        477.9108,
+        224.512_67,
+        467.2415,
+        231.3414,
       );
       ctx.bezierCurveTo(
-        -41.013_532,
-        5.635_746,
-        -39.972_946,
-        9.549_568,
-        -37.152_261,
-        16.163_069,
-      );
-      ctx.lineTo(-34.942_449, 21.344_279);
-      ctx.lineTo(-8.364_535, -5.361_649);
-      ctx.bezierCurveTo(
-        17.139_857,
-        -30.988_877,
-        18.207_467,
-        -32.129_19,
-        18.066_96,
-        -33.593_032,
-      );
-      ctx.moveTo(5.603_533, 40.114_884);
-      ctx.bezierCurveTo(
-        18.443_087,
-        38.252_884,
-        30.195_076,
-        29.803_314,
-        35.721_066,
-        18.460_658,
+        442.362_79,
+        247.265_42,
+        409.218_42,
+        239.994_58,
+        393.293_88,
+        215.119_47,
       );
       ctx.bezierCurveTo(
-        38.275_666,
-        13.217_072,
-        38.869_516,
-        10.218_417,
-        38.842_216,
-        2.700_461,
+        377.367_61,
+        190.244_11,
+        384.683_48,
+        157.175_02,
+        409.562_19,
+        141.249_94,
       );
       ctx.bezierCurveTo(
-        38.812_316,
-        -5.501_334,
-        37.619_886,
-        -11.694_394,
-        34.983_536,
-        -17.338_568,
-      );
-      ctx.lineTo(33.192_096, -21.173_866);
-      ctx.lineTo(19.886_003, -7.949_57);
-      ctx.bezierCurveTo(
-        5.092_643,
-        6.752_854,
-        -12.4197,
-        24.558_808,
-        -16.754_248,
-        29.304_984,
+        418.141_55,
+        135.758_65,
+        427.650_37,
+        133.064_36,
+        437.139_06,
+        132.858_39,
       );
       ctx.bezierCurveTo(
-        -18.576_124,
-        31.299_864,
-        -19.583_283,
-        32.791_904,
-        -19.583_283,
-        33.495_994,
-      );
-      ctx.bezierCurveTo(
-        -19.583_283,
-        34.804_184,
-        -18.010_991,
-        36.027_254,
-        -14.540_973,
-        37.418_404,
-      );
-      ctx.bezierCurveTo(
-        -7.406_745,
-        40.278_564,
-        -1.228_098,
-        41.105_614,
-        5.603_533,
-        40.114_884,
-      );
-      ctx.moveTo(-70.961_668, 72.098_354);
-      ctx.bezierCurveTo(
-        -72.007_521,
-        71.215_564,
-        -72.848_172,
-        69.767_224,
-        -73.254_683,
-        68.147_744,
-      );
-      ctx.bezierCurveTo(
-        -74.310_054,
-        63.943_354,
-        -73.110_785,
-        62.108_514,
-        -61.628_224,
-        50.359_954,
-      );
-      ctx.bezierCurveTo(
-        -56.064_325,
-        44.667_154,
-        -51.512_034,
-        39.823_104,
-        -51.512_034,
-        39.595_414,
-      );
-      ctx.bezierCurveTo(
-        -51.512_034,
-        39.367_754,
-        -52.884_405,
-        36.746_844,
-        -54.561_735,
-        33.771_244,
-      );
-      ctx.bezierCurveTo(
-        -58.102_513,
-        27.489_874,
-        -61.680_206,
-        17.244_693,
-        -63.009_578,
-        9.579_806,
-      );
-      ctx.bezierCurveTo(
-        -65.363_319,
-        -3.991_429,
-        -61.413_282,
-        -22.264_582,
-        -53.589_285,
-        -33.999_13,
-      );
-      ctx.bezierCurveTo(
-        -50.286_636,
-        -38.952_503,
-        -42.060_615,
-        -47.482_443,
-        -36.981_141,
-        -51.220_879,
-      );
-      ctx.bezierCurveTo(
-        -21.607_703,
-        -62.535_576,
-        0.534_45,
-        -65.806_397,
-        19.745_235,
-        -59.600_455,
-      );
-      ctx.bezierCurveTo(
-        22.204_314,
-        -58.806_068,
-        27.589_996,
-        -56.396_781,
-        31.713_436,
-        -54.246_479,
-      );
-      ctx.lineTo(39.210_586, -50.336_856);
-      ctx.lineTo(44.284_316, -55.795_686);
-      ctx.bezierCurveTo(
-        50.534_776,
-        -62.520_561,
-        59.178_086,
-        -70.298_349,
-        62.013_226,
-        -71.749_269,
-      );
-      ctx.bezierCurveTo(
-        63.178_396,
-        -72.345_549,
-        64.837_846,
-        -72.833_439,
-        65.700_876,
-        -72.833_439,
-      );
-      ctx.bezierCurveTo(
-        69.748_316,
-        -72.833_439,
-        73.929_256,
-        -67.197_129,
-        72.560_576,
-        -63.585_937,
-      );
-      ctx.bezierCurveTo(
-        71.640_246,
-        -61.157_693,
-        66.840_296,
-        -55.429_127,
-        58.367_846,
-        -46.647_432,
-      );
-      ctx.lineTo(50.817_656, -38.821_666);
-      ctx.lineTo(54.663_266, -30.728_187);
-      ctx.bezierCurveTo(
-        59.200_806,
-        -21.178_501,
-        61.029_016,
-        -15.9635,
-        62.199_266,
-        -9.231_772,
-      );
-      ctx.bezierCurveTo(
-        64.012_526,
-        1.198_819,
-        62.785_926,
-        11.912_655,
-        58.527_336,
-        22.841_222,
-      );
-      ctx.bezierCurveTo(
-        48.469_396,
-        48.652_304,
-        26.793_386,
-        63.400_694,
-        -1.083_752,
-        63.400_694,
-      );
-      ctx.bezierCurveTo(
-        -12.913_562,
-        63.400_694,
-        -21.748_215,
-        61.004_524,
-        -33.291_158,
-        54.665_244,
-      );
-      ctx.bezierCurveTo(
-        -36.333_509,
-        52.994_414,
-        -39.085_355,
-        51.627_384,
-        -39.406_377,
-        51.627_384,
-      );
-      ctx.bezierCurveTo(
-        -39.727_406,
-        51.627_384,
-        -44.405_839,
-        56.008_504,
-        -49.802_924,
-        61.363_214,
-      );
-      ctx.bezierCurveTo(
-        -55.311_645,
-        66.828_704,
-        -60.647_873,
-        71.623_884,
-        -61.968_783,
-        72.295_584,
-      );
-      ctx.bezierCurveTo(
-        -65.257_998,
-        73.968_204,
-        -68.839_478,
-        73.889_654,
-        -70.961_668,
-        72.098_364,
+        416.929_67,
+        126.511_22,
+        394.181_38,
+        128.772_83,
+        374.943_62,
+        141.0852,
       );
       ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
       ctx.closePath();
+      ctx.scale(4, 4);
     },
   ],
-  [
-    "infinity",
-    (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
-      ctx.scale(1.2, 1.2);
-      ctx.beginPath();
-      ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
-      ctx.translate(-91.082_135, -80.110_718);
-      ctx.transform(2.128_652, 0, 0, 2.476_848, -78.229_708, -213.117_53);
-      ctx.moveTo(84.443_554, 124.560_58);
-      ctx.bezierCurveTo(
-        86.918_78,
-        124.464_38,
-        89.392_846,
-        122.020_23,
-        89.392_11,
-        117.589_85,
-      );
-      ctx.bezierCurveTo(
-        89.392_11,
-        117.082_88,
-        88.432_933,
-        116.691_02,
-        87.515_841,
-        116.429_29,
-      );
-      ctx.bezierCurveTo(
-        86.129_485,
-        111.085_71,
-        80.894_815,
-        111.014_25,
-        78.815_855,
-        115.1772,
-      );
-      ctx.bezierCurveTo(
-        76.486_172,
-        109.953_16,
-        69.685_595,
-        111.837_18,
-        69.686_815,
-        119.181_05,
-      );
-      ctx.bezierCurveTo(
-        69.686_815,
-        119.688_13,
-        70.646_062,
-        120.081_25,
-        71.562_529,
-        120.342_24,
-      );
-      ctx.bezierCurveTo(
-        72.949_924,
-        125.686_47,
-        78.184_271,
-        125.757_92,
-        80.263_07,
-        121.594_34,
-      );
-      ctx.bezierCurveTo(
-        81.188_027,
-        123.667_36,
-        82.815_125,
-        124.623_69,
-        84.443_554,
-        124.560_58,
-      );
-      ctx.moveTo(83.404_271, 120.906_82);
-      ctx.bezierCurveTo(
-        82.731_479,
-        120.875_12,
-        82.029_116,
-        120.638_01,
-        81.439_628,
-        120.352_81,
-      );
-      ctx.bezierCurveTo(
-        80.979_448,
-        115.091_15,
-        84.019_975,
-        115.515_67,
-        85.906_337,
-        116.429_29,
-      );
-      ctx.bezierCurveTo(
-        86.222_708,
-        120.046_69,
-        84.884_415,
-        120.975_85,
-        83.404_271,
-        120.906_82,
-      );
-      ctx.moveTo(75.136_667, 120.896_22);
-      ctx.bezierCurveTo(
-        74.463_876,
-        120.864_52,
-        73.761_523,
-        120.627_41,
-        73.172_033,
-        120.342_21,
-      );
-      ctx.bezierCurveTo(
-        72.711_854,
-        115.080_55,
-        75.752_37,
-        115.504_43,
-        77.638_733,
-        116.418_06,
-      );
-      ctx.bezierCurveTo(
-        77.955_104,
-        120.035_45,
-        76.616_822,
-        120.965_25,
-        75.136_667,
-        120.896_22,
-      );
-      ctx.transform(1 / 2.128_652, 0, 0, 1 / 2.476_848, 0, 0);
-      ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
-      ctx.closePath();
-      ctx.scale(5 / 6, 5 / 6);
-      if (colors !== undefined) {
-        // When multiple colors are passed, create a gradient.
-        const gradient = ctx.createLinearGradient(500, 0, 700, 0);
-        for (const [i, color] of colors.entries()) {
-          gradient.addColorStop(i / (colors.length - 1), color);
-        }
-        ctx.fillStyle = gradient;
-        ctx.fill();
-      }
-    },
-  ],
+
   [
     "rainbow",
     (ctx: CanvasRenderingContext2D, colors?: readonly string[]) => {
@@ -3382,6 +3424,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.scale(1 / SCALE_FACTOR, 1 / SCALE_FACTOR);
     },
   ],
+
   [
     "triangle",
     (ctx: CanvasRenderingContext2D) => {

@@ -28,8 +28,8 @@ WEBSOCKET_URL="$WS_PREFIX://$DOMAIN:$PORT/ws"
 
 echo "Getting a cookie..."
 COOKIE_FILENAME="cookie.txt"
-echo curl --verbose --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
-curl --verbose --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
+echo curl --fail --show-error --location --verbose --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
+curl --fail --show-error --location --verbose --dump-header "$COOKIE_FILENAME" --data "username=$HANABI_USERNAME&password=$HANABI_PASSWORD&version=bot" "$URL"
 COOKIE=$(grep -i 'Set-Cookie' "$COOKIE_FILENAME" | awk '/hanabi.sid=/{print $2}')
 HTTP_HEADER="Cookie: $COOKIE"
 rm -f "$COOKIE_FILENAME"

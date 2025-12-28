@@ -40,7 +40,7 @@
     "name": "Black",
     "id": "Bk",
     "createVariants": true,
-    "pip": "hanabiAltBlue",
+    "pip": "katakanaHe",
     "oneOfEach": true
   },
   {
@@ -579,7 +579,7 @@
     "id": "Inv",
     "abbreviation": "I",
     "fill": "#999999",
-    "pip": "triangle",
+    "pip": "katakanaHe",
     "inverted": true,
     "clueColors": ["Inverted"]
   }
