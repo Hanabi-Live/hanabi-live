@@ -2,7 +2,6 @@
 | TODO |
 +------+
 
-- fix "Inverted" in top right
 - fix hypothetical for inverted
 
 - see "function httpWSError" - will this leak memory? test it

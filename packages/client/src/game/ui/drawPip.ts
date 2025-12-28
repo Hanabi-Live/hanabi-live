@@ -88,8 +88,10 @@ export function drawPip(
     // function; the drawing function will handle the filling.
     drawPipFunction(ctx, suit.fillColors);
   } else {
-    // All other suits have a solid fill.
-    ctx.fillStyle = suit.fill;
+    // All other suits have a solid fill. (We want the black pip to have an off-black custom fill so
+    // that the border is visible on the pip.)
+    const fill = suit.name === "Black" ? "#212121" : suit.fill;
+    ctx.fillStyle = fill;
     drawPipFunction(ctx);
     ctx.fill();
   }

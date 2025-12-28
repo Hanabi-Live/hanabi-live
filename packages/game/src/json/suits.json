@@ -579,7 +579,7 @@
     "id": "Inv",
     "abbreviation": "I",
     "fill": "#999999",
-    "pip": "katakanaHe",
+    "pip": "unoReverse",
     "inverted": true,
     "clueColors": ["Inverted"]
   }

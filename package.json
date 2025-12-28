@@ -14,6 +14,7 @@
   "author": "Zamiell",
   "type": "commonjs",
   "scripts": {
+    "build-client": "bash packages/client/build_client.sh",
     "check-variant-files": "tsx ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
     "create-variants-json": "tsx ./packages/scripts/src/createVariantsJSON/createVariantsJSONScript.ts",
     "lint": "bash ./lint.sh",

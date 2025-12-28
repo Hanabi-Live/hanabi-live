@@ -3443,4 +3443,24 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
       ctx.scale(42 / 150, 42 / 150);
     },
   ],
+
+  [
+    "unoReverse",
+    (ctx: CanvasRenderingContext2D) => {
+      const topRightArrow = new Path2D(
+        "m 0,-8.125 1.25,1.25 -5,5 c -1.25,1.25 -1.25,3.75 0,5 l 2.5,-2.5 5,-5 1.25,1.25 0,-5 z",
+      );
+      const bottomLeftArrow = new Path2D(
+        "m 0,8.125 -1.25,-1.25 5,-5 c 1.25,-1.25 1.25,-3.75 0,-5 l -2.5,2.5 -5,5 -1.25,-1.25 0,5 z",
+      );
+
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 0.45;
+
+      ctx.scale(7, 7);
+
+      ctx.stroke(topRightArrow);
+      ctx.stroke(bottomLeftArrow);
+    },
+  ],
 ]);
