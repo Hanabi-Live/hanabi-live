@@ -87,7 +87,7 @@ export function getVariantDescriptions(
   const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getInvertedVariants(basicVariantSuits),
+    ...getOrangeVariants(basicVariantSuits), // TODO: Remove this
     ...getVariantsForEachSpecialSuitCombination(
       suitsToCreateVariantsFor,
       basicVariantSuits,
@@ -1292,7 +1292,7 @@ function getSudokuVariants(
   return variantDescriptions;
 }
 
-function getInvertedVariants(
+function getOrangeVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];

@@ -134,6 +134,12 @@
     "prism": true
   },
   {
+    "name": "Orange",
+    "id": "Or",
+    "pip": "unoReverse",
+    "inverted": true
+  },
+  {
     "name": "Dark Rainbow",
     "id": "DRa",
     "abbreviation": "M",
@@ -239,6 +245,14 @@
     "pip": "triangle",
     "oneOfEach": true,
     "prism": true
+  },
+  {
+    "name": "Dark Orange",
+    "id": "DOr",
+    "pip": "unoReverse",
+    "oneOfEach": true,
+    "clueColors": ["Orange"],
+    "inverted": true
   },
   {
     "name": "Tomato",
@@ -573,11 +587,5 @@
     "displayName": "Teal",
     "pip": "hanabiAltWhite",
     "clueColors": ["Green", "Blue"]
-  },
-  {
-    "name": "Orange",
-    "id": "Or",
-    "pip": "unoReverse",
-    "inverted": true
   }
 ]
