@@ -102,6 +102,12 @@ One of each card per suit (e.g. 5 in total):
 - The prism 1 is touched by the left-most color, the prism 2 is touched by the second-to-left-most color, and so forth.
 - If there are less than 5 colors available in the variant, then the colors used for prism cards will wrap-around.
 
+### Orange
+
+- One of the suits is replaced with an orange suit.
+- When one tries to discard a card from the orange suit, it is played instead.
+- When one tries to play a card from the orange suit, it is discarded instead.
+
 ### Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
 
 - One of the suits is replaced with a "dark" version of a special suit.
@@ -419,12 +425,6 @@ One of each card per suit (e.g. 5 in total):
 - Cards of rank 5 are removed from the game. Therefore, stacks only consist of 4 cards each and will wrap around from 4 to 1.
 - Playing the fourth card of a suit gives back a clue.
 
-### Inverted
-
-- One of the suits is replaced with an inverted suit.
-- When one tries to discard a card from the inverted suit, it is played instead.
-- When one tries to play a card from the inverted suit, it is discarded instead.
-
 <br />
 
 ## Full Variant Listing
@@ -446,6 +446,7 @@ One of each card per suit (e.g. 5 in total):
 - Muddy Rainbow
 - Light Pink
 - Prism
+- Orange
 - Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
 - Special Suit Combinations (e.g. Black & Rainbow)
 - Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
@@ -476,4 +477,3 @@ One of each card per suit (e.g. 5 in total):
 - Funnels
 - Chimneys
 - Sudoku
-- Inverted
