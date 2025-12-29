@@ -136,6 +136,7 @@
   {
     "name": "Orange",
     "id": "Or",
+    "createVariants": true,
     "pip": "unoReverse",
     "inverted": true
   },
@@ -249,6 +250,7 @@
   {
     "name": "Dark Orange",
     "id": "DOr",
+    "createVariants": true,
     "fill": "#623500",
     "pip": "unoReverse",
     "oneOfEach": true,

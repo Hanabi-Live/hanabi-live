@@ -87,7 +87,6 @@ export function getVariantDescriptions(
   const variantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getOrangeVariants(basicVariantSuits), // TODO: Remove this
     ...getVariantsForEachSpecialSuitCombination(
       suitsToCreateVariantsFor,
       basicVariantSuits,
@@ -1287,29 +1286,6 @@ function getSudokuVariants(
         });
       }
     }
-  }
-
-  return variantDescriptions;
-}
-
-function getOrangeVariants(
-  basicVariantSuits: BasicVariantSuits,
-): readonly VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Orange (${numSuits} Suits)`;
-    const basicSuits = basicVariantSuits[numSuits - 1];
-    if (basicSuits === undefined) {
-      continue;
-    }
-    const variantSuits = [...basicSuits, "Orange"];
-
-    variantDescriptions.push({
-      name: variantName,
-      suits: variantSuits,
-    });
   }
 
   return variantDescriptions;

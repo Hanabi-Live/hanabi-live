@@ -252,6 +252,30 @@
     "suits": ["Red", "Blue", "Prism"]
   },
   {
+    "id": 2130,
+    "newID": "R+Y+G+B+P+Or",
+    "name": "Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"]
+  },
+  {
+    "id": 2131,
+    "newID": "R+Y+G+B+Or",
+    "name": "Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"]
+  },
+  {
+    "id": 2132,
+    "newID": "R+G+B+Or",
+    "name": "Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"]
+  },
+  {
+    "id": 2133,
+    "newID": "R+B+Or",
+    "name": "Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"]
+  },
+  {
     "id": 11,
     "newID": "R+Y+G+B+P+DRa",
     "name": "Dark Rainbow (6 Suits)",
@@ -360,28 +384,16 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"]
   },
   {
-    "id": 2130,
-    "newID": "R+Y+G+B+P+Or",
-    "name": "Orange (6 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"]
+    "id": 2134,
+    "newID": "R+Y+G+B+P+DOr",
+    "name": "Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"]
   },
   {
-    "id": 2131,
-    "newID": "R+Y+G+B+Or",
-    "name": "Orange (5 Suits)",
-    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"]
-  },
-  {
-    "id": 2132,
-    "newID": "R+G+B+Or",
-    "name": "Orange (4 Suits)",
-    "suits": ["Red", "Green", "Blue", "Orange"]
-  },
-  {
-    "id": 2133,
-    "newID": "R+B+Or",
-    "name": "Orange (3 Suits)",
-    "suits": ["Red", "Blue", "Orange"]
+    "id": 2135,
+    "newID": "R+Y+G+B+DOr",
+    "name": "Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"]
   },
   {
     "id": 65,
@@ -702,6 +714,30 @@
     "suits": ["Red", "Blue", "Rainbow", "Prism"]
   },
   {
+    "id": 2136,
+    "newID": "R+Y+G+B+Ra+Or",
+    "name": "Rainbow & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Orange"]
+  },
+  {
+    "id": 2137,
+    "newID": "R+G+B+Ra+Or",
+    "name": "Rainbow & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Rainbow", "Orange"]
+  },
+  {
+    "id": 2138,
+    "newID": "R+B+Ra+Or",
+    "name": "Rainbow & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Rainbow", "Orange"]
+  },
+  {
+    "id": 2139,
+    "newID": "R+Ra+Or",
+    "name": "Rainbow & Orange (3 Suits)",
+    "suits": ["Red", "Rainbow", "Orange"]
+  },
+  {
     "id": 140,
     "newID": "R+Y+G+B+Ra+DPi",
     "name": "Rainbow & Dark Pink (6 Suits)",
@@ -796,6 +832,18 @@
     "newID": "R+G+B+Ra+DPr",
     "name": "Rainbow & Dark Prism (5 Suits)",
     "suits": ["Red", "Green", "Blue", "Rainbow", "Dark Prism"]
+  },
+  {
+    "id": 2140,
+    "newID": "R+Y+G+B+Ra+DOr",
+    "name": "Rainbow & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow", "Dark Orange"]
+  },
+  {
+    "id": 2141,
+    "newID": "R+G+B+Ra+DOr",
+    "name": "Rainbow & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Rainbow", "Dark Orange"]
   },
   {
     "id": 123,
@@ -966,6 +1014,30 @@
     "suits": ["Red", "Pink", "Prism"]
   },
   {
+    "id": 2142,
+    "newID": "R+Y+G+B+Pi+Or",
+    "name": "Pink & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Orange"]
+  },
+  {
+    "id": 2143,
+    "newID": "R+G+B+Pi+Or",
+    "name": "Pink & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Pink", "Orange"]
+  },
+  {
+    "id": 2144,
+    "newID": "R+B+Pi+Or",
+    "name": "Pink & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Pink", "Orange"]
+  },
+  {
+    "id": 2145,
+    "newID": "R+Pi+Or",
+    "name": "Pink & Orange (3 Suits)",
+    "suits": ["Red", "Pink", "Orange"]
+  },
+  {
     "id": 131,
     "newID": "R+Y+G+B+Pi+DRa",
     "name": "Pink & Dark Rainbow (6 Suits)",
@@ -1060,6 +1132,18 @@
     "newID": "R+G+B+Pi+DPr",
     "name": "Pink & Dark Prism (5 Suits)",
     "suits": ["Red", "Green", "Blue", "Pink", "Dark Prism"]
+  },
+  {
+    "id": 2146,
+    "newID": "R+Y+G+B+Pi+DOr",
+    "name": "Pink & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink", "Dark Orange"]
+  },
+  {
+    "id": 2147,
+    "newID": "R+G+B+Pi+DOr",
+    "name": "Pink & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Pink", "Dark Orange"]
   },
   {
     "id": 79,
@@ -1200,6 +1284,30 @@
     "suits": ["Red", "Blue", "White", "Prism"]
   },
   {
+    "id": 2148,
+    "newID": "R+Y+G+B+Wh+Or",
+    "name": "White & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White", "Orange"]
+  },
+  {
+    "id": 2149,
+    "newID": "R+G+B+Wh+Or",
+    "name": "White & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "White", "Orange"]
+  },
+  {
+    "id": 2150,
+    "newID": "R+B+Wh+Or",
+    "name": "White & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "White", "Orange"]
+  },
+  {
+    "id": 2151,
+    "newID": "R+Wh+Or",
+    "name": "White & Orange (3 Suits)",
+    "suits": ["Red", "White", "Orange"]
+  },
+  {
     "id": 83,
     "newID": "R+Y+G+B+Wh+DRa",
     "name": "White & Dark Rainbow (6 Suits)",
@@ -1294,6 +1402,18 @@
     "newID": "R+G+B+Wh+DPr",
     "name": "White & Dark Prism (5 Suits)",
     "suits": ["Red", "Green", "Blue", "White", "Dark Prism"]
+  },
+  {
+    "id": 2152,
+    "newID": "R+Y+G+B+Wh+DOr",
+    "name": "White & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White", "Dark Orange"]
+  },
+  {
+    "id": 2153,
+    "newID": "R+G+B+Wh+DOr",
+    "name": "White & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "White", "Dark Orange"]
   },
   {
     "id": 214,
@@ -1416,6 +1536,30 @@
     "suits": ["Red", "Brown", "Prism"]
   },
   {
+    "id": 2154,
+    "newID": "R+Y+G+B+Br+Or",
+    "name": "Brown & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Orange"]
+  },
+  {
+    "id": 2155,
+    "newID": "R+G+B+Br+Or",
+    "name": "Brown & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Brown", "Orange"]
+  },
+  {
+    "id": 2156,
+    "newID": "R+B+Br+Or",
+    "name": "Brown & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Brown", "Orange"]
+  },
+  {
+    "id": 2157,
+    "newID": "R+Br+Or",
+    "name": "Brown & Orange (3 Suits)",
+    "suits": ["Red", "Brown", "Orange"]
+  },
+  {
     "id": 85,
     "newID": "R+Y+G+B+Br+DRa",
     "name": "Brown & Dark Rainbow (6 Suits)",
@@ -1512,6 +1656,18 @@
     "suits": ["Red", "Green", "Blue", "Brown", "Dark Prism"]
   },
   {
+    "id": 2158,
+    "newID": "R+Y+G+B+Br+DOr",
+    "name": "Brown & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown", "Dark Orange"]
+  },
+  {
+    "id": 2159,
+    "newID": "R+G+B+Br+DOr",
+    "name": "Brown & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Brown", "Dark Orange"]
+  },
+  {
     "id": 222,
     "newID": "R+Y+G+B+Om+Nu",
     "name": "Omni & Null (6 Suits)",
@@ -1600,6 +1756,30 @@
     "newID": "R+B+Om+Pr",
     "name": "Omni & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Omni", "Prism"]
+  },
+  {
+    "id": 2160,
+    "newID": "R+Y+G+B+Om+Or",
+    "name": "Omni & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Orange"]
+  },
+  {
+    "id": 2161,
+    "newID": "R+G+B+Om+Or",
+    "name": "Omni & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Omni", "Orange"]
+  },
+  {
+    "id": 2162,
+    "newID": "R+B+Om+Or",
+    "name": "Omni & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Omni", "Orange"]
+  },
+  {
+    "id": 2163,
+    "newID": "R+Om+Or",
+    "name": "Omni & Orange (3 Suits)",
+    "suits": ["Red", "Omni", "Orange"]
   },
   {
     "id": 226,
@@ -1698,6 +1878,18 @@
     "suits": ["Red", "Green", "Blue", "Omni", "Dark Prism"]
   },
   {
+    "id": 2164,
+    "newID": "R+Y+G+B+Om+DOr",
+    "name": "Omni & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni", "Dark Orange"]
+  },
+  {
+    "id": 2165,
+    "newID": "R+G+B+Om+DOr",
+    "name": "Omni & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Omni", "Dark Orange"]
+  },
+  {
     "id": 776,
     "newID": "R+Y+G+B+Nu+BrRa",
     "name": "Null & Muddy Rainbow (6 Suits)",
@@ -1762,6 +1954,30 @@
     "newID": "R+B+Nu+Pr",
     "name": "Null & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Null", "Prism"]
+  },
+  {
+    "id": 2166,
+    "newID": "R+Y+G+B+Nu+Or",
+    "name": "Null & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Orange"]
+  },
+  {
+    "id": 2167,
+    "newID": "R+G+B+Nu+Or",
+    "name": "Null & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Null", "Orange"]
+  },
+  {
+    "id": 2168,
+    "newID": "R+B+Nu+Or",
+    "name": "Null & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Null", "Orange"]
+  },
+  {
+    "id": 2169,
+    "newID": "R+Nu+Or",
+    "name": "Null & Orange (3 Suits)",
+    "suits": ["Red", "Null", "Orange"]
   },
   {
     "id": 228,
@@ -1860,6 +2076,18 @@
     "suits": ["Red", "Green", "Blue", "Null", "Dark Prism"]
   },
   {
+    "id": 2170,
+    "newID": "R+Y+G+B+Nu+DOr",
+    "name": "Null & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null", "Dark Orange"]
+  },
+  {
+    "id": 2171,
+    "newID": "R+G+B+Nu+DOr",
+    "name": "Null & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Null", "Dark Orange"]
+  },
+  {
     "id": 802,
     "newID": "R+Y+G+B+BrRa+WhPi",
     "name": "Muddy Rainbow & Light Pink (6 Suits)",
@@ -1900,6 +2128,30 @@
     "newID": "R+B+BrRa+Pr",
     "name": "Muddy Rainbow & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Muddy Rainbow", "Prism"]
+  },
+  {
+    "id": 2172,
+    "newID": "R+Y+G+B+BrRa+Or",
+    "name": "Muddy Rainbow & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow", "Orange"]
+  },
+  {
+    "id": 2173,
+    "newID": "R+G+B+BrRa+Or",
+    "name": "Muddy Rainbow & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Orange"]
+  },
+  {
+    "id": 2174,
+    "newID": "R+B+BrRa+Or",
+    "name": "Muddy Rainbow & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Muddy Rainbow", "Orange"]
+  },
+  {
+    "id": 2175,
+    "newID": "R+BrRa+Or",
+    "name": "Muddy Rainbow & Orange (3 Suits)",
+    "suits": ["Red", "Muddy Rainbow", "Orange"]
   },
   {
     "id": 1304,
@@ -1998,6 +2250,18 @@
     "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Dark Prism"]
   },
   {
+    "id": 2176,
+    "newID": "R+Y+G+B+BrRa+DOr",
+    "name": "Muddy Rainbow & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow", "Dark Orange"]
+  },
+  {
+    "id": 2177,
+    "newID": "R+G+B+BrRa+DOr",
+    "name": "Muddy Rainbow & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Muddy Rainbow", "Dark Orange"]
+  },
+  {
     "id": 1515,
     "newID": "R+Y+G+B+WhPi+Pr",
     "name": "Light Pink & Prism (6 Suits)",
@@ -2014,6 +2278,30 @@
     "newID": "R+B+WhPi+Pr",
     "name": "Light Pink & Prism (4 Suits)",
     "suits": ["Red", "Blue", "Light Pink", "Prism"]
+  },
+  {
+    "id": 2178,
+    "newID": "R+Y+G+B+WhPi+Or",
+    "name": "Light Pink & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink", "Orange"]
+  },
+  {
+    "id": 2179,
+    "newID": "R+G+B+WhPi+Or",
+    "name": "Light Pink & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Light Pink", "Orange"]
+  },
+  {
+    "id": 2180,
+    "newID": "R+B+WhPi+Or",
+    "name": "Light Pink & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Light Pink", "Orange"]
+  },
+  {
+    "id": 2181,
+    "newID": "R+WhPi+Or",
+    "name": "Light Pink & Orange (3 Suits)",
+    "suits": ["Red", "Light Pink", "Orange"]
   },
   {
     "id": 806,
@@ -2112,6 +2400,42 @@
     "suits": ["Red", "Green", "Blue", "Light Pink", "Dark Prism"]
   },
   {
+    "id": 2182,
+    "newID": "R+Y+G+B+WhPi+DOr",
+    "name": "Light Pink & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink", "Dark Orange"]
+  },
+  {
+    "id": 2183,
+    "newID": "R+G+B+WhPi+DOr",
+    "name": "Light Pink & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Light Pink", "Dark Orange"]
+  },
+  {
+    "id": 2184,
+    "newID": "R+Y+G+B+Pr+Or",
+    "name": "Prism & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism", "Orange"]
+  },
+  {
+    "id": 2185,
+    "newID": "R+G+B+Pr+Or",
+    "name": "Prism & Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Prism", "Orange"]
+  },
+  {
+    "id": 2186,
+    "newID": "R+B+Pr+Or",
+    "name": "Prism & Orange (4 Suits)",
+    "suits": ["Red", "Blue", "Prism", "Orange"]
+  },
+  {
+    "id": 2187,
+    "newID": "R+Pr+Or",
+    "name": "Prism & Orange (3 Suits)",
+    "suits": ["Red", "Prism", "Orange"]
+  },
+  {
     "id": 1521,
     "newID": "R+Y+G+B+Pr+DRa",
     "name": "Prism & Dark Rainbow (6 Suits)",
@@ -2208,6 +2532,126 @@
     "suits": ["Red", "Green", "Blue", "Prism", "Gray Pink"]
   },
   {
+    "id": 2188,
+    "newID": "R+Y+G+B+Pr+DOr",
+    "name": "Prism & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism", "Dark Orange"]
+  },
+  {
+    "id": 2189,
+    "newID": "R+G+B+Pr+DOr",
+    "name": "Prism & Dark Orange (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Prism", "Dark Orange"]
+  },
+  {
+    "id": 2190,
+    "newID": "R+Y+G+B+Or+DRa",
+    "name": "Orange & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Rainbow"]
+  },
+  {
+    "id": 2191,
+    "newID": "R+G+B+Or+DRa",
+    "name": "Orange & Dark Rainbow (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Rainbow"]
+  },
+  {
+    "id": 2192,
+    "newID": "R+Y+G+B+Or+DPi",
+    "name": "Orange & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Pink"]
+  },
+  {
+    "id": 2193,
+    "newID": "R+G+B+Or+DPi",
+    "name": "Orange & Dark Pink (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Pink"]
+  },
+  {
+    "id": 2194,
+    "newID": "R+Y+G+B+Or+DWh",
+    "name": "Orange & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Gray"]
+  },
+  {
+    "id": 2195,
+    "newID": "R+G+B+Or+DWh",
+    "name": "Orange & Gray (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Gray"]
+  },
+  {
+    "id": 2196,
+    "newID": "R+Y+G+B+Or+DBr",
+    "name": "Orange & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Brown"]
+  },
+  {
+    "id": 2197,
+    "newID": "R+G+B+Or+DBr",
+    "name": "Orange & Dark Brown (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Brown"]
+  },
+  {
+    "id": 2198,
+    "newID": "R+Y+G+B+Or+DOm",
+    "name": "Orange & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Omni"]
+  },
+  {
+    "id": 2199,
+    "newID": "R+G+B+Or+DOm",
+    "name": "Orange & Dark Omni (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Omni"]
+  },
+  {
+    "id": 2200,
+    "newID": "R+Y+G+B+Or+DNu",
+    "name": "Orange & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Null"]
+  },
+  {
+    "id": 2201,
+    "newID": "R+G+B+Or+DNu",
+    "name": "Orange & Dark Null (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Null"]
+  },
+  {
+    "id": 2202,
+    "newID": "R+Y+G+B+Or+DBrRa",
+    "name": "Orange & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Cocoa Rainbow"]
+  },
+  {
+    "id": 2203,
+    "newID": "R+G+B+Or+DBrRa",
+    "name": "Orange & Cocoa Rainbow (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Cocoa Rainbow"]
+  },
+  {
+    "id": 2204,
+    "newID": "R+Y+G+B+Or+DWhPi",
+    "name": "Orange & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Gray Pink"]
+  },
+  {
+    "id": 2205,
+    "newID": "R+G+B+Or+DWhPi",
+    "name": "Orange & Gray Pink (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Gray Pink"]
+  },
+  {
+    "id": 2206,
+    "newID": "R+Y+G+B+Or+DPr",
+    "name": "Orange & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange", "Dark Prism"]
+  },
+  {
+    "id": 2207,
+    "newID": "R+G+B+Or+DPr",
+    "name": "Orange & Dark Prism (5 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange", "Dark Prism"]
+  },
+  {
     "id": 146,
     "newID": "R+Y+G+B+DRa+DPi",
     "name": "Dark Rainbow & Dark Pink (6 Suits)",
@@ -2256,6 +2700,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Prism"]
   },
   {
+    "id": 2208,
+    "newID": "R+Y+G+B+DRa+DOr",
+    "name": "Dark Rainbow & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow", "Dark Orange"]
+  },
+  {
     "id": 147,
     "newID": "R+Y+G+B+DPi+DWh",
     "name": "Dark Pink & Gray (6 Suits)",
@@ -2298,6 +2748,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Dark Prism"]
   },
   {
+    "id": 2209,
+    "newID": "R+Y+G+B+DPi+DOr",
+    "name": "Dark Pink & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink", "Dark Orange"]
+  },
+  {
     "id": 97,
     "newID": "R+Y+G+B+DWh+DBr",
     "name": "Gray & Dark Brown (6 Suits)",
@@ -2334,6 +2790,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Dark Prism"]
   },
   {
+    "id": 2210,
+    "newID": "R+Y+G+B+DWh+DOr",
+    "name": "Gray & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray", "Dark Orange"]
+  },
+  {
     "id": 274,
     "newID": "R+Y+G+B+DBr+DOm",
     "name": "Dark Brown & Dark Omni (6 Suits)",
@@ -2364,6 +2826,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown", "Dark Prism"]
   },
   {
+    "id": 2211,
+    "newID": "R+Y+G+B+DBr+DOr",
+    "name": "Dark Brown & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Brown", "Dark Orange"]
+  },
+  {
     "id": 276,
     "newID": "R+Y+G+B+DOm+DNu",
     "name": "Dark Omni & Dark Null (6 Suits)",
@@ -2388,6 +2856,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Dark Prism"]
   },
   {
+    "id": 2212,
+    "newID": "R+Y+G+B+DOm+DOr",
+    "name": "Dark Omni & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Omni", "Dark Orange"]
+  },
+  {
     "id": 860,
     "newID": "R+Y+G+B+DNu+DBrRa",
     "name": "Dark Null & Cocoa Rainbow (6 Suits)",
@@ -2406,6 +2880,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null", "Dark Prism"]
   },
   {
+    "id": 2213,
+    "newID": "R+Y+G+B+DNu+DOr",
+    "name": "Dark Null & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null", "Dark Orange"]
+  },
+  {
     "id": 862,
     "newID": "R+Y+G+B+DBrRa+DWhPi",
     "name": "Cocoa Rainbow & Gray Pink (6 Suits)",
@@ -2418,10 +2898,28 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow", "Dark Prism"]
   },
   {
+    "id": 2214,
+    "newID": "R+Y+G+B+DBrRa+DOr",
+    "name": "Cocoa Rainbow & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow", "Dark Orange"]
+  },
+  {
     "id": 1544,
     "newID": "R+Y+G+B+DWhPi+DPr",
     "name": "Gray Pink & Dark Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink", "Dark Prism"]
+  },
+  {
+    "id": 2215,
+    "newID": "R+Y+G+B+DWhPi+DOr",
+    "name": "Gray Pink & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink", "Dark Orange"]
+  },
+  {
+    "id": 2216,
+    "newID": "R+Y+G+B+DPr+DOr",
+    "name": "Dark Prism & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism", "Dark Orange"]
   },
   {
     "id": 168,
@@ -2760,6 +3258,38 @@
     "specialRankAllClueColors": true
   },
   {
+    "id": 2217,
+    "newID": "R+Y+G+B+P+Or,R1",
+    "name": "Rainbow-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2218,
+    "newID": "R+Y+G+B+Or,R1",
+    "name": "Rainbow-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2219,
+    "newID": "R+G+B+Or,R1",
+    "name": "Rainbow-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2220,
+    "newID": "R+B+Or,R1",
+    "name": "Rainbow-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
     "id": 314,
     "newID": "R+Y+G+B+P+DRa,R1",
     "name": "Rainbow-Ones & Dark Rainbow (6 Suits)",
@@ -2900,6 +3430,22 @@
     "newID": "R+Y+G+B+DPr,R1",
     "name": "Rainbow-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2221,
+    "newID": "R+Y+G+B+P+DOr,R1",
+    "name": "Rainbow-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2222,
+    "newID": "R+Y+G+B+DOr,R1",
+    "name": "Rainbow-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankAllClueColors": true
   },
@@ -3282,6 +3828,42 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2223,
+    "newID": "R+Y+G+B+P+Or,P1",
+    "name": "Pink-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2224,
+    "newID": "R+Y+G+B+Or,P1",
+    "name": "Pink-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2225,
+    "newID": "R+G+B+Or,P1",
+    "name": "Pink-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2226,
+    "newID": "R+B+Or,P1",
+    "name": "Pink-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 354,
     "newID": "R+Y+G+B+P+DRa,P1",
     "name": "Pink-Ones & Dark Rainbow (6 Suits)",
@@ -3439,6 +4021,24 @@
     "newID": "R+Y+G+B+DPr,P1",
     "name": "Pink-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2227,
+    "newID": "R+Y+G+B+P+DOr,P1",
+    "name": "Pink-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2228,
+    "newID": "R+Y+G+B+DOr,P1",
+    "name": "Pink-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankAllClueRanks": true,
     "clueRanks": [2, 3, 4, 5]
@@ -3780,6 +4380,38 @@
     "specialRankNoClueColors": true
   },
   {
+    "id": 2229,
+    "newID": "R+Y+G+B+P+Or,W1",
+    "name": "White-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2230,
+    "newID": "R+Y+G+B+Or,W1",
+    "name": "White-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2231,
+    "newID": "R+G+B+Or,W1",
+    "name": "White-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2232,
+    "newID": "R+B+Or,W1",
+    "name": "White-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
     "id": 394,
     "newID": "R+Y+G+B+P+DRa,W1",
     "name": "White-Ones & Dark Rainbow (6 Suits)",
@@ -3920,6 +4552,22 @@
     "newID": "R+Y+G+B+DPr,W1",
     "name": "White-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2233,
+    "newID": "R+Y+G+B+P+DOr,W1",
+    "name": "White-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2234,
+    "newID": "R+Y+G+B+DOr,W1",
+    "name": "White-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankNoClueColors": true
   },
@@ -4302,6 +4950,42 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2235,
+    "newID": "R+Y+G+B+P+Or,B1",
+    "name": "Brown-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2236,
+    "newID": "R+Y+G+B+Or,B1",
+    "name": "Brown-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2237,
+    "newID": "R+G+B+Or,B1",
+    "name": "Brown-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2238,
+    "newID": "R+B+Or,B1",
+    "name": "Brown-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 434,
     "newID": "R+Y+G+B+P+DRa,B1",
     "name": "Brown-Ones & Dark Rainbow (6 Suits)",
@@ -4459,6 +5143,24 @@
     "newID": "R+Y+G+B+DPr,B1",
     "name": "Brown-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2239,
+    "newID": "R+Y+G+B+P+DOr,B1",
+    "name": "Brown-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2240,
+    "newID": "R+Y+G+B+DOr,B1",
+    "name": "Brown-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankNoClueRanks": true,
     "clueRanks": [2, 3, 4, 5]
@@ -4884,6 +5586,46 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2241,
+    "newID": "R+Y+G+B+P+Or,O1",
+    "name": "Omni-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2242,
+    "newID": "R+Y+G+B+Or,O1",
+    "name": "Omni-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2243,
+    "newID": "R+G+B+Or,O1",
+    "name": "Omni-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2244,
+    "newID": "R+B+Or,O1",
+    "name": "Omni-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 474,
     "newID": "R+Y+G+B+P+DRa,O1",
     "name": "Omni-Ones & Dark Rainbow (6 Suits)",
@@ -5058,6 +5800,26 @@
     "newID": "R+Y+G+B+DPr,O1",
     "name": "Omni-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2245,
+    "newID": "R+Y+G+B+P+DOr,O1",
+    "name": "Omni-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2246,
+    "newID": "R+Y+G+B+DOr,O1",
+    "name": "Omni-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankAllClueColors": true,
     "specialRankAllClueRanks": true,
@@ -5484,6 +6246,46 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2247,
+    "newID": "R+Y+G+B+P+Or,N1",
+    "name": "Null-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2248,
+    "newID": "R+Y+G+B+Or,N1",
+    "name": "Null-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2249,
+    "newID": "R+G+B+Or,N1",
+    "name": "Null-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2250,
+    "newID": "R+B+Or,N1",
+    "name": "Null-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 514,
     "newID": "R+Y+G+B+P+DRa,N1",
     "name": "Null-Ones & Dark Rainbow (6 Suits)",
@@ -5658,6 +6460,26 @@
     "newID": "R+Y+G+B+DPr,N1",
     "name": "Null-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2251,
+    "newID": "R+Y+G+B+P+DOr,N1",
+    "name": "Null-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2252,
+    "newID": "R+Y+G+B+DOr,N1",
+    "name": "Null-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankNoClueColors": true,
     "specialRankNoClueRanks": true,
@@ -6084,6 +6906,46 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2253,
+    "newID": "R+Y+G+B+P+Or,M1",
+    "name": "Muddy-Rainbow-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2254,
+    "newID": "R+Y+G+B+Or,M1",
+    "name": "Muddy-Rainbow-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2255,
+    "newID": "R+G+B+Or,M1",
+    "name": "Muddy-Rainbow-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2256,
+    "newID": "R+B+Or,M1",
+    "name": "Muddy-Rainbow-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 1047,
     "newID": "R+Y+G+B+P+DRa,M1",
     "name": "Muddy-Rainbow-Ones & Dark Rainbow (6 Suits)",
@@ -6258,6 +7120,26 @@
     "newID": "R+Y+G+B+DPr,M1",
     "name": "Muddy-Rainbow-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2257,
+    "newID": "R+Y+G+B+P+DOr,M1",
+    "name": "Muddy-Rainbow-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2258,
+    "newID": "R+Y+G+B+DOr,M1",
+    "name": "Muddy-Rainbow-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankAllClueColors": true,
     "specialRankNoClueRanks": true,
@@ -6684,6 +7566,46 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2259,
+    "newID": "R+Y+G+B+P+Or,L1",
+    "name": "Light-Pink-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2260,
+    "newID": "R+Y+G+B+Or,L1",
+    "name": "Light-Pink-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2261,
+    "newID": "R+G+B+Or,L1",
+    "name": "Light-Pink-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2262,
+    "newID": "R+B+Or,L1",
+    "name": "Light-Pink-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 1099,
     "newID": "R+Y+G+B+P+DRa,L1",
     "name": "Light-Pink-Ones & Dark Rainbow (6 Suits)",
@@ -6858,6 +7780,26 @@
     "newID": "R+Y+G+B+DPr,L1",
     "name": "Light-Pink-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2263,
+    "newID": "R+Y+G+B+P+DOr,L1",
+    "name": "Light-Pink-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2264,
+    "newID": "R+Y+G+B+DOr,L1",
+    "name": "Light-Pink-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankNoClueColors": true,
     "specialRankAllClueRanks": true,
@@ -7242,6 +8184,42 @@
     "clueRanks": [2, 3, 4, 5]
   },
   {
+    "id": 2265,
+    "newID": "R+Y+G+B+P+Or,D1",
+    "name": "Deceptive-Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2266,
+    "newID": "R+Y+G+B+Or,D1",
+    "name": "Deceptive-Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2267,
+    "newID": "R+G+B+Or,D1",
+    "name": "Deceptive-Ones & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2268,
+    "newID": "R+B+Or,D1",
+    "name": "Deceptive-Ones & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
     "id": 1713,
     "newID": "R+Y+G+B+P+DRa,D1",
     "name": "Deceptive-Ones & Dark Rainbow (6 Suits)",
@@ -7399,6 +8377,24 @@
     "newID": "R+Y+G+B+DPr,D1",
     "name": "Deceptive-Ones & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2269,
+    "newID": "R+Y+G+B+P+DOr,D1",
+    "name": "Deceptive-Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 1,
+    "specialRankDeceptive": true,
+    "clueRanks": [2, 3, 4, 5]
+  },
+  {
+    "id": 2270,
+    "newID": "R+Y+G+B+DOr,D1",
+    "name": "Deceptive-Ones & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 1,
     "specialRankDeceptive": true,
     "clueRanks": [2, 3, 4, 5]
@@ -7740,6 +8736,38 @@
     "specialRankAllClueColors": true
   },
   {
+    "id": 2271,
+    "newID": "R+Y+G+B+P+Or,R5",
+    "name": "Rainbow-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2272,
+    "newID": "R+Y+G+B+Or,R5",
+    "name": "Rainbow-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2273,
+    "newID": "R+G+B+Or,R5",
+    "name": "Rainbow-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2274,
+    "newID": "R+B+Or,R5",
+    "name": "Rainbow-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
     "id": 554,
     "newID": "R+Y+G+B+P+DRa,R5",
     "name": "Rainbow-Fives & Dark Rainbow (6 Suits)",
@@ -7880,6 +8908,22 @@
     "newID": "R+Y+G+B+DPr,R5",
     "name": "Rainbow-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2275,
+    "newID": "R+Y+G+B+P+DOr,R5",
+    "name": "Rainbow-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true
+  },
+  {
+    "id": 2276,
+    "newID": "R+Y+G+B+DOr,R5",
+    "name": "Rainbow-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankAllClueColors": true
   },
@@ -8262,6 +9306,42 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2277,
+    "newID": "R+Y+G+B+P+Or,P5",
+    "name": "Pink-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2278,
+    "newID": "R+Y+G+B+Or,P5",
+    "name": "Pink-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2279,
+    "newID": "R+G+B+Or,P5",
+    "name": "Pink-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2280,
+    "newID": "R+B+Or,P5",
+    "name": "Pink-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 586,
     "newID": "R+Y+G+B+P+DRa,P5",
     "name": "Pink-Fives & Dark Rainbow (6 Suits)",
@@ -8419,6 +9499,24 @@
     "newID": "R+Y+G+B+DPr,P5",
     "name": "Pink-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2281,
+    "newID": "R+Y+G+B+P+DOr,P5",
+    "name": "Pink-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2282,
+    "newID": "R+Y+G+B+DOr,P5",
+    "name": "Pink-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankAllClueRanks": true,
     "clueRanks": [1, 2, 3, 4]
@@ -8760,6 +9858,38 @@
     "specialRankNoClueColors": true
   },
   {
+    "id": 2283,
+    "newID": "R+Y+G+B+P+Or,W5",
+    "name": "White-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2284,
+    "newID": "R+Y+G+B+Or,W5",
+    "name": "White-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2285,
+    "newID": "R+G+B+Or,W5",
+    "name": "White-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2286,
+    "newID": "R+B+Or,W5",
+    "name": "White-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
     "id": 626,
     "newID": "R+Y+G+B+P+DRa,W5",
     "name": "White-Fives & Dark Rainbow (6 Suits)",
@@ -8900,6 +10030,22 @@
     "newID": "R+Y+G+B+DPr,W5",
     "name": "White-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2287,
+    "newID": "R+Y+G+B+P+DOr,W5",
+    "name": "White-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true
+  },
+  {
+    "id": 2288,
+    "newID": "R+Y+G+B+DOr,W5",
+    "name": "White-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankNoClueColors": true
   },
@@ -9282,6 +10428,42 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2289,
+    "newID": "R+Y+G+B+P+Or,B5",
+    "name": "Brown-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2290,
+    "newID": "R+Y+G+B+Or,B5",
+    "name": "Brown-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2291,
+    "newID": "R+G+B+Or,B5",
+    "name": "Brown-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2292,
+    "newID": "R+B+Or,B5",
+    "name": "Brown-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 666,
     "newID": "R+Y+G+B+P+DRa,B5",
     "name": "Brown-Fives & Dark Rainbow (6 Suits)",
@@ -9439,6 +10621,24 @@
     "newID": "R+Y+G+B+DPr,B5",
     "name": "Brown-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2293,
+    "newID": "R+Y+G+B+P+DOr,B5",
+    "name": "Brown-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2294,
+    "newID": "R+Y+G+B+DOr,B5",
+    "name": "Brown-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankNoClueRanks": true,
     "clueRanks": [1, 2, 3, 4]
@@ -9864,6 +11064,46 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2295,
+    "newID": "R+Y+G+B+P+Or,O5",
+    "name": "Omni-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2296,
+    "newID": "R+Y+G+B+Or,O5",
+    "name": "Omni-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2297,
+    "newID": "R+G+B+Or,O5",
+    "name": "Omni-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2298,
+    "newID": "R+B+Or,O5",
+    "name": "Omni-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 706,
     "newID": "R+Y+G+B+P+DRa,O5",
     "name": "Omni-Fives & Dark Rainbow (6 Suits)",
@@ -10038,6 +11278,26 @@
     "newID": "R+Y+G+B+DPr,O5",
     "name": "Omni-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2299,
+    "newID": "R+Y+G+B+P+DOr,O5",
+    "name": "Omni-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2300,
+    "newID": "R+Y+G+B+DOr,O5",
+    "name": "Omni-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankAllClueColors": true,
     "specialRankAllClueRanks": true,
@@ -10464,6 +11724,46 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2301,
+    "newID": "R+Y+G+B+P+Or,N5",
+    "name": "Null-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2302,
+    "newID": "R+Y+G+B+Or,N5",
+    "name": "Null-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2303,
+    "newID": "R+G+B+Or,N5",
+    "name": "Null-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2304,
+    "newID": "R+B+Or,N5",
+    "name": "Null-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 746,
     "newID": "R+Y+G+B+P+DRa,N5",
     "name": "Null-Fives & Dark Rainbow (6 Suits)",
@@ -10638,6 +11938,26 @@
     "newID": "R+Y+G+B+DPr,N5",
     "name": "Null-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2305,
+    "newID": "R+Y+G+B+P+DOr,N5",
+    "name": "Null-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2306,
+    "newID": "R+Y+G+B+DOr,N5",
+    "name": "Null-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankNoClueColors": true,
     "specialRankNoClueRanks": true,
@@ -11064,6 +12384,46 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2307,
+    "newID": "R+Y+G+B+P+Or,M5",
+    "name": "Muddy-Rainbow-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2308,
+    "newID": "R+Y+G+B+Or,M5",
+    "name": "Muddy-Rainbow-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2309,
+    "newID": "R+G+B+Or,M5",
+    "name": "Muddy-Rainbow-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2310,
+    "newID": "R+B+Or,M5",
+    "name": "Muddy-Rainbow-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 1151,
     "newID": "R+Y+G+B+P+DRa,M5",
     "name": "Muddy-Rainbow-Fives & Dark Rainbow (6 Suits)",
@@ -11238,6 +12598,26 @@
     "newID": "R+Y+G+B+DPr,M5",
     "name": "Muddy-Rainbow-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2311,
+    "newID": "R+Y+G+B+P+DOr,M5",
+    "name": "Muddy-Rainbow-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankAllClueColors": true,
+    "specialRankNoClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2312,
+    "newID": "R+Y+G+B+DOr,M5",
+    "name": "Muddy-Rainbow-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankAllClueColors": true,
     "specialRankNoClueRanks": true,
@@ -11664,6 +13044,46 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2313,
+    "newID": "R+Y+G+B+P+Or,L5",
+    "name": "Light-Pink-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2314,
+    "newID": "R+Y+G+B+Or,L5",
+    "name": "Light-Pink-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2315,
+    "newID": "R+G+B+Or,L5",
+    "name": "Light-Pink-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2316,
+    "newID": "R+B+Or,L5",
+    "name": "Light-Pink-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 1203,
     "newID": "R+Y+G+B+P+DRa,L5",
     "name": "Light-Pink-Fives & Dark Rainbow (6 Suits)",
@@ -11838,6 +13258,26 @@
     "newID": "R+Y+G+B+DPr,L5",
     "name": "Light-Pink-Fives & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2317,
+    "newID": "R+Y+G+B+P+DOr,L5",
+    "name": "Light-Pink-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankNoClueColors": true,
+    "specialRankAllClueRanks": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2318,
+    "newID": "R+Y+G+B+DOr,L5",
+    "name": "Light-Pink-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "specialRank": 5,
     "specialRankNoClueColors": true,
     "specialRankAllClueRanks": true,
@@ -12222,6 +13662,42 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2319,
+    "newID": "R+Y+G+B+P+Or,D5",
+    "name": "Deceptive-Fives & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2320,
+    "newID": "R+Y+G+B+Or,D5",
+    "name": "Deceptive-Fives & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2321,
+    "newID": "R+G+B+Or,D5",
+    "name": "Deceptive-Fives & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2322,
+    "newID": "R+B+Or,D5",
+    "name": "Deceptive-Fives & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 1773,
     "newID": "R+Y+G+B+P+DRa,D5",
     "name": "Deceptive-Fives & Dark Rainbow (6 Suits)",
@@ -12384,6 +13860,24 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2323,
+    "newID": "R+Y+G+B+P+DOr,D5",
+    "name": "Deceptive-Fives & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
+    "id": 2324,
+    "newID": "R+Y+G+B+DOr,D5",
+    "name": "Deceptive-Fives & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
+    "specialRank": 5,
+    "specialRankDeceptive": true,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 8,
     "newID": "AR1+AR2+AG1+AG2+AB1+AB2",
     "name": "Ambiguous (6 Suits)",
@@ -12498,6 +13992,18 @@
     "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Prism"]
   },
   {
+    "id": 2325,
+    "newID": "AR1+AR2+AB1+AB2+Or",
+    "name": "Ambiguous & Orange (5 Suits)",
+    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Orange"]
+  },
+  {
+    "id": 2326,
+    "newID": "AR1+AR2+Or",
+    "name": "Ambiguous & Orange (3 Suits)",
+    "suits": ["Tomato", "Mahogany", "Orange"]
+  },
+  {
     "id": 1371,
     "newID": "AR1+AR2+AB1+AB2+DRa",
     "name": "Ambiguous & Dark Rainbow (5 Suits)",
@@ -12550,6 +14056,12 @@
     "newID": "AR1+AR2+AB1+AB2+DPr",
     "name": "Ambiguous & Dark Prism (5 Suits)",
     "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Prism"]
+  },
+  {
+    "id": 2327,
+    "newID": "AR1+AR2+AB1+AB2+DOr",
+    "name": "Ambiguous & Dark Orange (5 Suits)",
+    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Orange"]
   },
   {
     "id": 9,
@@ -12611,6 +14123,12 @@
     "newID": "VB1+VB2+VB3+WhPi",
     "name": "Very Ambiguous & Light Pink (4 Suits)",
     "suits": ["Sky VA", "Berry VA", "Navy VA", "Light Pink"]
+  },
+  {
+    "id": 2328,
+    "newID": "VB1+VB2+VB3+Or",
+    "name": "Very Ambiguous & Orange (4 Suits)",
+    "suits": ["Sky VA", "Berry VA", "Navy VA", "Orange"]
   },
   {
     "id": 288,
@@ -12746,6 +14264,25 @@
     "newID": "EB1+EB2+EB3+EB4+WhPi",
     "name": "Extremely Ambiguous & Light Pink (5 Suits)",
     "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Light Pink"]
+  },
+  {
+    "id": 2329,
+    "newID": "EB1+EB2+EB3+EB4+EB5+Or",
+    "name": "Extremely Ambiguous & Orange (6 Suits)",
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Orange"
+    ]
+  },
+  {
+    "id": 2330,
+    "newID": "EB1+EB2+EB3+EB4+Or",
+    "name": "Extremely Ambiguous & Orange (5 Suits)",
+    "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Orange"]
   },
   {
     "id": 1409,
@@ -12891,6 +14428,25 @@
     "newID": "EB1+EB2+EB3+EB4+DWhPi",
     "name": "Extremely Ambiguous & Gray Pink (5 Suits)",
     "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Gray Pink"]
+  },
+  {
+    "id": 2331,
+    "newID": "EB1+EB2+EB3+EB4+EB5+DOr",
+    "name": "Extremely Ambiguous & Dark Orange (6 Suits)",
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Dark Orange"
+    ]
+  },
+  {
+    "id": 2332,
+    "newID": "EB1+EB2+EB3+EB4+DOr",
+    "name": "Extremely Ambiguous & Dark Orange (5 Suits)",
+    "suits": ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA", "Dark Orange"]
   },
   {
     "id": 150,
@@ -13152,6 +14708,30 @@
     "suits": ["Red", "Yam MD", "Prism"]
   },
   {
+    "id": 2333,
+    "newID": "R+MDY+MDG+MDB+MDP+Or",
+    "name": "Matryoshka & Orange (6 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Plum MD", "Orange"]
+  },
+  {
+    "id": 2334,
+    "newID": "R+MDY+MDG+MDB+Or",
+    "name": "Matryoshka & Orange (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Orange"]
+  },
+  {
+    "id": 2335,
+    "newID": "R+MDY+MDG+Or",
+    "name": "Matryoshka & Orange (4 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Orange"]
+  },
+  {
+    "id": 2336,
+    "newID": "R+MDY+Or",
+    "name": "Matryoshka & Orange (3 Suits)",
+    "suits": ["Red", "Yam MD", "Orange"]
+  },
+  {
     "id": 2051,
     "newID": "R+MDY+MDG+MDB+MDP+DRa",
     "name": "Matryoshka & Dark Rainbow (6 Suits)",
@@ -13272,6 +14852,25 @@
     "newID": "R+MDY+MDG+MDB+DPr",
     "name": "Matryoshka & Dark Prism (5 Suits)",
     "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Prism"]
+  },
+  {
+    "id": 2337,
+    "newID": "R+MDY+MDG+MDB+MDP+DOr",
+    "name": "Matryoshka & Dark Orange (6 Suits)",
+    "suits": [
+      "Red",
+      "Yam MD",
+      "Geas MD",
+      "Beatnik MD",
+      "Plum MD",
+      "Dark Orange"
+    ]
+  },
+  {
+    "id": 2338,
+    "newID": "R+MDY+MDG+MDB+DOr",
+    "name": "Matryoshka & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yam MD", "Geas MD", "Beatnik MD", "Dark Orange"]
   },
   {
     "id": 4,
@@ -13483,6 +15082,25 @@
     "suits": ["Tangerine D2", "Purple D", "Green D", "Prism"]
   },
   {
+    "id": 2339,
+    "newID": "DRY2+DYG+DGB+DBP+DPR+Or",
+    "name": "Dual-Color & Orange (6 Suits)",
+    "suits": [
+      "Tangerine D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Orange"
+    ]
+  },
+  {
+    "id": 2340,
+    "newID": "DRY2+DRB+DYB+Or",
+    "name": "Dual-Color & Orange (4 Suits)",
+    "suits": ["Tangerine D2", "Purple D", "Green D", "Orange"]
+  },
+  {
     "id": 1440,
     "newID": "DRY2+DYG+DGB+DBP+DPR+DRa",
     "name": "Dual-Color & Dark Rainbow (6 Suits)",
@@ -13597,6 +15215,19 @@
       "Indigo D",
       "Cardinal D",
       "Dark Prism"
+    ]
+  },
+  {
+    "id": 2341,
+    "newID": "DRY2+DYG+DGB+DBP+DPR+DOr",
+    "name": "Dual-Color & Dark Orange (6 Suits)",
+    "suits": [
+      "Tangerine D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Dark Orange"
     ]
   },
   {
@@ -13840,6 +15471,20 @@
     "criticalRank": 4
   },
   {
+    "id": 2342,
+    "newID": "R+Y+G+B+P+Or,C4",
+    "name": "Critical Fours & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2343,
+    "newID": "R+Y+G+B+Or,C4",
+    "name": "Critical Fours & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "criticalRank": 4
+  },
+  {
     "id": 1807,
     "newID": "R+Y+G+B+P+DRa,C4",
     "name": "Critical Fours & Dark Rainbow (6 Suits)",
@@ -13900,6 +15545,13 @@
     "newID": "R+Y+G+B+P+DPr,C4",
     "name": "Critical Fours & Dark Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "criticalRank": 4
+  },
+  {
+    "id": 2344,
+    "newID": "R+Y+G+B+P+DOr,C4",
+    "name": "Critical Fours & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
     "criticalRank": 4
   },
   {
@@ -14040,6 +15692,20 @@
     "newID": "R+Y+G+B+Pr,CS",
     "name": "Clue Starved & Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "clueStarved": true
+  },
+  {
+    "id": 2345,
+    "newID": "R+Y+G+B+P+Or,CS",
+    "name": "Clue Starved & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "clueStarved": true
+  },
+  {
+    "id": 2346,
+    "newID": "R+Y+G+B+Or,CS",
+    "name": "Clue Starved & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
     "clueStarved": true
   },
   {
@@ -14481,6 +16147,34 @@
     "alternatingClues": true
   },
   {
+    "id": 2347,
+    "newID": "R+Y+G+B+P+Or,AC",
+    "name": "Alternating Clues & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "alternatingClues": true
+  },
+  {
+    "id": 2348,
+    "newID": "R+Y+G+B+Or,AC",
+    "name": "Alternating Clues & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "alternatingClues": true
+  },
+  {
+    "id": 2349,
+    "newID": "R+G+B+Or,AC",
+    "name": "Alternating Clues & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "alternatingClues": true
+  },
+  {
+    "id": 2350,
+    "newID": "R+B+Or,AC",
+    "name": "Alternating Clues & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "alternatingClues": true
+  },
+  {
     "id": 1448,
     "newID": "R+Y+G+B+P+DRa,AC",
     "name": "Alternating Clues & Dark Rainbow (6 Suits)",
@@ -14604,6 +16298,20 @@
     "newID": "R+Y+G+B+DPr,AC",
     "name": "Alternating Clues & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "alternatingClues": true
+  },
+  {
+    "id": 2351,
+    "newID": "R+Y+G+B+P+DOr,AC",
+    "name": "Alternating Clues & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "alternatingClues": true
+  },
+  {
+    "id": 2352,
+    "newID": "R+Y+G+B+DOr,AC",
+    "name": "Alternating Clues & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "alternatingClues": true
   },
   {
@@ -14999,6 +16707,38 @@
     "oddsAndEvens": true
   },
   {
+    "id": 2353,
+    "newID": "R+Y+G+B+P+Or,OE",
+    "name": "Odds and Evens & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
+    "id": 2354,
+    "newID": "R+Y+G+B+Or,OE",
+    "name": "Odds and Evens & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
+    "id": 2355,
+    "newID": "R+G+B+Or,OE",
+    "name": "Odds and Evens & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
+    "id": 2356,
+    "newID": "R+B+Or,OE",
+    "name": "Odds and Evens & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
     "id": 1878,
     "newID": "R+Y+G+B+P+DRa,OE",
     "name": "Odds and Evens & Dark Rainbow (6 Suits)",
@@ -15139,6 +16879,22 @@
     "newID": "R+Y+G+B+DPr,OE",
     "name": "Odds and Evens & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
+    "id": 2357,
+    "newID": "R+Y+G+B+P+DOr,OE",
+    "name": "Odds and Evens & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "clueRanks": [1, 2],
+    "oddsAndEvens": true
+  },
+  {
+    "id": 2358,
+    "newID": "R+Y+G+B+DOr,OE",
+    "name": "Odds and Evens & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "clueRanks": [1, 2],
     "oddsAndEvens": true
   },
@@ -15319,6 +17075,38 @@
     "synesthesia": true
   },
   {
+    "id": 2359,
+    "newID": "R+Y+G+B+P+Or,NM,Sy",
+    "name": "Synesthesia & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
+    "id": 2360,
+    "newID": "R+Y+G+B+Or,NM,Sy",
+    "name": "Synesthesia & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
+    "id": 2361,
+    "newID": "R+G+B+Or,NM,Sy",
+    "name": "Synesthesia & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
+    "id": 2362,
+    "newID": "R+B+Or,NM,Sy",
+    "name": "Synesthesia & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
     "id": 1805,
     "newID": "R+Y+G+B+P+DRa,NM,Sy",
     "name": "Synesthesia & Dark Rainbow (6 Suits)",
@@ -15379,6 +17167,22 @@
     "newID": "R+Y+G+B+DNu,NM,Sy",
     "name": "Synesthesia & Dark Null (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Null"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
+    "id": 2363,
+    "newID": "R+Y+G+B+P+DOr,NM,Sy",
+    "name": "Synesthesia & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "clueRanks": [],
+    "synesthesia": true
+  },
+  {
+    "id": 2364,
+    "newID": "R+Y+G+B+DOr,NM,Sy",
+    "name": "Synesthesia & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "clueRanks": [],
     "synesthesia": true
   },
@@ -15491,6 +17295,30 @@
     "suits": ["Red", "Blue", "Prism Reversed"]
   },
   {
+    "id": 2365,
+    "newID": "R+Y+G+B+P+Or:R",
+    "name": "Orange Reversed (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange Reversed"]
+  },
+  {
+    "id": 2366,
+    "newID": "R+Y+G+B+Or:R",
+    "name": "Orange Reversed (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange Reversed"]
+  },
+  {
+    "id": 2367,
+    "newID": "R+G+B+Or:R",
+    "name": "Orange Reversed (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange Reversed"]
+  },
+  {
+    "id": 2368,
+    "newID": "R+B+Or:R",
+    "name": "Orange Reversed (3 Suits)",
+    "suits": ["Red", "Blue", "Orange Reversed"]
+  },
+  {
     "id": 1380,
     "newID": "R+Y+G+B+P+DRa:R",
     "name": "Dark Rainbow Reversed (6 Suits)",
@@ -15532,6 +17360,25 @@
     "newID": "R+Y+G+B+DPr:R",
     "name": "Dark Prism Reversed (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism Reversed"]
+  },
+  {
+    "id": 2369,
+    "newID": "R+Y+G+B+P+DOr:R",
+    "name": "Dark Orange Reversed (6 Suits)",
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Orange Reversed"
+    ]
+  },
+  {
+    "id": 2370,
+    "newID": "R+Y+G+B+DOr:R",
+    "name": "Dark Orange Reversed (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange Reversed"]
   },
   {
     "id": 2127,
@@ -15699,6 +17546,20 @@
     "upOrDown": true
   },
   {
+    "id": 2371,
+    "newID": "R+Y+G+B+P+Or,UD",
+    "name": "Up or Down & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "upOrDown": true
+  },
+  {
+    "id": 2372,
+    "newID": "R+Y+G+B+Or,UD",
+    "name": "Up or Down & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "upOrDown": true
+  },
+  {
     "id": 2108,
     "newID": "R+Y+G+B+P+DRa,UD",
     "name": "Up or Down & Dark Rainbow (6 Suits)",
@@ -15759,6 +17620,13 @@
     "newID": "R+Y+G+B+P+DPr,UD",
     "name": "Up or Down & Dark Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "upOrDown": true
+  },
+  {
+    "id": 2373,
+    "newID": "R+Y+G+B+P+DOr,UD",
+    "name": "Up or Down & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
     "upOrDown": true
   },
   {
@@ -15979,6 +17847,27 @@
     "throwItInAHole": true
   },
   {
+    "id": 2374,
+    "newID": "R+Y+G+B+P+Or,TH",
+    "name": "Throw It in a Hole & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2375,
+    "newID": "R+Y+G+B+Or,TH",
+    "name": "Throw It in a Hole & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2376,
+    "newID": "R+G+B+Or,TH",
+    "name": "Throw It in a Hole & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "throwItInAHole": true
+  },
+  {
     "id": 2118,
     "newID": "R+Y+G+B+P+DRa,TH",
     "name": "Throw It in a Hole & Dark Rainbow (6 Suits)",
@@ -16039,6 +17928,13 @@
     "newID": "R+Y+G+B+P+DPr,TH",
     "name": "Throw It in a Hole & Dark Prism (6 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "throwItInAHole": true
+  },
+  {
+    "id": 2377,
+    "newID": "R+Y+G+B+P+DOr,TH",
+    "name": "Throw It in a Hole & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
     "throwItInAHole": true
   },
   {
@@ -16336,6 +18232,34 @@
     "funnels": true
   },
   {
+    "id": 2378,
+    "newID": "R+Y+G+B+P+Or,Fu",
+    "name": "Funnels & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "funnels": true
+  },
+  {
+    "id": 2379,
+    "newID": "R+Y+G+B+Or,Fu",
+    "name": "Funnels & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "funnels": true
+  },
+  {
+    "id": 2380,
+    "newID": "R+G+B+Or,Fu",
+    "name": "Funnels & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "funnels": true
+  },
+  {
+    "id": 2381,
+    "newID": "R+B+Or,Fu",
+    "name": "Funnels & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "funnels": true
+  },
+  {
     "id": 1938,
     "newID": "R+Y+G+B+P+DRa,Fu",
     "name": "Funnels & Dark Rainbow (6 Suits)",
@@ -16459,6 +18383,20 @@
     "newID": "R+Y+G+B+DPr,Fu",
     "name": "Funnels & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "funnels": true
+  },
+  {
+    "id": 2382,
+    "newID": "R+Y+G+B+P+DOr,Fu",
+    "name": "Funnels & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "funnels": true
+  },
+  {
+    "id": 2383,
+    "newID": "R+Y+G+B+DOr,Fu",
+    "name": "Funnels & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "funnels": true
   },
   {
@@ -16756,6 +18694,34 @@
     "chimneys": true
   },
   {
+    "id": 2384,
+    "newID": "R+Y+G+B+P+Or,Ch",
+    "name": "Chimneys & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "chimneys": true
+  },
+  {
+    "id": 2385,
+    "newID": "R+Y+G+B+Or,Ch",
+    "name": "Chimneys & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "chimneys": true
+  },
+  {
+    "id": 2386,
+    "newID": "R+G+B+Or,Ch",
+    "name": "Chimneys & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "chimneys": true
+  },
+  {
+    "id": 2387,
+    "newID": "R+B+Or,Ch",
+    "name": "Chimneys & Orange (3 Suits)",
+    "suits": ["Red", "Blue", "Orange"],
+    "chimneys": true
+  },
+  {
     "id": 1998,
     "newID": "R+Y+G+B+P+DRa,Ch",
     "name": "Chimneys & Dark Rainbow (6 Suits)",
@@ -16882,6 +18848,20 @@
     "chimneys": true
   },
   {
+    "id": 2388,
+    "newID": "R+Y+G+B+P+DOr,Ch",
+    "name": "Chimneys & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "chimneys": true
+  },
+  {
+    "id": 2389,
+    "newID": "R+Y+G+B+DOr,Ch",
+    "name": "Chimneys & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
+    "chimneys": true
+  },
+  {
     "id": 2092,
     "newID": "R+Y+G+B,Su",
     "name": "Sudoku (4 Suits)",
@@ -16979,6 +18959,15 @@
     "clueRanks": [1, 2, 3, 4]
   },
   {
+    "id": 2390,
+    "newID": "R+G+B+Or,Su",
+    "name": "Sudoku & Orange (4 Suits)",
+    "suits": ["Red", "Green", "Blue", "Orange"],
+    "sudoku": true,
+    "stackSize": 4,
+    "clueRanks": [1, 2, 3, 4]
+  },
+  {
     "id": 2073,
     "newID": "R+Y+G+B+Bk,Su",
     "name": "Sudoku & Black (5 Suits)",
@@ -17049,6 +19038,13 @@
     "sudoku": true
   },
   {
+    "id": 2391,
+    "newID": "R+Y+G+B+Or,Su",
+    "name": "Sudoku & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "sudoku": true
+  },
+  {
     "id": 2083,
     "newID": "R+Y+G+B+DRa,Su",
     "name": "Sudoku & Dark Rainbow (5 Suits)",
@@ -17109,6 +19105,13 @@
     "newID": "R+Y+G+B+DPr,Su",
     "name": "Sudoku & Dark Prism (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Prism"],
+    "sudoku": true
+  },
+  {
+    "id": 2392,
+    "newID": "R+Y+G+B+DOr,Su",
+    "name": "Sudoku & Dark Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "sudoku": true
   }
 ]
