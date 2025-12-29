@@ -2,8 +2,6 @@
 | TODO |
 +------+
 
-- fix hypothetical for inverted
-
 - see "function httpWSError" - will this leak memory? test it
 - test if getting a database error disconnects other existing websocket users
 - test that a field annotated as z.date() actually works on the client

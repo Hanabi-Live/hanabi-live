@@ -99,10 +99,27 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
         return;
       }
 
+      // Handle inverted suits.
+      const suit = globals.variant.suits[suitIndex];
+      let actualType = type;
+      if (suit !== undefined && suit.inverted) {
+        switch (actualType) {
+          case "play": {
+            actualType = "discard";
+            break;
+          }
+
+          case "discard": {
+            actualType = "play";
+            break;
+          }
+        }
+      }
+
       // Find out if this card misplays.
       let failed = false;
-      let newType = type;
-      if (type === "play") {
+      let newType = actualType;
+      if (actualType === "play") {
         const nextRanks = getNextPlayableRanks(
           suitIndex,
           gameState.playStacks[suitIndex]!,
