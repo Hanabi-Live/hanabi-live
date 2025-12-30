@@ -14887,22 +14887,22 @@
   },
   {
     "id": 36,
-    "newID": "DRY2+DYG+DGB+DBP+DPR",
+    "newID": "DRY+DYG+DGB+DBP+DPR",
     "name": "Dual-Color (5 Suits)",
-    "suits": ["Tangerine D2", "Lime D", "Teal D", "Indigo D", "Cardinal D"]
+    "suits": ["Tangerine D", "Lime D", "Teal D", "Indigo D", "Cardinal D"]
   },
   {
     "id": 37,
-    "newID": "DRY2+DRB+DYB",
+    "newID": "DRY+DRB+DYB",
     "name": "Dual-Color (3 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D"]
+    "suits": ["Tangerine D", "Purple D", "Green D"]
   },
   {
     "id": 1425,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Bk",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Bk",
     "name": "Dual-Color & Black (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -14912,10 +14912,10 @@
   },
   {
     "id": 5,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Ra",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Ra",
     "name": "Dual-Color & Rainbow (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -14925,16 +14925,16 @@
   },
   {
     "id": 38,
-    "newID": "DRY2+DRB+DYB+Ra",
+    "newID": "DRY+DRB+DYB+Ra",
     "name": "Dual-Color & Rainbow (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Rainbow"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Rainbow"]
   },
   {
     "id": 1426,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Pi",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Pi",
     "name": "Dual-Color & Pink (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -14944,16 +14944,16 @@
   },
   {
     "id": 1427,
-    "newID": "DRY2+DRB+DYB+Pi",
+    "newID": "DRY+DRB+DYB+Pi",
     "name": "Dual-Color & Pink (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Pink"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Pink"]
   },
   {
     "id": 1428,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Wh",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Wh",
     "name": "Dual-Color & White (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -14963,16 +14963,16 @@
   },
   {
     "id": 1429,
-    "newID": "DRY2+DRB+DYB+Wh",
+    "newID": "DRY+DRB+DYB+Wh",
     "name": "Dual-Color & White (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "White"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "White"]
   },
   {
     "id": 1430,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Br",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Br",
     "name": "Dual-Color & Brown (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -14982,16 +14982,16 @@
   },
   {
     "id": 1431,
-    "newID": "DRY2+DRB+DYB+Br",
+    "newID": "DRY+DRB+DYB+Br",
     "name": "Dual-Color & Brown (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Brown"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Brown"]
   },
   {
     "id": 1432,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Om",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Om",
     "name": "Dual-Color & Omni (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15001,16 +15001,16 @@
   },
   {
     "id": 1433,
-    "newID": "DRY2+DRB+DYB+Om",
+    "newID": "DRY+DRB+DYB+Om",
     "name": "Dual-Color & Omni (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Omni"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Omni"]
   },
   {
     "id": 1434,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Nu",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Nu",
     "name": "Dual-Color & Null (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15020,16 +15020,16 @@
   },
   {
     "id": 1435,
-    "newID": "DRY2+DRB+DYB+Nu",
+    "newID": "DRY+DRB+DYB+Nu",
     "name": "Dual-Color & Null (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Null"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Null"]
   },
   {
     "id": 1436,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+BrRa",
+    "newID": "DRY+DYG+DGB+DBP+DPR+BrRa",
     "name": "Dual-Color & Muddy Rainbow (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15039,16 +15039,16 @@
   },
   {
     "id": 1437,
-    "newID": "DRY2+DRB+DYB+BrRa",
+    "newID": "DRY+DRB+DYB+BrRa",
     "name": "Dual-Color & Muddy Rainbow (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Muddy Rainbow"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Muddy Rainbow"]
   },
   {
     "id": 1438,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+WhPi",
+    "newID": "DRY+DYG+DGB+DBP+DPR+WhPi",
     "name": "Dual-Color & Light Pink (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15058,16 +15058,16 @@
   },
   {
     "id": 1439,
-    "newID": "DRY2+DRB+DYB+WhPi",
+    "newID": "DRY+DRB+DYB+WhPi",
     "name": "Dual-Color & Light Pink (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Light Pink"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Light Pink"]
   },
   {
     "id": 1649,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Pr",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Pr",
     "name": "Dual-Color & Prism (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15077,16 +15077,16 @@
   },
   {
     "id": 1650,
-    "newID": "DRY2+DRB+DYB+Pr",
+    "newID": "DRY+DRB+DYB+Pr",
     "name": "Dual-Color & Prism (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Prism"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Prism"]
   },
   {
     "id": 2339,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+Or",
+    "newID": "DRY+DYG+DGB+DBP+DPR+Or",
     "name": "Dual-Color & Orange (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15096,16 +15096,16 @@
   },
   {
     "id": 2340,
-    "newID": "DRY2+DRB+DYB+Or",
+    "newID": "DRY+DRB+DYB+Or",
     "name": "Dual-Color & Orange (4 Suits)",
-    "suits": ["Tangerine D2", "Purple D", "Green D", "Orange"]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Orange"]
   },
   {
     "id": 1440,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DRa",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DRa",
     "name": "Dual-Color & Dark Rainbow (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15115,10 +15115,10 @@
   },
   {
     "id": 1441,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DPi",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DPi",
     "name": "Dual-Color & Dark Pink (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15128,10 +15128,10 @@
   },
   {
     "id": 1442,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DWh",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DWh",
     "name": "Dual-Color & Gray (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15141,10 +15141,10 @@
   },
   {
     "id": 1443,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DBr",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DBr",
     "name": "Dual-Color & Dark Brown (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15154,10 +15154,10 @@
   },
   {
     "id": 1444,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DOm",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DOm",
     "name": "Dual-Color & Dark Omni (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15167,10 +15167,10 @@
   },
   {
     "id": 1445,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DNu",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DNu",
     "name": "Dual-Color & Dark Null (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15180,10 +15180,10 @@
   },
   {
     "id": 1446,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DBrRa",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DBrRa",
     "name": "Dual-Color & Cocoa Rainbow (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15193,10 +15193,10 @@
   },
   {
     "id": 1447,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DWhPi",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DWhPi",
     "name": "Dual-Color & Gray Pink (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15206,10 +15206,10 @@
   },
   {
     "id": 1651,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DPr",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DPr",
     "name": "Dual-Color & Dark Prism (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15219,10 +15219,10 @@
   },
   {
     "id": 2341,
-    "newID": "DRY2+DYG+DGB+DBP+DPR+DOr",
+    "newID": "DRY+DYG+DGB+DBP+DPR+DOr",
     "name": "Dual-Color & Dark Orange (6 Suits)",
     "suits": [
-      "Tangerine D2",
+      "Tangerine D",
       "Lime D",
       "Teal D",
       "Indigo D",
@@ -15250,16 +15250,9 @@
   },
   {
     "id": 7,
-    "newID": "DRY2+DRB+DYB+Bk+Ra+Wh",
+    "newID": "DRY+DRB+DYB+Bk+Ra+Wh",
     "name": "Dual-Color Mix",
-    "suits": [
-      "Tangerine D2",
-      "Purple D",
-      "Green D",
-      "Black",
-      "Rainbow",
-      "White"
-    ]
+    "suits": ["Tangerine D", "Purple D", "Green D", "Black", "Rainbow", "White"]
   },
   {
     "id": 184,
@@ -15276,22 +15269,15 @@
   },
   {
     "id": 2016,
-    "newID": "R+DRY2+Y+Wh+Br",
+    "newID": "R+DRY+Y+Wh+Br",
     "name": "Candy Corn Mix (5 Suits)",
-    "suits": ["Red", "Tangerine D2", "Yellow", "White", "Brown"]
+    "suits": ["Red", "Tangerine D", "Yellow", "White", "Brown"]
   },
   {
     "id": 2017,
-    "newID": "R+DRY2+Y+Wh+Br+DBrRa",
+    "newID": "R+DRY+Y+Wh+Br+DBrRa",
     "name": "Candy Corn Mix (6 Suits)",
-    "suits": [
-      "Red",
-      "Tangerine D2",
-      "Yellow",
-      "White",
-      "Brown",
-      "Cocoa Rainbow"
-    ]
+    "suits": ["Red", "Tangerine D", "Yellow", "White", "Brown", "Cocoa Rainbow"]
   },
   {
     "id": 2018,

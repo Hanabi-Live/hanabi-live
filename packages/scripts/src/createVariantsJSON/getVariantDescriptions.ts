@@ -641,9 +641,9 @@ function getDualColorsVariants(
     undefined,
     undefined,
     undefined,
-    ["Tangerine D2", "Purple D", "Green D"],
+    ["Tangerine D", "Purple D", "Green D"],
     undefined,
-    ["Tangerine D2", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
+    ["Tangerine D", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
     ["Tangerine D", "Purple D", "Mahogany D", "Green D", "Tan D", "Navy D"],
   ] as const;
 
@@ -697,7 +697,7 @@ function getMixVariants(): readonly VariantDescription[] {
     {
       name: "Dual-Color Mix",
       suits: [
-        "Tangerine D2",
+        "Tangerine D",
         "Purple D",
         "Green D",
         "Black",
@@ -718,13 +718,13 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "Candy Corn Mix (5 Suits)",
-      suits: ["Red", "Tangerine D2", "Yellow", "White", "Brown"],
+      suits: ["Red", "Tangerine D", "Yellow", "White", "Brown"],
     },
     {
       name: "Candy Corn Mix (6 Suits)",
       suits: [
         "Red",
-        "Tangerine D2",
+        "Tangerine D",
         "Yellow",
         "White",
         "Brown",

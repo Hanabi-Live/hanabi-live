@@ -400,14 +400,14 @@
     "id": "DRY",
     "displayName": "Tangerine",
     "fill": "#b35f00",
-    "pip": "hanabiAltWhite6",
+    "pip": "hanabiRed1",
     "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Purple D",
     "id": "DRB",
     "displayName": "Purple",
-    "pip": "hanabiWhite5",
+    "pip": "hanabiYellow2",
     "clueColors": ["Red", "Blue"]
   },
   {
@@ -415,14 +415,14 @@
     "id": "DRK",
     "displayName": "Mahogany",
     "fill": "#660016",
-    "pip": "hanabiRed1",
+    "pip": "hanabiGreen3",
     "clueColors": ["Red", "Black"]
   },
   {
     "name": "Green D",
     "id": "DYB",
     "displayName": "Green",
-    "pip": "hanabiGreen3",
+    "pip": "hanabiBlue4",
     "clueColors": ["Yellow", "Blue"]
   },
   {
@@ -430,7 +430,7 @@
     "id": "DYB2",
     "displayName": "Tan",
     "fill": "#999900",
-    "pip": "hanabiYellow2",
+    "pip": "hanabiWhite5",
     "clueColors": ["Yellow", "Black"]
   },
   {
@@ -438,16 +438,8 @@
     "id": "DBK",
     "displayName": "Navy",
     "fill": "#000066",
-    "pip": "hanabiBlue4",
+    "pip": "hanabiAltWhite6",
     "clueColors": ["Blue", "Black"]
-  },
-  {
-    "name": "Tangerine D2",
-    "id": "DRY2",
-    "displayName": "Tangerine",
-    "fill": "#b35f00",
-    "pip": "hanabiRed1",
-    "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Lime D",
