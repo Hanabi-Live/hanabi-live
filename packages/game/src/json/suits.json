@@ -142,7 +142,7 @@
   },
   {
     "name": "Dark Rainbow",
-    "id": "DRa",
+    "id": "Ra1",
     "abbreviation": "M",
     "createVariants": true,
     "fill": "multi",
@@ -153,7 +153,7 @@
   },
   {
     "name": "Dark Pink",
-    "id": "DPi",
+    "id": "Pi1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#800040",
@@ -164,7 +164,7 @@
   },
   {
     "name": "Gray",
-    "id": "DWh",
+    "id": "Wh1",
     "abbreviation": "A",
     "createVariants": true,
     "fill": "#555555",
@@ -174,7 +174,7 @@
   },
   {
     "name": "Dark Brown",
-    "id": "DBr",
+    "id": "Br1",
     "abbreviation": "N",
     "createVariants": true,
     "fill": "#271a0c",
@@ -185,7 +185,7 @@
   },
   {
     "name": "Dark Omni",
-    "id": "DOm",
+    "id": "Om1",
     "abbreviation": "O",
     "createVariants": true,
     "fill": "multi",
@@ -205,7 +205,7 @@
   },
   {
     "name": "Dark Null",
-    "id": "DNu",
+    "id": "Nu1",
     "abbreviation": "U",
     "createVariants": true,
     "fill": "#a6a6a6",
@@ -216,7 +216,7 @@
   },
   {
     "name": "Cocoa Rainbow",
-    "id": "DBrRa",
+    "id": "BrRa1",
     "abbreviation": "M",
     "createVariants": true,
     "fill": "multi",
@@ -228,7 +228,7 @@
   },
   {
     "name": "Gray Pink",
-    "id": "DWhPi",
+    "id": "WhPi1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#b05080",
@@ -239,7 +239,7 @@
   },
   {
     "name": "Dark Prism",
-    "id": "DPr",
+    "id": "Pr1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#d9d9d9",
@@ -249,7 +249,7 @@
   },
   {
     "name": "Dark Orange",
-    "id": "DOr",
+    "id": "Or1",
     "createVariants": true,
     "fill": "#623500",
     "pip": "unoReverse",
@@ -532,7 +532,7 @@
   },
   {
     "name": "Yellow D",
-    "id": "YD",
+    "id": "DRG",
     "abbreviation": "Y",
     "displayName": "Yellow",
     "fill": "#ffff00",
