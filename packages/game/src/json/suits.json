@@ -574,13 +574,5 @@
     "fill": "#ffff00",
     "pip": "hanabiYellow2",
     "clueColors": ["Red", "Green"]
-  },
-  {
-    "name": "Teal D2",
-    "id": "TD",
-    "abbreviation": "T",
-    "displayName": "Teal",
-    "pip": "hanabiAltWhite6",
-    "clueColors": ["Green", "Blue"]
   }
 ]
