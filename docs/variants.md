@@ -186,6 +186,15 @@ One of each card per suit (e.g. 5 in total):
 ### Extremely Ambiguous
 
 - Four, five, or six suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Ice (blue)
+  - Sapphire (blue)
+  - Sky (blue)
+  - Berry (blue)
+  - Navy (blue)
+  - Ocean (blue)
+- In the 5-suit version, the Ocean suit is removed.
+- In the 4-suit version, the Ocean and Navy suits are removed.
 
 ### Matryoshka
 
