@@ -202,7 +202,7 @@ One of each card per suit (e.g. 5 in total):
 - In the 3-suit version, there are 3 different colors:
   - Tangerine (red / yellow)
   - Green (yellow / blue)
-  - Purple (blue / red)
+  - Purple (red / blue)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
 ### RGB Mix (6 Suits)
@@ -213,7 +213,7 @@ One of each card per suit (e.g. 5 in total):
   - Green
   - Teal (green / blue)
   - Blue
-  - Purple (blue / red)
+  - Purple (red / blue)
 - The color names are taken from the [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
 
 ### Special Mix (5 Suits)
@@ -248,9 +248,9 @@ One of each card per suit (e.g. 5 in total):
 ### Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
-  1. Green (blue / yellow)
-  2. Purple (blue / red)
-  3. Tangerine (yellow / red)
+  1. Green (yellow / blue)
+  2. Purple (red / blue)
+  3. Tangerine (red / yellow)
   4. Black (one of each)
   5. Rainbow (all colors)
   6. White (colorless)
