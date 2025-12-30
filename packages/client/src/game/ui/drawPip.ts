@@ -22,20 +22,19 @@ export function drawPip(
     ctx.restore();
   }
 
-  // Each suit has a shape defined in the "suits.json" file (as the 'pip' property). If it is
-  // "auto", then we need to calculate it.
+  // Most suits have a shape defined in the "suits.json" file (as the "pip" property). But we get
+  // the pip from the variant object instead of the suit object in case the pip is
+  // automatically/dynamically calculated.
   const suitIndex = variant.suits.findIndex(
     (variantSuit) => variantSuit.id === suit.id,
   );
   if (suitIndex === -1) {
     throw new Error(`Failed to find the index for suit: ${suit.name}`);
   }
-  // We get the pip from the variant object instead of the suit object in case the pip is
-  // automatically/dynamically calculated.
   const pip = variant.pips[suitIndex];
   assertDefined(pip, `Failed to find the pip for suit index: ${suitIndex}`);
 
-  // Handle the shadow
+  // Handle the shadow.
   if (shadow === true) {
     ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   }
