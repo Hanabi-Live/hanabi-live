@@ -639,10 +639,10 @@ function getDualColorsVariants(
     undefined,
     undefined,
     undefined,
-    ["Tangerine", "Violet", "Green D"],
+    ["Tangerine", "Violet", "Jade"],
     undefined,
     ["Tangerine", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
-    ["Tangerine", "Violet", "Mahogany D", "Green D", "Tan D", "Navy D"],
+    ["Tangerine", "Violet", "Mahogany D", "Jade", "Tan D", "Navy D"],
   ] as const;
 
   // Create the basic variants.
@@ -694,7 +694,7 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "Dual-Color Mix",
-      suits: ["Tangerine", "Violet", "Green D", "Black", "Rainbow", "White"],
+      suits: ["Tangerine", "Violet", "Jade", "Black", "Rainbow", "White"],
     },
     {
       name: "Ambiguous & Dual-Color Mix",

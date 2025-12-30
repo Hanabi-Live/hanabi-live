@@ -382,9 +382,8 @@
     "clueColors": ["Red", "Black"]
   },
   {
-    "name": "Green D",
+    "name": "Jade",
     "id": "DYB",
-    "displayName": "Green",
     "pip": "auto",
     "clueColors": ["Yellow", "Blue"]
   },
