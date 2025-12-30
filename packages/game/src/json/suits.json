@@ -389,7 +389,6 @@
   {
     "name": "Tan",
     "id": "DYK",
-    "displayName": "Tan",
     "fill": "#999900",
     "pip": "auto",
     "clueColors": ["Yellow", "Black"]
@@ -404,15 +403,13 @@
   {
     "name": "Lime",
     "id": "DYG",
-    "displayName": "Lime",
     "fill": "#80c000",
     "pip": "auto",
     "clueColors": ["Yellow", "Green"]
   },
   {
-    "name": "Teal D",
+    "name": "Cyan",
     "id": "DGB",
-    "displayName": "Teal",
     "pip": "auto",
     "clueColors": ["Green", "Blue"]
   },
