@@ -213,11 +213,11 @@ One of each card per suit (e.g. 5 in total):
 - Each suit is touched by 2 separate colors.
 - In the 6-suit version, there are 4 different colors:
   - Tangerine (red / yellow)
-  - Purple (red / blue)
-  - Mahogany (red / black)
-  - Green (yellow / blue)
+  - Violet (red / blue)
+  - Maroon (red / black)
+  - Jade (yellow / blue)
   - Tan (yellow / black)
-  - Navy (blue / black)
+  - Cobalt (blue / black)
 - In the 5-suit version, there are 5 different colors:
   - Tangerine (red / yellow)
   - Lime (yellow / green)
