@@ -641,7 +641,7 @@ function getDualColorsVariants(
     undefined,
     ["Tangerine", "Violet", "Jade"],
     undefined,
-    ["Tangerine", "Lime", "Teal D", "Indigo D", "Cardinal D"],
+    ["Tangerine", "Lime", "Cyan", "Indigo D", "Cardinal D"],
     ["Tangerine", "Violet", "Maroon", "Jade", "Tan", "Cobalt"],
   ] as const;
 
@@ -733,7 +733,7 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "RGB Mix (6 Suits)",
-      suits: ["Red", "Yellow D", "Green", "Teal D", "Blue", "Violet"],
+      suits: ["Red", "Yellow D", "Green", "Cyan", "Blue", "Violet"],
     },
   ];
 }
