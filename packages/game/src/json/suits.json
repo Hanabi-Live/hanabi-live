@@ -400,14 +400,14 @@
     "id": "DRY",
     "displayName": "Tangerine",
     "fill": "#b35f00",
-    "pip": "hanabiRed1",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
     "name": "Purple D",
     "id": "DRB",
     "displayName": "Purple",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Red", "Blue"]
   },
   {
@@ -415,14 +415,14 @@
     "id": "DRK",
     "displayName": "Mahogany",
     "fill": "#660016",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Red", "Black"]
   },
   {
     "name": "Green D",
     "id": "DYB",
     "displayName": "Green",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Yellow", "Blue"]
   },
   {
@@ -430,7 +430,7 @@
     "id": "DYB2",
     "displayName": "Tan",
     "fill": "#999900",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Yellow", "Black"]
   },
   {
@@ -438,7 +438,7 @@
     "id": "DBK",
     "displayName": "Navy",
     "fill": "#000066",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Blue", "Black"]
   },
   {
@@ -446,14 +446,14 @@
     "id": "DYG",
     "displayName": "Lime",
     "fill": "#80c000",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Yellow", "Green"]
   },
   {
     "name": "Teal D",
     "id": "DGB",
     "displayName": "Teal",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Green", "Blue"]
   },
   {
@@ -461,7 +461,7 @@
     "id": "DBP",
     "displayName": "Indigo",
     "fill": "#1a0082",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Blue", "Purple"]
   },
   {
@@ -469,7 +469,7 @@
     "id": "DPR",
     "displayName": "Cardinal",
     "fill": "#810735",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Purple", "Red"]
   },
   {
@@ -477,7 +477,7 @@
     "id": "DRY3",
     "displayName": "Peach",
     "fill": "#ffac4d",
-    "pip": "hanabiRed1",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
@@ -485,7 +485,7 @@
     "id": "DRY4",
     "displayName": "Tangerine",
     "fill": "#b35f00",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
@@ -493,7 +493,7 @@
     "id": "DRB2",
     "displayName": "Orchid",
     "fill": "#8c1aff",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Red", "Blue"]
   },
   {
@@ -501,7 +501,7 @@
     "id": "DRB3",
     "displayName": "Violet",
     "fill": "#400080",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Red", "Blue"]
   },
   {
@@ -509,7 +509,7 @@
     "id": "DYB3",
     "displayName": "Lime",
     "fill": "#1aff1a",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Yellow", "Blue"]
   },
   {
@@ -518,7 +518,7 @@
     "abbreviation": "R",
     "displayName": "Forest",
     "fill": "#008000",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Yellow", "Blue"]
   },
   {
@@ -527,7 +527,7 @@
     "abbreviation": "Y",
     "displayName": "Yam",
     "fill": "#cc9900",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
@@ -536,7 +536,7 @@
     "abbreviation": "G",
     "displayName": "Geas",
     "fill": "#68b840",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green"]
   },
   {
@@ -545,7 +545,7 @@
     "abbreviation": "B",
     "displayName": "Beatnik",
     "fill": "#3f6fa4",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue"]
   },
   {
@@ -554,7 +554,7 @@
     "abbreviation": "P",
     "displayName": "Plum",
     "fill": "#281a58",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
   },
   {
@@ -563,7 +563,7 @@
     "abbreviation": "T",
     "displayName": "Taupe",
     "fill": "#381c12",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
   },
   {
@@ -572,7 +572,7 @@
     "abbreviation": "Y",
     "displayName": "Yellow",
     "fill": "#ffff00",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Red", "Green"]
   }
 ]
