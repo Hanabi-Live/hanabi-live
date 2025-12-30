@@ -67,7 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
       fillColors: info.fillColors ?? [],
     };
 
-    const mockVariant: Partial<Variant> = {};
+    const mockVariant: Partial<Variant> = {
+      suits: [mockSuit as Suit],
+      pips: [pip],
+    };
 
     try {
       drawPip(ctx, mockSuit as Suit, mockVariant as Variant);
