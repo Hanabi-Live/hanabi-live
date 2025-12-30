@@ -14401,399 +14401,399 @@
   },
   {
     "id": 150,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+DRYGBPT",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+DRYGBPT",
     "name": "Matryoshka (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Taupe M"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Taupe"]
   },
   {
     "id": 193,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP",
     "name": "Matryoshka (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum"]
   },
   {
     "id": 197,
-    "newID": "R+DRY5+DRYG+DRYGB",
+    "newID": "R+DRY+DRYG+DRYGB",
     "name": "Matryoshka (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik"]
   },
   {
     "id": 785,
-    "newID": "R+DRY5+DRYG",
+    "newID": "R+DRY+DRYG",
     "name": "Matryoshka (3 Suits)",
-    "suits": ["Red", "Yam M", "Geas M"]
+    "suits": ["Red", "Tangerine", "Geas"]
   },
   {
     "id": 1295,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Bk",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Bk",
     "name": "Matryoshka & Black (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Black"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Black"]
   },
   {
     "id": 1476,
-    "newID": "R+DRY5+DRYG+DRYGB+Bk",
+    "newID": "R+DRY+DRYG+DRYGB+Bk",
     "name": "Matryoshka & Black (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Black"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Black"]
   },
   {
     "id": 1488,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Ra",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Ra",
     "name": "Matryoshka & Rainbow (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Rainbow"]
   },
   {
     "id": 1500,
-    "newID": "R+DRY5+DRYG+DRYGB+Ra",
+    "newID": "R+DRY+DRYG+DRYGB+Ra",
     "name": "Matryoshka & Rainbow (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Rainbow"]
   },
   {
     "id": 1506,
-    "newID": "R+DRY5+DRYG+Ra",
+    "newID": "R+DRY+DRYG+Ra",
     "name": "Matryoshka & Rainbow (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Rainbow"]
   },
   {
     "id": 1512,
-    "newID": "R+DRY5+Ra",
+    "newID": "R+DRY+Ra",
     "name": "Matryoshka & Rainbow (3 Suits)",
-    "suits": ["Red", "Yam M", "Rainbow"]
+    "suits": ["Red", "Tangerine", "Rainbow"]
   },
   {
     "id": 1518,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Pi",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Pi",
     "name": "Matryoshka & Pink (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Pink"]
   },
   {
     "id": 2020,
-    "newID": "R+DRY5+DRYG+DRYGB+Pi",
+    "newID": "R+DRY+DRYG+DRYGB+Pi",
     "name": "Matryoshka & Pink (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Pink"]
   },
   {
     "id": 2021,
-    "newID": "R+DRY5+DRYG+Pi",
+    "newID": "R+DRY+DRYG+Pi",
     "name": "Matryoshka & Pink (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Pink"]
   },
   {
     "id": 2022,
-    "newID": "R+DRY5+Pi",
+    "newID": "R+DRY+Pi",
     "name": "Matryoshka & Pink (3 Suits)",
-    "suits": ["Red", "Yam M", "Pink"]
+    "suits": ["Red", "Tangerine", "Pink"]
   },
   {
     "id": 2023,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Wh",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Wh",
     "name": "Matryoshka & White (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "White"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "White"]
   },
   {
     "id": 2024,
-    "newID": "R+DRY5+DRYG+DRYGB+Wh",
+    "newID": "R+DRY+DRYG+DRYGB+Wh",
     "name": "Matryoshka & White (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "White"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "White"]
   },
   {
     "id": 2025,
-    "newID": "R+DRY5+DRYG+Wh",
+    "newID": "R+DRY+DRYG+Wh",
     "name": "Matryoshka & White (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "White"]
+    "suits": ["Red", "Tangerine", "Geas", "White"]
   },
   {
     "id": 2026,
-    "newID": "R+DRY5+Wh",
+    "newID": "R+DRY+Wh",
     "name": "Matryoshka & White (3 Suits)",
-    "suits": ["Red", "Yam M", "White"]
+    "suits": ["Red", "Tangerine", "White"]
   },
   {
     "id": 2027,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Br",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Br",
     "name": "Matryoshka & Brown (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Brown"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Brown"]
   },
   {
     "id": 2028,
-    "newID": "R+DRY5+DRYG+DRYGB+Br",
+    "newID": "R+DRY+DRYG+DRYGB+Br",
     "name": "Matryoshka & Brown (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Brown"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Brown"]
   },
   {
     "id": 2029,
-    "newID": "R+DRY5+DRYG+Br",
+    "newID": "R+DRY+DRYG+Br",
     "name": "Matryoshka & Brown (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Brown"]
+    "suits": ["Red", "Tangerine", "Geas", "Brown"]
   },
   {
     "id": 2030,
-    "newID": "R+DRY5+Br",
+    "newID": "R+DRY+Br",
     "name": "Matryoshka & Brown (3 Suits)",
-    "suits": ["Red", "Yam M", "Brown"]
+    "suits": ["Red", "Tangerine", "Brown"]
   },
   {
     "id": 2031,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Om",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Om",
     "name": "Matryoshka & Omni (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Omni"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Omni"]
   },
   {
     "id": 2032,
-    "newID": "R+DRY5+DRYG+DRYGB+Om",
+    "newID": "R+DRY+DRYG+DRYGB+Om",
     "name": "Matryoshka & Omni (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Omni"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Omni"]
   },
   {
     "id": 2033,
-    "newID": "R+DRY5+DRYG+Om",
+    "newID": "R+DRY+DRYG+Om",
     "name": "Matryoshka & Omni (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Omni"]
+    "suits": ["Red", "Tangerine", "Geas", "Omni"]
   },
   {
     "id": 2034,
-    "newID": "R+DRY5+Om",
+    "newID": "R+DRY+Om",
     "name": "Matryoshka & Omni (3 Suits)",
-    "suits": ["Red", "Yam M", "Omni"]
+    "suits": ["Red", "Tangerine", "Omni"]
   },
   {
     "id": 2035,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Nu",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Nu",
     "name": "Matryoshka & Null (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Null"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Null"]
   },
   {
     "id": 2036,
-    "newID": "R+DRY5+DRYG+DRYGB+Nu",
+    "newID": "R+DRY+DRYG+DRYGB+Nu",
     "name": "Matryoshka & Null (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Null"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Null"]
   },
   {
     "id": 2037,
-    "newID": "R+DRY5+DRYG+Nu",
+    "newID": "R+DRY+DRYG+Nu",
     "name": "Matryoshka & Null (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Null"]
+    "suits": ["Red", "Tangerine", "Geas", "Null"]
   },
   {
     "id": 2038,
-    "newID": "R+DRY5+Nu",
+    "newID": "R+DRY+Nu",
     "name": "Matryoshka & Null (3 Suits)",
-    "suits": ["Red", "Yam M", "Null"]
+    "suits": ["Red", "Tangerine", "Null"]
   },
   {
     "id": 2039,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+BrRa",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+BrRa",
     "name": "Matryoshka & Muddy Rainbow (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Muddy Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Muddy Rainbow"]
   },
   {
     "id": 2040,
-    "newID": "R+DRY5+DRYG+DRYGB+BrRa",
+    "newID": "R+DRY+DRYG+DRYGB+BrRa",
     "name": "Matryoshka & Muddy Rainbow (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Muddy Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Muddy Rainbow"]
   },
   {
     "id": 2041,
-    "newID": "R+DRY5+DRYG+BrRa",
+    "newID": "R+DRY+DRYG+BrRa",
     "name": "Matryoshka & Muddy Rainbow (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Muddy Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Muddy Rainbow"]
   },
   {
     "id": 2042,
-    "newID": "R+DRY5+BrRa",
+    "newID": "R+DRY+BrRa",
     "name": "Matryoshka & Muddy Rainbow (3 Suits)",
-    "suits": ["Red", "Yam M", "Muddy Rainbow"]
+    "suits": ["Red", "Tangerine", "Muddy Rainbow"]
   },
   {
     "id": 2043,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+WhPi",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+WhPi",
     "name": "Matryoshka & Light Pink (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Light Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Light Pink"]
   },
   {
     "id": 2044,
-    "newID": "R+DRY5+DRYG+DRYGB+WhPi",
+    "newID": "R+DRY+DRYG+DRYGB+WhPi",
     "name": "Matryoshka & Light Pink (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Light Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Light Pink"]
   },
   {
     "id": 2045,
-    "newID": "R+DRY5+DRYG+WhPi",
+    "newID": "R+DRY+DRYG+WhPi",
     "name": "Matryoshka & Light Pink (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Light Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Light Pink"]
   },
   {
     "id": 2046,
-    "newID": "R+DRY5+WhPi",
+    "newID": "R+DRY+WhPi",
     "name": "Matryoshka & Light Pink (3 Suits)",
-    "suits": ["Red", "Yam M", "Light Pink"]
+    "suits": ["Red", "Tangerine", "Light Pink"]
   },
   {
     "id": 2047,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Pr",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Pr",
     "name": "Matryoshka & Prism (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Prism"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Prism"]
   },
   {
     "id": 2048,
-    "newID": "R+DRY5+DRYG+DRYGB+Pr",
+    "newID": "R+DRY+DRYG+DRYGB+Pr",
     "name": "Matryoshka & Prism (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Prism"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Prism"]
   },
   {
     "id": 2049,
-    "newID": "R+DRY5+DRYG+Pr",
+    "newID": "R+DRY+DRYG+Pr",
     "name": "Matryoshka & Prism (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Prism"]
+    "suits": ["Red", "Tangerine", "Geas", "Prism"]
   },
   {
     "id": 2050,
-    "newID": "R+DRY5+Pr",
+    "newID": "R+DRY+Pr",
     "name": "Matryoshka & Prism (3 Suits)",
-    "suits": ["Red", "Yam M", "Prism"]
+    "suits": ["Red", "Tangerine", "Prism"]
   },
   {
     "id": 2333,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Or",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Or",
     "name": "Matryoshka & Orange (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Orange"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Orange"]
   },
   {
     "id": 2334,
-    "newID": "R+DRY5+DRYG+DRYGB+Or",
+    "newID": "R+DRY+DRYG+DRYGB+Or",
     "name": "Matryoshka & Orange (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Orange"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Orange"]
   },
   {
     "id": 2335,
-    "newID": "R+DRY5+DRYG+Or",
+    "newID": "R+DRY+DRYG+Or",
     "name": "Matryoshka & Orange (4 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Orange"]
+    "suits": ["Red", "Tangerine", "Geas", "Orange"]
   },
   {
     "id": 2336,
-    "newID": "R+DRY5+Or",
+    "newID": "R+DRY+Or",
     "name": "Matryoshka & Orange (3 Suits)",
-    "suits": ["Red", "Yam M", "Orange"]
+    "suits": ["Red", "Tangerine", "Orange"]
   },
   {
     "id": 2051,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Ra1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Ra1",
     "name": "Matryoshka & Dark Rainbow (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Rainbow"]
   },
   {
     "id": 2052,
-    "newID": "R+DRY5+DRYG+DRYGB+Ra1",
+    "newID": "R+DRY+DRYG+DRYGB+Ra1",
     "name": "Matryoshka & Dark Rainbow (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Rainbow"]
   },
   {
     "id": 2053,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Pi1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Pi1",
     "name": "Matryoshka & Dark Pink (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Pink"]
   },
   {
     "id": 2054,
-    "newID": "R+DRY5+DRYG+DRYGB+Pi1",
+    "newID": "R+DRY+DRYG+DRYGB+Pi1",
     "name": "Matryoshka & Dark Pink (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Pink"]
   },
   {
     "id": 2055,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Wh1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Wh1",
     "name": "Matryoshka & Gray (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Gray"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Gray"]
   },
   {
     "id": 2056,
-    "newID": "R+DRY5+DRYG+DRYGB+Wh1",
+    "newID": "R+DRY+DRYG+DRYGB+Wh1",
     "name": "Matryoshka & Gray (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Gray"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Gray"]
   },
   {
     "id": 2057,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Br1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Br1",
     "name": "Matryoshka & Dark Brown (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Brown"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Brown"]
   },
   {
     "id": 2058,
-    "newID": "R+DRY5+DRYG+DRYGB+Br1",
+    "newID": "R+DRY+DRYG+DRYGB+Br1",
     "name": "Matryoshka & Dark Brown (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Brown"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Brown"]
   },
   {
     "id": 2059,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Om1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Om1",
     "name": "Matryoshka & Dark Omni (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Omni"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Omni"]
   },
   {
     "id": 2060,
-    "newID": "R+DRY5+DRYG+DRYGB+Om1",
+    "newID": "R+DRY+DRYG+DRYGB+Om1",
     "name": "Matryoshka & Dark Omni (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Omni"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Omni"]
   },
   {
     "id": 2061,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Nu1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Nu1",
     "name": "Matryoshka & Dark Null (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Null"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Null"]
   },
   {
     "id": 2062,
-    "newID": "R+DRY5+DRYG+DRYGB+Nu1",
+    "newID": "R+DRY+DRYG+DRYGB+Nu1",
     "name": "Matryoshka & Dark Null (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Null"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Null"]
   },
   {
     "id": 2063,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+BrRa1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+BrRa1",
     "name": "Matryoshka & Cocoa Rainbow (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Cocoa Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Cocoa Rainbow"]
   },
   {
     "id": 2064,
-    "newID": "R+DRY5+DRYG+DRYGB+BrRa1",
+    "newID": "R+DRY+DRYG+DRYGB+BrRa1",
     "name": "Matryoshka & Cocoa Rainbow (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Cocoa Rainbow"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Cocoa Rainbow"]
   },
   {
     "id": 2065,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+WhPi1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+WhPi1",
     "name": "Matryoshka & Gray Pink (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Gray Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Gray Pink"]
   },
   {
     "id": 2066,
-    "newID": "R+DRY5+DRYG+DRYGB+WhPi1",
+    "newID": "R+DRY+DRYG+DRYGB+WhPi1",
     "name": "Matryoshka & Gray Pink (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Gray Pink"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Gray Pink"]
   },
   {
     "id": 2067,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Pr1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Pr1",
     "name": "Matryoshka & Dark Prism (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Prism"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Prism"]
   },
   {
     "id": 2068,
-    "newID": "R+DRY5+DRYG+DRYGB+Pr1",
+    "newID": "R+DRY+DRYG+DRYGB+Pr1",
     "name": "Matryoshka & Dark Prism (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Prism"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Prism"]
   },
   {
     "id": 2337,
-    "newID": "R+DRY5+DRYG+DRYGB+DRYGBP+Or1",
+    "newID": "R+DRY+DRYG+DRYGB+DRYGBP+Or1",
     "name": "Matryoshka & Dark Orange (6 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Plum M", "Dark Orange"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Plum", "Dark Orange"]
   },
   {
     "id": 2338,
-    "newID": "R+DRY5+DRYG+DRYGB+Or1",
+    "newID": "R+DRY+DRYG+DRYGB+Or1",
     "name": "Matryoshka & Dark Orange (5 Suits)",
-    "suits": ["Red", "Yam M", "Geas M", "Beatnik M", "Dark Orange"]
+    "suits": ["Red", "Tangerine", "Geas", "Beatnik", "Dark Orange"]
   },
   {
     "id": 4,
@@ -14803,7 +14803,7 @@
   },
   {
     "id": 36,
-    "newID": "DRY+DYG+DGB+DBP+DPR",
+    "newID": "DRY+DYG+DGB+DBP+DRP",
     "name": "Dual-Color (5 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal"]
   },
@@ -14815,13 +14815,13 @@
   },
   {
     "id": 1425,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Bk",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Bk",
     "name": "Dual-Color & Black (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Black"]
   },
   {
     "id": 5,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Ra",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Ra",
     "name": "Dual-Color & Rainbow (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Rainbow"]
   },
@@ -14833,7 +14833,7 @@
   },
   {
     "id": 1426,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Pi",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Pi",
     "name": "Dual-Color & Pink (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Pink"]
   },
@@ -14845,7 +14845,7 @@
   },
   {
     "id": 1428,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Wh",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Wh",
     "name": "Dual-Color & White (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "White"]
   },
@@ -14857,7 +14857,7 @@
   },
   {
     "id": 1430,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Br",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Br",
     "name": "Dual-Color & Brown (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Brown"]
   },
@@ -14869,7 +14869,7 @@
   },
   {
     "id": 1432,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Om",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Om",
     "name": "Dual-Color & Omni (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Omni"]
   },
@@ -14881,7 +14881,7 @@
   },
   {
     "id": 1434,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Nu",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Nu",
     "name": "Dual-Color & Null (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Null"]
   },
@@ -14893,7 +14893,7 @@
   },
   {
     "id": 1436,
-    "newID": "DRY+DYG+DGB+DBP+DPR+BrRa",
+    "newID": "DRY+DYG+DGB+DBP+DRP+BrRa",
     "name": "Dual-Color & Muddy Rainbow (6 Suits)",
     "suits": [
       "Tangerine",
@@ -14912,7 +14912,7 @@
   },
   {
     "id": 1438,
-    "newID": "DRY+DYG+DGB+DBP+DPR+WhPi",
+    "newID": "DRY+DYG+DGB+DBP+DRP+WhPi",
     "name": "Dual-Color & Light Pink (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Light Pink"]
   },
@@ -14924,7 +14924,7 @@
   },
   {
     "id": 1649,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Pr",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Pr",
     "name": "Dual-Color & Prism (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Prism"]
   },
@@ -14936,7 +14936,7 @@
   },
   {
     "id": 2339,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Or",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Or",
     "name": "Dual-Color & Orange (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Orange"]
   },
@@ -14948,43 +14948,43 @@
   },
   {
     "id": 1440,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Ra1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Ra1",
     "name": "Dual-Color & Dark Rainbow (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Rainbow"]
   },
   {
     "id": 1441,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Pi1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Pi1",
     "name": "Dual-Color & Dark Pink (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Pink"]
   },
   {
     "id": 1442,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Wh1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Wh1",
     "name": "Dual-Color & Gray (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Gray"]
   },
   {
     "id": 1443,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Br1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Br1",
     "name": "Dual-Color & Dark Brown (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Brown"]
   },
   {
     "id": 1444,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Om1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Om1",
     "name": "Dual-Color & Dark Omni (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Omni"]
   },
   {
     "id": 1445,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Nu1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Nu1",
     "name": "Dual-Color & Dark Null (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Null"]
   },
   {
     "id": 1446,
-    "newID": "DRY+DYG+DGB+DBP+DPR+BrRa1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+BrRa1",
     "name": "Dual-Color & Cocoa Rainbow (6 Suits)",
     "suits": [
       "Tangerine",
@@ -14997,19 +14997,19 @@
   },
   {
     "id": 1447,
-    "newID": "DRY+DYG+DGB+DBP+DPR+WhPi1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+WhPi1",
     "name": "Dual-Color & Gray Pink (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Gray Pink"]
   },
   {
     "id": 1651,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Pr1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Pr1",
     "name": "Dual-Color & Dark Prism (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Prism"]
   },
   {
     "id": 2341,
-    "newID": "DRY+DYG+DGB+DBP+DPR+Or1",
+    "newID": "DRY+DYG+DGB+DBP+DRP+Or1",
     "name": "Dual-Color & Dark Orange (6 Suits)",
     "suits": ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal", "Dark Orange"]
   },
@@ -15039,16 +15039,9 @@
   },
   {
     "id": 184,
-    "newID": "DRY3+DRY4+DRB2+DRB3+DYG+AG1",
+    "newID": "DRY2+DRY+DRB2+DRB+DYG+DYG2",
     "name": "Ambiguous & Dual-Color Mix",
-    "suits": [
-      "Peach AD",
-      "Tangerine AD",
-      "Orchid AD",
-      "Violet AD",
-      "Lime",
-      "Emerald"
-    ]
+    "suits": ["Peach", "Tangerine", "Magenta", "Violet", "Lime", "Jungle"]
   },
   {
     "id": 2016,
@@ -15090,7 +15083,7 @@
     "id": 2071,
     "newID": "R+DRG+G+DGB+B+DRB",
     "name": "RGB Mix (6 Suits)",
-    "suits": ["Red", "Yellow D", "Green", "Cyan", "Blue", "Violet"]
+    "suits": ["Red", "Gold", "Green", "Cyan", "Blue", "Violet"]
   },
   {
     "id": 1821,

@@ -366,6 +366,48 @@
     "clueColors": ["Red", "Yellow"]
   },
   {
+    "name": "Peach",
+    "id": "DRY2",
+    "fill": "#ffac4d",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow"]
+  },
+  {
+    "name": "Geas",
+    "id": "DRYG",
+    "fill": "#68b840",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow", "Green"]
+  },
+  {
+    "name": "Beatnik",
+    "id": "DRYGB",
+    "fill": "#3f6fa4",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow", "Green", "Blue"]
+  },
+  {
+    "name": "Plum",
+    "id": "DRYGBP",
+    "fill": "#281a58",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
+  },
+  {
+    "name": "Taupe",
+    "id": "DRYGBPT",
+    "fill": "#381c12",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
+  },
+  {
+    "name": "Gold",
+    "id": "DRG",
+    "fill": "#ffff00",
+    "pip": "auto",
+    "clueColors": ["Red", "Green"]
+  },
+  {
     "name": "Violet",
     "id": "DRB",
     "fill": "#7f00ff",
@@ -373,11 +415,39 @@
     "clueColors": ["Red", "Blue"]
   },
   {
+    "name": "Magenta",
+    "id": "DRB2",
+    "fill": "#ff00ff",
+    "pip": "auto",
+    "clueColors": ["Red", "Blue"]
+  },
+  {
+    "name": "Cardinal",
+    "id": "DRP",
+    "fill": "#810735",
+    "pip": "auto",
+    "clueColors": ["Red", "Purple"]
+  },
+  {
     "name": "Maroon",
     "id": "DRK",
     "fill": "#800000",
     "pip": "auto",
     "clueColors": ["Red", "Black"]
+  },
+  {
+    "name": "Lime",
+    "id": "DYG",
+    "fill": "#00ff00",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Green"]
+  },
+  {
+    "name": "Jungle",
+    "id": "DYG2",
+    "fill": "#006400",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Green"]
   },
   {
     "name": "Jade",
@@ -394,20 +464,6 @@
     "clueColors": ["Yellow", "Black"]
   },
   {
-    "name": "Cobalt",
-    "id": "DBK",
-    "fill": "#000066",
-    "pip": "auto",
-    "clueColors": ["Blue", "Black"]
-  },
-  {
-    "name": "Lime",
-    "id": "DYG",
-    "fill": "#80c000",
-    "pip": "auto",
-    "clueColors": ["Yellow", "Green"]
-  },
-  {
     "name": "Cyan",
     "id": "DGB",
     "fill": "#00ffff",
@@ -422,98 +478,10 @@
     "clueColors": ["Blue", "Purple"]
   },
   {
-    "name": "Cardinal",
-    "id": "DPR",
-    "fill": "#810735",
+    "name": "Cobalt",
+    "id": "DBK",
+    "fill": "#000066",
     "pip": "auto",
-    "clueColors": ["Red", "Purple"]
-  },
-  {
-    "name": "Peach AD",
-    "id": "DRY3",
-    "displayName": "Peach",
-    "fill": "#ffac4d",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Tangerine AD",
-    "id": "DRY4",
-    "displayName": "Tangerine",
-    "fill": "#b35f00",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Orchid AD",
-    "id": "DRB2",
-    "displayName": "Orchid",
-    "fill": "#8c1aff",
-    "pip": "auto",
-    "clueColors": ["Red", "Blue"]
-  },
-  {
-    "name": "Violet AD",
-    "id": "DRB3",
-    "displayName": "Violet",
-    "fill": "#400080",
-    "pip": "auto",
-    "clueColors": ["Red", "Blue"]
-  },
-  {
-    "name": "Lime AD",
-    "id": "DYB3",
-    "displayName": "Lime",
-    "fill": "#1aff1a",
-    "pip": "auto",
-    "clueColors": ["Yellow", "Blue"]
-  },
-  {
-    "name": "Yellow D",
-    "id": "DRG",
-    "displayName": "Yellow",
-    "fill": "#ffff00",
-    "pip": "auto",
-    "clueColors": ["Red", "Green"]
-  },
-  {
-    "name": "Yam M",
-    "id": "DRY5",
-    "displayName": "Yam",
-    "fill": "#cc9900",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Geas M",
-    "id": "DRYG",
-    "displayName": "Geas",
-    "fill": "#68b840",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow", "Green"]
-  },
-  {
-    "name": "Beatnik M",
-    "id": "DRYGB",
-    "displayName": "Beatnik",
-    "fill": "#3f6fa4",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow", "Green", "Blue"]
-  },
-  {
-    "name": "Plum M",
-    "id": "DRYGBP",
-    "displayName": "Plum",
-    "fill": "#281a58",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
-  },
-  {
-    "name": "Taupe M",
-    "id": "DRYGBPT",
-    "displayName": "Taupe",
-    "fill": "#381c12",
-    "pip": "auto",
-    "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
+    "clueColors": ["Blue", "Black"]
   }
 ]

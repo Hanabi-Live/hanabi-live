@@ -596,11 +596,11 @@ function getMatryoshkaVariants(
 
   const matryoshkaSuits = [
     "Red",
-    "Yam M",
-    "Geas M",
-    "Beatnik M",
-    "Plum M",
-    "Taupe M",
+    "Tangerine",
+    "Geas",
+    "Beatnik",
+    "Plum",
+    "Taupe",
   ] as const;
 
   // Create the basic variants.
@@ -698,14 +698,7 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "Ambiguous & Dual-Color Mix",
-      suits: [
-        "Peach AD",
-        "Tangerine AD",
-        "Orchid AD",
-        "Violet AD",
-        "Lime",
-        "Emerald",
-      ],
+      suits: ["Peach", "Tangerine", "Magenta", "Violet", "Lime", "Jungle"],
     },
     {
       name: "Candy Corn Mix (5 Suits)",
@@ -733,7 +726,7 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "RGB Mix (6 Suits)",
-      suits: ["Red", "Yellow D", "Green", "Cyan", "Blue", "Violet"],
+      suits: ["Red", "Gold", "Green", "Cyan", "Blue", "Violet"],
     },
   ];
 }
