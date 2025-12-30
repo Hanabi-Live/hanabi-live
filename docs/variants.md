@@ -165,8 +165,8 @@ One of each card per suit (e.g. 5 in total):
 - In the 6-suit version, the suits are as follows:
   - Tomato (red)
   - Mahogany (red)
+  - Emerald (green)
   - Lime (green)
-  - Forest (green)
   - Sky (blue)
   - Navy (blue)
 - In the 4-suit version, the green suits are removed.

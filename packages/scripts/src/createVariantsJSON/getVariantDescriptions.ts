@@ -424,8 +424,8 @@ function getAmbiguousVariants(
   const variantDescriptions: VariantDescription[] = [];
 
   const redAmbiguousSuits = ["Tomato", "Mahogany"] as const;
-  const greenAmbiguousSuits = ["Lime", "Forest"] as const;
-  const blueAmbiguousSuits = ["Sky", "Navy"] as const;
+  const greenAmbiguousSuits = ["Emerald", "Olive"] as const;
+  const blueAmbiguousSuits = ["Berry", "Navy"] as const;
 
   const ambiguousSuits = [
     undefined,
@@ -480,12 +480,8 @@ function getVeryAmbiguousVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  const redVeryAmbiguousSuits = [
-    "Tomato VA",
-    "Carrot VA",
-    "Mahogany VA",
-  ] as const;
-  const blueVeryAmbiguousSuits = ["Sky VA", "Berry VA", "Navy VA"] as const;
+  const redVeryAmbiguousSuits = ["Tomato", "Mahogany", "Carrot"] as const;
+  const blueVeryAmbiguousSuits = ["Berry", "Navy", "Sky"] as const;
 
   const veryAmbiguousSuits = [
     undefined,
@@ -536,6 +532,8 @@ function getExtremelyAmbiguousVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
+  // The suits should go from lightest to darkest. We want the fill colors to be evenly distributed,
+  // so we have to use custom suits.
   const fourSuits = ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"] as const;
   const fiveSuits = [...fourSuits, "Navy EA"] as const;
   const sixSuits = [...fiveSuits, "Ocean EA"] as const;
@@ -713,7 +711,7 @@ function getMixVariants(): readonly VariantDescription[] {
         "Orchid AD",
         "Violet AD",
         "Lime AD",
-        "Forest AD",
+        "Emerald",
       ],
     },
     {

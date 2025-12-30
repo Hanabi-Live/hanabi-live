@@ -13879,33 +13879,33 @@
   },
   {
     "id": 8,
-    "newID": "AR1+AR2+AG1+AG2+AB1+AB2",
+    "newID": "AR1+AR2+AG1+AG2+AB1+AB3",
     "name": "Ambiguous (6 Suits)",
-    "suits": ["Tomato", "Mahogany", "Lime", "Forest", "Sky", "Navy"]
+    "suits": ["Tomato", "Mahogany", "Emerald", "Olive", "Berry", "Navy"]
   },
   {
     "id": 30,
-    "newID": "AR1+AR2+AB1+AB2",
+    "newID": "AR1+AR2+AB1+AB3",
     "name": "Ambiguous (4 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy"]
   },
   {
     "id": 1352,
-    "newID": "AR1+AR2+AB1+AB2+Bk",
+    "newID": "AR1+AR2+AB1+AB3+Bk",
     "name": "Ambiguous & Black (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Black"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Black"]
   },
   {
     "id": 32,
-    "newID": "AR1+AR2+AB1+AB2+Ra",
+    "newID": "AR1+AR2+AB1+AB3+Ra",
     "name": "Ambiguous & Rainbow (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Rainbow"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Rainbow"]
   },
   {
     "id": 1354,
-    "newID": "AR1+AR2+AB1+AB2+Pi",
+    "newID": "AR1+AR2+AB1+AB3+Pi",
     "name": "Ambiguous & Pink (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Pink"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Pink"]
   },
   {
     "id": 1355,
@@ -13915,9 +13915,9 @@
   },
   {
     "id": 31,
-    "newID": "AR1+AR2+AB1+AB2+Wh",
+    "newID": "AR1+AR2+AB1+AB3+Wh",
     "name": "Ambiguous & White (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "White"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "White"]
   },
   {
     "id": 1360,
@@ -13927,9 +13927,9 @@
   },
   {
     "id": 1361,
-    "newID": "AR1+AR2+AB1+AB2+Br",
+    "newID": "AR1+AR2+AB1+AB3+Br",
     "name": "Ambiguous & Brown (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Brown"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Brown"]
   },
   {
     "id": 1362,
@@ -13939,9 +13939,9 @@
   },
   {
     "id": 1363,
-    "newID": "AR1+AR2+AB1+AB2+Om",
+    "newID": "AR1+AR2+AB1+AB3+Om",
     "name": "Ambiguous & Omni (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Omni"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Omni"]
   },
   {
     "id": 1364,
@@ -13951,9 +13951,9 @@
   },
   {
     "id": 1365,
-    "newID": "AR1+AR2+AB1+AB2+Nu",
+    "newID": "AR1+AR2+AB1+AB3+Nu",
     "name": "Ambiguous & Null (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Null"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Null"]
   },
   {
     "id": 1366,
@@ -13963,9 +13963,9 @@
   },
   {
     "id": 1367,
-    "newID": "AR1+AR2+AB1+AB2+BrRa",
+    "newID": "AR1+AR2+AB1+AB3+BrRa",
     "name": "Ambiguous & Muddy Rainbow (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Muddy Rainbow"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Muddy Rainbow"]
   },
   {
     "id": 1368,
@@ -13975,9 +13975,9 @@
   },
   {
     "id": 1369,
-    "newID": "AR1+AR2+AB1+AB2+WhPi",
+    "newID": "AR1+AR2+AB1+AB3+WhPi",
     "name": "Ambiguous & Light Pink (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Light Pink"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Light Pink"]
   },
   {
     "id": 1370,
@@ -13987,15 +13987,15 @@
   },
   {
     "id": 1641,
-    "newID": "AR1+AR2+AB1+AB2+Pr",
+    "newID": "AR1+AR2+AB1+AB3+Pr",
     "name": "Ambiguous & Prism (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Prism"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Prism"]
   },
   {
     "id": 2325,
-    "newID": "AR1+AR2+AB1+AB2+Or",
+    "newID": "AR1+AR2+AB1+AB3+Or",
     "name": "Ambiguous & Orange (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Orange"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Orange"]
   },
   {
     "id": 2326,
@@ -14005,130 +14005,123 @@
   },
   {
     "id": 1371,
-    "newID": "AR1+AR2+AB1+AB2+DRa",
+    "newID": "AR1+AR2+AB1+AB3+DRa",
     "name": "Ambiguous & Dark Rainbow (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Rainbow"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Rainbow"]
   },
   {
     "id": 1372,
-    "newID": "AR1+AR2+AB1+AB2+DPi",
+    "newID": "AR1+AR2+AB1+AB3+DPi",
     "name": "Ambiguous & Dark Pink (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Pink"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Pink"]
   },
   {
     "id": 1373,
-    "newID": "AR1+AR2+AB1+AB2+DWh",
+    "newID": "AR1+AR2+AB1+AB3+DWh",
     "name": "Ambiguous & Gray (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Gray"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Gray"]
   },
   {
     "id": 1374,
-    "newID": "AR1+AR2+AB1+AB2+DBr",
+    "newID": "AR1+AR2+AB1+AB3+DBr",
     "name": "Ambiguous & Dark Brown (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Brown"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Brown"]
   },
   {
     "id": 1375,
-    "newID": "AR1+AR2+AB1+AB2+DOm",
+    "newID": "AR1+AR2+AB1+AB3+DOm",
     "name": "Ambiguous & Dark Omni (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Omni"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Omni"]
   },
   {
     "id": 1376,
-    "newID": "AR1+AR2+AB1+AB2+DNu",
+    "newID": "AR1+AR2+AB1+AB3+DNu",
     "name": "Ambiguous & Dark Null (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Null"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Null"]
   },
   {
     "id": 1377,
-    "newID": "AR1+AR2+AB1+AB2+DBrRa",
+    "newID": "AR1+AR2+AB1+AB3+DBrRa",
     "name": "Ambiguous & Cocoa Rainbow (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Cocoa Rainbow"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Cocoa Rainbow"]
   },
   {
     "id": 1378,
-    "newID": "AR1+AR2+AB1+AB2+DWhPi",
+    "newID": "AR1+AR2+AB1+AB3+DWhPi",
     "name": "Ambiguous & Gray Pink (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Gray Pink"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Gray Pink"]
   },
   {
     "id": 1643,
-    "newID": "AR1+AR2+AB1+AB2+DPr",
+    "newID": "AR1+AR2+AB1+AB3+DPr",
     "name": "Ambiguous & Dark Prism (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Prism"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Prism"]
   },
   {
     "id": 2327,
-    "newID": "AR1+AR2+AB1+AB2+DOr",
+    "newID": "AR1+AR2+AB1+AB3+DOr",
     "name": "Ambiguous & Dark Orange (5 Suits)",
-    "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Dark Orange"]
+    "suits": ["Tomato", "Mahogany", "Berry", "Navy", "Dark Orange"]
   },
   {
     "id": 9,
-    "newID": "VR1+VR2+VR3+VB1+VB2+VB3",
+    "newID": "AR1+AR2+AR3+AB1+AB3+AB2",
     "name": "Very Ambiguous (6 Suits)",
-    "suits": [
-      "Tomato VA",
-      "Carrot VA",
-      "Mahogany VA",
-      "Sky VA",
-      "Berry VA",
-      "Navy VA"
-    ]
+    "suits": ["Tomato", "Mahogany", "Carrot", "Berry", "Navy", "Sky"]
   },
   {
     "id": 287,
-    "newID": "VB1+VB2+VB3",
+    "newID": "AB1+AB3+AB2",
     "name": "Very Ambiguous (3 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA"]
+    "suits": ["Berry", "Navy", "Sky"]
   },
   {
     "id": 1390,
-    "newID": "VB1+VB2+VB3+Pi",
+    "newID": "AB1+AB3+AB2+Pi",
     "name": "Very Ambiguous & Pink (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Pink"]
+    "suits": ["Berry", "Navy", "Sky", "Pink"]
   },
   {
     "id": 1393,
-    "newID": "VB1+VB2+VB3+Wh",
+    "newID": "AB1+AB3+AB2+Wh",
     "name": "Very Ambiguous & White (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "White"]
+    "suits": ["Berry", "Navy", "Sky", "White"]
   },
   {
     "id": 1396,
-    "newID": "VB1+VB2+VB3+Br",
+    "newID": "AB1+AB3+AB2+Br",
     "name": "Very Ambiguous & Brown (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Brown"]
+    "suits": ["Berry", "Navy", "Sky", "Brown"]
   },
   {
     "id": 1399,
-    "newID": "VB1+VB2+VB3+Om",
+    "newID": "AB1+AB3+AB2+Om",
     "name": "Very Ambiguous & Omni (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Omni"]
+    "suits": ["Berry", "Navy", "Sky", "Omni"]
   },
   {
     "id": 1402,
-    "newID": "VB1+VB2+VB3+Nu",
+    "newID": "AB1+AB3+AB2+Nu",
     "name": "Very Ambiguous & Null (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Null"]
+    "suits": ["Berry", "Navy", "Sky", "Null"]
   },
   {
     "id": 1405,
-    "newID": "VB1+VB2+VB3+BrRa",
+    "newID": "AB1+AB3+AB2+BrRa",
     "name": "Very Ambiguous & Muddy Rainbow (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Muddy Rainbow"]
+    "suits": ["Berry", "Navy", "Sky", "Muddy Rainbow"]
   },
   {
     "id": 1408,
-    "newID": "VB1+VB2+VB3+WhPi",
+    "newID": "AB1+AB3+AB2+WhPi",
     "name": "Very Ambiguous & Light Pink (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Light Pink"]
+    "suits": ["Berry", "Navy", "Sky", "Light Pink"]
   },
   {
     "id": 2328,
-    "newID": "VB1+VB2+VB3+Or",
+    "newID": "AB1+AB3+AB2+Or",
     "name": "Very Ambiguous & Orange (4 Suits)",
-    "suits": ["Sky VA", "Berry VA", "Navy VA", "Orange"]
+    "suits": ["Berry", "Navy", "Sky", "Orange"]
   },
   {
     "id": 288,
@@ -15244,7 +15237,7 @@
   },
   {
     "id": 20,
-    "newID": "AR1+AR2+AB1+AB2+Bk+Wh",
+    "newID": "AR1+AR2+AB2+AB3+Bk+Wh",
     "name": "Ambiguous Mix",
     "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White"]
   },
@@ -15256,7 +15249,7 @@
   },
   {
     "id": 184,
-    "newID": "DRY3+DRY4+DRB2+DRB3+DYB3+DYB4",
+    "newID": "DRY3+DRY4+DRB2+DRB3+DYB3+AG1",
     "name": "Ambiguous & Dual-Color Mix",
     "suits": [
       "Peach AD",
@@ -15264,7 +15257,7 @@
       "Orchid AD",
       "Violet AD",
       "Lime AD",
-      "Forest AD"
+      "Emerald"
     ]
   },
   {
@@ -15281,13 +15274,13 @@
   },
   {
     "id": 2018,
-    "newID": "DPi+G+Wh+AB1+AB2",
+    "newID": "DPi+G+Wh+AB2+AB3",
     "name": "Holiday Mix (5 Suits)",
     "suits": ["Dark Pink", "Green", "White", "Sky", "Navy"]
   },
   {
     "id": 2019,
-    "newID": "WhPi+R+G+Wh+AB1+AB2",
+    "newID": "WhPi+R+G+Wh+AB2+AB3",
     "name": "Holiday Mix (6 Suits)",
     "suits": ["Light Pink", "Red", "Green", "White", "Sky", "Navy"]
   },

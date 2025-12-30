@@ -260,7 +260,6 @@
   {
     "name": "Tomato",
     "id": "AR1",
-    "fill": "#e60000",
     "pip": "auto",
     "clueColors": ["Red"]
   },
@@ -272,77 +271,41 @@
     "clueColors": ["Red"]
   },
   {
-    "name": "Lime",
-    "id": "AG1",
-    "fill": "#1aff1a",
-    "pip": "auto",
-    "clueColors": ["Green"]
-  },
-  {
-    "name": "Forest",
-    "id": "AG2",
-    "abbreviation": "R",
-    "fill": "#008000",
-    "pip": "auto",
-    "clueColors": ["Green"]
-  },
-  {
-    "name": "Sky",
-    "id": "AB1",
-    "fill": "#1a66ff",
-    "pip": "auto",
-    "clueColors": ["Blue"]
-  },
-  {
-    "name": "Navy",
-    "id": "AB2",
-    "fill": "#002b80",
-    "pip": "auto",
-    "clueColors": ["Blue"]
-  },
-  {
-    "name": "Tomato VA",
-    "id": "VR1",
-    "displayName": "Tomato",
-    "fill": "#e60000",
-    "pip": "auto",
-    "clueColors": ["Red"]
-  },
-  {
-    "name": "Carrot VA",
-    "id": "VR2",
-    "displayName": "Carrot",
+    "name": "Carrot",
+    "id": "AR3",
     "fill": "#f96401",
     "pip": "auto",
     "clueColors": ["Red"]
   },
   {
-    "name": "Mahogany VA",
-    "id": "VR3",
-    "displayName": "Mahogany",
-    "fill": "#660000",
+    "name": "Emerald",
+    "id": "AG1",
     "pip": "auto",
-    "clueColors": ["Red"]
+    "clueColors": ["Green"]
   },
   {
-    "name": "Sky VA",
-    "id": "VB1",
-    "displayName": "Sky",
-    "fill": "#4d88ff",
+    "name": "Olive",
+    "id": "AG2",
+    "fill": "#808000",
     "pip": "auto",
-    "clueColors": ["Blue"]
+    "clueColors": ["Green"]
   },
   {
-    "name": "Berry VA",
-    "id": "VB2",
-    "displayName": "Berry",
+    "name": "Berry",
+    "id": "AB1",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
-    "name": "Navy VA",
-    "id": "VB3",
-    "displayName": "Navy",
+    "name": "Sky",
+    "id": "AB2",
+    "fill": "#3377ff",
+    "pip": "auto",
+    "clueColors": ["Blue"]
+  },
+  {
+    "name": "Navy",
+    "id": "AB3",
     "fill": "#001a4d",
     "pip": "auto",
     "clueColors": ["Blue"]
@@ -360,7 +323,7 @@
     "id": "EB2",
     "abbreviation": "A",
     "displayName": "Sapphire",
-    "fill": "#99bbff",
+    "fill": "#8aa5ff",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
@@ -368,7 +331,7 @@
     "name": "Sky EA",
     "id": "EB3",
     "displayName": "Sky",
-    "fill": "#3377ff",
+    "fill": "#2e5cff",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
@@ -376,6 +339,7 @@
     "name": "Berry EA",
     "id": "EB4",
     "displayName": "Berry",
+    "fill": "#002ed1",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
@@ -383,7 +347,7 @@
     "name": "Navy EA",
     "id": "EB5",
     "displayName": "Navy",
-    "fill": "#002266",
+    "fill": "#001b76",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
