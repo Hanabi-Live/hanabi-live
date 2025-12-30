@@ -6,6 +6,7 @@ import {
   DEFAULT_FINISHED_STACK_LENGTH,
   START_CARD_RANK,
 } from "./constants";
+import { Pip } from "./enums/Pip";
 import type { Color } from "./interfaces/Color";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";
@@ -15,6 +16,15 @@ import variantsJSON from "./json/variants.json";
 import { getIdentityNotePatternForVariant } from "./notes";
 import type { Rank } from "./types/Rank";
 import { isValidRankClueNumber } from "./types/RankClueNumber";
+
+const AUTO_PIP_PRIORITY = [
+  Pip.hanabiRed1,
+  Pip.hanabiYellow2,
+  Pip.hanabiGreen3,
+  Pip.hanabiBlue4,
+  Pip.hanabiWhite5,
+  Pip.hanabiAltWhite6,
+] as const;
 
 export function variantsInit(
   colorsMap: ReadonlyMap<string, Color>,
@@ -243,6 +253,27 @@ export function createVariant(
     ranks.push(START_CARD_RANK);
   }
 
+  const pips: Pip[] = [];
+  for (const suit of suits) {
+    const { pip } = suit;
+    if (pip === "none") {
+      throw new Error(`The "${suit.name}" suit has no pip.`);
+    }
+
+    if (pip === "auto") {
+      const match = AUTO_PIP_PRIORITY.find(
+        (candidatePip) => !pips.includes(candidatePip),
+      );
+      assertDefined(
+        match,
+        `Failed to find an automatic pip for suit: ${suit.name}`,
+      );
+      pips.push(match);
+    } else {
+      pips.push(pip);
+    }
+  }
+
   // --------------------------------------------
   // Special rank properties (from `VariantJSON`)
   // --------------------------------------------
@@ -356,6 +387,7 @@ export function createVariant(
     name,
     suits,
     ranks,
+    pips,
 
     clueColors,
     clueRanks,

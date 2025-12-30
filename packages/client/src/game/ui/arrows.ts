@@ -159,6 +159,7 @@ export function set(
                   drawPip(
                     ctx as unknown as CanvasRenderingContext2D,
                     matchingSuits[0]!,
+                    globals.variant,
                   );
                 });
                 arrow.suitPip!.show();

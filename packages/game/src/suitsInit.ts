@@ -1,6 +1,7 @@
-import { assertDefined } from "complete-common";
+import { assertDefined, assertEnumValue } from "complete-common";
 import { ALL_RESERVED_NOTES } from "./abbreviations";
 import { SUIT_REVERSED_SUFFIX } from "./constants";
+import { Pip } from "./enums/Pip";
 import type { Color } from "./interfaces/Color";
 import type { Suit } from "./interfaces/Suit";
 import type { SuitJSON } from "./interfaces/SuitJSON";
@@ -31,12 +32,14 @@ export function suitsInit(
     const { id } = suitJSON;
 
     // Validate the "pip" property.
-    if (suitJSON.pip === "" && suitJSON.name !== "Unknown") {
-      throw new Error(
-        `The "pip" property for the suit "${suitJSON.name}" is empty.`,
+    const { pip } = suitJSON;
+    if (pip !== "none" && pip !== "auto") {
+      assertEnumValue(
+        pip,
+        Pip,
+        `The "${suitJSON.name}" suit has an invalid pip of: ${pip}`,
       );
     }
-    const { pip } = suitJSON;
 
     // If the abbreviation for the suit is not specified, use the abbreviation of the color with the
     // same name. Otherwise, assume that it is the first letter of the suit.

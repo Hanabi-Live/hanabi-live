@@ -1,4 +1,4 @@
-import type { Clue, Suit } from "@hanabi-live/game";
+import type { Clue, Suit, Variant } from "@hanabi-live/game";
 import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
@@ -12,7 +12,7 @@ export class ColorButton extends Konva.Group {
 
   background: Konva.Rect;
 
-  constructor(config: Konva.ContainerConfig, suit: Suit) {
+  constructor(config: Konva.ContainerConfig, suit: Suit, variant: Variant) {
     super(config);
     this.listening(true);
 
@@ -75,7 +75,7 @@ export class ColorButton extends Konva.Group {
             y: h * -2,
           },
           sceneFunc: (ctx: KonvaContext.Context) => {
-            drawPip(ctx as unknown as CanvasRenderingContext2D, suit);
+            drawPip(ctx as unknown as CanvasRenderingContext2D, suit, variant);
           },
           listening: false,
         });

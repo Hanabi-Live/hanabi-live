@@ -1,3 +1,4 @@
+import type { Pip } from "../enums/Pip";
 import type { BasicRank, Rank } from "../types/Rank";
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
@@ -22,6 +23,8 @@ export interface Variant extends VariantJSONModified {
 
   // Computed values
   readonly ranks: readonly Rank[];
+  /** Some suits have "auto" pips, meaning that they must be computed per-variant. */
+  readonly pips: readonly Pip[];
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
   readonly suitAbbreviations: readonly string[];

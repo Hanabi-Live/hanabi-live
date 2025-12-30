@@ -1,18 +1,18 @@
-import type { Suit } from "@hanabi-live/game";
+import type { Suit, Variant } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions";
 
 export function drawPip(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
-  secondary?: boolean,
+  variant: Variant,
   shadow?: boolean,
   customFill?: string,
   lineWidth?: number,
-  highLight?: boolean,
+  highlight?: boolean,
 ): void {
-  // Positive indication for Color pips.
-  if (highLight === true) {
+  // Positive indication for color pips.
+  if (highlight === true) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(3, 5, 100, 0, 360);
@@ -22,12 +22,18 @@ export function drawPip(
     ctx.restore();
   }
 
-  // Each suit has a shape defined in the "suits.json" file (as the 'pip' property).
-  const drawPipFunction = DRAW_PIP_FUNCTIONS.get(suit.pip);
-  assertDefined(
-    drawPipFunction,
-    `Failed to find the shape function for pip "${suit.pip}".`,
+  // Each suit has a shape defined in the "suits.json" file (as the 'pip' property). If it is
+  // "auto", then we need to calculate it.
+  const suitIndex = variant.suits.findIndex(
+    (variantSuit) => variantSuit.id === suit.id,
   );
+  if (suitIndex === -1) {
+    throw new Error(`Failed to find the index for suit: ${suit.name}`);
+  }
+  // We get the pip from the variant object instead of the suit object in case the pip is
+  // automatically/dynamically calculated.
+  const pip = variant.pips[suitIndex];
+  assertDefined(pip, `Failed to find the pip for suit index: ${suitIndex}`);
 
   // Handle the shadow
   if (shadow === true) {
@@ -35,7 +41,12 @@ export function drawPip(
   }
 
   const hasCustomFill = customFill !== undefined && customFill !== "";
-  if (secondary === true) {
+
+  // In some variants, there can be two suits with the same pip, like "Rainbow & Muddy Rainbow". To
+  // disambiguate the suits, we draw a circle around the second suit that has the same pip.
+  const previousPips = variant.pips.slice(0, suitIndex);
+  const isDuplicatePip = previousPips.includes(pip);
+  if (isDuplicatePip) {
     ctx.scale(0.8, 0.8);
 
     ctx.save();
@@ -78,6 +89,7 @@ export function drawPip(
     ctx.restore();
   }
 
+  const drawPipFunction = DRAW_PIP_FUNCTIONS[pip];
   if (hasCustomFill) {
     // The parent function has specified a custom fill color.
     ctx.fillStyle = customFill!;

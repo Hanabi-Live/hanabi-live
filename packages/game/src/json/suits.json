@@ -4,7 +4,7 @@
     "id": "Uk",
     "fill": "#cccccc",
     "clueColors": [],
-    "pip": ""
+    "pip": "none"
   },
   {
     "name": "Red",
@@ -261,21 +261,21 @@
     "name": "Tomato",
     "id": "AR1",
     "fill": "#e60000",
-    "pip": "hanabiRed1",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
     "name": "Mahogany",
     "id": "AR2",
     "fill": "#660000",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
     "name": "Lime",
     "id": "AG1",
     "fill": "#1aff1a",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Green"]
   },
   {
@@ -283,21 +283,21 @@
     "id": "AG2",
     "abbreviation": "R",
     "fill": "#008000",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Green"]
   },
   {
     "name": "Sky",
     "id": "AB1",
     "fill": "#1a66ff",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Navy",
     "id": "AB2",
     "fill": "#002b80",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -305,7 +305,7 @@
     "id": "VR1",
     "displayName": "Tomato",
     "fill": "#e60000",
-    "pip": "hanabiRed1",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
@@ -313,7 +313,7 @@
     "id": "VR2",
     "displayName": "Carrot",
     "fill": "#f96401",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
@@ -321,7 +321,7 @@
     "id": "VR3",
     "displayName": "Mahogany",
     "fill": "#660000",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
@@ -329,14 +329,14 @@
     "id": "VB1",
     "displayName": "Sky",
     "fill": "#4d88ff",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Berry VA",
     "id": "VB2",
     "displayName": "Berry",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -344,7 +344,7 @@
     "id": "VB3",
     "displayName": "Navy",
     "fill": "#001a4d",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -352,7 +352,7 @@
     "id": "EB1",
     "displayName": "Ice",
     "fill": "#e6eeff",
-    "pip": "hanabiRed1",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -361,7 +361,7 @@
     "abbreviation": "A",
     "displayName": "Sapphire",
     "fill": "#99bbff",
-    "pip": "hanabiYellow2",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -369,14 +369,14 @@
     "id": "EB3",
     "displayName": "Sky",
     "fill": "#3377ff",
-    "pip": "hanabiGreen3",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Berry EA",
     "id": "EB4",
     "displayName": "Berry",
-    "pip": "hanabiBlue4",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -384,7 +384,7 @@
     "id": "EB5",
     "displayName": "Navy",
     "fill": "#002266",
-    "pip": "hanabiWhite5",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -392,7 +392,7 @@
     "id": "EB6",
     "displayName": "Ocean",
     "fill": "#00091a",
-    "pip": "hanabiAltWhite6",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {

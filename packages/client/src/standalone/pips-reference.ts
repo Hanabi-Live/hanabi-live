@@ -1,11 +1,10 @@
 // Script to generate a visualization of all Hanabi pips. This can be compiled and served as a
 // standalone page.
 
-import type { Suit } from "@hanabi-live/game";
-import { SUITS_MAP } from "@hanabi-live/game";
-import { assertNotNull } from "complete-common";
+import type { Suit, Variant } from "@hanabi-live/game";
+import { Pip, SUITS_MAP } from "@hanabi-live/game";
+import { assertEnumValue, assertNotNull, getEnumValues } from "complete-common";
 import { drawPip } from "../game/ui/drawPip";
-import { DRAW_PIP_FUNCTIONS } from "../game/ui/drawPipFunctions";
 
 document.addEventListener("DOMContentLoaded", () => {
   const uniquePips = new Map<
@@ -14,7 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
   >();
 
   for (const suit of SUITS_MAP.values()) {
-    if (suit.pip !== "" && !uniquePips.has(suit.pip)) {
+    if (
+      suit.pip !== "none"
+      && suit.pip !== "auto"
+      && !uniquePips.has(suit.pip)
+    ) {
       uniquePips.set(suit.pip, {
         name: suit.name,
         fill: suit.fill,
@@ -23,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  for (const pipName of DRAW_PIP_FUNCTIONS.keys()) {
-    if (!uniquePips.has(pipName)) {
-      console.warn(`The "${pipName}" pip is not assigned a suit.`);
+  for (const pip of getEnumValues(Pip)) {
+    if (!uniquePips.has(pip)) {
+      console.warn(`The "${pip}" pip is not assigned a suit.`);
     }
   }
 
@@ -37,11 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Create a canvas for each unique pip.
   let index = 0;
-  for (const [pipName, info] of uniquePips) {
-    // Skip the unknown suit.
-    if (pipName === "") {
+  for (const [pip, info] of uniquePips) {
+    if (pip === "none" || pip === "auto") {
       continue;
     }
+    assertEnumValue(pip, Pip, `Failed to parse pip: ${pip}`);
 
     const wrapper = document.createElement("div");
     wrapper.className = "pip-wrapper";
@@ -59,15 +62,17 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.translate(100, 100);
 
     const mockSuit: Partial<Suit> = {
-      pip: pipName,
+      pip,
       fill: info.fill ?? "#cccccc",
       fillColors: info.fillColors ?? [],
     };
 
+    const mockVariant: Partial<Variant> = {};
+
     try {
-      drawPip(ctx, mockSuit as Suit, false, false);
+      drawPip(ctx, mockSuit as Suit, mockVariant as Variant);
     } catch (error) {
-      console.error(`Error drawing pip ${pipName}:`, error);
+      console.error(`Error drawing pip ${pip}:`, error);
     }
 
     ctx.restore();
@@ -76,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     label.className = "pip-label";
     label.innerHTML = `
       <div class="pip-name">${info.name}</div>
-      <div class="pip-id">${pipName}</div>
+      <div class="pip-id">${pip}</div>
     `;
 
     wrapper.append(canvas);
