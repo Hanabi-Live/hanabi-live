@@ -642,7 +642,7 @@ function getDualColorsVariants(
     ["Tangerine", "Violet", "Jade"],
     undefined,
     ["Tangerine", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
-    ["Tangerine", "Violet", "Mahogany D", "Jade", "Tan D", "Navy D"],
+    ["Tangerine", "Violet", "Maroon", "Jade", "Tan", "Cobalt"],
   ] as const;
 
   // Create the basic variants.

@@ -368,26 +368,26 @@
   {
     "name": "Violet",
     "id": "DRB",
-    "fill": "#6600cc",
+    "fill": "#7f00ff",
     "pip": "auto",
     "clueColors": ["Red", "Blue"]
   },
   {
-    "name": "Mahogany D",
+    "name": "Maroon",
     "id": "DRK",
-    "displayName": "Mahogany",
-    "fill": "#660016",
+    "fill": "#800000",
     "pip": "auto",
     "clueColors": ["Red", "Black"]
   },
   {
     "name": "Jade",
     "id": "DYB",
+    "fill": "#00A86B",
     "pip": "auto",
     "clueColors": ["Yellow", "Blue"]
   },
   {
-    "name": "Tan D",
+    "name": "Tan",
     "id": "DYB2",
     "displayName": "Tan",
     "fill": "#999900",
@@ -395,9 +395,8 @@
     "clueColors": ["Yellow", "Black"]
   },
   {
-    "name": "Navy D",
+    "name": "Cobalt",
     "id": "DBK",
-    "displayName": "Navy",
     "fill": "#000066",
     "pip": "auto",
     "clueColors": ["Blue", "Black"]
