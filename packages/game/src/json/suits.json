@@ -297,16 +297,16 @@
     "clueColors": ["Blue"]
   },
   {
-    "name": "Sky",
+    "name": "Navy",
     "id": "AB2",
-    "fill": "#3377ff",
+    "fill": "#001a4d",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
-    "name": "Navy",
+    "name": "Sky",
     "id": "AB3",
-    "fill": "#001a4d",
+    "fill": "#3377ff",
     "pip": "auto",
     "clueColors": ["Blue"]
   },
