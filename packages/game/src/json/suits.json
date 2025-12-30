@@ -319,10 +319,9 @@
     "clueColors": ["Blue"]
   },
   {
-    "name": "Sapphire EA",
+    "name": "Aqua EA",
     "id": "EB2",
-    "abbreviation": "A",
-    "displayName": "Sapphire",
+    "displayName": "Aqua",
     "fill": "#8aa5ff",
     "pip": "auto",
     "clueColors": ["Blue"]
@@ -477,52 +476,46 @@
   {
     "name": "Yellow D",
     "id": "DRG",
-    "abbreviation": "Y",
     "displayName": "Yellow",
     "fill": "#ffff00",
     "pip": "auto",
     "clueColors": ["Red", "Green"]
   },
   {
-    "name": "Yam MD",
-    "id": "MDY",
-    "abbreviation": "Y",
+    "name": "Yam M",
+    "id": "DRY5",
     "displayName": "Yam",
     "fill": "#cc9900",
     "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Geas MD",
-    "id": "MDG",
-    "abbreviation": "G",
+    "name": "Geas M",
+    "id": "DRYG",
     "displayName": "Geas",
     "fill": "#68b840",
     "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green"]
   },
   {
-    "name": "Beatnik MD",
-    "id": "MDB",
-    "abbreviation": "B",
+    "name": "Beatnik M",
+    "id": "DRYGB",
     "displayName": "Beatnik",
     "fill": "#3f6fa4",
     "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue"]
   },
   {
-    "name": "Plum MD",
-    "id": "MDP",
-    "abbreviation": "P",
+    "name": "Plum M",
+    "id": "DRYGBP",
     "displayName": "Plum",
     "fill": "#281a58",
     "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
   },
   {
-    "name": "Taupe MD",
-    "id": "MDT",
-    "abbreviation": "T",
+    "name": "Taupe M",
+    "id": "DRYGBPT",
     "displayName": "Taupe",
     "fill": "#381c12",
     "pip": "auto",

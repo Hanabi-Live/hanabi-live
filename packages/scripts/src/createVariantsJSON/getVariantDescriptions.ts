@@ -534,7 +534,7 @@ function getExtremelyAmbiguousVariants(
 
   // The suits should go from lightest to darkest. We want the fill colors to be evenly distributed,
   // so we have to use custom suits.
-  const fourSuits = ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"] as const;
+  const fourSuits = ["Ice EA", "Aqua EA", "Sky EA", "Berry EA"] as const;
   const fiveSuits = [...fourSuits, "Navy EA"] as const;
   const sixSuits = [...fiveSuits, "Ocean EA"] as const;
 
@@ -596,11 +596,11 @@ function getMatryoshkaVariants(
 
   const matryoshkaSuits = [
     "Red",
-    "Yam MD",
-    "Geas MD",
-    "Beatnik MD",
-    "Plum MD",
-    "Taupe MD",
+    "Yam M",
+    "Geas M",
+    "Beatnik M",
+    "Plum M",
+    "Taupe M",
   ] as const;
 
   // Create the basic variants.
