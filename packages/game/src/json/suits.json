@@ -422,12 +422,11 @@
     "clueColors": ["Blue", "Purple"]
   },
   {
-    "name": "Cardinal D",
+    "name": "Cardinal",
     "id": "DPR",
-    "displayName": "Cardinal",
     "fill": "#810735",
     "pip": "auto",
-    "clueColors": ["Purple", "Red"]
+    "clueColors": ["Red", "Purple"]
   },
   {
     "name": "Peach AD",
