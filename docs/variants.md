@@ -201,8 +201,8 @@ One of each card per suit (e.g. 5 in total):
   - Cardinal (purple / red)
 - In the 3-suit version, there are 3 different colors:
   - Tangerine (red / yellow)
-  - Green (yellow / blue)
   - Purple (red / blue)
+  - Green (yellow / blue)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
 ### RGB Mix (6 Suits)
@@ -220,107 +220,107 @@ One of each card per suit (e.g. 5 in total):
 
 - This is a mix of several variants. The suits are as follows:
   1. Black (one of each)
-  2. Rainbow (all colors)
-  3. Pink (all ranks)
-  4. White (colorless)
-  5. Brown (rankless)
+  1. Rainbow (all colors)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Brown (rankless)
 
 ### Special Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Black (one of each)
-  2. Rainbow (all colors)
-  3. Pink (all ranks)
-  4. White (colorless)
-  5. Brown (rankless)
-  6. Null (clueless)
+  1. Rainbow (all colors)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Brown (rankless)
+  1. Null (clueless)
 
 ### Ambiguous Mix
 
 - This is a mix of several variants. The suits are as follows:
   1. Tomato (red)
-  2. Mahogany (red)
-  3. Sky (blue)
-  4. Navy (blue)
-  5. Black (one of each)
-  6. White (colorless)
+  1. Mahogany (red)
+  1. Sky (blue)
+  1. Navy (blue)
+  1. Black (one of each)
+  1. White (colorless)
 
 ### Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
+  1. Tangerine (red / yellow)
+  1. Purple (red / blue)
   1. Green (yellow / blue)
-  2. Purple (red / blue)
-  3. Tangerine (red / yellow)
-  4. Black (one of each)
-  5. Rainbow (all colors)
-  6. White (colorless)
+  1. Black (one of each)
+  1. Rainbow (all colors)
+  1. White (colorless)
 
 ### Ambiguous & Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
   1. Peach (red / yellow)
-  2. Tangerine (red / yellow)
-  3. Orchid (red / blue)
-  4. Violet (red / blue)
-  5. Lime (yellow / blue)
-  6. Forest (yellow / blue)
+  1. Tangerine (red / yellow)
+  1. Orchid (red / blue)
+  1. Violet (red / blue)
+  1. Lime (yellow / blue)
+  1. Forest (yellow / blue)
 
 ### Candy Corn Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Tangerine (red / yellow)
-  3. Yellow
-  4. White (colorless)
-  5. Brown (rankless)
+  1. Tangerine (red / yellow)
+  1. Yellow
+  1. White (colorless)
+  1. Brown (rankless)
 
 ### Candy Corn Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Tangerine (red / yellow)
-  3. Yellow
-  4. White (colorless)
-  5. Brown (rankless)
-  6. Cocoa Rainbow (all colors, rankless, one of each)
+  1. Tangerine (red / yellow)
+  1. Yellow
+  1. White (colorless)
+  1. Brown (rankless)
+  1. Cocoa Rainbow (all colors, rankless, one of each)
 
 ### Holiday Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Dark Pink (all ranks, one of each)
-  2. Green
-  3. White (colorless)
-  4. Sky (blue)
-  5. Navy (blue)
+  1. Green
+  1. White (colorless)
+  1. Sky (blue)
+  1. Navy (blue)
 
 ### Holiday Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Light Pink (all ranks, colorless)
-  2. Red
-  3. Green
-  4. White (colorless)
-  5. Sky (blue)
-  6. Navy (blue)
+  1. Red
+  1. Green
+  1. White (colorless)
+  1. Sky (blue)
+  1. Navy (blue)
 
 ### Valentine Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Pink (all ranks)
-  3. White (colorless)
-  4. Light pink (colorless and all ranks)
-  5. Cocoa rainbow (all colors, rankless, one of each)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Light pink (colorless and all ranks)
+  1. Cocoa rainbow (all colors, rankless, one of each)
 
 ### Valentine Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Pink (all ranks)
-  3. White (colorless)
-  4. Light pink (colorless and all ranks)
-  5. Cocoa rainbow (all colors, rankless, one of each)
-  6. Null (rankless and colorless)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Light pink (colorless and all ranks)
+  1. Cocoa rainbow (all colors, rankless, one of each)
+  1. Null (rankless and colorless)
 
 <!-- The variants are listed in order of how they appear in "VariantDescription.ts". -->
 
