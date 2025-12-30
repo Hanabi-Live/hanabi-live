@@ -410,14 +410,14 @@
   {
     "name": "Cyan",
     "id": "DGB",
+    "fill": "#00ffff",
     "pip": "auto",
     "clueColors": ["Green", "Blue"]
   },
   {
-    "name": "Indigo D",
+    "name": "Indigo",
     "id": "DBP",
-    "displayName": "Indigo",
-    "fill": "#1a0082",
+    "fill": "#4000ff",
     "pip": "auto",
     "clueColors": ["Blue", "Purple"]
   },
