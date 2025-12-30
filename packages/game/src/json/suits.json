@@ -399,7 +399,7 @@
     "name": "Tangerine D",
     "id": "DRY",
     "displayName": "Tangerine",
-    "fill": "#ff8800",
+    "fill": "#b35f00",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow"]
   },
@@ -445,7 +445,7 @@
     "name": "Tangerine D2",
     "id": "DRY2",
     "displayName": "Tangerine",
-    "fill": "#ff8800",
+    "fill": "#b35f00",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]
   },
