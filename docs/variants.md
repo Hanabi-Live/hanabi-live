@@ -162,10 +162,26 @@ One of each card per suit (e.g. 5 in total):
 ### Ambiguous
 
 - Two suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Tomato (red)
+  - Mahogany (red)
+  - Lime (green)
+  - Forest (green)
+  - Sky (blue)
+  - Navy (blue)
+- In the 4-suit version, the green suits are removed.
 
 ### Very Ambiguous
 
 - Three suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Tomato (red)
+  - Carrot (red)
+  - Mahogany (red)
+  - Sky (blue)
+  - Berry (blue)
+  - Navy (blue)
+- In the 3-suit version, the red suits are removed.
 
 ### Extremely Ambiguous
 
