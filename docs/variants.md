@@ -188,7 +188,7 @@ One of each card per suit (e.g. 5 in total):
 - Four, five, or six suits share a color. There is no way to disambiguate between them with color clues.
 - In the 6-suit version, the suits are as follows:
   - Ice (blue)
-  - Sapphire (blue)
+  - Aqua (blue)
   - Sky (blue)
   - Berry (blue)
   - Navy (blue)
