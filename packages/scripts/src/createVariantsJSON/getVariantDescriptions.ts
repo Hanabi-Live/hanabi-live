@@ -641,7 +641,7 @@ function getDualColorsVariants(
     undefined,
     ["Tangerine", "Violet", "Jade"],
     undefined,
-    ["Tangerine", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
+    ["Tangerine", "Lime", "Teal D", "Indigo D", "Cardinal D"],
     ["Tangerine", "Violet", "Maroon", "Jade", "Tan", "Cobalt"],
   ] as const;
 
@@ -703,7 +703,7 @@ function getMixVariants(): readonly VariantDescription[] {
         "Tangerine AD",
         "Orchid AD",
         "Violet AD",
-        "Lime AD",
+        "Lime",
         "Emerald",
       ],
     },
