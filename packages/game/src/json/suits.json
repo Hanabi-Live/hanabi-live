@@ -481,17 +481,17 @@
     "clueColors": ["Purple", "Red"]
   },
   {
-    "name": "Tangerine AD",
+    "name": "Peach AD",
     "id": "DRY3",
-    "displayName": "Tangerine",
+    "displayName": "Peach",
     "fill": "#ffac4d",
     "pip": "hanabiRed",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Peach AD",
+    "name": "Tangerine AD",
     "id": "DRY4",
-    "displayName": "Peach",
+    "displayName": "Tangerine",
     "fill": "#b35f00",
     "pip": "hanabiAltWhite",
     "clueColors": ["Red", "Yellow"]

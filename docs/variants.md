@@ -262,8 +262,8 @@ One of each card per suit (e.g. 5 in total):
   2. Forest (blue / yellow)
   3. Orchid (blue / red)
   4. Violet (blue / red)
-  5. Tangerine (yellow / red)
-  6. Peach (yellow / red)
+  5. Peach (yellow / red)
+  6. Tangerine (yellow / red)
 
 ### Candy Corn Mix (5 Suits)
 
