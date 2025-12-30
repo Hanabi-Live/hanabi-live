@@ -267,7 +267,7 @@ function getSuitFillAndFillColorblind(
   }
 
   /**
-   * For example, for the "Purple D" dual-color suit, we need to check for the existence of the
+   * For example, for the "Violet" dual-color suit, we need to check for the existence of the
    * "Purple" color so that it can match.
    */
   const potentialMatchingColorName = suitJSON.displayName ?? suitJSON.name;

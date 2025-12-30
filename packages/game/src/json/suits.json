@@ -360,17 +360,16 @@
     "clueColors": ["Blue"]
   },
   {
-    "name": "Tangerine D",
+    "name": "Tangerine",
     "id": "DRY",
-    "displayName": "Tangerine",
     "fill": "#b35f00",
     "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Purple D",
+    "name": "Violet",
     "id": "DRB",
-    "displayName": "Purple",
+    "fill": "#6600cc",
     "pip": "auto",
     "clueColors": ["Red", "Blue"]
   },
@@ -477,13 +476,13 @@
     "clueColors": ["Yellow", "Blue"]
   },
   {
-    "name": "Forest AD",
-    "id": "DYB4",
-    "abbreviation": "R",
-    "displayName": "Forest",
-    "fill": "#008000",
+    "name": "Yellow D",
+    "id": "DRG",
+    "abbreviation": "Y",
+    "displayName": "Yellow",
+    "fill": "#ffff00",
     "pip": "auto",
-    "clueColors": ["Yellow", "Blue"]
+    "clueColors": ["Red", "Green"]
   },
   {
     "name": "Yam MD",
@@ -529,14 +528,5 @@
     "fill": "#381c12",
     "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
-  },
-  {
-    "name": "Yellow D",
-    "id": "DRG",
-    "abbreviation": "Y",
-    "displayName": "Yellow",
-    "fill": "#ffff00",
-    "pip": "auto",
-    "clueColors": ["Red", "Green"]
   }
 ]
