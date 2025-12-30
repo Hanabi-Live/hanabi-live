@@ -258,12 +258,12 @@ One of each card per suit (e.g. 5 in total):
 ### Ambiguous & Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
-  1. Lime (blue / yellow)
-  2. Forest (blue / yellow)
-  3. Orchid (blue / red)
-  4. Violet (blue / red)
-  5. Peach (yellow / red)
-  6. Tangerine (yellow / red)
+  1. Peach (red / yellow)
+  2. Tangerine (red / yellow)
+  3. Orchid (red / blue)
+  4. Violet (red / blue)
+  5. Lime (yellow / blue)
+  6. Forest (yellow / blue)
 
 ### Candy Corn Mix (5 Suits)
 
