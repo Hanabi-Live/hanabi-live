@@ -13,7 +13,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   // ------------
 
   [
-    "hanabiRed",
+    "hanabiRed1",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -74,7 +74,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiYellow",
+    "hanabiYellow2",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -231,7 +231,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiGreen",
+    "hanabiGreen3",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -435,7 +435,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiBlue",
+    "hanabiBlue4",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -552,7 +552,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiWhite",
+    "hanabiWhite5",
     (ctx: CanvasRenderingContext2D) => {
       ctx.scale(0.25, 0.25);
       ctx.beginPath();
@@ -767,7 +767,7 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiAltWhite",
+    "hanabiAltWhite6",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
@@ -1078,7 +1078,8 @@ export const DRAW_PIP_FUNCTIONS = new ReadonlyMap<string, DrawFunction>([
   ],
 
   [
-    "hanabiAltBlue",
+    // This is currently unused.
+    "hanabiAltBlue7",
     (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
