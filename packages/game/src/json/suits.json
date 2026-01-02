@@ -373,6 +373,13 @@
     "clueColors": ["Red", "Yellow"]
   },
   {
+    "name": "Yam",
+    "id": "DRY3",
+    "fill": "#cc9900",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow"]
+  },
+  {
     "name": "Geas",
     "id": "DRYG",
     "fill": "#68b840",

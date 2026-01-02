@@ -596,11 +596,11 @@ function getMatryoshkaVariants(
 
   const matryoshkaSuits = [
     "Red",
-    "Tangerine",
-    "Geas",
-    "Beatnik",
-    "Plum",
-    "Taupe",
+    "Yam", // A suit name that starts with "Y" is chosen to have symmetry with the yellow suit.
+    "Geas", // A suit name that starts with "G" is chosen to have symmetry with the green suit.
+    "Beatnik", // A suit name that starts with "B" is chosen to have symmetry with the blue suit.
+    "Plum", // A suit name that starts with "P" is chosen to have symmetry with the purple suit.
+    "Taupe", // A suit name that starts with "T" is chosen to have symmetry with the teal suit.
   ] as const;
 
   // Create the basic variants.
