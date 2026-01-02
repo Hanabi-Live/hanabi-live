@@ -79,11 +79,8 @@ export function drawCards(
         drawCardBackground(ctx, enableShadows);
       }
 
-      // Make the special corners on the cards for dual-color suits. Do not do this for Matryoshka
-      // suits which have names ending in MD.
-      if (suit.clueColors.length === 2 && !suit.name.endsWith("MD")) {
-        drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
-      }
+      // Make the special corners on the cards for dual-color suits.
+      drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
 
       // Draw the background and the borders around the card.
       drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
@@ -515,66 +512,84 @@ function drawMixedCardHelper(
   clueColors: readonly Color[],
   enableShadows: boolean,
 ) {
-  const [clueColor1, clueColor2] = clueColors;
+  const count = clueColors.length;
+  if (count < 2) {
+    return;
+  }
 
   ctx.save();
   ctx.lineWidth = 1;
   const triangleSize = 50;
   const borderSize = 8;
+  const sliceAngle = Math.PI / 2 / count;
 
-  // Draw the first half of the top-right triangle.
-  ctx.beginPath();
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
-  ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
-  // Move down and right diagonally.
-  ctx.lineTo(
-    CARD_W - borderSize - triangleSize / 2,
-    borderSize + triangleSize / 2,
+  // Top-right triangle
+  drawFan(
+    ctx,
+    clueColors,
+    CARD_W - borderSize,
+    borderSize,
+    Math.PI,
+    -1,
+    triangleSize,
+    sliceAngle,
+    enableShadows,
   );
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1!.fill;
-  drawShape(ctx, enableShadows);
 
-  // Draw the second half of the top-right triangle.
-  ctx.beginPath();
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
-  ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
-  // Move up and left diagonally.
-  ctx.lineTo(
-    CARD_W - borderSize - triangleSize / 2,
-    borderSize + triangleSize / 2,
+  // Bottom-left triangle
+  drawFan(
+    ctx,
+    clueColors,
+    borderSize,
+    CARD_H - borderSize,
+    1.5 * Math.PI,
+    1,
+    triangleSize,
+    sliceAngle,
+    enableShadows,
   );
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2!.fill;
-  drawShape(ctx, enableShadows);
-
-  // Draw the first half of the bottom-left triangle.
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
-  // Move right and down diagonally.
-  ctx.lineTo(
-    borderSize + triangleSize / 2,
-    CARD_H - borderSize - triangleSize / 2,
-  );
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1!.fill;
-  drawShape(ctx, enableShadows);
-
-  // Draw the second half of the bottom-left triangle.
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
-  // Move left and up diagonally.
-  ctx.lineTo(
-    borderSize + triangleSize / 2,
-    CARD_H - borderSize - triangleSize / 2,
-  );
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2!.fill;
-  drawShape(ctx, enableShadows);
 
   ctx.restore();
+}
+
+/** Helper function to draw a single fan of colors. */
+function drawFan(
+  ctx: CanvasRenderingContext2D,
+  clueColors: readonly Color[],
+  cx: number,
+  cy: number,
+  startTheta: number,
+  direction: number,
+  triangleSize: number,
+  sliceAngle: number,
+  enableShadows: boolean,
+) {
+  for (const [index, color] of clueColors.entries()) {
+    const theta1 = startTheta + index * sliceAngle * direction;
+    const theta2 = startTheta + (index + 1) * sliceAngle * direction;
+
+    // Calculate the length of the ray from the corner to the hypotenuse. For a square/diamond shape
+    // (Manhattan distance), `r = size / (|cos| + |sin|)` ensures the point lies on the straight
+    // diagonal line.
+    const r1 =
+      triangleSize / (Math.abs(Math.cos(theta1)) + Math.abs(Math.sin(theta1)));
+    const r2 =
+      triangleSize / (Math.abs(Math.cos(theta2)) + Math.abs(Math.sin(theta2)));
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy); // Start at corner.
+
+    // Point on hypotenuse for start of slice.
+    ctx.lineTo(cx + Math.cos(theta1) * r1, cy + Math.sin(theta1) * r1);
+
+    // Point on hypotenuse for end of slice.
+    ctx.lineTo(cx + Math.cos(theta2) * r2, cy + Math.sin(theta2) * r2);
+
+    ctx.moveTo(cx, cy); // Return to corner to close path for filling.
+    ctx.fillStyle = color.fill;
+
+    drawShape(ctx, enableShadows);
+  }
 }
 
 function drawCardBackground(
