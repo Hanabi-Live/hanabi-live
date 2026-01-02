@@ -373,6 +373,13 @@
     "clueColors": ["Red", "Yellow"]
   },
   {
+    "name": "Rust",
+    "id": "R2",
+    "fill": "#da2c43",
+    "pip": "auto",
+    "clueColors": ["Red"]
+  },
+  {
     "name": "Yam",
     "id": "DRY3",
     "fill": "#cc9900",

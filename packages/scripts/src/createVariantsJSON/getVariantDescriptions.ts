@@ -595,7 +595,7 @@ function getMatryoshkaVariants(
   const variantDescriptions: VariantDescription[] = [];
 
   const matryoshkaSuits = [
-    "Red",
+    "Rust", // A suit name that starts with "R" is chosen to have symmetry with the red suit.
     "Yam", // A suit name that starts with "Y" is chosen to have symmetry with the yellow suit.
     "Geas", // A suit name that starts with "G" is chosen to have symmetry with the green suit.
     "Beatnik", // A suit name that starts with "B" is chosen to have symmetry with the blue suit.
