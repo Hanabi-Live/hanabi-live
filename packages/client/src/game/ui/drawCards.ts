@@ -80,7 +80,7 @@ export function drawCards(
       }
 
       // Make the special corners on the cards for dual-color suits.
-      drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
+      drawDualColorTriangles(ctx, suit.clueColors, enableShadows);
 
       // Draw the background and the borders around the card.
       drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
@@ -507,7 +507,7 @@ function drawText(
   ctx.restore();
 }
 
-function drawMixedCardHelper(
+function drawDualColorTriangles(
   ctx: CanvasRenderingContext2D,
   clueColors: readonly Color[],
   enableShadows: boolean,
@@ -523,8 +523,8 @@ function drawMixedCardHelper(
   const borderSize = 8;
   const sliceAngle = Math.PI / 2 / count;
 
-  // Top-right triangle
-  drawFan(
+  // Top-right
+  drawColorTriangle(
     ctx,
     clueColors,
     CARD_W - borderSize,
@@ -536,8 +536,8 @@ function drawMixedCardHelper(
     enableShadows,
   );
 
-  // Bottom-left triangle
-  drawFan(
+  // Bottom-left
+  drawColorTriangle(
     ctx,
     clueColors,
     borderSize,
@@ -552,8 +552,7 @@ function drawMixedCardHelper(
   ctx.restore();
 }
 
-/** Helper function to draw a single fan of colors. */
-function drawFan(
+function drawColorTriangle(
   ctx: CanvasRenderingContext2D,
   clueColors: readonly Color[],
   cx: number,
