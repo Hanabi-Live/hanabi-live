@@ -375,7 +375,7 @@
   {
     "name": "Ruby",
     "id": "R2",
-    "fill": "#da2c43",
+    "fill": "#e0115f",
     "pip": "auto",
     "clueColors": ["Red"]
   },
