@@ -8,4 +8,4 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd "$DIR"
 
-find . \( -name "node_modules" -o -name ".husky" \) -prune -o -type f -name "*.sh" -exec shellcheck {} +
+find . \( -name ".husky" -o -name "node_modules" \) -prune -o -type f -name "*.sh" -exec shellcheck {} +
