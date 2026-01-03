@@ -398,19 +398,14 @@ export function drawHands(winW: number, winH: number): void {
       // In BGA mode, we show a black box around a player's hand to indicate that it is their turn.
       const turnRectValues = {
         // The black box should always be as wide as the name frame.
-        x: playerNamePos[numPlayers]![j]!.x,
+        x: handValues.x,
         y: handValues.y,
-        w: playerNamePos[numPlayers]![j]!.w * 1.04,
-        h: handValues.h * 1.34,
-        offsetX: handValues.w * 0.02,
-        offsetY: handValues.h * 0.14,
+        w: handValues.w * 1.025,
+        h: handValues.h * 1.075,
+        offsetX: handValues.w * 0.0125,
+        offsetY: handValues.h * 0.0375,
       };
 
-      turnRectValues.x = handValues.x;
-      turnRectValues.w = handValues.w * 1.025;
-      turnRectValues.h = handValues.h * 1.075;
-      turnRectValues.offsetX = handValues.w * 0.0125;
-      turnRectValues.offsetY = handValues.h * 0.0375;
       if (numPlayers === 5) {
         turnRectValues.w += handValues.w * 0.03;
         turnRectValues.offsetX += handValues.w * 0.015;

@@ -307,7 +307,6 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 | Prism           | I                                              |
 | [any dark suit] | [the same as the "normal" version of the suit] |
 | Gray            | A                                              |
-| Forest          | R                                              |
 
 - If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
   - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
@@ -494,7 +493,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - You can also send private messages to other players with the `/pm` command.
 - You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emojis.json). For example, `:thinking:` will turn into 🤔.
 - You can type any [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emotes.json) into chat. For example, `Kappa` will turn into <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
-- There are various chat commands. The full list can be found [here](chat-commands.md).
+- There are various chat commands. The full list can be found on [the chat commands page](chat-commands.md).
 - All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
 - During an ongoing game, right-clicking the chat button will mute notifications from chat and hide the spectator count ("zen mode", indicated by ☯️). Right-clicking again reverts this.
 
@@ -553,7 +552,7 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 - A game can be stored as a [JSON](https://www.json.org/json-en.html) object. The community uses [the following format](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/misc/example_game_with_comments.jsonc) to specify a game.
 - The website supports watching arbitrary games from JSON files. Simply select "Watch Specific Replay" from the menu, select "JSON Data" as the source, and then paste in the JSON data.
 - This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into the website in order to more-easily see what kinds of strategies that it is doing.
-- It is also possible to program a bot to play on the website with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found [here](https://github.com/Hanabi-Live/hanabi-live-bot).
+- It is also possible to program a bot to play on the website with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found at [`hanabi-live-bot`](https://github.com/Hanabi-Live/hanabi-live-bot).
 
 ### JSON Endpoints
 

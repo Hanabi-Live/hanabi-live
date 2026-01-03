@@ -15,8 +15,9 @@ const clientCommandChatData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ClientCommandChatData
-  extends z.infer<typeof clientCommandChatData> {}
+export interface ClientCommandChatData extends z.infer<
+  typeof clientCommandChatData
+> {}
 
 const clientCommandChatPMData = z
   .object({
@@ -27,8 +28,9 @@ const clientCommandChatPMData = z
   .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ClientCommandChatPMData
-  extends z.infer<typeof clientCommandChatPMData> {}
+export interface ClientCommandChatPMData extends z.infer<
+  typeof clientCommandChatPMData
+> {}
 
 // -----------
 // Collections

@@ -2,8 +2,8 @@ import path from "node:path";
 import { isFile, readFile } from "./completeNode";
 import { createVariantsJSON } from "./createVariantsJSON.js";
 
-const PACKAGE_ROOT = path.join(__dirname, "..", "..");
-const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
+const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
 const VARIANTS_JSON_PATH = path.join(
   REPO_ROOT,
   "packages",

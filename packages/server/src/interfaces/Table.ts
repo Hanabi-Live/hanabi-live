@@ -3,7 +3,6 @@ import { numPlayers, options } from "@hanabi-live/game";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { extraOptions } from "./ExtraOptions";
 import { game } from "./Game";
 import { serverSpectator } from "./ServerSpectator";
@@ -53,7 +52,7 @@ const table = z
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Table extends z.infer<typeof table> {}
 
-const jsonSchema = zodToJsonSchema(table, "Game") as AnySchema;
+const jsonSchema = z.toJSONSchema(table) as AnySchema;
 export const tableStringifyFunc = fastJSONStringify(jsonSchema) as (
   table: Table,
 ) => string;

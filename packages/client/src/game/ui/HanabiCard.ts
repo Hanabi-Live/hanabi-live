@@ -1411,6 +1411,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       );
     }
 
+    if (suit.inverted) {
+      lines.push("Inverted: Plays on at attempted discard and vice-versa.");
+    }
+
     const abbreviation = getSuitAbbreviationForVariant(suit, variant);
 
     return `

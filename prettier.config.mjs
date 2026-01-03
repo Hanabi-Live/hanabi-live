@@ -10,6 +10,7 @@ const config = {
     "prettier-plugin-packagejson", // Prettier does not format "package.json" by default.
     // @template-customization-start
     "prettier-plugin-go-template", // Prettier does not format Golang files by default.
+    "prettier-plugin-sh", // Prettier does not format Bash files by default.
     // @template-customization-end
   ],
 

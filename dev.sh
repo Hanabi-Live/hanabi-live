@@ -6,7 +6,7 @@ set -euo pipefail # Exit on errors and undefined variables.
 # Stop background processes with: Ctrl + c
 trap "kill 0" EXIT
 
-./run.sh & # Run the Golang server.
+./run.sh &                         # Run the Golang server.
 ./packages/client/esbuild_dev.sh & # Watch the TypeScript code for any changes.
 
 wait

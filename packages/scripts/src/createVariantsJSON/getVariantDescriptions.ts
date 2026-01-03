@@ -115,7 +115,6 @@ export function getVariantDescriptions(
     ...getFunnelsVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getChimneysVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getInvertedVariants(basicVariantSuits),
   ];
 
   return variantDescriptions.filter((variantDescription) =>
@@ -426,8 +425,8 @@ function getAmbiguousVariants(
   const variantDescriptions: VariantDescription[] = [];
 
   const redAmbiguousSuits = ["Tomato", "Mahogany"] as const;
-  const greenAmbiguousSuits = ["Lime", "Forest"] as const;
-  const blueAmbiguousSuits = ["Sky", "Navy"] as const;
+  const greenAmbiguousSuits = ["Emerald", "Olive"] as const;
+  const blueAmbiguousSuits = ["Berry", "Navy"] as const;
 
   const ambiguousSuits = [
     undefined,
@@ -482,12 +481,8 @@ function getVeryAmbiguousVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  const redVeryAmbiguousSuits = [
-    "Tomato VA",
-    "Carrot VA",
-    "Mahogany VA",
-  ] as const;
-  const blueVeryAmbiguousSuits = ["Sky VA", "Berry VA", "Navy VA"] as const;
+  const redVeryAmbiguousSuits = ["Tomato", "Mahogany", "Carrot"] as const;
+  const blueVeryAmbiguousSuits = ["Berry", "Navy", "Sky"] as const;
 
   const veryAmbiguousSuits = [
     undefined,
@@ -538,7 +533,9 @@ function getExtremelyAmbiguousVariants(
 ): readonly VariantDescription[] {
   const variantDescriptions: VariantDescription[] = [];
 
-  const fourSuits = ["Ice EA", "Sapphire EA", "Sky EA", "Berry EA"] as const;
+  // The suits should go from lightest to darkest. We want the fill colors to be evenly distributed,
+  // so we have to use custom suits.
+  const fourSuits = ["Ice EA", "Aqua EA", "Sky EA", "Berry EA"] as const;
   const fiveSuits = [...fourSuits, "Navy EA"] as const;
   const sixSuits = [...fiveSuits, "Ocean EA"] as const;
 
@@ -599,12 +596,12 @@ function getMatryoshkaVariants(
   const variantDescriptions: VariantDescription[] = [];
 
   const matryoshkaSuits = [
-    "Red",
-    "Yam MD",
-    "Geas MD",
-    "Beatnik MD",
-    "Plum MD",
-    "Taupe MD",
+    "Rust", // A suit name that starts with "R" is chosen to have symmetry with the red suit.
+    "Yam", // A suit name that starts with "Y" is chosen to have symmetry with the yellow suit.
+    "Geas", // A suit name that starts with "G" is chosen to have symmetry with the green suit.
+    "Beatnik", // A suit name that starts with "B" is chosen to have symmetry with the blue suit.
+    "Plum", // A suit name that starts with "P" is chosen to have symmetry with the purple suit.
+    "Taupe", // A suit name that starts with "T" is chosen to have symmetry with the teal suit.
   ] as const;
 
   // Create the basic variants.
@@ -643,10 +640,10 @@ function getDualColorsVariants(
     undefined,
     undefined,
     undefined,
-    ["Orange D2", "Purple D", "Green D"],
+    ["Tangerine", "Violet", "Jade"],
     undefined,
-    ["Orange D2", "Lime D", "Teal D", "Indigo D", "Cardinal D"],
-    ["Orange D", "Purple D", "Mahogany D", "Green D", "Tan D", "Navy D"],
+    ["Tangerine", "Lime", "Cyan", "Indigo", "Cardinal"],
+    ["Tangerine", "Violet", "Maroon", "Jade", "Tan", "Cobalt"],
   ] as const;
 
   // Create the basic variants.
@@ -698,26 +695,19 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "Dual-Color Mix",
-      suits: ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White"],
+      suits: ["Tangerine", "Violet", "Jade", "Black", "Rainbow", "White"],
     },
     {
-      name: "Ambiguous & Dual-Color",
-      suits: [
-        "Tangelo AD",
-        "Peach AD",
-        "Orchid AD",
-        "Violet AD",
-        "Lime AD",
-        "Forest AD",
-      ],
+      name: "Ambiguous & Dual-Color Mix",
+      suits: ["Peach", "Tangerine", "Magenta", "Violet", "Lime", "Jungle"],
     },
     {
       name: "Candy Corn Mix (5 Suits)",
-      suits: ["Red", "Orange D2", "Yellow", "White", "Brown"],
+      suits: ["Red", "Tangerine", "Yellow", "White", "Brown"],
     },
     {
       name: "Candy Corn Mix (6 Suits)",
-      suits: ["Red", "Orange D2", "Yellow", "White", "Brown", "Cocoa Rainbow"],
+      suits: ["Red", "Tangerine", "Yellow", "White", "Brown", "Cocoa Rainbow"],
     },
     {
       name: "Holiday Mix (5 Suits)",
@@ -737,7 +727,7 @@ function getMixVariants(): readonly VariantDescription[] {
     },
     {
       name: "RGB Mix (6 Suits)",
-      suits: ["Red", "Yellow D", "Green", "Teal D2", "Blue", "Purple D"],
+      suits: ["Red", "Gold", "Green", "Cyan", "Blue", "Violet"],
     },
   ];
 }
@@ -1308,29 +1298,6 @@ function getSudokuVariants(
         });
       }
     }
-  }
-
-  return variantDescriptions;
-}
-
-function getInvertedVariants(
-  basicVariantSuits: BasicVariantSuits,
-): readonly VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Inverted (${numSuits} Suits)`;
-    const basicSuits = basicVariantSuits[numSuits - 1];
-    if (basicSuits === undefined) {
-      continue;
-    }
-    const variantSuits = [...basicSuits, "Inverted"];
-
-    variantDescriptions.push({
-      name: variantName,
-      suits: variantSuits,
-    });
   }
 
   return variantDescriptions;

@@ -121,7 +121,7 @@ export function createJSONFromReplay(room: string): void {
         SelfChatMessageType.Info,
       );
       const urlFix = json.replaceAll('"', String.raw`\'`);
-      const here = `<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
+      const here = String.raw`<button href="#" onclick="navigator.clipboard.writeText('${urlFix}'.replace(/\'/g, String.fromCharCode(34)));return false;"><strong>here</strong></button>`;
       sendSelfPMFromServer(
         `Click ${here} to copy the raw JSON data to your clipboard.`,
         room,

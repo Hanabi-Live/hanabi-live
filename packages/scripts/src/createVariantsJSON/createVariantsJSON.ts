@@ -9,8 +9,8 @@ import * as prettier from "prettier";
 import { getVariantDescriptions } from "./getVariantDescriptions";
 import { getNewVariantID, validateNewVariantIDs } from "./newID";
 
-const PACKAGE_ROOT = path.join(__dirname, "..", "..");
-const REPO_ROOT = path.join(PACKAGE_ROOT, "..", "..");
+const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
 
 export async function createVariantsJSON(quiet: boolean): Promise<void> {
   const { suitsPath, variantsPath, textPath } = getPaths();

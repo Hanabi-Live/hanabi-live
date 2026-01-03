@@ -4,7 +4,7 @@ set -euo pipefail # Exit on errors and undefined variables.
 
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
@@ -23,7 +23,8 @@ bash "$DIR/packages/scripts/lint.sh" &
 bash "$DIR/packages/server/lint.sh" &
 # bash "$DIR/server/build_server.sh" &
 # (The linting of the Golang code is disabled until it can be rewritten in TypeScript.)
-bash "$DIR/spell_check.sh" &
+bash "$DIR/check_spelling.sh" &
+bash "$DIR/check_shellcheck.sh" &
 bash "$DIR/check_templates.sh" &
 npm run check-variant-files &
 npm run lint-package-json &

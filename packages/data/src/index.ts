@@ -2,6 +2,7 @@ export * from "./clientCommands";
 export * from "./constants";
 export * from "./enums/ClientCommand";
 export * from "./enums/ServerCommand";
+export * from "./enums/SoundMove";
 export * from "./enums/Status";
 export * from "./functions/golem";
 export * from "./interfaces/GameHistory";

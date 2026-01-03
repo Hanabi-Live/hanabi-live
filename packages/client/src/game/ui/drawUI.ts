@@ -1928,6 +1928,7 @@ function drawClueArea() {
         clue: newColorClue(clueColor),
       },
       matchingSuit,
+      globals.variant,
     );
 
     globals.elements.clueTypeButtonGroup.add(button as unknown as Konva.Group);

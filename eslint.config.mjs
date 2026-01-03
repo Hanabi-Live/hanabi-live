@@ -26,8 +26,8 @@ export const hanabiConfigBase = defineConfig(
        * Documentation:
        * https://typescript-eslint.io/rules/prefer-enum-initializers/
        *
-       * We use number enums to save bandwidth between client and server. Number enums are almost
-       * always safe with the `complete/strict-enums` rule.
+       * We intentionally number enums to save bandwidth between the client and server. Number enums
+       * are almost always safe with the `complete/strict-enums` rule.
        */
       "@typescript-eslint/prefer-enum-initializers": "off",
 

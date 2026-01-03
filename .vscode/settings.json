@@ -16,8 +16,11 @@
     // @template-customization-end
   },
 
-  // We want to always use "lf" to be consistent with all platforms.
+  // Always use "lf" to be consistent with all platforms.
   "files.eol": "\n",
+
+  // Automatically insert a trailing newline when saving a file to match the POSIX standard.
+  "files.insertFinalNewline": true,
 
   // Automatically remove all trailing whitespace when saving a file.
   "files.trimTrailingWhitespace": true,
@@ -52,35 +55,85 @@
   // Use Prettier to format "cspell.config.jsonc".
   "cSpell.autoFormatConfigFile": true,
 
+  // Change all ESLint errors to have yellow squigglies instead of red squigglies.
+  // https://www.joshuakgoldberg.com/blog/if-i-wrote-a-linter-part-2-developer-experience/#only-errors
+  "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
+
   // -----------------
   // Language settings
   // -----------------
 
-  // By default, VSCode will not automatically fill-in function arguments.
+  // By default, Visual Studio Code will not automatically fill-in function arguments.
   "javascript.suggest.completeFunctionCalls": true,
   "typescript.suggest.completeFunctionCalls": true,
 
-  // By default, VSCode will prefer non-relative paths for deeply nested files.
+  // By default, Visual Studio Code will prefer non-relative paths for deeply nested files.
   "javascript.preferences.importModuleSpecifier": "project-relative",
   "typescript.preferences.importModuleSpecifier": "project-relative",
 
-  // By default, VSCode will not add `import type` automatically.
+  // By default, Visual Studio Code will not add `import type` automatically.
   "typescript.preferences.preferTypeOnlyAutoImports": true,
 
   // Show TypeScript errors for files that don't happen to be currently open, which makes TypeScript
   // work similar to other compiled languages like Golang or Rust.
   "typescript.tsserver.experimental.enableProjectDiagnostics": true,
 
-  // Automatically run the formatter when certain files are saved.
-  "[javascript][typescript][javascriptreact][typescriptreact]": {
+  // Automatically run the formatter when certain files are saved. We intentionally do not group
+  // languages together because of this bug: https://github.com/microsoft/vscode/issues/168411
+  "[javascript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
     },
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "prettier.prettier-vscode",
     "editor.formatOnSave": true,
   },
-  "[css][html][json][jsonc][markdown][postcss][yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[javascriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+    },
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[css]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[html]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[json]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[postcss]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
     "editor.formatOnSave": true,
   },
   // @template-customization-start
@@ -92,6 +145,10 @@
   "[python]": {
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.formatOnSave": true,
   },
   // @template-customization-end
 }

@@ -177,11 +177,8 @@ function makeCachedPips(variant: Variant) {
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsPositiveMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
-  const pipTypes = new Set<string>();
-  for (const [suitIndex, suit] of variant.suits.entries()) {
-    const secondaryPip = pipTypes.has(suit.pip);
-    pipTypes.add(suit.pip);
 
+  for (const [suitIndex, suit] of variant.suits.entries()) {
     // Set the pip at the middle of the card.
     const x = Math.floor(CARD_W * 0.5);
     const y = Math.floor(CARD_H * 0.5);
@@ -211,7 +208,7 @@ function makeCachedPips(variant: Variant) {
       offset,
       fill,
       suit,
-      secondaryPip,
+      variant,
       false,
     );
     const suitPipPositive = getNewColorPip(
@@ -221,7 +218,7 @@ function makeCachedPips(variant: Variant) {
       offset,
       fill,
       suit,
-      secondaryPip,
+      variant,
       true,
     );
     suitPipsMap.set(suitIndex, suitPip);
@@ -675,7 +672,7 @@ function getNewColorPip(
   offset: { x: number; y: number },
   fill: string,
   suit: Suit,
-  secondaryPip: boolean,
+  variant: Variant,
   isPositive: boolean,
 ): Konva.Shape {
   const suitPip = new Konva.Shape({
@@ -696,7 +693,7 @@ function getNewColorPip(
       drawPip(
         ctx as unknown as CanvasRenderingContext2D,
         suit,
-        secondaryPip,
+        variant,
         false,
         undefined,
         undefined,

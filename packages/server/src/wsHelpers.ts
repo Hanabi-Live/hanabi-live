@@ -8,13 +8,13 @@ import type { ReadonlyRecord } from "complete-common";
 import type { AnySchema } from "fast-json-stringify";
 import fastJSONStringify from "fast-json-stringify";
 import type { WebSocket } from "ws";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import { logger } from "./logger";
 import { wsUsers } from "./wsUsers";
 
 const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
   Object.entries(SERVER_COMMAND_SCHEMAS).map(([key, value]) => {
-    const jsonSchema = zodToJsonSchema(value, key) as AnySchema;
+    const jsonSchema = z.toJSONSchema(value) as AnySchema;
     const stringifyFunc = fastJSONStringify(jsonSchema);
     return [key, stringifyFunc];
   }),

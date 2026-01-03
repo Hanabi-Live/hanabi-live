@@ -49,13 +49,10 @@ export function drawCards(
   // cards, representing cards of known rank but unknown suit.
   const unknownSuit = getSuit("Unknown");
   const suits = [...variant.suits, unknownSuit];
-  const pipTypes = new Set<string>();
 
   let suitIndex = -1;
   for (const suit of suits) {
     suitIndex++;
-    const secondaryPip = pipTypes.has(suit.pip);
-    pipTypes.add(suit.pip);
 
     for (const rank of [
       STACK_BASE_RANK,
@@ -82,11 +79,8 @@ export function drawCards(
         drawCardBackground(ctx, enableShadows);
       }
 
-      // Make the special corners on the cards for dual-color suits. Do not do this for Matryoshka
-      // suits which have names ending in MD.
-      if (suit.clueColors.length === 2 && !suit.name.endsWith("MD")) {
-        drawMixedCardHelper(ctx, suit.clueColors, enableShadows);
-      }
+      // Make the special corners on the cards for dual-color suits.
+      drawDualColorTriangles(ctx, suit.clueColors, enableShadows);
 
       // Draw the background and the borders around the card.
       drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
@@ -180,14 +174,7 @@ export function drawCards(
       // The "Unknown" suit does not have pips. (It is a white suit that is used for cards that are
       // clued with rank.)
       if (suit.name !== "Unknown") {
-        drawSuitPips(
-          ctx,
-          rank,
-          suit,
-          secondaryPip,
-          colorblindMode,
-          enableShadows,
-        );
+        drawSuitPips(ctx, rank, suit, variant, colorblindMode, enableShadows);
       }
 
       const cardImageRankName = getCardImageRankName(rank);
@@ -241,7 +228,7 @@ function drawSuitPips(
   ctx: CanvasRenderingContext2D,
   rank: Rank | typeof STACK_BASE_RANK | typeof UNKNOWN_CARD_RANK,
   suit: Suit,
-  secondaryPip: boolean,
+  variant: Variant,
   colorblindMode: boolean,
   enableShadows: boolean,
 ) {
@@ -252,7 +239,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.8, scale * 1.8);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -263,7 +250,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -271,7 +258,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -282,7 +269,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -290,7 +277,7 @@ function drawSuitPips(
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -300,7 +287,7 @@ function drawSuitPips(
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(-90, 0);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
@@ -308,7 +295,7 @@ function drawSuitPips(
     ctx.translate(90, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -318,7 +305,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.2, scale * 1.2);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -328,7 +315,7 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 2.5, scale * 2.5);
-    drawPip(ctx, suit, secondaryPip, enableShadows);
+    drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
 
@@ -344,7 +331,7 @@ function drawSuitPips(
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, secondaryPip, enableShadows, undefined, lineWidth);
+    drawPip(ctx, suit, variant, enableShadows, undefined, lineWidth);
     ctx.restore();
   }
 }
@@ -391,16 +378,12 @@ function makeDeckBack(
   ctx: CanvasRenderingContext2D;
 } {
   const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
-  const pipTypes = new Set<string>();
 
   const sf = 0.4; // Scale factor
   const nSuits = variant.suits.length;
   ctx.scale(sf, sf);
 
   for (const [suitIndex, suit] of variant.suits.entries()) {
-    const secondaryPip = pipTypes.has(suit.pip);
-    pipTypes.add(suit.pip);
-
     // Transform polar to cartesian coordinates.
     const x =
       -1.05
@@ -415,7 +398,7 @@ function makeDeckBack(
 
     ctx.save();
     ctx.translate(x, y);
-    drawPip(ctx, suit, secondaryPip, true, "#444444"); // Pips on the back of the deck should be gray
+    drawPip(ctx, suit, variant, true, "#444444"); // Pips on the back of the deck should be gray.
     ctx.restore();
   }
 
@@ -524,71 +507,88 @@ function drawText(
   ctx.restore();
 }
 
-function drawMixedCardHelper(
+function drawDualColorTriangles(
   ctx: CanvasRenderingContext2D,
   clueColors: readonly Color[],
   enableShadows: boolean,
 ) {
-  const [clueColor1, clueColor2] = clueColors;
+  const count = clueColors.length;
+  if (count < 2) {
+    return;
+  }
 
   ctx.save();
   ctx.lineWidth = 1;
   const triangleSize = 50;
   const borderSize = 8;
+  const sliceAngle = Math.PI / 2 / count;
 
-  // Draw the first half of the top-right triangle.
-  ctx.beginPath();
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
-  ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
-  // Move down and right diagonally.
-  ctx.lineTo(
-    CARD_W - borderSize - triangleSize / 2,
-    borderSize + triangleSize / 2,
+  // Top-right
+  drawColorTriangle(
+    ctx,
+    clueColors,
+    CARD_W - borderSize,
+    borderSize,
+    Math.PI,
+    -1,
+    triangleSize,
+    sliceAngle,
+    enableShadows,
   );
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1!.fill;
-  drawShape(ctx, enableShadows);
 
-  // Draw the second half of the top-right triangle.
-  ctx.beginPath();
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
-  ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
-  // Move up and left diagonally.
-  ctx.lineTo(
-    CARD_W - borderSize - triangleSize / 2,
-    borderSize + triangleSize / 2,
+  // Bottom-left
+  drawColorTriangle(
+    ctx,
+    clueColors,
+    borderSize,
+    CARD_H - borderSize,
+    1.5 * Math.PI,
+    1,
+    triangleSize,
+    sliceAngle,
+    enableShadows,
   );
-  ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2!.fill;
-  drawShape(ctx, enableShadows);
-
-  // Draw the first half of the bottom-left triangle.
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
-  // Move right and down diagonally.
-  ctx.lineTo(
-    borderSize + triangleSize / 2,
-    CARD_H - borderSize - triangleSize / 2,
-  );
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1!.fill;
-  drawShape(ctx, enableShadows);
-
-  // Draw the second half of the bottom-left triangle.
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
-  // Move left and up diagonally.
-  ctx.lineTo(
-    borderSize + triangleSize / 2,
-    CARD_H - borderSize - triangleSize / 2,
-  );
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2!.fill;
-  drawShape(ctx, enableShadows);
 
   ctx.restore();
+}
+
+function drawColorTriangle(
+  ctx: CanvasRenderingContext2D,
+  clueColors: readonly Color[],
+  cx: number,
+  cy: number,
+  startTheta: number,
+  direction: number,
+  triangleSize: number,
+  sliceAngle: number,
+  enableShadows: boolean,
+) {
+  for (const [index, color] of clueColors.entries()) {
+    const theta1 = startTheta + index * sliceAngle * direction;
+    const theta2 = startTheta + (index + 1) * sliceAngle * direction;
+
+    // Calculate the length of the ray from the corner to the hypotenuse. For a square/diamond shape
+    // (Manhattan distance), `r = size / (|cos| + |sin|)` ensures the point lies on the straight
+    // diagonal line.
+    const r1 =
+      triangleSize / (Math.abs(Math.cos(theta1)) + Math.abs(Math.sin(theta1)));
+    const r2 =
+      triangleSize / (Math.abs(Math.cos(theta2)) + Math.abs(Math.sin(theta2)));
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy); // Start at corner.
+
+    // Point on hypotenuse for start of slice.
+    ctx.lineTo(cx + Math.cos(theta1) * r1, cy + Math.sin(theta1) * r1);
+
+    // Point on hypotenuse for end of slice.
+    ctx.lineTo(cx + Math.cos(theta2) * r2, cy + Math.sin(theta2) * r2);
+
+    ctx.moveTo(cx, cy); // Return to corner to close path for filling.
+    ctx.fillStyle = color.fill;
+
+    drawShape(ctx, enableShadows);
+  }
 }
 
 function drawCardBackground(

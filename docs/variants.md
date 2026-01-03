@@ -102,6 +102,12 @@ One of each card per suit (e.g. 5 in total):
 - The prism 1 is touched by the left-most color, the prism 2 is touched by the second-to-left-most color, and so forth.
 - If there are less than 5 colors available in the variant, then the colors used for prism cards will wrap-around.
 
+### Orange
+
+- One of the suits is replaced with an orange suit.
+- When one tries to discard a card from the orange suit, it is played instead.
+- When one tries to play a card from the orange suit, it is discarded instead.
+
 ### Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
 
 - One of the suits is replaced with a "dark" version of a special suit.
@@ -156,19 +162,44 @@ One of each card per suit (e.g. 5 in total):
 ### Ambiguous
 
 - Two suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Tomato (red)
+  - Mahogany (red)
+  - Emerald (green)
+  - Lime (green)
+  - Sky (blue)
+  - Navy (blue)
+- In the 4-suit version, the green suits are removed.
 
 ### Very Ambiguous
 
 - Three suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Tomato (red)
+  - Carrot (red)
+  - Mahogany (red)
+  - Sky (blue)
+  - Berry (blue)
+  - Navy (blue)
+- In the 3-suit version, the red suits are removed.
 
 ### Extremely Ambiguous
 
 - Four, five, or six suits share a color. There is no way to disambiguate between them with color clues.
+- In the 6-suit version, the suits are as follows:
+  - Ice (blue)
+  - Aqua (blue)
+  - Sky (blue)
+  - Berry (blue)
+  - Navy (blue)
+  - Ocean (blue)
+- In the 5-suit version, the Ocean suit is removed.
+- In the 4-suit version, the Ocean and Navy suits are removed.
 
 ### Matryoshka
 
 - The 6 "basic" suits are replaced with 6 nested ones:
-  - Red (red)
+  - Rust (red)
   - Yam (red / yellow)
   - Geas (red / yellow / green)
   - Beatnik (red / yellow / green / blue)
@@ -181,22 +212,22 @@ One of each card per suit (e.g. 5 in total):
 
 - Each suit is touched by 2 separate colors.
 - In the 6-suit version, there are 4 different colors:
-  - Orange (red / yellow)
-  - Purple (red / blue)
-  - Mahogany (red / black)
-  - Green (yellow / blue)
+  - Tangerine (red / yellow)
+  - Violet (red / blue)
+  - Maroon (red / black)
+  - Jade (yellow / blue)
   - Tan (yellow / black)
-  - Navy (blue / black)
+  - Cobalt (blue / black)
 - In the 5-suit version, there are 5 different colors:
-  - Orange (red / yellow)
+  - Tangerine (red / yellow)
   - Lime (yellow / green)
   - Teal (green / blue)
   - Indigo (blue / purple)
   - Cardinal (purple / red)
 - In the 3-suit version, there are 3 different colors:
-  - Orange (red / yellow)
+  - Tangerine (red / yellow)
+  - Purple (red / blue)
   - Green (yellow / blue)
-  - Purple (blue / red)
 - There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
 
 ### RGB Mix (6 Suits)
@@ -207,115 +238,114 @@ One of each card per suit (e.g. 5 in total):
   - Green
   - Teal (green / blue)
   - Blue
-  - Purple (blue / red)
-- The color names are taken from the
-  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
+  - Purple (red / blue)
+- The color names are taken from the [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
 
 ### Special Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Black (one of each)
-  2. Rainbow (all colors)
-  3. Pink (all ranks)
-  4. White (colorless)
-  5. Brown (rankless)
+  1. Rainbow (all colors)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Brown (rankless)
 
 ### Special Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Black (one of each)
-  2. Rainbow (all colors)
-  3. Pink (all ranks)
-  4. White (colorless)
-  5. Brown (rankless)
-  6. Null (clueless)
+  1. Rainbow (all colors)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Brown (rankless)
+  1. Null (clueless)
 
 ### Ambiguous Mix
 
 - This is a mix of several variants. The suits are as follows:
   1. Tomato (red)
-  2. Mahogany (red)
-  3. Sky (blue)
-  4. Navy (blue)
-  5. Black (one of each)
-  6. White (colorless)
+  1. Mahogany (red)
+  1. Sky (blue)
+  1. Navy (blue)
+  1. Black (one of each)
+  1. White (colorless)
 
 ### Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
-  1. Green (blue / yellow)
-  2. Purple (blue / red)
-  3. Orange (yellow / red)
-  4. Black (one of each)
-  5. Rainbow (all colors)
-  6. White (colorless)
+  1. Tangerine (red / yellow)
+  1. Purple (red / blue)
+  1. Green (yellow / blue)
+  1. Black (one of each)
+  1. Rainbow (all colors)
+  1. White (colorless)
 
 ### Ambiguous & Dual-Color Mix
 
 - This is a mix of several variants. The suits are as follows:
-  1. Lime (blue / yellow)
-  2. Forest (blue / yellow)
-  3. Orchid (blue / red)
-  4. Violet (blue / red)
-  5. Tangelo (yellow / red)
-  6. Peach (yellow / red)
+  1. Peach (red / yellow)
+  1. Tangerine (red / yellow)
+  1. Orchid (red / blue)
+  1. Violet (red / blue)
+  1. Lime (yellow / blue)
+  1. Forest (yellow / blue)
 
 ### Candy Corn Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Orange (red / yellow)
-  3. Yellow
-  4. White (colorless)
-  5. Brown (rankless)
+  1. Tangerine (red / yellow)
+  1. Yellow
+  1. White (colorless)
+  1. Brown (rankless)
 
 ### Candy Corn Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Orange (red / yellow)
-  3. Yellow
-  4. White (colorless)
-  5. Brown (rankless)
-  6. Cocoa Rainbow (all colors, rankless, one of each)
+  1. Tangerine (red / yellow)
+  1. Yellow
+  1. White (colorless)
+  1. Brown (rankless)
+  1. Cocoa Rainbow (all colors, rankless, one of each)
 
 ### Holiday Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Dark Pink (all ranks, one of each)
-  2. Green
-  3. White (colorless)
-  4. Sky (blue)
-  5. Navy (blue)
+  1. Green
+  1. White (colorless)
+  1. Sky (blue)
+  1. Navy (blue)
 
 ### Holiday Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Light Pink (all ranks, colorless)
-  2. Red
-  3. Green
-  4. White (colorless)
-  5. Sky (blue)
-  6. Navy (blue)
+  1. Red
+  1. Green
+  1. White (colorless)
+  1. Sky (blue)
+  1. Navy (blue)
 
 ### Valentine Mix (5 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Pink (all ranks)
-  3. White (colorless)
-  4. Light pink (colorless and all ranks)
-  5. Cocoa rainbow (all colors, rankless, one of each)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Light pink (colorless and all ranks)
+  1. Cocoa rainbow (all colors, rankless, one of each)
 
 ### Valentine Mix (6 Suits)
 
 - This is a mix of several variants. The suits are as follows:
   1. Red
-  2. Pink (all ranks)
-  3. White (colorless)
-  4. Light pink (colorless and all ranks)
-  5. Cocoa rainbow (all colors, rankless, one of each)
-  6. Null (rankless and colorless)
+  1. Pink (all ranks)
+  1. White (colorless)
+  1. Light pink (colorless and all ranks)
+  1. Cocoa rainbow (all colors, rankless, one of each)
+  1. Null (rankless and colorless)
 
 <!-- The variants are listed in order of how they appear in "VariantDescription.ts". -->
 
@@ -445,6 +475,7 @@ One of each card per suit (e.g. 5 in total):
 - Muddy Rainbow
 - Light Pink
 - Prism
+- Orange
 - Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
 - Special Suit Combinations (e.g. Black & Rainbow)
 - Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)

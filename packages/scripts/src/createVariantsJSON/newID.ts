@@ -341,7 +341,7 @@ export function validateNewVariantIDs(
 /**
  * This function is only used for validation.
  *
- * It cannot compute the name or the old ID, so those must be provided.
+ * It cannot compute the name of the old ID, so those must be provided.
  */
 function getVariantFromNewID(
   newID: string,

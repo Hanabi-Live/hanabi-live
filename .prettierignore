@@ -13,6 +13,9 @@ bun.lock
 
 # @template-customization-start
 
+# Auto-generated Husky files
+.husky/_
+
 # Images
 *.svg
 

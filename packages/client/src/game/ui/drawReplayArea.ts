@@ -253,6 +253,7 @@ export function drawReplayArea(winW: number, winH: number): void {
   function setCenter(this: SharedTurnsButton) {
     this.x(bottomCenterReplayButtonX * winW);
   }
+
   function setLeft(this: SharedTurnsButton) {
     this.x(bottomLeftReplayButtonX * winW);
   }
@@ -318,9 +319,11 @@ export function drawReplayArea(winW: number, winH: number): void {
   function enterHypoSetLeft(this: EnterHypoButton) {
     this.x(bottomLeftReplayButtonX * winW);
   }
+
   function enterHypoSetCenter(this: EnterHypoButton) {
     this.x(bottomCenterReplayButtonX * winW);
   }
+
   function enterHypoSetRight(this: EnterHypoButton) {
     this.x(bottomRightReplayButtonX * winW);
   }

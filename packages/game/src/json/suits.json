@@ -4,43 +4,43 @@
     "id": "Uk",
     "fill": "#cccccc",
     "clueColors": [],
-    "pip": ""
+    "pip": "none"
   },
   {
     "name": "Red",
     "id": "R",
-    "pip": "hanabiRed"
+    "pip": "hanabiRed1"
   },
   {
     "name": "Yellow",
     "id": "Y",
-    "pip": "hanabiYellow"
+    "pip": "hanabiYellow2"
   },
   {
     "name": "Green",
     "id": "G",
-    "pip": "hanabiGreen"
+    "pip": "hanabiGreen3"
   },
   {
     "name": "Blue",
     "id": "B",
-    "pip": "hanabiBlue"
+    "pip": "hanabiBlue4"
   },
   {
     "name": "Purple",
     "id": "P",
-    "pip": "hanabiWhite"
+    "pip": "hanabiWhite5"
   },
   {
     "name": "Teal",
     "id": "T",
-    "pip": "hanabiAltWhite"
+    "pip": "hanabiAltWhite6"
   },
   {
     "name": "Black",
     "id": "Bk",
     "createVariants": true,
-    "pip": "hanabiAltBlue",
+    "pip": "katakanaHe",
     "oneOfEach": true
   },
   {
@@ -134,8 +134,15 @@
     "prism": true
   },
   {
+    "name": "Orange",
+    "id": "Or",
+    "createVariants": true,
+    "pip": "unoReverse",
+    "inverted": true
+  },
+  {
     "name": "Dark Rainbow",
-    "id": "DRa",
+    "id": "Ra1",
     "abbreviation": "M",
     "createVariants": true,
     "fill": "multi",
@@ -146,7 +153,7 @@
   },
   {
     "name": "Dark Pink",
-    "id": "DPi",
+    "id": "Pi1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#800040",
@@ -157,7 +164,7 @@
   },
   {
     "name": "Gray",
-    "id": "DWh",
+    "id": "Wh1",
     "abbreviation": "A",
     "createVariants": true,
     "fill": "#555555",
@@ -167,7 +174,7 @@
   },
   {
     "name": "Dark Brown",
-    "id": "DBr",
+    "id": "Br1",
     "abbreviation": "N",
     "createVariants": true,
     "fill": "#271a0c",
@@ -178,7 +185,7 @@
   },
   {
     "name": "Dark Omni",
-    "id": "DOm",
+    "id": "Om1",
     "abbreviation": "O",
     "createVariants": true,
     "fill": "multi",
@@ -198,7 +205,7 @@
   },
   {
     "name": "Dark Null",
-    "id": "DNu",
+    "id": "Nu1",
     "abbreviation": "U",
     "createVariants": true,
     "fill": "#a6a6a6",
@@ -209,7 +216,7 @@
   },
   {
     "name": "Cocoa Rainbow",
-    "id": "DBrRa",
+    "id": "BrRa1",
     "abbreviation": "M",
     "createVariants": true,
     "fill": "multi",
@@ -221,7 +228,7 @@
   },
   {
     "name": "Gray Pink",
-    "id": "DWhPi",
+    "id": "WhPi1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#b05080",
@@ -232,7 +239,7 @@
   },
   {
     "name": "Dark Prism",
-    "id": "DPr",
+    "id": "Pr1",
     "abbreviation": "I",
     "createVariants": true,
     "fill": "#d9d9d9",
@@ -241,93 +248,66 @@
     "prism": true
   },
   {
+    "name": "Dark Orange",
+    "id": "Or1",
+    "createVariants": true,
+    "fill": "#623500",
+    "pip": "unoReverse",
+    "oneOfEach": true,
+    "clueColors": ["Orange"],
+    "inverted": true
+  },
+  {
     "name": "Tomato",
     "id": "AR1",
-    "fill": "#e60000",
-    "pip": "hanabiRed",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
     "name": "Mahogany",
     "id": "AR2",
     "fill": "#660000",
-    "pip": "hanabiWhite",
+    "pip": "auto",
     "clueColors": ["Red"]
   },
   {
-    "name": "Lime",
+    "name": "Carrot",
+    "id": "AR3",
+    "fill": "#f96401",
+    "pip": "auto",
+    "clueColors": ["Red"]
+  },
+  {
+    "name": "Emerald",
     "id": "AG1",
-    "fill": "#1aff1a",
-    "pip": "hanabiYellow",
+    "pip": "auto",
     "clueColors": ["Green"]
   },
   {
-    "name": "Forest",
+    "name": "Olive",
     "id": "AG2",
-    "abbreviation": "R",
-    "fill": "#008000",
-    "pip": "hanabiGreen",
+    "fill": "#808000",
+    "pip": "auto",
     "clueColors": ["Green"]
   },
   {
-    "name": "Sky",
+    "name": "Berry",
     "id": "AB1",
-    "fill": "#1a66ff",
-    "pip": "hanabiBlue",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Navy",
     "id": "AB2",
-    "fill": "#002b80",
-    "pip": "hanabiAltWhite",
-    "clueColors": ["Blue"]
-  },
-  {
-    "name": "Tomato VA",
-    "id": "VR1",
-    "displayName": "Tomato",
-    "fill": "#e60000",
-    "pip": "hanabiGreen",
-    "clueColors": ["Red"]
-  },
-  {
-    "name": "Carrot VA",
-    "id": "VR2",
-    "displayName": "Carrot",
-    "fill": "#f96401",
-    "pip": "hanabiRed",
-    "clueColors": ["Red"]
-  },
-  {
-    "name": "Mahogany VA",
-    "id": "VR3",
-    "displayName": "Mahogany",
-    "fill": "#660000",
-    "pip": "hanabiWhite",
-    "clueColors": ["Red"]
-  },
-  {
-    "name": "Sky VA",
-    "id": "VB1",
-    "displayName": "Sky",
-    "fill": "#4d88ff",
-    "pip": "hanabiBlue",
-    "clueColors": ["Blue"]
-  },
-  {
-    "name": "Berry VA",
-    "id": "VB2",
-    "displayName": "Berry",
-    "pip": "hanabiAltWhite",
-    "clueColors": ["Blue"]
-  },
-  {
-    "name": "Navy VA",
-    "id": "VB3",
-    "displayName": "Navy",
     "fill": "#001a4d",
-    "pip": "hanabiYellow",
+    "pip": "auto",
+    "clueColors": ["Blue"]
+  },
+  {
+    "name": "Sky",
+    "id": "AB3",
+    "fill": "#3377ff",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -335,39 +315,39 @@
     "id": "EB1",
     "displayName": "Ice",
     "fill": "#e6eeff",
-    "pip": "hanabiBlue",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
-    "name": "Sapphire EA",
+    "name": "Aqua EA",
     "id": "EB2",
-    "abbreviation": "A",
-    "displayName": "Sapphire",
-    "fill": "#99bbff",
-    "pip": "hanabiAltWhite",
+    "displayName": "Aqua",
+    "fill": "#8aa5ff",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Sky EA",
     "id": "EB3",
     "displayName": "Sky",
-    "fill": "#3377ff",
-    "pip": "hanabiYellow",
+    "fill": "#2e5cff",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Berry EA",
     "id": "EB4",
     "displayName": "Berry",
-    "pip": "hanabiGreen",
+    "fill": "#002ed1",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
     "name": "Navy EA",
     "id": "EB5",
     "displayName": "Navy",
-    "fill": "#002266",
-    "pip": "hanabiRed",
+    "fill": "#001b76",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
@@ -375,212 +355,147 @@
     "id": "EB6",
     "displayName": "Ocean",
     "fill": "#00091a",
-    "pip": "hanabiWhite",
+    "pip": "auto",
     "clueColors": ["Blue"]
   },
   {
-    "name": "Orange D",
+    "name": "Tangerine",
     "id": "DRY",
-    "displayName": "Orange",
-    "fill": "#ff8800",
-    "pip": "hanabiAltWhite",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Purple D",
-    "id": "DRB",
-    "displayName": "Purple",
-    "pip": "hanabiWhite",
-    "clueColors": ["Red", "Blue"]
-  },
-  {
-    "name": "Mahogany D",
-    "id": "DRK",
-    "displayName": "Mahogany",
-    "fill": "#660016",
-    "pip": "hanabiRed",
-    "clueColors": ["Red", "Black"]
-  },
-  {
-    "name": "Green D",
-    "id": "DYB",
-    "displayName": "Green",
-    "pip": "hanabiGreen",
-    "clueColors": ["Yellow", "Blue"]
-  },
-  {
-    "name": "Tan D",
-    "id": "DYB2",
-    "displayName": "Tan",
-    "fill": "#999900",
-    "pip": "hanabiYellow",
-    "clueColors": ["Yellow", "Black"]
-  },
-  {
-    "name": "Navy D",
-    "id": "DBK",
-    "displayName": "Navy",
-    "fill": "#000066",
-    "pip": "hanabiBlue",
-    "clueColors": ["Blue", "Black"]
-  },
-  {
-    "name": "Orange D2",
-    "id": "DRY2",
-    "displayName": "Orange",
-    "fill": "#ff8800",
-    "pip": "hanabiRed",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Lime D",
-    "id": "DYG",
-    "displayName": "Lime",
-    "fill": "#80c000",
-    "pip": "hanabiYellow",
-    "clueColors": ["Yellow", "Green"]
-  },
-  {
-    "name": "Teal D",
-    "id": "DGB",
-    "displayName": "Teal",
-    "pip": "hanabiGreen",
-    "clueColors": ["Green", "Blue"]
-  },
-  {
-    "name": "Indigo D",
-    "id": "DBP",
-    "displayName": "Indigo",
-    "fill": "#1a0082",
-    "pip": "hanabiBlue",
-    "clueColors": ["Blue", "Purple"]
-  },
-  {
-    "name": "Cardinal D",
-    "id": "DPR",
-    "displayName": "Cardinal",
-    "fill": "#810735",
-    "pip": "hanabiWhite",
-    "clueColors": ["Purple", "Red"]
-  },
-  {
-    "name": "Tangelo AD",
-    "id": "DRY3",
-    "displayName": "Tangelo",
-    "fill": "#ffac4d",
-    "pip": "hanabiRed",
-    "clueColors": ["Red", "Yellow"]
-  },
-  {
-    "name": "Peach AD",
-    "id": "DRY4",
-    "displayName": "Peach",
     "fill": "#b35f00",
-    "pip": "hanabiAltWhite",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Orchid AD",
-    "id": "DRB2",
-    "displayName": "Orchid",
-    "fill": "#8c1aff",
-    "pip": "hanabiBlue",
-    "clueColors": ["Red", "Blue"]
+    "name": "Peach",
+    "id": "DRY2",
+    "fill": "#ffac4d",
+    "pip": "auto",
+    "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Violet AD",
-    "id": "DRB3",
-    "displayName": "Violet",
-    "fill": "#400080",
-    "pip": "hanabiWhite",
-    "clueColors": ["Red", "Blue"]
+    "name": "Rust",
+    "id": "R2",
+    "fill": "#da2c43",
+    "pip": "auto",
+    "clueColors": ["Red"]
   },
   {
-    "name": "Lime AD",
-    "id": "DYB3",
-    "displayName": "Lime",
-    "fill": "#1aff1a",
-    "pip": "hanabiYellow",
-    "clueColors": ["Yellow", "Blue"]
-  },
-  {
-    "name": "Forest AD",
-    "id": "DYB4",
-    "abbreviation": "R",
-    "displayName": "Forest",
-    "fill": "#008000",
-    "pip": "hanabiGreen",
-    "clueColors": ["Yellow", "Blue"]
-  },
-  {
-    "name": "Yam MD",
-    "id": "MDY",
-    "abbreviation": "Y",
-    "displayName": "Yam",
+    "name": "Yam",
+    "id": "DRY3",
     "fill": "#cc9900",
-    "pip": "hanabiYellow",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Geas MD",
-    "id": "MDG",
-    "abbreviation": "G",
-    "displayName": "Geas",
+    "name": "Geas",
+    "id": "DRYG",
     "fill": "#68b840",
-    "pip": "hanabiGreen",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green"]
   },
   {
-    "name": "Beatnik MD",
-    "id": "MDB",
-    "abbreviation": "B",
-    "displayName": "Beatnik",
+    "name": "Beatnik",
+    "id": "DRYGB",
     "fill": "#3f6fa4",
-    "pip": "hanabiBlue",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue"]
   },
   {
-    "name": "Plum MD",
-    "id": "MDP",
-    "abbreviation": "P",
-    "displayName": "Plum",
+    "name": "Plum",
+    "id": "DRYGBP",
     "fill": "#281a58",
-    "pip": "hanabiWhite",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple"]
   },
   {
-    "name": "Taupe MD",
-    "id": "MDT",
-    "abbreviation": "T",
-    "displayName": "Taupe",
+    "name": "Taupe",
+    "id": "DRYGBPT",
     "fill": "#381c12",
-    "pip": "hanabiAltWhite",
+    "pip": "auto",
     "clueColors": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"]
   },
   {
-    "name": "Yellow D",
-    "id": "YD",
-    "abbreviation": "Y",
-    "displayName": "Yellow",
+    "name": "Gold",
+    "id": "DRG",
     "fill": "#ffff00",
-    "pip": "hanabiYellow",
+    "pip": "auto",
     "clueColors": ["Red", "Green"]
   },
   {
-    "name": "Teal D2",
-    "id": "TD",
-    "abbreviation": "T",
-    "displayName": "Teal",
-    "pip": "hanabiAltWhite",
+    "name": "Violet",
+    "id": "DRB",
+    "fill": "#7f00ff",
+    "pip": "auto",
+    "clueColors": ["Red", "Blue"]
+  },
+  {
+    "name": "Magenta",
+    "id": "DRB2",
+    "fill": "#ff00ff",
+    "pip": "auto",
+    "clueColors": ["Red", "Blue"]
+  },
+  {
+    "name": "Cardinal",
+    "id": "DRP",
+    "fill": "#810735",
+    "pip": "auto",
+    "clueColors": ["Red", "Purple"]
+  },
+  {
+    "name": "Maroon",
+    "id": "DRK",
+    "fill": "#800000",
+    "pip": "auto",
+    "clueColors": ["Red", "Black"]
+  },
+  {
+    "name": "Lime",
+    "id": "DYG",
+    "fill": "#00ff00",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Green"]
+  },
+  {
+    "name": "Jungle",
+    "id": "DYG2",
+    "fill": "#006400",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Green"]
+  },
+  {
+    "name": "Jade",
+    "id": "DYB",
+    "fill": "#00A86B",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Blue"]
+  },
+  {
+    "name": "Tan",
+    "id": "DYK",
+    "fill": "#999900",
+    "pip": "auto",
+    "clueColors": ["Yellow", "Black"]
+  },
+  {
+    "name": "Cyan",
+    "id": "DGB",
+    "fill": "#00ffff",
+    "pip": "auto",
     "clueColors": ["Green", "Blue"]
   },
   {
-    "name": "Inverted",
-    "id": "Inv",
-    "abbreviation": "I",
-    "fill": "#999999",
-    "pip": "triangle",
-    "inverted": true,
-    "clueColors": ["Inverted"]
+    "name": "Indigo",
+    "id": "DBP",
+    "fill": "#4000ff",
+    "pip": "auto",
+    "clueColors": ["Blue", "Purple"]
+  },
+  {
+    "name": "Cobalt",
+    "id": "DBK",
+    "fill": "#000066",
+    "pip": "auto",
+    "clueColors": ["Blue", "Black"]
   }
 ]

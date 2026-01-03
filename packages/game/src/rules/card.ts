@@ -174,6 +174,12 @@ export function isCardPotentiallyPlayable(
   return card.possibleCards.some((possibleCard) => {
     const [suitIndex, rank] = possibleCard;
 
+    // Always consider inverted cards to be "playable".
+    const suit = variant.suits[suitIndex];
+    if (suit !== undefined && suit.inverted) {
+      return true;
+    }
+
     const playStack = playStacks[suitIndex];
     if (playStack === undefined) {
       return false;

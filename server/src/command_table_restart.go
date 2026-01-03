@@ -9,6 +9,29 @@ import (
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
+var trailingNum = regexp.MustCompile(`^(.*?)(\d+)$`)
+
+// incrementSeedName takes a !seed-style name and either:
+// - increments trailing digits, if they exist ("!seed abc1" -> "!seed abc2")
+// - or appends "1" if there are no trailing digits ("!seed abc" -> "!seed abc1")
+func incrementSeedName(name string) string {
+	if m := trailingNum.FindStringSubmatch(name); len(m) == 3 {
+		// m[0] = full match
+		// m[1] = base (everything before the digits)
+		// m[2] = trailing digits
+		n, _ := strconv.Atoi(m[2])
+		newNum := strconv.Itoa(n + 1)
+		// Preserve leading zeros
+		for len(newNum) < len(m[2]) {
+			newNum = "0" + newNum
+		}
+		return m[1] + newNum
+	}
+
+	// no trailing number → append 1
+	return name + "1"
+}
+
 var (
 	// e.g. "room name (#2)" matches "room name" and "2"
 	roomNameRegExp = regexp.MustCompile(`^(.*) \(#(\d+)\)$`)
@@ -101,11 +124,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this is not a game with a custom prefix
-	if strings.HasPrefix(t.InitialName, "!seed") {
-		s.Warning("You are not allowed to restart \"!seed\" games.")
-		return
-	}
+	// Validate that this is not a game with a custom !replay prefix
 	if strings.HasPrefix(t.InitialName, "!replay") {
 		s.Warning("You are not allowed to restart \"!replay\" games.")
 		return
@@ -135,7 +154,7 @@ func tableRestart(
 	spectatorSessions []*Session,
 ) {
 	// Since this is a function that changes a user's relationship to tables,
-	// we must acquires the tables lock to prevent race conditions
+	// we must acquire the tables lock to prevent race conditions
 	if !d.NoTablesLock {
 		tables.Lock(ctx)
 		defer tables.Unlock(ctx)
@@ -187,6 +206,10 @@ func tableRestart(
 		// If players spawn a shared replay and then restart,
 		// there will not be an initial name for the table
 		newTableName = getName()
+	} else if strings.HasPrefix(t.InitialName, "!seed") {
+		// If players are in a !seed game, table name increment logic is different:
+		// look for trailing digits and bump them, or append "1"
+		newTableName = incrementSeedName(t.InitialName)
 	} else {
 		// Generate a new name for the game based on how many times the players have restarted
 		// e.g. "logic only" --> "logic only (#2)" --> "logic only (#3)"

@@ -61,6 +61,15 @@ jobs:
       - name: Check that the entire repository is formatted with Prettier
         run: npx prettier --log-level=warn --check .
 
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/workflows/setup
+
+      - name: Lint Bash files
+        run: bash check_shellcheck.sh
+
   spell_check:
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +77,7 @@ jobs:
       - uses: ./.github/workflows/setup
 
       - name: Spell check the entire repository
-        run: bash spell_check.sh
+        run: bash check_spelling.sh
 
   lint_monorepo:
     runs-on: ubuntu-latest
@@ -115,6 +124,7 @@ jobs:
         lint,
         test,
         format,
+        shellcheck,
         spell_check,
         lint_monorepo,
         deploy_docs_website,

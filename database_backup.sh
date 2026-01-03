@@ -2,13 +2,13 @@
 
 # Redirect all output to syslog (but skip this if we are on Windows).
 # https://www.urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/
-if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
-  exec 1> >(logger -s -t $(basename $0)) 2>&1
+if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
+  exec 1> >(logger -s -t "$(basename "$0")") 2>&1
 fi
 
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
@@ -24,6 +24,7 @@ if [[ ! -f $ENV_PATH ]]; then
   echo "Failed to find the \".env\" file at: $ENV_PATH"
   exit 1
 fi
+# shellcheck source=/dev/null
 source "$ENV_PATH"
 if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
@@ -35,8 +36,7 @@ fi
 # Back up the database and gzip it.
 mkdir -p "$BACKUPS_DIR"
 echo "Dumping the database..."
-PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
-if [[ $? -ne 0 ]]; then
+if ! PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"; then
   exit 1
 fi
 echo "Zipping the backup..."
@@ -48,13 +48,14 @@ function delete_file_if_near_full_local {
   echo "Local hard drive amount full: $AMOUNT_FULL"
   if [[ $AMOUNT_FULL -gt 75 ]]; then
     # Delete the oldest file in the backups directory.
-    OLDEST_FILE=$(ls -t "$BACKUPS_DIR" | tail -1)
+    # shellcheck disable=SC2012
+    OLDEST_FILE=$(ls --sort=time "$BACKUPS_DIR" | tail -1)
     rm -f "$BACKUPS_DIR/$OLDEST_FILE"
     echo "Hard drive over 80% full; deleted the oldest backup: $OLDEST_FILE"
     delete_file_if_near_full_local
   fi
 }
-if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
+if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
   delete_file_if_near_full_local
 fi
 
@@ -85,7 +86,7 @@ fi
 function delete_file_if_near_full_gdrive {
   AMOUNT_FULL=$($GDRIVE_PATH about --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | grep Free)
   echo "GDrive amount full: $AMOUNT_FULL"
-  if [[ $(echo $AMOUNT_FULL | grep GB) ]]; then
+  if echo "$AMOUNT_FULL" | grep --quiet GB; then
     return
   fi
 

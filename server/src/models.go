@@ -64,7 +64,7 @@ func modelsInit() (*Models, error) {
 		dbPassword = defaultPass
 	}
 	dbName = os.Getenv("DB_NAME")
-	if len(dbPassword) == 0 {
+	if len(dbName) == 0 {
 		defaultName := "hanabi"
 		logger.Info("DB_NAME not specified; using default value of \"" + defaultName + "\".")
 		dbName = defaultName
