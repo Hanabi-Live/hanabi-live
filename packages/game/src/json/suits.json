@@ -373,7 +373,7 @@
     "clueColors": ["Red", "Yellow"]
   },
   {
-    "name": "Rust",
+    "name": "Ruby",
     "id": "R2",
     "fill": "#da2c43",
     "pip": "auto",
