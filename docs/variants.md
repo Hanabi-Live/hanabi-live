@@ -199,7 +199,7 @@ One of each card per suit (e.g. 5 in total):
 ### Matryoshka
 
 - The 6 "basic" suits are replaced with 6 nested ones:
-  - Rust (red)
+  - Ruby (red)
   - Yam (red / yellow)
   - Geas (red / yellow / green)
   - Beatnik (red / yellow / green / blue)
