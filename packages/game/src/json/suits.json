@@ -250,6 +250,7 @@
   {
     "name": "Dark Orange",
     "id": "Or1",
+    "abbreviation": "O",
     "createVariants": true,
     "fill": "#b05e00",
     "pip": "unoReverse",
