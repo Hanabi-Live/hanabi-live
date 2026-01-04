@@ -251,7 +251,7 @@
     "name": "Dark Orange",
     "id": "Or1",
     "createVariants": true,
-    "fill": "#623500",
+    "fill": "#b05e00",
     "pip": "unoReverse",
     "oneOfEach": true,
     "clueColors": ["Orange"],
