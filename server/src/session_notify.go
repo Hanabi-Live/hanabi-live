@@ -67,7 +67,7 @@ type TableMessage struct {
 	PasswordProtected bool         `json:"passwordProtected"`
 	Joined            bool         `json:"joined"`
 	NumPlayers        int          `json:"numPlayers"`
-	Owned             bool         `json:"owned"`
+	OwnerID           int          `json:"ownerID"`
 	Running           bool         `json:"running"`
 	Variant           string       `json:"variant"`
 	Options           *Options     `json:"options"`
@@ -95,7 +95,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		PasswordProtected: len(t.PasswordHash) > 0,
 		Joined:            playerIndex != -1,
 		NumPlayers:        len(t.Players),
-		Owned:             s.UserID == t.OwnerID,
+		OwnerID:           t.OwnerID,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,
 		Options:           t.Options,
@@ -330,14 +330,14 @@ func (s *Session) NotifyCardIdentities(t *Table) {
 	})
 }
 
-func (s *Session) NotifyReplayLeader(t *Table) {
-	type ReplayLeaderMessage struct {
+func (s *Session) NotifyLeader(t *Table) {
+	type LeaderMessage struct {
 		TableID uint64 `json:"tableID"`
 		Name    string `json:"name"`
 	}
-	s.Emit("replayLeader", &ReplayLeaderMessage{
+	s.Emit("replayLeader", &LeaderMessage{
 		TableID: t.ID,
-		Name:    t.GetSharedReplayLeaderName(),
+		Name:    t.GetLeaderName(),
 	})
 }
 

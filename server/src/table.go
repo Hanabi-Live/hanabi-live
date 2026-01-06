@@ -370,25 +370,22 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 	return notifySessions
 }
 
-func (t *Table) GetSharedReplayLeaderName() string {
-	// Get the username of the game owner
-	// (the "Owner" field is used to store the leader of the shared replay)
+func (t *Table) GetLeaderName() string {
+	// Get the username of the game owner. (The "Owner" field is used to store the person who
+	// created the table or the leader of the shared replay.)
+	for _, p := range t.Players {
+		if p.UserID == t.OwnerID {
+			return p.Name
+		}
+	}
 	for _, sp := range t.Spectators {
 		if sp.UserID == t.OwnerID {
 			return sp.Name
 		}
 	}
 
-	// The leader is not currently present,
-	// so try getting their username from the players object
-	for _, p := range t.Players {
-		if p.UserID == t.OwnerID {
-			return p.Name
-		}
-	}
-
-	// The leader is not currently present and was not a member of the original game,
-	// so we need to look up their username from the database
+	// The leader is not currently present and was not a member of the original game, so we need to
+	// look up their username from the database.
 	if v, err := models.Users.GetUsername(t.OwnerID); err != nil {
 		logger.Error("Failed to get the username for user " + strconv.Itoa(t.OwnerID) +
 			" who is the owner of table: " + strconv.FormatUint(t.ID, 10))

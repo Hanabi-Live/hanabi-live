@@ -51,7 +51,6 @@ function getTableData(table: Table, userID: UserID): ServerCommandTableData {
   const playerIndex = getPlayerIndex(userID, table);
   const joined = playerIndex !== undefined;
   const numPlayers = table.players.length;
-  const owned = ownerID === userID;
   const passwordProtected = passwordHash !== undefined;
   const players = table.players.map((player) => player.name);
   const sharedReplay = visible && replay;
@@ -66,7 +65,7 @@ function getTableData(table: Table, userID: UserID): ServerCommandTableData {
     name,
     numPlayers,
     options,
-    owned,
+    ownerID,
     passwordProtected,
     players,
     progress,

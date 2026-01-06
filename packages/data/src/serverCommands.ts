@@ -73,7 +73,7 @@ const serverCommandTableData = z
     name: z.string().min(1),
     numPlayers: z.number().int(),
     options,
-    owned: z.boolean(),
+    ownerID: userID,
     passwordProtected: z.boolean(),
     players: z.string().min(1).array(),
     progress: z.number().int(),

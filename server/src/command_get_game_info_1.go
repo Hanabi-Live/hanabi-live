@@ -168,7 +168,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 
 		// Shared replay settings
 		SharedReplay:        t.Replay && t.Visible,
-		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
+		SharedReplayLeader:  t.GetLeaderName(),
 		SharedReplaySegment: g.Turn,
 		SharedReplayEffMod:  g.EfficiencyMod,
 

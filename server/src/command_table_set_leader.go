@@ -14,10 +14,11 @@ type NewLeader struct {
 // or types the "/setleader [username]" command
 //
 // Example data:
-// {
-//   tableID: 123,
-//   name: 'Alice,
-// }
+//
+//	{
+//	  tableID: 123,
+//	  name: 'Alice,
+//	}
 func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -94,7 +95,7 @@ func tableSetLeader(
 	t.OwnerID = newLeader.UserID
 
 	if t.Replay {
-		t.NotifyReplayLeader()
+		t.NotifyLeader()
 	} else {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,

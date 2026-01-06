@@ -231,7 +231,7 @@ func (t *Table) NotifyFinishOngoingGame() {
 	finishOngoingGameMessage := &FinishOngoingGameMessage{
 		TableID:            t.ID,
 		DatabaseID:         t.ExtraOptions.DatabaseID,
-		SharedReplayLeader: t.GetSharedReplayLeaderName(),
+		SharedReplayLeader: t.GetLeaderName(),
 	}
 
 	// At this point, all of the players will have been converted to spectators
@@ -279,9 +279,13 @@ func (t *Table) NotifySuggestion(userName string, segment int) {
 	}
 }
 
-func (t *Table) NotifyReplayLeader() {
+func (t *Table) NotifyLeader() {
 	for _, sp := range t.ActiveSpectators() {
-		sp.Session.NotifyReplayLeader(t)
+		sp.Session.NotifyLeader(t)
+	}
+
+	for _, sp := range t.ActiveSpectators() {
+		sp.Session.NotifyLeader(t)
 	}
 }
 

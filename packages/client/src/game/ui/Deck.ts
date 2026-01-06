@@ -5,17 +5,18 @@ import {
 } from "@hanabi-live/game";
 import Konva from "konva";
 import { OptionIcons } from "../../enums/OptionIcons";
+import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, timerFormatter } from "../../utils";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
-import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import * as cursor from "./cursor";
 import { isOurTurn } from "./isOurTurn";
 import * as konvaTooltips from "./konvaTooltips";
 import * as turn from "./turn";
+import { globals } from "./UIGlobals";
 
 export class Deck extends Konva.Group {
   cardBack: Konva.Image;
@@ -221,6 +222,12 @@ function getTooltipContent(): string {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
     content += `&nbsp; Table name: &nbsp;${currentTable.name}</li>`;
+
+    const owner = globals2.userMap.get(currentTable.ownerID);
+    const ownerName = owner?.name ?? "Unknown";
+    content +=
+      '<li><span class="game-tooltips-icon"><i class="fas fa-crown"></i></span>';
+    content += `&nbsp; Owner: &nbsp;${ownerName}</li>`;
   }
 
   if (
