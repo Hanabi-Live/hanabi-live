@@ -1,8 +1,5 @@
 import type { PlayerIndex } from "@hanabi-live/game";
-import {
-  isAtMaxClueTokens,
-  isCardPotentiallyPlayable,
-} from "@hanabi-live/game";
+import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
@@ -12,6 +9,7 @@ import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import type { PlayStack } from "./PlayStack";
 import { globals } from "./UIGlobals";
+import { checkMisplay } from "./checkMisplay";
 import * as cursor from "./cursor";
 import { isOurTurn } from "./isOurTurn";
 import * as turn from "./turn";
@@ -156,35 +154,7 @@ export class LayoutChild extends Konva.Group {
   // Before we play a card, do a check to ensure that it is actually playable to prevent silly
   // mistakes from players. (But disable this in speedruns, hypotheticals and certain variants.)
   checkMisplay(): boolean {
-    const { currentPlayerIndex } = globals.state.ongoingGame.turn;
-    const { ourPlayerIndex } = globals.metadata;
-    const { ongoingGame } = globals.state;
-
-    if (
-      globals.state.replay.hypothetical === null
-      && !globals.options.speedrun
-      && !globals.variant.throwItInAHole
-      // Do not use warnings for preplays unless we are at 2 strikes.
-      && (currentPlayerIndex === ourPlayerIndex
-        || ongoingGame.strikes.length === 2)
-      && !isCardPotentiallyPlayable(
-        this.card.state,
-        ongoingGame.deck,
-        ongoingGame.playStacks,
-        ongoingGame.playStackDirections,
-        ongoingGame.playStackStarts,
-        globals.variant,
-      )
-    ) {
-      let text = "Are you sure you want to play this card?\n";
-      text += "It is known to be unplayable based on the current information\n";
-      text +=
-        "available to you. (e.g. positive clues, negative clues, cards seen, etc.)";
-      // eslint-disable-next-line no-alert
-      return !globalThis.confirm(text);
-    }
-
-    return false;
+    return checkMisplay(this.card.state);
   }
 
   checkHypoUnknown(draggedTo: "playArea" | "discardArea"): boolean {

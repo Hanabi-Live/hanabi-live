@@ -22,6 +22,7 @@ import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { backToLobby } from "./backToLobby";
+import { checkMisplay } from "./checkMisplay";
 import * as clues from "./clues";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
@@ -468,6 +469,13 @@ function performAction(
   actionType: ActionType.Play | ActionType.Discard,
   target: CardOrder,
 ) {
+  if (actionType === ActionType.Play) {
+    const card = globals.deck[target];
+    if (card !== undefined && checkMisplay(card.state)) {
+      return; // User cancelled the play action.
+    }
+  }
+
   if (globals.state.replay.hypothetical === null) {
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
