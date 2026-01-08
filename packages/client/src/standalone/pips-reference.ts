@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   for (const pip of getEnumValues(Pip)) {
     if (!uniquePips.has(pip)) {
+      uniquePips.set(pip, {
+        name: pip,
+      });
       console.warn(`The "${pip}" pip is not assigned a suit.`);
     }
   }
