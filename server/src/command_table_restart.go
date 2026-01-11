@@ -97,6 +97,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 	// the shared replay
 	playerSessions := make([]*Session, 0)
 	spectatorSessions := make([]*Session, 0)
+	spectatorShadowingUserID := make([]int, 0)
 	for _, sp := range t.ActiveSpectators() {
 		if sp.Session == nil {
 			// A spectator's session should never be nil
@@ -116,6 +117,11 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 			playerSessions = append(playerSessions, sp.Session)
 		} else {
 			spectatorSessions = append(spectatorSessions, sp.Session)
+			shadowingUserID := -1
+			if sp.ShadowingPlayerIndex != -1 {
+				shadowingUserID = t.Players[sp.ShadowingPlayerIndex].UserID
+			}
+			spectatorShadowingUserID = append(spectatorShadowingUserID, shadowingUserID)
 		}
 	}
 	if len(playerSessions) != len(t.Players) && d.HidePregame {
@@ -142,7 +148,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions)
+	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions, spectatorShadowingUserID)
 }
 
 func tableRestart(
@@ -152,6 +158,7 @@ func tableRestart(
 	t *Table,
 	playerSessions []*Session,
 	spectatorSessions []*Session,
+	spectatorShadowingUserID []int,
 ) {
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquire the tables lock to prevent race conditions
@@ -310,6 +317,20 @@ func tableRestart(
 		})
 	}
 
+	// Automatically join any other spectators that were watching
+	for idx, s2 := range spectatorSessions {
+		shadowingPlayerIndex := -1
+		if spectatorShadowingUserID[idx] != -1 {
+			shadowingPlayerIndex = t2.GetPlayerIndexFromID(spectatorShadowingUserID[idx])
+		}
+		commandTableSpectate(ctx, s2, &CommandData{ // nolint: exhaustivestruct
+			TableID:              t2.ID,
+			ShadowingPlayerIndex: shadowingPlayerIndex,
+			NoTableLock:          true,
+			NoTablesLock:         true,
+		})
+	}
+
 	if d.HidePregame {
 		// Emulate the game owner clicking on the "Start Game" button
 		commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
@@ -317,16 +338,6 @@ func tableRestart(
 			NoTableLock:  true,
 			NoTablesLock: true,
 		})
-
-		// Automatically join any other spectators that were watching
-		for _, s2 := range spectatorSessions {
-			commandTableSpectate(ctx, s2, &CommandData{ // nolint: exhaustivestruct
-				TableID:              t2.ID,
-				ShadowingPlayerIndex: -1,
-				NoTableLock:          true,
-				NoTablesLock:         true,
-			})
-		}
 	}
 
 	// Add a message to the chat to indicate that the game was restarted
