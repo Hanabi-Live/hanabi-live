@@ -67,6 +67,8 @@ export enum VariantModifier {
   CriticalFours = "C4",
   CriticalFives = "C5",
 
+  ScarceOnes = "S1",
+
   ClueStarved = "CS",
   ColorBlind = "CB",
   NumberBlind = "NB",
