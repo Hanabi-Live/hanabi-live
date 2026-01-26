@@ -22,6 +22,8 @@ One of each card per suit (e.g. 5 in total):
 | **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
 | **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
+The pips that are assigned to each suit is documented on the [pips reference page](https://hanab.live/public/standalone/pips-reference.html).
+
 <br />
 
 ## Detailed Rules per Variant
