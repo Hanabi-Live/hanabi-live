@@ -8,9 +8,9 @@ import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
   CLUED_NOTES,
+  DISCARD_PERMISSION_NOTES,
   EXCLAMATION_MARK_NOTES,
   FINESSED_NOTES,
-  DISCARD_PERMISSION_NOTES,
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
@@ -187,7 +187,10 @@ export function parseNote(variant: Variant, text: string): CardNote {
   );
   const chopMoved = checkNoteKeywordsForMatch(CHOP_MOVED_NOTES, keywords);
   const finessed = checkNoteKeywordsForMatch(FINESSED_NOTES, keywords);
-  const discardPermission = checkNoteKeywordsForMatch(DISCARD_PERMISSION_NOTES, keywords);
+  const discardPermission = checkNoteKeywordsForMatch(
+    DISCARD_PERMISSION_NOTES,
+    keywords,
+  );
   const knownTrash = checkNoteKeywordsForMatch(KNOWN_TRASH_NOTES, keywords);
   const needsFix = checkNoteKeywordsForMatch(NEEDS_FIX_NOTES, keywords);
   const questionMark = checkNoteKeywordsForMatch(QUESTION_MARK_NOTES, keywords);

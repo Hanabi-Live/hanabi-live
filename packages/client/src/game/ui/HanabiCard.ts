@@ -599,7 +599,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.cluedBorder.visible(this.shouldShowClueBorder());
     this.chopMoveBorder.visible(this.shouldShowChopMoveBorder());
     this.finesseBorder.visible(this.shouldShowFinesseBorder());
-    this.discardPermissionBorder.visible(this.shouldShowDiscardPermissionBorder());
+    this.discardPermissionBorder.visible(
+      this.shouldShowDiscardPermissionBorder(),
+    );
   }
 
   private shouldShowAnyBorder() {
