@@ -42,6 +42,7 @@ export const FINESSE_COLOR = "aqua";
 
 /** A soft red, almost pink. */
 export const DISCARD_PERMISSION_COLOR = "#f07070";
+
 export const OFF_BLACK = "#0d0d0d";
 
 // --------------
