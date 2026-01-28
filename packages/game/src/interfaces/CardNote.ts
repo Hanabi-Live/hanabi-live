@@ -10,6 +10,7 @@ export interface CardNote {
   readonly exclamationMark: boolean;
   readonly chopMoved: boolean;
   readonly finessed: boolean;
+  readonly discardPermission: boolean;
   readonly blank: boolean;
   readonly unclued: boolean;
   readonly clued: boolean;

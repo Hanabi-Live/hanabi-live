@@ -17,6 +17,7 @@ import {
   CARD_W,
   CHOP_MOVE_COLOR,
   CLUED_COLOR,
+  DISCARD_PERMISSION_COLOR,
   FINESSE_COLOR,
   OFF_BLACK,
   SMALL_ICON_SIZE,
@@ -102,6 +103,10 @@ export function chopMoveBorder(): Konva.Group {
 
 export function finesseBorder(): Konva.Group {
   return makeBorder(FINESSE_COLOR);
+}
+
+export function discardPermissionBorder(): Konva.Group {
+  return makeBorder(DISCARD_PERMISSION_COLOR);
 }
 
 export function directionArrow(

@@ -38,6 +38,7 @@ export const FINESSED_NOTES = [
   "gd", // Gentleman's Discard
 ] as const;
 
+export const DISCARD_PERMISSION_NOTES = ["ptd", "ctd", "discard"] as const;
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
 export const BLANK_NOTES = ["blank", "unknown"] as const;
 export const CLUED_NOTES = ["clued", "cl"] as const;
@@ -53,6 +54,7 @@ export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
   ...EXCLAMATION_MARK_NOTES,
   ...CHOP_MOVED_NOTES,
   ...FINESSED_NOTES,
+  ...DISCARD_PERMISSION_NOTES,
   ...NEEDS_FIX_NOTES,
   ...BLANK_NOTES,
   ...CLUED_NOTES,
