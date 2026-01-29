@@ -40,8 +40,8 @@ export const CHOP_MOVE_COLOR = "#fffce6";
 
 export const FINESSE_COLOR = "aqua";
 
-/** A soft red, almost pink. */
-export const DISCARD_PERMISSION_COLOR = "#f07070";
+/** A dark shade of maroon. */
+export const DISCARD_PERMISSION_COLOR = "#812020";
 
 export const OFF_BLACK = "#0d0d0d";
 
