@@ -12,7 +12,7 @@ REPO_NAME="$(basename "$DIR")"
 
 # Ensure that the "logs" directory exists.
 # (If it does not exist, Supervisor will fail to start the service.)
-mkdir --parents "$DIR/logs"
+mkdir -p "$DIR/logs"
 
 "$DIR/server/build_server.sh"
 cd "$DIR"
