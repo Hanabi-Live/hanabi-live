@@ -99,8 +99,6 @@ export function getVariantDescriptions(
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    // NOTE: getClueStarvedVariants() is removed - all Clue Starved variants are now
-    // created by getClueStarvedCombinations() which runs after all base variants
     ...getBlindVariants(basicVariantSuits),
     ...getMuteVariants(basicVariantSuits),
     ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
@@ -1373,11 +1371,6 @@ function getClueStarvedCombinations(
   ]);
 
   for (const variant of existingVariants) {
-    // Skip if already clue starved
-    if (variant.clueStarved === true) {
-      continue;
-    }
-
     // Skip basic variants (we already created dedicated Clue Starved versions above)
     if (basicVariantNames.has(variant.name)) {
       continue;
