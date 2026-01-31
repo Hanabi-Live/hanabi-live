@@ -115,7 +115,7 @@ export function getVariantDescriptions(
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 
-  // Filter base variants for playability
+  // Filter base variants for playability.
   const filteredBaseVariants = baseVariantDescriptions.filter(
     (variantDescription) =>
       isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
