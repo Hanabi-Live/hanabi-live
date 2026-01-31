@@ -1330,12 +1330,9 @@ function getClueStarvedCombinations(
   }
 
   // Then, create Clue Starved combinations for all existing non-basic variants.
-  const basicVariantNames = new Set([
-    "No Variant",
-    "6 Suits",
-    "4 Suits",
-    "3 Suits",
-  ]);
+  const basicVariantNames = new Set(
+    getBasicVariants(basicVariantSuits).map((v) => v.name),
+  );
 
   for (const variant of existingVariants) {
     // Skip basic variants (we already created dedicated Clue Starved versions above).
