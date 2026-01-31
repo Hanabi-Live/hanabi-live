@@ -122,12 +122,17 @@ export function getVariantDescriptions(
     isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
   );
 
-  // Add Clue Starved combinations for all filtered variants
-  // Note: We don't filter Clue Starved variants again - if the base variant is allowed,
-  // its Clue Starved version should also be allowed (even if technically unwinnable)
+  // Generate Clue Starved combinations
+  const clueStarvedCombinations = getClueStarvedCombinations(filteredBaseVariants);
+
+  // Filter Clue Starved variants for winnability too
+  const filteredClueStarvedVariants = clueStarvedCombinations.filter((variantDescription) =>
+    isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
+  );
+
   const variantDescriptions = [
     ...filteredBaseVariants,
-    ...getClueStarvedCombinations(filteredBaseVariants),
+    ...filteredClueStarvedVariants,
   ];
 
   return variantDescriptions;
