@@ -84,56 +84,56 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
     },
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
     },
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[javascriptreact]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
     },
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[typescriptreact]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
     },
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[css]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[html]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[json]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[markdown]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[postcss]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   "[yaml]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   // @template-customization-start
@@ -147,7 +147,7 @@
     "editor.tabSize": 4,
   },
   "[shellscript]": {
-    "editor.defaultFormatter": "prettier.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
   },
   // @template-customization-end
