@@ -8,4 +8,4 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd "$DIR"
 
-npx complete-cli check --ignore "ci.yml,build.ts,eslint.config.mjs,LICENSE,lint.ts,tsconfig.json"
+npx complete-cli check --ignore "action.yml,ci.yml,build.ts,eslint.config.mjs,LICENSE,lint.ts,tsconfig.json"
