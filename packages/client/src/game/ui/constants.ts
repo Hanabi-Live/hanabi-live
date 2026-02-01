@@ -39,6 +39,10 @@ export const CLUED_COLOR = "orange";
 export const CHOP_MOVE_COLOR = "#fffce6";
 
 export const FINESSE_COLOR = "aqua";
+
+/** A dark shade of maroon. */
+export const DISCARD_PERMISSION_COLOR = "#812020";
+
 export const OFF_BLACK = "#0d0d0d";
 
 // --------------

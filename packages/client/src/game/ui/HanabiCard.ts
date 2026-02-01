@@ -89,6 +89,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private readonly cluedBorder: Konva.Group;
   private readonly chopMoveBorder: Konva.Group;
   private readonly finesseBorder: Konva.Group;
+  private readonly discardPermissionBorder: Konva.Group;
 
   private readonly suitPips: Konva.Group;
   private readonly rankPips: Konva.Group;
@@ -206,6 +207,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.add(this.finesseBorder);
     this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
     this.add(this.chopMoveBorder);
+    this.discardPermissionBorder = HanabiCardInit.discardPermissionBorder();
+    this.add(this.discardPermissionBorder);
 
     const pips = HanabiCardInit.pips(this.variant);
     this.suitPipsMap = pips.suitPipsMap;
@@ -596,6 +599,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.cluedBorder.visible(this.shouldShowClueBorder());
     this.chopMoveBorder.visible(this.shouldShowChopMoveBorder());
     this.finesseBorder.visible(this.shouldShowFinesseBorder());
+    this.discardPermissionBorder.visible(
+      this.shouldShowDiscardPermissionBorder(),
+    );
   }
 
   private shouldShowAnyBorder() {
@@ -614,7 +620,20 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return (
       this.note.chopMoved
       && this.shouldShowAnyBorder()
-      // The clue border and the finesse border have precedence over the chop move border
+      // The clue, finesse, and discard permission borders have precedence over the chop move
+      // border.
+      && !this.shouldShowClueBorder()
+      && !this.shouldShowFinesseBorder()
+      && !this.shouldShowDiscardPermissionBorder()
+      && !globals.state.finished
+    );
+  }
+
+  private shouldShowDiscardPermissionBorder() {
+    return (
+      this.note.discardPermission
+      && this.shouldShowAnyBorder()
+      // The clue border and the finesse border have precedence over the discard permission border.
       && !this.shouldShowClueBorder()
       && !this.shouldShowFinesseBorder()
       && !globals.state.finished
