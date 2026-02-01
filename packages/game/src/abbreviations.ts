@@ -26,6 +26,7 @@ export const CHOP_MOVED_NOTES = [
   "dtccm", // Duplicitous Tempo Clue Chop Move
   "atcm", // Assisted Trash Chop Move
   "ttcm", // Time Travel Chop Move
+  "bd", // Baton Discard
   // cspell:enable
 ] as const;
 
