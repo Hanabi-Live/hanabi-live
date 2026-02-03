@@ -15317,6 +15317,237 @@
     "criticalRank": 4
   },
   {
+    "id": 2393,
+    "newID": "R+Y+G+B+P+T,S1",
+    "name": "Scarce Ones (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2394,
+    "newID": "R+Y+G+B+P,S1",
+    "name": "Scarce Ones (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2395,
+    "newID": "R+Y+G+B+P+Bk,S1",
+    "name": "Scarce Ones & Black (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Black"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2396,
+    "newID": "R+Y+G+B+P+Ra,S1",
+    "name": "Scarce Ones & Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2397,
+    "newID": "R+Y+G+B+Ra,S1",
+    "name": "Scarce Ones & Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2398,
+    "newID": "R+Y+G+B+P+Pi,S1",
+    "name": "Scarce Ones & Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2399,
+    "newID": "R+Y+G+B+Pi,S1",
+    "name": "Scarce Ones & Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2400,
+    "newID": "R+Y+G+B+P+Wh,S1",
+    "name": "Scarce Ones & White (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "White"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2401,
+    "newID": "R+Y+G+B+Wh,S1",
+    "name": "Scarce Ones & White (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "White"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2402,
+    "newID": "R+Y+G+B+P+Br,S1",
+    "name": "Scarce Ones & Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Brown"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2403,
+    "newID": "R+Y+G+B+Br,S1",
+    "name": "Scarce Ones & Brown (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Brown"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2404,
+    "newID": "R+Y+G+B+P+Om,S1",
+    "name": "Scarce Ones & Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Omni"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2405,
+    "newID": "R+Y+G+B+Om,S1",
+    "name": "Scarce Ones & Omni (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2406,
+    "newID": "R+Y+G+B+P+Nu,S1",
+    "name": "Scarce Ones & Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Null"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2407,
+    "newID": "R+Y+G+B+Nu,S1",
+    "name": "Scarce Ones & Null (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2408,
+    "newID": "R+Y+G+B+P+BrRa,S1",
+    "name": "Scarce Ones & Muddy Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Muddy Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2409,
+    "newID": "R+Y+G+B+BrRa,S1",
+    "name": "Scarce Ones & Muddy Rainbow (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2410,
+    "newID": "R+Y+G+B+P+WhPi,S1",
+    "name": "Scarce Ones & Light Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Light Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2411,
+    "newID": "R+Y+G+B+WhPi,S1",
+    "name": "Scarce Ones & Light Pink (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2412,
+    "newID": "R+Y+G+B+P+Pr,S1",
+    "name": "Scarce Ones & Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Prism"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2413,
+    "newID": "R+Y+G+B+Pr,S1",
+    "name": "Scarce Ones & Prism (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Prism"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2414,
+    "newID": "R+Y+G+B+P+Or,S1",
+    "name": "Scarce Ones & Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Orange"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2415,
+    "newID": "R+Y+G+B+Or,S1",
+    "name": "Scarce Ones & Orange (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2416,
+    "newID": "R+Y+G+B+P+Ra1,S1",
+    "name": "Scarce Ones & Dark Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2417,
+    "newID": "R+Y+G+B+P+Pi1,S1",
+    "name": "Scarce Ones & Dark Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2418,
+    "newID": "R+Y+G+B+P+Wh1,S1",
+    "name": "Scarce Ones & Gray (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2419,
+    "newID": "R+Y+G+B+P+Br1,S1",
+    "name": "Scarce Ones & Dark Brown (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Brown"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2420,
+    "newID": "R+Y+G+B+P+Om1,S1",
+    "name": "Scarce Ones & Dark Omni (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Omni"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2421,
+    "newID": "R+Y+G+B+P+Nu1,S1",
+    "name": "Scarce Ones & Dark Null (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Null"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2422,
+    "newID": "R+Y+G+B+P+BrRa1,S1",
+    "name": "Scarce Ones & Cocoa Rainbow (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Cocoa Rainbow"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2423,
+    "newID": "R+Y+G+B+P+WhPi1,S1",
+    "name": "Scarce Ones & Gray Pink (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Gray Pink"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2424,
+    "newID": "R+Y+G+B+P+Pr1,S1",
+    "name": "Scarce Ones & Dark Prism (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Prism"],
+    "scarceOnes": true
+  },
+  {
+    "id": 2425,
+    "newID": "R+Y+G+B+P+Or1,S1",
+    "name": "Scarce Ones & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Dark Orange"],
+    "scarceOnes": true
+  },
+  {
     "id": 51,
     "newID": "R+Y+G+B+P+T,CS",
     "name": "Clue Starved (6 Suits)",

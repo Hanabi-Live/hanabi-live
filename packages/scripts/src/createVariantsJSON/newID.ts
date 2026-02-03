@@ -193,6 +193,11 @@ function getSpecialVariantIDSuffixes(
     );
   }
 
+  // Scarce Ones
+  if (variantDescription.scarceOnes === true) {
+    variantIDSuffixes.push(VariantModifier.ScarceOnes);
+  }
+
   // Clue Starved
   if (variantDescription.clueStarved === true) {
     variantIDSuffixes.push(VariantModifier.ClueStarved);
@@ -574,6 +579,12 @@ function getVariantFromNewID(
         );
 
         variant.criticalRank = variantModifierRank;
+        break;
+      }
+
+      // Scarce 1's
+      case VariantModifier.ScarceOnes: {
+        variant.scarceOnes = true;
         break;
       }
 

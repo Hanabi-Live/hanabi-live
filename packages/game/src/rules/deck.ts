@@ -29,8 +29,12 @@ function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
     return variant.stackSize;
   }
 
-  if (variant.upOrDown || variant.criticalRank !== undefined) {
-    // The normal amount minus one because there is one more critical card.
+  if (
+    variant.upOrDown
+    || variant.criticalRank !== undefined
+    || variant.scarceOnes
+  ) {
+    // The normal amount minus one because there is one fewer card.
     return variant.stackSize * 2 - 1;
   }
 
@@ -65,6 +69,10 @@ export function getNumCopiesOfCard(
     case 1: {
       if (variant.upOrDown || suit.reversed) {
         return 1;
+      }
+
+      if (variant.scarceOnes) {
+        return 2;
       }
 
       return 3;
