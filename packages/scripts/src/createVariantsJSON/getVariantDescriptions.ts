@@ -84,7 +84,7 @@ export function getVariantDescriptions(
   );
 
   // The variants should be listed in the order that they appear in "variants.md".
-  const variantDescriptions = [
+  const baseVariantDescriptions = [
     ...getBasicVariants(basicVariantSuits),
     ...getVariantsForEachSuit(suitsToCreateVariantsFor, basicVariantSuits),
     ...getVariantsForEachSpecialSuitCombination(
@@ -99,7 +99,6 @@ export function getVariantDescriptions(
     ...getDualColorsVariants(suitsToCreateVariantsFor),
     ...getMixVariants(),
     ...getCriticalFoursVariants(suitsToCreateVariantsFor, basicVariantSuits),
-    ...getClueStarvedVariants(suitsToCreateVariantsFor, basicVariantSuits),
     ...getBlindVariants(basicVariantSuits),
     ...getMuteVariants(basicVariantSuits),
     ...getAlternatingCluesVariants(suitsToCreateVariantsFor, basicVariantSuits),
@@ -116,9 +115,28 @@ export function getVariantDescriptions(
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 
-  return variantDescriptions.filter((variantDescription) =>
-    isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
+  // Filter base variants for playability.
+  const filteredBaseVariants = baseVariantDescriptions.filter(
+    (variantDescription) =>
+      isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
   );
+
+  // Generate Clue Starved combinations.
+  const clueStarvedCombinations =
+    getClueStarvedCombinations(filteredBaseVariants);
+
+  // Filter Clue Starved variants for playability too.
+  const filteredClueStarvedVariants = clueStarvedCombinations.filter(
+    (variantDescription) =>
+      isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
+  );
+
+  const variantDescriptions = [
+    ...filteredBaseVariants,
+    ...filteredClueStarvedVariants,
+  ];
+
+  return variantDescriptions;
 }
 
 /**
@@ -765,41 +783,6 @@ function getCriticalFoursVariants(
   return variantDescriptions;
 }
 
-function getClueStarvedVariants(
-  suitsToCreateVariantsFor: readonly SuitJSON[],
-  basicVariantSuits: BasicVariantSuits,
-): readonly VariantDescription[] {
-  const variantDescriptions: VariantDescription[] = [];
-
-  // Create the basic variants.
-  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-    const variantName = `Clue Starved (${numSuits} Suits)`;
-    variantDescriptions.push({
-      name: variantName,
-      suits: basicVariantSuits[numSuits],
-      clueStarved: true,
-    });
-  }
-
-  // Create combinations with special suits.
-  for (const suit of suitsToCreateVariantsFor) {
-    for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
-      // 4 suits and 3 suits would be too difficult.
-      const variantName = `Clue Starved & ${suit.name} (${numSuits} Suits)`;
-      const numBasicSuits = (numSuits - 1) as Subtract<typeof numSuits, 1>;
-      const basicSuits = basicVariantSuits[numBasicSuits];
-      const variantSuits = [...basicSuits, suit.name];
-      variantDescriptions.push({
-        name: variantName,
-        suits: variantSuits,
-        clueStarved: true,
-      });
-    }
-  }
-
-  return variantDescriptions;
-}
-
 function getBlindVariants(
   basicVariantSuits: BasicVariantSuits,
 ): readonly VariantDescription[] {
@@ -1324,4 +1307,48 @@ function isVariantAllowed(
   }
 
   return true;
+}
+
+/**
+ * Create Clue Starved versions for ALL variants. This creates Clue Starved combinations for every
+ * variant type (suit-based, modifier-based, and combinations).
+ */
+function getClueStarvedCombinations(
+  existingVariants: readonly VariantDescription[],
+): readonly VariantDescription[] {
+  const variantDescriptions: VariantDescription[] = [];
+
+  // First, create the basic Clue Starved variants (these don't correspond to existing variants).
+  const basicVariantSuits = getBasicVariantSuits();
+  for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
+    const variantName = `Clue Starved (${numSuits} Suits)`;
+    variantDescriptions.push({
+      name: variantName,
+      suits: basicVariantSuits[numSuits],
+      clueStarved: true,
+    });
+  }
+
+  // Then, create Clue Starved combinations for all existing non-basic variants.
+  const basicVariantNames = new Set(
+    getBasicVariants(basicVariantSuits).map((v) => v.name),
+  );
+
+  for (const variant of existingVariants) {
+    // Skip basic variants (we already created dedicated Clue Starved versions above).
+    if (basicVariantNames.has(variant.name)) {
+      continue;
+    }
+
+    // Create a Clue Starved version with "& " prefix.
+    const clueStarvedVariant: VariantDescription = {
+      ...variant,
+      name: `Clue Starved & ${variant.name}`,
+      clueStarved: true,
+    };
+
+    variantDescriptions.push(clueStarvedVariant);
+  }
+
+  return variantDescriptions;
 }
