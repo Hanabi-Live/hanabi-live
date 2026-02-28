@@ -3,8 +3,8 @@
 
 import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
-import type { Action } from "../types/actions";
 import type { GameExports } from "../main";
+import type { Action } from "../types/actions";
 import * as cursor from "./cursor";
 import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
@@ -77,7 +77,7 @@ export class HanabiUI {
           // Trigger a full update of all observers by dispatching a dummy action.
           if (this.globals.store !== null) {
             // We dispatch a "move" action to trigger all observers to update their new elements.
-            this.globals.store.dispatch({ type: "move" } as Action);
+            this.globals.store.dispatch({ type: "move" } as unknown as Action);
           }
 
           this.globals.layers.UI.batchDraw();
