@@ -61,6 +61,8 @@ import * as stats from "./stats";
 import * as timer from "./timer";
 import { toggleZen } from "./zen";
 
+import { Elements } from "./Elements";
+
 interface Values {
   x: number;
   y: number;
@@ -91,6 +93,15 @@ export function drawUI(): void {
   // Constants
   winW = globals.stage.width();
   winH = globals.stage.height();
+
+  // Just in case, delete all existing layers and clear children from the cached layers.
+  globals.stage.removeChildren();
+  for (const layer of Object.values(globals.layers)) {
+    layer.destroyChildren();
+  }
+
+  // Reset UI elements.
+  globals.elements = new Elements();
 
   // Create the various Konva layers upon which all graphic elements reside.
   drawBackground();

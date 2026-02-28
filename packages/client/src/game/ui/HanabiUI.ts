@@ -2,16 +2,20 @@
 // game (and destroyed when going to the lobby).
 
 import type { Globals as LobbyGlobals } from "../../Globals";
+import { Screen } from "../../lobby/types/Screen";
 import type { GameExports } from "../main";
-import type { UIGlobals } from "./UIGlobals";
+import { drawUI } from "./drawUI";
 import { globals } from "./UIGlobals";
+import type { UIGlobals } from "./UIGlobals";
 import * as cursor from "./cursor";
 import * as keyboard from "./keyboard";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
+import * as cardsView from "./reactive/views/cardsView";
 
 export class HanabiUI {
   globals: UIGlobals;
+  private readonly resizeHandler: () => void;
 
   constructor(lobby: LobbyGlobals, game: GameExports) {
     // Since the "HanabiUI" object is being reinstantiated, we need to explicitly reinitialize all
@@ -30,6 +34,52 @@ export class HanabiUI {
 
     initStageSize();
     cursor.set("default");
+
+    // Add a window resize listener.
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    this.resizeHandler = () => {
+      if (resizeTimeout !== null) {
+        clearTimeout(resizeTimeout);
+      }
+      resizeTimeout = setTimeout(() => {
+        if (this.globals.lobby.currentScreen === Screen.Game && !this.globals.loading) {
+          console.log("Resizing Hanabi UI...");
+          initStageSize();
+
+          // We must also clear the card-related globals or else we will have duplicates.
+          const visibleState = this.globals.state.visibleState;
+          this.globals.deck = [];
+          for (const unsubscribe of this.globals.cardSubscriptions) {
+            unsubscribe();
+          }
+          this.globals.cardSubscriptions = [];
+
+          drawUI();
+
+          // Re-register the state observers to bind them to the new UI elements.
+          if (this.globals.stateObserver !== null && this.globals.store !== null) {
+            this.globals.stateObserver.registerObservers(this.globals.store);
+          }
+
+          // Re-subscribe the cards to the state store.
+          if (visibleState !== null) {
+            cardsView.onCardsPossiblyAdded(visibleState.deck.length);
+          }
+
+          // Trigger a full update of all observers by dispatching a dummy action.
+          if (this.globals.store !== null) {
+            this.globals.store.dispatch({ type: "move" } as any);
+          }
+
+          this.globals.layers.UI.batchDraw();
+          this.globals.layers.timer.batchDraw();
+          this.globals.layers.card.batchDraw();
+          this.globals.layers.arrow.batchDraw();
+          this.globals.layers.UI2.batchDraw();
+        }
+      }, 100);
+    };
+    window.addEventListener("resize", this.resizeHandler);
 
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the "init" message from the server in order to know how many players are in the
@@ -66,6 +116,7 @@ export class HanabiUI {
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   destroy(): void {
+    window.removeEventListener("resize", this.resizeHandler);
     keyboard.destroy();
     timer.stop();
     globals.stage.destroy();
