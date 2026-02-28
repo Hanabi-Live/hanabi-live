@@ -3,15 +3,16 @@
 
 import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
+import type { Action } from "../types/actions";
 import type { GameExports } from "../main";
-import { drawUI } from "./drawUI";
-import { globals } from "./UIGlobals";
-import type { UIGlobals } from "./UIGlobals";
 import * as cursor from "./cursor";
+import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
+import * as cardsView from "./reactive/views/cardsView";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
-import * as cardsView from "./reactive/views/cardsView";
+import type { UIGlobals } from "./UIGlobals";
+import { globals } from "./UIGlobals";
 
 export class HanabiUI {
   globals: UIGlobals;
@@ -36,18 +37,22 @@ export class HanabiUI {
     cursor.set("default");
 
     // Add a window resize listener.
-    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    let resizeTimeout: ReturnType<typeof setTimeout> | undefined;
     this.resizeHandler = () => {
-      if (resizeTimeout !== null) {
+      if (resizeTimeout !== undefined) {
         clearTimeout(resizeTimeout);
       }
+
       resizeTimeout = setTimeout(() => {
-        if (this.globals.lobby.currentScreen === Screen.Game && !this.globals.loading) {
+        if (
+          this.globals.lobby.currentScreen === Screen.Game
+          && !this.globals.loading
+        ) {
           console.log("Resizing Hanabi UI...");
           initStageSize();
 
           // We must also clear the card-related globals or else we will have duplicates.
-          const visibleState = this.globals.state.visibleState;
+          const { visibleState } = this.globals.state;
           this.globals.deck = [];
           for (const unsubscribe of this.globals.cardSubscriptions) {
             unsubscribe();
@@ -57,7 +62,10 @@ export class HanabiUI {
           drawUI();
 
           // Re-register the state observers to bind them to the new UI elements.
-          if (this.globals.stateObserver !== null && this.globals.store !== null) {
+          if (
+            this.globals.stateObserver !== null
+            && this.globals.store !== null
+          ) {
             this.globals.stateObserver.registerObservers(this.globals.store);
           }
 
@@ -68,7 +76,8 @@ export class HanabiUI {
 
           // Trigger a full update of all observers by dispatching a dummy action.
           if (this.globals.store !== null) {
-            this.globals.store.dispatch({ type: "move" } as any);
+            // We dispatch a "move" action to trigger all observers to update their new elements.
+            this.globals.store.dispatch({ type: "move" } as Action);
           }
 
           this.globals.layers.UI.batchDraw();
@@ -114,7 +123,6 @@ export class HanabiUI {
     cursor.set("default");
   }
 
-  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
     keyboard.destroy();

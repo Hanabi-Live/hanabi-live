@@ -96,7 +96,7 @@ export function drawUI(): void {
 
   // Just in case, delete all existing layers and clear children from the cached layers.
   globals.stage.removeChildren();
-  for (const layer of Object.values(globals.layers)) {
+  for (const layer of Object.values(globals.layers) as Konva.Layer[]) {
     layer.destroyChildren();
   }
 
