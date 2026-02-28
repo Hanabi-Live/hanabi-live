@@ -50,6 +50,7 @@ To start both the backend and the frontend watch process, run the following scri
 ```
 
 This script performs two main actions:
+
 1. **Starts the Go Server:** Executes `./run.sh`, which builds the Go binary and starts the server.
 2. **Starts Frontend Watch:** Executes `./packages/client/esbuild_dev.sh`, which watches the TypeScript files in `packages/client/src/` and automatically rebuilds the bundle in `public/js/bundles/main.min.js` whenever a change is detected.
 
@@ -64,6 +65,7 @@ The server will be available at `http://localhost:1212` (or the port specified i
 **Strictly speaking, no.** The frontend is not designed to be run in a standalone "dev server" (like Vite or Webpack Dev Server). It is served as static files by the Go backend.
 
 However, if you want to test local frontend changes against the live production data, you should be aware of several hurdles:
+
 1. **Domain Validation:** The client code (in `websocketInit.ts`) checks that the current hostname matches the domain rendered by the server. It will throw an error if they don't match.
 2. **Authentication:** The application uses cookie-based authentication. If you try to run the frontend on `localhost` and connect to `hanab.live`, your browser will not send the `hanab.live` cookies due to security restrictions (CORS/SameSite).
 3. **WebSocket URL:** The WebSocket connection URL is automatically derived from `globalThis.location.hostname`.
