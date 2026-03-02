@@ -50,6 +50,7 @@ export function set(
   giverPlayerIndex: PlayerIndex | null,
   clue: Clue | null,
   preview = false,
+  immediate = false,
 ): void {
   // Show the arrow
   const arrow = globals.elements.arrows[i]!;
@@ -204,7 +205,12 @@ export function set(
     arrow.tween.destroy();
     arrow.tween = null;
   }
-  if (globals.animateFast || globals.isResizing || giverPlayerIndex === null) {
+  if (
+    immediate
+    || globals.animateFast
+    || globals.isResizing
+    || giverPlayerIndex === null
+  ) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {

@@ -25,7 +25,7 @@ export function onActiveChanged(active: boolean): void {
     globals.elements.premoveCancelButton?.show();
   }
 
-  cluesView.refreshArrows();
+  cluesView.refreshArrows(active);
   ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
@@ -70,7 +70,7 @@ export function onSegmentChanged(
   // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
   // "sharedSegment" changes.
   replay.adjustShuttles(false);
-  cluesView.refreshArrows();
+  cluesView.refreshArrows(true);
 
   globals.layers.UI.batchDraw();
 }

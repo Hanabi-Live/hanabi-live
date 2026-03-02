@@ -186,7 +186,7 @@ export class HanabiUI {
     if (this.globals.stateObserver !== null && this.globals.store !== null) {
       this.globals.stateObserver.registerObservers(this.globals.store);
     }
-    cluesView.refreshArrows();
+    cluesView.refreshArrows(false);
 
     this.globals.layers.UI.draw();
     this.globals.layers.timer.draw();

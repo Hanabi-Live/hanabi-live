@@ -14,20 +14,24 @@ export function onLastClueOrSegmentChanged(data: {
   clues: readonly StateClue[];
   segment: number | null;
 }): void {
-  updateArrows(data.clues, data.segment);
+  updateArrows(data.clues, data.segment, true);
 }
 
-export function refreshArrows(): void {
+export function refreshArrows(animate: boolean): void {
   const { visibleState } = globals.state;
   if (visibleState === null) {
     arrows.hideAll();
     return;
   }
 
-  updateArrows(visibleState.clues, visibleState.turn.segment);
+  updateArrows(visibleState.clues, visibleState.turn.segment, animate);
 }
 
-function updateArrows(clues: readonly StateClue[], segment: number | null) {
+function updateArrows(
+  clues: readonly StateClue[],
+  segment: number | null,
+  animate: boolean,
+) {
   arrows.hideAll();
 
   if (segment === null) {
@@ -44,7 +48,7 @@ function updateArrows(clues: readonly StateClue[], segment: number | null) {
   for (const [i, order] of clueForSegment.list.entries()) {
     const card = getCardOrStackBase(order);
     if (card) {
-      arrows.set(i, card, clueForSegment.giver, clue);
+      arrows.set(i, card, clueForSegment.giver, clue, false, !animate);
     }
   }
 
