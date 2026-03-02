@@ -11,34 +11,61 @@ export function onCluesChanged(clues: readonly StateClue[]): void {
 }
 
 export function onLastClueOrSegmentChanged(data: {
-  lastClue: StateClue | undefined;
+  clues: readonly StateClue[];
   segment: number | null;
 }): void {
-  updateArrows(data.lastClue, data.segment);
+  updateArrows(data.clues, data.segment);
 }
 
-function updateArrows(lastClue: StateClue | undefined, segment: number | null) {
+export function refreshArrows(): void {
+  const { visibleState } = globals.state;
+  if (visibleState === null) {
+    arrows.hideAll();
+    return;
+  }
+
+  updateArrows(visibleState.clues, visibleState.turn.segment);
+}
+
+function updateArrows(clues: readonly StateClue[], segment: number | null) {
   arrows.hideAll();
 
   if (segment === null) {
     return;
   }
 
-  if (lastClue === undefined || lastClue.segment !== segment - 1) {
-    // We are initializing (or we rewinded and just removed the first clue).
+  const clueForSegment = getClueForSegment(clues, segment);
+  if (clueForSegment === undefined) {
     return;
   }
 
-  const clue = msgClueToClue(lastClue, globals.variant);
+  const clue = msgClueToClue(clueForSegment, globals.variant);
 
-  for (const [i, order] of lastClue.list.entries()) {
+  for (const [i, order] of clueForSegment.list.entries()) {
     const card = getCardOrStackBase(order);
     if (card) {
-      arrows.set(i, card, lastClue.giver, clue);
+      arrows.set(i, card, clueForSegment.giver, clue);
     }
   }
 
   globals.layers.arrow.batchDraw();
+}
+
+function getClueForSegment(
+  clues: readonly StateClue[],
+  segment: number,
+): StateClue | undefined {
+  // The segment we are currently looking at is `segment`. The clue that resulted in this state (if
+  // any) would have `clue.segment === segment - 1`.
+  const targetSegment = segment - 1;
+  for (let i = clues.length - 1; i >= 0; i--) {
+    const clue = clues[i];
+    if (clue !== undefined && clue.segment === targetSegment) {
+      return clue;
+    }
+  }
+
+  return undefined;
 }
 
 function updateLog(clues: readonly StateClue[]) {

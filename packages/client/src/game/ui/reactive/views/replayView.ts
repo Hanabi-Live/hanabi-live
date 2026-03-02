@@ -8,6 +8,7 @@ import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
 import { toggleZen } from "../../zen";
+import * as cluesView from "./cluesView";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
@@ -24,6 +25,7 @@ export function onActiveChanged(active: boolean): void {
     globals.elements.premoveCancelButton?.show();
   }
 
+  cluesView.refreshArrows();
   ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
@@ -68,6 +70,7 @@ export function onSegmentChanged(
   // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
   // "sharedSegment" changes.
   replay.adjustShuttles(false);
+  cluesView.refreshArrows();
 
   globals.layers.UI.batchDraw();
 }
