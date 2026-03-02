@@ -193,6 +193,7 @@ export class HanabiUI {
     this.globals.layers.card.draw();
     this.globals.layers.UI2.draw();
     this.globals.layers.arrow.draw();
+    timer.resumeAfterResize();
 
     this.liveResizeActive = false;
     this.globals.isResizing = false;
