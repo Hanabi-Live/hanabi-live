@@ -94,7 +94,9 @@ export function drawUI(): void {
   winW = globals.stage.width();
   winH = globals.stage.height();
 
-  const layersBeforeDestroy = globals.stage.getLayers().toArray() as Konva.Layer[];
+  const layersBeforeDestroy = globals.stage
+    .getLayers()
+    .toArray() as Konva.Layer[];
 
   // Just in case, destroy all existing layers on the stage.
   for (const layer of layersBeforeDestroy) {

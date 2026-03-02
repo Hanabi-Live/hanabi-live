@@ -3,6 +3,7 @@
 
 import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
+import * as tooltips from "../../tooltips";
 import type { GameExports } from "../main";
 import * as cursor from "./cursor";
 import { drawUI } from "./drawUI";
@@ -11,7 +12,6 @@ import * as cardsView from "./reactive/views/cardsView";
 import * as cluesView from "./reactive/views/cluesView";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
-import * as tooltips from "../../tooltips";
 import type { UIGlobals } from "./UIGlobals";
 import { globals } from "./UIGlobals";
 
@@ -135,7 +135,9 @@ export class HanabiUI {
   private applyLiveResizeScale(): void {
     const dims = getStageSize(window.innerWidth, window.innerHeight);
     const scaleFromWidth =
-      this.liveResizeBaseWidth === 0 ? 1 : dims.width / this.liveResizeBaseWidth;
+      this.liveResizeBaseWidth === 0
+        ? 1
+        : dims.width / this.liveResizeBaseWidth;
     const scaleFromHeight =
       this.liveResizeBaseHeight === 0
         ? 1
