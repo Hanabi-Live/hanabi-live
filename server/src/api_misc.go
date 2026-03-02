@@ -188,6 +188,11 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 
 	// List of games played by seed (full data)
 	httpRouter.GET(api+"/seed-full/:seed", apiFullDataSeed)
+
+	// Identity token APIs
+	httpRouter.GET(api+"/identity/token", apiIdentityTokenGet)
+	httpRouter.POST(api+"/identity/token", apiIdentityTokenPost)
+	httpRouter.GET(api+"/identity/:token", apiIdentityLookup)
 }
 
 // Checks if a string contains a numeric value
