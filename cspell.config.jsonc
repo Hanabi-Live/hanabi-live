@@ -21,6 +21,9 @@
     "pnpm-lock.yaml",
     "yarn.lock",
     // @template-customization-start
+    ".direnv/**",
+    "flake.lock",
+    "flake.nix",
     // Assets which are not edited by hand.
     "*.cdr",
     "*.flp",
@@ -88,6 +91,8 @@
     "deadcode",
     "deckplays",
     "depcruise",
+    "direnv",
+    "envrc",
     "discon",
     "discordgo",
     "dotenv",

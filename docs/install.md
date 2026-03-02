@@ -12,6 +12,7 @@ The following instructions will set up the server as well as the linters. We ass
 1. [Installation for Development (Windows)](#installation-for-development-windows)
 1. [Installation for Development (MacOS)](#installation-for-development-macos)
 1. [Installation for Development/Production (Linux)](#installation-for-developmentproduction-linux)
+1. [Installation for Development (Nix)](#installation-for-development-nix)
 1. [Running the Server in Development](#running-the-server-in-development)
 
 <br />
@@ -203,6 +204,29 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
   - `./install/install_database_schema.sh`
 - If you are in development, see [Running the Server in Development](#running-the-server-in-development).
 - If you are in production, see [Running the Server in Production](#running-the-server-in-production).
+
+<br />
+
+## Installation for Development (Nix)
+
+If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with nix-darwin), you can use the provided `flake.nix` file to set up a development environment with all of the necessary dependencies (including Go, Node.js, PostgreSQL, Redis, and Bun).
+
+- Install Nix (if you do not already have it installed):
+  - `curl -L https://nixos.org/nix/install | sh`
+- Enable Flakes by adding the following to your Nix configuration (e.g. `~/.config/nix/nix.conf`):
+  ```
+  experimental-features = nix-command flakes
+  ```
+- Enter the development shell:
+  - `nix develop`
+- (Optional, recommended) If you also use [direnv](https://direnv.net/), copy the example file and then allow it:
+  - `cp .envrc.nix.example .envrc`
+  - `direnv allow`
+- This keeps Nix + direnv opt-in:
+  - Nix users do not have to use direnv.
+  - direnv users do not have to use Nix.
+- Once you are in the development shell, the environment variables for PostgreSQL and Redis will be set up automatically. The database files will be stored in the `.direnv` directory.
+- Follow the instructions in the shell hook to start the services and the development server.
 
 <br />
 
