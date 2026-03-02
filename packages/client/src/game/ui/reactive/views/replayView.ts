@@ -271,7 +271,7 @@ export function onSharedLeaderChanged(
   // Make the crown play an animation to indicate there is a new replay leader. (But do not play the
   // animation if the game just ended or we are first loading the page.)
   if (previousLeader !== undefined) {
-    globals.elements.sharedReplayLeaderLabelPulse!.play();
+    globals.elements.sharedReplayLeaderLabelPulse?.play();
   }
 }
 
