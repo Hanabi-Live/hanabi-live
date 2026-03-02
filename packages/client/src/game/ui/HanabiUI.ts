@@ -4,13 +4,14 @@
 import type { Globals as LobbyGlobals } from "../../Globals";
 import { Screen } from "../../lobby/types/Screen";
 import type { GameExports } from "../main";
-import type { Action } from "../types/actions";
 import * as cursor from "./cursor";
 import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
 import * as cardsView from "./reactive/views/cardsView";
+import * as cluesView from "./reactive/views/cluesView";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
+import * as tooltips from "../../tooltips";
 import type { UIGlobals } from "./UIGlobals";
 import { globals } from "./UIGlobals";
 
@@ -48,7 +49,9 @@ export class HanabiUI {
           this.globals.lobby.currentScreen === Screen.Game
           && !this.globals.loading
         ) {
-          console.log("Resizing Hanabi UI...");
+          tooltips.closeAllTooltips();
+          this.globals.isResizing = true;
+          this.globals.animateFast = true;
           initStageSize();
 
           // We must also clear the card-related globals or else we will have duplicates.
@@ -61,6 +64,11 @@ export class HanabiUI {
 
           drawUI();
 
+          // Re-subscribe the cards to the state store.
+          if (visibleState !== null) {
+            cardsView.onCardsPossiblyAdded(visibleState.deck.length);
+          }
+
           // Re-register the state observers to bind them to the new UI elements.
           if (
             this.globals.stateObserver !== null
@@ -68,23 +76,16 @@ export class HanabiUI {
           ) {
             this.globals.stateObserver.registerObservers(this.globals.store);
           }
+          cluesView.refreshArrows();
 
-          // Re-subscribe the cards to the state store.
-          if (visibleState !== null) {
-            cardsView.onCardsPossiblyAdded(visibleState.deck.length);
-          }
+          this.globals.layers.UI.draw();
+          this.globals.layers.timer.draw();
+          this.globals.layers.card.draw();
+          this.globals.layers.UI2.draw();
+          this.globals.layers.arrow.draw();
 
-          // Trigger a full update of all observers by dispatching a dummy action.
-          if (this.globals.store !== null) {
-            // We dispatch a "move" action to trigger all observers to update their new elements.
-            this.globals.store.dispatch({ type: "move" } as unknown as Action);
-          }
-
-          this.globals.layers.UI.batchDraw();
-          this.globals.layers.timer.batchDraw();
-          this.globals.layers.card.batchDraw();
-          this.globals.layers.arrow.batchDraw();
-          this.globals.layers.UI2.batchDraw();
+          this.globals.isResizing = false;
+          this.globals.animateFast = false;
         }
       }, 100);
     };

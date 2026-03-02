@@ -204,7 +204,7 @@ export function set(
     arrow.tween.destroy();
     arrow.tween = null;
   }
-  if (globals.animateFast || giverPlayerIndex === null) {
+  if (globals.animateFast || globals.isResizing || giverPlayerIndex === null) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
@@ -217,9 +217,7 @@ export function set(
       visibleSegment,
     );
   }
-  if (!globals.animateFast) {
-    globals.layers.arrow.batchDraw();
-  }
+  globals.layers.arrow.batchDraw();
 }
 
 function getPos(element: Konva.Node, rot: number) {

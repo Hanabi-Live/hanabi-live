@@ -98,6 +98,8 @@ export class UIGlobals {
 
   globalEmpathyEnabled = false;
 
+  isResizing = false;
+
   // State information
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
@@ -162,6 +164,7 @@ export class UIGlobals {
     this.animateFast = true;
     this.UIClickTime = 0;
     this.globalEmpathyEnabled = false;
+    this.isResizing = false;
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
