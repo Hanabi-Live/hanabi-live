@@ -67,10 +67,17 @@ export function onSegmentChanged(
     return;
   }
 
+  const liveSegmentAdvanced =
+    data.replaySegment === previousData.replaySegment
+    && data.ongoingGameSegment !== previousData.ongoingGameSegment;
+
   // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
-  // "sharedSegment" changes.
-  replay.adjustShuttles(false);
-  cluesView.refreshArrows(true);
+  // "sharedSegment" changes. If only the live segment advanced while we are reviewing a replay,
+  // snap instead of tweening to avoid re-animating the replay UI.
+  replay.adjustShuttles(liveSegmentAdvanced);
+  if (!liveSegmentAdvanced) {
+    cluesView.refreshArrows(true);
+  }
 
   globals.layers.UI.batchDraw();
 }
