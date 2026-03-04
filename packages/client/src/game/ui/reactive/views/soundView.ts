@@ -32,8 +32,7 @@ export function onNewSoundEffect(
     // Only make a sound when the game starts or when it is a new player's turn.
     || data.gameState.turn.currentPlayerIndex
       === previousData?.gameState.turn.currentPlayerIndex
-    // Do not play sounds in replays or hypotheticals.
-    || globals.state.replay.active
+    // Do not play sounds in hypotheticals.
     || globals.state.replay.hypothetical !== null
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
