@@ -13,7 +13,7 @@ import (
 
 const (
 	IdentityTokenTTL      = 24 * time.Hour
-	IdentityTokenNumBytes = 24
+	IdentityTokenNumBytes = 96 // 96 raw bytes encode to 128 base64url characters.
 )
 
 func identityTokenIsExpired(expiresAt time.Time) bool {

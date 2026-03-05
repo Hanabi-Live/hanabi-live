@@ -3,7 +3,7 @@ import { env } from "./env";
 import { models } from "./models";
 
 const IDENTITY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const IDENTITY_TOKEN_NUM_BYTES = 24;
+const IDENTITY_TOKEN_NUM_BYTES = 96; // 96 raw bytes encode to 128 base64url characters.
 interface RegeneratedIdentityToken {
   readonly token: string;
   readonly tokenHash: string;
