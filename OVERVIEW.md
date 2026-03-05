@@ -15,7 +15,7 @@ Hanab Live follows a monorepo structure with a Go backend and a TypeScript/jQuer
 - **Caching/State:** [Redis](https://redis.io/) is used for transient data like banned IPs.
 - **Location:** The primary backend code is in the `server/` directory.
 
-> **Note:** There is a newer, potentially experimental or transitional backend implementation in `packages/server` using Node.js, Fastify, and Drizzle ORM, but the primary production server is currently the Go implementation.
+> **Note:** There is a newer backend implementation in `packages/server` using Node.js, Fastify, and Drizzle ORM. The migration approach is incremental: production still runs the Go server, and server-side changes are currently expected to be mirrored in both implementations until cutover.
 
 ### Frontend
 
