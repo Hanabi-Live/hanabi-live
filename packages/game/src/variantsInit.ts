@@ -351,6 +351,15 @@ export function createVariant(
   }
   const { criticalRank } = variantDescription;
 
+  // Validate the "scarceOnes" property. If it is not specified, assume false (e.g. there is the
+  // usual number of ones per suit).
+  if (variantDescription.scarceOnes === false) {
+    throw new Error(
+      `The "scarceOnes" property for the variant "${variantDescription.name}" must be set to true. If it is intended to be false, then remove the property altogether.`,
+    );
+  }
+  const scarceOnes = variantDescription.scarceOnes ?? false;
+
   // --------------------------------------
   // Computed `Variant` properties (part 2)
   // --------------------------------------
@@ -401,6 +410,7 @@ export function createVariant(
     specialRankDeceptive,
 
     criticalRank,
+    scarceOnes,
     clueStarved,
     colorCluesTouchNothing,
     rankCluesTouchNothing,
