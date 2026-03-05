@@ -41,9 +41,16 @@ func apiIdentityTokenGet(c *gin.Context) {
 		return
 	}
 
+	token, err := identityTokenDecrypt(row.TokenEncrypted)
+	if err != nil {
+		logger.Error("Failed to decrypt identity token for user \"" + username + "\": " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
 	c.JSON(http.StatusOK, APIIdentityTokenResponse{
 		Username:  username,
-		Token:     row.Token,
+		Token:     token,
 		ExpiresAt: row.ExpiresAt.UTC().Format(http.TimeFormat),
 	})
 }
@@ -58,7 +65,7 @@ func apiIdentityTokenPost(c *gin.Context) {
 		return
 	}
 
-	row, err := identityTokenRegenerate(userID)
+	row, token, err := identityTokenRegenerate(userID)
 	if err != nil {
 		logger.Error("Failed to regenerate identity token for user \"" + username + "\": " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
@@ -67,7 +74,7 @@ func apiIdentityTokenPost(c *gin.Context) {
 
 	c.JSON(http.StatusOK, APIIdentityTokenResponse{
 		Username:  username,
-		Token:     row.Token,
+		Token:     token,
 		ExpiresAt: row.ExpiresAt.UTC().Format(http.TimeFormat),
 	})
 }
@@ -83,7 +90,14 @@ func apiIdentityLookup(c *gin.Context) {
 		return
 	}
 
-	exists, username, expiresAt, err := models.UserIdentityTokens.GetUsernameByToken(token)
+	tokenHash, err := identityTokenHash(token)
+	if err != nil {
+		logger.Error("Failed to hash identity token: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+
+	exists, username, expiresAt, err := models.UserIdentityTokens.GetUsernameByTokenHash(tokenHash)
 	if err != nil {
 		logger.Error("Failed to look up identity token: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})

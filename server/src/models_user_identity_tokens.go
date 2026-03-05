@@ -12,7 +12,8 @@ type UserIdentityTokens struct{}
 
 type UserIdentityTokenRow struct {
 	UserID          int
-	Token           string
+	TokenEncrypted  string
+	TokenHash       string
 	ExpiresAt       time.Time
 	DatetimeCreated time.Time
 	DatetimeUpdated time.Time
@@ -23,7 +24,8 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			user_id,
-			token,
+			token_encrypted,
+			token_hash,
 			expires_at,
 			datetime_created,
 			datetime_updated
@@ -31,7 +33,8 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 		WHERE user_id = $1
 	`, userID).Scan(
 		&row.UserID,
-		&row.Token,
+		&row.TokenEncrypted,
+		&row.TokenHash,
 		&row.ExpiresAt,
 		&row.DatetimeCreated,
 		&row.DatetimeUpdated,
@@ -44,25 +47,34 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 	return true, row, nil
 }
 
-func (*UserIdentityTokens) Upsert(userID int, token string, expiresAt time.Time) error {
+func (*UserIdentityTokens) Upsert(
+	userID int,
+	tokenEncrypted string,
+	tokenHash string,
+	expiresAt time.Time,
+) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO user_identity_tokens (
 			user_id,
-			token,
+			token_encrypted,
+			token_hash,
 			expires_at
 		)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (user_id)
 		DO UPDATE
 		SET
-			token = EXCLUDED.token,
+			token_encrypted = EXCLUDED.token_encrypted,
+			token_hash = EXCLUDED.token_hash,
 			expires_at = EXCLUDED.expires_at,
 			datetime_updated = NOW()
-	`, userID, token, expiresAt)
+	`, userID, tokenEncrypted, tokenHash, expiresAt)
 	return err
 }
 
-func (*UserIdentityTokens) GetUsernameByToken(token string) (bool, string, time.Time, error) {
+func (*UserIdentityTokens) GetUsernameByTokenHash(
+	tokenHash string,
+) (bool, string, time.Time, error) {
 	var username string
 	var expiresAt time.Time
 	if err := db.QueryRow(context.Background(), `
@@ -72,8 +84,8 @@ func (*UserIdentityTokens) GetUsernameByToken(token string) (bool, string, time.
 		FROM user_identity_tokens
 		JOIN users
 			ON users.id = user_identity_tokens.user_id
-		WHERE user_identity_tokens.token = $1
-	`, token).Scan(
+		WHERE user_identity_tokens.token_hash = $1
+	`, tokenHash).Scan(
 		&username,
 		&expiresAt,
 	); errors.Is(err, pgx.ErrNoRows) {

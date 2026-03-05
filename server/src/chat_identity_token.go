@@ -33,13 +33,20 @@ func chatTokenGenerateOrGet(s *Session, room string) {
 	}
 
 	if exists && !identityTokenIsExpired(row.ExpiresAt) {
+		token, err := identityTokenDecrypt(row.TokenEncrypted)
+		if err != nil {
+			logger.Error("Failed to decrypt identity token for user \"" + s.Username + "\": " + err.Error())
+			s.Error(DefaultErrorMsg)
+			return
+		}
+
 		msg := "Identity token (valid until " + row.ExpiresAt.UTC().Format(time.RFC3339) + " UTC): " +
-			"<code>" + row.Token + "</code>"
+			"<code>" + token + "</code>"
 		chatServerSendPM(s, msg, room)
 		return
 	}
 
-	row, err = identityTokenRegenerate(s.UserID)
+	row, token, err := identityTokenRegenerate(s.UserID)
 	if err != nil {
 		logger.Error("Failed to regenerate identity token for user \"" + s.Username + "\": " + err.Error())
 		s.Error(DefaultErrorMsg)
@@ -47,6 +54,6 @@ func chatTokenGenerateOrGet(s *Session, room string) {
 	}
 
 	msg := "Identity token (valid until " + row.ExpiresAt.UTC().Format(time.RFC3339) + " UTC): " +
-		"<code>" + row.Token + "</code>"
+		"<code>" + token + "</code>"
 	chatServerSendPM(s, msg, room)
 }
