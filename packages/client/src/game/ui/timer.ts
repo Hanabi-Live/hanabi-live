@@ -129,6 +129,23 @@ export function stop(): void {
   }
 }
 
+/**
+ * Resize rebuilds recreate timer UI elements and clear the local ticking interval. Rebind the
+ * current local clock state to the new timer elements without waiting for the next server "clock"
+ * message.
+ */
+export function resumeAfterResize(): void {
+  if (globals.playerTimes.length === 0 || globals.activePlayerIndex === -1) {
+    return;
+  }
+
+  update({
+    times: globals.playerTimes,
+    activePlayerIndex: globals.activePlayerIndex,
+    timeTaken: globals.timeTaken,
+  });
+}
+
 function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update.
   const now = Date.now();

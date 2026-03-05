@@ -25,12 +25,15 @@ export function onNewSoundEffect(
   const { soundMove } = globals.lobby.settings;
 
   if (
+    // Do not play sounds during resize-driven observer re-registration.
+    globals.isResizing
     // Do not play sounds on the initial load (unless it is the first turn).
-    (previousData === undefined && data.gameState.turn.turnNum !== 0)
+    || (previousData === undefined && data.gameState.turn.turnNum !== 0)
     // Only make a sound when the game starts or when it is a new player's turn.
     || data.gameState.turn.currentPlayerIndex
       === previousData?.gameState.turn.currentPlayerIndex
-    // Do not play sounds in replays or hypotheticals.
+    // Do not play sounds in hypotheticals.
+    || globals.state.replay.hypothetical !== null
     || globals.state.finished
     // Do not play sounds if it is not the user's turn and the user only wants sounds on their own
     // moves.

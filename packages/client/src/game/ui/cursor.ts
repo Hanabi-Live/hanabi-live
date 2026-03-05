@@ -67,7 +67,7 @@ export function getElementDragLocation(
 }
 
 export function elementOverlaps(element: LayoutChild): boolean {
-  if (globals.loading) {
+  if (globals.loading || globals.isResizing) {
     return false;
   }
 
