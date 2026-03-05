@@ -79,20 +79,30 @@ func apiIdentityLookup(c *gin.Context) {
 		return
 	}
 
-	tokenHash, err := identityTokenHash(token)
+	tokenLookupHash, err := identityTokenLookupHash(token)
 	if err != nil {
-		logger.Error("Failed to hash identity token: " + err.Error())
+		logger.Error("Failed to compute identity token lookup hash: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 
-	exists, username, expiresAt, err := models.UserIdentityTokens.GetUsernameByTokenHash(tokenHash)
+	exists, username, tokenHash, expiresAt, err := models.UserIdentityTokens.GetUsernameByTokenLookupHash(tokenLookupHash)
 	if err != nil {
 		logger.Error("Failed to look up identity token: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return
 	}
 	if !exists || identityTokenIsExpired(expiresAt) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Identity token not found."})
+		return
+	}
+	match, err := identityTokenPasswordHashMatches(token, tokenHash)
+	if err != nil {
+		logger.Error("Failed to compare identity token to hash: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
+	}
+	if !match {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Identity token not found."})
 		return
 	}

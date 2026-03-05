@@ -1,3 +1,4 @@
+import * as argon2 from "argon2";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { env } from "./env";
 import { models } from "./models";
@@ -7,6 +8,7 @@ const IDENTITY_TOKEN_NUM_BYTES = 96; // 96 raw bytes encode to 128 base64url cha
 interface RegeneratedIdentityToken {
   readonly token: string;
   readonly tokenHash: string;
+  readonly tokenLookupHash: string;
   readonly expiresAt: Date;
 }
 
@@ -22,22 +24,40 @@ function identityTokenGenerate(): string {
   return randomBytes(IDENTITY_TOKEN_NUM_BYTES).toString("base64url");
 }
 
-export function identityTokenHash(token: string): string {
+export function identityTokenLookupHash(token: string): string {
   return createHmac("sha256", getIdentityTokenKey())
     .update(token)
     .digest("hex");
+}
+
+async function identityTokenPasswordHash(token: string): Promise<string> {
+  return await argon2.hash(token);
+}
+
+export async function identityTokenPasswordHashMatches(
+  token: string,
+  tokenHash: string,
+): Promise<boolean> {
+  return await argon2.verify(tokenHash, token);
 }
 
 export async function identityTokenRegenerate(
   userID: number,
 ): Promise<RegeneratedIdentityToken> {
   const token = identityTokenGenerate();
-  const tokenHash = identityTokenHash(token);
+  const tokenHash = await identityTokenPasswordHash(token);
+  const tokenLookupHash = identityTokenLookupHash(token);
   const expiresAt = new Date(Date.now() + IDENTITY_TOKEN_TTL_MS);
-  await models.userIdentityTokens.upsert(userID, tokenHash, expiresAt);
+  await models.userIdentityTokens.upsert(
+    userID,
+    tokenHash,
+    tokenLookupHash,
+    expiresAt,
+  );
   return {
     token,
     tokenHash,
+    tokenLookupHash,
     expiresAt,
   };
 }

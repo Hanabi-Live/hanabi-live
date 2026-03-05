@@ -5,13 +5,15 @@ import { db } from "../db";
 interface UserIdentityTokenRow {
   readonly userID: number;
   readonly tokenHash: string;
+  readonly tokenLookupHash: string;
   readonly expiresAt: Date;
   readonly datetimeCreated: Date;
   readonly datetimeUpdated: Date;
 }
 
-interface UsernameByTokenHashRow {
+interface UsernameByTokenLookupHashRow {
   readonly username: string;
+  readonly tokenHash: string;
   readonly expiresAt: Date;
 }
 
@@ -23,6 +25,7 @@ export const userIdentityTokens = {
       .select({
         userID: userIdentityTokensTable.userID,
         tokenHash: userIdentityTokensTable.tokenHash,
+        tokenLookupHash: userIdentityTokensTable.tokenLookupHash,
         expiresAt: userIdentityTokensTable.expiresAt,
         datetimeCreated: userIdentityTokensTable.datetimeCreated,
         datetimeUpdated: userIdentityTokensTable.datetimeUpdated,
@@ -37,6 +40,7 @@ export const userIdentityTokens = {
   upsert: async (
     userID: number,
     tokenHash: string,
+    tokenLookupHash: string,
     expiresAt: Date,
   ): Promise<void> => {
     await db
@@ -44,29 +48,32 @@ export const userIdentityTokens = {
       .values({
         userID,
         tokenHash,
+        tokenLookupHash,
         expiresAt,
       })
       .onConflictDoUpdate({
         target: userIdentityTokensTable.userID,
         set: {
           tokenHash,
+          tokenLookupHash,
           expiresAt,
           datetimeUpdated: new Date(),
         },
       });
   },
 
-  getUsernameByTokenHash: async (
-    tokenHash: string,
-  ): Promise<UsernameByTokenHashRow | undefined> => {
+  getUsernameByTokenLookupHash: async (
+    tokenLookupHash: string,
+  ): Promise<UsernameByTokenLookupHashRow | undefined> => {
     const rows = await db
       .select({
         username: usersTable.username,
+        tokenHash: userIdentityTokensTable.tokenHash,
         expiresAt: userIdentityTokensTable.expiresAt,
       })
       .from(userIdentityTokensTable)
       .innerJoin(usersTable, eq(usersTable.id, userIdentityTokensTable.userID))
-      .where(and(eq(userIdentityTokensTable.tokenHash, tokenHash)))
+      .where(and(eq(userIdentityTokensTable.tokenLookupHash, tokenLookupHash)))
       .limit(1);
 
     return rows[0];

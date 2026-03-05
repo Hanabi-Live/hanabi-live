@@ -13,6 +13,7 @@ type UserIdentityTokens struct{}
 type UserIdentityTokenRow struct {
 	UserID          int
 	TokenHash       string
+	TokenLookupHash string
 	ExpiresAt       time.Time
 	DatetimeCreated time.Time
 	DatetimeUpdated time.Time
@@ -24,6 +25,7 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 		SELECT
 			user_id,
 			token_hash,
+			token_lookup_hash,
 			expires_at,
 			datetime_created,
 			datetime_updated
@@ -32,6 +34,7 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 	`, userID).Scan(
 		&row.UserID,
 		&row.TokenHash,
+		&row.TokenLookupHash,
 		&row.ExpiresAt,
 		&row.DatetimeCreated,
 		&row.DatetimeUpdated,
@@ -47,46 +50,52 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 func (*UserIdentityTokens) Upsert(
 	userID int,
 	tokenHash string,
+	tokenLookupHash string,
 	expiresAt time.Time,
 ) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO user_identity_tokens (
 			user_id,
 			token_hash,
+			token_lookup_hash,
 			expires_at
 		)
-		VALUES ($1, $2, $3)
+		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (user_id)
 		DO UPDATE
 		SET
 			token_hash = EXCLUDED.token_hash,
+			token_lookup_hash = EXCLUDED.token_lookup_hash,
 			expires_at = EXCLUDED.expires_at,
 			datetime_updated = NOW()
-	`, userID, tokenHash, expiresAt)
+	`, userID, tokenHash, tokenLookupHash, expiresAt)
 	return err
 }
 
-func (*UserIdentityTokens) GetUsernameByTokenHash(
-	tokenHash string,
-) (bool, string, time.Time, error) {
+func (*UserIdentityTokens) GetUsernameByTokenLookupHash(
+	tokenLookupHash string,
+) (bool, string, string, time.Time, error) {
 	var username string
+	var tokenHash string
 	var expiresAt time.Time
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			users.username,
+			user_identity_tokens.token_hash,
 			user_identity_tokens.expires_at
 		FROM user_identity_tokens
 		JOIN users
 			ON users.id = user_identity_tokens.user_id
-		WHERE user_identity_tokens.token_hash = $1
-	`, tokenHash).Scan(
+		WHERE user_identity_tokens.token_lookup_hash = $1
+	`, tokenLookupHash).Scan(
 		&username,
+		&tokenHash,
 		&expiresAt,
 	); errors.Is(err, pgx.ErrNoRows) {
-		return false, "", time.Time{}, nil
+		return false, "", "", time.Time{}, nil
 	} else if err != nil {
-		return false, "", time.Time{}, err
+		return false, "", "", time.Time{}, err
 	}
 
-	return true, username, expiresAt, nil
+	return true, username, tokenHash, expiresAt, nil
 }

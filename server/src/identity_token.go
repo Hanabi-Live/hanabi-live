@@ -9,6 +9,8 @@ import (
 	"errors"
 	"os"
 	"time"
+
+	"github.com/alexedwards/argon2id"
 )
 
 const (
@@ -39,7 +41,7 @@ func identityTokenGetSecretKey() ([]byte, error) {
 	return hash[:], nil
 }
 
-func identityTokenHash(token string) (string, error) {
+func identityTokenLookupHash(token string) (string, error) {
 	key, err := identityTokenGetSecretKey()
 	if err != nil {
 		return "", err
@@ -53,25 +55,39 @@ func identityTokenHash(token string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+func identityTokenPasswordHash(token string) (string, error) {
+	return argon2id.CreateHash(token, argon2id.DefaultParams)
+}
+
+func identityTokenPasswordHashMatches(token string, tokenHash string) (bool, error) {
+	return argon2id.ComparePasswordAndHash(token, tokenHash)
+}
+
 func identityTokenRegenerate(userID int) (UserIdentityTokenRow, string, error) {
 	token, err := identityTokenGenerate()
 	if err != nil {
 		return UserIdentityTokenRow{}, "", err
 	}
 
-	tokenHash, err := identityTokenHash(token)
+	tokenHash, err := identityTokenPasswordHash(token)
+	if err != nil {
+		return UserIdentityTokenRow{}, "", err
+	}
+
+	tokenLookupHash, err := identityTokenLookupHash(token)
 	if err != nil {
 		return UserIdentityTokenRow{}, "", err
 	}
 
 	expiresAt := time.Now().UTC().Add(IdentityTokenTTL)
-	if err := models.UserIdentityTokens.Upsert(userID, tokenHash, expiresAt); err != nil {
+	if err := models.UserIdentityTokens.Upsert(userID, tokenHash, tokenLookupHash, expiresAt); err != nil {
 		return UserIdentityTokenRow{}, "", err
 	}
 
 	return UserIdentityTokenRow{
-		UserID:    userID,
-		TokenHash: tokenHash,
-		ExpiresAt: expiresAt,
+		UserID:          userID,
+		TokenHash:       tokenHash,
+		TokenLookupHash: tokenLookupHash,
+		ExpiresAt:       expiresAt,
 	}, token, nil
 }

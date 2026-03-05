@@ -2,8 +2,9 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { getCookieValue } from "../httpSession";
 import {
-  identityTokenHash,
   identityTokenIsExpired,
+  identityTokenLookupHash,
+  identityTokenPasswordHashMatches,
   identityTokenRegenerate,
 } from "../identityToken";
 import { logger } from "../logger";
@@ -115,18 +116,32 @@ export async function httpIdentityLookup(
     });
   }
 
-  let tokenHash: string;
+  let tokenLookupHash: string;
   try {
-    tokenHash = identityTokenHash(token);
+    tokenLookupHash = identityTokenLookupHash(token);
   } catch (error) {
-    logger.error(`Failed to hash identity token: ${String(error)}`);
+    logger.error(
+      `Failed to compute identity token lookup hash: ${String(error)}`,
+    );
     return await reply
       .code(StatusCodes.INTERNAL_SERVER_ERROR)
       .send({ error: "Internal Server Error" });
   }
 
-  const row = await models.userIdentityTokens.getUsernameByTokenHash(tokenHash);
+  const row =
+    await models.userIdentityTokens.getUsernameByTokenLookupHash(
+      tokenLookupHash,
+    );
   if (row === undefined || identityTokenIsExpired(row.expiresAt)) {
+    return await reply.code(StatusCodes.NOT_FOUND).send({
+      error: "Identity token not found.",
+    });
+  }
+  const tokenMatches = await identityTokenPasswordHashMatches(
+    token,
+    row.tokenHash,
+  );
+  if (!tokenMatches) {
     return await reply.code(StatusCodes.NOT_FOUND).send({
       error: "Identity token not found.",
     });
