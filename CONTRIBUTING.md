@@ -10,6 +10,10 @@ With pull requests:
 - Your pull requests need to pass the linter. To set up the linter, read and follow the [installation instructions](docs/install.md).
 - Help me fix all these bugs and issues!
 
+## Server Code
+
+The long-term plan for the codebase is to migrate the server from Golang to TypeScript. Thus, any changes that you do to Golang code should also be performed to the new TypeScript server at "packages/server".
+
 ## Creating a New Variant
 
 - First, create a GitHub issue to discuss how the variant should work and if it should be implemented at all.
