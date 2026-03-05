@@ -16,7 +16,9 @@ interface UsernameByTokenHashRow {
 }
 
 export const userIdentityTokens = {
-  getByUserID: async (userID: number): Promise<UserIdentityTokenRow | undefined> => {
+  getByUserID: async (
+    userID: number,
+  ): Promise<UserIdentityTokenRow | undefined> => {
     const rows = await db
       .select({
         userID: userIdentityTokensTable.userID,

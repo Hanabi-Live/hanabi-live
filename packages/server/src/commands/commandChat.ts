@@ -27,7 +27,10 @@ export async function commandChat(
     return;
   }
 
-  if (normalizedMsg.startsWith("/") && (await chatToken(wsUser, normalizedMsg, room))) {
+  if (
+    normalizedMsg.startsWith("/")
+    && (await chatToken(wsUser, normalizedMsg, room))
+  ) {
     return;
   }
 

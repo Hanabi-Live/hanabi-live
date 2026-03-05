@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
+import { getCookieValue } from "../httpSession";
 import {
   identityTokenHash,
   identityTokenIsExpired,
@@ -7,7 +8,6 @@ import {
 } from "../identityToken";
 import { logger } from "../logger";
 import { models } from "../models";
-import { getCookieValue } from "../httpSession";
 
 interface IdentityTokenParams {
   token: string;
@@ -67,8 +67,12 @@ export async function httpIdentityTokenGet(
       expires_at: row.expiresAt.toUTCString(),
     } satisfies IdentityTokenResponse);
   } catch (error) {
-    logger.error(`Failed to regenerate identity token for user "${username}": ${String(error)}`);
-    return await reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: "Internal Server Error" });
+    logger.error(
+      `Failed to regenerate identity token for user "${username}": ${String(error)}`,
+    );
+    return await reply
+      .code(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal Server Error" });
   }
 }
 

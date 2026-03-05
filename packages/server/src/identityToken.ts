@@ -1,4 +1,4 @@
-import { createHmac, createHash, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { env } from "./env";
 import { models } from "./models";
 
@@ -23,7 +23,9 @@ function identityTokenGenerate(): string {
 }
 
 export function identityTokenHash(token: string): string {
-  return createHmac("sha256", getIdentityTokenKey()).update(token).digest("hex");
+  return createHmac("sha256", getIdentityTokenKey())
+    .update(token)
+    .digest("hex");
 }
 
 export async function identityTokenRegenerate(
