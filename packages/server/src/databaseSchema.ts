@@ -113,7 +113,6 @@ export const userIdentityTokensTable = pgTable(
       .notNull()
       .primaryKey()
       .references(() => usersTable.id),
-    tokenEncrypted: text("token_encrypted").notNull(),
     tokenHash: text("token_hash").notNull().unique(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     datetimeCreated: timestamp("datetime_created", { withTimezone: true })

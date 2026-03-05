@@ -1,7 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import {
-  identityTokenDecrypt,
   identityTokenHash,
   identityTokenIsExpired,
   identityTokenRegenerate,
@@ -60,30 +59,17 @@ export async function httpIdentityTokenGet(
   }
 
   const { userID, username } = auth;
-  const row = await models.userIdentityTokens.getByUserID(userID);
-  if (row === undefined || identityTokenIsExpired(row.expiresAt)) {
-    return await reply.code(StatusCodes.NOT_FOUND).send({
-      error: "No active identity token found.",
-    });
-  }
-
-  let token: string;
   try {
-    token = identityTokenDecrypt(row.tokenEncrypted);
+    const row = await identityTokenRegenerate(userID);
+    return await reply.send({
+      username,
+      token: row.token,
+      expires_at: row.expiresAt.toUTCString(),
+    } satisfies IdentityTokenResponse);
   } catch (error) {
-    logger.error(
-      `Failed to decrypt identity token for user "${username}": ${String(error)}`,
-    );
-    return await reply
-      .code(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ error: "Internal Server Error" });
+    logger.error(`Failed to regenerate identity token for user "${username}": ${String(error)}`);
+    return await reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: "Internal Server Error" });
   }
-
-  return await reply.send({
-    username,
-    token,
-    expires_at: row.expiresAt.toUTCString(),
-  } satisfies IdentityTokenResponse);
 }
 
 export async function httpIdentityTokenPost(

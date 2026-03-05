@@ -5,13 +5,8 @@ import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
 import { getCurrentDatetime } from "../date";
-import {
-  identityTokenDecrypt,
-  identityTokenIsExpired,
-  identityTokenRegenerate,
-} from "../identityToken";
+import { identityTokenRegenerate } from "../identityToken";
 import { logger } from "../logger";
-import { models } from "../models";
 import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 
@@ -59,25 +54,6 @@ async function chatToken(
   if (args.length > 0) {
     wsSendServerPM(wsUser, "The format of the /token command is: /token", room);
     return true;
-  }
-
-  const row = await models.userIdentityTokens.getByUserID(wsUser.userID);
-  if (row !== undefined && !identityTokenIsExpired(row.expiresAt)) {
-    try {
-      const token = identityTokenDecrypt(row.tokenEncrypted);
-      wsSendServerPM(
-        wsUser,
-        `Identity token (valid until ${row.expiresAt.toISOString()} UTC): <code>${token}</code>`,
-        room,
-      );
-      return true;
-    } catch (error) {
-      logger.error(
-        `Failed to decrypt identity token for user "${wsUser.username}": ${String(error)}`,
-      );
-      wsWarning(wsUser.connection, "Something went wrong on the server.");
-      return true;
-    }
   }
 
   try {

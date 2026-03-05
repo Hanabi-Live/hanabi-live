@@ -4,7 +4,6 @@ import { db } from "../db";
 
 interface UserIdentityTokenRow {
   readonly userID: number;
-  readonly tokenEncrypted: string;
   readonly tokenHash: string;
   readonly expiresAt: Date;
   readonly datetimeCreated: Date;
@@ -21,7 +20,6 @@ export const userIdentityTokens = {
     const rows = await db
       .select({
         userID: userIdentityTokensTable.userID,
-        tokenEncrypted: userIdentityTokensTable.tokenEncrypted,
         tokenHash: userIdentityTokensTable.tokenHash,
         expiresAt: userIdentityTokensTable.expiresAt,
         datetimeCreated: userIdentityTokensTable.datetimeCreated,
@@ -36,7 +34,6 @@ export const userIdentityTokens = {
 
   upsert: async (
     userID: number,
-    tokenEncrypted: string,
     tokenHash: string,
     expiresAt: Date,
   ): Promise<void> => {
@@ -44,14 +41,12 @@ export const userIdentityTokens = {
       .insert(userIdentityTokensTable)
       .values({
         userID,
-        tokenEncrypted,
         tokenHash,
         expiresAt,
       })
       .onConflictDoUpdate({
         target: userIdentityTokensTable.userID,
         set: {
-          tokenEncrypted,
           tokenHash,
           expiresAt,
           datetimeUpdated: new Date(),

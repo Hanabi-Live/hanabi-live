@@ -134,7 +134,6 @@ CREATE TABLE user_linkages (
 DROP TABLE IF EXISTS user_identity_tokens CASCADE;
 CREATE TABLE user_identity_tokens (
     user_id           INTEGER      NOT NULL  PRIMARY KEY,
-    token_encrypted   TEXT         NOT NULL,
     token_hash        TEXT         NOT NULL  UNIQUE,
     expires_at        TIMESTAMPTZ  NOT NULL,
     datetime_created  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),

@@ -12,7 +12,6 @@ type UserIdentityTokens struct{}
 
 type UserIdentityTokenRow struct {
 	UserID          int
-	TokenEncrypted  string
 	TokenHash       string
 	ExpiresAt       time.Time
 	DatetimeCreated time.Time
@@ -24,7 +23,6 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 	if err := db.QueryRow(context.Background(), `
 		SELECT
 			user_id,
-			token_encrypted,
 			token_hash,
 			expires_at,
 			datetime_created,
@@ -33,7 +31,6 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 		WHERE user_id = $1
 	`, userID).Scan(
 		&row.UserID,
-		&row.TokenEncrypted,
 		&row.TokenHash,
 		&row.ExpiresAt,
 		&row.DatetimeCreated,
@@ -49,14 +46,12 @@ func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
 
 func (*UserIdentityTokens) Upsert(
 	userID int,
-	tokenEncrypted string,
 	tokenHash string,
 	expiresAt time.Time,
 ) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO user_identity_tokens (
 			user_id,
-			token_encrypted,
 			token_hash,
 			expires_at
 		)
@@ -64,11 +59,10 @@ func (*UserIdentityTokens) Upsert(
 		ON CONFLICT (user_id)
 		DO UPDATE
 		SET
-			token_encrypted = EXCLUDED.token_encrypted,
 			token_hash = EXCLUDED.token_hash,
 			expires_at = EXCLUDED.expires_at,
 			datetime_updated = NOW()
-	`, userID, tokenEncrypted, tokenHash, expiresAt)
+	`, userID, tokenHash, expiresAt)
 	return err
 }
 

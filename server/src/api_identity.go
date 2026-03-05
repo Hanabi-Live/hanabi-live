@@ -30,20 +30,9 @@ func apiIdentityTokenGet(c *gin.Context) {
 		return
 	}
 
-	exists, row, err := models.UserIdentityTokens.Get(userID)
+	row, token, err := identityTokenRegenerate(userID)
 	if err != nil {
-		logger.Error("Failed to retrieve identity token for user \"" + username + "\": " + err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
-		return
-	}
-	if !exists || identityTokenIsExpired(row.ExpiresAt) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No active identity token found."})
-		return
-	}
-
-	token, err := identityTokenDecrypt(row.TokenEncrypted)
-	if err != nil {
-		logger.Error("Failed to decrypt identity token for user \"" + username + "\": " + err.Error())
+		logger.Error("Failed to regenerate identity token for user \"" + username + "\": " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return
 	}

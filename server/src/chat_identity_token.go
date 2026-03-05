@@ -21,31 +21,10 @@ func chatToken(ctx context.Context, s *Session, d *CommandData, t *Table, cmd st
 		}
 	}
 
-	chatTokenGenerateOrGet(s, d.Room)
+	chatTokenGenerateOrRegenerate(s, d.Room)
 }
 
-func chatTokenGenerateOrGet(s *Session, room string) {
-	exists, row, err := models.UserIdentityTokens.Get(s.UserID)
-	if err != nil {
-		logger.Error("Failed to retrieve identity token for user \"" + s.Username + "\": " + err.Error())
-		s.Error(DefaultErrorMsg)
-		return
-	}
-
-	if exists && !identityTokenIsExpired(row.ExpiresAt) {
-		token, err := identityTokenDecrypt(row.TokenEncrypted)
-		if err != nil {
-			logger.Error("Failed to decrypt identity token for user \"" + s.Username + "\": " + err.Error())
-			s.Error(DefaultErrorMsg)
-			return
-		}
-
-		msg := "Identity token (valid until " + row.ExpiresAt.UTC().Format(time.RFC3339) + " UTC): " +
-			"<code>" + token + "</code>"
-		chatServerSendPM(s, msg, room)
-		return
-	}
-
+func chatTokenGenerateOrRegenerate(s *Session, room string) {
 	row, token, err := identityTokenRegenerate(s.UserID)
 	if err != nil {
 		logger.Error("Failed to regenerate identity token for user \"" + s.Username + "\": " + err.Error())
