@@ -15,6 +15,11 @@ import path from "node:path";
 import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
+import {
+  httpIdentityLookup,
+  httpIdentityTokenGet,
+  httpIdentityTokenPost,
+} from "./http/httpIdentity";
 import { httpLogin } from "./http/httpLogin";
 import { httpLogout } from "./http/httpLogout";
 import { httpMain } from "./http/httpMain";
@@ -245,6 +250,12 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   httpServer.get("/replay-json/:string", httpMain);
   httpServer.get("/shared-replay-json/:string", httpMain);
   httpServer.get("/create-table", httpMain);
+
+  // API V1 routes.
+  const api = "/api/v1";
+  httpServer.get(`${api}/identity/token`, httpIdentityTokenGet);
+  httpServer.post(`${api}/identity/token`, httpIdentityTokenPost);
+  httpServer.post(`${api}/identity`, httpIdentityLookup);
 
   /*
 

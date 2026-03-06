@@ -6,6 +6,7 @@ import { chatLog } from "./models/chatLog";
 import { chatLogPM } from "./models/chatLogPM";
 import { games } from "./models/games";
 import { userFriends } from "./models/userFriends";
+import { userIdentityTokens } from "./models/userIdentityTokens";
 import { userSettings } from "./models/userSettings";
 import { users } from "./models/users";
 
@@ -16,5 +17,6 @@ export const models = {
   games,
   users,
   userFriends,
+  userIdentityTokens,
   userSettings,
 };

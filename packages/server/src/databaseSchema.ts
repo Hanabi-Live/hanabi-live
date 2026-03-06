@@ -106,6 +106,31 @@ export const userReverseFriendsTable = pgTable("user_reverse_friends", {
     .references(() => usersTable.id),
 });
 
+export const userIdentityTokensTable = pgTable(
+  "user_identity_tokens",
+  {
+    userID: integer("user_id")
+      .notNull()
+      .primaryKey()
+      .references(() => usersTable.id),
+    tokenHash: text("token_hash").notNull(),
+    tokenLookupHash: text("token_lookup_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    datetimeCreated: timestamp("datetime_created", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    datetimeUpdated: timestamp("datetime_updated", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("user_identity_tokens_index_token_lookup_hash").on(
+      table.tokenLookupHash,
+    ),
+    index("user_identity_tokens_index_expires_at").on(table.expiresAt),
+  ],
+);
+
 export const gamesTable = pgTable("games", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
