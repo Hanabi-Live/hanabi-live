@@ -255,7 +255,7 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   const api = "/api/v1";
   httpServer.get(`${api}/identity/token`, httpIdentityTokenGet);
   httpServer.post(`${api}/identity/token`, httpIdentityTokenPost);
-  httpServer.get(`${api}/identity/:token`, httpIdentityLookup);
+  httpServer.post(`${api}/identity`, httpIdentityLookup);
 
   /*
 

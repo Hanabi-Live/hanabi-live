@@ -192,7 +192,7 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	// Identity token APIs
 	httpRouter.GET(api+"/identity/token", apiIdentityTokenGet)
 	httpRouter.POST(api+"/identity/token", apiIdentityTokenPost)
-	httpRouter.GET(api+"/identity/:token", apiIdentityLookup)
+	httpRouter.POST(api+"/identity", apiIdentityLookup)
 }
 
 // Checks if a string contains a numeric value

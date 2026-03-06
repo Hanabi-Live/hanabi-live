@@ -10,7 +10,7 @@ import {
 import { logger } from "../logger";
 import { models } from "../models";
 
-interface IdentityTokenParams {
+interface IdentityLookupBody {
   token: string;
 }
 
@@ -106,10 +106,10 @@ export async function httpIdentityTokenPost(
 }
 
 export async function httpIdentityLookup(
-  request: FastifyRequest<{ Params: IdentityTokenParams }>,
+  request: FastifyRequest<{ Body: IdentityLookupBody }>,
   reply: FastifyReply,
 ): Promise<FastifyReply> {
-  const { token } = request.params;
+  const { token } = request.body;
   if (token === "") {
     return await reply.code(StatusCodes.BAD_REQUEST).send({
       error: "Missing identity token.",

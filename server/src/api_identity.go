@@ -20,6 +20,10 @@ type APIIdentityLookupResponse struct {
 	Username string `json:"username"`
 }
 
+type APIIdentityLookupRequest struct {
+	Token string `json:"token"`
+}
+
 func apiIdentityTokenGet(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return
@@ -73,13 +77,13 @@ func apiIdentityLookup(c *gin.Context) {
 		return
 	}
 
-	token := c.Param("token")
-	if token == "" {
+	var req APIIdentityLookupRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.Token == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing identity token."})
 		return
 	}
 
-	tokenLookupHash, err := identityTokenLookupHash(token)
+	tokenLookupHash, err := identityTokenLookupHash(req.Token)
 	if err != nil {
 		logger.Error("Failed to compute identity token lookup hash: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
@@ -96,7 +100,7 @@ func apiIdentityLookup(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Identity token not found."})
 		return
 	}
-	match, err := identityTokenPasswordHashMatches(token, tokenHash)
+	match, err := identityTokenPasswordHashMatches(req.Token, tokenHash)
 	if err != nil {
 		logger.Error("Failed to compare identity token to hash: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
