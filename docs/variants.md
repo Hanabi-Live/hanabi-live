@@ -355,6 +355,10 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 - One 4 is removed from each suit.
 
+### Scarce Ones
+
+- One 1 is removed from each suit.
+
 ### Clue Starved
 
 - Each discard or 5 played only generates 0.5 clues. (The team still starts with 8 clues.)
@@ -487,6 +491,7 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 - Dual-Color
 - Mixes
 - Critical Fours
+- Scarce Ones
 - Clue Starved
 - Color Blind
 - Number Blind
