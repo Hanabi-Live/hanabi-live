@@ -27,6 +27,7 @@ import { CardLayout } from "./CardLayout";
 import { ClueLog } from "./ClueLog";
 import { ColorButton } from "./ColorButton";
 import { Deck } from "./Deck";
+import { Elements } from "./Elements";
 import { FullActionLog } from "./FullActionLog";
 import { HanabiCard } from "./HanabiCard";
 import { MultiFitText } from "./MultiFitText";
@@ -60,7 +61,6 @@ import * as replay from "./replay";
 import * as stats from "./stats";
 import * as timer from "./timer";
 import { toggleZen } from "./zen";
-import { Elements } from "./Elements";
 
 interface Values {
   x: number;
