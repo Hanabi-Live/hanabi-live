@@ -212,10 +212,10 @@ export function getStandardSoundType(ourTurn: boolean): SoundType {
 }
 
 /**
- * https://hanabi.github.io/level-3#part-1---play-order-inversion-in-the-starting-hand
- * https://hanabi.github.io/level-3#part-2---the-fresh-1s-rule
- * https://hanabi.github.io/level-3#part-3---the-chop-focus-exception
- * https://hanabi.github.io/level-4/#the-order-chop-move-ocm
+ * - https://hanabi.github.io/level-3#part-1---play-order-inversion-in-the-starting-hand
+ * - https://hanabi.github.io/level-3#part-2---the-fresh-1s-rule
+ * - https://hanabi.github.io/level-3#part-3---the-chop-focus-exception
+ * - https://hanabi.github.io/level-4/#the-order-chop-move-ocm
  */
 function isOrderChopMove(
   previousGameState: GameState,
@@ -252,6 +252,10 @@ function isOrderChopMove(
       numOnesLeftToPlay++;
     }
   }
+
+  // This function is fired after the one has already played, so "numOnesLeftToPlay" needs to be
+  // adjusted by 1.
+  numOnesLeftToPlay++;
 
   // We can't Order Chop Move if all of the 1s are played or there is only one 1 left to be played.
   if (numOnesLeftToPlay === 0 || numOnesLeftToPlay === 1) {

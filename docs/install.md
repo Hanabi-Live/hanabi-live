@@ -214,9 +214,7 @@ If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with nix-
 - Install Nix (if you do not already have it installed):
   - `curl -L https://nixos.org/nix/install | sh`
 - Enable Flakes by adding the following to your Nix configuration (e.g. `~/.config/nix/nix.conf`):
-  ```
-  experimental-features = nix-command flakes
-  ```
+  - `experimental-features = nix-command flakes`
 - Enter the development shell:
   - `nix develop`
 - (Optional, recommended) If you also use [direnv](https://direnv.net/), copy the example file and then allow it:
