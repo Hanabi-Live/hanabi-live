@@ -62,14 +62,7 @@ function getClueForSegment(
   // The segment we are currently looking at is `segment`. The clue that resulted in this state (if
   // any) would have `clue.segment === segment - 1`.
   const targetSegment = segment - 1;
-  for (let i = clues.length - 1; i >= 0; i--) {
-    const clue = clues[i];
-    if (clue !== undefined && clue.segment === targetSegment) {
-      return clue;
-    }
-  }
-
-  return undefined;
+  return clues.findLast((clue) => clue.segment === targetSegment);
 }
 
 function updateLog(clues: readonly StateClue[]) {

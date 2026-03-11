@@ -60,7 +60,6 @@ import * as replay from "./replay";
 import * as stats from "./stats";
 import * as timer from "./timer";
 import { toggleZen } from "./zen";
-
 import { Elements } from "./Elements";
 
 interface Values {

@@ -18,7 +18,7 @@ import { globals } from "./UIGlobals";
 export class HanabiUI {
   globals: UIGlobals;
   private readonly resizeHandler: () => void;
-  private resizeRAF: number | null = null;
+  private resizeRequestAnimationFrame: number | null = null;
   private resizeFrame = 0;
   private lastResizeEventFrame = 0;
   private liveResizeActive = false;
@@ -106,9 +106,9 @@ export class HanabiUI {
 
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
-    if (this.resizeRAF !== null) {
-      cancelAnimationFrame(this.resizeRAF);
-      this.resizeRAF = null;
+    if (this.resizeRequestAnimationFrame !== null) {
+      cancelAnimationFrame(this.resizeRequestAnimationFrame);
+      this.resizeRequestAnimationFrame = null;
     }
     keyboard.destroy();
     timer.stop();
@@ -116,8 +116,8 @@ export class HanabiUI {
   }
 
   private scheduleResizeFrame(): void {
-    this.resizeRAF = requestAnimationFrame(() => {
-      this.resizeRAF = null;
+    this.resizeRequestAnimationFrame = requestAnimationFrame(() => {
+      this.resizeRequestAnimationFrame = null;
       this.resizeFrame++;
 
       this.applyLiveResizeScale();
