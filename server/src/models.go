@@ -35,6 +35,7 @@ type Models struct {
 	UserLinkages
 	UserReverseFriends
 	UserSettings
+	UserIdentityTokens
 	UserStats
 	VariantStats
 }

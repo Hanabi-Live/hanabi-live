@@ -14,6 +14,7 @@ func chatCommandInit() {
 	// General commands (that work both in the lobby and at a table)
 	chatCommandMap["replay"] = chatReplay
 	chatCommandMap["random"] = chatRandom
+	chatCommandMap["token"] = chatToken
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
@@ -100,9 +101,16 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 	}
 
 	// Search for existing handler
-	if _, ok := chatCommandMap[command]; !ok {
+	chatCommandFunction, ok := chatCommandMap[command]
+	if !ok {
 		// There is no handler, inform via PM
 		sendInvalidCommand(s, command, d.Room)
+		return false
+	}
+
+	// Commands that only reply via PM should not be shown in chat.
+	if command == "token" {
+		chatCommandFunction(ctx, s, d, t, command)
 		return false
 	}
 

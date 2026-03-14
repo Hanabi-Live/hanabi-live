@@ -68,6 +68,18 @@ export const users = {
     return row as Omit<typeof row, "id"> & { id: UserID };
   },
 
+  getUsername: async (userID: number): Promise<string | undefined> => {
+    const rows = await db
+      .select({
+        username: usersTable.username,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userID))
+      .limit(1);
+
+    return rows[0]?.username;
+  },
+
   getSimilarUsername: async (
     normalizedUsername: string,
   ): Promise<string | undefined> => {

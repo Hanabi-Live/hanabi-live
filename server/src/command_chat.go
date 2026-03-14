@@ -104,6 +104,12 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 
 	d.Msg = chatFillAll(d.Msg) // Convert Discord mentions from number to username, role or channel
 
+	// Handle /token before writing to chat history.
+	if command, _ := chatParseCommand(d.Msg); command == "token" {
+		chatCommandShouldOutput(ctx, s, d, nil) // We pass nil because there is no associated table
+		return
+	}
+
 	// Add the message to the database
 	if d.Discord {
 		if err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
@@ -198,6 +204,12 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 				", so you cannot send chat to it.")
 			return
 		}
+	}
+
+	// Handle /token before writing to table chat history.
+	if command, _ := chatParseCommand(d.Msg); command == "token" {
+		chatCommandShouldOutput(ctx, s, d, t)
+		return
 	}
 
 	// Store the chat in memory
