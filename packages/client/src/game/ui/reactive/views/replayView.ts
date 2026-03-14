@@ -8,6 +8,7 @@ import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
 import { toggleZen } from "../../zen";
+import * as cluesView from "./cluesView";
 
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
@@ -24,6 +25,7 @@ export function onActiveChanged(active: boolean): void {
     globals.elements.premoveCancelButton?.show();
   }
 
+  cluesView.refreshArrows(active);
   ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
@@ -65,9 +67,17 @@ export function onSegmentChanged(
     return;
   }
 
+  const liveSegmentAdvanced =
+    data.replaySegment === previousData.replaySegment
+    && data.ongoingGameSegment !== previousData.ongoingGameSegment;
+
   // There are two replay shuttles, so we have to adjust them whenever the "segment" or the
-  // "sharedSegment" changes.
-  replay.adjustShuttles(false);
+  // "sharedSegment" changes. If only the live segment advanced while we are reviewing a replay,
+  // snap instead of tweening to avoid re-animating the replay UI.
+  replay.adjustShuttles(liveSegmentAdvanced);
+  if (!liveSegmentAdvanced) {
+    cluesView.refreshArrows(true);
+  }
 
   globals.layers.UI.batchDraw();
 }
@@ -268,7 +278,7 @@ export function onSharedLeaderChanged(
   // Make the crown play an animation to indicate there is a new replay leader. (But do not play the
   // animation if the game just ended or we are first loading the page.)
   if (previousLeader !== undefined) {
-    globals.elements.sharedReplayLeaderLabelPulse!.play();
+    globals.elements.sharedReplayLeaderLabelPulse?.play();
   }
 }
 

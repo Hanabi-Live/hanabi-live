@@ -27,6 +27,7 @@ import { CardLayout } from "./CardLayout";
 import { ClueLog } from "./ClueLog";
 import { ColorButton } from "./ColorButton";
 import { Deck } from "./Deck";
+import { Elements } from "./Elements";
 import { FullActionLog } from "./FullActionLog";
 import { HanabiCard } from "./HanabiCard";
 import { MultiFitText } from "./MultiFitText";
@@ -92,6 +93,24 @@ export function drawUI(): void {
   winW = globals.stage.width();
   winH = globals.stage.height();
 
+  const layersBeforeDestroy = globals.stage
+    .getLayers()
+    .toArray() as Konva.Layer[];
+
+  // Just in case, destroy all existing layers on the stage.
+  for (const layer of layersBeforeDestroy) {
+    layer.destroy();
+  }
+
+  // Clear children from the cached layers.
+  for (const layer of Object.values(globals.layers) as Konva.Layer[]) {
+    layer.destroyChildren();
+  }
+
+  // Reset UI elements.
+  globals.elements = new Elements();
+  globals.elements.arrows = [];
+
   // Create the various Konva layers upon which all graphic elements reside.
   drawBackground();
 
@@ -131,12 +150,15 @@ export function drawUI(): void {
   drawRestartArea();
   drawExtraAnimations();
 
-  // Just in case, delete all existing layers.
-  globals.stage.getLayers().each((layer) => {
-    layer.remove();
-  });
+  const layersInOrder = [
+    globals.layers.UI,
+    globals.layers.timer,
+    globals.layers.card,
+    globals.layers.UI2,
+    globals.layers.arrow,
+  ];
 
-  for (const layer of Object.values(globals.layers)) {
+  for (const layer of layersInOrder) {
     globals.stage.add(layer);
   }
 }
@@ -923,22 +945,24 @@ function drawScoreArea() {
   );
 
   // Add an animation to signify that discarding at 8 clues is illegal.
-  globals.elements.cluesNumberLabelPulse = new Konva.Tween({
-    node: cluesNumberLabel,
-    fontSize: 0.04 * winH,
-    fill: "#df1c2d",
-    offsetX: 0.001 * winH,
-    offsetY: 0.01 * winH,
-    duration: CARD_ANIMATION_LENGTH_SECONDS,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    easing: Konva.Easings.EaseInOut,
-    onFinish: () => {
-      if (globals.elements.cluesNumberLabelPulse !== null) {
-        globals.elements.cluesNumberLabelPulse.reverse();
-      }
-    },
-  });
-  globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
+  if (!globals.isResizing) {
+    globals.elements.cluesNumberLabelPulse = new Konva.Tween({
+      node: cluesNumberLabel,
+      fontSize: 0.04 * winH,
+      fill: "#df1c2d",
+      offsetX: 0.001 * winH,
+      offsetY: 0.01 * winH,
+      duration: CARD_ANIMATION_LENGTH_SECONDS,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      easing: Konva.Easings.EaseInOut,
+      onFinish: () => {
+        if (globals.elements.cluesNumberLabelPulse !== null) {
+          globals.elements.cluesNumberLabelPulse.reverse();
+        }
+      },
+    });
+    globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
+  }
 
   // Draw the 3 strike (bomb) black squares / X's.
   function strikeClick(
@@ -1219,24 +1243,26 @@ function drawSharedReplay() {
   globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
   // Add an animation to alert everyone when shared replay leadership has been transferred.
-  globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
-    node: sharedReplayLeaderLabel,
-    width: size * 2,
-    height: size * 2,
-    offsetX: 0.025 * winH,
-    offsetY: 0.025 * winH,
-    duration: CARD_ANIMATION_LENGTH_SECONDS,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    easing: Konva.Easings.EaseInOut,
-    onFinish: () => {
-      if (globals.elements.sharedReplayLeaderLabelPulse !== null) {
-        globals.elements.sharedReplayLeaderLabelPulse.reverse();
-      }
-    },
-  });
-  globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(
-    globals.layers.UI,
-  );
+  if (!globals.isResizing) {
+    globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
+      node: sharedReplayLeaderLabel,
+      width: size * 2,
+      height: size * 2,
+      offsetX: 0.025 * winH,
+      offsetY: 0.025 * winH,
+      duration: CARD_ANIMATION_LENGTH_SECONDS,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      easing: Konva.Easings.EaseInOut,
+      onFinish: () => {
+        if (globals.elements.sharedReplayLeaderLabelPulse !== null) {
+          globals.elements.sharedReplayLeaderLabelPulse.reverse();
+        }
+      },
+    });
+    globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(
+      globals.layers.UI,
+    );
+  }
 
   // Tooltip for the crown.
   sharedReplayLeaderLabel.tooltipName = "leader";

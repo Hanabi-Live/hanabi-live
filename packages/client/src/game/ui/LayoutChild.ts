@@ -134,7 +134,7 @@ export class LayoutChild extends Konva.Group {
       && isAtMaxClueTokens(ongoingGameState.clueTokens, globals.variant)
     ) {
       sounds.play(SoundType.Error);
-      globals.elements.cluesNumberLabelPulse!.play();
+      globals.elements.cluesNumberLabelPulse?.play();
       draggedTo = null;
     }
     if (

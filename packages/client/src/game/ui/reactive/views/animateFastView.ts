@@ -23,8 +23,10 @@ export function onObserversStarted(
   }
 
   globals.animateFast =
+    // If the window is being resized, we should always animate fast (e.g. skip animations).
+    globals.isResizing
     // Converting a game to a shared replay should always be fast.
-    (!state.playing && previousState.playing)
+    || (!state.playing && previousState.playing)
     || (state.replay.shared !== null && previousState.replay.shared === null)
     // Jumping ahead or behind in a replay by 2 or more segments should always be fast.
     || segmentDifference >= 2
@@ -48,5 +50,7 @@ export function onObserversFinished(
   }
 
   // All of the observers are finished firing, so reset "animateFast" back to false.
-  globals.animateFast = false;
+  if (!globals.isResizing) {
+    globals.animateFast = false;
+  }
 }

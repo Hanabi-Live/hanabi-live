@@ -33,33 +33,46 @@ export class PlayStack extends Konva.Group {
         ? 0
         : 1;
 
-    // Animate the card leaving the hand to the play stacks (or vice versa). (Tweening from the hand
-    // to the discard pile is handled in the "CardLayout" object.)
-    layoutChild.card.startedTweening();
-    layoutChild.card.setRaiseAndShadowOffset();
-    animate(
-      layoutChild,
-      {
-        duration: 0.8,
-        x: 0,
-        y: 0,
-        scale,
-        rotation: 0,
-        opacity,
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        easing: Konva.Easings.EaseOut,
-        onFinish: () => {
-          if (layoutChild.tween !== null) {
-            layoutChild.tween.destroy();
-            layoutChild.tween = null;
-          }
-          layoutChild.card.finishedTweening();
-          layoutChild.checkSetDraggable();
-          this.hideCardsUnderneathTheTopCard();
+    if (globals.animateFast) {
+      // During fast updates (e.g. resize/replay jumps), snap directly to the final state.
+      layoutChild.x(0);
+      layoutChild.y(0);
+      layoutChild.scaleX(scale);
+      layoutChild.scaleY(scale);
+      layoutChild.rotation(0);
+      layoutChild.opacity(opacity);
+      layoutChild.checkSetDraggable();
+      layoutChild.card.setRaiseAndShadowOffset();
+      this.hideCardsUnderneathTheTopCard();
+    } else {
+      // Animate the card leaving the hand to the play stacks (or vice versa). (Tweening from the
+      // hand to the discard pile is handled in the "CardLayout" object.)
+      layoutChild.card.startedTweening();
+      layoutChild.card.setRaiseAndShadowOffset();
+      animate(
+        layoutChild,
+        {
+          duration: 0.8,
+          x: 0,
+          y: 0,
+          scale,
+          rotation: 0,
+          opacity,
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          easing: Konva.Easings.EaseOut,
+          onFinish: () => {
+            if (layoutChild.tween !== null) {
+              layoutChild.tween.destroy();
+              layoutChild.tween = null;
+            }
+            layoutChild.card.finishedTweening();
+            layoutChild.checkSetDraggable();
+            this.hideCardsUnderneathTheTopCard();
+          },
         },
-      },
-      true,
-    );
+        true,
+      );
+    }
   }
 
   hideCardsUnderneathTheTopCard(): void {

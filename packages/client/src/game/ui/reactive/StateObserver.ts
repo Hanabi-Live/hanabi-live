@@ -209,7 +209,10 @@ const visibleStateObservers: Subscriptions = [
 
   // Clue arrows
   subVS(
-    (s) => ({ lastClue: s.clues.at(-1), segment: s.turn.segment }),
+    (s) => ({
+      clues: s.clues,
+      segment: s.turn.segment,
+    }),
     cluesView.onLastClueOrSegmentChanged,
   ),
 

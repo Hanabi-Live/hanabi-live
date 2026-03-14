@@ -1,7 +1,7 @@
 import { globals } from "../../UIGlobals";
 
 export function onInitializationChanged(initialized: boolean): void {
-  if (!initialized) {
+  if (!initialized || globals.isResizing) {
     return;
   }
 
