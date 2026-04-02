@@ -172,7 +172,7 @@ export function noteHasMeaning(variant: Variant, note: CardNote): boolean {
 }
 
 export function parseNote(variant: Variant, text: string): CardNote {
-  // use the full note as keywords, since the parsing logic is handled in getNoteKeywords.
+  // Use the full note as keywords, since the parsing logic is handled in getNoteKeywords.
   const keywords = getNoteKeywords(text.toLowerCase().trim());
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
     variant,
