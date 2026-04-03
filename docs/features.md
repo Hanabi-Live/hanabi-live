@@ -348,7 +348,7 @@ There are also some keyboard shortcuts for making notes:
 - Ctrl + alt + right-click --> Insert turn count
 - Ctrl + shift + right-click --> Repeat the previously entered note
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
-- Shift + alt + right-click --> [ptd] 
+- Shift + alt + right-click --> [ptd]
 - Ctrl + shift + alt + right-click --> [kt]
 
 <br />
