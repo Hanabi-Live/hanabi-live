@@ -52,6 +52,14 @@ export function clickRightCheckAddNote(
     return;
   }
 
+  // Shift + alt + right-lick is a "ptd" note. (This is a common abbreviation for "this card has
+  // permission to discard").
+  if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
+    lastNote = "ptd";
+    card.appendNote(lastNote);
+    return;
+  }
+
   // A normal right-click is edit a note. (But in speedruns, this is ctrl + right-click.)
   if (
     event.ctrlKey === isSpeedrun
