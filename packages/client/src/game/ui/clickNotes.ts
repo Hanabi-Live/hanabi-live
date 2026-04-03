@@ -52,7 +52,7 @@ export function clickRightCheckAddNote(
     return;
   }
 
-  // Shift + alt + right-lick is a "ptd" note. (This is a common abbreviation for "this card has
+  // Shift + alt + right-click is a "ptd" note. (This is a common abbreviation for "this card has
   // permission to discard").
   if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
     lastNote = "ptd";
