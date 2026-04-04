@@ -65,7 +65,7 @@ Use three pieces:
 1. `alpha preview UI` (GitHub Pages, per PR)
 1. `prod server` (single source of truth for games)
 
-Key idea: do not rely on cross-site cookies for preview auth. Reuse the existing identity-token infrastructure as proof of account ownership, then mint a short-lived preview session ticket.
+Key idea: do not rely on cross-site cookies for preview auth. Use short-lived signed alpha tokens instead.
 
 <br />
 
@@ -90,14 +90,14 @@ Therefore, cookie auth should stay as-is for production UI, and alpha previews s
 
 ### Session Handoff
 
-1. Production UI gets a fresh identity token using existing authenticated API:
-   - `GET /api/v1/identity/token` (or `POST /api/v1/identity/token`).
+1. Production UI calls new same-origin endpoint: `POST /alpha/handoff`.
+1. Server verifies existing session cookie and returns a short-lived signed handoff token.
 1. Production UI redirects to preview URL with token in URL fragment (not query), for example:
-   - `https://hanabi-live.github.io/alpha/pr-3066/index.html#identity_token=...`
-1. Preview client reads fragment and calls a new endpoint:
-   - `POST /api/v1/alpha/session` with identity token and preview build metadata.
-1. Server verifies identity token using existing PR #3072 logic and returns a short-lived alpha WebSocket ticket.
-1. Preview connects WebSocket to production using that alpha ticket (query param or websocket subprotocol).
+   - `https://hanabi-live.github.io/alpha/pr-3066/index.html#handoff=...`
+1. Preview client reads fragment and calls production endpoint:
+   - `POST /alpha/exchange` with handoff token.
+1. Server returns short-lived alpha access token (and optional refresh token).
+1. Preview connects WebSocket to production using token-based auth (query param or websocket subprotocol).
 
 ### Back to Production
 
@@ -109,31 +109,22 @@ Therefore, cookie auth should stay as-is for production UI, and alpha previews s
 
 ## Server Changes
 
-### 1) Reuse existing identity-token endpoints
+### 1) Add alpha token endpoints
 
-- `GET /api/v1/identity/token` (authenticated, regenerates/returns token)
-- `POST /api/v1/identity/token` (authenticated, regenerates/returns token)
-- `GET /api/v1/identity/:token` (public token verification)
+- `POST /alpha/handoff` (cookie-authenticated, same-origin)
+- `POST /alpha/exchange` (validates handoff token, mints alpha access token)
+- Optional: `POST /alpha/refresh` and `POST /alpha/revoke`
 
-No separate alpha token table, hashing scheme, or lifecycle should be introduced.
-
-### 2) Add one alpha session exchange endpoint
-
-- `POST /api/v1/alpha/session`
-  - input: identity token (+ optional preview build ID)
-  - output: short-lived alpha WebSocket ticket
-  - implementation: validate identity token via existing model code
-
-### 3) Add token-based WebSocket auth
+### 2) Add token-based WebSocket auth
 
 Extend `/ws` auth path to accept either:
 
 - existing cookie session (current behavior), or
-- alpha WebSocket ticket (new behavior)
+- alpha access token (new behavior)
 
-### 4) Add strict CORS allowlist for alpha session endpoint
+### 3) Add strict CORS allowlist for alpha endpoints
 
-Only for `POST /api/v1/alpha/session` (not globally):
+Only for the alpha endpoints (not globally):
 
 - allow specific GitHub Pages origins for this repo
 
@@ -144,13 +135,13 @@ Only for `POST /api/v1/alpha/session` (not globally):
 ### Production Client
 
 - Add `Open Alpha UI` entry point.
-- Request identity token via existing API and redirect to preview.
+- Request handoff token and redirect to preview.
 
 ### Preview Client
 
 - Add support for:
   - `SERVER_ORIGIN` override
-  - alpha session exchange and temporary ticket storage
+  - token exchange and token storage
   - token-authenticated WebSocket bootstrap
 - Skip/replace strict `#domain` hostname check in preview mode.
   - Current check lives in `packages/client/src/websocketInit.ts`.
@@ -223,7 +214,7 @@ Example shape:
 1. Client fetches `previews.json`.
 1. Client renders an in-app picker sorted by `updatedAt` (newest first), with PR number + title.
 1. User picks a PR preview.
-1. Client runs the identity-token flow and redirects to the selected preview URL with identity token in URL fragment.
+1. Client runs the handoff flow and redirects to the selected preview URL with handoff token in URL fragment.
 
 ### Why Use a Static Metadata File
 
@@ -274,15 +265,12 @@ This keeps preview deployments aligned with real production server compatibility
 
 ### Token Properties
 
-Identity token (already implemented in main):
-
-- TTL: 24 hours.
-- Format: 96 random bytes encoded as 128-character base64url string.
-- Storage: irretrievable server-side (Argon2 password hash + keyed SHA-256 lookup hash).
-- Cardinality: one active token per user (upsert by user ID).
-
-Alpha WebSocket ticket (new):
-
-- TTL: very short (for example 5 minutes), ideally single-use.
-- Scope: only for preview WebSocket bootstrap.
-- Issuance: only from `POST /api/v1/alpha/session` after successful identity-token verification.
+- Signed, short TTL:
+  - handoff token: 15 minutes
+  - access token: 8 hours
+- Include:
+  - user ID
+  - issued-at / expiry
+  - audience (`alpha-preview`)
+  - optional PR/build metadata
+  - nonce/jti for replay protection
