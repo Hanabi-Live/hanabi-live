@@ -1279,10 +1279,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return brackets.join(" ");
   }
 
-  /**
-   * Returns true if the note string sets any of the border-overriding fields:
-   * chopMoved, finessed, or discardPermission.
-   */
   isBorderAffecting(noteString: string): boolean {
     const parsed = parseNote(this.variant, noteString);
     return parsed.chopMoved || parsed.finessed || parsed.discardPermission;
@@ -1290,9 +1286,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   updateNote(
     noteAdded: string,
-    updateFunc: (a: string, b: string) => string,
-    keepLast = false,
-    protect = true,
+    updateFunc: (a: string, b: string) => string, // how to combine last pipe section and noteAdded
+    keepLast = false, // true to repeat (and add to) the last pipe section
+    protect = true, // true to add [] to meaningful updates
     stripProse = false, // true to strip prose and conflicting border tokens
   ): void {
     const existingNote =
