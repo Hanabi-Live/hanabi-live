@@ -1270,11 +1270,30 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     return noteString;
   }
 
+  /**
+   * Strips all content from a note string that is not inside square brackets.
+   * e.g. "[cm] some prose [r4] more prose" → "[cm] [r4]"
+   */
+  static stripProse(noteString: string): string {
+    const brackets = noteString.match(/\[[^\]]*]/g) ?? [];
+    return brackets.join(" ");
+  }
+
+  /**
+   * Returns true if the note string sets any of the border-overriding fields:
+   * chopMoved, finessed, or discardPermission.
+   */
+  isBorderAffecting(noteString: string): boolean {
+    const parsed = parseNote(this.variant, noteString);
+    return parsed.chopMoved || parsed.finessed || parsed.discardPermission;
+  }
+
   updateNote(
     noteAdded: string,
-    updateFunc: (a: string, b: string) => string, // how to combine last pipe section and noteAdded
-    keepLast = false, // true to repeat (and add to) the last pipe section
-    protect = true, // true to add [] to meaningful updates
+    updateFunc: (a: string, b: string) => string,
+    keepLast = false,
+    protect = true,
+    stripProse = false, // true to strip prose and conflicting border tokens
   ): void {
     const existingNote =
       globals.state.notes.ourNotes[this.state.order]?.text ?? "";
@@ -1284,7 +1303,18 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const currentNoteString = noteText.slice(lastPipe + 1).trim();
     const noteString = this.protectedNote(currentNoteString);
     const currentNote = parseNote(this.variant, noteString);
-    const newNoteString = updateFunc(noteString, note);
+    let newNoteString = updateFunc(noteString, note);
+
+    if (stripProse) {
+      newNoteString = HanabiCard.stripProse(newNoteString);
+      if (this.isBorderAffecting(note)) {
+        newNoteString = newNoteString
+          .split(/(?<=])\s+(?=\[)/)
+          .filter((token) => token === note || !this.isBorderAffecting(token))
+          .join(" ");
+      }
+    }
+
     const newNoteText = keepLast
       ? noteText
       : noteText.slice(0, Math.max(lastPipe, 0)).trim();
@@ -1312,13 +1342,21 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   appendNoteOnly(noteAdded: string): void {
-    this.updateNote(noteAdded, (a: string, b: string): string => `${a} ${b}`);
+    this.updateNote(
+      noteAdded,
+      (a: string, b: string): string => `${a} ${b}`,
+      false,
+      true,
+      true,
+    );
   }
 
   appendNote(noteAdded: string): void {
     this.updateNote(
       noteAdded,
       (a: string, b: string): string => `${a} ${b}`,
+      true,
+      true,
       true,
     );
   }
