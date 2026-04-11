@@ -3,12 +3,12 @@
   "private": true,
   "dependencies": {
     "@hanabi-live/game": "file:../game",
-    "complete-common": "2.16.0",
-    "complete-node": "16.2.0",
-    "lodash": "4.17.23",
-    "prettier": "3.8.1"
+    "complete-common": "2.22.1",
+    "complete-node": "16.4.0",
+    "lodash": "4.18.1",
+    "prettier": "3.8.2"
   },
   "devDependencies": {
-    "@types/lodash": "4.17.23"
+    "@types/lodash": "4.17.24"
   }
 }

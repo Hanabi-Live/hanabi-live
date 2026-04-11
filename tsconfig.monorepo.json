@@ -5,7 +5,6 @@
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
     "rootDir": ".",
-    "baseUrl": ".",
 
     // Performance optimization; see: https://www.npmjs.com/package/tslib
     "importHelpers": true,
