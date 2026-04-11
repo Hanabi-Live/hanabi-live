@@ -1,5 +1,5 @@
-import { getDefaultVariant, getVariant } from "../../gameData";
 import { describe, expect, test } from "@jest/globals";
+import { getDefaultVariant, getVariant } from "../../gameData";
 import { hasReversedSuits } from "./variantIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();

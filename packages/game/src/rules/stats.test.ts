@@ -1,5 +1,5 @@
-import { PaceRisk } from "../enums/PaceRisk";
 import { describe, expect, test } from "@jest/globals";
+import { PaceRisk } from "../enums/PaceRisk";
 import { getDefaultVariant, getVariant } from "../gameData";
 import {
   getCluesStillUsable,

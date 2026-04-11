@@ -1,5 +1,5 @@
-import { eRange } from "complete-common";
 import { describe, expect, test } from "@jest/globals";
+import { eRange } from "complete-common";
 import type { TurnState } from "../interfaces/TurnState";
 import { getDefaultMetadata } from "../metadata";
 import { draw, play } from "../testActions";
