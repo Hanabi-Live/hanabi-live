@@ -9,7 +9,10 @@ import { getHTMLElement } from "../utils";
 const gameChatText = getHTMLElement("#game-chat-text");
 
 export function init(): void {
-  // Make the chat modal draggable (using the InteractJS library).
+  // Make the chat modal draggable (using the InteractJS library). The bundled "interactjs" package
+  // references "@interactjs/interactjs" which is not installed as a separate package, so
+  // typescript-eslint cannot resolve the interact() type or its event types.
+  /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-plus-operands */
   interact(".draggable")
     .draggable({
       allowFrom: "#game-chat-modal-header",
@@ -24,8 +27,8 @@ export function init(): void {
       // Define the drag behavior.
       onmove: (event: Interact.InteractEvent) => {
         // The old position is stored in the "data-x" and "data-y" attributes.
-        const oldXString = event.target.dataset["x"] ?? "";
-        const oldYString = event.target.dataset["y"] ?? "";
+        const oldXString = event.target.dataset.x ?? "";
+        const oldYString = event.target.dataset.y ?? "";
         const oldX = parseFloatSafe(oldXString) ?? 0;
         const oldY = parseFloatSafe(oldYString) ?? 0;
 
@@ -71,8 +74,8 @@ export function init(): void {
       }
 
       // The old position is stored in the "data-x" and "data-y" attributes.
-      const oldXString = event.target.dataset["x"] ?? "";
-      const oldYString = event.target.dataset["y"] ?? "";
+      const oldXString = event.target.dataset.x ?? "";
+      const oldYString = event.target.dataset.y ?? "";
       const oldX = parseFloatSafe(oldXString) ?? 0;
       const oldY = parseFloatSafe(oldYString) ?? 0;
 
@@ -94,9 +97,10 @@ export function init(): void {
       // persist between refreshes.
       localStorage.setItem("chatWindowWidth", event.target.style.width);
       localStorage.setItem("chatWindowHeight", event.target.style.height);
-      localStorage.setItem("chatWindowX", event.target.dataset["x"] ?? "0");
-      localStorage.setItem("chatWindowY", event.target.dataset["y"] ?? "0");
+      localStorage.setItem("chatWindowX", event.target.dataset.x ?? "0");
+      localStorage.setItem("chatWindowY", event.target.dataset.y ?? "0");
     });
+  /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-plus-operands */
 
   $("#game-chat-modal-header-close").click(() => {
     hide();
