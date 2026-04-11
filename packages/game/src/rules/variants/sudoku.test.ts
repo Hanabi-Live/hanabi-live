@@ -1,4 +1,5 @@
 import { getVariant } from "../../gameData";
+import { describe, expect, test } from "@jest/globals";
 import type { Rank } from "../../types/Rank";
 import { sudokuWalkUpAll } from "./sudoku";
 

@@ -18,6 +18,7 @@
     "tooltipster": "4.2.8"
   },
   "devDependencies": {
+    "@jest/globals": "30.3.0",
     "@types/jquery": "4.0.0",
     "@types/linkifyjs": "2.1.7",
     "@types/lodash": "4.17.24",

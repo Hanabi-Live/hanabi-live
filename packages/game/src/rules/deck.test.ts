@@ -1,4 +1,5 @@
 import { getDefaultVariant, getVariant } from "../gameData";
+import { describe, expect, test } from "@jest/globals";
 import { getTotalCardsInDeck } from "./deck";
 
 const DEFAULT_VARIANT = getDefaultVariant();

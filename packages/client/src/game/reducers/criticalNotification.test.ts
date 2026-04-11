@@ -1,5 +1,6 @@
 // Integration tests, involving loading a full game and checking state at different points.
 
+import { beforeAll, describe, expect, test } from "@jest/globals";
 import type { GameState } from "@hanabi-live/game";
 import {
   getVariant,

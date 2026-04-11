@@ -1,4 +1,5 @@
 import { assertDefined } from "complete-common";
+import { describe, expect, test } from "@jest/globals";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import { getDefaultMetadata } from "../metadata";

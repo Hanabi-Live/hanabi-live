@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/no-null */
 
+import { describe, expect, test } from "@jest/globals";
 import type { Tuple } from "complete-common";
 import { eRange, newArray } from "complete-common";
 import { START_CARD_RANK } from "../constants";
