@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/no-null */
 
+import { describe, expect, test } from "@jest/globals";
 import type { Tuple } from "complete-common";
 import { eRange, newArray } from "complete-common";
 import { START_CARD_RANK } from "../constants";
@@ -193,7 +194,7 @@ describe("nextRanks", () => {
     "returns the next rank for a play stack going up",
     (n) => {
       if (n === 0) {
-        return;
+        return undefined;
       }
       const redCard = {
         ...getInitialCardState(0 as CardOrder, DEFAULT_VARIANT, NUM_PLAYERS),
@@ -228,7 +229,7 @@ describe("nextRanks", () => {
     "returns the next rank for a play stack going down",
     (n) => {
       if (n === 0 || n === 1) {
-        return;
+        return undefined;
       }
       const redCard = {
         ...getInitialCardState(0 as CardOrder, DEFAULT_VARIANT, NUM_PLAYERS),

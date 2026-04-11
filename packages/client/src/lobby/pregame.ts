@@ -526,9 +526,11 @@ export function drawSpectators(tableID: number): void {
             event.stopPropagation();
             reattend(-1);
           })
+          // eslint-disable-next-line complete/require-ascii
           .append(" 🕵️");
       }
       item.html(
+        // eslint-disable-next-line complete/require-ascii
         `${item.html()} (🕵️ <em>${spectator.shadowingPlayerUsername}</em>)`,
       );
     }

@@ -1,3 +1,5 @@
+/* eslint-disable complete/require-ascii */
+
 import unidecode from "unidecode";
 
 /**

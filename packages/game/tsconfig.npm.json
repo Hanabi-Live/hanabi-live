@@ -12,9 +12,6 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-
-    // Needed so that the TypeScript output matches the declaration in the "package.json" file.
-    "module": "CommonJS",
   },
 
   "exclude": ["**/*.test.ts"],

@@ -1,3 +1,4 @@
+import { describe, expect, test } from "@jest/globals";
 import { assertDefined, eRange, iRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { getDefaultMetadata } from "../metadata";

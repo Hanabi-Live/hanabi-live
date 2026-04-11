@@ -1,5 +1,6 @@
 import type { GameMetadata } from "@hanabi-live/game";
 import { rankClue } from "@hanabi-live/game";
+import { beforeAll, describe, expect, jest, test } from "@jest/globals";
 import { assertDefined, assertNotNull } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import {

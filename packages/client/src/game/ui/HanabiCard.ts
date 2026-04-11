@@ -1272,7 +1272,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   /**
    * Strips all content from a note string that is not inside square brackets.
-   * e.g. "[cm] some prose [r4] more prose" → "[cm] [r4]"
+   * e.g. "[cm] some prose [r4] more prose" --> "[cm] [r4]"
    */
   static stripProse(noteString: string): string {
     const brackets = noteString.match(/\[[^\]]*]/g) ?? [];

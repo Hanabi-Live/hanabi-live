@@ -99,7 +99,7 @@ export class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: "Verdana",
       fill: "white",
-      text: "✘",
+      text: "✘", // eslint-disable-line complete/require-ascii
       visible: false,
       listening: false,
     });

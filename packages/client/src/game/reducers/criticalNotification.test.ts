@@ -6,6 +6,7 @@ import {
   reversibleIsCardCritical,
   START_CARD_RANK,
 } from "@hanabi-live/game";
+import { beforeAll, describe, expect, test } from "@jest/globals";
 import { assertDefined } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import upOrDownGame from "../../../test_data/up_or_down_critical.json";

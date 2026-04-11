@@ -20,7 +20,7 @@ const config = {
 
   // From: https://kulshekhar.github.io/ts-jest/docs/getting-started/paths-mapping/
   roots: ["<rootDir>"],
-  modulePaths: [tsconfig.compilerOptions.baseUrl],
+  modulePaths: [tsconfig.compilerOptions.rootDir],
   moduleNameMapper: pathsToModuleNameMapper(tsconfig.compilerOptions.paths, {
     prefix: "<rootDir>/../../",
   }),

@@ -49,6 +49,7 @@ export function onSpectatorsChanged(data: {
         );
 
         if (playerName !== spectator.name) {
+          // eslint-disable-next-line complete/require-ascii
           nameEntry += ` (🕵️ <em>${playerName}</em>)`;
         }
       }

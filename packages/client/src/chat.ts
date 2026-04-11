@@ -3,7 +3,12 @@
 
 import type { ServerCommandChatData } from "@hanabi-live/data";
 import { PROJECT_NAME } from "@hanabi-live/data";
-import { SECOND_IN_MILLISECONDS, eRange, trimPrefix } from "complete-common";
+import {
+  SECOND_IN_MILLISECONDS,
+  eRange,
+  isArray,
+  trimPrefix,
+} from "complete-common";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { globals } from "./Globals";
@@ -106,7 +111,7 @@ export function init(): void {
       return;
     }
 
-    if (Array.isArray(potentialArray)) {
+    if (isArray(potentialArray)) {
       typedChatHistory = potentialArray as string[];
     }
   }
@@ -163,11 +168,13 @@ function input(this: HTMLElement, event: JQuery.Event) {
 
   // /shrug
   if (text === "/shrug") {
+    // eslint-disable-next-line complete/require-ascii
     element.val(String.raw`¯\_(ツ)_/¯`);
     return;
   }
 
   // Check for emoji substitution.
+  // eslint-disable-next-line complete/require-ascii
   // e.g. :100: --> 💯
   const newText = substituteEmoji(text);
   if (newText !== null) {

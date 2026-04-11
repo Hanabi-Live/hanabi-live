@@ -241,7 +241,7 @@ const ongoingGameObservers: Subscriptions = [
 
   // Alternating Clues UI
   subAfterInit(
-    (s) => s.visibleState!.clues[s.visibleState!.clues.length - 1]?.type,
+    (s) => s.visibleState!.clues.at(-1)?.type,
     turnView.onLastClueTypeChanged,
   ),
 

@@ -1,3 +1,4 @@
+import { describe, expect, jest, test } from "@jest/globals";
 import { getVariantFromArgs, getVariantNameFromPartial } from "./chatCommands";
 
 jest.mock("./chat", () => ({}));

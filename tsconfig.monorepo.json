@@ -5,7 +5,6 @@
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
     "rootDir": ".",
-    "baseUrl": ".",
 
     // Performance optimization; see: https://www.npmjs.com/package/tslib
     "importHelpers": true,
@@ -18,8 +17,10 @@
     // false.
     "resolveJsonModule": true,
 
-    // Specifying "Node" is necessary in order for JSON files to be imported without erroring.
-    "moduleResolution": "Node",
+    // "node16" supports JSON imports in CommonJS mode (which all packages in this monorepo use)
+    // without requiring import assertion syntax changes.
+    "module": "node16",
+    "moduleResolution": "node16",
 
     "paths": {
       "@hanabi-live/data": ["./packages/data/src/index.ts"],

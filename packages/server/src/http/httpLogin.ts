@@ -55,14 +55,14 @@ const ILLEGAL_SPECIAL_CHARACTERS = [
 ] as const;
 
 const RESERVED_USERNAMES = new ReadonlySet([
-  normalizeUsername(PROJECT_NAME),
   "hanab",
   "hanabi",
-  "live",
-  "hlive",
-  "hanablive",
   "hanabilive",
+  "hanablive",
+  "hlive",
+  "live",
   "nabilive",
+  normalizeUsername(PROJECT_NAME),
 ]);
 
 /**
