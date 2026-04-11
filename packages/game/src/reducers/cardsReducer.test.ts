@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { describe, expect, it, jest, test } from "@jest/globals";
+import { describe, expect, jest, test } from "@jest/globals";
 import type { Tuple } from "complete-common";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";

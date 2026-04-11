@@ -86,8 +86,10 @@ export class HanabiUI {
 
     let text = "";
     if (globals.lobby.zenModeEnabled) {
+      // eslint-disable-next-line complete/require-ascii
       text += "☯️";
     } else {
+      // eslint-disable-next-line complete/require-ascii
       text += "💬";
       if (globals.lobby.chatUnread > 0) {
         text += ` (${globals.lobby.chatUnread})`;

@@ -565,8 +565,8 @@ function scaleCardImage(
   let src = globals.cardImages.get(name);
   assertDefined(src, `The image "${name}" was not generated.`);
 
-  const dw = Math.sqrt(tf.m[0]! * tf.m[0]! + tf.m[1]! * tf.m[1]!) * width;
-  const dh = Math.sqrt(tf.m[2]! * tf.m[2]! + tf.m[3]! * tf.m[3]!) * height;
+  const dw = Math.hypot(tf.m[0]!, tf.m[1]!) * width;
+  const dh = Math.hypot(tf.m[2]!, tf.m[3]!) * height;
 
   if (dw < 1 || dh < 1) {
     return;

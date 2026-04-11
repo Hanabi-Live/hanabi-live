@@ -581,6 +581,7 @@ function drawBottomLeftButtons() {
     y: (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01) * winH,
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
+    // eslint-disable-next-line complete/require-ascii
     text: "💬",
     visible: !globals.state.finished || globals.state.replay.shared !== null,
   });
@@ -2458,6 +2459,7 @@ function drawPauseArea() {
     y: buttonH * winH,
     width: button2W * winW,
     height: 0.1 * winH,
+    // eslint-disable-next-line complete/require-ascii
     text: "💬",
   });
   globals.elements.pauseArea.add(chatButton as unknown as Konva.Group);

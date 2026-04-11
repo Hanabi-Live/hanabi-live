@@ -62,7 +62,7 @@ export class Globals {
    * If the start game button is disabled due to a player leaving or joining, stores the ID of a
    * timeout designed to re-enable it.
    */
-  enableStartGameButtonTimeout: NodeJS.Timeout | null = null;
+  enableStartGameButtonTimeout: ReturnType<typeof setTimeout> | null = null;
 
   /** Equal to the data from the "game" command. */
   game: Game | null = null;

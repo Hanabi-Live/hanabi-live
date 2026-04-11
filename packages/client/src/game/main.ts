@@ -25,6 +25,7 @@ export function show(): void {
   globals.currentScreen = Screen.Game;
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
   $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
+  // eslint-disable-next-line @typescript-eslint/strict-void-return
   $("body").on("contextmenu", () => false); // Disable the right-click context menu
   $("#game").fadeIn(FADE_TIME_MS);
 

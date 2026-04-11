@@ -1,5 +1,7 @@
-import { getDefaultVariant, getVariant } from "../gameData";
+/* eslint-disable complete/prefer-readonly-parameter-types */
+
 import { describe, expect, test } from "@jest/globals";
+import { getDefaultVariant, getVariant } from "../gameData";
 import { getTotalCardsInDeck } from "./deck";
 
 const DEFAULT_VARIANT = getDefaultVariant();

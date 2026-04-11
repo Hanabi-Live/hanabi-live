@@ -218,6 +218,7 @@ function firstVariantDropdownInit() {
     const option = new Option(variantName, variantName);
     dropdown1.append(option);
   }
+  // eslint-disable-next-line complete/require-ascii
   const spacing = new Option("───────────────");
   spacing.disabled = true;
   dropdown1.append(spacing);

@@ -9,17 +9,17 @@ import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 
 const REMOVE_PIPE_KEYS = new ReadonlySet([
+  "ArrowDown",
   "ArrowLeft",
   "ArrowRight",
   "ArrowUp",
-  "ArrowDown",
-  "Home",
-  "End",
   "Backspace",
   "Delete",
+  "End",
+  "Home",
 ]);
 const CLOSE_NOTE_KEYS = new ReadonlySet(["Enter", "Escape"]);
-const META_KEYS = new ReadonlySet(["Control", "Alt", "Shift"]);
+const META_KEYS = new ReadonlySet(["Alt", "Control", "Shift"]);
 
 function escapeHtml(unsafe: string): string {
   return unsafe

@@ -105,6 +105,7 @@ function drawUser(
   if (username === globals.username) {
     nameColumn += "</strong>";
   }
+  // eslint-disable-next-line complete/require-ascii
   nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += "</span>";
 

@@ -1,3 +1,5 @@
+/* eslint-disable perfectionist/sort-arrays */
+
 import type {
   Color,
   Rank,
