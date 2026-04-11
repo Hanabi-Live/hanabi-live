@@ -2,8 +2,8 @@ import { assertDefined } from "complete-common";
 import type { Suit } from "./interfaces/Suit";
 
 /**
- * This function generates a regular expression that is used to detect "identity notes" (notes about
- * the possible identities of a card, such as `this is a [red 1]`).
+ * This function generates a regular expression that is used to detect "identity notes" (i.e., notes
+ * about the possible identities of a card, such as `this is a [red 1]`).
  */
 export function getIdentityNotePatternForVariant(
   suits: readonly Suit[],
