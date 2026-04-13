@@ -491,10 +491,10 @@ function gameReducerFunction(
   if (action.type === "play" && (hasReversedSuits(variant) || variant.sudoku)) {
     const suitIndex =
       action.suitIndex === -1
-        ? (gameState.deck[action.order]?.suitIndex ?? null)
+        ? (gameState.deck[action.order]?.suitIndex ?? undefined)
         : action.suitIndex;
 
-    if (suitIndex !== null) {
+    if (suitIndex !== undefined) {
       // We have to wait until the deck is updated with the information of the card that we played
       // before the `direction` function will work.
       const playStack = gameState.playStacks[suitIndex];
@@ -517,10 +517,10 @@ function gameReducerFunction(
   if (action.type === "play" && variant.sudoku) {
     const suitIndex =
       action.suitIndex === -1
-        ? (gameState.deck[action.order]?.suitIndex ?? null)
+        ? (gameState.deck[action.order]?.suitIndex ?? undefined)
         : action.suitIndex;
 
-    if (suitIndex !== null) {
+    if (suitIndex !== undefined) {
       const playStack = gameState.playStacks[suitIndex];
       assertDefined(
         playStack,
@@ -541,25 +541,11 @@ function gameReducerFunction(
     && action.suitIndex !== -1
     && action.rank !== -1
   ) {
-    if (variant.sudoku) {
-      for (const i of variant.suits.keys()) {
-        const suitIndex = i as SuitIndex;
-        for (const rank of variant.ranks) {
-          gameState.cardStatus[suitIndex][rank] = getCardStatus(
-            suitIndex,
-            rank,
-            gameState.deck,
-            gameState.playStacks,
-            gameState.playStackDirections,
-            gameState.playStackStarts,
-            variant,
-          );
-        }
-      }
-    } else {
+    for (const i of variant.suits.keys()) {
+      const suitIndex = i as SuitIndex;
       for (const rank of variant.ranks) {
-        gameState.cardStatus[action.suitIndex][rank] = getCardStatus(
-          action.suitIndex,
+        gameState.cardStatus[suitIndex][rank] = getCardStatus(
+          suitIndex,
           rank,
           gameState.deck,
           gameState.playStacks,
