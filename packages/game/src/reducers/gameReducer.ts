@@ -488,10 +488,7 @@ function gameReducerFunction(
   );
 
   // Resolve the stack direction.
-  if (
-    action.type === "play"
-    && (hasReversedSuits(variant) || variant.sudoku)
-  ) {
+  if (action.type === "play" && (hasReversedSuits(variant) || variant.sudoku)) {
     const suitIndex =
       action.suitIndex === -1
         ? (gameState.deck[action.order]?.suitIndex ?? null)
