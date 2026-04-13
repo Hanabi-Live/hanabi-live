@@ -541,6 +541,9 @@ function gameReducerFunction(
     && action.suitIndex !== -1
     && action.rank !== -1
   ) {
+    // For a no-variant game, we would only have to iterate over cards of the same suit to check for
+    // non-playability. But other variants become more complicated, so we iterate over the entire
+    // deck to be safe.
     for (const i of variant.suits.keys()) {
       const suitIndex = i as SuitIndex;
       for (const rank of variant.ranks) {
