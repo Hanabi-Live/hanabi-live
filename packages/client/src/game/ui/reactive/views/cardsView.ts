@@ -148,9 +148,18 @@ function subscribeToCardChanges(order: CardOrder) {
   subFullState(
     (s) => {
       const card = s.visibleState!.deck[order]!;
+      const morphedIdentity = s.replay.hypothetical?.morphedIdentities[order];
+      const identity =
+        morphedIdentity
+        ?? (card.suitIndex !== null && card.rank !== null
+          ? { suitIndex: card.suitIndex, rank: card.rank }
+          : s.cardIdentities[order]);
+
       const status =
-        card.suitIndex !== null && card.rank !== null
-          ? s.visibleState!.cardStatus[card.suitIndex][card.rank]
+        identity !== undefined
+        && identity.suitIndex !== null
+        && identity.rank !== null
+          ? s.visibleState!.cardStatus[identity.suitIndex][identity.rank]
           : null;
 
       return {

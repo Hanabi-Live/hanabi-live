@@ -1,6 +1,7 @@
 import { describe, expect, test } from "@jest/globals";
-import { assertDefined, eRange, iRange } from "complete-common";
+import { assertDefined, assertNotNull, eRange, iRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
+import { CardStatus } from "../enums/CardStatus";
 import { getDefaultMetadata } from "../metadata";
 import {
   colorClue,
@@ -22,6 +23,7 @@ const CLUE_STARVED_METADATA = getDefaultMetadata(
   NUM_PLAYERS,
   "Clue Starved (6 Suits)",
 );
+const SUDOKU_METADATA = getDefaultMetadata(NUM_PLAYERS, "Sudoku (5 Suits)");
 
 describe("gameReducer", () => {
   test("does not mutate state", () => {
@@ -611,6 +613,165 @@ describe("gameReducer", () => {
         expect(efficiency2).toBeCloseTo(3.33);
         // e.g. 5 / 1.5 (because we wasted half a clue)
       });
+    });
+  });
+
+  describe("Sudoku", () => {
+    const RED = 0;
+    const YELLOW = 1;
+    const GREEN = 2;
+    const BLUE = 3;
+    const PURPLE = 4;
+
+    test("recomputes cross-suit cardStatus after play changes available stack starts", () => {
+      let state = getInitialGameStateTest(SUDOKU_METADATA);
+
+      function currentPlayerIndex() {
+        const playerIndex = state.turn.currentPlayerIndex;
+        assertNotNull(
+          playerIndex,
+          "Expected currentPlayerIndex to be non-null during this Sudoku regression test.",
+        );
+        return playerIndex;
+      }
+
+      let playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 0, RED, 3),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        play(playerIndex, 0, RED, 3),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 1, YELLOW, 2),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        play(playerIndex, 1, YELLOW, 2),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 2, BLUE, 5),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        play(playerIndex, 2, BLUE, 5),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      // Hold a purple 5.
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 3, PURPLE, 5),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      // Discard both purple 2s.
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 4, PURPLE, 2),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        discard(playerIndex, 4, PURPLE, 2, false),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 5, PURPLE, 2),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        discard(playerIndex, 5, PURPLE, 2, false),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      expect(state.cardStatus[PURPLE][5]).not.toBe(CardStatus.Trash);
+
+      // Play a green 4, occupying the remaining viable stack start (4).
+      playerIndex = currentPlayerIndex();
+      state = gameReducer(
+        state,
+        draw(playerIndex, 6, GREEN, 4),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+      state = gameReducer(
+        state,
+        play(playerIndex, 6, GREEN, 4),
+        true,
+        false,
+        false,
+        false,
+        SUDOKU_METADATA,
+      );
+
+      expect(state.cardStatus[PURPLE][5]).toBe(CardStatus.Trash);
     });
   });
 
