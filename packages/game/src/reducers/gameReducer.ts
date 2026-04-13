@@ -42,6 +42,7 @@ import type {
   ActionPlay,
   GameAction,
 } from "../types/gameActions";
+import type { SuitIndex } from "../types/SuitIndex";
 import { cardsReducer } from "./cardsReducer";
 import { ddaReducer } from "./ddaReducer";
 import { knownTrashReducer } from "./knownTrashReducer";
@@ -490,37 +491,50 @@ function gameReducerFunction(
   if (
     action.type === "play"
     && (hasReversedSuits(variant) || variant.sudoku)
-    && action.suitIndex !== -1
   ) {
-    // We have to wait until the deck is updated with the information of the card that we played
-    // before the `direction` function will work.
-    const playStack = gameState.playStacks[action.suitIndex];
-    assertDefined(
-      playStack,
-      `Failed to find the play stack at index: ${action.suitIndex}`,
-    );
+    const suitIndex =
+      action.suitIndex === -1
+        ? (gameState.deck[action.order]?.suitIndex ?? null)
+        : action.suitIndex;
 
-    const direction = getStackDirection(
-      action.suitIndex,
-      playStack,
-      gameState.deck,
-      variant,
-    );
-    gameState.playStackDirections[action.suitIndex] = direction;
+    if (suitIndex !== null) {
+      // We have to wait until the deck is updated with the information of the card that we played
+      // before the `direction` function will work.
+      const playStack = gameState.playStacks[suitIndex];
+      assertDefined(
+        playStack,
+        `Failed to find the play stack at index: ${suitIndex}`,
+      );
+
+      const direction = getStackDirection(
+        suitIndex,
+        playStack,
+        gameState.deck,
+        variant,
+      );
+      gameState.playStackDirections[suitIndex] = direction;
+    }
   }
 
   // In Sudoku variants, resolve the stack starting value.
-  if (action.type === "play" && variant.sudoku && action.suitIndex !== -1) {
-    const playStack = gameState.playStacks[action.suitIndex];
-    assertDefined(
-      playStack,
-      `Failed to find the play stack at index: ${action.suitIndex}`,
-    );
+  if (action.type === "play" && variant.sudoku) {
+    const suitIndex =
+      action.suitIndex === -1
+        ? (gameState.deck[action.order]?.suitIndex ?? null)
+        : action.suitIndex;
 
-    gameState.playStackStarts[action.suitIndex] = getStackStartRank(
-      playStack,
-      gameState.deck,
-    );
+    if (suitIndex !== null) {
+      const playStack = gameState.playStacks[suitIndex];
+      assertDefined(
+        playStack,
+        `Failed to find the play stack at index: ${suitIndex}`,
+      );
+
+      gameState.playStackStarts[suitIndex] = getStackStartRank(
+        playStack,
+        gameState.deck,
+      );
+    }
   }
 
   // Discarding or playing cards can make other card cards in that suit not playable anymore and can
@@ -530,16 +544,33 @@ function gameReducerFunction(
     && action.suitIndex !== -1
     && action.rank !== -1
   ) {
-    for (const rank of variant.ranks) {
-      gameState.cardStatus[action.suitIndex][rank] = getCardStatus(
-        action.suitIndex,
-        rank,
-        gameState.deck,
-        gameState.playStacks,
-        gameState.playStackDirections,
-        gameState.playStackStarts,
-        variant,
-      );
+    if (variant.sudoku) {
+      for (const i of variant.suits.keys()) {
+        const suitIndex = i as SuitIndex;
+        for (const rank of variant.ranks) {
+          gameState.cardStatus[suitIndex][rank] = getCardStatus(
+            suitIndex,
+            rank,
+            gameState.deck,
+            gameState.playStacks,
+            gameState.playStackDirections,
+            gameState.playStackStarts,
+            variant,
+          );
+        }
+      }
+    } else {
+      for (const rank of variant.ranks) {
+        gameState.cardStatus[action.suitIndex][rank] = getCardStatus(
+          action.suitIndex,
+          rank,
+          gameState.deck,
+          gameState.playStacks,
+          gameState.playStackDirections,
+          gameState.playStackStarts,
+          variant,
+        );
+      }
     }
   }
 
