@@ -148,15 +148,13 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	// Pre-compute the seed here, while holding only t.Lock (not tables.Lock), to avoid a
-	// deadlock inside tableRestart. The deadlock arises because tableRestart holds t.Lock,
-	// tables.Lock, and t2.Lock simultaneously while calling commandTableStart, which in turn
-	// calls getNextAvailableSeed — a function that blocks on a DB connection pool query. If the
-	// pool is exhausted by other goroutines that are themselves waiting for one of the held locks,
-	// the server deadlocks and go-deadlock kills the process.
-	//
-	// This pre-computation is only needed for normal games. For "!seed" games the seed is derived
-	// from the table name (SetSeedSuffix), so getNextAvailableSeed is never called for them.
+	// All DB queries must be done here, while holding only t.Lock, BEFORE tableRestart acquires
+	// tables.Lock. Once tableRestart holds tables.Lock + t.Lock + t2.Lock simultaneously, any
+	// DB query that blocks on pool exhaustion will deadlock the server (other goroutines hold
+	// pool connections while waiting for the locks we hold).
+
+	// Pre-compute the seed for the new game (only for normal games; "!seed" games derive their
+	// seed from the table name via SetSeedSuffix and never call getNextAvailableSeed).
 	var precomputedSeed string
 	if d.HidePregame && !strings.HasPrefix(t.InitialName, "!seed") {
 		variant := variants[t.Options.VariantName]
@@ -172,7 +170,28 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
-	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions, spectatorShadowingUserID, precomputedSeed)
+	// Pre-fetch the creator's pregame stats for when they join the new table via
+	// commandTableCreate → tableCreate → commandTableJoin → tableJoin.
+	variant := variants[t.Options.VariantName]
+	var creatorNumGames int
+	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
+		logger.Error("Failed to pre-fetch game count for \"" + s.Username + "\": " + err.Error())
+		s.Error(StartGameFail)
+		return
+	} else {
+		creatorNumGames = v
+	}
+	var creatorVariantStats *UserStatsRow
+	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
+		logger.Error("Failed to pre-fetch variant stats for \"" + s.Username + "\": " + err.Error())
+		s.Error(StartGameFail)
+		return
+	} else {
+		creatorVariantStats = v
+	}
+	creatorPregameStats := &PregameStats{NumGames: creatorNumGames, Variant: creatorVariantStats}
+
+	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions, spectatorShadowingUserID, precomputedSeed, creatorPregameStats)
 }
 
 func tableRestart(
@@ -184,6 +203,7 @@ func tableRestart(
 	spectatorSessions []*Session,
 	spectatorShadowingUserID []int,
 	precomputedSeed string,
+	creatorPregameStats *PregameStats,
 ) {
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquire the tables lock to prevent race conditions
@@ -268,7 +288,9 @@ func tableRestart(
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
-	// Now, create the new game but hide it from the lobby
+	// Now, create the new game but hide it from the lobby.
+	// Pass creatorPregameStats so that commandTableCreate skips its own DB pre-fetch and
+	// tableJoin uses these stats directly, avoiding any DB calls while locks are held.
 	commandTableCreate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		Name:    newTableName,
 		Options: t.Options,
@@ -279,6 +301,7 @@ func tableRestart(
 		MaxPlayers:     t.MaxPlayers,
 		PasswordHash:   passwordHash,
 		BypassPassword: true,
+		PregameStats:   creatorPregameStats,
 	})
 
 	// Find the newly created table by name.
@@ -331,17 +354,27 @@ func tableRestart(
 	chatSendPastFromTable(s, t2)
 	t2.ChatRead[s.UserID] = len(t2.Chat)
 
-	// Emulate the other players joining the game
+	// Emulate the other players joining the game.
+	// Reuse each player's existing PregameStats from the original table so that tableJoin
+	// skips its DB calls, which would block while tables.Lock, t.Lock, and t2.Lock are held.
 	for _, s2 := range playerSessions {
 		if s2.UserID == s.UserID {
 			// The creator of the game does not need to join
 			continue
+		}
+		var existingStats *PregameStats
+		for _, p := range t.Players {
+			if p.UserID == s2.UserID {
+				existingStats = p.Stats
+				break
+			}
 		}
 		commandTableJoin(ctx, s2, &CommandData{ // nolint: exhaustivestruct
 			TableID:        t2.ID,
 			NoTableLock:    true,
 			NoTablesLock:   true,
 			BypassPassword: true,
+			PregameStats:   existingStats,
 		})
 	}
 

@@ -86,6 +86,9 @@ type CommandData struct {
 	// More remake table shenanigans
 	PasswordHash   string `json:"-"`
 	BypassPassword bool   `json:"-"`
+	// Pre-fetched player stats to avoid DB queries while holding table mutexes.
+	// When set on a tableJoin call, the DB lookups in tableJoin are skipped.
+	PregameStats *PregameStats `json:"-"`
 }
 
 var (

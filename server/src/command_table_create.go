@@ -100,6 +100,35 @@ func commandTableCreate(ctx context.Context, s *Session, d *CommandData) {
 		d.MaxPlayers = 5
 	}
 
+	// Pre-fetch the creator's pregame stats before tableCreate acquires any locks.
+	// tableCreate calls commandTableJoin, which calls tableJoin, which queries the DB.
+	// Making those queries while holding tables.Lock and t.Lock can exhaust the DB connection
+	// pool and deadlock the server. By pre-fetching here (no locks held) and passing the
+	// result via d.PregameStats, tableJoin will skip its DB calls entirely.
+	//
+	// If PregameStats is already set (e.g. called from tableRestart which pre-fetched before
+	// acquiring its own locks), skip this to avoid a redundant DB round-trip.
+	if d.PregameStats == nil {
+		variant := variants[d.Options.VariantName]
+		var numGames int
+		if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
+			logger.Error("Failed to pre-fetch game count for \"" + s.Username + "\": " + err.Error())
+			s.Error(CreateGameFail)
+			return
+		} else {
+			numGames = v
+		}
+		var variantStats *UserStatsRow
+		if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
+			logger.Error("Failed to pre-fetch variant stats for \"" + s.Username + "\": " + err.Error())
+			s.Error(CreateGameFail)
+			return
+		} else {
+			variantStats = v
+		}
+		d.PregameStats = &PregameStats{NumGames: numGames, Variant: variantStats}
+	}
+
 	tableCreate(ctx, s, d, data)
 }
 
@@ -215,12 +244,15 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 		chatServerSend(ctx, msg, t.GetRoomName(), true)
 	}
 
-	// Join the user to the new table
+	// Join the user to the new table.
+	// Pass d.PregameStats (pre-fetched in commandTableCreate) so that tableJoin skips its
+	// DB calls, which would otherwise block while tables.Lock and t.Lock are held.
 	commandTableJoin(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID:        t.ID,
 		Password:       d.Password,
 		NoTableLock:    true,
 		NoTablesLock:   true,
 		BypassPassword: d.BypassPassword,
+		PregameStats:   d.PregameStats,
 	})
 }

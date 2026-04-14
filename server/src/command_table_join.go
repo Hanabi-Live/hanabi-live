@@ -98,26 +98,35 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	logger.Info(t.GetName() + "User \"" + s.Username + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
-	// Get the total number of non-speedrun games that this player has played
-	var numGames int
-	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
-		logger.Error("Failed to get the number of non-speedrun games for player " +
-			"\"" + s.Username + "\": " + err.Error())
-		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
-		return
+	// Get the player's pregame stats (total games played, variant-specific stats).
+	// When called from within lock-holding code (e.g. tableCreate, tableRestart), the caller
+	// pre-fetches these before acquiring any locks and passes them via d.PregameStats to avoid
+	// a deadlock where a DB query blocks while table mutexes are held.
+	var stats *PregameStats
+	if d.PregameStats != nil {
+		stats = d.PregameStats
 	} else {
-		numGames = v
-	}
+		var numGames int
+		if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
+			logger.Error("Failed to get the number of non-speedrun games for player " +
+				"\"" + s.Username + "\": " + err.Error())
+			s.Error("Something went wrong when getting your stats. Please contact an administrator.")
+			return
+		} else {
+			numGames = v
+		}
 
-	// Get the variant-specific stats for this player
-	var variantStats *UserStatsRow
-	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
-		logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
-			strconv.Itoa(variant.ID) + ": " + err.Error())
-		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
-		return
-	} else {
-		variantStats = v
+		var variantStats *UserStatsRow
+		if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
+			logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
+				strconv.Itoa(variant.ID) + ": " + err.Error())
+			s.Error("Something went wrong when getting your stats. Please contact an administrator.")
+			return
+		} else {
+			variantStats = v
+		}
+
+		stats = &PregameStats{NumGames: numGames, Variant: variantStats}
 	}
 
 	p := &Player{
@@ -125,10 +134,7 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		Name:    s.Username,
 		Session: s,
 		Present: true,
-		Stats: &PregameStats{
-			NumGames: numGames,
-			Variant:  variantStats,
-		},
+		Stats:   stats,
 		Typing:     false,
 		LastTyped:  time.Time{},
 		VoteToKill: false,
