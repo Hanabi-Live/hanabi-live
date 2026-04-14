@@ -48,6 +48,11 @@ type ExtraOptions struct {
 	SetSeedSuffix string // Parsed from the game name for "!seed" games
 	SetReplay     bool   // True during "!replay" games
 	SetReplayTurn int    // Parsed from the game name for "!replay" games
+
+	// PrecomputedSeed is set during a table restart to avoid making a DB query while holding table
+	// mutexes. When non-empty, tableStart uses this seed directly instead of calling
+	// getNextAvailableSeed (which queries the database).
+	PrecomputedSeed string
 }
 
 // To minimize JSON output, we need to use pointers to each option instead of the normal type

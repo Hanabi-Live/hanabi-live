@@ -148,7 +148,31 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions, spectatorShadowingUserID)
+	// Pre-compute the seed here, while holding only t.Lock (not tables.Lock), to avoid a
+	// deadlock inside tableRestart. The deadlock arises because tableRestart holds t.Lock,
+	// tables.Lock, and t2.Lock simultaneously while calling commandTableStart, which in turn
+	// calls getNextAvailableSeed — a function that blocks on a DB connection pool query. If the
+	// pool is exhausted by other goroutines that are themselves waiting for one of the held locks,
+	// the server deadlocks and go-deadlock kills the process.
+	//
+	// This pre-computation is only needed for normal games. For "!seed" games the seed is derived
+	// from the table name (SetSeedSuffix), so getNextAvailableSeed is never called for them.
+	var precomputedSeed string
+	if d.HidePregame && !strings.HasPrefix(t.InitialName, "!seed") {
+		variant := variants[t.Options.VariantName]
+		seedPrefix := "p" + strconv.Itoa(len(t.Players)) +
+			"v" + strconv.Itoa(variant.ID) +
+			"s"
+		if seed, err := getNextAvailableSeed(t.Players, seedPrefix); err != nil {
+			logger.Error("Failed to pre-compute seed for table restart: " + err.Error())
+			s.Error(StartGameFail)
+			return
+		} else {
+			precomputedSeed = seed
+		}
+	}
+
+	tableRestart(ctx, s, d, t, playerSessions, spectatorSessions, spectatorShadowingUserID, precomputedSeed)
 }
 
 func tableRestart(
@@ -159,6 +183,7 @@ func tableRestart(
 	playerSessions []*Session,
 	spectatorSessions []*Session,
 	spectatorShadowingUserID []int,
+	precomputedSeed string,
 ) {
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquire the tables lock to prevent race conditions
@@ -256,20 +281,17 @@ func tableRestart(
 		BypassPassword: true,
 	})
 
-	// Find the table ID for the new game
+	// Find the newly created table by name.
+	// We intentionally do not acquire the per-table lock here. Doing so would create a lock
+	// ordering violation: other code (e.g. getTableIDFromName) acquires a table lock without
+	// holding tables.Lock, so locking a table while holding tables.Lock (write) can deadlock.
+	// It is safe to read existingTable.Name without the per-table lock because we already hold
+	// tables.Lock as a write lock, which blocks every goroutine that could mutate a table name
+	// (all such mutations go through getTableAndLock, which requires tables.RLock to proceed).
 	tableList := tables.GetList(false)
 	var t2 *Table
 	for _, existingTable := range tableList {
-		foundTable := false
-		// TODO: removing the lock here temporarily because it is somehow causing a deadlock
-		// The lock isn't super needed here because the only time a name changes is when a game ends
-		// existingTable.Lock(ctx)
 		if existingTable.Name == newTableName {
-			foundTable = true
-		}
-		// existingTable.Unlock(ctx)
-
-		if foundTable {
 			t2 = existingTable
 			break
 		}
@@ -284,6 +306,12 @@ func tableRestart(
 
 	t2.Lock(ctx)
 	defer t2.Unlock(ctx)
+
+	// Store the pre-computed seed so that tableStart uses it instead of querying the DB
+	// while all three locks (t, tables, t2) are held.
+	if precomputedSeed != "" {
+		t2.ExtraOptions.PrecomputedSeed = precomputedSeed
+	}
 
 	// Copy over the old chat
 	t2.Chat = make([]*TableChatMessage, len(oldChat))

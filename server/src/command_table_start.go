@@ -145,6 +145,10 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		// This is a custom table created with the "!seed" prefix
 		// (e.g. playing a deal with a specific seed)
 		g.Seed = seedPrefix + t.ExtraOptions.SetSeedSuffix
+	} else if t.ExtraOptions.PrecomputedSeed != "" {
+		// The seed was pre-computed outside of any table mutex scope (during table restart) to
+		// avoid a deadlock caused by making a DB query while holding table/tables locks.
+		g.Seed = t.ExtraOptions.PrecomputedSeed
 	} else {
 		if val, err := getNextAvailableSeed(t.Players, seedPrefix); err != nil {
 			logger.Error("Failed to compute next seed at table " + strconv.Itoa(int(s.TableID())) + ": " + err.Error())
