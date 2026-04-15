@@ -70,13 +70,45 @@ func commandTableJoin(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	// Pre-fetch the joining player's pregame stats here, BEFORE tableJoin acquires tables.Lock.
+	// At this point only t.Lock is held (acquired by getTableAndLock above; the brief tables RLock
+	// inside getTable was already released). Without this pre-fetch, tableJoin would issue these
+	// two DB queries while holding BOTH tables.Lock AND t.Lock simultaneously — the same
+	// lock-ordering footprint that triggered the deadlocks fixed in 11a3f29b and 52796122 for
+	// tableRestart/tableCreate.
+	//
+	// We skip when d.PregameStats is already populated by an internal caller (tableCreate /
+	// tableRestart), which pre-fetches even earlier under no locks at all and is the strongest
+	// guarantee. Holding only t.Lock during the DB roundtrip here is the next-best option for the
+	// user-initiated path: it confines pool-blocked goroutines to per-table contention instead of
+	// global tables-list contention.
+	if d.PregameStats == nil {
+		variant := variants[t.Options.VariantName]
+		var numGames int
+		if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
+			logger.Error("Failed to pre-fetch the number of non-speedrun games for player " +
+				"\"" + s.Username + "\": " + err.Error())
+			s.Error("Something went wrong when getting your stats. Please contact an administrator.")
+			return
+		} else {
+			numGames = v
+		}
+		var variantStats *UserStatsRow
+		if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
+			logger.Error("Failed to pre-fetch variant stats for player \"" + s.Username +
+				"\" for variant " + strconv.Itoa(variant.ID) + ": " + err.Error())
+			s.Error("Something went wrong when getting your stats. Please contact an administrator.")
+			return
+		} else {
+			variantStats = v
+		}
+		d.PregameStats = &PregameStats{NumGames: numGames, Variant: variantStats}
+	}
+
 	tableJoin(ctx, s, d, t)
 }
 
 func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
-	// Local variables
-	variant := variants[t.Options.VariantName]
-
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquires the tables lock to prevent race conditions
 	if !d.NoTablesLock {
@@ -106,6 +138,13 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if d.PregameStats != nil {
 		stats = d.PregameStats
 	} else {
+		// Legacy fallback path. After the deadlock-completion fix, every entry point pre-fetches
+		// PregameStats outside of tables.Lock + t.Lock scope (commandTableJoin for user-initiated
+		// joins; commandTableCreate / commandTableRestart for internal callers), so this branch
+		// should be dead code. Kept defensively so any future caller that forgets to pre-fetch
+		// still gets correct behavior — at the cost of holding tables.Lock + t.Lock during the DB
+		// roundtrip, which is the exact pattern that caused the original pool-exhaustion deadlock.
+		variant := variants[t.Options.VariantName]
 		var numGames int
 		if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
 			logger.Error("Failed to get the number of non-speedrun games for player " +
@@ -130,11 +169,11 @@ func tableJoin(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	p := &Player{
-		UserID:  s.UserID,
-		Name:    s.Username,
-		Session: s,
-		Present: true,
-		Stats:   stats,
+		UserID:     s.UserID,
+		Name:       s.Username,
+		Session:    s,
+		Present:    true,
+		Stats:      stats,
 		Typing:     false,
 		LastTyped:  time.Time{},
 		VoteToKill: false,
