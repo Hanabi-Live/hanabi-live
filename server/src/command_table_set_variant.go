@@ -57,24 +57,56 @@ func tableSetVariant(ctx context.Context, s *Session, d *CommandData, t *Table) 
 	// Local variables
 	variant := variants[d.Options.VariantName]
 
-	// First, change the variant
+	// First, change the variant (do this before releasing the lock so that any concurrent
+	// commandTableJoin will fetch stats for the new variant automatically).
 	t.Options.VariantName = d.Options.VariantName
 
-	// Update the variant-specific stats for each player at the table
-	for _, p := range t.Players {
-		var variantStats *UserStatsRow
-		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
+	// Snapshot each player's userID and numGames before releasing t.Lock.
+	// models.UserStats.Get issues a DB query; holding t.Lock during that call can exhaust
+	// the pgxpool and deadlock the server.
+	type playerSnapshot struct {
+		userID   int
+		numGames int
+	}
+	snapshot := make([]playerSnapshot, len(t.Players))
+	for i, p := range t.Players {
+		snapshot[i] = playerSnapshot{userID: p.UserID, numGames: p.Stats.NumGames}
+	}
+
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+	variantStatsMap := make(map[int]*UserStatsRow, len(snapshot))
+	for _, entry := range snapshot {
+		v, err := models.UserStats.Get(entry.userID, variant.ID)
+		if err != nil {
 			logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
 				strconv.Itoa(variant.ID) + ": " + err.Error())
+			if !d.NoTableLock {
+				t.Lock(ctx)
+			}
 			s.Error(DefaultErrorMsg)
 			return
-		} else {
-			variantStats = v
 		}
+		variantStatsMap[entry.userID] = v
+	}
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 
-		p.Stats = &PregameStats{
-			NumGames: p.Stats.NumGames,
-			Variant:  variantStats,
+	// Build a numGames lookup from the snapshot taken before the unlock.
+	numGamesMap := make(map[int]int, len(snapshot))
+	for _, entry := range snapshot {
+		numGamesMap[entry.userID] = entry.numGames
+	}
+	// Apply stats to original players.  Any player who joined while we were unlocked
+	// already got correct variant stats via commandTableJoin, so we leave them as-is.
+	for _, p := range t.Players {
+		if variantStats, ok := variantStatsMap[p.UserID]; ok {
+			p.Stats = &PregameStats{
+				NumGames: numGamesMap[p.UserID],
+				Variant:  variantStats,
+			}
 		}
 	}
 

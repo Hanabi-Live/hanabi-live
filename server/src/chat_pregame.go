@@ -224,12 +224,23 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 		return
 	}
 
+	// Release the table lock before issuing DB queries.  models.UserStats.GetAll makes a DB
+	// call per player; holding t.Lock during those calls can exhaust the pgxpool and deadlock
+	// the server.  userIDs is a plain []int (no pointers into t), so it is safe to use after
+	// the unlock.
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+
 	// Get all of the variant-specific stats for these players
 	statsMaps := make([]map[int]*UserStatsRow, 0)
 	for _, userID := range userIDs {
 		if statsMap, err := models.UserStats.GetAll(userID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player ID " +
 				strconv.Itoa(userID) + ": " + err.Error())
+			if !d.NoTableLock {
+				t.Lock(ctx)
+			}
 			chatServerSend(ctx, DefaultErrorMsg, d.Room, d.NoTablesLock)
 			return
 		} else {
@@ -260,6 +271,12 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 	// Get a random element from the list
 	randomIndex := getRandom(0, len(variantsWithNoMaxScores)-1)
 	randomVariant := variantsWithNoMaxScores[randomIndex]
+
+	// chatServerSend does not need t.Lock, but t.Running/t.Players/etc. below do.
+	// Reacquire the lock now so the rest of the function is properly guarded.
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 
 	msg := "Here is a random variant that everyone needs the " +
 		strconv.Itoa(len(userIDs)) + "-player max score in: " + randomVariant

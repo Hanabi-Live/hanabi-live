@@ -237,21 +237,52 @@ func tableUpdate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 		SetReplayTurn:              0,
 	}
 
-	// Update the variant-specific stats for each player at the table
-	for _, p := range t.Players {
-		var variantStats *UserStatsRow
-		if v, err := models.UserStats.Get(p.UserID, variant.ID); err != nil {
+	// Snapshot each player's userID and numGames before releasing t.Lock.
+	// models.UserStats.Get issues a DB query; holding t.Lock during that call can exhaust
+	// the pgxpool and deadlock the server.
+	type playerSnapshot struct {
+		userID   int
+		numGames int
+	}
+	snapshot := make([]playerSnapshot, len(t.Players))
+	for i, p := range t.Players {
+		snapshot[i] = playerSnapshot{userID: p.UserID, numGames: p.Stats.NumGames}
+	}
+
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+	variantStatsMap := make(map[int]*UserStatsRow, len(snapshot))
+	for _, entry := range snapshot {
+		v, err := models.UserStats.Get(entry.userID, variant.ID)
+		if err != nil {
 			logger.Error("Failed to get the stats for player \"" + s.Username + "\" for variant " +
 				strconv.Itoa(variant.ID) + ": " + err.Error())
+			if !d.NoTableLock {
+				t.Lock(ctx)
+			}
 			s.Error(DefaultErrorMsg)
 			return
-		} else {
-			variantStats = v
 		}
+		variantStatsMap[entry.userID] = v
+	}
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 
-		p.Stats = &PregameStats{
-			NumGames: p.Stats.NumGames,
-			Variant:  variantStats,
+	// Update the variant-specific stats for each player at the table.
+	// Use the numGames snapshot from before the unlock (correct: numGames only changes on game end).
+	// Any player who joined while unlocked already has stats for the new variant from commandTableJoin.
+	numGamesMap := make(map[int]int, len(snapshot))
+	for _, entry := range snapshot {
+		numGamesMap[entry.userID] = entry.numGames
+	}
+	for _, p := range t.Players {
+		if variantStats, ok := variantStatsMap[p.UserID]; ok {
+			p.Stats = &PregameStats{
+				NumGames: numGamesMap[p.UserID],
+				Variant:  variantStats,
+			}
 		}
 	}
 
