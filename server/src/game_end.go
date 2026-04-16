@@ -56,8 +56,13 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 		}
 	}
 
-	// Record the game in the database
+	// Record the game in the database.
+	// Release the table lock before any DB calls to avoid exhausting the pgxpool
+	// while other goroutines wait for this same lock (which would deadlock the server).
+	// The caller's defer t.Unlock() (or explicit unlock) will fire on the re-locked mutex.
+	t.Unlock(ctx)
 	if err := g.WriteDatabase(); err != nil {
+		t.Lock(ctx)
 		return
 	}
 
@@ -65,10 +70,12 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	var numGamesOnThisSeed int
 	if v, err := models.Seeds.GetNumGames(g.Seed); err != nil {
 		logger.Error("Failed to get the number of games on seed " + g.Seed + ": " + err.Error())
+		t.Lock(ctx)
 		return
 	} else {
 		numGamesOnThisSeed = v
 	}
+	t.Lock(ctx) // Re-acquire now that all DB work is done
 	playerNames := make([]string, 0)
 	for _, p := range t.Players {
 		playerNames = append(playerNames, p.Name)
@@ -91,7 +98,9 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 		Tags:               "", // Tags are written to the database at a later step
 	})
 	for _, p := range t.Players {
-		p.Session.Emit("gameHistory", &gameHistoryList)
+		if p.Session != nil {
+			p.Session.Emit("gameHistory", &gameHistoryList)
+		}
 	}
 
 	// Also send the history to the reverse friends

@@ -89,6 +89,10 @@ type CommandData struct {
 	// Pre-fetched player stats to avoid DB queries while holding table mutexes.
 	// When set on a tableJoin call, the DB lookups in tableJoin are skipped.
 	PregameStats *PregameStats `json:"-"`
+	// Pre-fetched notes for a database replay, to avoid a DB query while holding the
+	// tables lock + table lock inside replayCreate. When set, applyNotesToPlayers skips
+	// the GetNotes DB call.
+	PregameNotes [][]string `json:"-"`
 }
 
 var (

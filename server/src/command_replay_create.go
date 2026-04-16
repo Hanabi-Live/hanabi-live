@@ -42,6 +42,12 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 		if !validateDatabase(s, d) {
 			return
 		}
+		// Pre-fetch the notes here, before replayCreate acquires tables.Lock and t.Lock.
+		// Without this, applyNotesToPlayers would call models.Games.GetNotes while holding
+		// both locks, exhausting the pgxpool and deadlocking the server.
+		if !preFetchReplayNotes(s, d) {
+			return
+		}
 	} else if d.Source == "json" {
 		// Before creating a new game and emulating the actions,
 		// ensure that the submitted JSON does not have any obvious errors
@@ -588,19 +594,49 @@ func loadFakePlayers(t *Table, playerNames []string) {
 	}
 }
 
+// preFetchReplayNotes fetches the notes for a database replay BEFORE replayCreate acquires any
+// locks. It stores the result in d.PregameNotes so that applyNotesToPlayers can use it without
+// making a DB call while holding the tables lock + table lock.
+func preFetchReplayNotes(s *Session, d *CommandData) bool {
+	opts, err := models.Games.GetOptions(d.DatabaseID)
+	if err != nil {
+		logger.Error("Failed to get the options for game " + strconv.Itoa(d.DatabaseID) +
+			" when pre-fetching replay notes: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+	variant := variants[opts.VariantName]
+	noteSize := variant.GetDeckSize() + len(variant.Suits)
+	notes, err := models.Games.GetNotes(d.DatabaseID, opts.NumPlayers, noteSize)
+	if err != nil {
+		logger.Error("Failed to get the notes for game " + strconv.Itoa(d.DatabaseID) +
+			" when pre-fetching replay notes: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+	d.PregameNotes = notes
+	return true
+}
+
 func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 	var notes [][]string
 	if d.Source == "id" {
-		// Get the notes from the database
-		variant := variants[g.Options.VariantName]
-		noteSize := variant.GetDeckSize() + len(variant.Suits)
-		if v, err := models.Games.GetNotes(d.DatabaseID, len(g.Players), noteSize); err != nil {
-			logger.Error("Failed to get the notes from the database for game " +
-				strconv.Itoa(d.DatabaseID) + ": " + err.Error())
-			s.Error(InitGameFail)
-			return false
+		if d.PregameNotes != nil {
+			// Use the notes that were pre-fetched in commandReplayCreate before any locks
+			// were acquired, to avoid a DB call under the tables lock + table lock.
+			notes = d.PregameNotes
 		} else {
-			notes = v
+			// Fallback path (e.g. internal callers that bypass commandReplayCreate).
+			variant := variants[g.Options.VariantName]
+			noteSize := variant.GetDeckSize() + len(variant.Suits)
+			if v, err := models.Games.GetNotes(d.DatabaseID, len(g.Players), noteSize); err != nil {
+				logger.Error("Failed to get the notes from the database for game " +
+					strconv.Itoa(d.DatabaseID) + ": " + err.Error())
+				s.Error(InitGameFail)
+				return false
+			} else {
+				notes = v
+			}
 		}
 	} else if d.Source == "json" {
 		notes = d.GameJSON.Notes
