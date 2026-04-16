@@ -9,6 +9,19 @@ import (
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
+// PreFetchedReplayData holds every database row that replayCreate needs for a "source: id"
+// replay.  All fields are fetched in commandReplayCreate — before replayCreate acquires
+// tables.Lock or t.Lock — so that no DB calls are made while either mutex is held.
+type PreFetchedReplayData struct {
+	Options          *Options
+	Players          []*DBPlayer
+	Seed             string
+	Actions          []*GameAction
+	Notes            [][]string
+	DatetimeStarted  time.Time
+	DatetimeFinished time.Time
+}
+
 // commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",
 // or "Watch Specific Replay" button
 // It means that they want to view the replay of a game from the database or that they are
@@ -42,10 +55,11 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 		if !validateDatabase(s, d) {
 			return
 		}
-		// Pre-fetch the notes here, before replayCreate acquires tables.Lock and t.Lock.
-		// Without this, applyNotesToPlayers would call models.Games.GetNotes while holding
-		// both locks, exhausting the pgxpool and deadlocking the server.
-		if !preFetchReplayNotes(s, d) {
+		// Pre-fetch all database rows here, before replayCreate acquires tables.Lock and t.Lock.
+		// Making DB calls under either of those locks can exhaust the pgxpool and deadlock
+		// the server (loadDatabaseOptionsToTable, GetDatetimes, applyNotesToPlayers all issue
+		// DB queries that are now skipped once PreFetchedReplay is set).
+		if !preFetchReplayData(s, d) {
 			return
 		}
 	} else if d.Source == "json" {
@@ -120,7 +134,7 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 	// Load the options and players
 	if d.Source == "id" {
 		var dbPlayers []*DBPlayer
-		if v, success := loadDatabaseOptionsToTable(s, d.DatabaseID, t); !success {
+		if v, success := loadDatabaseOptionsToTable(s, d, t); !success {
 			return
 		} else {
 			dbPlayers = v
@@ -181,16 +195,23 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 	t.Progress = 0
 
 	if d.Source == "id" {
-		// Fill in the DatetimeStarted and DatetimeFinished" values from the database
-		if v1, v2, err := models.Games.GetDatetimes(t.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the datetimes for game " +
-				"\"" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "\": " + err.Error())
-			s.Error(InitGameFail)
-			deleteTable(t)
-			return
+		// Fill in the DatetimeStarted and DatetimeFinished values from the database.
+		// Use pre-fetched values when available (normal path via commandReplayCreate) to
+		// avoid a DB call while holding tables.Lock + t.Lock, which can exhaust the pgxpool.
+		if d.PreFetchedReplay != nil {
+			g.DatetimeStarted = d.PreFetchedReplay.DatetimeStarted
+			g.DatetimeFinished = d.PreFetchedReplay.DatetimeFinished
 		} else {
-			g.DatetimeStarted = v1
-			g.DatetimeFinished = v2
+			if v1, v2, err := models.Games.GetDatetimes(t.ExtraOptions.DatabaseID); err != nil {
+				logger.Error("Failed to get the datetimes for game " +
+					"\"" + strconv.Itoa(t.ExtraOptions.DatabaseID) + "\": " + err.Error())
+				s.Error(InitGameFail)
+				deleteTable(t)
+				return
+			} else {
+				g.DatetimeStarted = v1
+				g.DatetimeFinished = v2
+			}
 		}
 	}
 
@@ -375,25 +396,40 @@ func isJSONValid(d *CommandData) (bool, string) {
 	return true, ""
 }
 
-func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlayer, bool) {
-	// Get the options from the database
-	if v, err := models.Games.GetOptions(databaseID); err != nil {
-		logger.Error("Failed to get the options from the database for game " +
-			strconv.Itoa(databaseID) + ": " + err.Error())
-		s.Error(InitGameFail)
-		return nil, false
+// loadDatabaseOptionsToTable populates t.Options and t.ExtraOptions from the database for a
+// "source: id" replay.  When d.PreFetchedReplay is set (normal path via commandReplayCreate),
+// every DB call is skipped and the pre-fetched rows are used directly so that this function
+// can be called safely while tables.Lock + t.Lock are held.
+func loadDatabaseOptionsToTable(s *Session, d *CommandData, t *Table) ([]*DBPlayer, bool) {
+	databaseID := d.DatabaseID
+	pf := d.PreFetchedReplay
+
+	// Get the options
+	if pf != nil {
+		t.Options = pf.Options
 	} else {
-		t.Options = v
+		if v, err := models.Games.GetOptions(databaseID); err != nil {
+			logger.Error("Failed to get the options from the database for game " +
+				strconv.Itoa(databaseID) + ": " + err.Error())
+			s.Error(InitGameFail)
+			return nil, false
+		} else {
+			t.Options = v
+		}
 	}
 
-	// Get the players from the database
+	// Get the players
 	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(databaseID); err != nil {
-		logger.Error("Failed to get the players from the database for game " +
-			strconv.Itoa(databaseID) + ": " + err.Error())
-		return nil, false
+	if pf != nil {
+		dbPlayers = pf.Players
 	} else {
-		dbPlayers = v
+		if v, err := models.Games.GetPlayers(databaseID); err != nil {
+			logger.Error("Failed to get the players from the database for game " +
+				strconv.Itoa(databaseID) + ": " + err.Error())
+			return nil, false
+		} else {
+			dbPlayers = v
+		}
 	}
 
 	// As a sanity check, ensure that the number of game participants in the database matches the
@@ -411,26 +447,34 @@ func loadDatabaseOptionsToTable(s *Session, databaseID int, t *Table) ([]*DBPlay
 		characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
 	}
 
-	// Get the seed from the database
+	// Get the seed
 	var seed string
-	if v, err := models.Games.GetSeed(databaseID); err != nil {
-		logger.Error("Failed to get the seed from the database for game " +
-			strconv.Itoa(databaseID) + ": " + err.Error())
-		s.Error(InitGameFail)
-		return nil, false
+	if pf != nil {
+		seed = pf.Seed
 	} else {
-		seed = v
+		if v, err := models.Games.GetSeed(databaseID); err != nil {
+			logger.Error("Failed to get the seed from the database for game " +
+				strconv.Itoa(databaseID) + ": " + err.Error())
+			s.Error(InitGameFail)
+			return nil, false
+		} else {
+			seed = v
+		}
 	}
 
-	// Get the actions from the database
+	// Get the actions
 	var actions []*GameAction
-	if v, err := models.GameActions.GetAll(databaseID); err != nil {
-		logger.Error("Failed to get the actions from the database for game " +
-			strconv.Itoa(databaseID) + ": " + err.Error())
-		s.Error(InitGameFail)
-		return nil, false
+	if pf != nil {
+		actions = pf.Actions
 	} else {
-		actions = v
+		if v, err := models.GameActions.GetAll(databaseID); err != nil {
+			logger.Error("Failed to get the actions from the database for game " +
+				strconv.Itoa(databaseID) + ": " + err.Error())
+			s.Error(InitGameFail)
+			return nil, false
+		} else {
+			actions = v
+		}
 	}
 
 	t.ExtraOptions = &ExtraOptions{
@@ -594,37 +638,82 @@ func loadFakePlayers(t *Table, playerNames []string) {
 	}
 }
 
-// preFetchReplayNotes fetches the notes for a database replay BEFORE replayCreate acquires any
-// locks. It stores the result in d.PregameNotes so that applyNotesToPlayers can use it without
-// making a DB call while holding the tables lock + table lock.
-func preFetchReplayNotes(s *Session, d *CommandData) bool {
-	opts, err := models.Games.GetOptions(d.DatabaseID)
+// preFetchReplayData fetches every database row needed by replayCreate for a "source: id" replay
+// and stores them in d.PreFetchedReplay.  This must be called BEFORE replayCreate acquires
+// tables.Lock or t.Lock, because making DB calls while holding either mutex can exhaust the
+// pgxpool and deadlock the server.
+func preFetchReplayData(s *Session, d *CommandData) bool {
+	dbID := d.DatabaseID
+
+	opts, err := models.Games.GetOptions(dbID)
 	if err != nil {
-		logger.Error("Failed to get the options for game " + strconv.Itoa(d.DatabaseID) +
-			" when pre-fetching replay notes: " + err.Error())
+		logger.Error("Failed to get the options for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
 		s.Error(InitGameFail)
 		return false
 	}
+
+	players, err := models.Games.GetPlayers(dbID)
+	if err != nil {
+		logger.Error("Failed to get the players for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+
+	seed, err := models.Games.GetSeed(dbID)
+	if err != nil {
+		logger.Error("Failed to get the seed for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+
+	actions, err := models.GameActions.GetAll(dbID)
+	if err != nil {
+		logger.Error("Failed to get the actions for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+
 	variant := variants[opts.VariantName]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
-	notes, err := models.Games.GetNotes(d.DatabaseID, opts.NumPlayers, noteSize)
+	notes, err := models.Games.GetNotes(dbID, opts.NumPlayers, noteSize)
 	if err != nil {
-		logger.Error("Failed to get the notes for game " + strconv.Itoa(d.DatabaseID) +
-			" when pre-fetching replay notes: " + err.Error())
+		logger.Error("Failed to get the notes for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
 		s.Error(InitGameFail)
 		return false
 	}
-	d.PregameNotes = notes
+
+	dtStart, dtFinish, err := models.Games.GetDatetimes(dbID)
+	if err != nil {
+		logger.Error("Failed to get the datetimes for game " + strconv.Itoa(dbID) +
+			" when pre-fetching replay data: " + err.Error())
+		s.Error(InitGameFail)
+		return false
+	}
+
+	d.PreFetchedReplay = &PreFetchedReplayData{
+		Options:          opts,
+		Players:          players,
+		Seed:             seed,
+		Actions:          actions,
+		Notes:            notes,
+		DatetimeStarted:  dtStart,
+		DatetimeFinished: dtFinish,
+	}
 	return true
 }
 
 func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 	var notes [][]string
 	if d.Source == "id" {
-		if d.PregameNotes != nil {
+		if d.PreFetchedReplay != nil {
 			// Use the notes that were pre-fetched in commandReplayCreate before any locks
 			// were acquired, to avoid a DB call under the tables lock + table lock.
-			notes = d.PregameNotes
+			notes = d.PreFetchedReplay.Notes
 		} else {
 			// Fallback path (e.g. internal callers that bypass commandReplayCreate).
 			variant := variants[g.Options.VariantName]

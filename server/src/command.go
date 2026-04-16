@@ -89,10 +89,11 @@ type CommandData struct {
 	// Pre-fetched player stats to avoid DB queries while holding table mutexes.
 	// When set on a tableJoin call, the DB lookups in tableJoin are skipped.
 	PregameStats *PregameStats `json:"-"`
-	// Pre-fetched notes for a database replay, to avoid a DB query while holding the
-	// tables lock + table lock inside replayCreate. When set, applyNotesToPlayers skips
-	// the GetNotes DB call.
-	PregameNotes [][]string `json:"-"`
+	// Pre-fetched data for a database replay (source=="id"), fetched before replayCreate
+	// acquires tables.Lock + t.Lock.  Making DB calls under both locks exhausts the pgxpool
+	// and deadlocks the server.  When set, loadDatabaseOptionsToTable, applyNotesToPlayers,
+	// and the GetDatetimes call in replayCreate all skip their individual DB queries.
+	PreFetchedReplay *PreFetchedReplayData `json:"-"`
 }
 
 var (

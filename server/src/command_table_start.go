@@ -150,13 +150,20 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		// avoid a deadlock caused by making a DB query while holding table/tables locks.
 		g.Seed = t.ExtraOptions.PrecomputedSeed
 	} else {
-		if val, err := getNextAvailableSeed(t.Players, seedPrefix); err != nil {
+		// getNextAvailableSeed issues a DB query (GetBlockedSeeds).  Holding t.Lock during that
+		// call can exhaust the pgxpool and deadlock the server.  Copy the player list, drop the
+		// lock for the duration of the DB roundtrip, then reacquire before continuing.
+		playersCopy := make([]*Player, len(t.Players))
+		copy(playersCopy, t.Players)
+		t.Unlock(ctx)
+		val, err := getNextAvailableSeed(playersCopy, seedPrefix)
+		t.Lock(ctx)
+		if err != nil {
 			logger.Error("Failed to compute next seed at table " + strconv.Itoa(int(s.TableID())) + ": " + err.Error())
 			s.Error(StartGameFail)
 			return
-		} else {
-			g.Seed = val
 		}
+		g.Seed = val
 	}
 	logger.Info(t.GetName() + "Using seed: " + g.Seed)
 	logger.Info("Shuffling deck: " + strconv.FormatBool(shuffleDeck))

@@ -189,7 +189,9 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 	// If this is a "!replay" game, override the options with the ones found in the database
 	if data.SetReplay {
-		if _, success := loadDatabaseOptionsToTable(s, data.DatabaseID, t); !success {
+		// No pre-fetched data is available here (SpecialGameData is not CommandData), so
+		// loadDatabaseOptionsToTable will fall through to its DB-call paths as before.
+		if _, success := loadDatabaseOptionsToTable(s, &CommandData{DatabaseID: data.DatabaseID}, t); !success { // nolint: exhaustivestruct
 			return
 		}
 
