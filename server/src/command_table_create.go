@@ -166,6 +166,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 	}
 
 	t := NewTable(d.Name, s.UserID)
+	t.OwnerUsername = s.Username
 	t.Lock(ctx)
 	defer t.Unlock(ctx)
 	t.Visible = !d.HidePregame

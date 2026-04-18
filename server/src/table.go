@@ -25,9 +25,12 @@ type Table struct {
 	// so that we can prevent them from rejoining
 	KickedPlayers map[int]struct{} `json:"-"`
 
-	// This is the user ID of the person who started the table
-	// or the current leader of the shared replay
-	OwnerID int
+	// This is the user ID and username of the person who started the table
+	// or the current leader of the shared replay.
+	// OwnerUsername is kept in sync with OwnerID so that GetLeaderName never needs a DB
+	// call (which would be unsafe while holding table/tables locks).
+	OwnerID       int
+	OwnerUsername string
 	Visible bool // Whether or not this table is shown to other users
 	// This is an Argon2id hash generated from the plain-text password
 	// that the table creator sends us
@@ -384,15 +387,15 @@ func (t *Table) GetLeaderName() string {
 		}
 	}
 
-	// The leader is not currently present and was not a member of the original game, so we need to
-	// look up their username from the database.
-	if v, err := models.Users.GetUsername(t.OwnerID); err != nil {
-		logger.Error("Failed to get the username for user " + strconv.Itoa(t.OwnerID) +
-			" who is the owner of table: " + strconv.FormatUint(t.ID, 10))
-		return "(Unknown)"
-	} else {
-		return v
+	// The owner is not currently present in the players or spectators list.
+	// Return the cached username — OwnerUsername is kept in sync with OwnerID at every
+	// assignment site so we never need a DB call here (which would be unsafe while holding
+	// table/tables mutex locks).
+	if t.OwnerUsername != "" {
+		return t.OwnerUsername
 	}
+
+	return "(Unknown)"
 }
 
 func (t *Table) ChangeVote(playerIndex int) bool {

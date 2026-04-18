@@ -94,6 +94,7 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 		for _, p := range t.Players {
 			if p.UserID != s.UserID {
 				t.OwnerID = p.UserID
+				t.OwnerUsername = p.Name
 				t.NotifyPlayerChange()
 				msg := p.Session.Username + " is the new table owner."
 				chatServerSend(ctx, msg, t.GetRoomName(), !d.NoTablesLock)

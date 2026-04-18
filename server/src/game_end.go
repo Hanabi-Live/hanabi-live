@@ -430,6 +430,7 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Present {
 				t.OwnerID = p.UserID
+				t.OwnerUsername = p.Name
 				logger.Info("Set the new leader to be: " + p.Name)
 				break
 			}
@@ -437,9 +438,10 @@ func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {
 
 		if t.OwnerID == -1 {
 			// All of the players are away, so make the first spectator the leader
-			t.OwnerID = t.ActiveSpectators()[0].UserID
-			logger.Info("All players are offline; set the new leader to be: " +
-				t.Spectators[0].Name)
+			firstActiveSp := t.ActiveSpectators()[0]
+			t.OwnerID = firstActiveSp.UserID
+			t.OwnerUsername = firstActiveSp.Name
+			logger.Info("All players are offline; set the new leader to be: " + firstActiveSp.Name)
 		}
 	}
 

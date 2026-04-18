@@ -93,6 +93,7 @@ func tableSetLeader(
 	newLeader *NewLeader,
 ) {
 	t.OwnerID = newLeader.UserID
+	t.OwnerUsername = newLeader.Username
 
 	if t.Replay {
 		t.NotifyLeader()

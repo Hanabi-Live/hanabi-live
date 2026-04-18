@@ -223,6 +223,7 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 		NoTablesLock:         true,
 	})
 	t.OwnerID = s.UserID
+	t.OwnerUsername = s.Username
 
 	// Start the idle timeout
 	go t.CheckIdle(ctx)
