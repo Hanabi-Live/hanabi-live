@@ -59,11 +59,22 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
+	// Snapshot the values we need, then release the lock before DB calls.
+	// Making DB calls while holding t.Lock can exhaust the pgxpool and deadlock the server.
+	databaseID := t.ExtraOptions.DatabaseID
+	roomName := t.GetRoomName()
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+
 	// Get the existing tags from the database
 	var tags []string
-	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
+	if v, err := models.GameTags.GetAll(databaseID); err != nil {
 		logger.Error("Failed to get the tags for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -72,18 +83,27 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Ensure that the tag exists
 	if !stringInSlice(d.Msg, tags) {
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Warning("The tag of \"" + d.Msg + "\" does not exist on this game yet.")
 		return
 	}
 
 	// Delete it from the database
-	if err := models.GameTags.Delete(t.ExtraOptions.DatabaseID, d.Msg); err != nil {
+	if err := models.GameTags.Delete(databaseID, d.Msg); err != nil {
 		logger.Error("Failed to delete a tag for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+	chatServerSend(ctx, msg, roomName, d.NoTablesLock)
 }

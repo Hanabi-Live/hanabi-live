@@ -43,14 +43,28 @@ func tagsDeleteAll(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	// Delete it from the database
-	if err := models.GameTags.DeleteAll(s.UserID, t.ExtraOptions.DatabaseID); err != nil {
+	// Snapshot the values we need, then release the lock before the DB call.
+	// Making DB calls while holding t.Lock can exhaust the pgxpool and deadlock the server.
+	databaseID := t.ExtraOptions.DatabaseID
+	roomName := t.GetRoomName()
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+
+	// Delete all tags from the database
+	if err := models.GameTags.DeleteAll(s.UserID, databaseID); err != nil {
 		logger.Error("Failed to delete all tags for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 	msg := s.Username + " has deleted all their tags for this game."
-	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+	chatServerSend(ctx, msg, roomName, d.NoTablesLock)
 }

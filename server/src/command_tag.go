@@ -63,11 +63,22 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		return
 	}
 
+	// Snapshot the values we need, then release the lock before DB calls.
+	// Making DB calls while holding t.Lock can exhaust the pgxpool and deadlock the server.
+	databaseID := t.ExtraOptions.DatabaseID
+	roomName := t.GetRoomName()
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+
 	// Get the existing tags of that user from the database
 	var tags []string
-	if v, err := models.GameTags.GetAllByUserID(t.ExtraOptions.DatabaseID, s.UserID); err != nil {
+	if v, err := models.GameTags.GetAllByUserID(databaseID, s.UserID); err != nil {
 		logger.Error("Failed to get the tags for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
@@ -77,21 +88,30 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Ensure that this tag does not already exist
 	for _, tag := range tags {
 		if tag == d.Msg {
+			if !d.NoTableLock {
+				t.Lock(ctx)
+			}
 			s.Warning("You have already tagged this game with \"" + d.Msg + "\".")
 			return
 		}
 	}
 
 	// Add it to the database
-	if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, s.UserID, d.Msg); err != nil {
+	if err := models.GameTags.Insert(databaseID, s.UserID, d.Msg); err != nil {
 		logger.Error("Failed to insert a tag for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	}
 
+	if !d.NoTableLock {
+		t.Lock(ctx)
+	}
 	msg := s.Username + " has added a game tag of \"" + d.Msg + "\"."
-	chatServerSend(ctx, msg, t.GetRoomName(), d.NoTablesLock)
+	chatServerSend(ctx, msg, roomName, d.NoTablesLock)
 }
 
 func sanitizeTag(tag string) (string, string) {
