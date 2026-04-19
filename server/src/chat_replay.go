@@ -55,15 +55,29 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 		return
 	}
 
+	// Snapshot the database ID, then release the lock before the DB call.
+	// Making DB calls while holding t.Lock can exhaust the pgxpool and deadlock the server.
+	databaseID := t.ExtraOptions.DatabaseID
+	if !d.NoTableLock {
+		t.Unlock(ctx)
+	}
+
 	// Get the tags from the database
 	var tags []string
-	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
+	if v, err := models.GameTags.GetAll(databaseID); err != nil {
 		logger.Error("Failed to get the tags for game ID " +
-			strconv.Itoa(t.ExtraOptions.DatabaseID) + ": " + err.Error())
+			strconv.Itoa(databaseID) + ": " + err.Error())
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		tags = v
+	}
+
+	if !d.NoTableLock {
+		t.Lock(ctx)
 	}
 
 	if len(tags) == 0 {
