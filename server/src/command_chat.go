@@ -196,6 +196,13 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	// Handle /splitauto before the message is added to chat history.
+	if command, args := chatParseCommand(d.Msg); command == "splitauto" || command == "sa" {
+		d.Args = args
+		commandTableSplitAuto(ctx, s, d, tableID)
+		return
+	}
+
 	t, exists := getTableAndLock(ctx, s, tableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
