@@ -49,18 +49,20 @@ If you need general help with the website, then read the [features page](feature
 
 ## Pre-game Commands (table-owner-only)
 
-| Command                 | Description                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| `/impostor`             | Randomly tells one of the players they are an impostor and the others they are crew-mates. |
-| `/kick [username]`      | Remove a player from the table                                                             |
-| `/s`                    | Automatically start the game when the next person joins                                    |
-| `/s2`                   | Automatically start the game when it has 2 players                                         |
-| `/s3`                   | Automatically start the game when it has 3 players                                         |
-| `/s4`                   | Automatically start the game when it has 4 players                                         |
-| `/s5`                   | Automatically start the game when it has 5 players                                         |
-| `/s6`                   | Automatically start the game when it has 6 players                                         |
-| `/setvariant [variant]` | Change the variant of the current game                                                     |
-| `/startin [minutes]`    | Automatically start the game in the provided amount of minutes                             |
+| Command                              | Description                                                                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `/impostor`                          | Randomly tells one of the players they are an impostor and the others they are crew-mates.                                    |
+| `/kick [username]`                   | Remove a player from the table                                                                                                |
+| `/s`                                 | Automatically start the game when the next person joins                                                                       |
+| `/s2`                                | Automatically start the game when it has 2 players                                                                            |
+| `/s3`                                | Automatically start the game when it has 3 players                                                                            |
+| `/s4`                                | Automatically start the game when it has 4 players                                                                            |
+| `/s5`                                | Automatically start the game when it has 5 players                                                                            |
+| `/s6`                                | Automatically start the game when it has 6 players                                                                            |
+| `/setvariant [variant]`              | Change the variant of the current game                                                                                        |
+| `/startin [minutes]`                 | Automatically start the game in the provided amount of minutes                                                                |
+| `/split [username1] [username2] ...` | Move specified players to a new lobby with the same settings. The first player in the list becomes the owner of the new lobby |
+| `/splitauto` or `/sa`                | Automatically split players into two lobbies based on total game count                                                        |
 
 <br />
 
