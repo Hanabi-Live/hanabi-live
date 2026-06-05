@@ -15,12 +15,9 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd "$DIR"
 
-# Renew the Let's Encrypt certificate if it is close to expiring.
-#
-# When the certificate actually changes, the server must be gracefully restarted
-# so that it loads the new certificate (otherwise it keeps serving the old one
-# from memory until it expires). That restart is performed by the "renew_hook"
-# in the certbot renewal configuration
-# (/etc/letsencrypt/renewal/<domain>.conf), so that it fires on any successful
-# renewal, regardless of which scheduler triggered it.
+# Renew the Let's Encrypt certificate if it is close to expiring. When the certificate actually
+# changes, the server must be gracefully restarted so that it loads the new certificate (otherwise
+# it keeps serving the old one from memory until it expires). That restart is performed by the
+# "renew_hook" in the certbot renewal configuration (/etc/letsencrypt/renewal/<domain>.conf), so
+# that it fires on any successful renewal, regardless of which scheduler triggered it.
 certbot renew --webroot --webroot-path "$DIR/letsencrypt"
