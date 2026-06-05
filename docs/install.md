@@ -324,8 +324,10 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 Adjust the "certbot" command below according to what domain names you want to register.
 
 - `sudo apt install certbot -y`
-- `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live -d fireworks.cards -d www.fireworks.cards` <br />
-  (this creates "/etc/letsencrypt/live/hanab.live/")
+- Disable certbot's built-in automatic renewal. The "renew_cert.sh" script (configured below) is the only thing that should renew the certificate, because the graceful server restart needed to load a new certificate is wired to certbot's renewal hook. If certbot's own timer is left enabled, it can renew the certificate without restarting the server, so the server keeps serving the old (and eventually expired) certificate from memory:
+  - `sudo systemctl disable --now certbot.timer`
+- `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live -d fireworks.cards -d www.fireworks.cards --deploy-hook "cd /root/hanabi-live && bash admin/gracefulRestart.sh"` <br />
+  (this creates "/etc/letsencrypt/live/hanab.live/"; the deploy hook gracefully restarts the server on every renewal so that it loads the new certificate)
 - In the `.env` file:
   - Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanab.live/fullchain.pem`
   - Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanab.live/privkey.pem`
@@ -333,7 +335,7 @@ Adjust the "certbot" command below according to what domain names you want to re
 
 ```sh
 # Every day, keep the Let's Encrypt certificate up to date
-0 0 * * * /root/hanab-live/renew_cert.sh
+0 0 * * * /root/hanabi-live/renew_cert.sh
 ```
 
 <br />
