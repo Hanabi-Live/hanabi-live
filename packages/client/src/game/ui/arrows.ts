@@ -26,6 +26,32 @@ import { drawPip } from "./drawPip";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as konvaHelpers from "./konvaHelpers";
 
+function getClueArrowColor(
+  element: Konva.Node | null,
+  preview: boolean,
+): string {
+  if (!(element instanceof HanabiCard)) {
+    return ARROW_COLOR.DEFAULT;
+  }
+
+  // The arrow is drawn after the clue is given, so by this time `numPositiveClues` having a value
+  // of 2 means it had one clue already. During preview the clue is not applied yet, so if it has at
+  // least one positive clue on it already, it will be retouched by the next clue.
+  if (
+    element.state.numPositiveClues >= 2
+    || (element.state.numPositiveClues >= 1 && preview)
+  ) {
+    return ARROW_COLOR.RETOUCHED;
+  }
+
+  // if H-Group features are enabled, use a different color for cards that have been chop-moved
+  if (globals.lobby.settings.hyphenatedConventions && element.note.chopMoved) {
+    return ARROW_COLOR.CM_TOUCHED;
+  }
+
+  return ARROW_COLOR.DEFAULT;
+}
+
 export function hideAll(): void {
   let changed = false;
   for (const arrow of globals.elements.arrows) {
@@ -101,13 +127,8 @@ export function set(
     arrow.circle.hide();
     arrow.text.hide();
   } else {
-    // This is a clue arrow.
-    const color =
-      element instanceof HanabiCard
-      && (element.state.numPositiveClues >= 2
-        || (element.state.numPositiveClues >= 1 && preview))
-        ? ARROW_COLOR.RETOUCHED // Cards that are re-clued use a different color.
-        : ARROW_COLOR.DEFAULT; // Freshly touched cards use the default color.
+    // This is a clue arrow. Compute color using a small helper for clarity.
+    const color = getClueArrowColor(element, preview);
 
     arrow.base.stroke(color);
     arrow.base.fill(color);

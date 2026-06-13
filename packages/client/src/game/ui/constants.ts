@@ -29,6 +29,9 @@ export const ARROW_COLOR = {
   /** Dark gray */
   RETOUCHED: "#737373",
 
+  /** Light gray */
+  CM_TOUCHED: "#B9B9B9",
+
   /** Yellow */
   HIGHLIGHT: "#ffdf00",
 } as const;
