@@ -34,6 +34,9 @@ function getClueArrowColor(
     return ARROW_COLOR.DEFAULT;
   }
 
+  // The arrow is drawn after the clue is given, so by this time `numPositiveClues` having a value
+  // of 2 means it had one clue already. During preview the clue is not applied yet, so if it has at
+  // least one positive clue on it already, it will be retouched by the next clue.
   if (
     element.state.numPositiveClues >= 2
     || (element.state.numPositiveClues >= 1 && preview)
