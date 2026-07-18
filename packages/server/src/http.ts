@@ -285,7 +285,7 @@ function registerPathHandlers(httpServer: FastifyInstance) {
 	fastify.get("/tags/:player1", httpTags)
 	fastify.get("/seed", httpSeed)
 	fastify.get("/seed/:seed", httpSeed) // Display all games played on a given seed
-	fastify.get("/stats", httpStats)
+	// fastify.get("/stats", httpStats)
 	fastify.get("/variant", httpVariant)
 	fastify.get("/variant/:id", httpVariant)
 	fastify.get("/tag", httpTag)

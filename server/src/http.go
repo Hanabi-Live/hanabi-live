@@ -225,7 +225,7 @@ func httpInit() {
 	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
-	httpRouter.GET("/stats", httpStats)
+	// httpRouter.GET("/stats", httpStats)
 	httpRouter.GET("/variant", httpVariant)
 	httpRouter.GET("/variant/:id", httpVariant)
 	httpRouter.GET("/tag", httpTag)
