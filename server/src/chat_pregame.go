@@ -269,6 +269,15 @@ func chatFindVariant(ctx context.Context, s *Session, d *CommandData, t *Table, 
 		}
 	}
 
+	if len(variantsWithNoMaxScores) == 0 {
+		if !d.NoTableLock {
+			t.Lock(ctx)
+		}
+		msg := "No missing variants for this team."
+		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+		return
+	}
+
 	// Get a random element from the list
 	randomIndex := getRandom(0, len(variantsWithNoMaxScores)-1)
 	randomVariant := variantsWithNoMaxScores[randomIndex]
