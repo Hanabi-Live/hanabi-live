@@ -17,13 +17,13 @@ import { userID } from "./types/UserID";
 
 const serverCommandChatData = z
   .object({
-    msg: z.string().min(1),
-    who: z.string().min(1).optional(),
+    msg: z.string().min(1), // Pre-escaped HTML string
+    who: z.string().min(1).optional(), // plain string
     discord: z.boolean(),
     server: z.boolean(),
-    datetime: z.string().min(1),
-    room: z.string().min(1).optional(),
-    recipient: z.string().min(1).optional(),
+    datetime: z.string().min(1), // new Date(x) string
+    room: z.string().min(1).optional(), // room code string
+    recipient: z.string().min(1).optional(), // plain string
   })
   .strict()
   .readonly();
