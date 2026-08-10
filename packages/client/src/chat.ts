@@ -490,6 +490,20 @@ function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   }
 }
 
+/**
+ * Return the HTML-safe version of plain text input (usually a message author name, because the
+ * server takes care of message content HTML processing).
+ *
+ * If `payload` is undefined, returns the empty string.
+ */
+function textToHtml(payload?: string): string {
+  const sanEl = document.createElement("span");
+  if (payload !== undefined) {
+    sanEl.textContent = payload;
+  }
+  return sanEl.innerHTML;
+}
+
 export function add(data: ServerCommandChatData, fast: boolean): void {
   // If we are receiving a private message (PM), record who it is from.
   if (data.recipient === globals.username && data.who !== undefined) {
@@ -505,9 +519,10 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
 
   // Typescript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
   // format the hours manually.
-  const datetime = `${`0${new Date(data.datetime).getHours()}`.slice(
+  const dateObj = new Date(data.datetime);
+  const datetime = `${`0${dateObj.getHours()}`.slice(
     -2,
-  )}:${`0${new Date(data.datetime).getMinutes()}`.slice(-2)}`;
+  )}:${`0${dateObj.getMinutes()}`.slice(-2)}`;
 
   let line = `<span id="chat-line-${chatLineNum}" class="${
     fast ? "" : "hidden"
@@ -516,15 +531,15 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   if (data.recipient !== undefined && data.recipient !== "") {
     line +=
       data.recipient === globals.username
-        ? `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `
-        : `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
+        ? `<span class="red">[PM from <strong>${textToHtml(data.who)}</strong>]</span>&nbsp; `
+        : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
   if (data.server || (data.recipient !== undefined && data.recipient !== "")) {
     line += msg;
   } else if (data.who === "") {
     line += msg;
   } else {
-    line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
+    line += `&lt;<strong>${textToHtml(data.who)}</strong>&gt;&nbsp; `;
     line += msg;
   }
   if (data.server && line.includes("[Server Notice]")) {
@@ -754,15 +769,15 @@ function getTypingMessage(): string {
     }
 
     case 1: {
-      return `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
+      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong> is typing...`;
     }
 
     case 2: {
-      return `<strong>${globals.peopleTyping[0]}</strong> and <strong>${globals.peopleTyping[1]}</strong> are typing...`;
+      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong> and <strong>${textToHtml(globals.peopleTyping[1])}</strong> are typing...`;
     }
 
     case 3: {
-      return `<strong>${globals.peopleTyping[0]}</strong>, <strong>${globals.peopleTyping[1]}</strong>, and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
+      return `<strong>${textToHtml(globals.peopleTyping[0])}</strong>, <strong>${textToHtml(globals.peopleTyping[1])}</strong>, and <strong>${textToHtml(globals.peopleTyping[2])}</strong> are typing...`;
     }
 
     default: {
