@@ -35,7 +35,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	// Local variables
 	g := p.Game
 	t := g.Table
-	variant := variants[t.Options.VariantName]
+	variant := g.Variant
 	clue := NewClue(d) // Convert the incoming data to a clue object
 
 	// Add the action to the action log
@@ -60,7 +60,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := make([]int, 0)
 	for _, c := range p2.Hand {
-		if variantIsCardTouched(g.Options.VariantName, clue, c) {
+		if variantIsCardTouched(variant, clue, c) {
 			c.Touched = true
 			cardsTouched = append(cardsTouched, c.Order)
 		}
@@ -107,7 +107,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	// Local variables
 	g := p.Game
 	t := g.Table
-	variant := variants[t.Options.VariantName]
+	variant := g.Variant
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)

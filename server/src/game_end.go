@@ -333,7 +333,7 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 // so it can be handled in the background
 func (g *Game) WriteDatabaseStats(players []gameDatabasePlayer) {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	// 2-player is at index 0, 3-player is at index 1, etc.
 	bestScoreIndex := g.Options.NumPlayers - 2
 

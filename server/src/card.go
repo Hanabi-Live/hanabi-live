@@ -37,8 +37,7 @@ func NewCard(suit int, rank int) *Card {
 }
 
 func (c *Card) Name(g *Game) string {
-	variant := variants[g.Options.VariantName]
-	suit := variant.Suits[c.SuitIndex]
+	suit := g.Variant.Suits[c.SuitIndex]
 	name := suit.Name
 	name += " "
 	if c.Rank == StartCardRank {

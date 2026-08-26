@@ -39,7 +39,7 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 
 	list := make([]int, 0)
 	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Options.VariantName, clue, c) {
+		if variantIsCardTouched(g.Variant, clue, c) {
 			list = append(list, c.Order)
 		}
 	}
@@ -50,13 +50,13 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue) bool {
 	g := p.Game
 	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Options.VariantName, clue, card)
+	return variantIsCardTouched(g.Variant, clue, card)
 }
 
 func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue) bool {
 	g := p.Game
 	card := p.Hand[0]
-	return variantIsCardTouched(g.Options.VariantName, clue, card)
+	return variantIsCardTouched(g.Variant, clue, card)
 }
 
 func (p *GamePlayer) InHand(order int) bool {

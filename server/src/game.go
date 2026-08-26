@@ -35,6 +35,7 @@ type Game struct {
 	// It is either entered manually by players before the game starts or
 	// randomly selected by the server upon starting a game
 	Seed                string
+	Variant             *Variant
 	Deck                []*Card
 	CardIdentities      []*CardIdentity // A bare-bones version of the deck
 	DeckIndex           int
@@ -99,6 +100,7 @@ func NewGame(t *Table) *Game {
 
 		Players:               make([]*GamePlayer, 0),
 		Seed:                  "",
+		Variant:               variant,
 		Deck:                  make([]*Card, 0),
 		CardIdentities:        make([]*CardIdentity, 0),
 		DeckIndex:             0,
@@ -239,7 +241,7 @@ func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
@@ -368,14 +370,11 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // GetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
-	// Local variables
-	variant := variants[g.Options.VariantName]
-
 	// Getting the maximum score is much more complicated if we are playing a
 	// "Reversed", "Up or Down" or "Sudoku" variant
-	if variant.HasReversedSuits() {
+	if g.Variant.HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
-	} else if variant.IsSudoku() {
+	} else if g.Variant.IsSudoku() {
 		return variantSudokuGetMaxScore(g)
 	}
 
@@ -413,11 +412,8 @@ func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
 }
 
 func (g *Game) GetNotesSize() int {
-	// Local variables
-	variant := variants[g.Options.VariantName]
-
 	// There are notes for every card in the deck + the stack bases for each suit
 	numCards := len(g.Deck)
-	numSuits := len(variant.Suits)
+	numSuits := len(g.Variant.Suits)
 	return numCards + numSuits
 }

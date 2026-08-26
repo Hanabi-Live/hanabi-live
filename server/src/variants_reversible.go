@@ -24,7 +24,7 @@ const (
 
 func variantReversiblePlay(g *Game, c *Card) bool {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	var failed bool
 	if g.PlayStackDirections[c.SuitIndex] == StackDirectionUndecided {
@@ -88,7 +88,7 @@ func variantReversiblePlay(g *Game, c *Card) bool {
 // accounting for stacks that cannot be completed due to discarded cards
 func variantReversibleGetMaxScore(g *Game) int {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	maxScore := 0
 	for suitIndex := range g.Stacks {
@@ -123,7 +123,7 @@ func variantReversibleGetMaxScore(g *Game) int {
 // A helper function for "variantReversibleGetMaxScore()"
 func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	cardsThatCanStillBePlayed := 0
 
@@ -155,7 +155,7 @@ func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 // A helper function for "variantReversibleGetMaxScore()"
 func variantReversibleWalkDown(g *Game, allDiscarded map[int]bool) int {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	cardsThatCanStillBePlayed := 0
 
@@ -187,7 +187,7 @@ func variantReversibleWalkDown(g *Game, allDiscarded map[int]bool) int {
 // variantReversibleCheckAllDead returns true if no more cards can be played on the stacks
 func variantReversibleCheckAllDead(g *Game) bool {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	for suitIndex, stackRank := range g.Stacks {
 		neededRanks := make([]int, 0)

@@ -114,7 +114,7 @@ func charactersGenerate(g *Game) {
 	}
 
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// If predefined character selections were specified, use those
 	if g.ExtraOptions.CustomCharacterAssignments != nil &&
@@ -289,7 +289,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	}
 
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	clue := NewClue(d)        // Convert the incoming data to a clue object
 	p2 := g.Players[d.Target] // Get the target of the clue
 
@@ -452,7 +452,7 @@ func characterCheckMisplay(g *Game, p *GamePlayer, c *Card) bool {
 		return false
 	}
 
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	singleStackSize := len(variant.Ranks)
 	if p.Character == "Follower" { // 31
 		// Look through the stacks to see if two cards of this rank have already been played
@@ -490,7 +490,7 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 	}
 
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	if p.Character == "Anxious" && // 21
 		g.ClueTokens%2 == 0 { // Even amount of clues
@@ -607,7 +607,7 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 	}
 
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	if p.Character == "Genius" { // 24
 		// Must clue both a color and a number (uses 2 clues)
@@ -732,7 +732,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	}
 
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	if g.ClueTokens < variant.GetAdjustedClueTokens(1) &&
 		p.CharacterMetadata == 0 && // The character's "special ability" is currently enabled

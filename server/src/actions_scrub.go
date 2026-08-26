@@ -56,14 +56,13 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 func (a *ActionPlay) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
-	variant := variants[t.Options.VariantName]
 
 	if p == nil {
 		// Spectators get to see the identities of played cards
 		return
 	}
 
-	if variant.IsThrowItInAHole() {
+	if t.Game.Variant.IsThrowItInAHole() {
 		a.Rank = -1
 		a.SuitIndex = -1
 	}
@@ -74,14 +73,13 @@ func (a *ActionPlay) Scrub(t *Table, userID int) {
 func (a *ActionDiscard) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
-	variant := variants[t.Options.VariantName]
 
 	if p == nil {
 		// Spectators get to see the identities of discarded cards
 		return
 	}
 
-	if variant.IsThrowItInAHole() && a.Failed {
+	if t.Game.Variant.IsThrowItInAHole() && a.Failed {
 		// For the purposes of hiding information, failed discards are equivalent to plays
 		a.Rank = -1
 		a.SuitIndex = -1

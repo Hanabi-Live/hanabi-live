@@ -113,6 +113,7 @@ func httpExport(c *gin.Context) {
 	// Make a deck and shuffle it
 	g := &Game{ // nolint: exhaustivestruct
 		Options:      options,
+		Variant:      variants[options.VariantName],
 		ExtraOptions: &ExtraOptions{},
 		Seed:         seed,
 	}
@@ -136,8 +137,7 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Get the notes from the database
-	variant := variants[g.Options.VariantName]
-	noteSize := variant.GetDeckSize() + len(variant.Suits)
+	noteSize := g.GetNotesSize()
 	var notes [][]string
 	if v, err := models.Games.GetNotes(databaseID, len(dbPlayers), noteSize); err != nil {
 		logger.Error("Failed to get the notes from the database for game " +
@@ -184,7 +184,7 @@ func httpExport(c *gin.Context) {
 		allDefaultOptions = false
 	}
 	if options.VariantName != DefaultVariantName {
-		optionsJSON.Variant = &variant.Name
+		optionsJSON.Variant = &options.VariantName
 		allDefaultOptions = false
 	}
 	if options.Timed {

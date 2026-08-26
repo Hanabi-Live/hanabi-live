@@ -230,8 +230,7 @@ func variantsInit() {
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
 // This mirrors the function "touchesCard()" in "clues.ts"
-func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
-	variant := variants[variantName]
+func variantIsCardTouched(variant *Variant, clue Clue, card *Card) bool {
 	suit := variant.Suits[card.SuitIndex]
 
 	if clue.Type == ClueTypeColor {

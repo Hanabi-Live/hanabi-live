@@ -7,7 +7,7 @@ package main
 // If success and this is the last card of the stack, the stack direction and the stack starts are updated accordingly
 // Returns if the card misplayed
 func variantSudokuPlay(g *Game, c *Card) bool {
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	if g.Stacks[c.SuitIndex] == 0 {
 		for _, b := range g.StackStarts {
 			if b == c.Rank {
@@ -53,7 +53,7 @@ func variantSudokuPlay(g *Game, c *Card) bool {
 //     we will probably never have to do this, since for most of the suits, we should have one copy of each card
 //     or known starting value, in which case they will be filtered out in step 2 or 3 already.
 func variantSudokuGetMaxScore(g *Game) int {
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	independentPartOfMaxScore := 0
 	// Note that we use length 5 here even though the variant may have smaller stackSize.
 	maxPartialScores := [5][5]int{}
@@ -149,7 +149,8 @@ func variantSudokuGetMaxScore(g *Game) int {
 func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 	allDiscarded := [5]bool{}
 
-	for rank := 1; rank <= variants[g.Options.VariantName].StackSize; rank++ {
+	stackSize := g.Variant.StackSize
+	for rank := 1; rank <= stackSize; rank++ {
 		total, discarded := g.GetSpecificCardNum(suitIndex, rank)
 		allDiscarded[rank-1] = total == discarded
 	}
@@ -161,7 +162,8 @@ func checkAllDiscarded(g *Game, suitIndex int) [5]bool {
 func variantSudokuGetFreeStackStarts(g *Game) []int {
 	possibleStackStarts := make([]int, 0)
 
-	for possibleStackStart := 1; possibleStackStart <= variants[g.Options.VariantName].StackSize; possibleStackStart++ {
+	stackSize := g.Variant.StackSize
+	for possibleStackStart := 1; possibleStackStart <= stackSize; possibleStackStart++ {
 		if !contains(g.StackStarts, possibleStackStart) {
 			possibleStackStarts = append(possibleStackStarts, possibleStackStart)
 		}
@@ -207,7 +209,7 @@ func sudokuWalkUpAll(allDiscarded [5]bool, stackSize int) (bool, [5]int) {
 // variantSudokuCheckAllDead returns true if no more cards can be played on the stacks
 func variantSudokuCheckAllDead(g *Game) bool {
 	// This implementation is way easier than finding the max score, since we can check each suit independently
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 	possibleStackStarts := variantSudokuGetFreeStackStarts(g)
 
 	for suitIndex, stackRank := range g.Stacks {

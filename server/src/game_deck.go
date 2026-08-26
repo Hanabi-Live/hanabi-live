@@ -6,7 +6,7 @@ import (
 
 func (g *Game) InitDeck() {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified

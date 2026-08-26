@@ -231,7 +231,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 
 func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// Validate "Detrimental Character Assignment" restrictions
 	if characterCheckPlay(s, d, g, p) {
@@ -280,7 +280,7 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// Validate deck plays
 	if g.Options.DeckPlays &&
@@ -340,7 +340,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
-	variant := variants[g.Options.VariantName]
+	variant := g.Variant
 
 	// Validate that the target of the clue is sane
 	if d.Target < 0 || d.Target > len(g.Players)-1 {
@@ -409,7 +409,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 			continue
 		}
 
-		if variantIsCardTouched(g.Options.VariantName, clue, c) {
+		if variantIsCardTouched(g.Variant, clue, c) {
 			touchedAtLeastOneCard = true
 			break
 		}
