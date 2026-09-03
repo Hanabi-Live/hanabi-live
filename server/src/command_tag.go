@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"strconv"
 	"strings"
 	"unicode"
@@ -58,7 +59,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 		// Send them an acknowledgement via private message to avoid spoiling information about the
 		// ongoing game
-		msg := "Successfully added a tag of \"" + d.Msg + "\"."
+		msg := "Successfully added a tag of \"" + html.EscapeString(d.Msg) + "\"."
 		chatServerSendPM(s, msg, d.Room)
 		return
 	}
@@ -91,7 +92,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 			if !d.NoTableLock {
 				t.Lock(ctx)
 			}
-			s.Warning("You have already tagged this game with \"" + d.Msg + "\".")
+			s.Warning("You have already tagged this game with \"" + html.EscapeString(d.Msg) + "\".")
 			return
 		}
 	}
@@ -110,7 +111,7 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if !d.NoTableLock {
 		t.Lock(ctx)
 	}
-	msg := s.Username + " has added a game tag of \"" + d.Msg + "\"."
+	msg := s.Username + " has added a game tag of \"" + html.EscapeString(d.Msg) + "\"."
 	chatServerSend(ctx, msg, roomName, d.NoTablesLock)
 }
 

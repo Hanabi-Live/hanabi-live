@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"strconv"
 	"strings"
 
@@ -41,6 +42,6 @@ func commandTagSearch(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	// Send the results via a private message as to not spam public channels
-	msg := "Games matching \"" + d.Msg + "\": " + strings.Join(gameIDStrings, ", ")
+	msg := "Games matching \"" + html.EscapeString(d.Msg) + "\": " + strings.Join(gameIDStrings, ", ")
 	chatServerSendPM(s, msg, d.Room)
 }

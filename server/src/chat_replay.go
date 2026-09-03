@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"sort"
 	"strconv"
 
@@ -93,7 +94,7 @@ func chatTags(ctx context.Context, s *Session, d *CommandData, t *Table, cmd str
 	msg := "The list of tags for this game are as follows:"
 	chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	for i, tag := range tags {
-		msg := strconv.Itoa(i+1) + ") " + tag
+		msg := strconv.Itoa(i+1) + ") " + html.EscapeString(tag)
 		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
 	}
 }

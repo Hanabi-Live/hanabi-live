@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -51,10 +52,10 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 			// Send them an acknowledgement via private message to avoid spoiling information about
 			// the ongoing game
-			msg := "Successfully deleted the tag of \"" + d.Msg + "\"."
+			msg := "Successfully deleted the tag of \"" + html.EscapeString(d.Msg) + "\"."
 			chatServerSendPM(s, msg, d.Room)
 		} else {
-			s.Warning("The tag of \"" + d.Msg + "\" does not exist on this game yet.")
+			s.Warning("The tag of \"" + html.EscapeString(d.Msg) + "\" does not exist on this game yet.")
 		}
 		return
 	}
@@ -86,7 +87,7 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		if !d.NoTableLock {
 			t.Lock(ctx)
 		}
-		s.Warning("The tag of \"" + d.Msg + "\" does not exist on this game yet.")
+		s.Warning("The tag of \"" + html.EscapeString(d.Msg) + "\" does not exist on this game yet.")
 		return
 	}
 
@@ -104,6 +105,6 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if !d.NoTableLock {
 		t.Lock(ctx)
 	}
-	msg := s.Username + " has deleted a game tag of \"" + d.Msg + "\"."
+	msg := s.Username + " has deleted a game tag of \"" + html.EscapeString(d.Msg) + "\"."
 	chatServerSend(ctx, msg, roomName, d.NoTablesLock)
 }

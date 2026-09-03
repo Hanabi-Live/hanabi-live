@@ -48,6 +48,11 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		// Perform name fixes
 		d.Name = truncateTrimCheckEmpty(d.Name)
 
+		if valid, message := isTableNameValid(d.Name); !valid {
+			s.Warning(message)
+			return
+		}
+
 		// Perform options fixes
 		d.Options = fixGameOptions(d.Options)
 
