@@ -6,7 +6,7 @@ import { SECOND_IN_MILLISECONDS, assertDefined, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import { copyStringToClipboard, getURLFromPath } from "../utils";
+import { copyStringToClipboard, escapeHtml, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
@@ -105,7 +105,7 @@ export function tablesDraw(): void {
     const row = $(`<tr class="lobby-games-table-${htmlClass}">`);
 
     // Column 1 - Name.
-    let { name } = table;
+    let name = escapeHtml(table.name);
     if (table.passwordProtected && !table.running && !table.sharedReplay) {
       name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
     }
@@ -148,7 +148,7 @@ export function tablesDraw(): void {
     // Column 6 - Players.
     const td = $("<td>");
     for (const [playerIndex, player] of table.players.entries()) {
-      const span = $("<span>").html(player);
+      const span = $("<span>").text(player);
       if (player === globals.username) {
         span.addClass("name-me");
       } else if (globals.friends.includes(player) && !table.sharedReplay) {
@@ -171,9 +171,11 @@ export function tablesDraw(): void {
     const spectatorsArray: string[] = [];
     for (const spectator of table.spectators) {
       if (globals.friends.includes(spectator.name)) {
-        spectatorsArray.push(`<span class="friend">${spectator.name}</span>`);
+        spectatorsArray.push(
+          `<span class="friend">${escapeHtml(spectator.name)}</span>`,
+        );
       } else {
-        spectatorsArray.push(spectator.name);
+        spectatorsArray.push(escapeHtml(spectator.name));
       }
     }
     const spectatorsString = spectatorsArray.join(", ");

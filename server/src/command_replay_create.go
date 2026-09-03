@@ -350,6 +350,34 @@ func isJSONValid(d *CommandData) (bool, string) {
 		return false, msg
 	}
 
+	for i, name := range d.GameJSON.Players {
+		if name == "" {
+			msg := "The player name at index " + strconv.Itoa(i) + " is empty."
+			return false, msg
+		}
+		if len(name) > MaxUsernameLength {
+			msg := "The player name at index " + strconv.Itoa(i) + " is longer than " +
+				strconv.Itoa(MaxUsernameLength) + " characters."
+			return false, msg
+		}
+		if strings.ContainsAny(name, IllegalSpecialCharacters) {
+			msg := "The player name at index " + strconv.Itoa(i) +
+				" contains illegal special characters."
+			return false, msg
+		}
+	}
+
+	if d.GameJSON.Seed != "" {
+		if len(d.GameJSON.Seed) > MaxGameNameLength {
+			msg := "Seed names must be " + strconv.Itoa(MaxGameNameLength) + " characters or less."
+			return false, msg
+		}
+		if !seedHasValidCharacters(d.GameJSON.Seed) {
+			msg := "Seed names can only contain English letters, numbers, and hyphens."
+			return false, msg
+		}
+	}
+
 	// Validate the notes
 	if len(d.GameJSON.Notes) == 0 {
 		// They did not provide any notes, so create a blank note array

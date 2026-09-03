@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	MinUsernameLength = 2
-	MaxUsernameLength = 15
+	MinUsernameLength        = 2
+	MaxUsernameLength        = 15
+	IllegalSpecialCharacters = "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?"
 )
 
 type HTTPLoginData struct {
@@ -417,7 +418,7 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 
 	// Validate that the username does not have any special characters in it
 	// (other than underscores, hyphens, and periods)
-	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
+	if strings.ContainsAny(username, IllegalSpecialCharacters) {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but it has illegal special characters in it.")
 		http.Error(
