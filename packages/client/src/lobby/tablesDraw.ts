@@ -170,13 +170,12 @@ export function tablesDraw(): void {
     // Column 7 - Spectators.
     const spectatorsArray: string[] = [];
     for (const spectator of table.spectators) {
-      if (globals.friends.includes(spectator.name)) {
-        spectatorsArray.push(
-          `<span class="friend">${escapeHtml(spectator.name)}</span>`,
-        );
-      } else {
-        spectatorsArray.push(escapeHtml(spectator.name));
-      }
+      const spectatorName = escapeHtml(spectator.name);
+      spectatorsArray.push(
+        globals.friends.includes(spectator.name)
+          ? `<span class="friend">${spectatorName}</span>`
+          : spectatorName,
+      );
     }
     const spectatorsString = spectatorsArray.join(", ");
     // Change click behavior on the spectators cell.

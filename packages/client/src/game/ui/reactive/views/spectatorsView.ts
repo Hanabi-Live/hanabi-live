@@ -26,13 +26,14 @@ export function onSpectatorsChanged(data: {
     // Build the string that shows all the names.
     let nameEntries = "";
     for (const spectator of data.spectators) {
+      const spectatorName = escapeHtml(spectator.name);
       let nameEntry = "<li>";
       if (spectator.name === globals.metadata.ourUsername) {
-        nameEntry += `<span class="name-me">${escapeHtml(spectator.name)}</span>`;
+        nameEntry += `<span class="name-me">${spectatorName}</span>`;
       } else if (globals.lobby.friends.includes(spectator.name)) {
-        nameEntry += `<span class="friend">${escapeHtml(spectator.name)}</span>`;
+        nameEntry += `<span class="friend">${spectatorName}</span>`;
       } else {
-        nameEntry += escapeHtml(spectator.name);
+        nameEntry += spectatorName;
       }
 
       // Spectators can also be shadowing a specific player. However, only show this in ongoing
