@@ -1,0 +1,40 @@
+{{ define "profile-buttons" }}
+  {{ if not .NamesTitle }}
+    <div>
+      <ul class="actions fit" id="profile-buttons">
+        <li>
+          <a
+            class="button fit icon fa-chart-area{{ if eq .Title "Scores" }} disabled{{ end }}"
+            {{ if ne .Title "Scores" }}href="/scores/{{ .Name }}"{{ end }}
+          >
+            Scores & Statistics
+          </a>
+        </li>
+        <li>
+          <a
+            class="button fit icon fa-history{{ if eq .Title "History" }} disabled{{ end }}"
+            {{ if ne .Title "History" }}href="/history/{{ .Name }}"{{ end }}
+          >
+            Full Game History
+          </a>
+        </li>
+        <li>
+          <a
+            class="button fit icon fa-question{{ if eq .Title "Missing Scores" }} disabled{{ end }}"
+            {{ if ne .Title "Missing Scores" }}href="/missing-scores/{{ .Name }}"{{ end }}
+          >
+            Missing Scores
+          </a>
+        </li>
+        <li>
+          <a
+            class="button fit icon fa-tag{{ if eq .Title "Tagged Games" }} disabled{{ end }}"
+            {{ if ne .Title "Tagged Games" }}href="/tags/{{ .Name }}"{{ end }}
+          >
+            Tagged Games
+          </a>
+        </li>
+      </ul>
+    </div>
+  {{ end }}
+{{ end }}

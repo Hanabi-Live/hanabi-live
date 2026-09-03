@@ -361,6 +361,7 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
+	profileButtonsPath := path.Join(viewsPath, "profile-buttons.tmpl")
 
 	// Turn the slice of file names into a slice of full paths
 	for i := 0; i < len(templateName); i++ {
@@ -393,6 +394,9 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 	// Append the nav bar logo to our list of layouts
 	templateName = append(templateName, logoPath)
 
+	// Append the profile buttons to our list of layouts
+	templateName = append(templateName, profileButtonsPath)
+	
 	// Create the template
 	var tmpl *template.Template
 	if v, err := template.New("template").Funcs(template.FuncMap{
