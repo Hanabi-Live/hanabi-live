@@ -1,11 +1,11 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
-	"text/template"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -396,7 +396,7 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 
 	// Append the profile buttons to our list of layouts
 	templateName = append(templateName, profileButtonsPath)
-	
+
 	// Create the template
 	var tmpl *template.Template
 	if v, err := template.New("template").Funcs(template.FuncMap{
@@ -432,6 +432,6 @@ func httpServeTemplate(w http.ResponseWriter, data *TemplateData, templateName .
 	}
 }
 
-func httpFormatDate(date time.Time) string {
-	return date.Format("2006-01-02 &mdash; 15:04:05 MST")
+func httpFormatDate(date time.Time) template.HTML {
+	return template.HTML(date.Format("2006-01-02 &mdash; 15:04:05 MST"))
 }
