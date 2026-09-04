@@ -1,7 +1,6 @@
 import type { Spectator } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import * as tooltips from "../../../../tooltips";
-import { escapeHtml } from "../../../../utils";
 import { globals } from "../../UIGlobals";
 
 export function onSpectatorsChanged(data: {
@@ -26,14 +25,13 @@ export function onSpectatorsChanged(data: {
     // Build the string that shows all the names.
     let nameEntries = "";
     for (const spectator of data.spectators) {
-      const spectatorName = escapeHtml(spectator.name);
       let nameEntry = "<li>";
       if (spectator.name === globals.metadata.ourUsername) {
-        nameEntry += `<span class="name-me">${spectatorName}</span>`;
+        nameEntry += `<span class="name-me">${spectator.name}</span>`;
       } else if (globals.lobby.friends.includes(spectator.name)) {
-        nameEntry += `<span class="friend">${spectatorName}</span>`;
+        nameEntry += `<span class="friend">${spectator.name}</span>`;
       } else {
-        nameEntry += spectatorName;
+        nameEntry += spectator.name;
       }
 
       // Spectators can also be shadowing a specific player. However, only show this in ongoing
@@ -52,7 +50,7 @@ export function onSpectatorsChanged(data: {
 
         if (playerName !== spectator.name) {
           // eslint-disable-next-line complete/require-ascii
-          nameEntry += ` (🕵️ <em>${escapeHtml(playerName)}</em>)`;
+          nameEntry += ` (🕵️ <em>${playerName}</em>)`;
         }
       }
       nameEntry += "</li>";

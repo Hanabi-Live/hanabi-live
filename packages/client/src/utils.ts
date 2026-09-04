@@ -17,15 +17,6 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: "2-digit",
 });
 
-export function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace("&", "&amp;")
-    .replace("<", "&lt;")
-    .replace(">", "&gt;")
-    .replace('"', "&quot;")
-    .replace("'", "&#039;");
-}
-
 export function getHTMLElement(selectors: string): HTMLElement {
   const element = document.querySelector(selectors);
 

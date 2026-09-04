@@ -4,7 +4,6 @@ import type { CardOrder } from "@hanabi-live/game";
 import { ReadonlySet, trimSuffix } from "complete-common";
 import * as chat from "../../chat";
 import * as tooltips from "../../tooltips";
-import { escapeHtml } from "../../utils";
 import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
@@ -21,6 +20,15 @@ const REMOVE_PIPE_KEYS = new ReadonlySet([
 ]);
 const CLOSE_NOTE_KEYS = new ReadonlySet(["Enter", "Escape"]);
 const META_KEYS = new ReadonlySet(["Alt", "Control", "Shift"]);
+
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 function prepareContent(rawNote: string): string {
   const safe = escapeHtml(rawNote);
@@ -52,7 +60,7 @@ function get(order: CardOrder, our: boolean, process = false) {
         }
         content += "<div class='noteTitle'><span>Spectators</span></div>";
       }
-      content += `<strong>${escapeHtml(noteObject.name)}:</strong> ${text}<br />`;
+      content += `<strong>${noteObject.name}:</strong> ${text}<br />`;
     }
   }
 
