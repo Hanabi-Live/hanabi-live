@@ -106,8 +106,9 @@ export function getCardBorderPresentation(
   finished: boolean,
 ): CardBorderPresentation {
   const canShowBorder = !isCardPlayed(state) && !isCardDiscarded(state);
+  const unclued = note.unclued && !finished;
   const clued =
-    canShowBorder && !note.unclued && (isCardClued(state) || note.clued);
+    canShowBorder && !unclued && (isCardClued(state) || note.clued);
   const finessed = note.finessed && canShowBorder && !clued && !finished;
   const discardPermission =
     note.discardPermission && canShowBorder && !clued && !finessed && !finished;
