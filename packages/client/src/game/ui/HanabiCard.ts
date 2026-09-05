@@ -287,6 +287,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   finishedTweening(): void {
+    if (!this._tweening) {
+      return;
+    }
     this._tweening = false;
 
     if (this.isListening() === true) {

@@ -33,6 +33,11 @@ export class PlayStack extends Konva.Group {
         ? 0
         : 1;
 
+    if (layoutChild.tween !== null) {
+      layoutChild.tween.destroy();
+      layoutChild.tween = null;
+    }
+
     if (globals.animateFast) {
       // During fast updates (e.g. resize/replay jumps), snap directly to the final state.
       layoutChild.x(0);
@@ -41,6 +46,7 @@ export class PlayStack extends Konva.Group {
       layoutChild.scaleY(scale);
       layoutChild.rotation(0);
       layoutChild.opacity(opacity);
+      layoutChild.card.finishedTweening();
       layoutChild.checkSetDraggable();
       layoutChild.card.setRaiseAndShadowOffset();
       this.hideCardsUnderneathTheTopCard();

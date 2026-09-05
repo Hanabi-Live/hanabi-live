@@ -124,6 +124,7 @@ export class CardLayout extends Konva.Group {
         layoutChild.scaleY(scale);
         layoutChild.rotation(0);
         layoutChild.opacity(1);
+        layoutChild.card.finishedTweening();
         layoutChild.checkSetDraggable();
         layoutChild.card.setRaiseAndShadowOffset();
         layoutChild.doMisplayAnimation = false;
