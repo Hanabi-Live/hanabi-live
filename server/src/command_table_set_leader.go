@@ -100,9 +100,10 @@ func tableSetLeader(
 	} else {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,
-			// so we need to swap elements in the players slice
-			playerIndex := t.GetPlayerIndexFromID(s.UserID)
-			t.Players[playerIndex], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[playerIndex]
+			// so we need to swap the new leader into the leftmost seat
+			if newLeader.Index != 0 {
+				t.Players[0], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[0]
+			}
 
 			// Re-send the "game" message that draws the pregame screen
 			// and enables/disables the "Start Game" button
