@@ -646,11 +646,11 @@ function getChatBoxElement(data: ServerCommandChatData): JQuery | undefined {
  * Apply a transformation to the text portions of an HTML string, leaving tags untouched. (Splitting
  * with a capture group makes the segments alternate: even indexes are text and odds indexes are
  * tags.)
- * 
+ *
  * This is necessary so that a transformation based on regex replacement can never match across
  * existing markup (which would corrupt the markup and allow user-controlled text to escape into
  * attribute position).
- * 
+ *
  * WARNING: The splitting regex is not a general HTML tokenizer; a ">" inside of a quoted attribute
  * value would be misclassified. It is only sound because of the input contract of
  * `getPreparedMessage`: any tags present are either trusted markup whose attribute values never
@@ -670,12 +670,14 @@ function mapTextSegments(
   return segments.join("");
 }
 
-/** Add links, Discord emotes, and Twitch emotes. 
- * 
+/**
+ * Add links, Discord emotes, and Twitch emotes.
+ *
  * The input must already be safe to render as HTML; this function preserves that safety but cannot
  * create it. Specifically, all user text must already be HTML-escaped, and any tags must be trusted
- * markup whose attribute values never contain raw angle brackets (e.g. the links in server messages).
-*/
+ * markup whose attribute values never contain raw angle brackets (e.g. the links in server
+ * messages).
+ */
 export function getPreparedMessage(rawMsg: string): string {
   let msg = mapTextSegments(rawMsg, fillDiscordEmotes);
   msg = mapTextSegments(msg, fillTwitchEmotes);
