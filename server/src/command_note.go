@@ -81,6 +81,12 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the card order is within the bounds of the notes array
+	if d.Order < 0 || d.Order >= t.Game.GetNotesSize() {
+		s.Warning("That is an invalid card order to write a note on.")
+		return
+	}
+
 	note(d, t, playerIndex, spectatorIndex)
 }
 

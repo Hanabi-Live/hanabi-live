@@ -74,6 +74,10 @@ func commandReplayCreate(ctx context.Context, s *Session, d *CommandData) {
 			s.Warning(message)
 			return
 		}
+	} else {
+		// If the source is invalid, an empty table with no players would be created
+		s.Warning("That is not a valid replay source.")
+		return
 	}
 
 	replayCreate(ctx, s, d)
@@ -499,7 +503,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		timed = *d.GameJSON.Options.Timed
 	}
 	timeBase := 0
-	if d.GameJSON.Options.Timed != nil {
+	if d.GameJSON.Options.TimeBase != nil {
 		timeBase = *d.GameJSON.Options.TimeBase
 	}
 	timePerTurn := 0

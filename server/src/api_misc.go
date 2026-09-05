@@ -71,7 +71,7 @@ func apiGetOrder(c *gin.Context, columns []string, defaultSort APISortColumn) AP
 	}
 
 	for key, order := range vars {
-		if col, err := strconv.Atoi(key); err == nil && col < len(columns) {
+		if col, err := strconv.Atoi(key); err == nil && col >= 0 && col < len(columns) {
 			if order == "0" {
 				order = "ASC"
 			} else {
@@ -98,7 +98,7 @@ func apiGetFilters(c *gin.Context, columns []string, initialFilter APIColumnDesc
 
 	values := c.QueryMap("fcol")
 	for key, value := range values {
-		if col, err := strconv.Atoi(key); err == nil && col < len(columns) && columns[col] != "" {
+		if col, err := strconv.Atoi(key); err == nil && col >= 0 && col < len(columns) && columns[col] != "" {
 			filters = append(filters, APIColumnDescription{Column: columns[col], Value: value})
 		}
 	}
@@ -144,8 +144,8 @@ func apiBuildSubquery(params APIQueryVars) (string, string, string, []interface{
 			` + where[:len(where)-len(" AND ")]
 	}
 
-  // Note that we order by descending id as a secondary sorting criterion.
-  // This ensures that resulting queries have deterministic order.
+	// Note that we order by descending id as a secondary sorting criterion.
+	// This ensures that resulting queries have deterministic order.
 	orderBy := `
 		ORDER BY ` + params.Order.Column + " " + params.Order.Value + ", id DESC "
 	limit := `

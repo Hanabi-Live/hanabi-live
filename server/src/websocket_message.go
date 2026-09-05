@@ -104,6 +104,11 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 			"\"" + command + "\" with invalid data: " + string(jsonData))
 		return
 	}
+	if d == nil {
+		logger.Error("User \"" + s.Username + "\" sent a command of " +
+			"\"" + command + "\" with null data.")
+		return
+	}
 
 	// Call the command handler for this command
 	logger.Info("Command - " + command + " - " + s.Username)
