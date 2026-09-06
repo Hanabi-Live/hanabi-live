@@ -246,7 +246,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 	}
 
 	// Games created prior to April 2020 do not always have the 0th player taking the first turn
-	if t.Options.StartingPlayer != 0 {
+	if t.Options.StartingPlayer > 0 && t.Options.StartingPlayer < len(t.Players) {
 		g.ActivePlayerIndex = t.Options.StartingPlayer
 	}
 

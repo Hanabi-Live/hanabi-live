@@ -371,6 +371,14 @@ func isJSONValid(d *CommandData) (bool, string) {
 		}
 	}
 
+	if d.GameJSON.Options.StartingPlayer != nil &&
+		(*d.GameJSON.Options.StartingPlayer < 0 ||
+			*d.GameJSON.Options.StartingPlayer > len(d.GameJSON.Players)-1) {
+		msg := "The starting player index must be between 0 and " +
+			strconv.Itoa(len(d.GameJSON.Players)-1) + "."
+		return false, msg
+	}
+
 	if d.GameJSON.Seed != "" {
 		if len(d.GameJSON.Seed) > MaxGameNameLength {
 			msg := "Seed names must be " + strconv.Itoa(MaxGameNameLength) + " characters or less."

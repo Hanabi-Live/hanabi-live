@@ -387,6 +387,9 @@ func fixGameOptions(options *Options) *Options {
 		options = NewOptions()
 	}
 
+	// The starting player is a legacy element prior to April 2020, so it cannot be set for new games
+	options.StartingPlayer = 0
+
 	// Validate that there can be no time controls if this is not a timed game
 	if !options.Timed {
 		options.TimeBase = 0
