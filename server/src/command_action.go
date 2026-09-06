@@ -289,6 +289,8 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 		if !variant.HasInvertedSuits() {
 			s.Warning("You cannot discard the last card in non-Inverted games")
+			g.InvalidActionOccurred = true
+			return false
 		}
 
 		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {

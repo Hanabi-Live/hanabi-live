@@ -56,10 +56,11 @@ func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table, cmd 
 		return
 	}
 
-	// If the user did not specify the amount of minutes, assume 1
+	// Validate that the amount of minutes was specified
 	if len(d.Args) != 1 {
 		msg := "You must specify the amount of minutes to wait. (e.g. \"/startin 1\")"
 		chatServerSend(ctx, msg, d.Room, d.NoTablesLock)
+		return
 	}
 
 	var minutesToWait float64
@@ -442,6 +443,14 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd
 	randomIndex := rand.Intn(len(t.Players)) // nolint: gosec
 
 	for i, p := range t.Players {
+		// A player's session should never be nil, but they might be in the process of
+		// reconnecting, so skip them instead of dereferencing a nil pointer
+		if p.Session == nil {
+			logger.Info("Skipped player \"" + p.Name + "\" with a nil session in the " +
+				"\"chatImpostor()\" function.")
+			continue
+		}
+
 		var msg string
 		if i == randomIndex {
 			msg = "You are an IMPOSTOR."
