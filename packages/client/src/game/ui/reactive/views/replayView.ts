@@ -1,6 +1,7 @@
 import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
+import { escapeHtml } from "../../../../utils";
 import { ReplayActionType } from "../../../types/ReplayActionType";
 import { globals } from "../../UIGlobals";
 import * as konvaTooltips from "../../konvaTooltips";
@@ -318,7 +319,7 @@ export function onLeaderOrSpectatorsChanged(data: {
   }
 
   // Update the tooltip
-  let content = `<strong>Leader:</strong> ${data.leader}`;
+  let content = `<strong>Leader:</strong> ${escapeHtml(data.leader)}`;
   if (away) {
     content += " (away)";
   }

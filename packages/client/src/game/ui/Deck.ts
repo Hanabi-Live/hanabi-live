@@ -7,7 +7,7 @@ import Konva from "konva";
 import { OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
-import { dateTimeFormatter, timerFormatter } from "../../utils";
+import { dateTimeFormatter, escapeHtml, timerFormatter } from "../../utils";
 import { ActionType } from "../types/ActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
@@ -221,13 +221,13 @@ function getTooltipContent(): string {
   if (currentTable !== undefined) {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
-    content += `&nbsp; Table name: &nbsp;${currentTable.name}</li>`;
+    content += `&nbsp; Table name: &nbsp;${escapeHtml(currentTable.name)}</li>`;
 
     const owner = globals2.userMap.get(currentTable.ownerID);
     const ownerName = owner?.name ?? "Unknown";
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-crown"></i></span>';
-    content += `&nbsp; Owner: &nbsp;${ownerName}</li>`;
+    content += `&nbsp; Owner: &nbsp;${escapeHtml(ownerName)}</li>`;
   }
 
   if (
@@ -246,7 +246,7 @@ function getTooltipContent(): string {
       '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
     const seed =
       globals.metadata.seed === "JSON" ? "n/a" : globals.metadata.seed;
-    content += `&nbsp; Seed: &nbsp;<strong>${seed}</strong>`;
+    content += `&nbsp; Seed: &nbsp;<strong>${escapeHtml(seed)}</strong>`;
     if (globals.metadata.seed === "JSON") {
       content += " (JSON game)";
     }

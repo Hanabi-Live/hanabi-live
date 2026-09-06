@@ -4,6 +4,7 @@ import type { UserID } from "@hanabi-live/data";
 import { Status, StatusText } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
+import { escapeHtml } from "../utils";
 import * as tablesDraw from "./tablesDraw";
 import { Screen } from "./types/Screen";
 
@@ -80,6 +81,8 @@ function drawUser(
     return;
   }
 
+  const usernameEscaped = escapeHtml(username);
+
   let nameColumn = "";
   if (user.hyphenated) {
     nameColumn += `<span id="hyphenated-tooltip-${userID}" class="tooltip" `;
@@ -93,14 +96,14 @@ function drawUser(
   if (username === globals.username) {
     nameColumn += "<strong>";
   }
-  nameColumn += `<a href="/scores/${username}" `;
+  nameColumn += `<a href="/scores/${usernameEscaped}" `;
   if (username === globals.username) {
     nameColumn += 'class="name-me" ';
   } else if (friend) {
     nameColumn += 'class="friend" ';
   }
   nameColumn += 'target="_blank" rel="noopener noreferrer">';
-  nameColumn += username;
+  nameColumn += usernameEscaped;
   nameColumn += "</a>";
   if (username === globals.username) {
     nameColumn += "</strong>";

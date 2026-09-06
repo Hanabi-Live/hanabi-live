@@ -1,11 +1,12 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
 import { showError } from "./modals";
+import { escapeHtml } from "./utils";
 
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
   globalThis.addEventListener("error", (errorEvent) => {
     const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
-    const formattedStackTrace = `<pre>${stackTrace}</pre>`;
+    const formattedStackTrace = `<pre>${escapeHtml(stackTrace)}</pre>`;
 
     const reportInstructions = `
       In order to make the website better, please report this error along with steps that you did to
