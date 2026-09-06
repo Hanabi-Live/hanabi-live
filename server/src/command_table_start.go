@@ -245,6 +245,21 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 		}
 	}
 
+	// The seat of a shadowed player may have changed since a spectator started shadowing them in
+	// the pregame, so re-resolve the seat from the shadowed player's user ID
+	// This is normally done lazily in the "commandGetGameInfo1()" function, but "CheckScrub()"
+	// consults "ShadowingPlayerIndex" as soon as the first game action occurs, which can happen
+	// before the spectator sends a "getGameInfo1" command
+	for _, sp := range t.Spectators {
+		if sp.ShadowingPlayerPregameIndex != -1 {
+			sp.ShadowingPlayerIndex = t.GetPlayerIndexFromID(sp.ShadowingPlayerPregameIndex)
+			sp.ShadowingPlayerPregameIndex = -1
+			if sp.ShadowingPlayerIndex == -1 {
+				sp.ShadowingPlayerUsername = ""
+			}
+		}
+	}
+
 	// Games created prior to April 2020 do not always have the 0th player taking the first turn
 	if t.Options.StartingPlayer > 0 && t.Options.StartingPlayer < len(t.Players) {
 		g.ActivePlayerIndex = t.Options.StartingPlayer
