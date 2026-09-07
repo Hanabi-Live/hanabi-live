@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail # Exit on errors and undefined variables.
 set -x            # Enable debugging.
