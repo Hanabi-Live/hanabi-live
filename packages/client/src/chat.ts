@@ -11,6 +11,7 @@ import {
 } from "complete-common";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
+import { find as linkifyFind } from "linkifyjs";
 import { globals } from "./Globals";
 import { chatCommands } from "./chatCommands";
 import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
@@ -515,7 +516,12 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
     return;
   }
 
-  const msg = getPreparedMessage(data.msg);
+  let rawMsg = data.msg;
+  // Replace chat suggestions with anchors which, when clicked, are chat commands.
+  if (chat.is($("#lobby-chat-pregame-text"))) {
+    rawMsg = mapTextSegments(rawMsg, fillChatSuggestions);
+  }
+  const msg = getPreparedMessage(rawMsg);
 
   // Typescript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
   // format the hours manually.
@@ -547,15 +553,6 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
       "[Server Notice]",
       '<span class="red">[Server Notice]</span>',
     );
-  }
-  // Replace chat suggestions with anchors which, when clicked, are chat commands.
-  if (chat.is($("#lobby-chat-pregame-text"))) {
-    const regex = /(.*)(@(\/.*)@)(.*)/;
-    let match = regex.exec(line);
-    while (match !== null) {
-      line = `${match[1]}<a href="#" class="suggestion">${match[3]}</a>${match[4]}`;
-      match = regex.exec(line);
-    }
   }
   line += "</span>";
 
@@ -693,6 +690,23 @@ export function getPreparedMessage(rawMsg: string): string {
   });
 
   return msg;
+}
+
+// Chat suggestions are in the form of: @/command@
+function fillChatSuggestions(text: string): string {
+  const linkSpans = linkifyFind(text);
+
+  return text.replaceAll(
+    /@(\/[^@]*)@/g,
+    (fullMatch, command: string, offset: number) => {
+      const insideLink = linkSpans.some(
+        (span) => offset < span.end && offset + fullMatch.length > span.start,
+      );
+      return insideLink
+        ? fullMatch
+        : `<a href="#" class="suggestion">${command}</a>`;
+    },
+  );
 }
 
 // Discord emotes are in the form of: <:PogChamp:254683883033853954>
