@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Redirect all output to syslog (but skip this if we are on Windows).
 # https://www.urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/

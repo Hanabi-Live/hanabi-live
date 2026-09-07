@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Configuration
 GOLANGCI_LINT_VERSION="v1.33.0"
