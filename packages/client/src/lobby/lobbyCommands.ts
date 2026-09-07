@@ -196,6 +196,15 @@ lobbyCommands.set("tableGone", (data: TableGoneData) => {
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
+
+  // If we were spectating the pre-game of this table, return to the lobby.
+  if (
+    globals.currentScreen === Screen.PreGame
+    && globals.tableID === data.tableID
+  ) {
+    pregame.hide();
+    globals.tableID = -1;
+  }
 });
 
 // Received by the client upon initial connection.

@@ -105,6 +105,19 @@ func tableLeave(ctx context.Context, s *Session, d *CommandData, t *Table, playe
 
 	// If this is the last person to leave, delete the game
 	if len(t.Players) == 0 {
+		// Boot any remaining pre-game spectators back to the lobby
+		for _, sp := range t.ActiveSpectators() {
+			tables.deleteSpectating(sp.UserID, t.ID)
+			if sp.Session != nil {
+				sp.Session.SetStatus(StatusLobby)
+				sp.Session.SetTableID(uint64(0))
+				notifyAllUser(sp.Session)
+				sp.Session.Emit("left", &TableLeftMessage{
+					TableID: t.ID,
+				})
+			}
+		}
+
 		deleteTable(t)
 		logger.Info("Ended pre-game table #" + strconv.FormatUint(t.ID, 10) + " because everyone left.")
 		return
