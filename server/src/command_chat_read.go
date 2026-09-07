@@ -13,7 +13,11 @@ import (
 //	  tableID: 5,
 //	}
 func commandChatRead(ctx context.Context, s *Session, d *CommandData) {
-	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
+	// Unlike other command handlers, we do not want to show a warning to the user if the table does
+	// not exist, so we pass "nil" instead of "s" to the "getTableAndLock()" function
+	// This is because in some cases, network latency will cause the "read" message to get to
+	// the server after the respective table has already been deleted
+	t, exists := getTableAndLock(ctx, nil, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
 		return
 	}
