@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"reflect"
 	"strconv"
 
@@ -35,7 +36,7 @@ func commandSetting(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 	if !valid {
-		s.Warning("The settings name of \"" + d.Name + "\" is invalid.")
+		s.Warning("The settings name of \"" + html.EscapeString(d.Name) + "\" is invalid.")
 		return
 	}
 

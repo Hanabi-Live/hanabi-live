@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"hash/crc64"
+	"html"
 	"math"
 	"math/rand"
 	"net/url"
@@ -417,7 +418,7 @@ func fixGameOptions(options *Options) *Options {
 func areGameOptionsValid(options *Options) (bool, string) {
 	// Validate that the variant name is valid
 	if _, ok := variants[options.VariantName]; !ok {
-		msg := "\"" + options.VariantName + "\" is not a valid variant."
+		msg := "\"" + html.EscapeString(options.VariantName) + "\" is not a valid variant."
 		return false, msg
 	}
 

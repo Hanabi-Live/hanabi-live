@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -46,7 +47,7 @@ func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
 	}
 
 	if _, ok := variants[d.Options.VariantName]; !ok {
-		s.Warning("The variant of \"" + d.Options.VariantName + "\" does not exist.")
+		s.Warning("The variant of \"" + html.EscapeString(d.Options.VariantName) + "\" does not exist.")
 		return
 	}
 

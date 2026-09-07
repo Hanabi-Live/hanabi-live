@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 )
 
 type NewLeader struct {
@@ -66,11 +67,11 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 	if newLeader == nil {
-		var msg string
+		msg := "\"" + html.EscapeString(d.Name) + "\" is not "
 		if t.Replay {
-			msg = "\"" + d.Name + "\" is not spectating the shared replay."
+			msg += "spectating the shared replay."
 		} else {
-			msg = "\"" + d.Name + "\" is not joined to this table."
+			msg += "joined to this table."
 		}
 		s.Error(msg)
 		return

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"html"
+	"net/url"
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -26,7 +28,7 @@ func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
-		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
+		s.Warning("The username of \"" + html.EscapeString(d.Name) + "\" does not exist in the database.")
 		return
 	} else {
 		user = v
@@ -42,9 +44,9 @@ func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 		numGames = v
 	}
 
-	msg := "\"" + d.Name + "\" has played " + strconv.Itoa(numGames) + " non-speedrun games. " +
+	msg := "\"" + html.EscapeString(d.Name) + "\" has played " + strconv.Itoa(numGames) + " non-speedrun games. " +
 		"More stats " +
-		"<a href=\"/scores/" + d.Name + "\" target=\"_blank\" rel=\"noopener noreferrer\">" +
+		"<a href=\"/scores/" + url.PathEscape(user.Username) + "\" target=\"_blank\" rel=\"noopener noreferrer\">" +
 		"here</a>."
 	chatServerSendPM(s, msg, d.Room)
 }

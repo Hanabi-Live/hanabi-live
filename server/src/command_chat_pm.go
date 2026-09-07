@@ -53,7 +53,7 @@ func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 	if recipientSession == nil {
-		s.Warning("User \"" + d.Recipient + "\" is not currently online.")
+		s.Warning("User \"" + html.EscapeString(d.Recipient) + "\" is not currently online.")
 		return
 	}
 
