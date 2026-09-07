@@ -56,6 +56,7 @@ func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that this person is spectating the shared replay
 	if !t.IsActivelySpectating(s.UserID) {
 		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
+		return
 	}
 
 	// Validate that this person is leading the shared replay
