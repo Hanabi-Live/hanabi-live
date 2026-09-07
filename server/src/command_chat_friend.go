@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
@@ -40,6 +41,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	}
 
 	normalizedUsername := normalizeString(d.Name)
+	escapedName := html.EscapeString(d.Name)
 
 	// Validate that they did not target themselves
 	if normalizedUsername == normalizeString(s.Username) {
@@ -63,7 +65,7 @@ func friend(s *Session, d *CommandData, add bool) {
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
-		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
+		s.Warning("The username of \"" + escapedName + "\" does not exist in the database.")
 		return
 	} else {
 		friend = v
@@ -79,7 +81,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	if add {
 		// Validate that this user is not already their friend
 		if _, ok := friendMap[friend.ID]; ok {
-			s.Warning("\"" + d.Name + "\" is already your friend.")
+			s.Warning("\"" + escapedName + "\" is already your friend.")
 			return
 		}
 
@@ -103,11 +105,11 @@ func friend(s *Session, d *CommandData, add bool) {
 			reverseFriendMap[s.UserID] = struct{}{}
 		}
 
-		msg = "Successfully added \"" + d.Name + "\" to your friends list."
+		msg = "Successfully added \"" + escapedName + "\" to your friends list."
 	} else {
 		// Validate that this user is their friend
 		if _, ok := friendMap[friend.ID]; !ok {
-			s.Warning("\"" + d.Name + "\" is not your friend, so you cannot unfriend them.")
+			s.Warning("\"" + escapedName + "\" is not your friend, so you cannot unfriend them.")
 			return
 		}
 

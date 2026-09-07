@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/Hanabi-Live/hanabi-live/logger"
+	"html"
 	"strings"
+
+	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
 func commandChatLinked(ctx context.Context, s *Session, d *CommandData) {
@@ -47,6 +49,7 @@ func link(s *Session, d *CommandData, add bool) {
 	}
 
 	normalizedUsername := normalizeString(d.Name)
+	escapedName := html.EscapeString(d.Name)
 
 	// Validate that they did not target themselves
 	if normalizedUsername == normalizeString(s.Username) {
@@ -70,7 +73,7 @@ func link(s *Session, d *CommandData, add bool) {
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
-		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
+		s.Warning("The username of \"" + escapedName + "\" does not exist in the database.")
 		return
 	} else {
 		linkedUser = v
@@ -87,7 +90,7 @@ func link(s *Session, d *CommandData, add bool) {
 	if add {
 		// Validate that this user is not already their linked_user
 		if isLinked {
-			s.Warning("\"" + d.Name + "\" is already linked to your account.")
+			s.Warning("\"" + escapedName + "\" is already linked to your account.")
 			return
 		}
 
@@ -99,11 +102,11 @@ func link(s *Session, d *CommandData, add bool) {
 			return
 		}
 
-		msg = "Successfully added \"" + d.Name + "\" to your linked users."
+		msg = "Successfully added \"" + escapedName + "\" to your linked users."
 	} else {
 		// Validate that this user is their linked_user
 		if !isLinked {
-			s.Warning("\"" + d.Name + "\" is not linked to your account, so you cannot unlink them.")
+			s.Warning("\"" + escapedName + "\" is not linked to your account, so you cannot unlink them.")
 			return
 		}
 
@@ -115,7 +118,7 @@ func link(s *Session, d *CommandData, add bool) {
 			return
 		}
 
-		msg = "Successfully removed \"" + d.Name + "\" from your linked users."
+		msg = "Successfully removed \"" + escapedName + "\" from your linked users."
 	}
 	chatServerSendPM(s, msg, d.Room)
 }

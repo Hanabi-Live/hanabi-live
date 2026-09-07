@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"strconv"
 	"strings"
 	"time"
@@ -260,7 +261,7 @@ func isJSONValid(d *CommandData) (bool, string) {
 	// Validate that the specified variant exists
 	var variant *Variant
 	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
-		msg := "\"" + *d.GameJSON.Options.Variant + "\" is not a valid variant."
+		msg := "\"" + html.EscapeString(*d.GameJSON.Options.Variant) + "\" is not a valid variant."
 		return false, msg
 	} else {
 		variant = v
