@@ -8,6 +8,7 @@ import * as chat from "../chat";
 import { OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import {
+  escapeHtml,
   getHTMLElement,
   setBrowserAddressBarPath,
   timerFormatter,
@@ -481,7 +482,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
 }
 
 function getNameSpan(name: string) {
-  const span = $("<span>").html(name);
+  const span = $("<span>").text(name);
   if (name === globals.username) {
     span.addClass("name-me");
   } else if (globals.friends.includes(name)) {
@@ -531,7 +532,7 @@ export function drawSpectators(tableID: number): void {
       }
       item.html(
         // eslint-disable-next-line complete/require-ascii
-        `${item.html()} (🕵️ <em>${spectator.shadowingPlayerUsername}</em>)`,
+        `${item.html()} (🕵️ <em>${escapeHtml(spectator.shadowingPlayerUsername ?? "")}</em>)`,
       );
     }
     list.append(item);
