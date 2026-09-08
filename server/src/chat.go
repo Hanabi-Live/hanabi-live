@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"html"
 	"regexp"
 	"strings"
 	"time"
@@ -108,19 +109,12 @@ func chatFillMentions(msg string) string {
 	// By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
 	// They can also be in the form of "<@!12345678901234567>" (with a "!" after the "@")
 	// if a nickname is set for that person
-	// We want to convert this to the username,
-	// so that the lobby displays messages in a manner similar to the Discord client
-	for {
-		match := mentionRegExp.FindStringSubmatch(msg)
-		if match == nil || len(match) <= 1 {
-			break
-		}
-		discordID := match[1]
-		username := discordGetNickname(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+username)
-		msg = strings.ReplaceAll(msg, "&lt;@!"+discordID+"&gt;", "@"+username)
-	}
-	return msg
+	// We want to convert this to the member's per-server nickname (or username, if they do not
+	// have one), so that the lobby displays messages in a manner similar to the Discord client
+	return mentionRegExp.ReplaceAllStringFunc(msg, func(mention string) string {
+		discordId := mentionRegExp.FindStringSubmatch(mention)[1]
+		return "@" + html.EscapeString(discordGetNickname(discordId))
+	})
 }
 
 func chatFillRoles(msg string) string {
@@ -130,16 +124,10 @@ func chatFillRoles(msg string) string {
 
 	// Discord roles are in the form of "<@&12345678901234567>"
 	// By the time the message gets here, it will be sanitized to "&lt;@&amp;12345678901234567&gt;"
-	for {
-		match := roleRegExp.FindStringSubmatch(msg)
-		if match == nil || len(match) <= 1 {
-			break
-		}
-		discordID := match[1]
-		role := discordGetRole(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;@&amp;"+discordID+"&gt;", "@"+role)
-	}
-	return msg
+	return roleRegExp.ReplaceAllStringFunc(msg, func(mention string) string {
+		discordId := roleRegExp.FindStringSubmatch(mention)[1]
+		return "@" + html.EscapeString(discordGetRole(discordId))
+	})
 }
 
 func chatFillChannels(msg string) string {
@@ -149,16 +137,10 @@ func chatFillChannels(msg string) string {
 
 	// Discord channels are in the form of "<#380813128176500736>"
 	// By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
-	for {
-		match := channelRegExp.FindStringSubmatch(msg)
-		if match == nil || len(match) <= 1 {
-			break
-		}
-		discordID := match[1]
-		channel := discordGetChannel(discordID)
-		msg = strings.ReplaceAll(msg, "&lt;#"+discordID+"&gt;", "#"+channel)
-	}
-	return msg
+	return channelRegExp.ReplaceAllStringFunc(msg, func(mention string) string {
+		discordId := channelRegExp.FindStringSubmatch(mention)[1]
+		return "#" + html.EscapeString(discordGetChannel(discordId))
+	})
 }
 
 func chatReplaceSpoilers(msg string) string {
