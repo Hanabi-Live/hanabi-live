@@ -1,12 +1,9 @@
 import type { ServerCommandChatData } from "@hanabi-live/data";
-import {
-  getNumConsecutiveDiacritics,
-  normalizeString,
-  truncateString,
-} from "complete-common";
+import { getNumConsecutiveDiacritics, normalizeString } from "complete-common";
 import type { WebSocket } from "ws";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "./constants";
 import { models } from "./models";
+import { truncateToMaxCodeUnits } from "./utils";
 import { wsWarning } from "./wsHelpers";
 
 const MAX_CHAT_LENGTH = 300;
@@ -17,8 +14,8 @@ export function validateAndNormalizeChatMsg(
   msg: string,
 ): string | undefined {
   // We truncate first to prevent wasting CPU cycles on validating extremely long messages.
-  const truncatedMSg = truncateString(msg, MAX_CHAT_LENGTH);
-  const normalizedMsg = normalizeString(truncatedMSg);
+  const truncatedMsg = truncateToMaxCodeUnits(msg, MAX_CHAT_LENGTH);
+  const normalizedMsg = normalizeString(truncatedMsg);
 
   if (normalizedMsg === "") {
     wsWarning(connection, "Chat messages cannot be blank.");
