@@ -215,7 +215,7 @@ func numConsecutiveDiacritics(s string) int {
 }
 
 // truncateToMaxBytes shortens a string to at most maxBytes bytes,
-// backing up to the nearest rune boundary so that a mutibyte UTF-8 character is never split
+// backing up to the nearest rune boundary so that a multi-byte UTF-8 character is never split
 func truncateToMaxBytes(s string, maxBytes int) string {
 	if len(s) <= maxBytes {
 		return s
