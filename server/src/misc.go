@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	sentry "github.com/getsentry/sentry-go"
@@ -211,6 +212,19 @@ func numConsecutiveDiacritics(s string) int {
 	}
 
 	return maxConsecutive
+}
+
+// truncateToMaxBytes shortens a string to at most maxBytes bytes,
+// backing up to the nearest rune boundary so that a multi-byte UTF-8 character is never split
+func truncateToMaxBytes(s string, maxBytes int) string {
+	if len(s) <= maxBytes {
+		return s
+	}
+	cutoff := maxBytes
+	for cutoff > 0 && !utf8.RuneStart(s[cutoff]) {
+		cutoff--
+	}
+	return s[:cutoff]
 }
 
 func removeNonPrintableCharacters(s string) string {

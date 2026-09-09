@@ -279,20 +279,18 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 	if server {
 		maxLength = MaxChatLengthServer
 	}
-	if len(msg) > maxLength {
-		msg = msg[0 : maxLength-1]
-	}
-
-	// Remove any non-printable characters, if any
-	msg = removeNonPrintableCharacters(msg)
+	msg = truncateToMaxBytes(msg, maxLength)
 
 	// Check for valid UTF8
-	if !utf8.Valid([]byte(msg)) {
+	if !utf8.ValidString(msg) {
 		if s != nil {
 			s.Warning("Chat messages must contain valid UTF8 characters.")
 		}
 		return msg, false
 	}
+
+	// Remove any non-printable characters, if any
+	msg = removeNonPrintableCharacters(msg)
 
 	// Replace any whitespace that is not a space with a space
 	msg2 := msg

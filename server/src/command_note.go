@@ -49,18 +49,16 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 
 	// Truncate long notes
 	// (we do this first to prevent wasting CPU cycles on validating extremely long notes)
-	if len(d.Note) > MaxChatLength {
-		d.Note = d.Note[0 : MaxChatLength-1]
+	d.Note = truncateToMaxBytes(d.Note, MaxChatLength)
+
+	// Check for valid UTF8
+	if !utf8.ValidString(d.Note) {
+		s.Warning("Notes must contain valid UTF8 characters.")
+		return
 	}
 
 	// Remove any non-printable characters, if any
 	d.Note = removeNonPrintableCharacters(d.Note)
-
-	// Check for valid UTF8
-	if !utf8.Valid([]byte(d.Note)) {
-		s.Warning("Notes must contain valid UTF8 characters.")
-		return
-	}
 
 	// Replace any whitespace that is not a space with a space
 	msg2 := d.Note
