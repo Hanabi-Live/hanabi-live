@@ -61,7 +61,33 @@ func (s *Session) Friends() map[int]struct{} {
 
 	s.DataMutex.RLock()
 	defer s.DataMutex.RUnlock()
-	return s.Data.Friends
+	friends := make(map[int]struct{}, len(s.Data.Friends))
+	for userID := range s.Data.Friends {
+		friends[userID] = struct{}{}
+	}
+	return friends
+}
+
+func (s *Session) AddFriend(userID int) {
+	if s == nil {
+		logger.Error("The \"AddFriend\" method was called for a nil session.")
+		return
+	}
+
+	s.DataMutex.Lock()
+	s.Data.Friends[userID] = struct{}{}
+	s.DataMutex.Unlock()
+}
+
+func (s *Session) DeleteFriend(userID int) {
+	if s == nil {
+		logger.Error("The \"DeleteFriend\" method was called for a nil session.")
+		return
+	}
+
+	s.DataMutex.Lock()
+	delete(s.Data.Friends, userID)
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) ReverseFriends() map[int]struct{} {
@@ -72,7 +98,33 @@ func (s *Session) ReverseFriends() map[int]struct{} {
 
 	s.DataMutex.RLock()
 	defer s.DataMutex.RUnlock()
-	return s.Data.ReverseFriends
+	reverseFriends := make(map[int]struct{}, len(s.Data.ReverseFriends))
+	for userID := range s.Data.ReverseFriends {
+		reverseFriends[userID] = struct{}{}
+	}
+	return reverseFriends
+}
+
+func (s *Session) AddReverseFriend(userID int) {
+	if s == nil {
+		logger.Error("The \"AddReverseFriend\" method was called for a nil session.")
+		return
+	}
+
+	s.DataMutex.Lock()
+	s.Data.ReverseFriends[userID] = struct{}{}
+	s.DataMutex.Unlock()
+}
+
+func (s *Session) DeleteReverseFriend(userID int) {
+	if s == nil {
+		logger.Error("The \"DeleteReverseFriend\" method was called for a nil session.")
+		return
+	}
+
+	s.DataMutex.Lock()
+	delete(s.Data.ReverseFriends, userID)
+	s.DataMutex.Unlock()
 }
 
 func (s *Session) Hyphenated() bool {

@@ -72,9 +72,9 @@ func friend(s *Session, d *CommandData, add bool) {
 	}
 
 	friendMap := s.Friends()
-	var reverseFriendMap map[int]struct{}
+	var friendSession *Session
 	if s2, ok := sessions.Get(friend.ID); ok {
-		reverseFriendMap = s2.ReverseFriends()
+		friendSession = s2
 	}
 
 	var msg string
@@ -92,7 +92,7 @@ func friend(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		friendMap[friend.ID] = struct{}{}
+		s.AddFriend(friend.ID)
 
 		// Add the reverse friend (e.g. the inverse relationship)
 		if err := models.UserReverseFriends.Insert(friend.ID, s.UserID); err != nil {
@@ -101,8 +101,8 @@ func friend(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		if reverseFriendMap != nil {
-			reverseFriendMap[s.UserID] = struct{}{}
+		if friendSession != nil {
+			friendSession.AddReverseFriend(s.UserID)
 		}
 
 		msg = "Successfully added \"" + escapedName + "\" to your friends list."
@@ -120,7 +120,7 @@ func friend(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		delete(friendMap, friend.ID)
+		s.DeleteFriend(friend.ID)
 
 		// Remove the reverse friend (e.g. the inverse relationship)
 		if err := models.UserReverseFriends.Delete(friend.ID, s.UserID); err != nil {
@@ -129,8 +129,8 @@ func friend(s *Session, d *CommandData, add bool) {
 			s.Error(DefaultErrorMsg)
 			return
 		}
-		if reverseFriendMap != nil {
-			delete(reverseFriendMap, s.UserID)
+		if friendSession != nil {
+			friendSession.DeleteReverseFriend(s.UserID)
 		}
 
 		msg = "Successfully removed \"" + d.Name + "\" from your friends list."
