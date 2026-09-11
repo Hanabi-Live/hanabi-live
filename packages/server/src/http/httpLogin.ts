@@ -132,7 +132,7 @@ export async function httpLogin(
     // Password changes are handled by the same time as normal logins. `newPassword` will be
     // undefined in situations where users are logging in and not changing their password.
     if (newPassword !== undefined && newPassword !== "") {
-      const newPasswordHash = await argon2.hash(password);
+      const newPasswordHash = await argon2.hash(newPassword);
       await models.users.setPassword(user.id, newPasswordHash);
     }
   }
