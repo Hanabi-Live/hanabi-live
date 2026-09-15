@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"html"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -394,6 +395,23 @@ func isJSONValid(d *CommandData) (bool, string) {
 		if !seedHasValidCharacters(d.GameJSON.Seed) {
 			msg := "Seed names can only contain English letters, numbers, and hyphens."
 			return false, msg
+		}
+		if len(d.GameJSON.Deck) > 0 {
+			game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
+			game.InitDeck()
+			// Do not alter the shared random generator while validating a replay.
+			rng := rand.New(rand.NewSource(seedToInt64(d.GameJSON.Seed))) // nolint: gosec
+			game.shuffleDeck(rng.Intn)
+			for i, card := range d.GameJSON.Deck {
+				expected := game.CardIdentities[i]
+				if card.SuitIndex != expected.SuitIndex || card.Rank != expected.Rank {
+					msg := "The deck does not match the seed: the card at index " +
+						strconv.Itoa(i) + " must have suit number " +
+						strconv.Itoa(expected.SuitIndex) + " and rank " +
+						strconv.Itoa(expected.Rank) + "."
+					return false, msg
+				}
+			}
 		}
 	}
 

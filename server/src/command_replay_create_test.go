@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"math/rand"
 	"strings"
 	"testing"
 )
@@ -21,9 +22,22 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 	variants = map[string]*Variant{DefaultVariantName: variant}
 	game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
 	game.InitDeck()
+	setSeed("p4v0s1")
+	game.ShuffleDeck()
 	deck := game.CardIdentities
 	invalidDeck := append([]*CardIdentity(nil), deck...)
 	invalidDeck[0] = &CardIdentity{SuitIndex: 5, Rank: 1}
+	wrongSuitDeck := append([]*CardIdentity(nil), deck...)
+	wrongSuitDeck[0] = &CardIdentity{SuitIndex: (deck[0].SuitIndex + 1) % 5, Rank: deck[0].Rank}
+	wrongRankDeck := append([]*CardIdentity(nil), deck...)
+	wrongRankDeck[49] = &CardIdentity{SuitIndex: deck[49].SuitIndex, Rank: deck[49].Rank%5 + 1}
+	reorderedDeck := append([]*CardIdentity(nil), deck...)
+	for i, card := range deck {
+		if *card != *deck[0] {
+			reorderedDeck[0], reorderedDeck[i] = reorderedDeck[i], reorderedDeck[0]
+			break
+		}
+	}
 
 	testCases := []struct {
 		name      string
@@ -72,6 +86,33 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 			action: &GameAction{Type: ActionTypePlay, Target: 7},
 		},
 		{
+			name:   "explicit deck with legacy seed",
+			seed:   "legacy-1-p4v0s1",
+			deck:   deck,
+			action: &GameAction{Type: ActionTypePlay, Target: 7},
+		},
+		{
+			name:      "seed with wrong suit",
+			seed:      "p4v0s1",
+			deck:      wrongSuitDeck,
+			action:    &GameAction{Type: ActionTypePlay, Target: 7},
+			wantError: "The deck does not match the seed: the card at index 0",
+		},
+		{
+			name:      "seed with wrong rank on last card",
+			seed:      "p4v0s1",
+			deck:      wrongRankDeck,
+			action:    &GameAction{Type: ActionTypePlay, Target: 7},
+			wantError: "The deck does not match the seed: the card at index 49",
+		},
+		{
+			name:      "seed with reordered deck",
+			seed:      "p4v0s1",
+			deck:      reorderedDeck,
+			action:    &GameAction{Type: ActionTypePlay, Target: 7},
+			wantError: "The deck does not match the seed",
+		},
+		{
 			name:      "incomplete explicit deck with seed",
 			seed:      "p4v0s1",
 			deck:      deck[:1],
@@ -100,9 +141,15 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 				Deck:    tc.deck,
 				Actions: []*GameAction{tc.action},
 			}}
+			setSeed("validation-rng")
+			wantRandom := rand.Int63()
+			setSeed("validation-rng")
 			valid, message := isJSONValid(d)
 			if valid != (tc.wantError == "") || !strings.Contains(message, tc.wantError) {
 				t.Fatalf("isJSONValid() = (%v, %q), want error %q", valid, message, tc.wantError)
+			}
+			if got := rand.Int63(); got != wantRandom {
+				t.Fatalf("validation changed the shared random generator: got %d, want %d", got, wantRandom)
 			}
 		})
 	}

@@ -88,9 +88,13 @@ func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 }
 
 func (g *Game) ShuffleDeck() {
+	g.shuffleDeck(rand.Intn)
+}
+
+func (g *Game) shuffleDeck(intn func(int) int) {
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	for i := range g.Deck {
-		j := rand.Intn(i + 1) // nolint: gosec
+		j := intn(i + 1)
 		g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}
