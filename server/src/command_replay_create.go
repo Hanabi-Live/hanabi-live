@@ -273,10 +273,16 @@ func isJSONValid(d *CommandData) (bool, string) {
 		return false, msg
 	}
 
+	deckSize := variant.GetDeckSize()
+	actionDeckSize := len(d.GameJSON.Deck)
+	if d.GameJSON.Seed != "" {
+		actionDeckSize = deckSize
+	}
+
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
 		if action.Type == ActionTypePlay || action.Type == ActionTypeDiscard {
-			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
+			if action.Target < 0 || action.Target >= actionDeckSize {
 				msg := "Action at index " + strconv.Itoa(i) +
 					" is a play or discard with an invalid target (card order) of " +
 					strconv.Itoa(action.Target) + "."
@@ -330,9 +336,9 @@ func isJSONValid(d *CommandData) (bool, string) {
 		}
 	}
 
-	// Validate the deck
-	deckSize := variant.GetDeckSize()
-	if len(d.GameJSON.Deck) != deckSize {
+	// A seed can reconstruct an omitted deck; explicitly supplied decks must still be valid.
+	if (d.GameJSON.Seed == "" || len(d.GameJSON.Deck) > 0) &&
+		len(d.GameJSON.Deck) != deckSize {
 		msg := "The deck must have " + strconv.Itoa(deckSize) + " cards in it."
 		return false, msg
 	}
