@@ -67,9 +67,7 @@ describe("replay activation", () => {
     onActiveChanged(true);
 
     expect(globals.elements.replayArea?.visible).toHaveBeenCalledTimes(1);
-    expect(globals.elements.replayArea?.visible).toHaveBeenLastCalledWith(
-      true,
-    );
+    expect(globals.elements.replayArea?.visible).toHaveBeenLastCalledWith(true);
     expect(replay.adjustShuttles).toHaveBeenCalledWith(true);
   });
 
@@ -79,9 +77,7 @@ describe("replay activation", () => {
     onActiveChanged(false);
 
     expect(globals.elements.replayArea?.visible).toHaveBeenCalledTimes(1);
-    expect(globals.elements.replayArea?.visible).toHaveBeenLastCalledWith(
-      true,
-    );
+    expect(globals.elements.replayArea?.visible).toHaveBeenLastCalledWith(true);
     expect(replay.adjustShuttles).not.toHaveBeenCalled();
     expect(cluesView.refreshArrows).toHaveBeenCalledWith(false);
     expect(ourHand.checkSetDraggableAll).toHaveBeenCalledTimes(1);
