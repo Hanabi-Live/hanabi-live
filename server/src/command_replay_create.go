@@ -268,6 +268,18 @@ func isJSONValid(d *CommandData) (bool, string) {
 		variant = v
 	}
 
+	if len(d.GameJSON.Players) == 0 {
+		match := jsonSeedPlayerCountRegExp.FindStringSubmatch(d.GameJSON.Seed)
+		if match == nil {
+			return false, "You must provide players when the player count cannot be determined from the seed."
+		}
+		numPlayers, err := strconv.Atoi(match[1])
+		if err != nil {
+			return false, "The seed contains an invalid player count."
+		}
+		d.GameJSON.Players = append([]string(nil), defaultPlayerNames[:numPlayers]...)
+	}
+
 	// Validate that there is at least one action
 	if len(d.GameJSON.Actions) < 1 {
 		msg := "There must be at least one game action in the JSON array."

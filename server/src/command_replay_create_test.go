@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"math/rand"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -154,10 +155,73 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 		})
 	}
 
-	t.Run("import seed-only JSON", func(t *testing.T) {
+	t.Run("default player names", func(t *testing.T) {
+		testCases := []struct {
+			name      string
+			seed      string
+			players   []string
+			want      []string
+			wantError string
+		}{
+			{name: "two players", seed: "p2v0s1", want: []string{"Alice", "Bob"}},
+			{name: "three players", seed: "p3v0s1", want: []string{"Alice", "Bob", "Cathy"}},
+			{name: "four players", seed: "p4v0s1", want: []string{"Alice", "Bob", "Cathy", "Donald"}},
+			{name: "five players", seed: "p5v0s1", want: []string{"Alice", "Bob", "Cathy", "Donald", "Emily"}},
+			{name: "six players", seed: "p6v0s1", want: []string{"Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"}},
+			{name: "empty players", seed: "p2v0s1", players: []string{}, want: []string{"Alice", "Bob"}},
+			{name: "custom seed suffix", seed: "p2v0sshowmatch-jan-2050", want: []string{"Alice", "Bob"}},
+			{name: "legacy seed", seed: "legacy-1-p2v0s1", want: []string{"Alice", "Bob"}},
+			{name: "explicit names", seed: "p2v0s1", players: []string{"One", "Two"}, want: []string{"One", "Two"}},
+			{name: "explicit names with custom seed", seed: "custom-seed", players: []string{"One", "Two"}, want: []string{"One", "Two"}},
+			{name: "no seed", wantError: "You must provide players"},
+			{name: "custom seed without count", seed: "custom-seed", wantError: "You must provide players"},
+			{name: "too few players", seed: "p1v0s1", wantError: "You must provide players"},
+			{name: "too many players", seed: "p7v0s1", wantError: "You must provide players"},
+			{name: "incomplete seed", seed: "p4", wantError: "You must provide players"},
+			{name: "embedded count", seed: "custom-p4v0s1", wantError: "You must provide players"},
+			{name: "explicit empty name", seed: "p2v0s1", players: []string{"", "Bob"}, wantError: "player name at index 0 is empty"},
+		}
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				target := 1
+				if len(tc.want) > 0 {
+					target = len(tc.want) - 1
+				}
+				d := &CommandData{GameJSON: &GameJSON{
+					Players: tc.players,
+					Seed:    tc.seed,
+					Deck:    deck,
+					Actions: []*GameAction{{Type: ActionTypeRankClue, Target: target, Value: 3}},
+				}}
+				// These seeds have different decks; only the seedless case needs an explicit deck.
+				if tc.seed != "" {
+					d.GameJSON.Deck = nil
+				}
+				valid, message := isJSONValid(d)
+				if valid != (tc.wantError == "") || !strings.Contains(message, tc.wantError) {
+					t.Fatalf("isJSONValid() = (%v, %q), want error %q", valid, message, tc.wantError)
+				}
+				if !valid {
+					return
+				}
+				if !reflect.DeepEqual(d.GameJSON.Players, tc.want) {
+					t.Fatalf("players = %v, want %v", d.GameJSON.Players, tc.want)
+				}
+				if len(d.GameJSON.Notes) != len(tc.want) {
+					t.Fatalf("got %d note arrays, want %d", len(d.GameJSON.Notes), len(tc.want))
+				}
+				table := &Table{}
+				loadJSONOptionsToTable(d, table)
+				if table.Options.NumPlayers != len(tc.want) || table.ExtraOptions.CustomNumPlayers != len(tc.want) {
+					t.Fatal("inferred player count was not passed to game initialization")
+				}
+			})
+		}
+	})
+
+	t.Run("import seed-only JSON without players", func(t *testing.T) {
 		var replay GameJSON
 		err := json.Unmarshal([]byte(`{
-			"players": ["Alice", "Bob", "Cathy", "Donald"],
 			"actions": [
 				{"type": 3, "target": 3, "value": 3},
 				{"type": 0, "target": 7}
@@ -170,6 +234,9 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 		d := &CommandData{GameJSON: &replay}
 		if valid, message := isJSONValid(d); !valid {
 			t.Fatal(message)
+		}
+		if !reflect.DeepEqual(replay.Players, []string{"Alice", "Bob", "Cathy", "Donald"}) {
+			t.Fatalf("unexpected default players: %v", replay.Players)
 		}
 		table := &Table{}
 		loadJSONOptionsToTable(d, table)
