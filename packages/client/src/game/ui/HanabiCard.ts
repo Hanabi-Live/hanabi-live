@@ -26,6 +26,13 @@ import {
 import { assertDefined, assertNotNull, iRange } from "complete-common";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
+import {
+  getSectionText,
+  moveSectionToRound,
+  normalizeNoteText,
+  parseNoteSections,
+  setSectionText,
+} from "../noteSections";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
@@ -303,6 +310,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       callback();
     }
     this.tweenCallbacks = [];
+
+    notes.refreshOpenTooltip();
   }
 
   waitForTweening(callback: () => void): void {
@@ -1119,9 +1128,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ------------
 
   setNote(note: string): void {
-    notes.set(this.state.order, note);
-    notes.update(this, note);
-    if (note !== "") {
+    // Notes are stored as a series of sections, so clean it up before saving it.
+    const normalizedNote = normalizeNoteText(note);
+    notes.set(this.state.order, normalizedNote);
+    notes.update(this, normalizedNote);
+    if (normalizedNote !== "") {
       notes.show(this);
     }
   }
@@ -1156,16 +1167,17 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   updateNote(
     noteAdded: string,
     updateFunc: (a: string, b: string) => string, // how to combine last pipe section and noteAdded
-    keepLast = false, // true to repeat (and add to) the last pipe section
     protect = true, // true to add [] to meaningful updates
     stripProse = false, // true to strip prose and conflicting border tokens
   ): void {
     const existingNote =
       globals.state.notes.ourNotes[this.state.order]?.text ?? "";
-    const noteText = existingNote.trim();
+    // Notes that are added with a shortcut belong to the round that is currently being viewed.
+    const turnNumber = notes.getCurrentTurnNumber();
+    const sectionText = getSectionText(existingNote, turnNumber).trim();
     const note = protect ? this.protectedNote(noteAdded) : noteAdded;
-    const lastPipe = noteText.lastIndexOf("|");
-    const currentNoteString = noteText.slice(lastPipe + 1).trim();
+    const lastPipe = sectionText.lastIndexOf("|");
+    const currentNoteString = sectionText.slice(lastPipe + 1).trim();
     const noteString = this.protectedNote(currentNoteString);
     const currentNote = parseNote(this.variant, noteString);
     let newNoteString = updateFunc(noteString, note);
@@ -1180,9 +1192,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       }
     }
 
-    const newNoteText = keepLast
-      ? noteText
-      : noteText.slice(0, Math.max(lastPipe, 0)).trim();
     // Case of: updating note does not change note meaning.
     if (
       noteHasMeaning(this.variant, parseNote(this.variant, note))
@@ -1190,29 +1199,37 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     ) {
       return;
     }
+
+    const combinedSectionText = `${sectionText}${
+      sectionText === "" ? "" : " | "
+    }${newNoteString}`;
+    this.setNote(setSectionText(existingNote, turnNumber, combinedSectionText));
+  }
+
+  /** Replaces the text of the note for the current round. (e.g. when repeating a note.) */
+  setNoteInCurrentRound(text: string): void {
+    const existingNote =
+      globals.state.notes.ourNotes[this.state.order]?.text ?? "";
     this.setNote(
-      `${newNoteText}${newNoteText === "" ? "" : " | "}${newNoteString}`,
+      setSectionText(existingNote, notes.getCurrentTurnNumber(), text),
     );
   }
 
-  prependTurnCountNote(noteAdded: string): void {
-    this.updateNote(noteAdded, (a: string, b: string): string => {
-      const turnStripped = a.replace(/^#\d+ /, "");
-      return `${b} ${turnStripped}`;
-    });
-  }
+  /** Moves the last section of the note to the current round. (e.g. to correct the turn number.) */
+  moveLastNoteToCurrentRound(): void {
+    const existingNote =
+      globals.state.notes.ourNotes[this.state.order]?.text ?? "";
+    const lastSection = parseNoteSections(existingNote).at(-1);
+    if (lastSection === undefined) {
+      return;
+    }
 
-  prependNote(noteAdded: string): void {
-    this.updateNote(noteAdded, (a: string, b: string): string => `${b} ${a}`);
-  }
-
-  appendNoteOnly(noteAdded: string): void {
-    this.updateNote(
-      noteAdded,
-      (a: string, b: string): string => `${a} ${b}`,
-      false,
-      true,
-      true,
+    this.setNote(
+      moveSectionToRound(
+        existingNote,
+        lastSection.round,
+        notes.getCurrentTurnNumber(),
+      ),
     );
   }
 
@@ -1220,7 +1237,6 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.updateNote(
       noteAdded,
       (a: string, b: string): string => `${a} ${b}`,
-      true,
       true,
       true,
     );

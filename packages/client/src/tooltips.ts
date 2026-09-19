@@ -125,7 +125,10 @@ export function closeAllTooltips(): void {
   );
 }
 
-export function setInstanceContent(selector: string, content: string): void {
+export function setInstanceContent(
+  selector: string,
+  content: string | HTMLElement,
+): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {
     tooltip.tooltipster("instance").content(content);

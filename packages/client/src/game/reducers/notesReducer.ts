@@ -20,6 +20,7 @@ import {
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
+import { stripSectionMarker } from "../noteSections";
 import type { NotesState } from "../types/NotesState";
 import * as noteIdentity from "./noteIdentity";
 
@@ -177,8 +178,10 @@ export function parseNote(variant: Variant, text: string): CardNote {
   // No special handling is needed for the -1 case.
   const textAfterLastPipe = text.slice(lastPipeIndex + 1);
 
-  // We make all letters lowercase to simply the matching logic below.
-  const fullNote = textAfterLastPipe.toLowerCase().trim();
+  // We make all letters lowercase to simplify the matching logic below. A section marker (e.g.
+  // "#5") is written at the beginning of the section for that round, so it is not part of the note
+  // itself.
+  const fullNote = stripSectionMarker(textAfterLastPipe.toLowerCase().trim());
 
   const keywords = getNoteKeywords(fullNote);
   const possibilities = noteIdentity.getPossibilitiesFromKeywords(
