@@ -27,6 +27,16 @@
       name="keywords"
       content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning"
     />
+    <!-- The script block must match "public/html/theme-init.html" (enforced by a test). -->
+    <script type="text/javascript">
+  try {
+    var t = localStorage.getItem("darkMode");
+    var isDark = t === "true" || (t !== "false" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    if (isDark) {
+      document.documentElement.dataset.theme = "dark";
+    }
+  } catch (e) {}
+</script>
     {{ if (!it.isDev) { }}
     <!-- Load the Critical CSS first. -->
     <link
@@ -71,6 +81,7 @@
       href="/public/css/lib/alpha.css"
     />
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/dark.css" />
     {{ } else { }}
     <!-- Delay loading non-critical CSS. -->
     <link

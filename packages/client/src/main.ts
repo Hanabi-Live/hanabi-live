@@ -21,6 +21,7 @@ import { Screen } from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
 import * as modals from "./modals";
 import * as sounds from "./sounds";
+import * as theme from "./theme";
 import * as tooltips from "./tooltips";
 
 // Initialize JQuery:
@@ -66,6 +67,7 @@ $(document).ready(() => {
   lobbyLogin.init();
   lobbyNav.init();
   playerSettings.init();
+  theme.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
   sounds.init();

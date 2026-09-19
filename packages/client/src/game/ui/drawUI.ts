@@ -20,6 +20,7 @@ import {
 } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
+import { getCanvasColors } from "../../theme";
 import { getHTMLElement } from "../../utils";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { ButtonGroup } from "./ButtonGroup";
@@ -2388,7 +2389,7 @@ function drawPauseArea() {
   const pauseRect = new Konva.Rect({
     width: pauseAreaValues.w * winW,
     height: pauseAreaValues.h * winH,
-    fill: "#b3b3b3",
+    fill: getCanvasColors().surfaceArea,
     cornerRadius: 0.01 * winH,
     listening: true,
   });
@@ -2497,7 +2498,7 @@ function drawRestartArea() {
   const restartRect = new Konva.Rect({
     width: restartAreaValues.w * winW,
     height: restartAreaValues.h * winH,
-    fill: "#b3b3b3",
+    fill: getCanvasColors().surfaceArea,
     cornerRadius: 0.01 * winH,
     listening: true,
   });
