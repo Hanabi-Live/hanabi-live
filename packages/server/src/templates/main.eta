@@ -1558,6 +1558,13 @@
       <div>
         <h5>Appearance</h5>
         <p>
+          <select id="darkMode">
+            <option value="system">System (follow OS)</option>
+            <option value="true">Dark</option>
+            <option value="false">Light</option>
+          </select>
+        </p>
+        <p>
           <input id="keldonMode" type="checkbox" />
           <label for="keldonMode">
             <span class="label-text">
