@@ -24,6 +24,11 @@
     "test": "jest",
     "update": "tsx ./packages/scripts/src/update.mts"
   },
+  "overrides": {
+    "esbuild-plugin-pino": {
+      "esbuild": "$esbuild"
+    }
+  },
   "dependencies": {
     "@fastify/formbody": "8.0.2",
     "@fastify/secure-session": "8.3.0",

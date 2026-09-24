@@ -4,22 +4,30 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgres
-    image: "liubowei/hanab-live-db"
+    image: "hanab-live-db"
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: 1234567890
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hanabiuser -d hanabi"]
+      interval: 2s
   hanab-live-server:
     build:
       context: .
       dockerfile: Dockerfile
-    image: "liubowei/hanab-live-server"
+    image: "hanab-live-server"
+    depends_on:
+      hanab-live-db:
+        condition: service_healthy
     ports:
       - "1212:80"
+    environment:
+      DB_HOST: hanab-live-db
+      SESSION_SECRET: "example secret - just for development"
     volumes:
-      - ./.env:/root/hanabi-live/.env
-    command: ["-c", "sleep 5 && /root/hanabi-live/hanabi-live"]
+      - .env.example:/root/hanabi-live/.env
 volumes:
   pgdata:

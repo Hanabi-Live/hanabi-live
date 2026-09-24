@@ -1,14 +1,16 @@
 ## first build the client
-FROM node:16-buster
+FROM node:20-bookworm
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
 COPY .env.example .env
 COPY tsconfig.json tsconfig.json
+COPY tsconfig.monorepo.json tsconfig.monorepo.json
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 COPY packages packages
 COPY public public
+COPY scripts scripts
 RUN npm install
 
 # needed only for git rev parse
@@ -24,7 +26,9 @@ WORKDIR /root/hanabi-live
 COPY .env.example .env
 COPY server server
 
-RUN server/build_server.sh
+# CGO_ENABLED=0 produces a static binary; a dynamically-linked binary fails on
+# the alpine runtime stage because gcompat breaks os.Executable().
+RUN CGO_ENABLED=0 server/build_server.sh
 
 ## remove src code and copy build artifacts into a minimal image
 
@@ -42,6 +46,7 @@ WORKDIR /root/hanabi-live
 # will need to be mounted on startup
 RUN touch .env
 COPY packages/data packages/data
+COPY packages/game packages/game
 COPY misc misc
 RUN mkdir -p logs
 COPY --from=0 /root/hanabi-live/public public
