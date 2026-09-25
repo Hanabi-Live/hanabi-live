@@ -10,10 +10,11 @@ import (
 // commandTagsDeleteAll is sent when a user types the "/tagsdeleteall" command
 //
 // Example data:
-// {
-//   tableID: 123,
-//   msg: 'inverted priority finesse',
-// }
+//
+//	{
+//	  tableID: 123,
+//	  msg: 'inverted priority finesse',
+//	}
 func commandTagsDeleteAll(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
@@ -36,9 +37,13 @@ func tagsDeleteAll(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	g := t.Game
 
 	if !t.Replay {
-		// Clear all tags
-		g.Tags = make(map[string]int)
-		msg := "Successfully deleted the all the game's tags."
+		// Clear only this user's tags.
+		for tag, userID := range g.Tags {
+			if userID == s.UserID {
+				delete(g.Tags, tag)
+			}
+		}
+		msg := "Successfully deleted all your tags for this game."
 		chatServerSendPM(s, msg, d.Room)
 		return
 	}
