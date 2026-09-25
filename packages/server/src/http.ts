@@ -23,6 +23,8 @@ import {
 import { httpLogin } from "./http/httpLogin";
 import { httpLogout } from "./http/httpLogout";
 import { httpMain } from "./http/httpMain";
+import { httpAPITags } from "./http/httpTags";
+import { httpAPITagSearch } from "./http/httpTagSearch";
 import { httpTestCookie } from "./http/httpTestCookie";
 import { httpWS } from "./http/httpWS";
 import { logger } from "./logger";
@@ -253,6 +255,8 @@ function registerPathHandlers(httpServer: FastifyInstance) {
 
   // API V1 routes.
   const api = "/api/v1";
+  httpServer.get(`${api}/tags/:player1`, httpAPITags);
+  httpServer.get(`${api}/tag/:tag`, httpAPITagSearch);
   httpServer.get(`${api}/identity/token`, httpIdentityTokenGet);
   httpServer.post(`${api}/identity/token`, httpIdentityTokenPost);
   httpServer.post(`${api}/identity`, httpIdentityLookup);
