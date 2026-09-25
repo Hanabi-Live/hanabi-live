@@ -38,12 +38,13 @@ func (*GameTags) BulkInsert(gameTagsRows []*GameTagsRow) error {
 	return err
 }
 
-func (*GameTags) Delete(gameID int, tag string) error {
+func (*GameTags) Delete(gameID int, userID int, tag string) error {
 	_, err := db.Exec(context.Background(), `
 		DELETE FROM game_tags
 		WHERE game_id = $1
-			AND tag = $2
-	`, gameID, tag)
+			AND user_id = $2
+			AND tag = $3
+	`, gameID, userID, tag)
 	return err
 }
 
