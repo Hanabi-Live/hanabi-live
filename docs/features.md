@@ -567,6 +567,8 @@ In-game, the right side of the screen shows the _Pace_ and the _Efficiency_ for 
 | `/api/v1/history/[username]/[username2]`      | Lists a paginated list of past games where the players were in together. (You can specify up to 6 players.) |
 | `/api/v1/history-full/[username]`             | Lists all the player's past games.                                                                          |
 | `/api/v1/history-full/[username]/[username2]` | Lists all the past games that 2 players were in together. (You can specify up to 6 players.)                |
+| `/api/v1/tags/[username]`                     | Lists all games tagged by the player, with only that player's tags on each game.                            |
+| `/api/v1/tag/[tag]`                           | Lists all games containing the specified tag.                                                               |
 | `/api/v1/seed/[seed]`                         | Lists paginated games played on a specific seed.                                                            |
 | `/api/v1/seed-full/[seed]`                    | Lists all the games played on a specific seed.                                                              |
 
