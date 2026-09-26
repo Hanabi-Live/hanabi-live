@@ -496,6 +496,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       && !this.empathy
       && !isCardPlayed(this.state)
       && !isCardDiscarded(this.state)
+      && !globals.state.finished
     ) {
       return DECK_BACK_IMAGE;
     }
