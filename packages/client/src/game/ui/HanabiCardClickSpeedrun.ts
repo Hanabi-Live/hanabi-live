@@ -29,9 +29,9 @@ import * as turn from "./turn";
 
 export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
   if (
-    // Do nothing if we are clicking on a card that is not in a hand. (This is likely a misclick.)
+    // Do nothing if we click on a moving card that is not in a hand. (This is likely a misclick.)
     card.layout.parent === null
-    || typeof card.state.location !== "number"
+    || (card.tweening && typeof card.state.location !== "number")
     // Unlike the "click()" function, we do not want to disable all clicks if the card is tweening
     // because we want to be able to click on cards as they are sliding down. However, make an
     // exception for the first card in the hand (as it is sliding in from the deck).
