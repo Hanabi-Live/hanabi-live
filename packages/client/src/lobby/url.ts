@@ -161,8 +161,8 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
       }
 
       const visibility = globalThis.location.pathname.includes("shared-")
-        ? "solo"
-        : "shared";
+        ? "shared"
+        : "solo";
 
       const source = "json";
       localStorage.setItem("watchReplayJSON", gameJSONString);
