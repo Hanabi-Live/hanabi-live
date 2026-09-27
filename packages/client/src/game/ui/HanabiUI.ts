@@ -18,7 +18,6 @@ import { globals } from "./UIGlobals";
 export class HanabiUI {
   globals: UIGlobals;
   private readonly resizeHandler: () => void;
-  private readonly themeChangeHandler: () => void;
   private resizeRequestAnimationFrame: number | null = null;
   private resizeFrame = 0;
   private lastResizeEventFrame = 0;
@@ -72,20 +71,6 @@ export class HanabiUI {
     };
     window.addEventListener("resize", this.resizeHandler);
 
-    // Rebuild the UI when the theme changes so that the canvas elements are redrawn with the new
-    // colors.
-    this.themeChangeHandler = () => {
-      if (
-        this.globals.lobby.currentScreen !== Screen.Game
-        || this.globals.loading
-        || this.liveResizeActive
-      ) {
-        return;
-      }
-      this.rebuildGameUI();
-    };
-    document.addEventListener("theme_change", this.themeChangeHandler);
-
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet. We
     // must wait for the "init" message from the server in order to know how many players are in the
     // game and what the variant is. Only then can we start drawing the UI.
@@ -123,7 +108,6 @@ export class HanabiUI {
 
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
-    document.removeEventListener("theme_change", this.themeChangeHandler);
     if (this.resizeRequestAnimationFrame !== null) {
       cancelAnimationFrame(this.resizeRequestAnimationFrame);
       this.resizeRequestAnimationFrame = null;
@@ -174,11 +158,7 @@ export class HanabiUI {
     stageContainer.style.transform = `scale(${stageScale})`;
   }
 
-  /**
-   * Rebuilds the entire game UI from scratch, redrawing every element (e.g. so that canvas elements
-   * pick up new theme colors or the new stage size).
-   */
-  private rebuildGameUI(): void {
+  private finishResize(): void {
     const stageContainer = this.globals.stage.container();
     stageContainer.style.transform = "";
     stageContainer.style.transformOrigin = "";
@@ -216,10 +196,6 @@ export class HanabiUI {
     this.globals.layers.UI2.draw();
     this.globals.layers.arrow.draw();
     timer.resumeAfterResize();
-  }
-
-  private finishResize(): void {
-    this.rebuildGameUI();
 
     this.liveResizeActive = false;
     this.globals.isResizing = false;
