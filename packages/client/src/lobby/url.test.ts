@@ -1,6 +1,7 @@
 import type { ServerCommandWelcomeData } from "@hanabi-live/data";
 import { afterEach, describe, expect, jest, test } from "@jest/globals";
 import { globals } from "../Globals";
+import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";
 import { parseAndGoto } from "./url";
 
@@ -33,11 +34,11 @@ describe("replay URL loading", () => {
   });
 
   test.each([
-    ["shared-replay-json", ",p4v0s3", "p4v0s3"],
-    ["replay-json", ",legacy-1-p4v0s3", "legacy-1-p4v0s3"],
-    ["shared-replay-json", "", ""],
-    ["replay-json", ",", ""],
-  ])("%s preserves embedded seed %s", (route, suffix, seed) => {
+    ["shared-replay-json", ",p4v0s3", "p4v0s3", "shared"],
+    ["replay-json", ",legacy-1-p4v0s3", "legacy-1-p4v0s3", "solo"],
+    ["shared-replay-json", "", "", "shared"],
+    ["replay-json", ",", "", "solo"],
+  ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = jest.fn();
     const send = jest.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
@@ -51,9 +52,15 @@ describe("replay URL loading", () => {
 
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
 
+    const gameJSON = JSON.parse(expand(`${payload}${suffix}`)!) as GameJSON;
     expect(send).toHaveBeenCalledWith(
       "replayCreate",
-      expect.objectContaining({ gameJSON: expect.objectContaining({ seed }) }),
+      {
+        source: "json",
+        gameJSON: { ...gameJSON, seed },
+        visibility,
+        shadowingPlayerIndex: -1,
+      },
     );
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJSON",
