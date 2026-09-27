@@ -193,9 +193,8 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 			g.Seed = "JSON"
 			shuffleDeck = false
 		} else {
-			// A custom seed was specified along with the JSON,
-			// so ignore the deck provided in the JSON, generate a deck based on the specified seed,
-			// and shuffle it as per normal
+			// Generate and shuffle the deck using the custom seed. Any supplied JSON deck
+			// has already been validated to match it.
 			g.Seed = g.ExtraOptions.CustomSeed
 		}
 	} else if t.ExtraOptions.CustomSeed != "" {

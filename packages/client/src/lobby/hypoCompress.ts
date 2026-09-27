@@ -45,12 +45,14 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /**
  * Compresses a string representing a `GameJSON` object. Returns undefined if the compression fails.
  *
- * The resulting string is composed of three substrings separated by commas:
+ * The resulting string is composed of four substrings separated by commas:
  * - The first substring represents the number of players and the deck.
  * - The second substring represents the actions.
  * - The third substring is the ID of the variant.
+ * - The fourth substring is the seed (empty for an unspecified seed).
  *
- * Finally, hyphens are added to the string to make URL text wrap when posting.
+ * Hyphens are added to the first three substrings to make URL text wrap when posting. The seed is
+ * appended verbatim so that meaningful seed hyphens are preserved.
  */
 export function shrink(JSONString: string): string | undefined {
   let gameDataJSON: GameJSON;
@@ -84,8 +86,13 @@ export function shrink(JSONString: string): string | undefined {
 
 /** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
 export function expand(data: string): string | undefined {
-  // Remove all hyphens from URL.
-  const normal = data.replaceAll("-", "");
+  const parts = data.split(",");
+  const seed = parts[3] ?? "";
+  if (parts.length < 3 || parts.length > 4 || !/^[\dA-Za-z-]*$/.test(seed)) {
+    return undefined;
+  }
+  // Remove wrapping hyphens from the compressed data, never from the seed.
+  const normal = parts.slice(0, 3).join(",").replaceAll("-", "");
 
   // The compressed string is composed of 3 substrings separated by commas.
   const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
@@ -140,7 +147,7 @@ export function expand(data: string): string | undefined {
     characters: [],
     id: 0,
     notes: [],
-    seed: "",
+    seed,
   };
 
   return JSON.stringify(original);
@@ -148,6 +155,9 @@ export function expand(data: string): string | undefined {
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
 function gameJSONCompress(data: GameJSON): string | undefined {
+  if (typeof data.seed !== "string" || !/^[\dA-Za-z-]*$/.test(data.seed)) {
+    return undefined;
+  }
   let out = "";
 
   // Number of players
@@ -183,7 +193,7 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   // Add hyphens every 20 characters for URL posting (hyphens make the text wrap).
   out = out.match(/.{1,20}/g)!.join("-");
 
-  return out;
+  return `${out},${data.seed}`;
 }
 
 /**

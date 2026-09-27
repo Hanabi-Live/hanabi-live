@@ -16,10 +16,9 @@ export function onActiveChanged(active: boolean): void {
   if (replayArea === null) {
     return;
   }
-  replayArea.visible(active);
 
   if (active) {
-    // Show the replay area and initialize some UI elements.
+    // Visibility is handled by hypotheticalView.shouldShowReplayAreaChanged.
     replay.adjustShuttles(true); // We want it to immediately snap to the end
   } else if (globals.state.premove !== null) {
     // We are exiting a replay.

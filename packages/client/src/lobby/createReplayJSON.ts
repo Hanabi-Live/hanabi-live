@@ -74,6 +74,20 @@ export function createJSONFromReplay(room: string): void {
     }
   }
 
+  // A morphed deck no longer necessarily matches its original seed. Preserve seed metadata only
+  // when every exported identity is unchanged.
+  if (
+    globals.metadata.seed !== "JSON"
+    && game.deck.every((card, i) => {
+      const original = globals.state.cardIdentities[i];
+      return (
+        card.suitIndex === original?.suitIndex && card.rank === original.rank
+      );
+    })
+  ) {
+    game.seed = globals.metadata.seed;
+  }
+
   // Copy actions up to current segment.
   const { replay } = globals.state;
   game.actions = getGameActionsFromState(replay);

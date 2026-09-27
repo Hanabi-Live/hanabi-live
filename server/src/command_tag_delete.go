@@ -47,7 +47,7 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	if !t.Replay {
 		// See if the tag exists
-		if _, ok := g.Tags[d.Msg]; ok {
+		if userID, ok := g.Tags[d.Msg]; ok && userID == s.UserID {
 			delete(g.Tags, d.Msg)
 
 			// Send them an acknowledgement via private message to avoid spoiling information about
@@ -70,7 +70,7 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 
 	// Get the existing tags from the database
 	var tags []string
-	if v, err := models.GameTags.GetAll(databaseID); err != nil {
+	if v, err := models.GameTags.GetAllByUserID(databaseID, s.UserID); err != nil {
 		logger.Error("Failed to get the tags for game ID " +
 			strconv.Itoa(databaseID) + ": " + err.Error())
 		if !d.NoTableLock {
@@ -92,7 +92,7 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	}
 
 	// Delete it from the database
-	if err := models.GameTags.Delete(databaseID, d.Msg); err != nil {
+	if err := models.GameTags.Delete(databaseID, s.UserID, d.Msg); err != nil {
 		logger.Error("Failed to delete a tag for game ID " +
 			strconv.Itoa(databaseID) + ": " + err.Error())
 		if !d.NoTableLock {

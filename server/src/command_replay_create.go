@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"html"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -267,16 +268,34 @@ func isJSONValid(d *CommandData) (bool, string) {
 		variant = v
 	}
 
+	if len(d.GameJSON.Players) == 0 {
+		match := jsonSeedPlayerCountRegExp.FindStringSubmatch(d.GameJSON.Seed)
+		if match == nil {
+			return false, "You must provide players when the player count cannot be determined from the seed."
+		}
+		numPlayers, err := strconv.Atoi(match[1])
+		if err != nil {
+			return false, "The seed contains an invalid player count."
+		}
+		d.GameJSON.Players = append([]string(nil), defaultPlayerNames[:numPlayers]...)
+	}
+
 	// Validate that there is at least one action
 	if len(d.GameJSON.Actions) < 1 {
 		msg := "There must be at least one game action in the JSON array."
 		return false, msg
 	}
 
+	deckSize := variant.GetDeckSize()
+	actionDeckSize := len(d.GameJSON.Deck)
+	if d.GameJSON.Seed != "" {
+		actionDeckSize = deckSize
+	}
+
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
 		if action.Type == ActionTypePlay || action.Type == ActionTypeDiscard {
-			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
+			if action.Target < 0 || action.Target >= actionDeckSize {
 				msg := "Action at index " + strconv.Itoa(i) +
 					" is a play or discard with an invalid target (card order) of " +
 					strconv.Itoa(action.Target) + "."
@@ -330,9 +349,9 @@ func isJSONValid(d *CommandData) (bool, string) {
 		}
 	}
 
-	// Validate the deck
-	deckSize := variant.GetDeckSize()
-	if len(d.GameJSON.Deck) != deckSize {
+	// A seed can reconstruct an omitted deck; explicitly supplied decks must still be valid.
+	if (d.GameJSON.Seed == "" || len(d.GameJSON.Deck) > 0) &&
+		len(d.GameJSON.Deck) != deckSize {
 		msg := "The deck must have " + strconv.Itoa(deckSize) + " cards in it."
 		return false, msg
 	}
@@ -388,6 +407,23 @@ func isJSONValid(d *CommandData) (bool, string) {
 		if !seedHasValidCharacters(d.GameJSON.Seed) {
 			msg := "Seed names can only contain English letters, numbers, and hyphens."
 			return false, msg
+		}
+		if len(d.GameJSON.Deck) > 0 {
+			game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
+			game.InitDeck()
+			// Do not alter the shared random generator while validating a replay.
+			rng := rand.New(rand.NewSource(seedToInt64(d.GameJSON.Seed))) // nolint: gosec
+			game.shuffleDeck(rng.Intn)
+			for i, card := range d.GameJSON.Deck {
+				expected := game.CardIdentities[i]
+				if card.SuitIndex != expected.SuitIndex || card.Rank != expected.Rank {
+					msg := "The deck does not match the seed: the card at index " +
+						strconv.Itoa(i) + " must have suit number " +
+						strconv.Itoa(expected.SuitIndex) + " and rank " +
+						strconv.Itoa(expected.Rank) + "."
+					return false, msg
+				}
+			}
 		}
 	}
 
