@@ -94,13 +94,13 @@ export function set(order: CardOrder, text: string): void {
 }
 
 export function update(card: HanabiCard, text: string): void {
-  // Update the tooltip.
-  const filledText = prepareContent(text);
-  const tooltip = `#tooltip-${card.tooltipName}`;
-  tooltips.setInstanceContent(tooltip, filledText);
-  if (text === "") {
+  // Update the tooltip if it still needs to be shown.
+  if (text === "" || globals.activeHover !== card) {
+    const tooltip = `#tooltip-${card.tooltipName}`;
     tooltips.close(tooltip);
     globals.editingNote = null;
+  } else {
+    show(card);
   }
 
   // Update the card indicator.
