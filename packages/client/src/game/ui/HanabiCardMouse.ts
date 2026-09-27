@@ -11,6 +11,7 @@ import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as cursor from "./cursor";
+import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
 
@@ -82,6 +83,11 @@ function touchStart(
     // double-tapped.
     this.wasRecentlyTapped = true;
     if (globals.editingNote !== null) {
+      const card = getCardOrStackBase(globals.editingNote);
+      if (card !== undefined) {
+        tooltips.close(`#tooltip-${card.tooltipName}`);
+      }
+
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
