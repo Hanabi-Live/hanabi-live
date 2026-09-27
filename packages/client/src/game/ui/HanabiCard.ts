@@ -25,6 +25,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, assertNotNull, iRange } from "complete-common";
 import Konva from "konva";
+import * as tooltips from "../../tooltips";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
 import type { UICard } from "../types/UICard";
 import * as HanabiCardInit from "./HanabiCardInit";
@@ -1080,6 +1081,12 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   removeLayoutChildFromParent(): void {
     // Ensure that empathy is disabled prior to removing a card from a player's hand.
     this.setEmpathy(false);
+
+    // Hide the card tooltip when the card moves to a different parent.
+    if (globals.activeHover === this) {
+      const tooltip = `#tooltip-${this.tooltipName}`;
+      tooltips.close(tooltip);
+    }
 
     // Remove the card from the player's hand in preparation of adding it to either the play stacks
     // or the discard pile.

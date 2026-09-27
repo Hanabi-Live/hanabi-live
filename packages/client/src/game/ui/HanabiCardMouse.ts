@@ -11,6 +11,7 @@ import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as cursor from "./cursor";
+import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
 
@@ -33,8 +34,7 @@ export function registerMouseHandlers(this: HanabiCard): void {
 
 function mouseEnter(this: HanabiCard) {
   // Keep track of which element we are hovering over
-  konvaTooltips.resetActiveHover();
-  globals.activeHover = this;
+  konvaTooltips.setActiveHover(this);
 
   // When we hover over a card, show a tooltip that contains the note.
   checkShowNoteTooltip(this);
@@ -49,7 +49,7 @@ function mouseEnter(this: HanabiCard) {
 }
 
 function mouseLeave(this: HanabiCard) {
-  globals.activeHover = null;
+  konvaTooltips.resetActiveHover(this);
 
   // When we stop hovering over a card, close any open tooltips.
   checkHideNoteTooltip(this);
@@ -83,6 +83,11 @@ function touchStart(
     // double-tapped.
     this.wasRecentlyTapped = true;
     if (globals.editingNote !== null) {
+      const card = getCardOrStackBase(globals.editingNote);
+      if (card !== undefined) {
+        tooltips.close(`#tooltip-${card.tooltipName}`);
+      }
+
       globals.editingNote = null;
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
