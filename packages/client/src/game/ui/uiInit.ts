@@ -1,5 +1,6 @@
 import { assertNotNull } from "complete-common";
 import Konva from "konva";
+import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
 import { LABEL_COLOR } from "./constants";
 import { drawCards } from "./drawCards";
@@ -50,7 +51,7 @@ export function uiInit(): void {
 
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
-    stroke: "#747278",
+    stroke: getCanvasColors().loadingLabelStroke,
     strokeWidth: 0.001_056 * winH,
     text: "Loading...",
     align: "center",
@@ -67,7 +68,7 @@ export function uiInit(): void {
 
   const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
-    stroke: "#747278",
+    stroke: getCanvasColors().loadingLabelStroke,
     strokeWidth: 0.001_056 * winH,
     text: "0 / 0",
     align: "center",

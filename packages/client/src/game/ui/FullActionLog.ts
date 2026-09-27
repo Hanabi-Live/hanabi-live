@@ -3,6 +3,7 @@ import type { Tuple } from "complete-common";
 import { assertNotNull, eRange, newArray } from "complete-common";
 import Konva from "konva";
 import type { ContainerConfig } from "konva/types/Container";
+import { getCanvasColors } from "../../theme";
 import { MultiFitText } from "./MultiFitText";
 import { globals } from "./UIGlobals";
 import { FitText } from "./controls/FitText";
@@ -62,7 +63,7 @@ export class FullActionLog extends Konva.Group {
     this.numbersOptions = {
       fontSize: 0.025 * winH,
       fontFamily: "Verdana",
-      fill: "#d3d3d3", // Light gray
+      fill: getCanvasColors().actionLogNumber,
       x: 0.01 * winW,
       y: 0.01 * winH,
       width: 0.03 * winW,

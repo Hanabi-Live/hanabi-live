@@ -1,0 +1,344 @@
+/*
+  Dark mode palette and overrides.
+  Scoped to html[data-theme="dark"] so light mode is completely untouched.
+  Loaded last in the CSS bundle so it can override everything above it.
+
+  Shared colors are defined as custom properties here, with light-mode values in "hanabi.css";
+  prefer consuming a variable over hardcoding a color so the two themes cannot drift apart.
+*/
+
+html[data-theme="dark"] {
+  /* Palette custom properties */
+  --dm-bg: #0b1410;
+  --dm-surface: #1c1f22;
+  --dm-surface-2: #23262a;
+  --dm-border: #3a3f45;
+  --dm-text: #e6e6e6;
+  --dm-text-muted: #a9a9a9;
+  --dm-link: #7fb2ff;
+  --dm-header-bg: #15181c;
+  --dm-accent-green: #2e7d32;
+  --dm-accent-green-hover: #256a29;
+
+  /* Canvas colors (read by "packages/client/src/theme.ts" via "getComputedStyle") */
+  --canvas-action-log-number: #7a7a7a;
+  --canvas-current-player-text: #aa9944;
+  --canvas-replay-shuttle: #555555;
+  --canvas-surface-area: #3a3f45;
+  --canvas-loading-label-stroke: #555555;
+
+  /* Shared component colors that differ between themes (light values in "hanabi.css") */
+  --lobby-table-joined: #29294a;
+  --lobby-table-joined-hover: #33335a;
+  --lobby-table-unstarted: #3b3a24;
+  --lobby-table-unstarted-hover: #4b4a34;
+  --lobby-table-unstarted-password: #402626;
+  --lobby-table-unstarted-password-hover: #503636;
+  --lobby-table-started: #1d3a29;
+  --lobby-table-started-hover: #2d4a39;
+  --lobby-table-replay: #3a2740;
+  --lobby-table-replay-hover: #4a3750;
+  --login-alert-bg: #3a2020;
+  --login-alert-border: #5a3030;
+  --login-alert-text: #ffcccc;
+
+  /* Body */
+  body {
+    background-color: var(--dm-bg);
+    background-image: none;
+  }
+
+  /* Text defaults */
+  body,
+  input,
+  select,
+  textarea,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  #header {
+    color: var(--dm-text);
+  }
+
+  /*
+    Table headers and bold text are #646464 in light mode, which is unreadable on the dark
+    surfaces. ("strong" deliberately has no "!important" so that any more specific color, like
+    the red private-message text, still wins.)
+  */
+  table th {
+    color: var(--dm-text-muted);
+  }
+
+  strong {
+    color: var(--dm-text);
+  }
+
+  /* Links */
+  a {
+    color: var(--dm-link);
+  }
+
+  /* Header bar */
+  #header {
+    background-color: var(--dm-header-bg);
+    border-bottom: 1px solid var(--dm-border);
+  }
+
+  #header a {
+    color: var(--dm-text);
+  }
+
+  /* Nav buttons (e.g. "Help") have colored backgrounds, so they keep white text. */
+  #header .button {
+    color: var(--color-text-on-accent);
+  }
+
+  /*
+    The green nav/toggle buttons keep white text, so they use a darker green in dark mode for
+    sufficient contrast (the light-mode green is only 3.7:1 against white).
+    ("!important" is needed because "hanabi.css" sets these backgrounds with "!important".)
+  */
+  .help-button,
+  a.toggle-active {
+    background-color: var(--dm-accent-green) !important;
+  }
+
+  .help-button:hover {
+    background-color: var(--dm-accent-green-hover) !important;
+  }
+
+  /* Alpha template: .box panels (lobby sections, modals) */
+  .box {
+    background-color: var(--dm-surface);
+    box-shadow: 0 2px 0 0 var(--dm-border);
+  }
+
+  /* Alpha template: .modal / .dialog */
+  .modal,
+  .dialog {
+    background-color: var(--dm-surface);
+    border-color: var(--dm-border);
+  }
+
+  /* Alpha template: tables */
+  table tbody tr {
+    border-bottom: 1px solid var(--dm-border);
+  }
+
+  /*
+    Zebra stripes: alpha.css gives odd rows a light background. The lobby games table rows get
+    their status colors back further down, with ID specificity, so they beat these zebra rules.
+  */
+  table tbody tr:nth-child(2n),
+  table.alt tbody tr:nth-child(2n) {
+    background-color: var(--dm-surface-2);
+  }
+
+  table tbody tr:nth-child(2n + 1),
+  table.alt tbody tr:nth-child(2n + 1) {
+    background-color: transparent;
+  }
+
+  /* Alpha template: form controls */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    background-color: var(--dm-surface-2);
+    border-color: var(--dm-border);
+    color: var(--dm-text);
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus,
+  input[type="email"]:focus,
+  input[type="number"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--dm-link);
+  }
+
+  /* Alpha template: buttons (filled with mid-tone colors, so they keep white text) */
+  .button {
+    color: var(--color-text-on-accent);
+  }
+
+  .button.alt {
+    background-color: var(--dm-surface-2);
+    border-color: var(--dm-border);
+  }
+
+  .button.alt:hover {
+    background-color: var(--dm-surface);
+  }
+
+  input[type="submit"],
+  input[type="reset"],
+  input[type="button"] {
+    background-color: var(--dm-surface-2);
+    border-color: var(--dm-border);
+    color: var(--color-text-on-accent);
+  }
+
+  /* Alpha template: code / pre */
+  pre,
+  code {
+    background-color: var(--dm-surface-2);
+    border-color: var(--dm-border);
+    color: var(--dm-text);
+  }
+
+  /* Lobby: chat text boxes
+     ("!important" is needed because "hanabi.css" sets "border-color" with "!important".) */
+  .lobby-chat-text-box {
+    border-color: var(--dm-border) !important;
+    background-color: var(--dm-surface-2);
+    color: var(--dm-text);
+  }
+
+  .chat-text {
+    color: var(--dm-text);
+  }
+
+  /*
+    Lobby: table row variants (dark muted hues).
+    ("!important" is needed because "hanabi.css" sets these backgrounds with "!important".)
+  */
+  #lobby-games-table tbody tr.lobby-games-table-joined {
+    background-color: var(--lobby-table-joined) !important;
+  }
+  #lobby-games-table tbody tr.lobby-games-table-joined:hover {
+    background-color: var(--lobby-table-joined-hover) !important;
+  }
+
+  #lobby-games-table tbody tr.lobby-games-table-unstarted {
+    background-color: var(--lobby-table-unstarted) !important;
+  }
+  #lobby-games-table tbody tr.lobby-games-table-unstarted:hover {
+    background-color: var(--lobby-table-unstarted-hover) !important;
+  }
+
+  #lobby-games-table tbody tr.lobby-games-table-unstarted-password {
+    background-color: var(--lobby-table-unstarted-password) !important;
+  }
+  #lobby-games-table tbody tr.lobby-games-table-unstarted-password:hover {
+    background-color: var(--lobby-table-unstarted-password-hover) !important;
+  }
+
+  #lobby-games-table tbody tr.lobby-games-table-started {
+    background-color: var(--lobby-table-started) !important;
+  }
+  #lobby-games-table tbody tr.lobby-games-table-started:hover {
+    background-color: var(--lobby-table-started-hover) !important;
+  }
+
+  #lobby-games-table tbody tr.lobby-games-table-replay {
+    background-color: var(--lobby-table-replay) !important;
+  }
+  #lobby-games-table tbody tr.lobby-games-table-replay:hover {
+    background-color: var(--lobby-table-replay-hover) !important;
+  }
+
+  /* Lobby: game table border */
+  #lobby-games-table {
+    border-color: var(--dm-border);
+  }
+
+  /* Settings volume slider */
+  #settings-volume-slider {
+    background: var(--dm-surface-2);
+  }
+
+  /* Login page */
+  #main-login > header p,
+  #main-tutorial > header p {
+    border-top-color: var(--dm-border);
+  }
+
+  .login-header {
+    color: var(--dm-text);
+  }
+
+  /* Login alert (error box) */
+  #login-alert {
+    background-color: var(--login-alert-bg);
+    border-color: var(--login-alert-border);
+    color: var(--login-alert-text);
+  }
+
+  /* Modals container */
+  #modals-container > div {
+    background-color: var(--dm-surface);
+    border-color: var(--dm-border);
+  }
+
+  /* Settings modal */
+  #settings-modal {
+    background-color: var(--dm-surface);
+  }
+
+  #settings-modal h5 {
+    color: var(--dm-text-muted);
+  }
+
+  /* Alpha template: feature row borders */
+  .features-row section {
+    border-color: var(--dm-border);
+  }
+
+  /* Alpha template: labels on inputs */
+  label,
+  .label-text {
+    color: var(--dm-text);
+  }
+
+  /* Alpha template: horizontal lists */
+  .horizontal > li {
+    color: var(--dm-text);
+  }
+
+  /* Game chat */
+  #game-chat-text {
+    background-color: var(--dm-surface-2);
+    color: var(--dm-text);
+  }
+
+  #game-chat-modal {
+    border-color: var(--dm-border);
+  }
+
+  /* Alpha template: row divider */
+  .row {
+    border-bottom-color: var(--dm-border);
+  }
+
+  /* Alpha template: nav button hover */
+  #nav a:hover {
+    background-color: var(--dm-surface-2);
+  }
+
+  /* Alpha template: footer */
+  footer {
+    color: var(--dm-text-muted);
+  }
+
+  /*
+    Note editor inputs sit on the white note tooltip, so they keep their light-mode colors here;
+    without this, they would inherit the dark form-control colors above and render as a dark box
+    on the white tooltip.
+  */
+  input.note-input {
+    background-color: var(--note-input-bg);
+    border-color: var(--note-input-border);
+    color: var(--note-input-text);
+  }
+
+  input.note-input:focus {
+    border-color: var(--note-input-border);
+  }
+}
