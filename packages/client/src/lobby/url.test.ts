@@ -53,15 +53,12 @@ describe("replay URL loading", () => {
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
 
     const gameJSON = JSON.parse(expand(`${payload}${suffix}`)!) as GameJSON;
-    expect(send).toHaveBeenCalledWith(
-      "replayCreate",
-      {
-        source: "json",
-        gameJSON: { ...gameJSON, seed },
-        visibility,
-        shadowingPlayerIndex: -1,
-      },
-    );
+    expect(send).toHaveBeenCalledWith("replayCreate", {
+      source: "json",
+      gameJSON: { ...gameJSON, seed },
+      visibility,
+      shadowingPlayerIndex: -1,
+    });
     expect(setItem).toHaveBeenCalledWith(
       "watchReplayJSON",
       expand(`${payload}${suffix}`),
