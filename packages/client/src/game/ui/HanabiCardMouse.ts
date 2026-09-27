@@ -33,8 +33,7 @@ export function registerMouseHandlers(this: HanabiCard): void {
 
 function mouseEnter(this: HanabiCard) {
   // Keep track of which element we are hovering over
-  konvaTooltips.resetActiveHover();
-  globals.activeHover = this;
+  konvaTooltips.setActiveHover(this);
 
   // When we hover over a card, show a tooltip that contains the note.
   checkShowNoteTooltip(this);
@@ -49,7 +48,7 @@ function mouseEnter(this: HanabiCard) {
 }
 
 function mouseLeave(this: HanabiCard) {
-  globals.activeHover = null;
+  konvaTooltips.resetActiveHover(this);
 
   // When we stop hovering over a card, close any open tooltips.
   checkHideNoteTooltip(this);

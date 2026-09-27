@@ -4,7 +4,6 @@ import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
 import { ReplayActionType } from "../../../types/ReplayActionType";
 import { globals } from "../../UIGlobals";
-import * as konvaTooltips from "../../konvaTooltips";
 import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
@@ -225,7 +224,7 @@ export function onFinishedChanged(
   }
 
   // If any tooltips are open, close them.
-  konvaTooltips.resetActiveHover();
+  tooltips.closeAllTooltips();
 
   // If the timers are showing, hide them.
   globals.elements.timer1?.hide();

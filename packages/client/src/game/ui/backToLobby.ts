@@ -1,12 +1,12 @@
 import * as chat from "../../chat";
+import * as tooltips from "../../tooltips";
 import { setBrowserAddressBarPath } from "../../utils";
 import { globals } from "./UIGlobals";
-import * as konvaTooltips from "./konvaTooltips";
 import * as timer from "./timer";
 
 export function backToLobby(): void {
-  // Hide the tooltip, if showing.
-  konvaTooltips.resetActiveHover();
+  // Hide any tooltips, if showing.
+  tooltips.closeAllTooltips();
 
   // Stop any timer-related callbacks.
   timer.stop();

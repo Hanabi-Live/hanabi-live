@@ -21,8 +21,7 @@ export function initKonvaTooltips(
   );
 
   element.on("mouseover touchstart", function mouseOver(this: Konva.Node) {
-    resetActiveHover();
-    globals.activeHover = this;
+    setActiveHover(this);
     if (delayed) {
       setTimeout(() => {
         show(this);
@@ -32,12 +31,12 @@ export function initKonvaTooltips(
     }
   });
 
-  element.on("mouseout touchend", () => {
+  element.on("mouseout touchend", function mouseOut(this: Konva.Node) {
     assertDefined(
       element.tooltipName,
       'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
     );
-    globals.activeHover = null;
+    resetActiveHover(this);
     tooltips.close(`#tooltip-${element.tooltipName}`);
   });
 
@@ -84,8 +83,20 @@ export function show(element: NodeWithTooltip): void {
   tooltips.open(tooltip);
 }
 
-export function resetActiveHover(): void {
+export function setActiveHover(element: NodeWithTooltip): void {
+  // Most elements use "mouseout", but cards use "mouseleave" instead, so send both events.
   if (globals.activeHover !== null) {
     globals.activeHover.dispatchEvent(new MouseEvent("mouseout"));
+  }
+  if (globals.activeHover !== null) {
+    globals.activeHover.dispatchEvent(new MouseEvent("mouseleave"));
+  }
+
+  globals.activeHover = element;
+}
+
+export function resetActiveHover(element: NodeWithTooltip): void {
+  if (globals.activeHover === element) {
+    globals.activeHover = null;
   }
 }
