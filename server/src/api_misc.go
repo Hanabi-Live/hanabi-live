@@ -167,6 +167,10 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	// List of games by variant
 	httpRouter.GET(api+"/variants/:id", apiVariantsSingle)
 
+	// List of games associated with tags
+	httpRouter.GET(api+"/tags/:player1", apiTags)
+	httpRouter.GET(api+"/tag/:tag", apiTagSearch)
+
 	// List of games played by player[s]
 	httpRouter.GET(api+"/history/:player1", apiHistory)
 	httpRouter.GET(api+"/history/:player1/:player2", apiHistory)

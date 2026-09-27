@@ -181,7 +181,15 @@ export const gameParticipantsTable = pgTable("game_participants", {
 
 // TODO: game_actions
 
-// TODO: game_tags
+export const gameTagsTable = pgTable("game_tags", {
+  gameID: integer("game_id")
+    .notNull()
+    .references(() => gamesTable.id),
+  userID: integer("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  tag: text("tag").notNull(),
+});
 
 // TODO: variant_stats
 

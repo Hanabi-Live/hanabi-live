@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -120,6 +122,79 @@ func apiFullDataHistory(c *gin.Context) {
 		gameHistoryList = make([]*GameHistory, 0)
 	}
 
+	c.JSON(http.StatusOK, gameHistoryList)
+}
+
+// Returns all games tagged by a user, including games they did not participate in.
+func apiTags(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
+	user, ok := httpParsePlayerName(c)
+	if !ok {
+		return
+	}
+
+	tagsByGame, err := models.GameTags.SearchByUserID(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+		return
+	}
+
+	gameIDs := make([]int, 0, len(tagsByGame))
+	for gameID := range tagsByGame {
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	gameHistoryList, err := models.Games.GetHistory(gameIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+		return
+	}
+	for _, gameHistory := range gameHistoryList {
+		tags := tagsByGame[gameHistory.ID]
+		sort.Strings(tags)
+		gameHistory.Tags = strings.Join(tags, ", ")
+	}
+	if gameHistoryList == nil {
+		gameHistoryList = make([]*GameHistory, 0)
+	}
+	c.JSON(http.StatusOK, gameHistoryList)
+}
+
+// Returns all games containing the requested normalized tag.
+func apiTagSearch(c *gin.Context) {
+	if apiCheckIPBanned(c) {
+		return
+	}
+
+	tag := c.Param("tag")
+	if tag == "" {
+		c.String(http.StatusNotFound, "Error: You must specify a tag.")
+		return
+	}
+	if normalizedTag, validationError := sanitizeTag(tag); validationError != "" {
+		c.String(http.StatusNotFound, validationError)
+		return
+	} else {
+		tag = normalizedTag
+	}
+
+	gameIDs, err := models.GameTags.SearchByTag(tag)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+		return
+	}
+
+	gameHistoryList, err := models.Games.GetHistory(gameIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "")
+		return
+	}
+	if gameHistoryList == nil {
+		gameHistoryList = make([]*GameHistory, 0)
+	}
 	c.JSON(http.StatusOK, gameHistoryList)
 }
 

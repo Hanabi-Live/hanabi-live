@@ -98,6 +98,18 @@ export const users = {
     return user.username;
   },
 
+  getIDByNormalizedUsername: async (
+    normalizedUsername: string,
+  ): Promise<UserID | undefined> => {
+    const rows = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.normalizedUsername, normalizedUsername))
+      .limit(1);
+    const row = rows[0];
+    return row === undefined ? undefined : (row.id as UserID);
+  },
+
   /** Get a user's WebSocket connection metadata that will be stored alongside their connection. */
   getWSData: async (
     userID: number,

@@ -10,8 +10,12 @@ import unidecode from "unidecode";
  * (like e.g. Alice and Alicè).
  */
 export function normalizeUsername(string: string): string {
-  const ascii = unidecode(string);
-  return ascii.toLowerCase().trim();
+  return normalizeString(string).trim();
+}
+
+/** Transliterate a string to ASCII and lowercase it without trimming whitespace. */
+export function normalizeString(string: string): string {
+  return unidecode(string).toLowerCase();
 }
 
 /**
