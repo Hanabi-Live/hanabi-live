@@ -114,40 +114,6 @@ select {
 }
 
 /*
-  Light-mode palette custom properties.
-  Dark-mode overrides live in "dark.css" (scoped to "html[data-theme=dark]"); the canvas palette
-  in "packages/client/src/theme.ts" reads these variables so that both CSS and the Konva canvas
-  share a single source of truth for the colors.
-*/
-:root {
-  --canvas-action-log-number: #d3d3d3;
-  --canvas-current-player-text: #ffffcc;
-  --canvas-replay-shuttle: #d1d1d1;
-  --canvas-surface-area: #b3b3b3;
-  --canvas-loading-label-stroke: #747278;
-
-  /* Shared component colors (overridden in "dark.css") */
-  --color-text-on-accent: #fff;
-
-  /* Lobby table row variants (light-mode values) */
-  --lobby-table-joined: #f2f2ff;
-  --lobby-table-joined-hover: #e0e0ff;
-  --lobby-table-unstarted: #fffff0;
-  --lobby-table-unstarted-hover: #ffffe1;
-  --lobby-table-unstarted-password: #ffeaea;
-  --lobby-table-unstarted-password-hover: #ffd5d5;
-  --lobby-table-started: #e6ffee;
-  --lobby-table-started-hover: #cdffdd;
-  --lobby-table-replay: #fff0ff;
-  --lobby-table-replay-hover: #ffe1ff;
-
-  /* Login alert (error box; based on the Bootstrap alert color) */
-  --login-alert-bg: #f2dede;
-  --login-alert-border: #ebccd1;
-  --login-alert-text: #a94442;
-}
-
-/*
   Common
 */
 
@@ -281,9 +247,9 @@ table td {
 
 /* Based on the Bootstrap alert color */
 #login-alert {
-  color: var(--login-alert-text);
-  background-color: var(--login-alert-bg);
-  border-color: var(--login-alert-border);
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
   padding: 15px;
   margin-bottom: 1em;
   border: 1px solid transparent;
@@ -450,23 +416,23 @@ table td {
 }
 
 .lobby-games-table-joined {
-  background-color: var(--lobby-table-joined) !important;
+  background-color: #f2f2ff !important;
 }
 .lobby-games-table-unstarted {
-  background-color: var(--lobby-table-unstarted) !important;
+  background-color: #fffff0 !important;
 }
 .lobby-games-table-unstarted-password {
-  background-color: var(--lobby-table-unstarted-password) !important;
+  background-color: #ffeaea !important;
 }
 .lobby-games-table-started {
-  background-color: var(--lobby-table-started) !important;
+  background-color: #e6ffee !important;
 }
 .lobby-games-table-replay {
-  background-color: var(--lobby-table-replay) !important;
+  background-color: #fff0ff !important;
 }
 
 .lobby-games-table-joined:hover {
-  background-color: var(--lobby-table-joined-hover) !important;
+  background-color: #e0e0ff !important;
 }
 .lobby-games-table-joined:hover {
   /* rejoin */
@@ -476,10 +442,10 @@ table td {
     pointer;
 }
 .lobby-games-table-unstarted:hover {
-  background-color: var(--lobby-table-unstarted-hover) !important;
+  background-color: #ffffe1 !important;
 }
 .lobby-games-table-unstarted-password:hover {
-  background-color: var(--lobby-table-unstarted-password-hover) !important;
+  background-color: #ffd5d5 !important;
 }
 .lobby-games-table-unstarted:hover,
 .lobby-games-table-unstarted-password:hover {
@@ -498,10 +464,10 @@ table td {
     pointer;
 }
 .lobby-games-table-started:hover {
-  background-color: var(--lobby-table-started-hover) !important;
+  background-color: #cdffdd !important;
 }
 .lobby-games-table-replay:hover {
-  background-color: var(--lobby-table-replay-hover) !important;
+  background-color: #ffe1ff !important;
 }
 .lobby-games-table-started,
 .lobby-games-table-replay,

@@ -1,5 +1,4 @@
 import Konva from "konva";
-import { getCanvasColors } from "../../../theme";
 import { globals } from "../UIGlobals";
 import { LABEL_COLOR } from "../constants";
 import { FitText } from "./FitText";
@@ -89,7 +88,7 @@ export class CurrentPlayerArea extends Konva.Group {
       fontSize: 0.08 * winH,
       text: "",
       align: "center",
-      fill: getCanvasColors().currentPlayerText,
+      fill: "#ffffcc",
       shadowColor: "black",
       shadowBlur: 10,
       shadowOffset: {

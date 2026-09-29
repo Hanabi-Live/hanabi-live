@@ -1,5 +1,4 @@
 import Konva from "konva";
-import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
 import { Button } from "./controls/Button";
 import { EnterHypoButton } from "./controls/EnterHypoButton";
@@ -78,7 +77,7 @@ export function drawReplayArea(winW: number, winH: number): void {
       y: (shuttleValues.h / 2) * winW,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
-    fill: getCanvasColors().replayShuttle,
+    fill: "#d1d1d1", // Gray
     stroke: shuttleValues.stroke,
     strokeWidth: shuttleValues.strokeWidth * winW,
     visible: false,
