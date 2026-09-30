@@ -74,7 +74,15 @@ module.exports = function Gruntfile(grunt) {
   grunt.loadNpmTasks("grunt-contrib-cssmin");
   grunt.loadNpmTasks("grunt-criticalcss");
 
-  grunt.registerTask("default", ["concat", "cssmin:main"]);
+  // "cssmin" logs clean-css parser warnings with "grunt.log.error" but still succeeds. Fail before
+  // the build can publish CSS that the minifier could not parse correctly.
+  grunt.registerTask("check-cssmin", () => {
+    if (grunt.fail.errorcount > 0) {
+      grunt.fail.fatal("CSS minification produced errors or warnings.");
+    }
+  });
+
+  grunt.registerTask("default", ["concat", "cssmin:main", "check-cssmin"]);
 
   // Generating critical CSS is slow and infrequent.
   // Run manually when the CSS changes with "npx grunt critical --url=http://localhost"
@@ -82,7 +90,9 @@ module.exports = function Gruntfile(grunt) {
   grunt.registerTask("critical", [
     "concat",
     "cssmin:main",
+    "check-cssmin",
     "criticalcss",
     "cssmin:critical",
+    "check-cssmin",
   ]);
 };
