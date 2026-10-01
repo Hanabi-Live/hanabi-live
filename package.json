@@ -47,7 +47,7 @@
     "complete-node": "16.4.0",
     "dotenv": "17.4.1",
     "drizzle-orm": "0.45.2",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.2",
     "esbuild-plugin-pino": "2.3.3",
     "eta": "4.5.1",
     "fast-deep-equal": "3.1.3",
