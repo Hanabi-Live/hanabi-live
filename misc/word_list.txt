@@ -13097,6 +13097,8 @@ ants
 antsier
 antsiest
 antsy
+anus
+anuses
 anvil
 anvils
 anxieties
@@ -19140,6 +19142,7 @@ butches
 butler
 butlers
 buts
+butt
 butte
 butted
 butter
@@ -19169,6 +19172,8 @@ buttery
 buttes
 butties
 butting
+buttock
+buttocks
 button
 buttoned
 buttonhole
@@ -19183,6 +19188,7 @@ buttress
 buttressed
 buttresses
 buttressing
+butts
 butty
 buxom
 buy
@@ -34855,7 +34861,9 @@ fangs
 fanlight
 fanlights
 fanned
+fannies
 fanning
+fanny
 fans
 fantail
 fantails
@@ -34920,11 +34928,15 @@ farrows
 farseeing
 farsighted
 farsightedness
+fart
+farted
 farther
 farthermost
 farthest
 farthing
 farthings
+farting
+farts
 fascia
 fascias
 fascicle
@@ -35128,6 +35140,8 @@ featureless
 features
 featuring
 febrile
+fecal
+feces
 feckless
 fecklessly
 fecklessness
@@ -62970,6 +62984,10 @@ pugnaciously
 pugnaciousness
 pugnacity
 pugs
+puke
+puked
+pukes
+puking
 pukka
 pulchritude
 pulchritudinous
@@ -83387,6 +83405,12 @@ urinals
 urinalyses
 urinalysis
 urinary
+urinate
+urinated
+urinates
+urinating
+urination
+urine
 urn
 urns
 urogenital
@@ -84514,6 +84538,10 @@ voluptuously
 voluptuousness
 volute
 volutes
+vomit
+vomited
+vomiting
+vomits
 voodoo
 voodooed
 voodooing
