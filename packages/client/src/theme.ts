@@ -119,8 +119,6 @@ export function init(): void {
     const stored = getStoredPreference();
     if (stored === true) {
       select.value = "true";
-    } else if (stored === false) {
-      select.value = "false";
     } else if (stored === "system") {
       select.value = "system";
     } else {

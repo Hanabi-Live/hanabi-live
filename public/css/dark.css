@@ -20,13 +20,6 @@ html[data-theme="dark"] {
   --dm-accent-green: #2e7d32;
   --dm-accent-green-hover: #256a29;
 
-  /* Canvas colors (read by "packages/client/src/theme.ts" via "getComputedStyle") */
-  --canvas-action-log-number: #7a7a7a;
-  --canvas-current-player-text: #aa9944;
-  --canvas-replay-shuttle: #555555;
-  --canvas-surface-area: #3a3f45;
-  --canvas-loading-label-stroke: #555555;
-
   /* Shared component colors that differ between themes (light values in "hanabi.css") */
   --lobby-table-joined: #29294a;
   --lobby-table-joined-hover: #33335a;
