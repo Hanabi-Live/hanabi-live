@@ -5,6 +5,21 @@ import { escapeHtml } from "./utils";
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
   globalThis.addEventListener("error", (errorEvent) => {
+    if (
+      (errorEvent.lineno === 0
+        && errorEvent.colno === 0
+        && errorEvent.filename === ""
+        && errorEvent.error === null)
+      || (errorEvent.lineno === 1
+        && errorEvent.colno === 16
+        && !errorEvent.filename.endsWith("/main.min.js"))
+    ) {
+      // Some buggy code that the browser injected is causing an error. Safe to ignore. This occurs
+      // on the Brave browser on iOS. Line 1:16 corresponds to the character directly after the
+      // opening <!doctype html> of each page.
+      return;
+    }
+
     const stackTrace = getErrorStackTrace(errorEvent) ?? errorEvent.message;
     const formattedStackTrace = `<pre>${escapeHtml(stackTrace)}</pre>`;
 
@@ -28,12 +43,22 @@ export function initErrorListener(): void {
 
 function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
   const error = errorEvent.error as unknown; // Cast from `any` to `unknown`.
-  return typeof error === "object"
+  if (
+    typeof error === "object"
     && error !== null
     && "stack" in error
     && typeof error.stack === "string"
-    ? error.stack
-    : undefined;
+  ) {
+    if (
+      "message" in error
+      && typeof error.message === "string"
+      && !error.stack.includes(error.message)
+    ) {
+      return `${errorEvent.message}\n${error.stack}`;
+    }
+    return error.stack;
+  }
+  return undefined;
 }
 
 /**
