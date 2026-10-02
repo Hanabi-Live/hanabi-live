@@ -29,6 +29,7 @@ module.exports = function Gruntfile(grunt) {
           path.join(cssLibDir, "tooltipster-sideTip-shadow.min.css"),
           path.join(cssLibDir, "alpha.css"),
           path.join(cssDir, "hanabi.css"),
+          path.join(cssDir, "dark.css"),
         ],
         dest: path.join(gruntOutputDir, "main.css"),
       },

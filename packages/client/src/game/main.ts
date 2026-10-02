@@ -23,6 +23,7 @@ export function init(): void {
 
 export function show(): void {
   globals.currentScreen = Screen.Game;
+  document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
   $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
   // eslint-disable-next-line @typescript-eslint/strict-void-return
@@ -43,6 +44,7 @@ export function show(): void {
 
 function hide() {
   globals.currentScreen = Screen.Lobby;
+  document.body.dataset["screen"] = "lobby";
   tablesDraw();
   usersDraw.draw();
 

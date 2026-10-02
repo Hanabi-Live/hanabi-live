@@ -114,6 +114,46 @@ select {
 }
 
 /*
+  Light-mode palette custom properties.
+  Dark-mode overrides live in "dark.css" (scoped to "html[data-theme=dark]"); the canvas palette
+  in "packages/client/src/theme.ts" reads these variables so that both CSS and the Konva canvas
+  share a single source of truth for the colors.
+*/
+:root {
+  --body-bg: #00420f;
+
+  --canvas-action-log-number: #d3d3d3;
+  --canvas-current-player-text: #ffffcc;
+  --canvas-replay-shuttle: #d1d1d1;
+  --canvas-surface-area: #b3b3b3;
+  --canvas-loading-label-stroke: #747278;
+
+  /* Shared component colors (overridden in "dark.css") */
+  --color-text-on-accent: #fff;
+
+  /* Lobby table row variants (light-mode values) */
+  --lobby-table-joined: #f2f2ff;
+  --lobby-table-joined-hover: #e0e0ff;
+  --lobby-table-unstarted: #fffff0;
+  --lobby-table-unstarted-hover: #ffffe1;
+  --lobby-table-unstarted-password: #ffeaea;
+  --lobby-table-unstarted-password-hover: #ffd5d5;
+  --lobby-table-started: #e6ffee;
+  --lobby-table-started-hover: #cdffdd;
+  --lobby-table-replay: #fff0ff;
+  --lobby-table-replay-hover: #ffe1ff;
+
+  /* Login alert (error box; based on the Bootstrap alert color) */
+  --login-alert-bg: #f2dede;
+  --login-alert-border: #ebccd1;
+  --login-alert-text: #a94442;
+
+  --note-input-bg: #f8f8f8;
+  --note-input-border: #e5e5e5;
+  --note-input-border-focus: #e89980;
+}
+
+/*
   Common
 */
 
@@ -124,7 +164,7 @@ body,
 }
 
 body {
-  background-color: #00420f;
+  background-color: var(--body-bg);
   background-image: url(../img/dark-wood.png);
   background-repeat: repeat;
   background-attachment: fixed;
@@ -247,9 +287,9 @@ table td {
 
 /* Based on the Bootstrap alert color */
 #login-alert {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
+  color: var(--login-alert-text);
+  background-color: var(--login-alert-bg);
+  border-color: var(--login-alert-border);
   padding: 15px;
   margin-bottom: 1em;
   border: 1px solid transparent;
@@ -416,23 +456,23 @@ table td {
 }
 
 .lobby-games-table-joined {
-  background-color: #f2f2ff !important;
+  background-color: var(--lobby-table-joined) !important;
 }
 .lobby-games-table-unstarted {
-  background-color: #fffff0 !important;
+  background-color: var(--lobby-table-unstarted) !important;
 }
 .lobby-games-table-unstarted-password {
-  background-color: #ffeaea !important;
+  background-color: var(--lobby-table-unstarted-password) !important;
 }
 .lobby-games-table-started {
-  background-color: #e6ffee !important;
+  background-color: var(--lobby-table-started) !important;
 }
 .lobby-games-table-replay {
-  background-color: #fff0ff !important;
+  background-color: var(--lobby-table-replay) !important;
 }
 
 .lobby-games-table-joined:hover {
-  background-color: #e0e0ff !important;
+  background-color: var(--lobby-table-joined-hover) !important;
 }
 .lobby-games-table-joined:hover {
   /* rejoin */
@@ -442,10 +482,10 @@ table td {
     pointer;
 }
 .lobby-games-table-unstarted:hover {
-  background-color: #ffffe1 !important;
+  background-color: var(--lobby-table-unstarted-hover) !important;
 }
 .lobby-games-table-unstarted-password:hover {
-  background-color: #ffd5d5 !important;
+  background-color: var(--lobby-table-unstarted-password-hover) !important;
 }
 .lobby-games-table-unstarted:hover,
 .lobby-games-table-unstarted-password:hover {
@@ -464,10 +504,10 @@ table td {
     pointer;
 }
 .lobby-games-table-started:hover {
-  background-color: #cdffdd !important;
+  background-color: var(--lobby-table-started-hover) !important;
 }
 .lobby-games-table-replay:hover {
-  background-color: #ffe1ff !important;
+  background-color: var(--lobby-table-replay-hover) !important;
 }
 .lobby-games-table-started,
 .lobby-games-table-replay,
@@ -790,55 +830,18 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 #settings-modal {
   min-width: unset;
   max-width: 100vw;
+  width: min(1100px, 90vw);
 }
 
 #settings-modal .settings-content {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  align-content: space-between;
-  justify-content: flex-start;
-  align-items: stretch;
+  display: block;
+  width: 100%;
+  columns: 20em;
   column-gap: 2em;
-  width: 1100px;
-  max-height: 800px;
-  max-width: unset;
 }
 
-@media screen and (max-width: 1920px) {
-  #settings-modal .settings-content {
-    max-width: 900px;
-    max-height: 650px;
-  }
-}
-
-@media screen and (max-width: 1440px) {
-  #settings-modal .settings-content {
-    max-width: 700px;
-    max-height: 550px;
-  }
-}
-
-@media screen and (max-width: 980px) {
-  #settings-modal .settings-content {
-    max-width: 500px;
-    max-height: unset;
-    width: fit-content;
-  }
-}
-
-@media screen and (max-height: 660px) and (min-width: 1180px) {
-  #settings-modal .settings-content {
-    max-width: 60vw;
-    max-height: 90vh;
-  }
-}
-
-@media screen and (max-height: 539px) and (min-width: 1180px) {
-  #settings-modal .settings-content {
-    max-width: 100vw;
-    max-height: 90vh;
-  }
+#settings-modal .settings-content > div {
+  break-inside: avoid;
 }
 
 #settings-modal h5 {
