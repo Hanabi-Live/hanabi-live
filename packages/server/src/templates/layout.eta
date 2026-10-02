@@ -31,7 +31,7 @@
     <script type="text/javascript">
   try {
     var t = localStorage.getItem("darkMode");
-    var isDark = t === "true" || (t !== "false" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var isDark = t === "true" || (t === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
     if (isDark) {
       document.documentElement.dataset.theme = "dark";
     }

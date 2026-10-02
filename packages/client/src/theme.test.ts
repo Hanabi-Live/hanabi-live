@@ -52,6 +52,11 @@ describe("theme", () => {
       expect(getStoredPreference()).toBe(false);
     });
 
+    test('returns "system" when "system" is stored', () => {
+      localStorageStub.setItem(STORAGE_KEY, "system");
+      expect(getStoredPreference()).toBe("system");
+    });
+
     test("returns null for an invalid stored value", () => {
       localStorageStub.setItem(STORAGE_KEY, "yes");
       expect(getStoredPreference()).toBeNull();
@@ -74,7 +79,16 @@ describe("theme", () => {
       expect(isDarkMode()).toBe(true);
     });
 
-    test("follows the system preference when nothing is stored", () => {
+    test("defaults to light mode when nothing is stored", () => {
+      matchMediaMock.matches = true;
+      expect(isDarkMode()).toBe(false);
+
+      matchMediaMock.matches = false;
+      expect(isDarkMode()).toBe(false);
+    });
+
+    test('follows the system preference when "system" is stored', () => {
+      localStorageStub.setItem(STORAGE_KEY, "system");
       matchMediaMock.matches = true;
       expect(isDarkMode()).toBe(true);
 

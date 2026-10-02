@@ -1,10 +1,10 @@
 // Theme management for dark mode. The preference is stored in localStorage (client-only, not synced
-// to the server). Default follows the system preference (prefers-color-scheme).
+// to the server). The default is light mode.
 
 const STORAGE_KEY = "darkMode";
 
 /** Read the stored preference. Returns null if not set. (Exported for testing.) */
-export function getStoredPreference(): boolean | null {
+export function getStoredPreference(): boolean | "system" | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
     if (value === "true") {
@@ -12,6 +12,9 @@ export function getStoredPreference(): boolean | null {
     }
     if (value === "false") {
       return false;
+    }
+    if (value === "system") {
+      return "system";
     }
   } catch {
     // localStorage may be unavailable (e.g. private browsing, disabled).
@@ -27,10 +30,10 @@ function getSystemPreference(): boolean {
 /** Determine the effective dark mode state. (Exported for testing.) */
 export function isDarkMode(): boolean {
   const stored = getStoredPreference();
-  if (stored !== null) {
+  if (typeof stored === "boolean") {
     return stored;
   }
-  return getSystemPreference();
+  return stored === "system" && getSystemPreference();
 }
 
 /** Apply the current theme to the document. */
@@ -84,14 +87,10 @@ export function getCanvasColors(): CanvasColors {
   };
 }
 
-/** Set the dark mode preference. `null` means "follow system" (removes the stored override). */
-function setDarkMode(enabled: boolean | null) {
+/** Set the dark mode preference. */
+function setDarkMode(preference: boolean | "system") {
   try {
-    if (enabled === null) {
-      localStorage.removeItem(STORAGE_KEY);
-    } else {
-      localStorage.setItem(STORAGE_KEY, String(enabled));
-    }
+    localStorage.setItem(STORAGE_KEY, String(preference));
   } catch {
     // The localStorage API may be unavailable.
   }
@@ -103,12 +102,12 @@ function setDarkMode(enabled: boolean | null) {
 export function init(): void {
   applyTheme();
 
-  // Listen for OS theme changes (only relevant when stored preference is null).
+  // Listen for OS theme changes (only relevant when the system preference is selected).
   globalThis
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", () => {
       const stored = getStoredPreference();
-      if (stored === null) {
+      if (stored === "system") {
         applyTheme();
         document.dispatchEvent(new Event("theme_change"));
       }
@@ -122,8 +121,10 @@ export function init(): void {
       select.value = "true";
     } else if (stored === false) {
       select.value = "false";
-    } else {
+    } else if (stored === "system") {
       select.value = "system";
+    } else {
+      select.value = "false";
     }
     select.addEventListener("change", () => {
       const { value } = select;
@@ -132,7 +133,7 @@ export function init(): void {
       } else if (value === "false") {
         setDarkMode(false);
       } else {
-        setDarkMode(null);
+        setDarkMode("system");
       }
     });
   }
