@@ -130,6 +130,12 @@ select {
 
   /* Shared component colors (overridden in "dark.css") */
   --color-text-on-accent: #fff;
+  --note-input-bg: #fff;
+  --note-input-border: #767676;
+  --note-input-text: #000;
+  --note-section-current-border: #b8860b;
+  --note-section-current-bg: #fff3cc;
+  --note-section-current-text: #5c4a00;
 
   /* Lobby table row variants (light-mode values) */
   --lobby-table-joined: #f2f2ff;
@@ -1947,4 +1953,106 @@ div.noteTitle span {
   background-color: #fff;
   text-align: center;
   padding: 0 10px;
+}
+
+/*
+  Notes are split into a section for each round in which something was written.
+*/
+
+div.note-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+div.note-section {
+  border-left: 2px solid #999;
+  padding-left: 5px;
+}
+
+div.note-section-round {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 16px;
+}
+
+div.note-section-text {
+  word-break: break-word;
+}
+
+/*
+  The section for the round that the viewer is looking at: highlight it so that the notes that they
+  should be paying attention to stand out.
+*/
+
+div.note-section-current {
+  border-left: 3px solid var(--note-section-current-border);
+  background-color: var(--note-section-current-bg);
+}
+
+div.note-section-current > div.note-section-round {
+  color: var(--note-section-current-text);
+  font-weight: 700;
+}
+
+/*
+  Sections that were written after the round that the viewer is looking at.
+*/
+
+div.note-section-future {
+  opacity: 0.55;
+}
+
+/*
+  The combined tooltip (spectators / replays) shows every player's notes as a grid: one column per
+  player and one row per round, so that the sections for the same round are aligned between players.
+*/
+
+div.note-grid {
+  display: grid;
+  grid-auto-flow: row;
+}
+
+div.note-grid-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: 8px;
+  align-items: start;
+  padding: 3px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+div.note-grid-row:last-child {
+  border-bottom: 0;
+}
+
+div.note-grid-header {
+  border-bottom: 1px solid #999;
+}
+
+div.note-grid-row-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 16px;
+  white-space: nowrap;
+  min-width: 24px;
+}
+
+div.note-grid-row-header-current {
+  color: var(--note-section-current-text);
+  font-weight: 700;
+}
+
+div.note-grid-name {
+  font-weight: 700;
+  color: #333;
+}
+
+input.note-input {
+  width: 100%;
+  min-width: 150px;
+  box-sizing: border-box;
 }

@@ -26,14 +26,13 @@ export function clickRightCheckAddNote(
   // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered.
   // (This must be above the other note code because of the modifiers.)
   if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
-    card.setNote(globals.lastNote);
+    card.setNoteInCurrentRound(globals.lastNote);
     return;
   }
 
-  // Ctrl + alt + right-click is prepend turn count.
+  // Ctrl + alt + right-click moves the last section of the note to the current turn.
   if (event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
-    lastNote = `#${globals.elements.turnNumberLabel?.text()}`;
-    card.prependTurnCountNote(lastNote);
+    card.moveLastNoteToCurrentRound();
     return;
   }
 

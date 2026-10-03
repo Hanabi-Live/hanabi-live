@@ -288,6 +288,14 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 - Notes are saved in the database and will persist into the replay.
 - Everyone's notes are combined and shown to spectators, which is fun to see.
 
+### Note Sections
+
+- Notes are automatically split into separate sections, one for each turn in which something was written.
+- Each section shows the turn number that it was written on. (e.g. `#5`)
+- When re-viewing an earlier turn of a game, the section for the most recent turn that has happened so far is highlighted, and sections that were written after that turn are faded.
+- If you want to write something for a specific turn, then you can type the turn number at the beginning of your text. (e.g. typing `#5 this card is red 2` moves that text into the turn 5 section.)
+- When a note is saved, the sections are sorted by turn number. If there are multiple sections for the same turn, then the last one wins.
+
 ### Card Identity Notes
 
 - If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match.
@@ -342,15 +350,20 @@ If you are playing with the [H-Group](https://hanabi.github.io/), some additiona
 
 ### Note Shortcuts
 
-There are also some keyboard shortcuts for making notes:
+While a note is open, the up and down arrow keys move between the sections of the note.
 
+There are also some mouse shortcuts for making notes:
+
+- Right-click (or double-tap on mobile) --> Open the note window
 - Shift + right-click --> [f]
 - Alt + right-click --> [cm]
-- Ctrl + alt + right-click --> Insert turn count
+- Ctrl + alt + right-click --> Move the last section of the note to the current turn
 - Ctrl + shift + right-click --> Repeat the previously entered note
   - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 - Shift + alt + right-click --> [ptd]
 - Ctrl + shift + alt + right-click --> [kt]
+
+Shortcut notes are added to the section for the turn that is currently being viewed.
 
 <br />
 

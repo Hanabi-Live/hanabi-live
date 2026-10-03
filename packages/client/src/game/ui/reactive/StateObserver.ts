@@ -15,6 +15,7 @@ import * as gameInfoView from "./views/gameInfoView";
 import * as hypotheticalView from "./views/hypotheticalView";
 import * as initView from "./views/initView";
 import * as logView from "./views/logView";
+import * as notesView from "./views/notesView";
 import * as pauseView from "./views/pauseView";
 import * as premoveView from "./views/premoveView";
 import * as replayView from "./views/replayView";
@@ -183,6 +184,9 @@ const visibleStateObservers: Subscriptions = [
 
   // Logs
   subVS((s) => s.log, logView.onLogChanged),
+
+  // Notes: the note tooltip highlighting depends on the viewed turn
+  subVS((s) => s.turn.turnNum, notesView.onTurnNumberChanged),
 
   // Cards. Each card will subscribe to changes to its own data. Must come before card layout, since
   // cards are constructed here.
