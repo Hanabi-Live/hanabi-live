@@ -1,0 +1,26 @@
+--- a/lib/Stage.js	
++++ b/lib/Stage.js	
+@@ -138,11 +138,8 @@
+         }
+         return this;
+     };
+     Stage.prototype.getPointerPosition = function () {
+-        if (!this.pointerPos) {
+-            Util_1.Util.warn(NO_POINTERS_MESSAGE);
+-        }
+         return this.pointerPos;
+     };
+     Stage.prototype.getStage = function () {
+         return this;
+@@ -169,8 +166,11 @@
+         });
+         return canvas;
+     };
+     Stage.prototype.getIntersection = function (pos, selector) {
++        if (!pos) {
++            return null;
++        }
+         var layers = this.children, len = layers.length, end = len - 1, n, shape;
+         for (n = end; n >= 0; n--) {
+             shape = layers[n].getIntersection(pos, selector);
+             if (shape) {
