@@ -95,5 +95,8 @@
     "ts-prune-2": "0.10.7",
     "tsx": "4.21.0",
     "typescript": "6.0.2"
+  },
+  "patchedDependencies": {
+    "konva@3.4.1": "patches/konva@3.4.1.patch"
   }
 }
