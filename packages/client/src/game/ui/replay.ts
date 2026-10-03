@@ -175,6 +175,9 @@ export function exitButton(): void {
 // Gets the current segment from an X position relative to a maximum width
 function segmentFromBarPosition(x: number, w: number) {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
+  if (finalSegment <= 0) {
+    return 0;
+  }
   const step = w / finalSegment;
   return Math.floor((x + step / 2) / step);
 }
@@ -218,7 +221,7 @@ export function shuttleDragBound(
   const segment = segmentFromBarPosition(shuttleX, w);
 
   const finalSegment = globals.state.ongoingGame.turn.segment!;
-  const step = w / finalSegment;
+  const step = finalSegment > 0 ? w / finalSegment : 0;
 
   return {
     x: min + segment * step,
