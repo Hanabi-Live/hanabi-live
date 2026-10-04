@@ -47,6 +47,7 @@ WORKDIR /root/hanabi-live
 RUN touch .env
 COPY packages/data packages/data
 COPY packages/game packages/game
+COPY packages/server/src/json packages/server/src/json
 COPY misc misc
 RUN mkdir -p logs
 COPY --from=0 /root/hanabi-live/public public

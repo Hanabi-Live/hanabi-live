@@ -101,11 +101,11 @@ a {
 }
 
 .name-me {
-  color: #e69500;
+  color: var(--color-name-me);
 }
 
 .friend {
-  color: hotpink;
+  color: var(--color-friend);
 }
 
 /* Sets fill color of the select arrow to #777 */
@@ -128,8 +128,10 @@ select {
   --canvas-surface-area: #b3b3b3;
   --canvas-loading-label-stroke: #747278;
 
-  /* Shared component colors (overridden in "dark.css") */
+  /* Shared component colors */
   --color-text-on-accent: #fff;
+  --color-name-me: #e69500;
+  --color-friend: hotpink;
 
   /* Lobby table row variants (light-mode values) */
   --lobby-table-joined: #f2f2ff;
