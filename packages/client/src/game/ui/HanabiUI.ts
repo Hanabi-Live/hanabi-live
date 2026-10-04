@@ -70,7 +70,15 @@ export class HanabiUI {
 
       this.lastResizeEventFrame = this.resizeFrame;
     };
-    window.addEventListener("resize", this.resizeHandler);
+
+    // On mobile, only trigger a resize when the screen orientation changes (when the user turns
+    // their phone). This is a compromise to avoid resizes that occur when editing a note, which
+    // shows on-screen keyboard, causing a resize event, then causing the tooltip to close.
+    if ("ontouchstart" in document.documentElement) {
+      window.screen.orientation.addEventListener("change", this.resizeHandler);
+    } else {
+      window.addEventListener("resize", this.resizeHandler);
+    }
 
     // Rebuild the UI when the theme changes so that the canvas elements are redrawn with the new
     // colors.

@@ -178,6 +178,10 @@ export function openEditTooltip(
   input.setAttribute("id", `tooltip-${card.tooltipName}-input`);
   input.setAttribute("type", "text");
   input.setAttribute("value", note);
+  input.setAttribute("autocomplete", "off");
+  input.setAttribute("spellcheck", "false");
+  input.setAttribute("autocorrect", "off");
+  input.setAttribute("autocapitalize", "off");
 
   tooltips.setInstanceContent(tooltip, input.outerHTML);
 
@@ -279,7 +283,7 @@ export function openEditTooltip(
     }
 
     let newNote = oldNote;
-    if (oldNote !== "") {
+    if (oldNote !== "" && !oldNote.endsWith(" | ")) {
       newNote += " | ";
     }
     newNote += addText;
@@ -300,9 +304,13 @@ export function openEditTooltip(
 
   // Automatically focus the new text input box. (This will not work properly unless we put it in a
   // callback.)
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     noteTextbox.trigger("focus");
-  }, 1);
+  });
+
+  // On mobile, if the focus event is wrapped in a callback then it will not trigger the keyboard to
+  // open (due to security restrictions where only user inputs can trigger certain things).
+  noteTextbox.trigger("focus");
 }
 
 /**
