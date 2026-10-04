@@ -1146,6 +1146,15 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   padding-left: 0.9em;
 }
 
+/* prevent unwanted selection when double clicking */
+.konvajs-content canvas,
+.tooltipster-arrow-border {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /*
   In-game modals
 */
