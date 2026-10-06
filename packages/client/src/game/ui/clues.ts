@@ -1,10 +1,9 @@
-import type { CardOrder, Clue, MsgClue } from "@hanabi-live/game";
+import type { Clue } from "@hanabi-live/game";
 import {
   ClueType,
   getAdjustedClueTokens,
   getCharacterNameForPlayer,
   isCardTouchedByClue,
-  msgClueToClue,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
@@ -119,28 +118,6 @@ function showClueMatch(target: number, clue: Clue): boolean {
   }
 
   return touchedAtLeastOneCard;
-}
-
-export function getTouchedCardsFromClue(
-  target: number,
-  clue: MsgClue,
-): readonly CardOrder[] {
-  const hand = globals.elements.playerHands[target]!;
-  const cardsTouched: CardOrder[] = [];
-  hand.children.each((child) => {
-    const card = child.children[0] as HanabiCard;
-    const identity = card.getMorphedIdentity();
-    if (identity.rank === null && identity.suitIndex === null) {
-      // It is a "blank" card, so the clue should not touch it.
-      return;
-    }
-
-    if (isTouched(card, msgClueToClue(clue, globals.variant))) {
-      cardsTouched.push(card.state.order);
-    }
-  });
-
-  return cardsTouched;
 }
 
 function isTouched(card: HanabiCard, clue: Clue): boolean {
