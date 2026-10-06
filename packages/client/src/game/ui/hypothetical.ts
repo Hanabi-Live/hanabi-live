@@ -1,17 +1,20 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
-import type { CardOrder, MsgClue, PlayerIndex } from "@hanabi-live/game";
-import { ClueType, getNextPlayableRanks } from "@hanabi-live/game";
+import type {
+  HypotheticalActionIntent,
+  HypotheticalCardView,
+  PlayerIndex,
+} from "@hanabi-live/game";
+import { planHypotheticalAction } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
-import type { ClientAction, ClientActionClue } from "../types/ClientAction";
+import type { ClientAction } from "../types/ClientAction";
 import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import { globals } from "./UIGlobals";
-import { getTouchedCardsFromClue } from "./clues";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 
 export function startHypothetical(): void {
@@ -60,178 +63,88 @@ export function endHypothetical(): void {
 
 export function sendHypotheticalAction(hypoAction: ClientAction): void {
   const gameState = globals.state.replay.hypothetical!.ongoing;
-
-  // If the game is already over, do nothing.
-  if (gameState.turn.currentPlayerIndex === null) {
-    return;
-  }
-
-  let type: "play" | "discard" | "clue";
+  let intent: HypotheticalActionIntent;
   switch (hypoAction.type) {
     case ActionType.Play: {
-      type = "play";
+      intent = { type: "play", order: hypoAction.target };
       break;
     }
 
     case ActionType.Discard: {
-      type = "discard";
+      intent = { type: "discard", order: hypoAction.target };
       break;
     }
 
-    case ActionType.ColorClue:
-    case ActionType.RankClue: {
-      type = "clue";
-      break;
-    }
-  }
-
-  switch (type) {
-    case "play":
-    case "discard": {
-      const card = getCardOrStackBase(hypoAction.target as CardOrder);
-      if (!card) {
-        return;
-      }
-
-      const { suitIndex, rank } = card.getMorphedIdentity();
-      if (suitIndex === null || rank === null) {
-        // Play or discard action could have been initiated from the keyboard.
-        return;
-      }
-
-      // Handle inverted suits.
-      const suit = globals.variant.suits[suitIndex];
-      let actualType = type;
-      if (suit !== undefined && suit.inverted) {
-        switch (actualType) {
-          case "play": {
-            actualType = "discard";
-            break;
-          }
-
-          case "discard": {
-            actualType = "play";
-            break;
-          }
-        }
-      }
-
-      // Find out if this card misplays.
-      let failed = false;
-      let newType = actualType;
-      if (actualType === "play") {
-        const nextRanks = getNextPlayableRanks(
-          suitIndex,
-          gameState.playStacks[suitIndex]!,
-          gameState.playStackDirections[suitIndex]!,
-          gameState.playStackStarts,
-          globals.variant,
-          gameState.deck,
-        );
-        if (!nextRanks.includes(rank)) {
-          newType = "discard";
-          failed = true;
-        }
-      }
-
-      switch (newType) {
-        case "play": {
-          sendHypotheticalActionToServer({
-            type: "play",
-            playerIndex: gameState.turn.currentPlayerIndex,
-            order: hypoAction.target as CardOrder,
-            suitIndex,
-            rank,
-          });
-          break;
-        }
-
-        case "discard": {
-          sendHypotheticalActionToServer({
-            type: "discard",
-            playerIndex: gameState.turn.currentPlayerIndex,
-            order: hypoAction.target as CardOrder,
-            suitIndex,
-            rank,
-            failed,
-          });
-          break;
-        }
-      }
-
-      if (failed) {
-        sendHypotheticalActionToServer({
-          type: "strike",
-          num: (gameState.strikes.length + 1) as 1 | 2 | 3,
-          turn: gameState.turn.segment!,
-          order: hypoAction.target as CardOrder,
-        });
-      }
-
-      // Check if all the cards have already been drawn.
-      if (gameState.deck.length < globals.state.cardIdentities.length) {
-        // Draw
-        const nextCardOrder = gameState.deck.length as CardOrder;
-        const nextCard = globals.state.cardIdentities[nextCardOrder];
-        sendHypotheticalActionToServer({
-          type: "draw",
-          order: nextCardOrder,
-          playerIndex: gameState.turn.currentPlayerIndex,
-          // Always send the correct suitIndex and rank if known; the blanking of the card will be
-          // performed on the client.
-          suitIndex: nextCard?.suitIndex ?? -1,
-          rank: nextCard?.rank ?? -1,
-        });
-      }
-
-      break;
-    }
-
-    case "clue": {
-      const clientActionClue = hypoAction as ClientActionClue;
-      const clue = hypoActionToMsgClue(clientActionClue);
-      const list = getTouchedCardsFromClue(hypoAction.target, clue);
-      sendHypotheticalActionToServer({
-        type,
-        clue,
-        giver: gameState.turn.currentPlayerIndex,
-        list,
-        target: hypoAction.target as PlayerIndex,
-        ignoreNegative: false,
-      });
-
-      break;
-    }
-  }
-
-  // Finally, send a turn action. Even though this action is unnecessary from the point of the
-  // client, for now we must send it to the server so that it can correctly shave off the last
-  // action during a "hypoBack".
-  let nextPlayerIndex = gameState.turn.currentPlayerIndex + 1;
-  if (nextPlayerIndex === globals.options.numPlayers) {
-    nextPlayerIndex = 0;
-  }
-  sendHypotheticalActionToServer({
-    type: "turn",
-    num: gameState.turn.turnNum + 1,
-    currentPlayerIndex: nextPlayerIndex as PlayerIndex,
-  });
-}
-
-function hypoActionToMsgClue(hypoAction: ClientActionClue): MsgClue {
-  switch (hypoAction.type) {
     case ActionType.ColorClue: {
-      return {
-        type: ClueType.Color,
+      intent = {
+        type: "colorClue",
+        target: hypoAction.target,
         value: hypoAction.value,
       };
+      break;
     }
 
     case ActionType.RankClue: {
-      return {
-        type: ClueType.Rank,
+      intent = {
+        type: "rankClue",
+        target: hypoAction.target,
         value: hypoAction.value,
       };
+      break;
+    }
+  }
+
+  const cardViews: HypotheticalCardView[] = [];
+  if (gameState.turn.currentPlayerIndex !== null) {
+    switch (intent.type) {
+      case "play":
+      case "discard": {
+        const card = getCardOrStackBase(intent.order);
+        if (!card) {
+          return;
+        }
+        cardViews.push({
+          state: card.state,
+          isStackBase: card.isStackBase,
+          visibleSuitIndex: card.visibleSuitIndex,
+          visibleRank: card.visibleRank,
+        });
+        break;
+      }
+
+      case "colorClue":
+      case "rankClue": {
+        const hand = globals.elements.playerHands[intent.target]!;
+        hand.children.each((child) => {
+          const card = child.children[0] as HanabiCard | undefined;
+          if (card !== undefined) {
+            cardViews.push({
+              state: card.state,
+              isStackBase: card.isStackBase,
+              visibleSuitIndex: card.visibleSuitIndex,
+              visibleRank: card.visibleRank,
+            });
+          }
+        });
+        break;
+      }
+    }
+  }
+
+  const actions = planHypotheticalAction(intent, {
+    gameState,
+    metadata: globals.metadata,
+    variant: globals.variant,
+    cardIdentities: globals.state.cardIdentities,
+    morphedIdentities:
+      globals.state.replay.hypothetical!.morphedIdentities,
+    notes: globals.state.notes.ourNotes,
+    playing: globals.state.playing,
+    cardViews,
+  });
+  if (actions !== null) {
+    for (const action of actions) {
+      sendHypotheticalActionToServer(action);
     }
   }
 }
