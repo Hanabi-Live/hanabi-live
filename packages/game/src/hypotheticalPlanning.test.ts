@@ -18,7 +18,9 @@ import {
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
 import type { GameState } from "./interfaces/GameState";
+import type { Variant } from "./interfaces/Variant";
 import { getDefaultMetadata } from "./metadata";
+import { gameReducer } from "./reducers/gameReducer";
 import { getInitialCardState } from "./reducers/initialStates/initialCardState";
 import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest";
 import type { CardOrder } from "./types/CardOrder";
@@ -26,6 +28,7 @@ import type { ColorIndex } from "./types/ColorIndex";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type { RankClueNumber } from "./types/RankClueNumber";
 import type { SuitIndex } from "./types/SuitIndex";
+import type { GameAction } from "./types/gameActions";
 
 const variant = getDefaultVariant();
 const metadata = getDefaultMetadata(2);
@@ -102,7 +105,247 @@ function cardInput(
   };
 }
 
+function makeBottomDeckContext(
+  testVariant: Variant = variant,
+): PlanHypotheticalActionContext {
+  const context = makeContext();
+  const testMetadata = getDefaultMetadata(2, testVariant.name);
+  const finalCard = getInitialCardState(2 as CardOrder, testVariant, 2);
+  return {
+    ...context,
+    variant: testVariant,
+    metadata: {
+      ...testMetadata,
+      options: { ...testMetadata.options, deckPlays: true },
+    },
+    gameState: {
+      ...getInitialGameStateTest(testMetadata),
+      turn: context.gameState.turn,
+      deck: [0, 1].map((order) => ({
+        ...getInitialCardState(order as CardOrder, testVariant, 2),
+        location: order as PlayerIndex,
+      })),
+      hands: context.gameState.hands,
+      cardsRemainingInTheDeck: 1,
+    },
+    cardIdentities: [
+      ...context.cardIdentities,
+      { suitIndex: 0 as SuitIndex, rank: 1 },
+    ],
+    notes: [...context.notes, emptyNote],
+    cardViews: [...context.cardViews, view(finalCard, null, null)],
+  };
+}
+
+function applyPlan(
+  actions: readonly GameAction[] | null,
+  context: PlanHypotheticalActionContext,
+): GameState {
+  expect(actions).not.toBeNull();
+  let state = context.gameState;
+  for (const action of actions!) {
+    state = gameReducer(
+      state,
+      action,
+      context.playing,
+      false,
+      false,
+      true,
+      context.metadata,
+    );
+  }
+  return state;
+}
+
 describe("hypothetical planning", () => {
+  test("draws the bottom card before a successful play", () => {
+    const context = makeBottomDeckContext();
+    const actions = planHypotheticalAction(
+      { type: "play", order: 2 as CardOrder },
+      context,
+    );
+    expect(actions).toEqual([
+      { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
+      { type: "play", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
+      { type: "turn", num: 7, currentPlayerIndex: 1 },
+    ]);
+    const state = applyPlan(actions, context);
+    expect(state.hands).toEqual(context.gameState.hands);
+    expect(state.deck[2]?.location).toBe("playStack");
+    expect(state.playStacks[0]).toEqual([2]);
+    expect(state.cardsRemainingInTheDeck).toBe(0);
+    expect(state.turn.turnNum).toBe(7);
+    expect(state.turn.currentPlayerIndex).toBe(1);
+  });
+
+  test("draws the bottom card before a failed discard and strike", () => {
+    const base = makeBottomDeckContext();
+    const context = {
+      ...base,
+      cardIdentities: [
+        ...base.cardIdentities.slice(0, 2),
+        { suitIndex: 0 as SuitIndex, rank: 2 as const },
+      ],
+    };
+    const actions = planHypotheticalAction(
+      { type: "play", order: 2 as CardOrder },
+      context,
+    );
+    expect(actions).toEqual([
+      { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 2 },
+      {
+        type: "discard",
+        order: 2,
+        playerIndex: 0,
+        suitIndex: 0,
+        rank: 2,
+        failed: true,
+      },
+      { type: "strike", num: 1, turn: 4, order: 2 },
+      { type: "turn", num: 7, currentPlayerIndex: 1 },
+    ]);
+    const state = applyPlan(actions, context);
+    expect(state.hands).toEqual(context.gameState.hands);
+    expect(state.deck[2]).toMatchObject({
+      location: "discard",
+      isMisplayed: true,
+    });
+    expect(state.discardStacks[0]).toEqual([2]);
+    expect(state.strikes.map(({ order }) => order)).toEqual([2]);
+    expect(state.cardsRemainingInTheDeck).toBe(0);
+  });
+
+  test("keeps normal hand play before the final draw", () => {
+    const context = makeBottomDeckContext();
+    const actions = planHypotheticalAction(
+      { type: "play", order: 0 as CardOrder },
+      context,
+    );
+    expect(actions?.map(({ type }) => type)).toEqual(["play", "draw", "turn"]);
+    const state = applyPlan(actions, context);
+    expect(state.hands[0]).toEqual([2]);
+    expect(state.playStacks[0]).toEqual([0]);
+    expect(state.cardsRemainingInTheDeck).toBe(0);
+  });
+
+  test.each(["play", "discard"] as const)(
+    "draws before an inverted bottom-deck %s",
+    (type) => {
+      const invertedVariant = VARIANT_NAMES.map(getVariant).find((candidate) =>
+        candidate.suits.some((suit) => suit.inverted),
+      );
+      expect(invertedVariant).toBeDefined();
+      const suitIndex = invertedVariant!.suits.findIndex(
+        (suit) => suit.inverted,
+      );
+      const base = makeBottomDeckContext(invertedVariant);
+      const context = {
+        ...base,
+        cardIdentities: [
+          ...base.cardIdentities.slice(0, 2),
+          { suitIndex: suitIndex as SuitIndex, rank: 1 as const },
+        ],
+      };
+      const actions = planHypotheticalAction(
+        { type, order: 2 as CardOrder },
+        context,
+      );
+      const invertedType = type === "play" ? "discard" : "play";
+      expect(actions?.map((action) => action.type)).toEqual([
+        "draw",
+        invertedType,
+        "turn",
+      ]);
+      expect(actions?.[1]).toMatchObject({
+        type: invertedType,
+        suitIndex,
+        rank: 1,
+      });
+      const state = applyPlan(actions, context);
+      expect(state.hands).toEqual(context.gameState.hands);
+      expect(state.deck[2]?.location).toBe(
+        invertedType === "play" ? "playStack" : "discard",
+      );
+      expect(state.strikes).toEqual([]);
+      expect(state.cardsRemainingInTheDeck).toBe(0);
+    },
+  );
+
+  test("preserves an unknown bottom draw identity when the played card is morphed", () => {
+    const base = makeBottomDeckContext();
+    const context = {
+      ...base,
+      cardIdentities: [
+        ...base.cardIdentities.slice(0, 2),
+        { suitIndex: null, rank: null },
+      ],
+      morphedIdentities: [
+        undefined,
+        undefined,
+        { suitIndex: 0 as SuitIndex, rank: 1 as const },
+      ],
+    };
+    const actions = planHypotheticalAction(
+      { type: "play", order: 2 as CardOrder },
+      context,
+    );
+    expect(actions?.[0]).toMatchObject({
+      type: "draw",
+      suitIndex: -1,
+      rank: -1,
+    });
+    expect(actions?.[1]).toMatchObject({ type: "play", suitIndex: 0, rank: 1 });
+    const state = applyPlan(actions, context);
+    expect(state.hands).toEqual(context.gameState.hands);
+    expect(state.deck[2]?.location).toBe("playStack");
+  });
+
+  test("does not move the draw first when deck plays are disabled", () => {
+    const base = makeBottomDeckContext();
+    const context = {
+      ...base,
+      metadata: {
+        ...base.metadata,
+        options: { ...base.metadata.options, deckPlays: false },
+      },
+    };
+    const actions = planHypotheticalAction(
+      { type: "play", order: 2 as CardOrder },
+      context,
+    );
+    expect(actions?.map(({ type }) => type)).toEqual(["play", "draw", "turn"]);
+  });
+
+  test.each([2, 3])(
+    "does not treat future card order %s as the bottom card with two cards remaining",
+    (order) => {
+      const base = makeBottomDeckContext();
+      const context = {
+        ...base,
+        cardIdentities: [
+          ...base.cardIdentities,
+          { suitIndex: 0 as SuitIndex, rank: 1 as const },
+        ],
+        notes: [...base.notes, emptyNote],
+        cardViews: [
+          ...base.cardViews,
+          view(getInitialCardState(3 as CardOrder, variant, 2), null, null),
+        ],
+        gameState: { ...base.gameState, cardsRemainingInTheDeck: 2 },
+      };
+      const actions = planHypotheticalAction(
+        { type: "play", order: order as CardOrder },
+        context,
+      );
+      expect(actions?.map(({ type }) => type)).toEqual([
+        "play",
+        "draw",
+        "turn",
+      ]);
+      expect(actions?.[1]).toMatchObject({ type: "draw", order: 2 });
+    },
+  );
+
   test("plans a successful play", () => {
     const actions = planHypotheticalAction(
       { type: "play", order: 0 as CardOrder },
