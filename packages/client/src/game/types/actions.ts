@@ -4,12 +4,10 @@
 
 import type { Spectator } from "@hanabi-live/data";
 import type {
+  ActionIncludingHypothetical,
   CardIdentity,
-  CardOrder,
   GameAction,
   PlayerIndex,
-  Rank,
-  SuitIndex,
 } from "@hanabi-live/game";
 import type { ClientAction } from "./ClientAction";
 import type { UIAction } from "./UIAction";
@@ -27,10 +25,7 @@ export type Action =
   | ActionFinishOngoingGame
   | UIAction;
 
-export type ActionIncludingHypothetical =
-  | GameAction
-  | ActionHypotheticalMorph
-  | ActionHypotheticalUnmorph;
+export type { ActionIncludingHypothetical } from "@hanabi-live/game";
 
 export type ReplayAction =
   | ActionReplayEnter
@@ -166,23 +161,6 @@ export interface ActionHypotheticalAction {
 
 export interface ActionHypotheticalBack {
   readonly type: "hypoBack";
-}
-
-interface ActionHypotheticalMorph {
-  readonly type: "morph"; // This is not "hypoMorph" because it is a game action.
-
-  /** -1 represents a card of an unknown card. */
-  readonly suitIndex: SuitIndex | -1;
-
-  /** -1 represents a card of an unknown rank. */
-  readonly rank: Rank | -1;
-
-  readonly order: CardOrder;
-}
-
-interface ActionHypotheticalUnmorph {
-  readonly type: "unmorph"; // This is not "hypoUnmorph" because it is a game action.
-  readonly order: CardOrder;
 }
 
 interface ActionHypotheticalShowDrawnCards {
