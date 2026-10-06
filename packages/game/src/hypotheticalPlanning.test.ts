@@ -2,17 +2,18 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { describe, expect, test } from "@jest/globals";
-import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
+import { ClueType } from "./enums/ClueType";
 import { StackDirection } from "./enums/StackDirection";
-import {
-  getHypotheticalCard,
-  getHypotheticalTouchedCards,
-  planHypotheticalAction,
-} from "./hypotheticalPlanning";
+import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
 import type {
   HypotheticalCardInput,
   HypotheticalCardView,
   PlanHypotheticalActionContext,
+} from "./hypotheticalPlanning";
+import {
+  getHypotheticalCard,
+  getHypotheticalTouchedCards,
+  planHypotheticalAction,
 } from "./hypotheticalPlanning";
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
@@ -20,7 +21,6 @@ import type { GameState } from "./interfaces/GameState";
 import { getDefaultMetadata } from "./metadata";
 import { getInitialCardState } from "./reducers/initialStates/initialCardState";
 import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest";
-import { ClueType } from "./enums/ClueType";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { PlayerIndex } from "./types/PlayerIndex";
@@ -72,10 +72,7 @@ function makeContext(
     morphedIdentities: [],
     notes: [emptyNote, emptyNote],
     playing: true,
-    cardViews: [
-      view(card0, 1, 1),
-      view(card1, null, null),
-    ],
+    cardViews: [view(card0, 1, 1), view(card1, null, null)],
   };
   return { ...context, ...overrides };
 }
@@ -134,7 +131,9 @@ describe("hypothetical planning", () => {
       cardIdentities: [{ suitIndex: suitIndex as SuitIndex, rank: 1 }],
       gameState: {
         ...makeContext().gameState,
-        playStacks: invertedVariant!.suits.map(() => []) as unknown as GameState["playStacks"],
+        playStacks: invertedVariant!.suits.map(
+          () => [],
+        ) as unknown as GameState["playStacks"],
         playStackDirections: invertedVariant!.suits.map(
           () => StackDirection.Up,
         ) as unknown as GameState["playStackDirections"],
@@ -245,7 +244,11 @@ describe("hypothetical planning", () => {
         ...context,
         cardIdentities: [],
         cardViews: [
-          { ...context.cardViews[0]!, state: stackBaseState, isStackBase: true },
+          {
+            ...context.cardViews[0]!,
+            state: stackBaseState,
+            isStackBase: true,
+          },
         ],
       },
     );
@@ -259,8 +262,8 @@ describe("hypothetical planning", () => {
 
   test("plans color and rank clues with MsgClue values", () => {
     const colorIndex = variant.clueColors.findIndex((color) =>
-      variant.suits[0]!.clueColors.some((suitColor) =>
-        suitColor.name === color.name,
+      variant.suits[0]!.clueColors.some(
+        (suitColor) => suitColor.name === color.name,
       ),
     ) as ColorIndex;
     const colorActions = planHypotheticalAction(
@@ -292,29 +295,41 @@ describe("hypothetical planning", () => {
       cardInput({
         state: {
           ...getInitialCardState(0 as CardOrder, variant, 2),
-          possibleCardsFromClues: [[0, 1], [0, 2]],
-          possibleCards: [[0, 1], [0, 2]],
+          possibleCardsFromClues: [
+            [0, 1],
+            [0, 2],
+          ],
+          possibleCards: [
+            [0, 1],
+            [0, 2],
+          ],
         },
         identity: { suitIndex: null, rank: null },
       }),
     );
     const clue = { type: ClueType.Rank, value: 1 as RankClueNumber };
-    expect(
-      getHypotheticalTouchedCards([touchedCard], clue, variant),
-    ).toEqual([]);
+    expect(getHypotheticalTouchedCards([touchedCard], clue, variant)).toEqual(
+      [],
+    );
     const allTouched = getHypotheticalCard(
       cardInput({
         state: {
           ...getInitialCardState(0 as CardOrder, variant, 2),
-          possibleCardsFromClues: [[0, 1], [0, 2]],
-          possibleCards: [[0, 1], [0, 2]],
+          possibleCardsFromClues: [
+            [0, 1],
+            [0, 2],
+          ],
+          possibleCards: [
+            [0, 1],
+            [0, 2],
+          ],
         },
         visibleRank: 1,
       }),
     );
-    expect(
-      getHypotheticalTouchedCards([allTouched], clue, variant),
-    ).toEqual([0]);
+    expect(getHypotheticalTouchedCards([allTouched], clue, variant)).toEqual([
+      0,
+    ]);
 
     const noPossibilities = getHypotheticalCard(
       cardInput({
@@ -349,8 +364,14 @@ describe("hypothetical planning", () => {
   test("preserves partial morphs and intersects notes with clue possibilities", () => {
     const state = {
       ...getInitialCardState(0 as CardOrder, variant, 2),
-      possibleCardsFromClues: [[0, 1], [0, 2]] as const,
-      possibleCards: [[0, 1], [0, 2]] as const,
+      possibleCardsFromClues: [
+        [0, 1],
+        [0, 2],
+      ] as const,
+      possibleCards: [
+        [0, 1],
+        [0, 2],
+      ] as const,
     };
     const partial = getHypotheticalCard(
       cardInput({
@@ -359,13 +380,22 @@ describe("hypothetical planning", () => {
       }),
     );
     expect(partial.identity).toEqual({ suitIndex: 0, rank: null });
-    expect(partial.possibilities).toEqual([[0, 1], [0, 2]]);
+    expect(partial.possibilities).toEqual([
+      [0, 1],
+      [0, 2],
+    ]);
 
     const singleton = getHypotheticalCard(
       cardInput({
         state,
         identity: { suitIndex: null, rank: null },
-        note: { ...emptyNote, possibilities: [[0, 1], [0, 3]] },
+        note: {
+          ...emptyNote,
+          possibilities: [
+            [0, 1],
+            [0, 3],
+          ],
+        },
       }),
     );
     expect(singleton.identity).toEqual({ suitIndex: 0, rank: 1 });
@@ -392,7 +422,10 @@ describe("hypothetical planning", () => {
         ...context,
         gameState: {
           ...context.gameState,
-          turn: { ...context.gameState.turn, currentPlayerIndex: 1 as PlayerIndex },
+          turn: {
+            ...context.gameState.turn,
+            currentPlayerIndex: 1 as PlayerIndex,
+          },
         },
       },
     );

@@ -136,8 +136,7 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
     metadata: globals.metadata,
     variant: globals.variant,
     cardIdentities: globals.state.cardIdentities,
-    morphedIdentities:
-      globals.state.replay.hypothetical!.morphedIdentities,
+    morphedIdentities: globals.state.replay.hypothetical!.morphedIdentities,
     notes: globals.state.notes.ourNotes,
     playing: globals.state.playing,
     cardViews,

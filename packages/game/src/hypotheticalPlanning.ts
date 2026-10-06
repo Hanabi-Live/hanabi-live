@@ -1,24 +1,24 @@
 /* eslint-disable unicorn/no-null */
 
+import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { ClueType } from "./enums/ClueType";
-import { assertDefined } from "complete-common";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
 import type { Variant } from "./interfaces/Variant";
-import { getNextPlayableRanks } from "./rules/playStacks";
 import { isCardTouchedByClue, msgClueToClue } from "./rules/clues";
+import { getNextPlayableRanks } from "./rules/playStacks";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { GameAction } from "./types/gameActions";
 import type { MsgClue } from "./types/MsgClue";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type { RankClueNumber } from "./types/RankClueNumber";
-import type { SuitRankTuple } from "./types/SuitRankTuple";
 import type { SuitIndex } from "./types/SuitIndex";
+import type { SuitRankTuple } from "./types/SuitRankTuple";
 
 export type HypotheticalActionIntent =
   | { readonly type: "play"; readonly order: CardOrder }
@@ -75,10 +75,7 @@ export function getHypotheticalCard(
 
   let morphedCardIdentity: CardIdentity;
   if (morphedIdentity === undefined) {
-    const noteAndCluePossibilities = possibleCardsFromNoteAndClues(
-      note,
-      state,
-    );
+    const noteAndCluePossibilities = possibleCardsFromNoteAndClues(note, state);
     if (playing && noteAndCluePossibilities.length === 1) {
       const possibility = noteAndCluePossibilities[0];
       assertDefined(possibility, "Expected one note and clue possibility.");
@@ -103,10 +100,9 @@ export function getHypotheticalCard(
     return {
       order: state.order,
       identity: morphedCardIdentity,
-      possibilities: [[
-        morphedCardIdentity.suitIndex,
-        morphedCardIdentity.rank,
-      ]],
+      possibilities: [
+        [morphedCardIdentity.suitIndex, morphedCardIdentity.rank],
+      ],
       visibleSuitIndex,
       visibleRank,
     };
@@ -118,8 +114,7 @@ export function getHypotheticalCard(
   const possibilities = possibleCardsWithoutObservation.filter(
     ([suitIndexA, rankA]) =>
       state.possibleCards.some(
-        ([suitIndexB, rankB]) =>
-          suitIndexA === suitIndexB && rankA === rankB,
+        ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
       ),
   );
 
@@ -150,12 +145,7 @@ export function getHypotheticalTouchedCards(
 
     if (
       card.possibilities.every(([possibleSuitIndex, possibleRank]) =>
-        isCardTouchedByClue(
-          variant,
-          fullClue,
-          possibleSuitIndex,
-          possibleRank,
-        ),
+        isCardTouchedByClue(variant, fullClue, possibleSuitIndex, possibleRank),
       )
       && card.possibilities.every(() =>
         clue.type === ClueType.Rank
@@ -193,8 +183,8 @@ export function planHypotheticalAction(
   }
 
   function cardAt(order: CardOrder): HypotheticalCard | undefined {
-    const view = context.cardViews.find((candidate) =>
-      candidate.state.order === order,
+    const view = context.cardViews.find(
+      (candidate) => candidate.state.order === order,
     );
     const cardIdentity = context.cardIdentities[order];
     const note = context.notes[order];
@@ -205,8 +195,7 @@ export function planHypotheticalAction(
     ) {
       return undefined;
     }
-    const identity =
-      cardIdentity ?? { suitIndex: null, rank: null };
+    const identity = cardIdentity ?? { suitIndex: null, rank: null };
     return getHypotheticalCard({
       ...view,
       identity,
