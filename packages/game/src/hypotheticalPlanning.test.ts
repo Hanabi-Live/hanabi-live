@@ -317,7 +317,7 @@ describe("hypothetical planning", () => {
   });
 
   test.each([2, 3])(
-    "does not treat future card order %s as the bottom card with two cards undrawn",
+    "does not treat future card order %s as the bottom card with two cards remaining",
     (order) => {
       const base = makeBottomDeckContext();
       const context = {
