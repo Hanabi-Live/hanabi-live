@@ -278,13 +278,23 @@ export function planHypotheticalAction(
     if (gameState.deck.length < context.cardIdentities.length) {
       const nextCardOrder = gameState.deck.length as CardOrder;
       const nextCard = context.cardIdentities[nextCardOrder];
-      actions.push({
+      const drawAction: GameAction = {
         type: "draw",
         order: nextCardOrder,
         playerIndex,
         suitIndex: nextCard?.suitIndex ?? -1,
         rank: nextCard?.rank ?? -1,
-      });
+      };
+      const isBottomDeckAction =
+        metadata.options.deckPlays
+        && gameState.deck.length === context.cardIdentities.length - 1
+        && intent.order === nextCardOrder;
+      if (isBottomDeckAction) {
+        // The final card must exist in state before it can be played or discarded.
+        actions.unshift(drawAction);
+      } else {
+        actions.push(drawAction);
+      }
     }
   } else {
     const clue: MsgClue =
