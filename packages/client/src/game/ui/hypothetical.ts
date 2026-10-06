@@ -6,7 +6,6 @@ import type {
   HypotheticalCardView,
   PlayerIndex,
 } from "@hanabi-live/game";
-import { planHypotheticalAction } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
@@ -16,6 +15,7 @@ import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
+import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
 
 export function startHypothetical(): void {
   if (globals.state.replay.hypothetical !== null) {
@@ -100,15 +100,14 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
       case "play":
       case "discard": {
         const card = getCardOrStackBase(intent.order);
-        if (!card) {
-          return;
+        if (card !== undefined) {
+          cardViews.push({
+            state: card.state,
+            isStackBase: card.isStackBase,
+            visibleSuitIndex: card.visibleSuitIndex,
+            visibleRank: card.visibleRank,
+          });
         }
-        cardViews.push({
-          state: card.state,
-          isStackBase: card.isStackBase,
-          visibleSuitIndex: card.visibleSuitIndex,
-          visibleRank: card.visibleRank,
-        });
         break;
       }
 
@@ -131,7 +130,7 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
     }
   }
 
-  const actions = planHypotheticalAction(intent, {
+  const actions = planClientHypotheticalAction(intent, {
     gameState,
     metadata: globals.metadata,
     variant: globals.variant,
