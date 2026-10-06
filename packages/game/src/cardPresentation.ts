@@ -1,13 +1,14 @@
-import type {
-  CardIdentity,
-  CardNote,
-  CardState,
-  Rank,
-  SuitIndex,
-  SuitRankTuple,
-  Variant,
-} from "@hanabi-live/game";
-import { isCardClued, isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
+/* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import type { CardIdentity } from "./interfaces/CardIdentity";
+import type { CardNote } from "./interfaces/CardNote";
+import type { CardState } from "./interfaces/CardState";
+import type { Variant } from "./interfaces/Variant";
+import { isCardClued, isCardDiscarded, isCardPlayed } from "./rules/cardState";
+import type { Rank } from "./types/Rank";
+import type { SuitIndex } from "./types/SuitIndex";
+import type { SuitRankTuple } from "./types/SuitRankTuple";
 
 export enum PipState {
   Hidden,

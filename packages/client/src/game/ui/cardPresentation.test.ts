@@ -4,14 +4,15 @@ import type {
   CardOrder,
   CardState,
 } from "@hanabi-live/game";
-import { getDefaultVariant, getInitialCardState } from "@hanabi-live/game";
-import { describe, expect, test } from "@jest/globals";
 import {
   PipState,
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
-} from "./cardPresentation";
+  getDefaultVariant,
+  getInitialCardState,
+} from "@hanabi-live/game";
+import { describe, expect, test } from "@jest/globals";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);

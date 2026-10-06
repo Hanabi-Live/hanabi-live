@@ -13,8 +13,12 @@ import type {
 } from "@hanabi-live/game";
 import {
   CardStatus,
+  PipState,
   StackDirection,
   canCardPossiblyBeFromEmpathy,
+  getCardBorderPresentation,
+  getCardIdentityToShow,
+  getCardPipPresentation,
   getInitialCardState,
   getSuit,
   getSuitAbbreviationForVariant,
@@ -32,12 +36,6 @@ import * as HanabiCardInit from "./HanabiCardInit";
 import * as HanabiCardMouse from "./HanabiCardMouse";
 import { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
-import {
-  PipState,
-  getCardBorderPresentation,
-  getCardIdentityToShow,
-  getCardPipPresentation,
-} from "./cardPresentation";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_FADE,
