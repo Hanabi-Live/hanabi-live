@@ -1,10 +1,5 @@
-import type {
-  CardIdentity,
-  CardNote,
-  CardOrder,
-  CardState,
-} from "@hanabi-live/game";
-import { getDefaultVariant, getInitialCardState } from "@hanabi-live/game";
+/* eslint-disable unicorn/no-null */
+
 import { describe, expect, test } from "@jest/globals";
 import {
   PipState,
@@ -12,6 +7,12 @@ import {
   getCardIdentityToShow,
   getCardPipPresentation,
 } from "./cardPresentation";
+import { getDefaultVariant } from "./gameData";
+import type { CardIdentity } from "./interfaces/CardIdentity";
+import type { CardNote } from "./interfaces/CardNote";
+import type { CardState } from "./interfaces/CardState";
+import { getInitialCardState } from "./reducers/initialStates/initialCardState";
+import type { CardOrder } from "./types/CardOrder";
 
 const variant = getDefaultVariant();
 const baseCard = getInitialCardState(0 as CardOrder, variant, 2);

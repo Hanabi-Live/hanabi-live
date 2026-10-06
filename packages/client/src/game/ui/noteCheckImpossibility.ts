@@ -6,7 +6,7 @@ import {
 import * as modals from "../../modals";
 import { globals } from "./UIGlobals";
 
-export { possibleCardsFromNoteAndClues } from "./cardPresentation";
+export { possibleCardsFromNoteAndClues } from "@hanabi-live/game";
 
 export function checkNoteImpossibility(
   variant: Variant,

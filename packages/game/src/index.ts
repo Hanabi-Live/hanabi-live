@@ -1,4 +1,5 @@
 export * from "./abbreviations";
+export * from "./cardPresentation";
 export * from "./constants";
 export * from "./enums/CardStatus";
 export * from "./enums/ClueType";
