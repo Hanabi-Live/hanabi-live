@@ -1,15 +1,15 @@
 // The reducer for replays and hypotheticals.
 
-import type { GameMetadata } from "@hanabi-live/game";
-import { gameReducer } from "@hanabi-live/game";
+import type { GameMetadata, HypotheticalStateAction } from "@hanabi-live/game";
+import {
+  hypotheticalStateReducer,
+  initializeHypotheticalState,
+} from "@hanabi-live/game";
 import { assertDefined, assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
 import type { ReplayState } from "../types/ReplayState";
-import type {
-  ActionIncludingHypothetical,
-  ReplayAction,
-} from "../types/actions";
+import type { ReplayAction } from "../types/actions";
 
 export const replayReducer = produce(replayReducerFunction, {} as ReplayState);
 
@@ -148,20 +148,17 @@ function replayReducerFunction(
         `Failed to get the game state for segment: ${state.segment}`,
       );
 
-      const startingPlayerIndex = ongoing.turn.currentPlayerIndex;
-
-      state.hypothetical = {
-        ongoing,
-        states: [ongoing],
-        showDrawnCards: action.showDrawnCards,
-        drawnCardsInHypothetical: [],
-        morphedIdentities: [],
-        startingPlayerIndex,
-      };
-
-      for (const a of action.actions) {
-        hypoAction(state, a, finished, metadata);
-      }
+      const originalOngoing = original(ongoing);
+      assertDefined(originalOngoing, "Failed to get the original game state.");
+      state.hypothetical = castDraft(
+        initializeHypotheticalState(
+          originalOngoing,
+          action.showDrawnCards,
+          action.actions,
+          finished,
+          metadata,
+        ),
+      );
 
       break;
     }
@@ -176,136 +173,34 @@ function replayReducerFunction(
       break;
     }
 
-    case "hypoBack": {
-      assertNotNull(
-        state.hypothetical,
-        `A "${action.type}" action was dispatched with a null hypothetical state.`,
-      );
-
-      const hypoStates = state.hypothetical.states;
-      hypoStates.pop();
-      const lastState = hypoStates.at(-1);
-      if (lastState !== undefined) {
-        state.hypothetical.ongoing = lastState;
-      }
-
-      break;
-    }
-
-    case "hypoShowDrawnCards": {
-      assertNotNull(
-        state.hypothetical,
-        `A "${action.type}" action was dispatched with a null hypothetical state.`,
-      );
-
-      state.hypothetical.showDrawnCards = action.showDrawnCards;
-
-      const drawnCardsInHypothetical = original(
-        state.hypothetical.drawnCardsInHypothetical,
-      );
-      if (drawnCardsInHypothetical !== undefined) {
-        for (const order of drawnCardsInHypothetical) {
-          if (action.showDrawnCards) {
-            // This is a sparse array, so we must delete it with the `delete` operator. (We are not
-            // using a map because Immer state objects must be composed of primitives for
-            // performance reasons.)
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
-            delete state.hypothetical.morphedIdentities[order];
-          } else {
-            // Hide all cards drawn since the beginning of the hypothetical.
-            state.hypothetical.morphedIdentities[order] = {
-              rank: null,
-              suitIndex: null,
-            };
-          }
-        }
-      }
-
-      break;
-    }
-
+    case "hypoBack":
+    case "hypoShowDrawnCards":
     case "hypoAction": {
       assertNotNull(
         state.hypothetical,
         `A "${action.type}" action was dispatched with a null hypothetical state.`,
       );
 
-      hypoAction(state, action.action, finished, metadata);
+      const hypothetical = original(state.hypothetical);
+      assertDefined(
+        hypothetical,
+        "Failed to get the original hypothetical state.",
+      );
+      let coreAction: HypotheticalStateAction;
+      if (action.type === "hypoAction") {
+        coreAction = action.action;
+      } else if (action.type === "hypoBack") {
+        coreAction = { type: "back" };
+      } else {
+        coreAction = {
+          type: "showDrawnCards",
+          showDrawnCards: action.showDrawnCards,
+        };
+      }
+      state.hypothetical = castDraft(
+        hypotheticalStateReducer(hypothetical, coreAction, finished, metadata),
+      );
       break;
     }
-  }
-}
-
-function hypoAction(
-  state: Draft<ReplayState>,
-  action: ActionIncludingHypothetical,
-  finished: boolean,
-  metadata: GameMetadata,
-) {
-  assertNotNull(
-    state.hypothetical,
-    `A "${action.type}" action was dispatched with a null hypothetical state.`,
-  );
-
-  // The morph action is handled here. Also take note of any draws that conflict with the known card
-  // identities.
-  if (action.type === "morph") {
-    const suitIndex = action.suitIndex === -1 ? null : action.suitIndex;
-    const rank = action.rank === -1 ? null : action.rank;
-
-    state.hypothetical.morphedIdentities[action.order] = {
-      suitIndex,
-      rank,
-    };
-  } else if (action.type === "unmorph") {
-    // This is a sparse array, so we must delete it with the `delete` operator. (We are not using a
-    // map because Immer state objects must be composed of primitives for performance reasons.)
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-array-delete
-    delete state.hypothetical.morphedIdentities[action.order];
-  }
-
-  if (action.type === "draw") {
-    // Store drawn cards to be able to show/hide in the future.
-    state.hypothetical.drawnCardsInHypothetical.push(action.order);
-    if (!state.hypothetical.showDrawnCards) {
-      // This card has been morphed or blanked.
-      state.hypothetical.morphedIdentities[action.order] = {
-        suitIndex: null,
-        rank: null,
-      };
-    }
-  }
-
-  // The game state doesn't care about morphed cards.
-  if (action.type === "morph" || action.type === "unmorph") {
-    return;
-  }
-
-  const isClueActionThatShouldIgnoreNegative =
-    action.type === "clue"
-    && !state.hypothetical.showDrawnCards
-    && state.hypothetical.startingPlayerIndex === action.target;
-  const newAction = isClueActionThatShouldIgnoreNegative
-    ? {
-        ...action,
-        ignoreNegative: true,
-      }
-    : action;
-
-  const oldSegment = state.hypothetical.ongoing.turn.segment;
-  const newState = gameReducer(
-    state.hypothetical.ongoing,
-    newAction,
-    true,
-    false,
-    finished,
-    true,
-    metadata,
-  );
-  state.hypothetical.ongoing = castDraft(newState);
-
-  if (oldSegment !== newState.turn.segment) {
-    // Save the new segment in case we want to go backwards.
-    state.hypothetical.states.push(castDraft(newState));
   }
 }
