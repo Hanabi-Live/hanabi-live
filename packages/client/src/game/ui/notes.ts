@@ -94,11 +94,12 @@ export function set(order: CardOrder, text: string): void {
 }
 
 export function update(card: HanabiCard, text: string): void {
+  globals.editingNote = null;
+
   // Update the tooltip if it still needs to be shown.
   if (text === "" || globals.activeHover !== card) {
     const tooltip = `#tooltip-${card.tooltipName}`;
     tooltips.close(tooltip);
-    globals.editingNote = null;
   } else {
     show(card);
   }
@@ -213,8 +214,6 @@ export function openEditTooltip(
       return;
     }
 
-    globals.editingNote = null;
-
     let newNote: string;
     if (key === "Escape") {
       // If Escape is pressed, use the existing note, if any.
@@ -241,7 +240,9 @@ export function openEditTooltip(
     // Check to see if an event happened while we were editing this note.
     if (globals.actionOccurred) {
       globals.actionOccurred = false;
+      globals.editingNote = null;
       tooltips.close(tooltip);
+      return;
     }
 
     update(card, newNote);
@@ -266,13 +267,6 @@ export function openEditTooltip(
       noteTextbox.val(newText);
       event.preventDefault();
     }
-  });
-
-  // Automatically close the tooltip if we click elsewhere on the screen.
-  noteTextbox.on("focusout", () => {
-    globals.editingNote = null;
-    chat.tabResetAutoCompleteList();
-    tooltips.close(tooltip);
   });
 
   // Automatically add a pipe to a non empty note input box when it is focused.
@@ -302,10 +296,19 @@ export function openEditTooltip(
     }
   });
 
-  // Automatically focus the new text input box. (This will not work properly unless we put it in a
-  // callback.)
+  // Automatically focus the new text input box. (This will not work properly in speedrun mode
+  // unless we put it in a callback.)
   requestAnimationFrame(() => {
     noteTextbox.trigger("focus");
+
+    // Automatically close the tooltip if we click elsewhere on the screen.
+    noteTextbox.on("focusout", () => {
+      if (card.state.order === globals.editingNote) {
+        globals.editingNote = null;
+      }
+      chat.tabResetAutoCompleteList();
+      tooltips.close(tooltip);
+    });
   });
 
   // On mobile, if the focus event is wrapped in a callback then it will not trigger the keyboard to
