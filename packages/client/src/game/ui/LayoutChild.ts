@@ -70,7 +70,10 @@ export class LayoutChild extends Konva.Group {
       this.off("dragend");
     }
 
-    if (cursor.elementOverlaps(this)) {
+    const shape = globals.stage.getIntersection(
+      globals.stage.getPointerPosition(),
+    );
+    if (shape !== null && this.card.isAncestorOf(shape)) {
       this.card.setCursor();
     }
   }
