@@ -66,21 +66,6 @@ export function getElementDragLocation(
   return null;
 }
 
-export function elementOverlaps(element: LayoutChild): boolean {
-  if (globals.loading || globals.isResizing) {
-    return false;
-  }
-
-  // This method will return undefined if the cursor is not inside of the stage.
-  const pos = globals.stage.getPointerPosition();
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (pos === undefined) {
-    return false;
-  }
-
-  return posOverlaps(pos, element);
-}
-
 function posOverlaps(pos: Konva.Vector2d, element: Konva.Rect | LayoutChild) {
   const elementPos = element.getAbsolutePosition();
   return (

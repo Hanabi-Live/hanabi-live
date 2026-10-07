@@ -198,7 +198,7 @@ function getCursorType(card: HanabiCard) {
     return "edit";
   }
 
-  if (card.layout.draggable() && !card.tweening) {
+  if (card.layout.draggable() && card.layout.isListening() === true) {
     return "hand";
   }
 
@@ -213,6 +213,11 @@ function getCursorType(card: HanabiCard) {
 function shouldShowLookCursor(card: HanabiCard) {
   // It is not possible to use Empathy on a stack base.
   if (card.isStackBase) {
+    return false;
+  }
+
+  // If the card wouldn't be possible to click anyway, don't show the cursor.
+  if (card.layout.isListening() === false) {
     return false;
   }
 
@@ -307,7 +312,7 @@ export function setEmpathyOnHand(card: HanabiCard, enabled: boolean): void {
 // only make a card draggable with a left click. However, checking for "event.evt.buttons !== 1"
 // will break iPads.
 function dragStart(card: HanabiCard) {
-  if (!card.layout.draggable()) {
+  if (!card.layout.draggable() || card.layout.isListening() === false) {
     return;
   }
 

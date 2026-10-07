@@ -70,7 +70,10 @@ export class LayoutChild extends Konva.Group {
       this.off("dragend");
     }
 
-    if (cursor.elementOverlaps(this)) {
+    const shape = globals.stage.getIntersection(
+      globals.stage.getPointerPosition(),
+    );
+    if (shape !== null && this.card.isAncestorOf(shape)) {
       this.card.setCursor();
     }
   }
@@ -172,11 +175,9 @@ export class LayoutChild extends Konva.Group {
   }
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | null): void {
-    if (draggedTo === "playArea" && this.checkMisplay()) {
-      return;
-    }
+    const cancelMisplay = draggedTo === "playArea" && this.checkMisplay();
 
-    if (draggedTo === null) {
+    if (cancelMisplay || draggedTo === null) {
       // The card was dragged to an invalid location; tween it back to the hand.
       (this.parent as unknown as CardLayout | PlayStack).doLayout();
       return;

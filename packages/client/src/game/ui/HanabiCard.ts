@@ -278,11 +278,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   startedTweening(): void {
     this._tweening = true;
 
-    if (this.isListening() === false) {
-      // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
-      // listening.
-      this.bare.listening(false);
-    }
+    // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
+    // listening.
+    this.bare.listening(this.isListening() === true);
   }
 
   finishedTweening(): void {
@@ -291,11 +289,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
     this._tweening = false;
 
-    if (this.isListening() === true) {
-      // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
-      // listening.
-      this.bare.listening(true);
-    }
+    // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
+    // listening.
+    this.bare.listening(this.isListening() === true);
 
     for (const callback of this.tweenCallbacks) {
       callback();

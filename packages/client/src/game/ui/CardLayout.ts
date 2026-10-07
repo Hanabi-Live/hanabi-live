@@ -109,87 +109,75 @@ export class CardLayout extends Konva.Group {
       }
 
       const scale = handHeight / layoutChild.height();
+      const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
+      if (globals.animateFast) {
+        layoutChild.doMisplayAnimation = false;
+      }
 
       if (layoutChild.tween !== null) {
         layoutChild.tween.destroy();
         layoutChild.tween = null;
       }
 
-      const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
-      if (globals.animateFast) {
-        // Immediately set the card in place at the new location.
-        layoutChild.x(newX);
-        layoutChild.y(0);
-        layoutChild.scaleX(scale);
-        layoutChild.scaleY(scale);
-        layoutChild.rotation(0);
-        layoutChild.opacity(1);
-        layoutChild.card.finishedTweening();
-        layoutChild.checkSetDraggable();
-        layoutChild.card.setRaiseAndShadowOffset();
+      // Animate the card going:
+      // - from the deck to a player's hand (or vice versa)
+      // - or leaving the hand to the discard pile (or vice versa)
+
+      // Also, animate the rest of the cards sliding over.
+      layoutChild.card.startedTweening();
+      layoutChild.card.setRaiseAndShadowOffset();
+
+      // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
+      const animateToLayout = () => {
+        animate(
+          layoutChild,
+          {
+            duration: CARD_ANIMATION_LENGTH_SECONDS,
+            x: newX,
+            y: 0,
+            scale,
+            rotation: 0,
+            opacity: 1,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            easing: Konva.Easings.EaseOut,
+            onFinish: () => {
+              layoutChild.card.finishedTweening();
+              layoutChild.checkSetDraggable();
+            },
+          },
+          !globals.options.speedrun,
+        );
+      };
+
+      if (layoutChild.doMisplayAnimation) {
+        // If this card just misplayed, do a special animation.
         layoutChild.doMisplayAnimation = false;
+
+        const suit = globals.variant.suits[layoutChild.card.state.suitIndex!]!;
+        const playStack = globals.elements.playStacks.get(suit)!;
+        const pos = this.getAbsolutePosition();
+        const playStackPos = playStack.getAbsolutePosition();
+
+        animate(
+          layoutChild,
+          {
+            duration: CARD_ANIMATION_LENGTH_SECONDS,
+            x: playStackPos.x - pos.x,
+            y: playStackPos.y - pos.y,
+            scale: (playStack.height() * scale) / handHeight,
+            rotation: 0,
+            opacity: 1,
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            easing: Konva.Easings.EaseOut,
+            onFinish: () => {
+              layoutChild.rotation(360);
+              animateToLayout();
+            },
+          },
+          !globals.options.speedrun,
+        );
       } else {
-        // Animate the card going:
-        // - from the deck to a player's hand (or vice versa)
-        // - or leaving the hand to the discard pile (or vice versa)
-
-        // Also, animate the rest of the cards sliding over.
-        layoutChild.card.startedTweening();
-        layoutChild.card.setRaiseAndShadowOffset();
-
-        // eslint-disable-next-line func-style
-        const animateToLayout = () => {
-          animate(
-            layoutChild,
-            {
-              duration: CARD_ANIMATION_LENGTH_SECONDS,
-              x: newX,
-              y: 0,
-              scale,
-              rotation: 0,
-              opacity: 1,
-              // eslint-disable-next-line @typescript-eslint/unbound-method
-              easing: Konva.Easings.EaseOut,
-              onFinish: () => {
-                layoutChild.card.finishedTweening();
-                layoutChild.checkSetDraggable();
-              },
-            },
-            !globals.options.speedrun,
-          );
-        };
-
-        if (layoutChild.doMisplayAnimation) {
-          // If this card just misplayed, do a special animation.
-          layoutChild.doMisplayAnimation = false;
-
-          const suit =
-            globals.variant.suits[layoutChild.card.state.suitIndex!]!;
-          const playStack = globals.elements.playStacks.get(suit)!;
-          const pos = this.getAbsolutePosition();
-          const playStackPos = playStack.getAbsolutePosition();
-
-          animate(
-            layoutChild,
-            {
-              duration: CARD_ANIMATION_LENGTH_SECONDS,
-              x: playStackPos.x - pos.x,
-              y: playStackPos.y - pos.y,
-              scale: (playStack.height() * scale) / handHeight,
-              rotation: 0,
-              opacity: 1,
-              // eslint-disable-next-line @typescript-eslint/unbound-method
-              easing: Konva.Easings.EaseOut,
-              onFinish: () => {
-                layoutChild.rotation(360);
-                animateToLayout();
-              },
-            },
-            !globals.options.speedrun,
-          );
-        } else {
-          animateToLayout();
-        }
+        animateToLayout();
       }
 
       x +=
