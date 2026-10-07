@@ -1,7 +1,10 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type { ServerCommandChatData } from "@hanabi-live/data";
+import type {
+  ServerCommandChatData,
+  ServerCommandChatPMHistoryMessageData,
+} from "@hanabi-live/data";
 import { PROJECT_NAME } from "@hanabi-live/data";
 import {
   SECOND_IN_MILLISECONDS,
@@ -506,8 +509,36 @@ function textToHtml(payload?: string): string {
 }
 
 export function add(data: ServerCommandChatData, fast: boolean): void {
+  addInternal(data, fast, true);
+}
+
+export function addPMHistory(
+  data: ServerCommandChatPMHistoryMessageData,
+  room?: string,
+): void {
+  addInternal(
+    {
+      ...data,
+      discord: false,
+      server: false,
+      ...(room === undefined ? {} : { room }),
+    },
+    true,
+    false,
+  );
+}
+
+function addInternal(
+  data: ServerCommandChatData,
+  fast: boolean,
+  updateLiveState: boolean,
+) {
   // If we are receiving a private message (PM), record who it is from.
-  if (data.recipient === globals.username && data.who !== undefined) {
+  if (
+    updateLiveState
+    && data.recipient === globals.username
+    && data.who !== undefined
+  ) {
     lastPM = data.who;
   }
 
@@ -594,7 +625,7 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   }
 
   // Remove the person from the typing list, if present.
-  if (data.who !== undefined) {
+  if (updateLiveState && data.who !== undefined) {
     const index = globals.peopleTyping.indexOf(data.who);
     if (index !== -1) {
       globals.peopleTyping.splice(index, 1);

@@ -2,7 +2,6 @@ import type { ClientCommandChatPMData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
-import { getCurrentDatetime } from "../date";
 import { logger } from "../logger";
 import { models } from "../models";
 import { normalizeUsername } from "../utils";
@@ -52,15 +51,20 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
   // Add the message to the database. (Even though this is the most time intensive part, we want to
   // do it first in case database insertion fails. That way, we will not send "phantom" direct
   // messages.)
-  await models.chatLogPM.insert(wsUser.userID, wsUserRecipient.userID, msg);
+  const { pmID, datetimeSent } = await models.chatLogPM.insert(
+    wsUser.userID,
+    wsUserRecipient.userID,
+    msg,
+  );
 
   const data = {
     msg,
     who: wsUser.username,
     discord: false,
     server: false,
-    datetime: getCurrentDatetime(),
+    datetime: datetimeSent.toISOString(),
     recipient: wsUserRecipient.username,
+    pmID,
   };
 
   // Echo the private message back to the person who sent it.

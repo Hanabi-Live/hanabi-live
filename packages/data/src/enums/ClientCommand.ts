@@ -2,4 +2,5 @@
 export enum ClientCommand {
   chat = "chat",
   chatPM = "chatPM",
+  chatPMHistoryGet = "chatPMHistoryGet",
 }

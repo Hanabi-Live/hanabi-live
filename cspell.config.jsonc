@@ -220,6 +220,8 @@
     "pidfile",
     "pingable",
     "playerinfo",
+    "PMID",
+    "pmhistory",
     "plpgsql",
     "prasmussen",
     "premove",

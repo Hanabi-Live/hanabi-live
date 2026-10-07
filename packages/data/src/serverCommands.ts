@@ -22,6 +22,7 @@ const serverCommandChatData = z
     discord: z.boolean(),
     server: z.boolean(),
     datetime: z.string().min(1), // new Date(x) string
+    pmID: z.number().int().positive().optional(),
     room: z.string().min(1).optional(), // room code string
     recipient: z.string().min(1).optional(), // plain string
   })
@@ -44,6 +45,36 @@ const serverCommandChatListData = z
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandChatListData extends z.infer<
   typeof serverCommandChatListData
+> {}
+
+const serverCommandChatPMHistoryMessageData = z
+  .object({
+    pmID: z.number().int().positive(),
+    msg: z.string().min(1),
+    who: z.string().min(1),
+    recipient: z.string().min(1),
+    datetime: z.string().min(1),
+  })
+  .strict()
+  .readonly();
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ServerCommandChatPMHistoryMessageData extends z.infer<
+  typeof serverCommandChatPMHistoryMessageData
+> {}
+
+const serverCommandChatPMHistoryData = z
+  .object({
+    list: serverCommandChatPMHistoryMessageData.array().readonly(),
+    hasMore: z.boolean(),
+    room: z.string().min(1).optional(),
+  })
+  .strict()
+  .readonly();
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ServerCommandChatPMHistoryData extends z.infer<
+  typeof serverCommandChatPMHistoryData
 > {}
 
 const serverCommandErrorData = z
@@ -182,6 +213,7 @@ export interface ServerCommandWelcomeData extends z.infer<
 export interface ServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatList]: ServerCommandChatListData;
+  [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
   [ServerCommand.table]: ServerCommandTableData;
@@ -198,6 +230,7 @@ interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatList]: serverCommandChatListData,
+  [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
   [ServerCommand.error]: serverCommandErrorData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.table]: serverCommandTableData,

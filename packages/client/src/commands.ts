@@ -2,6 +2,7 @@
 
 import type {
   ServerCommandChatData,
+  ServerCommandChatPMHistoryData,
   ServerCommandErrorData,
   ServerCommandWarningData,
 } from "@hanabi-live/data";
@@ -46,6 +47,23 @@ commands.set("error", (data: ServerCommandErrorData) => {
 commands.set("chat", (data: ServerCommandChatData) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.room, data.recipient);
+});
+
+commands.set("chatPMHistory", (data: ServerCommandChatPMHistoryData) => {
+  const room = data.room ?? "lobby";
+
+  if (data.list.length === 0) {
+    chat.sendSelfPMFromServer(
+      "No private messages found.",
+      room,
+      chat.SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  for (const line of data.list) {
+    chat.addPMHistory(line, room);
+  }
 });
 
 function acknowledgeChatRead(
