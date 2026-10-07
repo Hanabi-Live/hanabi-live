@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html"
-	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
@@ -68,7 +67,8 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 	logger.Info("PM <" + s.Username + "> --> <" + recipientSession.Username + "> " + d.Msg)
 
 	// Add the message to the database
-	if err := models.ChatLogPM.Insert(s.UserID, d.Msg, recipientSession.UserID); err != nil {
+	insertResult, err := models.ChatLogPM.Insert(s.UserID, d.Msg, recipientSession.UserID)
+	if err != nil {
 		logger.Error("Failed to insert a private message into the database: " + err.Error())
 		s.Error(DefaultErrorMsg)
 		return
@@ -79,7 +79,8 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 		Who:       s.Username,
 		Discord:   false,
 		Server:    false,
-		Datetime:  time.Now(),
+		Datetime:  insertResult.DatetimeSent,
+		PMID:      insertResult.ID,
 		Room:      "",
 		Recipient: recipientSession.Username,
 	}

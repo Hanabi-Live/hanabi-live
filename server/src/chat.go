@@ -33,6 +33,7 @@ type ChatMessage struct {
 	Discord   bool      `json:"discord"`
 	Server    bool      `json:"server"`
 	Datetime  time.Time `json:"datetime"`
+	PMID      int       `json:"pmID,omitempty"`
 	Room      string    `json:"room"`
 	Recipient string    `json:"recipient"`
 }

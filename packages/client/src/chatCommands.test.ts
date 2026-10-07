@@ -1,5 +1,9 @@
 import { describe, expect, jest, test } from "@jest/globals";
-import { getVariantFromArgs, getVariantNameFromPartial } from "./chatCommands";
+import {
+  getVariantFromArgs,
+  getVariantNameFromPartial,
+  parsePMHistoryCommandArgs,
+} from "./chatCommands";
 
 jest.mock("./chat", () => ({}));
 jest.mock("./Globals", () => ({}));
@@ -11,6 +15,35 @@ const brownFives = "Brown-Fives (6 Suits)";
 const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";
 
 describe("functions", () => {
+  describe("parsing PM history arguments", () => {
+    test("uses five messages by default", () => {
+      expect(parsePMHistoryCommandArgs([])).toEqual({ amount: 5 });
+      expect(parsePMHistoryCommandArgs(["Alice"])).toEqual({
+        username: "Alice",
+        amount: 5,
+      });
+    });
+
+    test("accepts an amount with or without a username", () => {
+      expect(parsePMHistoryCommandArgs(["15"])).toEqual({ amount: 15 });
+      expect(parsePMHistoryCommandArgs(["Alice", "15"])).toEqual({
+        username: "Alice",
+        amount: 15,
+      });
+    });
+
+    test.each([
+      [["0"]],
+      [["101"]],
+      [["Alice", "0"]],
+      [["Alice", "101"]],
+      [["Alice", "nope"]],
+      [["Alice", "5", "extra"]],
+    ])("rejects invalid arguments: %j", (args: readonly string[]) => {
+      expect(parsePMHistoryCommandArgs(args)).toBeUndefined();
+    });
+  });
+
   describe("parsing variant from input", () => {
     describe("normal input", () => {
       test("is valid", () => {

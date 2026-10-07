@@ -2,6 +2,7 @@
 export enum ServerCommand {
   chat = "chat",
   chatList = "chatList",
+  chatPMHistory = "chatPMHistory",
   error = "error",
   gameHistory = "gameHistory",
   table = "table",

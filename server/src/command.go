@@ -13,9 +13,10 @@ type CommandData struct {
 	Setting string `json:"setting"`
 
 	// chat
-	Msg       string `json:"msg"`
-	Room      string `json:"room"`
-	Recipient string `json:"recipient"`
+	Msg             string `json:"msg"`
+	Room            string `json:"room"`
+	Recipient       string `json:"recipient"`
+	HistoryUsername string `json:"username"`
 
 	// tableCreate
 	Name       string   `json:"name"`
@@ -53,8 +54,9 @@ type CommandData struct {
 	Sound   string `json:"sound"`
 
 	// historyGet
-	Offset int `json:"offset"`
-	Amount int `json:"amount"`
+	Offset   int `json:"offset"`
+	Amount   int `json:"amount"`
+	BeforeID int `json:"beforeID"`
 
 	// historyGetSeed
 	Seed    string `json:"seed"`
@@ -123,6 +125,7 @@ func commandInit() {
 	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
 	commandMap["chatPM"] = commandChatPM
+	commandMap["chatPMHistoryGet"] = commandChatPMHistoryGet
 	commandMap["chatRead"] = commandChatRead
 	commandMap["chatTyping"] = commandChatTyping
 	commandMap["chatFriend"] = commandChatFriend

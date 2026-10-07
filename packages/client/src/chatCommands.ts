@@ -158,6 +158,68 @@ chatCommands.set("msg", pm);
 chatCommands.set("tell", pm);
 chatCommands.set("t", pm);
 
+interface PMHistoryCommandArgs {
+  readonly username?: string;
+  readonly amount: number;
+}
+
+export function parsePMHistoryCommandArgs(
+  args: readonly string[],
+): PMHistoryCommandArgs | undefined {
+  if (args.length === 0) {
+    return { amount: 5 };
+  }
+  if (args.length > 2) {
+    return undefined;
+  }
+
+  const firstArg = args[0]!;
+  const secondArg = args[1];
+
+  let username: string | undefined;
+  let amount = 5;
+
+  if (secondArg === undefined) {
+    const parsedAmount = parseIntSafe(firstArg);
+    if (parsedAmount === undefined) {
+      username = firstArg;
+    } else {
+      amount = parsedAmount;
+    }
+  } else {
+    username = firstArg;
+    const parsedAmount = parseIntSafe(secondArg);
+    if (parsedAmount === undefined) {
+      return undefined;
+    }
+    amount = parsedAmount;
+  }
+
+  if (amount < 1 || amount > 100) {
+    return undefined;
+  }
+
+  return username === undefined ? { amount } : { username, amount };
+}
+
+// Request private message history with an optional username and amount.
+function pmHistory(room: string, args: readonly string[]) {
+  const data = parsePMHistoryCommandArgs(args);
+  if (data === undefined) {
+    sendSelfPMFromServer(
+      "The format of the /pmhistory command is: "
+        + "<code>/pmhistory [username] [amount]</code> or "
+        + "<code>/pmhistory [amount]</code>, where amount is between 1 and 100.",
+      room,
+      SelfChatMessageType.Info,
+    );
+    return;
+  }
+
+  globals.conn!.send("chatPMHistoryGet", { ...data, room });
+}
+chatCommands.set("pmhistory", pmHistory);
+
 // /setleader [username]
 function setLeader(room: string, args: readonly string[]) {
   if (globals.tableID === -1) {
