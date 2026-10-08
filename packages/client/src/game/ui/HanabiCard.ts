@@ -71,6 +71,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   tween: Konva.Tween | null = null; // Required in order to be able to cancel animations
   tweenFinalPosition: { x: number; y: number } | null = null;
+  tweenFinalScale: { x: number; y: number } | null = null;
   cursor: CursorType = "default";
   private empathy = false;
   dragging = false;
@@ -275,9 +276,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // Tween methods
   // -------------
 
-  startedTweening(pos: { x: number; y: number }): void {
+  startedTweening(posX: number, scale: number): void {
     this._tweening = true;
-    this.tweenFinalPosition = pos;
+    this.tweenFinalPosition = { x: posX, y: 0 };
+    this.tweenFinalScale = { x: scale, y: scale };
 
     // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
     // listening.
@@ -290,6 +292,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
     this._tweening = false;
     this.tweenFinalPosition = null;
+    this.tweenFinalScale = null;
 
     // HACK: since Konva doesn't propagate listening hierarchically until v7, stop the image from
     // listening.
@@ -956,7 +959,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       layoutChild.setAbsolutePosition(pos);
 
       // Animate to the deck.
-      this.startedTweening({ x: 0, y: 0 });
+      this.startedTweening(0, scale);
       animate(
         layoutChild,
         {
