@@ -11,7 +11,6 @@ import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
 import * as cursor from "./cursor";
-import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
 
@@ -83,12 +82,7 @@ function touchStart(
     // double-tapped.
     this.wasRecentlyTapped = true;
     if (globals.editingNote !== null) {
-      const card = getCardOrStackBase(globals.editingNote);
-      if (card !== undefined) {
-        tooltips.close(`#tooltip-${card.tooltipName}`);
-      }
-
-      globals.editingNote = null;
+      tooltips.close(globals.editingNote);
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
   }, DOUBLE_TAP_DELAY_SECONDS);
@@ -254,12 +248,14 @@ function shouldShowLookCursor(card: HanabiCard) {
 }
 
 function checkHideNoteTooltip(card: HanabiCard) {
+  const tooltip = `#tooltip-${card.tooltipName}`;
+
   // Do not close the tooltip if we are currently editing a note.
-  if (globals.editingNote === card.state.order) {
+  if (globals.editingNote === tooltip) {
     return;
   }
 
-  tooltips.close(`#tooltip-${card.tooltipName}`);
+  tooltips.close(tooltip);
 }
 
 function useSpeedrunClickHandlers() {
