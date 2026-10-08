@@ -107,16 +107,16 @@ export function init(): void {
   });
 }
 
-export function toggle(): void {
+export function toggle(focusInput = true): void {
   const modal = $("#game-chat-modal");
   if (modal.is(":visible")) {
     hide();
   } else {
-    show();
+    show(focusInput);
   }
 }
 
-export function show(): void {
+export function show(focusInput = true): void {
   const modal = $("#game-chat-modal");
   modal.fadeIn(FADE_TIME_MS);
 
@@ -184,7 +184,9 @@ export function show(): void {
   // Scroll to the bottom of the chat.
   gameChatText.scrollTop = gameChatText.scrollHeight;
 
-  $("#game-chat-input").trigger("focus");
+  if (focusInput) {
+    $("#game-chat-input").trigger("focus");
+  }
 }
 
 export function hide(): void {

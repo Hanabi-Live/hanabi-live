@@ -99,7 +99,7 @@ function acknowledgeChatRead(
     const UIState = globals.ui.globals.state;
     if (!UIState.playing && !UIState.finished) {
       // The chat window was not open; pop open the chat window every time for spectators.
-      gameChat.toggle();
+      gameChat.toggle(false);
       globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
