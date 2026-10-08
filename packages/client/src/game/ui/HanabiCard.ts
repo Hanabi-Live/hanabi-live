@@ -956,7 +956,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       layoutChild.setAbsolutePosition(pos);
 
       // Animate to the deck.
-      this.startedTweening();
+      this.startedTweening({ x: 0, y: 0 });
       animate(
         layoutChild,
         {
