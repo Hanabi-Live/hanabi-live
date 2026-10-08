@@ -59,7 +59,7 @@ function getChatData(
   room: string,
   row: Awaited<ReturnType<typeof models.chatLog.get>>[number],
 ): ServerCommandChatData {
-  const { username, discordName, message, datetimeSent } = row;
+  const { chatID, username, discordName, message, datetimeSent } = row;
 
   const msg = message;
   const who = discordName ?? username ?? "";
@@ -68,6 +68,7 @@ function getChatData(
   const datetime = datetimeSent.toISOString();
 
   return {
+    chatID,
     msg,
     who,
     discord,

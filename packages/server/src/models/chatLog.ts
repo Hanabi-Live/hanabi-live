@@ -23,6 +23,7 @@ export const chatLog = {
   get: async (room: string, count?: number) => {
     const query = db
       .select({
+        chatID: chatLogTable.id,
         username: usersTable.username,
         discordName: chatLogTable.discordName,
         message: chatLogTable.message,

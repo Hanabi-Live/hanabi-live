@@ -22,6 +22,7 @@ const serverCommandChatData = z
     discord: z.boolean(),
     server: z.boolean(),
     datetime: z.string().min(1), // new Date(x) string
+    chatID: z.number().int().positive().optional(),
     pmID: z.number().int().positive().optional(),
     room: z.string().min(1).optional(), // room code string
     recipient: z.string().min(1).optional(), // plain string

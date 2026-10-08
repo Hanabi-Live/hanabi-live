@@ -11,6 +11,11 @@ import (
 
 type ChatLog struct{}
 
+type ChatLogInsertResult struct {
+	ID           int
+	DatetimeSent time.Time
+}
+
 // ChatLogRow mirrors the "chat_log" table row
 type ChatLogRow struct {
 	UserID  int
@@ -18,12 +23,17 @@ type ChatLogRow struct {
 	Room    string
 }
 
-func (*ChatLog) Insert(userID int, message string, room string) error {
-	_, err := db.Exec(context.Background(), `
+func (*ChatLog) Insert(userID int, message string, room string) (ChatLogInsertResult, error) {
+	var result ChatLogInsertResult
+	err := db.QueryRow(context.Background(), `
 		INSERT INTO chat_log (user_id, message, room)
 		VALUES ($1, $2, $3)
-	`, userID, message, room)
-	return err
+		RETURNING id, datetime_sent
+	`, userID, message, room).Scan(
+		&result.ID,
+		&result.DatetimeSent,
+	)
+	return result, err
 }
 
 func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
@@ -42,15 +52,25 @@ func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
 	return err
 }
 
-func (*ChatLog) InsertDiscord(discordName string, message string, room string) error {
-	_, err := db.Exec(context.Background(), `
+func (*ChatLog) InsertDiscord(
+	discordName string,
+	message string,
+	room string,
+) (ChatLogInsertResult, error) {
+	var result ChatLogInsertResult
+	err := db.QueryRow(context.Background(), `
 		INSERT INTO chat_log (user_id, discord_name, message, room)
 		VALUES (0, $1, $2, $3)
-	`, discordName, message, room)
-	return err
+		RETURNING id, datetime_sent
+	`, discordName, message, room).Scan(
+		&result.ID,
+		&result.DatetimeSent,
+	)
+	return result, err
 }
 
 type DBChatMessage struct {
+	ID          int            `json:"id"`
 	Name        string         `json:"name"`
 	DiscordName sql.NullString `json:"discordName"`
 	Message     string         `json:"message"`
@@ -63,6 +83,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 
 	SQLString := `
 		SELECT
+			chat_log.id,
 			COALESCE(users.username, '__server'),
 			chat_log.discord_name,
 			chat_log.message,
@@ -92,6 +113,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	for rows.Next() {
 		var message DBChatMessage
 		if err := rows.Scan(
+			&message.ID,
 			&message.Name,
 			&message.DiscordName,
 			&message.Message,

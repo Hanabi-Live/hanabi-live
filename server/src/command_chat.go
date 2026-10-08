@@ -111,19 +111,27 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 	}
 
 	// Add the message to the database
+	var chatID int
+	var datetime time.Time
 	if d.Discord {
-		if err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
+		insertResult, err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room)
+		if err != nil {
 			logger.Error("Failed to insert a Discord chat message into the database: " +
 				err.Error())
 			s.Error(DefaultErrorMsg)
 			return
 		}
+		chatID = insertResult.ID
+		datetime = insertResult.DatetimeSent
 	} else if !d.OnlyDiscord {
-		if err := models.ChatLog.Insert(userID, d.Msg, d.Room); err != nil {
+		insertResult, err := models.ChatLog.Insert(userID, d.Msg, d.Room)
+		if err != nil {
 			logger.Error("Failed to insert a chat message into the database: " + err.Error())
 			s.Error(DefaultErrorMsg)
 			return
 		}
+		chatID = insertResult.ID
+		datetime = insertResult.DatetimeSent
 	}
 
 	// Check for command handler
@@ -140,7 +148,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 				Who:       d.Username,
 				Discord:   d.Discord,
 				Server:    d.Server,
-				Datetime:  time.Now(),
+				Datetime:  datetime,
+				ChatID:    chatID,
 				Room:      d.Room,
 				Recipient: "",
 			})
