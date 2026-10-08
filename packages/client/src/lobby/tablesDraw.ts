@@ -334,8 +334,8 @@ function copyURLToClipboard(path: string, selector: string) {
 
   // Show a visual indication that the copy worked.
   tooltips.create(selector, "clipboard");
-  tooltips.openInstance(selector);
+  tooltips.open(selector);
   setTimeout(() => {
-    tooltips.closeInstance(selector);
+    tooltips.close(selector);
   }, SECOND_IN_MILLISECONDS);
 }

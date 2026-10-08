@@ -94,13 +94,12 @@ export function set(order: CardOrder, text: string): void {
 }
 
 export function update(card: HanabiCard, text: string): void {
-  globals.editingNote = null;
-
   // Update the tooltip if it still needs to be shown.
   if (text === "" || globals.activeHover !== card) {
     const tooltip = `#tooltip-${card.tooltipName}`;
     tooltips.close(tooltip);
   } else {
+    globals.editingNote = null;
     show(card);
   }
 
@@ -172,7 +171,7 @@ export function openEditTooltip(
 
   show(card);
 
-  globals.editingNote = card.state.order;
+  globals.editingNote = tooltip;
   const note = get(card.state.order, true);
 
   const input = document.createElement("input");
@@ -240,7 +239,6 @@ export function openEditTooltip(
     // Check to see if an event happened while we were editing this note.
     if (globals.actionOccurred) {
       globals.actionOccurred = false;
-      globals.editingNote = null;
       tooltips.close(tooltip);
       return;
     }
@@ -303,9 +301,6 @@ export function openEditTooltip(
 
     // Automatically close the tooltip if we click elsewhere on the screen.
     noteTextbox.on("focusout", () => {
-      if (card.state.order === globals.editingNote) {
-        globals.editingNote = null;
-      }
       chat.tabResetAutoCompleteList();
       tooltips.close(tooltip);
     });

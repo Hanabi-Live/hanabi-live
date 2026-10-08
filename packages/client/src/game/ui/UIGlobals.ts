@@ -1,5 +1,4 @@
 import type {
-  CardOrder,
   GameAction,
   GameMetadata,
   Options,
@@ -65,9 +64,9 @@ export class UIGlobals {
 
   /**
    * Used to keep track of which card the user is editing. Users can only update one note at a time
-   * to prevent bugs. Equal to the card order number or null.
+   * to prevent bugs. Equal to the selector of the tooltip or null.
    */
-  editingNote: CardOrder | null = null;
+  editingNote: string | null = null;
 
   /** Equal to true if something happened when the note box happens to be open. */
   actionOccurred = false;

@@ -14,6 +14,7 @@ import {
 import { eRange } from "complete-common";
 import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
 import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import-x/no-unassigned-import
+import { globals } from "./game/ui/UIGlobals";
 import { getHTMLElement } from "./utils";
 
 // Constants
@@ -91,29 +92,21 @@ export function open(selector: string): void {
   }
 }
 
-export function openInstance(selector: string): void {
-  const tooltip = getElementFromSelector(selector);
-  if (isTooltipster(tooltip)) {
-    tooltip.tooltipster("instance").open();
-  }
-}
-
 export function close(selector: string): void {
+  if (globals.editingNote === selector) {
+    globals.editingNote = null;
+  }
+
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {
     tooltip.tooltipster("close");
   }
 }
 
-export function closeInstance(selector: string): void {
-  const tooltip = getElementFromSelector(selector);
-  if (isTooltipster(tooltip)) {
-    tooltip.tooltipster("instance").close();
-  }
-}
-
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
 export function closeAllTooltips(): void {
+  globals.editingNote = null;
+
   const instances = $.tooltipster.instances();
   $.each(
     instances,
