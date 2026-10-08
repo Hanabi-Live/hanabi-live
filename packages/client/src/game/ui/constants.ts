@@ -53,5 +53,6 @@ export const OFF_BLACK = "#0d0d0d";
 // --------------
 
 export const CARD_ANIMATION_LENGTH_SECONDS = 0.5;
+export const CARD_ANIMATION_DELAY_SECONDS = 0.1;
 export const PREPLAY_DELAY_MILLISECONDS = 75;
 export const DOUBLE_TAP_DELAY_SECONDS = 0.5;

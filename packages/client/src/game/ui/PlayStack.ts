@@ -40,7 +40,7 @@ export class PlayStack extends Konva.Group {
 
     // Animate the card leaving the hand to the play stacks (or vice versa). (Tweening from the hand
     // to the discard pile is handled in the "CardLayout" object.)
-    layoutChild.card.startedTweening();
+    layoutChild.card.startedTweening({ x: 0, y: 0 });
     layoutChild.card.setRaiseAndShadowOffset();
 
     animate(

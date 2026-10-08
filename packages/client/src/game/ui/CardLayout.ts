@@ -124,7 +124,7 @@ export class CardLayout extends Konva.Group {
       // - or leaving the hand to the discard pile (or vice versa)
 
       // Also, animate the rest of the cards sliding over.
-      layoutChild.card.startedTweening();
+      layoutChild.card.startedTweening({ x: newX, y: 0 });
       layoutChild.card.setRaiseAndShadowOffset();
 
       // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
