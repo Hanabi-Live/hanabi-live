@@ -251,11 +251,21 @@ function getPos(element: Konva.Node, rot: number) {
   if (element instanceof HanabiCard) {
     // If the card is currently tweening, position the arrow at its final position instead of its
     // current position.
-    if (element.tweening && element.tweenFinalPosition !== null) {
+    if (
+      element.tweening
+      && element.tweenFinalPosition !== null
+      && element.tweenFinalScale !== null
+    ) {
       const origPos = element.layout.position();
+      const origScale = element.layout.scale();
+      const origRot = element.layout.rotation();
       element.layout.position(element.tweenFinalPosition);
+      element.layout.scale(element.tweenFinalScale);
+      element.layout.rotation(0);
       pos = element.getAbsolutePosition();
       element.layout.position(origPos);
+      element.layout.scale(origScale);
+      element.layout.rotation(origRot);
     }
 
     // If we set the arrow at the absolute position of a card, it will point to the exact center.
