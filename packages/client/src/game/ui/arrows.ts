@@ -18,7 +18,11 @@ import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
-import { ARROW_COLOR, CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
+import {
+  ARROW_COLOR,
+  CARD_ANIMATION_DELAY_SECONDS,
+  CARD_ANIMATION_LENGTH_SECONDS,
+} from "./constants";
 import type { Arrow } from "./controls/Arrow";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import { StrikeSquare } from "./controls/StrikeSquare";
@@ -235,23 +239,25 @@ export function set(
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    const visibleSegment = globals.state.visibleState!.turn.segment!;
-    animate(
-      arrow,
-      element as HanabiCard,
-      rot,
-      giverPlayerIndex,
-      visibleSegment,
-    );
+    animate(arrow, element as HanabiCard, rot, giverPlayerIndex);
   }
   globals.layers.arrow.batchDraw();
 }
 
 function getPos(element: Konva.Node, rot: number) {
   // Start by using the absolute position of the element.
-  const pos = element.getAbsolutePosition();
+  let pos = element.getAbsolutePosition();
 
   if (element instanceof HanabiCard) {
+    // If the card is currently tweening, position the arrow at its final position instead of its
+    // current position.
+    if (element.tweening && element.tweenFinalPosition !== null) {
+      const origPos = element.layout.position();
+      element.layout.position(element.tweenFinalPosition);
+      pos = element.getAbsolutePosition();
+      element.layout.position(origPos);
+    }
+
     // If we set the arrow at the absolute position of a card, it will point to the exact center.
     // Instead, back it off a little bit (accounting for the rotation of the hand).
     const winH = globals.stage.height();
@@ -312,57 +318,31 @@ function getPos(element: Konva.Node, rot: number) {
 }
 
 /** Animate the arrow to fly from the player who gave the clue to the card. */
-function animate(
-  arrow: Arrow,
-  card: HanabiCard,
-  rot: number,
-  giver: number,
-  segment: number,
-) {
-  // We can't continue arrow animations if we are on the wrong segment because arrows are reused and
-  // this causes glitches.
-  const visibleSegment = globals.state.visibleState!.turn.segment!;
-  if (visibleSegment !== segment) {
-    return;
-  }
-
-  // Do not bother doing the animation if the card is no longer part of a hand (which can happen
-  // when jumping quickly through a replay).
-  if (card.parent === null || card.parent.parent === null) {
-    return;
-  }
-
-  // Do not bother doing the animation if we have hidden the arrow in the meantime (which can happen
-  // when jumping quickly through a replay).
-  if (arrow.pointingTo === null) {
-    return;
-  }
-
-  // Delay the animation if the card is currently tweening to avoid buggy behavior.
-  if (card.tweening) {
-    arrow.hide();
-    card.waitForTweening(() => {
-      animate(arrow, card, rot, giver, segment);
-    });
-    return;
-  }
-  arrow.show();
-
+function animate(arrow: Arrow, card: HanabiCard, rot: number, giver: number) {
   // Start the arrow at the center position of the clue giver's hand.
   const centerPos = globals.elements.playerHands[giver]!.getAbsoluteCenterPos();
   arrow.setAbsolutePosition(centerPos);
 
-  // Calculate the position of the final arrow destination. (This must be done after the card is
-  // finished tweening.)
+  // Calculate the position of the final arrow destination.
   const pos = getPos(card, rot);
 
+  // Start the tween after a short delay to prevent flashing when moving quickly through a replay.
   konvaHelpers.animate(arrow, {
-    duration: CARD_ANIMATION_LENGTH_SECONDS,
-    x: pos.x,
-    y: pos.y,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    easing: Konva.Easings.EaseOut,
+    duration: CARD_ANIMATION_DELAY_SECONDS,
+    onFinish: () => {
+      arrow.show();
+      konvaHelpers.animate(arrow, {
+        duration: CARD_ANIMATION_LENGTH_SECONDS,
+        x: pos.x,
+        y: pos.y,
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        easing: Konva.Easings.EaseOut,
+      });
+    },
   });
+
+  // The call to animate() shows the arrow, so we need to hide it again.
+  arrow.hide();
 }
 
 export function click(
@@ -404,15 +384,6 @@ export function toggle(
   // Get the element corresponding to the "order" number.
   const element = getElementFromOrder(order);
   if (!element) {
-    return;
-  }
-
-  // If we are showing an arrow on a card that is currently tweening, delay showing it until the
-  // tween is finished.
-  if (element instanceof HanabiCard && element.tweening) {
-    element.waitForTweening(() => {
-      toggle(order, alwaysShow);
-    });
     return;
   }
 
