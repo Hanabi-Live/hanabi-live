@@ -33,6 +33,7 @@ type ChatMessage struct {
 	Discord   bool      `json:"discord"`
 	Server    bool      `json:"server"`
 	Datetime  time.Time `json:"datetime"`
+	ChatID    int       `json:"chatID,omitempty"`
 	PMID      int       `json:"pmID,omitempty"`
 	Room      string    `json:"room"`
 	Recipient string    `json:"recipient"`
@@ -201,6 +202,7 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 			Discord:   discord,
 			Server:    server,
 			Datetime:  rawMsg.Datetime,
+			ChatID:    rawMsg.ID,
 			Room:      room,
 			Recipient: "",
 		}
