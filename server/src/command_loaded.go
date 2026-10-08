@@ -46,13 +46,19 @@ func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
 		g.StartedTimer = true
 		g.DatetimeTurnBegin = time.Now()
 
+		activePlayer := g.Players[g.ActivePlayerIndex]
+		if t.Options.Timed {
+			// The first player should receive the same per-turn increment that players receive
+			// after completing later turns.
+			activePlayer.Time += time.Duration(t.Options.TimePerTurn) * time.Second
+		}
+
 		// Re-send the clock times, which will bump up the active player's clock by however
 		// many seconds it took for them to load the UI
 		t.NotifyTime()
 
 		// Start the countdown for when the active player runs out of time
 		if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
-			activePlayer := g.Players[g.ActivePlayerIndex]
 			go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
 		}
 	}
