@@ -14,7 +14,9 @@ export class ClueLog extends Konva.Group {
   }
 
   updateClue(index: number, clue: ClueEntry): void {
-    this.children.toArray()[index] = clue;
+    this.children[index]?.remove();
+    this.add(clue as unknown as Konva.Group);
+    clue.zIndex(index);
   }
 
   refresh(): void {
