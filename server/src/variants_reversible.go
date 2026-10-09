@@ -4,15 +4,6 @@
 
 package main
 
-// iota starts at 0 and counts upwards
-// i.e. stackDirectionUndecided = 0, stackDirectionUp = 1, etc.
-
-const (
-	StackDirectionUndecided = iota
-	StackDirectionUp
-	StackDirectionDown
-	StackDirectionFinished
-)
 const (
 	// The "Up or Down" variants have "START" cards
 	// Rank 0 is the stack base

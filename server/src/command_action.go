@@ -29,7 +29,7 @@ func actionsFunctionsInit() {
 //
 //	{
 //	  tableID: 5,
-//	  // Corresponds to "actionType" in "constants.go"
+//	  // Corresponds to "actionType" in "enums.go"
 //	  type: 0,
 //	  // If a play or a discard, corresponds to the order of the the card that was played/discarded
 //	  // If a clue, corresponds to the index of the player that received the clue
@@ -38,7 +38,7 @@ func actionsFunctionsInit() {
 //	  // Optional; only present if a clue
 //	  // If a color clue, then 0 if red, 1 if yellow, etc.
 //	  // If a rank clue, then 1 if 1, 2 if 2, etc.
-//	  // If a game over, then the value corresponds to the "endCondition" values in "constants.go"
+//	  // If a game over, then the value corresponds to the "endCondition" values in "enums.go"
 //	  value: 0,
 //	}
 func commandAction(ctx context.Context, s *Session, d *CommandData) {
@@ -438,7 +438,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// An "endGame" action is a special action type sent by the server to itself
-	// The value will correspond to the end condition (see "endCondition" in "constants.go")
+	// The value will correspond to the end condition (see "endCondition" in "enums.go")
 	// The target will correspond to the index of the player who ended the game
 
 	// Validate the value

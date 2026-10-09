@@ -95,7 +95,7 @@ func NewOptions() *Options {
 }
 
 // GetModifier computes the integer modifier for the game options,
-// corresponding to the "ScoreModifier" constants in "constants.go"
+// corresponding to the "ScoreModifier" constants in "enums.go"
 func (o *Options) GetModifier() Bitmask {
 	var modifier Bitmask
 

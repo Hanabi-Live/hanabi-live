@@ -41,7 +41,7 @@ type Game struct {
 	DeckIndex           int
 	Stacks              []int
 	StackStarts         []int // For sudoku variants, the first card in the stack, 0 if the stack is empty so far
-	PlayStackDirections []int // The values for this are listed in "constants.go"
+	PlayStackDirections []int // The values for this are listed in "enums.go"
 	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	DatetimeTurnBegin   time.Time
 	TurnsInverted       bool
@@ -61,7 +61,7 @@ type Game struct {
 	// (it is much less verbose when compared with Actions)
 	Actions2              []*GameAction
 	InvalidActionOccurred bool // Used when emulating game actions in replays
-	EndCondition          int  // The values for this are listed in "constants.go"
+	EndCondition          int  // The values for this are listed in "enums.go"
 	// The index of the player who ended the game, if any
 	// (needed for writing a "game over" terminate action to the database)
 	EndPlayer int
