@@ -59,12 +59,25 @@ function getChatData(
   room: string,
   row: Awaited<ReturnType<typeof models.chatLog.get>>[number],
 ): ServerCommandChatData {
-  const { chatID, username, discordName, message, datetimeSent } = row;
+  const {
+    chatID,
+    userID,
+    source,
+    username,
+    discordName,
+    message,
+    datetimeSent,
+  } = row;
 
   const msg = message;
-  const who = discordName ?? username ?? "";
-  const discord = discordName !== null;
-  const server = username === null && discordName === null;
+  const discord = source === "discord";
+  const server = source === "server";
+  let who = username ?? `Deleted user #${userID}`;
+  if (discord) {
+    who = discordName ?? "";
+  } else if (server) {
+    who = "__server";
+  }
   const datetime = datetimeSent.toISOString();
 
   return {

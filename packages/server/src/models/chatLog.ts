@@ -24,6 +24,8 @@ export const chatLog = {
     const query = db
       .select({
         chatID: chatLogTable.id,
+        userID: chatLogTable.userID,
+        source: chatLogTable.source,
         username: usersTable.username,
         discordName: chatLogTable.discordName,
         message: chatLogTable.message,
@@ -42,6 +44,7 @@ export const chatLog = {
   set: async (userID: UserID, message: string, room: string): Promise<void> => {
     await db.insert(chatLogTable).values({
       userID,
+      source: "user",
       message,
       room,
     });

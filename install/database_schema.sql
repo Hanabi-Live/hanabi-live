@@ -291,7 +291,8 @@ CREATE TABLE variant_stats (
 DROP TABLE IF EXISTS chat_log CASCADE;
 CREATE TABLE chat_log (
     id             SERIAL       PRIMARY KEY,
-    user_id        INTEGER      NOT NULL, /* 0 is a Discord message. */
+    user_id        INTEGER      NOT NULL, /* 0 for server or Discord messages. */
+    source         TEXT         NOT NULL CHECK (source IN ('user', 'server', 'discord')),
     discord_name   TEXT         NULL,     /* Only used if it is a Discord message. */
     message        TEXT         NOT NULL,
     room           TEXT         NOT NULL, /* Either "lobby" or "table####". */
@@ -311,11 +312,13 @@ CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
  */
 INSERT INTO chat_log (
     user_id,
+    source,
     discord_name,
     message,
     room
 ) VALUES (
     0,
+    'discord',
     'Hanab Live',
     'The Hanab Live database has been successfully initialized.',
     'lobby'

@@ -198,6 +198,7 @@ export const chatLogTable = pgTable(
   {
     id: serial("id").primaryKey(),
     userID: integer("user_id").notNull(),
+    source: text("source", { enum: ["user", "server", "discord"] }).notNull(),
     discordName: text("discord_name"),
     message: text("message").notNull(),
     room: text("room").notNull(),
