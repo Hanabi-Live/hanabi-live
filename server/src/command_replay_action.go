@@ -33,7 +33,7 @@ func replayActionsFunctionsInit() {
 //
 //	{
 //	  tableID: 5,
-//	  type: 0, // Types are listed in the "constants.go" file
+//	  type: 0, // Types are listed in the "enums.go" file
 //	  value: 10, // Optional
 //	  name: 'Alice', // Optional
 //	}

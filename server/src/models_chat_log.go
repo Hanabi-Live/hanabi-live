@@ -11,15 +11,6 @@ import (
 
 type ChatLog struct{}
 
-// ChatLogSource records the origin of a persisted message independently of user lookup.
-type ChatLogSource string
-
-const (
-	ChatLogSourceUser ChatLogSource = "user"
-	ChatLogSourceServer ChatLogSource = "server"
-	ChatLogSourceDiscord ChatLogSource = "discord"
-)
-
 func chatLogSourceForUserID(userID int) ChatLogSource {
 	if userID == 0 {
 		return ChatLogSourceServer
