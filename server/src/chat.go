@@ -187,13 +187,16 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		rawMsg := rawMsgs[i]
 		discord := false
 		server := false
-		if rawMsg.Name == "__server" {
+		if rawMsg.Source == ChatLogSourceServer {
 			server = true
+			rawMsg.Name = "__server"
 		}
-		if rawMsg.DiscordName.Valid {
+		if rawMsg.Source == ChatLogSourceDiscord {
 			server = false
 			discord = true
-			rawMsg.Name = rawMsg.DiscordName.String
+			if rawMsg.DiscordName.Valid {
+				rawMsg.Name = rawMsg.DiscordName.String
+			}
 		}
 		rawMsg.Message = chatFillAll(rawMsg.Message)
 		msg := &ChatMessage{

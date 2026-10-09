@@ -11,6 +11,22 @@ import (
 
 type ChatLog struct{}
 
+// ChatLogSource records the origin of a persisted message independently of user lookup.
+type ChatLogSource string
+
+const (
+	ChatLogSourceUser ChatLogSource = "user"
+	ChatLogSourceServer ChatLogSource = "server"
+	ChatLogSourceDiscord ChatLogSource = "discord"
+)
+
+func chatLogSourceForUserID(userID int) ChatLogSource {
+	if userID == 0 {
+		return ChatLogSourceServer
+	}
+	return ChatLogSourceUser
+}
+
 type ChatLogInsertResult struct {
 	ID           int
 	DatetimeSent time.Time
@@ -26,10 +42,10 @@ type ChatLogRow struct {
 func (*ChatLog) Insert(userID int, message string, room string) (ChatLogInsertResult, error) {
 	var result ChatLogInsertResult
 	err := db.QueryRow(context.Background(), `
-		INSERT INTO chat_log (user_id, message, room)
-		VALUES ($1, $2, $3)
+		INSERT INTO chat_log (user_id, source, message, room)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, datetime_sent
-	`, userID, message, room).Scan(
+	`, userID, string(chatLogSourceForUserID(userID)), message, room).Scan(
 		&result.ID,
 		&result.DatetimeSent,
 	)
@@ -38,13 +54,13 @@ func (*ChatLog) Insert(userID int, message string, room string) (ChatLogInsertRe
 
 func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
 	SQLString := `
-		INSERT INTO chat_log (user_id, message, room)
+		INSERT INTO chat_log (user_id, source, message, room)
 		VALUES %s
 	`
-	numArgsPerRow := 3
+	numArgsPerRow := 4
 	valueArgs := make([]interface{}, 0, numArgsPerRow*len(chatLogRows))
 	for _, chatLogRow := range chatLogRows {
-		valueArgs = append(valueArgs, chatLogRow.UserID, chatLogRow.Message, chatLogRow.Room)
+		valueArgs = append(valueArgs, chatLogRow.UserID, string(chatLogSourceForUserID(chatLogRow.UserID)), chatLogRow.Message, chatLogRow.Room)
 	}
 	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(chatLogRows))
 
@@ -59,8 +75,8 @@ func (*ChatLog) InsertDiscord(
 ) (ChatLogInsertResult, error) {
 	var result ChatLogInsertResult
 	err := db.QueryRow(context.Background(), `
-		INSERT INTO chat_log (user_id, discord_name, message, room)
-		VALUES (0, $1, $2, $3)
+		INSERT INTO chat_log (user_id, source, discord_name, message, room)
+		VALUES (0, 'discord', $1, $2, $3)
 		RETURNING id, datetime_sent
 	`, discordName, message, room).Scan(
 		&result.ID,
@@ -71,6 +87,8 @@ func (*ChatLog) InsertDiscord(
 
 type DBChatMessage struct {
 	ID          int            `json:"id"`
+	UserID      int            `json:"userID"`
+	Source      ChatLogSource  `json:"source"`
 	Name        string         `json:"name"`
 	DiscordName sql.NullString `json:"discordName"`
 	Message     string         `json:"message"`
@@ -84,7 +102,9 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	SQLString := `
 		SELECT
 			chat_log.id,
-			COALESCE(users.username, '__server'),
+			chat_log.user_id,
+			chat_log.source,
+			COALESCE(users.username, 'Deleted user #' || chat_log.user_id::text),
 			chat_log.discord_name,
 			chat_log.message,
 			chat_log.datetime_sent
@@ -112,8 +132,11 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 
 	for rows.Next() {
 		var message DBChatMessage
+		var source string
 		if err := rows.Scan(
 			&message.ID,
+			&message.UserID,
+			&source,
 			&message.Name,
 			&message.DiscordName,
 			&message.Message,
@@ -121,6 +144,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 		); err != nil {
 			return chatMessages, err
 		}
+		message.Source = ChatLogSource(source)
 		chatMessages = append(chatMessages, message)
 	}
 
