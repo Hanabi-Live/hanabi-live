@@ -27,15 +27,10 @@ export function checkLegal(): void {
       : globals.elements.clueTargetButtonGroup2;
 
   const target = clueTargetButtonGroup?.getPressed() as
-    | PlayerButton
-    | null
-    | undefined;
+    PlayerButton | null | undefined;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup?.getPressed() as
-    | ColorButton
-    | RankButton
-    | null
-    | undefined;
+    ColorButton | RankButton | null | undefined;
 
   if (
     target === undefined
@@ -137,15 +132,10 @@ export function give(): void {
       : globals.elements.clueTargetButtonGroup2;
 
   const playerButton = clueTargetButtonGroup?.getPressed() as
-    | PlayerButton
-    | null
-    | undefined;
+    PlayerButton | null | undefined;
   const { clueTypeButtonGroup } = globals.elements;
   const clueOrRankButton = clueTypeButtonGroup?.getPressed() as
-    | ColorButton
-    | RankButton
-    | null
-    | undefined;
+    ColorButton | RankButton | null | undefined;
 
   if (
     playerButton === undefined

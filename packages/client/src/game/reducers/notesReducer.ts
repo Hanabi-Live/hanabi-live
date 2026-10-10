@@ -4,7 +4,6 @@ import type {
   NoteAction,
   Variant,
 } from "@hanabi-live/game";
-import { assertDefined } from "complete-common";
 import {
   BLANK_NOTES,
   CHOP_MOVED_NOTES,
@@ -18,6 +17,7 @@ import {
   UNCLUED_NOTES,
   getVariant,
 } from "@hanabi-live/game";
+import { assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";

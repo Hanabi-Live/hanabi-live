@@ -57,8 +57,7 @@ export class TimerDisplay extends Konva.Group {
       height: config.height,
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
       fontSize: (config["labelFontSize"] || config["fontSize"]) as
-        | number
-        | undefined,
+        number | undefined,
       fontFamily: "Verdana",
       align: "center",
       text: config["label"] as string | undefined,
