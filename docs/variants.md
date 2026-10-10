@@ -1,6 +1,10 @@
 # Variants
 
-[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further customize a game by using a number of [custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played
+the game thousands of times. In order to keep the game fresh, the server allows
+you to create games using many different variants. Players also have the ability
+to further customize a game by using a number of
+[custom game options](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options).
 
 <br />
 
@@ -22,7 +26,8 @@ One of each card per suit (e.g. 5 in total):
 | **Own rank clue**  | Gray           | Black          | Dark Rainbow    |
 | **All rank clues** | Gray Pink      | Dark Pink      | Dark Omni       |
 
-The pips that are assigned to each suit is documented on the [pips reference page](https://hanab.live/public/standalone/pips-reference.html).
+The pips that are assigned to each suit is documented on the
+[pips reference page](https://hanab.live/public/standalone/pips-reference.html).
 
 <br />
 
@@ -30,7 +35,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### No Variant
 
-- This is the "normal" game, with 5 suits. Unlike some other versions of the game, the website uses the following five suit colors:
+- This is the "normal" game, with 5 suits. Unlike some other versions of the
+  game, the website uses the following five suit colors:
   - Red
   - Yellow
   - Green
@@ -40,7 +46,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 ### 6 Suits
 
 - A teal suit is added.
-- It works identical to the other suits in that you can clue teal cards with teal clues.
+- It works identical to the other suits in that you can clue teal cards with
+  teal clues.
 
 ### 4 Suits
 
@@ -53,8 +60,10 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 ### Black
 
 - One of the suits is replaced with a black suit.
-- It works similar to the other suits in that you can clue black cards with black clues.
-- There is only one of each black card in the deck, which means that every black card is "critical".
+- It works similar to the other suits in that you can clue black cards with
+  black clues.
+- There is only one of each black card in the deck, which means that every black
+  card is "critical".
 
 ### Rainbow
 
@@ -101,8 +110,10 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 ### Prism
 
 - One of the suits is replaced with a prism suit.
-- The prism 1 is touched by the left-most color, the prism 2 is touched by the second-to-left-most color, and so forth.
-- If there are less than 5 colors available in the variant, then the colors used for prism cards will wrap-around.
+- The prism 1 is touched by the left-most color, the prism 2 is touched by the
+  second-to-left-most color, and so forth.
+- If there are less than 5 colors available in the variant, then the colors used
+  for prism cards will wrap-around.
 
 ### Orange
 
@@ -116,7 +127,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
   - Gray is the "dark" version of white.
   - Cocoa rainbow is the "dark" version of muddy rainbow.
   - Gray pink is the "dark" version of light pink.
-- There is only one of each dark card in the deck, which means that every dark card is "critical".
+- There is only one of each dark card in the deck, which means that every dark
+  card is "critical".
 
 ### Special Suit Combinations (e.g. Black & Rainbow)
 
@@ -124,11 +136,13 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Suit-Ones (e.g. Rainbow-Ones, Pink-Ones, White-Ones, etc.)
 
-- Ones have the property of the suit prefix. For example, rainbow-ones are "touched" by all colors.
+- Ones have the property of the suit prefix. For example, rainbow-ones are
+  "touched" by all colors.
 
 ### Suit-Fives (e.g. Rainbow-Fives, Pink-Fives, White-Fives, etc.)
 
-- Fives have the property of the suit prefix. For example, rainbow-fives are "touched" by all colors.
+- Fives have the property of the suit prefix. For example, rainbow-fives are
+  "touched" by all colors.
 
 ### Deceptive-Ones
 
@@ -150,20 +164,27 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Suit-Ones or Suit-Fives with Another Special Suit (e.g. Rainbow-Ones & Pink)
 
-- Suit-Ones or Suit-Fives of a special suit inherit the special suit's properties.
+- Suit-Ones or Suit-Fives of a special suit inherit the special suit's
+  properties.
   - For example, consider the "Rainbow-Ones & Pink" variant:
     - The rainbow suit has the property of being touched by all colors.
     - The pink suit has the property of being touched by all ranks.
-    - These add together and the pink 1 is touched by all colors and touched by all ranks.
-- If a conflict is present, the suit property will override the special property.
+    - These add together and the pink 1 is touched by all colors and touched by
+      all ranks.
+- If a conflict is present, the suit property will override the special
+  property.
   - For example, consider the "Null-Ones & Rainbow" variant:
-    - The null suit has the property of being touched by no colors and touched by no ranks.
+    - The null suit has the property of being touched by no colors and touched
+      by no ranks.
     - The rainbow suit has the property of being touched by all colors.
-    - These add together, but the color touch property is in conflict. The rainbow property takes precedence, so the rainbow 1 is touched by all colors and touched by no ranks.
+    - These add together, but the color touch property is in conflict. The
+      rainbow property takes precedence, so the rainbow 1 is touched by all
+      colors and touched by no ranks.
 
 ### Ambiguous
 
-- Two suits share a color. There is no way to disambiguate between them with color clues.
+- Two suits share a color. There is no way to disambiguate between them with
+  color clues.
 - In the 6-suit version, the suits are as follows:
   - Tomato (red)
   - Mahogany (red)
@@ -175,7 +196,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Very Ambiguous
 
-- Three suits share a color. There is no way to disambiguate between them with color clues.
+- Three suits share a color. There is no way to disambiguate between them with
+  color clues.
 - In the 6-suit version, the suits are as follows:
   - Tomato (red)
   - Carrot (red)
@@ -187,7 +209,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Extremely Ambiguous
 
-- Four, five, or six suits share a color. There is no way to disambiguate between them with color clues.
+- Four, five, or six suits share a color. There is no way to disambiguate
+  between them with color clues.
 - In the 6-suit version, the suits are as follows:
   - Ice (blue)
   - Aqua (blue)
@@ -208,7 +231,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
   - Plum (red / yellow / green / blue / purple)
   - Taupe (red / yellow / green / blue / purple / teal)
 - In a 5-suit game, the Taupe suit would be removed, and so on.
-- The name of the variant comes from [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
+- The name of the variant comes from
+  [nested doll sets](https://en.wikipedia.org/wiki/Matryoshka_doll).
 
 ### Dual-Color
 
@@ -230,7 +254,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
   - Tangerine (red / yellow)
   - Purple (red / blue)
   - Green (yellow / blue)
-- There are also dual-color variants with one standard special suit in addition to either the 3-suit or 5-suit versions above.
+- There are also dual-color variants with one standard special suit in addition
+  to either the 3-suit or 5-suit versions above.
 
 ### RGB Mix (6 Suits)
 
@@ -241,7 +266,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
   - Teal (green / blue)
   - Blue
   - Purple (red / blue)
-- The color names are taken from the [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
+- The color names are taken from the
+  [colors of light in the RGB model](https://en.wikipedia.org/wiki/RGB_color_model).
 
 ### Special Mix (5 Suits)
 
@@ -361,7 +387,8 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Clue Starved
 
-- Each discard or 5 played only generates 0.5 clues. (The team still starts with 8 clues.)
+- Each discard or 5 played only generates 0.5 clues. (The team still starts with
+  8 clues.)
 
 ### Color Blind
 
@@ -385,18 +412,23 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Alternating Clues
 
-- The first clue of the game has no restrictions. After that, each successive clue must be the opposite type as the one prior.
-- For example, if the first clue of the game is a color clue, then the second clue must be a number clue, the third clue must be a color clue, and so forth.
+- The first clue of the game has no restrictions. After that, each successive
+  clue must be the opposite type as the one prior.
+- For example, if the first clue of the game is a color clue, then the second
+  clue must be a number clue, the third clue must be a color clue, and so forth.
 - This variant was invented by Jake Stiles.
 
 ### Cow & Pig
 
-- When players give a clue, they point at the cards clued, but say "moo" if it is a color clue, and "oink" if it is a rank clue.
+- When players give a clue, they point at the cards clued, but say "moo" if it
+  is a color clue, and "oink" if it is a rank clue.
 
 ### Duck
 
-- When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
-- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
+- When players give a clue, they point at the cards clued, but say "quack"
+  instead of a color or number.
+- This variant was invented by
+  [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
 ### Odds and Evens
 
@@ -406,8 +438,10 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 ### Synesthesia
 
 - Only color clues may be given.
-- In addition to their normal color, cards with rank 1 count as the first color, cards with rank 2 count as the second color, and so on.
-- If the brown suit is in use, its cards only get clued by brown, and not as the color of their rank.
+- In addition to their normal color, cards with rank 1 count as the first color,
+  cards with rank 2 count as the second color, and so on.
+- If the brown suit is in use, its cards only get clued by brown, and not as the
+  color of their rank.
 
 ### Reversed
 
@@ -422,18 +456,24 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 - One "START" card is added to each suit.
 - When a stack is empty, you can play either a 1, a 5, or a START card on it.
 - When a stack has a START card on it, you can play either a 2 or a 4 on it.
-- If a stack was started with a 1 (or a START + 2), then it works as a normal stack.
-- If a stack was started with a 5 (or a START + 4), then it must be completed in reverse.
-- A clue token is given when a stack is completed, regardless of whether it is a normal stack or a reversed stack.
-- This variant was invented by [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
+- If a stack was started with a 1 (or a START + 2), then it works as a normal
+  stack.
+- If a stack was started with a 5 (or a START + 4), then it must be completed in
+  reverse.
+- A clue token is given when a stack is completed, regardless of whether it is a
+  normal stack or a reversed stack.
+- This variant was invented by
+  [Sean McCarthy on the BoardGameGeek forums](https://boardgamegeek.com/article/30863162).
 
 ### Throw It in a Hole
 
-- When players play a card, they do not flip it over like normal but instead place it face down in the center of the table.
+- When players play a card, they do not flip it over like normal but instead
+  place it face down in the center of the table.
 - The score of the game is not revealed until the game is over.
 - Players do not get a clue back for successfully playing a 5.
 - The game will automatically end if 3 strikes are accumulated.
-- This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
+- This variant was invented by
+  [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
 ### Funnels
 
@@ -445,15 +485,20 @@ The pips that are assigned to each suit is documented on the [pips reference pag
 
 ### Sudoku (5 Suits)
 
-- Instead of the stacks starting with a rank of 1, the stacks can be started with any rank. They will wrap around from 5 to 1 until 5 cards are played.
-- Each stack has to be started with a different rank. However, it is not predetermined which stack has to start with a particular rank.
+- Instead of the stacks starting with a rank of 1, the stacks can be started
+  with any rank. They will wrap around from 5 to 1 until 5 cards are played.
+- Each stack has to be started with a different rank. However, it is not
+  predetermined which stack has to start with a particular rank.
 - Instead of the normal card distribution, there are two copies of each card.
-- Similar to a no variant game, playing the fifth card of a suit gives back a clue.
+- Similar to a no variant game, playing the fifth card of a suit gives back a
+  clue.
 
 ### Sudoku (4 Suits)
 
-- Similar to 5-suit Sudoku, stacks can be started at arbitrary but different ranks.
-- Cards of rank 5 are removed from the game. Therefore, stacks only consist of 4 cards each and will wrap around from 4 to 1.
+- Similar to 5-suit Sudoku, stacks can be started at arbitrary but different
+  ranks.
+- Cards of rank 5 are removed from the game. Therefore, stacks only consist of 4
+  cards each and will wrap around from 4 to 1.
 - Playing the fourth card of a suit gives back a clue.
 
 <br />

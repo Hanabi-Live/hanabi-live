@@ -481,11 +481,11 @@ chatCommands.set("vote", (room: string) => {
 
 export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
-    doubleSpaces: / {2,}/g,
-    openingParenthesis: / *\( */g,
-    closingParenthesis: / *\) */g,
-    hyphen: / *- */g,
-    ampersand: / *& */g,
+    doubleSpaces: / {2,}/gu,
+    openingParenthesis: /(?<! ) *\( */gu,
+    closingParenthesis: /(?<! ) *\) */gu,
+    hyphen: /(?<! ) *- */gu,
+    ampersand: /(?<! ) *& */gu,
   };
 
   const variant = args
@@ -509,7 +509,7 @@ export function getVariantFromArgs(args: readonly string[]): string {
 }
 
 function capitalize(input: string) {
-  const pattern = /(^|[ &()-])(\w)/g;
+  const pattern = /(?:^|[ &()-])\w/gu;
   return input.toLowerCase().replaceAll(pattern, (x) => x.toUpperCase());
 }
 

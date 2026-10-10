@@ -17,7 +17,7 @@ export function planClientHypotheticalAction(
     && gameState.cardsRemainingInTheDeck === 1
     && gameState.deck.length === cardIdentities.length - 1
     && intent.order === gameState.deck.length
-    && !cardViews.some((view) => view.state.order === intent.order)
+    && cardViews.every((view) => view.state.order !== intent.order)
   ) {
     // The bottom card has no HanabiCard yet. Supply only the planner's data.
     return planHypotheticalAction(intent, {

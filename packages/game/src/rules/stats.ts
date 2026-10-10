@@ -90,11 +90,7 @@ export function getPace(
   endGameLength: number,
   gameOver: boolean,
 ): number | null {
-  if (gameOver) {
-    return null;
-  }
-
-  if (deckSize <= 0) {
+  if (gameOver || deckSize <= 0) {
     return null;
   }
 

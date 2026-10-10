@@ -72,7 +72,7 @@ function millisecondsToDateString(milliseconds: number): string {
  * https://stackoverflow.com/questions/19700283/how-to-convert-time-in-milliseconds-to-hours-min-sec-format-in-javascript
  */
 function millisecondsToDuration(milliseconds: number) {
-  if (!Number.isInteger(milliseconds)) {
+  if (!Number.isSafeInteger(milliseconds)) {
     return undefined;
   }
 

@@ -26,9 +26,9 @@ import { globals } from "../game/ui/UIGlobals";
 import { shrink } from "./hypoCompress";
 
 const PLAY_REGEX =
-  /^(?:\[Hypo] )?(.*)(?: plays | fails to play ).* from slot #(\d).*$/;
-const DISCARD_REGEX = /^(?:\[Hypo] )?(.*) discards .* slot #(\d).*$/;
-const CLUE_REGEX = /^(?:\[Hypo] )?.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/;
+  /^(?:\[Hypo\] )?(.*)(?: fails to play | plays ).* from slot #(\d).*$/u;
+const DISCARD_REGEX = /^(?:\[Hypo\] )?(.*) discards .* slot #(\d).*$/u;
+const CLUE_REGEX = /^.+ tells (.*) about \w+ ([A-Za-z]+|\d)s?$/u;
 
 export function createJSONFromReplay(room: string): void {
   if (globals.store === null || !globals.state.finished) {
@@ -235,7 +235,7 @@ function getActionFromLogEntry(
   i: number,
   logEntry: LogEntry,
 ): ClientAction | undefined {
-  const foundPlay = logEntry.text.match(PLAY_REGEX);
+  const foundPlay = PLAY_REGEX.exec(logEntry.text);
   if (foundPlay !== null) {
     const [, playerName, slotString] = foundPlay;
     if (playerName !== undefined && slotString !== undefined) {
@@ -251,7 +251,7 @@ function getActionFromLogEntry(
     }
   }
 
-  const foundDiscard = logEntry.text.match(DISCARD_REGEX);
+  const foundDiscard = DISCARD_REGEX.exec(logEntry.text);
   if (foundDiscard !== null) {
     const [, playerName, slotString] = foundDiscard;
     if (playerName !== undefined && slotString !== undefined) {
@@ -267,7 +267,7 @@ function getActionFromLogEntry(
     }
   }
 
-  const foundClue = logEntry.text.match(CLUE_REGEX);
+  const foundClue = CLUE_REGEX.exec(logEntry.text);
   if (foundClue !== null) {
     const [, playerName, clueWord] = foundClue;
     if (playerName !== undefined && clueWord !== undefined) {

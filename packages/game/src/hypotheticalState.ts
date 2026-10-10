@@ -54,9 +54,7 @@ export interface ActionHypotheticalUnmorph {
 }
 
 export type ActionIncludingHypothetical =
-  | GameAction
-  | ActionHypotheticalMorph
-  | ActionHypotheticalUnmorph;
+  GameAction | ActionHypotheticalMorph | ActionHypotheticalUnmorph;
 
 export type HypotheticalStateAction =
   | ActionIncludingHypothetical

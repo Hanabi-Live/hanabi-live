@@ -188,7 +188,7 @@ export function init(): void {
   // Add delegate handler for new options buttons.
   $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
     const data = String($(e.target).data("new-options"));
-    const regExp = /'/g;
+    const regExp = /'/gu;
     const textWithDoubleQuotes = data.replaceAll(regExp, '"');
     const options = JSON.parse(textWithDoubleQuotes) as Options;
     acceptOptionsFromGuest(options);
@@ -290,11 +290,10 @@ function submit() {
 
   // Try getting the user's values. If they are invalid, leave the dialog open.
   if (timed) {
-    let timeValue: number;
     let foundErrors = false;
 
     try {
-      timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
+      const timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
       timeBaseSeconds = Math.round(timeValue * 60);
     } catch {
       // Invalid value, inform the UI and do not close the tooltip.

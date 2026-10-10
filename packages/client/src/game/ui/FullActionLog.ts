@@ -87,7 +87,7 @@ export class FullActionLog extends Konva.Group {
       "This player has not taken any actions yet.",
     );
     this.playerLogEmptyMessage.hide();
-    this.add(this.playerLogEmptyMessage as unknown as Konva.Text);
+    this.add(this.playerLogEmptyMessage);
 
     this.playerLogs = newArray(globals.options.numPlayers, null) as Tuple<
       null,

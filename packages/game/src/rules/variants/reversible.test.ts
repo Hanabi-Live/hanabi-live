@@ -30,7 +30,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles play 1, 2, 3", () => {
     const allDiscardedSet = new Set<Rank>();
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      3 as Rank,
+      3,
       allDiscardedSet,
       StackDirection.Up,
     );
@@ -39,7 +39,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
   test("Handles play 5, discard 2", () => {
     const allDiscardedSet = new Set<Rank>([2]);
     const ranks = reversibleGetRanksUsefulForMaxScore(
-      5 as Rank,
+      5,
       allDiscardedSet,
       StackDirection.Down,
     );

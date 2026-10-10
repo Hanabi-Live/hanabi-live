@@ -127,7 +127,7 @@ export class CardLayout extends Konva.Group {
       layoutChild.card.startedTweening(newX, scale);
       layoutChild.card.setRaiseAndShadowOffset();
 
-      // eslint-disable-next-line func-style, unicorn/consistent-function-scoping
+      // eslint-disable-next-line func-style
       const animateToLayout = () => {
         animate(
           layoutChild,

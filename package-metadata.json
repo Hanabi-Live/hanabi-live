@@ -5,5 +5,11 @@
       "lock-version": true,
       "lock-reason": "Stuck on 3.4.1 until the front-end client can be rewritten. (Upgrading the version causes weird graphical glitches.)"
     }
+  },
+  "devDependencies": {
+    "typescript": {
+      "lock-version": true,
+      "lock-reason": "TSESLint does not work yet with TypeScript 7."
+    }
   }
 }

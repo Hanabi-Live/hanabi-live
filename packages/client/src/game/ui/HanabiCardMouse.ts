@@ -234,17 +234,13 @@ function shouldShowLookCursor(card: HanabiCard) {
   // Check if there exists a possibility from clues that the note declares impossible.
   const noteNarrowsPossibilities =
     card.note.possibilities.length > 0
-    && card.state.possibleCardsFromClues.some(
-      ([suitIndexA, rankA]) =>
-        !card.note.possibilities.some(
-          ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
-        ),
+    && card.state.possibleCardsFromClues.some(([suitIndexA, rankA]) =>
+      card.note.possibilities.every(
+        ([suitIndexB, rankB]) =>
+          !(suitIndexA === suitIndexB && rankA === rankB),
+      ),
     );
-  if (noteNarrowsPossibilities || card.note.blank || card.note.unclued) {
-    return true;
-  }
-
-  return false;
+  return noteNarrowsPossibilities || card.note.blank || card.note.unclued;
 }
 
 function checkHideNoteTooltip(card: HanabiCard) {
@@ -329,7 +325,7 @@ function dragStart(card: HanabiCard) {
     && card.layout.parent !== null
     && globals.lobby.settings.keldonMode
   ) {
-    card.layout.rotation(card.layout.parent.rotation() * -1);
+    card.layout.rotation(-card.layout.parent.rotation());
   }
 
   // Hide any visible arrows on the rest of a hand when the card begins to be dragged.

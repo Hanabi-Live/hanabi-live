@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "@hanabi-live/game": "file:../game",
-    "complete-common": "2.22.1",
-    "zod": "4.3.6"
+    "complete-common": "2.32.0",
+    "zod": "4.6.5"
   }
 }

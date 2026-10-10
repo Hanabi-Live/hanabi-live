@@ -49,7 +49,7 @@ async function chatToken(
   msg: string,
   room: string,
 ): Promise<boolean> {
-  const [command, ...args] = msg.trim().split(/\s+/);
+  const [command, ...args] = msg.trim().split(/\s+/u);
   if (command?.toLowerCase() !== "/token") {
     return false;
   }

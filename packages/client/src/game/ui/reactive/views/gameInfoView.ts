@@ -17,7 +17,7 @@ export function onTurnChanged(data: {
 }): void {
   // On both the client and the server, the first turn of the game is represented as turn 0.
   // However, turn 0 is represented to the end-user as turn 1, so we must add one.
-  const friendlyTurn = `${data.turn + 1}`;
+  const friendlyTurn = (data.turn + 1).toString();
 
   // Update the "Turn" label.
   globals.elements.turnNumberLabel?.text(friendlyTurn);

@@ -29,7 +29,7 @@ export function lobbyKeyboardInit(): void {
       return;
     }
 
-    // We also account for MacOS special characters that are inserted when you hold down the option
+    // We also account for macOS special characters that are inserted when you hold down the option
     // key.
     if (event.altKey && event.which === KeyCode.KEY_J) {
       // Alt + j.

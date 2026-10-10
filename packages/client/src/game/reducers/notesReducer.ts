@@ -17,6 +17,7 @@ import {
   UNCLUED_NOTES,
   getVariant,
 } from "@hanabi-live/game";
+import { assertDefined } from "complete-common";
 import equal from "fast-deep-equal";
 import type { Draft } from "immer";
 import { castDraft, produce } from "immer";
@@ -117,27 +118,27 @@ function notesReducerFunction(
 }
 
 function getNoteKeywords(note: string): readonly string[] {
-  // Match either:
-  // - zero or more characters between square brackets `[]`
-  //   - \[(.*?)\]
-  // - zero or more non-pipe non-bracket characters between a pipe `|` and the end of the note
-  //   - \|([^[|]*$)
-  // - one or more non-pipe non-bracket characters between the start and end of the note
-  //   - (^[^[|]+$)
-  const regexp = /\[(.*?)]|\|([^[|]*$)|(^[^[|]+$)/g;
+  if (note !== "" && !note.includes("[") && !note.includes("|")) {
+    return [note.trim()];
+  }
+
+  // Consume unterminated brackets too, so repeated opening brackets do not cause backtracking.
+  const regexp = /\[([^\n\r\]\u{2028}\u{2029}]*)(\])?/gu;
   const keywords: string[] = [];
+  let lastBracketEnd = 0;
 
-  let match = regexp.exec(note);
-  while (match !== null) {
-    if (match[1] !== undefined) {
+  for (const match of note.matchAll(regexp)) {
+    if (match[2] === "]") {
+      assertDefined(match[1], "Failed to get the bracketed note keyword.");
       keywords.push(match[1].trim());
-    } else if (match[2] !== undefined) {
-      keywords.push(match[2].trim());
-    } else if (match[3] !== undefined) {
-      keywords.push(match[3].trim());
+      lastBracketEnd = match.index + match[0].length;
     }
+  }
 
-    match = regexp.exec(note);
+  const lastPipe = note.lastIndexOf("|");
+  const trailingKeyword = note.slice(lastPipe + 1);
+  if (lastPipe >= lastBracketEnd && !trailingKeyword.includes("[")) {
+    keywords.push(trailingKeyword.trim());
   }
 
   return keywords;
