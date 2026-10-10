@@ -16,7 +16,7 @@ export function initErrorListener(): void {
     ) {
       // Some buggy code that the browser injected is causing an error. Safe to ignore. This occurs
       // on the Brave browser on iOS. Line 1:16 corresponds to the character directly after the
-      // opening <!doctype html> of each page.
+      // opening <!doctype HTML> of each page.
       return;
     }
 
@@ -42,7 +42,7 @@ export function initErrorListener(): void {
 }
 
 function getErrorStackTrace(errorEvent: ErrorEvent): string | undefined {
-  const error = errorEvent.error as unknown; // Cast from `any` to `unknown`.
+  const error: unknown = errorEvent.error; // Cast from `any` to `unknown`.
   if (
     typeof error === "object"
     && error !== null
@@ -70,7 +70,7 @@ function isIoS() {
     "standalone"
   ];
   return (
-    /iPad|iPhone|iPod/.test(navigator.userAgent)
+    /iPad|iPhone|iPod/u.test(navigator.userAgent)
     || (navigator.platform === "MacIntel" && standaloneProp !== undefined)
   );
 }

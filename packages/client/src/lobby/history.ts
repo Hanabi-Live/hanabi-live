@@ -315,7 +315,7 @@ export function drawOtherScores(
     $("<td>").html(datePlayed).appendTo(row);
 
     // Column 6 - Seed. Chop off the prefix.
-    const match = /p\dv\d+s(\d+)/.exec(game.seed);
+    const match = /p\dv\d+s(\d+)/u.exec(game.seed);
     let seedNumberSuffix: string;
     seedNumberSuffix =
       match === null || match.length < 2 ? "Unknown" : match[1]!;

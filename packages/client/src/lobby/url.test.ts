@@ -41,13 +41,15 @@ describe("replay URL loading", () => {
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
     const setItem = jest.fn();
     const send = jest.spyOn(globals.conn!, "send");
-    Object.defineProperty(globalThis, "location", {
-      configurable: true,
-      value: new URL(`https://hanab.live/${route}/${payload}${suffix}#42`),
-    });
-    Object.defineProperty(globalThis, "localStorage", {
-      configurable: true,
-      value: { setItem },
+    Object.defineProperties(globalThis, {
+      location: {
+        configurable: true,
+        value: new URL(`https://hanab.live/${route}/${payload}${suffix}#42`),
+      },
+      localStorage: {
+        configurable: true,
+        value: { setItem },
+      },
     });
 
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);

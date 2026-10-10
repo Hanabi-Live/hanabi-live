@@ -88,7 +88,7 @@ export function shrink(JSONString: string): string | undefined {
 export function expand(data: string): string | undefined {
   const parts = data.split(",");
   const seed = parts[3] ?? "";
-  if (parts.length < 3 || parts.length > 4 || !/^[\dA-Za-z-]*$/.test(seed)) {
+  if (parts.length < 3 || parts.length > 4 || !/^[\d\-A-Za-z]*$/u.test(seed)) {
     return undefined;
   }
   // Remove wrapping hyphens from the compressed data, never from the seed.
@@ -155,7 +155,7 @@ export function expand(data: string): string | undefined {
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
 function gameJSONCompress(data: GameJSON): string | undefined {
-  if (typeof data.seed !== "string" || !/^[\dA-Za-z-]*$/.test(data.seed)) {
+  if (typeof data.seed !== "string" || !/^[\d\-A-Za-z]*$/u.test(data.seed)) {
     return undefined;
   }
   let out = "";
@@ -165,7 +165,7 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) {
     return undefined;
   }
-  out += `${data.players.length}`;
+  out += data.players.length.toString();
 
   // Deck
   const deck = compressDeck(data.deck);
@@ -185,13 +185,13 @@ function gameJSONCompress(data: GameJSON): string | undefined {
 
   try {
     const variant = getVariant(data.options.variant);
-    out += `${variant.id}`;
+    out += variant.id.toString();
   } catch {
     return undefined;
   }
 
   // Add hyphens every 20 characters for URL posting (hyphens make the text wrap).
-  out = out.match(/.{1,20}/g)!.join("-");
+  out = out.match(/.{1,20}/gu)!.join("-");
 
   return `${out},${data.seed}`;
 }

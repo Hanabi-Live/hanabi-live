@@ -252,10 +252,10 @@ function sendText(room: string, msgRaw: string) {
   if (index !== -1) {
     typedChatHistory.splice(index, 1);
   }
-  const newLength = typedChatHistory.unshift(msg);
+  typedChatHistory.unshift(msg);
 
   // Prevent the typed history from getting too large.
-  if (newLength > TYPED_HISTORY_MAX_LENGTH) {
+  if (typedChatHistory.length > TYPED_HISTORY_MAX_LENGTH) {
     // Pop off the final element.
     typedChatHistory.pop();
   }
@@ -416,10 +416,10 @@ function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   tabCompleteOriginalText = finalWord;
 
   // Make a list of the currently connected users.
-  const userList: string[] = [];
-  for (const user of globals.userMap.values()) {
-    userList.push(user.name);
-  }
+  const userList: string[] = Array.from(
+    globals.userMap.values(),
+    (user) => user.name,
+  );
 
   // Combine it with the list of emotes and the list of emoji.
   const usersAndEmojisAndEmotesList = [...userList, ...emojiList, ...emoteList];
@@ -521,7 +521,7 @@ export function addPMHistory(
       ...data,
       discord: false,
       server: false,
-      ...(room === undefined ? {} : { room }),
+      ...(room !== undefined && { room }),
     },
     true,
     false,
@@ -554,7 +554,7 @@ function addInternal(
   }
   const msg = getPreparedMessage(rawMsg);
 
-  // Typescript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
+  // TypeScript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
   // format the hours manually.
   const dateObj = new Date(data.datetime);
   const datetime = `${`0${dateObj.getHours()}`.slice(
@@ -691,7 +691,7 @@ function mapTextSegments(
   html: string,
   transform: (text: string) => string,
 ): string {
-  const segments = html.split(/(<[^>]*>)/);
+  const segments = html.split(/(<[^<>]*>)/u);
   for (let i = 0; i < segments.length; i += 2) {
     segments[i] = transform(segments[i]!);
   }
@@ -728,7 +728,7 @@ function fillChatSuggestions(text: string): string {
   const linkSpans = linkifyFind(text);
 
   return text.replaceAll(
-    /@(\/[^@]*)@/g,
+    /@(\/[^@]*)@/gu,
     (fullMatch, command: string, offset: number) => {
       const insideLink = linkSpans.some(
         (span) => offset < span.end && offset + fullMatch.length > span.start,
@@ -743,7 +743,7 @@ function fillChatSuggestions(text: string): string {
 // Discord emotes are in the form of: <:PogChamp:254683883033853954>
 function fillDiscordEmotes(message: string) {
   return message.replaceAll(
-    /&lt;:(\w+):(\d+)&gt;/g,
+    /&lt;:(\w+):(\d+)&gt;/gu,
     (_fullMatch, name: string, id: string) =>
       `<img src="https://cdn.discordapp.com/emojis/${id}.png" title="${name}" height="28">`,
   );
@@ -765,7 +765,7 @@ export function fillEmojis(message: string): string {
 }
 
 export function substituteEmoji(text: string): string | null {
-  const matches = text.match(/:\S+:/g); // "\S" is a non-whitespace character.
+  const matches = text.match(/:\S+:/gu); // "\S" is a non-whitespace character.
   if (matches === null) {
     return null;
   }
@@ -802,7 +802,7 @@ function fillTwitchEmotes(message: string) {
     // The Twitch heart emote.
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
-    const re = /&lt;3/g; // "\b" won't work with a semicolon.
+    const re = /&lt;3/gu; // "\b" won't work with a semicolon.
     filledMessage = filledMessage.replaceAll(re, emoteTag);
   }
   if (filledMessage.includes("D:")) {
@@ -810,7 +810,7 @@ function fillTwitchEmotes(message: string) {
     const emoteTag =
       '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
-    const re = /(^|\s)D:(\s|$)/g; // "\b" won't work with a colon
+    const re = /(?:^|\s)D:(?:\s|$)/gu; // "\b" won't work with a colon
     filledMessage = filledMessage.replaceAll(re, ` ${emoteTag} `); // We have to re-add the spaces.
   }
 

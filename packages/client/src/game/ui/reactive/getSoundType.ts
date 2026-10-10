@@ -232,11 +232,7 @@ function isOrderChopMove(
   }
 
   const playedCard = previousGameState.deck[action.order];
-  if (playedCard === undefined) {
-    return false;
-  }
-
-  if (!isCandidateOneForOCM(playedCard)) {
+  if (playedCard === undefined || !isCandidateOneForOCM(playedCard)) {
     return false;
   }
 

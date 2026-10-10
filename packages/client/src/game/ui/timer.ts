@@ -210,7 +210,7 @@ function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex | -1) {
   }
 
   // Invert it to show how much time each player is taking.
-  const milliseconds = globals.options.timed ? playerTime : playerTime * -1;
+  const milliseconds = globals.options.timed ? playerTime : -playerTime;
 
   let content = "Time ";
   content += globals.options.timed ? "remaining" : "taken";

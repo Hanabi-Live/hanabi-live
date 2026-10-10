@@ -52,11 +52,7 @@ export function getNumCopiesOfCard(
   rank: Rank,
   variant: Variant,
 ): number {
-  if (suit.oneOfEach) {
-    return 1;
-  }
-
-  if (variant.criticalRank === rank) {
+  if (suit.oneOfEach || variant.criticalRank === rank) {
     return 1;
   }
 

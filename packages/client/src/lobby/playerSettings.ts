@@ -104,7 +104,8 @@ export function setPlayerSettings(): void {
     if (setting.startsWith("createTable")) {
       // Settings for the "Create Game" nav button are handled when the user clicks on it.
       continue;
-    } else if (setting === "volume") {
+    }
+    if (setting === "volume") {
       if (typeof value !== "number") {
         throw new TypeError("The volume setting is not stored as a number.");
       }

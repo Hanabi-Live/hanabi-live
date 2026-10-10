@@ -5,7 +5,6 @@ import type {
   PlanHypotheticalActionContext,
   PlayerIndex,
   Rank,
-  SuitIndex,
 } from "@hanabi-live/game";
 import {
   gameReducer,
@@ -47,16 +46,16 @@ function makeContext(rank: Rank = 1): PlanHypotheticalActionContext {
         ...state.ongoingGame.turn,
         segment: 4,
         turnNum: 6,
-        currentPlayerIndex: 0 as PlayerIndex,
+        currentPlayerIndex: 0,
       },
       deck,
       hands: [[0 as CardOrder], [1 as CardOrder]],
       cardsRemainingInTheDeck: 1,
     },
     cardIdentities: [
-      { suitIndex: 0 as SuitIndex, rank: 1 },
-      { suitIndex: 0 as SuitIndex, rank: 1 },
-      { suitIndex: 0 as SuitIndex, rank },
+      { suitIndex: 0, rank: 1 },
+      { suitIndex: 0, rank: 1 },
+      { suitIndex: 0, rank },
     ],
     morphedIdentities: [],
     notes: state.notes.ourNotes,

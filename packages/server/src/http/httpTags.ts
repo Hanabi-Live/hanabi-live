@@ -61,7 +61,7 @@ export async function httpAPITags(
         .toSorted((left, right) => right.id - left.id)
         .map((game) => ({
           ...game,
-          tags: (tagsByGame.get(game.id as GameID) ?? [])
+          tags: (tagsByGame.get(game.id) ?? [])
             .toSorted(compareTags)
             .join(", "),
         })),

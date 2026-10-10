@@ -20,7 +20,7 @@ export function unpackWSMessage(
   }
 
   try {
-    const args = JSON.parse(argsString) as unknown;
+    const args: unknown = JSON.parse(argsString);
     return [command, args];
   } catch {
     return [command, undefined];

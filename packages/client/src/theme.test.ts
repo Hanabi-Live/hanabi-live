@@ -19,15 +19,17 @@ const matchMediaMock = ((query: string): MediaQueryList =>
   query: string,
 ) => MediaQueryList) & { matches: boolean };
 
-Object.defineProperty(globalThis, "matchMedia", {
-  value: matchMediaMock,
-  configurable: true,
-  writable: true,
-});
-Object.defineProperty(globalThis, "window", {
-  value: { matchMedia: matchMediaMock },
-  configurable: true,
-  writable: true,
+Object.defineProperties(globalThis, {
+  matchMedia: {
+    value: matchMediaMock,
+    configurable: true,
+    writable: true,
+  },
+  window: {
+    value: { matchMedia: matchMediaMock },
+    configurable: true,
+    writable: true,
+  },
 });
 
 describe("theme", () => {

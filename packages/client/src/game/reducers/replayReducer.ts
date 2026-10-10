@@ -149,7 +149,6 @@ function replayReducerFunction(
       );
 
       const originalOngoing = original(ongoing);
-      assertDefined(originalOngoing, "Failed to get the original game state.");
       state.hypothetical = castDraft(
         initializeHypotheticalState(
           originalOngoing,
@@ -182,10 +181,6 @@ function replayReducerFunction(
       );
 
       const hypothetical = original(state.hypothetical);
-      assertDefined(
-        hypothetical,
-        "Failed to get the original hypothetical state.",
-      );
       let coreAction: HypotheticalStateAction;
       if (action.type === "hypoAction") {
         coreAction = action.action;

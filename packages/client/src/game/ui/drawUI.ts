@@ -1286,7 +1286,7 @@ function drawSharedReplay() {
       return;
     }
 
-    leaderPlaceholder.innerHTML = "";
+    leaderPlaceholder.replaceChildren();
 
     for (const spectator of globals.state.spectators) {
       if (spectator.name === globals.state.replay.shared.leader) {
@@ -1411,7 +1411,7 @@ function drawStatistics() {
   globals.layers.UI.add(statsRect);
 
   const variantLabel = new FitText({
-    text: globals.variant.name.replace(/\s*\(\d Suits\)/, ""),
+    text: globals.variant.name.replace(/(?<!\s)\s*\(\d Suits\)/u, ""),
     x: 0.825 * winW,
     y: 0.54 * winH,
     width: 0.15 * winW,
@@ -1892,7 +1892,7 @@ function drawClueArea() {
     listening: false,
   });
 
-  // In a hypo, the lower part of the clue ui slides left independently of the clue target buttons.
+  // In a hypo, the lower part of the clue UI slides left independently of the clue target buttons.
   // The limiting factor on how far it can slide is when there's 6 color buttons.
   const maxColorWidth = buttonW * 6 + buttonXSpacing * 5;
   const lowerClueAreaWidth = maxColorWidth * winW;

@@ -24,7 +24,7 @@ import * as sounds from "./sounds";
 import * as theme from "./theme";
 import * as tooltips from "./tooltips";
 
-// Initialize JQuery:
+// Initialize jQuery:
 // https://stackoverflow.com/questions/56457935/typescript-error-property-x-does-not-exist-on-type-window
 declare global {
   interface Window {

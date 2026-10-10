@@ -1,7 +1,7 @@
 import { createVariantsJSON } from "./createVariantsJSON";
 
 main().catch((error: unknown) => {
-  throw new Error(`${error}`);
+  throw new Error(String(error));
 });
 
 async function main() {

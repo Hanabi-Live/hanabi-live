@@ -71,8 +71,7 @@ export class PlayStack extends Konva.Group {
   hideCardsUnderneathTheTopCard(): void {
     for (const i of eRange(this.children.length)) {
       const layoutChild = this.children[i] as unknown as
-        | LayoutChild
-        | undefined;
+        LayoutChild | undefined;
       if (layoutChild === undefined) {
         continue;
       }
@@ -86,8 +85,7 @@ export class PlayStack extends Konva.Group {
     // Hide all of the cards.
     for (const i of eRange(this.children.length)) {
       const layoutChild = this.children[i] as unknown as
-        | LayoutChild
-        | undefined;
+        LayoutChild | undefined;
       if (layoutChild === undefined) {
         continue;
       }
@@ -96,7 +94,6 @@ export class PlayStack extends Konva.Group {
     }
 
     // Show the top card.
-    // eslint-disable-next-line unicorn/prefer-at
     const lastLayoutChild = this.children[this.children.length - 1];
     if (lastLayoutChild !== undefined) {
       lastLayoutChild.show();

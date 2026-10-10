@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   assertNotNull(container, "Container element not found.");
 
   // Clear the loading message.
-  container.innerHTML = "";
+  container.replaceChildren();
 
   // Create a canvas for each unique pip.
   let index = 0;
@@ -85,10 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const label = document.createElement("div");
     label.className = "pip-label";
-    label.innerHTML = `
-      <div class="pip-name">${info.name}</div>
-      <div class="pip-id">${pip}</div>
-    `;
+    const name = document.createElement("div");
+    name.className = "pip-name";
+    name.textContent = info.name;
+    const id = document.createElement("div");
+    id.className = "pip-id";
+    id.textContent = pip;
+    label.append(name, id);
 
     wrapper.append(canvas);
     wrapper.append(label);
