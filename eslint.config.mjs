@@ -41,7 +41,6 @@ export const hanabiConfigBase = defineConfig(
       "complete/no-number-enums": "off",
 
       // State interfaces and third-party declarations intentionally contain mutable fields.
-      // This rule also crashes while inspecting the server command interfaces.
       "complete/type-declaration-immutability": "off",
 
       // Application entry points initialize shared state and register handlers at module scope.
