@@ -33,6 +33,6 @@ export async function commandChatPMHistoryGet(
   );
   wsSend(wsUser.connection, ServerCommand.chatPMHistory, {
     ...history,
-    ...(room === undefined ? {} : { room }),
+    ...(room !== undefined && { room }),
   });
 }

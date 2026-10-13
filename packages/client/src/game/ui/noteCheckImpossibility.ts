@@ -34,7 +34,7 @@ export function checkNoteImpossibility(
 
   // Only validate cards in our own hand.
   if (
-    !(cardState.location === globals.metadata.ourPlayerIndex)
+    cardState.location !== globals.metadata.ourPlayerIndex
     || possibilities.some((possibility) =>
       canCardPossiblyBeFromEmpathy(cardState, possibility[0], possibility[1]),
     )

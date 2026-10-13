@@ -79,7 +79,7 @@ describe("tag search API", () => {
     getHistory.mockResolvedValue([]);
     const rec = createReplyRecorder();
 
-    await httpAPITagSearch(makeRequest("  CAF\u00C9\u00A0Tag  "), rec.reply);
+    await httpAPITagSearch(makeRequest("  CAF\u{C9}\u{A0}Tag  "), rec.reply);
 
     expect(getGameIDsForTag).toHaveBeenCalledWith("cafe tag");
     expect(rec.payload).toEqual([]);
@@ -97,7 +97,7 @@ describe("tag search API", () => {
 
   test("rejects blank and overlong tags with 404 validation responses", async () => {
     const blankRec = createReplyRecorder();
-    await httpAPITagSearch(makeRequest(" \u00A0 "), blankRec.reply);
+    await httpAPITagSearch(makeRequest(" \u{A0} "), blankRec.reply);
     expect(blankRec.statusCode).toBe(404);
     expect(blankRec.payload).toBe("Tags cannot be blank.");
 
@@ -109,7 +109,7 @@ describe("tag search API", () => {
   });
 
   test("sanitizeTag preserves the Go behavior for invalid UTF-16 input", () => {
-    expect(sanitizeTag("\uD800")).toEqual({
+    expect(sanitizeTag("\u{D800}")).toEqual({
       error: "Tags must contain valid UTF8 characters.",
     });
   });

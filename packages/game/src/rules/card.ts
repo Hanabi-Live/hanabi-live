@@ -258,15 +258,16 @@ export function isAllCardPossibilitiesTrash(
   const possibilities = empathy
     ? card.possibleCardsForEmpathy
     : card.possibleCards;
-  return !possibilities.some(([suitIndex, rank]) =>
-    isCardNeededForMaxScore(
-      suitIndex,
-      rank,
-      deck,
-      playStacks,
-      playStackDirections,
-      playStackStarts,
-      variant,
-    ),
+  return possibilities.every(
+    ([suitIndex, rank]) =>
+      !isCardNeededForMaxScore(
+        suitIndex,
+        rank,
+        deck,
+        playStacks,
+        playStackDirections,
+        playStackStarts,
+        variant,
+      ),
   );
 }

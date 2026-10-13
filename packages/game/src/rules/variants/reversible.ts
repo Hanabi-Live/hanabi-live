@@ -81,9 +81,8 @@ export function reversibleGetRanksUsefulForMaxScore(
     for (let rank = nextToPlay; rank <= 5; rank++) {
       if (allDiscardedSet.has(rank as Rank)) {
         break;
-      } else {
-        ranksSet.add(rank as Rank);
       }
+      ranksSet.add(rank as Rank);
     }
   }
 
@@ -102,9 +101,8 @@ export function reversibleGetRanksUsefulForMaxScore(
     for (let rank = nextToPlay; rank >= 1; rank--) {
       if (allDiscardedSet.has(rank as Rank)) {
         break;
-      } else {
-        ranksSet.add(rank as Rank);
       }
+      ranksSet.add(rank as Rank);
     }
   }
 

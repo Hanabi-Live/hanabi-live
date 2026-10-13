@@ -418,8 +418,8 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
   const maxSlotIndex = hand.length;
   const verb = ActionType[actionType];
 
-  playDiscardTitle.innerHTML = `${verb} Card`;
-  playDiscardMessage.innerHTML = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
+  playDiscardTitle.textContent = `${verb} Card`;
+  playDiscardMessage.textContent = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb.toLowerCase()}.`;
 
   playDiscardCard.min = "1";
   playDiscardCard.max = maxSlotIndex.toString();
@@ -434,7 +434,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     if (response === "") {
       return;
     }
-    if (/^deck$/i.test(response)) {
+    if (/^deck$/iu.test(response)) {
       // Card orders start at 0, so the final card order is the length of the deck - 1.
       const totalCardsInDeck = getTotalCardsInDeck(globals.variant);
       const cardOrder = (totalCardsInDeck - 1) as CardOrder;
@@ -443,10 +443,7 @@ function promptCardOrder(actionType: ActionType.Play | ActionType.Discard) {
     }
 
     const slot = parseIntSafe(response);
-    if (slot === undefined) {
-      return;
-    }
-    if (slot < 1 || slot > maxSlotIndex) {
+    if (slot === undefined || slot < 1 || slot > maxSlotIndex) {
       return;
     }
 

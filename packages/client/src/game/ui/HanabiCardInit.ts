@@ -373,7 +373,6 @@ export function pips(variant: Variant): Pips {
     rankPips.add(rankPipX);
     rankPipsMap.set(rank, rankPip);
     rankPipsXMap.set(rank, rankPipX);
-    continue;
   }
 
   return {

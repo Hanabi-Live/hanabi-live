@@ -259,11 +259,9 @@ function identityArrayToMap(
   possibilities: readonly SuitRankTuple[],
   numSuits: number,
 ): ReadonlyArray<readonly number[]> {
-  const cardMap: number[][] = [];
-
-  for (const _rank of iRange(1, 7)) {
-    cardMap.push(ZEROES.slice(0, numSuits));
-  }
+  const cardMap: number[][] = Array.from(iRange(1, 7), (_rank) =>
+    ZEROES.slice(0, numSuits),
+  );
 
   for (const [suitIndex, rank] of possibilities) {
     cardMap[rank - 1]![suitIndex] = 1;

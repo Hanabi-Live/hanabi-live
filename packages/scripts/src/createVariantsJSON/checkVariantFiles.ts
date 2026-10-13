@@ -15,7 +15,7 @@ const VARIANTS_JSON_PATH = path.join(
 const VARIANTS_TXT_PATH = path.join(REPO_ROOT, "misc", "variants.txt");
 
 main().catch((error: unknown) => {
-  throw new Error(`${error}`);
+  throw new Error(String(error));
 });
 
 async function main() {

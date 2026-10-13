@@ -175,7 +175,7 @@ export function askForMorph(
 
   if (draggedTo === null) {
     // If action is null, the function was called from "HanabiCardClick.ts" during replay hypo.
-    morphModalDescription.innerHTML =
+    morphModalDescription.textContent =
       "Select the card you want to morph it into.";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
@@ -189,7 +189,7 @@ export function askForMorph(
     morphModalButtonCancel.onclick = morphReplayCancelButton;
   } else {
     // The function was called from "LayoutChild.ts" during in-game hypo.
-    morphModalDescription.innerHTML =
+    morphModalDescription.textContent =
       "What will the card will be for the purposes of this hypothetical?";
 
     // We can't use "addEventListener" because we can't easily remove the previous listener.
@@ -259,6 +259,8 @@ function morphInGameCancelButton(card: HanabiCard | null) {
 export function showWarning(msg: string): void {
   allowCloseModal = true;
 
+  // Warning messages include intentional markup from the server and client.
+  // eslint-disable-next-line unicorn/no-unsafe-dom-html
   warningModalDescription.innerHTML = msg;
 
   // Store the screen's active element.
@@ -282,6 +284,8 @@ export function showError(msg: string): void {
   // Clear out the top navigation buttons.
   lobbyNav.show("nothing");
 
+  // Error messages include the formatted stack trace from "errors.ts".
+  // eslint-disable-next-line unicorn/no-unsafe-dom-html
   errorModalDescription.innerHTML = msg;
   showModal("#error-modal", false);
 
@@ -444,8 +448,8 @@ function fillMorphModalWithRadios(
   possibilities: readonly SuitRankTuple[],
   cardImages: ReadonlyMap<string, HTMLCanvasElement>,
 ) {
-  const placeHolder = getHTMLElement(element);
-  placeHolder.innerHTML = "";
+  const placeholder = getHTMLElement(element);
+  placeholder.replaceChildren();
   const table = document.createElement("table");
   table.classList.add("slim-table");
 
@@ -502,5 +506,5 @@ function fillMorphModalWithRadios(
     table.append(row);
   }
 
-  placeHolder.append(table);
+  placeholder.append(table);
 }

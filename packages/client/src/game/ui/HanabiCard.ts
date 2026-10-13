@@ -324,8 +324,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       this._visibleSuitIndex = null;
     } else {
       const suitIndexToShow = this.variant.suits.indexOf(suitToShow) as
-        | SuitIndex
-        | -1;
+        SuitIndex | -1;
       this._visibleSuitIndex = suitIndexToShow === -1 ? null : suitIndexToShow;
     }
     this._visibleRank = rankToShow;
@@ -826,10 +825,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Cards are raised when:
     // - they have one or more positive clues on them
     // - they are being dragged
-    const baseOffsetY = this.shouldBeRaisedFromClues()
-      ? 0.6 * CARD_H
-      : 0.5 * CARD_H;
-    const offsetX = this.dragging ? 0.52 * CARD_W : 0.5 * CARD_W;
+    const baseOffsetY = (this.shouldBeRaisedFromClues() ? 0.6 : 0.5) * CARD_H;
+    const offsetX = (this.dragging ? 0.52 : 0.5) * CARD_W;
     const offsetY = baseOffsetY + (this.dragging ? 0.02 * CARD_H : 0);
     if (globals.animateFast) {
       this.offsetX(offsetX);
@@ -921,7 +918,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Sometimes the `LayoutChild` can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay.
     this.layout.visible(true);
-    this.layout.rotation(hand.rotation() * -1);
+    this.layout.rotation(-hand.rotation());
     this.layout.opacity(1); // Cards can be faded in certain variants.
 
     // Add it to the player's hand (which will automatically tween the card).
@@ -1051,7 +1048,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // will fly on top of the play stacks and other player's hands. However, if we use
     // "globals.elements.discardStacks.get(suit).moveToTop()" like we do in the
     // "animateToPlayStacks()" function, then the discard stacks will not be arranged in the correct
-    // order. Thus, move all of the discord piles to the top in order so that they will be properly
+    // order. Thus, move all of the discard piles to the top in order so that they will be properly
     // overlapping (the bottom-most stack should have priority over the top).
     for (const stack of globals.elements.discardStacks.values()) {
       stack.moveToTop();
@@ -1130,8 +1127,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
    * e.g. "[cm] some prose [r4] more prose" --> "[cm] [r4]"
    */
   static stripProse(noteString: string): string {
-    const brackets = noteString.match(/\[[^\]]*]/g) ?? [];
-    return brackets.join(" ");
+    // Consume an unterminated suffix instead of retrying at each opening bracket.
+    const brackets = noteString.match(/\[[^\]]*\]?/gu) ?? [];
+    return brackets.filter((bracket) => bracket.endsWith("]")).join(" ");
   }
 
   isBorderAffecting(noteString: string): boolean {
@@ -1160,7 +1158,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       newNoteString = HanabiCard.stripProse(newNoteString);
       if (this.isBorderAffecting(note)) {
         newNoteString = newNoteString
-          .split(/(?<=])\s+(?=\[)/)
+          .split(/(?<=\])\s+(?=\[)/u)
           .filter((token) => token === note || !this.isBorderAffecting(token))
           .join(" ");
       }
@@ -1183,7 +1181,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   prependTurnCountNote(noteAdded: string): void {
     this.updateNote(noteAdded, (a: string, b: string): string => {
-      const turnStripped = a.replace(/^#\d+ /, "");
+      const turnStripped = a.replace(/^#\d+ /u, "");
       return `${b} ${turnStripped}`;
     });
   }
@@ -1266,10 +1264,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     if (suit.clueColors.length > 1) {
-      const colors: string[] = [];
-      for (const color of suit.clueColors) {
-        colors.push(getColorHTML(color));
-      }
+      const colors: string[] = Array.from(suit.clueColors, (color) =>
+        getColorHTML(color),
+      );
       lines.push(`Touched by ${colors.join(", ")} color clues`);
     }
 

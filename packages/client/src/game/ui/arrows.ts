@@ -9,6 +9,7 @@ import {
   isCardInPlayerHand,
   isCardPlayed,
 } from "@hanabi-live/game";
+import { assertEnumValue } from "complete-common";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
@@ -436,6 +437,11 @@ function getElementFromOrder(
     return getCardOrStackBase(order as CardOrder);
   }
 
+  assertEnumValue(
+    order,
+    ReplayArrowOrder,
+    `Invalid replay arrow order: ${order}`,
+  );
   return getElementFromNegativeOrder(order);
 }
 

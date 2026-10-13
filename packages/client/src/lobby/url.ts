@@ -55,7 +55,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   }
 
   // Automatically join a pre-game if we are using a "/pre-game/123" URL.
-  const preGameMatch = /\/pre-game\/(\d+)/.exec(globalThis.location.pathname);
+  const preGameMatch = /\/pre-game\/(\d+)/u.exec(globalThis.location.pathname);
   if (preGameMatch !== null) {
     const tableIDString = preGameMatch[1];
     if (tableIDString !== undefined) {
@@ -77,13 +77,13 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // a seat with "/game/123/shadow/0" (We want to spectate it instead of reattend it because if we
   // are at this point, it is assumed that if we were in the respective game, we would have already
   // tried to join it.)
-  const gameMatch = /\/game\/(\d+)/.exec(globalThis.location.pathname);
+  const gameMatch = /\/game\/(\d+)/u.exec(globalThis.location.pathname);
   if (gameMatch !== null) {
     const tableIDString = gameMatch[1];
     if (tableIDString !== undefined) {
       const tableID = parseIntSafe(tableIDString);
       if (tableID !== undefined && tableID > 0) {
-        const shadowMatch = /\/shadow\/(\d+)/.exec(
+        const shadowMatch = /\/shadow\/(\d+)/u.exec(
           globalThis.location.pathname,
         );
         let shadowingPlayerIndex = -1;
@@ -111,7 +111,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   }
 
   // Automatically go into a replay if we are using a "/(shared-)?replay/123" URL.
-  const replayMatch = /\/(?:shared-)?replay\/(\d+)/.exec(
+  const replayMatch = /\/(?:shared-)?replay\/(\d+)/u.exec(
     globalThis.location.pathname,
   );
   if (replayMatch !== null) {
@@ -135,7 +135,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
 
   // Automatically go into a replay if we are using a "/replay-json/string" or
   // "/shared-replay-json/string" URL.
-  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,A-Za-z-]+)$/.exec(
+  const replayJSONMatch = /\/(?:shared-)?replay-json\/([\d,\-A-Za-z]+)$/u.exec(
     globalThis.location.pathname,
   );
   if (replayJSONMatch !== null) {

@@ -16,7 +16,12 @@ import {
   VARIANT_MODIFIER_SET,
   VariantModifier,
 } from "@hanabi-live/game";
-import { assertDefined, parseIntSafe, trimSuffix } from "complete-common";
+import {
+  assertDefined,
+  assertEnumValue,
+  parseIntSafe,
+  trimSuffix,
+} from "complete-common";
 import { isEqual } from "lodash";
 import { getSpecialClueRanks } from "./getVariantDescriptions";
 
@@ -65,7 +70,7 @@ function getNewSuitID(
 function getSpecialVariantIDSuffixes(
   variantDescription: VariantDescription,
 ): readonly string[] {
-  const variantIDSuffixes: VariantModifier[] = [];
+  const variantIDSuffixes: string[] = [];
 
   if (variantDescription.specialRank !== undefined) {
     // Rainbow-Ones / Rainbow-Twos / etc.
@@ -76,9 +81,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `R${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`R${variantDescription.specialRank}`);
     }
 
     // Pink-Ones / Pink-Twos / etc.
@@ -89,9 +92,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `P${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`P${variantDescription.specialRank}`);
     }
 
     // White-Ones / White-Twos / etc.
@@ -102,9 +103,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `W${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`W${variantDescription.specialRank}`);
     }
 
     // Brown-Ones / Brown-Twos / etc.
@@ -115,9 +114,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `B${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`B${variantDescription.specialRank}`);
     }
 
     // Omni-Ones / Omni-Twos / etc.
@@ -128,9 +125,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `O${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`O${variantDescription.specialRank}`);
     }
 
     // Null-Ones / Null-Twos / etc.
@@ -141,9 +136,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `N${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`N${variantDescription.specialRank}`);
     }
 
     // Muddy-Rainbow-Ones / Muddy-Rainbow-Twos / etc.
@@ -154,9 +147,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks === true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `M${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`M${variantDescription.specialRank}`);
     }
 
     // Light-Pink-Ones / Light-Pink-Twos / etc.
@@ -167,9 +158,7 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive !== true
     ) {
-      variantIDSuffixes.push(
-        `L${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`L${variantDescription.specialRank}`);
     }
 
     // Deceptive-Ones / Deceptive-Twos / etc.
@@ -180,17 +169,13 @@ function getSpecialVariantIDSuffixes(
       && variantDescription.specialRankNoClueRanks !== true
       && variantDescription.specialRankDeceptive === true
     ) {
-      variantIDSuffixes.push(
-        `D${variantDescription.specialRank}` as VariantModifier,
-      );
+      variantIDSuffixes.push(`D${variantDescription.specialRank}`);
     }
   }
 
   // Critical Ones / Critical Twos / etc.
   if (variantDescription.criticalRank !== undefined) {
-    variantIDSuffixes.push(
-      `C${variantDescription.criticalRank}` as VariantModifier,
-    );
+    variantIDSuffixes.push(`C${variantDescription.criticalRank}`);
   }
 
   // Scarce Ones
@@ -387,14 +372,14 @@ function getVariantFromNewID(
       );
     }
 
-    if (!VARIANT_MODIFIER_SET.has(variantModifier as VariantModifier)) {
-      throw new Error(
-        `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newID}".`,
-      );
-    }
-    const validatedVariantModifier = variantModifier as VariantModifier;
+    assertEnumValue(
+      variantModifier,
+      VariantModifier,
+      `Unknown variant modifier of "${variantModifier}" in a variant ID of "${newID}".`,
+      VARIANT_MODIFIER_SET,
+    );
 
-    switch (validatedVariantModifier) {
+    switch (variantModifier) {
       // Rainbow-Ones / Rainbow-Fives
       case VariantModifier.RainbowOnes:
       case VariantModifier.RainbowTwos:

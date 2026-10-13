@@ -139,7 +139,7 @@ export function drawCards<Canvas, Image>(
             ctx.fill();
             ctx.stroke();
           } else {
-            drawText(ctx, textYPos, `${deceptiveRank}`, enableShadows);
+            drawText(ctx, textYPos, deceptiveRank.toString(), enableShadows);
           }
         }
         ctx.restore();
@@ -235,10 +235,8 @@ function drawSuitPips(
     ctx.scale(scale * 1.8, scale * 1.8);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
-  }
-
-  // Top and bottom for card 2.
-  if (rank === 2) {
+  } else if (rank === 2) {
+    // Top and bottom for card 2.
     const symbolYPos = colorblindMode ? 60 : 90;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -786,7 +784,7 @@ function colorMixer(
 function hexToRGB(
   hex: string,
 ): { r: number; g: number; b: number } | undefined {
-  const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex);
+  const result = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/iu.exec(hex);
   if (result === null) {
     return undefined;
   }

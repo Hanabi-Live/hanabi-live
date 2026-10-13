@@ -68,7 +68,7 @@ export function askForEfficiency(): void {
 
   const currentModifier = globals.state.notes.efficiencyModifier;
 
-  setModifierCurrent.innerHTML = currentModifier.toString();
+  setModifierCurrent.textContent = currentModifier.toString();
   setModifierNew.value = currentModifier.toString();
 
   // We can't use "addEventListener" because we can't easily remove the previous listener.

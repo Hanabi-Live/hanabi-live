@@ -257,10 +257,10 @@ function createVariantsTextFile(
   textPath: string,
   quiet: boolean,
 ) {
-  const lines: string[] = [];
-  for (const variant of variants) {
-    lines.push(`${variant.name} (#${variant.id})`);
-  }
+  const lines: string[] = Array.from(
+    variants,
+    (variant) => `${variant.name} (#${variant.id})`,
+  );
 
   const fileContents = lines.join("\n").concat("\n");
   fs.writeFileSync(textPath, fileContents);

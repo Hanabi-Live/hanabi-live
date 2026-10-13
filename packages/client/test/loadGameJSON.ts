@@ -16,6 +16,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   ClueType,
+  EndCondition,
   MAX_PLAYERS,
   MIN_PLAYERS,
   gameReducer,
@@ -26,7 +27,12 @@ import {
   isCardTouchedByClue,
   msgClueToClue,
 } from "@hanabi-live/game";
-import { assertDefined, assertNotNull, eRange } from "complete-common";
+import {
+  assertDefined,
+  assertEnumValue,
+  assertNotNull,
+  eRange,
+} from "complete-common";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
 import { ActionType } from "../src/game/types/ActionType";
@@ -44,7 +50,7 @@ enum JSONActionType {
 }
 
 interface JSONAction {
-  type: JSONActionType;
+  type: number;
   target: number;
   value: number;
 }
@@ -106,7 +112,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
       type: "gameOver",
       // Assume that the game ended normally; this is not necessarily the case and will break if a
       // test game is added with a strikeout, a termination, etc.
-      endCondition: 1,
+      endCondition: EndCondition.Normal,
       playerIndex: currentPlayerIndex,
       votes: [],
     });
@@ -343,6 +349,11 @@ function parseJSONAction(
   deck: readonly CardIdentity[],
   a: JSONAction,
 ): GameAction | null {
+  assertEnumValue(
+    a.type,
+    JSONActionType,
+    `Invalid JSON action type: ${a.type}`,
+  );
   switch (a.type) {
     case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
@@ -385,6 +396,11 @@ function parseJSONAction(
     }
 
     case JSONActionType.ActionTypeGameOver: {
+      assertEnumValue(
+        a.value,
+        EndCondition,
+        `Invalid end condition: ${a.value}`,
+      );
       return {
         type: "gameOver",
         endCondition: a.value,

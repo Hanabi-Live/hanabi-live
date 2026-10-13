@@ -159,7 +159,6 @@
     "hgetall",
     "hset",
     "IFNULL",
-    "initdb",
     "inkscape",
     "interactjs",
     "isready",

@@ -59,7 +59,7 @@ function makeContext(
       ...base.turn,
       segment: 4,
       turnNum: 6,
-      currentPlayerIndex: 0 as PlayerIndex,
+      currentPlayerIndex: 0,
     },
     deck: [card0, card1],
     hands: [[0 as CardOrder], [1 as CardOrder]],
@@ -69,7 +69,7 @@ function makeContext(
     metadata,
     variant,
     cardIdentities: [
-      { suitIndex: 0 as SuitIndex, rank: 1 },
+      { suitIndex: 0, rank: 1 },
       { suitIndex: null, rank: null },
     ],
     morphedIdentities: [],
@@ -94,12 +94,12 @@ function cardInput(
   const state = getInitialCardState(0 as CardOrder, variant, 2);
   return {
     state,
-    identity: { suitIndex: 0 as SuitIndex, rank: 1 },
+    identity: { suitIndex: 0, rank: 1 },
     morphedIdentity: undefined,
     note: emptyNote,
     playing: true,
     isStackBase: false,
-    visibleSuitIndex: 0 as SuitIndex,
+    visibleSuitIndex: 0,
     visibleRank: 1,
     ...overrides,
   };
@@ -128,10 +128,7 @@ function makeBottomDeckContext(
       hands: context.gameState.hands,
       cardsRemainingInTheDeck: 1,
     },
-    cardIdentities: [
-      ...context.cardIdentities,
-      { suitIndex: 0 as SuitIndex, rank: 1 },
-    ],
+    cardIdentities: [...context.cardIdentities, { suitIndex: 0, rank: 1 }],
     notes: [...context.notes, emptyNote],
     cardViews: [...context.cardViews, view(finalCard, null, null)],
   };
@@ -403,7 +400,7 @@ describe("hypothetical planning", () => {
     const actions = planHypotheticalAction(
       { type: "play", order: 0 as CardOrder },
       makeContext({
-        cardIdentities: [{ suitIndex: 0 as SuitIndex, rank: 2 }],
+        cardIdentities: [{ suitIndex: 0, rank: 2 }],
       }),
     );
     expect(actions?.slice(0, 2)).toEqual([
@@ -426,8 +423,8 @@ describe("hypothetical planning", () => {
         deck: [getInitialCardState(0 as CardOrder, variant, 2)],
       },
       cardIdentities: [
-        { suitIndex: 0 as SuitIndex, rank: 1 },
-        { suitIndex: 1 as SuitIndex, rank: 2 },
+        { suitIndex: 0, rank: 1 },
+        { suitIndex: 1, rank: 2 },
       ],
     });
     const known = planHypotheticalAction(
@@ -449,7 +446,7 @@ describe("hypothetical planning", () => {
           deck: [getInitialCardState(0 as CardOrder, variant, 2)],
         },
         cardIdentities: [
-          { suitIndex: 0 as SuitIndex, rank: 1 },
+          { suitIndex: 0, rank: 1 },
           { suitIndex: null, rank: null },
         ],
       }),
@@ -667,7 +664,7 @@ describe("hypothetical planning", () => {
           ...context.gameState,
           turn: {
             ...context.gameState.turn,
-            currentPlayerIndex: 1 as PlayerIndex,
+            currentPlayerIndex: 1,
           },
         },
       },

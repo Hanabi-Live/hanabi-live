@@ -1346,19 +1346,9 @@ function isVariantAllowed(
 ): boolean {
   const variant = createVariant(colorsMap, suitsMap, variantDescription, 0, "");
 
-  if (getTotalCardsInDeck(variant) < MINIMUM_CARD_COUNT) {
-    return false;
-  }
-
-  if (minVariantPace(variant) < 0) {
-    return false;
-  }
-
-  if (
-    maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
-  ) {
-    return false;
-  }
-
-  return true;
+  return !(
+    getTotalCardsInDeck(variant) < MINIMUM_CARD_COUNT
+    || minVariantPace(variant) < 0
+    || maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
+  );
 }

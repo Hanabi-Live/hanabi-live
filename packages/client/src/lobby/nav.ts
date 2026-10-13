@@ -52,7 +52,7 @@ export function init(): void {
   // The "Sign Out" button.
   $(".signout").on("click", () => {
     // Add the query parameters to the end to preserve using "?dev".
-    globalThis.location.href = `/logout${globalThis.location.search}`;
+    globalThis.location.assign(`/logout${globalThis.location.search}`);
   });
 
   // The "Games" bottom screen toggle button.

@@ -482,7 +482,6 @@ function gameReducerFunction(
 
   // Use a sub-reducer to calculate changes on cards.
   const originalDeck = original(gameState.deck);
-  assertDefined(originalDeck, "Failed to find the original deck.");
   gameState.deck = castDraft(
     cardsReducer(originalDeck, action, gameState, metadata),
   );
@@ -570,7 +569,6 @@ function gameReducerFunction(
 
   // Use a sub-reducer to calculate some game statistics.
   const originalState = original(gameState);
-  assertDefined(originalState, "Failed to get the original state.");
   gameState.stats = castDraft(
     statsReducer(
       original(gameState.stats),

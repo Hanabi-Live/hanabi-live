@@ -12,12 +12,7 @@ export default defineConfig(
        *
        * We allow reassigning properties of parameters, but not the parameters themselves.
        */
-      "no-param-reassign": [
-        "error",
-        {
-          props: false,
-        },
-      ],
+      "no-param-reassign": ["error", { props: false }],
 
       /**
        * Documentation:
@@ -31,8 +26,8 @@ export default defineConfig(
        * Documentation:
        * https://typescript-eslint.io/rules/no-deprecated/
        *
-       * We use a lot of deprecated JQuery methods. If they are removed from the latest version of
-       * JQuery, then we will stick with using an older version.
+       * We use a lot of deprecated jQuery methods. If they are removed from the latest version of
+       * jQuery, then we will stick with using an older version.
        */
       "@typescript-eslint/no-deprecated": "off",
 
@@ -71,10 +66,14 @@ export default defineConfig(
        * first to avoid having to make changes to Golang code.)
        */
       "unicorn/no-null": "off",
+
+      // Konva's children are canvas nodes, not DOM elements.
+      "unicorn/better-dom-traversing": "off",
+
+      // Keep HTML serialization compatible with browsers without Element.getHTML.
+      "unicorn/prefer-dom-node-html-methods": "off",
     },
   },
 
-  {
-    ignores: ["**/lib/*.js", "**/test_data/*.js"],
-  },
+  { ignores: ["**/lib/*.js", "**/test_data/*.js"] },
 );

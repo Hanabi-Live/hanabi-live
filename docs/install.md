@@ -1,8 +1,15 @@
 # Hanab Live Installation
 
-Like many code projects, we use [linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of the code is written consistently and error-free. Specifically, we use [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that all pull requests pass our linting rules.
+Like many code projects, we use
+[linters](<https://en.wikipedia.org/wiki/Lint_(software)>) to ensure that all of
+the code is written consistently and error-free. Specifically, we use
+[ESLint](https://eslint.org/) and [Prettier](https://prettier.io/). We ask that
+all pull requests pass our linting rules.
 
-The following instructions will set up the server as well as the linters. We assume that you will be using Microsoft's [Visual Studio Code](https://code.visualstudio.com/), which is a very nice code editor. Some adjustments will be needed if you are using a different editor.
+The following instructions will set up the server as well as the linters. We
+assume that you will be using Microsoft's
+[Visual Studio Code](https://code.visualstudio.com/), which is a very nice code
+editor. Some adjustments will be needed if you are using a different editor.
 
 <br />
 
@@ -19,50 +26,63 @@ The following instructions will set up the server as well as the linters. We ass
 
 ## Hardware Prerequisites
 
-Building the client code can be memory intensive. Make sure that your system has at least 2 GB of RAM.
+Building the client code can be memory intensive. Make sure that your system has
+at least 2 GB of RAM.
 
 <br />
 
 ## Installation for Development (Windows)
 
-- Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
+- Open a
+  [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 - Install [Git](https://git-scm.com/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id Git.Git`
-- Install [Golang](https://golang.org/) (if you do not already have it installed):
+- Install [Golang](https://golang.org/) (if you do not already have it
+  installed):
   - `winget install --accept-source-agreements --silent --exact --id GoLang.Go`
-- Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
+- Install [Node.js](https://nodejs.org/en/) (if you do not already have it
+  installed):
   - `winget install --accept-source-agreements --silent --exact --id OpenJS.NodeJS.LTS`
-- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
+- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not
+  already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id Microsoft.VisualStudioCode`
-- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed).
-  - You should use the latest version, which is not available on `winget`, so you have to download the installer manually. (Older versions will probably work fine too, if you already have an older version installed.)
+- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have
+  it installed).
+  - You should use the latest version, which is not available on `winget`, so
+    you have to download the installer manually. (Older versions will probably
+    work fine too, if you already have an older version installed.)
 - Configure Git (if you do not already have it configured):
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
-- Make it so that PostgreSQL only listens on "localhost" instead of on all interfaces:
+- Make it so that PostgreSQL only listens on "localhost" instead of on all
+  interfaces:
   - `notepad "C:\Program Files\PostgreSQL\18\data\postgresql.conf"`
     - Add a "#" in front of the "listen_addresses" line.
     - Save the file.
   - `net stop postgresql-x64-18`
   - `net start postgresql-x64-18`
 - Create a new database and set up a database user:
-  - `set PGPASSWORD=1234567890` <br />
-    (replace "1234567890" with the root password that you entered when installing PostgreSQL)
+  - `set PGPASSWORD=1234567890` <br /> (replace "1234567890" with the root
+    password that you entered when installing PostgreSQL)
   - `"C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres`
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
-  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-    (replace "1234567890" with a more secure password if you want)
+  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br /> (replace
+    "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
-  - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
+  - If you already have an SSH key pair and have the public key attached to your
+    GitHub profile, then use the following command to clone the repository via
+    SSH:
     - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
-  - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
+  - If you do not already have an SSH key pair, then use the following command
+    to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
-  - Or, if you are doing development work, then clone your forked version of the repository. For example:
+  - Or, if you are doing development work, then clone your forked version of the
+    repository. For example:
     - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
@@ -82,50 +102,63 @@ Building the client code can be memory intensive. Make sure that your system has
   - `code .`
 - Test the TypeScript linter:
   - On the left pane, navigate to and open "packages/client/src/main.ts".
-  - Open the "Problems Pane", if it is not already open. (You can use the "Ctrl + Shift + M" hotkey to do this, or "View" --> "Problems" from the menu.)
-  - Add a new line of "test" somewhere and watch as an ESLint warning appears in the bottom pane. (There is no need to save the file.)
+  - Open the "Problems Pane", if it is not already open. (You can use the
+    "Ctrl + Shift + M" hotkey to do this, or "View" --> "Problems" from the
+    menu.)
+  - Add a new line of "test" somewhere and watch as an ESLint warning appears in
+    the bottom pane. (There is no need to save the file.)
 - See [Running the Server in Development](#running-the-server-in-development).
 
 <br />
 
 ## Installation for Development (MacOS)
 
-- Install the [Homebrew](https://brew.sh/) package manager (if you do not already have it installed):
+- Install the [Homebrew](https://brew.sh/) package manager (if you do not
+  already have it installed):
   - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 - Install [Git](https://git-scm.com/) (if you do not already have it installed):
   - `brew install git`
-- Install [Golang](https://golang.org/) (if you do not already have it installed):
+- Install [Golang](https://golang.org/) (if you do not already have it
+  installed):
   - `brew install golang`
-- Install [Node.js](https://nodejs.org/en/) (if you do not already have it installed):
+- Install [Node.js](https://nodejs.org/en/) (if you do not already have it
+  installed):
   - `brew install node`
-- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not already have it installed):
+- Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not
+  already have it installed):
   - `brew cask install visual-studio-code`
-- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have it installed):
+- Install [PostgreSQL](https://www.postgresql.org/) (if you do not already have
+  it installed):
   - `brew install postgresql`
 - Configure Git:
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
-- Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
+- Enable
+  [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 - Create a new database, and set up a database user:
   - `brew services start postgresql`
-  - `psql postgres` <br />
-    (on MacOS, there is no password by default)
+  - `psql postgres` <br /> (on MacOS, there is no password by default)
   - `\password postgres`
-  - Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
+  - Enter a secure password for the postgres user. (This is the "master" account
+    that has access to all databases.)
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
-  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-    (replace "1234567890" with a more secure password if you want)
+  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br /> (replace
+    "1234567890" with a more secure password if you want)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
 - Clone the repository:
   - `cd [the path where you want the code to live]` (optional)
-  - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
+  - If you already have an SSH key pair and have the public key attached to your
+    GitHub profile, then use the following command to clone the repository via
+    SSH:
     - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
-  - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
+  - If you do not already have an SSH key pair, then use the following command
+    to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
-  - Or, if you are doing development work, then clone your forked version of the repository. For example:
+  - Or, if you are doing development work, then clone your forked version of the
+    repository. For example:
     - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
@@ -143,14 +176,16 @@ Building the client code can be memory intensive. Make sure that your system has
   - `code .`
 - Test the TypeScript linter:
   - On the left pane, navigate to and open "packages/client/src/main.ts".
-  - Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
+  - Add a new line of "testing" somewhere and watch as some "Problems" appear in
+    the bottom pane. (There is no need to save the file.)
 - See [Running the Server in Development](#running-the-server-in-development).
 
 <br />
 
 ## Installation for Development/Production (Linux)
 
-These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
+These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be
+needed if you are on a different flavor of Linux.
 
 - Make sure the package manager is up to date:
   - `sudo apt update`
@@ -159,39 +194,46 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
   - `sudo apt install git -y`
 - Install [Golang](https://golang.org/):
   - `sudo apt install golang -y`
-- Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
+- Install [PostgreSQL](https://www.postgresql.org/), create a new database, and
+  set up a database user:
   - `sudo apt install postgresql -y` <br />
-  - `sudo -u postgres psql` <br />
-    (on Linux, there is no default password; you must connect through the "postgres" operating system account)
+  - `sudo -u postgres psql` <br /> (on Linux, there is no default password; you
+    must connect through the "postgres" operating system account)
   - `CREATE DATABASE hanabi;`
   - `\c hanabi`
-  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-    (replace "1234567890" with a secure password)
+  - `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br /> (replace
+    "1234567890" with a secure password)
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
-- Install [fnm](https://github.com/schniz/fnm) and [Node.js](https://nodejs.org/en/):
+- Install [fnm](https://github.com/schniz/fnm) and
+  [Node.js](https://nodejs.org/en/):
   - `curl --silent --fail --show-error --location https://fnm.vercel.app/install | bash -s -- --skip-shell`
   - `export PATH="$HOME/.local/share/fnm:$PATH"`
   - `eval "$(fnm env --shell bash)"`
-  - `fnm install --lts` <br />
-    (this installs the latest version)
+  - `fnm install --lts` <br /> (this installs the latest version)
 - Configure Git:
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`
 - Clone the server:
-  - `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
-  - If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
+  - `cd /root` (or change to the path where you want the code to live; "/root"
+    is recommended)
+  - If you already have an SSH key pair and have the public key attached to your
+    GitHub profile, then use the following command to clone the repository via
+    SSH:
     - `git clone git@github.com:Hanabi-Live/hanabi-live.git`
-  - If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
+  - If you do not already have an SSH key pair, then use the following command
+    to clone the repository via HTTPS:
     - `git clone https://github.com/Hanabi-Live/hanabi-live.git`
-  - Or, if you are doing development work, then clone your forked version of the repository. For example:
+  - Or, if you are doing development work, then clone your forked version of the
+    repository. For example:
     - `git clone git@github.com:[Your_GitHub_Username]/hanabi-live.git`
 - Enter the cloned repository:
   - `cd hanabi-live`
 - Install the project dependencies:
   - `./install/install_dependencies.sh`
-- Install the project development dependencies (but only in non-production environments):
+- Install the project development dependencies (but only in non-production
+  environments):
   - `./install/install_development_dependencies.sh`
 - Set up environment variables:
   - `vim .env`
@@ -200,29 +242,39 @@ These instructions assume you are on Ubuntu 20.04 LTS. Some adjustments may be n
     - Save and exit.
 - Install the database schema:
   - `./install/install_database_schema.sh`
-- If you are in development, see [Running the Server in Development](#running-the-server-in-development).
-- If you are in production, see [Running the Server in Production](#running-the-server-in-production).
+- If you are in development, see
+  [Running the Server in Development](#running-the-server-in-development).
+- If you are in production, see
+  [Running the Server in Production](#running-the-server-in-production).
 
 <br />
 
 ## Installation for Development (Nix)
 
-If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with nix-darwin), you can use the provided `flake.nix` file to set up a development environment with all of the necessary dependencies (including Go, Node.js, PostgreSQL, Redis, and Bun).
+If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with
+nix-darwin), you can use the provided `flake.nix` file to set up a development
+environment with all of the necessary dependencies (including Go, Node.js,
+PostgreSQL, Redis, and Bun).
 
 - Install Nix (if you do not already have it installed):
   - `curl -L https://nixos.org/nix/install | sh`
-- Enable Flakes by adding the following to your Nix configuration (e.g. `~/.config/nix/nix.conf`):
+- Enable Flakes by adding the following to your Nix configuration (e.g.
+  `~/.config/nix/nix.conf`):
   - `experimental-features = nix-command flakes`
 - Enter the development shell:
   - `nix develop`
-- (Optional, recommended) If you also use [direnv](https://direnv.net/), copy the example file and then allow it:
+- (Optional, recommended) If you also use [direnv](https://direnv.net/), copy
+  the example file and then allow it:
   - `cp .envrc.nix.example .envrc`
   - `direnv allow`
 - This keeps Nix + direnv opt-in:
   - Nix users do not have to use direnv.
   - direnv users do not have to use Nix.
-- Once you are in the development shell, the environment variables for PostgreSQL and Redis will be set up automatically. The database files will be stored in the `.direnv` directory.
-- Follow the instructions in the shell hook to start the services and the development server.
+- Once you are in the development shell, the environment variables for
+  PostgreSQL and Redis will be set up automatically. The database files will be
+  stored in the `.direnv` directory.
+- Follow the instructions in the shell hook to start the services and the
+  development server.
 
 <br />
 
@@ -232,20 +284,37 @@ If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with nix-
   - On Windows, you should use Git Bash.
 - Run the server:
   - `./run.sh`
-  - This will run the server forever until you either close the terminal window or cancel it with Ctrl + C.
-  - If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
-  - If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443. If you do not want to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file and restarting the server.
-- Open a second shell/terminal. (We need to leave the first one open, since it is running the server.)
+  - This will run the server forever until you either close the terminal window
+    or cancel it with Ctrl + C.
+  - If you are on Windows, you might have to accept a Windows Firewall dialog
+    (because a new program is listening on new ports).
+  - If you are on MacOS or Linux, then `sudo` might be necessary to run this
+    script because the server listens on port 80 and/or 443. If you do not want
+    to use `sudo`, then change the port to e.g. 8000 by editing the ".env" file
+    and restarting the server.
+- Open a second shell/terminal. (We need to leave the first one open, since it
+  is running the server.)
 - Run the TypeScript listener:
   - `./packages/client/esbuild_dev.sh`
-  - This will run `esbuild` forever until you either close the terminal window or cancel it with Ctrl + C.
-  - `esbuild` will scan for any changes to TypeScript files and automatically update the `main.min.js` file.
+  - This will run `esbuild` forever until you either close the terminal window
+    or cancel it with Ctrl + C.
+  - `esbuild` will scan for any changes to TypeScript files and automatically
+    update the `main.min.js` file.
 - Open a browser and go to: http://localhost/
-  - If it does not work or is stuck loading, press F12 to open the JavaScript console for hints as to what went wrong.
-- If you update any Golang files, you will have to manually stop and start the server.
-- If you update any TypeScript files, you will have to manually refresh the page to pick up the new changes.
-- If you update any CSS files, you might also need to run `build_client.sh crit` to re-generate the critical CSS, which is necessary for the content the users see first. The "crit" version takes a long time, but you only need to run it once before committing your changes.
-- You can also go to "http://localhost/?login=test1" to automatically log in as "test1", "http://localhost/?login=test2" to automatically log in as "test2", and so forth. This is useful for testing a bunch of different users in tabs without having to use an incognito window.
+  - If it does not work or is stuck loading, press F12 to open the JavaScript
+    console for hints as to what went wrong.
+- If you update any Golang files, you will have to manually stop and start the
+  server.
+- If you update any TypeScript files, you will have to manually refresh the page
+  to pick up the new changes.
+- If you update any CSS files, you might also need to run `build_client.sh crit`
+  to re-generate the critical CSS, which is necessary for the content the users
+  see first. The "crit" version takes a long time, but you only need to run it
+  once before committing your changes.
+- You can also go to "http://localhost/?login=test1" to automatically log in as
+  "test1", "http://localhost/?login=test2" to automatically log in as "test2",
+  and so forth. This is useful for testing a bunch of different users in tabs
+  without having to use an incognito window.
 
 <br />
 
@@ -253,7 +322,9 @@ If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with nix-
 
 ### Install as a Service (optional)
 
-This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
+This assumes that you installed the server to "/root/hanabi-live". If not, you
+will need to edit the paths in the below commands and edit the contents of the
+three Supervisor files.
 
 - Install Supervisor and install the service:
   - `./install/install_supervisor.sh`
@@ -304,28 +375,42 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
   - `go get github.com/prasmussen/gdrive`
 - Add it to the path:
   - `export PATH="$PATH:/root/go/bin" && echo >> "~/.bashrc" && echo 'export PATH="$PATH:/root/go/bin"' >> "~/.bashrc"`
-- Go to the [Google Drive service account project page](https://console.cloud.google.com/iam-admin/serviceaccounts?project=hanabi-live&folder=&organizationId=&supportedpurview=project).
-  - If you are starting fresh, you will have to create a new Google Drive account, create a new service account, and create a new project. For more information, see [this GitHub issue](https://github.com/gdrive-org/gdrive/issues/533).
+- Go to the
+  [Google Drive service account project page](https://console.cloud.google.com/iam-admin/serviceaccounts?project=hanabi-live&folder=&organizationId=&supportedpurview=project).
+  - If you are starting fresh, you will have to create a new Google Drive
+    account, create a new service account, and create a new project. For more
+    information, see
+    [this GitHub issue](https://github.com/gdrive-org/gdrive/issues/533).
 - Actions --> Create key --> JSON --> Create
 - `mkdir -p "~/.gdrive"`
 - `vim ~/.gdrive/hanabi-live-c3373cecaf32.json`
   - Paste it in.
-- Find the ID of the subdirectory inside of the Google Drive account that you want the file to be uploaded to:
+- Find the ID of the subdirectory inside of the Google Drive account that you
+  want the file to be uploaded to:
   - `gdrive list --service-account "hanabi-live-c3373cecaf32.json" --max 9999 | grep dir`
 - `vim /root/hanabi-live/.env`
-  - Fill in the "GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_PATH" and "GOOGLE_DRIVE_PARENT_DIRECTORY_ID" fields.
+  - Fill in the "GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_PATH" and
+    "GOOGLE_DRIVE_PARENT_DIRECTORY_ID" fields.
 
 <br />
 
 ### Install HTTPS (optional)
 
-Adjust the "certbot" command below according to what domain names you want to register.
+Adjust the "certbot" command below according to what domain names you want to
+register.
 
 - `sudo apt install certbot -y`
-- Disable certbot's built-in automatic renewal. The "renew_cert.sh" script (configured below) is the only thing that should renew the certificate, because the graceful server restart needed to load a new certificate is wired to certbot's renewal hook. If certbot's own timer is left enabled, it can renew the certificate without restarting the server, so the server keeps serving the old (and eventually expired) certificate from memory:
+- Disable certbot's built-in automatic renewal. The "renew_cert.sh" script
+  (configured below) is the only thing that should renew the certificate,
+  because the graceful server restart needed to load a new certificate is wired
+  to certbot's renewal hook. If certbot's own timer is left enabled, it can
+  renew the certificate without restarting the server, so the server keeps
+  serving the old (and eventually expired) certificate from memory:
   - `sudo systemctl disable --now certbot.timer`
-- `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live -d fireworks.cards -d www.fireworks.cards --deploy-hook "cd /root/hanabi-live && bash admin/gracefulRestart.sh"` <br />
-  (this creates "/etc/letsencrypt/live/hanab.live/"; the deploy hook gracefully restarts the server on every renewal so that it loads the new certificate)
+- `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live -d fireworks.cards -d www.fireworks.cards --deploy-hook "cd /root/hanabi-live && bash admin/gracefulRestart.sh"`
+  <br /> (this creates "/etc/letsencrypt/live/hanab.live/"; the deploy hook
+  gracefully restarts the server on every renewal so that it loads the new
+  certificate)
 - In the `.env` file:
   - Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanab.live/fullchain.pem`
   - Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanab.live/privkey.pem`
