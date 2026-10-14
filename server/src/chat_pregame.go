@@ -458,15 +458,10 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd
 			msg = "You are a CREWMATE."
 		}
 
-		chatMessage := &ChatMessage{
-			Msg:       msg,
-			Who:       WebsiteName,
-			Discord:   false,
-			Server:    true,
-			Datetime:  time.Now(),
-			Room:      d.Room,
-			Recipient: p.Session.Username,
-		}
+		chatMessage := (noticeChatEvent{
+			msg: msg, who: WebsiteName, datetime: time.Now(),
+			room: d.Room, recipient: p.Session.Username,
+		}).wire()
 		p.Session.Emit("chat", chatMessage)
 	}
 }

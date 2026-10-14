@@ -148,15 +148,10 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 			"\">click to apply the suggestion</button></span>"
 		for _, p := range t.Players {
 			if p.UserID == t.OwnerID {
-				p.Session.Emit("chat", &ChatMessage{
-					Msg:       message,
-					Who:       WebsiteName,
-					Discord:   false,
-					Server:    true,
-					Datetime:  time.Now(),
-					Room:      room,
-					Recipient: p.Name,
-				})
+				p.Session.Emit("chat", (noticeChatEvent{
+					msg: message, who: WebsiteName, datetime: time.Now(),
+					room: room, recipient: p.Name,
+				}).wire())
 				break
 			}
 		}

@@ -74,15 +74,10 @@ func chatServerSendAll(ctx context.Context, msg string) {
 func chatServerSendPM(s *Session, msg string, room string) {
 	// Some messages are sent from Discord
 	if s != nil {
-		s.Emit("chat", &ChatMessage{
-			Msg:       msg,
-			Who:       WebsiteName,
-			Discord:   false,
-			Server:    true,
-			Datetime:  time.Now(),
-			Room:      room,
-			Recipient: s.Username,
-		})
+		s.Emit("chat", (noticeChatEvent{
+			msg: msg, who: WebsiteName, datetime: time.Now(),
+			room: room, recipient: s.Username,
+		}).wire())
 	}
 }
 
@@ -185,30 +180,20 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		// We want to send them to the client in the reverse order so that
 		// the newest messages display at the bottom
 		rawMsg := rawMsgs[i]
-		discord := false
-		server := false
 		if rawMsg.Source == ChatLogSourceServer {
-			server = true
 			rawMsg.Name = "__server"
 		}
-		if rawMsg.Source == ChatLogSourceDiscord {
-			server = false
-			discord = true
-			if rawMsg.DiscordName.Valid {
-				rawMsg.Name = rawMsg.DiscordName.String
-			}
+		if rawMsg.Source == ChatLogSourceDiscord && rawMsg.DiscordName.Valid {
+			rawMsg.Name = rawMsg.DiscordName.String
 		}
 		rawMsg.Message = chatFillAll(rawMsg.Message)
-		msg := &ChatMessage{
-			Msg:       rawMsg.Message,
-			Who:       rawMsg.Name,
-			Discord:   discord,
-			Server:    server,
-			Datetime:  rawMsg.Datetime,
-			ChatID:    rawMsg.ID,
-			Room:      room,
-			Recipient: "",
-		}
+		msg := (lobbyChatEvent{
+			content: chatMessageContent{
+				msg: rawMsg.Message, who: rawMsg.Name,
+				source: rawMsg.Source, datetime: rawMsg.Datetime,
+			},
+			room: room, chatID: rawMsg.ID,
+		}).wire()
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", &ChatListMessage{
@@ -228,15 +213,13 @@ func chatSendPastFromTable(s *Session, t *Table) {
 	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
-		cm := &ChatMessage{
-			Msg:       gcm.Msg,
-			Who:       gcm.Username,
-			Discord:   false,
-			Server:    gcm.Server,
-			Datetime:  gcm.Datetime,
-			Room:      t.GetRoomName(),
-			Recipient: "",
-		}
+		cm := (tableChatEvent{
+			content: chatMessageContent{
+				msg: gcm.Msg, who: gcm.Username,
+				source: chatMessageSource(false, gcm.Server), datetime: gcm.Datetime,
+			},
+			room: t.GetRoomName(),
+		}).wire()
 		chatList = append(chatList, cm)
 	}
 	s.Emit("chatList", &ChatListMessage{
