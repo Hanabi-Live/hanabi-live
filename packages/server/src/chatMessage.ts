@@ -8,8 +8,7 @@ interface ChatMessageContent {
   readonly datetime: string;
 }
 
-// These are internal message variants. The legacy WebSocket shape is produced
-// only at the boundary, so PM IDs, public IDs, and recipients cannot mix.
+/** Internal variants keep PM IDs, public IDs, and recipients separate. */
 type InternalChatMessage =
   | (ChatMessageContent & {
       readonly kind: "lobby";
