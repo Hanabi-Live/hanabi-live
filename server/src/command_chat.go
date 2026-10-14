@@ -138,17 +138,18 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
 		sessionList := sessions.GetList()
+		message := (lobbyChatEvent{
+			content: chatMessageContent{
+				msg:      d.Msg,
+				who:      d.Username,
+				source:   chatMessageSource(d.Discord, d.Server),
+				datetime: datetime,
+			},
+			room:    d.Room,
+			chatID:  chatID,
+		}).wire()
 		for _, s2 := range sessionList {
-			s2.Emit("chat", &ChatMessage{
-				Msg:       d.Msg,
-				Who:       d.Username,
-				Discord:   d.Discord,
-				Server:    d.Server,
-				Datetime:  datetime,
-				ChatID:    chatID,
-				Room:      d.Room,
-				Recipient: "",
-			})
+			s2.Emit("chat", message)
 		}
 	}
 
@@ -224,15 +225,15 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	t.NotifyChat(&ChatMessage{
-		Msg:       d.Msg,
-		Who:       d.Username,
-		Discord:   d.Discord,
-		Server:    d.Server,
-		Datetime:  chatMsg.Datetime,
-		Room:      d.Room,
-		Recipient: "",
-	})
+	t.NotifyChat((tableChatEvent{
+		content: chatMessageContent{
+			msg:      d.Msg,
+			who:      d.Username,
+			source:   chatMessageSource(d.Discord, d.Server),
+			datetime: chatMsg.Datetime,
+		},
+		room:    d.Room,
+	}).wire())
 
 	// Check for commands
 	chatCommand(ctx, s, d, t)

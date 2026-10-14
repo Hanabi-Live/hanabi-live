@@ -319,15 +319,11 @@ func websocketConnectChat(s *Session) {
 	msg := "Find teammates and discuss strategy in the " +
 		"<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">" +
 		"Discord chat</a>."
-	s.Emit("chat", &ChatMessage{
-		Msg:       msg,
-		Who:       "",
-		Discord:   false,
-		Server:    true,
-		Datetime:  time.Now(),
-		Room:      "lobby",
-		Recipient: "",
-	})
+	s.Emit("chat", (noticeChatEvent{
+		msg:      msg,
+		datetime: time.Now(),
+		room:     "lobby",
+	}).wire())
 
 	// Send them the message of the day, if any
 	motdPath := path.Join(projectPath, "motd.txt")
@@ -346,15 +342,11 @@ func websocketConnectChat(s *Session) {
 			motd = strings.TrimSpace(motd)
 			if len(motd) > 0 {
 				msg := "[Server Notice] " + motd
-				s.Emit("chat", &ChatMessage{
-					Msg:       msg,
-					Who:       "",
-					Discord:   false,
-					Server:    true,
-					Datetime:  time.Now(),
-					Room:      "lobby",
-					Recipient: "",
-				})
+				s.Emit("chat", (noticeChatEvent{
+					msg:      msg,
+					datetime: time.Now(),
+					room:     "lobby",
+				}).wire())
 			}
 		}
 	}

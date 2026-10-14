@@ -4,6 +4,7 @@ import type { ClientCommandChatData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
+import { chatMessageToWire } from "../chatMessage";
 import type { ChatTarget } from "../chatTarget";
 import { parseChatTarget } from "../chatTarget";
 import { getCurrentDatetime } from "../date";
@@ -79,15 +80,19 @@ async function chatToken(
 }
 
 function wsSendServerPM(wsUser: WSUser, msg: string, room: string) {
-  wsSend(wsUser.connection, ServerCommand.chat, {
-    msg,
-    who: "Hanab Live",
-    discord: false,
-    server: true,
-    datetime: getCurrentDatetime(),
-    room,
-    recipient: wsUser.username,
-  });
+  wsSend(
+    wsUser.connection,
+    ServerCommand.chat,
+    chatMessageToWire({
+      kind: "notice",
+      source: "server",
+      text: msg,
+      who: "Hanab Live",
+      datetime: getCurrentDatetime(),
+      room,
+      recipient: wsUser.username,
+    }),
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

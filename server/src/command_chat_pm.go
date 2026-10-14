@@ -75,16 +75,16 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 		return
 	}
 
-	chatMessage := &ChatMessage{
-		Msg:       d.Msg,
-		Who:       s.Username,
-		Discord:   false,
-		Server:    false,
-		Datetime:  insertResult.DatetimeSent,
-		PMID:      insertResult.ID,
-		Room:      "",
-		Recipient: recipientSession.Username,
-	}
+	chatMessage := (privateChatEvent{
+		content:   chatMessageContent{
+			msg:      d.Msg,
+			who:      s.Username,
+			source:   ChatLogSourceUser,
+			datetime: insertResult.DatetimeSent,
+		},
+		pmID:      insertResult.ID,
+		recipient: recipientSession.Username,
+	}).wire()
 
 	// Echo the private message back to the person who sent it
 	s.Emit("chat", chatMessage)

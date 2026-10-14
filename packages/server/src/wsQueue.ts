@@ -6,6 +6,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { getChatList } from "./chat";
+import { chatMessageToWire } from "./chatMessage";
 import { getCurrentDatetime } from "./date";
 import { logger } from "./logger";
 import { isMaintenanceMode } from "./maintenanceMode";
@@ -179,27 +180,35 @@ async function sendChatLobbyPrevious(wsUser: WSUser) {
 function sendChatDiscordAdvertisement(wsUser: WSUser) {
   const discordMsg =
     'Find teammates and discuss strategy in the <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">Discord chat</a>.';
-  wsSend(wsUser.connection, ServerCommand.chat, {
-    msg: discordMsg,
-    discord: false,
-    server: true,
-    datetime: getCurrentDatetime(),
-    room: "lobby",
-  });
+  wsSend(
+    wsUser.connection,
+    ServerCommand.chat,
+    chatMessageToWire({
+      kind: "notice",
+      source: "server",
+      text: discordMsg,
+      datetime: getCurrentDatetime(),
+      room: "lobby",
+    }),
+  );
 }
 
 async function sendChatMessageOfTheDay(wsUser: WSUser) {
   const motd = await getMessageOfTheDay();
   if (motd !== undefined && motd !== "") {
     const motdMsg = `[Server Notice] ${motd}`;
-    wsSend(wsUser.connection, ServerCommand.chat, {
-      msg: motdMsg,
-      who: "",
-      discord: false,
-      server: true,
-      datetime: getCurrentDatetime(),
-      room: "lobby",
-    });
+    wsSend(
+      wsUser.connection,
+      ServerCommand.chat,
+      chatMessageToWire({
+        kind: "notice",
+        source: "server",
+        text: motdMsg,
+        who: "",
+        datetime: getCurrentDatetime(),
+        room: "lobby",
+      }),
+    );
   }
 }
 
