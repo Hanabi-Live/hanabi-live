@@ -12,9 +12,10 @@ import (
 // commandChatPlayerInfo is sent when a user types the "/playerinfo" command
 //
 // Example data:
-// {
-//   name: 'Alice',
-// }
+//
+//	{
+//	  name: 'Alice',
+//	}
 func commandChatPlayerInfo(ctx context.Context, s *Session, d *CommandData) {
 	normalizedUsername := normalizeString(d.Name)
 

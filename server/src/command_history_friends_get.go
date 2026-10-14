@@ -10,10 +10,11 @@ import (
 // (on the "Show History of Friends" screen)
 //
 // Example data:
-// {
-//   offset: 10,
-//   amount: 10,
-// }
+//
+//	{
+//	  offset: 10,
+//	  amount: 10,
+//	}
 func commandHistoryFriendsGet(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they sent a valid offset and amount value
 	if d.Offset < 0 {

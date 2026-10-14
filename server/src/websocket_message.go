@@ -25,8 +25,9 @@ const (
 // then a JSON string of the data for the command, if any
 //
 // Example:
-//   tableJoin {"tableID":1}
-//   action {"target":1,"type":2}
+//
+//	tableJoin {"tableID":1}
+//	action {"target":1,"type":2}
 func websocketMessage(ms *melody.Session, msg []byte) {
 	// If the server is shutting down, ignore all incoming message from users
 	if blockAllIncomingMessages.IsSet() {

@@ -21,6 +21,9 @@ jobs:
       - name: Install Golang
         uses: actions/setup-go@v6
 
+      - name: Check Go formatting
+        run: bash check_gofmt.sh
+
       - name: Compile the Golang code
         run: bash build_server.sh
         working-directory: ${{ env.working-directory }}

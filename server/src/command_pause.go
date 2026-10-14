@@ -9,11 +9,12 @@ import (
 // commandPause is sent when the user pauses or unpauses the game
 //
 // Example data:
-// {
-//   tableID: 5,
-//   setting: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
-//   // ('pause-queue' will automatically pause the game when it gets to their turn)
-// }
+//
+//	{
+//	  tableID: 5,
+//	  setting: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
+//	  // ('pause-queue' will automatically pause the game when it gets to their turn)
+//	}
 func commandPause(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {

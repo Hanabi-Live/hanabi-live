@@ -28,7 +28,9 @@ process_ids+=("$!")
 bash "$DIR/packages/server/lint.sh" &
 process_ids+=("$!")
 # bash "$DIR/server/build_server.sh" &
-# (The linting of the Golang code is disabled until it can be rewritten in TypeScript.)
+# (Full Golang linting is disabled until it can be rewritten in TypeScript.)
+bash "$DIR/check_gofmt.sh" &
+process_ids+=("$!")
 bash "$DIR/check_spelling.sh" &
 process_ids+=("$!")
 bash "$DIR/check_shellcheck.sh" &

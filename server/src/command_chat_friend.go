@@ -10,9 +10,10 @@ import (
 // commandChatFriend is sent when a user types the "/friend" command
 //
 // Example data:
-// {
-//   name: 'Alice',
-// }
+//
+//	{
+//	  name: 'Alice',
+//	}
 func commandChatFriend(ctx context.Context, s *Session, d *CommandData) {
 	friend(s, d, true)
 }
@@ -20,9 +21,10 @@ func commandChatFriend(ctx context.Context, s *Session, d *CommandData) {
 // commandChatUnfriend is sent when a user types the "/unfriend" command
 //
 // Example data:
-// {
-//   name: 'Alice',
-// }
+//
+//	{
+//	  name: 'Alice',
+//	}
 func commandChatUnfriend(ctx context.Context, s *Session, d *CommandData) {
 	friend(s, d, false)
 }

@@ -100,7 +100,7 @@ const (
 type ChatLogSource string
 
 const (
-	ChatLogSourceUser ChatLogSource = "user"
-	ChatLogSourceServer ChatLogSource = "server"
+	ChatLogSourceUser    ChatLogSource = "user"
+	ChatLogSourceServer  ChatLogSource = "server"
 	ChatLogSourceDiscord ChatLogSource = "discord"
 )
