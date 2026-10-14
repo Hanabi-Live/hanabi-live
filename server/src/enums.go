@@ -88,6 +88,14 @@ const (
 	StackDirectionFinished
 )
 
+// ChatTargetKind identifies the destination of a public chat message inside the server.
+type ChatTargetKind string
+
+const (
+	ChatTargetKindLobby ChatTargetKind = "lobby"
+	ChatTargetKindTable ChatTargetKind = "table"
+)
+
 // ChatLogSource records the origin of a persisted message independently of user lookup.
 type ChatLogSource string
 

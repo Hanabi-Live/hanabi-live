@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,10 +15,6 @@ import (
 const (
 	MaxChatLength       = 300
 	MaxChatLengthServer = 600
-)
-
-var (
-	lobbyRoomRegExp = regexp.MustCompile(`table(\d+)`)
 )
 
 // commandChat is sent when the user presses enter after typing a text message
@@ -72,18 +67,19 @@ func commandChat(ctx context.Context, s *Session, d *CommandData) {
 		d.Msg = html.EscapeString(d.Msg)
 	}
 
-	// Validate the room
-	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
+	// Convert the wire-format room to a typed destination once.
+	target, valid := parseChatTarget(d.Room)
+	if !valid {
 		if s != nil {
 			s.Warning("That is not a valid room.")
 		}
 		return
 	}
 
-	chat(ctx, s, d, userID, rawMsg)
+	chat(ctx, s, d, target, userID, rawMsg)
 }
 
-func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg string) {
+func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, userID int, rawMsg string) {
 	// Log the message
 	text := "#" + d.Room + " "
 	if d.Username != "" {
@@ -97,8 +93,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 	logger.Info(text)
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
-	if strings.HasPrefix(d.Room, "table") {
-		commandChatTable(ctx, s, d)
+	if target.kind == ChatTargetKindTable {
+		commandChatTable(ctx, s, d, target.tableID)
 		return
 	}
 
@@ -174,27 +170,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, userID int, rawMsg st
 	chatCommand(ctx, s, d, nil) // We pass nil because there is no associated table
 }
 
-func commandChatTable(ctx context.Context, s *Session, d *CommandData) {
-	// Parse the table ID from the room
-	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
-	if match == nil {
-		logger.Error("Failed to parse the table ID from the room: " + d.Room)
-		if s != nil {
-			s.Error("That is an invalid room.")
-		}
-		return
-	}
-	var tableID uint64
-	if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
-		logger.Error("Failed to convert the table ID to a number: " + err.Error())
-		if s != nil {
-			s.Error("That is an invalid room.")
-		}
-		return
-	} else {
-		tableID = v
-	}
-
+func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID uint64) {
+	// tableID has already been parsed from the incoming room.
 	// Handle /split before the message is added to chat history.
 	if command, args := chatParseCommand(d.Msg); command == "split" {
 		d.Args = args
