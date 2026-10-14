@@ -320,7 +320,9 @@ func websocketConnectChat(s *Session) {
 		"<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">" +
 		"Discord chat</a>."
 	s.Emit("chat", (noticeChatEvent{
-		msg: msg, datetime: time.Now(), room: "lobby",
+		msg:      msg,
+		datetime: time.Now(),
+		room:     "lobby",
 	}).wire())
 
 	// Send them the message of the day, if any
@@ -341,7 +343,9 @@ func websocketConnectChat(s *Session) {
 			if len(motd) > 0 {
 				msg := "[Server Notice] " + motd
 				s.Emit("chat", (noticeChatEvent{
-					msg: msg, datetime: time.Now(), room: "lobby",
+					msg:      msg,
+					datetime: time.Now(),
+					room:     "lobby",
 				}).wire())
 			}
 		}

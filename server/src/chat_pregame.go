@@ -459,8 +459,11 @@ func chatImpostor(ctx context.Context, s *Session, d *CommandData, t *Table, cmd
 		}
 
 		chatMessage := (noticeChatEvent{
-			msg: msg, who: WebsiteName, datetime: time.Now(),
-			room: d.Room, recipient: p.Session.Username,
+			msg:       msg,
+			who:       WebsiteName,
+			datetime:  time.Now(),
+			room:      d.Room,
+			recipient: p.Session.Username,
 		}).wire()
 		p.Session.Emit("chat", chatMessage)
 	}

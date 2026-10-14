@@ -140,10 +140,13 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 		sessionList := sessions.GetList()
 		message := (lobbyChatEvent{
 			content: chatMessageContent{
-				msg: d.Msg, who: d.Username,
-				source: chatMessageSource(d.Discord, d.Server), datetime: datetime,
+				msg:      d.Msg,
+				who:      d.Username,
+				source:   chatMessageSource(d.Discord, d.Server),
+				datetime: datetime,
 			},
-			room: d.Room, chatID: chatID,
+			room:    d.Room,
+			chatID:  chatID,
 		}).wire()
 		for _, s2 := range sessionList {
 			s2.Emit("chat", message)
@@ -224,10 +227,12 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 	// Send it to all of the players and spectators
 	t.NotifyChat((tableChatEvent{
 		content: chatMessageContent{
-			msg: d.Msg, who: d.Username,
-			source: chatMessageSource(d.Discord, d.Server), datetime: chatMsg.Datetime,
+			msg:      d.Msg,
+			who:      d.Username,
+			source:   chatMessageSource(d.Discord, d.Server),
+			datetime: chatMsg.Datetime,
 		},
-		room: d.Room,
+		room:    d.Room,
 	}).wire())
 
 	// Check for commands

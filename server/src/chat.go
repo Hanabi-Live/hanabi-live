@@ -75,8 +75,11 @@ func chatServerSendPM(s *Session, msg string, room string) {
 	// Some messages are sent from Discord
 	if s != nil {
 		s.Emit("chat", (noticeChatEvent{
-			msg: msg, who: WebsiteName, datetime: time.Now(),
-			room: room, recipient: s.Username,
+			msg:       msg,
+			who:       WebsiteName,
+			datetime:  time.Now(),
+			room:      room,
+			recipient: s.Username,
 		}).wire())
 	}
 }
@@ -189,10 +192,13 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		rawMsg.Message = chatFillAll(rawMsg.Message)
 		msg := (lobbyChatEvent{
 			content: chatMessageContent{
-				msg: rawMsg.Message, who: rawMsg.Name,
-				source: rawMsg.Source, datetime: rawMsg.Datetime,
+				msg:      rawMsg.Message,
+				who:      rawMsg.Name,
+				source:   rawMsg.Source,
+				datetime: rawMsg.Datetime,
 			},
-			room: room, chatID: rawMsg.ID,
+			room:    room,
+			chatID:  rawMsg.ID,
 		}).wire()
 		msgs = append(msgs, msg)
 	}
@@ -215,10 +221,12 @@ func chatSendPastFromTable(s *Session, t *Table) {
 		gcm := t.Chat[i]
 		cm := (tableChatEvent{
 			content: chatMessageContent{
-				msg: gcm.Msg, who: gcm.Username,
-				source: chatMessageSource(false, gcm.Server), datetime: gcm.Datetime,
+				msg:      gcm.Msg,
+				who:      gcm.Username,
+				source:   chatMessageSource(false, gcm.Server),
+				datetime: gcm.Datetime,
 			},
-			room: t.GetRoomName(),
+			room:    t.GetRoomName(),
 		}).wire()
 		chatList = append(chatList, cm)
 	}
