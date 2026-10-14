@@ -34,15 +34,14 @@ type InternalChatMessage =
       readonly recipient?: string;
     });
 
-/** Serialize internal chat variants without changing the existing wire contract. */
+/** Serialize internal chat variants to the WebSocket chat payload. */
 export function chatMessageToWire(
   message: InternalChatMessage,
 ): ServerCommandChatData {
   const common = {
     msg: message.text,
     ...(message.who !== undefined && { who: message.who }),
-    discord: message.source === "discord",
-    server: message.source === "server",
+    source: message.source,
     datetime: message.datetime,
   };
 

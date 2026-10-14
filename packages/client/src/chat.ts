@@ -519,8 +519,7 @@ export function addPMHistory(
   addInternal(
     {
       ...data,
-      discord: false,
-      server: false,
+      source: "user",
       ...(room !== undefined && { room }),
     },
     true,
@@ -571,7 +570,7 @@ function addInternal(
         ? `<span class="red">[PM from <strong>${textToHtml(data.who)}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
-  if (data.server || (data.recipient !== undefined && data.recipient !== "")) {
+  if (data.source === "server" || (data.recipient !== undefined && data.recipient !== "")) {
     line += msg;
   } else if (data.who === "") {
     line += msg;
@@ -579,7 +578,7 @@ function addInternal(
     line += `&lt;<strong>${textToHtml(data.who)}</strong>&gt;&nbsp; `;
     line += msg;
   }
-  if (data.server && line.includes("[Server Notice]")) {
+  if (data.source === "server" && line.includes("[Server Notice]")) {
     line = line.replace(
       "[Server Notice]",
       '<span class="red">[Server Notice]</span>',
@@ -862,8 +861,7 @@ export function sendSelfPMFromServer(
     {
       msg: message,
       who: PROJECT_NAME,
-      discord: false,
-      server: true,
+      source: "server",
       datetime: new Date().toString(),
       room,
       recipient: globals.username,

@@ -15,8 +15,7 @@ func (m chatMessageContent) wire() ChatMessage {
 	return ChatMessage{
 		Msg:      m.msg,
 		Who:      m.who,
-		Discord:  m.source == ChatLogSourceDiscord,
-		Server:   m.source == ChatLogSourceServer,
+		Source:   m.source,
 		Datetime: m.datetime,
 	}
 }

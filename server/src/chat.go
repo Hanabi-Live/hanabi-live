@@ -30,8 +30,7 @@ var (
 type ChatMessage struct {
 	Msg       string    `json:"msg"`
 	Who       string    `json:"who"`
-	Discord   bool      `json:"discord"`
-	Server    bool      `json:"server"`
+	Source    ChatLogSource `json:"source"`
 	Datetime  time.Time `json:"datetime"`
 	ChatID    int       `json:"chatID,omitempty"`
 	PMID      int       `json:"pmID,omitempty"`
