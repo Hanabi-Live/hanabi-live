@@ -17,25 +17,26 @@ type APIGamesAnswer struct {
 }
 
 // Returns list of games for given player[s]
-//   URL: /api/v1/history/:player1 [/:player2...]
 //
-//   Columns:
-//   game_id       int
-//   no_of_players int
-//   score         int
-//   variant       string (link: /variant/id)
-//   date & time   datetime
-//   players       []string (link: /history/[]p)
-//   other scores  int (link: /seed/id)
+//	URL: /api/v1/history/:player1 [/:player2...]
 //
-//   Order
-//   0: games.id
+//	Columns:
+//	game_id       int
+//	no_of_players int
+//	score         int
+//	variant       string (link: /variant/id)
+//	date & time   datetime
+//	players       []string (link: /history/[]p)
+//	other scores  int (link: /seed/id)
 //
-//   Filters
-//   0: games.id
-//   1: num_players
-//   2: score
-//   3: variant_id
+//	Order
+//	0: games.id
+//
+//	Filters
+//	0: games.id
+//	1: num_players
+//	2: score
+//	3: variant_id
 func apiHistory(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return
@@ -199,22 +200,23 @@ func apiTagSearch(c *gin.Context) {
 }
 
 // Returns list of games for given seed
-//   URL: /api/v1/seed/:seed
 //
-//   Columns:
-//   game_id       int
-//   no_of_players int
-//   score         int
-//   variant       string (link: /variant/id)
-//   date & time   datetime
-//   players       []string (link: /history/[]p)
+//	URL: /api/v1/seed/:seed
 //
-//   Order
-//   2: score
+//	Columns:
+//	game_id       int
+//	no_of_players int
+//	score         int
+//	variant       string (link: /variant/id)
+//	date & time   datetime
+//	players       []string (link: /history/[]p)
 //
-//   Filters
-//   0: games.id
-//   2: score
+//	Order
+//	2: score
+//
+//	Filters
+//	0: games.id
+//	2: score
 func apiSeed(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return

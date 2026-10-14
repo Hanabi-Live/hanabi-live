@@ -11,12 +11,13 @@ import (
 // commandTableSetVariant is sent when a user types the "/setvariant [variant]" command
 //
 // Example data:
-// {
-//   tableID: 123,
-//   options: {
-//     variant: 'Black & Rainbow (6 Suit)',
-//   },
-// }
+//
+//	{
+//	  tableID: 123,
+//	  options: {
+//	    variant: 'Black & Rainbow (6 Suit)',
+//	  },
+//	}
 func commandTableSetVariant(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {

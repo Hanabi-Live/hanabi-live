@@ -10,10 +10,11 @@ import (
 // commandChatPM is sent when a user sends a private message
 //
 // Example data:
-// {
-//   msg: 'i secretly adore you',
-//   recipient: 'Alice',
-// }
+//
+//	{
+//	  msg: 'i secretly adore you',
+//	  recipient: 'Alice',
+//	}
 func commandChatPM(ctx context.Context, s *Session, d *CommandData) {
 	// Check to see if their IP has been muted
 	if s != nil && s.Muted {

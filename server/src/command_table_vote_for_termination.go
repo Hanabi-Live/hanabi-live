@@ -9,10 +9,11 @@ import (
 // corner
 //
 // Example data:
-// {
-//   tableID: 5,
-//   server: true, // True if a server-initiated termination, otherwise omitted
-// }
+//
+//	{
+//	  tableID: 5,
+//	  server: true, // True if a server-initiated termination, otherwise omitted
+//	}
 func commandTableVoteForTermination(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {

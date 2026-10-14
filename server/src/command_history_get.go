@@ -9,10 +9,11 @@ import (
 // commandHistoryGet is sent when the user clicks the "Show More History" button
 //
 // Example data:
-// {
-//   offset: 10,
-//   amount: 10,
-// }
+//
+//	{
+//	  offset: 10,
+//	  amount: 10,
+//	}
 func commandHistoryGet(ctx context.Context, s *Session, d *CommandData) {
 	// Validate that they sent a valid offset and amount value
 	if d.Offset < 0 {

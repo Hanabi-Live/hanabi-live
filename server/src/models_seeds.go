@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Hanabi-Live/hanabi-live/logger"
 	"fmt"
+	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -64,7 +64,7 @@ func (*Seeds) GetNumGames(seed string) (int, error) {
 }
 
 type ScoreFreq struct {
-	Score int `json:"score"`
+	Score    int `json:"score"`
 	NumTimes int `json:"numTimes"`
 }
 
@@ -90,8 +90,8 @@ func (*Seeds) GetScoreFreqs(seed string) ([]*ScoreFreq, error) {
 		freq := ScoreFreq{ // nolint: exhaustivestruct
 		}
 		rows.Scan(&freq.Score, &freq.NumTimes)
-		logger.Debug(fmt.Sprintf("%d instances of score %d", freq.NumTimes, freq.Score));
-		scoreFreqs = append(scoreFreqs, &freq);
+		logger.Debug(fmt.Sprintf("%d instances of score %d", freq.NumTimes, freq.Score))
+		scoreFreqs = append(scoreFreqs, &freq)
 	}
 
 	return scoreFreqs, nil

@@ -25,9 +25,10 @@ type APIVariantAnswer struct {
 }
 
 // List of variants
-//   /api/v1/variants
 //
-//   A map from variant id to variant name (string)
+//	/api/v1/variants
+//
+//	A map from variant id to variant name (string)
 func apiVariants(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return
@@ -37,14 +38,15 @@ func apiVariants(c *gin.Context) {
 }
 
 // List of variants, with more info
-//   /api/v1/variants-full
 //
-//   A map from variant id to variant info. Variant info has these columns:
+//	/api/v1/variants-full
 //
-//   name       string
-//   suits      string[]
-//   stackSize  int
-//   maxScore   int
+//	A map from variant id to variant info. Variant info has these columns:
+//
+//	name       string
+//	suits      string[]
+//	stackSize  int
+//	maxScore   int
 func apiVariantsFull(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return
@@ -54,22 +56,23 @@ func apiVariantsFull(c *gin.Context) {
 }
 
 // Returns list of games of given variant
-//   URL: /api/v1/variants/:id
 //
-//   Columns
-//   id                int
-//   num_players       int
-//   score             int
-//   users             string
-//   datetime          string
+//	URL: /api/v1/variants/:id
 //
-//   Order
-//   0: id
+//	Columns
+//	id                int
+//	num_players       int
+//	score             int
+//	users             string
+//	datetime          string
 //
-//   Filters
-//   0: id
-//   1: num_players
-//   2: score
+//	Order
+//	0: id
+//
+//	Filters
+//	0: id
+//	1: num_players
+//	2: score
 func apiVariantsSingle(c *gin.Context) {
 	if apiCheckIPBanned(c) {
 		return

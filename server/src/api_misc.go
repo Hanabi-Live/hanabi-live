@@ -27,10 +27,11 @@ type APIQueryVars struct {
 }
 
 // Filters the query vars and returns only the valid ones
-//     Page    int (min 0, default 0)
-//     Size    int (min 0, max 100, default 10)
-//     Order   {Name: string, Order: ASC|DESC}
-//     Filters {column_name: filter, ...}
+//
+//	Page    int (min 0, default 0)
+//	Size    int (min 0, max 100, default 10)
+//	Order   {Name: string, Order: ASC|DESC}
+//	Filters {column_name: filter, ...}
 func apiParseQueryVars(c *gin.Context, orderCols []string, filterCols []string, defaultSort APISortColumn, initialFilter APIColumnDescription) APIQueryVars {
 	return APIQueryVars{
 		Page:    apiGetPage(c),

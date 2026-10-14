@@ -11,9 +11,10 @@ import (
 // commandTableLeave is sent when the user clicks on the "Leave Game" button in the lobby
 //
 // Example data:
-// {
-//   tableID: 5,
-// }
+//
+//	{
+//	  tableID: 5,
+//	}
 func commandTableLeave(ctx context.Context, s *Session, d *CommandData) {
 	t, exists := getTableAndLock(ctx, s, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
