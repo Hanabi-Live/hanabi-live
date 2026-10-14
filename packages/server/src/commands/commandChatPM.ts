@@ -2,6 +2,7 @@ import type { ClientCommandChatPMData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
+import { chatMessageToWire } from "../chatMessage";
 import { logger } from "../logger";
 import { models } from "../models";
 import { normalizeUsername } from "../utils";
@@ -57,15 +58,15 @@ async function chatPM(wsUser: WSUser, wsUserRecipient: WSUser, msg: string) {
     msg,
   );
 
-  const data = {
-    msg,
+  const data = chatMessageToWire({
+    kind: "private",
+    source: "user",
+    text: msg,
     who: wsUser.username,
-    discord: false,
-    server: false,
     datetime: datetimeSent.toISOString(),
     recipient: wsUserRecipient.username,
     pmID,
-  };
+  });
 
   // Echo the private message back to the person who sent it.
   wsSend(wsUser.connection, ServerCommand.chat, data);

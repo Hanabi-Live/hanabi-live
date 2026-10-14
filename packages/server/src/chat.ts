@@ -1,6 +1,7 @@
 import type { ServerCommandChatData } from "@hanabi-live/data";
 import { getNumConsecutiveDiacritics, normalizeString } from "complete-common";
 import type { WebSocket } from "ws";
+import { chatMessageToWire } from "./chatMessage";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "./constants";
 import { models } from "./models";
 import { truncateToMaxCodeUnits } from "./utils";
@@ -80,13 +81,13 @@ function getChatData(
   }
   const datetime = datetimeSent.toISOString();
 
-  return {
-    chatID,
-    msg,
+  return chatMessageToWire({
+    kind: "lobby",
+    source,
+    text: msg,
     who,
-    discord,
-    server,
     datetime,
     room,
-  };
+    chatID,
+  });
 }
