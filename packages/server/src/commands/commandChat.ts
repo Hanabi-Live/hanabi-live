@@ -4,6 +4,8 @@ import type { ClientCommandChatData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
+import type { ChatTarget } from "../chatTarget";
+import { parseChatTarget } from "../chatTarget";
 import { getCurrentDatetime } from "../date";
 import { identityTokenRegenerate } from "../identityToken";
 import { logger } from "../logger";
@@ -27,6 +29,12 @@ export async function commandChat(
     return;
   }
 
+  const target = parseChatTarget(room);
+  if (target === undefined) {
+    wsWarning(wsUser.connection, "That is not a valid room");
+    return;
+  }
+
   if (
     normalizedMsg.startsWith("/")
     && (await chatToken(wsUser, normalizedMsg, room))
@@ -35,13 +43,7 @@ export async function commandChat(
   }
 
   const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
-
-  if (room !== "lobby" && !room.startsWith("table")) {
-    wsWarning(wsUser.connection, "That is not a valid room");
-    return;
-  }
-
-  await chat(wsUser, normalizedMsg, sanitizedMsg, room, false);
+  await chat(wsUser, normalizedMsg, sanitizedMsg, target, false);
 }
 
 async function chatToken(
@@ -93,15 +95,16 @@ async function chat(
   wsUser: WSUser,
   _normalizedMsg: string,
   sanitizedMsg: string,
-  room: string,
+  target: ChatTarget,
   discord: boolean,
 ) {
   const { username } = wsUser;
 
   const discordPrefix = discord ? "D" : "";
+  const room = target.kind === "lobby" ? "lobby" : `table${target.tableID}`;
   logger.info(`#${room} ${discordPrefix}<${username}> ${sanitizedMsg}`);
 
-  if (room.startsWith("table")) {
+  if (target.kind === "table") {
     chatTable();
   } else {
     chatLobby();
