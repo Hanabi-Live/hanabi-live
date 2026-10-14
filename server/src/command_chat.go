@@ -145,8 +145,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 				source:   chatMessageSource(d.Discord, d.Server),
 				datetime: datetime,
 			},
-			room:    d.Room,
-			chatID:  chatID,
+			room:   d.Room,
+			chatID: chatID,
 		}).wire()
 		for _, s2 := range sessionList {
 			s2.Emit("chat", message)
@@ -232,7 +232,7 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 			source:   chatMessageSource(d.Discord, d.Server),
 			datetime: chatMsg.Datetime,
 		},
-		room:    d.Room,
+		room: d.Room,
 	}).wire())
 
 	// Check for commands

@@ -76,7 +76,7 @@ func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 	}
 
 	chatMessage := (privateChatEvent{
-		content:   chatMessageContent{
+		content: chatMessageContent{
 			msg:      d.Msg,
 			who:      s.Username,
 			source:   ChatLogSourceUser,
