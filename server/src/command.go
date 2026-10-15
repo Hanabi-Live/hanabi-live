@@ -79,6 +79,7 @@ type CommandData struct {
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
+	DiscordMessageID     string `json:"-"` // Discord snowflake of the original message, if any
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`
 	// Used when a command handler calls another command handler

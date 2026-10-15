@@ -63,13 +63,15 @@ func (*ChatLog) InsertDiscord(
 	discordName string,
 	message string,
 	room string,
+	discordMessageID string,
 ) (ChatLogInsertResult, error) {
 	var result ChatLogInsertResult
 	err := db.QueryRow(context.Background(), `
-		INSERT INTO chat_log (user_id, source, discord_name, message, room)
-		VALUES (0, 'discord', $1, $2, $3)
+		INSERT INTO chat_log (user_id, source, discord_name, message, room, discord_message_id)
+		VALUES (0, 'discord', $1, $2, $3, NULLIF($4, ''))
+		ON CONFLICT (discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING
 		RETURNING id, datetime_sent
-	`, discordName, message, room).Scan(
+	`, discordName, message, room, discordMessageID).Scan(
 		&result.ID,
 		&result.DatetimeSent,
 	)

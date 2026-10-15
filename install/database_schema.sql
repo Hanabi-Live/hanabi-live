@@ -290,13 +290,14 @@ CREATE TABLE variant_stats (
 
 DROP TABLE IF EXISTS chat_log CASCADE;
 CREATE TABLE chat_log (
-    id             SERIAL       PRIMARY KEY,
-    user_id        INTEGER      NOT NULL, /* 0 for server or Discord messages. */
-    source         TEXT         NOT NULL CHECK (source IN ('user', 'server', 'discord')),
-    discord_name   TEXT         NULL,     /* Only used if it is a Discord message. */
-    message        TEXT         NOT NULL,
-    room           TEXT         NOT NULL, /* Either "lobby" or "table####". */
-    datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
+    id                  SERIAL       PRIMARY KEY,
+    user_id             INTEGER      NOT NULL, /* 0 for server or Discord messages. */
+    source              TEXT         NOT NULL CHECK (source IN ('user', 'server', 'discord')),
+    discord_name        TEXT         NULL,     /* Only used if it is a Discord message. */
+    discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */
+    message             TEXT         NOT NULL,
+    room                TEXT         NOT NULL, /* Either "lobby" or "table####". */
+    datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
     /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
      * server messages.
@@ -305,6 +306,8 @@ CREATE TABLE chat_log (
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_room             ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
+CREATE UNIQUE INDEX chat_log_index_discord_message_id ON chat_log (discord_message_id)
+    WHERE discord_message_id IS NOT NULL;
 
 /**
  * We want at least one entry in the "chat_log" table so that we can verify that we have
