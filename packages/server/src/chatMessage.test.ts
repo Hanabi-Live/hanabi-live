@@ -18,8 +18,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "hi",
       who: "Ada",
-      discord: false,
-      server: false,
+      source: "user",
       datetime,
       room: "lobby",
       chatID: 42,
@@ -40,8 +39,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "hello",
       who: "DiscordUser",
-      discord: true,
-      server: false,
+      source: "discord",
       datetime,
       room: "lobby",
       chatID: 43,
@@ -61,8 +59,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "clue",
       who: "Ada",
-      discord: false,
-      server: false,
+      source: "user",
       datetime,
       room: "table00123",
     });
@@ -82,8 +79,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "secret",
       who: "Ada",
-      discord: false,
-      server: false,
+      source: "user",
       datetime,
       pmID: 88,
       recipient: "Alice",
@@ -104,8 +100,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "Identity token",
       who: "Hanab Live",
-      discord: false,
-      server: true,
+      source: "server",
       datetime,
       room: "table123",
       recipient: "Alice",
@@ -123,8 +118,7 @@ describe("chatMessageToWire", () => {
       }),
     ).toEqual({
       msg: "Join Discord",
-      discord: false,
-      server: true,
+      source: "server",
       datetime,
       room: "lobby",
     });
@@ -143,8 +137,7 @@ describe("chatMessageToWire", () => {
     ).toEqual({
       msg: "[Server Notice] Hello",
       who: "",
-      discord: false,
-      server: true,
+      source: "server",
       datetime,
       room: "lobby",
     });

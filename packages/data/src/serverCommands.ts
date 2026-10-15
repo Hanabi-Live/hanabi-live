@@ -19,8 +19,7 @@ const serverCommandChatData = z
   .object({
     msg: z.string().min(1), // Pre-escaped HTML string
     who: z.string().min(1).optional(), // plain string
-    discord: z.boolean(),
-    server: z.boolean(),
+    source: z.enum(["user", "server", "discord"]),
     datetime: z.string().min(1), // new Date(x) string
     chatID: z.number().int().positive().optional(),
     pmID: z.number().int().positive().optional(),
