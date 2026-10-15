@@ -28,14 +28,14 @@ var (
 )
 
 type ChatMessage struct {
-	Msg       string    `json:"msg"`
-	Who       string    `json:"who"`
+	Msg       string        `json:"msg"`
+	Who       string        `json:"who"`
 	Source    ChatLogSource `json:"source"`
-	Datetime  time.Time `json:"datetime"`
-	ChatID    int       `json:"chatID,omitempty"`
-	PMID      int       `json:"pmID,omitempty"`
-	Room      string    `json:"room"`
-	Recipient string    `json:"recipient"`
+	Datetime  time.Time     `json:"datetime"`
+	ChatID    int           `json:"chatID,omitempty"`
+	PMID      int           `json:"pmID,omitempty"`
+	Room      string        `json:"room"`
+	Recipient string        `json:"recipient"`
 }
 
 // chatServerSend is a helper function to send a message from the server

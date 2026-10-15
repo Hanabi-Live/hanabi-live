@@ -570,7 +570,10 @@ function addInternal(
         ? `<span class="red">[PM from <strong>${textToHtml(data.who)}</strong>]</span>&nbsp; `
         : `<span class="red">[PM to <strong>${textToHtml(data.recipient)}</strong>]</span>&nbsp; `;
   }
-  if (data.source === "server" || (data.recipient !== undefined && data.recipient !== "")) {
+  if (
+    data.source === "server"
+    || (data.recipient !== undefined && data.recipient !== "")
+  ) {
     line += msg;
   } else if (data.who === "") {
     line += msg;
