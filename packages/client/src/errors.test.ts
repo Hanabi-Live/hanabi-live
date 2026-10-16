@@ -23,7 +23,11 @@ describe("error reporting", () => {
     if (previousAddEventListener === undefined) {
       Reflect.deleteProperty(globalThis, "addEventListener");
     } else {
-      Object.defineProperty(globalThis, "addEventListener", previousAddEventListener);
+      Object.defineProperty(
+        globalThis,
+        "addEventListener",
+        previousAddEventListener,
+      );
     }
     if (previousNavigator === undefined) {
       Reflect.deleteProperty(globalThis, "navigator");
