@@ -4,34 +4,38 @@ import { showError } from "./modals";
 
 jest.mock("./modals", () => ({ showError: jest.fn() }));
 
+type ErrorListener = (type: string, listener: (event: ErrorEvent) => void) => void;
+
 describe("error reporting", () => {
-  const addEventListenerDescriptor = Object.getOwnPropertyDescriptor(
+  const previousAddEventListener = Object.getOwnPropertyDescriptor(
     globalThis,
     "addEventListener",
   );
-  const navigatorDescriptor = Object.getOwnPropertyDescriptor(
+  const previousNavigator = Object.getOwnPropertyDescriptor(
     globalThis,
     "navigator",
   );
 
   afterEach(() => {
-    for (const [key, descriptor] of [
-      ["addEventListener", addEventListenerDescriptor],
-      ["navigator", navigatorDescriptor],
-    ] as const) {
-      if (descriptor === undefined) {
-        Reflect.deleteProperty(globalThis, key);
-      } else {
-        Object.defineProperty(globalThis, key, descriptor);
-      }
+    if (previousAddEventListener === undefined) {
+      Reflect.deleteProperty(globalThis, "addEventListener");
+    } else {
+      Object.defineProperty(
+        globalThis,
+        "addEventListener",
+        previousAddEventListener,
+      );
+    }
+    if (previousNavigator === undefined) {
+      Reflect.deleteProperty(globalThis, "navigator");
+    } else {
+      Object.defineProperty(globalThis, "navigator", previousNavigator);
     }
     jest.clearAllMocks();
   });
 
-  test("keeps the error page available when following report links", () => {
-    const addEventListener = jest.fn<
-      (type: string, listener: (event: ErrorEvent) => void) => void
-    >();
+  test("report links open in new tabs without discarding the stack", () => {
+    const addEventListener = jest.fn<ErrorListener>();
     Object.defineProperties(globalThis, {
       addEventListener: {
         configurable: true,
@@ -46,13 +50,12 @@ describe("error reporting", () => {
     initErrorListener();
     const listener = addEventListener.mock.calls[0]?.[1];
     expect(listener).toBeDefined();
-
     listener?.({
       lineno: 12,
       colno: 4,
       filename: "https://hanab.live/main.min.js",
       message: "Test error",
-      error: { stack: "Test error\\n  at stackTraceLocation" },
+      error: { stack: String.raw`Test error\n  at stackTraceLocation` },
     } as ErrorEvent);
 
     const renderedError = jest.mocked(showError).mock.calls[0]?.[0];
