@@ -39,6 +39,7 @@ export function reversibleIsCardNeededForMaxScore(
     lastPlayedRank,
     allDiscardedSet,
     direction,
+    variant.upOrDown,
   );
   return usefulRanks.has(rank);
 }
@@ -47,17 +48,20 @@ export function reversibleGetRanksUsefulForMaxScore(
   lastPlayed: Rank | null,
   allDiscardedSet: ReadonlySet<Rank>,
   direction: StackDirection | undefined,
+  upOrDown: boolean,
 ): ReadonlySet<Rank> {
   if (direction === StackDirection.Undecided) {
     const upSet = reversibleGetRanksUsefulForMaxScore(
       lastPlayed,
       allDiscardedSet,
       StackDirection.Up,
+      upOrDown,
     );
     const downSet = reversibleGetRanksUsefulForMaxScore(
       lastPlayed,
       allDiscardedSet,
       StackDirection.Down,
+      upOrDown,
     );
     return new Set<Rank>([...upSet, ...downSet]);
   }
@@ -67,13 +71,18 @@ export function reversibleGetRanksUsefulForMaxScore(
   }
   if (direction === StackDirection.Up) {
     // We first deal with S and 1, if both are discarded then no other cards can be played:
-    if (allDiscardedSet.has(START_CARD_RANK) && allDiscardedSet.has(1)) {
+    if (
+      allDiscardedSet.has(1)
+      && (!upOrDown || allDiscardedSet.has(START_CARD_RANK))
+    ) {
       return ranksSet;
     }
     let nextToPlay = 2;
     if (lastPlayed === null) {
       ranksSet.add(1);
-      ranksSet.add(START_CARD_RANK);
+      if (upOrDown) {
+        ranksSet.add(START_CARD_RANK);
+      }
     } else if (lastPlayed !== START_CARD_RANK) {
       nextToPlay = lastPlayed + 1;
     }
@@ -88,13 +97,18 @@ export function reversibleGetRanksUsefulForMaxScore(
 
   // Same logic than Up, but reversed.
   if (direction === StackDirection.Down) {
-    if (allDiscardedSet.has(START_CARD_RANK) && allDiscardedSet.has(5)) {
+    if (
+      allDiscardedSet.has(5)
+      && (!upOrDown || allDiscardedSet.has(START_CARD_RANK))
+    ) {
       return ranksSet;
     }
     let nextToPlay = 4;
     if (lastPlayed === null) {
       ranksSet.add(5);
-      ranksSet.add(START_CARD_RANK);
+      if (upOrDown) {
+        ranksSet.add(START_CARD_RANK);
+      }
     } else if (lastPlayed !== START_CARD_RANK) {
       nextToPlay = lastPlayed - 1;
     }
