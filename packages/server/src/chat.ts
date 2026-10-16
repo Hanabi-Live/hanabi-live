@@ -39,26 +39,24 @@ export function validateAndNormalizeChatMsg(
 
 export async function getChatList(
   room: string,
-  count?: number,
-): Promise<readonly ServerCommandChatData[]> {
-  const rows = await models.chatLog.get(room, count);
-
-  // The chat messages were queried from the database in order from newest to oldest. We want to
-  // send them to the client in the reverse order so that the newest messages display at the bottom.
-  const reversedRows = rows.toReversed();
-
-  const chatList: ServerCommandChatData[] = [];
-  for (const row of reversedRows) {
-    const chatData = getChatData(room, row);
-    chatList.push(chatData);
-  }
-
-  return chatList;
+  amount: number,
+  beforeID?: number,
+): Promise<{ list: readonly ServerCommandChatData[]; hasMore: boolean }> {
+  const { rows, hasMore } = await models.chatLog.getHistory(
+    room,
+    amount,
+    beforeID,
+  );
+  // Pages are selected newest first for the cursor, but rendered oldest first.
+  return {
+    list: rows.toReversed().map((row) => getChatData(room, row)),
+    hasMore,
+  };
 }
 
 function getChatData(
   room: string,
-  row: Awaited<ReturnType<typeof models.chatLog.get>>[number],
+  row: Awaited<ReturnType<typeof models.chatLog.getHistory>>["rows"][number],
 ): ServerCommandChatData {
   const {
     chatID,

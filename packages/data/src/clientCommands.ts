@@ -32,6 +32,19 @@ export interface ClientCommandChatPMData extends z.infer<
   typeof clientCommandChatPMData
 > {}
 
+const clientCommandChatHistoryGetData = z
+  .object({
+    amount: z.number().int().min(1).max(100),
+    beforeID: z.number().int().positive().optional(),
+  })
+  .strict()
+  .readonly();
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ClientCommandChatHistoryGetData extends z.infer<
+  typeof clientCommandChatHistoryGetData
+> {}
+
 const clientCommandChatPMHistoryGetData = z
   .object({
     amount: z.number().int().min(1).max(100),
@@ -53,6 +66,7 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
 
 export interface ClientCommandData {
   [ClientCommand.chat]: ClientCommandChatData;
+  [ClientCommand.chatHistoryGet]: ClientCommandChatHistoryGetData;
   [ClientCommand.chatPM]: ClientCommandChatPMData;
   [ClientCommand.chatPMHistoryGet]: ClientCommandChatPMHistoryGetData;
 }
@@ -61,6 +75,7 @@ interfaceSatisfiesEnum<ClientCommandData, ClientCommand>();
 
 export const CLIENT_COMMAND_SCHEMAS = {
   [ClientCommand.chat]: clientCommandChatData,
+  [ClientCommand.chatHistoryGet]: clientCommandChatHistoryGetData,
   [ClientCommand.chatPM]: clientCommandChatPMData,
   [ClientCommand.chatPMHistoryGet]: clientCommandChatPMHistoryGetData,
 } as const satisfies Record<ClientCommand, unknown>;

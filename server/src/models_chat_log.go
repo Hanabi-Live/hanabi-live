@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -156,11 +155,11 @@ type DBChatMessage struct {
 	Datetime    time.Time      `json:"datetime"`
 }
 
-// Get the past messages sent in the lobby
-func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
-	chatMessages := make([]DBChatMessage, 0)
-
-	SQLString := `
+// GetHistory returns a page of persisted lobby messages in descending chat ID
+// order. Fetching one extra row lets us return hasMore without an extra query.
+// The cursor is exclusive and stable even when old messages are deleted.
+func (*ChatLog) GetHistory(room string, amount int, beforeID int) ([]DBChatMessage, bool, error) {
+	rows, err := db.Query(context.Background(), `
 		SELECT
 			chat_log.id,
 			chat_log.user_id,
@@ -169,29 +168,21 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 			chat_log.discord_name,
 			chat_log.message,
 			chat_log.datetime_sent
-		FROM
-			chat_log
-		LEFT JOIN
-			users ON users.id = chat_log.user_id
+		FROM chat_log
+		LEFT JOIN users ON users.id = chat_log.user_id
 		WHERE
-			room = $1
+			chat_log.room = $1
 			AND chat_log.deleted_at IS NULL
-		ORDER BY
-			chat_log.datetime_sent DESC,
-			/* We provide a secondary sort by id in case two chat messages are sent at the same time. */
-			chat_log.id DESC
-	`
-	if count > 0 {
-		SQLString += "LIMIT " + strconv.Itoa(count)
+			AND ($2 = 0 OR chat_log.id < $2)
+		ORDER BY chat_log.id DESC
+		LIMIT $3
+	`, room, beforeID, amount+1)
+	if err != nil {
+		return nil, false, err
 	}
+	defer rows.Close()
 
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, room); err != nil {
-		return chatMessages, err
-	} else {
-		rows = v
-	}
-
+	messages := make([]DBChatMessage, 0, amount+1)
 	for rows.Next() {
 		var message DBChatMessage
 		var source string
@@ -204,16 +195,18 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 			&message.Message,
 			&message.Datetime,
 		); err != nil {
-			return chatMessages, err
+			return nil, false, err
 		}
 		message.Source = ChatLogSource(source)
-		chatMessages = append(chatMessages, message)
+		messages = append(messages, message)
 	}
-
 	if err := rows.Err(); err != nil {
-		return chatMessages, err
+		return nil, false, err
 	}
-	rows.Close()
 
-	return chatMessages, nil
+	hasMore := len(messages) > amount
+	if hasMore {
+		messages = messages[:amount]
+	}
+	return messages, hasMore, nil
 }

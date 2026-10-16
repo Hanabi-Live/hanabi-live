@@ -21,6 +21,7 @@ import {
   getLobbyChatIDAttribute,
   LobbyChatDeletionState,
 } from "./chatDeletion";
+import { LobbyChatHistoryState } from "./chatHistory";
 import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
@@ -39,6 +40,7 @@ const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 const lobbyChatDeletionState = new LobbyChatDeletionState();
+const lobbyChatHistoryState = new LobbyChatHistoryState();
 let lastPM = "";
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
@@ -60,6 +62,14 @@ export function init(): void {
   $("#game-chat-input").on("keypress", keypress("table"));
   $("#game-chat-input").on("keydown", keydown);
   $(".emoji-button").on("click", emojiClick);
+
+  // Unlike the in-memory table chat, the lobby has persisted history.
+  $("<button>")
+    .attr({ id: "lobby-chat-history-more", type: "button" })
+    .addClass("button small hidden")
+    .text("Load older messages")
+    .insertBefore("#lobby-chat-text")
+    .on("click", requestOlderLobbyMessages);
 
   // Make an emoji list/map and ensure that there are no overlapping emoji.
   for (const [emojiName, emoji] of Object.entries(emojis)) {
@@ -517,6 +527,61 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   addInternal(data, fast, true);
 }
 
+export function initializeLobbyHistory(
+  list: readonly ServerCommandChatData[],
+  hasMore: boolean,
+): void {
+  lobbyChatHistoryState.reset(list, hasMore);
+  updateLobbyHistoryButton();
+}
+
+function updateLobbyHistoryButton() {
+  const button = $("#lobby-chat-history-more");
+  button.toggleClass("hidden", !lobbyChatHistoryState.hasMore);
+  button.prop("disabled", lobbyChatHistoryState.loading);
+  button.text(
+    lobbyChatHistoryState.loading ? "Loading..." : "Load older messages",
+  );
+}
+
+function requestOlderLobbyMessages() {
+  const beforeID = lobbyChatHistoryState.begin();
+  if (beforeID === undefined) {
+    return;
+  }
+  if (globals.conn === null) {
+    lobbyChatHistoryState.cancel();
+    updateLobbyHistoryButton();
+    return;
+  }
+  updateLobbyHistoryButton();
+  globals.conn.send("chatHistoryGet", { amount: 50, beforeID });
+}
+
+export function addOlderLobbyMessages(
+  list: readonly ServerCommandChatData[],
+  hasMore: boolean,
+): void {
+  if (!lobbyChatHistoryState.loading) {
+    return;
+  }
+  const container = $("#lobby-chat-text")[0];
+  if (container === undefined) {
+    lobbyChatHistoryState.cancel();
+    return;
+  }
+  const oldHeight = container.scrollHeight;
+  const oldTop = container.scrollTop;
+  // Each prepend pushes an older entry to the front; traverse newest first.
+  for (let i = list.length - 1; i >= 0; i--) {
+    addInternal(list[i]!, true, false, true);
+  }
+  // Keep the previously visible line at the same place in the viewport.
+  container.scrollTop = oldTop + container.scrollHeight - oldHeight;
+  lobbyChatHistoryState.complete(list, hasMore);
+  updateLobbyHistoryButton();
+}
+
 export function removeDeletedLobbyMessage(chatID: number): void {
   // Retain recent deletions so a late live message or chatList cannot revive one.
   lobbyChatDeletionState.markDeleted(chatID);
@@ -542,8 +607,17 @@ function addInternal(
   data: ServerCommandChatData,
   fast: boolean,
   updateLiveState: boolean,
+  prepend = false,
 ) {
   if (lobbyChatDeletionState.shouldSkipMessage(data.room, data.chatID)) {
+    return;
+  }
+  // Live deliveries may overlap with the initial page or a requested page.
+  if (
+    data.room === "lobby"
+    && data.chatID !== undefined
+    && $(`#lobby-chat-text [data-chat-id="${data.chatID}"]`).length > 0
+  ) {
     return;
   }
 
@@ -612,13 +686,19 @@ function addInternal(
   const pxEpsilon = 2;
   const firstChat = chat[0]!;
   const autoScroll =
-    Math.abs(
+    !prepend
+    && Math.abs(
       firstChat.clientHeight + firstChat.scrollTop - firstChat.scrollHeight,
     ) < pxEpsilon;
 
-  // Add the new line and fade it in.
-  chat.append(line);
-  $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
+  // Older history is prepended without animation or updating live-chat state.
+  if (prepend) {
+    chat.prepend(line);
+    $(`#chat-line-${chatLineNum}`).css("display", "block");
+  } else {
+    chat.append(line);
+    $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
+  }
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
     $(element).on("click", () => {

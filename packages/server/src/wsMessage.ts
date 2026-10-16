@@ -7,6 +7,7 @@ import {
 import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
 import { commandChat } from "./commands/commandChat";
+import { commandChatHistoryGet } from "./commands/commandChatHistoryGet";
 import { commandChatPM } from "./commands/commandChatPM";
 import { commandChatPMHistoryGet } from "./commands/commandChatPMHistoryGet";
 import { logger } from "./logger";
@@ -24,6 +25,7 @@ type ClientCommandHandlers = {
 
 const CLIENT_COMMAND_HANDLERS = {
   [ClientCommand.chat]: commandChat,
+  [ClientCommand.chatHistoryGet]: commandChatHistoryGet,
   [ClientCommand.chatPM]: commandChatPM,
   [ClientCommand.chatPMHistoryGet]: commandChatPMHistoryGet,
 } as const satisfies ClientCommandHandlers;

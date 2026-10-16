@@ -170,10 +170,14 @@ async function sendChat(wsUser: WSUser) {
 }
 
 async function sendChatLobbyPrevious(wsUser: WSUser) {
-  const list = await getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH);
+  const { list, hasMore } = await getChatList(
+    "lobby",
+    LOBBY_CHAT_HISTORY_LENGTH,
+  );
   wsSend(wsUser.connection, ServerCommand.chatList, {
     list,
     unread: 0,
+    hasMore,
   });
 }
 

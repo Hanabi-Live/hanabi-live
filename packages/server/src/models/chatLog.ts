@@ -1,5 +1,5 @@
 import type { UserID } from "@hanabi-live/data";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, lt } from "drizzle-orm";
 import { chatLogTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
 
@@ -20,8 +20,8 @@ export const chatLog = {
   },
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  get: async (room: string, count?: number) => {
-    const query = db
+  getHistory: async (room: string, amount: number, beforeID?: number) => {
+    const rows = await db
       .select({
         chatID: chatLogTable.id,
         userID: chatLogTable.userID,
@@ -33,12 +33,18 @@ export const chatLog = {
       })
       .from(chatLogTable)
       .leftJoin(usersTable, eq(usersTable.id, chatLogTable.userID))
-      .where(and(eq(chatLogTable.room, room), isNull(chatLogTable.deletedAt)))
-      .orderBy(desc(chatLogTable.datetimeSent), desc(chatLogTable.id));
-    const queryWithLimit = count === undefined ? query : query.limit(count);
-    const rows = await queryWithLimit;
+      .where(
+        and(
+          eq(chatLogTable.room, room),
+          isNull(chatLogTable.deletedAt),
+          beforeID === undefined ? undefined : lt(chatLogTable.id, beforeID),
+        ),
+      )
+      // Always sort by the same monotonically increasing ID as the cursor.
+      .orderBy(desc(chatLogTable.id))
+      .limit(amount + 1);
 
-    return rows;
+    return { rows: rows.slice(0, amount), hasMore: rows.length > amount };
   },
 
   set: async (userID: UserID, message: string, room: string): Promise<void> => {

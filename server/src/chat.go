@@ -162,8 +162,15 @@ func chatReplaceSpoilers(msg string) string {
 }
 
 type ChatListMessage struct {
-	List   []*ChatMessage `json:"list"`
-	Unread int            `json:"unread"`
+	List    []*ChatMessage `json:"list"`
+	Unread  int            `json:"unread"`
+	HasMore *bool          `json:"hasMore,omitempty"` // Only set for initial lobby history.
+}
+
+// ChatHistoryData is an explicitly requested page of older persisted lobby messages.
+type ChatHistoryData struct {
+	List    []*ChatMessage `json:"list"`
+	HasMore bool           `json:"hasMore"`
 }
 
 // ChatDeleteMessage tells clients to remove a persisted lobby chat message.
@@ -179,21 +186,10 @@ func chatBroadcastDeletion(chatID int) {
 	}
 }
 
-func chatSendPastFromDatabase(s *Session, room string, count int) bool {
-	var rawMsgs []DBChatMessage
-	if v, err := models.ChatLog.Get(room, count); err != nil {
-		logger.Error("Failed to get the lobby chat history for user \"" + s.Username + "\": " + err.Error())
-		s.Error(DefaultErrorMsg)
-		return false
-	} else {
-		rawMsgs = v
-	}
-
-	msgs := make([]*ChatMessage, 0)
+// lobbyHistoryToWire converts newest-first DB rows into oldest-first wire messages.
+func lobbyHistoryToWire(room string, rawMsgs []DBChatMessage) []*ChatMessage {
+	msgs := make([]*ChatMessage, 0, len(rawMsgs))
 	for i := len(rawMsgs) - 1; i >= 0; i-- {
-		// The chat messages were queried from the database in order from newest to newest
-		// We want to send them to the client in the reverse order so that
-		// the newest messages display at the bottom
 		rawMsg := rawMsgs[i]
 		if rawMsg.Source == ChatLogSourceServer {
 			rawMsg.Name = "__server"
@@ -214,11 +210,22 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 		}).wire()
 		msgs = append(msgs, msg)
 	}
-	s.Emit("chatList", &ChatListMessage{
-		List:   msgs,
-		Unread: 0,
-	})
+	return msgs
+}
 
+func chatSendPastFromDatabase(s *Session, room string, count int) bool {
+	rawMsgs, hasMore, err := models.ChatLog.GetHistory(room, count, 0)
+	if err != nil {
+		logger.Error("Failed to get the lobby chat history for user \"" + s.Username + "\": " + err.Error())
+		s.Error(DefaultErrorMsg)
+		return false
+	}
+
+	s.Emit("chatList", &ChatListMessage{
+		List:    lobbyHistoryToWire(room, rawMsgs),
+		Unread:  0,
+		HasMore: &hasMore,
+	})
 	return true
 }
 

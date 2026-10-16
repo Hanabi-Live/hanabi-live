@@ -127,6 +127,7 @@ func commandInit() {
 	commandMap["chat"] = commandChat
 	commandMap["chatPM"] = commandChatPM
 	commandMap["chatPMHistoryGet"] = commandChatPMHistoryGet
+	commandMap["chatHistoryGet"] = commandChatHistoryGet
 	commandMap["chatRead"] = commandChatRead
 	commandMap["chatTyping"] = commandChatTyping
 	commandMap["chatFriend"] = commandChatFriend

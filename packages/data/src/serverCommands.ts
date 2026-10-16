@@ -47,10 +47,24 @@ export interface ServerCommandChatDeleteData extends z.infer<
   typeof serverCommandChatDeleteData
 > {}
 
+const serverCommandChatHistoryData = z
+  .object({
+    list: serverCommandChatData.array().readonly(),
+    hasMore: z.boolean(),
+  })
+  .strict()
+  .readonly();
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ServerCommandChatHistoryData extends z.infer<
+  typeof serverCommandChatHistoryData
+> {}
+
 const serverCommandChatListData = z
   .object({
     list: serverCommandChatData.array().readonly(),
     unread: z.number().int(),
+    hasMore: z.boolean().optional(), // Present only for initial lobby history.
   })
   .strict()
   .readonly();
@@ -225,6 +239,7 @@ export interface ServerCommandWelcomeData extends z.infer<
 
 export interface ServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
+  [ServerCommand.chatHistory]: ServerCommandChatHistoryData;
   [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
@@ -243,6 +258,7 @@ interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chat]: serverCommandChatData,
+  [ServerCommand.chatHistory]: serverCommandChatHistoryData,
   [ServerCommand.chatDelete]: serverCommandChatDeleteData,
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,

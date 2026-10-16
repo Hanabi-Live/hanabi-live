@@ -1,6 +1,7 @@
 /** A command sent from the server to the client. */
 export enum ServerCommand {
   chat = "chat",
+  chatHistory = "chatHistory",
   chatDelete = "chatDelete",
   chatList = "chatList",
   chatPMHistory = "chatPMHistory",

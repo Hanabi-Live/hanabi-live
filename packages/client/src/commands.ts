@@ -3,6 +3,7 @@
 import type {
   ServerCommandChatData,
   ServerCommandChatDeleteData,
+  ServerCommandChatHistoryData,
   ServerCommandChatPMHistoryData,
   ServerCommandErrorData,
   ServerCommandWarningData,
@@ -48,6 +49,10 @@ commands.set("error", (data: ServerCommandErrorData) => {
 commands.set("chat", (data: ServerCommandChatData) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.room, data.recipient);
+});
+
+commands.set("chatHistory", (data: ServerCommandChatHistoryData) => {
+  chat.addOlderLobbyMessages(data.list, data.hasMore);
 });
 
 commands.set("chatDelete", (data: ServerCommandChatDeleteData) => {
@@ -142,8 +147,12 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
 interface ChatListData {
   list: ServerCommandChatData[];
   unread: number;
+  hasMore?: boolean;
 }
 commands.set("chatList", (data: ChatListData) => {
+  if (data.hasMore !== undefined) {
+    chat.initializeLobbyHistory(data.list, data.hasMore);
+  }
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
