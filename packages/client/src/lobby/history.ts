@@ -43,9 +43,10 @@ export function show(): void {
     globalThis.location.pathname === "/lobby"
     && globalThis.location.hash === ""
   ) {
-    setBrowserAddressBarPath("/lobby", "#history", "push");
+    setBrowserAddressBarPath("/lobby", "#history");
   }
 
+  $("#lobby-history-other-scores").hide();
   $("#lobby-history").show();
   $("#lobby-top-half").addClass("hidden");
   $("#lobby-separator").addClass("hidden");
@@ -70,7 +71,7 @@ export function show(): void {
 
 export function hide(): void {
   globals.currentScreen = Screen.Lobby;
-  setBrowserAddressBarPath("/lobby", undefined, "push");
+  setBrowserAddressBarPath("/lobby", undefined);
   tablesDraw();
   usersDraw.draw();
 
@@ -224,7 +225,7 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
 export function showFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
   if (globalThis.location.hash === "#history") {
-    setBrowserAddressBarPath("/lobby", "#history-friends", "push");
+    setBrowserAddressBarPath("/lobby", "#history-friends");
   }
   nav.show("history-friends");
   $("#lobby-history-table-players").html("Players");
