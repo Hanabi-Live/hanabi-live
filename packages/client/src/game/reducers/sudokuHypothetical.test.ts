@@ -141,15 +141,14 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
       { type: "colorClue", target: 1, value: 1 },
       { type: "rankClue", target: 0, value: 4 },
       { type: "colorClue", target: 1, value: 0 },
-      { type: "play", order: 6 },
-      { type: "play", order: 47 },
+      { type: "play", order: 6 as CardOrder },
+      { type: "play", order: 47 as CardOrder },
     ] as const;
 
     for (const intent of intents) {
       const ongoing = hypothetical.ongoing;
       const orders =
         intent.type === "play" ? [intent.order] : ongoing.hands[intent.target];
-      assertDefined(orders, "Missing target hand.");
       const cardViews = orders.map((order) => {
         const state: CardState | undefined = ongoing.deck[order];
         const identity = cardIdentities[order];

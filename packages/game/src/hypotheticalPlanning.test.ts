@@ -161,10 +161,7 @@ describe("hypothetical planning", () => {
       const base = makeContext();
       const context: PlanHypotheticalActionContext = {
         ...base,
-        cardIdentities: [
-          base.cardIdentities[0]!,
-          { suitIndex: 0, rank: 1 },
-        ],
+        cardIdentities: [base.cardIdentities[0]!, { suitIndex: 0, rank: 1 }],
       };
       expect(
         planHypotheticalAction({ type, order: 1 as CardOrder }, context),
@@ -683,6 +680,7 @@ describe("hypothetical planning", () => {
             ...context.gameState.turn,
             currentPlayerIndex: 1,
           },
+          hands: [[1 as CardOrder], [0 as CardOrder]],
         },
       },
     );

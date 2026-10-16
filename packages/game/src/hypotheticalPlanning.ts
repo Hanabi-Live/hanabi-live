@@ -207,17 +207,13 @@ export function planHypotheticalAction(
 
   const actions: GameAction[] = [];
   if (intent.type === "play" || intent.type === "discard") {
-    // Playing another player's card would leave its order in that hand as well
-    // as the play/discard stack, putting the UI out of sync with the state.
-    // Only the final undrawn card can be played without being in this hand.
-    const isInCurrentHand =
-      gameState.hands[playerIndex]?.includes(intent.order) === true;
-    const isUndrawnFinalCard =
-      metadata.options.deckPlays
-      && gameState.cardsRemainingInTheDeck === 1
-      && gameState.deck.length === context.cardIdentities.length - 1
-      && intent.order === gameState.deck.length;
-    if (!isInCurrentHand && !isUndrawnFinalCard) {
+    // Playing a card held by another player would leave its order in that
+    // hand and also add it to a stack, putting the UI out of sync.
+    const isInOtherHand = gameState.hands.some(
+      (hand, otherPlayerIndex) =>
+        otherPlayerIndex !== playerIndex && hand.includes(intent.order),
+    );
+    if (isInOtherHand) {
       return null;
     }
 
