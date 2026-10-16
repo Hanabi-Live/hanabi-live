@@ -89,6 +89,9 @@ export function set(
   arrow.show();
   arrow.moveToTop();
 
+  // Clear leftover suit pips before reusing an arrow for another clue or highlight.
+  arrow.suitPip?.hide();
+
   // Figure out whether the arrow should be inverted or not.
   let rot = 0;
   if (
