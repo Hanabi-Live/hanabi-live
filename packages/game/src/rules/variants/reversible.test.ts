@@ -93,3 +93,25 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
     expect(ranks).toEqual(new Set([1, START_CARD_RANK]));
   });
 });
+
+describe("fixed reversed suits cannot start after their starting card is discarded", () => {
+  test("discarding the only reversed 5 makes all lower ranks trash", () => {
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      // eslint-disable-next-line unicorn/no-null
+      null,
+      new Set<Rank>([5]),
+      StackDirection.Down,
+    );
+    expect(ranks).toEqual(new Set());
+  });
+
+  test("discarding every normal 1 makes higher ranks trash", () => {
+    const ranks = reversibleGetRanksUsefulForMaxScore(
+      // eslint-disable-next-line unicorn/no-null
+      null,
+      new Set<Rank>([1]),
+      StackDirection.Up,
+    );
+    expect(ranks).toEqual(new Set());
+  });
+});
