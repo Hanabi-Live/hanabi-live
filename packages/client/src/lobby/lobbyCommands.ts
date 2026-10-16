@@ -249,8 +249,8 @@ lobbyCommands.set("tableStart", (data: TableStartData) => {
   // Record the table ID for later.
   globals.tableID = data.tableID;
 
-  if (!data.replay) {
-    pregame.hide();
+  if (!data.replay && globals.currentScreen === Screen.PreGame) {
+    pregame.hide(false);
   }
   gameMain.show();
 });
@@ -345,6 +345,26 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
   playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
+
+  // Restoring a lobby history entry should not immediately reopen the old spectated game.
+  const historyNavigation = sessionStorage.getItem("historyNavigation");
+  sessionStorage.removeItem("historyNavigation");
+  if (
+    historyNavigation === "/lobby"
+    && globalThis.location.pathname === "/lobby"
+    && data.playingAtTables.length === 0
+  ) {
+    if (
+      data.disconSpectatingTable !== undefined
+      && data.disconSpectatingTable > 0
+    ) {
+      globals.conn!.send("tableUnattend", {
+        tableID: data.disconSpectatingTable,
+      });
+    }
+    url.parseAndGoto(data);
+    return;
+  }
 
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game (and ignore any specific custom path that the user has entered).

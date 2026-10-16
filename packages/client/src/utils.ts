@@ -56,7 +56,11 @@ export function getURLFromPath(path: string): string {
   return url;
 }
 
-export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
+export function setBrowserAddressBarPath(
+  newPath: string,
+  hash?: string,
+  historyMode: "push" | "replace" = "replace",
+): void {
   // Combine the path (e.g. "/") with the query string parameters (e.g. "?dev")
   const queryParameters = new URLSearchParams(globalThis.location.search);
   const modifiedQueryParameters = queryParameters
@@ -73,7 +77,15 @@ export function setBrowserAddressBarPath(newPath: string, hash?: string): void {
     // e.g. "#123", which is used to show the current turn
     path += hash;
   }
-  globalThis.history.replaceState(undefined, "", path);
+  if (
+    historyMode === "push"
+    && path
+      !== `${globalThis.location.pathname}${globalThis.location.search}${globalThis.location.hash}`
+  ) {
+    globalThis.history.pushState(undefined, "", path);
+  } else {
+    globalThis.history.replaceState(undefined, "", path);
+  }
 }
 
 export function timerFormatter(totalSeconds: number): string {

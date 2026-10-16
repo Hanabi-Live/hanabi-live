@@ -1,10 +1,16 @@
 import type { ServerCommandWelcomeData } from "@hanabi-live/data";
 import { afterEach, describe, expect, jest, test } from "@jest/globals";
 import { globals } from "../Globals";
+import * as history from "./history";
 import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";
 import { parseAndGoto } from "./url";
 
+jest.mock("./history", () => ({
+  show: jest.fn(),
+  showFriends: jest.fn(),
+  showOtherScoresFromURL: jest.fn(),
+}));
 jest.mock("../Globals", () => ({ globals: { conn: { send: jest.fn() } } }));
 jest.mock("../utils", () => ({ setBrowserAddressBarPath: jest.fn() }));
 
@@ -66,6 +72,40 @@ describe("replay URL loading", () => {
       expand(`${payload}${suffix}`),
     );
     expect(globalThis.location.hash).toBe("#42");
+  });
+
+  test.each([
+    ["#history", false],
+    ["#history-friends", true],
+  ])("restores lobby history route %s", (hash, friends) => {
+    const show = jest.spyOn(history, "show");
+    const showFriends = jest.spyOn(history, "showFriends");
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(`https://hanab.live/lobby${hash}`),
+    });
+
+    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+
+    expect(show).toHaveBeenCalledTimes(1);
+    expect(showFriends).toHaveBeenCalledTimes(friends ? 1 : 0);
+  });
+
+  test("restores the other scores history route", () => {
+    const show = jest.spyOn(history, "show");
+    const showFriends = jest.spyOn(history, "showFriends");
+    const showOtherScores = jest.spyOn(history, "showOtherScoresFromURL");
+    const url = "https://hanab.live/lobby#history-other-scores-friends-p4v0s1";
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(url),
+    });
+
+    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+
+    expect(show).toHaveBeenCalledTimes(1);
+    expect(showFriends).toHaveBeenCalledTimes(1);
+    expect(showOtherScores).toHaveBeenCalledWith("p4v0s1", true);
   });
 
   test.each([

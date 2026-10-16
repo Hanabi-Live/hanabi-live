@@ -47,6 +47,11 @@ if (
 initErrorListener();
 
 $(document).ready(() => {
+  globalThis.addEventListener("popstate", () => {
+    sessionStorage.setItem("historyNavigation", globalThis.location.pathname);
+    globalThis.location.reload();
+  });
+
   // Set an event handler for when the entire window loses focus.
   $(globalThis).blur(() => {
     if (globals.currentScreen === Screen.Game && globals.ui !== null) {
