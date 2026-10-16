@@ -155,6 +155,20 @@ function applyPlan(
 }
 
 describe("hypothetical planning", () => {
+  test.each(["play", "discard"] as const)(
+    "rejects a %s of another player's card",
+    (type) => {
+      const base = makeContext();
+      const context: PlanHypotheticalActionContext = {
+        ...base,
+        cardIdentities: [base.cardIdentities[0]!, { suitIndex: 0, rank: 1 }],
+      };
+      expect(
+        planHypotheticalAction({ type, order: 1 as CardOrder }, context),
+      ).toBeNull();
+    },
+  );
+
   test("draws the bottom card before a successful play", () => {
     const context = makeBottomDeckContext();
     const actions = planHypotheticalAction(
@@ -666,6 +680,7 @@ describe("hypothetical planning", () => {
             ...context.gameState.turn,
             currentPlayerIndex: 1,
           },
+          hands: [[1 as CardOrder], [0 as CardOrder]],
         },
       },
     );

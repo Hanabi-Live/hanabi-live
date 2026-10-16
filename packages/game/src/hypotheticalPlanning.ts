@@ -207,6 +207,15 @@ export function planHypotheticalAction(
 
   const actions: GameAction[] = [];
   if (intent.type === "play" || intent.type === "discard") {
+    // Reject cards held by other players to prevent duplicated card orders.
+    const isInOtherHand = gameState.hands.some(
+      (hand, otherPlayerIndex) =>
+        otherPlayerIndex !== playerIndex && hand.includes(intent.order),
+    );
+    if (isInOtherHand) {
+      return null;
+    }
+
     const card = cardAt(intent.order);
     if (
       card === undefined
