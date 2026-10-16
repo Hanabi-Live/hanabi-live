@@ -148,6 +148,7 @@ describe("Dark Prism Reversed card status (#3047)", () => {
       suit.reversed ? StackDirection.Down : StackDirection.Up,
     ) as unknown as GameState["playStackDirections"];
     const starts = variant.suits.map(
+      // eslint-disable-next-line unicorn/no-null
       () => null,
     ) as unknown as GameState["playStackStarts"];
     const discardedFive = {
