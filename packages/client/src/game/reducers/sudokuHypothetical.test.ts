@@ -18,12 +18,12 @@ import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
 import { initialState } from "./initialStates/initialState";
 
 const replay = loadGameJSON(sudokuGame);
-const metadata = replay.metadata;
+const { metadata } = replay;
 const variant = getVariant(metadata.options.variantName);
 const notes = initialState(metadata).notes.ourNotes;
 const cardIdentities = sudokuGame.deck as unknown as readonly CardIdentity[];
 
-function expectConsistentCollections(state: GameState): void {
+function expectConsistentCollections(state: GameState) {
   const locations = [
     ...state.hands.flat(),
     ...state.playStacks.flat(),
@@ -97,10 +97,10 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
             ],
           };
           const actions = planHypotheticalAction(
-            { type, order: order as CardOrder },
+            { type, order },
             context,
           );
-          expect(actions).not.toBeNull();
+          assertNotNull(actions, "Failed to plan a hand action.");
 
           let hypothetical = initializeHypotheticalState(
             gameState,
@@ -109,7 +109,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
             true,
             metadata,
           );
-          for (const action of actions ?? []) {
+          for (const action of actions) {
             hypothetical = hypotheticalStateReducer(
               hypothetical,
               action,
@@ -146,7 +146,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     ] as const;
 
     for (const intent of intents) {
-      const ongoing = hypothetical.ongoing;
+      const { ongoing } = hypothetical;
       const orders =
         intent.type === "play" ? [intent.order] : ongoing.hands[intent.target];
       const cardViews = orders.map((order) => {
@@ -171,9 +171,9 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
         notes,
         playing: false,
         cardViews,
-      } as PlanHypotheticalActionContext);
-      expect(planned).not.toBeNull();
-      for (const action of planned ?? []) {
+      });
+      assertNotNull(planned, "Failed to plan a replay action.");
+      for (const action of planned) {
         hypothetical = hypotheticalStateReducer(
           hypothetical,
           action,
@@ -190,9 +190,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     expect(after.hands[0]).toContain(49);
     expect(after.hands[1]).not.toContain(49);
 
-    // Card 49 is no longer in the deck. Its actual identity is Green 2, but it
-    // can be morphed to Red 4. Playing it as player 1 would duplicate it in
-    // player 0's hand and a play/discard stack, desynchronizing the UI.
+    // Replaying card 49 from another hand would duplicate it in the UI.
     const card = after.deck[49];
     assertDefined(card, "Missing the final card.");
     const morphedIdentities: Array<CardIdentity | undefined> = [];
