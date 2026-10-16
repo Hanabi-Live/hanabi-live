@@ -207,8 +207,7 @@ export function planHypotheticalAction(
 
   const actions: GameAction[] = [];
   if (intent.type === "play" || intent.type === "discard") {
-    // Playing a card held by another player would leave its order in that
-    // hand and also add it to a stack, putting the UI out of sync.
+    // Reject cards held by other players to prevent duplicated card orders.
     const isInOtherHand = gameState.hands.some(
       (hand, otherPlayerIndex) =>
         otherPlayerIndex !== playerIndex && hand.includes(intent.order),
