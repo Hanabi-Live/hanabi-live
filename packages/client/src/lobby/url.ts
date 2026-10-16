@@ -95,7 +95,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
             );
             if (
               shadowingPlayerIndexInt !== undefined
-              && shadowingPlayerIndex >= 0
+              && shadowingPlayerIndexInt >= 0
             ) {
               shadowingPlayerIndex = shadowingPlayerIndexInt;
             }

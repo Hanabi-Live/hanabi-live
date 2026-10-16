@@ -67,4 +67,24 @@ describe("replay URL loading", () => {
     );
     expect(globalThis.location.hash).toBe("#42");
   });
+
+  test.each([
+    ["/game/123", -1],
+    ["/game/123/shadow/0", 0],
+    ["/game/123/shadow/2", 2],
+  ])("route %s requests spectator seat %i", (pathname, shadowingPlayerIndex) => {
+    const send = jest.spyOn(globals.conn!, "send");
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(`https://hanab.live${pathname}`),
+    });
+
+    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+
+    expect(send).toHaveBeenCalledWith("tableSpectate", {
+      tableID: 123,
+      shadowingPlayerIndex,
+    });
+  });
+
 });
