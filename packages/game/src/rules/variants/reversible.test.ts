@@ -30,6 +30,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
         null,
         allDiscardedSet,
         StackDirection.Undecided,
+        true,
       );
       expect(ranks).toEqual(new Set([1, 2, 3, 4, 5, START_CARD_RANK]));
     }
