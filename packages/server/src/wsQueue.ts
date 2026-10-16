@@ -104,6 +104,10 @@ function attachWebSocketEventHandlers(wsUser: WSUser) {
 
 async function sendInitialWSMessages(wsUser: WSUser) {
   await sendWelcomeMessage(wsUser);
+  // A reconnect probe confirms the session; a new initial connection restores state.
+  if (wsUser.reconnect === true) {
+    return;
+  }
   sendUserList(wsUser);
   sendTableList(wsUser);
   await sendChat(wsUser);
@@ -141,6 +145,7 @@ async function sendWelcomeMessage(wsUser: WSUser) {
     firstTimeUser,
     settings,
     friends,
+    connectionMode: wsUser.reconnect === true ? "reconnect" : "initial",
 
     playingAtTables,
     disconSpectatingTable,

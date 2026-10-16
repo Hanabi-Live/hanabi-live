@@ -123,7 +123,9 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusBadRequest),
 			http.StatusBadRequest,
 		)
-		deleteCookie(c)
+		// A dropped/aborted WebSocket handshake does not invalidate a valid
+		// authenticated cookie. The browser may legitimately retry it, especially
+		// when resuming from a mobile tab that was hidden.
 		return
 	}
 

@@ -20,6 +20,7 @@ export interface WSUser {
   ip: string;
   muted: boolean; // Users are forcefully disconnected upon being muted, so this is static.
   fakeUser: boolean; // TODO: is this needed?
+  reconnect?: boolean; // Optional authenticated resume probe, not an auth mechanism.
 
   // Dynamic fields
   status: Status;

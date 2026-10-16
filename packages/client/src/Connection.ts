@@ -21,10 +21,12 @@ export class Connection {
   ws: WebSocket;
   callbacks: WebSocketCallbacks = {};
   debug: boolean;
+  private readonly allowApplicationCommands: boolean;
 
-  constructor(addr: string, debug: boolean) {
+  constructor(addr: string, debug: boolean, allowApplicationCommands = true) {
     this.ws = new WebSocket(addr);
     this.debug = debug;
+    this.allowApplicationCommands = allowApplicationCommands;
 
     this.ws.addEventListener("close", this.onClose.bind(this));
     this.ws.addEventListener("open", this.onOpen.bind(this));
@@ -58,6 +60,10 @@ export class Connection {
 
     const callback = this.callbacks[command];
     if (callback === undefined) {
+      if (!this.allowApplicationCommands) {
+        // Older servers send normal bootstrap messages during reconnect.
+        return;
+      }
       console.error(
         `Received a WebSocket message with no corresponding callback: ${command}`,
       );
@@ -83,7 +89,11 @@ export class Connection {
   }
 
   send(command: string, data: unknown): void {
-    if (this.ws.readyState !== WebSocket.OPEN) {
+    // Resume probes must never submit gameplay commands to a stateful server.
+    if (
+      !this.allowApplicationCommands
+      || this.ws.readyState !== WebSocket.OPEN
+    ) {
       return;
     }
 
