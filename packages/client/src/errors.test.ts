@@ -9,7 +9,10 @@ describe("error reporting", () => {
     globalThis,
     "addEventListener",
   );
-  const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  const navigatorDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "navigator",
+  );
 
   afterEach(() => {
     for (const [key, descriptor] of [
