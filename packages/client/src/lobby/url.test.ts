@@ -72,7 +72,7 @@ describe("replay URL loading", () => {
     ["/game/123", -1],
     ["/game/123/shadow/0", 0],
     ["/game/123/shadow/2", 2],
-  ])("route %s requests spectator seat %i", (pathname, shadowingPlayerIndex) => {
+  ])("route %s => seat %i", (pathname, shadowingPlayerIndex) => {
     const send = jest.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
