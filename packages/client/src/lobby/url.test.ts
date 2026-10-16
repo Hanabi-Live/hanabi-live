@@ -86,5 +86,4 @@ describe("replay URL loading", () => {
       shadowingPlayerIndex,
     });
   });
-
 });
