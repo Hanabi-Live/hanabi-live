@@ -255,11 +255,11 @@ func TestIsJSONValidEmptyReplay(t *testing.T) {
 	previousVariants := variants
 	defer func() { variants = previousVariants }()
 	variant := &Variant{
-		Name: DefaultVariantName,
-		Suits: []*Suit{{}, {}, {}, {}, {}},
-		Ranks: []int{1, 2, 3, 4, 5},
+		Name:       DefaultVariantName,
+		Suits:      []*Suit{{}, {}, {}, {}, {}},
+		Ranks:      []int{1, 2, 3, 4, 5},
 		ClueColors: []string{"Red", "Yellow", "Green", "Blue", "Purple"},
-		StackSize: 5,
+		StackSize:  5,
 	}
 	variants = map[string]*Variant{DefaultVariantName: variant}
 	game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
