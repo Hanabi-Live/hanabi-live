@@ -104,16 +104,6 @@ export function createJSONFromReplay(room: string): void {
     }
   }
 
-  // Enforce at least one action.
-  if (game.actions.length === 0) {
-    sendSelfPMFromServer(
-      "There are no actions in your hypothetical.",
-      room,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-
   const json = JSON.stringify(game);
   const URLData = shrink(json);
   if (URLData === undefined || URLData === "") {

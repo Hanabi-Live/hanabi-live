@@ -250,3 +250,44 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 		}
 	})
 }
+
+func TestIsJSONValidEmptyReplay(t *testing.T) {
+	previousVariants := variants
+	defer func() { variants = previousVariants }()
+	variant := &Variant{
+		Name:       DefaultVariantName,
+		Suits:      []*Suit{{}, {}, {}, {}, {}},
+		Ranks:      []int{1, 2, 3, 4, 5},
+		ClueColors: []string{"Red", "Yellow", "Green", "Blue", "Purple"},
+		StackSize:  5,
+	}
+	variants = map[string]*Variant{DefaultVariantName: variant}
+	game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
+	game.InitDeck()
+	deck := game.CardIdentities
+
+	for _, tc := range []struct {
+		name      string
+		seed      string
+		deck      []*CardIdentity
+		wantError string
+	}{
+		{name: "seed-only empty actions", seed: "p4v0s1"},
+		{name: "explicit deck empty actions", deck: deck},
+		{name: "empty actions without seed or deck", wantError: "The deck must have 50 cards"},
+		{name: "invalid deck still rejected", deck: deck[:1], wantError: "The deck must have 50 cards"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := &CommandData{GameJSON: &GameJSON{
+				Players: []string{"Alice", "Bob", "Cathy", "Donald"},
+				Seed:    tc.seed,
+				Deck:    tc.deck,
+				Actions: []*GameAction{},
+			}}
+			valid, message := isJSONValid(d)
+			if valid != (tc.wantError == "") || !strings.Contains(message, tc.wantError) {
+				t.Fatalf("isJSONValid() = (%v, %q), want error %q", valid, message, tc.wantError)
+			}
+		})
+	}
+}
