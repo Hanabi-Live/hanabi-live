@@ -12,6 +12,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       null,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set([1, 2, 3, 4, 5, START_CARD_RANK]));
   });
@@ -33,6 +34,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       3,
       allDiscardedSet,
       StackDirection.Up,
+      true,
     );
     expect(ranks).toEqual(new Set([4, 5]));
   });
@@ -42,6 +44,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       5,
       allDiscardedSet,
       StackDirection.Down,
+      true,
     );
     expect(ranks).toEqual(new Set([3, 4]));
   });
@@ -52,6 +55,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       null,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set([1, 5, START_CARD_RANK]));
   });
@@ -61,6 +65,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       START_CARD_RANK,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set());
   });
@@ -70,6 +75,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       START_CARD_RANK,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set([3, 4]));
   });
@@ -79,6 +85,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       START_CARD_RANK,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set([2, 4]));
   });
@@ -89,6 +96,7 @@ describe("upOrDownDeadCardsDirectionUndecided", () => {
       null,
       allDiscardedSet,
       StackDirection.Undecided,
+      true,
     );
     expect(ranks).toEqual(new Set([1, START_CARD_RANK]));
   });
@@ -101,6 +109,7 @@ describe("fixed reversed suits cannot start after their starting card is discard
       null,
       new Set<Rank>([5]),
       StackDirection.Down,
+      false,
     );
     expect(ranks).toEqual(new Set());
   });
@@ -111,6 +120,7 @@ describe("fixed reversed suits cannot start after their starting card is discard
       null,
       new Set<Rank>([1]),
       StackDirection.Up,
+      false,
     );
     expect(ranks).toEqual(new Set());
   });
