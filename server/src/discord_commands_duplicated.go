@@ -73,8 +73,9 @@ func discordSubscribe(ctx context.Context, m *discordgo.MessageCreate, args []st
 	}
 
 	username := args[0]
+	// The generated notice has no corresponding Discord message ID.
 	// This won't get repeated because the sender is the bot; send it to two different channels
-	discordSendToChat(ctx, "@"+username+" is now a member of the @Ping Crew.", "")
+	discordSendToChat(ctx, "@"+username+" is now a member of the @Ping Crew.", "", "")
 	discordSend(m.ChannelID, "", "`@"+username+"` is now a member of the `@Ping Crew`.")
 }
 
@@ -102,7 +103,8 @@ func discordUnsubscribe(ctx context.Context, m *discordgo.MessageCreate, args []
 	}
 
 	username := args[0]
+	// The generated notice has no corresponding Discord message ID.
 	// This won't get repeated because the sender is the bot; send it to two different channels
-	discordSendToChat(ctx, "`@"+username+"` has left the `@Ping Crew`.", "")
+	discordSendToChat(ctx, "`@"+username+"` has left the `@Ping Crew`.", "", "")
 	discordSend(m.ChannelID, "", "`@"+username+"` has left the `@Ping Crew`.")
 }

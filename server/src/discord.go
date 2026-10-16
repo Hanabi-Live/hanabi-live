@@ -143,7 +143,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Send everyone the notification
 	username := discordGetNickname(m.Author.ID)
-	discordSendToChat(ctx, m.Content, username)
+	discordSendToChat(ctx, m.Content, username, m.ID)
 }
 
 /*
@@ -241,7 +241,7 @@ func discordCheckLobbyCommands(ctx context.Context, m *discordgo.MessageCreate) 
 			// Get the username once, and put it in args
 			// Because repeated calls to getUsername produce Discord errors
 			username := discordGetNickname(m.Author.ID)
-			discordSendToChat(ctx, "/"+command, username)
+			discordSendToChat(ctx, "/"+command, username, m.ID)
 
 			args = []string{username}
 			discordCommand(ctx, m, command, args)
@@ -284,13 +284,18 @@ func discordGetRoleByName(name string) (*discordgo.Role, bool) {
 	return nil, false
 }
 
-func discordSendToChat(ctx context.Context, msg string, username string) {
-	commandChat(ctx, nil, &CommandData{ // nolint: exhaustivestruct
-		Username: username,
-		Msg:      msg,
-		Discord:  true,
-		Room:     "lobby",
-	})
+func discordSendToChat(ctx context.Context, msg string, username string, discordMessageID string) {
+	commandChat(ctx, nil, newDiscordChatCommandData(msg, username, discordMessageID))
+}
+
+func newDiscordChatCommandData(msg string, username string, discordMessageID string) *CommandData {
+	return &CommandData{ // nolint: exhaustivestruct
+		Username:         username,
+		Msg:              msg,
+		Discord:          true,
+		DiscordMessageID: discordMessageID,
+		Room:             "lobby",
+	}
 }
 
 func discordReadEnvVar(envVar string) (string, bool) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"html"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
+	"github.com/jackc/pgx/v4"
 )
 
 const (
@@ -110,11 +112,17 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 	var chatID int
 	var datetime time.Time
 	if d.Discord {
-		insertResult, err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room)
+		insertResult, err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room, d.DiscordMessageID)
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Discord can deliver the same message more than once.
+			return
+		}
 		if err != nil {
 			logger.Error("Failed to insert a Discord chat message into the database: " +
 				err.Error())
-			s.Error(DefaultErrorMsg)
+			if s != nil {
+				s.Error(DefaultErrorMsg)
+			}
 			return
 		}
 		chatID = insertResult.ID

@@ -1,5 +1,6 @@
 // The schema in this file corresponds to "database_schema.sql".
 
+import { sql } from "drizzle-orm";
 import {
   boolean,
   doublePrecision,
@@ -10,6 +11,7 @@ import {
   smallint,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -200,6 +202,7 @@ export const chatLogTable = pgTable(
     userID: integer("user_id").notNull(),
     source: text("source", { enum: ["user", "server", "discord"] }).notNull(),
     discordName: text("discord_name"),
+    discordMessageID: text("discord_message_id"),
     message: text("message").notNull(),
     room: text("room").notNull(),
     datetimeSent: timestamp("datetime_sent", { withTimezone: true })
@@ -209,6 +212,9 @@ export const chatLogTable = pgTable(
   (table) => [
     index("chat_log_index_user_id").on(table.userID),
     index("chat_log_index_room").on(table.room),
+    uniqueIndex("chat_log_index_discord_message_id")
+      .on(table.discordMessageID)
+      .where(sql`${table.discordMessageID} IS NOT NULL`),
     index("chat_log_datetime_sent_id").on(table.datetimeSent, table.id),
   ],
 );
