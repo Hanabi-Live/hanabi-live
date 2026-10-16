@@ -2,6 +2,7 @@
 
 import type {
   ServerCommandChatData,
+  ServerCommandChatDeleteData,
   ServerCommandChatPMHistoryData,
   ServerCommandErrorData,
   ServerCommandWarningData,
@@ -47,6 +48,10 @@ commands.set("error", (data: ServerCommandErrorData) => {
 commands.set("chat", (data: ServerCommandChatData) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.room, data.recipient);
+});
+
+commands.set("chatDelete", (data: ServerCommandChatDeleteData) => {
+  chat.removeDeletedLobbyMessage(data.chatID);
 });
 
 commands.set("chatPMHistory", (data: ServerCommandChatPMHistoryData) => {

@@ -34,6 +34,19 @@ export interface ServerCommandChatData extends z.infer<
   typeof serverCommandChatData
 > {}
 
+const serverCommandChatDeleteData = z
+  .object({
+    chatID: z.number().int().positive(),
+    room: z.literal("lobby"),
+  })
+  .strict()
+  .readonly();
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ServerCommandChatDeleteData extends z.infer<
+  typeof serverCommandChatDeleteData
+> {}
+
 const serverCommandChatListData = z
   .object({
     list: serverCommandChatData.array().readonly(),
@@ -212,6 +225,7 @@ export interface ServerCommandWelcomeData extends z.infer<
 
 export interface ServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
+  [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
@@ -229,6 +243,7 @@ interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chat]: serverCommandChatData,
+  [ServerCommand.chatDelete]: serverCommandChatDeleteData,
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
   [ServerCommand.error]: serverCommandErrorData,

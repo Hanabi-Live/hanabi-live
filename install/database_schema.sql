@@ -295,6 +295,7 @@ CREATE TABLE chat_log (
     source              TEXT         NOT NULL CHECK (source IN ('user', 'server', 'discord')),
     discord_name        TEXT         NULL,     /* Only used if it is a Discord message. */
     discord_message_id  TEXT         NULL,     /* Discord snowflake, if the message came from Discord. */
+    deleted_at          TIMESTAMPTZ  NULL,     /* Tombstone: do not show or restore removed messages. */
     message             TEXT         NOT NULL,
     room                TEXT         NOT NULL, /* Either "lobby" or "table####". */
     datetime_sent       TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
