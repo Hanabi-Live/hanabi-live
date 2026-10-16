@@ -4,7 +4,10 @@ import { showError } from "./modals";
 
 jest.mock("./modals", () => ({ showError: jest.fn() }));
 
-type ErrorListener = (type: string, listener: (event: ErrorEvent) => void) => void;
+type ErrorListener = (
+  type: string,
+  listener: (event: ErrorEvent) => void,
+) => void;
 
 describe("error reporting", () => {
   const previousAddEventListener = Object.getOwnPropertyDescriptor(
@@ -20,11 +23,7 @@ describe("error reporting", () => {
     if (previousAddEventListener === undefined) {
       Reflect.deleteProperty(globalThis, "addEventListener");
     } else {
-      Object.defineProperty(
-        globalThis,
-        "addEventListener",
-        previousAddEventListener,
-      );
+      Object.defineProperty(globalThis, "addEventListener", previousAddEventListener);
     }
     if (previousNavigator === undefined) {
       Reflect.deleteProperty(globalThis, "navigator");
