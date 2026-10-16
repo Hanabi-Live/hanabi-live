@@ -1,6 +1,7 @@
 import { Status } from "@hanabi-live/data";
 import type { FastifyRequest } from "fastify";
 import type { WebSocket } from "ws";
+import { isReconnectRequest } from "../connectionMode";
 import { deleteCookie, getCookieValue } from "../httpSession";
 import { models } from "../models";
 import { wsError } from "../wsHelpers";
@@ -59,6 +60,7 @@ export async function httpWS(
     ip,
     muted,
     fakeUser: false,
+    reconnect: isReconnectRequest(request.url),
 
     status: Status.Lobby,
     tableID: undefined,

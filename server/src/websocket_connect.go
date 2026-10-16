@@ -30,6 +30,7 @@ type WebsocketConnectData struct {
 	PlayingAtTables       []uint64
 	DisconSpectatingTable uint64
 	DisconShadowingSeat   int
+	ConnectionMode        string // initial or reconnect; reconnect needs only a resume acknowledgement
 }
 
 // websocketConnect is fired when a new Melody WebSocket session is established
@@ -55,6 +56,7 @@ func websocketConnect(ms *melody.Session) {
 	// Next, perform all the expensive database retrieval to gather the data we need
 	// We want to do this before we start locking any mutexes (to minimize the lock time)
 	data := websocketConnectGetData(ctx, ms, userID, username)
+	data.ConnectionMode = websocketConnectionMode(ms.Request)
 
 	// Attach the new data to the session object
 	s.Muted = data.Muted
@@ -102,6 +104,12 @@ func websocketConnect(ms *melody.Session) {
 func websocketConnectMessages(ctx context.Context, s *Session, data *WebsocketConnectData) {
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
+	// A reconnect probe only confirms authenticated session and membership.
+	// The browser reloads before performing a new authoritative initial bootstrap;
+	// streaming additional snapshots here could feed stale gameplay UI.
+	if data.ConnectionMode == "reconnect" {
+		return
+	}
 	websocketConnectUserList(s)
 	websocketConnectTableList(ctx, s)
 	websocketConnectChat(s)
@@ -227,13 +235,14 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 	// Send an initial message that contains information about who they are and
 	// the current state of the server
 	type WelcomeMessage struct {
-		UserID        int      `json:"userID"`
-		Username      string   `json:"username"`
-		TotalGames    int      `json:"totalGames"`
-		Muted         bool     `json:"muted"`
-		FirstTimeUser bool     `json:"firstTimeUser"`
-		Settings      Settings `json:"settings"`
-		Friends       []string `json:"friends"`
+		UserID         int      `json:"userID"`
+		Username       string   `json:"username"`
+		TotalGames     int      `json:"totalGames"`
+		Muted          bool     `json:"muted"`
+		FirstTimeUser  bool     `json:"firstTimeUser"`
+		Settings       Settings `json:"settings"`
+		ConnectionMode string   `json:"connectionMode"`
+		Friends        []string `json:"friends"`
 
 		PlayingAtTables       []uint64 `json:"playingAtTables"`
 		DisconSpectatingTable uint64   `json:"disconSpectatingTable"`
@@ -262,8 +271,9 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
-		Settings: data.Settings,
-		Friends:  data.FriendsList,
+		Settings:       data.Settings,
+		Friends:        data.FriendsList,
+		ConnectionMode: data.ConnectionMode,
 
 		// Inform the user that they were previously playing or spectating a game
 		// (so that they can choose to rejoin it)

@@ -200,6 +200,7 @@ const serverCommandWelcomeData = z
     muted: z.boolean(),
     firstTimeUser: z.boolean(),
     settings,
+    connectionMode: z.enum(["initial", "reconnect"]).optional(),
     friends: z.string().min(1).array().readonly(),
 
     playingAtTables: tableID.array().readonly(),
