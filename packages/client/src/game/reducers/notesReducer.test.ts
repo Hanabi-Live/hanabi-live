@@ -21,6 +21,18 @@ describe("parseNote", () => {
     expect(parseNote(VARIANT, text).chopMoved).toBe(expected);
   });
 
+  test.each(["[xf]", "[ctp]", "[XF]", "[CTP]"])(
+    "%s combines unclued and finesse effects",
+    (text) => {
+      const shorthand = parseNote(VARIANT, text);
+      const expanded = parseNote(VARIANT, "[x][f]");
+      expect(shorthand.finessed).toBe(true);
+      expect(shorthand.unclued).toBe(true);
+      expect(shorthand.possibilities).toEqual(expanded.possibilities);
+      expect(shorthand.clued).toBe(expanded.clued);
+    },
+  );
+
   test("handles a long unterminated bracket sequence", () => {
     const text = "[".repeat(100_000);
     expect(parseNote(VARIANT, text).chopMoved).toBe(false);

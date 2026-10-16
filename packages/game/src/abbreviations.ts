@@ -32,6 +32,8 @@ export const CHOP_MOVED_NOTES = [
 
 export const FINESSED_NOTES = [
   "f", // Finesse
+  "xf", // Unclued Finesse / Call To Play
+  "ctp", // Call To Play
   "hf", // Hidden Finesse
   "sf", // Sarcastic Finesse
   "cf", // Certain Finesse / Composition Finesse
@@ -43,7 +45,7 @@ export const DISCARD_PERMISSION_NOTES = ["ptd", "ctd", "discard"] as const;
 export const NEEDS_FIX_NOTES = ["fix", "fixme", "needs fix"] as const;
 export const BLANK_NOTES = ["blank", "unknown"] as const;
 export const CLUED_NOTES = ["clued", "cl"] as const;
-export const UNCLUED_NOTES = ["unclued", "x"] as const;
+export const UNCLUED_NOTES = ["unclued", "x", "xf", "ctp"] as const;
 
 /**
  * Contains only lowercase letters. Thus, when checking against the set, the input must also be
