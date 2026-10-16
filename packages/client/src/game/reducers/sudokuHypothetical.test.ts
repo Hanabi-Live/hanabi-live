@@ -96,10 +96,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
               },
             ],
           };
-          const actions = planHypotheticalAction(
-            { type, order },
-            context,
-          );
+          const actions = planHypotheticalAction({ type, order }, context);
           assertNotNull(actions, "Failed to plan a hand action.");
 
           let hypothetical = initializeHypotheticalState(
