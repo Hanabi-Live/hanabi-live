@@ -280,12 +280,6 @@ func isJSONValid(d *CommandData) (bool, string) {
 		d.GameJSON.Players = append([]string(nil), defaultPlayerNames[:numPlayers]...)
 	}
 
-	// Validate that there is at least one action
-	if len(d.GameJSON.Actions) < 1 {
-		msg := "There must be at least one game action in the JSON array."
-		return false, msg
-	}
-
 	deckSize := variant.GetDeckSize()
 	actionDeckSize := len(d.GameJSON.Deck)
 	if d.GameJSON.Seed != "" {
