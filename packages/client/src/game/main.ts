@@ -22,6 +22,7 @@ export function init(): void {
 }
 
 export function show(): void {
+  tooltips.clearPlayerTimeTooltips();
   globals.currentScreen = Screen.Game;
   document.body.dataset["screen"] = "game";
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap

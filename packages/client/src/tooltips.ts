@@ -118,6 +118,13 @@ export function closeAllTooltips(): void {
   );
 }
 
+/** Clear player clock tooltips retained from a previously viewed game. */
+export function clearPlayerTimeTooltips(): void {
+  for (const i of eRange(MAX_PLAYERS)) {
+    setInstanceContent(`#tooltip-player-${i}`, "");
+  }
+}
+
 export function setInstanceContent(selector: string, content: string): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {
