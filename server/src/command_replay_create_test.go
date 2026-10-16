@@ -267,9 +267,9 @@ func TestIsJSONValidEmptyReplay(t *testing.T) {
 	deck := game.CardIdentities
 
 	for _, tc := range []struct {
-		name string
-		seed string
-		deck []*CardIdentity
+		name      string
+		seed      string
+		deck      []*CardIdentity
 		wantError string
 	}{
 		{name: "seed-only empty actions", seed: "p4v0s1"},
@@ -280,8 +280,8 @@ func TestIsJSONValidEmptyReplay(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			d := &CommandData{GameJSON: &GameJSON{
 				Players: []string{"Alice", "Bob", "Cathy", "Donald"},
-				Seed: tc.seed,
-				Deck: tc.deck,
+				Seed:    tc.seed,
+				Deck:    tc.deck,
 				Actions: []*GameAction{},
 			}}
 			valid, message := isJSONValid(d)
