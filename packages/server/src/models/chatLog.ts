@@ -1,5 +1,5 @@
 import type { UserID } from "@hanabi-live/data";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { chatLogTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
 
@@ -33,7 +33,7 @@ export const chatLog = {
       })
       .from(chatLogTable)
       .leftJoin(usersTable, eq(usersTable.id, chatLogTable.userID))
-      .where(eq(chatLogTable.room, room))
+      .where(and(eq(chatLogTable.room, room), isNull(chatLogTable.deletedAt)))
       .orderBy(desc(chatLogTable.datetimeSent), desc(chatLogTable.id));
     const queryWithLimit = count === undefined ? query : query.limit(count);
     const rows = await queryWithLimit;

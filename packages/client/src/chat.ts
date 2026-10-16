@@ -7,9 +7,9 @@ import type {
 } from "@hanabi-live/data";
 import { PROJECT_NAME } from "@hanabi-live/data";
 import {
-  SECOND_IN_MILLISECONDS,
   eRange,
   isArray,
+  SECOND_IN_MILLISECONDS,
   trimPrefix,
 } from "complete-common";
 import * as KeyCode from "keycode-js";
@@ -17,6 +17,10 @@ import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
 import { globals } from "./Globals";
 import { chatCommands } from "./chatCommands";
+import {
+  getLobbyChatIDAttribute,
+  LobbyChatDeletionState,
+} from "./chatDeletion";
 import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import emojis from "./json/emojis.json";
 import emotes from "./json/emotes.json";
@@ -34,6 +38,7 @@ const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
+const lobbyChatDeletionState = new LobbyChatDeletionState();
 let lastPM = "";
 let datetimeLastChatInput = Date.now();
 let typedChatHistory: string[] = [];
@@ -512,6 +517,12 @@ export function add(data: ServerCommandChatData, fast: boolean): void {
   addInternal(data, fast, true);
 }
 
+export function removeDeletedLobbyMessage(chatID: number): void {
+  // Retain recent deletions so a late live message or chatList cannot revive one.
+  lobbyChatDeletionState.markDeleted(chatID);
+  $(`#lobby-chat-text [data-chat-id="${chatID}"]`).remove();
+}
+
 export function addPMHistory(
   data: ServerCommandChatPMHistoryMessageData,
   room?: string,
@@ -532,6 +543,10 @@ function addInternal(
   fast: boolean,
   updateLiveState: boolean,
 ) {
+  if (lobbyChatDeletionState.shouldSkipMessage(data.room, data.chatID)) {
+    return;
+  }
+
   // If we are receiving a private message (PM), record who it is from.
   if (
     updateLiveState
@@ -560,9 +575,9 @@ function addInternal(
     -2,
   )}:${`0${dateObj.getMinutes()}`.slice(-2)}`;
 
-  let line = `<span id="chat-line-${chatLineNum}" class="${
-    fast ? "" : "hidden"
-  }">`;
+  const chatIDAttribute = getLobbyChatIDAttribute(data.room, data.chatID);
+  let line = `<span id="chat-line-${chatLineNum}"${chatIDAttribute}`;
+  line += ` class="${fast ? "" : "hidden"}">`;
   line += `[${datetime}]&nbsp; `;
   if (data.recipient !== undefined && data.recipient !== "") {
     line +=

@@ -168,7 +168,16 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 	if !d.Discord {
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
 		// (since Discord can handle escaping HTML special characters itself)
-		discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
+		discordMessageID := discordSend(discordChannelSyncWithLobby, d.Username, rawMsg)
+		if chatID > 0 && discordMessageID != "" {
+			deleted, err := models.ChatLog.LinkDiscordMessageID(chatID, discordMessageID)
+			if err != nil {
+				logger.Error("Failed to associate the Discord copy with its lobby message: " + err.Error())
+			} else if deleted {
+				// A Discord delete arrived before the send response was saved.
+				chatBroadcastDeletion(chatID)
+			}
+		}
 
 		// Some messages are also sent to website-development
 		if sendMessageToWebDevChannel {

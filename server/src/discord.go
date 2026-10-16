@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
+	"github.com/jackc/pgx/v4"
 	"github.com/tevino/abool"
 )
 
@@ -77,6 +79,8 @@ func discordConnect() {
 	// Register function handlers for various events
 	discord.AddHandler(discordReady)
 	discord.AddHandler(discordMessageCreate)
+	discord.AddHandler(discordMessageDelete)
+	discord.AddHandler(discordMessageDeleteBulk)
 
 	// Open the websocket and begin listening
 	if err := discord.Open(); err != nil {
@@ -146,13 +150,69 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	discordSendToChat(ctx, m.Content, username, m.ID)
 }
 
+// Copy Discord message deletions to the lobby, including bulk moderation actions.
+func discordMessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
+	if m == nil || m.Message == nil {
+		return
+	}
+	discordDeleteMessages(m.ChannelID, []string{m.ID})
+}
+
+func discordMessageDeleteBulk(s *discordgo.Session, m *discordgo.MessageDeleteBulk) {
+	if m == nil {
+		return
+	}
+	discordDeleteMessages(m.ChannelID, m.Messages)
+}
+
+// Only the synchronized Discord channel can affect lobby chat. Filter duplicate and
+// missing IDs before performing database writes.
+func discordLobbyDeletionIDs(channelID string, lobbyChannelID string, ids []string) []string {
+	if channelID == "" || channelID != lobbyChannelID {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(ids))
+	filtered := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if id == "" {
+			continue
+		}
+		if _, exists := seen[id]; exists {
+			continue
+		}
+		seen[id] = struct{}{}
+		filtered = append(filtered, id)
+	}
+	return filtered
+}
+
+func discordDeleteMessages(channelID string, ids []string) {
+	if discordIsReady.IsNotSet() {
+		return
+	}
+	for _, id := range discordLobbyDeletionIDs(channelID, discordChannelSyncWithLobby, ids) {
+		chatID, err := models.ChatLog.DeleteDiscord(id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Already deleted: the tombstone is retained for deduplication.
+			continue
+		}
+		if err != nil {
+			logger.Error("Failed to delete Discord lobby chat message: " + err.Error())
+			continue
+		}
+		chatBroadcastDeletion(chatID)
+	}
+}
+
 /*
 	Miscellaneous functions
 */
 
-func discordSend(to string, username string, msg string) {
+// discordSend returns the ID of the Discord copy, if it was successfully sent.
+// Callers that do not need to track the copy may discard this result.
+func discordSend(to string, username string, msg string) string {
 	if discord == nil {
-		return
+		return ""
 	}
 
 	// Put "<" and ">" around any links to prevent the link preview from showing
@@ -190,12 +250,17 @@ func discordSend(to string, username string, msg string) {
 			Roles: roles,
 		},
 	}
-	if _, err := discord.ChannelMessageSendComplex(to, messageSendData); err != nil {
+	message, err := discord.ChannelMessageSendComplex(to, messageSendData)
+	if err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
 		// do not bother retrying, since losing a single message is fairly meaningless
 		logger.Info("Failed to send \"" + fullMsg + "\" to Discord: " + err.Error())
-		return
+		return ""
 	}
+	if message == nil {
+		return ""
+	}
+	return message.ID
 }
 
 func discordGetNickname(discordID string) string {

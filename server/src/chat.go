@@ -166,6 +166,19 @@ type ChatListMessage struct {
 	Unread int            `json:"unread"`
 }
 
+// ChatDeleteMessage tells clients to remove a persisted lobby chat message.
+type ChatDeleteMessage struct {
+	ChatID int    `json:"chatID"`
+	Room   string `json:"room"`
+}
+
+func chatBroadcastDeletion(chatID int) {
+	message := &ChatDeleteMessage{ChatID: chatID, Room: "lobby"}
+	for _, session := range sessions.GetList() {
+		session.Emit("chatDelete", message)
+	}
+}
+
 func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 	var rawMsgs []DBChatMessage
 	if v, err := models.ChatLog.Get(room, count); err != nil {

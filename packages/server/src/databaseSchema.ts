@@ -203,6 +203,7 @@ export const chatLogTable = pgTable(
     source: text("source", { enum: ["user", "server", "discord"] }).notNull(),
     discordName: text("discord_name"),
     discordMessageID: text("discord_message_id"),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     message: text("message").notNull(),
     room: text("room").notNull(),
     datetimeSent: timestamp("datetime_sent", { withTimezone: true })
