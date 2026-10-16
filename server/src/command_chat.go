@@ -131,7 +131,9 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 		insertResult, err := models.ChatLog.Insert(userID, d.Msg, d.Room)
 		if err != nil {
 			logger.Error("Failed to insert a chat message into the database: " + err.Error())
-			s.Error(DefaultErrorMsg)
+			if s != nil {
+				s.Error(DefaultErrorMsg)
+			}
 			return
 		}
 		chatID = insertResult.ID
