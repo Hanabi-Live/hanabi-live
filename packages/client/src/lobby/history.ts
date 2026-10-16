@@ -5,7 +5,11 @@ import { getVariant } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
-import { dateTimeFormatter, timerFormatter } from "../utils";
+import {
+  dateTimeFormatter,
+  setBrowserAddressBarPath,
+  timerFormatter,
+} from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import type { GameHistory } from "./types/GameHistory";
@@ -35,7 +39,14 @@ export function init(): void {
 
 export function show(): void {
   globals.currentScreen = Screen.History;
+  if (
+    globalThis.location.pathname === "/lobby"
+    && globalThis.location.hash === ""
+  ) {
+    setBrowserAddressBarPath("/lobby", "#history");
+  }
 
+  $("#lobby-history-other-scores").hide();
   $("#lobby-history").show();
   $("#lobby-top-half").addClass("hidden");
   $("#lobby-separator").addClass("hidden");
@@ -60,6 +71,7 @@ export function show(): void {
 
 export function hide(): void {
   globals.currentScreen = Screen.Lobby;
+  setBrowserAddressBarPath("/lobby", undefined);
   tablesDraw();
   usersDraw.draw();
 
@@ -195,11 +207,15 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
     button.addClass("disabled");
   } else {
     button.on("click", () => {
-      globals.conn!.send("historyGetSeed", {
-        seed,
-        friends: globals.currentScreen === Screen.HistoryFriends,
-      });
+      const friends = globals.currentScreen === Screen.HistoryFriends;
+      globals.conn!.send("historyGetSeed", { seed, friends });
       showOtherScores();
+      const friendPrefix = friends ? "friends-" : "";
+      setBrowserAddressBarPath(
+        "/lobby",
+        `#history-other-scores-${friendPrefix}${encodeURIComponent(seed)}`,
+        "push",
+      );
     });
   }
 
@@ -208,6 +224,9 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
 
 export function showFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
+  if (globalThis.location.hash === "#history") {
+    setBrowserAddressBarPath("/lobby", "#history-friends");
+  }
   nav.show("history-friends");
   $("#lobby-history-table-players").html("Players");
   $("#lobby-history-show-all").hide();
@@ -216,10 +235,16 @@ export function showFriends(): void {
 
 export function hideFriends(): void {
   globals.currentScreen = Screen.History;
+  setBrowserAddressBarPath("/lobby", "#history", "push");
   nav.show("history");
   $("#lobby-history-table-players").html("Other Players");
   $("#lobby-history-show-all").show();
   draw(false);
+}
+
+export function showOtherScoresFromURL(seed: string, friends: boolean): void {
+  globals.conn!.send("historyGetSeed", { seed, friends });
+  showOtherScores();
 }
 
 function showOtherScores() {
@@ -231,6 +256,7 @@ function showOtherScores() {
 
 function hideOtherScores() {
   globals.currentScreen = Screen.History;
+  setBrowserAddressBarPath("/lobby", "#history", "push");
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history");
@@ -238,6 +264,7 @@ function hideOtherScores() {
 
 function hideOtherScoresToFriends() {
   globals.currentScreen = Screen.HistoryFriends;
+  setBrowserAddressBarPath("/lobby", "#history-friends", "push");
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history-friends");

@@ -249,8 +249,8 @@ lobbyCommands.set("tableStart", (data: TableStartData) => {
   // Record the table ID for later.
   globals.tableID = data.tableID;
 
-  if (!data.replay) {
-    pregame.hide();
+  if (!data.replay && globals.currentScreen === Screen.PreGame) {
+    pregame.hide(false);
   }
   gameMain.show();
 });

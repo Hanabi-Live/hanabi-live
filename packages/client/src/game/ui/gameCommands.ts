@@ -491,7 +491,14 @@ function setURL(data: InitData) {
       data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
     }`;
   }
-  setBrowserAddressBarPath(path, globalThis.location.hash);
+  const hash = /^#\d+$/u.test(globalThis.location.hash)
+    ? globalThis.location.hash
+    : "";
+  setBrowserAddressBarPath(
+    path,
+    hash,
+    globalThis.location.pathname === "/lobby" ? "push" : "replace",
+  );
 }
 
 function initStateStore(data: InitData) {

@@ -66,10 +66,14 @@ export function show(): void {
   toggleJoinSpectateButtons();
 
   // Set the browser address bar.
-  setBrowserAddressBarPath(`/pre-game/${globals.tableID}`);
+  setBrowserAddressBarPath(
+    `/pre-game/${globals.tableID}`,
+    undefined,
+    globalThis.location.pathname === "/lobby" ? "push" : "replace",
+  );
 }
 
-export function hide(): void {
+export function hide(updateURL = true): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
@@ -105,7 +109,9 @@ export function hide(): void {
   $("#lobby-chat-pregame-text").off();
 
   // Set the browser address bar.
-  setBrowserAddressBarPath("/lobby");
+  if (updateURL) {
+    setBrowserAddressBarPath("/lobby");
+  }
 }
 
 export function draw(): void {
