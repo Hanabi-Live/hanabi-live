@@ -141,15 +141,15 @@ describe("Dark Prism Reversed card status (#3047)", () => {
     ) as SuitIndex;
     expect(suitIndex).toBeGreaterThanOrEqual(0);
 
-    const playStacks = variant.suits.map(() => []) as unknown as GameState[
-      "playStacks"
-    ];
+    const playStacks = variant.suits.map(
+      () => [],
+    ) as unknown as GameState["playStacks"];
     const directions = variant.suits.map((suit) =>
       suit.reversed ? StackDirection.Down : StackDirection.Up,
     ) as unknown as GameState["playStackDirections"];
-    const starts = variant.suits.map(() => null) as unknown as GameState[
-      "playStackStarts"
-    ];
+    const starts = variant.suits.map(
+      () => null,
+    ) as unknown as GameState["playStackStarts"];
     const discardedFive = {
       order: 0,
       suitIndex,
@@ -158,15 +158,7 @@ describe("Dark Prism Reversed card status (#3047)", () => {
     } as unknown as CardState;
 
     expect(
-      getCardStatus(
-        suitIndex,
-        4,
-        [],
-        playStacks,
-        directions,
-        starts,
-        variant,
-      ),
+      getCardStatus(suitIndex, 4, [], playStacks, directions, starts, variant),
     ).not.toBe(CardStatus.Trash);
 
     for (const rank of [1, 2, 3, 4] as const) {
