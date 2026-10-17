@@ -17,14 +17,19 @@ describe("noteIdentity", () => {
   test.each([
     ["i3", "Indigo", "I"],
     ["g3", "Light Pink", "G"],
-  ])("parses the variant-specific abbreviation %s as %s 3", (input, suitName, abbreviation) => {
-    const variant = DUAL_COLOR_LIGHT_PINK_VARIANT;
-    const suitIndex = variant.suits.findIndex((suit) => suit.name === suitName);
+  ])(
+    "parses the variant-specific abbreviation %s as %s 3",
+    (input, suitName, abbreviation) => {
+      const variant = DUAL_COLOR_LIGHT_PINK_VARIANT;
+      const suitIndex = variant.suits.findIndex(
+        (suit) => suit.name === suitName,
+      );
 
-    expect(suitIndex).toBeGreaterThanOrEqual(0);
-    expect(variant.suitAbbreviations[suitIndex]).toBe(abbreviation);
-    expect(parseIdentity(variant, input)).toEqual({ suitIndex, rank: 3 });
-  });
+      expect(suitIndex).toBeGreaterThanOrEqual(0);
+      expect(variant.suitAbbreviations[suitIndex]).toBe(abbreviation);
+      expect(parseIdentity(variant, input)).toEqual({ suitIndex, rank: 3 });
+    },
+  );
 
   describe("getPossibilitiesFromKeyword", () => {
     // The note keyword `red` should return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`.
