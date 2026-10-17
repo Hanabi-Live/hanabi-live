@@ -466,7 +466,7 @@ function fillMorphModalWithRadios(
         cell.classList.add("faded");
       }
       const radio = document.createElement("input");
-      const radioId = `morph-radio-${suit.abbreviation}-${rank}`;
+      const radioId = `morph-radio-${suitIndex}-${rank}`;
 
       radio.setAttribute("type", "radio");
       radio.setAttribute("name", "morph-cards");
