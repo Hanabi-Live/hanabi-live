@@ -2,15 +2,35 @@ import type { SuitRankTuple } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
 import { describe, expect, test } from "@jest/globals";
 import { iRange } from "complete-common";
-import { getPossibilitiesFromKeywords } from "./noteIdentity";
+import { getPossibilitiesFromKeywords, parseIdentity } from "./noteIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();
 const UP_OR_DOWN_VARIANT = getVariant("Up or Down (5 Suits)");
+const DUAL_COLOR_LIGHT_PINK_VARIANT = getVariant(
+  "Dual-Color & Light Pink (6 Suits)",
+);
 
 const ZEROES = [0, 0, 0, 0, 0, 0] as const;
 const ONES = [1, 1, 1, 1, 1, 1] as const;
 
 describe("noteIdentity", () => {
+  test.each([
+    ["i3", "Indigo", "I"],
+    ["g3", "Light Pink", "G"],
+  ])(
+    "parses the variant-specific abbreviation %s as %s 3",
+    (input, suitName, abbreviation) => {
+      const variant = DUAL_COLOR_LIGHT_PINK_VARIANT;
+      const suitIndex = variant.suits.findIndex(
+        (suit) => suit.name === suitName,
+      );
+
+      expect(suitIndex).toBeGreaterThanOrEqual(0);
+      expect(variant.suitAbbreviations[suitIndex]).toBe(abbreviation);
+      expect(parseIdentity(variant, input)).toEqual({ suitIndex, rank: 3 });
+    },
+  );
+
   describe("getPossibilitiesFromKeyword", () => {
     // The note keyword `red` should return `[[0,1], [0,2], [0,3], [0,4], [0,5]]`.
     test("positive suit full", () => {
