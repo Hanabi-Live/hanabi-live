@@ -153,7 +153,7 @@ gameCommands.set("hypoBack", () => {
 });
 
 gameCommands.set("hypoEnd", () => {
-  hypothetical.endHypothetical();
+  hypothetical.finishHypothetical();
 });
 
 interface HypoShowDrawnCardsData {

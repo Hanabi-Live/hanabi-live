@@ -46,14 +46,25 @@ export function endHypothetical(): void {
     return;
   }
 
-  if (
-    globals.state.replay.shared !== null
-    && globals.state.replay.shared.amLeader
-  ) {
-    globals.lobby.conn!.send("replayAction", {
-      tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoEnd,
-    });
+  if (globals.state.replay.shared !== null) {
+    if (globals.state.replay.shared.amLeader) {
+      globals.lobby.conn!.send("replayAction", {
+        tableID: globals.lobby.tableID,
+        type: ReplayActionType.HypoEnd,
+      });
+    }
+
+    // Wait for the server's hypoEnd event so pending actions are processed first.
+    return;
+  }
+
+  finishHypothetical();
+}
+
+/** Apply the server-confirmed end (or immediately end a local hypothetical). */
+export function finishHypothetical(): void {
+  if (globals.state.replay.hypothetical === null) {
+    return;
   }
 
   globals.store!.dispatch({
