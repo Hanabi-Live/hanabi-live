@@ -7,6 +7,7 @@ import type {
   Rank,
 } from "@hanabi-live/game";
 import {
+  ClueType,
   gameReducer,
   getDefaultMetadata,
   getDefaultVariant,
@@ -133,6 +134,69 @@ describe("client hypothetical planning", () => {
       }
     },
   );
+
+  test("reads the layout card for a hypothetical clue", () => {
+    const context = makeContext();
+    const state = initialState(context.metadata);
+    const dispatch = jest.fn();
+    const handChild = {
+      card: {
+        state: context.gameState.deck[1],
+        isStackBase: false,
+        visibleSuitIndex: 0,
+        visibleRank: 1,
+      },
+      children: [{}],
+    };
+    Object.assign(globals, {
+      metadata: context.metadata,
+      variant: context.variant,
+      elements: {
+        playerHands: [
+          { children: { each: jest.fn() } },
+          {
+            children: {
+              each: (callback: (child: unknown) => void) => {
+                callback(handChild);
+              },
+            },
+          },
+        ],
+      },
+      state: {
+        ...state,
+        playing: false,
+        cardIdentities: context.cardIdentities,
+        notes: { ...state.notes, ourNotes: context.notes },
+        replay: {
+          ...state.replay,
+          hypothetical: {
+            ongoing: context.gameState,
+            morphedIdentities: [],
+          },
+        },
+      },
+      store: { dispatch },
+    });
+
+    sendHypotheticalAction({
+      type: ActionType.RankClue,
+      target: 1 as PlayerIndex,
+      value: 1,
+    });
+
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "hypoAction",
+      action: {
+        type: "clue",
+        clue: { type: ClueType.Rank, value: 1 },
+        giver: 0,
+        list: [1],
+        target: 1,
+        ignoreNegative: false,
+      },
+    });
+  });
 
   test("plans the exact final order without an existing UI card", () => {
     const context = makeContext();
