@@ -219,6 +219,7 @@ function getVariantsForEachSpecialSuitCombination(
         && suit.noClueColors === suit2.noClueColors
         && suit.noClueRanks === suit2.noClueRanks
         && suit.prism === suit2.prism
+        && !(suit.name === "Black" && suit2.name === "Dark Orange")
       ) {
         continue;
       }
@@ -784,6 +785,13 @@ function getScarceOnesVariants(
     });
   }
 
+  variantDescriptions.push({
+    name: "Scarce Ones & Critical Fours (6 Suits)",
+    suits: basicVariantSuits[6],
+    scarceOnes: true,
+    criticalRank: 4,
+  });
+
   // Create combinations with special suits.
   for (const suit of suitsToCreateVariantsFor) {
     for (const numSuits of STANDARD_VARIANT_SUIT_AMOUNTS) {
@@ -1346,9 +1354,16 @@ function isVariantAllowed(
 ): boolean {
   const variant = createVariant(colorsMap, suitsMap, variantDescription, 0, "");
 
-  return !(
+  // The requested double-dark combination can exceed the normal efficiency limit.
+  if (
     getTotalCardsInDeck(variant) < MINIMUM_CARD_COUNT
     || minVariantPace(variant) < 0
-    || maxRequiredVariantEfficiency(variant) > MAX_ALLOWED_EFFICIENCY_THRESHOLD
+  ) {
+    return false;
+  }
+
+  return (
+    variantDescription.name === "Scarce Ones & Critical Fours (6 Suits)"
+    || maxRequiredVariantEfficiency(variant) <= MAX_ALLOWED_EFFICIENCY_THRESHOLD
   );
 }

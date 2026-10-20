@@ -558,6 +558,12 @@
     "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Prism"]
   },
   {
+    "id": 2426,
+    "newID": "R+Y+G+B+Bk+Or1",
+    "name": "Black & Dark Orange (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Black", "Dark Orange"]
+  },
+  {
     "id": 120,
     "newID": "R+Y+G+B+Ra+Pi",
     "name": "Rainbow & Pink (6 Suits)",
@@ -15329,6 +15335,14 @@
     "name": "Scarce Ones (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Purple"],
     "scarceOnes": true
+  },
+  {
+    "id": 2427,
+    "newID": "R+Y+G+B+P+T,C4,S1",
+    "name": "Scarce Ones & Critical Fours (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal"],
+    "scarceOnes": true,
+    "criticalRank": 4
   },
   {
     "id": 2395,
