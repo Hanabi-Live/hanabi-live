@@ -48,4 +48,14 @@ describe("getTotalCardsInDeck", () => {
 
     expect(getTotalCardsInDeck(combinedVariant)).toBe(40);
   });
+
+  test("counts both missing Double Darks", () => {
+    const blackAndDarkOrange = getVariant("Black & Dark Orange (6 Suits)");
+    const scarceAndCriticalFours = getVariant(
+      "Scarce Ones & Critical Fours (6 Suits)",
+    );
+
+    expect(getTotalCardsInDeck(blackAndDarkOrange)).toBe(50);
+    expect(getTotalCardsInDeck(scarceAndCriticalFours)).toBe(48);
+  });
 });
