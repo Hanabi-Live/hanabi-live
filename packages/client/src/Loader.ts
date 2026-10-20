@@ -2,6 +2,7 @@ import { assertDefined } from "complete-common";
 
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;
+type FailedCallback = (filePath: string) => void;
 
 // The list of all game-related images to preload. All of these files should have a ".png"
 // extension.
@@ -43,9 +44,15 @@ export class Loader {
   filePathMap = new Map<string, string>();
   numLoaded = 0;
   finished = false;
+  failedFiles = new Set<string>();
   imageMap = new Map<string, HTMLImageElement>();
   progressCallback: ProgressCallback | null = null;
   finishedCallback: FinishedCallback | null = null;
+  failedCallback: FailedCallback | null = null;
+
+  get failed(): boolean {
+    return this.failedFiles.size > 0;
+  }
 
   constructor() {
     // Build a map of image identifiers to URL paths.
@@ -61,23 +68,39 @@ export class Loader {
 
   start(): void {
     for (const [fileID, filePath] of this.filePathMap) {
-      const img = new Image();
-      img.addEventListener("load", () => {
-        this.numLoaded++;
-        this.progress();
-        if (this.numLoaded === this.filePathMap.size) {
-          this.finished = true;
-          if (this.finishedCallback !== null) {
-            this.finishedCallback();
-          }
-        }
-      });
-      img.src = filePath;
-
-      this.imageMap.set(fileID, img);
+      this.loadImage(fileID, filePath);
     }
 
     this.progress();
+  }
+
+  private loadImage(fileID: string, filePath: string, retryCount = 0): void {
+    const img = new Image();
+    img.addEventListener("load", () => {
+      this.numLoaded++;
+      this.progress();
+      if (this.numLoaded === this.filePathMap.size) {
+        this.finished = true;
+        this.finishedCallback?.();
+      }
+    });
+    img.addEventListener("error", () => {
+      if (retryCount < 2) {
+        // Retry transient transport failures without counting the image as loaded.
+        setTimeout(
+          () => {
+            this.loadImage(fileID, filePath, retryCount + 1);
+          },
+          1000 * 2 ** retryCount,
+        );
+        return;
+      }
+
+      this.failedFiles.add(filePath);
+      this.failedCallback?.(filePath);
+    });
+    this.imageMap.set(fileID, img);
+    img.src = filePath;
   }
 
   progress(): void {
