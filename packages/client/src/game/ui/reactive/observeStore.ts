@@ -19,41 +19,54 @@ export function observeStore<S, A extends Action, T>(
   subscriptions: ReadonlyArray<Subscription<S, T>>,
 ): Unsubscribe {
   let currentState: S;
+  let isUpdating = false;
 
   function handleChange() {
-    const nextState = store.getState();
-    if (currentState === nextState) {
-      // No change
+    if (isUpdating) {
+      // A listener dispatched another action. Finish this update before rendering the next one.
       return;
     }
 
-    // If the path changed, call the function.
-    const filteredSubscriptions = subscriptions.filter((subscription) => {
-      const nextValue = subscription.select(nextState);
-      if (nextValue === undefined) {
-        // The selector wants to skip this one.
-        return false;
+    isUpdating = true;
+    try {
+      let nextState = store.getState();
+      while (currentState !== nextState) {
+        const previousState = currentState;
+        const snapshot = nextState;
+
+        // If the path changed, call the function.
+        const filteredSubscriptions = subscriptions.filter((subscription) => {
+          const nextValue = subscription.select(snapshot);
+          if (nextValue === undefined) {
+            // The selector wants to skip this one.
+            return false;
+          }
+
+          if (previousState === undefined) {
+            // Initializing, always fire all.
+            return true;
+          }
+
+          // Fire if any part of it changed.
+          return !equal(nextValue, subscription.select(previousState));
+        });
+
+        for (const subscription of filteredSubscriptions) {
+          // `previousState` is undefined during initialization.
+          const previousValue =
+            previousState === undefined
+              ? undefined
+              : subscription.select(previousState);
+          subscription.onChange(subscription.select(snapshot)!, previousValue);
+        }
+
+        // Commit only after every callback succeeds, then process any nested dispatch.
+        currentState = snapshot;
+        nextState = store.getState();
       }
-
-      if (currentState === undefined) {
-        // Initializing, always fire all.
-        return true;
-      }
-
-      // Fire if any part of it changed.
-      return !equal(nextValue, subscription.select(currentState));
-    });
-
-    for (const subscription of filteredSubscriptions) {
-      // `currentState` is undefined during initialization.
-      const currentValue =
-        currentState === undefined
-          ? undefined
-          : subscription.select(currentState);
-      subscription.onChange(subscription.select(nextState)!, currentValue);
+    } finally {
+      isUpdating = false;
     }
-
-    currentState = nextState;
   }
 
   const unsubscribe = store.subscribe(handleChange);
