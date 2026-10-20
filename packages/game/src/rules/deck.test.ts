@@ -38,4 +38,14 @@ describe("getTotalCardsInDeck", () => {
     const upOrDownVariant = getVariant(`Up or Down (${suits} Suits)`);
     expect(getTotalCardsInDeck(upOrDownVariant)).toBe(cards);
   });
+
+  test("counts both reductions from Scarce Ones and Critical Fours", () => {
+    const combinedVariant = {
+      ...DEFAULT_VARIANT,
+      scarceOnes: true,
+      criticalRank: 4,
+    } as const;
+
+    expect(getTotalCardsInDeck(combinedVariant)).toBe(40);
+  });
 });
