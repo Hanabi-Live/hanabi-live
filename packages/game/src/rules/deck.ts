@@ -21,25 +21,9 @@ export function getTotalCardsInDeck(variant: Variant): number {
 }
 
 function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
-  if (suit.oneOfEach) {
-    if (variant.upOrDown) {
-      // A critical suit in up or down has all unique cards plus an extra start card.
-      return variant.stackSize + 1;
-    }
-    return variant.stackSize;
-  }
-
-  if (
-    variant.upOrDown
-    || variant.criticalRank !== undefined
-    || variant.scarceOnes
-  ) {
-    // The normal amount minus one because there is one fewer card.
-    return variant.stackSize * 2 - 1;
-  }
-
-  // The normal amount: three 1's + two 2's + two 3's + two 4's + one 5
-  return variant.stackSize * 2;
+  return sumArray(
+    variant.ranks.map((rank) => getNumCopiesOfCard(suit, rank, variant)),
+  );
 }
 
 /**
