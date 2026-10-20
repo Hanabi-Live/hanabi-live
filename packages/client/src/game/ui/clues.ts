@@ -13,6 +13,7 @@ import type {
 } from "../types/ClientAction";
 import type { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
+import type { LayoutChild } from "./LayoutChild";
 import type { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
@@ -101,11 +102,7 @@ function showClueMatch(target: number, clue: Clue): boolean {
       continue;
     }
 
-    const card = child.children[0] as HanabiCard | undefined;
-    if (card === undefined) {
-      continue;
-    }
-
+    const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);

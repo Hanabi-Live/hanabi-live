@@ -1,6 +1,5 @@
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
-import type { HanabiCard } from "./HanabiCard";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
@@ -218,16 +217,8 @@ export class CardLayout extends Konva.Group {
 
     this.empathy = enabled;
     this.children.each((layoutChild) => {
-      const card = layoutChild.children[0] as HanabiCard;
-
-      // As a sanity check, make sure that the card exists. (It can be undefined sometimes when
-      // rewinding.)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (card === undefined) {
-        return;
-      }
-
-      card.setEmpathy(enabled);
+      // The first Konva child is not guaranteed to be the card itself.
+      (layoutChild as unknown as LayoutChild).card.setEmpathy(enabled);
     });
   }
 }

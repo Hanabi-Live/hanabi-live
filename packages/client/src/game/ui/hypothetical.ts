@@ -13,6 +13,7 @@ import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
+import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
@@ -126,15 +127,13 @@ export function sendHypotheticalAction(hypoAction: ClientAction): void {
       case "rankClue": {
         const hand = globals.elements.playerHands[intent.target]!;
         hand.children.each((child) => {
-          const card = child.children[0] as HanabiCard | undefined;
-          if (card !== undefined) {
-            cardViews.push({
-              state: card.state,
-              isStackBase: card.isStackBase,
-              visibleSuitIndex: card.visibleSuitIndex,
-              visibleRank: card.visibleRank,
-            });
-          }
+          const { card } = child as unknown as LayoutChild;
+          cardViews.push({
+            state: card.state,
+            isStackBase: card.isStackBase,
+            visibleSuitIndex: card.visibleSuitIndex,
+            visibleRank: card.visibleRank,
+          });
         });
         break;
       }
