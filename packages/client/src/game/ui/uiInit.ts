@@ -1,5 +1,6 @@
 import { assertNotNull } from "complete-common";
 import Konva from "konva";
+import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
 import { LABEL_COLOR } from "./constants";
@@ -21,6 +22,11 @@ export function uiInit(): void {
   // reference to the existing "Loader" object to our UI globals (for convenience).
   globals.imageLoader = globals.lobby.imageLoader;
 
+  if (globals.imageLoader.failed) {
+    showImageLoadError([...globals.imageLoader.failedFiles][0]!);
+    return;
+  }
+
   if (globals.imageLoader.finished) {
     // The user has spent enough time in the lobby before joining a game such that all of the
     // game-related images have had time to fully download. This means we do not have to show the
@@ -40,6 +46,7 @@ export function uiInit(): void {
     loadingLayer.batchDraw();
   };
   globals.imageLoader.finishedCallback = finishedDownloadingImages;
+  globals.imageLoader.failedCallback = showImageLoadError;
 
   const winW = globals.stage.width();
   const winH = globals.stage.height();
@@ -84,6 +91,15 @@ export function uiInit(): void {
   loadingLayer.add(progressLabel);
 
   globals.stage.add(loadingLayer);
+
+  // Images may have loaded before this UI subscribed to progress updates.
+  globals.imageLoader.progress();
+}
+
+function showImageLoadError(filePath: string) {
+  modals.showError(
+    `Failed to download the game image "${filePath}". Please reload the page to retry.`,
+  );
 }
 
 function finishedDownloadingImages() {
