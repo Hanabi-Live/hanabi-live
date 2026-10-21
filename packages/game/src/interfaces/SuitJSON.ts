@@ -55,4 +55,8 @@ export interface SuitJSON {
   readonly noClueRanks?: boolean;
   readonly prism?: boolean;
   readonly inverted?: boolean;
+  /** Clues matching this card touch only matching Singularity cards in its hand. */
+  readonly singularity?: boolean;
+  /** Null Singularity also absorbs clues that do not match itself. */
+  readonly absorbsUnmatchedClues?: boolean;
 }

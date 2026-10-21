@@ -9,6 +9,8 @@ import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import { isCardTouchedByClue } from "../rules/clues";
+import type { ClueModes } from "../rules/singularity";
+import { isPossibleAfterClue } from "../rules/singularity";
 import type { Clue } from "../types/Clue";
 import type { SuitRankTuple } from "../types/SuitRankTuple";
 
@@ -17,6 +19,7 @@ export function cardPossibilitiesReducer(
   clue: Clue,
   positive: boolean,
   metadata: GameMetadata,
+  modes?: ClueModes,
 ): CardState {
   if (state.possibleCardsFromClues.length === 1) {
     // We already know all details about this card, no need to calculate.
@@ -25,19 +28,17 @@ export function cardPossibilitiesReducer(
 
   const variant = getVariant(metadata.options.variantName);
 
+  function matches(identity: SuitRankTuple): boolean {
+    return modes === undefined
+      ? isCardTouchedByClue(variant, clue, identity[0], identity[1])
+          === positive
+      : isPossibleAfterClue(variant, clue, identity, positive, modes);
+  }
+
   // Apply the clue and check what is eliminated.
-  const possibleCardsFromClues = state.possibleCardsFromClues.filter(
-    ([suitIndex, rank]) =>
-      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
-  );
-  const possibleCards = state.possibleCards.filter(
-    ([suitIndex, rank]) =>
-      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
-  );
-  const possibleCardsForEmpathy = state.possibleCardsForEmpathy.filter(
-    ([suitIndex, rank]) =>
-      isCardTouchedByClue(variant, clue, suitIndex, rank) === positive,
-  );
+  const possibleCardsFromClues = state.possibleCardsFromClues.filter(matches);
+  const possibleCards = state.possibleCards.filter(matches);
+  const possibleCardsForEmpathy = state.possibleCardsForEmpathy.filter(matches);
 
   let { positiveColorClues } = state;
   if (

@@ -2,6 +2,7 @@
 
 import type {
   CardState,
+  Clue,
   Color,
   RankClueNumber,
   Variant,
@@ -9,18 +10,22 @@ import type {
 import {
   START_CARD_RANK,
   getAdjustedClueTokens,
+  getClueTouchedIndices,
   getColorForPrismCard,
   isAtMaxClueTokens,
   isCardInPlayerHand,
   isCardTouchedByClueColor,
   isCardTouchedByClueRank,
   isValidRankClueNumber,
+  newColorClue,
+  newRankClue,
 } from "@hanabi-live/game";
 import * as sounds from "../../sounds";
 import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";
 import { ColorButton } from "./ColorButton";
 import type { HanabiCard } from "./HanabiCard";
+import type { LayoutChild } from "./LayoutChild";
 import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import { clickRightCheckAddNote } from "./clickNotes";
@@ -78,7 +83,10 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
     && typeof card.state.location === "number"
   ) {
     const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
-    if (clueColor === undefined) {
+    if (
+      clueColor === undefined
+      || !speedrunClueTouchesCard(card, newColorClue(clueColor))
+    ) {
       return;
     }
 
@@ -186,7 +194,10 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     && !event.metaKey
   ) {
     const clueRank = getRankForSpeedrunClue(card.state);
-    if (clueRank === undefined) {
+    if (
+      clueRank === undefined
+      || !speedrunClueTouchesCard(card, newRankClue(clueRank))
+    ) {
       return;
     }
 
@@ -199,6 +210,23 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 
   clickRightCheckAddNote(event, card, true);
+}
+
+function speedrunClueTouchesCard(card: HanabiCard, clue: Clue): boolean {
+  if (typeof card.state.location !== "number") {
+    return false;
+  }
+  const hand =
+    globals.elements.playerHands[card.state.location]?.children ?? [];
+  const cards = Array.from(
+    { length: hand.length },
+    (_, i) => (hand[i] as LayoutChild | undefined)?.card,
+  );
+  return getClueTouchedIndices(
+    globals.variant,
+    clue,
+    cards.map((other) => other?.getMorphedPossibilities() ?? []),
+  ).includes(cards.indexOf(card));
 }
 
 /** A card may be clueable by more than one rank, so we need to figure out which rank to use. */

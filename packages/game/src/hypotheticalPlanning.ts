@@ -11,6 +11,7 @@ import type { GameState } from "./interfaces/GameState";
 import type { Variant } from "./interfaces/Variant";
 import { isCardTouchedByClue, msgClueToClue } from "./rules/clues";
 import { getNextPlayableRanks } from "./rules/playStacks";
+import { getClueTouchedIndices } from "./rules/singularity";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { GameAction } from "./types/gameActions";
@@ -135,8 +136,17 @@ export function getHypotheticalTouchedCards(
 ): readonly CardOrder[] {
   const fullClue = msgClueToClue(clue, variant);
   const touchedCards: CardOrder[] = [];
+  const touchedIndices = getClueTouchedIndices(
+    variant,
+    fullClue,
+    cards.map((card) =>
+      card.identity.suitIndex === null && card.identity.rank === null
+        ? []
+        : card.possibilities,
+    ),
+  );
 
-  for (const card of cards) {
+  for (const [index, card] of cards.entries()) {
     const { suitIndex, rank } = card.identity;
     if (suitIndex === null && rank === null) {
       // Blank morphs are never touched, even when their underlying possibilities match.
@@ -144,7 +154,8 @@ export function getHypotheticalTouchedCards(
     }
 
     if (
-      card.possibilities.every(([possibleSuitIndex, possibleRank]) =>
+      touchedIndices.includes(index)
+      && card.possibilities.every(([possibleSuitIndex, possibleRank]) =>
         isCardTouchedByClue(variant, fullClue, possibleSuitIndex, possibleRank),
       )
       && card.possibilities.every(() =>

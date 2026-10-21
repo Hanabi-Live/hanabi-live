@@ -404,6 +404,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 	// Validate that the clue touches at least one card
 	p2 := g.Players[d.Target] // The target of the clue
+	touchedOrders := p2.FindCardsTouchedByClue(clue)
 	touchedAtLeastOneCard := false
 	for _, c := range p2.Hand {
 		// Prevent characters from cluing cards that they are not supposed to see
@@ -411,12 +412,14 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 			continue
 		}
 
-		if variantIsCardTouched(g.Variant, clue, c) {
+		if intInSlice(c.Order, touchedOrders) {
 			touchedAtLeastOneCard = true
 			break
 		}
 	}
 	if !touchedAtLeastOneCard &&
+		// Null Singularity absorbs clues without marking any cards.
+		!p2.IsClueAbsorbed(clue) &&
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
 		// Make an exception for variants where color clues are always allowed
