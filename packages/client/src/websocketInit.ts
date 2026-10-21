@@ -11,6 +11,9 @@ import * as modals from "./modals";
 import { ReconnectBackoff } from "./reconnect";
 
 const reconnectBackoff = new ReconnectBackoff();
+const CONNECT_TIMEOUT_MS = 15_000;
+const WELCOME_TIMEOUT_MS = 15_000;
+const COOKIE_CHECK_TIMEOUT_MS = 10_000;
 let activeConnection: Connection | undefined;
 let websocketURL = "";
 let recovering = false;
@@ -18,6 +21,7 @@ let stopped = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 let wakeListenersRegistered = false;
 let welcomeTimer: ReturnType<typeof setTimeout> | undefined;
+let connectTimer: ReturnType<typeof setTimeout> | undefined;
 let cookieProbeInFlight = false;
 
 function isRecoveryCurrent(connection: Connection | undefined) {
@@ -31,8 +35,16 @@ function clearWelcomeTimer() {
   }
 }
 
+function clearConnectTimer() {
+  if (connectTimer !== undefined) {
+    clearTimeout(connectTimer);
+    connectTimer = undefined;
+  }
+}
+
 function stopRecovery() {
   stopped = true;
+  clearConnectTimer();
   recovering = false;
   clearWelcomeTimer();
   if (reconnectTimer !== undefined) {
@@ -66,6 +78,30 @@ function scheduleReconnect(immediate = false) {
   }, delay);
 }
 
+async function fetchCookieForReconnect(): Promise<Response> {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      fetch("/test-cookie", {
+        cache: "no-store",
+        signal: controller.signal,
+      }),
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error("WebSocket session check timed out."));
+        }, COOKIE_CHECK_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 async function attemptReconnect() {
   if (!recovering || stopped || !canRetryNow() || cookieProbeInFlight) {
     return;
@@ -74,7 +110,7 @@ async function attemptReconnect() {
   const oldConnection = activeConnection;
   let shouldRetry = false;
   try {
-    const response = await fetch("/test-cookie", { cache: "no-store" });
+    const response = await fetchCookieForReconnect();
     if (!isRecoveryCurrent(oldConnection)) {
       return;
     }
@@ -134,31 +170,51 @@ function registerReconnectWakeListeners() {
   globalThis.addEventListener("pageshow", wakeReconnect);
 }
 
+function reconnectAfterTimeout(conn: Connection) {
+  if (activeConnection !== conn || stopped) {
+    return;
+  }
+
+  clearConnectTimer();
+  clearWelcomeTimer();
+  console.warn("WebSocket handshake timed out; attempting to reconnect.");
+  // Do not depend on a browser emitting close for a stalled CONNECTING socket.
+  activeConnection = undefined;
+  recovering = true;
+  conn.close();
+  scheduleReconnect();
+}
+
 function openConnection(isReconnect: boolean) {
   const url = isReconnect ? `${websocketURL}?reconnect=1` : websocketURL;
   const conn = new Connection(url, true, !isReconnect);
+  clearConnectTimer();
   activeConnection = conn;
   globals.conn = conn;
+
+  connectTimer = setTimeout(() => {
+    if (conn.ws.readyState === WebSocket.CONNECTING) {
+      reconnectAfterTimeout(conn);
+    }
+  }, CONNECT_TIMEOUT_MS);
 
   conn.on("open", () => {
     if (activeConnection !== conn || stopped) {
       return;
     }
+    clearConnectTimer();
     console.log("WebSocket connection established.");
-    if (isReconnect) {
-      // Close an authenticated probe that stalls before the welcome message.
-      clearWelcomeTimer();
-      welcomeTimer = setTimeout(() => {
-        if (isRecoveryCurrent(conn)) {
-          conn.close();
-        }
-      }, 15_000);
-    }
+    // Even an open socket can be stuck before the server sends "welcome".
+    clearWelcomeTimer();
+    welcomeTimer = setTimeout(() => {
+      reconnectAfterTimeout(conn);
+    }, WELCOME_TIMEOUT_MS);
   });
   conn.on("close", () => {
     if (activeConnection !== conn || stopped) {
       return;
     }
+    clearConnectTimer();
     clearWelcomeTimer();
     console.log("WebSocket closed unexpectedly; attempting to reconnect.");
     recovering = true;
@@ -259,6 +315,7 @@ function lobbyCallback(
       return;
     }
     if (commandName === "welcome") {
+      clearWelcomeTimer();
       reconnectBackoff.reset();
     }
     commandFunction(data);
