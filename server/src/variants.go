@@ -40,6 +40,8 @@ type VariantJSON struct {
 	Chimneys                 bool      `json:"chimneys"`
 	Sudoku                   bool      `json:"sudoku"`
 	UpOrDown                 bool      `json:"upOrDown"`
+	CriticalRank             int       `json:"criticalRank"`
+	ScarceOnes               bool      `json:"scarceOnes"`
 }
 
 // VariantInfoJSON contains limited information about a variant, returned in /api/v1/variants-full
@@ -172,6 +174,8 @@ func variantsInit() {
 			ID:                       variant.ID,
 			Suits:                    variantSuits,
 			Ranks:                    variantRanks,
+			CriticalRank:             variant.CriticalRank,
+			ScarceOnes:               variant.ScarceOnes,
 			ClueColors:               *clueColors,
 			ClueRanks:                *clueRanks,
 			StackSize:                stackSize,
