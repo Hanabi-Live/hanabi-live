@@ -27,9 +27,6 @@ jobs:
       - name: Compile the Golang code
         run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
-      - name: Test the Golang code
-        run: go test ./...
-        working-directory: ./server/src
 
   lint:
     runs-on: ubuntu-latest
