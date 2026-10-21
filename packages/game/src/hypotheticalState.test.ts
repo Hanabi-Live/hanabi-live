@@ -11,6 +11,7 @@ import { gameReducer } from "./reducers/gameReducer";
 import { getInitialGameState } from "./reducers/initialStates/initialGameState";
 import { draw, rankClue } from "./testActions";
 import type { CardOrder } from "./types/CardOrder";
+import type { PlayerIndex } from "./types/PlayerIndex";
 
 const metadata = getDefaultMetadata(2);
 let startingState = getInitialGameState(metadata);
@@ -164,6 +165,28 @@ describe("hypothetical state", () => {
 
     expect(result).toBe(initial);
   });
+
+  test.each([-1, metadata.options.numPlayers, 1.5])(
+    "ignores a received draw with invalid player index %s",
+    (playerIndex) => {
+      const initial = initializeHypotheticalState(
+        startingState,
+        false,
+        [],
+        false,
+        metadata,
+      );
+
+      const result = hypotheticalStateReducer(
+        initial,
+        draw(playerIndex as PlayerIndex, startingState.deck.length, 0, 1),
+        false,
+        metadata,
+      );
+
+      expect(result).toBe(initial);
+    },
+  );
 
   test("ignores a received draw when the deck is empty", () => {
     const emptyDeckState = {

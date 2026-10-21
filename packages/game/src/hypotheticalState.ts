@@ -146,7 +146,10 @@ function hypotheticalStateReducerFunction(
   // Ignore invalid draws from persisted shared replay actions.
   if (
     action.type === "draw"
-    && (action.order !== state.ongoing.deck.length
+    && (!Number.isSafeInteger(action.playerIndex)
+      || action.playerIndex < 0
+      || action.playerIndex >= state.ongoing.hands.length
+      || action.order !== state.ongoing.deck.length
       || state.ongoing.cardsRemainingInTheDeck <= 0)
   ) {
     return;
