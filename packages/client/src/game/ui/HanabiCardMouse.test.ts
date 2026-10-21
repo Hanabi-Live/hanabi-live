@@ -1,6 +1,6 @@
 import { describe, expect, jest, test } from "@jest/globals";
 import type { HanabiCard } from "./HanabiCard";
-import { setEmpathyOnHand } from "./HanabiCardMouse";
+import { registerMouseHandlers, setEmpathyOnHand } from "./HanabiCardMouse";
 import { globals } from "./UIGlobals";
 
 jest.mock("./UIGlobals", () => ({ globals: {} }));
@@ -57,5 +57,41 @@ describe("setEmpathyOnHand", () => {
 
     expect(setEmpathy0).not.toHaveBeenCalled();
     expect(setEmpathy1).not.toHaveBeenCalled();
+  });
+});
+
+describe("hypothetical empathy mouse handling", () => {
+  test("recognizes the LayoutChild card despite a leading decoration", () => {
+    const setEmpathy = jest.fn();
+    const handlers = new Map<string, () => void>();
+    const card = {
+      _id: 42,
+      state: { location: 0 },
+      layout: { parent: null as unknown, draggable: () => false },
+      on: jest.fn((event: string, handler: () => void) => {
+        handlers.set(event, handler);
+      }),
+    } as unknown as HanabiCard;
+    const hand = {
+      children: [{ card, children: [{ isDecoration: true }] }],
+      setEmpathy,
+    };
+    Object.assign(card.layout, { parent: hand });
+    Object.assign(globals, {
+      globalEmpathyEnabled: false,
+      state: {
+        replay: { hypothetical: { startingPlayerIndex: 0 } },
+      },
+      options: { speedrun: false },
+      lobby: { settings: { speedrunMode: false } },
+      elements: { playerHands: [hand] },
+    });
+
+    registerMouseHandlers.call(card);
+    const mouseUp = handlers.get("mouseup");
+    expect(mouseUp).toBeDefined();
+    mouseUp?.call(card);
+
+    expect(setEmpathy).not.toHaveBeenCalled();
   });
 });

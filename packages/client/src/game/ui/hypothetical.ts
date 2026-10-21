@@ -11,7 +11,6 @@ import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
-import type { HanabiCard } from "./HanabiCard";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
@@ -293,11 +292,7 @@ function forceHandEmpathy(playerIndex: PlayerIndex, force: boolean) {
       continue;
     }
 
-    const card = layoutChild.children[0] as HanabiCard | undefined;
-    if (card === undefined) {
-      continue;
-    }
-
+    const { card } = layoutChild as unknown as LayoutChild;
     setEmpathyOnHand(card, force);
   }
 }
