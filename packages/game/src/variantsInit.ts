@@ -380,13 +380,12 @@ export function createVariant(
 
   const showSuitNames = getVariantShowSuitNames(suits, upOrDown, sudoku);
 
-  // Create the regular expression pattern for identity notes in this variant.
-  const isUpOrDown = name.startsWith("Up or Down");
+  // Use the variant metadata, not its name, to enable Up or Down note shorthands.
   const identityNotePattern = getIdentityNotePatternForVariant(
     suits,
     ranks,
     suitAbbreviations,
-    isUpOrDown,
+    upOrDown,
   );
 
   const hasInverted = suits.some((suit: Suit) => suit.inverted);

@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
@@ -16,6 +15,14 @@ type Variant struct {
 	Ranks                    []int
 	CriticalRank             int
 	ScarceOnes               bool
+	AlternatingClues         bool
+	ClueStarved              bool
+	CowAndPig                bool
+	Duck                     bool
+	ThrowItInAHole           bool
+	UpOrDown                 bool
+	Synesthesia              bool
+	Sudoku                   bool
 	ClueColors               []string
 	ClueRanks                []int
 	StackSize                int
@@ -34,43 +41,39 @@ type Variant struct {
 }
 
 func (v *Variant) IsAlternatingClues() bool {
-	return strings.HasPrefix(v.Name, "Alternating Clues")
+	return v.AlternatingClues
 }
 
 func (v *Variant) IsClueStarved() bool {
-	return strings.HasPrefix(v.Name, "Clue Starved")
+	return v.ClueStarved
 }
 
 func (v *Variant) IsCowAndPig() bool {
-	return strings.HasPrefix(v.Name, "Cow & Pig")
+	return v.CowAndPig
 }
 
 func (v *Variant) IsDuck() bool {
-	return strings.HasPrefix(v.Name, "Duck")
+	return v.Duck
 }
 
 func (v *Variant) IsThrowItInAHole() bool {
-	return strings.HasPrefix(v.Name, "Throw It in a Hole")
+	return v.ThrowItInAHole
 }
 
 func (v *Variant) IsUpOrDown() bool {
-	return strings.HasPrefix(v.Name, "Up or Down")
+	return v.UpOrDown
 }
 
 func (v *Variant) IsSynesthesia() bool {
-	return strings.HasPrefix(v.Name, "Synesthesia")
-}
-
-func (v *Variant) IsCriticalFours() bool {
-	return v.CriticalRank == 4 || strings.HasPrefix(v.Name, "Critical Fours")
+	return v.Synesthesia
 }
 
 func (v *Variant) IsScarceOnes() bool {
-	return v.ScarceOnes || strings.HasPrefix(v.Name, "Scarce Ones")
+	return v.ScarceOnes
 }
 
 func (v *Variant) IsSudoku() bool {
-	return strings.HasPrefix(v.Name, "Sudoku")
+	return v.Sudoku
 }
 
 func (v *Variant) HasReversedSuits() bool {
