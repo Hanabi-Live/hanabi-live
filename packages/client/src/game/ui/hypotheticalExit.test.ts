@@ -5,12 +5,18 @@ import { createStore } from "redux";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
 import { ReplayActionType } from "../types/ReplayActionType";
+import type { HanabiCard } from "./HanabiCard";
+import * as mouse from "./HanabiCardMouse";
+import {
+  changeStartingHandVisibility,
+  endHypothetical,
+  finishHypothetical,
+} from "./hypothetical";
 import { globals } from "./UIGlobals";
-import { endHypothetical, finishHypothetical } from "./hypothetical";
 
 jest.mock("../reducers/uiReducer", () => ({ uiReducer: jest.fn() }));
 jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("./HanabiCardMouse", () => ({}));
+jest.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: jest.fn() }));
 
 function setup(shared: boolean) {
   const metadata = getDefaultMetadata(2);
@@ -89,5 +95,26 @@ describe("hypothetical exit", () => {
     finishHypothetical();
     expect(store.getState().replay.hypothetical).toBeNull();
     expect(send).not.toHaveBeenCalled();
+  });
+});
+
+describe("hypothetical hand empathy", () => {
+  test("uses the LayoutChild card when its first Konva child is not a card", () => {
+    setup(false);
+    const card = { state: { location: 0 } } as unknown as HanabiCard;
+    const hand = {
+      children: [{ card, children: [{ isDecoration: true }] }],
+    };
+    Object.assign(globals, {
+      elements: { playerHands: [hand, { children: [] }] },
+      options: { numPlayers: 2 },
+    });
+
+    changeStartingHandVisibility();
+
+    const empathyCalls = (mouse.setEmpathyOnHand as unknown as jest.Mock).mock
+      .calls;
+    expect(empathyCalls).toHaveLength(1);
+    expect(empathyCalls[0]).toEqual([card, true]);
   });
 });
