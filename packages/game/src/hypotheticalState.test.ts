@@ -143,6 +143,107 @@ describe("hypothetical state", () => {
     expect(initial.morphedIdentities).toEqual([]);
   });
 
+  test.each([
+    { name: "duplicate", order: 0 },
+    { name: "skipped", order: startingState.deck.length + 1 },
+  ])("ignores a received $name draw order", ({ order }) => {
+    const initial = initializeHypotheticalState(
+      startingState,
+      false,
+      [],
+      false,
+      metadata,
+    );
+
+    const result = hypotheticalStateReducer(
+      initial,
+      draw(0, order, 0, 1),
+      false,
+      metadata,
+    );
+
+    expect(result).toBe(initial);
+  });
+
+  test("ignores a received draw when the deck is empty", () => {
+    const emptyDeckState = {
+      ...startingState,
+      cardsRemainingInTheDeck: 0,
+    };
+    const initial = initializeHypotheticalState(
+      emptyDeckState,
+      false,
+      [],
+      false,
+      metadata,
+    );
+
+    const result = hypotheticalStateReducer(
+      initial,
+      draw(0, emptyDeckState.deck.length, 0, 1),
+      false,
+      metadata,
+    );
+
+    expect(result).toBe(initial);
+  });
+
+  test("allows drawing the last remaining card", () => {
+    const finalCardState = {
+      ...startingState,
+      cardsRemainingInTheDeck: 1,
+    };
+    const initial = initializeHypotheticalState(
+      finalCardState,
+      false,
+      [],
+      false,
+      metadata,
+    );
+    const nextOrder = finalCardState.deck.length;
+
+    const result = hypotheticalStateReducer(
+      initial,
+      draw(0, nextOrder, 0, 1),
+      false,
+      metadata,
+    );
+
+    expect(result.ongoing.cardsRemainingInTheDeck).toBe(0);
+    expect(result.ongoing.deck).toHaveLength(nextOrder + 1);
+    expect(result.ongoing.hands[0]).toContain(nextOrder);
+    expect(initial.ongoing.cardsRemainingInTheDeck).toBe(1);
+  });
+
+  test("ignores a repeated draw after applying it once", () => {
+    const initial = initializeHypotheticalState(
+      startingState,
+      false,
+      [],
+      false,
+      metadata,
+    );
+    const nextOrder = startingState.deck.length;
+    const once = hypotheticalStateReducer(
+      initial,
+      draw(0, nextOrder, 0, 1),
+      false,
+      metadata,
+    );
+    const twice = hypotheticalStateReducer(
+      once,
+      draw(0, nextOrder, 0, 1),
+      false,
+      metadata,
+    );
+
+    expect(twice).toBe(once);
+    const drawnCards = once.ongoing.hands[0].filter(
+      (order) => order === nextOrder,
+    );
+    expect(drawnCards).toHaveLength(1);
+  });
+
   test("records every hidden draw and toggles all drawn identities", () => {
     const initial = initializeHypotheticalState(
       startingState,
@@ -160,11 +261,11 @@ describe("hypothetical state", () => {
     );
     state = hypotheticalStateReducer(
       state,
-      draw(0, order, 0, 1),
+      draw(0, order + 1, 0, 1),
       false,
       metadata,
     );
-    expect(state.drawnCardsInHypothetical).toEqual([order, order]);
+    expect(state.drawnCardsInHypothetical).toEqual([order, order + 1]);
     expect(state.morphedIdentities[order]).toEqual({
       suitIndex: null,
       rank: null,
@@ -196,11 +297,11 @@ describe("hypothetical state", () => {
     expect(state.ongoing).toBe(ongoing);
     state = hypotheticalStateReducer(
       state,
-      draw(0, order + 1, 0, 2),
+      draw(0, order + 2, 0, 2),
       false,
       metadata,
     );
-    expect(state.morphedIdentities[order + 1]).toBeUndefined();
+    expect(state.morphedIdentities[order + 2]).toBeUndefined();
     const afterDraw = state.ongoing;
     state = hypotheticalStateReducer(
       state,
@@ -209,7 +310,7 @@ describe("hypothetical state", () => {
       metadata,
     );
     expect(state.showDrawnCards).toBe(false);
-    for (const drawnOrder of [order, order + 1]) {
+    for (const drawnOrder of [order, order + 1, order + 2]) {
       expect(state.morphedIdentities[drawnOrder]).toEqual({
         suitIndex: null,
         rank: null,
@@ -217,7 +318,11 @@ describe("hypothetical state", () => {
     }
     expect(state.morphedIdentities[0]).toEqual({ suitIndex: 1, rank: 2 });
     expect(state.ongoing).toBe(afterDraw);
-    expect(state.drawnCardsInHypothetical).toEqual([order, order, order + 1]);
+    expect(state.drawnCardsInHypothetical).toEqual([
+      order,
+      order + 1,
+      order + 2,
+    ]);
     expect(initial.drawnCardsInHypothetical).toEqual([]);
   });
 

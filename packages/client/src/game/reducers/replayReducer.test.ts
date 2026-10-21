@@ -160,13 +160,13 @@ describe("replayReducer", () => {
       );
       state = replayReducer(
         state,
-        hypoAction(draw(0, order, 0, 1)),
+        hypoAction(draw(0, order + 1, 0, 1)),
         false,
         metadata,
       );
       expect(state.hypothetical?.drawnCardsInHypothetical).toEqual([
         order,
-        order,
+        order + 1,
       ]);
       expect(state.hypothetical?.morphedIdentities[order]).toEqual({
         suitIndex: null,
@@ -198,11 +198,11 @@ describe("replayReducer", () => {
       expect(state.hypothetical?.morphedIdentities[order]).toBeUndefined();
       state = replayReducer(
         state,
-        hypoAction(draw(0, order + 1, 0, 2)),
+        hypoAction(draw(0, order + 2, 0, 2)),
         false,
         metadata,
       );
-      expect(state.hypothetical?.morphedIdentities[order + 1]).toBeUndefined();
+      expect(state.hypothetical?.morphedIdentities[order + 2]).toBeUndefined();
       const afterDraw = state.hypothetical?.ongoing;
       expect(afterDraw).not.toBe(ongoing);
       state = replayReducer(
@@ -212,7 +212,7 @@ describe("replayReducer", () => {
         metadata,
       );
       expect(state.hypothetical?.showDrawnCards).toBe(false);
-      for (const drawnOrder of [order, order + 1]) {
+      for (const drawnOrder of [order, order + 1, order + 2]) {
         expect(state.hypothetical?.morphedIdentities[drawnOrder]).toEqual({
           suitIndex: null,
           rank: null,
@@ -225,8 +225,8 @@ describe("replayReducer", () => {
       expect(state.hypothetical?.ongoing).toBe(afterDraw);
       expect(state.hypothetical?.drawnCardsInHypothetical).toEqual([
         order,
-        order,
         order + 1,
+        order + 2,
       ]);
     });
 

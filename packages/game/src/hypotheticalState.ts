@@ -143,6 +143,15 @@ function hypotheticalStateReducerFunction(
     }
   }
 
+  // Ignore invalid draws from persisted shared replay actions.
+  if (
+    action.type === "draw"
+    && (action.order !== state.ongoing.deck.length
+      || state.ongoing.cardsRemainingInTheDeck <= 0)
+  ) {
+    return;
+  }
+
   // Validate persisted replay actions, which bypass the local action planner.
   if (action.type === "play" || action.type === "discard") {
     for (const [playerIndex, hand] of state.ongoing.hands.entries()) {
