@@ -143,7 +143,14 @@ function hypotheticalStateReducerFunction(
     }
   }
 
-  if (action.type === "draw") {
+  // Validate persisted replay actions, which bypass the local action planner.
+  if (action.type === "play" || action.type === "discard") {
+    for (const [playerIndex, hand] of state.ongoing.hands.entries()) {
+      if (playerIndex !== action.playerIndex && hand.includes(action.order)) {
+        return;
+      }
+    }
+  } else if (action.type === "draw") {
     // Store every draw to be able to show/hide the cards in the future.
     state.drawnCardsInHypothetical.push(action.order);
     if (!state.showDrawnCards) {
