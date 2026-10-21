@@ -19120,5 +19120,101 @@
     "name": "Sudoku & Dark Orange (5 Suits)",
     "suits": ["Red", "Yellow", "Green", "Blue", "Dark Orange"],
     "sudoku": true
+  },
+  {
+    "id": 2432,
+    "newID": "R+Y+G+B+P+SiT",
+    "name": "Singularity (6 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple", "Teal Singularity"]
+  },
+  {
+    "id": 2431,
+    "newID": "R+Y+G+B+SiP",
+    "name": "Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Purple Singularity"]
+  },
+  {
+    "id": 2433,
+    "newID": "R+Y+G+SiB",
+    "name": "Singularity (4 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue Singularity"]
+  },
+  {
+    "id": 2434,
+    "newID": "R+G+SiB",
+    "name": "Singularity (3 Suits)",
+    "suits": ["Red", "Green", "Blue Singularity"]
+  },
+  {
+    "id": 2436,
+    "newID": "R+Y+G+B+SiBk",
+    "name": "Black Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Black Singularity"]
+  },
+  {
+    "id": 2441,
+    "newID": "R+Y+G+B+SiPi",
+    "name": "Pink Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Pink Singularity"]
+  },
+  {
+    "id": 2429,
+    "newID": "R+Y+G+B+SiWhPi",
+    "name": "Light Pink Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Light Pink Singularity"]
+  },
+  {
+    "id": 2472,
+    "newID": "R+Y+G+B+SiPi1",
+    "name": "Dark Pink Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Pink Singularity"]
+  },
+  {
+    "id": 2482,
+    "newID": "R+Y+G+B+SiWhPi1",
+    "name": "Gray Pink Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Gray Pink Singularity"]
+  },
+  {
+    "id": 2435,
+    "newID": "R+Y+G+B+SiRa",
+    "name": "Rainbow Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Rainbow Singularity"]
+  },
+  {
+    "id": 2470,
+    "newID": "R+Y+G+B+SiRa1",
+    "name": "Dark Rainbow Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Dark Rainbow Singularity"]
+  },
+  {
+    "id": 2455,
+    "newID": "R+Y+G+B+SiBrRa",
+    "name": "Muddy Rainbow Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Muddy Rainbow Singularity"]
+  },
+  {
+    "id": 2480,
+    "newID": "R+Y+G+B+SiBrRa1",
+    "name": "Cocoa Rainbow Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Cocoa Rainbow Singularity"]
+  },
+  {
+    "id": 2428,
+    "newID": "R+Y+G+B+SiOm",
+    "name": "Omni Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Omni Singularity"]
+  },
+  {
+    "id": 2430,
+    "newID": "R+Y+G+B+SiNu",
+    "name": "Null Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Null Singularity"]
+  },
+  {
+    "id": 2466,
+    "newID": "R+Y+G+B+SiOr",
+    "name": "Orange Singularity (5 Suits)",
+    "suits": ["Red", "Yellow", "Green", "Blue", "Orange Singularity"]
   }
 ]

@@ -498,5 +498,177 @@
     "fill": "#000066",
     "pip": "auto",
     "clueColors": ["Blue", "Black"]
+  },
+  {
+    "name": "Blue Singularity",
+    "id": "SiB",
+    "pip": "hanabiBlue4",
+    "singularity": true,
+    "abbreviation": "B",
+    "clueColors": ["Blue"],
+    "displayName": "Blue"
+  },
+  {
+    "name": "Purple Singularity",
+    "id": "SiP",
+    "pip": "hanabiWhite5",
+    "singularity": true,
+    "abbreviation": "P",
+    "clueColors": ["Purple"],
+    "displayName": "Purple"
+  },
+  {
+    "name": "Teal Singularity",
+    "id": "SiT",
+    "pip": "hanabiAltWhite6",
+    "singularity": true,
+    "abbreviation": "T",
+    "clueColors": ["Teal"],
+    "displayName": "Teal"
+  },
+  {
+    "name": "Black Singularity",
+    "id": "SiBk",
+    "pip": "katakanaHe",
+    "oneOfEach": true,
+    "singularity": true,
+    "abbreviation": "K",
+    "clueColors": ["Black"],
+    "displayName": "Black"
+  },
+  {
+    "name": "Rainbow Singularity",
+    "id": "SiRa",
+    "abbreviation": "M",
+    "fill": "multi",
+    "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff"],
+    "pip": "rainbow",
+    "allClueColors": true,
+    "singularity": true,
+    "displayName": "Rainbow"
+  },
+  {
+    "name": "Pink Singularity",
+    "id": "SiPi",
+    "pip": "hashtag",
+    "allClueRanks": true,
+    "singularity": true,
+    "abbreviation": "I",
+    "clueColors": ["Pink"],
+    "displayName": "Pink"
+  },
+  {
+    "name": "Omni Singularity",
+    "id": "SiOm",
+    "fill": "multi",
+    "fillColors": [
+      "#ffffff",
+      "#8000ff",
+      "#0037ff",
+      "#02ec00",
+      "#ffff00",
+      "#ff0000",
+      "#ffffff"
+    ],
+    "pip": "infinity",
+    "allClueColors": true,
+    "allClueRanks": true,
+    "singularity": true,
+    "abbreviation": "O",
+    "displayName": "Omni"
+  },
+  {
+    "name": "Null Singularity",
+    "id": "SiNu",
+    "abbreviation": "U",
+    "fill": "#ffffff",
+    "pip": "emptySet",
+    "noClueColors": true,
+    "noClueRanks": true,
+    "singularity": true,
+    "absorbsUnmatchedClues": true,
+    "displayName": "Null"
+  },
+  {
+    "name": "Muddy Rainbow Singularity",
+    "id": "SiBrRa",
+    "abbreviation": "M",
+    "fill": "multi",
+    "fillColors": ["#bb4321", "#bb8021", "#808000", "#8080ff", "#500030"],
+    "pip": "rainbow",
+    "allClueColors": true,
+    "noClueRanks": true,
+    "singularity": true,
+    "displayName": "Muddy Rainbow"
+  },
+  {
+    "name": "Light Pink Singularity",
+    "id": "SiWhPi",
+    "abbreviation": "I",
+    "fill": "#ffbbdd",
+    "pip": "hashtag",
+    "noClueColors": true,
+    "allClueRanks": true,
+    "singularity": true,
+    "displayName": "Light Pink"
+  },
+  {
+    "name": "Orange Singularity",
+    "id": "SiOr",
+    "pip": "unoReverse",
+    "inverted": true,
+    "singularity": true,
+    "abbreviation": "O",
+    "clueColors": ["Orange"],
+    "displayName": "Orange"
+  },
+  {
+    "name": "Dark Rainbow Singularity",
+    "id": "SiRa1",
+    "abbreviation": "M",
+    "fill": "multi",
+    "fillColors": ["#a00000", "#a0a000", "#00a000", "#0000a0", "#5000a0"],
+    "pip": "rainbow",
+    "oneOfEach": true,
+    "allClueColors": true,
+    "singularity": true,
+    "displayName": "Dark Rainbow"
+  },
+  {
+    "name": "Dark Pink Singularity",
+    "id": "SiPi1",
+    "abbreviation": "I",
+    "fill": "#800040",
+    "pip": "hashtag",
+    "oneOfEach": true,
+    "clueColors": ["Pink"],
+    "allClueRanks": true,
+    "singularity": true,
+    "displayName": "Dark Pink"
+  },
+  {
+    "name": "Cocoa Rainbow Singularity",
+    "id": "SiBrRa1",
+    "abbreviation": "M",
+    "fill": "multi",
+    "fillColors": ["#662211", "#664011", "#404000", "#404080", "#280018"],
+    "pip": "rainbow",
+    "oneOfEach": true,
+    "allClueColors": true,
+    "noClueRanks": true,
+    "singularity": true,
+    "displayName": "Cocoa Rainbow"
+  },
+  {
+    "name": "Gray Pink Singularity",
+    "id": "SiWhPi1",
+    "abbreviation": "I",
+    "fill": "#b05080",
+    "pip": "hashtag",
+    "oneOfEach": true,
+    "noClueColors": true,
+    "allClueRanks": true,
+    "singularity": true,
+    "displayName": "Gray Pink"
   }
 ]

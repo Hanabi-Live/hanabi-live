@@ -17,6 +17,7 @@ import type { GameState } from "../interfaces/GameState";
 import { msgClueToClue, shouldApplyClue } from "../rules/clues";
 import { isInitialDealFinished } from "../rules/deck";
 import { isCardOnChop } from "../rules/hand";
+import { getClueModes } from "../rules/singularity";
 import { shouldSeeSlot2CardIdentity } from "../rules/variants/characters";
 import type { CardOrder } from "../types/CardOrder";
 import type { NumPlayers } from "../types/NumPlayers";
@@ -95,6 +96,17 @@ export function cardsReducer(
       const hand = game.hands[action.target];
       assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
 
+      const modes = variant.suits.some((suit) => suit.singularity)
+        ? getClueModes(
+            variant,
+            clue,
+            hand,
+            deck,
+            action.list,
+            action.ignoreNegative,
+          )
+        : undefined;
+
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
@@ -108,6 +120,7 @@ export function cardsReducer(
           clue,
           positive,
           metadata,
+          modes,
         );
         newDeck[order] = newCard;
       };

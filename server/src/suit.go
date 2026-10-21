@@ -11,8 +11,10 @@ type Suit struct {
 	Reversed     bool     `json:"reversed"`
 	Inverted     bool     `json:"inverted"`
 
-	AllClueColors bool `json:"allClueColors"`
-	AllClueRanks  bool `json:"allClueRanks"`
-	NoClueColors  bool `json:"noClueColors"`
-	NoClueRanks   bool `json:"noClueRanks"`
+	AllClueColors         bool `json:"allClueColors"`
+	AllClueRanks          bool `json:"allClueRanks"`
+	NoClueColors          bool `json:"noClueColors"`
+	NoClueRanks           bool `json:"noClueRanks"`
+	Singularity           bool `json:"singularity"`
+	AbsorbsUnmatchedClues bool `json:"absorbsUnmatchedClues"`
 }

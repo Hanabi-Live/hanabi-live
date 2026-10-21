@@ -95,6 +95,18 @@ The pips that are assigned to each suit is documented on the
 - One of the suits is replaced with a null suit.
 - No clues "touch" the null suit.
 
+### Singularity
+
+- Singularity modifies the last suit of a variant. A clue that touches a Singularity card touches only matching Singularity cards in that hand; otherwise the clue works normally.
+- In Singularity (3, 4, 5, or 6 Suits), the last suit retains its usual color and ranks. For example, with a Singularity 3, red 2, and green 3 in hand, a 2 clue touches red 2, while a 3 clue touches only the Singularity 3. A red clue still touches red 2.
+- Pink Singularity accepts every rank and its own color; Light Pink Singularity accepts every rank but no colors. Dark Pink and Gray Pink retain their usual color rules and single copies.
+- Rainbow Singularity accepts every color and its actual rank, absorbing both kinds when they match. Muddy Rainbow and Cocoa Rainbow do not accept or absorb rank clues.
+- Omni Singularity accepts and absorbs every clue.
+- Null Singularity is the exception: it absorbs every clue without accepting any. These absorbed empty clues are legal even without the Empty Clues option.
+- Black retains its single copies; Orange retains its reversed play/discard rules and still plays through discard.
+- The catalog contains 16 Singularity variants: the basic version with 3–6 suits, and five-suit versions of Black, Pink, Light Pink, Dark Pink, Gray Pink, Rainbow, Dark Rainbow, Muddy Rainbow, Cocoa Rainbow, Omni, Null, and Orange.
+- Absorption is not announced. The recipient sees only the usual clue and touched cards. An untouched card can still match the clue if another card absorbed it; the interface preserves that possibility and previous knowledge. The interface tracks possibilities for each card, but does not solve every dependency between cards across earlier clues.
+
 ### Muddy Rainbow
 
 - One of the suits is replaced with a muddy rainbow suit.
