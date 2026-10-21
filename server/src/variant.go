@@ -14,6 +14,8 @@ type Variant struct {
 	ID                       int
 	Suits                    []*Suit
 	Ranks                    []int
+	CriticalRank             int
+	ScarceOnes               bool
 	ClueColors               []string
 	ClueRanks                []int
 	StackSize                int
@@ -60,11 +62,11 @@ func (v *Variant) IsSynesthesia() bool {
 }
 
 func (v *Variant) IsCriticalFours() bool {
-	return strings.HasPrefix(v.Name, "Critical Fours")
+	return v.CriticalRank == 4 || strings.HasPrefix(v.Name, "Critical Fours")
 }
 
 func (v *Variant) IsScarceOnes() bool {
-	return strings.HasPrefix(v.Name, "Scarce Ones")
+	return v.ScarceOnes || strings.HasPrefix(v.Name, "Scarce Ones")
 }
 
 func (v *Variant) IsSudoku() bool {
@@ -106,21 +108,11 @@ func (v *Variant) GetDeckSize() int {
 }
 
 func (v *Variant) totalCardsInSuit(suit *Suit) int {
-	if suit.OneOfEach {
-		if v.IsUpOrDown() {
-			// A critical suit in up or down has all unique cards plus an extra start card.
-			return v.StackSize + 1
-		}
-		return v.StackSize
+	total := 0
+	for _, rank := range v.Ranks {
+		total += numCopiesOfCard(suit, rank, v)
 	}
-
-	if v.IsUpOrDown() || v.IsCriticalFours() {
-		// The normal amount minus one because there is one more critical card
-		return v.StackSize*2 - 1
-	}
-
-	// The normal amount: three 1's + two 2's + two 3's + two 4's + one 5. Or in Sudoku: 2 of each.
-	return v.StackSize * 2
+	return total
 }
 
 func (v *Variant) GetAdjustedClueTokens(clueTokens int) int {
