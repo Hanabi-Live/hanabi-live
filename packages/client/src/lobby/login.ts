@@ -8,6 +8,7 @@ import { globals } from "../Globals";
 import { FADE_TIME_MS } from "../constants";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
+import { checkCookieWithRetry } from "./cookieProbe";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
@@ -154,15 +155,30 @@ export function automaticLogin(): void {
   // If we have logged in previously and our cookie is still good, automatically login.
   console.log("Testing to see if we have a cached WebSocket cookie.");
   const testCookiePath = "/test-cookie";
-  fetch(testCookiePath)
+  checkCookieWithRetry()
+    .catch((error: unknown) => {
+      // Handle only failures of the cookie check; a later WebSocket error is separate.
+      console.error(`Failed to fetch "${testCookiePath}":`, error);
+      const alert = $("#login-alert");
+      alert.text(
+        "Unable to check your saved session. You can sign in or retry.",
+      );
+      const retryButton = $("<button>", { type: "button" }).text("Retry");
+      retryButton.on("click", () => {
+        alert.hide();
+        $("#sign-in").hide();
+        $("#loading").show();
+        automaticLogin();
+      });
+      alert.append(" ", retryButton).show();
+
+      if (!showFirefoxWarningIfNeeded()) {
+        show();
+      }
+      return null;
+    })
     .then((response) => {
-      // Check to see if we have accepted the Firefox warning.
-      if (
-        isBrowserFirefox()
-        && localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true" // Cookies are strings.
-      ) {
-        $("#loading").hide();
-        $("#firefox-warning").show();
+      if (response === null || showFirefoxWarningIfNeeded()) {
         return;
       }
 
@@ -187,12 +203,28 @@ export function automaticLogin(): void {
       show();
     })
     .catch((error: unknown) => {
-      console.error(`Failed to fetch "${testCookiePath}":`, error);
+      // Do not report errors from websocketInit() as cookie-check failures.
+      console.error("Automatic login initialization failed:", error);
+      if (!showFirefoxWarningIfNeeded()) {
+        show();
+      }
     });
 }
 
 function isBrowserFirefox() {
   return navigator.userAgent.toLowerCase().includes("firefox");
+}
+
+function showFirefoxWarningIfNeeded(): boolean {
+  if (
+    isBrowserFirefox()
+    && localStorage.getItem(FIREFOX_WARNING_COOKIE_NAME) !== "true"
+  ) {
+    $("#loading").hide();
+    $("#firefox-warning").show();
+    return true;
+  }
+  return false;
 }
 
 // -------------------------
