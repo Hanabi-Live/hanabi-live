@@ -41,7 +41,14 @@ type VariantJSON struct {
 	Sudoku                   bool      `json:"sudoku"`
 	UpOrDown                 bool      `json:"upOrDown"`
 	CriticalRank             int       `json:"criticalRank"`
+	StackSize                int       `json:"stackSize"`
 	ScarceOnes               bool      `json:"scarceOnes"`
+	AlternatingClues         bool      `json:"alternatingClues"`
+	ClueStarved              bool      `json:"clueStarved"`
+	CowAndPig                bool      `json:"cowAndPig"`
+	Duck                     bool      `json:"duck"`
+	ThrowItInAHole           bool      `json:"throwItInAHole"`
+	Synesthesia              bool      `json:"synesthesia"`
 }
 
 // VariantInfoJSON contains limited information about a variant, returned in /api/v1/variants-full
@@ -50,6 +57,18 @@ type VariantInfoJSON struct {
 	Suits     []string `json:"suits"`
 	StackSize int      `json:"stackSize"`
 	MaxScore  int      `json:"maxScore"`
+}
+
+// deriveVariantRanks mirrors the rank derivation in packages/game/src/variantsInit.ts.
+func deriveVariantRanks(stackSize int, upOrDown bool) []int {
+	ranks := make([]int, stackSize)
+	for i := range ranks {
+		ranks[i] = i + 1
+	}
+	if upOrDown {
+		ranks = append(ranks, StartCardRank)
+	}
+	return ranks
 }
 
 func variantsInit() {
@@ -108,22 +127,18 @@ func variantsInit() {
 			}
 		}
 
-		// Derive the card ranks (the ranks that the cards of each suit will be)
-		// By default, assume ranks 1 through 5
-		variantRanks := []int{1, 2, 3, 4, 5}
-		if variant.Sudoku {
-			variantRanks = variantRanks[:len(variantSuits)]
+		// The explicit stackSize is authoritative, including for Sudoku variants.
+		// An omitted value means the standard five ranks.
+		stackSize := variant.StackSize
+		if stackSize == 0 {
+			stackSize = DefaultPointsPerSuit
 		}
-		if variant.UpOrDown {
-			// The "Up or Down" variants have START cards
-			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
-			variantRanks = append(variantRanks, StartCardRank)
+		if stackSize < 1 || stackSize > DefaultPointsPerSuit {
+			logger.Fatal("The variant of \"" + variant.Name + "\" has an invalid stack size of " + strconv.Itoa(stackSize) + ".")
+			return
 		}
 
-		stackSize := DefaultPointsPerSuit
-		if variant.Sudoku {
-			stackSize = len(variantSuits)
-		}
+		variantRanks := deriveVariantRanks(stackSize, variant.UpOrDown)
 
 		// Validate or derive the clue colors (the colors available to clue in this variant)
 		clueColors := variant.ClueColors
@@ -176,6 +191,14 @@ func variantsInit() {
 			Ranks:                    variantRanks,
 			CriticalRank:             variant.CriticalRank,
 			ScarceOnes:               variant.ScarceOnes,
+			AlternatingClues:         variant.AlternatingClues,
+			ClueStarved:              variant.ClueStarved,
+			CowAndPig:                variant.CowAndPig,
+			Duck:                     variant.Duck,
+			ThrowItInAHole:           variant.ThrowItInAHole,
+			UpOrDown:                 variant.UpOrDown,
+			Synesthesia:              variant.Synesthesia,
+			Sudoku:                   variant.Sudoku,
 			ClueColors:               *clueColors,
 			ClueRanks:                *clueRanks,
 			StackSize:                stackSize,
@@ -295,6 +318,26 @@ func variantIsCardTouched(variant *Variant, clue Clue, card *Card) bool {
 			return false
 		}
 
+		// Keep the same precedence as isCardTouchedByClueRank in packages/game.
+		// These variant-wide clue rules apply before special-rank rules.
+		if variant.Funnels {
+			// Rank clues in Funnels also touch lower ranked cards.
+			return card.Rank <= clue.Value
+		}
+
+		if variant.Chimneys {
+			// Rank clues in Chimneys also touch higher ranked cards.
+			return card.Rank >= clue.Value
+		}
+
+		if variant.OddsAndEvens {
+			// Clue ranks in Odds and Evens can only be 1 or 2.
+			if clue.Value == 1 {
+				return intInSlice(card.Rank, oddClues)
+			}
+			return intInSlice(card.Rank, evenClues)
+		}
+
 		if variant.SpecialRank == card.Rank {
 			if variant.SpecialRankAllClueRanks {
 				return true
@@ -303,28 +346,10 @@ func variantIsCardTouched(variant *Variant, clue Clue, card *Card) bool {
 				return false
 			}
 			if variant.SpecialRankDeceptive {
-				// The rank that touches a deceptive card is contingent upon the card's suit
+				// The rank that touches a deceptive card is contingent upon the card's suit.
 				deceptiveRank := variant.ClueRanks[card.SuitIndex%len(variant.ClueRanks)]
 				return clue.Value == deceptiveRank
 			}
-		}
-
-		if variant.OddsAndEvens {
-			// Clue ranks in Odds and Evens can only be 1 or 2
-			if clue.Value == 1 {
-				return intInSlice(card.Rank, oddClues)
-			}
-			return intInSlice(card.Rank, evenClues)
-		}
-
-		if variant.Funnels {
-			// Rank clues in Funnels touch also all lower ranked cards
-			return card.Rank <= clue.Value
-		}
-
-		if variant.Chimneys {
-			// Rank clues in Chimneys touch also all higher ranked cards
-			return card.Rank >= clue.Value
 		}
 
 		return clue.Value == card.Rank

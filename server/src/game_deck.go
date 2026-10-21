@@ -46,7 +46,7 @@ func (g *Game) InitDeck() {
 
 func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 	// This implementation mirrors numCopiesOfCard in the "deck.ts" file
-	if suit.OneOfEach {
+	if suit.OneOfEach || (variant.CriticalRank != 0 && variant.CriticalRank == rank) {
 		return 1
 	}
 
@@ -65,12 +65,6 @@ func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 		}
 
 		return 3
-	}
-
-	if rank == 4 {
-		if variant.IsCriticalFours() {
-			return 1
-		}
 	}
 
 	if rank == 5 {
