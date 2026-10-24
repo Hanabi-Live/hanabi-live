@@ -49,10 +49,15 @@ type TemplateData struct {
 	NumMaxScores               int
 	TotalMaxScores             int
 	PercentageMaxScores        string
-	RequestedNumPlayers        int      // Used on the "Missing Scores" page
-	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
-	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
-	SharedMissingScores        bool     // Used on the "Missing Scores" page
+	RequestedNumPlayers        int                          // Used on the "Missing Scores" page
+	NumMaxScoresPerType        []int                        // Used on the "Missing Scores" page
+	PercentageMaxScoresPerType []string                     // Used on the "Missing Scores" page
+	SharedMissingScores        bool                         // Used on the "Missing Scores" page
+	SharedMissingScoresPlayers []*SharedMissingScoresPlayer // Used on the "Missing Scores" page
+	ExcludeVariants            string                       // Used on the "Missing Scores" page
+	MinEfficiency              string                       // Used on the "Missing Scores" page
+	MaxEfficiency              string                       // Used on the "Missing Scores" page
+	AdvancedFiltersActive      bool                         // Used on the "Missing Scores" page
 	VariantStats               []*UserVariantStats
 
 	// Stats

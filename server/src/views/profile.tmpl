@@ -249,6 +249,7 @@
     .tablesorterPager(pagerOptions);
 
     initMissingScores();
+    initSharedMissingScoresFilters();
   });
 
   const initMissingScores = () => {
@@ -281,6 +282,68 @@
     $('#filter-by-players').change(() => {
       const numPlayers = $('#filter-by-players').val();
       window.location = `/missing-scores/${playerName}/${numPlayers}`;
+    });
+  }
+
+  const initSharedMissingScoresFilters = () => {
+    if (!window.location.pathname.startsWith('/shared-missing-scores/')) {
+      return;
+    }
+
+    // The gear icon shows/hides the advanced filters
+    $('#advanced-filters-toggle').click(() => {
+      const form = document.getElementById('advanced-filters');
+      form.hidden = !form.hidden;
+      $('#advanced-filters-toggle').attr('aria-expanded', (!form.hidden).toString());
+    });
+
+    // The filters are passed to the server as query parameters, which keeps the URL shareable
+    // e.g. "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5"
+    $('#advanced-filters').submit((event) => {
+      event.preventDefault();
+
+      const excludedPlayers = $('.include-player:not(:checked)')
+        .map((_, element) => element.value)
+        .get();
+      if (excludedPlayers.length === $('.include-player').length) {
+        $('#advanced-filters-error').text('At least one player must be included.');
+        document.getElementById('advanced-filters-error').hidden = false;
+        return;
+      }
+
+      const minEfficiency = $('#min-efficiency').val().trim();
+      const maxEfficiency = $('#max-efficiency').val().trim();
+      if (
+        minEfficiency !== '' &&
+        maxEfficiency !== '' &&
+        Number(minEfficiency) > Number(maxEfficiency)
+      ) {
+        $('#advanced-filters-error').text('The min efficiency can not be greater than the max efficiency.');
+        document.getElementById('advanced-filters-error').hidden = false;
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (excludedPlayers.length > 0) {
+        params.set('excludePlayers', excludedPlayers.join(','));
+      }
+      const excludeVariants = $('#exclude-variants').val().trim();
+      if (excludeVariants !== '') {
+        params.set('excludeVariants', excludeVariants);
+      }
+      if (minEfficiency !== '') {
+        params.set('minEfficiency', minEfficiency);
+      }
+      if (maxEfficiency !== '') {
+        params.set('maxEfficiency', maxEfficiency);
+      }
+
+      const query = params.toString();
+      window.location = window.location.pathname + (query === '' ? '' : `?${query}`);
+    });
+
+    $('#advanced-filters-reset').click(() => {
+      window.location = window.location.pathname;
     });
   }
 
