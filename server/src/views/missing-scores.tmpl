@@ -131,12 +131,12 @@
         </div>
         <div class="col-12">
           <label for="exclude-variants">
-            Exclude variants containing (comma-separated)
+            Exclude variants (comma-separated, matches any part of the name;
+            "Rainbow (3 Suits), Pink" excludes one Rainbow and all Pink variants)
           </label>
           <input
             type="text"
             id="exclude-variants"
-            placeholder="e.g. Up or Down, Duck, Cow & Pig"
             value="{{ .ExcludeVariants }}"
           />
         </div>
