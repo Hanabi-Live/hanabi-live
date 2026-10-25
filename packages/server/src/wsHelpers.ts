@@ -14,7 +14,9 @@ import { wsUsers } from "./wsUsers";
 
 const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
   Object.entries(SERVER_COMMAND_SCHEMAS).map(([key, value]) => {
-    const jsonSchema = z.toJSONSchema(value) as AnySchema;
+    const jsonSchema = z.toJSONSchema(value, {
+      unrepresentable: "any",
+    }) as AnySchema;
     const stringifyFunc = fastJSONStringify(jsonSchema);
     return [key, stringifyFunc];
   }),

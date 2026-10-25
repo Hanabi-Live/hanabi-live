@@ -5,8 +5,7 @@ import { fastifyStatic } from "@fastify/static";
 import { fastifyView } from "@fastify/view";
 import fastifyWebSocket from "@fastify/websocket";
 import { isObject } from "complete-common";
-import { Eta } from "eta";
-import type { FastifyInstance } from "fastify";
+import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import { fastify } from "fastify";
 import { fastifyFavicon } from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
@@ -15,6 +14,7 @@ import path from "node:path";
 import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
+import { createEta } from "./eta";
 import {
   httpIdentityLookup,
   httpIdentityTokenGet,
@@ -74,27 +74,7 @@ const LETS_ENCRYPT_PATH_PREFIX = "/letsencrypt/.well-known/acme-challenge";
 
 const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
 
-const eta = new Eta({
-  // Prefer the Golang template syntax, which is not the default.
-  tags: ["{{", "}}"],
-
-  // By default, Eta will allow undefined values to bubble through to the template. We want to
-  // explicitly throw an error in this case. This solution was recommended by Ben Gubler in the
-  // Discord server.
-  functionHeader: `
-    if (it !== undefined) {
-      for (const [key, value] of Object.entries(it)) {
-        if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
-          throw new Error('The template value of "' + key + '" has a type of: ' + typeof value);
-        }
-
-        if (typeof value === "string" && value.trim() === "") {
-          throw new Error('The template value of "' + key + '" is empty.');
-        }
-      }
-    }
-  `,
-});
+const eta = createEta();
 
 export async function httpInit(): Promise<void> {
   const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
@@ -108,10 +88,13 @@ export async function httpInit(): Promise<void> {
       }
     : null; // eslint-disable-line unicorn/no-null
 
+  // Fastify's types only accept a logger that is typed as the base logger interface.
+  const loggerInstance: FastifyBaseLogger = logger;
+
   // Initialize the HTTP server using the Fastify library:
   // https://fastify.dev/
   const httpServer = fastify({
-    logger,
+    loggerInstance,
     https,
 
     // The "incoming request" and "request completed" logs are too noisy when developing.

@@ -52,7 +52,9 @@ const table = z
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Table extends z.infer<typeof table> {}
 
-const jsonSchema = z.toJSONSchema(table) as AnySchema;
+const jsonSchema = z.toJSONSchema(table, {
+  unrepresentable: "any",
+}) as AnySchema;
 export const tableStringifyFunc = fastJSONStringify(jsonSchema) as (
   table: Table,
 ) => string;
