@@ -23,6 +23,7 @@ import {
 import { httpLogin } from "./http/httpLogin";
 import { httpLogout } from "./http/httpLogout";
 import { httpMain } from "./http/httpMain";
+import { httpSharedMissingScores } from "./http/httpSharedMissingScores";
 import { httpAPITags } from "./http/httpTags";
 import { httpAPITagSearch } from "./http/httpTagSearch";
 import { httpTestCookie } from "./http/httpTestCookie";
@@ -236,6 +237,15 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   httpServer.get("/shared-replay-json/:string", httpMain);
   httpServer.get("/create-table", httpMain);
 
+  // For the "Missing Scores" page of multiple players. The player names are in the path, e.g.
+  // "/shared-missing-scores/3/Alice/Bob/Cathy".
+  let sharedMissingScoresPath = "/shared-missing-scores/:numPlayers";
+  httpServer.get(sharedMissingScoresPath, httpSharedMissingScores);
+  for (let i = 1; i <= 6; i++) {
+    sharedMissingScoresPath += `/:player${i}`;
+    httpServer.get(sharedMissingScoresPath, httpSharedMissingScores);
+  }
+
   // API V1 routes.
   const api = "/api/v1";
   httpServer.get(`${api}/tags/:player1`, httpAPITags);
@@ -261,13 +271,6 @@ function registerPathHandlers(httpServer: FastifyInstance) {
 	fastify.get("/missing-scores", httpMissingScores)
 	fastify.get("/missing-scores/:player1", httpMissingScores)
 	fastify.get("/missing-scores/:player1/:numPlayers", httpMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
-	fastify.get("/shared-missing-scores/:numPlayers/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
 	fastify.get("/tags", httpTags)
 	fastify.get("/tags/:player1", httpTags)
 	fastify.get("/seed", httpSeed)

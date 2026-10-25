@@ -10,6 +10,7 @@ import { userFriends } from "./models/userFriends";
 import { userIdentityTokens } from "./models/userIdentityTokens";
 import { users } from "./models/users";
 import { userSettings } from "./models/userSettings";
+import { userStats } from "./models/userStats";
 
 export const models = {
   bannedIPs,
@@ -21,4 +22,5 @@ export const models = {
   userFriends,
   userIdentityTokens,
   userSettings,
+  userStats,
 };

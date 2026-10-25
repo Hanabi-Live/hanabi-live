@@ -7,6 +7,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   serial,
   smallint,
   text,
@@ -88,7 +89,31 @@ export const userSettingsTable = pgTable("user_settings", {
     .default(5),
 });
 
-// TODO: user_stats
+export const userStatsTable = pgTable(
+  "user_stats",
+  {
+    userID: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id),
+    variantID: smallint("variant_id").notNull(),
+    numGames: integer("num_games").notNull().default(0),
+    /** Their best score for 2-player games on this variant. */
+    bestScore2: smallint("best_score2").notNull().default(0),
+    /** This stores if they used additional options to make the game easier. */
+    bestScore2Mod: smallint("best_score2_mod").notNull().default(0),
+    bestScore3: smallint("best_score3").notNull().default(0),
+    bestScore3Mod: smallint("best_score3_mod").notNull().default(0),
+    bestScore4: smallint("best_score4").notNull().default(0),
+    bestScore4Mod: smallint("best_score4_mod").notNull().default(0),
+    bestScore5: smallint("best_score5").notNull().default(0),
+    bestScore5Mod: smallint("best_score5_mod").notNull().default(0),
+    bestScore6: smallint("best_score6").notNull().default(0),
+    bestScore6Mod: smallint("best_score6_mod").notNull().default(0),
+    averageScore: doublePrecision("average_score").notNull().default(0),
+    numStrikeouts: integer("num_strikeouts").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userID, table.variantID] })],
+);
 
 export const userFriendsTable = pgTable("user_friends", {
   userID: integer("user_id")
