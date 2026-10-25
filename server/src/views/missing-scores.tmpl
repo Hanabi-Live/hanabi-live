@@ -92,13 +92,17 @@
   {{ end }}
 
   {{ if .SharedMissingScores }}
+    {{ $toggleClass := "button small" }}
+    {{ if .AdvancedFiltersActive }}
+      {{ $toggleClass = "button small primary" }}
+    {{ end }}
     <div class="advanced-filters-toggle-wrapper">
       <button
         type="button"
         id="advanced-filters-toggle"
-        class="button small{{ if .AdvancedFiltersActive }} primary{{ end }}"
+        class="{{ $toggleClass }}"
         title="Advanced filters"
-        aria-expanded="{{ if .AdvancedFiltersActive }}true{{ else }}false{{ end }}"
+        aria-expanded="{{ .AdvancedFiltersActive }}"
         aria-controls="advanced-filters"
       >
         <i class="fas fa-cog"></i>
@@ -124,7 +128,9 @@
                   value="{{ .Name }}"
                   {{ if not .Excluded }}checked{{ end }}
                 />
-                <label for="include-player-{{ $playerIndex }}">{{ .Name }}</label>
+                <label for="include-player-{{ $playerIndex }}"
+                  >{{ .Name }}</label
+                >
               </li>
             {{ end }}
           </ul>
@@ -132,7 +138,8 @@
         <div class="col-12">
           <label for="exclude-variants">
             Exclude variants (comma-separated, matches any part of the name;
-            "Rainbow (3 Suits), Pink" excludes one Rainbow and all Pink variants)
+            "Rainbow (3 Suits), Pink" excludes one Rainbow and all Pink
+            variants)
           </label>
           <input
             type="text"
@@ -166,7 +173,9 @@
           <p id="advanced-filters-error" class="red" hidden></p>
           <ul class="actions">
             <li><input type="submit" value="Apply" class="primary" /></li>
-            <li><input type="button" id="advanced-filters-reset" value="Reset" /></li>
+            <li>
+              <input type="button" id="advanced-filters-reset" value="Reset" />
+            </li>
           </ul>
         </div>
       </div>
