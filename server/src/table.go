@@ -146,6 +146,17 @@ func (t *Table) Unlock(ctx context.Context) {
 	t.mutex.Unlock()
 }
 
+// RecordReplayChatActivity marks accepted user chat as replay activity.
+// The caller must hold the table lock. Server announcements must not keep a replay alive.
+// Returns true when the idle checker should be rescheduled.
+func (t *Table) RecordReplayChatActivity(msg *TableChatMessage) bool {
+	if !t.Replay || !t.Visible || msg.Server {
+		return false
+	}
+	t.DatetimeLastAction = msg.Datetime
+	return true
+}
+
 // CheckIdle is meant to be called in a new goroutine
 func (t *Table) CheckIdle(ctx context.Context) {
 	// Disable idle timeouts in development
