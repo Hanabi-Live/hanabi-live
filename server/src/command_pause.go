@@ -107,7 +107,7 @@ func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerInde
 		g.PauseCount++
 
 		// Decrement the time that the player has taken so far prior to this pause
-		p.Time -= time.Since(g.DatetimeTurnBegin)
+		g.Players[g.ActivePlayerIndex].Time -= time.Since(g.DatetimeTurnBegin)
 	} else if d.Setting == "unpause" {
 		g.Paused = false
 		g.PausePlayerIndex = -1

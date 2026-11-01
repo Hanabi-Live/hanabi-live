@@ -218,61 +218,31 @@ authorization.
 
 ### Progress and Audit Record
 
-- Complete: Go regression/race checks in CI and isolated seeded game setup with
-  legacy deck and character fixtures.
-- Complete: repaired the unused spelling-dictionary entry left by the random
-  generator refactor; full lint and CI passed before further work.
-- Snapshot foundation: versioned, atomically replaced restart files, typed
-  action restoration, restored hand/deck aliases, and explicit save failures.
-  This is not yet continuous recovery or a durable command journal. Emergency
-  saves still bypass table locks, and files are still consumed on restoration;
-  those limitations must be resolved before claiming crash-safe gameplay.
-- Between-step audit: Go static analysis and all TypeScript regressions passed.
-  Unused-export analysis reported no TypeScript findings. Go reachability
-  analysis identified 18 unreachable functions, including obsolete
-  non-transactional insert wrappers, disabled statistics routes, and maintenance
-  helpers. Inspect those consumers before removal. The snapshot decoder removed
-  the repetitive action-restoration branch that incorrectly decoded
-  `playerTimes` as a draw.
-- Remaining: continuous recovery, lifecycle ownership, recovery/queue metrics,
-  toolchain/artifact modernization, engine compatibility, the TypeScript
-  vertical slice, and the final migration decision. None of these phases is
-  complete.
-
-The local administration server now exposes `/metrics` on
-`127.0.0.1:${LOCALHOST_PORT:-8081}`. It reports process uptime and memory,
-per-command in-flight/completed counts, total/maximum handler duration,
-cumulative latency buckets in seconds, and database-pool acquisition counters.
-Bucket `+Inf` includes every completed handler. Counters reset on restart;
-collect snapshots externally to measure rates and latency distributions over
-time. Only recognized commands that reach dispatch are counted; rejected
-protocol messages are not. Completed counts include handlers that reject an
-action, not just successful moves. No player names, command payloads, or
-database credentials are included. Reading metrics does not query the database,
-and this endpoint is not a database health check.
-
-The accompanying reachability audit confirmed that the non-transactional game,
-participant, and action insertion wrappers had no consumers. They were removed;
-game completion retains its transactional write path. The other 15 unreachable
-functions require separate maintenance/API review.
-
-Database calls now use a bounded Go adapter for connection-pool acquisition,
-statement execution, row consumption, and individual transaction operations. The
-limit is fixed at 30 seconds, without an additional runtime configuration
-option. Earlier caller deadlines are retained. Both Go and the partial
-TypeScript server configure PostgreSQL statement timeouts; the TypeScript
-prototype does not yet provide Go's end-to-end pool-wait deadline.
-PostgreSQL-backed CI regressions exercise slow queries, exhausted pools, row
-cleanup, and commit/ rollback behavior. This does not yet bound an entire
-multi-statement workflow or propagate every HTTP request cancellation through
-all models.
-
-WebSocket draining now uses one admission gate instead of a separate atomic flag
-and wait-group increment. A restart waits for admitted commands before blocking
-subsequent dispatch, and failed snapshot/restart operations resume admission.
-Restart and immediate-shutdown operations are serialized so one failure cannot
-reopen admission during another operation's snapshot. Planned restarts drain
-active mutation paths and registered background database work.
+- Implemented: Go race and PostgreSQL integration checks, deterministic legacy
+  deck/character fixtures, Go 1.27 and Node 24 build alignment, and container
+  builds and Go static analysis in CI.
+- Implemented: incremental lifecycle ownership through admission/draining,
+  cancelable timers, stale-session protection, fail-closed login initialization,
+  and registered background writes. This is not a complete table-owner rewrite.
+- Implemented: aggregate localhost metrics, fixed database operation deadlines,
+  tracked migrations, and startup schema checks. Database deadlines bound
+  individual operations, not an entire multi-statement workflow.
+- Recovery foundations: atomic/versioned restart snapshots, typed restoration,
+  whole-set validation before consuming files, stable game recovery IDs, and
+  idempotent completed-game transactions. Action validation is separated from
+  mutation. This is not continuous crash recovery: successful restoration still
+  consumes files, emergency saves bypass locks, and ancillary completion writes
+  remain best-effort.
+- Between-step audits: no TypeScript unused exports; three obsolete Go insertion
+  wrappers removed. Fifteen unreachable maintenance/disabled-route helpers still
+  require consumer review. Container startup works, but its administrative
+  shutdown still expects a missing `stop.sh`; container lifecycle handling must
+  be resolved before treating it as a production deployment replacement.
+- Remaining: a durable in-progress journal, checkpoints, and command
+  deduplication, reliable finalization, recovery/queue metrics, dependency
+  modernization, immutable artifact deployment, the compatibility corpus, a
+  complete TypeScript slice, and the measured architecture decision. No
+  production deployment or migration has been performed.
 
 ### Phase 1: Strengthen Go
 
@@ -295,7 +265,7 @@ Redis instance; the added database integration suite uses an isolated PostgreSQL
 service in CI. Race detection covers exercised paths, not all possible
 concurrency bugs. Repository branch-protection settings are outside this PR.
 
-**Subsequent Go hardening PRs:**
+**Subsequent Go hardening milestones:**
 
 1. Add focused regression scenarios for deterministic replays, reconnects,
    timers, and game completion, plus measurements of command latency and

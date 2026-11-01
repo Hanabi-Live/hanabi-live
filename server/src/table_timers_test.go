@@ -107,6 +107,41 @@ func TestAcceptedActionStartsTimerWithoutLoadedMessage(t *testing.T) {
 	}
 }
 
+func TestPauseChargesActivePlayerRatherThanRequester(t *testing.T) {
+	table, ctx := newTimerTestTable(t)
+	g := table.Game
+	g.DatetimeTurnBegin = time.Now().Add(-10 * time.Second)
+	g.Players[1].Time = 2 * time.Hour
+	table.Lock(ctx)
+	g.scheduleTurnTimer(ctx)
+	table.Unlock(ctx)
+
+	requester := NewFakeSession(2, "Bob")
+	beforePause := time.Now()
+	commandPause(ctx, requester, &CommandData{TableID: table.ID, Setting: "pause"})
+	afterPause := time.Now()
+	if !g.Paused || g.PausePlayerIndex != 1 || table.turnTimer != nil {
+		t.Fatal("another player's pause did not stop the active clock")
+	}
+	remaining := g.Players[0].Time
+	if remaining > time.Hour-beforePause.Sub(g.DatetimeTurnBegin) ||
+		remaining < time.Hour-afterPause.Sub(g.DatetimeTurnBegin) {
+		t.Fatalf("active player's remaining time = %v", remaining)
+	}
+	if g.Players[1].Time != 2*time.Hour {
+		t.Fatal("pausing another player's turn charged the requester")
+	}
+
+	resumedAt := time.Now()
+	commandPause(ctx, requester, &CommandData{TableID: table.ID, Setting: "unpause"})
+	if g.Paused || table.turnTimer == nil || g.DatetimeTurnBegin.Before(resumedAt) {
+		t.Fatal("unpausing did not start a new interval for the active clock")
+	}
+	if g.Players[0].Time != remaining || g.Players[1].Time != 2*time.Hour {
+		t.Fatal("unpausing changed the saved player budgets")
+	}
+}
+
 func TestIdleTimerExpiresInactiveGame(t *testing.T) {
 	table, ctx := newTimerTestTable(t)
 	table.Lock(ctx)
