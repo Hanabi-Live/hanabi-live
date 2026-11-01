@@ -3,7 +3,6 @@ import type {
   CardOrder,
   CardState,
   GameState,
-  PlayerIndex,
   SuitIndex,
 } from "@hanabi-live/game";
 import {
@@ -35,7 +34,7 @@ function makeCluedCard(
 ): CardState {
   return {
     ...getInitialCardState(order, variant, 2),
-    location: 1 as PlayerIndex,
+    location: 1,
     suitIndex,
     rank,
     numPositiveClues: 1,
@@ -60,9 +59,7 @@ function soundAfterPlayingCluedOne(
       // Dark Omni 3 is playable, but rank 1 clues still touch it.
       return [50 as CardOrder, 51 as CardOrder];
     }
-    return stillUnplayed.includes(index as SuitIndex)
-      ? []
-      : [50 as CardOrder];
+    return stillUnplayed.includes(index as SuitIndex) ? [] : [50 as CardOrder];
   }) as unknown as GameState["playStacks"];
   const startingState = getInitialGameState(metadata);
   const previousGameState: GameState = {
@@ -85,22 +82,23 @@ function soundAfterPlayingCluedOne(
     ],
     hands: [[], [0 as CardOrder, 1 as CardOrder]],
     playStacks: beforeStacks,
-    turn: { ...startingState.turn, currentPlayerIndex: 1 as PlayerIndex },
+    turn: { ...startingState.turn, currentPlayerIndex: 1 },
   };
+  const afterStacks = beforeStacks.map((stack, index) =>
+    index === playedSuitIndex ? [...stack, 0 as CardOrder] : stack,
+  ) as unknown as GameState["playStacks"];
   const gameState: GameState = {
     ...previousGameState,
     deck: previousGameState.deck.map((card) =>
       card.order === 0 ? { ...card, location: "playStack" } : card,
     ),
     hands: [[], [1 as CardOrder]],
-    playStacks: beforeStacks.map((stack, index) =>
-      index === playedSuitIndex ? [...stack, 0 as CardOrder] : stack,
-    ) as unknown as GameState["playStacks"],
-    turn: { ...previousGameState.turn, currentPlayerIndex: 0 as PlayerIndex },
+    playStacks: afterStacks,
+    turn: { ...previousGameState.turn, currentPlayerIndex: 0 },
   };
   const action: ActionPlay = {
     type: "play",
-    playerIndex: 1 as PlayerIndex,
+    playerIndex: 1,
     order: 0 as CardOrder,
     suitIndex: playedSuitIndex,
     rank: actualRank,
