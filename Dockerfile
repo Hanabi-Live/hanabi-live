@@ -1,5 +1,5 @@
 ## first build the client
-FROM node:20-bookworm
+FROM node:24-bookworm
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
@@ -11,7 +11,7 @@ COPY package-lock.json package-lock.json
 COPY packages packages
 COPY public public
 COPY scripts scripts
-RUN npm install
+RUN npm ci
 
 # needed only for git rev parse
 COPY .git .git
@@ -19,7 +19,7 @@ COPY .git .git
 RUN packages/client/build_client.sh
 
 ## then build the server
-FROM golang:1.17-buster
+FROM golang:1.27-bookworm
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live
@@ -36,9 +36,8 @@ FROM alpine
 
 ENTRYPOINT ["/bin/sh"]
 
-# was compiled against gnu libc above; musl is decently compatible
-# also needs git so server can get rev-parse head
-RUN apk update && apk add --no-cache libc6-compat git
+# Git is needed so the server can get rev-parse HEAD.
+RUN apk add --no-cache git
 
 RUN mkdir -p /root/hanabi-live
 WORKDIR /root/hanabi-live

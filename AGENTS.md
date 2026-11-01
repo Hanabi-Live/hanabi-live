@@ -45,8 +45,9 @@ only appropriate when the server is already stopped.
 
 Use `./install/migrate.sh status` to inspect migration state and
 `./install/migrate.sh apply` to apply pending migrations before restarting. The
-runner uses pinned Tern, requires Go 1.25 or newer, and reuses the existing
-`.env` database settings. It does not apply migrations during server startup.
+runner uses pinned Tern and the project's Go 1.27 toolchain, and reuses the
+existing `.env` database settings. It does not apply migrations during server
+startup.
 
 Keep migration files numbered consecutively from `001_name.sql`. Applied
 migrations are immutable: do not edit or delete them. Use forward migrations

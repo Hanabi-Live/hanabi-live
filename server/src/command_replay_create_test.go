@@ -9,6 +9,8 @@ import (
 )
 
 func TestIsJSONValidSeedDeck(t *testing.T) {
+	// Enable global reseeding only for this isolation assertion on modern Go.
+	t.Setenv("GODEBUG", "randseednop=0")
 	previousVariants := variants
 	defer func() {
 		variants = previousVariants

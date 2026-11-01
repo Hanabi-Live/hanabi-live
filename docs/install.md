@@ -37,8 +37,7 @@ at least 2 GB of RAM.
   [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 - Install [Git](https://git-scm.com/) (if you do not already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id Git.Git`
-- Install [Golang](https://golang.org/) (if you do not already have it
-  installed):
+- Install [Golang](https://golang.org/) 1.27 or newer:
   - `winget install --accept-source-agreements --silent --exact --id GoLang.Go`
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it
   installed):
@@ -118,8 +117,7 @@ at least 2 GB of RAM.
   - `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 - Install [Git](https://git-scm.com/) (if you do not already have it installed):
   - `brew install git`
-- Install [Golang](https://golang.org/) (if you do not already have it
-  installed):
+- Install [Golang](https://golang.org/) 1.27 or newer:
   - `brew install golang`
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it
   installed):
@@ -192,8 +190,10 @@ needed if you are on a different flavor of Linux.
   - `sudo apt upgrade -y`
 - Install [Git](https://git-scm.com/):
   - `sudo apt install git -y`
-- Install [Golang](https://golang.org/):
+- Install [Golang](https://golang.org/) 1.27 or newer:
   - `sudo apt install golang -y`
+  - If the packaged version is older, use the
+    [official installer](https://go.dev/doc/install).
 - Install [PostgreSQL](https://www.postgresql.org/), create a new database, and
   set up a database user:
   - `sudo apt install postgresql -y` <br />

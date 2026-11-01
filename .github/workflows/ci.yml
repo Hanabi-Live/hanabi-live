@@ -55,6 +55,19 @@ jobs:
         run: go test -race -count=1 -timeout=2m ./...
         working-directory: ./server/src
 
+      - name: Analyze the Golang code
+        run: go vet ./...
+        working-directory: ./server/src
+
+  container_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Build the production container
+        run: docker build --tag hanabi-live-ci .
+
   lint:
     runs-on: ubuntu-latest
     strategy:
@@ -151,6 +164,7 @@ jobs:
       [
         client_build,
         server_build,
+        container_build,
         lint,
         test,
         format,

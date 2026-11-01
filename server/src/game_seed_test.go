@@ -127,6 +127,7 @@ func TestSeededGameLegacyCompatibility(t *testing.T) {
 }
 
 func TestShuffleDeckRandomIsolation(t *testing.T) {
+	t.Setenv("GODEBUG", "randseednop=0")
 	fixture := seededGameFixtures[0]
 	g := newSeededTestGame(fixture.seed, fixture.numPlayers)
 	rand.Seed(123)
@@ -135,6 +136,8 @@ func TestShuffleDeckRandomIsolation(t *testing.T) {
 }
 
 func TestCharacterGenerationRandomIsolation(t *testing.T) {
+	// Enable global reseeding only for this isolation assertion on modern Go.
+	t.Setenv("GODEBUG", "randseednop=0")
 	loadSeededGameCharacters(t)
 	fixture := seededGameFixtures[0]
 	g := newSeededTestGame(fixture.seed, fixture.numPlayers)
