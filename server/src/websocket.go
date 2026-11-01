@@ -1,8 +1,6 @@
 package main
 
 import (
-	"sync"
-
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gabstv/melody"
 )
@@ -18,8 +16,7 @@ var (
 	// We keep track of all WebSocket sessions
 	sessions = NewSessions()
 
-	// We keep track of all ongoing WebSocket messages/commands
-	commandWaitGroup sync.WaitGroup
+	incomingCommands = &commandGate{}
 )
 
 func websocketInit() {

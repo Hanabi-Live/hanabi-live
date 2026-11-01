@@ -30,14 +30,10 @@ const (
 //	action {"target":1,"type":2}
 func websocketMessage(ms *melody.Session, msg []byte) {
 	// If the server is shutting down, ignore all incoming message from users
-	if blockAllIncomingMessages.IsSet() {
+	if !incomingCommands.enter() {
 		return
 	}
-
-	// Keep track of the number of ongoing executing commands
-	// https://gobyexample.com/waitgroups
-	commandWaitGroup.Add(1)
-	defer commandWaitGroup.Done()
+	defer incomingCommands.leave()
 
 	// Get the respective Hanabi session for this Melody session
 	s := getSessionFromMelodySession(ms)

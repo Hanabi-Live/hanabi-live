@@ -266,6 +266,14 @@ exercise slow queries, exhausted pools, row cleanup, and commit/ rollback
 behavior. This does not yet bound an entire multi-statement workflow or
 propagate every HTTP request cancellation through all models.
 
+WebSocket draining now uses one admission gate instead of a separate atomic flag
+and wait-group increment. A restart waits for admitted commands before blocking
+subsequent dispatch, and failed snapshot/restart operations resume admission.
+Restart and immediate-shutdown operations are serialized so one failure cannot
+reopen admission during another operation's snapshot. This does not yet drain
+timer callbacks, connection callbacks, Discord activity, or other administrative
+mutations; full lifecycle ownership remains unfinished.
+
 ### Phase 1: Strengthen Go
 
 Deliver small, independently reviewable changes while Go remains the production

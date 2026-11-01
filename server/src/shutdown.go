@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	shuttingDown             = abool.New()
-	blockAllIncomingMessages = abool.New()
-	datetimeShutdownInit     time.Time
+	shuttingDown         = abool.New()
+	datetimeShutdownInit time.Time
 )
 
 func shutdown(ctx context.Context) {
@@ -162,6 +161,9 @@ func countActiveTables(ctx context.Context) int {
 }
 
 func shutdownImmediate(ctx context.Context) {
+	serverLifecycleMutex.Lock()
+	defer serverLifecycleMutex.Unlock()
+
 	logger.Info("Initiating an immediate server shutdown.")
 
 	waitForAllWebSocketCommandsToFinish()
@@ -181,6 +183,9 @@ func shutdownImmediate(ctx context.Context) {
 		logger.Info("Manually kill the server now.")
 	} else if err := executeScript("stop.sh"); err != nil {
 		logger.Error("Failed to execute the \"stop.sh\" script: " + err.Error())
+		shuttingDown.UnSet()
+		notifyAllShutdown()
+		incomingCommands.resume()
 	}
 }
 
@@ -216,7 +221,6 @@ func checkImminentShutdown(s *Session) bool {
 
 func waitForAllWebSocketCommandsToFinish() {
 	logger.Info("Waiting for all ongoing WebSocket commands to finish execution...")
-	blockAllIncomingMessages.Set()
-	commandWaitGroup.Wait() // Will block until it the counter becomes 0
+	incomingCommands.drain()
 	logger.Info("All WebSocket commands have completed.")
 }
