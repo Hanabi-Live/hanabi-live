@@ -35,7 +35,7 @@ files in `install/migrations/` since the last deploy. New server code will fail
 migration with (replacing the filename):
 
 ```sh
-(source .env && PGPASSWORD="$DB_PASSWORD" psql --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" --username="$DB_USER" --dbname="$DB_NAME" -v ON_ERROR_STOP=1 -f install/migrations/chat_log_deleted_at.sql)
+(source .env && PGPASSWORD="$DB_PASSWORD" psql --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" --username="$DB_USER" --dbname="$DB_NAME" -v ON_ERROR_STOP=1 -f install/migrations/example.sql)
 ```
 
 Some tables, such as `chat_log` (~90 million rows), are very large:
