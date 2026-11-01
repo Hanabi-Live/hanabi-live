@@ -2,17 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/mitchellh/mapstructure"
-	"github.com/sasha-s/go-deadlock"
 )
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
@@ -32,7 +30,7 @@ func serializeTables() bool {
 			// Otherwise, we would have to explicitly unset some fields here to avoid circular
 			// references, session data, and so forth
 			var tableJSON []byte
-			if v, err := json.Marshal(t); err != nil {
+			if v, err := encodeTableSnapshot(t); err != nil {
 				logger.Error("Failed to marshal table " + strconv.FormatUint(t.ID, 10) + ": " +
 					err.Error())
 				return false
@@ -42,7 +40,7 @@ func serializeTables() bool {
 
 			tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
 			tablePath := path.Join(tablesPath, tableFilename)
-			if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
+			if err := writeTableSnapshot(tablePath, tableJSON); err != nil {
 				logger.Error("Failed to write \"" + tablePath + "\": " + err.Error())
 				return false
 			}
@@ -97,7 +95,7 @@ func restoreTables() {
 }
 
 func restoreTable(ctx context.Context, f os.FileInfo) bool {
-	if f.Name() == ".gitignore" {
+	if f.IsDir() || !strings.HasSuffix(f.Name(), ".json") {
 		return false
 	}
 
@@ -110,37 +108,14 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 		tableJSON = v
 	}
 
-	t := &Table{} // We must initialize the table for "Unmarshal()" to work
-	if err := json.Unmarshal(tableJSON, t); err != nil {
+	t, err := decodeTableSnapshot(tableJSON)
+	if err != nil {
 		logger.Fatal("Failed to unmarshal \"" + tablePath + "\": " + err.Error())
 		return false
 	}
-	t.Spectators = make([]*Spectator, 0)
-	t.KickedPlayers = make(map[int]struct{})
-	if t.ChatRead == nil {
-		t.ChatRead = make(map[int]int)
-	}
-	t.mutex = &deadlock.Mutex{}
-
-	// Restore the circular references that could not be represented in JSON
 	g := t.Game
-	g.Table = t
-	g.Options = t.Options
-	g.ExtraOptions = t.ExtraOptions
-	for _, gp := range g.Players {
-		gp.Game = g
-	}
-
-	// Restore the types of the actions
-	for i, a := range g.Actions {
-		restoreTableAction(t, i, a)
-	}
 
 	for _, p := range t.Players {
-		// Ensure that all of the players are not present
-		// (they were presumably present and connected when the table serialization happened)
-		p.Present = false
-
 		// Restore the player relationships
 		tables.AddPlaying(p.UserID, t.ID)
 	}
@@ -168,94 +143,4 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 	go t.CheckIdle(ctx)
 
 	return true
-}
-
-func restoreTableAction(t *Table, i int, a interface{}) {
-	// Local variables
-	g := t.Game
-
-	var action map[string]interface{}
-	if v, ok := a.(map[string]interface{}); !ok {
-		logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-			strconv.FormatUint(t.ID, 10) + " to a map.")
-	} else {
-		action = v
-	}
-
-	actionType := action["type"].(string)
-
-	if actionType == "cardIdentity" {
-		actionCardIdentity := ActionCardIdentity{}
-		if err := mapstructure.Decode(a, &actionCardIdentity); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"cardIdentity\" action.")
-		}
-		g.Actions[i] = actionCardIdentity
-	} else if actionType == "clue" {
-		actionClue := ActionClue{}
-		if err := mapstructure.Decode(a, &actionClue); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"clue\" action.")
-		}
-		g.Actions[i] = actionClue
-	} else if actionType == "discard" {
-		actionDiscard := ActionDiscard{}
-		if err := mapstructure.Decode(a, &actionDiscard); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"discard\" action.")
-		}
-		g.Actions[i] = actionDiscard
-	} else if actionType == "draw" {
-		actionDraw := ActionDraw{}
-		if err := mapstructure.Decode(a, &actionDraw); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"draw\" action.")
-		}
-		g.Actions[i] = actionDraw
-	} else if actionType == "gameOver" {
-		actionGameOver := ActionGameOver{}
-		if err := mapstructure.Decode(a, &actionGameOver); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"gameOver\" action.")
-		}
-		g.Actions[i] = actionGameOver
-	} else if actionType == "play" {
-		actionPlay := ActionPlay{}
-		if err := mapstructure.Decode(a, &actionPlay); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"play\" action.")
-		}
-		g.Actions[i] = actionPlay
-	} else if actionType == "playerTimes" {
-		actionDraw := ActionDraw{}
-		if err := mapstructure.Decode(a, &actionDraw); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"playerTimes\" action.")
-		}
-		g.Actions[i] = actionDraw
-	} else if actionType == "strike" {
-		actionStrike := ActionStrike{}
-		if err := mapstructure.Decode(a, &actionStrike); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"strike\" action.")
-		}
-		g.Actions[i] = actionStrike
-	} else if actionType == "status" {
-		actionStatus := ActionStatus{}
-		if err := mapstructure.Decode(a, &actionStatus); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"status\" action.")
-		}
-		g.Actions[i] = actionStatus
-	} else if actionType == "turn" {
-		actionTurn := ActionTurn{}
-		if err := mapstructure.Decode(a, &actionTurn); err != nil {
-			logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-				strconv.FormatUint(t.ID, 10) + " to a \"turn\" action.")
-		}
-		g.Actions[i] = actionTurn
-	} else {
-		logger.Fatal("Table " + strconv.FormatUint(t.ID, 10) +
-			" had an unknown action type of \"" + actionType + "\".")
-	}
 }

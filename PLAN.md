@@ -201,15 +201,43 @@ game state.
 ### Execution Model
 
 Work by agreed phase, not by individual edits. Within that phase, choose routine
-implementation details, validate changes, and open cohesive PRs without
-requesting confirmation for each small step. Group related fixes and regression
-coverage by outcome rather than creating a separate PR for every file or test.
+implementation details and group related fixes and regression coverage by
+outcome. The current authorization is to commit and push completed milestones
+directly to `main`, without opening PRs or requesting small-step confirmation.
 
-Keep dependent changes in order; use independent branches for independent work.
-Do not mix unrelated hardening tasks just to reduce the PR count. Escalate
-blockers and material architecture decisions, not routine choices. Merging PRs,
-deploying to production, and destructive data changes require separate
+Run the full repository lint, formatting, and regression suites before each
+push, then verify remote CI before proceeding to the next milestone. Audit the
+whole codebase between milestones for unreachable code, unused exports,
+refactoring opportunities, and gaps in coverage. Verify reachability findings
+before deleting code; maintenance tools and external APIs need special care.
+
+Keep dependent changes in order and do not mix unrelated hardening tasks.
+Escalate blockers and material architecture decisions, not routine choices.
+Deploying to production and destructive data changes require separate
 authorization.
+
+### Progress and Audit Record
+
+- Complete: Go regression/race checks in CI and isolated seeded game setup with
+  legacy deck and character fixtures.
+- Complete: repaired the unused spelling-dictionary entry left by the random
+  generator refactor; full lint and CI passed before further work.
+- Snapshot foundation: versioned, atomically replaced restart files, typed
+  action restoration, restored hand/deck aliases, and explicit save failures.
+  This is not yet continuous recovery or a durable command journal. Emergency
+  saves still bypass table locks, and files are still consumed on restoration;
+  those limitations must be resolved before claiming crash-safe gameplay.
+- Between-step audit: Go static analysis and all TypeScript regressions passed.
+  Unused-export analysis reported no TypeScript findings. Go reachability
+  analysis identified 18 unreachable functions, including obsolete
+  non-transactional insert wrappers, disabled statistics routes, and maintenance
+  helpers. Inspect those consumers before removal. The snapshot decoder removed
+  the repetitive action-restoration branch that incorrectly decoded
+  `playerTimes` as a draw.
+- Remaining: continuous recovery, lifecycle ownership, operation metrics,
+  tracked migrations, bounded database calls, toolchain/artifact modernization,
+  engine compatibility, the TypeScript vertical slice, and the final migration
+  decision. None of these phases is complete.
 
 ### Phase 1: Strengthen Go
 

@@ -18,7 +18,6 @@ require (
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/joho/godotenv v1.4.0
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/mitchellh/mapstructure v1.4.3
 	github.com/mozillazg/go-unidecode v0.1.1
 	github.com/petermattis/goid v0.0.0-20211229010228-4d14c490ee36 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1
