@@ -3,6 +3,8 @@ import postgres from "postgres";
 import * as databaseSchema from "./databaseSchema";
 import { env } from "./env";
 
+const DATABASE_TIMEOUT_SECONDS = 30;
+
 /**
  * The database object is lazy such that it will not actually be connect to the database until the
  * first query is performed:
@@ -14,9 +16,9 @@ const client = postgres({
   user: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
-  connect_timeout: env.DB_OPERATION_TIMEOUT_SECONDS,
+  connect_timeout: DATABASE_TIMEOUT_SECONDS,
   connection: {
-    statement_timeout: env.DB_OPERATION_TIMEOUT_SECONDS * 1000,
+    statement_timeout: DATABASE_TIMEOUT_SECONDS * 1000,
   },
 });
 

@@ -42,10 +42,7 @@ type Models struct {
 
 // modelsInit opens a database connection based on the credentials in the ".env" file
 func modelsInit() (*Models, error) {
-	timeout, err := parseDatabaseTimeout(os.Getenv("DB_OPERATION_TIMEOUT_SECONDS"))
-	if err != nil {
-		return nil, err
-	}
+	timeout := defaultDatabaseTimeout
 	// Read the database configuration from environment variables
 	// (it was loaded from the .env file in main.go)
 	dbHost := os.Getenv("DB_HOST")

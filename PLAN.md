@@ -258,13 +258,14 @@ functions require separate maintenance/API review.
 
 Database calls now use a bounded Go adapter for connection-pool acquisition,
 statement execution, row consumption, and individual transaction operations. The
-default limit is 30 seconds; `DB_OPERATION_TIMEOUT_SECONDS` configures it.
-Earlier caller deadlines are retained. Both Go and the partial TypeScript server
-configure PostgreSQL statement timeouts; the TypeScript prototype does not yet
-provide Go's end-to-end pool-wait deadline. PostgreSQL-backed CI regressions
-exercise slow queries, exhausted pools, row cleanup, and commit/ rollback
-behavior. This does not yet bound an entire multi-statement workflow or
-propagate every HTTP request cancellation through all models.
+limit is fixed at 30 seconds, without an additional runtime configuration
+option. Earlier caller deadlines are retained. Both Go and the partial
+TypeScript server configure PostgreSQL statement timeouts; the TypeScript
+prototype does not yet provide Go's end-to-end pool-wait deadline.
+PostgreSQL-backed CI regressions exercise slow queries, exhausted pools, row
+cleanup, and commit/ rollback behavior. This does not yet bound an entire
+multi-statement workflow or propagate every HTTP request cancellation through
+all models.
 
 WebSocket draining now uses one admission gate instead of a separate atomic flag
 and wait-group increment. A restart waits for admitted commands before blocking

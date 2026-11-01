@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"strconv"
 	"time"
 
 	"github.com/jackc/pgconn"
@@ -32,18 +30,6 @@ type database struct {
 type databaseTransaction struct {
 	*databaseOperations
 	tx pgx.Tx
-}
-
-func parseDatabaseTimeout(value string) (time.Duration, error) {
-	if value == "" {
-		return defaultDatabaseTimeout, nil
-	}
-	seconds, err := strconv.ParseInt(value, 10, 64)
-	// PostgreSQL statement_timeout uses a signed 32-bit number of milliseconds.
-	if err != nil || seconds < 1 || seconds > 2147483 {
-		return 0, errors.New("DB_OPERATION_TIMEOUT_SECONDS must be an integer between 1 and 2147483")
-	}
-	return time.Duration(seconds) * time.Second, nil
 }
 
 func newDatabase(pool *pgxpool.Pool, timeout time.Duration) *database {

@@ -1,5 +1,12 @@
 # AGENTS.md
 
+## Configuration and customization
+
+Do not add environment variables, configuration options, or customization unless
+they are absolutely necessary or there is a strong, concrete reason. Prefer a
+simple, documented behavior over speculative flexibility. When a new option is
+justified, explain the use case and why a fixed behavior is insufficient.
+
 ## Production server
 
 The production server is `root@hanab.live`, with the repository at

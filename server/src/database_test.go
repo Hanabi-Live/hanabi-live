@@ -11,20 +11,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func TestDatabaseTimeoutConfiguration(t *testing.T) {
-	for _, value := range []string{"0", "-1", "1.5", "invalid", "2147484"} {
-		if _, err := parseDatabaseTimeout(value); err == nil {
-			t.Errorf("invalid timeout %q was accepted", value)
-		}
-	}
-	for value, want := range map[string]time.Duration{"": 30 * time.Second, "1": time.Second, "60": time.Minute} {
-		got, err := parseDatabaseTimeout(value)
-		if err != nil || got != want {
-			t.Errorf("timeout %q = %s, %v; want %s", value, got, err, want)
-		}
-	}
-}
-
 func TestDatabaseStatementTimeoutConfiguration(t *testing.T) {
 	url := os.Getenv("HANABI_TEST_DATABASE_URL")
 	if url == "" {
@@ -39,7 +25,6 @@ func TestDatabaseStatementTimeoutConfiguration(t *testing.T) {
 	t.Setenv("DB_USER", config.ConnConfig.User)
 	t.Setenv("DB_PASSWORD", config.ConnConfig.Password)
 	t.Setenv("DB_NAME", config.ConnConfig.Database)
-	t.Setenv("DB_OPERATION_TIMEOUT_SECONDS", "2")
 	oldDB, oldName := db, dbName
 	t.Cleanup(func() { db, dbName = oldDB, oldName })
 	model, err := modelsInit()
@@ -51,8 +36,8 @@ func TestDatabaseStatementTimeoutConfiguration(t *testing.T) {
 	if err := db.QueryRow(context.Background(), "SHOW statement_timeout").Scan(&setting); err != nil {
 		t.Fatal(err)
 	}
-	if setting != "2s" {
-		t.Fatalf("configured statement timeout = %q, want 2s", setting)
+	if setting != "30s" {
+		t.Fatalf("configured statement timeout = %q, want 30s", setting)
 	}
 }
 

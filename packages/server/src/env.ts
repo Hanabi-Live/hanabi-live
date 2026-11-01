@@ -39,12 +39,6 @@ const envSchema = z.object({
   DB_USER: z.string().min(1).default("hanabiuser"),
   DB_PASSWORD: z.string().min(1).default("1234567890"),
   DB_NAME: z.string().min(1).default("hanabi"),
-  DB_OPERATION_TIMEOUT_SECONDS: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(2_147_483)
-    .default(30),
 });
 
 export const env = envSchema.parse(process.env);
