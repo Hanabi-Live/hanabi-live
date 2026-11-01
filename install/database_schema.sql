@@ -79,6 +79,7 @@ CREATE TABLE user_settings (
     create_table_max_players             SMALLINT  NOT NULL  DEFAULT 5,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+CREATE INDEX user_settings_index_user_id ON user_settings (user_id);
 
 /* User stats are per variant. */
 DROP TABLE IF EXISTS user_stats CASCADE;
@@ -266,6 +267,7 @@ CREATE TABLE game_tags (
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+CREATE INDEX game_tags_index_game_id_user_id ON game_tags (game_id, user_id);
 
 DROP TABLE IF EXISTS seeds CASCADE;
 CREATE TABLE seeds (
@@ -308,6 +310,8 @@ CREATE TABLE chat_log (
 CREATE INDEX chat_log_index_user_id          ON chat_log (user_id);
 CREATE INDEX chat_log_index_room             ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent_id ON chat_log (datetime_sent, id);
+CREATE INDEX chat_log_index_room_datetime_sent_id ON chat_log (room, datetime_sent, id)
+    WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX chat_log_index_discord_message_id ON chat_log (discord_message_id)
     WHERE discord_message_id IS NOT NULL;
 
