@@ -13,20 +13,23 @@ import (
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/sasha-s/go-deadlock"
-	uuid "github.com/satori/go.uuid"
 )
 
-const tableSnapshotVersion = 1
+const tableSnapshotVersion = 2
 
 var snapshotFilesMutex sync.Mutex
 
 func encodeTableSnapshot(t *Table) ([]byte, error) {
-	// Keep table fields at the top level so older servers can still read this format.
+	return encodeTableSnapshotAt(t, time.Now())
+}
+
+func encodeTableSnapshotAt(t *Table, savedAt time.Time) ([]byte, error) {
+	// Retain the top-level table layout used by legacy snapshots.
 	return json.Marshal(struct {
 		SnapshotVersion int
 		SavedAt         time.Time
 		*Table
-	}{tableSnapshotVersion, time.Now(), t})
+	}{tableSnapshotVersion, savedAt, t})
 }
 
 func decodeTableSnapshot(data []byte) (*Table, error) {
@@ -34,13 +37,14 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 		SnapshotVersion int
 		SavedAt         time.Time
 		Game            *struct {
-			Actions []json.RawMessage
+			Actions    []json.RawMessage
+			RecoveryID string
 		}
 	}
 	if err := json.Unmarshal(data, &metadata); err != nil {
 		return nil, err
 	}
-	if metadata.SnapshotVersion != 0 && metadata.SnapshotVersion != tableSnapshotVersion {
+	if metadata.SnapshotVersion < 0 || metadata.SnapshotVersion > tableSnapshotVersion {
 		return nil, fmt.Errorf("unsupported table snapshot version: %d", metadata.SnapshotVersion)
 	}
 	if metadata.Game == nil {
@@ -52,12 +56,11 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 		return nil, err
 	}
 	g := t.Game
-	if g.RecoveryID == "" {
-		g.RecoveryID = uuid.NewV4().String()
-	} else if id, err := uuid.FromString(g.RecoveryID); err != nil {
-		return nil, fmt.Errorf("invalid game recovery ID: %w", err)
-	} else {
-		g.RecoveryID = id.String()
+	if g.DatabaseID < 0 || (metadata.SnapshotVersion == tableSnapshotVersion && g.DatabaseID == 0) {
+		return nil, errors.New("table snapshot has no valid reserved database ID")
+	}
+	if g.DatabaseID == 0 && metadata.Game.RecoveryID != "" {
+		return nil, errors.New("UUID-based snapshot must be resolved with the previous server before applying migration 003")
 	}
 	if t.ID == 0 || !t.Running || t.Replay || t.Options == nil || t.ExtraOptions == nil || g.Variant == nil {
 		return nil, errors.New("table snapshot is missing active-game metadata")

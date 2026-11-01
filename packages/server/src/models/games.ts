@@ -49,7 +49,7 @@ export const games = {
         eq(gamesTable.id, gameParticipantsTable.gameID),
       )
       .where(eq(gameParticipantsTable.userID, userID))
-      .orderBy(desc(gamesTable.id));
+      .orderBy(desc(gamesTable.datetimeFinished), desc(gamesTable.id));
     const queryWithLimit =
       amount > 0 ? query.limit(amount).offset(offset) : query;
     const rows = await queryWithLimit;
@@ -86,8 +86,14 @@ export const games = {
       .from(gameParticipantsTable)
       .where(eq(gameParticipantsTable.userID, userID));
 
-    const rows = await except(friendGameIDs, ourGameIDs)
-      .orderBy(desc(gameParticipantsTable.gameID))
+    const availableGameIDs = except(friendGameIDs, ourGameIDs).as(
+      "friend_games",
+    );
+    const rows = await db
+      .select({ gameID: gamesTable.id })
+      .from(gamesTable)
+      .innerJoin(availableGameIDs, eq(gamesTable.id, availableGameIDs.gameID))
+      .orderBy(desc(gamesTable.datetimeFinished), desc(gamesTable.id))
       .limit(amount)
       .offset(offset);
 
@@ -184,6 +190,7 @@ export const games = {
         ) AS tags
       FROM games AS games1
       WHERE games1.id IN (${gameIDs.join(",")})
+      ORDER BY games1.datetime_finished DESC, games1.id DESC
     `);
 
     // We parse the input from the database as a safety layer to ensure that the untyped `SELECT`

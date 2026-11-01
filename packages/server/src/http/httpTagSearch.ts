@@ -1,3 +1,4 @@
+import { compareGameHistory } from "@hanabi-live/data";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { logger } from "../logger";
@@ -28,9 +29,7 @@ export async function httpAPITagSearch(
     const gameIDs = await models.gameTags.getGameIDsForTag(sanitized.tag);
     const uniqueGameIDs = [...new Set(gameIDs)];
     const history = await models.games.getHistory(uniqueGameIDs);
-    return await reply.send(
-      history.toSorted((left, right) => right.id - left.id),
-    );
+    return await reply.send(history.toSorted(compareGameHistory));
   } catch (error) {
     logger.error(
       `Failed to search for games matching tag "${sanitized.tag}": ${String(error)}`,

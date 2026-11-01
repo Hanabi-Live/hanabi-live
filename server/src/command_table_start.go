@@ -31,6 +31,27 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	databaseID := t.reservedGameID
+	if !t.ExtraOptions.NoWriteToDatabase && databaseID == 0 {
+		if d.NoTablesLock {
+			logger.Error("commandTableStart was called without a reserved game ID while the caller held tables.Lock.")
+			s.Error(StartGameFail)
+			return
+		}
+		t.Unlock(ctx)
+		id, err := models.Games.ReserveID()
+		t.Lock(ctx)
+		if err != nil {
+			logger.Error("Failed to reserve a game ID: " + err.Error())
+			s.Error(StartGameFail)
+			return
+		}
+		if !validateTableStart(s, d, t) {
+			return
+		}
+		databaseID = id
+	}
+
 	precomputedSeed := ""
 	if t.ExtraOptions.CustomSeed == "" &&
 		t.ExtraOptions.SetSeedSuffix == "" &&
@@ -68,7 +89,7 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 		}
 	}
 
-	tableStart(ctx, s, d, t, precomputedSeed)
+	tableStart(ctx, s, d, t, precomputedSeed, databaseID)
 }
 
 func validateTableStart(s *Session, d *CommandData, t *Table) bool {
@@ -153,7 +174,7 @@ func sameTablePlayers(first []*Player, second []*Player) bool {
 	return true
 }
 
-func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, precomputedSeed string) {
+func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, precomputedSeed string, databaseID int) {
 	t.cancelStartTimer()
 
 	// Local variables
@@ -173,7 +194,8 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 	}
 
 	// Create the game object
-	g := NewGame(t)
+	g := NewGame(t, databaseID)
+	t.reservedGameID = 0
 
 	// Start the idle timeout
 	t.recordActivity(ctx)

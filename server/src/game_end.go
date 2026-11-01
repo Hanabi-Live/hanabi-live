@@ -169,7 +169,7 @@ func snapshotGameDatabaseTable(t *Table) *gameDatabaseTableSnapshot {
 func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, error) {
 
 	row := GameRow{
-		RecoveryID:       g.RecoveryID,
+		ID:               g.DatabaseID,
 		Name:             tableSnapshot.name,
 		Options:          g.Options,
 		Seed:             g.Seed,

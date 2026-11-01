@@ -55,23 +55,26 @@ describe("tag search API", () => {
 
   test("returns matching games regardless of tag author and preserves history tags", async () => {
     const gameID = 15 as GameID;
-    const matchingGame = { id: gameID, tags: "alice tag, bob tag" };
+    const matchingGame = {
+      id: gameID,
+      datetimeFinished: "2026-01-01T12:01:00Z",
+      tags: "alice tag, bob tag",
+    };
+    const olderGame = {
+      id: 8 as GameID,
+      datetimeFinished: "2026-01-01T12:00:00Z",
+      tags: "older game tags",
+    };
     // Duplicate IDs represent multiple users attaching this same tag to one game.
     getGameIDsForTag.mockResolvedValue([gameID, gameID]);
-    getHistory.mockResolvedValue([
-      { id: 8 as GameID, tags: "older game tags" },
-      matchingGame,
-    ] as never);
+    getHistory.mockResolvedValue([olderGame, matchingGame] as never);
     const rec = createReplyRecorder();
 
     await httpAPITagSearch(makeRequest("shared tag"), rec.reply);
 
     expect(getGameIDsForTag).toHaveBeenCalledWith("shared tag");
     expect(getHistory).toHaveBeenCalledWith([gameID]);
-    expect(rec.payload).toEqual([
-      matchingGame,
-      { id: 8 as GameID, tags: "older game tags" },
-    ]);
+    expect(rec.payload).toEqual([matchingGame, olderGame]);
   });
 
   test("normalizes case, transliteration, and non-space whitespace", async () => {

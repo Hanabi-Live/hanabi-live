@@ -49,6 +49,12 @@ runner uses pinned Tern and the project's Go 1.27 toolchain, and reuses the
 existing `.env` database settings. It does not apply migrations during server
 startup.
 
+Before migration `003_reserved_game_ids.sql`, finish games and resolve saved
+snapshots from the intermediate UUID-based server. It removes that column and
+index; those snapshots cannot be restored afterward. Original unversioned
+snapshots are upgraded automatically. Do not roll back to a server without
+reserved-ID support while such games are in progress.
+
 Keep migration files numbered consecutively from `001_name.sql`. Applied
 migrations are immutable: do not edit or delete them. Use forward migrations
 only, without a down-migration section. Update `install/database_schema.sql` in

@@ -17,6 +17,7 @@ import (
 
 func snapshotTestTable() *Table {
 	g := newSeededTestGame("p2v0s1", 2)
+	g.DatabaseID = 101
 	g.Options.NumPlayers = 2
 	g.Options.DetrimentalCharacters = false
 	t := &Table{
@@ -98,23 +99,40 @@ func TestTableSnapshotRoundTrip(t *testing.T) {
 	}
 }
 
-func TestLegacySnapshotRecoveryIDBecomesStable(t *testing.T) {
+func TestSnapshotReservedGameIDRemainsStable(t *testing.T) {
 	legacy, err := json.Marshal(snapshotTestTable())
 	if err != nil {
 		t.Fatal(err)
 	}
 	restored, err := decodeTableSnapshot(legacy)
-	if err != nil || restored.Game.RecoveryID == "" {
-		t.Fatalf("legacy snapshot did not get a recovery ID: %v", err)
+	if err != nil || restored.Game.DatabaseID != 101 {
+		t.Fatalf("snapshot did not preserve its reserved game ID: %v", err)
 	}
-	id := restored.Game.RecoveryID
+	id := restored.Game.DatabaseID
 	data, err := encodeTableSnapshot(restored)
 	if err != nil {
 		t.Fatal(err)
 	}
 	restoredAgain, err := decodeTableSnapshot(data)
-	if err != nil || restoredAgain.Game.RecoveryID != id {
-		t.Fatalf("recovery ID changed on the next restart: %v", err)
+	if err != nil || restoredAgain.Game.DatabaseID != id {
+		t.Fatalf("reserved ID changed on the next restart: %v", err)
+	}
+}
+
+func TestLegacySnapshotIDCompatibility(t *testing.T) {
+	table := snapshotTestTable()
+	table.Game.DatabaseID = 0
+	data, err := json.Marshal(table)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := decodeTableSnapshot(data)
+	if err != nil || restored.Game.DatabaseID != 0 {
+		t.Fatalf("original snapshot should defer reservation until startup: %v", err)
+	}
+	_, err = decodeTableSnapshot([]byte(`{"SnapshotVersion":1,"Game":{"RecoveryID":"9c262643-43d4-44f4-ad91-9b000014de20"}}`))
+	if err == nil || !strings.Contains(err.Error(), "before applying migration 003") {
+		t.Fatalf("ambiguous UUID-era snapshot was not rejected explicitly: %v", err)
 	}
 }
 
@@ -124,7 +142,8 @@ func TestTableSnapshotRejectsInvalidState(t *testing.T) {
 		mutate func(*Table)
 	}{
 		{"missing game", func(table *Table) { table.Game = nil }},
-		{"invalid recovery ID", func(table *Table) { table.Game.RecoveryID = "invalid" }},
+		{"invalid reserved ID", func(table *Table) { table.Game.DatabaseID = -1 }},
+		{"missing reserved ID", func(table *Table) { table.Game.DatabaseID = 0 }},
 		{"missing options", func(table *Table) { table.Options = nil }},
 		{"missing player", func(table *Table) { table.Players[0] = nil }},
 		{"invalid active player", func(table *Table) { table.Game.ActivePlayerIndex = 2 }},
@@ -152,7 +171,7 @@ func TestTableSnapshotRejectsInvalidState(t *testing.T) {
 			}
 		})
 	}
-	for _, data := range []string{`{"SnapshotVersion":2}`, `{"Game":`, `null`} {
+	for _, data := range []string{`{"SnapshotVersion":3}`, `{"Game":`, `null`} {
 		if _, err := decodeTableSnapshot([]byte(data)); err == nil {
 			t.Fatalf("invalid snapshot was accepted: %s", data)
 		}
@@ -216,7 +235,7 @@ func TestRestoreTableIgnoresInterruptedWrite(t *testing.T) {
 }
 
 func TestRestoreTablesValidatesEntireSnapshotSet(t *testing.T) {
-	for _, scenario := range []string{"malformed later file", "duplicate table", "duplicate game", "duplicate game spelling", "existing table"} {
+	for _, scenario := range []string{"malformed later file", "duplicate table", "duplicate game", "existing table"} {
 		t.Run(scenario, func(t *testing.T) {
 			oldTables, oldPath := tables, tablesPath
 			tables, tablesPath = NewTables(), t.TempDir()
@@ -231,21 +250,18 @@ func TestRestoreTablesValidatesEntireSnapshotSet(t *testing.T) {
 			})
 
 			first := snapshotTestTable()
-			first.Game.RecoveryID = "9c262643-43d4-44f4-ad91-9b000014de20"
 			firstData, err := encodeTableSnapshot(first)
 			if err != nil {
 				t.Fatal(err)
 			}
 			second := snapshotTestTable()
 			second.ID = 43
+			second.Game.DatabaseID = 102
 			if scenario == "duplicate table" {
 				second.ID = first.ID
 			}
 			if scenario == "duplicate game" {
-				second.Game.RecoveryID = first.Game.RecoveryID
-			}
-			if scenario == "duplicate game spelling" {
-				second.Game.RecoveryID = strings.ToUpper(first.Game.RecoveryID)
+				second.Game.DatabaseID = first.Game.DatabaseID
 			}
 			if scenario == "existing table" {
 				tables.Set(second.ID, second)

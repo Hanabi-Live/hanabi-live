@@ -70,6 +70,7 @@ type Table struct {
 	snapshotSavedAt  time.Time
 	startTimer       *time.Timer
 	typingTimers     map[int]*time.Timer
+	reservedGameID   int
 }
 
 type TableChatMessage struct {

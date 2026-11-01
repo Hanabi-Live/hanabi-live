@@ -74,7 +74,7 @@ func restoreTables() error {
 	}
 	var snapshots []snapshotFile
 	tableIDs := make(map[uint64]string)
-	recoveryIDs := make(map[string]string)
+	gameIDs := make(map[int]string)
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
 			continue
@@ -91,17 +91,40 @@ func restoreTables() error {
 		if previous, exists := tableIDs[table.ID]; exists {
 			return fmt.Errorf("duplicate table ID %d in %q and %q", table.ID, previous, filename)
 		}
-		if previous, exists := recoveryIDs[table.Game.RecoveryID]; exists {
-			return fmt.Errorf("duplicate game recovery ID in %q and %q", previous, filename)
+		if previous, exists := gameIDs[table.Game.DatabaseID]; table.Game.DatabaseID != 0 && exists {
+			return fmt.Errorf("duplicate reserved game ID in %q and %q", previous, filename)
 		}
 		tableIDs[table.ID] = filename
-		recoveryIDs[table.Game.RecoveryID] = filename
+		gameIDs[table.Game.DatabaseID] = filename
 		snapshots = append(snapshots, snapshotFile{filename, table})
 	}
 
 	if len(snapshots) == 0 {
 		logger.Info("No previously running tables to restore.")
 		return nil
+	}
+
+	// Legacy snapshots get a committed sequence value before any table locks or gameplay.
+	// Persist the assignment so a failed startup cannot allocate a different ID on retry.
+	for _, snapshot := range snapshots {
+		if snapshot.table.Game.DatabaseID == 0 {
+			id, err := models.Games.ReserveID()
+			if err != nil {
+				return fmt.Errorf("reserve game ID for %q: %w", snapshot.filename, err)
+			}
+			if previous, exists := gameIDs[id]; exists {
+				return fmt.Errorf("reserved game ID %d conflicts with snapshot %q; check the games sequence", id, previous)
+			}
+			gameIDs[id] = snapshot.filename
+			snapshot.table.Game.DatabaseID = id
+			data, err := encodeTableSnapshotAt(snapshot.table, snapshot.table.snapshotSavedAt)
+			if err != nil {
+				return fmt.Errorf("encode upgraded snapshot %q: %w", snapshot.filename, err)
+			}
+			if err := writeTableSnapshot(snapshot.filename, data); err != nil {
+				return fmt.Errorf("persist reserved game ID in %q: %w", snapshot.filename, err)
+			}
+		}
 	}
 
 	tables.Lock(ctx)

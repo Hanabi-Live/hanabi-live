@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Game is a sub-object of a table
@@ -14,7 +13,7 @@ import (
 // A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
 // (which is used in this case to prevent circular references)
 type Game struct {
-	RecoveryID string
+	DatabaseID int
 
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
@@ -90,11 +89,11 @@ type Game struct {
 	Tags map[string]int // Keys are the tags, values are the user ID that created it
 }
 
-func NewGame(t *Table) *Game {
+func NewGame(t *Table, databaseID int) *Game {
 	variant := variants[t.Options.VariantName]
 
 	g := &Game{
-		RecoveryID:       uuid.NewV4().String(),
+		DatabaseID:       databaseID,
 		DatetimeStarted:  time.Time{},
 		DatetimeFinished: time.Time{},
 

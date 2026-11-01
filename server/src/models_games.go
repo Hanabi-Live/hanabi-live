@@ -16,7 +16,7 @@ type Games struct{}
 // GameRow roughly mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
-	RecoveryID       string
+	ID               int
 	Name             string
 	Options          *Options
 	Seed             string
@@ -45,12 +45,30 @@ type GameInsertResult struct {
 	DatetimeFinished time.Time
 }
 
+func (*Games) ReserveID() (int, error) {
+	tx, err := db.Begin(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(context.Background())
+	var id int
+	if err := tx.QueryRow(context.Background(),
+		"SELECT nextval(pg_get_serial_sequence('games', 'id'))").Scan(&id); err != nil {
+		return 0, err
+	}
+	// Commit the sequence allocation before retaining its value outside PostgreSQL.
+	if err := tx.Commit(context.Background()); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
 func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (GameInsertResult, error) {
 	result := GameInsertResult{
 		DatetimeStarted: gameRow.DatetimeStarted, DatetimeFinished: gameRow.DatetimeFinished,
 	}
-	if gameRow.RecoveryID == "" {
-		return result, errors.New("cannot persist a game without a recovery ID")
+	if gameRow.ID <= 0 {
+		return result, errors.New("cannot persist a game without a reserved database ID")
 	}
 	// Local variables
 	variant := variants[gameRow.Options.VariantName]
@@ -81,7 +99,7 @@ func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (GameInsertResu
 				end_condition,
 				datetime_started,
 				datetime_finished,
-				recovery_id
+				id
 			) VALUES (
 				$1,
 				$2,
@@ -105,7 +123,7 @@ func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (GameInsertResu
 				$20,
 				$21
 			)
-			ON CONFLICT (recovery_id) WHERE recovery_id IS NOT NULL DO NOTHING
+			ON CONFLICT (id) DO NOTHING
 			RETURNING id
 		`,
 		gameRow.Name,
@@ -130,20 +148,20 @@ func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (GameInsertResu
 		gameRow.EndCondition,
 		gameRow.DatetimeStarted,
 		gameRow.DatetimeFinished,
-		gameRow.RecoveryID,
+		gameRow.ID,
 	).Scan(&result.ID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = tx.QueryRow(context.Background(), `
 			SELECT id, datetime_started, datetime_finished
 			FROM games
-			WHERE recovery_id = $1 AND seed = $2 AND score = $3
+			WHERE id = $1 AND seed = $2 AND score = $3
 				AND num_turns = $4 AND end_condition = $5
 				AND variant_id = $6 AND num_players = $7
-		`, gameRow.RecoveryID, gameRow.Seed, gameRow.Score, gameRow.NumTurns,
+		`, gameRow.ID, gameRow.Seed, gameRow.Score, gameRow.NumTurns,
 			gameRow.EndCondition, variant.ID, gameRow.Options.NumPlayers).
 			Scan(&result.ID, &result.DatetimeStarted, &result.DatetimeFinished)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return result, errors.New("game recovery ID conflicts with a different result")
+			return result, errors.New("reserved game ID conflicts with a different result")
 		}
 		return result, err
 	}
@@ -200,11 +218,11 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sortMode string) ([]*GameHisto
 	var sortSQL string
 	if sortMode == "normal" {
 		// Normally, we want history to be displayed with the newest game at the top
-		sortSQL = "games1.id DESC"
+		sortSQL = "games1.datetime_finished DESC, games1.id DESC"
 	} else if sortMode == "seed" {
 		// For viewing games of the same seed, we want the best scores to be at the top,
 		// with the first group to get that score displayed on top
-		sortSQL = "games1.score DESC, games1.id ASC"
+		sortSQL = "games1.score DESC, games1.datetime_finished ASC, games1.id ASC"
 	} else {
 		return games, errors.New("unknown sort mode of \"" + sortMode + "\"")
 	}
@@ -344,7 +362,7 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
 		/* We must get the results in descending order for the limit to work properly */
-		ORDER BY games.id DESC
+		ORDER BY games.datetime_finished DESC, games.id DESC
 	`
 	if amount > 0 {
 		SQLString += "LIMIT $2 OFFSET $3"
@@ -427,16 +445,14 @@ func (*Games) GetGameIDsFriends(
 	}
 
 	SQLString := `
-		SELECT DISTINCT game_participants.game_id
-		FROM game_participants
-		WHERE game_participants.user_id = ANY ($1)
-		EXCEPT
-		(
-			SELECT game_participants.game_id
-			FROM game_participants
-			WHERE game_participants.user_id = $2
-		)
-		ORDER BY game_id DESC
+		SELECT games.id
+		FROM games
+		JOIN (
+			SELECT game_id FROM game_participants WHERE user_id = ANY ($1)
+			EXCEPT
+			SELECT game_id FROM game_participants WHERE user_id = $2
+		) AS friend_games ON friend_games.game_id = games.id
+		ORDER BY games.datetime_finished DESC, games.id DESC
 		LIMIT $3 OFFSET $4
 	`
 

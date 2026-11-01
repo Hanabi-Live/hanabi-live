@@ -75,7 +75,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		t.Unlock(ctx)
 		tableLocked = false
 
-		precomputedSeed, creatorPregameStats, success := preFetchTableRestartData(s, restartData)
+		precomputedSeed, databaseID, creatorPregameStats, success := preFetchTableRestartData(s, restartData)
 		if !success {
 			return
 		}
@@ -102,6 +102,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 				currentData.spectatorSessions,
 				currentData.spectatorShadowingUserID,
 				precomputedSeed,
+				databaseID,
 				creatorPregameStats,
 			)
 			return
@@ -117,6 +118,7 @@ type tableRestartData struct {
 	players                  []*Player
 	variantName              string
 	precomputeSeed           bool
+	reserveGameID            bool
 }
 
 func validateAndSnapshotTableRestart(
@@ -227,12 +229,14 @@ func validateAndSnapshotTableRestart(
 		players:                  players,
 		variantName:              t.Options.VariantName,
 		precomputeSeed:           d.HidePregame && !strings.HasPrefix(t.InitialName, "!seed"),
+		reserveGameID:            d.HidePregame,
 	}, true
 }
 
 func (d *tableRestartData) hasSameDatabaseInputs(other *tableRestartData) bool {
 	if d.variantName != other.variantName ||
 		d.precomputeSeed != other.precomputeSeed ||
+		d.reserveGameID != other.reserveGameID ||
 		len(d.players) != len(other.players) {
 		return false
 	}
@@ -247,7 +251,17 @@ func (d *tableRestartData) hasSameDatabaseInputs(other *tableRestartData) bool {
 func preFetchTableRestartData(
 	s *Session,
 	restartData *tableRestartData,
-) (string, *PregameStats, bool) {
+) (string, int, *PregameStats, bool) {
+	var databaseID int
+	if restartData.reserveGameID {
+		id, err := models.Games.ReserveID()
+		if err != nil {
+			logger.Error("Failed to reserve a game ID for table restart: " + err.Error())
+			s.Error(StartGameFail)
+			return "", 0, nil, false
+		}
+		databaseID = id
+	}
 	var precomputedSeed string
 	if restartData.precomputeSeed {
 		variant := variants[restartData.variantName]
@@ -257,7 +271,7 @@ func preFetchTableRestartData(
 		if seed, err := getNextAvailableSeed(restartData.players, seedPrefix); err != nil {
 			logger.Error("Failed to pre-compute seed for table restart: " + err.Error())
 			s.Error(StartGameFail)
-			return "", nil, false
+			return "", 0, nil, false
 		} else {
 			precomputedSeed = seed
 		}
@@ -270,7 +284,7 @@ func preFetchTableRestartData(
 	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
 		logger.Error("Failed to pre-fetch game count for \"" + s.Username + "\": " + err.Error())
 		s.Error(StartGameFail)
-		return "", nil, false
+		return "", 0, nil, false
 	} else {
 		creatorNumGames = v
 	}
@@ -278,13 +292,13 @@ func preFetchTableRestartData(
 	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
 		logger.Error("Failed to pre-fetch variant stats for \"" + s.Username + "\": " + err.Error())
 		s.Error(StartGameFail)
-		return "", nil, false
+		return "", 0, nil, false
 	} else {
 		creatorVariantStats = v
 	}
 	creatorPregameStats := &PregameStats{NumGames: creatorNumGames, Variant: creatorVariantStats}
 
-	return precomputedSeed, creatorPregameStats, true
+	return precomputedSeed, databaseID, creatorPregameStats, true
 }
 
 func tableRestart(
@@ -296,6 +310,7 @@ func tableRestart(
 	spectatorSessions []*Session,
 	spectatorShadowingUserID []int,
 	precomputedSeed string,
+	databaseID int,
 	creatorPregameStats *PregameStats,
 ) {
 	// Since this is a function that changes a user's relationship to tables,
@@ -428,6 +443,7 @@ func tableRestart(
 	if precomputedSeed != "" {
 		t2.ExtraOptions.PrecomputedSeed = precomputedSeed
 	}
+	t2.reservedGameID = databaseID
 
 	// Copy over the old chat
 	t2.Chat = make([]*TableChatMessage, len(oldChat))

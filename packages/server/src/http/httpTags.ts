@@ -1,4 +1,5 @@
 import type { GameID } from "@hanabi-live/data";
+import { compareGameHistory } from "@hanabi-live/data";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { logger } from "../logger";
@@ -57,14 +58,10 @@ export async function httpAPITags(
 
     const history = await models.games.getHistory([...tagsByGame.keys()]);
     return await reply.send(
-      history
-        .toSorted((left, right) => right.id - left.id)
-        .map((game) => ({
-          ...game,
-          tags: (tagsByGame.get(game.id) ?? [])
-            .toSorted(compareTags)
-            .join(", "),
-        })),
+      history.toSorted(compareGameHistory).map((game) => ({
+        ...game,
+        tags: (tagsByGame.get(game.id) ?? []).toSorted(compareTags).join(", "),
+      })),
     );
   } catch (error) {
     logger.error(

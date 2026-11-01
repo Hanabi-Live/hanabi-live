@@ -1,5 +1,6 @@
 // The screens that show past games and other scores.
 
+import { compareGameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import { getVariant } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons";
@@ -90,13 +91,12 @@ export function draw(friends: boolean): void {
   // Clear all of the existing rows.
   tbody.html("");
 
-  // JavaScript keys come as strings, so we need to convert them to integers.
-  const ids = friends
-    ? [...globals.historyFriends.keys()]
-    : [...globals.history.keys()];
+  const games = [
+    ...(friends ? globals.historyFriends : globals.history).values(),
+  ].toSorted(compareGameHistory);
 
   // Handle if the user has no history.
-  if (ids.length === 0) {
+  if (games.length === 0) {
     $("#lobby-history-no").show();
     if (friends) {
       $("#lobby-history-no").html(
@@ -113,20 +113,9 @@ export function draw(friends: boolean): void {
   $("#lobby-history").removeClass("align-center-v");
   $("#lobby-history-table-container").show();
 
-  // Sort the game IDs in reverse order (so that the most recent ones are near the top). By default,
-  // JavaScript will sort them in alphabetical order, so we must specify an ascending sort.
-  ids.sort((a, b) => a - b);
-  ids.reverse();
-
   // Add all of the history.
-  for (const [i, id] of ids.entries()) {
-    const gameData = friends
-      ? globals.historyFriends.get(id)
-      : globals.history.get(id);
-    if (gameData === undefined) {
-      continue;
-    }
-
+  for (const [i, gameData] of games.entries()) {
+    const { id } = gameData;
     const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 

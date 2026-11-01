@@ -48,6 +48,8 @@ function createReplyRecorder(): {
 function historyRecord(id: number) {
   return {
     id: id as GameID,
+    datetimeFinished:
+      id === 10 ? "2026-01-01T12:01:00Z" : "2026-01-01T12:00:00Z",
     tags: "other user's tag",
   };
 }
@@ -78,8 +80,8 @@ describe("tagged games API", () => {
     expect(getUserID).toHaveBeenCalledWith("alice");
     expect(getHistory).toHaveBeenCalledWith([10, 20] as GameID[]);
     expect(rec.payload).toEqual([
-      { id: 20 as GameID, tags: "zeta" },
-      { id: 10 as GameID, tags: "first, second" },
+      { ...historyRecord(10), tags: "first, second" },
+      { ...historyRecord(20), tags: "zeta" },
     ]);
   });
 

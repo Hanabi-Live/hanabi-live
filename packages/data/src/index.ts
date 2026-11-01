@@ -5,6 +5,7 @@ export * from "./enums/ServerCommand";
 export * from "./enums/SoundMove";
 export * from "./enums/Status";
 export * from "./functions/golem";
+export * from "./functions/history";
 export * from "./interfaces/GameHistory";
 export * from "./interfaces/HTTPLoginData";
 export * from "./interfaces/Settings";
