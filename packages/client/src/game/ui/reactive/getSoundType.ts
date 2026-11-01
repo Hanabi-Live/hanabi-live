@@ -198,7 +198,7 @@ export function getSoundType(
         }
       }
 
-      if (isOrderChopMove(previousGameState, gameState, action, metadata)) {
+      if (isOrderChopMove(previousGameState, action, metadata)) {
         return SoundType.OrderChopMove;
       }
 
@@ -219,7 +219,6 @@ export function getStandardSoundType(ourTurn: boolean): SoundType {
  */
 function isOrderChopMove(
   previousGameState: GameState,
-  gameState: GameState,
   action: ActionPlay,
   metadata: GameMetadata,
 ): boolean {
@@ -236,22 +235,19 @@ function isOrderChopMove(
     return false;
   }
 
-  // Get the number of 1's left to play on the stacks.
+  // Count open 1 stacks before the play. The played card might only be clued as a 1
+  // (e.g. a Dark Omni 3), so adding 1 to the post-play count leaks its actual rank.
   let numOnesLeftToPlay = 0;
   for (const [suitIndex, suit] of variant.suits.entries()) {
     if (suit.reversed) {
       continue;
     }
 
-    const playStack = gameState.playStacks[suitIndex];
+    const playStack = previousGameState.playStacks[suitIndex];
     if (playStack !== undefined && playStack.length === 0) {
       numOnesLeftToPlay++;
     }
   }
-
-  // This function is fired after the one has already played, so "numOnesLeftToPlay" needs to be
-  // adjusted by 1.
-  numOnesLeftToPlay++;
 
   // We can't Order Chop Move if all of the 1s are played or there is only one 1 left to be played.
   if (numOnesLeftToPlay === 0 || numOnesLeftToPlay === 1) {
@@ -304,18 +300,17 @@ function isOrderChopMove(
       return false;
     }
 
-    const startingHandCards = candidateCards.filter(
-      (card) => card.dealtToStartingHand,
+    // Chop-Focus overrides the Fresh 1's Rule whenever both cards first received the 1 clue
+    // together. The chop card itself may also be fresh, not just from the starting hand.
+    const chopFocusedCard = candidateCards.find(
+      (card) =>
+        card.order !== newestOneOrder
+        && card.firstCluedWhileOnChop === true
+        && card.segmentFirstClued !== null
+        && card.segmentFirstClued === newestOne.segmentFirstClued,
     );
-    for (const startingHandCard of startingHandCards) {
-      if (
-        startingHandCard.segmentFirstClued === newestOne.segmentFirstClued
-        && startingHandCard.firstCluedWhileOnChop === true
-      ) {
-        // Playing Multiple 1's - The Chop Focus Exception (Part 3). They were clued at the same
-        // time and the card in the starting was on chop, so the Chop Focus Exception applies.
-        return startingHandCard.order !== action.order;
-      }
+    if (chopFocusedCard !== undefined) {
+      return chopFocusedCard.order !== action.order;
     }
 
     // The Fresh 1's Rule applies.
