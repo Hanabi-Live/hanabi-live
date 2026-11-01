@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -403,11 +402,9 @@ func isJSONValid(d *CommandData) (bool, string) {
 			return false, msg
 		}
 		if len(d.GameJSON.Deck) > 0 {
-			game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
+			game := &Game{Seed: d.GameJSON.Seed, Variant: variant, ExtraOptions: &ExtraOptions{}}
 			game.InitDeck()
-			// Do not alter the shared random generator while validating a replay.
-			rng := rand.New(rand.NewSource(seedToInt64(d.GameJSON.Seed))) // nolint: gosec
-			game.shuffleDeck(rng.Intn)
+			game.ShuffleDeck()
 			for i, card := range d.GameJSON.Deck {
 				expected := game.CardIdentities[i]
 				if card.SuitIndex != expected.SuitIndex || card.Rank != expected.Rank {

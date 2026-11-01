@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"math/rand"
 	"strconv"
 	"time"
 
@@ -220,9 +219,10 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 	logger.Info("Shuffling deck: " + strconv.FormatBool(shuffleDeck))
 	logger.Info("Shuffling players: " + strconv.FormatBool(shufflePlayers))
 
-	setSeed(g.Seed) // Seed the random number generator
+	// Deck and seat shuffling share a local stream to preserve their legacy order.
+	rng := newSeededRand(g.Seed)
 	if shuffleDeck {
-		g.ShuffleDeck()
+		g.shuffleDeck(rng.Intn)
 	}
 
 	// Mark the order of all of the cards in the deck
@@ -235,11 +235,9 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 	// Additionally, we need to shuffle the order of the players so that the order that the players
 	// joined the game in does not correspond to the order of the players in the actual game
 	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	// For this step, we do not care about explicitly seeding the random number generator,
-	// since any random shuffling will do
 	if shufflePlayers {
 		for i := range t.Players {
-			j := rand.Intn(i + 1) // nolint: gosec
+			j := rng.Intn(i + 1) // nolint: gosec
 			t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
 		}
 	}

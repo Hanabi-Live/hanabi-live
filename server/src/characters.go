@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"math/rand"
 	"os"
 	"path"
 	"strconv"
@@ -137,7 +136,7 @@ func charactersGenerate(g *Game) {
 
 	// This is not a replay,
 	// so we must generate new random character selections based on the game's seed
-	setSeed(g.Seed) // Seed the random number generator
+	rng := newSeededRand(g.Seed)
 
 	for i, p := range g.Players {
 		// Set the character
@@ -147,9 +146,7 @@ func charactersGenerate(g *Game) {
 		} else {
 			for {
 				// Get a random character assignment
-				// We do not have to seed the PRNG,
-				// since that was done just a moment ago when the deck was shuffled
-				randomIndex := rand.Intn(len(characterNames)) // nolint: gosec
+				randomIndex := rng.Intn(len(characterNames)) // nolint: gosec
 				p.Character = characterNames[randomIndex]
 
 				// Check to see if any other players have this assignment already
@@ -187,16 +184,16 @@ func charactersGenerate(g *Game) {
 		} else {
 			if p.Character == "Fuming" { // 0
 				// A random number from 0 to the number of colors in this variant
-				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
+				p.CharacterMetadata = rng.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Dumbfounded" { // 1
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
+				p.CharacterMetadata = rng.Intn(4) + 1 // nolint: gosec
 			} else if p.Character == "Inept" { // 2
 				// A random number from 0 to the number of colors in this variant
-				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
+				p.CharacterMetadata = rng.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Awkward" { // 3
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
+				p.CharacterMetadata = rng.Intn(4) + 1 // nolint: gosec
 			}
 		}
 	}

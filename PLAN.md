@@ -198,6 +198,19 @@ game state.
 
 ## Delivery Sequence
 
+### Execution Model
+
+Work by agreed phase, not by individual edits. Within that phase, choose routine
+implementation details, validate changes, and open cohesive PRs without
+requesting confirmation for each small step. Group related fixes and regression
+coverage by outcome rather than creating a separate PR for every file or test.
+
+Keep dependent changes in order; use independent branches for independent work.
+Do not mix unrelated hardening tasks just to reduce the PR count. Escalate
+blockers and material architecture decisions, not routine choices. Merging PRs,
+deploying to production, and destructive data changes require separate
+authorization.
+
 ### Phase 1: Strengthen Go
 
 Deliver small, independently reviewable changes while Go remains the production

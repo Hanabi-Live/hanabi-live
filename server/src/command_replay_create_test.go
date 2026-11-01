@@ -21,9 +21,8 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 		StackSize:  5,
 	}
 	variants = map[string]*Variant{DefaultVariantName: variant}
-	game := &Game{Variant: variant, ExtraOptions: &ExtraOptions{}}
+	game := &Game{Seed: "p4v0s1", Variant: variant, ExtraOptions: &ExtraOptions{}}
 	game.InitDeck()
-	setSeed("p4v0s1")
 	game.ShuffleDeck()
 	deck := game.CardIdentities
 	invalidDeck := append([]*CardIdentity(nil), deck...)
@@ -142,9 +141,9 @@ func TestIsJSONValidSeedDeck(t *testing.T) {
 				Deck:    tc.deck,
 				Actions: []*GameAction{tc.action},
 			}}
-			setSeed("validation-rng")
+			rand.Seed(seedToInt64("validation-rng"))
 			wantRandom := rand.Int63()
-			setSeed("validation-rng")
+			rand.Seed(seedToInt64("validation-rng"))
 			valid, message := isJSONValid(d)
 			if valid != (tc.wantError == "") || !strings.Contains(message, tc.wantError) {
 				t.Fatalf("isJSONValid() = (%v, %q), want error %q", valid, message, tc.wantError)
