@@ -8,18 +8,21 @@ import (
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
 
-var (
-	actionFunctions map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool
-)
+type gameActionHandler struct {
+	validate func(*Session, *CommandData, *Game, *GamePlayer) bool
+	apply    func(*CommandData, *Game, *GamePlayer)
+}
+
+var actionFunctions map[int]gameActionHandler
 
 func actionsFunctionsInit() {
-	actionFunctions = map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool{
-		ActionTypePlay:          commandActionPlay,
-		ActionTypeDiscard:       commandActionDiscard,
-		ActionTypeColorClue:     commandActionClue,
-		ActionTypeRankClue:      commandActionClue,
-		ActionTypeEndGame:       commandActionEndGame,
-		ActionTypeEndGameByVote: commandActionEndGame,
+	actionFunctions = map[int]gameActionHandler{
+		ActionTypePlay:          {validateActionPlay, commandActionPlay},
+		ActionTypeDiscard:       {validateActionDiscard, commandActionDiscard},
+		ActionTypeColorClue:     {validateActionClue, commandActionClue},
+		ActionTypeRankClue:      {validateActionClue, commandActionClue},
+		ActionTypeEndGame:       {validateActionEndGame, commandActionEndGame},
+		ActionTypeEndGameByVote: {validateActionEndGame, commandActionEndGame},
 	}
 }
 
@@ -110,22 +113,23 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	// Local variables
 	g := t.Game
 
+	handler, ok := actionFunctions[d.Type]
+	if !ok {
+		s.Warning("That is not a valid action type.")
+		g.InvalidActionOccurred = true
+		return
+	}
+	if !handler.validate(s, d, g, p) {
+		return
+	}
+
 	// Start the idle timeout
 	// (but do not update the idle variable if we are ending the game)
 	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
 		t.recordActivity(ctx)
 	}
 
-	// Do different tasks depending on the action
-	if actionFunction, ok := actionFunctions[d.Type]; ok {
-		if !actionFunction(s, d, g, p) {
-			return
-		}
-	} else {
-		s.Warning("That is not a valid action type.")
-		g.InvalidActionOccurred = true
-		return
-	}
+	handler.apply(d, g, p)
 
 	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
 		g.StartedTimer = true
@@ -233,10 +237,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	}
 }
 
-func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Local variables
-	variant := g.Variant
-
+func validateActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Validate "Detrimental Character Assignment" restrictions
 	if characterCheckPlay(s, d, g, p) {
 		g.InvalidActionOccurred = true
@@ -248,14 +249,6 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		g.DeckIndex == len(g.Deck)-1 && // There is 1 card left in the deck
 		d.Target == g.DeckIndex { // The target is the last card left in the deck
 
-		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
-			if !variant.AtMaxClueTokens(g.ClueTokens) {
-				g.ClueTokens++
-			}
-			p.DiscardDeck()
-		} else {
-			p.PlayDeck()
-		}
 		return true
 	}
 
@@ -264,6 +257,23 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		s.Warning("You cannot play a card that is not in your hand.")
 		g.InvalidActionOccurred = true
 		return false
+	}
+
+	return true
+}
+
+func commandActionPlay(d *CommandData, g *Game, p *GamePlayer) {
+	variant := g.Variant
+	if g.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1 && d.Target == g.DeckIndex {
+		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+			if !variant.AtMaxClueTokens(g.ClueTokens) {
+				g.ClueTokens++
+			}
+			p.DiscardDeck()
+		} else {
+			p.PlayDeck()
+		}
+		return
 	}
 
 	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
@@ -278,11 +288,9 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		p.PlayCard(c)
 		p.DrawCard()
 	}
-
-	return true
 }
 
-func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+func validateActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
 	variant := g.Variant
 
@@ -297,14 +305,6 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 			return false
 		}
 
-		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
-			p.PlayDeck()
-		} else {
-			if !variant.AtMaxClueTokens(g.ClueTokens) {
-				g.ClueTokens++
-			}
-			p.DiscardDeck()
-		}
 		return true
 	}
 
@@ -328,6 +328,23 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		return false
 	}
 
+	return true
+}
+
+func commandActionDiscard(d *CommandData, g *Game, p *GamePlayer) {
+	variant := g.Variant
+	if g.Options.DeckPlays && g.DeckIndex == len(g.Deck)-1 && d.Target == g.DeckIndex {
+		if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
+			p.PlayDeck()
+		} else {
+			if !variant.AtMaxClueTokens(g.ClueTokens) {
+				g.ClueTokens++
+			}
+			p.DiscardDeck()
+		}
+		return
+	}
+
 	if variant.IsSuitInverted(g.CardIdentities[d.Target].SuitIndex) && !g.Table.ExtraOptions.NoWriteToDatabase {
 		c := p.RemoveCard(d.Target)
 		p.PlayCard(c)
@@ -340,11 +357,9 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		p.DiscardCard(c)
 		p.DrawCard()
 	}
-
-	return true
 }
 
-func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+func validateActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
 	variant := g.Variant
 
@@ -435,12 +450,14 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		return false
 	}
 
-	p.GiveClue(d)
-
 	return true
 }
 
-func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+func commandActionClue(d *CommandData, g *Game, p *GamePlayer) {
+	p.GiveClue(d)
+}
+
+func validateActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// An "endGame" action is a special action type sent by the server to itself
 	// The value will correspond to the end condition (see "endCondition" in "enums.go")
 	// The target will correspond to the index of the player who ended the game
@@ -457,6 +474,10 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		return false
 	}
 
+	return true
+}
+
+func commandActionEndGame(d *CommandData, g *Game, p *GamePlayer) {
 	// Mark that the game should be ended
 	g.EndCondition = d.Value
 	g.EndPlayer = d.Target
@@ -491,6 +512,4 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	if endGameAction != nil {
 		g.Actions2 = append(g.Actions2, endGameAction)
 	}
-
-	return true
 }
