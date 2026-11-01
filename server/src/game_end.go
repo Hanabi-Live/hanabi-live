@@ -169,6 +169,7 @@ func snapshotGameDatabaseTable(t *Table) *gameDatabaseTableSnapshot {
 func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, error) {
 
 	row := GameRow{
+		RecoveryID:       g.RecoveryID,
 		Name:             tableSnapshot.name,
 		Options:          g.Options,
 		Seed:             g.Seed,
@@ -187,10 +188,17 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		_ = tx.Rollback(context.Background())
 	}()
 
-	databaseID, err := models.Games.InsertTx(tx, row)
+	insertedGame, err := models.Games.InsertTx(tx, row)
 	if err != nil {
 		logger.Error("Failed to insert the game row: " + err.Error())
 		return 0, err
+	}
+	databaseID := insertedGame.ID
+	if !insertedGame.Inserted {
+		g.DatetimeStarted = insertedGame.DatetimeStarted
+		g.DatetimeFinished = insertedGame.DatetimeFinished
+		logger.Info("Game was already committed; reusing database ID " + strconv.Itoa(databaseID) + ".")
+		return databaseID, nil
 	}
 
 	// Next, we insert rows for each of the participants

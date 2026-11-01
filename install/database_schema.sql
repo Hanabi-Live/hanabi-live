@@ -148,6 +148,7 @@ CREATE INDEX user_identity_tokens_index_expires_at ON user_identity_tokens (expi
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
+    recovery_id             UUID         NULL,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
 
@@ -185,6 +186,7 @@ CREATE TABLE games (
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_variant_id  ON games (variant_id);
 CREATE INDEX games_index_seed        ON games (seed);
+CREATE UNIQUE INDEX games_index_recovery_id ON games (recovery_id) WHERE recovery_id IS NOT NULL;
 
 DROP TABLE IF EXISTS game_participants CASCADE;
 CREATE TABLE game_participants (

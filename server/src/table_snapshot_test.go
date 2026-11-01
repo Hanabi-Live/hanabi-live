@@ -98,12 +98,33 @@ func TestTableSnapshotRoundTrip(t *testing.T) {
 	}
 }
 
+func TestLegacySnapshotRecoveryIDBecomesStable(t *testing.T) {
+	legacy, err := json.Marshal(snapshotTestTable())
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := decodeTableSnapshot(legacy)
+	if err != nil || restored.Game.RecoveryID == "" {
+		t.Fatalf("legacy snapshot did not get a recovery ID: %v", err)
+	}
+	id := restored.Game.RecoveryID
+	data, err := encodeTableSnapshot(restored)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restoredAgain, err := decodeTableSnapshot(data)
+	if err != nil || restoredAgain.Game.RecoveryID != id {
+		t.Fatalf("recovery ID changed on the next restart: %v", err)
+	}
+}
+
 func TestTableSnapshotRejectsInvalidState(t *testing.T) {
 	tests := []struct {
 		name   string
 		mutate func(*Table)
 	}{
 		{"missing game", func(table *Table) { table.Game = nil }},
+		{"invalid recovery ID", func(table *Table) { table.Game.RecoveryID = "invalid" }},
 		{"missing options", func(table *Table) { table.Options = nil }},
 		{"missing player", func(table *Table) { table.Players[0] = nil }},
 		{"invalid active player", func(table *Table) { table.Game.ActivePlayerIndex = 2 }},

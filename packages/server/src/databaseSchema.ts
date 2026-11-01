@@ -13,6 +13,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -158,36 +159,45 @@ export const userIdentityTokensTable = pgTable(
   ],
 );
 
-export const gamesTable = pgTable("games", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  numPlayers: smallint("num_players").notNull(),
-  startingPlayer: smallint("starting_player").notNull(),
-  variantID: smallint("variant_id").notNull(),
+export const gamesTable = pgTable(
+  "games",
+  {
+    id: serial("id").primaryKey(),
+    recoveryID: uuid("recovery_id"),
+    name: text("name").notNull(),
+    numPlayers: smallint("num_players").notNull(),
+    startingPlayer: smallint("starting_player").notNull(),
+    variantID: smallint("variant_id").notNull(),
 
-  timed: boolean("timed").notNull(),
-  timeBase: integer("time_base").notNull(),
-  timePerTurn: integer("time_per_turn").notNull(),
-  speedrun: boolean("speedrun").notNull(),
-  cardCycle: boolean("card_cycle").notNull(),
-  deckPlays: boolean("deck_plays").notNull(),
-  emptyClues: boolean("empty_clues").notNull(),
-  oneExtraCard: boolean("one_extra_card").notNull(),
-  oneLessCard: boolean("one_less_card").notNull(),
-  allOrNothing: boolean("all_or_nothing").notNull(),
-  detrimentalCharacters: boolean("detrimental_characters").notNull(),
+    timed: boolean("timed").notNull(),
+    timeBase: integer("time_base").notNull(),
+    timePerTurn: integer("time_per_turn").notNull(),
+    speedrun: boolean("speedrun").notNull(),
+    cardCycle: boolean("card_cycle").notNull(),
+    deckPlays: boolean("deck_plays").notNull(),
+    emptyClues: boolean("empty_clues").notNull(),
+    oneExtraCard: boolean("one_extra_card").notNull(),
+    oneLessCard: boolean("one_less_card").notNull(),
+    allOrNothing: boolean("all_or_nothing").notNull(),
+    detrimentalCharacters: boolean("detrimental_characters").notNull(),
 
-  seed: text("seed").notNull(),
-  score: smallint("score").notNull(),
-  numTurns: smallint("num_turns").notNull(),
-  endCondition: smallint("end_condition").notNull(),
-  datetimeStarted: timestamp("datetime_started", {
-    withTimezone: true,
-  }).notNull(),
-  datetimeFinished: timestamp("datetime_finished", {
-    withTimezone: true,
-  }).notNull(),
-});
+    seed: text("seed").notNull(),
+    score: smallint("score").notNull(),
+    numTurns: smallint("num_turns").notNull(),
+    endCondition: smallint("end_condition").notNull(),
+    datetimeStarted: timestamp("datetime_started", {
+      withTimezone: true,
+    }).notNull(),
+    datetimeFinished: timestamp("datetime_finished", {
+      withTimezone: true,
+    }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("games_index_recovery_id")
+      .on(table.recoveryID)
+      .where(sql`${table.recoveryID} IS NOT NULL`),
+  ],
+);
 
 export const gameParticipantsTable = pgTable("game_participants", {
   id: serial("id").primaryKey(),

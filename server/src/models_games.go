@@ -16,6 +16,7 @@ type Games struct{}
 // GameRow roughly mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
+	RecoveryID       string
 	Name             string
 	Options          *Options
 	Seed             string
@@ -37,22 +38,26 @@ type GamesRow struct {
 	OtherScores int    `json:"other_scores"`
 }
 
-type gameRowQuerier interface {
-	QueryRow(context.Context, string, ...interface{}) pgx.Row
+type GameInsertResult struct {
+	ID               int
+	Inserted         bool
+	DatetimeStarted  time.Time
+	DatetimeFinished time.Time
 }
 
-func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (int, error) {
-	return insertGame(tx, gameRow)
-}
-
-func insertGame(queryer gameRowQuerier, gameRow GameRow) (int, error) {
+func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (GameInsertResult, error) {
+	result := GameInsertResult{
+		DatetimeStarted: gameRow.DatetimeStarted, DatetimeFinished: gameRow.DatetimeFinished,
+	}
+	if gameRow.RecoveryID == "" {
+		return result, errors.New("cannot persist a game without a recovery ID")
+	}
 	// Local variables
 	variant := variants[gameRow.Options.VariantName]
 
 	// https://www.postgresql.org/docs/9.5/dml-returning.html
 	// https://github.com/jackc/pgx/issues/411
-	var id int
-	if err := queryer.QueryRow(
+	err := tx.QueryRow(
 		context.Background(),
 		`
 			INSERT INTO games (
@@ -75,7 +80,8 @@ func insertGame(queryer gameRowQuerier, gameRow GameRow) (int, error) {
 				num_turns,
 				end_condition,
 				datetime_started,
-				datetime_finished
+				datetime_finished,
+				recovery_id
 			) VALUES (
 				$1,
 				$2,
@@ -96,8 +102,10 @@ func insertGame(queryer gameRowQuerier, gameRow GameRow) (int, error) {
 				$17,
 				$18,
 				$19,
-				$20
+				$20,
+				$21
 			)
+			ON CONFLICT (recovery_id) WHERE recovery_id IS NOT NULL DO NOTHING
 			RETURNING id
 		`,
 		gameRow.Name,
@@ -122,11 +130,29 @@ func insertGame(queryer gameRowQuerier, gameRow GameRow) (int, error) {
 		gameRow.EndCondition,
 		gameRow.DatetimeStarted,
 		gameRow.DatetimeFinished,
-	).Scan(&id); err != nil {
-		return -1, err
+		gameRow.RecoveryID,
+	).Scan(&result.ID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		err = tx.QueryRow(context.Background(), `
+			SELECT id, datetime_started, datetime_finished
+			FROM games
+			WHERE recovery_id = $1 AND seed = $2 AND score = $3
+				AND num_turns = $4 AND end_condition = $5
+				AND variant_id = $6 AND num_players = $7
+		`, gameRow.RecoveryID, gameRow.Seed, gameRow.Score, gameRow.NumTurns,
+			gameRow.EndCondition, variant.ID, gameRow.Options.NumPlayers).
+			Scan(&result.ID, &result.DatetimeStarted, &result.DatetimeFinished)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return result, errors.New("game recovery ID conflicts with a different result")
+		}
+		return result, err
+	}
+	if err != nil {
+		return result, err
 	}
 
-	return id, nil
+	result.Inserted = true
+	return result, nil
 }
 
 func (*Games) Exists(databaseID int) (bool, error) {

@@ -13,6 +13,7 @@ import (
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/sasha-s/go-deadlock"
+	uuid "github.com/satori/go.uuid"
 )
 
 const tableSnapshotVersion = 1
@@ -51,6 +52,11 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 		return nil, err
 	}
 	g := t.Game
+	if g.RecoveryID == "" {
+		g.RecoveryID = uuid.NewV4().String()
+	} else if _, err := uuid.FromString(g.RecoveryID); err != nil {
+		return nil, fmt.Errorf("invalid game recovery ID: %w", err)
+	}
 	if t.ID == 0 || !t.Running || t.Replay || t.Options == nil || t.ExtraOptions == nil || g.Variant == nil {
 		return nil, errors.New("table snapshot is missing active-game metadata")
 	}
