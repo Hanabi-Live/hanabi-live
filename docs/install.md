@@ -341,14 +341,6 @@ server: signals do not save ongoing games. Check the server log after a restart.
 See [the production instructions](../AGENTS.md) for deployment and database
 migration precautions.
 
-The localhost-only `/metrics` endpoint reports aggregate command latency,
-runtime memory, and database-pool acquisition statistics. Database operations
-use a fixed 30-second limit. Both servers enforce PostgreSQL statement timeouts;
-Go additionally bounds pool acquisition, row consumption, and individual
-transaction operations. An earlier caller deadline takes precedence. This is not
-a timeout for an entire multi-statement transaction, and administrative
-migrations should use their own connection and explicit time limits.
-
 <br />
 
 ### Set up `iptables` (Optional)

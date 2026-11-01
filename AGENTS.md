@@ -7,6 +7,13 @@ they are absolutely necessary or there is a strong, concrete reason. Prefer a
 simple, documented behavior over speculative flexibility. When a new option is
 justified, explain the use case and why a fixed behavior is insufficient.
 
+## Documentation
+
+Do not document every small change or implementation detail. Add or update
+documentation only for essential instructions, significant decisions, or
+non-obvious constraints. Keep it concise and relevant to the document's purpose;
+do not put unrelated operational details in installation instructions.
+
 ## Production server
 
 The production server is `root@hanab.live`, with the repository at
