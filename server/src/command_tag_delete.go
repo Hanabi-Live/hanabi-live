@@ -29,6 +29,10 @@ func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
 		s.Warning(NotStartedFail)
 		return
 	}
+	if t.Ending {
+		s.Warning("The game is already ending.")
+		return
+	}
 
 	// Sanitize, validate, and normalize the tag
 	if v, err := sanitizeTag(d.Msg); err != "" {

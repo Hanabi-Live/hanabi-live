@@ -14,7 +14,7 @@ type GameParticipantNotesRow struct {
 	Note      string
 }
 
-func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticipantNotesRow) error {
+func (*GameParticipantNotes) BulkInsertTx(tx *databaseTransaction, gameParticipantNotesRows []*GameParticipantNotesRow) error {
 	SQLString := `
 		INSERT INTO game_participant_notes (
 			game_participant_id,
@@ -23,7 +23,7 @@ func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticip
 		)
 		VALUES %s
 	`
-	numArgsPerRow := 5
+	numArgsPerRow := 4
 	valueArgs := make([]interface{}, 0, numArgsPerRow*len(gameParticipantNotesRows))
 	for _, gameParticipantNotesRow := range gameParticipantNotesRows {
 		valueArgs = append(
@@ -41,6 +41,6 @@ func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticip
 	`
 	SQLString = getBulkInsertSQL(SQLString, valueSQL, len(gameParticipantNotesRows))
 
-	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
+	_, err := tx.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }

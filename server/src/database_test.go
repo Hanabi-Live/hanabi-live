@@ -8,8 +8,34 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
+
+func TestDatabaseCopyDeadline(t *testing.T) {
+	database := newIntegrationDatabase(t, time.Second)
+	tx, err := database.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(context.Background())
+	if _, err := tx.Exec(context.Background(), `
+		CREATE TEMP TABLE slow_copy (id INTEGER);
+		CREATE FUNCTION pg_temp.slow_copy_insert() RETURNS trigger LANGUAGE plpgsql AS $$
+			BEGIN PERFORM pg_sleep(2); RETURN NEW; END
+		$$;
+		CREATE TRIGGER slow_copy_trigger BEFORE INSERT ON slow_copy
+			FOR EACH ROW EXECUTE FUNCTION pg_temp.slow_copy_insert();
+	`); err != nil {
+		t.Fatal(err)
+	}
+	tx.timeout = 50 * time.Millisecond
+	_, err = tx.CopyFrom(context.Background(), pgx.Identifier{"slow_copy"}, []string{"id"},
+		pgx.CopyFromRows([][]interface{}{{1}}))
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("slow copy returned %v, want deadline exceeded", err)
+	}
+}
 
 func TestDatabaseStatementTimeoutConfiguration(t *testing.T) {
 	url := os.Getenv("HANABI_TEST_DATABASE_URL")

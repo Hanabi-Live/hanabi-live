@@ -22,19 +22,13 @@ func (*GameTags) Insert(gameID int, userID int, tag string) error {
 	return err
 }
 
-func (*GameTags) BulkInsert(gameTagsRows []*GameTagsRow) error {
-	SQLString := `
-		INSERT INTO game_tags (game_id, user_id, tag)
-		VALUES %s
-	`
-	numArgsPerRow := 3
-	valueArgs := make([]interface{}, 0, numArgsPerRow*len(gameTagsRows))
-	for _, gameTagsRow := range gameTagsRows {
-		valueArgs = append(valueArgs, gameTagsRow.GameID, gameTagsRow.UserID, gameTagsRow.Tag)
-	}
-	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(gameTagsRows))
-
-	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
+func (*GameTags) BulkInsertTx(tx *databaseTransaction, gameTagsRows []*GameTagsRow) error {
+	_, err := tx.CopyFrom(context.Background(), pgx.Identifier{"game_tags"},
+		[]string{"game_id", "user_id", "tag"},
+		pgx.CopyFromSlice(len(gameTagsRows), func(i int) ([]interface{}, error) {
+			row := gameTagsRows[i]
+			return []interface{}{row.GameID, row.UserID, row.Tag}, nil
+		}))
 	return err
 }
 

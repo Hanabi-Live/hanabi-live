@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -334,11 +335,17 @@ func TestGameInsertCanRetryRolledBackTransaction(t *testing.T) {
 	}
 }
 
-func TestGameCompletionRetryDoesNotDuplicateParticipantsOrActions(t *testing.T) {
+func gameCompletionTestTable(t *testing.T) (*database, *Table) {
+	t.Helper()
 	database := gamePersistenceDatabase(t)
 	oldDB, oldModels, oldGate := db, models, incomingCommands
-	t.Cleanup(func() { db, models, incomingCommands = oldDB, oldModels, oldGate })
 	db, models, incomingCommands = database, &Models{}, &commandGate{}
+	incomingCommands.enter()
+	t.Cleanup(func() {
+		incomingCommands.leave()
+		incomingCommands.drain()
+		db, models, incomingCommands = oldDB, oldModels, oldGate
+	})
 	if _, err := db.Exec(context.Background(), `
 		INSERT INTO users (id, username, normalized_username, password_hash, last_ip)
 		VALUES (1, 'Alice', 'alice', 'unused-test-hash', '127.0.0.1'),
@@ -354,26 +361,97 @@ func TestGameCompletionRetryDoesNotDuplicateParticipantsOrActions(t *testing.T) 
 	g.Seed, g.Score, g.Turn, g.EndCondition = row.Seed, row.Score, row.NumTurns, row.EndCondition
 	g.Variant.MaxScore = 25
 	g.Actions2 = []*GameAction{{Type: ActionTypePlay, Target: 0}, {Type: ActionTypeRankClue, Target: 1, Value: 1}}
-	snapshot := snapshotGameDatabaseTable(table)
+	g.Players[0].Notes = []string{"first note"}
+	g.Players[1].Notes = []string{"second note"}
+	g.Tags = map[string]int{"keep": 1}
+	table.Chat = []*TableChatMessage{{UserID: 1, Msg: "first message"}, {UserID: 0, Msg: "server message", Server: true}}
+	return database, table
+}
 
-	incomingCommands.enter()
+func TestGameCompletionRetryDoesNotDuplicateRecords(t *testing.T) {
+	database, table := gameCompletionTestTable(t)
+	g := table.Game
+	snapshot := snapshotGameDatabaseTable(table)
+	g.Players[0].Notes[0] = "changed after snapshot"
+
 	first, firstErr := g.WriteDatabase(snapshot)
 	second, secondErr := g.WriteDatabase(snapshot)
-	incomingCommands.leave()
-	incomingCommands.drain()
 	if firstErr != nil || secondErr != nil || first != second {
 		t.Fatalf("completion retry = %d, %d; errors = %v, %v", first, second, firstErr, secondErr)
 	}
-	var games, participants, actions int
+	var games, participants, actions, notes, chat, tags int
 	if err := database.QueryRow(context.Background(), `
 		SELECT (SELECT COUNT(*) FROM games),
 			(SELECT COUNT(*) FROM game_participants),
-			(SELECT COUNT(*) FROM game_actions)
-	`).Scan(&games, &participants, &actions); err != nil {
+			(SELECT COUNT(*) FROM game_actions),
+			(SELECT COUNT(*) FROM game_participant_notes),
+			(SELECT COUNT(*) FROM chat_log WHERE room = 'table42'),
+			(SELECT COUNT(*) FROM game_tags)
+	`).Scan(&games, &participants, &actions, &notes, &chat, &tags); err != nil {
 		t.Fatal(err)
 	}
-	if games != 1 || participants != 2 || actions != 2 {
-		t.Fatalf("completion duplicated records: games=%d participants=%d actions=%d", games, participants, actions)
+	if games != 1 || participants != 2 || actions != 2 || notes != 2 || chat != 2 || tags != 1 {
+		t.Fatalf("completion record counts = %d, %d, %d, %d, %d, %d", games, participants, actions, notes, chat, tags)
+	}
+	var savedNote string
+	if err := database.QueryRow(context.Background(), `
+		SELECT note FROM game_participant_notes
+		JOIN game_participants ON game_participants.id = game_participant_id
+		WHERE user_id = 1
+	`).Scan(&savedNote); err != nil || savedNote != "first note" {
+		t.Fatalf("completion did not use its frozen notes: %q, %v", savedNote, err)
+	}
+}
+
+func TestGameCompletionMetadataFailureRollsBackEverything(t *testing.T) {
+	for _, failingTable := range []string{"game_participant_notes", "chat_log", "game_tags"} {
+		t.Run(failingTable, func(t *testing.T) {
+			database, table := gameCompletionTestTable(t)
+			if _, err := database.Exec(context.Background(),
+				"ALTER TABLE "+failingTable+" ADD CONSTRAINT reject_completion CHECK (FALSE) NOT VALID"); err != nil {
+				t.Fatal(err)
+			}
+			snapshot := snapshotGameDatabaseTable(table)
+			if id, err := table.Game.WriteDatabase(snapshot); err == nil || id != 0 {
+				t.Fatalf("failed metadata write reported success: %d, %v", id, err)
+			}
+			var count int
+			if err := database.QueryRow(context.Background(), `
+				SELECT (SELECT COUNT(*) FROM games) + (SELECT COUNT(*) FROM game_participants)
+					+ (SELECT COUNT(*) FROM game_actions) + (SELECT COUNT(*) FROM game_participant_notes)
+					+ (SELECT COUNT(*) FROM chat_log WHERE room = 'table42') + (SELECT COUNT(*) FROM game_tags)
+			`).Scan(&count); err != nil || count != 0 {
+				t.Fatalf("metadata failure left partially committed records: %d, %v", count, err)
+			}
+			if _, err := database.Exec(context.Background(),
+				"ALTER TABLE "+failingTable+" DROP CONSTRAINT reject_completion"); err != nil {
+				t.Fatal(err)
+			}
+			if id, err := table.Game.WriteDatabase(snapshot); err != nil || id != table.Game.DatabaseID {
+				t.Fatalf("failed completion could not be retried: %d, %v", id, err)
+			}
+		})
+	}
+}
+
+func TestGameCompletionStreamsLargeChatAndTagCollections(t *testing.T) {
+	database, table := gameCompletionTestTable(t)
+	table.Chat = make([]*TableChatMessage, 20_000)
+	for i := range table.Chat {
+		table.Chat[i] = &TableChatMessage{UserID: 1, Msg: "message"}
+	}
+	table.Game.Tags = make(map[string]int)
+	for i := 0; i < 22_000; i++ {
+		table.Game.Tags[fmt.Sprint("tag-", i)] = 1
+	}
+	if _, err := table.Game.WriteDatabase(snapshotGameDatabaseTable(table)); err != nil {
+		t.Fatal(err)
+	}
+	var chat, tags int
+	if err := database.QueryRow(context.Background(), `
+		SELECT (SELECT COUNT(*) FROM chat_log WHERE room = 'table42'), (SELECT COUNT(*) FROM game_tags)
+	`).Scan(&chat, &tags); err != nil || chat != len(table.Chat) || tags != len(table.Game.Tags) {
+		t.Fatalf("large completion lost records: %d, %d, %v", chat, tags, err)
 	}
 }
 

@@ -44,19 +44,13 @@ func (*ChatLog) Insert(userID int, message string, room string) (ChatLogInsertRe
 	return result, err
 }
 
-func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
-	SQLString := `
-		INSERT INTO chat_log (user_id, source, message, room)
-		VALUES %s
-	`
-	numArgsPerRow := 4
-	valueArgs := make([]interface{}, 0, numArgsPerRow*len(chatLogRows))
-	for _, chatLogRow := range chatLogRows {
-		valueArgs = append(valueArgs, chatLogRow.UserID, string(chatLogSourceForUserID(chatLogRow.UserID)), chatLogRow.Message, chatLogRow.Room)
-	}
-	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(chatLogRows))
-
-	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
+func (*ChatLog) BulkInsertTx(tx *databaseTransaction, chatLogRows []*ChatLogRow) error {
+	_, err := tx.CopyFrom(context.Background(), pgx.Identifier{"chat_log"},
+		[]string{"user_id", "source", "message", "room"},
+		pgx.CopyFromSlice(len(chatLogRows), func(i int) ([]interface{}, error) {
+			row := chatLogRows[i]
+			return []interface{}{row.UserID, string(chatLogSourceForUserID(row.UserID)), row.Message, row.Room}, nil
+		}))
 	return err
 }
 

@@ -142,6 +142,21 @@ func TestPauseChargesActivePlayerRatherThanRequester(t *testing.T) {
 	}
 }
 
+func TestFinalizingGameRejectsNoteAndTagChanges(t *testing.T) {
+	table, ctx := newTimerTestTable(t)
+	table.Ending = true
+	table.Game.Players[0].Notes = []string{"saved note"}
+	table.Game.Tags = map[string]int{"saved tag": 1}
+	session := NewFakeSession(1, "Alice")
+	commandNote(ctx, session, &CommandData{TableID: table.ID, Order: 0, Note: "late note"})
+	commandTag(ctx, session, &CommandData{TableID: table.ID, Msg: "late tag"})
+	commandTagDelete(ctx, session, &CommandData{TableID: table.ID, Msg: "saved tag"})
+	if table.Game.Players[0].Notes[0] != "saved note" ||
+		len(table.Game.Tags) != 1 || table.Game.Tags["saved tag"] != 1 {
+		t.Fatal("finalization accepted metadata changes after taking its snapshot")
+	}
+}
+
 func TestIdleTimerExpiresInactiveGame(t *testing.T) {
 	table, ctx := newTimerTestTable(t)
 	table.Lock(ctx)

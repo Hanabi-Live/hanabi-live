@@ -31,6 +31,10 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 		s.Warning(NotStartedFail)
 		return
 	}
+	if t.Ending {
+		s.Warning("The game is already ending.")
+		return
+	}
 
 	// Validate that it is not a replay
 	if t.Replay {

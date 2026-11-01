@@ -93,6 +93,12 @@ func (t *databaseTransaction) Rollback(ctx context.Context) error {
 	return t.tx.Rollback(ctx)
 }
 
+func (t *databaseTransaction) CopyFrom(ctx context.Context, table pgx.Identifier, columns []string, rows pgx.CopyFromSource) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, t.timeout)
+	defer cancel()
+	return t.tx.CopyFrom(ctx, table, columns, rows)
+}
+
 type databaseRow struct {
 	pgx.Row
 	ctx    context.Context

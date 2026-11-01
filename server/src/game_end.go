@@ -103,7 +103,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 		NumGamesOnThisSeed: numGamesOnThisSeed,
 		PlayerNames:        playerNames,
 		IncrementNumGames:  true,
-		Tags:               "", // Tags are written to the database at a later step
+		Tags:               "",
 	})
 	for _, p := range t.Players {
 		if p.Session != nil {
@@ -124,6 +124,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 type gameDatabasePlayer struct {
 	userID int
 	name   string
+	notes  []string
 }
 
 type gameDatabaseTableSnapshot struct {
@@ -140,6 +141,7 @@ func snapshotGameDatabaseTable(t *Table) *gameDatabaseTableSnapshot {
 		players[i] = gameDatabasePlayer{
 			userID: p.UserID,
 			name:   p.Name,
+			notes:  append([]string(nil), t.Game.Players[i].Notes...),
 		}
 	}
 
@@ -264,17 +266,10 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 			return 0, err
 		}
 	}
-	if err := tx.Commit(context.Background()); err != nil {
-		logger.Error("Failed to commit the game database transaction: " + err.Error())
-		return 0, err
-	}
-
 	// Next, we insert rows for each note
 	gameParticipantNotesRows := make([]*GameParticipantNotesRow, 0)
-	for _, gp := range g.Players {
-		p := tableSnapshot.players[gp.Index]
-
-		for j, note := range gp.Notes {
+	for _, p := range tableSnapshot.players {
+		for j, note := range p.notes {
 			if note == "" {
 				continue
 			}
@@ -288,19 +283,17 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		}
 	}
 	if len(gameParticipantNotesRows) > 0 {
-		if err := models.GameParticipantNotes.BulkInsert(gameParticipantNotesRows); err != nil {
+		if err := models.GameParticipantNotes.BulkInsertTx(tx, gameParticipantNotesRows); err != nil {
 			logger.Error("Failed to insert the game participants notes rows: " + err.Error())
-			// Do not return on failed note insertion,
-			// since it should not affect subsequent operations
+			return 0, err
 		}
 	}
 
 	// Next, we insert rows for each chat message (if any)
 	if len(tableSnapshot.chat) > 0 {
-		if err := models.ChatLog.BulkInsert(tableSnapshot.chat); err != nil {
+		if err := models.ChatLog.BulkInsertTx(tx, tableSnapshot.chat); err != nil {
 			logger.Error("Failed to insert the chat message rows: " + err.Error())
-			// Do not return on failed chat insertion,
-			// since it should not affect subsequent operations
+			return 0, err
 		}
 	}
 
@@ -314,11 +307,15 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		})
 	}
 	if len(gameTagsRows) > 0 {
-		if err := models.GameTags.BulkInsert(gameTagsRows); err != nil {
+		if err := models.GameTags.BulkInsertTx(tx, gameTagsRows); err != nil {
 			logger.Error("Failed to insert the tag rows: " + err.Error())
-			// Do not return on failed tag insertion,
-			// since it should not affect subsequent operations
+			return 0, err
 		}
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		logger.Error("Failed to commit the game database transaction: " + err.Error())
+		return 0, err
 	}
 
 	// Finally, we update the seeds table with the number of games played on this seed

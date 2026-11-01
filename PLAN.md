@@ -232,8 +232,9 @@ authorization.
   idempotent completed-game transactions. Action validation is separated from
   mutation. Completion retries reuse the existing primary key, without an extra
   UUID column or index. This is not continuous crash recovery: successful
-  restoration still consumes files, emergency saves bypass locks, and ancillary
-  completion writes remain best-effort.
+  restoration still consumes files and emergency saves bypass locks. Notes,
+  chat, and tags commit with the game; derived seed/statistic refreshes remain
+  best-effort.
 - Between-step audits: no TypeScript unused exports; three obsolete Go insertion
   wrappers removed. Fifteen unreachable maintenance/disabled-route helpers still
   require consumer review. Container startup works, but its administrative
