@@ -10,11 +10,10 @@ func httpLocalhostShutdown(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	if shuttingDown.IsSet() {
+	if !shutdown(NewMiscContext("shutdown")) {
 		http.Error(w, "The server is already shutting down.", http.StatusBadRequest)
 		return
 	}
 
-	shutdown(c)
 	c.String(http.StatusOK, "success\n")
 }

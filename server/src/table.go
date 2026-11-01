@@ -68,6 +68,8 @@ type Table struct {
 	idleTimerVersion uint64
 	turnTimerVersion uint64
 	snapshotSavedAt  time.Time
+	startTimer       *time.Timer
+	typingTimers     map[int]*time.Timer
 }
 
 type TableChatMessage struct {

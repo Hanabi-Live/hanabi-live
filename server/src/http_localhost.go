@@ -33,28 +33,30 @@ func httpLocalhostInit() {
 	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
 
 	// Path handlers
-	httpRouter.POST("/ban", httpLocalhostUserAction)
-	httpRouter.POST("/mute", httpLocalhostUserAction)
-	httpRouter.POST("/sendError", httpLocalhostUserAction)
-	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
-	httpRouter.POST("/sendWarningAll", httpLocalhostSendWarningAll)
+	mutations := httpRouter.Group("")
+	mutations.Use(admitAdministrativeCommand)
+	mutations.POST("/ban", httpLocalhostUserAction)
+	mutations.POST("/mute", httpLocalhostUserAction)
+	mutations.POST("/sendError", httpLocalhostUserAction)
+	mutations.POST("/sendWarning", httpLocalhostUserAction)
+	mutations.POST("/sendWarningAll", httpLocalhostSendWarningAll)
 
-	httpRouter.GET("/cancel", httpLocalhostCancel)
-	httpRouter.GET("/clearEmptyTables", httpLocalhostClearEmptyTables)
-	httpRouter.GET("/debugFunction", httpLocalhostDebugFunction)
+	mutations.GET("/cancel", httpLocalhostCancel)
+	mutations.GET("/clearEmptyTables", httpLocalhostClearEmptyTables)
+	mutations.GET("/debugFunction", httpLocalhostDebugFunction)
 	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
 	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
-	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
+	mutations.GET("/maintenance", httpLocalhostMaintenance)
 	httpRouter.GET("/memory", httpLocalhostMemory)
 	httpRouter.GET("/metrics", httpLocalhostMetrics)
 	httpRouter.GET("/print", httpLocalhostPrint)
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
-	httpRouter.GET("/shutdown", httpLocalhostShutdown)
-	httpRouter.GET("/terminate", httpLocalhostTerminate)
+	mutations.GET("/shutdown", httpLocalhostShutdown)
+	mutations.GET("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
 	httpRouter.GET("/uptime", httpLocalhostUptime)
 	httpRouter.GET("/version", httpLocalhostVersion)
-	httpRouter.GET("/unmaintenance", httpLocalhostUnmaintenance)
+	mutations.GET("/unmaintenance", httpLocalhostUnmaintenance)
 
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -69,6 +71,15 @@ func httpLocalhostInit() {
 		return
 	}
 	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
+}
+
+func admitAdministrativeCommand(c *gin.Context) {
+	if !incomingCommands.enter() {
+		c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{"error": "The server is draining for maintenance."})
+		return
+	}
+	defer incomingCommands.leave()
+	c.Next()
 }
 
 func httpLocalhostUserAction(c *gin.Context) {

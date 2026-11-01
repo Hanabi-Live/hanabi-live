@@ -4,9 +4,10 @@ import "sync"
 
 // Accepted commands hold a read lock until completion. Draining excludes new admissions.
 type commandGate struct {
-	mutex   sync.RWMutex
-	blocked bool
-	resumed chan struct{}
+	mutex      sync.RWMutex
+	blocked    bool
+	resumed    chan struct{}
+	background sync.WaitGroup
 }
 
 func (g *commandGate) enter() bool {
@@ -42,6 +43,16 @@ func (g *commandGate) drain() {
 		g.resumed = make(chan struct{})
 	}
 	g.mutex.Unlock()
+	g.background.Wait()
+}
+
+// The caller must be an admitted operation, so registration precedes draining.
+func (g *commandGate) runBackground(task func()) {
+	g.background.Add(1)
+	go func() {
+		defer g.background.Done()
+		task()
+	}()
 }
 
 func (g *commandGate) resume() {

@@ -362,8 +362,7 @@ func getTableIDFromName(ctx context.Context, tableName string) (uint64, bool) {
 }
 
 func deleteTable(t *Table) {
-	t.cancelIdleTimer()
-	t.cancelTurnTimer()
+	t.cancelTimers()
 	tables.Delete(t.ID) // It is assumed that tables.mutex is locked at this point
 	t.Deleted = true    // It is assumed that t.Mutex is locked at this point
 	notifyAllTableGone(t)

@@ -8,7 +8,7 @@ import (
 
 func httpLocalhostGracefulRestart(c *gin.Context) {
 	// We need to call this in a new goroutine or else the return string will never get sent
-	go gracefulRestart(c)
+	go gracefulRestart(NewMiscContext("gracefulRestart"))
 
 	c.String(http.StatusOK, "success\n")
 }

@@ -250,7 +250,7 @@ func tableCreate(ctx context.Context, s *Session, d *CommandData, data *SpecialG
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {
-		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
+		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit.Load())
 		minutesLeft := int(timeLeft.Minutes())
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +

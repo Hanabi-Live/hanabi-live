@@ -154,6 +154,8 @@ func sameTablePlayers(first []*Player, second []*Player) bool {
 }
 
 func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, precomputedSeed string) {
+	t.cancelStartTimer()
+
 	// Local variables
 	variant := variants[t.Options.VariantName]
 

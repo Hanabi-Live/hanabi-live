@@ -30,8 +30,7 @@ func newTimerTestTable(t *testing.T) (*Table, context.Context) {
 	ctx := NewMiscContext("test")
 	t.Cleanup(func() {
 		table.Lock(ctx)
-		table.cancelIdleTimer()
-		table.cancelTurnTimer()
+		table.cancelTimers()
 		table.Unlock(ctx)
 		tables, incomingCommands, isDev, actionFunctions = oldTables, oldGate, oldDev, oldActions
 	})

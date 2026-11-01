@@ -99,7 +99,7 @@ func chatStartIn(ctx context.Context, s *Session, d *CommandData, t *Table, cmd 
 	}
 	announcement += "."
 	chatServerSend(ctx, announcement, d.Room, d.NoTablesLock)
-	go startIn(ctx, t, timeToWait, timeToStart)
+	t.scheduleStartTimer(ctx)
 }
 
 func chatKick(ctx context.Context, s *Session, d *CommandData, t *Table, cmd string) {
@@ -370,23 +370,23 @@ func automaticStart(ctx context.Context, s *Session, d *CommandData, t *Table, n
 	}
 }
 
-// startIn is meant to be run in a goroutine
 func startIn(
 	ctx context.Context,
 	t *Table,
-	timeToWait time.Duration,
 	datetimePlannedStart time.Time,
 ) {
-	// Sleep until it is time to automatically start
-	time.Sleep(timeToWait)
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false, false)
-	if !exists || t != t2 {
+	t2, exists := getTableAndLock(ctx, nil, t.ID, true, true)
+	if !exists {
 		return
 	}
-	t.Lock(ctx)
-	defer t.Unlock(ctx)
+	defer t2.Unlock(ctx)
+	if t != t2 {
+		return
+	}
 
 	// Check to see if the game has already started
 	if t.Running {
@@ -397,6 +397,7 @@ func startIn(
 	if datetimePlannedStart != t.DatetimePlannedStart {
 		return
 	}
+	t.startTimer = nil
 
 	// Check to see if the owner is present
 	for _, p := range t.Players {

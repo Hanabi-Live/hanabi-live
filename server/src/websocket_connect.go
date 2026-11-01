@@ -303,7 +303,7 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown.IsSet(),
-		DatetimeShutdownInit: datetimeShutdownInit,
+		DatetimeShutdownInit: datetimeShutdownInit.Load(),
 		MaintenanceMode:      maintenanceMode.IsSet(),
 	})
 }

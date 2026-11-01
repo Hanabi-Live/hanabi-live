@@ -4,42 +4,60 @@ import (
 	"context"
 	"runtime"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/tevino/abool"
+	"go.uber.org/atomic"
 )
 
 var (
 	shuttingDown         = abool.New()
-	datetimeShutdownInit time.Time
+	datetimeShutdownInit = atomic.NewTime(time.Time{})
+	shutdownStateMutex   sync.Mutex
 )
 
-func shutdown(ctx context.Context) {
+func shutdown(ctx context.Context) bool {
+	shutdownStateMutex.Lock()
+	defer shutdownStateMutex.Unlock()
+	if shuttingDown.IsSet() {
+		return false
+	}
+	startedAt := time.Now()
+	datetimeShutdownInit.Store(startedAt)
 	shuttingDown.Set()
-	datetimeShutdownInit = time.Now()
 
 	numGames := countActiveTables(ctx)
 	logger.Info("Initiating a graceful server shutdown (with " + strconv.Itoa(numGames) +
 		" active games).")
 	if numGames == 0 {
-		shutdownImmediate(ctx)
+		go shutdownImmediate(ctx, startedAt)
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
 		chatServerSendAll(ctx, "The server will shutdown in "+numMinutes+" minutes.")
-		go shutdownXMinutesLeft(ctx, 5)
-		go shutdownXMinutesLeft(ctx, 10)
-		go shutdownWait(ctx)
+		go shutdownXMinutesLeft(ctx, 5, startedAt)
+		go shutdownXMinutesLeft(ctx, 10, startedAt)
+		go shutdownWait(ctx, startedAt)
 	}
+	return true
 }
 
-func shutdownXMinutesLeft(ctx context.Context, minutesLeft int) {
-	time.Sleep(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)
+func shutdownIsCurrent(startedAt time.Time) bool {
+	return shuttingDown.IsSet() && datetimeShutdownInit.Load().Equal(startedAt)
+}
+
+func shutdownXMinutesLeft(ctx context.Context, minutesLeft int, startedAt time.Time) {
+	time.Sleep(time.Until(startedAt.Add(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)))
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
+	shutdownStateMutex.Lock()
+	defer shutdownStateMutex.Unlock()
 
 	// Do nothing if the shutdown was canceled
-	if shuttingDown.IsNotSet() {
+	if !shutdownIsCurrent(startedAt) {
 		return
 	}
 
@@ -82,9 +100,9 @@ func terminateAllUnstartedTables(ctx context.Context) {
 	}
 }
 
-func shutdownWait(ctx context.Context) {
+func shutdownWait(ctx context.Context, startedAt time.Time) {
 	for {
-		if shutdownWaitSub(ctx) {
+		if shutdownWaitSub(ctx, startedAt) {
 			break
 		}
 
@@ -94,8 +112,8 @@ func shutdownWait(ctx context.Context) {
 
 // shutdownWaitSub runs at an interval while the server is waiting to shutdown
 // It returns whether or not to break out of the infinite loop
-func shutdownWaitSub(ctx context.Context) bool {
-	if shuttingDown.IsNotSet() {
+func shutdownWaitSub(ctx context.Context, startedAt time.Time) bool {
+	if !shutdownIsCurrent(startedAt) {
 		logger.Info("The shutdown was aborted.")
 		return true
 	}
@@ -106,7 +124,7 @@ func shutdownWaitSub(ctx context.Context) bool {
 		// Wait 10 seconds so that the players are not immediately booted upon finishing
 		time.Sleep(time.Second * 10)
 
-		if shuttingDown.IsNotSet() {
+		if !shutdownIsCurrent(startedAt) {
 			logger.Info("The shutdown was aborted.")
 			return true
 		}
@@ -114,11 +132,20 @@ func shutdownWaitSub(ctx context.Context) bool {
 			return false
 		}
 		logger.Info("There are 0 active tables left.")
-		shutdownImmediate(ctx)
+		shutdownImmediate(ctx, startedAt)
 		return true
 	}
 
-	if numActiveTables > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
+	if numActiveTables > 0 && time.Since(startedAt) >= ShutdownTimeout {
+		if !incomingCommands.enter() {
+			return false
+		}
+		defer incomingCommands.leave()
+		shutdownStateMutex.Lock()
+		defer shutdownStateMutex.Unlock()
+		if !shutdownIsCurrent(startedAt) {
+			return true
+		}
 		// It has been a long time since the server shutdown/restart was initiated,
 		// so automatically terminate any remaining ongoing games
 		terminateAllStartedTables(ctx)
@@ -160,13 +187,20 @@ func countActiveTables(ctx context.Context) int {
 	return numTables
 }
 
-func shutdownImmediate(ctx context.Context) {
+func shutdownImmediate(ctx context.Context, startedAt time.Time) {
 	serverLifecycleMutex.Lock()
 	defer serverLifecycleMutex.Unlock()
+	if !shutdownIsCurrent(startedAt) {
+		return
+	}
 
 	logger.Info("Initiating an immediate server shutdown.")
 
 	waitForAllWebSocketCommandsToFinish()
+	if !shutdownIsCurrent(startedAt) {
+		resumeIncomingCommands(ctx)
+		return
+	}
 
 	sessionList := sessions.GetList()
 	for _, s := range sessionList {
@@ -190,6 +224,8 @@ func shutdownImmediate(ctx context.Context) {
 }
 
 func cancel(ctx context.Context) {
+	shutdownStateMutex.Lock()
+	defer shutdownStateMutex.Unlock()
 	shuttingDown.UnSet()
 	notifyAllShutdown()
 	chatServerSendAll(ctx, "Server shutdown has been canceled.")
@@ -200,7 +236,7 @@ func checkImminentShutdown(s *Session) bool {
 		return false
 	}
 
-	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
+	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit.Load())
 	minutesLeft := int(timeLeft.Minutes())
 	if minutesLeft <= 5 {
 		msg := "The server is shutting down "

@@ -90,6 +90,8 @@ func discordConnect() {
 
 	// Announce that the server has started
 	// (we wait for Discord to connect before displaying this message)
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + " " +
 		"(" + gitCommitOnStart + ")"
 	// Send once this message to website-development as well
@@ -109,6 +111,9 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
+
 	// Do not do anything if we are not yet connected
 	if discordIsReady.IsNotSet() {
 		return
@@ -187,6 +192,9 @@ func discordLobbyDeletionIDs(channelID string, lobbyChannelID string, ids []stri
 }
 
 func discordDeleteMessages(channelID string, ids []string) {
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
+
 	if discordIsReady.IsNotSet() {
 		return
 	}

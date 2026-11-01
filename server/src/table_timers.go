@@ -30,6 +30,44 @@ func (t *Table) cancelTurnTimer() {
 	}
 }
 
+func (t *Table) cancelStartTimer() {
+	if t.startTimer != nil {
+		t.startTimer.Stop()
+		t.startTimer = nil
+	}
+	t.DatetimePlannedStart = time.Time{}
+}
+
+func (t *Table) cancelTypingTimer(userID int) {
+	if timer := t.typingTimers[userID]; timer != nil {
+		timer.Stop()
+		delete(t.typingTimers, userID)
+	}
+}
+
+func (t *Table) cancelTimers() {
+	t.cancelIdleTimer()
+	t.cancelTurnTimer()
+	t.cancelStartTimer()
+	for userID := range t.typingTimers {
+		t.cancelTypingTimer(userID)
+	}
+}
+
+func (t *Table) scheduleStartTimer(ctx context.Context) {
+	if t.startTimer != nil {
+		t.startTimer.Stop()
+	}
+	planned := t.DatetimePlannedStart
+	if t.Deleted || t.Running || planned.IsZero() {
+		t.startTimer = nil
+		return
+	}
+	t.startTimer = time.AfterFunc(time.Until(planned), func() {
+		startIn(ctx, t, planned)
+	})
+}
+
 func (t *Table) scheduleIdleTimer(ctx context.Context) {
 	t.cancelIdleTimer()
 	if isDev || t.Deleted || t.Ending || t.DatetimeLastAction.IsZero() {

@@ -171,7 +171,7 @@ func (s *Session) NotifyShutdown() {
 	}
 	s.Emit("shutdown", &ShutdownMessage{
 		ShuttingDown:         shuttingDown.IsSet(),
-		DatetimeShutdownInit: datetimeShutdownInit,
+		DatetimeShutdownInit: datetimeShutdownInit.Load(),
 	})
 }
 

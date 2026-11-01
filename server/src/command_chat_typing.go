@@ -68,32 +68,42 @@ func chatTyping(ctx context.Context, s *Session, t *Table, playerIndex int, spec
 		t.NotifyChatTyping(name, true)
 	}
 
-	// X seconds from now, check to see if they have stopped typing
-	go chatTypingCheckStopped(ctx, t, s.UserID)
+	userID := s.UserID
+	t.cancelTypingTimer(userID)
+	if t.typingTimers == nil {
+		t.typingTimers = make(map[int]*time.Timer)
+	}
+	t.typingTimers[userID] = time.AfterFunc(TypingDelay, func() {
+		chatTypingCheckStopped(ctx, t, userID)
+	})
 }
 
-// chatTypingCheckStopped is meant to be run in a new goroutine
 func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
-	time.Sleep(TypingDelay)
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
 
 	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
-	if !exists || t != t2 {
+	t2, exists := getTableAndLock(ctx, nil, t.ID, true, true)
+	if !exists {
 		return
 	}
-	t.Lock(ctx)
-	defer t.Unlock(ctx)
+	defer t2.Unlock(ctx)
+	if t != t2 {
+		return
+	}
 
 	// Validate that they are in the game or are a spectator
 	playerIndex := t.GetPlayerIndexFromID(userID)
 	spectatorIndex := t.GetSpectatorIndexFromID(userID)
 	if !t.IsPlayerOrSpectating(userID) {
+		t.cancelTypingTimer(userID)
 		// They left the game shortly after they started typing
 		// The "typing" message is automatically removed when a player leaves a table,
 		// so we do not have to do anything
 		return
 	}
 	if !t.IsActivelySpectating(userID) && t.Replay {
+		t.cancelTypingTimer(userID)
 		// Same as above
 		return
 	}
@@ -103,6 +113,7 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	if spectatorIndex != -1 {
 		sp := t.Spectators[spectatorIndex]
 		if !sp.Typing {
+			t.cancelTypingTimer(userID)
 			return
 		}
 		if time.Since(sp.LastTyped) >= TypingDelay {
@@ -112,6 +123,7 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	} else if playerIndex != -1 {
 		p := t.Players[playerIndex]
 		if !p.Typing {
+			t.cancelTypingTimer(userID)
 			return
 		}
 		if time.Since(p.LastTyped) >= TypingDelay {
@@ -121,6 +133,7 @@ func chatTypingCheckStopped(ctx context.Context, t *Table, userID int) {
 	}
 
 	if name != "" {
+		t.cancelTypingTimer(userID)
 		// They have not typed anything for X seconds, so assume that they are finished typing
 		t.NotifyChatTyping(name, false)
 	}

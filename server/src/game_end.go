@@ -321,7 +321,9 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 	}
 
 	// We also need to update stats in the database, but that can be done in the background
-	go g.WriteDatabaseStats(tableSnapshot.players)
+	incomingCommands.runBackground(func() {
+		g.WriteDatabaseStats(tableSnapshot.players)
+	})
 
 	logger.Info("Finished core database actions for table " +
 		strconv.FormatUint(tableSnapshot.tableID, 10) +

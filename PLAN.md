@@ -271,9 +271,8 @@ WebSocket draining now uses one admission gate instead of a separate atomic flag
 and wait-group increment. A restart waits for admitted commands before blocking
 subsequent dispatch, and failed snapshot/restart operations resume admission.
 Restart and immediate-shutdown operations are serialized so one failure cannot
-reopen admission during another operation's snapshot. This does not yet drain
-Discord activity or other administrative mutations; full lifecycle ownership
-remains unfinished.
+reopen admission during another operation's snapshot. Planned restarts drain
+active mutation paths and registered background database work.
 
 ### Phase 1: Strengthen Go
 
