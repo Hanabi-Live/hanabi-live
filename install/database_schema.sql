@@ -4,8 +4,8 @@
  * - Initializing the database is accomplished in the "install_database_schema.sh" script.
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
- * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and
- *   constraints, so we only have to explicitly create a few indexes.
+ * - PostgreSQL automatically creates indexes for primary keys and unique constraints, but not
+ *   foreign keys. Add other indexes explicitly to support query patterns.
  * - PostgreSQL automatically handles Unicode text, emojis, and so forth.
  * - "ON DELETE CASCADE" means that if the parent row is deleted, the child row will also be
  *   automatically deleted.
@@ -197,6 +197,7 @@ CREATE TABLE game_participants (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)
 );
+CREATE INDEX game_participants_index_user_id_game_id ON game_participants (user_id, game_id);
 
 DROP FUNCTION IF EXISTS delete_game_of_deleted_participant;
 CREATE FUNCTION delete_game_of_deleted_participant() RETURNS TRIGGER AS $_$
