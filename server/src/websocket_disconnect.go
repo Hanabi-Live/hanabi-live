@@ -9,6 +9,9 @@ import (
 )
 
 func websocketDisconnect(ms *melody.Session) {
+	incomingCommands.enterDeferred()
+	defer incomingCommands.leave()
+
 	s := getSessionFromMelodySession(ms)
 	if s == nil {
 		return
@@ -23,7 +26,9 @@ func websocketDisconnect(ms *melody.Session) {
 	sessions.ConnectMutex.Lock()
 	defer sessions.ConnectMutex.Unlock()
 
-	websocketDisconnectRemoveFromMap(s)
+	if !websocketDisconnectRemoveFromMap(s) {
+		return
+	}
 	websocketDisconnectRemoveFromGames(ctx, s)
 
 	// Alert everyone that a user has logged out
@@ -32,10 +37,13 @@ func websocketDisconnect(ms *melody.Session) {
 	logger.Info("Exited the \"websocketDisconnect()\" function for user: " + s.Username)
 }
 
-func websocketDisconnectRemoveFromMap(s *Session) {
-	sessions.Delete(s.UserID)
+func websocketDisconnectRemoveFromMap(s *Session) bool {
+	if !sessions.DeleteIfCurrent(s) {
+		return false
+	}
 	logger.Info("User \"" + s.Username + "\" disconnected; " +
 		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
+	return true
 }
 
 type spectatorData struct {

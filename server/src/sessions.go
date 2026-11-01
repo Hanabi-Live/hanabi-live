@@ -44,10 +44,14 @@ func (ss *Sessions) Set(userID int, s *Session) {
 	ss.mutex.Unlock()
 }
 
-func (ss *Sessions) Delete(userID int) {
+func (ss *Sessions) DeleteIfCurrent(session *Session) bool {
 	ss.mutex.Lock()
-	delete(ss.sessions, userID)
-	ss.mutex.Unlock()
+	defer ss.mutex.Unlock()
+	if ss.sessions[session.UserID] != session {
+		return false
+	}
+	delete(ss.sessions, session.UserID)
+	return true
 }
 
 func (ss *Sessions) Length() int {

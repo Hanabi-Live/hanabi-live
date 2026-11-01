@@ -36,6 +36,14 @@ type WebsocketConnectData struct {
 // websocketConnect is fired when a new Melody WebSocket session is established
 // This is the third step of logging in; users will only get here if authentication was successful
 func websocketConnect(ms *melody.Session) {
+	if !incomingCommands.enter() {
+		if err := ms.Close(); err != nil {
+			logger.Info("Failed to close a connection rejected during maintenance.")
+		}
+		return
+	}
+	defer incomingCommands.leave()
+
 	sessionID, userID, username, success := websocketGetKeyValues(ms)
 	if !success {
 		return
@@ -56,6 +64,13 @@ func websocketConnect(ms *melody.Session) {
 	// Next, perform all the expensive database retrieval to gather the data we need
 	// We want to do this before we start locking any mutexes (to minimize the lock time)
 	data := websocketConnectGetData(ctx, ms, userID, username)
+	if data == nil {
+		s.Error("The server could not initialize your connection. Please try again.")
+		if err := ms.Close(); err != nil {
+			logger.Info("Failed to close an incompletely initialized connection.")
+		}
+		return
+	}
 	data.ConnectionMode = websocketConnectionMode(ms.Request)
 
 	// Attach the new data to the session object
@@ -84,16 +99,17 @@ func websocketConnect(ms *melody.Session) {
 		// but the disconnection event will be fired in another goroutine
 		// Thus, we need to manually clean up the user from the global session map and any ongoing
 		// games
-		websocketDisconnectRemoveFromMap(s2)
-		websocketDisconnectRemoveFromGames(ctx, s2)
+		if websocketDisconnectRemoveFromMap(s2) {
+			websocketDisconnectRemoveFromGames(ctx, s2)
+		}
 	}
-
-	go websocketConnectMessages(ctx, s, data)
 
 	// Add the session to a map so that we can keep track of all of the connected users
 	sessions.Set(s.UserID, s)
 	logger.Info("User \"" + s.Username + "\" connected; " +
 		strconv.Itoa(sessions.Length()) + " user(s) now connected.")
+
+	go websocketConnectMessages(ctx, s, data)
 
 	// Alert everyone that a new user has logged in
 	notifyAllUser(s)
@@ -134,7 +150,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	if v, _, err := net.SplitHostPort(ms.Request.RemoteAddr); err != nil {
 		logger.Error("Failed to parse the IP address from \"" + ms.Request.RemoteAddr + "\": " +
 			err.Error())
-		return data
+		return nil
 	} else {
 		ip = v
 	}
@@ -142,7 +158,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Check to see if their IP is muted
 	if v, err := models.MutedIPs.Check(ip); err != nil {
 		logger.Error("Failed to check to see if the IP \"" + ip + "\" is muted: " + err.Error())
-		return data
+		return nil
 	} else {
 		data.Muted = v
 	}
@@ -150,7 +166,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Get their friends
 	if v, err := models.UserFriends.GetMap(userID); err != nil {
 		logger.Error("Failed to get the friends map for user \"" + username + "\": " + err.Error())
-		return data
+		return nil
 	} else {
 		data.Friends = v
 	}
@@ -159,7 +175,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
 		logger.Error("Failed to get the reverse friends map for user \"" + username + "\": " +
 			err.Error())
-		return data
+		return nil
 	} else {
 		data.ReverseFriends = v
 	}
@@ -168,7 +184,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
 		logger.Error("Failed to get the Hyphenated setting for user \"" + username + "\": " +
 			err.Error())
-		return data
+		return nil
 	} else {
 		data.Hyphenated = v
 	}
@@ -181,7 +197,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	var datetimeCreated time.Time
 	if v, err := models.Users.GetDatetimeCreated(userID); err != nil {
 		logger.Error("Failed to get the join date for user \"" + username + "\": " + err.Error())
-		return data
+		return nil
 	} else {
 		datetimeCreated = v
 	}
@@ -191,7 +207,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	if v, err := models.Games.GetUserNumGames(userID, true); err != nil {
 		logger.Error("Failed to get the number of games played for user \"" + username + "\": " +
 			err.Error())
-		return data
+		return nil
 	} else {
 		data.TotalGames = v
 	}
@@ -199,7 +215,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Get their settings from the database
 	if v, err := models.UserSettings.Get(userID); err != nil {
 		logger.Error("Failed to get the settings for user \"" + username + "\": " + err.Error())
-		return data
+		return nil
 	} else {
 		data.Settings = v
 	}
@@ -207,7 +223,7 @@ func websocketConnectGetData(ctx context.Context, ms *melody.Session, userID int
 	// Get their friends from the database
 	if v, err := models.UserFriends.GetAllUsernames(userID); err != nil {
 		logger.Error("Failed to get the friends for user \"" + username + "\": " + err.Error())
-		return data
+		return nil
 	} else {
 		data.FriendsList = v
 	}

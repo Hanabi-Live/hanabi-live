@@ -153,7 +153,7 @@ func (ts *Tables) DeletePlaying(userID int, tableID uint64) {
 func (ts *Tables) GetTablesUserPlaying(userID int) []uint64 {
 	// It is assumed that the tables mutex is locked when calling this function
 	if tablesList, ok := ts.playing[userID]; ok {
-		return tablesList
+		return append([]uint64(nil), tablesList...)
 	}
 	return make([]uint64, 0)
 }
