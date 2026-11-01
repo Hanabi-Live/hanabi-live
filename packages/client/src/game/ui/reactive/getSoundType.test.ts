@@ -63,7 +63,7 @@ function soundAfterPlayingCluedOne(
     return stillUnplayed.includes(index as SuitIndex)
       ? []
       : [50 as CardOrder];
-  }) as GameState["playStacks"];
+  }) as unknown as GameState["playStacks"];
   const startingState = getInitialGameState(metadata);
   const previousGameState: GameState = {
     ...startingState,
@@ -95,7 +95,7 @@ function soundAfterPlayingCluedOne(
     hands: [[], [1 as CardOrder]],
     playStacks: beforeStacks.map((stack, index) =>
       index === playedSuitIndex ? [...stack, 0 as CardOrder] : stack,
-    ) as GameState["playStacks"],
+    ) as unknown as GameState["playStacks"],
     turn: { ...previousGameState.turn, currentPlayerIndex: 0 as PlayerIndex },
   };
   const action: ActionPlay = {
