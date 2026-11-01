@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sasha-s/go-deadlock"
 )
 
 func snapshotTestTable() *Table {
@@ -21,6 +22,7 @@ func snapshotTestTable() *Table {
 	t := &Table{
 		ID: 42, Running: true, Game: g, Options: g.Options, ExtraOptions: g.ExtraOptions,
 		Players: []*Player{{UserID: 1, Name: "Alice", Present: true}, {UserID: 2, Name: "Bob", Present: true}},
+		mutex:   &deadlock.Mutex{},
 	}
 	g.Table = t
 	for i, card := range g.Deck {
@@ -70,6 +72,9 @@ func TestTableSnapshotRoundTrip(t *testing.T) {
 				t.Fatal(err)
 			}
 			g := restored.Game
+			if restored.snapshotSavedAt.IsZero() != legacy {
+				t.Fatal("snapshot time did not preserve the legacy/versioned distinction")
+			}
 			if !reflect.DeepEqual(g.Actions, original.Game.Actions) {
 				t.Fatalf("restored actions lost types or values: %#v", g.Actions)
 			}
@@ -102,6 +107,7 @@ func TestTableSnapshotRejectsInvalidState(t *testing.T) {
 		{"missing options", func(table *Table) { table.Options = nil }},
 		{"missing player", func(table *Table) { table.Players[0] = nil }},
 		{"invalid active player", func(table *Table) { table.Game.ActivePlayerIndex = 2 }},
+		{"missing clock start", func(table *Table) { table.Game.StartedTimer = true }},
 		{"mismatched player index", func(table *Table) { table.Game.Players[0].Index = 1 }},
 		{"missing identity", func(table *Table) { table.Game.CardIdentities[0] = nil }},
 		{"missing hand card", func(table *Table) { table.Game.Players[0].Hand[0] = nil }},

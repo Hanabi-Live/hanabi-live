@@ -113,7 +113,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	// Start the idle timeout
 	// (but do not update the idle variable if we are ending the game)
 	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
-		go t.CheckIdle(ctx)
+		t.recordActivity(ctx)
 	}
 
 	// Do different tasks depending on the action
@@ -125,6 +125,10 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 		s.Warning("That is not a valid action type.")
 		g.InvalidActionOccurred = true
 		return
+	}
+
+	if d.Type != ActionTypeEndGame && d.Type != ActionTypeEndGameByVote {
+		g.StartedTimer = true
 	}
 
 	// Do post-action tasks
@@ -215,7 +219,7 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
-		go g.CheckTimer(ctx, nextPlayer.Time, g.Turn, g.PauseCount, nextPlayer)
+		g.scheduleTurnTimer(ctx)
 
 		// If the next player queued a pause command, then pause the game
 		if nextPlayer.RequestedPause {

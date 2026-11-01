@@ -70,7 +70,7 @@ func commandReplayAction(ctx context.Context, s *Session, d *CommandData) {
 
 func replayAction(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Start the idle timeout
-	go t.CheckIdle(ctx)
+	t.recordActivity(ctx)
 
 	// Do different tasks depending on the action
 	if replayActionFunction, ok := replayActionFunctions[d.Type]; ok {

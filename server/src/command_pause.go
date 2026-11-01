@@ -102,6 +102,7 @@ func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerInde
 
 	if d.Setting == "pause" {
 		g.Paused = true
+		t.cancelTurnTimer()
 		g.PausePlayerIndex = playerIndex
 		g.PauseCount++
 
@@ -115,11 +116,7 @@ func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerInde
 		// but this variable is only used for decrementing time taken at the end of a player's turn
 		g.DatetimeTurnBegin = time.Now()
 
-		// Restart the function that will check to see if the current player has run out of time
-		// (the old "CheckTimer()" invocation will return and do nothing because the pause count of
-		// the game will not match)
-		activePlayer := g.Players[g.ActivePlayerIndex]
-		go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
+		g.scheduleTurnTimer(ctx)
 	}
 
 	t.NotifyPause()

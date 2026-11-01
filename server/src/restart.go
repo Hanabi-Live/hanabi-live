@@ -38,7 +38,7 @@ func gracefulRestart(ctx context.Context) {
 
 	logger.Info("Serializing the tables and writing all tables to disk...")
 	if !serializeTables() {
-		incomingCommands.resume()
+		abortRestart(ctx)
 		return
 	}
 	logger.Info("Finished writing all tables to disk.")
@@ -65,8 +65,17 @@ func gracefulRestart(ctx context.Context) {
 		logger.Info("Restarting...")
 		if err := executeScript("restart_service_only.sh"); err != nil {
 			logger.Error("Failed to execute the \"restart_service_only.sh\" script: " + err.Error())
-			incomingCommands.resume()
+			abortRestart(ctx)
 			return
 		}
 	}
+}
+
+func abortRestart(ctx context.Context) {
+	// Restart-only snapshots become stale once gameplay resumes.
+	if err := discardTableSnapshots(tablesPath); err != nil {
+		logger.Error("Failed to discard aborted restart snapshots; commands remain paused: " + err.Error())
+		return
+	}
+	resumeIncomingCommands(ctx)
 }

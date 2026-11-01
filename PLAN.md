@@ -272,8 +272,8 @@ and wait-group increment. A restart waits for admitted commands before blocking
 subsequent dispatch, and failed snapshot/restart operations resume admission.
 Restart and immediate-shutdown operations are serialized so one failure cannot
 reopen admission during another operation's snapshot. This does not yet drain
-timer callbacks, connection callbacks, Discord activity, or other administrative
-mutations; full lifecycle ownership remains unfinished.
+connection callbacks, Discord activity, or other administrative mutations; full
+lifecycle ownership remains unfinished.
 
 ### Phase 1: Strengthen Go
 

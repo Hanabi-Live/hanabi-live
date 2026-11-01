@@ -13,6 +13,7 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	// Local variables
 	t := g.Table
 
+	t.cancelTurnTimer()
 	g.DatetimeFinished = time.Now()
 	if g.EndCondition > EndConditionNormal {
 		g.Score = 0

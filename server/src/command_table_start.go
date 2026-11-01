@@ -174,7 +174,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 	g := NewGame(t)
 
 	// Start the idle timeout
-	go t.CheckIdle(ctx)
+	t.recordActivity(ctx)
 
 	g.InitDeck()
 
@@ -349,7 +349,7 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 		}
 	}
 
-	// The "CheckTimer()" function will be called when the starting player has finished loading
+	// The turn timer starts when the starting player has finished loading.
 }
 
 func emulateActions(ctx context.Context, s *Session, d *CommandData, t *Table) {

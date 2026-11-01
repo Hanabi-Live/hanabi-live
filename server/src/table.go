@@ -62,6 +62,12 @@ type Table struct {
 
 	// Each table has its own mutex to ensure that only one action can occur at the same time
 	mutex *deadlock.Mutex
+
+	idleTimer        *time.Timer
+	turnTimer        *time.Timer
+	idleTimerVersion uint64
+	turnTimerVersion uint64
+	snapshotSavedAt  time.Time
 }
 
 type TableChatMessage struct {
@@ -157,37 +163,6 @@ func (t *Table) RecordReplayChatActivity(msg *TableChatMessage) bool {
 	return true
 }
 
-// CheckIdle is meant to be called in a new goroutine
-func (t *Table) CheckIdle(ctx context.Context) {
-	// Disable idle timeouts in development
-	if isDev {
-		return
-	}
-
-	// Set the last action
-	t.Lock(ctx)
-	t.DatetimeLastAction = time.Now()
-	t.Unlock(ctx)
-
-	// We want to clean up idle games, so sleep for a reasonable amount of time
-	time.Sleep(IdleGameTimeout)
-
-	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
-	if !exists || t != t2 {
-		return
-	}
-	t.Lock(ctx)
-	defer t.Unlock(ctx)
-
-	// Do not do anything if there has been an action in the meantime
-	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
-		return
-	}
-
-	t.EndIdle(ctx)
-}
-
 // EndIdle is called when a table has been idle for a while and should be automatically ended
 // The table lock is assumed to be acquired in this function
 func (t *Table) EndIdle(ctx context.Context) {
@@ -212,7 +187,7 @@ func (t *Table) EndIdle(ctx context.Context) {
 			// They might be in the process of reconnecting,
 			// so make a fake session that will represent them
 			s = NewFakeSession(sp.UserID, sp.Name)
-			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
+			logger.Info("Created a new fake session in the \"EndIdle()\" function.")
 		}
 		commandTableUnattend(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID:      t.ID,

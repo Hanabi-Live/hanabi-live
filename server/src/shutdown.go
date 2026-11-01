@@ -185,7 +185,7 @@ func shutdownImmediate(ctx context.Context) {
 		logger.Error("Failed to execute the \"stop.sh\" script: " + err.Error())
 		shuttingDown.UnSet()
 		notifyAllShutdown()
-		incomingCommands.resume()
+		resumeIncomingCommands(ctx)
 	}
 }
 
@@ -220,7 +220,7 @@ func checkImminentShutdown(s *Session) bool {
 }
 
 func waitForAllWebSocketCommandsToFinish() {
-	logger.Info("Waiting for all ongoing WebSocket commands to finish execution...")
+	logger.Info("Waiting for all ongoing WebSocket commands and timers to finish execution...")
 	incomingCommands.drain()
-	logger.Info("All WebSocket commands have completed.")
+	logger.Info("All WebSocket commands and timers have completed.")
 }

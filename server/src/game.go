@@ -159,51 +159,6 @@ func NewGame(t *Table) *Game {
 	Major functions
 */
 
-// CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(
-	ctx context.Context,
-	timeToSleep time.Duration,
-	turn int,
-	pauseCount int,
-	gp *GamePlayer,
-) {
-	// Sleep until the active player runs out of time
-	time.Sleep(timeToSleep)
-
-	// Local variables
-	t := g.Table
-
-	// Check to see if the table still exists
-	t2, exists := getTableAndLock(ctx, nil, t.ID, false, true)
-	if !exists || t != t2 {
-		return
-	}
-	t.Lock(ctx)
-	defer t.Unlock(ctx)
-
-	// Check to see if we have made a move in the meanwhile
-	if turn != g.Turn {
-		return
-	}
-
-	// Check to see if the game is currently paused
-	if g.Paused {
-		return
-	}
-
-	// Check to see if the game was paused while we were sleeping
-	if pauseCount != g.PauseCount {
-		return
-	}
-
-	// Check to see if the game ended already
-	if g.EndCondition > EndConditionInProgress {
-		return
-	}
-
-	g.EndTimer(ctx, gp)
-}
-
 // EndTimer is called when a player has run out of time in a timed game, which will automatically
 // end the game with a score of 0
 // The table lock is assumed to be acquired in this function
@@ -224,7 +179,7 @@ func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
 		s = NewFakeSession(p.UserID, p.Name)
-		logger.Info("Created a new fake session in the \"CheckTimer()\" function.")
+		logger.Info("Created a new fake session in the \"EndTimer()\" function.")
 	}
 
 	// End the game

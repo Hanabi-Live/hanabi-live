@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/sasha-s/go-deadlock"
@@ -14,17 +17,21 @@ import (
 
 const tableSnapshotVersion = 1
 
+var snapshotFilesMutex sync.Mutex
+
 func encodeTableSnapshot(t *Table) ([]byte, error) {
 	// Keep table fields at the top level so older servers can still read this format.
 	return json.Marshal(struct {
 		SnapshotVersion int
+		SavedAt         time.Time
 		*Table
-	}{tableSnapshotVersion, t})
+	}{tableSnapshotVersion, time.Now(), t})
 }
 
 func decodeTableSnapshot(data []byte) (*Table, error) {
 	var metadata struct {
 		SnapshotVersion int
+		SavedAt         time.Time
 		Game            *struct {
 			Actions []json.RawMessage
 		}
@@ -51,6 +58,9 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 		t.Options.NumPlayers != len(t.Players) || g.ActivePlayerIndex < 0 || g.ActivePlayerIndex >= len(g.Players) {
 		return nil, errors.New("table snapshot has invalid players")
 	}
+	if g.StartedTimer && g.DatetimeTurnBegin.IsZero() {
+		return nil, errors.New("table snapshot has no start time for its running clock")
+	}
 	if g.DeckIndex < 0 || g.DeckIndex > len(g.Deck) || len(g.Deck) != len(g.CardIdentities) {
 		return nil, errors.New("table snapshot has an invalid deck")
 	}
@@ -68,6 +78,7 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 		t.ChatRead = make(map[int]int)
 	}
 	t.mutex = &deadlock.Mutex{}
+	t.snapshotSavedAt = metadata.SavedAt
 	g.Table, g.Options, g.ExtraOptions = t, t.Options, t.ExtraOptions
 	if g.Tags == nil {
 		g.Tags = make(map[string]int)
@@ -181,6 +192,31 @@ func writeTableSnapshot(filename string, data []byte) error {
 	if err := os.Rename(file.Name(), filename); err != nil {
 		return err
 	}
+	return syncSnapshotDirectory(directory)
+}
+
+func discardTableSnapshots(directory string) error {
+	snapshotFilesMutex.Lock()
+	defer snapshotFilesMutex.Unlock()
+
+	files, err := os.ReadDir(directory)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
+			if err := os.Remove(filepath.Join(directory, file.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return syncSnapshotDirectory(directory)
+}
+
+func syncSnapshotDirectory(directory string) error {
 	// Directory syncing is not supported on Windows.
 	if runtime.GOOS != "windows" {
 		dir, err := os.Open(directory)

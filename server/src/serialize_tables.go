@@ -15,6 +15,9 @@ import (
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
 func serializeTables() bool {
+	snapshotFilesMutex.Lock()
+	defer snapshotFilesMutex.Unlock()
+
 	tableList := tables.GetList(true)
 	for _, t := range tableList {
 		// t.Lock()
@@ -114,22 +117,16 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 		return false
 	}
 	g := t.Game
+	t.Lock(ctx)
+	defer t.Unlock(ctx)
 
 	for _, p := range t.Players {
 		// Restore the player relationships
 		tables.AddPlaying(p.UserID, t.ID)
 	}
 
-	if g.Options.Timed {
-		// Give the current player some additional seconds to make up for the fact that they are
-		// forced to refresh
-		g.Players[g.ActivePlayerIndex].Time += 20 * time.Second
-
-		// Players will never run out of time on restored tables because the "CheckTimer()"
-		// function was never initiated; manually do this
-		activePlayer := g.Players[g.ActivePlayerIndex]
-		go g.CheckTimer(ctx, activePlayer.Time, g.Turn, g.PauseCount, activePlayer)
-	}
+	restoreTableClock(t, time.Now())
+	g.scheduleTurnTimer(ctx)
 
 	tables.Set(t.ID, t)
 	logger.Info(t.GetName() + "Restored table.")
@@ -138,9 +135,7 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 		logger.Fatal("Failed to delete \"" + tablePath + "\": " + err.Error())
 	}
 
-	// Restored tables will never be automatically terminated due to idleness because the
-	// "CheckIdle()" function was never initiated; manually do this
-	go t.CheckIdle(ctx)
+	t.recordActivity(ctx)
 
 	return true
 }

@@ -246,7 +246,7 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 	// Chat is activity in a shared replay, even if the leader has not moved the replay.
 	// The table lock is already held, so refresh the timestamp before the idle checker wakes.
 	if t.RecordReplayChatActivity(chatMsg) {
-		go t.CheckIdle(ctx)
+		t.scheduleIdleTimer(ctx)
 	}
 
 	// Send it to all of the players and spectators

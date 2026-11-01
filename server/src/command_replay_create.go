@@ -222,7 +222,7 @@ func replayCreate(ctx context.Context, s *Session, d *CommandData) {
 	t.OwnerUsername = s.Username
 
 	// Start the idle timeout
-	go t.CheckIdle(ctx)
+	t.recordActivity(ctx)
 
 	// The "commandTableSpectate()" function above sends the user the "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
