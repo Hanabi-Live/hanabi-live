@@ -23,7 +23,7 @@ The production server is `root@hanab.live`, with the repository at
 ### Deploying
 
 1. Pull the latest code on the server: `git pull`
-1. Apply any new SQL migrations in `install/migrations/` (see below).
+1. Apply pending SQL migrations: `./install/migrate.sh apply`.
 1. Gracefully restart the server:
 
    ```sh
@@ -43,14 +43,20 @@ only appropriate when the server is already stopped.
 
 ### Database migrations
 
-Migrations are not tracked or applied automatically, so check `git log` for new
-files in `install/migrations/` since the last deploy. New server code will fail
-(and may crash-loop) if a migration it depends on has not been applied. Run a
-migration with (replacing the filename):
+Use `./install/migrate.sh status` to inspect migration state and
+`./install/migrate.sh apply` to apply pending migrations before restarting. The
+runner uses pinned Tern, requires Go 1.25 or newer, and reuses the existing
+`.env` database settings. It does not apply migrations during server startup.
 
-```sh
-(source .env && PGPASSWORD="$DB_PASSWORD" psql --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" --username="$DB_USER" --dbname="$DB_NAME" -v ON_ERROR_STOP=1 -f install/migrations/example.sql)
-```
+Keep migration files numbered consecutively from `001_name.sql`. Applied
+migrations are immutable: do not edit or delete them. Use forward migrations
+only, without a down-migration section. Update `install/database_schema.sql` in
+the same change; fresh installations record the version already represented by
+that complete schema.
+
+Migrations normally run in transactions. Operations such as concurrent index
+creation require `---- tern: disable-tx ----` and must be designed for safe
+recovery after partial failure.
 
 Some tables, such as `chat_log` (~90 million rows), are very large:
 

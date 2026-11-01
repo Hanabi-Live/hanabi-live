@@ -235,9 +235,9 @@ authorization.
   the repetitive action-restoration branch that incorrectly decoded
   `playerTimes` as a draw.
 - Remaining: continuous recovery, lifecycle ownership, recovery/queue metrics,
-  tracked migrations, toolchain/artifact modernization, engine compatibility,
-  the TypeScript vertical slice, and the final migration decision. None of these
-  phases is complete.
+  toolchain/artifact modernization, engine compatibility, the TypeScript
+  vertical slice, and the final migration decision. None of these phases is
+  complete.
 
 The local administration server now exposes `/metrics` on
 `127.0.0.1:${LOCALHOST_PORT:-8081}`. It reports process uptime and memory,

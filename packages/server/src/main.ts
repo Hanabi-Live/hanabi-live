@@ -3,6 +3,7 @@ import { bannedIPsInit } from "./bannedIPs";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";
 import { logger } from "./logger";
+import { verifyDatabaseMigrations } from "./migrations";
 import { models } from "./models";
 import { redisInit } from "./redis";
 
@@ -17,10 +18,11 @@ async function main() {
 
   try {
     await models.chatLog.testDatabase();
+    await verifyDatabaseMigrations();
   } catch (error) {
-    logger.error(`Failed to connect to the PostgreSQL database: ${error}`);
+    logger.error(`Failed database startup checks: ${error}`);
     logger.info(
-      'Did you already run the "install_database_schema.sh" script to set up the database?',
+      "Verify database initialization and apply pending migrations. Do not reinitialize an existing production database.",
     );
     process.exit(1);
   }

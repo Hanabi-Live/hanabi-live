@@ -3,6 +3,7 @@ package main // In Go, executable commands must always use package main
 // This file contains the entry point for the server software
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path"
@@ -158,7 +159,17 @@ func main() {
 		}
 
 		logger.Error("Failed to run the database test query: " + err.Error())
-		logger.Fatal("Try re-running the \"install/install_database_schema.sh\" script in order to re-initialize the database.")
+		logger.Fatal("Verify database initialization and apply pending migrations. Do not reinitialize an existing production database.")
+		return
+	}
+
+	expectedVersion, err := expectedSchemaVersion(path.Join(projectPath, "install", "migrations"))
+	if err != nil {
+		logger.Fatal("Failed to load migration versions: " + err.Error())
+		return
+	}
+	if err := verifySchemaVersion(context.Background(), db, expectedVersion); err != nil {
+		logger.Fatal(err.Error())
 		return
 	}
 

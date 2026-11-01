@@ -1,6 +1,9 @@
 FROM postgres:12
 
-COPY install/database_schema.sql /docker-entrypoint-initdb.d/init.sql
+COPY install/database_schema.sql /docker-entrypoint-initdb.d/001_schema.sql
+COPY install/docker_schema_version.sh /docker-entrypoint-initdb.d/002_schema_version.sh
+COPY install/migration_files.sh install/schema_version.sql /docker-entrypoint-initdb.d/helpers/
+COPY install/migrations /docker-entrypoint-initdb.d/helpers/migrations
 
 ENV POSTGRES_USER hanabiuser
 ENV POSTGRES_DB hanabi

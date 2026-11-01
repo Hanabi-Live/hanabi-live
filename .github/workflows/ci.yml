@@ -33,6 +33,15 @@ jobs:
 
       - name: Install Golang
         uses: actions/setup-go@v6
+        with:
+          cache-dependency-path: |
+            server/src/go.sum
+            install/migration_files.sh
+
+      - name: Prepare the pinned migration tool
+        run: |
+          source install/migration_files.sh
+          go install "github.com/jackc/tern/v2@$TERN_VERSION"
 
       - name: Check Go formatting
         run: bash check_gofmt.sh

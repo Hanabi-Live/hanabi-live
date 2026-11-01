@@ -5,6 +5,10 @@ set -euo pipefail # Exit on errors and undefined variables.
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
+# shellcheck source=./install/migration_files.sh
+source "$DIR/migration_files.sh"
+migration_version="$(get_migration_version "$DIR/migrations")"
+
 # Import the database information.
 # shellcheck source=/dev/null
 source "$DIR/../.env"
@@ -32,6 +36,9 @@ PGPASSWORD="$DB_PASSWORD" psql \
   --port="$DB_PORT" \
   --username="$DB_USER" \
   --dbname="$DB_NAME" \
-  < "$DIR/database_schema.sql"
+  --single-transaction \
+  --variable=migration_version="$migration_version" \
+  --file="$DIR/database_schema.sql" \
+  --file="$DIR/schema_version.sql"
 
 echo "Successfully installed the database schema."
