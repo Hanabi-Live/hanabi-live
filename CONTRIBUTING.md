@@ -18,6 +18,20 @@ The long-term plan for the codebase is to migrate the server from Golang to
 TypeScript. Thus, any changes that you do to Golang code should also be
 performed to the new TypeScript server at "packages/server".
 
+Before submitting Go server changes, run the regression tests with the race
+detector from the repository root:
+
+```sh
+(cd server/src && go test -race -count=1 -timeout=2m ./...)
+```
+
+The race detector requires a supported platform and a C compiler. CI runs this
+command on Ubuntu as part of the existing `server_build` check, after formatting
+and compilation. The tests do not require running PostgreSQL or Redis instances.
+
+See [the server architecture plan](PLAN.md) for the hardening and migration
+roadmap.
+
 ## Creating a New Variant
 
 - First, create a GitHub issue to discuss how the variant should work and if it

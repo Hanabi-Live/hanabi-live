@@ -28,6 +28,10 @@ jobs:
         run: bash build_server.sh
         working-directory: ${{ env.working-directory }}
 
+      - name: Test the Golang code with the race detector
+        run: go test -race -count=1 -timeout=2m ./...
+        working-directory: ./server/src
+
   lint:
     runs-on: ubuntu-latest
     strategy:
