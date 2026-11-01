@@ -1,9 +1,5 @@
 package main
 
-import (
-	"math/rand"
-)
-
 func (g *Game) InitDeck() {
 	// Local variables
 	variant := g.Variant
@@ -82,7 +78,8 @@ func numCopiesOfCard(suit *Suit, rank int, variant *Variant) int {
 }
 
 func (g *Game) ShuffleDeck() {
-	g.shuffleDeck(rand.Intn)
+	rng := newSeededRand(g.Seed)
+	g.shuffleDeck(rng.Intn)
 }
 
 func (g *Game) shuffleDeck(intn func(int) int) {

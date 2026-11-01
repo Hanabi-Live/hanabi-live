@@ -118,7 +118,6 @@ func httpExport(c *gin.Context) {
 		Seed:         seed,
 	}
 	g.InitDeck()
-	setSeed(g.Seed) // Seed the random number generator
 	g.ShuffleDeck()
 
 	// Get the actions from the database
