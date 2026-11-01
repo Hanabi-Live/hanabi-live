@@ -331,9 +331,24 @@ three Supervisor files.
 
 To manage the service:
 
-- Start it: `supervisorctl start hanabi-live`
-- Stop it: `supervisorctl stop hanabi-live`
-- Restart it: `supervisorctl restart hanabi-live`
+- Start it, only if it is already stopped: `supervisorctl start hanabi-live`
+- Stop it gracefully: `curl http://127.0.0.1:${LOCALHOST_PORT:-8081}/shutdown`
+- Restart it gracefully:
+  `curl http://127.0.0.1:${LOCALHOST_PORT:-8081}/gracefulRestart`
+
+Do not use `supervisorctl stop` or `supervisorctl restart` on a running game
+server: signals do not save ongoing games. Check the server log after a restart.
+See [the production instructions](../AGENTS.md) for deployment and database
+migration precautions.
+
+The localhost-only `/metrics` endpoint reports aggregate command latency,
+runtime memory, and database-pool acquisition statistics. Database operations
+default to a 30-second limit, configured by `DB_OPERATION_TIMEOUT_SECONDS`. Both
+servers enforce PostgreSQL statement timeouts; Go additionally bounds pool
+acquisition, row consumption, and individual transaction operations. An earlier
+caller deadline takes precedence. This is not a timeout for an entire
+multi-statement transaction, and administrative migrations should use their own
+connection and explicit time limits.
 
 <br />
 

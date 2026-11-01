@@ -24,7 +24,7 @@ type GameActionRow struct {
 	Value  int
 }
 
-func (*GameActions) BulkInsertTx(tx pgx.Tx, gameActionRows []*GameActionRow) error {
+func (*GameActions) BulkInsertTx(tx *databaseTransaction, gameActionRows []*GameActionRow) error {
 	SQLString, valueArgs := getGameActionsBulkInsert(gameActionRows)
 	_, err := tx.Exec(context.Background(), SQLString, valueArgs...)
 	return err

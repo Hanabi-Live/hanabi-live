@@ -89,7 +89,7 @@ func TestLocalhostMetrics(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	db = pool
+	db = newDatabase(pool, defaultDatabaseTimeout)
 	datetimeStarted = time.Now().Add(-time.Second)
 	serverCommandMetrics = newCommandMetrics()
 	serverCommandMetrics.start("tableCreate")

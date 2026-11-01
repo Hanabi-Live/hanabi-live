@@ -27,7 +27,10 @@ detector from the repository root:
 
 The race detector requires a supported platform and a C compiler. CI runs this
 command on Ubuntu as part of the existing `server_build` check, after formatting
-and compilation. The tests do not require running PostgreSQL or Redis instances.
+and compilation. Unit tests do not require PostgreSQL or Redis. Database
+integration tests run when `HANABI_TEST_DATABASE_URL` points to a disposable
+PostgreSQL instance; CI supplies an isolated PostgreSQL service. Do not point
+the integration tests at production.
 
 See [the server architecture plan](PLAN.md) for the hardening and migration
 roadmap.

@@ -212,6 +212,7 @@
     "outputfile",
     "pagedisplay",
     "petermattis",
+    "pgconn",
     "pgdata",
     "pgpassword",
     "pgxpool",

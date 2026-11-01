@@ -41,7 +41,7 @@ type gameRowQuerier interface {
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
-func (*Games) InsertTx(tx pgx.Tx, gameRow GameRow) (int, error) {
+func (*Games) InsertTx(tx *databaseTransaction, gameRow GameRow) (int, error) {
 	return insertGame(tx, gameRow)
 }
 

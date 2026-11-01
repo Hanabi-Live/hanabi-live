@@ -14,6 +14,10 @@ const client = postgres({
   user: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
+  connect_timeout: env.DB_OPERATION_TIMEOUT_SECONDS,
+  connection: {
+    statement_timeout: env.DB_OPERATION_TIMEOUT_SECONDS * 1000,
+  },
 });
 
 export const db = drizzle(client, {

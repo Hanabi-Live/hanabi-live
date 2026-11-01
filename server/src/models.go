@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	db     *pgxpool.Pool
+	db     *database
 	dbName string
 )
 
@@ -42,6 +42,10 @@ type Models struct {
 
 // modelsInit opens a database connection based on the credentials in the ".env" file
 func modelsInit() (*Models, error) {
+	timeout, err := parseDatabaseTimeout(os.Getenv("DB_OPERATION_TIMEOUT_SECONDS"))
+	if err != nil {
+		return nil, err
+	}
 	// Read the database configuration from environment variables
 	// (it was loaded from the .env file in main.go)
 	dbHost := os.Getenv("DB_HOST")
@@ -86,10 +90,17 @@ func modelsInit() (*Models, error) {
 	// We use "pgxpool.Connect()" instead of "pgx.Connect()" because the vanilla driver is not safe
 	// for concurrent connections (unlike the other Golang SQL drivers)
 	// https://github.com/jackc/pgx/wiki/Getting-started-with-pgx
-	if v, err := pgxpool.Connect(context.Background(), dsn); err != nil {
+	config, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	config.ConnConfig.RuntimeParams["statement_timeout"] = strconv.FormatInt(timeout.Milliseconds(), 10)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	if v, err := pgxpool.ConnectConfig(ctx, config); err != nil {
 		return nil, err
 	} else {
-		db = v
+		db = newDatabase(v, timeout)
 	}
 
 	// Create the model

@@ -235,9 +235,9 @@ authorization.
   the repetitive action-restoration branch that incorrectly decoded
   `playerTimes` as a draw.
 - Remaining: continuous recovery, lifecycle ownership, recovery/queue metrics,
-  tracked migrations, bounded database calls, toolchain/artifact modernization,
-  engine compatibility, the TypeScript vertical slice, and the final migration
-  decision. None of these phases is complete.
+  tracked migrations, toolchain/artifact modernization, engine compatibility,
+  the TypeScript vertical slice, and the final migration decision. None of these
+  phases is complete.
 
 The local administration server now exposes `/metrics` on
 `127.0.0.1:${LOCALHOST_PORT:-8081}`. It reports process uptime and memory,
@@ -256,6 +256,16 @@ participant, and action insertion wrappers had no consumers. They were removed;
 game completion retains its transactional write path. The other 15 unreachable
 functions require separate maintenance/API review.
 
+Database calls now use a bounded Go adapter for connection-pool acquisition,
+statement execution, row consumption, and individual transaction operations. The
+default limit is 30 seconds; `DB_OPERATION_TIMEOUT_SECONDS` configures it.
+Earlier caller deadlines are retained. Both Go and the partial TypeScript server
+configure PostgreSQL statement timeouts; the TypeScript prototype does not yet
+provide Go's end-to-end pool-wait deadline. PostgreSQL-backed CI regressions
+exercise slow queries, exhausted pools, row cleanup, and commit/ rollback
+behavior. This does not yet bound an entire multi-statement workflow or
+propagate every HTTP request cancellation through all models.
+
 ### Phase 1: Strengthen Go
 
 Deliver small, independently reviewable changes while Go remains the production
@@ -272,8 +282,9 @@ authority.
   procedures, and TypeScript behavior unchanged.
 
 Acceptance: formatting and compilation still run; test failures and detected
-races fail the existing server check. The suite needs no running PostgreSQL or
-Redis instance. Race detection covers exercised paths, not all possible
+races fail the existing server check. Unit tests need no running PostgreSQL or
+Redis instance; the added database integration suite uses an isolated PostgreSQL
+service in CI. Race detection covers exercised paths, not all possible
 concurrency bugs. Repository branch-protection settings are outside this PR.
 
 **Subsequent Go hardening PRs:**

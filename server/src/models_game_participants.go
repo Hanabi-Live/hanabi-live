@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v4"
 )
 
 type GameParticipants struct{}
@@ -18,7 +16,7 @@ type GameParticipantsRow struct {
 }
 
 func (*GameParticipants) BulkInsertTx(
-	tx pgx.Tx,
+	tx *databaseTransaction,
 	gameParticipantsRows []*GameParticipantsRow,
 ) error {
 	SQLString, valueArgs := getGameParticipantsBulkInsert(gameParticipantsRows)
