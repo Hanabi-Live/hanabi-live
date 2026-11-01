@@ -49,6 +49,7 @@ func commandTableTerminate(ctx context.Context, s *Session, d *CommandData) {
 func terminate(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
 	commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		TableID:     t.ID,
+		RequestID:   d.RequestID,
 		Type:        ActionTypeEndGame,
 		Target:      playerIndex,
 		Value:       EndConditionTerminatedByPlayer,

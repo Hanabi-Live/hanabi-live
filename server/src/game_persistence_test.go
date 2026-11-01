@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func TestGameIDReservationDoesNotInsertGames(t *testing.T) {
@@ -65,16 +67,7 @@ func TestGameStartReservesIDBeforePublication(t *testing.T) {
 				}
 			}
 			data := &CommandData{TableID: table.ID}
-			if scenario == "prefetched restart" {
-				tables.Lock(ctx)
-				table.Lock(ctx)
-				data.NoTableLock, data.NoTablesLock = true, true
-			}
 			commandTableStart(ctx, NewFakeSession(1, "Alice"), data)
-			if scenario == "prefetched restart" {
-				table.Unlock(ctx)
-				tables.Unlock(ctx)
-			}
 			if scenario == "unavailable database" {
 				if table.Running || table.Game != nil {
 					t.Fatal("game started without reserving an ID")
@@ -226,9 +219,20 @@ func gamePersistenceDatabase(t *testing.T) *database {
 	}
 	oldVariants := variants
 	oldDB := db
+	oldRecovery := recoveryStore
 	db = database
+	config := database.pool.Config().Copy()
+	config.MaxConns = 2
+	pool, err := pgxpool.ConnectConfig(context.Background(), config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recoveryStore = &postgresActiveGames{newDatabase(pool, defaultDatabaseTimeout)}
 	variants = map[string]*Variant{DefaultVariantName: {ID: 0, Name: DefaultVariantName, MaxScore: 25}}
-	t.Cleanup(func() { variants, db = oldVariants, oldDB })
+	t.Cleanup(func() {
+		pool.Close()
+		variants, db, recoveryStore = oldVariants, oldDB, oldRecovery
+	})
 	return database
 }
 
@@ -357,6 +361,7 @@ func gameCompletionTestTable(t *testing.T) (*database, *Table) {
 	g := table.Game
 	row := gamePersistenceRow(t)
 	g.DatabaseID, g.Options = row.ID, row.Options
+	table.Options = g.Options
 	g.DatetimeStarted, g.DatetimeFinished = row.DatetimeStarted, row.DatetimeFinished
 	g.Seed, g.Score, g.Turn, g.EndCondition = row.Seed, row.Score, row.NumTurns, row.EndCondition
 	g.Variant.MaxScore = 25
@@ -515,5 +520,38 @@ func TestReservedIDMigrationPreservesCompletedGames(t *testing.T) {
 	}
 	if err := verifySchemaVersion(context.Background(), database, 3); err != nil {
 		t.Fatal(err)
+	}
+	migration, err = os.ReadFile(filepath.Join("..", "..", "install", "migrations", "004_active_games.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(install, "migrations", "004_active_games.sql"), migration, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := runMigrationScript(t, install, env, "migrate.sh", "apply"); err != nil {
+		t.Fatal(err)
+	}
+	if err := verifySchemaVersion(context.Background(), database, 4); err != nil {
+		t.Fatal(err)
+	}
+	table := snapshotTestTable()
+	if err := database.QueryRow(context.Background(), "SELECT nextval('games_id_seq')").Scan(&table.Game.DatabaseID); err != nil {
+		t.Fatal(err)
+	}
+	data, err := encodeTableSnapshot(table)
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := &postgresActiveGames{database}
+	checkpoint := activeGameCheckpoint{table.Game.DatabaseID, 1, data}
+	if err := store.Save(context.Background(), checkpoint); err != nil {
+		t.Fatal("migration did not permit a checkpoint for a reserved ID without a completed game:", err)
+	}
+	if err := store.Save(context.Background(), checkpoint); err == nil {
+		t.Fatal("a stale checkpoint revision overwrote committed state")
+	}
+	checkpoint.Revision++
+	if err := store.Save(context.Background(), checkpoint); err != nil {
+		t.Fatal("the next checkpoint revision was rejected:", err)
 	}
 }

@@ -20,11 +20,12 @@ func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
 	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
-	g := t.Game
-
 	// Validate that the game has started
 	if !t.Running {
 		s.Warning(NotStartedFail)
+		return
+	}
+	if t.Ending {
 		return
 	}
 
@@ -36,6 +37,11 @@ func commandLoaded(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	t.mutate(ctx, s, d, func() { loaded(ctx, t, playerIndex) })
+}
+
+func loaded(ctx context.Context, t *Table, playerIndex int) {
+	g := t.Game
 	// Set their "present" variable back to true,
 	// which will turn their name from red to black
 	t.Players[playerIndex].Present = true

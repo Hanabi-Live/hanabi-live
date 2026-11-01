@@ -10,8 +10,7 @@ import (
 
 var serverLifecycleMutex sync.Mutex
 
-// We want to record all of the ongoing games to a flat file on the disk
-// This allows the server to restart without waiting for ongoing games to finish
+// Draining and writing fresh checkpoints preserve clocks through planned maintenance.
 func gracefulRestart(ctx context.Context) {
 	serverLifecycleMutex.Lock()
 	defer serverLifecycleMutex.Unlock()
@@ -36,12 +35,12 @@ func gracefulRestart(ctx context.Context) {
 
 	waitForAllWebSocketCommandsToFinish()
 
-	logger.Info("Serializing the tables and writing all tables to disk...")
-	if !serializeTables() {
+	logger.Info("Writing active table checkpoints...")
+	if !checkpointTables(ctx) {
 		abortRestart(ctx)
 		return
 	}
-	logger.Info("Finished writing all tables to disk.")
+	logger.Info("Finished writing active table checkpoints.")
 
 	sessionList := sessions.GetList()
 	for _, s := range sessionList {

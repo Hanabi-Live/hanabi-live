@@ -70,6 +70,9 @@ func (t *Table) scheduleStartTimer(ctx context.Context) {
 
 func (t *Table) scheduleIdleTimer(ctx context.Context) {
 	t.cancelIdleTimer()
+	if t.mutationActive || t.recoveryBlocked.Load() {
+		return
+	}
 	if isDev || t.Deleted || t.Ending || t.DatetimeLastAction.IsZero() {
 		return
 	}
@@ -106,6 +109,9 @@ func (t *Table) expireIdleTimer(ctx context.Context, version uint64) {
 func (g *Game) scheduleTurnTimer(ctx context.Context) {
 	t := g.Table
 	t.cancelTurnTimer()
+	if t.mutationActive || t.recoveryBlocked.Load() {
+		return
+	}
 	if t.Deleted || t.Ending || !t.Running || t.Replay || t.Game != g ||
 		!g.Options.Timed || !g.StartedTimer || g.Paused ||
 		g.EndCondition != EndConditionInProgress || g.ExtraOptions.NoWriteToDatabase {
@@ -163,9 +169,6 @@ func restoreTableClock(t *Table, now time.Time) {
 			if elapsed := t.snapshotSavedAt.Sub(g.DatetimeTurnBegin); elapsed > 0 {
 				player.Time -= elapsed
 			}
-		}
-		if g.Options.Timed {
-			player.Time += 20 * time.Second
 		}
 	}
 	g.DatetimeTurnBegin = now

@@ -13,6 +13,13 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 	// Local variables
 	t := g.Table
 
+	if t.Ending {
+		return
+	}
+	if !t.mutationActive && t.usesRecovery() {
+		t.mutate(ctx, nil, d, func() { g.End(ctx, d) })
+		return
+	}
 	t.cancelTurnTimer()
 	g.DatetimeFinished = time.Now()
 	if g.EndCondition > EndConditionNormal {
@@ -22,9 +29,6 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 
 	// There will be no times associated with a replay, so do not bother with the rest of the code
 	if g.ExtraOptions.NoWriteToDatabase {
-		return
-	}
-	if t.Ending {
 		return
 	}
 	t.Ending = true
@@ -44,15 +48,42 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 		Duration:    duration,
 	})
 	t.NotifyGameAction()
+	if !t.mutationActive {
+		g.finalizeEnd(ctx, d)
+	}
+}
 
-	// Notify everyone that the table was deleted
-	// (we will send a new table message later for the shared replay)
+func (g *Game) finalizeEnd(ctx context.Context, d *CommandData) {
+	t := g.Table
+
+	// Record the game in the database.
+	// Release the table lock before any DB calls to avoid exhausting the pgxpool
+	// while other goroutines wait for this same lock (which would deadlock the server).
+	// The caller's defer t.Unlock() (or explicit unlock) will fire on the re-locked mutex.
+	tableSnapshot := snapshotGameDatabaseTable(t)
+	var databaseID int
+	var numGamesOnThisSeed int
+	var err error
+	func() {
+		t.Unlock(ctx)
+		defer t.Lock(ctx)
+		databaseID, err = g.WriteDatabase(tableSnapshot)
+		if err != nil {
+			return
+		}
+		if v, seedErr := models.Seeds.GetNumGames(g.Seed); seedErr != nil {
+			logger.Error("Failed to get the number of games on seed " + g.Seed + ": " + seedErr.Error())
+		} else {
+			numGamesOnThisSeed = v
+		}
+	}()
+	if err != nil {
+		t.EndingFailed = true
+		t.blockRecovery(err)
+		return
+	}
+
 	notifyAllTableGone(t)
-
-	// Reset the player's current game and status
-	// (this is needed in case the game ends due to idleness;
-	// they will be manually set to having a "Shared Replay" status later
-	// after the game is converted)
 	for _, p := range t.Players {
 		if p.Session != nil {
 			p.Session.SetStatus(StatusLobby)
@@ -60,29 +91,6 @@ func (g *Game) End(ctx context.Context, d *CommandData) {
 			notifyAllUser(p.Session)
 		}
 	}
-
-	// Record the game in the database.
-	// Release the table lock before any DB calls to avoid exhausting the pgxpool
-	// while other goroutines wait for this same lock (which would deadlock the server).
-	// The caller's defer t.Unlock() (or explicit unlock) will fire on the re-locked mutex.
-	tableSnapshot := snapshotGameDatabaseTable(t)
-	t.Unlock(ctx)
-	databaseID, err := g.WriteDatabase(tableSnapshot)
-	if err != nil {
-		t.Lock(ctx)
-		t.EndingFailed = true
-		return
-	}
-
-	// Send a "gameHistory" message to all the players in the game
-	var numGamesOnThisSeed int
-	if v, err := models.Seeds.GetNumGames(g.Seed); err != nil {
-		logger.Error("Failed to get the number of games on seed " + g.Seed + ": " + err.Error())
-		numGamesOnThisSeed = 0
-	} else {
-		numGamesOnThisSeed = v
-	}
-	t.Lock(ctx) // Re-acquire now that all DB work is done
 	t.ExtraOptions.DatabaseID = databaseID
 	playerNames := make([]string, 0)
 	for _, p := range t.Players {
@@ -189,6 +197,9 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 	defer func() {
 		_ = tx.Rollback(context.Background())
 	}()
+	if _, err := tx.Exec(context.Background(), gameRecoveryLockSQL, g.DatabaseID); err != nil {
+		return 0, err
+	}
 
 	insertedGame, err := models.Games.InsertTx(tx, row)
 	if err != nil {
@@ -200,7 +211,10 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		g.DatetimeStarted = insertedGame.DatetimeStarted
 		g.DatetimeFinished = insertedGame.DatetimeFinished
 		logger.Info("Game was already committed; reusing database ID " + strconv.Itoa(databaseID) + ".")
-		return databaseID, nil
+		if _, err := tx.Exec(context.Background(), "DELETE FROM active_games WHERE game_id = $1", databaseID); err != nil {
+			return 0, err
+		}
+		return databaseID, tx.Commit(context.Background())
 	}
 
 	// Next, we insert rows for each of the participants
@@ -313,6 +327,9 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		}
 	}
 
+	if _, err := tx.Exec(context.Background(), "DELETE FROM active_games WHERE game_id = $1", databaseID); err != nil {
+		return 0, err
+	}
 	if err := tx.Commit(context.Background()); err != nil {
 		logger.Error("Failed to commit the game database transaction: " + err.Error())
 		return 0, err

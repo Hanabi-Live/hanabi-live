@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,10 +11,15 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sasha-s/go-deadlock"
 )
+
+func encodeTableSnapshot(t *Table) ([]byte, error) {
+	return encodeTableSnapshotAt(t, time.Now())
+}
 
 func snapshotTestTable() *Table {
 	g := newSeededTestGame("p2v0s1", 2)
@@ -148,6 +154,7 @@ func TestTableSnapshotRejectsInvalidState(t *testing.T) {
 		{"missing player", func(table *Table) { table.Players[0] = nil }},
 		{"invalid active player", func(table *Table) { table.Game.ActivePlayerIndex = 2 }},
 		{"missing clock start", func(table *Table) { table.Game.StartedTimer = true }},
+		{"missing completion time", func(table *Table) { table.Game.EndCondition = EndConditionNormal }},
 		{"mismatched player index", func(table *Table) { table.Game.Players[0].Index = 1 }},
 		{"missing identity", func(table *Table) { table.Game.CardIdentities[0] = nil }},
 		{"missing hand card", func(table *Table) { table.Game.Players[0].Hand[0] = nil }},
@@ -219,6 +226,7 @@ func TestWriteTableSnapshotFailure(t *testing.T) {
 }
 
 func TestRestoreTableIgnoresInterruptedWrite(t *testing.T) {
+	injectMemoryRecovery(t)
 	oldTables, oldPath := tables, tablesPath
 	t.Cleanup(func() { tables, tablesPath = oldTables, oldPath })
 	tables, tablesPath = NewTables(), t.TempDir()
@@ -237,6 +245,7 @@ func TestRestoreTableIgnoresInterruptedWrite(t *testing.T) {
 func TestRestoreTablesValidatesEntireSnapshotSet(t *testing.T) {
 	for _, scenario := range []string{"malformed later file", "duplicate table", "duplicate game", "existing table"} {
 		t.Run(scenario, func(t *testing.T) {
+			injectMemoryRecovery(t)
 			oldTables, oldPath := tables, tablesPath
 			tables, tablesPath = NewTables(), t.TempDir()
 			t.Cleanup(func() {
@@ -314,18 +323,33 @@ func TestRestoreTablesValidatesEntireSnapshotSet(t *testing.T) {
 	}
 }
 
-func TestSaveTablesReportsFailure(t *testing.T) {
-	oldTables, oldPath := tables, tablesPath
-	t.Cleanup(func() { tables, tablesPath = oldTables, oldPath })
-	tables = NewTables()
-	table := snapshotTestTable()
-	tables.Set(table.ID, table)
-	tablesPath = filepath.Join(t.TempDir(), "missing")
-
-	response := httptest.NewRecorder()
-	ctx, _ := gin.CreateTestContext(response)
-	httpLocalhostSaveTables(ctx)
-	if response.Code != http.StatusInternalServerError || !strings.Contains(response.Body.String(), "Failed") {
-		t.Fatalf("save failure response = %d %q", response.Code, response.Body.String())
+func TestSaveTablesReportsRetirementWithoutAttemptingSave(t *testing.T) {
+	for _, unavailable := range []bool{false, true} {
+		t.Run(map[bool]string{false: "missing store", true: "unavailable store"}[unavailable], func(t *testing.T) {
+			store := injectMemoryRecovery(t)
+			if unavailable {
+				store.err = errors.New("storage unavailable")
+				store.beforeSave = func() { t.Error("retired endpoint attempted a save") }
+			} else {
+				recoveryStore = nil
+			}
+			oldTables := tables
+			tables = NewTables()
+			t.Cleanup(func() { tables = oldTables })
+			table := snapshotTestTable()
+			table.Game = nil // Emergency handlers cannot safely inspect an incomplete transition.
+			tables.Set(table.ID, table)
+			lockContext := NewMiscContext("retiredSaveTest")
+			table.Lock(lockContext)
+			response := httptest.NewRecorder()
+			ctx, _ := gin.CreateTestContext(response)
+			httpLocalhostSaveTables(ctx)
+			table.Unlock(lockContext)
+			body := response.Body.String()
+			if response.Code != http.StatusGone || !strings.Contains(body, "no save was performed") ||
+				!strings.Contains(body, "/gracefulRestart") || strings.Contains(body, "success") {
+				t.Fatalf("retired save response = %d %q", response.Code, body)
+			}
+		})
 	}
 }

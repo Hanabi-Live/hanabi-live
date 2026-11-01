@@ -2,7 +2,9 @@
 
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
+  check,
   doublePrecision,
   index,
   integer,
@@ -14,6 +16,16 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+
+export const activeGamesTable = pgTable(
+  "active_games",
+  {
+    gameID: integer("game_id").primaryKey(),
+    revision: bigint("revision", { mode: "number" }).notNull(),
+    checkpoint: text("checkpoint").notNull(),
+  },
+  (table) => [check("active_games_revision_check", sql`${table.revision} > 0`)],
+);
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),

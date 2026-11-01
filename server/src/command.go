@@ -8,6 +8,7 @@ type CommandData struct {
 	// various
 	TableID    uint64 `json:"tableID"`
 	DatabaseID int    `json:"databaseID"`
+	RequestID  string `json:"requestID,omitempty"`
 
 	// setting
 	Setting string `json:"setting"`
@@ -26,6 +27,7 @@ type CommandData struct {
 
 	// tableStart
 	IntendedPlayers *[]string `json:"intendedPlayers"`
+	IntendedVariant string    `json:"-"`
 
 	// action
 	Type   int `json:"type"`

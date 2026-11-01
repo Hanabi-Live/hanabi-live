@@ -189,9 +189,6 @@ func main() {
 	// Initialize the list that contains every word in the dictionary
 	wordListInit()
 
-	// Start the Discord bot (in "discord.go")
-	discordInit()
-
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 
@@ -206,6 +203,8 @@ func main() {
 		logger.Fatal("Failed to restore tables: " + err.Error())
 		return
 	}
+	// External callbacks must not mutate tables until restoration is complete.
+	discordInit()
 
 	// Specify that we are running the HTTP framework in production
 	// (it is "gin.DebugMode" by default)

@@ -7,9 +7,7 @@ import (
 )
 
 func httpLocalhostSaveTables(c *gin.Context) {
-	if !serializeTables() {
-		c.String(http.StatusInternalServerError, "Failed to save ongoing tables; check the server log.\n")
-		return
-	}
-	c.String(http.StatusOK, "success\n")
+	c.String(http.StatusGone, "Emergency table saves are retired; no save was performed. "+
+		"Accepted progress uses continuous PostgreSQL recovery. "+
+		"Use /gracefulRestart for planned maintenance or recovery of frozen tables.\n")
 }

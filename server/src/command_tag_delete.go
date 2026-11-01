@@ -4,6 +4,7 @@ import (
 	"context"
 	"html"
 	"strconv"
+	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 )
@@ -23,6 +24,9 @@ func commandTagDelete(ctx context.Context, s *Session, d *CommandData) {
 	}
 	if !d.NoTableLock {
 		defer t.Unlock(ctx)
+	}
+	if t.duplicateRequest(s, d) {
+		return
 	}
 
 	if !t.Running {
@@ -52,12 +56,13 @@ func tagDelete(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	if !t.Replay {
 		// See if the tag exists
 		if userID, ok := g.Tags[d.Msg]; ok && userID == s.UserID {
-			delete(g.Tags, d.Msg)
-
-			// Send them an acknowledgement via private message to avoid spoiling information about
-			// the ongoing game
-			msg := "Successfully deleted the tag of \"" + html.EscapeString(d.Msg) + "\"."
-			chatServerSendPM(s, msg, d.Room)
+			t.mutate(ctx, s, d, func() {
+				delete(g.Tags, d.Msg)
+				msg := "Successfully deleted the tag of \"" + html.EscapeString(d.Msg) + "\"."
+				t.emit(s, "chat", (noticeChatEvent{
+					msg: msg, who: WebsiteName, datetime: time.Now(), room: d.Room, recipient: s.Username,
+				}).wire())
+			})
 		} else {
 			s.Warning("The tag of \"" + html.EscapeString(d.Msg) + "\" does not exist on this game yet.")
 		}

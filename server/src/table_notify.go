@@ -10,13 +10,13 @@ func (t *Table) NotifyChat(chatMessage *ChatMessage) {
 	if !t.Replay {
 		for _, p := range t.Players {
 			if p.Present {
-				p.Session.Emit("chat", chatMessage)
+				t.emit(p.Session, "chat", chatMessage)
 			}
 		}
 	}
 
 	for _, sp := range t.ActiveSpectators() {
-		sp.Session.Emit("chat", chatMessage)
+		t.emit(sp.Session, "chat", chatMessage)
 	}
 }
 
@@ -93,7 +93,7 @@ func (t *Table) NotifyPlayerChange() {
 		}
 
 		// Second, send information about the game and the players in one big message
-		p.Session.Emit("game", &GameMessage{
+		t.emit(p.Session, "game", &GameMessage{
 			TableID:           t.ID,
 			Name:              t.Name,
 			Owner:             t.OwnerID,
@@ -111,7 +111,7 @@ func (t *Table) NotifyPlayerChange() {
 
 	// Emit game the information to all pregame spectators
 	for _, s := range t.ActiveSpectators() {
-		s.Session.Emit("game", &GameMessage{
+		t.emit(s.Session, "game", &GameMessage{
 			TableID:           t.ID,
 			Name:              t.Name,
 			Owner:             t.OwnerID,
@@ -236,7 +236,7 @@ func (t *Table) NotifyFinishOngoingGame() {
 
 	// At this point, all of the players will have been converted to spectators
 	for _, sp := range t.ActiveSpectators() {
-		sp.Session.Emit("finishOngoingGame", finishOngoingGameMessage)
+		t.emit(sp.Session, "finishOngoingGame", finishOngoingGameMessage)
 	}
 }
 
@@ -335,7 +335,7 @@ func (t *Table) NotifySpectatorsNote(order int) {
 			Order int    `json:"order"`
 			Notes []Note `json:"notes"`
 		}
-		sp.Session.Emit("note", &NoteMessage{
+		t.emit(sp.Session, "note", &NoteMessage{
 			TableID: t.ID,
 			Order:   order,
 			Notes:   notes,

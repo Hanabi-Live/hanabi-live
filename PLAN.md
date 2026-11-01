@@ -227,24 +227,29 @@ authorization.
 - Implemented: aggregate localhost metrics, fixed database operation deadlines,
   tracked migrations, and startup schema checks. Database deadlines bound
   individual operations, not an entire multi-statement workflow.
-- Recovery foundations: atomic/versioned restart snapshots, typed restoration,
-  whole-set validation before consuming files, reserved numeric game IDs, and
-  idempotent completed-game transactions. Action validation is separated from
-  mutation. Completion retries reuse the existing primary key, without an extra
-  UUID column or index. This is not continuous crash recovery: successful
-  restoration still consumes files and emergency saves bypass locks. Notes,
-  chat, and tags commit with the game; derived seed/statistic refreshes remain
-  best-effort.
+- Durable recovery: versioned PostgreSQL checkpoints keyed by reserved game IDs,
+  monotonic revisions, and optional per-user command IDs. Accepted gameplay,
+  clocks, pauses, notes, tags, and active chat are saved before table effects.
+  Recipient payloads are scrubbed and frozen before buffering. Storage failures
+  freeze the affected table; restoration retains authoritative checkpoints,
+  excludes downtime, reconciles legacy files, and finalizes terminal games
+  idempotently. Completion atomically removes its active checkpoint along with
+  committing the game, participants, actions, notes, chat, and tags. A fixed
+  two-connection leaf pool permits checkpoints under only the table lock.
+  Planned maintenance checkpoints the existing 20-second restart allowance;
+  crash-loop restoration does not repeatedly grant it. Spectators remain
+  ephemeral; chat command effects are not replayed, and derived seed/statistic
+  refreshes remain best-effort. Reconnect still bootstraps state rather than
+  resubmitting commands. No extra completed-game identifier or index.
 - Between-step audits: no TypeScript unused exports; three obsolete Go insertion
   wrappers removed. Fifteen unreachable maintenance/disabled-route helpers still
   require consumer review. Container startup works, but its administrative
   shutdown still expects a missing `stop.sh`; container lifecycle handling must
   be resolved before treating it as a production deployment replacement.
-- Remaining: a durable in-progress journal, checkpoints, and command
-  deduplication, reliable finalization, recovery/queue metrics, dependency
-  modernization, immutable artifact deployment, the compatibility corpus, a
-  complete TypeScript slice, and the measured architecture decision. No
-  production deployment or migration has been performed.
+- Remaining: broader recovery/load measurements, recovery/queue metrics,
+  dependency modernization, immutable artifact deployment, the compatibility
+  corpus, a complete TypeScript slice, and the measured architecture decision.
+  No production deployment or migration has been performed.
 
 ### Phase 1: Strengthen Go
 

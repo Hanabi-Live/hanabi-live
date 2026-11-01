@@ -30,6 +30,11 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 	if !validateTableStart(s, d, t) {
 		return
 	}
+	if d.NoTablesLock && t.usesRecovery() {
+		s.Error(StartGameFail)
+		logger.Error("Live game start requires releasing the global tables lock.")
+		return
+	}
 
 	databaseID := t.reservedGameID
 	if !t.ExtraOptions.NoWriteToDatabase && databaseID == 0 {
@@ -94,6 +99,9 @@ func commandTableStart(ctx context.Context, s *Session, d *CommandData) {
 
 func validateTableStart(s *Session, d *CommandData, t *Table) bool {
 	if t.Deleted {
+		return false
+	}
+	if d.IntendedVariant != "" && d.IntendedVariant != t.Options.VariantName {
 		return false
 	}
 
@@ -175,6 +183,12 @@ func sameTablePlayers(first []*Player, second []*Player) bool {
 }
 
 func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, precomputedSeed string, databaseID int) {
+	t.mutate(ctx, s, d, func() {
+		applyTableStart(ctx, s, d, t, precomputedSeed, databaseID)
+	})
+}
+
+func applyTableStart(ctx context.Context, s *Session, d *CommandData, t *Table, precomputedSeed string, databaseID int) {
 	t.cancelStartTimer()
 
 	// Local variables
@@ -364,13 +378,15 @@ func tableStart(ctx context.Context, s *Session, d *CommandData, t *Table, preco
 		notifyAllTable(t)
 
 		// Set the status for all of the users in the game
-		for _, p := range t.Players {
-			if p.Session != nil {
-				p.Session.SetStatus(StatusPlaying)
-				p.Session.SetTableID(t.ID)
-				notifyAllUser(p.Session)
+		t.afterCommit(func() {
+			for _, p := range t.Players {
+				if p.Session != nil {
+					p.Session.SetStatus(StatusPlaying)
+					p.Session.SetTableID(t.ID)
+					notifyAllUser(p.Session)
+				}
 			}
-		}
+		})
 	}
 
 	// The turn timer starts when the starting player has finished loading.

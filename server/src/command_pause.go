@@ -23,6 +23,9 @@ func commandPause(ctx context.Context, s *Session, d *CommandData) {
 	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
+	if t.Ending || t.duplicateRequest(s, d) {
+		return
+	}
 	g := t.Game
 
 	// Validate that the game has started
@@ -83,7 +86,7 @@ func commandPause(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	pause(ctx, s, d, t, playerIndex)
+	t.mutate(ctx, s, d, func() { pause(ctx, s, d, t, playerIndex) })
 }
 
 func pause(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {

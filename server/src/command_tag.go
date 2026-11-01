@@ -5,6 +5,7 @@ import (
 	"html"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -49,7 +50,11 @@ func commandTag(ctx context.Context, s *Session, d *CommandData) {
 		d.Msg = v
 	}
 
-	tag(ctx, s, d, t)
+	if t.Replay {
+		tag(ctx, s, d, t)
+	} else {
+		t.mutate(ctx, s, d, func() { tag(ctx, s, d, t) })
+	}
 }
 
 func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
@@ -64,7 +69,9 @@ func tag(ctx context.Context, s *Session, d *CommandData, t *Table) {
 		// Send them an acknowledgement via private message to avoid spoiling information about the
 		// ongoing game
 		msg := "Successfully added a tag of \"" + html.EscapeString(d.Msg) + "\"."
-		chatServerSendPM(s, msg, d.Room)
+		t.emit(s, "chat", (noticeChatEvent{
+			msg: msg, who: WebsiteName, datetime: time.Now(), room: d.Room, recipient: s.Username,
+		}).wire())
 		return
 	}
 

@@ -146,6 +146,12 @@ CREATE INDEX user_identity_tokens_index_token_lookup_hash ON user_identity_token
 CREATE INDEX user_identity_tokens_index_expires_at ON user_identity_tokens (expires_at);
 
 DROP TABLE IF EXISTS games CASCADE;
+CREATE TABLE active_games (
+    game_id integer PRIMARY KEY,
+    revision bigint NOT NULL CHECK (revision > 0),
+    checkpoint text NOT NULL
+);
+
 CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,

@@ -93,7 +93,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		}
 
 		if restartData.hasSameDatabaseInputs(currentData) {
-			tableRestart(
+			restarted := tableRestart(
 				ctx,
 				s,
 				d,
@@ -105,6 +105,24 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 				databaseID,
 				creatorPregameStats,
 			)
+			t.Unlock(ctx)
+			tableLocked = false
+			if restarted != nil && d.HidePregame {
+				intendedPlayers := make([]string, 0, len(currentData.playerSessions))
+				for _, player := range currentData.playerSessions {
+					intendedPlayers = append(intendedPlayers, player.Username)
+				}
+				commandTableStart(ctx, s, &CommandData{
+					TableID: restarted.ID, IntendedPlayers: &intendedPlayers, IntendedVariant: currentData.variantName,
+				})
+				restarted.Lock(ctx)
+				if !restarted.Deleted && !restarted.Running && !restarted.recoveryBlocked.Load() {
+					restarted.ExtraOptions.PrecomputedSeed = ""
+					restarted.Visible = true
+					notifyAllTable(restarted)
+				}
+				restarted.Unlock(ctx)
+			}
 			return
 		}
 
@@ -312,7 +330,7 @@ func tableRestart(
 	precomputedSeed string,
 	databaseID int,
 	creatorPregameStats *PregameStats,
-) {
+) *Table {
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquire the tables lock to prevent race conditions
 	if !d.NoTablesLock {
@@ -326,7 +344,7 @@ func tableRestart(
 		if len(tables.GetTablesUserPlaying(s2.UserID)) > 0 {
 			s.Warning("You cannot restart the game because " + s2.Username +
 				" is already playing in another game.")
-			return
+			return nil
 		}
 	}
 
@@ -432,14 +450,13 @@ func tableRestart(
 			"in the table map.")
 		s.Error("Something went wrong when restarting the game. " +
 			"Please report this error to an administrator.")
-		return
+		return nil
 	}
 
 	t2.Lock(ctx)
 	defer t2.Unlock(ctx)
 
-	// Store the pre-computed seed so that tableStart uses it instead of querying the DB
-	// while all three locks (t, tables, t2) are held.
+	// Retain the prefetched inputs for the hidden start, after these locks are released.
 	if precomputedSeed != "" {
 		t2.ExtraOptions.PrecomputedSeed = precomputedSeed
 	}
@@ -501,15 +518,6 @@ func tableRestart(
 		})
 	}
 
-	if d.HidePregame {
-		// Emulate the game owner clicking on the "Start Game" button
-		commandTableStart(ctx, s, &CommandData{ // nolint: exhaustivestruct
-			TableID:      t2.ID,
-			NoTableLock:  true,
-			NoTablesLock: true,
-		})
-	}
-
 	// Add a message to the chat to indicate that the game was restarted
 	path := "/replay/" + strconv.Itoa(t.ExtraOptions.DatabaseID)
 	url := getURLFromPath(path)
@@ -524,4 +532,5 @@ func tableRestart(
 			t2.ChatRead[k] = len(t2.Chat)
 		}
 	}
+	return t2
 }

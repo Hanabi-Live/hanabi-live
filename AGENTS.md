@@ -30,16 +30,16 @@ The production server is `root@hanab.live`, with the repository at
    curl http://127.0.0.1:${LOCALHOST_PORT:-8081}/gracefulRestart
    ```
 
-   This builds the client and the server, saves all ongoing games to disk, warns
+   This builds the client and the server, checkpoints ongoing games, warns
    players, and restarts. The games are restored when the server starts back up.
    Check the log afterward for the "successfully started" message and for
    errors.
 
 **Never use `supervisorctl restart` or `supervisorctl stop` (or
-`restart_service_only.sh`) on a running server.** The server does not save
-ongoing games when it receives a signal, so every game in progress is lost. Use
-`/gracefulRestart` to restart or `/shutdown` to stop. `supervisorctl start` is
-only appropriate when the server is already stopped.
+`restart_service_only.sh`) on a running server.** Signals bypass command
+draining and orderly finalization; continuous recovery is not a replacement for
+maintenance shutdown. Use `/gracefulRestart` to restart or `/shutdown` to stop.
+`supervisorctl start` is only appropriate when the server is already stopped.
 
 ### Database migrations
 
@@ -54,6 +54,15 @@ snapshots from the intermediate UUID-based server. It removes that column and
 index; those snapshots cannot be restored afterward. Original unversioned
 snapshots are upgraded automatically. Do not roll back to a server without
 reserved-ID support while such games are in progress.
+
+Migration `004_active_games.sql` is required for continuous game recovery. Do
+not roll back to a binary without active-game recovery while checkpoints exist.
+PostgreSQL checkpoints supersede flat snapshots and survive restoration. The
+retired `/saveTables` endpoint returns HTTP 410 without saving anything; use
+`/gracefulRestart`, which checkpoints the active timed player's 20-second
+maintenance allowance once. Crash restoration does not grant additional time. A
+failed or uncertain checkpoint freezes only that table until server recovery.
+Keep using graceful restart, including when recovering frozen tables.
 
 Keep migration files numbered consecutively from `001_name.sql`. Applied
 migrations are immutable: do not edit or delete them. Use forward migrations

@@ -52,6 +52,9 @@ func commandAction(ctx context.Context, s *Session, d *CommandData) {
 	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
+	if t.duplicateRequest(s, d) {
+		return
+	}
 	g := t.Game
 
 	// Validate that the game has started
@@ -121,6 +124,16 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 	}
 	if !handler.validate(s, d, g, p) {
 		return
+	}
+	t.mutate(ctx, s, d, func() {
+		applyAction(ctx, s, d, t, p, handler)
+	})
+}
+
+func applyAction(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePlayer, handler gameActionHandler) {
+	g := t.Game
+	if d.Type == ActionTypeEndGame && d.Value == EndConditionTimeout {
+		g.Players[d.Target].Time = 0
 	}
 
 	// Start the idle timeout
@@ -228,6 +241,10 @@ func action(ctx context.Context, s *Session, d *CommandData, t *Table, p *GamePl
 		// If the next player queued a pause command, then pause the game
 		if nextPlayer.RequestedPause {
 			nextPlayer.RequestedPause = false
+			if nextPlayerSession == nil {
+				player := t.Players[nextPlayer.Index]
+				nextPlayerSession = NewFakeSession(player.UserID, player.Name)
+			}
 			commandPause(ctx, nextPlayerSession, &CommandData{ // nolint: exhaustivestruct
 				TableID:     t.ID,
 				Setting:     "pause",
@@ -461,6 +478,10 @@ func validateActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	// An "endGame" action is a special action type sent by the server to itself
 	// The value will correspond to the end condition (see "endCondition" in "enums.go")
 	// The target will correspond to the index of the player who ended the game
+	if d.Value == EndConditionTimeout && (d.Target < 0 || d.Target >= len(g.Players)) {
+		s.Warning("That is not a valid player for a timeout.")
+		return false
+	}
 
 	// Validate the value
 	if d.Value != EndConditionTimeout &&

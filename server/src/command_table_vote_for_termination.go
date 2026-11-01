@@ -22,6 +22,9 @@ func commandTableVoteForTermination(ctx context.Context, s *Session, d *CommandD
 	if !d.NoTableLock {
 		defer t.Unlock(ctx)
 	}
+	if t.Ending {
+		return
+	}
 
 	// Validate that they are in the game
 	playerIndex := t.GetPlayerIndexFromID(s.UserID)
@@ -43,13 +46,13 @@ func commandTableVoteForTermination(ctx context.Context, s *Session, d *CommandD
 		return
 	}
 
-	voteForTermination(ctx, s, d, t, playerIndex)
+	t.mutate(ctx, s, d, func() { voteForTermination(ctx, s, d, t, playerIndex) })
 }
 
 func voteForTermination(ctx context.Context, s *Session, d *CommandData, t *Table, playerIndex int) {
 	newVote := t.ChangeVote(playerIndex)
 	// Notify the player about his vote
-	s.NotifyVote(newVote)
+	s.NotifyVote(t, newVote)
 	if t.ShouldTerminateByVotes() {
 		commandAction(ctx, s, &CommandData{ // nolint: exhaustivestruct
 			TableID:     t.ID,

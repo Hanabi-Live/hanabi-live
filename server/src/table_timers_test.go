@@ -10,6 +10,7 @@ import (
 
 func newTimerTestTable(t *testing.T) (*Table, context.Context) {
 	t.Helper()
+	injectMemoryRecovery(t)
 	oldTables, oldGate, oldDev, oldActions := tables, incomingCommands, isDev, actionFunctions
 	tables = NewTables()
 	incomingCommands = &commandGate{}
@@ -29,6 +30,7 @@ func newTimerTestTable(t *testing.T) (*Table, context.Context) {
 	tables.Set(table.ID, table)
 	ctx := NewMiscContext("test")
 	t.Cleanup(func() {
+		incomingCommands.drain()
 		table.Lock(ctx)
 		table.cancelTimers()
 		table.Unlock(ctx)
@@ -234,10 +236,10 @@ func TestRestoreTableClockExcludesDowntime(t *testing.T) {
 		legacy  bool
 		want    time.Duration
 	}{
-		{"running timed", true, true, false, false, 70 * time.Second},
-		{"paused timed", true, true, true, false, 80 * time.Second},
-		{"not loaded", true, false, false, false, 80 * time.Second},
-		{"legacy timed", true, true, false, true, 80 * time.Second},
+		{"running timed", true, true, false, false, 50 * time.Second},
+		{"paused timed", true, true, true, false, 60 * time.Second},
+		{"not loaded", true, false, false, false, 60 * time.Second},
+		{"legacy timed", true, true, false, true, 60 * time.Second},
 		{"untimed", false, true, false, false, 50 * time.Second},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -252,6 +254,43 @@ func TestRestoreTableClockExcludesDowntime(t *testing.T) {
 			restoreTableClock(table, resumedAt)
 			if g.Players[0].Time != test.want || !g.DatetimeTurnBegin.Equal(resumedAt) {
 				t.Fatalf("restored clock = %s, turn start = %v", g.Players[0].Time, g.DatetimeTurnBegin)
+			}
+		})
+	}
+}
+
+func TestPlannedRestartAllowanceIsDurableAndNotRepeatedOnRestore(t *testing.T) {
+	for _, timed := range []bool{false, true} {
+		t.Run(map[bool]string{false: "untimed", true: "timed"}[timed], func(t *testing.T) {
+			table, ctx := newTimerTestTable(t)
+			store := recoveryStore.(*memoryActiveGames)
+			table.Options.Timed = timed
+			table.Game.Players[0].Time = time.Minute
+			otherTime := table.Game.Players[1].Time
+			incomingCommands.drain()
+			if !checkpointTables(ctx) {
+				t.Fatal("planned maintenance checkpoint failed")
+			}
+			want := time.Minute
+			if timed {
+				want += 20 * time.Second
+				otherTime += 20 * time.Second
+			}
+			if table.Game.Players[0].Time != want || table.Game.Players[1].Time != otherTime {
+				t.Fatal("planned maintenance changed the wrong clock or allowance")
+			}
+			row := store.rows[table.Game.DatabaseID]
+			var restoredTime time.Duration
+			for attempt := 0; attempt < 3; attempt++ {
+				restored, err := decodeTableSnapshot(row.Data)
+				if err != nil || restored.Game.Players[0].Time != want {
+					t.Fatal("maintenance allowance was not durable", err)
+				}
+				restoreTableClock(restored, time.Now().Add(time.Duration(attempt+1)*time.Hour))
+				if attempt > 0 && restored.Game.Players[0].Time != restoredTime {
+					t.Fatal("crash-loop restoration granted another allowance")
+				}
+				restoredTime = restored.Game.Players[0].Time
 			}
 		})
 	}

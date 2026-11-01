@@ -171,9 +171,6 @@ func (g *Game) EndTimer(ctx context.Context, gp *GamePlayer) {
 
 	logger.Info(t.GetName() + "Time ran out for \"" + gp.Name + "\".")
 
-	// Adjust the final player's time (for the purposes of displaying the correct ending times)
-	gp.Time = 0
-
 	// Get the session of this player
 	p := t.Players[gp.Index]
 	s := p.Session

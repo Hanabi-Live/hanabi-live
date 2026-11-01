@@ -89,7 +89,7 @@ func commandNote(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
-	note(d, t, playerIndex, spectatorIndex)
+	t.mutate(ctx, s, d, func() { note(d, t, playerIndex, spectatorIndex) })
 }
 
 func note(d *CommandData, t *Table, playerIndex int, spectatorIndex int) {

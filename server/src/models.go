@@ -99,6 +99,15 @@ func modelsInit() (*Models, error) {
 	} else {
 		db = newDatabase(v, timeout)
 	}
+	recoveryConfig := config.Copy()
+	recoveryConfig.MaxConns = 2
+	recoveryConfig.MinConns = 0
+	recoveryPool, err := pgxpool.ConnectConfig(ctx, recoveryConfig)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	recoveryStore = &postgresActiveGames{newDatabase(recoveryPool, timeout)}
 
 	// Create the model
 	return &Models{}, nil
@@ -106,6 +115,9 @@ func modelsInit() (*Models, error) {
 
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
+	if store, ok := recoveryStore.(*postgresActiveGames); ok {
+		store.db.Close()
+	}
 	db.Close()
 }
 

@@ -63,14 +63,19 @@ type Table struct {
 	// Each table has its own mutex to ensure that only one action can occur at the same time
 	mutex *deadlock.Mutex
 
-	idleTimer        *time.Timer
-	turnTimer        *time.Timer
-	idleTimerVersion uint64
-	turnTimerVersion uint64
-	snapshotSavedAt  time.Time
-	startTimer       *time.Timer
-	typingTimers     map[int]*time.Timer
-	reservedGameID   int
+	idleTimer         *time.Timer
+	turnTimer         *time.Timer
+	idleTimerVersion  uint64
+	turnTimerVersion  uint64
+	snapshotSavedAt   time.Time
+	startTimer        *time.Timer
+	typingTimers      map[int]*time.Timer
+	reservedGameID    int
+	ProcessedRequests map[string]bool `json:",omitempty"`
+	recoveryRevision  int64
+	recoveryBlocked   atomic.Bool
+	mutationActive    bool
+	pendingEffects    []func()
 }
 
 type TableChatMessage struct {

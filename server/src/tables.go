@@ -38,13 +38,24 @@ func NewTables() *Tables {
 // ---------------------------
 
 func (ts *Tables) Get(tableID uint64, acquireTablesLock bool) (*Table, bool) {
+	t, _ := ts.getAvailable(tableID, acquireTablesLock)
+	return t, t != nil
+}
+
+func (ts *Tables) getAvailable(tableID uint64, acquireTablesLock bool) (*Table, string) {
 	if acquireTablesLock {
 		ts.mutex.RLock()
 		defer ts.mutex.RUnlock()
 	}
 
 	t, ok := ts.tables[tableID]
-	return t, ok
+	if !ok {
+		return nil, "Table " + strconv.FormatUint(tableID, 10) + " does not exist."
+	}
+	if t.recoveryBlocked.Load() {
+		return nil, "This game is unavailable until server recovery."
+	}
+	return t, ""
 }
 
 func (ts *Tables) GetList(acquireLock bool) []*Table {
@@ -55,7 +66,9 @@ func (ts *Tables) GetList(acquireLock bool) []*Table {
 
 	tableList := make([]*Table, 0)
 	for _, t := range ts.tables {
-		tableList = append(tableList, t)
+		if !t.recoveryBlocked.Load() {
+			tableList = append(tableList, t)
+		}
 	}
 	return tableList
 }
@@ -300,10 +313,10 @@ func (ts *Tables) RUnlock() {
 // ----------------
 
 func getTable(s *Session, tableID uint64, acquireTablesLock bool) (*Table, bool) {
-	t, ok := tables.Get(tableID, acquireTablesLock)
-	if !ok {
+	t, failure := tables.getAvailable(tableID, acquireTablesLock)
+	if failure != "" {
 		if s != nil {
-			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+			s.Warning(failure)
 		}
 		return nil, false
 	}
@@ -334,6 +347,13 @@ func getTableAndLock(
 
 		// Prevent the race condition where the table can be removed from the map while the above
 		// lock acquisition is blocking
+		if t.recoveryBlocked.Load() {
+			t.Unlock(ctx)
+			if s != nil {
+				s.Warning("This game is unavailable until server recovery.")
+			}
+			return nil, false
+		}
 		if t.Deleted {
 			t.Unlock(ctx)
 			return nil, false
@@ -348,7 +368,7 @@ func getTableIDFromName(ctx context.Context, tableName string) (uint64, bool) {
 	for _, t := range tableList {
 		foundTable := false
 		t.Lock(ctx)
-		if t.Name == tableName {
+		if !t.recoveryBlocked.Load() && t.Name == tableName {
 			foundTable = true
 		}
 		t.Unlock(ctx)

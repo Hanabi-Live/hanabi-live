@@ -51,8 +51,8 @@ func TestDatabaseStatementTimeoutConfiguration(t *testing.T) {
 	t.Setenv("DB_USER", config.ConnConfig.User)
 	t.Setenv("DB_PASSWORD", config.ConnConfig.Password)
 	t.Setenv("DB_NAME", config.ConnConfig.Database)
-	oldDB, oldName := db, dbName
-	t.Cleanup(func() { db, dbName = oldDB, oldName })
+	oldDB, oldName, oldRecovery := db, dbName, recoveryStore
+	t.Cleanup(func() { db, dbName, recoveryStore = oldDB, oldName, oldRecovery })
 	model, err := modelsInit()
 	if err != nil {
 		t.Fatal(err)

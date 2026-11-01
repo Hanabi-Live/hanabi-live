@@ -193,14 +193,14 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID uint64) {
 	// tableID has already been parsed from the incoming room.
 	// Handle /split before the message is added to chat history.
-	if command, args := chatParseCommand(d.Msg); command == "split" {
+	if command, args := chatParseCommand(d.Msg); !d.Server && command == "split" {
 		d.Args = args
 		commandTableSplit(ctx, s, d, tableID)
 		return
 	}
 
 	// Handle /splitauto before the message is added to chat history.
-	if command, args := chatParseCommand(d.Msg); command == "splitauto" || command == "sa" {
+	if command, args := chatParseCommand(d.Msg); !d.Server && (command == "splitauto" || command == "sa") {
 		d.Args = args
 		commandTableSplitAuto(ctx, s, d, tableID)
 		return
@@ -224,11 +224,48 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 	}
 
 	// Handle /token before writing to table chat history.
-	if command, _ := chatParseCommand(d.Msg); command == "token" {
+	if command, _ := chatParseCommand(d.Msg); !d.Server && command == "token" {
 		chatCommandShouldOutput(ctx, s, d, t)
 		return
 	}
 
+	if t.Ending || t.duplicateRequest(s, d) {
+		return
+	}
+	if d.Server && d.NoTablesLock && t.Running && t.usesRecovery() && !t.mutationActive {
+		// Membership changes can announce while holding the global tables lock.
+		// Admit the notice now, but acquire only this table's lock when persisting it.
+		notice := *d
+		notice.NoTableLock, notice.NoTablesLock = false, false
+		incomingCommands.runBackground(func() {
+			commandChatTable(NewMiscContext("tableNotice"), nil, &notice, tableID)
+		})
+		return
+	}
+	if t.Running && !t.Replay {
+		if !t.mutate(ctx, s, d, func() { appendTableChat(ctx, s, d, t) }) {
+			return
+		}
+	} else {
+		appendTableChat(ctx, s, d, t)
+	}
+
+	if d.Server {
+		return
+	}
+	// Interpret user commands only after the content is durable. Server notices
+	// may share a gameplay transaction and must never execute command effects.
+	chatCommand(ctx, s, d, t)
+	playerIndex := t.GetPlayerIndexFromID(s.UserID)
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
+	if spectatorIndex != -1 {
+		t.Spectators[spectatorIndex].Typing = false
+	} else if playerIndex != -1 {
+		t.Players[playerIndex].Typing = false
+	}
+}
+
+func appendTableChat(ctx context.Context, s *Session, d *CommandData, t *Table) {
 	// Store the chat in memory
 	userID := 0
 	if s != nil {
@@ -259,29 +296,6 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 		},
 		room: d.Room,
 	}).wire())
-
-	// Check for commands
-	chatCommand(ctx, s, d, t)
-
-	// If this user was typing, set them so that they are not typing
-	// Check for spectators first in case this is a shared replay that the player happened to be in
-	if d.Server {
-		return
-	}
-
-	playerIndex := t.GetPlayerIndexFromID(s.UserID)
-	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID)
-	if spectatorIndex != -1 {
-		sp := t.Spectators[spectatorIndex]
-		if sp.Typing {
-			sp.Typing = false
-		}
-	} else if playerIndex != -1 {
-		p := t.Players[playerIndex]
-		if p.Typing {
-			p.Typing = false
-		}
-	}
 }
 
 func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {

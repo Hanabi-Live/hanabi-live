@@ -19,10 +19,6 @@ const tableSnapshotVersion = 2
 
 var snapshotFilesMutex sync.Mutex
 
-func encodeTableSnapshot(t *Table) ([]byte, error) {
-	return encodeTableSnapshotAt(t, time.Now())
-}
-
 func encodeTableSnapshotAt(t *Table, savedAt time.Time) ([]byte, error) {
 	// Retain the top-level table layout used by legacy snapshots.
 	return json.Marshal(struct {
@@ -71,6 +67,10 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 	}
 	if g.StartedTimer && g.DatetimeTurnBegin.IsZero() {
 		return nil, errors.New("table snapshot has no start time for its running clock")
+	}
+	if g.EndCondition < EndConditionInProgress || g.EndCondition > EndConditionTerminatedByVote ||
+		(g.EndCondition != EndConditionInProgress && g.DatetimeFinished.IsZero()) {
+		return nil, errors.New("table snapshot has invalid terminal state")
 	}
 	if g.DeckIndex < 0 || g.DeckIndex > len(g.Deck) || len(g.Deck) != len(g.CardIdentities) {
 		return nil, errors.New("table snapshot has an invalid deck")

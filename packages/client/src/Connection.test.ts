@@ -2,9 +2,13 @@ import { describe, expect, test } from "@jest/globals";
 import { Connection } from "./Connection";
 
 describe("WebSocket resume safety", () => {
-  test("a reconnect probe never sends gameplay or chat commands", () => {
+  test("resume probes stay inert and normal commands work without randomUUID", () => {
     // eslint-disable-next-line unicorn/no-unnecessary-global-this
     const originalWebSocket = globalThis.WebSocket;
+    const originalRandomUUID = Object.getOwnPropertyDescriptor(
+      crypto,
+      "randomUUID",
+    );
     const sockets: FakeWebSocket[] = [];
 
     class FakeWebSocket {
@@ -29,6 +33,10 @@ describe("WebSocket resume safety", () => {
     }
 
     globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
+    Object.defineProperty(crypto, "randomUUID", {
+      configurable: true,
+      value: undefined,
+    });
     try {
       const probe = new Connection(
         "ws://localhost/ws?reconnect=1",
@@ -42,8 +50,26 @@ describe("WebSocket resume safety", () => {
       const initial = new Connection("ws://localhost/ws", false);
       initial.send("chat", { room: "lobby", msg: "allowed" });
       expect(sockets[1]?.sent).toHaveLength(1);
+      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      const first = sockets[1]?.sent[1];
+      const second = sockets[1]?.sent[2];
+      expect(first).toMatch(/"requestID":"[\d\-a-f]+"/u);
+      expect(second).not.toBe(first);
+      const retry = { tableID: 123, requestID: "original-request" };
+      initial.send("pause", retry);
+      initial.send("pause", retry);
+      expect(sockets[1]?.sent[3]).toBe(sockets[1]?.sent[4]);
+      expect(sockets[1]?.sent[3]).toContain("original-request");
+      initial.send("tagDelete", { tableID: 123, msg: "private tag" });
+      expect(sockets[1]?.sent[5]).toMatch(/"requestID":"[\da-f]{32}"/u);
     } finally {
       globalThis.WebSocket = originalWebSocket;
+      if (originalRandomUUID === undefined) {
+        Reflect.deleteProperty(crypto, "randomUUID");
+      } else {
+        Object.defineProperty(crypto, "randomUUID", originalRandomUUID);
+      }
     }
   });
 });
