@@ -17,12 +17,6 @@ type GameParticipantsRow struct {
 	CharacterMetadata   int
 }
 
-func (*GameParticipants) BulkInsert(gameParticipantsRows []*GameParticipantsRow) error {
-	SQLString, valueArgs := getGameParticipantsBulkInsert(gameParticipantsRows)
-	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
-	return err
-}
-
 func (*GameParticipants) BulkInsertTx(
 	tx pgx.Tx,
 	gameParticipantsRows []*GameParticipantsRow,

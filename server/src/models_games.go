@@ -37,10 +37,6 @@ type GamesRow struct {
 	OtherScores int    `json:"other_scores"`
 }
 
-func (*Games) Insert(gameRow GameRow) (int, error) {
-	return insertGame(db, gameRow)
-}
-
 type gameRowQuerier interface {
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }

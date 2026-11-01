@@ -234,10 +234,27 @@ authorization.
   helpers. Inspect those consumers before removal. The snapshot decoder removed
   the repetitive action-restoration branch that incorrectly decoded
   `playerTimes` as a draw.
-- Remaining: continuous recovery, lifecycle ownership, operation metrics,
+- Remaining: continuous recovery, lifecycle ownership, recovery/queue metrics,
   tracked migrations, bounded database calls, toolchain/artifact modernization,
   engine compatibility, the TypeScript vertical slice, and the final migration
   decision. None of these phases is complete.
+
+The local administration server now exposes `/metrics` on
+`127.0.0.1:${LOCALHOST_PORT:-8081}`. It reports process uptime and memory,
+per-command in-flight/completed counts, total/maximum handler duration,
+cumulative latency buckets in seconds, and database-pool acquisition counters.
+Bucket `+Inf` includes every completed handler. Counters reset on restart;
+collect snapshots externally to measure rates and latency distributions over
+time. Only recognized commands that reach dispatch are counted; rejected
+protocol messages are not. Completed counts include handlers that reject an
+action, not just successful moves. No player names, command payloads, or
+database credentials are included. Reading metrics does not query the database,
+and this endpoint is not a database health check.
+
+The accompanying reachability audit confirmed that the non-transactional game,
+participant, and action insertion wrappers had no consumers. They were removed;
+game completion retains its transactional write path. The other 15 unreachable
+functions require separate maintenance/API review.
 
 ### Phase 1: Strengthen Go
 

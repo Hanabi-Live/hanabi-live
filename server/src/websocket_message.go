@@ -113,6 +113,11 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Call the command handler for this command
 	logger.Info("Command - " + command + " - " + s.Username)
+	started := time.Now()
+	serverCommandMetrics.start(command)
+	defer func() {
+		serverCommandMetrics.finish(command, time.Since(started))
+	}()
 	commandFunction(ctx, s, d)
 }
 

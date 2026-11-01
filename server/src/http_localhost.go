@@ -46,6 +46,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
 	httpRouter.GET("/maintenance", httpLocalhostMaintenance)
 	httpRouter.GET("/memory", httpLocalhostMemory)
+	httpRouter.GET("/metrics", httpLocalhostMetrics)
 	httpRouter.GET("/print", httpLocalhostPrint)
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
