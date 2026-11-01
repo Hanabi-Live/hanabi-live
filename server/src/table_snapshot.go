@@ -54,8 +54,10 @@ func decodeTableSnapshot(data []byte) (*Table, error) {
 	g := t.Game
 	if g.RecoveryID == "" {
 		g.RecoveryID = uuid.NewV4().String()
-	} else if _, err := uuid.FromString(g.RecoveryID); err != nil {
+	} else if id, err := uuid.FromString(g.RecoveryID); err != nil {
 		return nil, fmt.Errorf("invalid game recovery ID: %w", err)
+	} else {
+		g.RecoveryID = id.String()
 	}
 	if t.ID == 0 || !t.Running || t.Replay || t.Options == nil || t.ExtraOptions == nil || g.Variant == nil {
 		return nil, errors.New("table snapshot is missing active-game metadata")

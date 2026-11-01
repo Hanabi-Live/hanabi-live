@@ -200,16 +200,101 @@ func TestWriteTableSnapshotFailure(t *testing.T) {
 }
 
 func TestRestoreTableIgnoresInterruptedWrite(t *testing.T) {
-	filename := filepath.Join(t.TempDir(), ".42.json.tmp-interrupted")
+	oldTables, oldPath := tables, tablesPath
+	t.Cleanup(func() { tables, tablesPath = oldTables, oldPath })
+	tables, tablesPath = NewTables(), t.TempDir()
+	filename := filepath.Join(tablesPath, ".42.json.tmp-interrupted")
 	if err := os.WriteFile(filename, []byte(`{"Game":`), 0600); err != nil {
 		t.Fatal(err)
 	}
-	info, err := os.Stat(filename)
-	if err != nil {
+	if err := restoreTables(); err != nil {
 		t.Fatal(err)
 	}
-	if restoreTable(NewMiscContext("test"), info) {
+	if len(tables.GetList(true)) != 0 {
 		t.Fatal("an interrupted snapshot write should not be restored")
+	}
+}
+
+func TestRestoreTablesValidatesEntireSnapshotSet(t *testing.T) {
+	for _, scenario := range []string{"malformed later file", "duplicate table", "duplicate game", "duplicate game spelling", "existing table"} {
+		t.Run(scenario, func(t *testing.T) {
+			oldTables, oldPath := tables, tablesPath
+			tables, tablesPath = NewTables(), t.TempDir()
+			t.Cleanup(func() {
+				ctx := NewMiscContext("test")
+				for _, table := range tables.GetList(true) {
+					table.Lock(ctx)
+					table.cancelTimers()
+					table.Unlock(ctx)
+				}
+				tables, tablesPath = oldTables, oldPath
+			})
+
+			first := snapshotTestTable()
+			first.Game.RecoveryID = "9c262643-43d4-44f4-ad91-9b000014de20"
+			firstData, err := encodeTableSnapshot(first)
+			if err != nil {
+				t.Fatal(err)
+			}
+			second := snapshotTestTable()
+			second.ID = 43
+			if scenario == "duplicate table" {
+				second.ID = first.ID
+			}
+			if scenario == "duplicate game" {
+				second.Game.RecoveryID = first.Game.RecoveryID
+			}
+			if scenario == "duplicate game spelling" {
+				second.Game.RecoveryID = strings.ToUpper(first.Game.RecoveryID)
+			}
+			if scenario == "existing table" {
+				tables.Set(second.ID, second)
+			}
+			secondData, err := encodeTableSnapshot(second)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if scenario == "malformed later file" {
+				secondData = []byte(`{"Game":`)
+			}
+			for filename, data := range map[string][]byte{"42.json": firstData, "43.json": secondData} {
+				if err := writeTableSnapshot(filepath.Join(tablesPath, filename), data); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := restoreTables(); err == nil {
+				t.Fatal("invalid snapshot set was accepted")
+			}
+			if _, exists := tables.Get(first.ID, true); exists || len(tables.playing) != 0 {
+				t.Fatal("failed restoration published a partial table set")
+			}
+			for filename, want := range map[string][]byte{"42.json": firstData, "43.json": secondData} {
+				got, err := os.ReadFile(filepath.Join(tablesPath, filename))
+				if err != nil || string(got) != string(want) {
+					t.Fatalf("failed restoration consumed or changed %s: %v", filename, err)
+				}
+			}
+			if scenario == "malformed later file" {
+				repaired, err := encodeTableSnapshot(second)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := writeTableSnapshot(filepath.Join(tablesPath, "43.json"), repaired); err != nil {
+					t.Fatal(err)
+				}
+				if err := restoreTables(); err != nil {
+					t.Fatal(err)
+				}
+				if len(tables.GetList(true)) != 2 || len(tables.playing[1]) != 2 {
+					t.Fatal("repair did not recover every table and player relationship")
+				}
+				for _, filename := range []string{"42.json", "43.json"} {
+					if _, err := os.Stat(filepath.Join(tablesPath, filename)); !os.IsNotExist(err) {
+						t.Fatalf("successful restoration did not consume %s: %v", filename, err)
+					}
+				}
+			}
+		})
 	}
 }
 

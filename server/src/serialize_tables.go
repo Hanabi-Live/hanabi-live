@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
-	"log"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -59,63 +58,86 @@ func serializeTables() bool {
 
 // restoreTables recreates tables that were ongoing at the time of the last server restart
 // Tables were serialized to flat files in the "tablesPath" directory
-func restoreTables() {
+func restoreTables() error {
 	ctx := NewMiscContext("restoreTables")
+	snapshotFilesMutex.Lock()
+	defer snapshotFilesMutex.Unlock()
 
-	// We first acquire the tables lock so that we can safely modify the tables map
+	files, err := os.ReadDir(tablesPath)
+	if err != nil {
+		return fmt.Errorf("read table snapshot directory: %w", err)
+	}
+
+	type snapshotFile struct {
+		filename string
+		table    *Table
+	}
+	var snapshots []snapshotFile
+	tableIDs := make(map[uint64]string)
+	recoveryIDs := make(map[string]string)
+	for _, file := range files {
+		if file.IsDir() || !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+		filename := path.Join(tablesPath, file.Name())
+		data, err := os.ReadFile(filename)
+		if err != nil {
+			return fmt.Errorf("read table snapshot %q: %w", filename, err)
+		}
+		table, err := decodeTableSnapshot(data)
+		if err != nil {
+			return fmt.Errorf("decode table snapshot %q: %w", filename, err)
+		}
+		if previous, exists := tableIDs[table.ID]; exists {
+			return fmt.Errorf("duplicate table ID %d in %q and %q", table.ID, previous, filename)
+		}
+		if previous, exists := recoveryIDs[table.Game.RecoveryID]; exists {
+			return fmt.Errorf("duplicate game recovery ID in %q and %q", previous, filename)
+		}
+		tableIDs[table.ID] = filename
+		recoveryIDs[table.Game.RecoveryID] = filename
+		snapshots = append(snapshots, snapshotFile{filename, table})
+	}
+
+	if len(snapshots) == 0 {
+		logger.Info("No previously running tables to restore.")
+		return nil
+	}
+
 	tables.Lock(ctx)
 	defer tables.Unlock(ctx)
-
-	var files []os.FileInfo
-	if v, err := ioutil.ReadDir(tablesPath); err != nil {
-		log.Fatal("Failed to get the files in the \""+tablesPath+"\" directory: ", err)
-		return
-	} else {
-		files = v
-	}
-
-	if len(files) == 0 {
-		logger.Info("No previously running tables to restore.")
-		return
-	}
-
-	numTablesRestored := 0
-	for _, f := range files {
-		if restoreTable(ctx, f) {
-			numTablesRestored++
+	for _, snapshot := range snapshots {
+		if _, exists := tables.Get(snapshot.table.ID, false); exists {
+			return fmt.Errorf("table %d already exists while restoring %q", snapshot.table.ID, snapshot.filename)
 		}
+	}
+
+	// Validate the entire set before changing membership, starting timers, or consuming files.
+	for _, snapshot := range snapshots {
+		restoreTable(ctx, snapshot.table)
+	}
+	for _, snapshot := range snapshots {
+		if err := os.Remove(snapshot.filename); err != nil {
+			return fmt.Errorf("remove restored table snapshot %q: %w", snapshot.filename, err)
+		}
+	}
+	if err := syncSnapshotDirectory(tablesPath); err != nil {
+		return fmt.Errorf("sync restored table snapshot directory: %w", err)
 	}
 
 	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
-	msg := "Restored " + strconv.Itoa(numTablesRestored) + " previously running table"
-	if numTablesRestored >= 2 {
+	msg := "Restored " + strconv.Itoa(len(snapshots)) + " previously running table"
+	if len(snapshots) >= 2 {
 		msg += "s"
 	}
 	msg += "."
 	logger.Info(msg)
+	return nil
 }
 
-func restoreTable(ctx context.Context, f os.FileInfo) bool {
-	if f.IsDir() || !strings.HasSuffix(f.Name(), ".json") {
-		return false
-	}
-
-	tablePath := path.Join(tablesPath, f.Name())
-	var tableJSON []byte
-	if v, err := os.ReadFile(tablePath); err != nil {
-		log.Fatal("Failed to read \""+tablePath+"\":", err)
-		return false
-	} else {
-		tableJSON = v
-	}
-
-	t, err := decodeTableSnapshot(tableJSON)
-	if err != nil {
-		logger.Fatal("Failed to unmarshal \"" + tablePath + "\": " + err.Error())
-		return false
-	}
+func restoreTable(ctx context.Context, t *Table) {
 	g := t.Game
 	t.Lock(ctx)
 	defer t.Unlock(ctx)
@@ -131,11 +153,5 @@ func restoreTable(ctx context.Context, f os.FileInfo) bool {
 	tables.Set(t.ID, t)
 	logger.Info(t.GetName() + "Restored table.")
 
-	if err := os.Remove(tablePath); err != nil {
-		logger.Fatal("Failed to delete \"" + tablePath + "\": " + err.Error())
-	}
-
 	t.recordActivity(ctx)
-
-	return true
 }

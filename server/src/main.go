@@ -202,7 +202,10 @@ func main() {
 	datetimeStarted = time.Now()
 
 	// Restore tables that were ongoing at the time of the last server restart
-	restoreTables()
+	if err := restoreTables(); err != nil {
+		logger.Fatal("Failed to restore tables: " + err.Error())
+		return
+	}
 
 	// Specify that we are running the HTTP framework in production
 	// (it is "gin.DebugMode" by default)
