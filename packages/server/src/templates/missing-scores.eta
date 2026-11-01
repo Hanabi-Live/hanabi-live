@@ -1,0 +1,433 @@
+{{ layout("./layout") }}
+
+{{
+  // The template engine only accepts strings, numbers, and booleans, so the lists are passed as
+  // JSON.
+  const players = JSON.parse(it.playersJSON);
+  const rows = JSON.parse(it.rowsJSON);
+}}
+
+<style>
+  th:hover {
+    background-color: rgb(220, 220, 220);
+    cursor: pointer;
+  }
+  .stat-description {
+    /* Override the existing width since the columns are shorter on this page */
+    width: 11em;
+  }
+  .advanced-filters-toggle-wrapper {
+    text-align: right;
+    margin-bottom: 1em;
+  }
+  .advanced-filters {
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    border-radius: 4px;
+    padding: 1.5em;
+    margin-bottom: 2em;
+  }
+  .advanced-filters[hidden],
+  #advanced-filters-error[hidden] {
+    display: none;
+  }
+  .advanced-filters-players {
+    margin: 0.5em 0 0 0;
+  }
+  .advanced-filters-players li {
+    margin-right: 1.5em;
+  }
+</style>
+
+<div id="page-wrapper">
+  <!-- Header -->
+  <header id="header">
+    <h1>{{~ include("./logo") }}</h1>
+    <nav id="nav"></nav>
+  </header>
+
+  <!-- Main -->
+  <section id="main" class="container max history-page">
+    <header>
+      <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
+    </header>
+    <div class="row uniform 100%">
+      <div class="col-12">
+        <section class="box">
+          <h2 class="align-center">{{= it.namesTitle }}</h2>
+
+          <div class="advanced-filters-toggle-wrapper">
+            <button
+              type="button"
+              id="advanced-filters-toggle"
+              class="button small{{ if (it.advancedFiltersActive) { }} primary{{ } }}"
+              title="Advanced filters"
+              aria-expanded="{{= it.advancedFiltersActive ? 'true' : 'false' }}"
+              aria-controls="advanced-filters"
+            >
+              <i class="fas fa-cog"></i>
+              {{ if (it.advancedFiltersActive) { }}&nbsp;Filters active{{ } }}
+            </button>
+          </div>
+
+          <form
+            id="advanced-filters"
+            class="advanced-filters"
+            {{ if (!it.advancedFiltersActive) { }}hidden{{ } }}
+          >
+            <div class="row gtr-uniform">
+              <div class="col-12">
+                <strong>Players included in the calculation</strong>
+                <ul class="horizontal advanced-filters-players">
+                  {{ for (const [playerIndex, player] of players.entries()) { }}
+                    <li>
+                      <input
+                        type="checkbox"
+                        id="include-player-{{= playerIndex }}"
+                        class="include-player"
+                        value="{{= player.name }}"
+                        {{ if (!player.excluded) { }}checked{{ } }}
+                      />
+                      <label for="include-player-{{= playerIndex }}">{{= player.name }}</label>
+                    </li>
+                  {{ } }}
+                </ul>
+              </div>
+              <div class="col-12">
+                <label for="exclude-variants">
+                  Exclude variants (comma-separated, matches any part of the name;
+                  "Rainbow (3 Suits), Pink" excludes one Rainbow and all Pink variants)
+                </label>
+                <input
+                  type="text"
+                  id="exclude-variants"
+                  value="{{= it.excludeVariants ?? '' }}"
+                />
+              </div>
+              <div class="col-6 col-12-mobilep">
+                <label for="min-efficiency">Min efficiency</label>
+                <input
+                  type="number"
+                  id="min-efficiency"
+                  step="0.01"
+                  min="0"
+                  placeholder="e.g. 1.00"
+                  value="{{= it.minEfficiency ?? '' }}"
+                />
+              </div>
+              <div class="col-6 col-12-mobilep">
+                <label for="max-efficiency">Max efficiency</label>
+                <input
+                  type="number"
+                  id="max-efficiency"
+                  step="0.01"
+                  min="0"
+                  placeholder="e.g. 1.50"
+                  value="{{= it.maxEfficiency ?? '' }}"
+                />
+              </div>
+              <div class="col-12">
+                <p id="advanced-filters-error" class="red" hidden></p>
+                <ul class="actions">
+                  <li><input type="submit" value="Apply" class="primary" /></li>
+                  <li><input type="button" id="advanced-filters-reset" value="Reset" /></li>
+                </ul>
+              </div>
+            </div>
+          </form>
+
+          <!-- Pagination controls -->
+          <div class="pager">
+            Page:
+            <select class="gotoPage"></select>
+            <i class="fas fa-fast-backward first"></i>
+            <i class="fas fa-backward prev"></i>
+            <span class="pagedisplay"></span>
+            <i class="fas fa-forward next"></i>
+            <i class="fas fa-fast-forward last"></i>
+            <select class="pagesize" title="Select page size">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="all">All Rows</option>
+            </select>
+          </div>
+          <!-- End of pagination controls -->
+
+          <table class="history">
+            <thead>
+              <tr>
+                <th width="55%">Variant</th>
+                <th width="15%" class="center"># of Players</th>
+                <th width="15%" class="sorter-current-max-score center">
+                  Highest Score
+                </th>
+                <th width="15%" class="sorter-efficiency center">Efficiency</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{ for (const row of rows) { }}
+                <tr
+                  class="missing-scores-row missing-scores-row-players-{{= row.numPlayers }}"
+                >
+                  <td>{{= row.name }}</td>
+                  <td class="center">{{= row.numPlayers }}</td>
+                  <td class="center">
+                    {{= row.score }} / {{= row.maxScore }} &nbsp;
+                    {{ if (row.modifier === 1) { }}
+                      <i
+                        class="fas fa-times score-modifier red tooltip"
+                        data-tooltip-content="#modifier-deckplays"
+                      ></i>
+                    {{ } else if (row.modifier === 2) { }}
+                      <i
+                        class="fas fa-times score-modifier red tooltip"
+                        data-tooltip-content="#modifier-emptyclues"
+                      ></i>
+                    {{ } else if (row.modifier === 3) { }}
+                      <i
+                        class="fas fa-times score-modifier red tooltip"
+                        data-tooltip-content="#modifier-deckplays-emptyclues"
+                      ></i>
+                    {{ } }}
+                  </td>
+                  <td class="center {{= row.efficiencyClass }}">
+                    {{= row.efficiency }}
+                  </td>
+                </tr>
+              {{ } }}
+            </tbody>
+          </table>
+
+          <!-- Pagination controls -->
+          <div class="pager">
+            Page:
+            <select class="gotoPage"></select>
+            <i class="fas fa-fast-backward first"></i>
+            <i class="fas fa-backward prev"></i>
+            <span class="pagedisplay"></span>
+            <i class="fas fa-forward next"></i>
+            <i class="fas fa-fast-forward last"></i>
+            <select class="pagesize" title="Select page size">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="all">All Rows</option>
+            </select>
+          </div>
+          <!-- End of pagination controls -->
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Tooltips -->
+<div class="hidden">
+  <div id="modifier-deckplays" class="profile-tooltip">
+    This score is not legitimate since the
+    <strong>Bottom-Deck Blind-Play</strong> option was used.
+  </div>
+  <div id="modifier-emptyclues" class="profile-tooltip">
+    This score is not legitimate since the <strong>Empty Clue</strong> option
+    was used.
+  </div>
+  <div id="modifier-oneextracard" class="profile-tooltip">
+    This score is not legitimate since the
+    <strong>One Extra Card</strong> option was used.
+  </div>
+  <div id="modifier-onelesscard" class="profile-tooltip">
+    This score is not legitimate since the
+    <strong>One Less Card</strong> option was used.
+  </div>
+  <div id="modifier-allornothing" class="profile-tooltip">
+    This score is not legitimate since the
+    <strong>All or Nothing</strong> option was used.
+  </div>
+</div>
+
+<script
+  type="text/javascript"
+  src="/public/js/lib/jquery-3.5.0.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="/public/js/lib/widget-filter-2.30.0.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="/public/js/lib/tooltipster.bundle.min.js"
+></script>
+<script type="text/javascript">
+  $(document).ready(() => {
+    // Initialize the tooltips
+    $('.tooltip').tooltipster({
+      animation: 'grow',
+      contentAsHTML: true,
+      delay: 0,
+      theme: [
+        'tooltipster-shadow',
+        'tooltipster-shadow-big',
+      ],
+    });
+    const pagerOptions = {
+      // target the pager markup - see the HTML block below
+      container: $(".pager"),
+      // output string - default is '{page}/{totalPages}';
+      // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+      // also {page:input} & {startRow:input} will add a modifiable input in place of the value
+      output: '{startRow} - {endRow} / {filteredRows} ({totalRows})',
+      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
+      // table row set to a height to compensate; default is false
+      fixedHeight: true,
+      // remove rows from the table to speed up the sort of large tables.
+      // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+      removeRows: false,
+      // go to page selector - select dropdown that sets the current page
+      cssGoto: '.gotoPage'
+    };
+
+    // Add parser for $currentScore / $maxScore column
+    $.tablesorter.addParser({
+      id: 'current-max-score', // matches all table header cells with class "sorter-current-max-score"
+      is: function (s, table, cell, $cell) {
+        // return false so this parser is not auto detected
+        return false;
+      },
+      format: function (s, table, cell, cellIndex) {
+        try {
+          // Expected s format: int / int &nbsp;[<i ...></i>]
+          const [currentScore, maxScore] = s.split(" / ");
+          if (maxScore == 0) {
+            return 0;
+          }
+          return currentScore / maxScore;
+        } catch {
+          return 0;
+        }
+      },
+      type: 'numeric'
+    });
+
+    // Initialize the table sorting
+    $('table:not(.plain)').tablesorter({
+      headers: {
+        0: { filter: false },
+        1: { filter: false, sorter: false },
+        2: { filter: false },
+        3: { filter: false },
+      },
+      widgets: ['zebra', 'filter'],
+      // Filter options
+      // From https://mottie.github.io/tablesorter/docs/example-widget-filter.html
+      widgetOptions: {
+        filter_cssFilter   : '',
+        filter_childRows   : false,
+        filter_hideFilters : false,
+        filter_ignoreCase  : true,
+        filter_reset : '',
+        filter_saveFilters : true,
+        filter_searchDelay : 300,
+        filter_startsWith  : false,
+        filter_functions : {
+        }
+      }
+    })
+
+    // Bind to pager events
+    // *********************
+    .bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c) {
+      var msg = '"</span> event triggered, ' + (e.type === 'pagerChange' ? 'going to' : 'now on') +
+        ' page <span class="typ">' + (c.page + 1) + '/' + c.totalPages + '</span>';
+      $('#display')
+        .append('<li><span class="str">"' + e.type + msg + '</li>')
+        .find('li:first').remove();
+    })
+
+    .bind('filterEnd', () => { setRowColors() })
+
+    // Initialize the pager plugin
+    // ****************************
+    .tablesorterPager(pagerOptions);
+
+    initSharedMissingScoresFilters();
+  });
+
+  const initSharedMissingScoresFilters = () => {
+    // The gear icon shows/hides the advanced filters
+    $('#advanced-filters-toggle').click(() => {
+      const form = document.getElementById('advanced-filters');
+      form.hidden = !form.hidden;
+      $('#advanced-filters-toggle').attr('aria-expanded', (!form.hidden).toString());
+    });
+
+    // The filters are passed to the server as query parameters, which keeps the URL shareable
+    // e.g. "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5"
+    $('#advanced-filters').submit((event) => {
+      event.preventDefault();
+
+      const excludedPlayers = $('.include-player:not(:checked)')
+        .map((_, element) => element.value)
+        .get();
+      if (excludedPlayers.length === $('.include-player').length) {
+        $('#advanced-filters-error').text('At least one player must be included.');
+        document.getElementById('advanced-filters-error').hidden = false;
+        return;
+      }
+
+      const minEfficiency = $('#min-efficiency').val().trim();
+      const maxEfficiency = $('#max-efficiency').val().trim();
+      if (
+        minEfficiency !== '' &&
+        maxEfficiency !== '' &&
+        Number(minEfficiency) > Number(maxEfficiency)
+      ) {
+        $('#advanced-filters-error').text('The min efficiency can not be greater than the max efficiency.');
+        document.getElementById('advanced-filters-error').hidden = false;
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (excludedPlayers.length > 0) {
+        params.set('excludePlayers', excludedPlayers.join(','));
+      }
+      const excludeVariants = $('#exclude-variants').val().trim();
+      if (excludeVariants !== '') {
+        params.set('excludeVariants', excludeVariants);
+      }
+      if (minEfficiency !== '') {
+        params.set('minEfficiency', minEfficiency);
+      }
+      if (maxEfficiency !== '') {
+        params.set('maxEfficiency', maxEfficiency);
+      }
+
+      const query = params.toString();
+      window.location = window.location.pathname + (query === '' ? '' : `?${query}`);
+    });
+
+    $('#advanced-filters-reset').click(() => {
+      window.location = window.location.pathname;
+    });
+  }
+
+  // In the Alpha HTML5 template, table rows are supposed to alternate colors
+  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
+  const setRowColors = () => {
+    const selector = "table.history.tablesorter tbody tr:not(.filtered)";
+    const numRows = $(selector).length;
+    const color1 = '#f8f8f8';
+    const color2 = 'white';
+    for (let i = 0; i < numRows; i++) {
+      const colorForThisRow = i % 2 == 0 ? color1 : color2;
+      $(selector).eq(i).css('background-color', colorForThisRow);
+    }
+  }
+</script>

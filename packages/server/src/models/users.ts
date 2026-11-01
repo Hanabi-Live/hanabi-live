@@ -98,6 +98,21 @@ export const users = {
     return user.username;
   },
 
+  /** @returns The user's ID and their username with its original capitalization. */
+  getByNormalizedUsername: async (
+    normalizedUsername: string,
+  ): Promise<{ id: UserID; username: string } | undefined> => {
+    const rows = await db
+      .select({ id: usersTable.id, username: usersTable.username })
+      .from(usersTable)
+      .where(eq(usersTable.normalizedUsername, normalizedUsername))
+      .limit(1);
+    const row = rows[0];
+    return row === undefined
+      ? undefined
+      : { id: row.id as UserID, username: row.username };
+  },
+
   getIDByNormalizedUsername: async (
     normalizedUsername: string,
   ): Promise<UserID | undefined> => {

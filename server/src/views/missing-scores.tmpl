@@ -4,6 +4,26 @@
       /* Override the existing width since the columns are shorter on this page */
       width: 11em;
     }
+    .advanced-filters-toggle-wrapper {
+      text-align: right;
+      margin-bottom: 1em;
+    }
+    .advanced-filters {
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 4px;
+      padding: 1.5em;
+      margin-bottom: 2em;
+    }
+    .advanced-filters[hidden],
+    #advanced-filters-error[hidden] {
+      display: none;
+    }
+    .advanced-filters-players {
+      margin: 0.5em 0 0 0;
+    }
+    .advanced-filters-players li {
+      margin-right: 1.5em;
+    }
   </style>
 
   {{ if .NumMaxScores }}
@@ -69,6 +89,97 @@
     </ul>
 
     <br /><br /><br />
+  {{ end }}
+
+  {{ if .SharedMissingScores }}
+    {{ $toggleClass := "button small" }}
+    {{ if .AdvancedFiltersActive }}
+      {{ $toggleClass = "button small primary" }}
+    {{ end }}
+    <div class="advanced-filters-toggle-wrapper">
+      <button
+        type="button"
+        id="advanced-filters-toggle"
+        class="{{ $toggleClass }}"
+        title="Advanced filters"
+        aria-expanded="{{ .AdvancedFiltersActive }}"
+        aria-controls="advanced-filters"
+      >
+        <i class="fas fa-cog"></i>
+        {{ if .AdvancedFiltersActive }}&nbsp;Filters active{{ end }}
+      </button>
+    </div>
+
+    <form
+      id="advanced-filters"
+      class="advanced-filters"
+      {{ if not .AdvancedFiltersActive }}hidden{{ end }}
+    >
+      <div class="row gtr-uniform">
+        <div class="col-12">
+          <strong>Players included in the calculation</strong>
+          <ul class="horizontal advanced-filters-players">
+            {{ range $playerIndex, $player := .SharedMissingScoresPlayers }}
+              <li>
+                <input
+                  type="checkbox"
+                  id="include-player-{{ $playerIndex }}"
+                  class="include-player"
+                  value="{{ .Name }}"
+                  {{ if not .Excluded }}checked{{ end }}
+                />
+                <label for="include-player-{{ $playerIndex }}"
+                  >{{ .Name }}</label
+                >
+              </li>
+            {{ end }}
+          </ul>
+        </div>
+        <div class="col-12">
+          <label for="exclude-variants">
+            Exclude variants (comma-separated, matches any part of the name;
+            "Rainbow (3 Suits), Pink" excludes one Rainbow and all Pink
+            variants)
+          </label>
+          <input
+            type="text"
+            id="exclude-variants"
+            value="{{ .ExcludeVariants }}"
+          />
+        </div>
+        <div class="col-6 col-12-mobilep">
+          <label for="min-efficiency">Min efficiency</label>
+          <input
+            type="number"
+            id="min-efficiency"
+            step="0.01"
+            min="0"
+            placeholder="e.g. 1.00"
+            value="{{ .MinEfficiency }}"
+          />
+        </div>
+        <div class="col-6 col-12-mobilep">
+          <label for="max-efficiency">Max efficiency</label>
+          <input
+            type="number"
+            id="max-efficiency"
+            step="0.01"
+            min="0"
+            placeholder="e.g. 1.50"
+            value="{{ .MaxEfficiency }}"
+          />
+        </div>
+        <div class="col-12">
+          <p id="advanced-filters-error" class="red" hidden></p>
+          <ul class="actions">
+            <li><input type="submit" value="Apply" class="primary" /></li>
+            <li>
+              <input type="button" id="advanced-filters-reset" value="Reset" />
+            </li>
+          </ul>
+        </div>
+      </div>
+    </form>
   {{ end }}
 
   {{ if ne .RequestedNumPlayers 0 }}
