@@ -24,7 +24,7 @@ motd.txt*
 /packages/data/src/version.js
 
 # Various directories
-/experimental/rust-server/target
+/experimental/rust-server/**/target
 /backups
 /letsencrypt
 /logs

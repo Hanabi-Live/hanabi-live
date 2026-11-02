@@ -1,38 +1,103 @@
-use anyhow::{Result, ensure};
-use axum::serve::ListenerExt;
+use anyhow::{Context, Result, ensure};
 use hanabi_rust_poc::{
-    actors::{Hub, HubCommand, TableCommand},
+    actors::Hub,
     config::Config,
+    game,
+    lifecycle::{Control, StopReason, drain_game_runtime},
+    operations,
+    public_http::PublicConfig,
+    restart,
     store::Store,
+    tls,
     web::{App, router},
 };
 use std::{
     collections::HashSet,
+    net::{SocketAddr, TcpListener},
     path::Path,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, AtomicU64, Ordering},
-    },
+    sync::{Arc, atomic::Ordering},
+    time::Duration,
 };
-use tokio::sync::{Semaphore, oneshot};
+use tokio::{sync::mpsc, task::JoinSet};
 use tokio_util::task::TaskTracker;
 
 fn main() -> Result<()> {
+    let arguments: Vec<_> = std::env::args().skip(1).collect();
+    if arguments == ["--version"] {
+        println!("{}", restart::version());
+        return Ok(());
+    }
+    ensure!(
+        arguments.is_empty() || arguments == ["--check-startup"],
+        "Only --check-startup and --version are supported"
+    );
+    // Load once before Tokio starts; dotenv values never mutate process-wide environment.
     let config = Config::load(Path::new(".env"))?;
-    tokio::runtime::Builder::new_multi_thread()
+    let version = restart::validate_assets(&config)?;
+    let root = config.root.clone();
+    let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .build()?
-        .block_on(run(config))
+        .build()?;
+    let replace = if arguments.is_empty() {
+        runtime.block_on(run(config, version))?
+    } else {
+        runtime.block_on(tls::configuration(&config))?;
+        false
+    };
+    drop(runtime);
+    if replace {
+        restart::replace(&root)?;
+    }
+    Ok(())
 }
 
-async fn run(config: Config) -> Result<()> {
+fn bind(host: &str, port: u16) -> Result<TcpListener> {
+    let listener = TcpListener::bind((host, port))
+        .with_context(|| format!("Cannot bind listener at {host}:{port}"))?;
+    listener.set_nonblocking(true)?;
+    Ok(listener)
+}
+
+fn http_settings<A>(server: &mut axum_server::Server<SocketAddr, A>) {
+    server
+        .http_builder()
+        .http1()
+        .timer(hyper_util::rt::TokioTimer::new())
+        .header_read_timeout(Duration::from_secs(30))
+        .max_buf_size(64 * 1024);
+    server
+        .http_builder()
+        .http2()
+        .timer(hyper_util::rt::TokioTimer::new())
+        .keep_alive_interval(Some(Duration::from_secs(30)))
+        .keep_alive_timeout(Duration::from_secs(10));
+}
+
+fn request_timeout(router: axum::Router) -> axum::Router {
+    router.layer(tower_http::timeout::TimeoutLayer::with_status_code(
+        axum::http::StatusCode::REQUEST_TIMEOUT,
+        Duration::from_secs(30),
+    ))
+}
+
+async fn run(config: Config, version: String) -> Result<bool> {
     let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
     let mut interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
-    let version = tokio::fs::read_to_string("public/js/bundles/version.txt")
-        .await?
-        .trim()
-        .to_owned();
-    let text = tokio::fs::read_to_string("misc/word_list.txt").await?;
+    let tls_config = tls::configuration(&config).await?;
+    if config.use_tls() {
+        tokio::fs::create_dir_all(config.root.join("letsencrypt/.well-known/acme-challenge"))
+            .await?;
+    }
+    let public = bind(config.listen_host(), config.port())?;
+    let address = public.local_addr()?;
+    let operations_listener = bind("127.0.0.1", config.localhost_port)?;
+    let operations_address = operations_listener.local_addr()?;
+    let redirect = if config.use_tls() {
+        Some(bind(config.listen_host(), 80)?)
+    } else {
+        None
+    };
+    let text = tokio::fs::read_to_string(config.root.join("misc/word_list.txt")).await?;
     let mut seen = HashSet::new();
     let words: Vec<String> = text
         .lines()
@@ -43,57 +108,165 @@ async fn run(config: Config) -> Result<()> {
     ensure!(words.len() >= 3, "Dictionary has too few distinct words");
     let store = Store::connect(&config).await?;
     let tables = TaskTracker::new();
-    let hub = Hub::start(store.clone(), Arc::new(words), tables.clone()).await?;
-    let app = Arc::new(App {
+    let hub = match Hub::start(store.clone(), Arc::new(words), tables.clone()).await {
+        Ok(hub) => hub,
+        Err(error) => {
+            if let Err(close) = store.close().await {
+                eprintln!("Startup storage cleanup failed: {close:#}");
+            }
+            return Err(error).context("Failed to recover durable game state");
+        }
+    };
+    let lease_lost = store.state_lost();
+    let app = App::new(
         store,
         hub,
-        secret: config.secret().to_owned(),
-        version,
-        accepting: AtomicBool::new(true),
-        generation: AtomicU64::new(1),
-        hashing: Arc::new(Semaphore::new(4)),
-        sockets: Arc::new(Semaphore::new(128)),
-        connections: TaskTracker::new(),
-    });
-    let listener = tokio::net::TcpListener::bind(("127.0.0.1", config.port())).await?;
-    let address = listener.local_addr()?;
-    let listener = listener.tap_io(|connection| {
-        if let Err(error) = connection.set_nodelay(true) {
-            eprintln!("Failed to enable TCP_NODELAY: {error}");
-        }
-    });
-    let (stop, stopped) = oneshot::channel::<()>();
-    let service = tokio::spawn(
-        axum::serve(
-            listener,
-            router(app.clone()).into_make_service_with_connect_info::<std::net::SocketAddr>(),
-        )
-        .with_graceful_shutdown(async {
-            let _ = stopped.await;
-        })
-        .into_future(),
+        PublicConfig {
+            root: config.root.clone(),
+            session_secret: config.secret().into(),
+            domain: config.domain.clone().into(),
+            use_tls: config.use_tls(),
+            client_version: version.into(),
+            is_dev: config.is_dev(),
+            seeded_deck: game::seeded_deck,
+            deck_size: game::deck_size,
+        },
+        lease_lost.clone(),
     );
-    println!("Server listening at http://{address}");
-    tokio::select! { _=interrupt.recv()=>{}, _=terminate.recv()=>{} }
+    let (stops, mut stop_requests) = mpsc::channel(1);
+    let control = Control::new(
+        app.hub.clone(),
+        app.store.primary.clone(),
+        config.root.clone(),
+        restart::version().into(),
+        stops,
+    );
+    app.set_runtime(control.clone());
+    control.attach_application(Arc::downgrade(&app));
+    let mut failures = Vec::new();
+    let mut handles = Vec::new();
+    let mut services = JoinSet::new();
+    let startup: Result<()> = async {
+        app.start_integrations(&config.integrations).await?;
+        let public_handle = axum_server::Handle::new();
+        handles.push(public_handle.clone());
+        let service = request_timeout(router(app.clone()))
+            .into_make_service_with_connect_info::<SocketAddr>();
+        if let Some(tls) = tls_config {
+            let mut server = axum_server::from_tcp_rustls(public, tls)?
+                .map(|acceptor| {
+                    acceptor
+                        .handshake_timeout(Duration::from_secs(10))
+                        .acceptor(axum_server::accept::NoDelayAcceptor::new())
+                })
+                .handle(public_handle);
+            http_settings(&mut server);
+            services.spawn(async move { ("HTTPS", server.serve(service).await) });
+        } else {
+            let mut server = axum_server::from_tcp(public)?
+                .acceptor(axum_server::accept::NoDelayAcceptor::new())
+                .handle(public_handle);
+            http_settings(&mut server);
+            services.spawn(async move { ("HTTP", server.serve(service).await) });
+        }
+        let operations_handle = axum_server::Handle::new();
+        handles.push(operations_handle.clone());
+        let mut server = axum_server::from_tcp(operations_listener)?.handle(operations_handle);
+        http_settings(&mut server);
+        let service = request_timeout(operations::router(control.clone()))
+            .into_make_service_with_connect_info::<SocketAddr>();
+        services.spawn(async move { ("operations", server.serve(service).await) });
+        if let Some(redirect) = redirect {
+            let redirect_handle = axum_server::Handle::new();
+            handles.push(redirect_handle.clone());
+            let mut server = axum_server::from_tcp(redirect)?.handle(redirect_handle);
+            http_settings(&mut server);
+            let service = request_timeout(tls::redirect_router(
+                config.root.clone(),
+                &config.domain,
+                address.port(),
+            ))
+            .into_make_service_with_connect_info::<SocketAddr>();
+            services.spawn(async move { ("HTTP redirect", server.serve(service).await) });
+        }
+        app.store.state_health()?;
+        control.activate();
+        println!(
+            "Server listening at {}://{address}",
+            if config.use_tls() { "https" } else { "http" }
+        );
+        println!("Localhost operations listening at http://{operations_address}");
+        println!(
+            "The server has successfully started at: {} ({})",
+            control.started.to_rfc3339(),
+            control.version
+        );
+        Ok(())
+    }
+    .await;
+    let reason = if let Err(error) = startup {
+        StopReason::Failure(format!("Runtime startup failed: {error:#}"))
+    } else {
+        tokio::select! {
+            biased;
+            _=lease_lost.cancelled()=>StopReason::LeaseLost,
+            _=interrupt.recv()=>StopReason::Shutdown,
+            _=terminate.recv()=>StopReason::Shutdown,
+            request=stop_requests.recv()=>request.unwrap_or_else(||StopReason::Failure("Lifecycle control channel closed".into())),
+            service=services.join_next()=>StopReason::Failure(format!("HTTP listener exited unexpectedly: {service:?}"))
+        }
+    };
+    let replace = matches!(reason, StopReason::Restart);
+    match reason {
+        StopReason::LeaseLost => {
+            failures.push("Redis state ownership or durability was lost".into());
+            app.shutdown.cancel();
+        }
+        StopReason::Failure(message) => failures.push(message),
+        _ => {}
+    }
     app.accepting.store(false, Ordering::Release);
-    let (reply, received) = oneshot::channel();
-    app.hub.send(HubCommand::Quiesce(reply)).await?;
-    for table in received.await? {
-        let (reply, drained) = oneshot::channel();
-        if table.sender.send(TableCommand::Drain(reply)).await.is_ok() {
-            drained.await??;
+    control.begin_drain().await;
+    {
+        let admitted = app.admission.write().await;
+        drop(admitted);
+    }
+    match tokio::time::timeout(Duration::from_secs(120), drain_game_runtime(&app, &tables)).await {
+        Ok(Ok(())) => {}
+        Ok(Err(error)) => failures.push(format!("{error:#}")),
+        Err(_) => failures.push(
+            "Game runtime drain exceeded its deadline; shutdown cannot be reported as durable"
+                .into(),
+        ),
+    }
+    app.shutdown.cancel();
+    for handle in handles {
+        handle.graceful_shutdown(Some(Duration::from_secs(30)));
+    }
+    while let Some(service) = services.join_next().await {
+        match service {
+            Ok((_, Ok(()))) => {}
+            Ok((name, Err(error))) => {
+                failures.push(format!("{name} listener shutdown failed: {error}"))
+            }
+            Err(error) => failures.push(format!("HTTP listener task failed: {error}")),
         }
     }
-    tables.close();
-    tables.wait().await;
-    let (reply, received) = oneshot::channel();
-    app.hub.send(HubCommand::Stop(reply)).await?;
-    received.await?;
-    let _ = stop.send(());
-    service.await??;
     app.connections.close();
+    app.background.close();
     app.connections.wait().await;
-    app.store.close().await;
-    println!("Rust PoC drained successfully.");
-    Ok(())
+    app.background.wait().await;
+    if let Err(error) = app.store.state_health() {
+        failures.push(format!("Final state ownership check failed: {error:#}"));
+    }
+    if let Err(error) = app.store.close().await {
+        failures.push(format!("Storage shutdown failed: {error:#}"));
+    }
+    ensure!(
+        failures.is_empty(),
+        "Server shutdown failed: {}",
+        failures.join("; ")
+    );
+    println!("The server successfully shut down.");
+    Ok(replace)
 }

@@ -1,10 +1,21 @@
-// cspell:words hexdigit
 use anyhow::{Context, Result, ensure};
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    net::IpAddr,
+    path::{Path, PathBuf},
+};
 
+#[derive(Clone)]
 pub struct Config {
+    pub root: PathBuf,
     secret: String,
     port: u16,
+    pub localhost_port: u16,
+    pub domain: String,
+    pub tls_cert_file: Option<PathBuf>,
+    pub tls_key_file: Option<PathBuf>,
+    pub integrations: HashMap<String, String>,
+    pub(crate) redis_url: String,
     pub(crate) database: String,
     pub(crate) database_host: String,
     pub(crate) database_port: u16,
@@ -17,48 +28,120 @@ impl Config {
         &self.secret
     }
     pub fn port(&self) -> u16 {
-        self.port
+        if self.use_tls() && self.port == 80 {
+            443
+        } else {
+            self.port
+        }
+    }
+    pub fn use_tls(&self) -> bool {
+        self.tls_cert_file.is_some()
+    }
+    pub fn is_dev(&self) -> bool {
+        matches!(self.domain.as_str(), "localhost" | "127.0.0.1" | "::1")
+            || self.domain.starts_with("192.168.")
+            || self.domain.starts_with("10.")
+    }
+    pub fn listen_host(&self) -> &str {
+        if matches!(self.domain.as_str(), "localhost" | "127.0.0.1") {
+            "127.0.0.1"
+        } else if self.domain == "::1" {
+            "::1"
+        } else {
+            "0.0.0.0"
+        }
     }
 
+    /// Loads an immutable configuration snapshot; never modifies process environment.
     pub fn load(path: &Path) -> Result<Self> {
-        let values = dotenvy::from_path_iter(path)?.collect::<Result<HashMap<_, _>, _>>()?;
-        Self::parse(values)
+        let mut values = dotenvy::from_path_iter(path)?.collect::<Result<HashMap<_, _>, _>>()?;
+        values.extend(std::env::vars());
+        let root = path
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(Path::new("."))
+            .canonicalize()?;
+        Self::from_values(root, values)
     }
 
-    fn parse(values: HashMap<String, String>) -> Result<Self> {
-        let field = |key: &str| {
+    pub fn from_values(root: PathBuf, values: HashMap<String, String>) -> Result<Self> {
+        let field = |key: &str, default: &str| {
             values
                 .get(key)
-                .cloned()
-                .with_context(|| format!("Missing {key}"))
+                .filter(|s| !s.is_empty())
+                .map(String::as_str)
+                .unwrap_or(default)
+                .to_owned()
         };
+        let domain = field("DOMAIN", "localhost");
         ensure!(
-            matches!(field("DOMAIN")?.as_str(), "localhost" | "127.0.0.1"),
-            "The Rust PoC requires a local benchmark fixture"
+            domain.parse::<IpAddr>().is_ok()
+                || domain.split('.').all(|part| !part.is_empty()
+                    && part.len() <= 63
+                    && !part.starts_with('-')
+                    && !part.ends_with('-')
+                    && part.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-')),
+            "Invalid DOMAIN"
         );
-        let database = field("DB_NAME")?;
-        ensure!(
-            database.starts_with("ts_slice_")
-                && database.len() == 41
-                && database[9..].bytes().all(|byte| byte.is_ascii_hexdigit()),
-            "Rust PoC refuses non-benchmark databases"
-        );
-        let database_host = field("DB_HOST")?;
-        ensure!(
-            database_host.starts_with('/')
-                || matches!(database_host.as_str(), "localhost" | "127.0.0.1"),
-            "Rust PoC requires local PostgreSQL"
-        );
-        let secret = field("SESSION_SECRET")?;
+        let secret = field("SESSION_SECRET", "");
         ensure!(secret.len() >= 128, "Session signing key is too short");
+        let redis_url = field("REDIS_URL", "");
+        ensure!(
+            !redis_url.is_empty(),
+            "Missing REDIS_URL: durable Redis state is required"
+        );
+        let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
+        ensure!(
+            matches!(redis.scheme(), "redis" | "rediss" | "unix" | "redis+unix"),
+            "REDIS_URL must use redis, rediss, or redis+unix"
+        );
+        let cert = field("TLS_CERT_FILE", "");
+        let key = field("TLS_KEY_FILE", "");
+        ensure!(
+            cert.is_empty() == key.is_empty(),
+            "TLS_CERT_FILE and TLS_KEY_FILE must both be provided"
+        );
+        let resolve = |value: &str| {
+            if value.is_empty() {
+                None
+            } else {
+                Some(root.join(value))
+            }
+        };
+        let mut integrations = HashMap::new();
+        for key in [
+            "DISCORD_TOKEN",
+            "DISCORD_GUILD_ID",
+            "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
+            "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
+            "DISCORD_PING_CREW_ROLE_NAME",
+            "DISCORD_TRUSTED_TEACHER_ROLE_NAME",
+            "SENTRY_DSN",
+            "GA_TRACKING_ID",
+        ] {
+            if let Some(value) = values.get(key).filter(|v| !v.is_empty()) {
+                integrations.insert(key.into(), value.clone());
+            }
+        }
         Ok(Self {
+            root: root.clone(),
             secret,
-            port: field("PORT")?.parse().context("Invalid PORT")?,
-            database,
-            database_host,
-            database_port: field("DB_PORT")?.parse().context("Invalid DB_PORT")?,
-            database_user: field("DB_USER")?,
-            database_password: field("DB_PASSWORD")?,
+            port: field("PORT", "80").parse().context("Invalid PORT")?,
+            localhost_port: field("LOCALHOST_PORT", "8081")
+                .parse()
+                .context("Invalid LOCALHOST_PORT")?,
+            domain,
+            tls_cert_file: resolve(&cert),
+            tls_key_file: resolve(&key),
+            integrations,
+            redis_url,
+            database: field("DB_NAME", "hanabi"),
+            database_host: field("DB_HOST", "localhost"),
+            database_port: field("DB_PORT", "5432")
+                .parse()
+                .context("Invalid DB_PORT")?,
+            database_user: field("DB_USER", "hanabiuser"),
+            database_password: field("DB_PASSWORD", "1234567890"),
         })
     }
 }
@@ -66,46 +149,38 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
-    fn refuses_production_and_remote_databases_without_mutating_the_environment() {
+    fn validates_runtime_configuration_without_mutating_environment() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let values: HashMap<String, String> = [
-            ("DOMAIN", "localhost"),
-            ("DB_NAME", "ts_slice_00000000000000000000000000000000"),
-            ("DB_HOST", "127.0.0.1"),
-            ("DB_PORT", "5432"),
-            ("DB_USER", "test"),
-            ("DB_PASSWORD", "test"),
-            ("PORT", "0"),
-            ("SESSION_SECRET", &"synthetic".repeat(32)),
+            ("SESSION_SECRET", "synthetic".repeat(32)),
+            ("REDIS_URL", "redis://127.0.0.1:6379".into()),
+            ("DOMAIN", "example.invalid".into()),
+            ("DB_HOST", "database.example.invalid".into()),
         ]
         .into_iter()
-        .map(|(key, value)| (key.into(), value.into()))
+        .map(|(k, v)| (k.into(), v))
         .collect();
-        assert!(Config::parse(values.clone()).is_ok());
+        let before = std::env::var("DOMAIN");
+        let config = Config::from_values(root.clone(), values.clone()).unwrap();
+        assert_eq!(config.listen_host(), "0.0.0.0");
+        assert_eq!(config.port(), 80);
+        assert_eq!(std::env::var("DOMAIN"), before);
         for (key, value) in [
-            ("DOMAIN", "hanab.live"),
-            ("DB_NAME", "production"),
-            ("DB_HOST", "remote.invalid"),
+            ("DOMAIN", "bad/name"),
+            ("PORT", "65536"),
+            ("LOCALHOST_PORT", "-1"),
+            ("SESSION_SECRET", "short"),
+            ("REDIS_URL", "http://localhost"),
+            ("TLS_CERT_FILE", "cert.pem"),
         ] {
-            let mut invalid = values.clone();
-            invalid.insert(key.into(), value.into());
-            assert!(Config::parse(invalid).is_err());
+            let mut values = values.clone();
+            values.insert(key.into(), value.into());
+            assert!(Config::from_values(root.clone(), values).is_err(), "{key}");
         }
-        let before = std::env::var("DB_NAME");
-        let path =
-            std::env::temp_dir().join(format!("hanabi-poc-config-{:032x}", rand::random::<u128>()));
-        std::fs::write(
-            &path,
-            values
-                .iter()
-                .map(|(key, value)| format!("{key}={value}\n"))
-                .collect::<String>(),
-        )
-        .unwrap();
-        let loaded = Config::load(&path);
-        std::fs::remove_file(path).unwrap();
-        assert!(loaded.is_ok());
-        assert_eq!(std::env::var("DB_NAME"), before);
+        let mut values = values;
+        values.insert("TLS_CERT_FILE".into(), "cert.pem".into());
+        values.insert("TLS_KEY_FILE".into(), "key.pem".into());
+        assert_eq!(Config::from_values(root, values).unwrap().port(), 443);
     }
 }

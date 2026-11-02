@@ -131,6 +131,8 @@ jobs:
       - name: Create the "version.js" file
         run: bash ./packages/client/set_version.sh
 
+      - uses: ./.github/workflows/setup-redis
+
       - name: Test the TypeScript code
         run: npm run test
 
@@ -155,12 +157,17 @@ jobs:
         working-directory: experimental/rust-server
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/workflows/setup-redis
       - name: Check Rust formatting
-        run: cargo fmt --check
+        run: cargo fmt --all --check
       - name: Check Rust ownership and lint rules
-        run: cargo clippy --locked --all-targets -- -D warnings
-      - name: Test Rust primitives, actors, and PostgreSQL durability
-        run: cargo test --locked
+        run: |
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings
+      - name: Test Rust rules, actors, and Redis/PostgreSQL durability
+        run: |
+          cargo test --locked
+          cargo test --locked --manifest-path engine/Cargo.toml
 
   format:
     runs-on: ubuntu-latest

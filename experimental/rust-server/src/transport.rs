@@ -1,22 +1,102 @@
-use axum::extract::ws::Message;
+use axum::extract::ws::{CloseFrame, Message};
 use serde_json::Value;
-use std::sync::Arc;
-use tokio::sync::{OwnedSemaphorePermit, Semaphore, mpsc};
+use std::sync::{
+    Arc, LazyLock,
+    atomic::{AtomicBool, Ordering},
+};
+use tokio::sync::{OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
 
 pub struct Outbound {
     pub message: Message,
     pub permit: OwnedSemaphorePermit,
+    pub completion: Option<oneshot::Sender<()>>,
+    pub global_permit: OwnedSemaphorePermit,
+}
+
+/// Full JSON replays share the durable state ceiling, rather than an 8 KiB
+/// text-chat limit. Separate byte budgets bound aggregate queued memory.
+pub const MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
+pub const GLOBAL_INPUT_BYTES: usize = 64 * 1024 * 1024;
+const SESSION_INPUT_BYTES: usize = 8 * 1024 * 1024;
+const SESSION_OUTPUT_BYTES: usize = 8 * 1024 * 1024;
+static GLOBAL_OUTPUT_BYTES: LazyLock<Arc<Semaphore>> =
+    LazyLock::new(|| Arc::new(Semaphore::new(128 * 1024 * 1024)));
+
+pub struct Inbound {
+    pub text: String,
+    _session_bytes: OwnedSemaphorePermit,
+    _global_bytes: OwnedSemaphorePermit,
+}
+
+pub struct InboundBudget {
+    bytes: Arc<Semaphore>,
+    global: Arc<Semaphore>,
+}
+
+impl InboundBudget {
+    pub fn new(global: Arc<Semaphore>) -> Self {
+        Self {
+            bytes: Arc::new(Semaphore::new(SESSION_INPUT_BYTES)),
+            global,
+        }
+    }
+
+    pub fn admit(&self, session: &Session, text: &str) -> Option<Inbound> {
+        if !session.active() {
+            return None;
+        }
+        if text.len() > MAX_MESSAGE_BYTES {
+            eprintln!("Closing connection with oversized input.");
+            session.cancel.cancel();
+            return None;
+        }
+        let length = text.len() as u32;
+        let Ok(local) = self.bytes.clone().try_acquire_many_owned(length) else {
+            eprintln!("Closing connection exceeding its input byte budget.");
+            session.cancel.cancel();
+            return None;
+        };
+        let Ok(global) = self.global.clone().try_acquire_many_owned(length) else {
+            eprintln!("Closing connection because the aggregate input byte budget is exhausted.");
+            session.cancel.cancel();
+            return None;
+        };
+        // Reserve before copying the transport frame. Both permits travel with
+        // the queued/processing message and cannot be cloned with its contents.
+        Some(Inbound {
+            text: text.to_owned(),
+            _session_bytes: local,
+            _global_bytes: global,
+        })
+    }
 }
 
 pub struct Session {
     pub user: i32,
     pub name: String,
     pub generation: u64,
-    pub hyphenated: bool,
+    pub normalized_name: String,
+    pub ip: String,
     pub cancel: CancellationToken,
+    pub lease_lost: CancellationToken,
+    health: HealthCheck,
+    hyphenated: AtomicBool,
+    inactive: AtomicBool,
+    closing: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
+}
+
+pub type HealthCheck = Arc<dyn Fn() -> bool + Send + Sync>;
+
+pub struct SessionMetadata {
+    pub user: i32,
+    pub name: String,
+    pub normalized_name: String,
+    pub ip: String,
+    pub generation: u64,
+    pub hyphenated: bool,
 }
 
 impl Session {
@@ -26,45 +106,162 @@ impl Session {
         generation: u64,
         hyphenated: bool,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
+        Self::with_health(
+            SessionMetadata {
+                user,
+                normalized_name: crate::accounts::normalize_username(&name),
+                name,
+                ip: String::new(),
+                generation,
+                hyphenated,
+            },
+            CancellationToken::new(),
+            Arc::new(|| true),
+        )
+    }
+
+    pub fn with_health(
+        metadata: SessionMetadata,
+        lease_lost: CancellationToken,
+        health: HealthCheck,
+    ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
         let (outbound, receiver) = mpsc::channel(64);
         (
             Arc::new(Self {
-                user,
-                name,
-                generation,
-                hyphenated,
+                user: metadata.user,
+                name: metadata.name,
+                normalized_name: metadata.normalized_name,
+                ip: metadata.ip,
+                generation: metadata.generation,
+                hyphenated: AtomicBool::new(metadata.hyphenated),
+                inactive: AtomicBool::new(false),
+                closing: AtomicBool::new(false),
                 cancel: CancellationToken::new(),
+                lease_lost,
+                health,
                 outbound,
-                bytes: Arc::new(Semaphore::new(262_144)),
+                bytes: Arc::new(Semaphore::new(SESSION_OUTPUT_BYTES)),
             }),
             receiver,
         )
     }
 
     pub fn active(&self) -> bool {
-        !self.cancel.is_cancelled()
+        if self.cancel.is_cancelled() || self.lease_lost.is_cancelled() || !(self.health)() {
+            self.cancel.cancel();
+            return false;
+        }
+        true
+    }
+
+    pub fn hyphenated(&self) -> bool {
+        self.hyphenated.load(Ordering::Acquire)
+    }
+
+    pub fn set_hyphenated(&self, value: bool) {
+        self.hyphenated.store(value, Ordering::Release);
+    }
+
+    pub fn inactive(&self) -> bool {
+        self.inactive.load(Ordering::Acquire)
+    }
+
+    pub fn set_inactive(&self, value: bool) {
+        self.inactive.store(value, Ordering::Release);
     }
 
     pub fn emit(&self, message: &str) {
-        if !self.active() {
+        if !self.active() || self.closing.load(Ordering::Acquire) {
             return;
         }
-        let permit = u32::try_from(message.len())
-            .ok()
+        let permit = (message.len() <= MAX_MESSAGE_BYTES)
+            .then_some(message.len())
+            .and_then(|len| u32::try_from(len).ok())
             .and_then(|len| self.bytes.clone().try_acquire_many_owned(len).ok());
         let Some(permit) = permit else {
-            eprintln!("Closing a slow or oversized PoC connection.");
+            eprintln!("Closing a slow or oversized connection.");
+            self.cancel.cancel();
+            return;
+        };
+        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
+            .clone()
+            .try_acquire_many_owned(message.len() as u32)
+        else {
             self.cancel.cancel();
             return;
         };
         let outbound = Outbound {
             message: Message::Text(message.to_owned().into()),
             permit,
+            completion: None,
+            global_permit,
         };
         if self.outbound.try_send(outbound).is_err() {
-            eprintln!("Closing a saturated PoC connection.");
+            eprintln!("Closing a saturated connection.");
             self.cancel.cancel();
         }
+    }
+
+    pub fn close_after(&self, messages: &[String], code: u16) -> Option<oneshot::Receiver<()>> {
+        if !self.active() || self.closing.swap(true, Ordering::AcqRel) {
+            return None;
+        }
+        for message in messages {
+            let permit = (message.len() <= MAX_MESSAGE_BYTES)
+                .then_some(message.len())
+                .and_then(|len| u32::try_from(len).ok())
+                .and_then(|len| self.bytes.clone().try_acquire_many_owned(len).ok());
+            let Some(permit) = permit else {
+                self.cancel.cancel();
+                return None;
+            };
+            let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
+                .clone()
+                .try_acquire_many_owned(message.len() as u32)
+            else {
+                self.cancel.cancel();
+                return None;
+            };
+            if self
+                .outbound
+                .try_send(Outbound {
+                    message: Message::Text(message.clone().into()),
+                    permit,
+                    completion: None,
+                    global_permit,
+                })
+                .is_err()
+            {
+                self.cancel.cancel();
+                return None;
+            }
+        }
+        let Ok(permit) = self.bytes.clone().try_acquire_owned() else {
+            self.cancel.cancel();
+            return None;
+        };
+        let (completion, received) = oneshot::channel();
+        let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_owned() else {
+            self.cancel.cancel();
+            return None;
+        };
+        if self
+            .outbound
+            .try_send(Outbound {
+                message: Message::Close(Some(CloseFrame {
+                    code,
+                    reason: "Server maintenance".into(),
+                })),
+                permit,
+                completion: Some(completion),
+                global_permit,
+            })
+            .is_err()
+        {
+            self.cancel.cancel();
+            return None;
+        }
+        Some(received)
     }
 }
 
@@ -90,7 +287,216 @@ mod tests {
         drop(receiver.try_recv().unwrap());
         session.emit(&"x".repeat(131_072));
         assert!(session.active());
-        session.emit(&"x".repeat(262_144));
+        session.emit(&"x".repeat(MAX_MESSAGE_BYTES + 1));
         assert!(!session.active());
+    }
+
+    #[test]
+    fn lease_deadline_fences_without_waiting_for_watchdog() {
+        let valid = Arc::new(AtomicBool::new(true));
+        let check = valid.clone();
+        let lost = CancellationToken::new();
+        let (session, mut receiver) = Session::with_health(
+            SessionMetadata {
+                user: 1,
+                name: "Alice".into(),
+                normalized_name: "alice".into(),
+                ip: "127.0.0.1".into(),
+                generation: 1,
+                hyphenated: false,
+            },
+            lost.clone(),
+            Arc::new(move || check.load(Ordering::Acquire)),
+        );
+        session.emit("before {}");
+        drop(receiver.try_recv().unwrap());
+        valid.store(false, Ordering::Release);
+        assert!(!lost.is_cancelled());
+        session.emit("after {}");
+        assert!(!session.active());
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[test]
+    fn full_replay_frames_and_ordered_maintenance_close() {
+        let (session, mut receiver) = Session::new(1, "Alice".into(), 1, false);
+        session.emit(&"x".repeat(300_000));
+        assert!(session.active());
+        drop(receiver.try_recv().unwrap());
+        let mut completed = session
+            .close_after(&["soundLobby {}".into(), "error {}".into()], 1012)
+            .unwrap();
+        session.emit("must not follow close");
+        assert_eq!(
+            receiver.try_recv().unwrap().message,
+            Message::Text("soundLobby {}".into())
+        );
+        assert_eq!(
+            receiver.try_recv().unwrap().message,
+            Message::Text("error {}".into())
+        );
+        let close = receiver.try_recv().unwrap();
+        assert!(matches!(
+            close.message,
+            Message::Close(Some(CloseFrame { code: 1012, .. }))
+        ));
+        close.completion.unwrap().send(()).unwrap();
+        assert!(completed.try_recv().is_ok());
+        assert!(receiver.try_recv().is_err());
+    }
+
+    #[test]
+    fn inbound_processing_and_queued_frames_share_the_session_budget() {
+        let global = Arc::new(Semaphore::new(24));
+        let budget = InboundBudget {
+            bytes: Arc::new(Semaphore::new(16)),
+            global: global.clone(),
+        };
+        let (session, _) = Session::new(1, "Alice".into(), 1, false);
+        let (sender, mut receiver) = mpsc::channel(1);
+        assert!(
+            sender
+                .try_send(budget.admit(&session, "12345678").unwrap())
+                .is_ok()
+        );
+        let processing = receiver.try_recv().unwrap();
+        assert!(
+            sender
+                .try_send(budget.admit(&session, "abcdefgh").unwrap())
+                .is_ok()
+        );
+        assert!(budget.admit(&session, "!").is_none());
+        assert!(session.cancel.is_cancelled());
+        assert_eq!(global.available_permits(), 8);
+        drop(processing);
+        assert_eq!(global.available_permits(), 16);
+        drop(receiver);
+        assert_eq!(global.available_permits(), 24);
+        assert_eq!(budget.bytes.available_permits(), 16);
+    }
+
+    #[test]
+    fn inbound_global_saturation_and_queue_rejection_release_both_permits() {
+        let global = Arc::new(Semaphore::new(12));
+        let first = InboundBudget {
+            bytes: Arc::new(Semaphore::new(16)),
+            global: global.clone(),
+        };
+        let second = InboundBudget {
+            bytes: Arc::new(Semaphore::new(16)),
+            global: global.clone(),
+        };
+        let (alice, _) = Session::new(1, "Alice".into(), 1, false);
+        let (bob, _) = Session::new(2, "Bob".into(), 2, false);
+        let processing = first.admit(&alice, "12345678").unwrap();
+        assert!(second.admit(&bob, "abcdefgh").is_none());
+        assert!(bob.cancel.is_cancelled());
+        assert!(alice.active());
+        assert_eq!(second.bytes.available_permits(), 16);
+        drop(processing);
+        assert_eq!(global.available_permits(), 12);
+        let (sender, receiver) = mpsc::channel(1);
+        assert!(
+            sender
+                .try_send(first.admit(&alice, "12345678").unwrap())
+                .is_ok()
+        );
+        assert!(
+            sender
+                .try_send(first.admit(&alice, "abcd").unwrap())
+                .is_err()
+        );
+        assert_eq!(global.available_permits(), 4);
+        assert_eq!(first.bytes.available_permits(), 8);
+        drop(receiver);
+        assert_eq!(global.available_permits(), 12);
+        assert_eq!(first.bytes.available_permits(), 16);
+    }
+
+    #[test]
+    fn inbound_valid_large_replay_keeps_full_payload_and_returns_capacity() {
+        let global = Arc::new(Semaphore::new(GLOBAL_INPUT_BYTES));
+        let budget = InboundBudget::new(global.clone());
+        let (session, _) = Session::new(1, "Alice".into(), 1, false);
+        let text = format!(
+            "replayCreate {}",
+            serde_json::json!({"source":"json","visibility":"solo","gameJSON":{
+                "seed":"p2v0s1","notes":[["n".repeat(65536)],[]]
+            }})
+        );
+        let message = budget.admit(&session, &text).unwrap();
+        assert_eq!(message.text, text);
+        assert!(session.active());
+        assert_eq!(global.available_permits(), GLOBAL_INPUT_BYTES - text.len());
+        drop(message);
+        assert_eq!(global.available_permits(), GLOBAL_INPUT_BYTES);
+    }
+
+    #[tokio::test]
+    async fn cancelled_inbound_processing_releases_owned_byte_permits() {
+        let global = Arc::new(Semaphore::new(24));
+        let budget = InboundBudget {
+            bytes: Arc::new(Semaphore::new(16)),
+            global: global.clone(),
+        };
+        let (session, _) = Session::new(1, "Alice".into(), 1, false);
+        let message = budget.admit(&session, "12345678").unwrap();
+        let task = tokio::spawn(async move {
+            std::future::pending::<()>().await;
+            drop(message);
+        });
+        assert_eq!(global.available_permits(), 16);
+        task.abort();
+        assert!(task.await.unwrap_err().is_cancelled());
+        assert_eq!(global.available_permits(), 24);
+        assert_eq!(budget.bytes.available_permits(), 16);
+    }
+
+    #[test]
+    fn valid_large_replay_notes_queue_without_a_writer_and_remain_complete() {
+        let (session, mut outgoing) = Session::new(1, "Alice".into(), 1, false);
+        let notes: Vec<_> = (0..6).map(|_| "n".repeat(65536)).collect();
+        let all_notes: Vec<_> = (0..6)
+            .map(|index| {
+                serde_json::json!({
+                    "name":format!("Player{index}"),"notes":notes,"isSpectator":false
+                })
+            })
+            .collect();
+        let messages = [
+            frame(
+                "gameActionList",
+                serde_json::json!({"tableID":42,"list":[]}),
+            ),
+            frame(
+                "noteList",
+                serde_json::json!({"tableID":42,"notes":all_notes}),
+            ),
+            frame(
+                "noteListPlayer",
+                serde_json::json!({"tableID":42,"notes":notes}),
+            ),
+        ];
+        assert!(messages[1].len() > 262_144);
+        assert!(
+            messages
+                .iter()
+                .all(|message| message.len() <= MAX_MESSAGE_BYTES)
+        );
+        for message in &messages {
+            session.emit(message);
+        }
+        assert!(
+            session.active(),
+            "Valid replay projection required the writer to race publication"
+        );
+        for expected in messages {
+            let outbound = outgoing.try_recv().unwrap();
+            let Message::Text(actual) = outbound.message else {
+                panic!("Unexpected replay frame");
+            };
+            assert_eq!(actual.as_str(), expected);
+        }
+        assert_eq!(session.bytes.available_permits(), SESSION_OUTPUT_BYTES);
     }
 }

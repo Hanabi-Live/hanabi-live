@@ -1,14 +1,14 @@
 # Server comparison
 
-Go remains the production authority. TypeScript implements the normal client
-protocol and durable lifecycle; the
-[Rust PoC](../experimental/rust-server/README.md) implements the benchmark
-subset. Neither functional acceptance nor these measurements authorize a
-production migration.
+Go remains the production authority. TypeScript and the
+[native Rust server](../experimental/rust-server/README.md) are alternate
+implementations. Neither functional acceptance nor these measurements authorize
+a production migration.
 
 ## Reproducible workload
 
-With Go, Node, Rust/rustup, and a disposable local PostgreSQL service available:
+With Go, Node, Rust/rustup, Redis 7.2+ binaries, and a disposable local
+PostgreSQL service available:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
@@ -16,17 +16,29 @@ HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=di
   --testNamePattern='normal-server comparison'
 ```
 
-Each implementation runs in a separate process. Go and TypeScript run their full
-applications; Rust is a release-mode prototype. The same browser wire messages
-exercise login, signed cookies, four concurrent lanes, eight 25-point games, 200
-plays, eight live reconnects, and, after restarting the process, 160 historical
-replay reads and 80 reconnect/replay reads.
+Each implementation runs in a separate process; Rust is built in release mode.
+The same browser wire messages exercise login, signed cookies, four concurrent
+lanes, eight 25-point games, 200 plays, eight live reconnects, and, after
+restarting the process, 160 historical replay reads and 80 reconnect/replay
+reads.
 
 Every game must finish correctly and restored hands must remain private. All
 three use the same explicit played deck through the normal custom-deck storage
 path. The harness verifies stored actions, participants, custom decks, settled
 statistics, and independent reconstruction with the existing TypeScript engine.
-PostgreSQL reported **232 checkpoint writes per implementation per run**.
+
+The current Rust implementation uses Redis AOF/`WAITAOF` for recoverable state
+and PostgreSQL for accounts/history. The harness creates its private Redis
+sidecar. Its `postgresCheckpointWrites` should therefore be zero, not
+interpreted as an absence of durable checkpoints. Storage now differs between
+implementations; server RSS also excludes the Redis sidecar.
+
+## Historical PostgreSQL-backed baseline
+
+The following measurements describe commit `55643c642`, before full Rust server
+development and the Redis transition. PostgreSQL reported **232 checkpoint
+writes per implementation per run** at that point; these numbers do not describe
+the current Redis-backed implementation.
 
 Three fresh local runs on a shared Linux host used Go 1.27.0, Node 24.19.0, Rust
 1.98.0, and PostgreSQL 18.6. Rounded ranges:
@@ -65,8 +77,8 @@ earlier mixed read phase from 2.83-2.93 seconds to roughly 0.7 seconds. Only
 compiled queries are cached, not replay data or mutable account metadata.
 
 Account creation is not identical hashing work: Go's defaults use one Argon2
-pass, while Node uses three with different parallelism. Rust uses Node's 64
-MiB/three-pass/four-lane parameters, but a different hashing library. No
+pass, while Node uses three with different parallelism. The Rust PoC used Node's
+64 MiB/three-pass/four-lane parameters, but a different hashing library. No
 password costs were weakened. Peak RSS was approximately 486-614 MiB for Go, 467
 MiB for Node, and 278 MiB for Rust. These include concurrent hashing, different
 allocators, and very different feature footprints; they are not steady-state
@@ -81,15 +93,15 @@ inherent language speedup or sufficient justification for a production rewrite.
 
 ## Compatibility boundaries
 
-The full servers share historical seeds, actions, sparse custom decks, and
-account data. The Rust prototype accepts only its documented standard-game
-subset and rejects unsupported commands, options, and authored replay notes. Its
-cookies and RNG match Go fixtures, and its standard rules match a Go-generated
-authoritative event trace.
+The implementations share historical seeds, actions, sparse custom decks, and
+account data. The measured Rust prototype above only implemented the standard
+benchmark subset. The current native engine covers the full Go variant and
+character corpora; server parity has separate real-process acceptance checks.
 
 Active checkpoint formats are runtime-specific: do not switch implementations
 with unresolved active games. Old custom decks that were never saved cannot be
-reconstructed. Go's legacy replay interpretation is retained by TypeScript.
+reconstructed. Go's legacy replay interpretation is retained by TypeScript and
+the native Rust engine.
 
 TypeScript's and Rust's process signals drain admitted work; existing Go source
 deployments still require their documented graceful shutdown procedure.

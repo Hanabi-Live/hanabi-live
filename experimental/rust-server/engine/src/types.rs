@@ -1,0 +1,304 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+pub struct Options {
+    pub num_players: usize,
+    pub starting_player: usize,
+    pub variant_name: String,
+    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    pub variant_id: Option<u32>,
+    pub timed: bool,
+    pub time_base: f64,
+    pub time_per_turn: i64,
+    pub speedrun: bool,
+    pub card_cycle: bool,
+    pub deck_plays: bool,
+    pub empty_clues: bool,
+    pub one_extra_card: bool,
+    pub one_less_card: bool,
+    pub all_or_nothing: bool,
+    pub detrimental_characters: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_players: Option<usize>,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            num_players: 2,
+            starting_player: 0,
+            variant_name: "No Variant".into(),
+            variant_id: None,
+            timed: false,
+            time_base: 0.0,
+            time_per_turn: 0,
+            speedrun: false,
+            card_cycle: false,
+            deck_plays: false,
+            empty_clues: false,
+            one_extra_card: false,
+            one_less_card: false,
+            all_or_nothing: false,
+            detrimental_characters: false,
+            table_name: None,
+            max_players: None,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Interpretation {
+    #[default]
+    Live,
+    LegacyReplay,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "i32", into = "i32")]
+#[repr(i32)]
+pub enum EndCondition {
+    InProgress = 0,
+    Normal = 1,
+    Strikeout = 2,
+    Timeout = 3,
+    TerminatedByPlayer = 4,
+    SpeedrunFail = 5,
+    IdleTimeout = 6,
+    CharacterSoftlock = 7,
+    AllOrNothingFail = 8,
+    AllOrNothingSoftlock = 9,
+    TerminatedByVote = 10,
+}
+impl TryFrom<i32> for EndCondition {
+    type Error = &'static str;
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => Self::InProgress,
+            1 => Self::Normal,
+            2 => Self::Strikeout,
+            3 => Self::Timeout,
+            4 => Self::TerminatedByPlayer,
+            5 => Self::SpeedrunFail,
+            6 => Self::IdleTimeout,
+            7 => Self::CharacterSoftlock,
+            8 => Self::AllOrNothingFail,
+            9 => Self::AllOrNothingSoftlock,
+            10 => Self::TerminatedByVote,
+            _ => return Err("Invalid end condition"),
+        })
+    }
+}
+impl From<EndCondition> for i32 {
+    fn from(value: EndCondition) -> Self {
+        value as i32
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DeckCard {
+    pub suit_index: usize,
+    pub rank: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AssignedCharacter {
+    pub name: String,
+    pub metadata: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GameSetup {
+    pub options: Options,
+    pub player_names: Vec<String>,
+    pub seed: String,
+    pub deck: Option<Vec<DeckCard>>,
+    pub characters: Option<Vec<AssignedCharacter>>,
+    #[serde(default)]
+    pub interpretation: Interpretation,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlayerAction {
+    #[serde(rename = "type")]
+    pub action_type: i32,
+    pub target: i32,
+    pub value: i32,
+}
+pub type RecordedAction = PlayerAction;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EngineCard {
+    pub suit_index: usize,
+    pub rank: i32,
+    pub order: usize,
+    pub slot: i32,
+    pub touched: bool,
+    pub discarded: bool,
+    pub played: bool,
+    pub failed: bool,
+    pub cannot_be_played: bool,
+    pub insistent_touched: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnginePlayer {
+    pub name: String,
+    pub index: usize,
+    pub character: String,
+    pub character_metadata: i32,
+    pub hand: Vec<usize>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Clue {
+    #[serde(rename = "type")]
+    pub clue_type: i32,
+    pub value: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum EngineEvent {
+    Draw {
+        player_index: usize,
+        order: usize,
+        suit_index: i32,
+        rank: i32,
+    },
+    Play {
+        player_index: usize,
+        order: usize,
+        suit_index: i32,
+        rank: i32,
+    },
+    CardIdentity {
+        player_index: usize,
+        order: usize,
+        suit_index: i32,
+        rank: i32,
+    },
+    Discard {
+        player_index: usize,
+        order: usize,
+        suit_index: i32,
+        rank: i32,
+        failed: bool,
+    },
+    Clue {
+        clue: Clue,
+        giver: usize,
+        target: usize,
+        list: Vec<usize>,
+        turn: i32,
+    },
+    Strike {
+        num: i32,
+        turn: i32,
+        order: usize,
+    },
+    Status {
+        clues: i32,
+        score: i32,
+        max_score: i32,
+    },
+    Turn {
+        num: i32,
+        current_player_index: i32,
+    },
+    GameOver {
+        end_condition: EndCondition,
+        player_index: i32,
+        votes: Option<Vec<usize>>,
+    },
+    PlayerTimes {
+        player_times: Vec<i64>,
+        duration: i64,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EngineState {
+    pub options: Options,
+    pub seed: String,
+    pub interpretation: Interpretation,
+    pub players: Vec<EnginePlayer>,
+    pub deck: Vec<EngineCard>,
+    pub deck_index: usize,
+    pub stacks: Vec<i32>,
+    pub stack_starts: Vec<i32>,
+    pub play_stack_directions: Vec<i32>,
+    pub turn: i32,
+    pub turns_inverted: bool,
+    pub active_player_index: usize,
+    pub clue_tokens: i32,
+    pub score: i32,
+    pub max_score: i32,
+    pub strikes: i32,
+    pub last_clue_type_given: i32,
+    pub end_condition: EndCondition,
+    pub end_player: i32,
+    pub end_turn: i32,
+    pub started_timer: bool,
+    pub paused: bool,
+    pub events: Vec<EngineEvent>,
+    pub actions: Vec<RecordedAction>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Transition {
+    pub state: EngineState,
+    pub events: Vec<EngineEvent>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CompletionTiming {
+    pub player_times: Vec<i64>,
+    pub duration: i64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Termination {
+    pub actor_index: usize,
+    pub condition: EndCondition,
+    pub player_index: i32,
+    pub votes: Option<Vec<usize>>,
+}
+
+#[derive(Debug)]
+pub struct ActionRejected {
+    pub message: String,
+    pub silent: bool,
+}
+impl std::fmt::Display for ActionRejected {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.message.fmt(f)
+    }
+}
+impl std::error::Error for ActionRejected {}
+pub(crate) fn reject<T>(message: impl Into<String>) -> anyhow::Result<T> {
+    Err(ActionRejected {
+        message: message.into(),
+        silent: false,
+    }
+    .into())
+}

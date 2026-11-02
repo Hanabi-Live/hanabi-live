@@ -1,0 +1,104 @@
+<!doctype html>
+<!--
+  Alpha by HTML5 UP
+  html5up.net | @ajlkn
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="en">
+  <head>
+    <title>
+      {% if isDev %} Test {% else %} {{ projectName }} {% if title != "Main" %}
+      &nbsp;-{{ title }} {% endif %} {% endif %}
+    </title>
+    <meta charset="utf-8" />
+    <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A place to play Hanab online, a cooperative card game of logic and reasoning."
+    />
+    <meta
+      name="keywords"
+      content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning"
+    />
+    <!-- The script block must match "public/html/theme-init.html" -->
+    <script type="text/javascript">
+      try {
+        var t = localStorage.getItem("darkMode");
+        var isDark =
+          t === "true"
+          || (t === "system"
+            && window.matchMedia
+            && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (isDark) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (e) {}
+    </script>
+    {% if not isDev %}
+    <!-- Load the Critical CSS first. -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/critical.min.css?{{ version }}"
+    />
+    {% endif %}
+    <!-- Preload fonts. -->
+    <link
+      rel="preload"
+      as="font"
+      crossorigin="anonymous"
+      type="font/woff2"
+      href="/public/webfonts/fa-solid-900.woff2"
+    />
+    {% if isDev %}
+    <!-- These should match the CSS array in "Gruntfile.js". -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/lib/fontawesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/lib/solid.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/lib/tooltipster.bundle.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/lib/tooltipster-sideTip-shadow.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/public/css/lib/alpha.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/dark.css" />
+    {% else %}
+    <!-- Delay loading non-critical CSS. -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/public/css/main.{{ version }}.min.css"
+    />
+    {% endif %}
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/public/img/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/public/img/favicon-16x16.png"
+    />
+  </head>
+
+  <body>
+    {% block body %}{% endblock %}
+  </body>
+</html>

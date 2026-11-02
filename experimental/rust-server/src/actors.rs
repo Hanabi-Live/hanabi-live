@@ -1,31 +1,113 @@
 use crate::{
-    game::{self, Action, Card, Game},
-    model::{FORMAT, Player, Snapshot},
-    random::{GoRandom, seed_hash},
+    game::{Action, Card, Game, Options},
+    lobby::{Effect, OnlineUser},
+    model::{Phase, *},
+    operations::Operation,
     store::Store,
     transport::{Session, frame},
 };
 use anyhow::{Context, Result, bail, ensure};
-use chrono::Utc;
+use chrono::{Duration as ChronoDuration, Utc};
+use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use rand::Rng;
 use serde_json::{Value, json};
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    sync::{Arc, Mutex},
+    time::{Duration, Instant},
+};
 use tokio::sync::{Notify, OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
+#[cfg(test)]
+#[path = "actor_protocol_tests.rs"]
+mod protocol_tests;
+#[path = "table_replay.rs"]
+mod replay_helpers;
+#[cfg(test)]
+#[path = "actor_tests.rs"]
+mod tests;
 type Reply = oneshot::Sender<Result<()>>;
-
 pub struct Allocation {
     pub id: u64,
-    permit: OwnedSemaphorePermit,
+    permit: Option<OwnedSemaphorePermit>,
+    cleanup: Option<(Store, TaskTracker)>,
+    revision: i64,
+    playing_claims: Vec<PlayingClaim>,
 }
-
-#[derive(PartialEq)]
+pub struct PlayingClaim {
+    users: Arc<Mutex<HashSet<i32>>>,
+    user: i32,
+}
+impl PlayingClaim {
+    fn acquire(users: &Arc<Mutex<HashSet<i32>>>, user: i32) -> Result<Self> {
+        ensure!(
+            users.lock().unwrap_or_else(|e| e.into_inner()).insert(user),
+            "Another playing-table request is already pending."
+        );
+        Ok(Self {
+            users: users.clone(),
+            user,
+        })
+    }
+}
+impl Drop for PlayingClaim {
+    fn drop(&mut self) {
+        self.users
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(&self.user);
+    }
+}
+impl Allocation {
+    fn new(
+        id: u64,
+        permit: OwnedSemaphorePermit,
+        store: Store,
+        tasks: TaskTracker,
+        revision: i64,
+    ) -> Self {
+        Self {
+            id,
+            permit: Some(permit),
+            cleanup: Some((store, tasks)),
+            revision,
+            playing_claims: vec![],
+        }
+    }
+    fn into_permit(mut self) -> OwnedSemaphorePermit {
+        self.cleanup = None;
+        self.permit.take().expect("owned allocation permit")
+    }
+    fn preserve(&mut self) {
+        self.cleanup = None;
+    }
+}
+impl Drop for Allocation {
+    fn drop(&mut self) {
+        if let Some((store, tasks)) = self.cleanup.take() {
+            let id = self.id;
+            let revision = self.revision;
+            let permit = self.permit.take();
+            let playing_claims = std::mem::take(&mut self.playing_claims);
+            tasks.spawn(async move {
+                if let Err(error) = store.remove(id, revision).await {
+                    eprintln!("Uninstalled table {id} cleanup failed: {error}");
+                }
+                drop(permit);
+                drop(playing_claims);
+            });
+        }
+    }
+}
+#[derive(Clone, PartialEq)]
 pub struct TableView {
     players: Vec<i32>,
     replay: bool,
     visible: bool,
     data: Value,
+    inspection: Value,
+    reconnects: BTreeMap<i32, Option<i32>>,
 }
 #[derive(Clone)]
 pub struct TableHandle {
@@ -34,7 +116,8 @@ pub struct TableHandle {
 }
 struct Entry {
     handle: TableHandle,
-    view: Option<TableView>,
+    view: TableView,
+    published: bool,
 }
 struct Presence {
     session: Arc<Session>,
@@ -62,12 +145,53 @@ pub enum HubCommand {
         deck: Option<Vec<Card>>,
         reply: Reply,
     },
+    CreateConfigured {
+        session: Arc<Session>,
+        player: Player,
+        name: String,
+        options: Options,
+        extra: Box<ExtraOptions>,
+        reply: Reply,
+    },
     Allocate(oneshot::Sender<Result<Allocation>>),
     Replay {
         session: Arc<Session>,
         snapshot: Box<Snapshot>,
         allocation: Allocation,
         reply: Reply,
+    },
+    Client {
+        session: Arc<Session>,
+        command: String,
+        data: Value,
+        reply: Reply,
+    },
+    Directory {
+        session: Arc<Session>,
+        reply: oneshot::Sender<Result<Vec<OnlineUser>>>,
+    },
+    LobbyEffects {
+        session: Arc<Session>,
+        effects: Vec<Effect>,
+        reply: Reply,
+    },
+    ExternalEffects {
+        effects: Vec<Effect>,
+        reply: Reply,
+    },
+    PlayingFinished {
+        result: Result<()>,
+        reply: Reply,
+        claim: PlayingClaim,
+    },
+    CheckPlaying {
+        users: Vec<i32>,
+        except: u64,
+        reply: Reply,
+    },
+    Operations {
+        command: Operation,
+        reply: oneshot::Sender<Result<Value>>,
     },
     Route {
         session: Arc<Session>,
@@ -81,6 +205,20 @@ pub enum HubCommand {
     },
     Effects(Effects),
     Retire(u64),
+    Install {
+        table: Box<TableSnapshot>,
+        revision: i64,
+        allocation: Allocation,
+        session: Arc<Session>,
+        warnings: Vec<String>,
+        reply: Reply,
+    },
+    Spawn {
+        table: Box<TableSnapshot>,
+        revision: i64,
+        allocation: Allocation,
+        attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
+    },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
     Stop(oneshot::Sender<()>),
 }
@@ -92,6 +230,7 @@ pub enum Command {
     Info(u8),
     Reattend,
     Unattend,
+    Wire { name: String, data: Value },
 }
 pub enum TableCommand {
     Client {
@@ -100,21 +239,31 @@ pub enum TableCommand {
         reply: Reply,
     },
     Drain(oneshot::Sender<Result<()>>),
+    Operation {
+        operation: TableOperation,
+        reply: oneshot::Sender<Result<Value>>,
+    },
 }
-
+pub enum TableOperation {
+    Notice(String),
+    Terminate,
+    Clear { pregames: bool, empty: bool },
+    Kick(i32),
+}
 pub struct Hub {
     receiver: mpsc::Receiver<HubCommand>,
     sender: mpsc::Sender<HubCommand>,
     sessions: HashMap<i32, Presence>,
     tables: HashMap<u64, Entry>,
-    next: u64,
     closing: bool,
+    maintenance: bool,
+    shutdown_imminent: bool,
     store: Store,
     words: Arc<Vec<String>>,
     tasks: TaskTracker,
     capacity: Arc<Semaphore>,
+    playing_claims: Arc<Mutex<HashSet<i32>>>,
 }
-
 impl Hub {
     pub async fn start(
         store: Store,
@@ -128,97 +277,448 @@ impl Hub {
             sender: sender.clone(),
             sessions: HashMap::new(),
             tables: HashMap::new(),
-            next: 1,
             closing: false,
+            maintenance: false,
+            shutdown_imminent: false,
             store,
             words,
-            tasks,
+            tasks: tasks.clone(),
             capacity: Arc::new(Semaphore::new(256)),
+            playing_claims: Arc::new(Mutex::new(HashSet::new())),
         };
-        for (snapshot, revision) in restored {
-            hub.next = hub.next.max(snapshot.table_id + 1);
-            let id = snapshot.table_id;
+        for (table, revision) in restored {
             let permit = hub
                 .capacity
                 .clone()
                 .try_acquire_owned()
-                .context("Too many recovery tables")?;
-            let actor = TableActor::live(
-                snapshot,
-                revision,
-                hub.store.clone(),
-                sender.clone(),
-                permit,
-            );
+                .context("Recovery table capacity exhausted")?;
+            let actor = TableActor::new(table, revision, hub.store.clone(), sender.clone(), permit);
+            let id = actor.table.id;
             let view = actor.view();
             let handle = hub.spawn(actor, None);
             hub.tables.insert(
                 id,
                 Entry {
                     handle,
-                    view: Some(view),
+                    view,
+                    published: true,
                 },
             );
         }
-        tokio::spawn(hub.run());
+        tasks.spawn(hub.run());
         Ok(sender)
     }
-
-    fn spawn(&self, actor: TableActor, initial: Option<(Arc<Session>, Reply)>) -> TableHandle {
+    fn spawn(
+        &self,
+        mut actor: TableActor,
+        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+    ) -> TableHandle {
         let (sender, receiver) = mpsc::channel(64);
+        actor.playing_claims = self.playing_claims.clone();
         let handle = TableHandle {
             sender,
             cleanup: actor.cleanup.clone(),
         };
-        self.tasks.spawn(async move {
-            actor.run(receiver, initial).await;
-        });
+        self.tasks.spawn(actor.run(receiver, initial));
         handle
     }
-
-    fn current(&self, session: &Session) -> bool {
-        session.active()
+    fn current(&self, s: &Session) -> bool {
+        self.store.check_state().is_ok()
+            && s.active()
             && self
                 .sessions
-                .get(&session.user)
-                .is_some_and(|p| p.session.generation == session.generation)
+                .get(&s.user)
+                .is_some_and(|p| p.session.generation == s.generation)
     }
-
-    fn allocate(&mut self) -> Result<Allocation> {
-        ensure!(
-            self.next < 9_007_199_254_740_991,
-            "Table capacity exhausted"
-        );
-        let permit = self
-            .capacity
-            .clone()
-            .try_acquire_owned()
-            .context("Table capacity exhausted")?;
-        let id = self.next;
-        self.next += 1;
-        Ok(Allocation { id, permit })
-    }
-
     fn user(p: &Presence) -> Value {
-        let mut value = json!({"userID":p.session.user,"name":p.session.name,"status":p.status,"hyphenated":p.session.hyphenated,"inactive":false});
-        if let Some(table) = p.table {
-            value["tableID"] = json!(table);
+        let mut v = json!({"userID":p.session.user,"name":p.session.name,"status":p.status,"hyphenated":p.session.hyphenated(),"inactive":p.session.inactive()});
+        if p.status == 4 {
+            v["tableID"] = json!(0);
+        } else if let Some(id) = p.table {
+            v["tableID"] = json!(id);
         }
-        value
+        v
     }
-
     fn broadcast(&self, message: &str) {
-        for presence in self.sessions.values() {
-            presence.session.emit(message);
+        if self.store.check_state().is_ok() {
+            for p in self.sessions.values() {
+                if self.current(&p.session) {
+                    p.session.emit(message);
+                }
+            }
         }
     }
-
-    fn table_for(view: &TableView, user: i32) -> Value {
-        let mut data = view.data.clone();
-        data["joined"] = json!(view.players.contains(&user));
+    fn table_for(v: &TableView, user: i32) -> Value {
+        let mut data = v.data.clone();
+        data["joined"] = json!(v.players.contains(&user));
         data
     }
-
+    fn playing_elsewhere(&self, user: i32, except: Option<u64>) -> bool {
+        self.tables.iter().any(|(id, entry)| {
+            Some(*id) != except && !entry.view.replay && entry.view.players.contains(&user)
+        })
+    }
+    fn route(&self, s: Arc<Session>, id: u64, command: Command, reply: Reply) {
+        if self.closing || !self.current(&s) {
+            let _ = reply.send(Err(anyhow::anyhow!("Stale session or draining server")));
+            return;
+        }
+        let joining = matches!(&command, Command::Join(_))
+            || matches!(&command,Command::Wire{name,..} if name=="tableJoin");
+        if joining && !s.name.starts_with("Bot-") && self.playing_elsewhere(s.user, Some(id)) {
+            let _ = reply.send(Err(anyhow::anyhow!(
+                "You cannot join more than one table at a time. Terminate your other game before joining a new one."
+            )));
+            return;
+        }
+        if let Some(entry) = self.tables.get(&id) {
+            if joining && !s.name.starts_with("Bot-") {
+                let claim = match PlayingClaim::acquire(&self.playing_claims, s.user) {
+                    Ok(claim) => claim,
+                    Err(error) => {
+                        let _ = reply.send(Err(error));
+                        return;
+                    }
+                };
+                let (completed, received) = oneshot::channel();
+                if entry
+                    .handle
+                    .sender
+                    .try_send(TableCommand::Client {
+                        session: s,
+                        command,
+                        reply: completed,
+                    })
+                    .is_err()
+                {
+                    let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
+                    return;
+                }
+                let hub = self.sender.clone();
+                self.tasks.spawn(async move {
+                    let result = received
+                        .await
+                        .unwrap_or_else(|_| Err(anyhow::anyhow!("Table closed")));
+                    if let Err(error) = hub
+                        .send(HubCommand::PlayingFinished {
+                            result,
+                            reply,
+                            claim,
+                        })
+                        .await
+                        && let HubCommand::PlayingFinished { reply, .. } = error.0
+                    {
+                        let _ = reply.send(Err(anyhow::anyhow!("Coordinator stopped")));
+                    }
+                });
+                return;
+            }
+            if let Err(e) = entry.handle.sender.try_send(TableCommand::Client {
+                session: s,
+                command,
+                reply,
+            }) && let TableCommand::Client { reply, .. } = e.into_inner()
+            {
+                let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
+            }
+        } else {
+            let _ = reply.send(Err(anyhow::anyhow!("Unknown table")));
+        }
+    }
+    fn create(&self, s: Arc<Session>, command: String, data: Value, reply: Reply) {
+        if self.closing || self.maintenance || self.shutdown_imminent || !self.current(&s) {
+            let message = if self.maintenance {
+                "The server is undergoing maintenance."
+            } else if self.closing || self.shutdown_imminent {
+                "The server is shutting down."
+            } else {
+                "Your session is no longer current."
+            };
+            let _ = reply.send(Err(anyhow::anyhow!(message)));
+            return;
+        }
+        let playing = command == "tableCreate" && !s.name.starts_with("Bot-");
+        if playing && self.playing_elsewhere(s.user, None) {
+            let _ = reply.send(Err(anyhow::anyhow!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
+            return;
+        }
+        let playing_claim = if playing {
+            match PlayingClaim::acquire(&self.playing_claims, s.user) {
+                Ok(claim) => Some(claim),
+                Err(error) => {
+                    let _ = reply.send(Err(error));
+                    return;
+                }
+            }
+        } else {
+            None
+        };
+        let permit = match self.capacity.clone().try_acquire_owned() {
+            Ok(p) => p,
+            Err(e) => {
+                let _ = reply.send(Err(e.into()));
+                return;
+            }
+        };
+        let store = self.store.clone();
+        let hub = self.sender.clone();
+        let words = self.words.clone();
+        let tasks = self.tasks.clone();
+        self.tasks.spawn(async move {
+            let prepared = prepare_table(&store, &s, &command, data, &words).await;
+            match prepared {
+                Ok((table, revision, warnings)) => {
+                    let id = table.id;
+                    let mut allocation =
+                        Allocation::new(id, permit, store.clone(), tasks, revision);
+                    if let Some(claim) = playing_claim {
+                        allocation.playing_claims.push(claim);
+                    }
+                    let installed = HubCommand::Install {
+                        table: Box::new(table),
+                        revision,
+                        allocation,
+                        session: s,
+                        warnings,
+                        reply,
+                    };
+                    if let Err(e) = hub.send(installed).await
+                        && let HubCommand::Install { reply, .. } = e.0
+                    {
+                        let _ = reply.send(Err(anyhow::anyhow!(
+                            "Coordinator stopped; table is recoverable"
+                        )));
+                    }
+                }
+                Err(error) => {
+                    let _ = reply.send(Err(error));
+                }
+            }
+        });
+    }
+    fn apply_effects(
+        &mut self,
+        session: Option<&Arc<Session>>,
+        effects: Vec<Effect>,
+    ) -> Result<()> {
+        self.store.check_state()?;
+        if let Some(s) = session {
+            ensure!(self.current(s), "Stale session");
+        }
+        for effect in effects {
+            match effect {
+                Effect::Broadcast { command, data } => self.broadcast(&frame(&command, data)),
+                Effect::ToSelf { command, data } => {
+                    let s = session.context("External effects must be public")?;
+                    s.emit(&frame(&command, data));
+                }
+                Effect::ToUser {
+                    id,
+                    generation,
+                    command,
+                    data,
+                } => {
+                    ensure!(session.is_some(), "External private effect rejected");
+                    if let Some(p) = self
+                        .sessions
+                        .get(&id)
+                        .filter(|p| p.session.generation == generation && p.session.active())
+                    {
+                        p.session.emit(&frame(&command, data));
+                    }
+                }
+                Effect::Hyphenated(value) => {
+                    let s = session.context("Missing session")?;
+                    s.set_hyphenated(value);
+                    if let Some(p) = self.sessions.get(&s.user) {
+                        self.broadcast(&frame("user", Self::user(p)));
+                    }
+                }
+                Effect::Inactive(value) => {
+                    let s = session.context("Missing session")?;
+                    s.set_inactive(value);
+                    if let Some(p) = self.sessions.get(&s.user) {
+                        self.broadcast(&frame("user", Self::user(p)));
+                    }
+                }
+                Effect::RelationshipChanged { .. } => {
+                    ensure!(session.is_some(), "External relationship effect rejected");
+                }
+                _ => bail!("Runtime effects must be resolved before hub publication"),
+            }
+        }
+        Ok(())
+    }
+    fn operations(&mut self, command: Operation, reply: oneshot::Sender<Result<Value>>) {
+        if let Err(error) = self.store.check_state() {
+            let _ = reply.send(Err(error));
+            return;
+        }
+        if matches!(command, Operation::Drained) {
+            let messages = [
+                frame("soundLobby", json!({"file":"shutdown"})),
+                frame(
+                    "error",
+                    json!({"error":"The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts."}),
+                ),
+            ];
+            let total = self.sessions.len();
+            let receipts = self
+                .sessions
+                .values()
+                .filter_map(|p| p.session.close_after(&messages, 1012))
+                .collect::<Vec<_>>();
+            self.tasks.spawn(async move {
+                let closed = match tokio::time::timeout(
+                    Duration::from_secs(1),
+                    futures_util::future::join_all(receipts),
+                )
+                .await
+                {
+                    Ok(results) => results.iter().filter(|r| r.is_ok()).count(),
+                    Err(_) => 0,
+                };
+                let _ = reply.send(Ok(json!({"closed":closed,"total":total})));
+            });
+            return;
+        }
+        let mut jobs = vec![];
+        let result = match command {
+            Operation::Drained => unreachable!("handled before dispatch"),
+            Operation::Inspect | Operation::LongTables => Ok(
+                json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
+            ),
+            Operation::Maintenance { enabled } => {
+                self.maintenance = enabled;
+                self.broadcast(&frame("maintenance", json!({"maintenanceMode":enabled})));
+                Ok(json!({"enabled":enabled}))
+            }
+            Operation::Shutdown {
+                scheduled,
+                started_at,
+                imminent,
+            } => {
+                self.shutdown_imminent = scheduled && imminent;
+                let mut metadata = json!({"shuttingDown":scheduled});
+                if let Some(started_at) = started_at {
+                    metadata["datetimeShutdownInit"] = json!(started_at);
+                }
+                self.broadcast(&frame("shutdown", metadata));
+                Ok(json!({}))
+            }
+            Operation::Warning {
+                user_id,
+                message,
+                error,
+            } => {
+                let command = if error { "error" } else { "warning" };
+                let data = if error {
+                    json!({"error":message})
+                } else {
+                    json!({"warning":message})
+                };
+                if let Some(id) = user_id {
+                    if let Some(p) = self.sessions.get(&id) {
+                        p.session.emit(&frame(command, data));
+                        Ok(json!({"sent":1,"total":self.sessions.len()}))
+                    } else {
+                        Ok(json!({"missing":true}))
+                    }
+                } else {
+                    self.broadcast(&frame(command, data));
+                    Ok(json!({"sent":self.sessions.len(),"total":self.sessions.len()}))
+                }
+            }
+            Operation::Kick { user_id }
+            | Operation::Ban { user_id }
+            | Operation::Mute { user_id } => {
+                if let Some(p) = self.sessions.remove(&user_id) {
+                    p.session.cancel.cancel();
+                    self.broadcast(&frame("userLeft", json!({"userID":user_id})));
+                }
+                for e in self.tables.values() {
+                    e.handle.cleanup.notify_one();
+                }
+                Ok(json!({}))
+            }
+            Operation::Unmute { user_id } | Operation::Unban { user_id } => {
+                if let Some(p) = self.sessions.get(&user_id) {
+                    p.session.emit(&frame(
+                        "warning",
+                        json!({"warning":"Your moderation settings have changed."}),
+                    ));
+                }
+                Ok(json!({}))
+            }
+            Operation::Broadcast { message } => {
+                self.broadcast(&frame("chat", server_chat(0, &message)));
+                for e in self.tables.values() {
+                    jobs.push((e.handle.clone(), TableOperation::Notice(message.clone())));
+                }
+                Ok(json!({}))
+            }
+            Operation::ClearEmptyTables | Operation::ClearPregames | Operation::TerminateGames => {
+                let (pregames, empty, terminate) = match command {
+                    Operation::ClearPregames => (true, false, false),
+                    Operation::ClearEmptyTables => (false, true, false),
+                    _ => (false, false, true),
+                };
+                for e in self.tables.values() {
+                    jobs.push((
+                        e.handle.clone(),
+                        if terminate {
+                            TableOperation::Terminate
+                        } else {
+                            TableOperation::Clear { pregames, empty }
+                        },
+                    ));
+                }
+                Ok(json!({}))
+            }
+            Operation::Terminate { identifier } => {
+                let entry = self.tables.iter().find(|(id, e)| {
+                    id.to_string() == identifier
+                        || e.view.data["name"].as_str() == Some(identifier.as_str())
+                });
+                if let Some((_, entry)) = entry {
+                    jobs.push((entry.handle.clone(), TableOperation::Terminate));
+                    Ok(json!({"found":true}))
+                } else {
+                    Ok(json!({"found":false,"terminated":false}))
+                }
+            }
+        };
+        if jobs.is_empty() {
+            let _ = reply.send(result);
+            return;
+        }
+        self.tasks.spawn(async move {
+            let outcome = async {
+                let mut results = vec![];
+                for (handle, operation) in jobs {
+                    let (sent, received) = oneshot::channel();
+                    handle
+                        .sender
+                        .try_send(TableCommand::Operation {
+                            operation,
+                            reply: sent,
+                        })
+                        .map_err(|_| anyhow::anyhow!("Table operation queue unavailable"))?;
+                    results.push(received);
+                }
+                let mut values = vec![];
+                for received in results {
+                    values.push(received.await??);
+                }
+                let mut response = result?;
+                response["results"] = json!(values);
+                response["terminated"] = json!(values.iter().any(|v| v["terminated"] == true));
+                Ok(response)
+            }
+            .await;
+            let _ = reply.send(outcome);
+        });
+    }
     async fn run(mut self) {
         while let Some(command) = self.receiver.recv().await {
             match command {
@@ -229,11 +729,12 @@ impl Hub {
                     reply,
                 } => {
                     if self.closing
+                        || self.store.check_state().is_err()
                         || !session.active()
                         || self
                             .sessions
                             .get(&session.user)
-                            .is_some_and(|old| old.session.generation > session.generation)
+                            .is_some_and(|p| p.session.generation > session.generation)
                     {
                         session.cancel.cancel();
                         let _ = reply.send(Err(anyhow::anyhow!("Stale or draining session")));
@@ -245,18 +746,24 @@ impl Hub {
                     for entry in self.tables.values() {
                         entry.handle.cleanup.notify_one();
                     }
-                    let playing: Vec<_> = self
-                        .tables
-                        .iter()
-                        .filter(|(_, entry)| {
-                            entry
-                                .view
-                                .as_ref()
-                                .is_some_and(|v| !v.replay && v.players.contains(&session.user))
-                        })
-                        .map(|(id, _)| *id)
-                        .collect();
-                    welcome["playingAtTables"] = json!(playing);
+                    welcome["playingAtTables"] = json!(
+                        self.tables
+                            .iter()
+                            .filter(
+                                |(_, e)| !e.view.replay && e.view.players.contains(&session.user)
+                            )
+                            .map(|(id, _)| id)
+                            .collect::<Vec<_>>()
+                    );
+                    if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
+                        e.view
+                            .reconnects
+                            .get(&session.user)
+                            .map(|shadow| (*id, *shadow))
+                    }) {
+                        welcome["disconSpectatingTable"] = json!(id);
+                        welcome["disconShadowingSeat"] = json!(shadow.unwrap_or(-1));
+                    }
                     welcome["randomTableName"] = json!(random_name(&self.words));
                     self.sessions.insert(
                         session.user,
@@ -266,205 +773,344 @@ impl Hub {
                             table: None,
                         },
                     );
+                    let reconnect = welcome["connectionMode"] == "reconnect";
                     session.emit(&frame("welcome", welcome));
-                    session.emit(&frame(
-                        "userList",
-                        json!(self.sessions.values().map(Self::user).collect::<Vec<_>>()),
-                    ));
-                    session.emit(&frame(
-                        "tableList",
-                        json!(
-                            self.tables
-                                .values()
-                                .filter_map(|entry| entry.view.as_ref())
-                                .filter(|v| v.visible)
-                                .map(|view| Self::table_for(view, session.user))
-                                .collect::<Vec<_>>()
-                        ),
-                    ));
+                    if !reconnect {
+                        session.emit(&frame(
+                            "userList",
+                            json!(self.sessions.values().map(Self::user).collect::<Vec<_>>()),
+                        ));
+                        session.emit(&frame(
+                            "tableList",
+                            json!(
+                                self.tables
+                                    .values()
+                                    .filter(|e| e.view.visible)
+                                    .map(|e| Self::table_for(&e.view, session.user))
+                                    .collect::<Vec<_>>()
+                            ),
+                        ));
+                    }
                     for message in initial {
                         session.emit(&message);
                     }
-                    if let Some(presence) = self.sessions.get(&session.user) {
-                        self.broadcast(&frame("user", Self::user(presence)));
+                    if let Some(p) = self.sessions.get(&session.user) {
+                        self.broadcast(&frame("user", Self::user(p)));
                     }
                     let _ = reply.send(Ok(()));
                 }
-                HubCommand::Logout(session) => {
+                HubCommand::Logout(s) => {
+                    s.cancel.cancel();
                     if self
                         .sessions
-                        .get(&session.user)
-                        .is_some_and(|p| p.session.generation == session.generation)
+                        .get(&s.user)
+                        .is_some_and(|p| p.session.generation == s.generation)
                     {
-                        self.sessions.remove(&session.user);
-                        self.broadcast(&frame("userLeft", json!({"userID":session.user})));
+                        self.sessions.remove(&s.user);
+                        self.broadcast(&frame("userLeft", json!({"userID":s.user})));
                     }
-                    for entry in self.tables.values() {
-                        entry.handle.cleanup.notify_one();
+                    for e in self.tables.values() {
+                        e.handle.cleanup.notify_one();
+                    }
+                }
+                HubCommand::Directory { session, reply } => {
+                    let result = if self.current(&session) {
+                        Ok(self
+                            .sessions
+                            .values()
+                            .filter(|p| p.session.active())
+                            .map(|p| OnlineUser {
+                                id: p.session.user,
+                                name: p.session.name.clone(),
+                                normalized_name: p.session.normalized_name.clone(),
+                                generation: p.session.generation,
+                            })
+                            .collect())
+                    } else {
+                        Err(anyhow::anyhow!("Stale session"))
+                    };
+                    let _ = reply.send(result);
+                }
+                HubCommand::LobbyEffects {
+                    session,
+                    effects,
+                    reply,
+                } => {
+                    let result = self.apply_effects(Some(&session), effects);
+                    let _ = reply.send(result);
+                }
+                HubCommand::ExternalEffects { effects, reply } => {
+                    let result = if effects
+                        .iter()
+                        .all(|e| matches!(e, Effect::Broadcast { .. }))
+                    {
+                        self.apply_effects(None, effects)
+                    } else {
+                        Err(anyhow::anyhow!("External effects must be public"))
+                    };
+                    let _ = reply.send(result);
+                }
+                HubCommand::PlayingFinished {
+                    result,
+                    reply,
+                    claim,
+                } => {
+                    drop(claim);
+                    let _ = reply.send(result);
+                }
+                HubCommand::CheckPlaying {
+                    users,
+                    except,
+                    reply,
+                } => {
+                    let result = if self.closing || self.maintenance || self.shutdown_imminent {
+                        Err(anyhow::anyhow!(
+                            "The server is undergoing maintenance or shutting down."
+                        ))
+                    } else if users
+                        .iter()
+                        .any(|user| self.playing_elsewhere(*user, Some(except)))
+                    {
+                        Err(anyhow::anyhow!(
+                            "An original player is already playing at another table."
+                        ))
+                    } else {
+                        self.store.check_state()
+                    };
+                    let _ = reply.send(result);
+                }
+                HubCommand::Operations { command, reply } => self.operations(command, reply),
+                HubCommand::Client {
+                    session,
+                    command,
+                    data,
+                    reply,
+                } => {
+                    if command == "tableCreate" || command == "replayCreate" {
+                        self.create(session, command, data, reply);
+                    } else {
+                        let table = data["tableID"].as_u64().or_else(|| {
+                            data["room"]
+                                .as_str()
+                                .and_then(|r| r.strip_prefix("table"))
+                                .and_then(|r| r.parse().ok())
+                        });
+                        if let Some(table) = table {
+                            self.route(
+                                session,
+                                table,
+                                Command::Wire {
+                                    name: command,
+                                    data,
+                                },
+                                reply,
+                            );
+                        } else {
+                            let _ = reply.send(Err(anyhow::anyhow!("Missing tableID")));
+                        }
                     }
                 }
                 HubCommand::Create {
                     session,
-                    player,
+                    player: _,
                     name,
                     deck,
                     reply,
                 } => {
-                    if self.closing
-                        || player.id != session.user
-                        || !self.current(&session)
-                        || self
-                            .sessions
-                            .get(&session.user)
-                            .is_some_and(|p| p.table.is_some())
-                    {
-                        let _ = reply.send(Err(anyhow::anyhow!(
-                            "Leave the current table before creating another"
-                        )));
-                        continue;
-                    }
-                    match self.allocate() {
-                        Ok(allocation) => {
-                            let id = allocation.id;
-                            let actor = TableActor::pregame(
-                                id,
-                                name,
-                                player,
-                                deck,
-                                self.store.clone(),
-                                self.sender.clone(),
-                                allocation.permit,
-                            );
-                            let handle = self.spawn(actor, Some((session, reply)));
-                            self.tables.insert(
-                                id,
-                                Entry {
-                                    handle: handle.clone(),
-                                    view: None,
-                                },
-                            );
-                        }
-                        Err(error) => {
-                            let _ = reply.send(Err(error));
-                        }
-                    }
+                    let data = json!({"name":name,"options":Options::default(),"maxPlayers":5,"gameJSON":deck.map(|deck|json!({"players":["Alice","Bob"],"deck":deck}))});
+                    self.create(session, "tableCreate".into(), data, reply);
                 }
+                HubCommand::CreateConfigured {
+                    session,
+                    player: _,
+                    name,
+                    options,
+                    extra,
+                    reply,
+                } => self.create(
+                    session,
+                    "tableCreate".into(),
+                    json!({"name":name,"options":options,"extra":extra}),
+                    reply,
+                ),
                 HubCommand::Allocate(reply) => {
-                    let result = if self.closing {
-                        Err(anyhow::anyhow!("Draining"))
-                    } else {
-                        self.allocate()
-                    };
-                    let _ = reply.send(result);
+                    let permit = self.capacity.clone().try_acquire_owned();
+                    let store = self.store.clone();
+                    let tasks = self.tasks.clone();
+                    let closing = self.closing;
+                    self.tasks.spawn(async move {
+                        let result = async {
+                            ensure!(!closing, "Draining");
+                            let permit = permit?;
+                            let id = store.allocate_table().await?;
+                            Ok(Allocation::new(id, permit, store, tasks, 0))
+                        }
+                        .await;
+                        let _ = reply.send(result);
+                    });
                 }
                 HubCommand::Replay {
                     session,
                     snapshot,
-                    allocation,
+                    mut allocation,
                     reply,
                 } => {
-                    if self.closing
-                        || !self.current(&session)
-                        || self
-                            .sessions
-                            .get(&session.user)
-                            .is_some_and(|p| p.table.is_some())
-                    {
+                    let table = replay_table(*snapshot, false, session.user, &session.name);
+                    let store = self.store.clone();
+                    let hub = self.sender.clone();
+                    self.tasks.spawn(async move {
+                        match store.save(&table, 0).await {
+                            Ok(revision) => {
+                                allocation.revision = revision;
+                                let _ = hub
+                                    .send(HubCommand::Install {
+                                        table: Box::new(table),
+                                        revision,
+                                        allocation,
+                                        session,
+                                        warnings: vec![],
+                                        reply,
+                                    })
+                                    .await;
+                            }
+                            Err(e) => {
+                                let _ = reply.send(Err(e));
+                            }
+                        }
+                    });
+                }
+                HubCommand::Install {
+                    table,
+                    revision,
+                    allocation,
+                    session,
+                    warnings,
+                    reply,
+                } => {
+                    if self.closing {
                         let _ = reply.send(Err(anyhow::anyhow!(
-                            "Leave the current table before creating a replay"
+                            "Server draining; the prepared table will recover"
                         )));
                         continue;
                     }
-                    let id = snapshot.table_id;
-                    if id != allocation.id {
-                        let _ = reply.send(Err(anyhow::anyhow!("Mismatched table allocation")));
+                    if !self.current(&session) {
+                        let _ =
+                            reply.send(Err(anyhow::anyhow!("Session changed during preparation")));
                         continue;
                     }
-                    let actor = TableActor::replay(
-                        *snapshot,
+                    if self.tables.contains_key(&table.id) || allocation.id != table.id {
+                        let _ = reply.send(Err(anyhow::anyhow!("Duplicate table installation")));
+                        continue;
+                    }
+                    let actor = TableActor::new(
+                        *table,
+                        revision,
                         self.store.clone(),
                         self.sender.clone(),
-                        allocation.permit,
+                        allocation.into_permit(),
                     );
-                    let handle = self.spawn(actor, Some((session, reply)));
+                    let id = actor.table.id;
+                    let view = actor.view();
+                    let initial = if !self.closing && self.current(&session) {
+                        Some((session, warnings, reply))
+                    } else {
+                        let _ = reply.send(Err(anyhow::anyhow!(
+                            "Session changed during preparation; table is recoverable"
+                        )));
+                        None
+                    };
+                    let handle = self.spawn(actor, initial);
+                    self.tables.insert(
+                        id,
+                        Entry {
+                            handle,
+                            view,
+                            published: false,
+                        },
+                    );
+                }
+                HubCommand::Spawn {
+                    table,
+                    revision,
+                    allocation,
+                    attendees,
+                } => {
+                    if self.closing {
+                        continue;
+                    }
+                    let actor = TableActor::new(
+                        *table,
+                        revision,
+                        self.store.clone(),
+                        self.sender.clone(),
+                        allocation.into_permit(),
+                    );
+                    let id = actor.table.id;
+                    let view = actor.view();
+                    let handle = self.spawn(actor, None);
                     self.tables.insert(
                         id,
                         Entry {
                             handle: handle.clone(),
-                            view: None,
+                            view,
+                            published: false,
                         },
                     );
+                    for (session, spectator, shadow) in attendees {
+                        if self.current(&session) {
+                            let (reply, _) = oneshot::channel();
+                            let _=handle.sender.try_send(TableCommand::Client{session,command:Command::Wire{name:if spectator{"tableSpectate".into()}else{"tableReattend".into()},data:json!({"shadowingPlayerIndex":shadow.map(|s|s as i32).unwrap_or(-1)})},reply});
+                        }
+                    }
                 }
                 HubCommand::Route {
                     session,
                     table,
                     command,
                     reply,
-                } => {
-                    if self.closing || !self.current(&session) {
-                        let _ =
-                            reply.send(Err(anyhow::anyhow!("Stale session or draining server")));
-                    } else if self
-                        .sessions
-                        .get(&session.user)
-                        .is_some_and(|p| match &command {
-                            Command::Join(_) | Command::Reattend => {
-                                p.table.is_some_and(|current| current != table)
-                            }
-                            _ => p.table != Some(table),
-                        })
-                    {
-                        let _ = reply.send(Err(anyhow::anyhow!(
-                            "Attend this table before issuing commands"
-                        )));
-                    } else if let Some(entry) = self.tables.get(&table) {
-                        if let Err(error) = entry.handle.sender.try_send(TableCommand::Client {
-                            session,
-                            command,
-                            reply,
-                        }) && let TableCommand::Client { reply, .. } = error.into_inner()
-                        {
-                            let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
-                        }
-                    } else {
-                        let _ = reply.send(Err(anyhow::anyhow!("Unknown table")));
-                    }
-                }
+                } => self.route(session, table, command, reply),
                 HubCommand::Name { session, reply } => {
-                    if self.closing || !self.current(&session) {
-                        let _ = reply.send(Err(anyhow::anyhow!("Session unavailable")));
-                    } else {
+                    let result = if self.current(&session) && !self.closing {
                         session.emit(&frame("name", json!({"name":random_name(&self.words)})));
-                        let _ = reply.send(Ok(()));
-                    }
+                        Ok(())
+                    } else {
+                        Err(anyhow::anyhow!("Session unavailable"))
+                    };
+                    let _ = reply.send(result);
                 }
                 HubCommand::Effects(effects) => {
-                    let mut changed = false;
-                    if let Some(entry) = self.tables.get_mut(&effects.table) {
-                        changed = entry.view.as_ref() != Some(&effects.view);
-                        entry.view = Some(effects.view);
+                    if self.store.check_state().is_err() {
+                        continue;
+                    }
+                    let Some(entry) = self.tables.get_mut(&effects.table) else {
+                        continue;
+                    };
+                    let hidden = entry.view.visible && !effects.view.visible;
+                    let changed = !entry.published || entry.view != effects.view;
+                    entry.view = effects.view;
+                    entry.published = true;
+                    if hidden {
+                        self.broadcast(&frame("tableGone", json!({"tableID":effects.table})));
                     }
                     for (session, status, table) in effects.statuses {
                         if self.current(&session) {
-                            if let Some(presence) = self.sessions.get_mut(&session.user) {
-                                presence.status = status;
-                                presence.table = table;
+                            if let Some(p) = self.sessions.get_mut(&session.user) {
+                                p.status = status;
+                                p.table = table;
                             }
-                            if let Some(presence) = self.sessions.get(&session.user) {
-                                self.broadcast(&frame("user", Self::user(presence)));
+                            if let Some(p) = self.sessions.get(&session.user) {
+                                self.broadcast(&frame("user", Self::user(p)));
                             }
                         }
                     }
-                    if let Some(view) = self
-                        .tables
-                        .get(&effects.table)
-                        .and_then(|entry| entry.view.as_ref())
-                        .filter(|v| changed && v.visible)
+                    if changed
+                        && let Some(entry) = self.tables.get(&effects.table)
+                        && entry.view.visible
                     {
-                        for presence in self.sessions.values() {
-                            presence.session.emit(&frame(
+                        for p in self.sessions.values() {
+                            p.session.emit(&frame(
                                 "table",
-                                Self::table_for(view, presence.session.user),
+                                Self::table_for(&entry.view, p.session.user),
                             ));
                         }
                     }
@@ -475,26 +1121,17 @@ impl Hub {
                     }
                 }
                 HubCommand::Retire(id) => {
-                    if self
-                        .tables
-                        .remove(&id)
-                        .is_some_and(|entry| entry.view.is_some_and(|view| view.visible))
-                    {
+                    if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame("tableGone", json!({"tableID":id})));
                     }
                 }
                 HubCommand::Quiesce(reply) => {
                     self.closing = true;
-                    let _ = reply.send(
-                        self.tables
-                            .values()
-                            .map(|entry| entry.handle.clone())
-                            .collect(),
-                    );
+                    let _ = reply.send(self.tables.values().map(|e| e.handle.clone()).collect());
                 }
                 HubCommand::Stop(reply) => {
-                    for presence in self.sessions.values() {
-                        presence.session.cancel.cancel();
+                    for p in self.sessions.values() {
+                        p.session.cancel.cancel();
                     }
                     let _ = reply.send(());
                     break;
@@ -505,909 +1142,3064 @@ impl Hub {
 }
 
 fn random_name(words: &[String]) -> String {
-    let mut selected = Vec::new();
-    let mut result = Vec::new();
-    let mut random = rand::thread_rng();
-    for _ in 0..3 {
-        let mut index = random.gen_range(0..words.len() - selected.len());
-        for previous in &selected {
-            if index >= *previous {
-                index += 1;
-            }
-        }
-        result.push(words[index].as_str());
-        selected.push(index);
-        selected.sort_unstable();
+    if words.len() < 3 {
+        return "New Table".into();
     }
-    result.join(" ")
+    let mut selected = vec![];
+    let mut rng = rand::thread_rng();
+    while selected.len() < 3 {
+        let i = rng.gen_range(0..words.len());
+        if !selected.contains(&i) {
+            selected.push(i);
+        }
+    }
+    selected
+        .iter()
+        .map(|i| words[*i].as_str())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+fn server_chat(id: u64, message: &str) -> Value {
+    json!({"msg":message,"who":"Hanab Live","source":"server","datetime":chat_time(),"room":if id==0{"lobby".into()}else{format!("table{id}")}})
+}
+fn chat_time() -> String {
+    Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
+}
+fn parse_start_minutes(argument: &str) -> Option<f64> {
+    let value = format!("0{argument}");
+    let decimal =
+        regex::Regex::new(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$")
+            .ok()?;
+    if decimal.is_match(&value) {
+        let value = value.replace('_', "").parse::<f64>().ok()?;
+        return value.is_finite().then_some(value);
+    }
+    let hex=regex::Regex::new(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").ok()?;
+    if !hex.is_match(&value) {
+        return None;
+    }
+    let cleaned = value.replace('_', "").to_ascii_lowercase();
+    let (mantissa, power) = cleaned[2..].split_once('p')?;
+    let fraction = mantissa
+        .split_once('.')
+        .map_or(0, |(_, fraction)| fraction.len());
+    let power = power.parse::<i64>().unwrap_or_else(|_| {
+        if power.starts_with('-') {
+            i64::MIN
+        } else {
+            i64::MAX
+        }
+    });
+    let exponent = power.saturating_sub((fraction as i64).saturating_mul(4));
+    let mut bits = Vec::new();
+    for digit in mantissa.chars().filter(|c| *c != '.') {
+        let value = digit.to_digit(16)?;
+        for bit in (0..4).rev() {
+            bits.push((value >> bit) & 1);
+        }
+    }
+    let Some(first) = bits.iter().position(|b| *b != 0) else {
+        return Some(0.0);
+    };
+    let bits = &bits[first..];
+    let size = bits.len() as i64;
+    if exponent.saturating_add(size) < -1074 {
+        return Some(0.0);
+    }
+    if exponent.saturating_add(size) > 1024 {
+        return None;
+    }
+    let shift = 0.max(size - 53).max(-1074 - exponent);
+    let kept = (size - shift).max(0) as usize;
+    let mut rounded = bits[..kept]
+        .iter()
+        .fold(0_u64, |v, bit| (v << 1) | u64::from(*bit));
+    // Round once, including subnormal results, using guard/sticky bits.
+    if bits.get(kept) == Some(&1) && (bits[kept + 1..].contains(&1) || rounded & 1 != 0) {
+        rounded += 1;
+    }
+    let result = rounded as f64 * 2_f64.powi(i32::try_from(exponent + shift).ok()?);
+    result.is_finite().then_some(result)
+}
+fn options_suggestion(options: &Options, name: &str, max_players: usize) -> Result<String> {
+    let mut value = serde_json::to_value(options)?;
+    value["tableName"] = json!(name);
+    value["maxPlayers"] = json!(max_players);
+    let encoded = crate::accounts::escape_html(
+        &serde_json::to_string(&value)?
+            .replace('\'', "\\u0027")
+            .replace('"', "'"),
+    );
+    Ok(format!(
+        "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"{encoded}\">click to apply the suggestion</button></span>"
+    ))
+}
+fn is_variant_discovery(command: &Command) -> bool {
+    let Command::Wire { name, data } = command else {
+        return false;
+    };
+    name == "chat"
+        && data["msg"]
+            .as_str()
+            .and_then(|text| crate::accounts::normalize_chat(text).ok())
+            .is_some_and(|text| {
+                matches!(
+                    text.split_whitespace()
+                        .next()
+                        .unwrap_or("")
+                        .to_ascii_lowercase()
+                        .as_str(),
+                    "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
+                )
+            })
+}
+struct VariantDiscovery {
+    requester: Arc<Session>,
+    participants: Vec<(i32, String)>,
+    query: std::pin::Pin<Box<dyn std::future::Future<Output = Result<Option<String>>> + Send>>,
+}
+fn replay_table(
+    mut snapshot: Snapshot,
+    shared: bool,
+    owner: i32,
+    owner_name: &str,
+) -> TableSnapshot {
+    let id = snapshot.table_id;
+    let options = snapshot.game.options.clone();
+    for (index, player) in snapshot.players.iter_mut().enumerate() {
+        player.id = -1 - index as i32;
+    }
+    let name = format!(
+        "{} replay for {}",
+        if shared { "Shared" } else { "Solo" },
+        if snapshot.game_id == 0 {
+            format!(
+                "{owner_name}{} JSON game",
+                if owner_name.ends_with('s') { "'" } else { "'s" }
+            )
+        } else {
+            format!("game #{}", snapshot.game_id)
+        }
+    );
+    TableSnapshot {
+        format: FORMAT.into(),
+        id,
+        name,
+        owner,
+        visible: shared,
+        max_players: snapshot.players.len(),
+        password_hash: None,
+        extra: ExtraOptions {
+            no_write_to_database: true,
+            custom_seed: Some(snapshot.seed.clone()),
+            ..ExtraOptions::default()
+        },
+        created: Utc::now(),
+        options,
+        phase: Phase::Replay {
+            snapshot: Box::new(snapshot),
+            replay: ReplayState {
+                leader: owner,
+                segment: 0,
+                efficiency_modifier: 0,
+                hypothetical: None,
+                hypothetical_actions: vec![],
+                show_drawn_cards: false,
+            },
+        },
+        chat: vec![],
+        chat_archived: 0,
+        receipts: vec![],
+        shadows: BTreeMap::new(),
+        pending_spawn: None,
+        retire_after_spawn: false,
+        pending_tag: None,
+    }
+}
+async fn prepare_table(
+    store: &Store,
+    session: &Session,
+    command: &str,
+    data: Value,
+    words: &[String],
+) -> Result<(TableSnapshot, i64, Vec<String>)> {
+    store.check_state()?;
+    ensure!(session.active(), "Stale session");
+    let id = store.allocate_table().await?;
+    let result = async {
+        if command == "replayCreate" {
+            ensure!(
+                data["password"].as_str().unwrap_or("").is_empty(),
+                "You cannot create a replay with a password."
+            );
+            let mut warnings = vec![];
+            let mut custom_seed = None;
+            let snapshot = if data["source"] == "json" {
+                let imported = replay_helpers::parse(&data["gameJSON"])?;
+                warnings = imported.warnings.clone();
+                custom_seed = Some(imported.extra.custom_seed.clone());
+                replay_helpers::snapshot(imported, id, session.user)
+            } else {
+                store
+                    .historical(
+                        i32::try_from(data["databaseID"].as_i64().context("Missing databaseID")?)?,
+                        id,
+                        session.user,
+                    )
+                    .await?
+            };
+            let mut table = replay_table(
+                snapshot,
+                data["visibility"] == "shared",
+                session.user,
+                &session.name,
+            );
+            if let Some(seed) = custom_seed {
+                table.extra.custom_seed = seed;
+            }
+            let revision = store.save(&table, 0).await?;
+            return Ok((table, revision, warnings));
+        }
+        let mut name = data["name"].as_str().unwrap_or("").trim().to_owned();
+        while name.len() > 45 {
+            name.pop();
+        }
+        if name.is_empty() {
+            name = random_name(words);
+        }
+        ensure!(
+            name.chars()
+                .all(|c| c.is_ascii_alphanumeric() || " _!#$()+,-.:;=?@".contains(c)),
+            "Invalid table name"
+        );
+        let mut options: Options =
+            serde_json::from_value(data.get("options").cloned().unwrap_or(json!({})))?;
+        options.starting_player = 0;
+        if options.speedrun || !options.timed {
+            options.timed = false;
+            options.time_base = 0.0;
+            options.time_per_turn = 0;
+        }
+        if options.one_extra_card && options.one_less_card {
+            options.one_extra_card = false;
+            options.one_less_card = false;
+        }
+        ensure!(
+            !options.timed
+                || (options.time_base > 0.0
+                    && options.time_base <= 604800.0
+                    && (1..=86400).contains(&options.time_per_turn)),
+            "Invalid timed options"
+        );
+        let mut extra: ExtraOptions =
+            serde_json::from_value(data.get("extra").cloned().unwrap_or(json!({})))?;
+        if name.starts_with('!') {
+            ensure!(
+                data.get("gameJSON").is_none_or(Value::is_null),
+                "Special prefixes cannot be combined with JSON"
+            );
+            let parts = name.split_whitespace().collect::<Vec<_>>();
+            if parts.first() == Some(&"!seed") {
+                ensure!(
+                    parts.len() == 2
+                        && parts[1]
+                            .bytes()
+                            .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+                    "Expected !seed [seed name]"
+                );
+                extra.set_seed_suffix = parts[1].into();
+            } else if parts.first() == Some(&"!replay") {
+                ensure!(
+                    (2..=3).contains(&parts.len()),
+                    "Expected !replay [game ID] [turn]"
+                );
+                let historical = store
+                    .historical(parts[1].parse()?, id, session.user)
+                    .await?;
+                let turn = if parts.len() == 3 {
+                    parts[2]
+                        .parse::<usize>()?
+                        .checked_sub(1)
+                        .context("Turn must be positive")?
+                } else {
+                    0
+                };
+                ensure!(
+                    turn < historical.game.turn as usize,
+                    "Replay turn exceeds game"
+                );
+                options = historical.game.options.clone();
+                extra.custom_seed = Some(historical.seed);
+                extra.custom_deck = Some(historical.game.identities());
+                extra.custom_deck_is_shuffled = true;
+                extra.custom_characters = Some(
+                    historical
+                        .game
+                        .players
+                        .iter()
+                        .map(|p| hanabi_engine::AssignedCharacter {
+                            name: if p.character.is_empty() {
+                                "n/a".into()
+                            } else {
+                                p.character.clone()
+                            },
+                            metadata: if matches!(
+                                p.character.as_str(),
+                                "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
+                            ) {
+                                p.character_metadata
+                            } else {
+                                -1
+                            },
+                        })
+                        .collect(),
+                );
+                extra.custom_actions = historical
+                    .game
+                    .actions
+                    .iter()
+                    .map(|a| Action {
+                        kind: a.action_type as u8,
+                        target: a.target,
+                        value: a.value,
+                    })
+                    .collect();
+                extra.custom_num_players = Some(options.num_players);
+                extra.set_replay = true;
+                extra.set_replay_turn = turn;
+            } else {
+                bail!("Unknown special game prefix");
+            }
+        } else if let Some(input) = data.get("gameJSON").filter(|v| !v.is_null()) {
+            let imported = replay_helpers::parse(input)?;
+            options = imported.game.options.clone();
+            extra = imported.extra;
+        }
+        let variant = hanabi_engine::get_variant(&options.variant_name)?;
+        options.variant_id = Some(variant.id);
+        let player = store
+            .player_for_variant(session.user, session.name.clone(), variant.id)
+            .await?;
+        let max_players = data["maxPlayers"]
+            .as_u64()
+            .map(|n| n as usize)
+            .filter(|n| (2..=6).contains(n))
+            .unwrap_or(5)
+            .max(extra.custom_num_players.unwrap_or(2));
+        let password = data["password"].as_str().unwrap_or("").to_owned();
+        let password_hash = if password.is_empty() {
+            None
+        } else {
+            ensure!(password.len() <= 1024, "Password too long");
+            Some(crate::accounts::hash_password(password).await?)
+        };
+        ensure!(session.active(), "Creator disconnected during preparation");
+        let table = TableSnapshot {
+            format: FORMAT.into(),
+            id,
+            name,
+            owner: session.user,
+            visible: !data["hidePregame"].as_bool().unwrap_or(false),
+            options,
+            max_players,
+            password_hash,
+            extra,
+            created: Utc::now(),
+            phase: Phase::Pregame {
+                players: vec![player],
+                automatic_start: None,
+                countdown: None,
+                kicked: vec![],
+            },
+            chat: vec![],
+            chat_archived: 0,
+            receipts: vec![],
+            shadows: BTreeMap::new(),
+            pending_spawn: None,
+            retire_after_spawn: false,
+            pending_tag: None,
+        };
+        let revision = store.save(&table, 0).await?;
+        Ok((table, revision, vec![]))
+    }
+    .await;
+    if result.is_err() {
+        let _ = store.remove(id, 0).await;
+    }
+    result
 }
 
-enum State {
-    Pregame {
-        players: Vec<Player>,
-        input: Option<Vec<Card>>,
-    },
-    Live(Box<Snapshot>),
-    Replay(Box<Snapshot>),
-    Frozen(Box<Snapshot>),
-}
 struct Attendance {
     session: Arc<Session>,
     loaded: bool,
+    spectator: bool,
+    shadow: Option<usize>,
+    chat_read: usize,
+    typing_until: Option<Instant>,
 }
 struct TableActor {
-    id: u64,
-    name: String,
-    owner: i32,
-    visible: bool,
-    state: State,
+    table: TableSnapshot,
     revision: i64,
+    frozen: bool,
+    retired: bool,
     attendees: HashMap<i32, Attendance>,
     cleanup: Arc<Notify>,
     store: Store,
     hub: mpsc::Sender<HubCommand>,
-    anchor: std::time::Instant,
+    anchor: Instant,
     _permit: OwnedSemaphorePermit,
+    playing_claims: Arc<Mutex<HashSet<i32>>>,
 }
-
 impl TableActor {
-    fn pregame(
-        id: u64,
-        name: String,
-        player: Player,
-        input: Option<Vec<Card>>,
-        store: Store,
-        hub: mpsc::Sender<HubCommand>,
-        permit: OwnedSemaphorePermit,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            owner: player.id,
-            visible: true,
-            state: State::Pregame {
-                players: vec![player],
-                input,
-            },
-            revision: 0,
-            attendees: HashMap::new(),
-            cleanup: Arc::new(Notify::new()),
-            store,
-            hub,
-            anchor: std::time::Instant::now(),
-            _permit: permit,
-        }
-    }
-    fn live(
-        snapshot: Snapshot,
+    fn new(
+        table: TableSnapshot,
         revision: i64,
         store: Store,
         hub: mpsc::Sender<HubCommand>,
         permit: OwnedSemaphorePermit,
     ) -> Self {
         Self {
-            id: snapshot.table_id,
-            name: snapshot.name.clone(),
-            owner: snapshot.owner,
-            visible: true,
-            state: State::Live(Box::new(snapshot)),
+            table,
             revision,
+            frozen: false,
+            retired: false,
             attendees: HashMap::new(),
             cleanup: Arc::new(Notify::new()),
             store,
             hub,
-            anchor: std::time::Instant::now(),
+            anchor: Instant::now(),
             _permit: permit,
-        }
-    }
-    fn replay(
-        snapshot: Snapshot,
-        store: Store,
-        hub: mpsc::Sender<HubCommand>,
-        permit: OwnedSemaphorePermit,
-    ) -> Self {
-        let mut actor = Self::live(snapshot, 0, store, hub, permit);
-        if let State::Live(snapshot) = actor.state {
-            actor.state = State::Replay(snapshot);
-        }
-        actor.visible = false;
-        actor
-    }
-    fn players(&self) -> &[Player] {
-        match &self.state {
-            State::Pregame { players, .. } => players,
-            State::Live(s) | State::Replay(s) | State::Frozen(s) => &s.players,
+            playing_claims: Arc::new(Mutex::new(HashSet::new())),
         }
     }
     fn view(&self) -> TableView {
-        let replay = matches!(self.state, State::Replay(_));
-        let progress = match &self.state {
-            State::Pregame { .. } => 0,
-            State::Live(s) | State::Replay(s) | State::Frozen(s) => u32::from(s.game.score) * 4,
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        let running = !matches!(self.table.phase, Phase::Pregame { .. });
+        let progress = if let Some(s) = self.table.game() {
+            if let Phase::Replay { replay, .. } = &self.table.phase {
+                (replay.segment * 100 / s.game.turn.max(1)).clamp(0, 100)
+            } else {
+                s.game.score * 100
+                    / hanabi_engine::get_variant(&self.table.options.variant_name)
+                        .expect("variant")
+                        .max_score
+            }
+        } else {
+            0
         };
+        let spectators = self.spectators();
         TableView {
-            players: self.players().iter().map(|p| p.id).collect(),
+            players: self.table.players().iter().map(|p| p.id).collect(),
             replay,
-            visible: self.visible,
-            data: json!({"id":self.id,"joined":false,"maxPlayers":2,"name":self.name,
-                "numPlayers":self.players().len(),"options":game::options(),"ownerID":self.owner,
-                "passwordProtected":false,"players":self.players().iter().map(|p|&p.name).collect::<Vec<_>>(),
-                "progress":progress,"running":!matches!(self.state,State::Pregame{..}),"sharedReplay":replay&&self.visible,
-                "spectators":[],"timeBase":0,"timePerTurn":0,"timed":false,"variant":"No Variant"}),
+            visible: self.table.visible,
+            reconnects: self
+                .table
+                .shadows
+                .iter()
+                .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
+                .map(|(id, shadow)| (*id, *shadow))
+                .collect(),
+            inspection: json!({"id":self.table.id,"name":self.table.name,"created":self.table.created,"running":running,"replay":replay,"frozen":self.frozen}),
+            data: json!({"id":self.table.id,"joined":false,"maxPlayers":self.table.max_players,"name":self.table.name,"numPlayers":self.table.players().len(),"options":self.table.options,"ownerID":self.table.owner,"passwordProtected":self.table.password_hash.is_some(),"players":self.table.players().iter().map(|p|&p.name).collect::<Vec<_>>(),"progress":progress,"running":running,"sharedReplay":replay&&self.table.visible,"spectators":spectators,"timeBase":self.table.options.time_base,"timePerTurn":self.table.options.time_per_turn,"timed":self.table.options.timed,"variant":self.table.options.variant_name}),
         }
+    }
+    fn spectators(&self) -> Vec<Value> {
+        self.attendees.values().filter(|a|a.spectator&&a.session.active()).map(|a|json!({"name":a.session.name,"shadowingPlayerIndex":a.shadow.map(|v|v as i32).unwrap_or(-1),"shadowingPlayerUsername":a.shadow.and_then(|i|self.table.players().get(i)).map(|p|p.name.as_str()).unwrap_or("")})).collect()
     }
     fn effects(&self) -> Effects {
         Effects {
-            table: self.id,
+            table: self.table.id,
             view: self.view(),
-            statuses: Vec::new(),
-            messages: Vec::new(),
+            statuses: vec![],
+            messages: vec![],
         }
     }
     async fn publish(&self, effects: Effects) -> Result<()> {
+        self.store.check_state()?;
         self.hub
             .send(HubCommand::Effects(effects))
             .await
             .context("Coordinator stopped")
     }
-    fn attending(&self, session: &Session) -> bool {
-        session.active()
+    fn attending(&self, s: &Session) -> bool {
+        s.active()
             && self
                 .attendees
-                .get(&session.user)
-                .is_some_and(|a| a.session.generation == session.generation)
+                .get(&s.user)
+                .is_some_and(|a| a.session.generation == s.generation)
     }
-    fn pregame_messages(&self, effects: &mut Effects) {
-        for attendee in self.attendees.values().filter(|a| a.session.active()) {
-            effects.messages.push((attendee.session.clone(), frame("game", json!({
-                "tableID":self.id,"name":self.name,"owner":self.owner,
-                "players":self.players().iter().enumerate().map(|(index,p)|json!({
-                    "index":index,"name":p.name,"you":p.id==attendee.session.user,
-                    "present":self.attendees.get(&p.id).is_some_and(|a|a.session.active()),"stats":p.stats
-                })).collect::<Vec<_>>(),"options":game::options(),"passwordProtected":false,"maxPlayers":2
-            }))));
+    fn seat(&self, s: &Session) -> Result<usize> {
+        self.table
+            .players()
+            .iter()
+            .position(|p| p.id == s.user)
+            .context("You are not playing at this table")
+    }
+    fn audience(&self) -> impl Iterator<Item = &Attendance> {
+        self.attendees.values().filter(|a| a.session.active())
+    }
+    fn add_all(&self, e: &mut Effects, command: &str, data: Value) {
+        let message = frame(command, data);
+        for a in self.audience() {
+            e.messages.push((a.session.clone(), message.clone()));
         }
     }
-    async fn initialize_attendance(&mut self, session: Arc<Session>) -> Result<()> {
+    fn typing_messages(&self, e: &mut Effects, author: i32, name: &str, typing: bool) {
+        let message = frame(
+            "chatTyping",
+            json!({"tableID":self.table.id,"name":name,"typing":typing}),
+        );
+        for a in self.audience().filter(|a| a.session.user != author) {
+            e.messages.push((a.session.clone(), message.clone()));
+        }
+    }
+    fn pregame_messages(&self, e: &mut Effects) {
+        for a in self.audience() {
+            e.messages.push((a.session.clone(),frame("game",json!({"tableID":self.table.id,"name":self.table.name,"owner":self.table.owner,
+        "players":self.table.players().iter().enumerate().map(|(i,p)|json!({"index":i,"name":p.name,"you":p.id==a.session.user,"present":self.attendees.get(&p.id).is_some_and(|a|a.session.active()&&!a.spectator),"stats":p.stats})).collect::<Vec<_>>(),"options":self.table.options,"passwordProtected":self.table.password_hash.is_some(),"maxPlayers":self.table.max_players}))));
+        }
+    }
+    fn candidate(&self) -> TableSnapshot {
+        let mut next = self.table.clone();
+        let delta = self.anchor.elapsed().as_millis().min(9_007_199_254_740_991) as i64;
+        if let Some(s) = next.game_mut() {
+            s.idle_remaining = (s.idle_remaining - delta).max(0);
+            if s.game.end_condition == EndCondition::InProgress {
+                s.duration = s.duration.saturating_add(delta);
+                if s.timer_started && !s.game.paused {
+                    let active = s.game.active_player_index;
+                    s.clocks[active] -= delta;
+                    s.turn_elapsed += delta;
+                }
+            }
+        }
+        next
+    }
+    async fn persist(&mut self, mut next: TableSnapshot) -> Result<()> {
+        self.store.check_state()?;
+        ensure!(!self.frozen, "Table is frozen until recovery");
+        let old_ids = self
+            .table
+            .players()
+            .iter()
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        let new_ids = next.players().iter().map(|p| p.id).collect::<Vec<_>>();
+        if old_ids != new_ids {
+            for shadow in next.shadows.values_mut() {
+                *shadow = shadow
+                    .and_then(|seat| usize::try_from(seat).ok())
+                    .and_then(|seat| old_ids.get(seat))
+                    .and_then(|id| new_ids.iter().position(|new| new == id))
+                    .map(|seat| seat as i32);
+            }
+        }
+        if let Some(s) = next.game_mut()
+            && s.game.end_condition != EndCondition::InProgress
+            && s.finished.is_none()
+        {
+            s.finished = Some(Utc::now());
+        }
+        next.validate()?;
+        self.store.prepare_chat(&mut next).await?;
+        ensure!(
+            serde_json::to_vec(&next)?.len() <= 4 * 1024 * 1024,
+            "Checkpoint exceeds the durable state limit"
+        );
+        let result = async {
+            let mut revision = self.store.save(&next, self.revision).await?;
+            if let Some(edit) = next.pending_tag.take() {
+                let tags = self.store.apply_tag(&edit).await?;
+                next.game_mut().context("Missing tagged replay")?.tags = tags;
+                revision = self.store.save(&next, revision).await?;
+            }
+            if next.chat_archived < next.chat.len() {
+                self.store
+                    .archive_chat(&next.chat[next.chat_archived..])
+                    .await?;
+                next.chat_archived = next.chat.len();
+                revision = self.store.save(&next, revision).await?;
+            }
+            if let Phase::Live { snapshot } = &next.phase
+                && snapshot.game.end_condition != EndCondition::InProgress
+            {
+                if !next.extra.no_write_to_database {
+                    self.store.complete(snapshot, revision).await?;
+                    self.store.refresh_background((**snapshot).clone());
+                }
+                let snapshot = snapshot.clone();
+                let segment = snapshot.game.turn;
+                next.phase = Phase::Replay {
+                    snapshot,
+                    replay: ReplayState {
+                        leader: next.owner,
+                        segment,
+                        efficiency_modifier: 0,
+                        hypothetical: None,
+                        hypothetical_actions: vec![],
+                        show_drawn_cards: false,
+                    },
+                };
+                for a in self.audience() {
+                    next.shadows.insert(a.session.user, None);
+                }
+                revision = self.store.save(&next, revision).await?;
+            }
+            Ok::<i64, anyhow::Error>(revision)
+        }
+        .await;
+        match result {
+            Ok(revision) => {
+                self.revision = revision;
+                let became_replay = matches!(self.table.phase, Phase::Live { .. })
+                    && matches!(next.phase, Phase::Replay { .. });
+                self.table = next;
+                for a in self.attendees.values_mut() {
+                    if became_replay {
+                        a.spectator = true;
+                        a.shadow = None;
+                    }
+                    if let Some(shadow) = self.table.shadows.get(&a.session.user) {
+                        a.shadow = shadow.and_then(|s| usize::try_from(s).ok());
+                    }
+                }
+                self.anchor = Instant::now();
+                Ok(())
+            }
+            Err(error) => {
+                self.frozen = true;
+                let _ = self.hub.try_send(HubCommand::Effects(self.effects()));
+                eprintln!("Table {} storage uncertain: {error}", self.table.id);
+                bail!("Storage result is uncertain; table frozen until recovery")
+            }
+        }
+    }
+    async fn initialize(&mut self, s: Arc<Session>, warnings: Vec<String>) -> Result<()> {
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        if replay {
+            let mut next = self.candidate();
+            next.shadows.insert(s.user, None);
+            self.persist(next).await?;
+        }
         self.attendees.insert(
-            session.user,
+            s.user,
             Attendance {
-                session: session.clone(),
+                session: s.clone(),
                 loaded: false,
+                spectator: replay,
+                shadow: None,
+                chat_read: 0,
+                typing_until: None,
             },
         );
-        let mut effects = self.effects();
-        if matches!(self.state, State::Pregame { .. }) {
-            effects.statuses.push((session.clone(), 1, Some(self.id)));
-            self.pregame_messages(&mut effects);
-            effects
-                .messages
-                .push((session, frame("joined", json!({"tableID":self.id}))));
+        let mut e = self.effects();
+        if matches!(self.table.phase, Phase::Pregame { .. }) {
+            e.statuses.push((s.clone(), 1, Some(self.table.id)));
+            self.pregame_messages(&mut e);
+            e.messages
+                .push((s.clone(), frame("joined", json!({"tableID":self.table.id}))));
         } else {
-            effects.statuses.push((session.clone(), 4, Some(self.id)));
-            effects.messages.push((
-                session,
-                frame("tableStart", json!({"tableID":self.id,"replay":true})),
+            e.statuses.push((
+                s.clone(),
+                if self.table.visible { 5 } else { 4 },
+                Some(self.table.id),
+            ));
+            e.messages.push((
+                s.clone(),
+                frame("tableStart", json!({"tableID":self.table.id,"replay":true})),
             ));
         }
-        self.publish(effects).await
+        for warning in warnings {
+            e.messages
+                .push((s.clone(), frame("warning", json!({"warning":warning}))));
+        }
+        self.publish(e).await
     }
-
     async fn run(
         mut self,
         mut receiver: mpsc::Receiver<TableCommand>,
-        initial: Option<(Arc<Session>, Reply)>,
+        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
     ) {
-        // Establish ownership before polling either commands or coalesced cleanup.
-        if let Some((session, reply)) = initial {
-            let result = self.initialize_attendance(session).await;
-            let failed = result.is_err();
+        if let Some((session, warnings, reply)) = initial {
+            let result = self.initialize(session, warnings).await;
             let _ = reply.send(result);
-            if failed {
-                return;
-            }
         }
+        let mut tick = tokio::time::interval(Duration::from_millis(250));
+        tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        let mut discovery: Option<(VariantDiscovery, Reply)> = None;
         loop {
-            let previous_attendees = self.attendees.len();
-            self.attendees
-                .retain(|_, attendee| attendee.session.active());
-            if self.attendees.len() != previous_attendees && matches!(self.state, State::Live(_)) {
-                let mut effects = self.effects();
-                for attendee in self.attendees.values() {
-                    effects
-                        .messages
-                        .push((attendee.session.clone(), self.connected_message()));
-                }
-                if let Err(error) = self.publish(effects).await {
-                    eprintln!("Failed to publish disconnect state: {error}");
-                    break;
-                }
-            }
-            if matches!(self.state, State::Replay(_)) && self.attendees.is_empty() {
-                if self.hub.send(HubCommand::Retire(self.id)).await.is_err() {
-                    eprintln!("Coordinator stopped before replay cleanup");
-                }
+            if self.retired {
                 break;
             }
+            let discovering = discovery.is_some();
             tokio::select! {
-                command = receiver.recv() => {
-                    let Some(command) = command else { break; };
-                    match command {
-                        TableCommand::Drain(reply) => {
-                            let result = if let State::Live(snapshot) = &self.state {
-                                self.persist(self.candidate(snapshot)).await
-                            } else { Ok(()) };
-                            let _ = reply.send(result);
-                            break;
-                        }
-                        TableCommand::Client { session, command, reply } => {
-                            let result = if !session.active() { Err(anyhow::anyhow!("Stale session")) } else { self.command(session, command).await };
-                            let _ = reply.send(result);
-                        }
+                selected=async{discovery.as_mut().expect("enabled discovery").0.query.as_mut().await},if discovering=>{
+                    let (query,reply)=discovery.take().expect("completed discovery");
+                    let result=self.finish_discovery(query,selected).await;
+                    let _=reply.send(result);
+                },
+                command=receiver.recv()=>{
+                    let Some(command)=command else{break;};
+                    match command{
+                        TableCommand::Drain(reply)=>{
+                            let result=async{
+                                self.store.check_state()?;ensure!(!self.frozen,"Cannot drain frozen table");
+                                let mut next=self.candidate();
+                                if let Some(s)=next.game_mut()&&s.game.end_condition==EndCondition::InProgress&&s.game.options.timed&&!s.maintenance_applied{
+                                    for clock in &mut s.clocks{*clock+=20_000;}s.maintenance_applied=true;
+                                }
+                                self.persist(next).await
+                            }.await;
+                            let _=reply.send(result);break;
+                        },
+                        TableCommand::Client{session,command,reply}=>{
+                            if is_variant_discovery(&command){
+                                if discovering{
+                                    let _=reply.send(Err(anyhow::anyhow!("A variant search is already pending at this table.")));
+                                }else{
+                                    match self.prepare_discovery(session){
+                                        Ok(query)=>discovery=Some((query,reply)),
+                                        Err(error)=>{let _=reply.send(Err(error));}
+                                    }
+                                }
+                                continue;
+                            }
+                            let result=if !session.active()||self.store.check_state().is_err(){Err(anyhow::anyhow!("Stale session or unavailable authority"))}else{self.command(session,command).await};
+                            let _=reply.send(result);
+                        },
+                        TableCommand::Operation{operation,reply}=>{let result=self.operation(operation).await;let _=reply.send(result);},
                     }
-                }
-                _ = self.cleanup.notified() => {}
+                },
+                _=self.cleanup.notified()=>{if let Err(e)=self.cleanup().await{eprintln!("Table cleanup: {e}");}},
+                _=tick.tick()=>{if !self.frozen&&self.store.check_state().is_ok()&&let Err(e)=self.tick().await{eprintln!("Table timer: {e}");}},
             }
         }
+        if let Some((_, reply)) = discovery.take() {
+            let _ = reply.send(Err(anyhow::anyhow!(
+                "Table closed during variant discovery"
+            )));
+        }
         receiver.close();
-        while let Ok(command) = receiver.try_recv() {
+        while let Some(command) = receiver.recv().await {
             match command {
                 TableCommand::Drain(reply) => {
-                    let _ = reply.send(Ok(()));
+                    let _ = reply.send(if self.retired {
+                        Ok(())
+                    } else {
+                        self.store.check_state()
+                    });
                 }
                 TableCommand::Client { reply, .. } => {
+                    let _ = reply.send(Err(anyhow::anyhow!("Table closed")));
+                }
+                TableCommand::Operation { reply, .. } => {
                     let _ = reply.send(Err(anyhow::anyhow!("Table closed")));
                 }
             }
         }
     }
-
-    async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
+    fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
+        self.store.check_state()?;
         ensure!(
-            !matches!(self.state, State::Frozen(_)),
-            "Table frozen after uncertain storage; restart to recover"
+            !self.frozen && self.attending(&requester),
+            "You are not at an available table."
         );
-        match command {
-            Command::Join(player) => {
-                ensure!(
-                    player.id == session.user,
-                    "Player identity does not match the session"
-                );
-                let State::Pregame { players, .. } = &mut self.state else {
-                    bail!("The table has started")
-                };
-                ensure!(
-                    players.len() < 2 && !players.iter().any(|p| p.id == session.user),
-                    "Table is full or already joined"
-                );
-                players.push(player);
-                self.attendees.insert(
-                    session.user,
-                    Attendance {
-                        session: session.clone(),
-                        loaded: false,
-                    },
-                );
-                let mut effects = self.effects();
-                effects.statuses.push((session.clone(), 1, Some(self.id)));
-                self.pregame_messages(&mut effects);
-                effects
-                    .messages
-                    .push((session, frame("joined", json!({"tableID":self.id}))));
-                self.publish(effects).await
-            }
-            Command::Start(request) => self.start(session, request).await,
-            Command::Reattend => {
-                ensure!(
-                    self.players().iter().any(|p| p.id == session.user),
-                    "Not a player of this table"
-                );
-                self.attendees.insert(
-                    session.user,
-                    Attendance {
-                        session: session.clone(),
-                        loaded: false,
-                    },
-                );
-                let mut effects = self.effects();
-                let replay = matches!(self.state, State::Replay(_));
-                if matches!(self.state, State::Pregame { .. }) {
-                    effects.statuses.push((session.clone(), 1, Some(self.id)));
-                    self.pregame_messages(&mut effects);
-                    effects
-                        .messages
-                        .push((session, frame("joined", json!({"tableID":self.id}))));
-                    return self.publish(effects).await;
-                }
-                effects
-                    .statuses
-                    .push((session.clone(), if replay { 5 } else { 2 }, Some(self.id)));
-                effects.messages.push((
-                    session,
-                    frame("tableStart", json!({"tableID":self.id,"replay":replay})),
-                ));
-                self.publish(effects).await
-            }
-            Command::Unattend => {
-                ensure!(
-                    self.attending(&session),
-                    "Reattend before leaving this table"
-                );
-                self.attendees.remove(&session.user);
-                let mut effects = self.effects();
-                effects.statuses.push((session, 0, None));
-                self.publish(effects).await
-            }
-            Command::Info(part) => self.info(session, part).await,
-            Command::Loaded(request) => {
-                ensure!(self.attending(&session), "Reattend before loading");
-                if let State::Live(snapshot) = &self.state
-                    && !snapshot.duplicate(session.user, request.as_deref())
+        let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
+            self.audience()
+                .map(|a| (a.session.user, a.session.name.clone()))
+                .collect::<Vec<_>>()
+        } else {
+            self.table
+                .players()
+                .iter()
+                .map(|p| (p.id, p.name.clone()))
+                .collect()
+        };
+        ensure!(
+            (2..=6).contains(&participants.len()),
+            "This command requires two to six participants"
+        );
+        let count = participants.len();
+        let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
+        let store = self.store.clone();
+        let query = Box::pin(async move {
+            let rows = sqlx::query(&format!(
+                "SELECT variant_id,best_score{count} AS score FROM user_stats WHERE user_id=ANY($1)"
+            ))
+            .bind(ids)
+            .fetch_all(&store.primary)
+            .await?;
+            let mut completed = HashSet::new();
+            for row in rows {
+                use sqlx::Row;
+                let id = u32::try_from(row.try_get::<i16, _>("variant_id")?)?;
+                if i32::from(row.try_get::<i16, _>("score")?)
+                    == hanabi_engine::get_variant_by_id(id)?.max_score
                 {
-                    let mut next = self.candidate(snapshot);
-                    if next.players[next.game.active].id == session.user {
-                        next.timer_started = true;
-                    }
-                    next.remember(session.user, request.as_deref())?;
-                    self.persist(next).await?;
+                    completed.insert(id);
                 }
-                if let Some(attendee) = self.attendees.get_mut(&session.user) {
-                    attendee.loaded = true;
-                }
-                let mut effects = self.effects();
-                for attendee in self.attendees.values().filter(|a| a.session.active()) {
-                    effects
-                        .messages
-                        .push((attendee.session.clone(), self.connected_message()));
-                    if let State::Live(snapshot) = &self.state {
-                        effects
-                            .messages
-                            .push((attendee.session.clone(), self.clock_message(snapshot)));
-                    }
-                }
-                self.publish(effects).await
             }
-            Command::Action(action, request) => {
-                ensure!(self.attending(&session), "Reattend before acting");
-                let State::Live(snapshot) = &self.state else {
-                    bail!("Not an ongoing game")
-                };
-                if snapshot.duplicate(session.user, request.as_deref()) {
-                    return Ok(());
-                }
-                let seat = snapshot
-                    .players
-                    .iter()
-                    .position(|p| p.id == session.user)
-                    .context("Not a player")?;
-                let mut next = self.candidate(snapshot);
-                next.remember(session.user, request.as_deref())?;
-                let from = next.game.events.len();
-                next.game.apply(seat, action)?;
-                next.timer_started = true;
-                next.turn_elapsed = 0;
-                if next.game.end != 0 {
-                    next.finished = Some(Utc::now());
-                }
-                self.persist(next).await?;
-                let (snapshot, replay) = match &self.state {
-                    State::Live(s) => (s, false),
-                    State::Replay(s) => (s, true),
-                    _ => bail!("Game unavailable"),
-                };
-                let mut effects = self.effects();
-                for attendee in self
-                    .attendees
-                    .values()
-                    .filter(|a| a.loaded && a.session.active())
-                {
-                    let seat = snapshot
-                        .players
-                        .iter()
-                        .position(|p| p.id == attendee.session.user);
-                    for event in snapshot.game.projected(seat, from) {
-                        effects.messages.push((
-                            attendee.session.clone(),
-                            frame("gameAction", json!({"tableID":self.id,"action":event})),
-                        ));
-                    }
-                    if replay {
-                        effects.messages.push((attendee.session.clone(), frame("gameAction", json!({
-                            "tableID":self.id,"action":{"type":"playerTimes","playerTimes":snapshot.clocks,"duration":snapshot.duration}
-                        }))));
-                    } else {
-                        effects
-                            .messages
-                            .push((attendee.session.clone(), self.clock_message(snapshot)));
-                    }
-                }
-                if replay {
-                    let count = self.store.seed_count(&snapshot.seed).await?;
-                    for attendee in self.attendees.values().filter(|a| a.session.active()) {
-                        effects
-                            .statuses
-                            .push((attendee.session.clone(), 5, Some(self.id)));
-                        effects.messages.push((
-                            attendee.session.clone(),
-                            frame("gameHistory", json!([snapshot.history(count, true)])),
-                        ));
-                        effects.messages.push((attendee.session.clone(),frame("finishOngoingGame",json!({"tableID":self.id,"databaseID":snapshot.game_id,
-                            "sharedReplayLeader":snapshot.players.iter().find(|p|p.id==self.owner).map(|p|p.name.as_str()).unwrap_or("")}))));
-                    }
-                }
-                self.publish(effects).await
-            }
-        }
+            let missing = hanabi_engine::variants()
+                .iter()
+                .filter(|v| !completed.contains(&v.id))
+                .collect::<Vec<_>>();
+            Ok(if missing.is_empty() {
+                None
+            } else {
+                Some(
+                    missing[rand::thread_rng().gen_range(0..missing.len())]
+                        .name
+                        .clone(),
+                )
+            })
+        });
+        Ok(VariantDiscovery {
+            requester,
+            participants,
+            query,
+        })
     }
-
-    async fn start(&mut self, session: Arc<Session>, request: Option<String>) -> Result<()> {
+    async fn finish_discovery(
+        &mut self,
+        query: VariantDiscovery,
+        selected: Result<Option<String>>,
+    ) -> Result<()> {
+        self.store.check_state()?;
         ensure!(
-            session.user == self.owner && self.attending(&session),
-            "Only the attended owner can start"
+            !self.frozen && self.attending(&query.requester),
+            "Variant requester is no longer at this table."
         );
-        let State::Pregame { players, input } = &self.state else {
-            bail!("Already started")
-        };
-        ensure!(
-            players.len() == 2
-                && players.iter().all(|p| self
-                    .attendees
-                    .get(&p.id)
-                    .is_some_and(|a| a.session.active())),
-            "Exactly two present players required"
-        );
-        let mut players: [Player; 2] = players
-            .clone()
-            .try_into()
-            .map_err(|_| anyhow::anyhow!("Invalid roster"))?;
-        let ids: Vec<i32> = players.iter().map(|p| p.id).collect();
-        let seeds:Vec<String> = sqlx::query_scalar("SELECT DISTINCT g.seed FROM games g JOIN game_participants p ON p.game_id=g.id
-            WHERE p.user_id=ANY($1) OR p.user_id IN (SELECT linked_id FROM user_linkages WHERE user_id=ANY($1))")
-            .bind(ids).fetch_all(&self.store.primary).await?;
-        let mut suffix = 1;
-        while seeds.contains(&format!("p2v0s{suffix}")) {
-            suffix += 1;
-        }
-        let seed = format!("p2v0s{suffix}");
-        let mut deck = input.clone().unwrap_or_else(game::unshuffled_deck);
-        let mut random = GoRandom::new(seed_hash(&seed)?);
-        random.shuffle(&mut deck);
-        random.shuffle(&mut players);
-        ensure!(
-            session.active(),
-            "Owner disconnected during start preparation"
-        );
-        let now = Utc::now();
-        let mut snapshot = Snapshot {
-            format: FORMAT.into(),
-            table_id: self.id,
-            game_id: self.store.reserve().await?,
-            owner: self.owner,
-            name: self.name.clone(),
-            players,
-            seed,
-            created: now,
-            started: now,
-            finished: None,
-            game: Game::new(deck)?,
-            clocks: [0, 0],
-            duration: 0,
-            turn_elapsed: 0,
-            timer_started: false,
-            receipts: Vec::new(),
-        };
-        snapshot.remember(session.user, request.as_deref())?;
-        self.persist(snapshot).await?;
-        for attendee in self.attendees.values_mut() {
-            attendee.loaded = false;
-        }
+        let selected = selected?;
+        let text=selected.as_ref().map_or_else(||"No missing variants for this team.".to_owned(),|name|
+            format!("Here is a random variant that everyone needs the {}-player max score in: {name}",query.participants.len()));
+        let message = server_chat(self.table.id, &text);
+        let mut next = self.candidate();
+        next.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: message.clone(),
+        });
+        self.persist(next).await?;
         let mut effects = self.effects();
-        for attendee in self.attendees.values().filter(|a| a.session.active()) {
+        self.add_all(&mut effects, "chat", message);
+        if let Some(variant) = selected
+            && matches!(self.table.phase, Phase::Pregame { .. })
+            && self.table.players().len() == query.participants.len()
+            && self
+                .table
+                .players()
+                .iter()
+                .all(|player| query.participants.iter().any(|(id, _)| *id == player.id))
+            && let Some(owner) = self
+                .attendees
+                .get(&self.table.owner)
+                .filter(|a| self.attending(&a.session))
+        {
+            let mut options = self.table.options.clone();
+            options.variant_name = variant;
+            let mut proposal = server_chat(
+                self.table.id,
+                &options_suggestion(&options, &self.table.name, self.table.max_players)?,
+            );
+            proposal["recipient"] = json!(owner.session.name);
             effects
-                .statuses
-                .push((attendee.session.clone(), 2, Some(self.id)));
-            effects.messages.push((
-                attendee.session.clone(),
-                frame("tableStart", json!({"tableID":self.id,"replay":false})),
-            ));
+                .messages
+                .push((owner.session.clone(), frame("chat", proposal)));
         }
         self.publish(effects).await
     }
-
-    fn connected_message(&self) -> String {
-        frame(
-            "connected",
-            json!({"tableID":self.id,
-            "list":self.players().iter().map(|p|self.attendees.get(&p.id).is_some_and(|a|a.loaded&&a.session.active())).collect::<Vec<_>>()}),
-        )
-    }
-
-    fn clock_message(&self, snapshot: &Snapshot) -> String {
-        let mut clocks = snapshot.clocks;
-        let mut elapsed = snapshot.turn_elapsed;
-        if snapshot.timer_started && snapshot.game.end == 0 {
-            let delta = self.anchor.elapsed().as_millis().min(i64::MAX as u128) as i64;
-            clocks[snapshot.game.active] -= delta;
-            elapsed += delta;
-        }
-        frame(
-            "clock",
-            json!({"tableID":self.id,"times":clocks,"activePlayerIndex":snapshot.game.active,"timeTaken":elapsed}),
-        )
-    }
-
-    fn candidate(&self, snapshot: &Snapshot) -> Snapshot {
-        let mut next = snapshot.clone();
-        let elapsed = self.anchor.elapsed().as_millis().min(i64::MAX as u128) as i64;
-        next.duration += elapsed;
-        if next.timer_started && next.game.end == 0 {
-            next.clocks[next.game.active] -= elapsed;
-            next.turn_elapsed += elapsed;
-        }
-        next
-    }
-
-    async fn persist(&mut self, mut next: Snapshot) -> Result<()> {
-        match self.store.save(&next, self.revision).await {
-            Ok(revision) => self.revision = revision,
-            Err(error) => {
-                self.state = State::Frozen(Box::new(next));
-                eprintln!("Table {} checkpoint uncertain: {error}", self.id);
-                bail!("Storage result is uncertain; table frozen until recovery");
+    async fn cleanup(&mut self) -> Result<()> {
+        let before = self.attendees.len();
+        let expired = self
+            .attendees
+            .values()
+            .filter(|a| !a.session.active() && a.typing_until.is_some())
+            .map(|a| (a.session.user, a.session.name.clone()))
+            .collect::<Vec<_>>();
+        self.attendees.retain(|_, a| a.session.active());
+        let successor = self.audience().next().map(|a| a.session.user);
+        if before != self.attendees.len()
+            && matches!(self.table.phase, Phase::Replay { .. })
+            && !self.attendees.contains_key(&self.table.owner)
+            && let Some(successor) = successor
+        {
+            let mut next = self.candidate();
+            next.owner = successor;
+            if let Phase::Replay { replay, .. } = &mut next.phase {
+                replay.leader = successor;
             }
+            self.persist(next).await?;
         }
-        if next.game.end != 0 {
-            match self.store.complete(&next, self.revision).await {
-                Ok((started, finished)) => {
-                    next.started = started;
-                    next.finished = Some(finished);
-                }
-                Err(error) => {
-                    self.state = State::Frozen(Box::new(next));
-                    eprintln!("Table {} completion uncertain: {error}", self.id);
-                    bail!("Completion uncertain; table frozen until recovery");
-                }
+        if before != self.attendees.len() {
+            let mut e = self.effects();
+            for (id, name) in expired {
+                self.typing_messages(&mut e, id, &name, false);
             }
-            self.store.refresh_background(next.clone());
-            self.state = State::Replay(Box::new(next));
-        } else {
-            self.state = State::Live(Box::new(next));
+            self.add_all(&mut e, "connected", self.connected());
+            self.add_all(
+                &mut e,
+                "spectators",
+                json!({"tableID":self.table.id,"spectators":self.spectators()}),
+            );
+            self.publish(e).await?;
         }
-        self.anchor = std::time::Instant::now();
         Ok(())
     }
-
+    fn connected(&self) -> Value {
+        json!({"tableID":self.table.id,"list":self.table.players().iter().map(|p|self.attendees.get(&p.id).is_some_and(|a|a.loaded&&!a.spectator&&a.session.active())).collect::<Vec<_>>()})
+    }
+    fn clock(&self) -> Value {
+        let next = self.candidate();
+        let s = next.game().expect("game clock");
+        json!({"tableID":self.table.id,"times":s.clocks,"activePlayerIndex":s.game.active_player_index,"timeTaken":if s.game.paused{0}else{s.turn_elapsed}})
+    }
+    async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
+        ensure!(!self.frozen, "Table is frozen until recovery");
+        if matches!(self.table.phase, Phase::Live { .. }) {
+            let candidate = self.candidate();
+            if candidate.game().is_some_and(|s| {
+                s.idle_remaining == 0
+                    || (s.game.options.timed
+                        && s.timer_started
+                        && !s.game.paused
+                        && s.clocks[s.game.active_player_index] <= 0)
+            }) {
+                self.tick().await?;
+            }
+        }
+        let (name, data) = match command {
+            Command::Join(player) => {
+                ensure!(player.id == session.user, "Player mismatch");
+                ("tableJoin".into(), json!({}))
+            }
+            Command::Start(id) => ("tableStart".into(), json!({"requestID":id})),
+            Command::Loaded(id) => ("loaded".into(), json!({"requestID":id})),
+            Command::Action(a, id) => (
+                "action".into(),
+                json!({"type":a.kind,"target":a.target,"value":a.value,"requestID":id}),
+            ),
+            Command::Info(p) => (format!("getGameInfo{p}"), json!({})),
+            Command::Reattend => ("tableReattend".into(), json!({})),
+            Command::Unattend => ("tableUnattend".into(), json!({})),
+            Command::Wire { name, data } => (name, data),
+        };
+        let request = data["requestID"].as_str();
+        if self.table.duplicate(session.user, request) {
+            return Ok(());
+        }
+        match name.as_str() {
+            "tableJoin" => self.join(session, &data).await,
+            "tableReattend" | "tableSpectate" => {
+                self.reattend(session, &data, name == "tableSpectate").await
+            }
+            "tableUnattend" | "tableLeave" => self.leave(session, name == "tableLeave").await,
+            "getGameInfo1" | "getGameInfo2" => {
+                self.info(session, if name == "getGameInfo1" { 1 } else { 2 })
+                    .await
+            }
+            "tableStart" => {
+                if data["intendedVariant"]
+                    .as_str()
+                    .is_some_and(|v| !v.is_empty() && v != self.table.options.variant_name)
+                    || data["intendedPlayers"].as_array().is_some_and(|names| {
+                        names.len() != self.table.players().len()
+                            || self
+                                .table
+                                .players()
+                                .iter()
+                                .any(|p| !names.iter().any(|n| n.as_str() == Some(p.name.as_str())))
+                    })
+                {
+                    return Ok(());
+                }
+                self.start(session, request).await
+            }
+            "loaded" => {
+                ensure!(self.attending(&session), "Reattend before loading");
+                let mut next = self.candidate();
+                if let Some(s) = next.game_mut()
+                    && s.game.end_condition == EndCondition::InProgress
+                    && s.players[s.game.active_player_index].id == session.user
+                {
+                    s.timer_started = true;
+                    s.game.started_timer = true;
+                }
+                next.remember(session.user, request)?;
+                self.persist(next).await?;
+                if let Some(a) = self.attendees.get_mut(&session.user) {
+                    a.loaded = true;
+                }
+                let mut e = self.effects();
+                self.add_all(&mut e, "connected", self.connected());
+                if self.table.game().is_some() {
+                    self.add_all(&mut e, "clock", self.clock());
+                }
+                self.publish(e).await
+            }
+            "action" => self.action(session, &data).await,
+            "tableTerminate" if matches!(self.table.phase, Phase::Pregame { .. }) => {
+                ensure!(
+                    self.attending(&session) && session.user == self.table.owner,
+                    "Only owner can terminate"
+                );
+                self.retire().await
+            }
+            "tableTerminate" | "tableVoteForTermination" => {
+                self.terminate(session, request, name == "tableVoteForTermination")
+                    .await
+            }
+            "pause" => self.pause(session, &data).await,
+            "note" => self.note(session, &data).await,
+            "tag" | "tagDelete" | "tagsDeleteAll" => self.tag(session, &data, &name).await,
+            "chat" => self.chat(session, &data).await,
+            "chatRead" | "chatTyping" => self.chat_presence(session, name == "chatTyping").await,
+            "tableSetLeader" => self.leader(session, &data).await,
+            "tableSuggest" => self.suggest(session, &data).await,
+            "tableUpdate" | "tableSetVariant" => {
+                self.update(session, &data, name == "tableSetVariant").await
+            }
+            "tableRestart" => self.restart(session, &data).await,
+            "replayAction" => self.replay_action(session, &data).await,
+            "tableAbandon" => self.leave(session, true).await,
+            _ => bail!("Unsupported table command: {name}"),
+        }
+    }
+    async fn update(
+        &mut self,
+        session: Arc<Session>,
+        data: &Value,
+        variant_only: bool,
+    ) -> Result<()> {
+        ensure!(self.attending(&session), "You must attend this table");
+        self.seat(&session)?;
+        ensure!(
+            matches!(self.table.phase, Phase::Pregame { .. }),
+            "Game already started"
+        );
+        ensure!(
+            !variant_only || session.user == self.table.owner,
+            "Only owner can change variant"
+        );
+        let mut options = if variant_only {
+            self.table.options.clone()
+        } else {
+            serde_json::from_value(data.get("options").cloned().unwrap_or(json!({})))?
+        };
+        if variant_only {
+            options.variant_name = data["options"]["variantName"]
+                .as_str()
+                .context("Missing variant")?
+                .into();
+        }
+        options.starting_player = 0;
+        if options.speedrun || !options.timed {
+            options.timed = false;
+            options.time_base = 0.0;
+            options.time_per_turn = 0;
+        }
+        ensure!(
+            !options.timed
+                || (options.time_base > 0.0
+                    && options.time_base <= 604800.0
+                    && (1..=86400).contains(&options.time_per_turn)),
+            "Invalid timed options"
+        );
+        if options.one_extra_card && options.one_less_card {
+            options.one_extra_card = false;
+            options.one_less_card = false;
+        }
+        let mut name = if variant_only {
+            self.table.name.clone()
+        } else {
+            crate::accounts::truncate_to_max_bytes(data["name"].as_str().unwrap_or(""), 45)
+                .trim()
+                .to_owned()
+        };
+        if name.is_empty() {
+            name = self.table.name.clone();
+        }
+        ensure!(
+            name.chars()
+                .all(|c| c.is_ascii_alphanumeric() || " _!#$()+,-.:;=?@".contains(c)),
+            "Invalid table name"
+        );
+        let mut max_players = if variant_only {
+            self.table.max_players
+        } else {
+            data["maxPlayers"]
+                .as_u64()
+                .map(|n| n as usize)
+                .filter(|n| (2..=6).contains(n))
+                .unwrap_or(5)
+        };
+        let mut extra = if variant_only {
+            self.table.extra.clone()
+        } else {
+            ExtraOptions::default()
+        };
+        if !variant_only && session.user == self.table.owner {
+            if name.starts_with('!') {
+                ensure!(
+                    data.get("gameJSON").is_none_or(Value::is_null),
+                    "Special prefixes cannot be combined with JSON"
+                );
+                let parts = name.split_whitespace().collect::<Vec<_>>();
+                match parts.first().copied() {
+                    Some("!seed") => {
+                        ensure!(
+                            parts.len() == 2
+                                && parts[1]
+                                    .bytes()
+                                    .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+                            "Expected !seed [seed name]"
+                        );
+                        extra.set_seed_suffix = parts[1].into();
+                    }
+                    Some("!replay") => {
+                        ensure!(
+                            (2..=3).contains(&parts.len()),
+                            "Expected !replay [game ID] [turn]"
+                        );
+                        let historical = self
+                            .store
+                            .historical(parts[1].parse()?, self.table.id, session.user)
+                            .await?;
+                        let turn = if parts.len() == 3 {
+                            parts[2]
+                                .parse::<usize>()?
+                                .checked_sub(1)
+                                .context("Turn must be positive")?
+                        } else {
+                            0
+                        };
+                        ensure!(
+                            turn < historical.game.turn as usize,
+                            "Replay turn exceeds game"
+                        );
+                        options = historical.game.options.clone();
+                        extra.custom_seed = Some(historical.seed);
+                        extra.custom_deck = Some(historical.game.identities());
+                        extra.custom_deck_is_shuffled = true;
+                        extra.custom_num_players = Some(options.num_players);
+                        extra.set_replay = true;
+                        extra.set_replay_turn = turn;
+                        extra.custom_characters = Some(
+                            historical
+                                .game
+                                .players
+                                .iter()
+                                .map(|p| hanabi_engine::AssignedCharacter {
+                                    name: if p.character.is_empty() {
+                                        "n/a".into()
+                                    } else {
+                                        p.character.clone()
+                                    },
+                                    metadata: if matches!(
+                                        p.character.as_str(),
+                                        "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
+                                    ) {
+                                        p.character_metadata
+                                    } else {
+                                        -1
+                                    },
+                                })
+                                .collect(),
+                        );
+                        extra.custom_actions = historical
+                            .game
+                            .actions
+                            .iter()
+                            .map(|a| Action {
+                                kind: a.action_type as u8,
+                                target: a.target,
+                                value: a.value,
+                            })
+                            .collect();
+                    }
+                    _ => bail!("Unknown special game prefix"),
+                }
+            } else if let Some(input) = data.get("gameJSON").filter(|v| !v.is_null()) {
+                let imported = replay_helpers::parse(input)?;
+                options = imported.game.options.clone();
+                extra = imported.extra;
+            }
+        }
+        let variant = hanabi_engine::get_variant(&options.variant_name)?;
+        options.variant_id = Some(variant.id);
+        max_players = max_players.max(extra.custom_num_players.unwrap_or(2));
+        if session.user != self.table.owner {
+            ensure!(
+                name != self.table.name
+                    || options != self.table.options
+                    || max_players != self.table.max_players,
+                "There are no new options proposed."
+            );
+            let mut suggested = serde_json::to_value(&options)?;
+            suggested["tableName"] = json!(name);
+            suggested["maxPlayers"] = json!(max_players);
+            let encoded = crate::accounts::escape_html(
+                &serde_json::to_string(&suggested)?
+                    .replace('\'', "\\u0027")
+                    .replace('"', "'"),
+            );
+            let message = server_chat(
+                self.table.id,
+                &format!(
+                    "{} proposes new game options.",
+                    crate::accounts::escape_html(&session.name)
+                ),
+            );
+            let mut next = self.candidate();
+            next.chat.push(TableChat {
+                id: None,
+                user: 0,
+                message: message.clone(),
+            });
+            self.persist(next).await?;
+            let mut e = self.effects();
+            self.add_all(&mut e, "chat", message);
+            if let Some(owner) = self.attendees.get(&self.table.owner) {
+                let mut suggestion = server_chat(
+                    self.table.id,
+                    &format!(
+                        "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"{encoded}\">click to apply the suggestion</button></span>"
+                    ),
+                );
+                suggestion["recipient"] = json!(owner.session.name);
+                e.messages
+                    .push((owner.session.clone(), frame("chat", suggestion)));
+            }
+            return self.publish(e).await;
+        }
+        let mut next = self.candidate();
+        next.name = name;
+        next.options = options;
+        next.max_players = max_players;
+        next.extra = extra;
+        if !variant_only {
+            next.visible = !data["hidePregame"].as_bool().unwrap_or(false);
+        }
+        let Phase::Pregame {
+            players,
+            countdown,
+            automatic_start,
+            ..
+        } = &mut next.phase
+        else {
+            unreachable!()
+        };
+        let removed = players.split_off(players.len().min(max_players));
+        *countdown = None;
+        *automatic_start = None;
+        for player in players.iter_mut() {
+            player.stats = self
+                .store
+                .player_for_variant(player.id, player.name.clone(), variant.id)
+                .await?
+                .stats;
+        }
+        ensure!(
+            session.active(),
+            "Session changed while refreshing table options"
+        );
+        if players.iter().all(|p| p.id != next.owner) {
+            next.owner = players[0].id;
+        }
+        let message = server_chat(
+            self.table.id,
+            &format!(
+                "{} has changed {}.",
+                crate::accounts::escape_html(&session.name),
+                if variant_only {
+                    "the variant"
+                } else {
+                    "game options"
+                }
+            ),
+        );
+        next.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: message.clone(),
+        });
+        self.persist(next).await?;
+        let mut e = self.effects();
+        for p in removed {
+            if let Some(a) = self.attendees.remove(&p.id) {
+                e.statuses.push((a.session.clone(), 0, None));
+                e.messages
+                    .push((a.session, frame("boot", json!({"TableID":self.table.id}))));
+            }
+        }
+        self.pregame_messages(&mut e);
+        self.add_all(&mut e, "chat", message);
+        self.publish(e).await
+    }
+    async fn join(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        let Phase::Pregame {
+            players, kicked, ..
+        } = &self.table.phase
+        else {
+            bail!("The table has started");
+        };
+        ensure!(
+            !kicked.contains(&session.user),
+            "You were kicked from this table"
+        );
+        ensure!(
+            players.len() < self.table.max_players && !players.iter().any(|p| p.id == session.user),
+            "Table is full or already joined"
+        );
+        if let Some(hash) = &self.table.password_hash {
+            let hash = hash.clone();
+            let password = data["password"].as_str().unwrap_or("").to_owned();
+            let valid = crate::accounts::verify_password(password, hash).await?;
+            ensure!(valid, "Incorrect table password");
+        }
+        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
+        let player = self
+            .store
+            .player_for_variant(session.user, session.name.clone(), variant.id)
+            .await?;
+        ensure!(session.active(), "Session changed during join");
+        let mut next = self.candidate();
+        if let Phase::Pregame { players, .. } = &mut next.phase {
+            players.push(player);
+        }
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        self.initialize(session, vec![]).await
+    }
+    async fn reattend(
+        &mut self,
+        session: Arc<Session>,
+        data: &Value,
+        spectating: bool,
+    ) -> Result<()> {
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        let seat = self
+            .table
+            .players()
+            .iter()
+            .position(|p| p.id == session.user);
+        ensure!(
+            spectating || seat.is_some() || replay,
+            "You are not a player"
+        );
+        ensure!(
+            !spectating || seat.is_none() || replay,
+            "Players cannot spectate their own ongoing game"
+        );
+        let shadow = if spectating {
+            data["shadowingPlayerIndex"]
+                .as_i64()
+                .and_then(|v| usize::try_from(v).ok())
+                .filter(|v| *v < self.table.players().len())
+        } else {
+            self.table
+                .shadows
+                .get(&session.user)
+                .copied()
+                .flatten()
+                .and_then(|v| usize::try_from(v).ok())
+        };
+        let mut next = self.candidate();
+        next.shadows.insert(session.user, shadow.map(|v| v as i32));
+        self.persist(next).await?;
+        let pregame = matches!(self.table.phase, Phase::Pregame { .. });
+        self.attendees.insert(
+            session.user,
+            Attendance {
+                session: session.clone(),
+                loaded: false,
+                spectator: spectating || replay,
+                shadow,
+                chat_read: 0,
+                typing_until: None,
+            },
+        );
+        let mut e = self.effects();
+        e.statuses.push((
+            session.clone(),
+            if replay {
+                if self.table.visible { 5 } else { 4 }
+            } else if spectating {
+                3
+            } else if pregame {
+                1
+            } else {
+                2
+            },
+            Some(self.table.id),
+        ));
+        if pregame {
+            self.pregame_messages(&mut e);
+            e.messages
+                .push((session, frame("joined", json!({"tableID":self.table.id}))));
+        } else {
+            e.messages.push((
+                session,
+                frame(
+                    "tableStart",
+                    json!({"tableID":self.table.id,"replay":replay}),
+                ),
+            ));
+        }
+        self.add_all(
+            &mut e,
+            "spectators",
+            json!({"tableID":self.table.id,"spectators":self.spectators()}),
+        );
+        self.publish(e).await
+    }
+    async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
+        ensure!(self.attending(&session), "You are not attending this table");
+        let mut next = self.candidate();
+        next.shadows.remove(&session.user);
+        if remove
+            && let Phase::Pregame {
+                players, countdown, ..
+            } = &mut next.phase
+        {
+            players.retain(|p| p.id != session.user);
+            *countdown = None;
+            if players.is_empty() {
+                return self.retire().await;
+            }
+            if next.owner == session.user {
+                next.owner = players[0].id;
+            }
+        }
+        if matches!(next.phase, Phase::Replay { .. })
+            && next.owner == session.user
+            && let Some(a) = self.audience().find(|a| a.session.user != session.user)
+        {
+            next.owner = a.session.user;
+            if let Phase::Replay { replay, .. } = &mut next.phase {
+                replay.leader = next.owner;
+            }
+        }
+        self.persist(next).await?;
+        self.attendees.remove(&session.user);
+        let mut e = self.effects();
+        e.statuses.push((session.clone(), 0, None));
+        e.messages
+            .push((session, frame("left", json!({"tableID":self.table.id}))));
+        if matches!(self.table.phase, Phase::Pregame { .. }) {
+            self.pregame_messages(&mut e);
+        }
+        self.publish(e).await?;
+        if matches!(self.table.phase, Phase::Replay { .. }) && self.attendees.is_empty() {
+            self.retire().await?;
+        }
+        Ok(())
+    }
+    async fn start(&mut self, session: Arc<Session>, request: Option<&str>) -> Result<()> {
+        ensure!(
+            self.attending(&session) && session.user == self.table.owner,
+            "Only the attended owner can start"
+        );
+        let Phase::Pregame { players, .. } = &self.table.phase else {
+            bail!("Already started");
+        };
+        ensure!(
+            (2..=6).contains(&players.len()),
+            "You need at least two players"
+        );
+        ensure!(
+            self.table
+                .extra
+                .custom_num_players
+                .is_none_or(|n| n == players.len()),
+            "Custom game requires its original player count"
+        );
+        if self.table.extra.custom_num_players.is_some() {
+            ensure!(
+                players.iter().all(|p| self
+                    .attendees
+                    .get(&p.id)
+                    .is_some_and(|a| a.session.active() && !a.spectator)),
+                "Custom games require all players present"
+            );
+        }
+        let mut players = players.clone();
+        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
+        let seed = if let Some(seed) = &self.table.extra.custom_seed {
+            seed.clone()
+        } else {
+            self.store
+                .next_seed(
+                    &players,
+                    variant.id,
+                    players.len(),
+                    &self.table.extra.set_seed_suffix,
+                )
+                .await?
+        };
+        let game_id = self.store.reserve().await?;
+        let extra = &self.table.extra;
+        let mut deck = if let Some(custom) = &extra.custom_deck {
+            custom.clone()
+        } else {
+            hanabi_engine::create_deck(variant)
+        };
+        if extra.custom_seed.is_some() && !extra.custom_deck_is_shuffled {
+            deck = hanabi_engine::create_shuffled_deck(variant, &seed)?;
+        }
+        let mut rng =
+            hanabi_engine::random::GoRandom::new(hanabi_engine::random::seed_hash(&seed)?);
+        for i in 0..deck.len() {
+            let other = rng.intn(i as u64 + 1) as usize;
+            if extra.custom_seed.is_none() && !extra.custom_deck_is_shuffled {
+                deck.swap(i, other);
+            }
+        }
+        if extra.custom_seed.is_none() {
+            rng.shuffle(&mut players);
+        }
+        ensure!(session.active(), "Owner disconnected during start");
+        let mut options = self.table.options.clone();
+        options.num_players = players.len();
+        let mut game = Game::create(GameSetup {
+            options: options.clone(),
+            player_names: players.iter().map(|p| p.name.clone()).collect(),
+            seed: seed.clone(),
+            deck: Some(deck),
+            characters: extra.custom_characters.clone(),
+            interpretation: Interpretation::Live,
+        })?;
+        let emulated = if extra.set_replay {
+            &extra.custom_actions[..extra.set_replay_turn.min(extra.custom_actions.len())]
+        } else {
+            &extra.custom_actions
+        };
+        for a in emulated {
+            if game.end_condition != EndCondition::InProgress {
+                break;
+            }
+            let actor = game.active_player_index;
+            if a.kind >= 4 {
+                game.terminate(
+                    actor,
+                    EndCondition::try_from(a.value).map_err(anyhow::Error::msg)?,
+                    a.target,
+                    None,
+                    None,
+                )?;
+            } else {
+                game.apply(actor, a.clone())?;
+            }
+        }
+        let now = Utc::now();
+        let n = players.len();
+        let size = game.deck.len() + game.stacks.len();
+        let snapshot = Snapshot {
+            format: FORMAT.into(),
+            table_id: self.table.id,
+            game_id,
+            owner: self.table.owner,
+            name: self.table.name.clone(),
+            players,
+            seed,
+            created: self.table.created,
+            started: now,
+            finished: (game.end_condition != EndCondition::InProgress).then_some(now),
+            game,
+            clocks: vec![
+                if options.timed {
+                    (options.time_base * 1000.0) as i64
+                } else {
+                    0
+                };
+                n
+            ],
+            duration: 0,
+            turn_elapsed: 0,
+            timer_started: false,
+            receipts: vec![],
+            idle_remaining: 1_800_000,
+            pause_player_index: -1,
+            queued_pauses: vec![false; n],
+            notes: vec![vec![String::new(); size]; n],
+            spectator_notes: BTreeMap::new(),
+            tags: vec![],
+            votes: vec![false; n],
+            maintenance_applied: false,
+        };
+        let mut next = self.candidate();
+        next.options = options;
+        next.phase = Phase::Live {
+            snapshot: Box::new(snapshot),
+        };
+        next.remember(session.user, request)?;
+        self.persist(next).await?;
+        for a in self.attendees.values_mut() {
+            a.loaded = false;
+        }
+        let mut e = self.effects();
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        for a in self.audience() {
+            e.statuses.push((
+                a.session.clone(),
+                if replay {
+                    5
+                } else if a.spectator {
+                    3
+                } else {
+                    2
+                },
+                Some(self.table.id),
+            ));
+            e.messages.push((
+                a.session.clone(),
+                frame(
+                    "tableStart",
+                    json!({"tableID":self.table.id,"replay":replay}),
+                ),
+            ));
+        }
+        self.publish(e).await
+    }
+    fn live(&self) -> Result<&Snapshot> {
+        let Phase::Live { snapshot } = &self.table.phase else {
+            bail!("Not an ongoing game");
+        };
+        ensure!(
+            snapshot.game.end_condition == EndCondition::InProgress,
+            "Game already ended"
+        );
+        Ok(snapshot)
+    }
+    async fn action(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(self.attending(&session), "Reattend before acting");
+        let seat = self.seat(&session)?;
+        let old = self.live()?;
+        let a = Action {
+            kind: u8::try_from(data["type"].as_i64().context("Invalid action")?)?,
+            target: i32::try_from(data["target"].as_i64().context("Invalid action target")?)?,
+            value: i32::try_from(data["value"].as_i64().unwrap_or(0))?,
+        };
+        hanabi_engine::validate_action(&old.game.0, seat, &hanabi_engine::PlayerAction::from(&a))?;
+        let from = old.game.events.len();
+        let mut next = self.candidate();
+        let s = next.game_mut().expect("game");
+        if s.game.options.timed {
+            s.clocks[seat] += s.game.options.time_per_turn * 1000;
+        }
+        let timing = CompletionTiming {
+            player_times: s.clocks.clone(),
+            duration: s.duration,
+        };
+        s.game.apply_timed(seat, &a, Some(timing))?;
+        s.timer_started = true;
+        s.turn_elapsed = 0;
+        s.idle_remaining = 1_800_000;
+        s.maintenance_applied = false;
+        let active = s.game.active_player_index;
+        if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
+            s.queued_pauses[active] = false;
+            s.pause_player_index = active as i32;
+            s.game.paused = true;
+        }
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        self.transitions(from).await
+    }
+    async fn transitions(&self, from: usize) -> Result<()> {
+        let s = self.table.game().context("Missing game")?;
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        let mut e = self.effects();
+        for a in self.audience().filter(|a| a.loaded) {
+            let recipient = if let Some(seat) = self
+                .table
+                .players()
+                .iter()
+                .position(|p| p.id == a.session.user)
+            {
+                Recipient::Player {
+                    player_index: seat as i32,
+                }
+            } else {
+                Recipient::Spectator {
+                    shadowing_player_index: a.shadow.map(|i| i as i32),
+                }
+            };
+            for event in hanabi_engine::events_for_recipient(
+                &s.game.0,
+                recipient,
+                Some(&s.game.events[from..]),
+            )? {
+                e.messages.push((
+                    a.session.clone(),
+                    frame(
+                        "gameAction",
+                        json!({"tableID":self.table.id,"action":event}),
+                    ),
+                ));
+            }
+        }
+        if replay {
+            let count = if s.game_id > 0 {
+                self.store.seed_count(&s.seed).await?
+            } else {
+                0
+            };
+            for a in self.audience() {
+                e.statuses.push((
+                    a.session.clone(),
+                    if self.table.visible { 5 } else { 4 },
+                    Some(self.table.id),
+                ));
+                if s.players.iter().any(|p| p.id == a.session.user) {
+                    e.messages.push((
+                        a.session.clone(),
+                        frame("gameHistory", json!([s.history(count, true)])),
+                    ));
+                }
+                e.messages.push((a.session.clone(),frame("finishOngoingGame",json!({"tableID":self.table.id,"databaseID":s.game_id,"sharedReplayLeader":self.leader_name()}))));
+                e.messages.push((
+                    a.session.clone(),
+                    frame(
+                        "cardIdentities",
+                        json!({"tableID":self.table.id,"cardIdentities":s.game.identities()}),
+                    ),
+                ));
+                e.messages.push((
+                    a.session.clone(),
+                    frame(
+                        "noteList",
+                        json!({"tableID":self.table.id,"notes":self.observer_notes(a)}),
+                    ),
+                ));
+            }
+        } else {
+            self.add_all(&mut e, "clock", self.clock());
+            if s.game.paused {
+                self.add_all(&mut e,"pause",json!({"tableID":self.table.id,"active":true,"playerIndex":s.pause_player_index}));
+            }
+        }
+        self.publish(e).await
+    }
+    fn leader_name(&self) -> String {
+        self.attendees
+            .get(&self.table.owner)
+            .map(|a| a.session.name.clone())
+            .or_else(|| {
+                self.table
+                    .players()
+                    .iter()
+                    .find(|p| p.id == self.table.owner)
+                    .map(|p| p.name.clone())
+            })
+            .unwrap_or_default()
+    }
+    async fn terminate(
+        &mut self,
+        session: Arc<Session>,
+        request: Option<&str>,
+        vote: bool,
+    ) -> Result<()> {
+        ensure!(self.attending(&session), "You are not attending");
+        let seat = self.seat(&session)?;
+        let from = self.live()?.game.events.len();
+        let mut next = self.candidate();
+        let s = next.game_mut().expect("game");
+        let mut votes = None;
+        let mut terminate = !vote;
+        if vote {
+            s.votes[seat] = !s.votes[seat];
+            let seats = s
+                .votes
+                .iter()
+                .enumerate()
+                .filter(|(_, v)| **v)
+                .map(|(i, _)| i)
+                .collect::<Vec<_>>();
+            terminate = if s.players.len() == 2 {
+                seats.len() == 2
+            } else {
+                seats.len() * 2 >= s.players.len()
+            };
+            votes = Some(seats);
+        }
+        if terminate {
+            s.game.terminate(
+                seat,
+                if vote {
+                    EndCondition::TerminatedByVote
+                } else {
+                    EndCondition::TerminatedByPlayer
+                },
+                if vote { -1 } else { seat as i32 },
+                votes,
+                Some(CompletionTiming {
+                    player_times: s.clocks.clone(),
+                    duration: s.duration,
+                }),
+            )?;
+        }
+        next.remember(session.user, request)?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        if vote {
+            e.messages.push((
+                session,
+                frame(
+                    "voteChange",
+                    json!({"vote":self.table.game().expect("game").votes[seat]}),
+                ),
+            ));
+        }
+        self.publish(e).await?;
+        if terminate {
+            self.transitions(from).await?;
+        }
+        Ok(())
+    }
+    async fn pause(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        let seat = self.seat(&session)?;
+        let old = self.live()?;
+        ensure!(old.game.options.timed, "This is not a timed game");
+        let mut setting = data["setting"].as_str().context("Invalid pause setting")?;
+        if setting == "pause-queue" && seat == old.game.active_player_index {
+            setting = "pause";
+        }
+        ensure!(
+            match setting {
+                "pause" => !old.game.paused,
+                "unpause" => old.game.paused,
+                "pause-queue" => !old.queued_pauses[seat],
+                "pause-unqueue" => old.queued_pauses[seat],
+                _ => false,
+            },
+            "Invalid or already applied pause setting"
+        );
+        let mut next = self.candidate();
+        let s = next.game_mut().expect("game");
+        match setting {
+            "pause-queue" | "pause-unqueue" => s.queued_pauses[seat] = setting == "pause-queue",
+            _ => {
+                s.game.paused = setting == "pause";
+                s.pause_player_index = if s.game.paused { seat as i32 } else { -1 };
+                if !s.game.paused {
+                    s.turn_elapsed = 0;
+                }
+            }
+        }
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        let s = self.table.game().expect("game");
+        let mut e = self.effects();
+        if setting == "pause" || setting == "unpause" {
+            self.add_all(&mut e,"pause",json!({"tableID":self.table.id,"active":s.game.paused,"playerIndex":s.pause_player_index}));
+            self.add_all(&mut e, "clock", self.clock());
+        }
+        self.publish(e).await
+    }
+    async fn note(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        self.live()?;
+        let order = data["order"].as_u64().context("Invalid note order")? as usize;
+        let text = crate::accounts::truncate_to_max_bytes(
+            data["note"].as_str().context("Invalid note")?,
+            300,
+        );
+        let text = regex::Regex::new(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]")?
+            .replace_all(text, "")
+            .trim()
+            .to_owned();
+        ensure!(
+            crate::accounts::max_consecutive_marks(&text) <= 3,
+            "Notes cannot contain more than 3 consecutive diacritics."
+        );
+        let seat = self
+            .table
+            .players()
+            .iter()
+            .position(|p| p.id == session.user);
+        let mut next = self.candidate();
+        let s = next.game_mut().expect("game");
+        let size = s.game.deck.len() + s.game.stacks.len();
+        ensure!(order < size, "Invalid note order");
+        if let Some(seat) = seat {
+            s.notes[seat][order] = text;
+        } else {
+            s.spectator_notes
+                .entry(session.user)
+                .or_insert_with(|| NoteOwner {
+                    name: session.name.clone(),
+                    notes: vec![String::new(); size],
+                })
+                .notes[order] = text;
+        }
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        for a in self.audience().filter(|a| a.spectator) {
+            let notes=self.observer_notes(a).into_iter().map(|n|json!({"name":n["name"],"text":n["notes"][order],"isSpectator":n["isSpectator"]})).collect::<Vec<_>>();
+            e.messages.push((
+                a.session.clone(),
+                frame(
+                    "note",
+                    json!({"tableID":self.table.id,"order":order,"notes":notes}),
+                ),
+            ));
+        }
+        self.publish(e).await
+    }
+    fn observer_notes(&self, a: &Attendance) -> Vec<Value> {
+        let Some(s) = self.table.game() else {
+            return vec![];
+        };
+        let mut notes = vec![];
+        for (i, p) in s.players.iter().enumerate() {
+            if a.shadow.is_none_or(|shadow| shadow == i)
+                || matches!(self.table.phase, Phase::Replay { .. })
+            {
+                notes.push(json!({"name":p.name,"notes":s.notes[i],"isSpectator":false}));
+            }
+        }
+        for (id, n) in &s.spectator_notes {
+            if *id == a.session.user || a.shadow.is_none() {
+                notes.push(json!({"name":n.name,"notes":n.notes,"isSpectator":true}));
+            }
+        }
+        for spectator in self
+            .audience()
+            .filter(|p| p.spectator && !s.spectator_notes.contains_key(&p.session.user))
+        {
+            if a.shadow.is_none() || spectator.session.user == a.session.user {
+                notes.push(json!({"name":spectator.session.name,"notes":vec!["";s.game.deck.len()+s.game.stacks.len()],"isSpectator":true}));
+            }
+        }
+        notes
+    }
+    async fn tag(&mut self, session: Arc<Session>, data: &Value, operation: &str) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        let raw = data["msg"].as_str().unwrap_or("");
+        ensure!(
+            raw.len() <= 100,
+            "Tags cannot be longer than 100 characters."
+        );
+        let tag = crate::accounts::normalize_string(
+            raw.chars()
+                .map(|c| if c.is_whitespace() { ' ' } else { c })
+                .collect::<String>()
+                .trim(),
+        );
+        ensure!(
+            operation == "tagsDeleteAll" || !tag.is_empty(),
+            "Tags cannot be blank."
+        );
+        let mut next = self.candidate();
+        let replay = matches!(next.phase, Phase::Replay { .. });
+        let s = next.game_mut().context("No game")?;
+        let escaped = crate::accounts::escape_html(&tag);
+        if replay {
+            ensure!(
+                s.game_id > 0,
+                "JSON replays do not have a database game to tag."
+            );
+            s.tags = self
+                .store
+                .tags_for_game(s.game_id)
+                .await?
+                .context("That game no longer exists in the database.")?;
+            ensure!(
+                self.attending(&session),
+                "Tag author is no longer at this table."
+            );
+        }
+        let exists = s
+            .tags
+            .iter()
+            .any(|t| t.user == session.user && t.tag == tag);
+        if operation == "tag" {
+            ensure!(
+                !replay || !exists,
+                "You have already tagged this game with \"{escaped}\"."
+            );
+            if !replay {
+                s.tags.retain(|t| t.tag != tag);
+            }
+            s.tags.push(Tag {
+                user: session.user,
+                tag: tag.clone(),
+            });
+        } else {
+            ensure!(
+                operation == "tagsDeleteAll" || exists,
+                "The tag of \"{escaped}\" does not exist on this game yet."
+            );
+            s.tags.retain(|t| {
+                if operation == "tagsDeleteAll" {
+                    t.user != session.user
+                } else if replay {
+                    t.user != session.user || t.tag != tag
+                } else {
+                    t.tag != tag
+                }
+            });
+        }
+        if replay {
+            ensure!(
+                s.game_id > 0,
+                "JSON replays cannot be tagged in the database"
+            );
+            next.pending_tag = Some(PendingTag {
+                game_id: s.game_id,
+                user_id: session.user,
+                operation: operation.into(),
+                tag: tag.clone(),
+            });
+        }
+        let verb = if operation == "tag" {
+            "added"
+        } else {
+            "deleted"
+        };
+        let text = if replay {
+            if operation == "tagsDeleteAll" {
+                format!(
+                    "{} has deleted all their tags for this game.",
+                    crate::accounts::escape_html(&session.name)
+                )
+            } else {
+                format!(
+                    "{} has {verb} a game tag of \"{escaped}\".",
+                    crate::accounts::escape_html(&session.name)
+                )
+            }
+        } else if operation == "tagsDeleteAll" {
+            "Successfully deleted all your tags for this game.".into()
+        } else {
+            format!(
+                "Successfully {verb} {} tag of \"{escaped}\".",
+                if operation == "tag" { "a" } else { "the" }
+            )
+        };
+        let mut message = server_chat(self.table.id, &text);
+        if replay {
+            next.chat.push(TableChat {
+                id: None,
+                user: 0,
+                message: message.clone(),
+            });
+        } else {
+            message["room"] = json!(data["room"].as_str().unwrap_or(""));
+            message["recipient"] = json!(session.name);
+        }
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        if replay {
+            self.add_all(&mut e, "chat", message);
+        } else {
+            e.messages.push((session, frame("chat", message)));
+        }
+        self.publish(e).await
+    }
+    async fn leader(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        let name = data["name"].as_str().context("Missing leader name")?;
+        let target = if matches!(self.table.phase, Phase::Replay { .. }) {
+            self.audience()
+                .find(|a| {
+                    crate::accounts::normalize_string(&a.session.name)
+                        == crate::accounts::normalize_string(name)
+                })
+                .map(|a| (a.session.user, a.session.name.clone()))
+        } else {
+            self.table
+                .players()
+                .iter()
+                .find(|p| {
+                    crate::accounts::normalize_string(&p.name)
+                        == crate::accounts::normalize_string(name)
+                })
+                .map(|p| (p.id, p.name.clone()))
+        }
+        .context("That player is not at this table")?;
+        ensure!(
+            target.0 != self.table.owner,
+            "That player is already the leader"
+        );
+        ensure!(
+            !matches!(self.table.phase, Phase::Replay { .. }) || self.table.visible,
+            "Solo replay cannot change leader"
+        );
+        let mut next = self.candidate();
+        next.owner = target.0;
+        if let Phase::Replay { replay, .. } = &mut next.phase {
+            replay.leader = target.0;
+        }
+        self.persist(next).await?;
+        let mut e = self.effects();
+        self.add_all(
+            &mut e,
+            "replayLeader",
+            json!({"tableID":self.table.id,"name":target.1}),
+        );
+        if matches!(self.table.phase, Phase::Pregame { .. }) {
+            self.pregame_messages(&mut e);
+        }
+        self.publish(e).await
+    }
+    async fn suggest(&self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(
+            self.attending(&session)
+                && matches!(self.table.phase, Phase::Replay { .. })
+                && self.table.visible,
+            "Not a shared replay"
+        );
+        let leader = self
+            .attendees
+            .get(&self.table.owner)
+            .filter(|a| a.session.active())
+            .context("Leader is not attending")?;
+        let mut e = self.effects();
+        e.messages.push((
+            leader.session.clone(),
+            frame(
+                "suggestion",
+                json!({"tableID":self.table.id,"userName":session.name,"segment":data["segment"]}),
+            ),
+        ));
+        self.publish(e).await
+    }
+    async fn replay_action(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(
+            self.attending(&session) && session.user == self.table.owner && self.table.visible,
+            "You must lead this shared replay"
+        );
+        let mut next = self.candidate();
+        let Phase::Replay { snapshot, replay } = &mut next.phase else {
+            bail!("Not a replay");
+        };
+        let kind = data["type"].as_i64().context("Invalid replay action")?;
+        let (command, payload) = match kind {
+            0 => {
+                let segment = i32::try_from(data["segment"].as_i64().context("Invalid segment")?)?;
+                ensure!(segment >= 0, "Invalid segment");
+                replay.segment = segment;
+                (
+                    "replaySegment",
+                    json!({"tableID":self.table.id,"segment":segment}),
+                )
+            }
+            1 => (
+                "replayIndicator",
+                json!({"tableID":self.table.id,"order":data["order"]}),
+            ),
+            2 => (
+                "replaySound",
+                json!({"tableID":self.table.id,"sound":data["sound"]}),
+            ),
+            3 => {
+                ensure!(replay.hypothetical.is_none(), "Already hypothetical");
+                replay.hypothetical = Some(Box::new(snapshot.game.0.clone()));
+                replay.show_drawn_cards = false;
+                ("hypoStart", json!({"TableID":self.table.id}))
+            }
+            4 => {
+                ensure!(replay.hypothetical.is_some(), "Not hypothetical");
+                replay.hypothetical = None;
+                replay.hypothetical_actions.clear();
+                ("hypoEnd", json!({"TableID":self.table.id}))
+            }
+            5 => {
+                let raw = data["actionJSON"].as_str().context("Invalid action JSON")?;
+                let _: Value = serde_json::from_str(raw)?;
+                ensure!(
+                    replay.hypothetical_actions.len() < 4096
+                        && replay
+                            .hypothetical_actions
+                            .iter()
+                            .map(String::len)
+                            .sum::<usize>()
+                            + raw.len()
+                            <= 4_194_304,
+                    "Too many hypothetical actions"
+                );
+                replay.hypothetical_actions.push(raw.into());
+                ("hypoAction", json!(raw))
+            }
+            6 => {
+                replay.hypothetical_actions.pop();
+                while replay.hypothetical_actions.last().is_some_and(|v| {
+                    serde_json::from_str::<Value>(v).is_ok_and(|v| v["type"] != "turn")
+                }) {
+                    replay.hypothetical_actions.pop();
+                }
+                ("hypoBack", json!({"TableID":self.table.id}))
+            }
+            7 => {
+                replay.show_drawn_cards = !replay.show_drawn_cards;
+                (
+                    "hypoShowDrawnCards",
+                    json!({"tableID":self.table.id,"showDrawnCards":replay.show_drawn_cards}),
+                )
+            }
+            8 => {
+                replay.efficiency_modifier =
+                    i32::try_from(data["value"].as_i64().context("Invalid efficiency")?)?;
+                (
+                    "replayEfficiencyMod",
+                    json!({"tableID":self.table.id,"mod":replay.efficiency_modifier}),
+                )
+            }
+            _ => bail!("Invalid replay action"),
+        };
+        snapshot.idle_remaining = 1_800_000;
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        let mut e = self.effects();
+        self.add_all(&mut e, command, payload);
+        self.publish(e).await
+    }
+    async fn chat_presence(&mut self, session: Arc<Session>, typing: bool) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        let a = self.attendees.get_mut(&session.user).expect("attendee");
+        let notify = typing && a.typing_until.is_none();
+        if typing {
+            a.typing_until = Some(Instant::now() + Duration::from_secs(2));
+        } else {
+            a.chat_read = self.table.chat.len();
+        }
+        if notify {
+            let mut e = self.effects();
+            self.typing_messages(&mut e, session.user, &session.name, true);
+            self.publish(e).await?;
+        }
+        Ok(())
+    }
+    async fn chat(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        let text =
+            crate::accounts::normalize_chat(data["msg"].as_str().context("Missing chat message")?)
+                .map_err(anyhow::Error::msg)?;
+        if let Some(response) = crate::lobby::general_response(&text) {
+            let responses = match response {
+                crate::lobby::GeneralResponse::Private(response) => {
+                    let mut e = self.effects();
+                    let mut message = server_chat(self.table.id, &response);
+                    message["recipient"] = json!(session.name);
+                    e.messages.push((session, frame("chat", message)));
+                    return self.publish(e).await;
+                }
+                crate::lobby::GeneralResponse::Public(response) => vec![response],
+                crate::lobby::GeneralResponse::Runtime { .. } => data["runtimeResponses"]
+                    .as_array()
+                    .context("Missing trusted runtime chat response")?
+                    .iter()
+                    .map(|v| {
+                        v.as_str()
+                            .map(str::to_owned)
+                            .context("Invalid runtime response")
+                    })
+                    .collect::<Result<Vec<_>>>()?,
+            };
+            let mut messages = vec![
+                json!({"msg":crate::accounts::escape_html(&text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)}),
+            ];
+            messages.extend(
+                responses
+                    .iter()
+                    .map(|response| server_chat(self.table.id, response)),
+            );
+            let mut next = self.candidate();
+            ensure!(
+                next.chat.len() + messages.len() <= 4096,
+                "Chat history is full"
+            );
+            for (index, message) in messages.iter().enumerate() {
+                next.chat.push(TableChat {
+                    id: None,
+                    user: if index == 0 { session.user } else { 0 },
+                    message: message.clone(),
+                });
+            }
+            next.remember(session.user, data["requestID"].as_str())?;
+            self.persist(next).await?;
+            let mut e = self.effects();
+            for message in messages {
+                self.add_all(&mut e, "chat", message);
+            }
+            return self.publish(e).await;
+        }
+        if text.starts_with('/') {
+            return self
+                .chat_command(session, &text, data["publicBaseURL"].as_str().unwrap_or(""))
+                .await;
+        }
+        let message = json!({"msg":crate::accounts::escape_html(&text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)});
+        let mut next = self.candidate();
+        ensure!(next.chat.len() < 4096, "Chat history is full");
+        next.chat.push(TableChat {
+            id: None,
+            user: session.user,
+            message: message.clone(),
+        });
+        next.remember(session.user, data["requestID"].as_str())?;
+        self.persist(next).await?;
+        let typing = self
+            .attendees
+            .get_mut(&session.user)
+            .is_some_and(|a| a.typing_until.take().is_some());
+        let mut e = self.effects();
+        self.add_all(&mut e, "chat", message);
+        if typing {
+            self.typing_messages(&mut e, session.user, &session.name, false);
+        }
+        self.publish(e).await
+    }
+    async fn chat_command(
+        &mut self,
+        session: Arc<Session>,
+        text: &str,
+        base_url: &str,
+    ) -> Result<()> {
+        let mut words = text[1..].split_whitespace();
+        let command = words.next().unwrap_or("").to_ascii_lowercase();
+        let args = words.collect::<Vec<_>>();
+        let mut next = self.candidate();
+        if [
+            "m",
+            "missing",
+            "missing-scores",
+            "missingscores",
+            "shared-missing-scores",
+            "sharedmissingscores",
+        ]
+        .contains(&command.as_str())
+        {
+            let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
+                self.audience()
+                    .map(|a| (a.session.user, a.session.name.clone()))
+                    .collect::<Vec<_>>()
+            } else {
+                self.table
+                    .players()
+                    .iter()
+                    .map(|p| (p.id, p.name.clone()))
+                    .collect::<Vec<_>>()
+            };
+            ensure!(
+                (2..=6).contains(&participants.len()),
+                "This command requires two to six participants"
+            );
+            let message = format!(
+                "{}/shared-missing-scores/{}/{}",
+                base_url.trim_end_matches('/'),
+                participants.len(),
+                participants
+                    .iter()
+                    .map(|(_, n)| url::form_urlencoded::byte_serialize(n.as_bytes())
+                        .collect::<String>()
+                        .replace('+', "%20"))
+                    .collect::<Vec<_>>()
+                    .join("/")
+            );
+            let message = server_chat(self.table.id, &message);
+            next.chat.push(TableChat {
+                id: None,
+                user: 0,
+                message: message.clone(),
+            });
+            self.persist(next).await?;
+            let mut e = self.effects();
+            self.add_all(&mut e, "chat", message);
+            return self.publish(e).await;
+        }
+        if command == "tags" || command == "taglist" {
+            let messages = if !matches!(self.table.phase, Phase::Replay { .. }) {
+                vec!["You can only perform this command while in a replay.".to_owned()]
+            } else {
+                let id = self.table.game().expect("replay game").game_id;
+                let tags = self
+                    .store
+                    .tags_for_game(id)
+                    .await?
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|t| t.tag)
+                    .collect::<std::collections::BTreeSet<_>>();
+                if tags.is_empty() {
+                    vec!["There are not yet any tags for this game.".to_owned()]
+                } else {
+                    let mut lines =
+                        vec!["The list of tags for this game are as follows:".to_owned()];
+                    lines.extend(tags.iter().enumerate().map(|(index, tag)| {
+                        format!("{}) {}", index + 1, crate::accounts::escape_html(tag))
+                    }));
+                    lines
+                }
+            };
+            ensure!(
+                self.attending(&session),
+                "Tag reader is no longer at this table."
+            );
+            let messages = messages
+                .iter()
+                .map(|text| server_chat(self.table.id, text))
+                .collect::<Vec<_>>();
+            for message in &messages {
+                next.chat.push(TableChat {
+                    id: None,
+                    user: 0,
+                    message: message.clone(),
+                });
+            }
+            self.persist(next).await?;
+            let mut e = self.effects();
+            for message in messages {
+                self.add_all(&mut e, "chat", message);
+            }
+            return self.publish(e).await;
+        }
+        if command == "suggest" {
+            ensure!(args.len() == 1, "Expected /suggest [turn]");
+            return self
+                .suggest(session, &json!({"segment":args[0].parse::<i32>()?}))
+                .await;
+        }
+        if ["split", "splitauto", "sa"].contains(&command.as_str()) {
+            return self.split(session, &args, command != "split").await;
+        }
+        ensure!(
+            session.user == self.table.owner,
+            "Only the table owner can use that command"
+        );
+        let Phase::Pregame {
+            players,
+            automatic_start,
+            countdown,
+            kicked,
+        } = &mut next.phase
+        else {
+            bail!("This command requires a pregame table");
+        };
+        let mut boot = None;
+        let notice;
+        match command.as_str() {
+            "s" | "s2" | "s3" | "s4" | "s5" | "s6" => {
+                let n = if let Some(arg) = args.first() {
+                    arg.parse::<usize>()?
+                } else if command == "s" {
+                    players.len() + 1
+                } else {
+                    command[1..].parse()?
+                };
+                ensure!((2..=6).contains(&n), "Tables require two to six players");
+                *automatic_start = Some(n);
+                *countdown = None;
+                notice = format!("The game will start as soon as {n} players have joined.");
+            }
+            "si" | "startin" => {
+                ensure!(args.len() == 1, "Expected /startin [minutes]");
+                let minutes = parse_start_minutes(args[0]).context("Invalid countdown number")?;
+                ensure!(
+                    minutes.is_finite() && minutes > 0.0 && minutes <= 10.0,
+                    "Minutes must be between zero and ten"
+                );
+                *countdown =
+                    Some(Utc::now() + ChronoDuration::seconds((minutes * 60.0).ceil() as i64));
+                let seconds = (minutes * 60.0).ceil() as i64;
+                let wait = if seconds < 60 {
+                    format!("{seconds} seconds")
+                } else if seconds == 60 {
+                    "1 minute".into()
+                } else {
+                    format!("{} minutes", crate::accounts::escape_html(args[0]))
+                };
+                notice = format!("The game will automatically start in {wait}.");
+            }
+            "kick" => {
+                ensure!(args.len() == 1, "Expected /kick [username]");
+                let index = players
+                    .iter()
+                    .position(|p| {
+                        crate::accounts::normalize_string(&p.name)
+                            == crate::accounts::normalize_string(args[0])
+                    })
+                    .context("Player not found")?;
+                ensure!(
+                    players[index].id != session.user,
+                    "You cannot kick yourself"
+                );
+                let player = players.remove(index);
+                notice = format!(
+                    "Successfully kicked \"{}\" from the game.",
+                    crate::accounts::escape_html(&player.name)
+                );
+                kicked.push(player.id);
+                boot = Some(player.id);
+                *countdown = None;
+            }
+            "impostor" => {
+                ensure!(players.len() > 2, "Impostor requires more than two players");
+                let chosen = rand::thread_rng().gen_range(0..players.len());
+                let mut e = self.effects();
+                for (i, p) in players.iter().enumerate() {
+                    if let Some(a) = self.attendees.get(&p.id) {
+                        let mut message = server_chat(
+                            self.table.id,
+                            if i == chosen {
+                                "You are an IMPOSTOR."
+                            } else {
+                                "You are a CREWMATE."
+                            },
+                        );
+                        message["recipient"] = json!(a.session.name);
+                        e.messages.push((a.session.clone(), frame("chat", message)));
+                    }
+                }
+                return self.publish(e).await;
+            }
+            _ => bail!("Unknown table chat command: /{command}"),
+        }
+        let authored = json!({"msg":crate::accounts::escape_html(text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)});
+        let notice = server_chat(self.table.id, &notice);
+        next.chat.push(TableChat {
+            id: None,
+            user: session.user,
+            message: authored.clone(),
+        });
+        next.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: notice.clone(),
+        });
+        self.persist(next).await?;
+        let mut e = self.effects();
+        if let Some(user) = boot
+            && let Some(a) = self.attendees.remove(&user)
+        {
+            e.statuses.push((a.session.clone(), 0, None));
+            e.messages
+                .push((a.session, frame("boot", json!({"TableID":self.table.id}))));
+        }
+        self.pregame_messages(&mut e);
+        self.add_all(&mut e, "chat", authored);
+        self.add_all(&mut e, "chat", notice);
+        self.publish(e).await
+    }
+    async fn allocation(&self) -> Result<Allocation> {
+        let (reply, received) = oneshot::channel();
+        self.hub.send(HubCommand::Allocate(reply)).await?;
+        received.await?
+    }
+    async fn transfer(
+        &mut self,
+        mut source: TableSnapshot,
+        destination: TableSnapshot,
+        mut allocation: Allocation,
+        moving: Vec<(Arc<Session>, bool, Option<usize>)>,
+        retire: bool,
+    ) -> Result<()> {
+        let humans = destination
+            .players()
+            .iter()
+            .filter(|p| !p.name.starts_with("Bot-"))
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        for user in &humans {
+            allocation
+                .playing_claims
+                .push(PlayingClaim::acquire(&self.playing_claims, *user)?);
+        }
+        let (reply, received) = oneshot::channel();
+        self.hub
+            .send(HubCommand::CheckPlaying {
+                users: humans,
+                except: self.table.id,
+                reply,
+            })
+            .await?;
+        received.await??;
+        source.pending_spawn = Some(Box::new(destination.clone()));
+        source.retire_after_spawn = retire;
+        // The source is the durable transfer journal. Recovery can finish a
+        // destination reservation that had no payload when the process stopped.
+        self.persist(source).await?;
+        let destination_revision = match self.store.save(&destination, 0).await {
+            Ok(r) => r,
+            Err(e) => {
+                self.frozen = true;
+                return Err(e);
+            }
+        };
+        allocation.revision = destination_revision;
+        if retire {
+            if let Err(e) = self.store.remove(self.table.id, self.revision).await {
+                self.frozen = true;
+                return Err(e);
+            }
+        } else {
+            let mut final_source = self.table.clone();
+            final_source.pending_spawn = None;
+            final_source.retire_after_spawn = false;
+            self.persist(final_source).await?;
+        }
+        allocation.preserve();
+        let mut effects = self.effects();
+        for (session, _, _) in &moving {
+            self.attendees.remove(&session.user);
+            effects.messages.push((
+                session.clone(),
+                frame("boot", json!({"TableID":self.table.id})),
+            ));
+            effects.statuses.push((session.clone(), 0, None));
+        }
+        self.pregame_messages(&mut effects);
+        self.publish(effects).await?;
+        if retire {
+            self.hub.send(HubCommand::Retire(self.table.id)).await?;
+            self.retired = true;
+        }
+        self.hub
+            .send(HubCommand::Spawn {
+                table: Box::new(destination),
+                revision: destination_revision,
+                allocation,
+                attendees: moving,
+            })
+            .await?;
+        Ok(())
+    }
+    async fn split(&mut self, session: Arc<Session>, args: &[&str], automatic: bool) -> Result<()> {
+        ensure!(
+            self.attending(&session) && session.user == self.table.owner,
+            "Only owner can split"
+        );
+        let Phase::Pregame { players, .. } = &self.table.phase else {
+            bail!("Split requires a pregame");
+        };
+        let selected = if automatic {
+            ensure!(players.len() >= 2, "At least two players required");
+            let mut sorted = players.clone();
+            sorted.sort_by_key(|p| std::cmp::Reverse(p.stats["numGames"].as_u64().unwrap_or(0)));
+            let mid = sorted.len() / 2;
+            if sorted[..mid].iter().any(|p| p.id == self.table.owner) {
+                sorted[mid..].to_vec()
+            } else {
+                sorted[..mid].to_vec()
+            }
+        } else {
+            ensure!(!args.is_empty(), "Expected /split [username] ...");
+            let mut selected = vec![];
+            for name in args {
+                let player = players
+                    .iter()
+                    .find(|p| {
+                        crate::accounts::normalize_string(&p.name)
+                            == crate::accounts::normalize_string(name)
+                    })
+                    .context("Unknown split player")?;
+                ensure!(
+                    !selected.iter().any(|p: &Player| p.id == player.id),
+                    "Duplicate split player"
+                );
+                selected.push(player.clone());
+            }
+            selected
+        };
+        ensure!(
+            !selected.is_empty() && selected.len() <= self.table.max_players,
+            "Invalid split size"
+        );
+        let selected_ids = selected
+            .iter()
+            .map(|p| p.id)
+            .collect::<std::collections::HashSet<_>>();
+        let allocation = self.allocation().await?;
+        ensure!(session.active(), "Owner changed while splitting");
+        let mut source = self.candidate();
+        let Phase::Pregame {
+            players,
+            countdown,
+            automatic_start,
+            ..
+        } = &mut source.phase
+        else {
+            unreachable!()
+        };
+        players.retain(|p| !selected_ids.contains(&p.id));
+        *countdown = None;
+        *automatic_start = None;
+        if selected_ids.contains(&source.owner)
+            && let Some(p) = players.first()
+        {
+            source.owner = p.id;
+        }
+        let retire = players.is_empty();
+        let mut destination = self.table.clone();
+        destination.id = allocation.id;
+        destination.name = format!(
+            "{} (split)",
+            crate::accounts::truncate_to_max_bytes(self.table.name.trim(), 37)
+        );
+        destination.owner = selected[0].id;
+        destination.created = Utc::now();
+        destination.phase = Phase::Pregame {
+            players: selected,
+            automatic_start: None,
+            countdown: None,
+            kicked: vec![],
+        };
+        destination.chat.clear();
+        destination.chat_archived = 0;
+        destination.receipts.clear();
+        destination.shadows.clear();
+        let moving = self
+            .audience()
+            .filter(|a| selected_ids.contains(&a.session.user))
+            .map(|a| (a.session.clone(), false, None))
+            .collect();
+        self.transfer(source, destination, allocation, moving, retire)
+            .await
+    }
+    async fn restart(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+        ensure!(
+            self.attending(&session)
+                && session.user == self.table.owner
+                && self.table.visible
+                && matches!(self.table.phase, Phase::Replay { .. }),
+            "Only the shared replay leader can restart"
+        );
+        self.seat(&session)?;
+        ensure!(
+            !self.table.name.starts_with("!replay"),
+            "Cannot restart !replay games"
+        );
+        let hide = data["hidePregame"].as_bool().unwrap_or(false);
+        let players = self
+            .table
+            .players()
+            .iter()
+            .filter(|p| {
+                self.attendees
+                    .get(&p.id)
+                    .is_some_and(|a| a.session.active())
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        ensure!(
+            players.len() >= 2 && (!hide || players.len() == self.table.players().len()),
+            "Original players must attend to restart"
+        );
+        let allocation = self.allocation().await?;
+        let mut destination = self.table.clone();
+        destination.id = allocation.id;
+        destination.created = Utc::now();
+        destination.name = if let Some(seed) = self.table.name.strip_prefix("!seed ") {
+            let split = seed
+                .rfind(|c: char| !c.is_ascii_digit())
+                .map_or(0, |i| i + 1);
+            let (prefix, number) = seed.split_at(split);
+            if number.is_empty() {
+                format!("!seed {seed}1")
+            } else {
+                format!(
+                    "!seed {prefix}{:0width$}",
+                    number
+                        .parse::<u64>()?
+                        .checked_add(1)
+                        .context("Seed suffix exhausted")?,
+                    width = number.len()
+                )
+            }
+        } else {
+            let pattern = regex::Regex::new(r"^(.*) \(#(\d+)\)$")?;
+            let (base, count) = if let Some(m) = pattern.captures(&self.table.name) {
+                (m[1].to_owned(), m[2].parse::<u64>()? + 1)
+            } else {
+                (self.table.name.clone(), 2)
+            };
+            let suffix = format!(" (#{count})");
+            format!(
+                "{}{suffix}",
+                crate::accounts::truncate_to_max_bytes(&base, 45 - suffix.len())
+            )
+        };
+        destination.extra = ExtraOptions {
+            set_seed_suffix: destination.name.strip_prefix("!seed ").unwrap_or("").into(),
+            ..ExtraOptions::default()
+        };
+        destination.receipts.clear();
+        destination.shadows.clear();
+        destination.phase = Phase::Pregame {
+            automatic_start: hide.then_some(players.len()),
+            players,
+            countdown: None,
+            kicked: vec![],
+        };
+        let moving = self
+            .audience()
+            .map(|a| {
+                let spectator = destination.players().iter().all(|p| p.id != a.session.user);
+                (a.session.clone(), spectator, None)
+            })
+            .collect();
+        self.transfer(self.candidate(), destination, allocation, moving, true)
+            .await
+    }
     async fn info(&self, session: Arc<Session>, part: u8) -> Result<()> {
         ensure!(
             self.attending(&session),
             "Reattend before requesting private game data"
         );
-        let (s, replay) = match &self.state {
-            State::Live(s) => (s, false),
-            State::Replay(s) => (s, true),
-            _ => bail!("No available game"),
-        };
-        let seat = s
-            .players
-            .iter()
-            .position(|p| p.id == session.user)
-            .unwrap_or(0);
-        let mut effects = self.effects();
+        let s = self.table.game().context("No available game")?;
+        let a = self.attendees.get(&session.user).expect("attendee");
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        let seat = s.players.iter().position(|p| p.id == session.user);
+        let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
+        let mut e = self.effects();
         if part == 1 {
-            effects.messages.push((session.clone(),frame("init",json!({
-                "tableID":self.id,"playerNames":s.players.iter().map(|p|&p.name).collect::<Vec<_>>(),
-                "ourPlayerIndex":seat,"spectating":false,"shadowing":false,"replay":replay,
-                "databaseID":if replay{s.game_id}else{-1},"hasCustomSeed":replay,"seed":s.seed,
-                "datetimeStarted":s.started,"datetimeFinished":s.finished.map(|d|d.to_rfc3339()).unwrap_or_else(||"0001-01-01T00:00:00Z".into()),
-                "options":game::options(),"characterAssignments":[],"characterMetadata":[],
-                "sharedReplay":replay&&self.visible,"sharedReplayLeader":s.players.iter().find(|p|p.id==self.owner).map(|p|p.name.as_str()).unwrap_or(&session.name),
-                "sharedReplaySegment":s.game.turn,"sharedReplayEffMod":0,"paused":false,"pausePlayerIndex":-1,"pauseQueued":false
-            }))));
+            let (segment, efficiency) = if let Phase::Replay { replay, .. } = &self.table.phase {
+                (replay.segment, replay.efficiency_modifier)
+            } else {
+                (s.game.turn, 0)
+            };
+            e.messages.push((session.clone(),frame("init",json!({"tableID":self.table.id,"playerNames":s.players.iter().map(|p|p.name.clone()).collect::<Vec<_>>(),"ourPlayerIndex":a.shadow.or(display_seat).unwrap_or(0),"spectating":a.spectator&&!replay,"shadowing":a.shadow.is_some()&&!replay,"replay":replay,"databaseID":if replay{s.game_id}else{-1},"hasCustomSeed":self.table.extra.custom_seed.is_some(),"seed":s.seed,"datetimeStarted":s.started,"datetimeFinished":s.finished.map(|d|d.to_rfc3339()).unwrap_or_else(||"0001-01-01T00:00:00Z".into()),"options":s.game.options,"characterAssignments":if s.game.options.detrimental_characters{s.game.players.iter().map(|p|hanabi_engine::characters().iter().find(|c|c.name==p.character).map_or(-1,|c|c.id as i32)).collect::<Vec<_>>()}else{vec![]},"characterMetadata":if s.game.options.detrimental_characters{s.game.players.iter().map(|p|p.character_metadata).collect::<Vec<_>>()}else{vec![]},"sharedReplay":replay&&self.table.visible,"sharedReplayLeader":self.leader_name(),"sharedReplaySegment":segment,"sharedReplayEffMod":efficiency,"paused":s.game.paused,"pausePlayerIndex":s.pause_player_index,"pauseQueued":seat.is_some_and(|i|s.queued_pauses[i])}))));
         } else {
-            effects.messages.push((session.clone(),frame("gameActionList",json!({"tableID":self.id,"list":s.game.projected(if replay{None}else{Some(seat)},0)}))));
+            let recipient = if replay {
+                Recipient::Spectator {
+                    shadowing_player_index: None,
+                }
+            } else if !a.spectator {
+                Recipient::Player {
+                    player_index: seat.context("Missing player")? as i32,
+                }
+            } else {
+                Recipient::Spectator {
+                    shadowing_player_index: a.shadow.map(|i| i as i32),
+                }
+            };
+            let list = hanabi_engine::events_for_recipient(&s.game.0, recipient, None)?;
+            e.messages.push((
+                session.clone(),
+                frame(
+                    "gameActionList",
+                    json!({"tableID":self.table.id,"list":list}),
+                ),
+            ));
             if replay {
-                effects.messages.push((
+                e.messages.push((
                     session.clone(),
                     frame(
                         "cardIdentities",
-                        json!({"tableID":self.id,"cardIdentities":s.game.deck}),
+                        json!({"tableID":self.table.id,"cardIdentities":s.game.identities()}),
                     ),
                 ));
-                effects.messages.push((session.clone(),frame("noteList",json!({"tableID":self.id,"notes":s.players.iter().map(|p|json!({"name":p.name,"notes":vec!["";55],"isSpectator":false})).collect::<Vec<_>>()}))));
-            } else {
-                effects
-                    .messages
-                    .push((session.clone(), self.connected_message()));
-                effects
-                    .messages
-                    .push((session.clone(), self.clock_message(s)));
-                effects.messages.push((
+            }
+            if replay || a.spectator {
+                e.messages.push((
+                    session.clone(),
+                    frame(
+                        "noteList",
+                        json!({"tableID":self.table.id,"notes":self.observer_notes(a)}),
+                    ),
+                ));
+            } else if let Some(seat) = seat {
+                e.messages.push((
                     session.clone(),
                     frame(
                         "noteListPlayer",
-                        json!({"tableID":self.id,"notes":vec!["";55]}),
+                        json!({"tableID":self.table.id,"notes":s.notes[seat]}),
                     ),
                 ));
-                effects
-                    .messages
-                    .push((session.clone(), frame("voteChange", json!({"vote":false}))));
+                e.messages.push((
+                    session.clone(),
+                    frame("voteChange", json!({"vote":s.votes[seat]})),
+                ));
             }
-            effects.messages.push((
+            if !replay {
+                e.messages
+                    .push((session.clone(), frame("connected", self.connected())));
+                e.messages
+                    .push((session.clone(), frame("clock", self.clock())));
+            }
+            e.messages.push((session.clone(),frame("chatList",json!({"list":self.table.chat.iter().map(|c|&c.message).collect::<Vec<_>>(),"unread":self.table.chat.len().saturating_sub(a.chat_read)}))));
+            e.messages.push((
                 session.clone(),
-                frame("chatList", json!({"list":[],"unread":0})),
+                frame(
+                    "spectators",
+                    json!({"tableID":self.table.id,"spectators":self.spectators()}),
+                ),
             ));
-            effects.messages.push((
-                session,
-                frame("spectators", json!({"tableID":self.id,"spectators":[]})),
-            ));
+            for a in self
+                .audience()
+                .filter(|a| a.session.user != session.user && a.typing_until.is_some())
+            {
+                e.messages.push((
+                    session.clone(),
+                    frame(
+                        "chatTyping",
+                        json!({"tableID":self.table.id,"name":a.session.name,"typing":true}),
+                    ),
+                ));
+            }
+            if let Phase::Replay { replay, .. } = &self.table.phase
+                && replay.hypothetical.is_some()
+            {
+                e.messages.push((session,frame("hypothetical",json!({"showDrawnCards":replay.show_drawn_cards,"actions":replay.hypothetical_actions}))));
+            }
         }
-        self.publish(effects).await
+        self.publish(e).await
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::time::Duration;
-
-    fn fixture() -> Hub {
-        let (sender, receiver) = mpsc::channel(16);
-        Hub {
-            receiver,
-            sender,
-            sessions: HashMap::new(),
-            tables: HashMap::new(),
-            next: 1,
-            closing: false,
-            store: Store::disconnected_fixture(),
-            words: Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks: TaskTracker::new(),
-            capacity: Arc::new(Semaphore::new(1)),
+    async fn tick(&mut self) -> Result<()> {
+        self.cleanup().await?;
+        let mut expired = vec![];
+        for a in self.attendees.values_mut() {
+            if a.typing_until.is_some_and(|t| Instant::now() >= t) {
+                a.typing_until = None;
+                expired.push((a.session.user, a.session.name.clone()));
+            }
         }
-    }
-
-    async fn result(receiver: oneshot::Receiver<Result<()>>) -> Result<()> {
-        tokio::time::timeout(Duration::from_secs(1), receiver).await???;
+        if !expired.is_empty() {
+            let mut e = self.effects();
+            for (id, name) in expired {
+                self.typing_messages(&mut e, id, &name, false);
+            }
+            self.publish(e).await?;
+        }
+        if let Phase::Pregame {
+            players,
+            automatic_start,
+            countdown,
+            ..
+        } = &self.table.phase
+        {
+            let due = automatic_start.is_some_and(|n| n == players.len())
+                || countdown.is_some_and(|t| Utc::now() >= t);
+            if due
+                && let Some(owner) = self
+                    .attendees
+                    .get(&self.table.owner)
+                    .filter(|a| a.session.active())
+            {
+                let owner = owner.session.clone();
+                return self.start(owner, None).await;
+            }
+            return Ok(());
+        }
+        let mut next = self.candidate();
+        let replay = matches!(next.phase, Phase::Replay { .. });
+        let s = next.game_mut().expect("game");
+        if replay {
+            if s.idle_remaining == 0 {
+                return self.retire().await;
+            }
+            return Ok(());
+        }
+        if s.game.end_condition != EndCondition::InProgress {
+            return Ok(());
+        }
+        let active = s.game.active_player_index;
+        let idle = s.idle_remaining == 0;
+        let timeout =
+            s.game.options.timed && s.timer_started && !s.game.paused && s.clocks[active] <= 0;
+        if idle || timeout {
+            let from = s.game.events.len();
+            if timeout {
+                s.clocks[active] = 0;
+            }
+            s.game.terminate(
+                active,
+                if idle {
+                    EndCondition::IdleTimeout
+                } else {
+                    EndCondition::Timeout
+                },
+                if idle { -1 } else { active as i32 },
+                None,
+                Some(CompletionTiming {
+                    player_times: s.clocks.clone(),
+                    duration: s.duration,
+                }),
+            )?;
+            self.persist(next).await?;
+            self.transitions(from).await?;
+        }
         Ok(())
     }
-
-    #[tokio::test]
-    async fn pending_allocations_hold_capacity_and_cancellation_releases_it() {
-        let mut hub = fixture();
-        let first = hub.allocate().unwrap();
-        assert!(hub.allocate().is_err());
-        let id = first.id;
-        drop(first);
-        let next = hub.allocate().unwrap();
-        assert!(next.id > id);
-    }
-
-    fn replay_fixture() -> Snapshot {
-        let mut game = Game::new(vec![
-            Card {
-                suit_index: 0,
-                rank: 1
-            };
-            50
-        ])
-        .unwrap();
-        game.apply(
-            0,
-            Action {
-                kind: 0,
-                target: 0,
-                value: 0,
-            },
-        )
-        .unwrap();
-        let now = Utc::now();
-        let snapshot = Snapshot {
-            format: FORMAT.into(),
-            table_id: 1,
-            game_id: 1,
-            owner: 1,
-            name: "Replay".into(),
-            players: [
-                Player {
-                    id: 1,
-                    name: "Alice".into(),
-                    stats: crate::store::zero_stats(),
-                },
-                Player {
-                    id: 2,
-                    name: "Bob".into(),
-                    stats: crate::store::zero_stats(),
-                },
-            ],
-            seed: "p2v0s1".into(),
-            created: now,
-            started: now,
-            finished: Some(now),
-            game,
-            clocks: [0, 0],
-            duration: 0,
-            turn_elapsed: 0,
-            timer_started: true,
-            receipts: Vec::new(),
-        };
-        snapshot.validate().unwrap();
-        snapshot
-    }
-
-    #[tokio::test]
-    async fn replay_retirement_acknowledges_an_already_queued_shutdown() {
-        let snapshot = replay_fixture();
-        let (hub, _effects) = mpsc::channel(8);
-        let capacity = Arc::new(Semaphore::new(1));
-        let mut actor = TableActor::replay(
-            snapshot,
-            Store::disconnected_fixture(),
-            hub,
-            capacity.clone().try_acquire_owned().unwrap(),
-        );
-        let (session, _outgoing) = Session::new(1, "Alice".into(), 1, false);
-        actor.attendees.insert(
-            1,
-            Attendance {
-                session: session.clone(),
-                loaded: true,
-            },
-        );
-        let (sender, receiver) = mpsc::channel(8);
-        let (left, leaving) = oneshot::channel();
-        sender
-            .try_send(TableCommand::Client {
-                session,
-                command: Command::Unattend,
-                reply: left,
-            })
-            .unwrap();
-        let (drain, drained) = oneshot::channel();
-        sender.try_send(TableCommand::Drain(drain)).unwrap();
-        let task = tokio::spawn(actor.run(receiver, None));
-        result(leaving).await.unwrap();
-        result(drained).await.unwrap();
-        task.await.unwrap();
-        assert_eq!(capacity.available_permits(), 1);
-    }
-
-    #[tokio::test]
-    async fn cleanup_cannot_overtake_initial_replay_attendance() {
-        let (hub, _effects) = mpsc::channel(8);
-        let capacity = Arc::new(Semaphore::new(1));
-        let actor = TableActor::replay(
-            replay_fixture(),
-            Store::disconnected_fixture(),
-            hub,
-            capacity.clone().try_acquire_owned().unwrap(),
-        );
-        actor.cleanup.notify_one();
-        let (session, _outgoing) = Session::new(1, "Alice".into(), 1, false);
-        let (sender, receiver) = mpsc::channel(8);
-        let (created, initialized) = oneshot::channel();
-        let (info, received) = oneshot::channel();
-        sender
-            .try_send(TableCommand::Client {
-                session: session.clone(),
-                command: Command::Info(1),
-                reply: info,
-            })
-            .unwrap();
-        let task = tokio::spawn(actor.run(receiver, Some((session, created))));
-        result(initialized).await.unwrap();
-        result(received).await.unwrap();
-        let (drain, drained) = oneshot::channel();
-        sender.send(TableCommand::Drain(drain)).await.unwrap();
-        result(drained).await.unwrap();
-        task.await.unwrap();
-        assert_eq!(capacity.available_permits(), 1);
-    }
-
-    #[tokio::test]
-    async fn full_table_mailboxes_do_not_block_the_hub_and_replacements_fence_private_frames() {
-        let mut hub = fixture();
-        let sender = hub.sender.clone();
-        let (old, mut old_frames) = Session::new(1, "Alice".into(), 1, false);
-        hub.sessions.insert(
-            1,
-            Presence {
-                session: old.clone(),
-                status: 0,
-                table: Some(42),
-            },
-        );
-        let (table_sender, _table_receiver) = mpsc::channel(1);
-        let (drain, _drained) = oneshot::channel();
-        table_sender.try_send(TableCommand::Drain(drain)).unwrap();
-        hub.tables.insert(
-            42,
-            Entry {
-                handle: TableHandle {
-                    sender: table_sender,
-                    cleanup: Arc::new(Notify::new()),
-                },
-                view: None,
-            },
-        );
-        let task = tokio::spawn(hub.run());
-        let (reply, received) = oneshot::channel();
-        sender
-            .send(HubCommand::Route {
-                session: old.clone(),
-                table: 42,
-                command: Command::Info(1),
-                reply,
-            })
-            .await
-            .unwrap();
-        assert!(result(received).await.is_err());
-        let (reply, received) = oneshot::channel();
-        sender
-            .send(HubCommand::Name {
-                session: old.clone(),
-                reply,
-            })
-            .await
-            .unwrap();
-        result(received).await.unwrap();
-        assert!(old_frames.try_recv().is_ok());
-
-        let (new, mut new_frames) = Session::new(1, "Alice".into(), 2, false);
-        let (reply, received) = oneshot::channel();
-        sender
-            .send(HubCommand::Register {
-                session: new.clone(),
-                welcome: json!({}),
-                initial: Vec::new(),
-                reply,
-            })
-            .await
-            .unwrap();
-        result(received).await.unwrap();
-        assert!(!old.active());
-        sender.send(HubCommand::Logout(old.clone())).await.unwrap();
-        sender
-            .send(HubCommand::Effects(Effects {
-                table: 42,
-                view: TableView {
-                    players: vec![1],
-                    replay: false,
-                    visible: false,
-                    data: json!({}),
-                },
-                statuses: vec![(old.clone(), 2, Some(42))],
-                messages: vec![(old.clone(), "secret private frame".into())],
-            }))
-            .await
-            .unwrap();
-        let (reply, received) = oneshot::channel();
-        sender
-            .send(HubCommand::Name {
-                session: new.clone(),
-                reply,
-            })
-            .await
-            .unwrap();
-        result(received).await.unwrap();
-        assert!(new.active());
-        while let Ok(frame) = new_frames.try_recv() {
-            assert!(!frame.message.to_text().unwrap().contains("secret"));
+    async fn retire(&mut self) -> Result<()> {
+        self.store.check_state()?;
+        ensure!(!self.frozen, "Frozen table cannot be removed");
+        if let Err(e) = self.store.remove(self.table.id, self.revision).await {
+            self.frozen = true;
+            return Err(e);
         }
-        assert!(old_frames.try_recv().is_err());
-        let (reply, received) = oneshot::channel();
-        sender
-            .send(HubCommand::Route {
-                session: old,
-                table: 42,
-                command: Command::Info(1),
-                reply,
-            })
-            .await
-            .unwrap();
-        assert!(result(received).await.is_err());
-        let (reply, received) = oneshot::channel();
-        sender.send(HubCommand::Stop(reply)).await.unwrap();
-        received.await.unwrap();
-        task.await.unwrap();
+        let mut e = self.effects();
+        for a in self.audience() {
+            e.statuses.push((a.session.clone(), 0, None));
+            e.messages.push((
+                a.session.clone(),
+                frame("boot", json!({"TableID":self.table.id})),
+            ));
+        }
+        self.publish(e).await?;
+        self.hub.send(HubCommand::Retire(self.table.id)).await?;
+        self.retired = true;
+        Ok(())
+    }
+    async fn operation(&mut self, operation: TableOperation) -> Result<Value> {
+        self.store.check_state()?;
+        ensure!(!self.frozen, "Table frozen until recovery");
+        match operation {
+            TableOperation::Notice(message) => {
+                let mut next = self.candidate();
+                let message = server_chat(self.table.id, &message);
+                next.chat.push(TableChat {
+                    id: None,
+                    user: 0,
+                    message: message.clone(),
+                });
+                self.persist(next).await?;
+                let mut e = self.effects();
+                self.add_all(&mut e, "chat", message);
+                self.publish(e).await?;
+                Ok(json!({"sent":true}))
+            }
+            TableOperation::Terminate => {
+                if !matches!(self.table.phase, Phase::Live { .. }) {
+                    return Ok(json!({"terminated":false}));
+                }
+                let mut next = self.candidate();
+                let s = next.game_mut().expect("game");
+                let from = s.game.events.len();
+                s.game.terminate(
+                    s.game.active_player_index,
+                    EndCondition::TerminatedByPlayer,
+                    -1,
+                    None,
+                    Some(CompletionTiming {
+                        player_times: s.clocks.clone(),
+                        duration: s.duration,
+                    }),
+                )?;
+                self.persist(next).await?;
+                self.transitions(from).await?;
+                Ok(json!({"terminated":true}))
+            }
+            TableOperation::Clear { pregames, empty } => {
+                let clear = (pregames && matches!(self.table.phase, Phase::Pregame { .. }))
+                    || (empty
+                        && self.attendees.is_empty()
+                        && !matches!(self.table.phase, Phase::Live { .. }));
+                if clear {
+                    self.retire().await?;
+                }
+                Ok(json!({"removed":clear}))
+            }
+            TableOperation::Kick(user) => {
+                if let Some(a) = self.attendees.remove(&user) {
+                    a.session.cancel.cancel();
+                }
+                Ok(json!({}))
+            }
+        }
     }
 }

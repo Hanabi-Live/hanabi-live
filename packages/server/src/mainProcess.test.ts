@@ -27,6 +27,7 @@ import { z } from "zod";
 import { decodeCustomDeck } from "./customDeck";
 import { GoRandom, seedToInt64 } from "./engine/goRandom";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
+import { redisFixture } from "./experimental/redisFixture";
 import { winningDeck } from "./experimental/scenarios";
 import { expectedSchemaVersion } from "./migrationFiles";
 import { importReplay } from "./replayImport";
@@ -57,6 +58,24 @@ interface CheckpointProgress {
   readonly active_player_index: number;
   readonly clocks: readonly number[];
 }
+
+const rustProgressSnapshotSchema = z.object({
+  game_id: z.number().int().positive(),
+  game: z.object({
+    turn: z.number().int().nonnegative(),
+    activePlayerIndex: z.number().int().nonnegative(),
+  }),
+  clocks: z.number().array().readonly(),
+});
+const rustProgressPhaseSchema = z.discriminatedUnion("phase", [
+  z.object({ phase: z.literal("pregame") }),
+  z.object({ phase: z.literal("replay") }),
+  z.object({ phase: z.literal("live"), snapshot: rustProgressSnapshotSchema }),
+]);
+const rustProgressTableSchema = z.object({
+  format: z.literal("hanabi-live-native-rust-2"),
+  phase: rustProgressPhaseSchema,
+});
 
 async function bounded<T>(
   promise: Promise<T>,
@@ -279,6 +298,7 @@ databaseDescribe("normal-server comparison", () => {
         path.join(ROOT, "dist/normal-comparison-"),
       );
       let processState: ReturnType<typeof startProcess> | undefined;
+      let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
       const sockets = new Set<WebSocket>();
       const samples = {
         action: [] as number[],
@@ -312,6 +332,11 @@ databaseDescribe("normal-server comparison", () => {
         });
         await prepareRoot(directory, database, "localhost");
         if (language === "rust") {
+          redis = await redisFixture();
+          await appendFile(
+            path.join(directory, ".env"),
+            `REDIS_URL=${redis.url}\n`,
+          );
           await buildRust(directory);
         }
         let goPort: number | undefined;
@@ -680,13 +705,15 @@ databaseDescribe("normal-server comparison", () => {
             driverNode: process.version,
             scope:
               language === "rust"
-                ? "Separate release-mode benchmark-only Rust PoC; same protocol workload and disposable PostgreSQL. Not a full-server or language-only comparison."
+                ? "Separate release-mode Rust server; same protocol workload, Redis AOF/WAITAOF state and disposable PostgreSQL history. Storage differs from Go/TypeScript; not a language-only or capacity comparison."
                 : "Separate normal server process; real login/cookies/client wire protocol; disposable local PostgreSQL. Not a capacity or language-only benchmark.",
             deckSHA256,
             games: completed.length,
             lanes: 4,
             peakRSSKiB,
-            checkpointWrites: writes.count,
+            postgresCheckpointWrites: writes.count,
+            stateStore:
+              language === "rust" ? "Redis AOF/WAITAOF" : "PostgreSQL",
             gameplayMilliseconds,
             mixedReadMilliseconds: performance.now() - readStart,
             latency,
@@ -704,6 +731,7 @@ databaseDescribe("normal-server comparison", () => {
         if (processState !== undefined) {
           await stopChild(processState.child);
         }
+        await redis?.close();
         await sql.end({ timeout: 3 });
         await database.close();
         await rm(directory, { recursive: true, force: true });
@@ -722,6 +750,12 @@ databaseDescribe("Rust actor durability and ownership", () => {
       await mkdir(path.join(ROOT, "dist"), { recursive: true });
       const directory = await mkdtemp(path.join(ROOT, "dist/rust-recovery-"));
       let state: ReturnType<typeof startProcess> | undefined;
+      let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
+      const namespace = JSON.stringify([
+        database.connection.host,
+        database.connection.port,
+        database.connection.database,
+      ]);
       const sockets: WebSocket[] = [];
       try {
         await sql.unsafe(
@@ -740,6 +774,11 @@ databaseDescribe("Rust actor durability and ownership", () => {
           timeout: 30_000,
         });
         await prepareRoot(directory, database, "localhost");
+        redis = await redisFixture();
+        await appendFile(
+          path.join(directory, ".env"),
+          `REDIS_URL=${redis.url}\n`,
+        );
         await buildRust(directory);
         state = startProcess(directory, undefined, true);
         let address = await bounded(state.ready, "Rust recovery readiness");
@@ -789,10 +828,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
           SERVER_COMMAND_SCHEMAS.connected,
           (data) => data.list.every(Boolean),
         );
-        alice.send("pause", { tableID });
-        await alice.receive("warning", SERVER_COMMAND_SCHEMAS.warning, (data) =>
-          data.warning.includes("Unsupported PoC command"),
-        );
         const activeIsAlice = a.init.ourPlayerIndex === 0;
         const active = activeIsAlice ? alice : bob;
         const other = activeIsAlice ? bob : alice;
@@ -804,20 +839,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
         if (card.type !== "draw") {
           throw new Error("Expected a draw.");
         }
-        const [before] = await sql<
-          Array<{ game_id: number; revision: number }>
-        >`
-          SELECT game_id, revision::int FROM active_games
-        `;
-        assertDefined(before, "Missing durable Rust start.");
-        const acquired = Promise.withResolvers<undefined>();
-        const release = Promise.withResolvers<undefined>();
-        const locking = sql.begin(async (transaction) => {
-          await transaction`SELECT pg_advisory_xact_lock(17482, ${before.game_id})`;
-          acquired.resolve(undefined);
-          await release.promise;
-        });
-        await acquired.promise;
+        const startedState = await redis.states(namespace);
+        expect(startedState.length).toBeGreaterThan(0);
+        expect(await sql`SELECT game_id FROM active_games`).toHaveLength(0);
         const action = {
           tableID,
           type: 0,
@@ -827,24 +851,25 @@ databaseDescribe("Rust actor durability and ownership", () => {
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
         try {
           active.send("action", { ...action, target: 9999 });
-          await active.receive(
-            "warning",
-            SERVER_COMMAND_SCHEMAS.warning,
-            (data) => data.warning.includes("not in your hand"),
-          );
+          await active.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
+          await redis.command("CLIENT", "PAUSE", "2000", "WRITE");
           active.send("action", action);
-          const deadline = performance.now() + 5000;
+          const deadline = performance.now() + 1500;
           for (;;) {
-            const [waiting] = await sql<Array<{ blocked: boolean }>>`
-              SELECT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory'
-                AND classid = 17482::oid AND objid = ${before.game_id}::oid AND NOT granted
-                AND database = (SELECT oid FROM pg_database WHERE datname = current_database())) AS blocked
-            `;
-            if (waiting?.blocked === true) {
+            const clients = await redis.text("CLIENT", "LIST");
+            if (
+              clients
+                .split("\n")
+                .some(
+                  (line) =>
+                    line.includes("name=hanabi-state ")
+                    && /flags=\S*b\S*/u.test(line),
+                )
+            ) {
               break;
             }
             if (performance.now() > deadline) {
-              throw new Error("Rust action did not wait for its durable lock.");
+              throw new Error("Rust action did not wait for its Redis write.");
             }
             await delay(10);
           }
@@ -852,8 +877,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
             active.frames.some((message) => message.startsWith("gameAction ")),
           ).toBe(false);
           replacement = await connect(activeIsAlice ? aliceCookie : bobCookie);
-          release.resolve(undefined);
-          await locking;
+          await redis.command("CLIENT", "UNPAUSE");
           await other.receive(
             "gameAction",
             SERVER_COMMAND_SCHEMAS.gameAction,
@@ -869,8 +893,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
             ),
           ).toBe(false);
         } finally {
-          release.resolve(undefined);
-          await locking;
+          await redis.command("CLIENT", "UNPAUSE");
         }
         if (activeIsAlice) {
           alice = replacement;
@@ -894,8 +917,8 @@ databaseDescribe("Rust actor durability and ownership", () => {
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toHaveLength(1);
+        const acknowledged = await redis.states(namespace);
         if (failure === "failed write") {
-          await sql`ALTER TABLE active_games RENAME TO unavailable_active_games`;
           const next = activeIsAlice ? bob : alice;
           const nextInitial = activeIsAlice ? b : a;
           const nextCard = nextInitial.history.list.find(
@@ -906,40 +929,28 @@ databaseDescribe("Rust actor durability and ownership", () => {
             throw new Error("Expected a draw.");
           }
           const offset = replacement.frames.length;
+          const stopped = once(state.child, "close");
+          await redis.command("CONFIG", "SET", "maxmemory", "1");
           next.send("action", {
             tableID,
             type: 0,
             target: nextCard.order,
             requestID: "not-committed",
           });
-          await next.receive(
-            "warning",
-            SERVER_COMMAND_SCHEMAS.warning,
-            (data) => data.warning.includes("uncertain"),
-          );
+          await bounded(stopped, "Rust fail-closed Redis shutdown", 15_000);
+          expect(state.child.exitCode).not.toBe(0);
           expect(
             replacement.frames
               .slice(offset)
               .some((message) => message.startsWith("gameAction ")),
           ).toBe(false);
-          await sql`ALTER TABLE unavailable_active_games RENAME TO active_games`;
-          next.send("getGameInfo2", { tableID });
-          await next.receive(
-            "warning",
-            SERVER_COMMAND_SCHEMAS.warning,
-            (data) => data.warning.includes("frozen"),
-          );
-          await stopChild(state.child);
-          expect(state.child.exitCode).toBe(0);
+          await redis.restart();
         } else {
           const closed = once(state.child, "close");
           state.child.kill("SIGKILL");
           await bounded(closed, "Rust crash");
         }
-        const [retained] = await sql<Array<{ game_id: number; turn: number }>>`
-          SELECT game_id, (checkpoint::jsonb -> 'game' ->> 'turn')::int AS turn FROM active_games
-        `;
-        expect(retained).toEqual({ game_id: before.game_id, turn: 1 });
+        expect(await redis.states(namespace)).toEqual(acknowledged);
         state = startProcess(directory, undefined, true);
         address = await bounded(state.ready, "Rust cold recovery readiness");
         const returning = await connect(
@@ -988,6 +999,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         if (state !== undefined) {
           await stopChild(state.child);
         }
+        await redis?.close();
         await sql.end({ timeout: 3 });
         await database.close();
         await rm(directory, { recursive: true, force: true });
@@ -1102,548 +1114,927 @@ function socketClient(address: string, cookie: string) {
   };
 }
 
-databaseDescribe("compiled application entry point", () => {
-  test.each([
-    ["completes real WebSocket gameplay on localhost", "localhost", undefined],
-    ["completes real WebSocket gameplay on 127.0.0.1", "127.0.0.1", undefined],
-    [
-      "restores acknowledged gameplay and reserved ID after abrupt process death",
-      "127.0.0.1",
-      "SIGKILL",
-    ],
-    ["drains and preserves timed gameplay on SIGTERM", "127.0.0.1", "SIGTERM"],
-    ["drains and preserves timed gameplay on SIGINT", "127.0.0.1", "SIGINT"],
-    [
-      "replaces the process through gracefulRestart without losing gameplay",
-      "127.0.0.1",
-      "HTTP",
-    ],
-  ] as const)(
-    "%s",
-    async (_title, domain, signal) => {
-      const restart = signal !== undefined;
-      const crash = signal === "SIGKILL";
-      await run("bash", [path.join(ROOT, "packages/server/build.sh")], {
-        cwd: ROOT,
-        timeout: 30_000,
-        maxBuffer: 2 * 1024 * 1024,
-      });
-      const database = await evaluationDatabase();
-      const client = database.connect();
-      let directory: string | undefined;
-      let processState: ReturnType<typeof startProcess> | undefined;
-      let outputBeforeCrash = "";
-      const sockets: WebSocket[] = [];
-      try {
-        await mkdir(path.join(ROOT, "dist"), { recursive: true });
-        directory = await mkdtemp(path.join(ROOT, "dist/server-process-"));
-        const schema = await readFile(
-          path.join(ROOT, "install/database_schema.sql"),
-          "utf8",
-        );
-        await client.unsafe(schema);
-        const version = expectedSchemaVersion(
-          await readdir(path.join(ROOT, "install/migrations")),
-        );
-        await client`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
-        await client`INSERT INTO public.schema_version (version) VALUES (${version})`;
-        await prepareRoot(directory, database, domain);
-        processState = startProcess(directory);
-        let address = await bounded(
-          processState.ready,
-          "compiled server readiness",
-        );
-        const port = Number(new URL(address).port);
-        expect(port).toBeGreaterThan(0);
-        expect(port).not.toBe(80);
-        expect(port).not.toBe(443);
-        const page = await fetch(address, {
-          signal: AbortSignal.timeout(5000),
+databaseDescribe.each(["typescript", "rust"] as const)(
+  "compiled application entry point (%s)",
+  (language) => {
+    test.each([
+      [
+        "completes real WebSocket gameplay on localhost",
+        "localhost",
+        undefined,
+      ],
+      [
+        "completes real WebSocket gameplay on 127.0.0.1",
+        "127.0.0.1",
+        undefined,
+      ],
+      [
+        "restores acknowledged gameplay and reserved ID after abrupt process death",
+        "127.0.0.1",
+        "SIGKILL",
+      ],
+      [
+        "drains and preserves timed gameplay on SIGTERM",
+        "127.0.0.1",
+        "SIGTERM",
+      ],
+      ["drains and preserves timed gameplay on SIGINT", "127.0.0.1", "SIGINT"],
+      [
+        "replaces the process through gracefulRestart without losing gameplay",
+        "127.0.0.1",
+        "HTTP",
+      ],
+    ] as const)(
+      "%s",
+      async (_title, domain, signal) => {
+        const restart = signal !== undefined;
+        const crash = signal === "SIGKILL";
+        await run("bash", [path.join(ROOT, "packages/server/build.sh")], {
+          cwd: ROOT,
+          timeout: 30_000,
+          maxBuffer: 2 * 1024 * 1024,
         });
-        expect(page.status).toBe(200);
-        expect(await page.text()).toContain("page-wrapper");
-        const operationsAddress =
-          /Localhost operations listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
-            processState.output(),
-          )?.[1];
-        assertDefined(
-          operationsAddress,
-          "Missing loopback operations listener.",
-        );
-        const publicMetrics = await fetch(`${address}/metrics`);
-        expect(publicMetrics.status).toBe(404);
-        await publicMetrics.text();
-        const metrics = await fetch(`${operationsAddress}/metrics`);
-        expect(metrics.status).toBe(200);
-        const poolSchema = z.object({
-          maxConnections: z.number().int().positive(),
-          totalConnections: z.number().int().positive(),
-        });
-        const reports = z
-          .object({
-            database: poolSchema,
-            recovery: z.object({
-              storageInitialized: z.literal(true),
-              database: poolSchema,
-            }),
-          })
-          .parse(await metrics.json());
-        expect(reports.database.maxConnections).toBe(10);
-        expect(reports.database.totalConnections).toBeLessThanOrEqual(10);
-        expect(reports.recovery.database.maxConnections).toBe(2);
-        expect(reports.recovery.database.totalConnections).toBeLessThanOrEqual(
-          2,
-        );
-        const aliceCookie = await login(address, "SmokeAlice");
-        const alice = socketClient(address, aliceCookie);
-        sockets.push(alice.socket);
-        const aliceWelcome = await alice.receive(
-          "welcome",
-          SERVER_COMMAND_SCHEMAS.welcome,
-        );
-        expect(aliceWelcome.username).toBe("SmokeAlice");
-        const bobCookie = await login(address, "SmokeBob");
-        let bob = socketClient(address, bobCookie);
-        sockets.push(bob.socket);
-        const bobWelcome = await bob.receive(
-          "welcome",
-          SERVER_COMMAND_SCHEMAS.welcome,
-        );
-        expect(bobWelcome.username).toBe("SmokeBob");
-        const maintenance = await fetch(`${operationsAddress}/maintenance`);
-        expect(maintenance.status).toBe(200);
-        await maintenance.text();
-        await alice.receive(
-          "maintenance",
-          SERVER_COMMAND_SCHEMAS.maintenance,
-          (data) => data.maintenanceMode,
-        );
-        alice.send("tableCreate", { name: "Blocked during maintenance" });
-        const warning = await alice.receive(
-          "warning",
-          SERVER_COMMAND_SCHEMAS.warning,
-        );
-        expect(warning.warning).toContain("maintenance");
-        const resumedCreation = await fetch(
-          `${operationsAddress}/unmaintenance`,
-        );
-        expect(resumedCreation.status).toBe(200);
-        await resumedCreation.text();
-        await alice.receive(
-          "maintenance",
-          SERVER_COMMAND_SCHEMAS.maintenance,
-          (data) => !data.maintenanceMode,
-        );
-        alice.send("tableCreate", {
-          name: "Compiled smoke table",
-          password: "synthetic-table-password",
-          options: {
-            variantName: "No Variant",
-            timed: restart,
-            timeBase: 600,
-            timePerTurn: 2,
-          },
-        });
-        const { tableID } = await alice.receive(
-          "joined",
-          SERVER_COMMAND_SCHEMAS.joined,
-        );
-        bob.send("tableJoin", {
-          tableID,
-          password: "synthetic-table-password",
-        });
-        const bobJoined = await bob.receive(
-          "joined",
-          SERVER_COMMAND_SCHEMAS.joined,
-        );
-        expect(bobJoined.tableID).toBe(tableID);
-        const game = await bob.receive("game", SERVER_COMMAND_SCHEMAS.game);
-        expect(game.players.map((player) => player.name)).toEqual([
-          "SmokeAlice",
-          "SmokeBob",
-        ]);
-        expect(game.players.map((player) => player.you)).toEqual([false, true]);
-        bob.send("tableLeave", { tableID });
-        const bobLeft = await bob.receive("left", SERVER_COMMAND_SCHEMAS.left);
-        expect(bobLeft.tableID).toBe(tableID);
-        const automatic = signal === undefined && domain !== "localhost";
-        if (automatic) {
-          alice.send("chat", { room: `table${tableID}`, msg: "/s2" });
-          await alice.receive("chat", SERVER_COMMAND_SCHEMAS.chat, (data) =>
-            data.msg.includes("as soon as 2 players have joined"),
-          );
-        }
-        bob.send("tableJoin", {
-          tableID,
-          password: "synthetic-table-password",
-        });
-        await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-        if (signal === undefined && !automatic) {
-          alice.send("chat", {
-            room: `table${tableID}`,
-            msg: "/startin 0.001",
+        const database = await evaluationDatabase();
+        const client = database.connect();
+        let directory: string | undefined;
+        let processState: ReturnType<typeof startProcess> | undefined;
+        let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
+        let outputBeforeCrash = "";
+        const sockets: WebSocket[] = [];
+        async function checkpointProgress(): Promise<
+          readonly CheckpointProgress[]
+        > {
+          if (redis === undefined) {
+            return await client<CheckpointProgress[]>`
+            SELECT game_id, revision::integer AS revision,
+              (checkpoint::jsonb -> 'game' -> 'state' ->> 'turn')::integer AS turn,
+              (checkpoint::jsonb -> 'game' -> 'state' ->> 'activePlayerIndex')::integer AS active_player_index,
+              checkpoint::jsonb -> 'game' -> 'clocks' AS clocks
+            FROM active_games
+          `;
+          }
+          const namespace = JSON.stringify([
+            database.connection.host,
+            database.connection.port,
+            database.connection.database,
+          ]);
+          const stored = await redis.states(namespace);
+          return stored.flatMap((record) => {
+            if (record.revision === 0) {
+              return [];
+            }
+            const table = rustProgressTableSchema.parse(record.payload);
+            if (table.phase.phase !== "live") {
+              return [];
+            }
+            const { snapshot } = table.phase;
+            return [
+              {
+                game_id: snapshot.game_id,
+                revision: record.revision,
+                turn: snapshot.game.turn,
+                active_player_index: snapshot.game.activePlayerIndex,
+                clocks: snapshot.clocks,
+              },
+            ];
           });
-        } else if (!automatic) {
-          alice.send("tableStart", { tableID, requestID: "start-once" });
         }
-        await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
-        await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+        try {
+          await mkdir(path.join(ROOT, "dist"), { recursive: true });
+          directory = await mkdtemp(path.join(ROOT, "dist/server-process-"));
+          const schema = await readFile(
+            path.join(ROOT, "install/database_schema.sql"),
+            "utf8",
+          );
+          await client.unsafe(schema);
+          const version = expectedSchemaVersion(
+            await readdir(path.join(ROOT, "install/migrations")),
+          );
+          await client`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
+          await client`INSERT INTO public.schema_version (version) VALUES (${version})`;
+          await prepareRoot(directory, database, domain);
+          if (language === "rust") {
+            redis = await redisFixture();
+            await appendFile(
+              path.join(directory, ".env"),
+              `REDIS_URL=${redis.url}\n`,
+            );
+            await buildRust(directory);
+          }
+          processState = startProcess(
+            directory,
+            undefined,
+            language === "rust",
+          );
+          let address = await bounded(
+            processState.ready,
+            "compiled server readiness",
+          );
+          const port = Number(new URL(address).port);
+          expect(port).toBeGreaterThan(0);
+          expect(port).not.toBe(80);
+          expect(port).not.toBe(443);
+          const page = await fetch(address, {
+            signal: AbortSignal.timeout(5000),
+          });
+          expect(page.status).toBe(200);
+          expect(await page.text()).toContain("page-wrapper");
+          const operationsAddress =
+            /Localhost operations listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
+              processState.output(),
+            )?.[1];
+          assertDefined(
+            operationsAddress,
+            "Missing loopback operations listener.",
+          );
+          const publicMetrics = await fetch(`${address}/metrics`);
+          expect(publicMetrics.status).toBe(404);
+          await publicMetrics.text();
+          const metrics = await fetch(`${operationsAddress}/metrics`);
+          expect(metrics.status).toBe(200);
+          const poolSchema = z.object({
+            maxConnections: z.number().int().positive(),
+            totalConnections: z.number().int().positive(),
+          });
+          const reports = z
+            .object({
+              database: poolSchema,
+              recovery: z.object({
+                storageInitialized: z.literal(true),
+                database: poolSchema,
+              }),
+            })
+            .parse(await metrics.json());
+          expect(reports.database.maxConnections).toBe(10);
+          expect(reports.database.totalConnections).toBeLessThanOrEqual(10);
+          expect(reports.recovery.database.maxConnections).toBe(2);
+          expect(
+            reports.recovery.database.totalConnections,
+          ).toBeLessThanOrEqual(2);
+          const aliceCookie = await login(address, "SmokeAlice");
+          const alice = socketClient(address, aliceCookie);
+          sockets.push(alice.socket);
+          const aliceWelcome = await alice.receive(
+            "welcome",
+            SERVER_COMMAND_SCHEMAS.welcome,
+          );
+          expect(aliceWelcome.username).toBe("SmokeAlice");
+          const bobCookie = await login(address, "SmokeBob");
+          let bob = socketClient(address, bobCookie);
+          sockets.push(bob.socket);
+          const bobWelcome = await bob.receive(
+            "welcome",
+            SERVER_COMMAND_SCHEMAS.welcome,
+          );
+          expect(bobWelcome.username).toBe("SmokeBob");
+          const maintenance = await fetch(`${operationsAddress}/maintenance`);
+          expect(maintenance.status).toBe(200);
+          await maintenance.text();
+          await alice.receive(
+            "maintenance",
+            SERVER_COMMAND_SCHEMAS.maintenance,
+            (data) => data.maintenanceMode,
+          );
+          alice.send("tableCreate", { name: "Blocked during maintenance" });
+          const warning = await alice.receive(
+            "warning",
+            SERVER_COMMAND_SCHEMAS.warning,
+          );
+          expect(warning.warning).toContain("maintenance");
+          const resumedCreation = await fetch(
+            `${operationsAddress}/unmaintenance`,
+          );
+          expect(resumedCreation.status).toBe(200);
+          await resumedCreation.text();
+          await alice.receive(
+            "maintenance",
+            SERVER_COMMAND_SCHEMAS.maintenance,
+            (data) => !data.maintenanceMode,
+          );
+          alice.send("tableCreate", {
+            name: "Compiled smoke table",
+            password: "synthetic-table-password",
+            options: {
+              variantName: "No Variant",
+              timed: restart,
+              timeBase: 600,
+              timePerTurn: 2,
+            },
+          });
+          const { tableID } = await alice.receive(
+            "joined",
+            SERVER_COMMAND_SCHEMAS.joined,
+          );
+          bob.send("tableJoin", {
+            tableID,
+            password: "synthetic-table-password",
+          });
+          const bobJoined = await bob.receive(
+            "joined",
+            SERVER_COMMAND_SCHEMAS.joined,
+          );
+          expect(bobJoined.tableID).toBe(tableID);
+          const game = await bob.receive("game", SERVER_COMMAND_SCHEMAS.game);
+          expect(game.players.map((player) => player.name)).toEqual([
+            "SmokeAlice",
+            "SmokeBob",
+          ]);
+          expect(game.players.map((player) => player.you)).toEqual([
+            false,
+            true,
+          ]);
+          bob.send("tableLeave", { tableID });
+          const bobLeft = await bob.receive(
+            "left",
+            SERVER_COMMAND_SCHEMAS.left,
+          );
+          expect(bobLeft.tableID).toBe(tableID);
+          const automatic = signal === undefined && domain !== "localhost";
+          if (automatic) {
+            alice.send("chat", { room: `table${tableID}`, msg: "/s2" });
+            await alice.receive("chat", SERVER_COMMAND_SCHEMAS.chat, (data) =>
+              data.msg.includes("as soon as 2 players have joined"),
+            );
+          }
+          bob.send("tableJoin", {
+            tableID,
+            password: "synthetic-table-password",
+          });
+          await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+          if (signal === undefined && !automatic) {
+            alice.send("chat", {
+              room: `table${tableID}`,
+              msg: "/startin 0.001",
+            });
+          } else if (!automatic) {
+            alice.send("tableStart", { tableID, requestID: "start-once" });
+          }
+          await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+          await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
 
-        async function bootstrap(peer: ReturnType<typeof socketClient>) {
-          peer.send("getGameInfo1", { tableID });
-          const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
-          peer.send("getGameInfo2", { tableID });
-          const history = await peer.receive(
+          async function bootstrap(peer: ReturnType<typeof socketClient>) {
+            peer.send("getGameInfo1", { tableID });
+            const init = await peer.receive(
+              "init",
+              SERVER_COMMAND_SCHEMAS.init,
+            );
+            peer.send("getGameInfo2", { tableID });
+            const history = await peer.receive(
+              "gameActionList",
+              SERVER_COMMAND_SCHEMAS.gameActionList,
+            );
+            peer.send("loaded", { tableID });
+            await peer.receive(
+              "connected",
+              SERVER_COMMAND_SCHEMAS.connected,
+              (data) => data.list.every(Boolean),
+            );
+            return { init, history };
+          }
+          const [aliceGame, bobGame] = await Promise.all([
+            bootstrap(alice),
+            bootstrap(bob),
+          ]);
+          const operatorWarning = await fetch(
+            `${operationsAddress}/sendWarning`,
+            {
+              method: "POST",
+              body: new URLSearchParams({
+                username: "SmokeAlice",
+                msg: "Operator notice.",
+              }),
+            },
+          );
+          expect(operatorWarning.status).toBe(200);
+          await operatorWarning.text();
+          await alice.receive(
+            "warning",
+            SERVER_COMMAND_SCHEMAS.warning,
+            (data) => data.warning === "Operator notice.",
+          );
+          const scheduled = await fetch(`${operationsAddress}/shutdown`);
+          expect(scheduled.status).toBe(200);
+          await scheduled.text();
+          await alice.receive(
+            "shutdown",
+            SERVER_COMMAND_SCHEMAS.shutdown,
+            (data) => data.shuttingDown,
+          );
+          const canceled = await fetch(`${operationsAddress}/cancel`);
+          expect(canceled.status).toBe(200);
+          await canceled.text();
+          await alice.receive(
+            "shutdown",
+            SERVER_COMMAND_SCHEMAS.shutdown,
+            (data) => !data.shuttingDown,
+          );
+          const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
+          const activeGame =
+            aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
+          const card = activeGame.history.list.find(
+            (event) => event.type === "draw" && event.playerIndex === 0,
+          );
+          assertDefined(card, "Missing first player's initial draw.");
+          if (card.type !== "draw") {
+            throw new Error("Expected an initial draw.");
+          }
+          expect(card.rank).toBe(-1);
+          active.send("action", {
+            tableID,
+            type: 0,
+            target: card.order,
+            requestID: "play-once",
+          });
+          await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
+          active.send("getGameInfo2", { tableID });
+          const acknowledged = await active.receive(
             "gameActionList",
             SERVER_COMMAND_SCHEMAS.gameActionList,
           );
-          peer.send("loaded", { tableID });
-          await peer.receive(
-            "connected",
-            SERVER_COMMAND_SCHEMAS.connected,
-            (data) => data.list.every(Boolean),
-          );
-          return { init, history };
-        }
-        const [aliceGame, bobGame] = await Promise.all([
-          bootstrap(alice),
-          bootstrap(bob),
-        ]);
-        const operatorWarning = await fetch(
-          `${operationsAddress}/sendWarning`,
-          {
-            method: "POST",
-            body: new URLSearchParams({
-              username: "SmokeAlice",
-              msg: "Operator notice.",
-            }),
-          },
-        );
-        expect(operatorWarning.status).toBe(200);
-        await operatorWarning.text();
-        await alice.receive(
-          "warning",
-          SERVER_COMMAND_SCHEMAS.warning,
-          (data) => data.warning === "Operator notice.",
-        );
-        const scheduled = await fetch(`${operationsAddress}/shutdown`);
-        expect(scheduled.status).toBe(200);
-        await scheduled.text();
-        await alice.receive(
-          "shutdown",
-          SERVER_COMMAND_SCHEMAS.shutdown,
-          (data) => data.shuttingDown,
-        );
-        const canceled = await fetch(`${operationsAddress}/cancel`);
-        expect(canceled.status).toBe(200);
-        await canceled.text();
-        await alice.receive(
-          "shutdown",
-          SERVER_COMMAND_SCHEMAS.shutdown,
-          (data) => !data.shuttingDown,
-        );
-        const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
-        const activeGame =
-          aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
-        const card = activeGame.history.list.find(
-          (event) => event.type === "draw" && event.playerIndex === 0,
-        );
-        assertDefined(card, "Missing first player's initial draw.");
-        if (card.type !== "draw") {
-          throw new Error("Expected an initial draw.");
-        }
-        expect(card.rank).toBe(-1);
-        active.send("action", {
-          tableID,
-          type: 0,
-          target: card.order,
-          requestID: "play-once",
-        });
-        await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
-        active.send("getGameInfo2", { tableID });
-        const acknowledged = await active.receive(
-          "gameActionList",
-          SERVER_COMMAND_SCHEMAS.gameActionList,
-        );
-        const checkpoints = await client<CheckpointProgress[]>`
-          SELECT game_id, revision::integer AS revision,
-            (checkpoint::jsonb -> 'game' -> 'state' ->> 'turn')::integer AS turn,
-            (checkpoint::jsonb -> 'game' -> 'state' ->> 'activePlayerIndex')::integer AS active_player_index,
-            checkpoint::jsonb -> 'game' -> 'clocks' AS clocks
-          FROM active_games
-        `;
-        expect(checkpoints).toHaveLength(1);
-        const checkpoint = checkpoints[0];
-        assertDefined(checkpoint, "Missing acknowledged durable checkpoint.");
-        expect(checkpoint.game_id).toBeGreaterThan(0);
-        expect(checkpoint.turn).toBe(1);
+          const checkpoints = await checkpointProgress();
+          expect(checkpoints).toHaveLength(1);
+          const checkpoint = checkpoints[0];
+          assertDefined(checkpoint, "Missing acknowledged durable checkpoint.");
+          expect(checkpoint.game_id).toBeGreaterThan(0);
+          expect(checkpoint.turn).toBe(1);
 
-        if (signal !== undefined) {
-          outputBeforeCrash = processState.output();
-          if (signal === "HTTP") {
-            const ready = processState.nextReady();
-            const response = await fetch(
-              `${operationsAddress}/gracefulRestart`,
-            );
-            expect(response.status).toBe(200);
-            await response.text();
-            address = await bounded(ready, "replacement process readiness");
-          } else {
-            const crashed = processState.child;
-            const crashedClosed = once(crashed, "close");
-            expect(crashed.kill(signal)).toBe(true);
-            await bounded(crashedClosed, "child process shutdown", 5000);
-            if (crash) {
-              expect(crashed.signalCode).toBe("SIGKILL");
+          if (signal !== undefined) {
+            outputBeforeCrash = processState.output();
+            if (signal === "HTTP") {
+              const ready = processState.nextReady();
+              const response = await fetch(
+                `${operationsAddress}/gracefulRestart`,
+              );
+              expect(response.status).toBe(200);
+              await response.text();
+              address = await bounded(ready, "replacement process readiness");
             } else {
-              expect(crashed.exitCode).toBe(0);
-              expect(crashed.signalCode).toBeNull();
-              expect(processState.output()).toContain("successfully shut down");
+              const crashed = processState.child;
+              const crashedClosed = once(crashed, "close");
+              expect(crashed.kill(signal)).toBe(true);
+              await bounded(crashedClosed, "child process shutdown", 5000);
+              if (crash) {
+                expect(crashed.signalCode).toBe("SIGKILL");
+              } else {
+                expect(crashed.exitCode).toBe(0);
+                expect(crashed.signalCode).toBeNull();
+                expect(processState.output()).toContain(
+                  "successfully shut down",
+                );
+              }
+              processState = startProcess(
+                directory,
+                undefined,
+                language === "rust",
+              );
+              address = await bounded(
+                processState.ready,
+                "restarted compiled server readiness",
+              );
             }
-            processState = startProcess(directory);
-            address = await bounded(
-              processState.ready,
-              "restarted compiled server readiness",
-            );
-          }
-          const retained = await client<CheckpointProgress[]>`
-            SELECT game_id, revision::integer AS revision,
-              (checkpoint::jsonb -> 'game' -> 'state' ->> 'turn')::integer AS turn,
-              (checkpoint::jsonb -> 'game' -> 'state' ->> 'activePlayerIndex')::integer AS active_player_index,
-              checkpoint::jsonb -> 'game' -> 'clocks' AS clocks
-            FROM active_games
-          `;
-          if (crash) {
-            expect(retained).toEqual(checkpoints);
-          } else {
-            expect(retained).toHaveLength(1);
-            const saved = retained[0];
-            assertDefined(saved, "Missing planned shutdown checkpoint.");
-            expect(saved).toMatchObject({
-              game_id: checkpoint.game_id,
-              turn: checkpoint.turn,
-              active_player_index: checkpoint.active_player_index,
-            });
-            expect(saved.revision).toBeGreaterThan(checkpoint.revision);
-          }
-          bob = socketClient(address, bobCookie);
-          sockets.push(bob.socket);
-        }
-        if (alice.socket.readyState !== alice.socket.CLOSED) {
-          const oldClosed = once(alice.socket, "close");
-          alice.socket.terminate();
-          await bounded(oldClosed, "old player socket closes");
-        }
-        const replacement = socketClient(address, aliceCookie);
-        sockets.push(replacement.socket);
-        const returningPeers = restart ? [replacement, bob] : [replacement];
-        const [resumed, recoveredBob] = await Promise.all(
-          returningPeers.map(async (peer) => {
-            const returning = await peer.receive(
-              "welcome",
-              SERVER_COMMAND_SCHEMAS.welcome,
-            );
-            expect(returning.playingAtTables).toEqual([tableID]);
-            peer.send("tableReattend", { tableID });
-            await peer.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
-            return await bootstrap(peer);
-          }),
-        );
-        assertDefined(resumed, "Missing reconnected player bootstrap.");
-        expect(resumed.init.replay).toBe(false);
-        expect(
-          resumed.history.list.some(
-            (event) => event.type === "play" || event.type === "discard",
-          ),
-        ).toBe(true);
-        if (restart) {
-          assertDefined(recoveredBob, "Missing recovered second player.");
-          expect(resumed.init.ourPlayerIndex).toBe(
-            aliceGame.init.ourPlayerIndex,
-          );
-          expect(recoveredBob.init.ourPlayerIndex).toBe(
-            bobGame.init.ourPlayerIndex,
-          );
-          const restoredActive =
-            aliceGame.init.ourPlayerIndex === 0 ? resumed : recoveredBob;
-          expect(restoredActive.history.list).toEqual(acknowledged.list);
-          expect(resumed.init.datetimeStarted).toBe(
-            aliceGame.init.datetimeStarted,
-          );
-          const [recovered] = await client<CheckpointProgress[]>`
-            SELECT game_id, revision::integer AS revision,
-              (checkpoint::jsonb -> 'game' -> 'state' ->> 'turn')::integer AS turn,
-              (checkpoint::jsonb -> 'game' -> 'state' ->> 'activePlayerIndex')::integer AS active_player_index,
-              checkpoint::jsonb -> 'game' -> 'clocks' AS clocks
-            FROM active_games
-          `;
-          assertDefined(recovered, "Missing recovered checkpoint.");
-          expect(recovered.game_id).toBe(checkpoint.game_id);
-          expect(recovered.turn).toBe(checkpoint.turn);
-          expect(recovered.revision).toBeGreaterThan(checkpoint.revision);
-          for (const [index, time] of recovered.clocks.entries()) {
-            const previous: number | undefined = checkpoint.clocks[index];
-            assertDefined(previous, "Missing pre-crash clock.");
-            const allowance = crash ? 0 : 20_000;
-            expect(time).toBeLessThanOrEqual(previous + allowance);
-            expect(time).toBeGreaterThan(0);
-            if (!crash) {
-              expect(time).toBeGreaterThan(previous);
+            const retained = await checkpointProgress();
+            if (crash) {
+              expect(retained).toEqual(checkpoints);
+            } else {
+              expect(retained).toHaveLength(1);
+              const saved = retained[0];
+              assertDefined(saved, "Missing planned shutdown checkpoint.");
+              expect(saved).toMatchObject({
+                game_id: checkpoint.game_id,
+                turn: checkpoint.turn,
+                active_player_index: checkpoint.active_player_index,
+              });
+              expect(saved.revision).toBeGreaterThan(checkpoint.revision);
             }
-            if (index !== checkpoint.active_player_index) {
-              expect(time).toBe(previous + allowance);
-            }
+            bob = socketClient(address, bobCookie);
+            sockets.push(bob.socket);
           }
-        }
-        replacement.send("note", {
-          tableID,
-          order: 0,
-          note: "retained note",
-          requestID: "note-once",
-        });
-        replacement.send("tag", {
-          tableID,
-          msg: "compiled smoke",
-          room: `table${tableID}`,
-          requestID: "tag-once",
-        });
-        replacement.send("chat", {
-          room: `table${tableID}`,
-          msg: "retained authored chat",
-          requestID: "chat-once",
-        });
-        if (signal === undefined && domain === "localhost") {
-          replacement.send("tableVoteForTermination", {
-            tableID,
-            requestID: "alice-vote",
-          });
-          await replacement.receive(
-            "voteChange",
-            SERVER_COMMAND_SCHEMAS.voteChange,
-            (data) => data.vote,
-          );
-          bob.send("tableVoteForTermination", {
-            tableID,
-            requestID: "bob-vote",
-          });
-        } else {
-          replacement.send("tableTerminate", {
-            tableID,
-            requestID: "finish-once",
-          });
-        }
-        const finished = await replacement.receive(
-          "finishOngoingGame",
-          SERVER_COMMAND_SCHEMAS.finishOngoingGame,
-        );
-        expect(finished.databaseID).toBe(checkpoint.game_id);
-        const historyRow = z
-          .object({
-            id: z.number().int(),
-            incrementNumGames: z.boolean(),
-          })
-          .readonly();
-        await replacement.receive(
-          "gameHistory",
-          historyRow.array().readonly(),
-          (rows) =>
-            rows.some(
-              (row) => row.id === finished.databaseID && row.incrementNumGames,
-            ),
-        );
-        replacement.send("replayAction", { tableID, type: 0, segment: 1 });
-        const replayPosition = await replacement.receive(
-          "replaySegment",
-          SERVER_COMMAND_SCHEMAS.replaySegment,
-        );
-        expect(replayPosition.segment).toBe(1);
-        replacement.send("getGameInfo2", { tableID });
-        const replayHistory = await replacement.receive(
-          "gameActionList",
-          SERVER_COMMAND_SCHEMAS.gameActionList,
-        );
-        expect(
-          replayHistory.list
-            .filter((event) => event.type === "draw")
-            .every((event) => event.rank > 0),
-        ).toBe(true);
-        expect(
-          await client`SELECT id FROM games WHERE id = ${finished.databaseID}`,
-        ).toHaveLength(1);
-        expect(await client`SELECT id FROM games`).toEqual([
-          { id: checkpoint.game_id },
-        ]);
-        expect(await client`SELECT game_id FROM active_games`).toHaveLength(0);
-        expect(
-          await client`SELECT user_id FROM chat_log WHERE message = 'retained authored chat'`,
-        ).toHaveLength(1);
-        bob.send("tableUnattend", { tableID });
-        replacement.send("tableUnattend", { tableID });
-        const gone = await replacement.receive(
-          "tableGone",
-          SERVER_COMMAND_SCHEMAS.tableGone,
-        );
-        expect(gone.tableID).toBe(tableID);
-        if (signal === undefined && domain === "localhost") {
-          const banned = await fetch(`${operationsAddress}/ban`, {
-            method: "POST",
-            body: new URLSearchParams({ username: "SmokeAlice" }),
-          });
-          expect(banned.status).toBe(200);
-          await banned.text();
-          const denied = await fetch(`${address}/login`, {
-            method: "POST",
-            body: new URLSearchParams({
-              username: "SmokeAlice",
-              password: "synthetic-smoke-password",
-              version: "1",
+          if (alice.socket.readyState !== alice.socket.CLOSED) {
+            const oldClosed = once(alice.socket, "close");
+            alice.socket.terminate();
+            await bounded(oldClosed, "old player socket closes");
+          }
+          const replacement = socketClient(address, aliceCookie);
+          sockets.push(replacement.socket);
+          const returningPeers = restart ? [replacement, bob] : [replacement];
+          const [resumed, recoveredBob] = await Promise.all(
+            returningPeers.map(async (peer) => {
+              const returning = await peer.receive(
+                "welcome",
+                SERVER_COMMAND_SCHEMAS.welcome,
+              );
+              expect(returning.playingAtTables).toEqual([tableID]);
+              peer.send("tableReattend", { tableID });
+              await peer.receive(
+                "tableStart",
+                SERVER_COMMAND_SCHEMAS.tableStart,
+              );
+              return await bootstrap(peer);
             }),
-          });
-          expect(denied.status).toBe(401);
-          await denied.text();
-          const stopped = once(processState.child, "close");
-          const stop = await fetch(`${operationsAddress}/shutdown`);
-          expect(stop.status).toBe(200);
-          await stop.text();
-          await bounded(stopped, "empty server scheduled shutdown", 5000);
-          expect(processState.child.exitCode).toBe(0);
-        }
-        const listeners = [
-          ...processState
-            .output()
-            .matchAll(/Server listening at http:\/\/([^\s:]+):/gu),
-        ];
-        expect(listeners.map((match) => match[1])).toEqual(
-          signal === "HTTP" ? ["127.0.0.1", "127.0.0.1"] : ["127.0.0.1"],
-        );
-      } catch (error) {
-        throw new Error(
-          `Compiled process smoke failed.\n${outputBeforeCrash}\n${processState?.output() ?? "Process not started."}`,
-          { cause: error },
-        );
-      } finally {
-        for (const socket of sockets) {
-          socket.terminate();
-        }
-        try {
-          if (processState !== undefined) {
-            await stopChild(processState.child);
+          );
+          assertDefined(resumed, "Missing reconnected player bootstrap.");
+          expect(resumed.init.replay).toBe(false);
+          expect(
+            resumed.history.list.some(
+              (event) => event.type === "play" || event.type === "discard",
+            ),
+          ).toBe(true);
+          if (restart) {
+            assertDefined(recoveredBob, "Missing recovered second player.");
+            expect(resumed.init.ourPlayerIndex).toBe(
+              aliceGame.init.ourPlayerIndex,
+            );
+            expect(recoveredBob.init.ourPlayerIndex).toBe(
+              bobGame.init.ourPlayerIndex,
+            );
+            const restoredActive =
+              aliceGame.init.ourPlayerIndex === 0 ? resumed : recoveredBob;
+            expect(restoredActive.history.list).toEqual(acknowledged.list);
+            expect(resumed.init.datetimeStarted).toBe(
+              aliceGame.init.datetimeStarted,
+            );
+            const [recovered] = await checkpointProgress();
+            assertDefined(recovered, "Missing recovered checkpoint.");
+            expect(recovered.game_id).toBe(checkpoint.game_id);
+            expect(recovered.turn).toBe(checkpoint.turn);
+            expect(recovered.revision).toBeGreaterThan(checkpoint.revision);
+            for (const [index, time] of recovered.clocks.entries()) {
+              const previous: number | undefined = checkpoint.clocks[index];
+              assertDefined(previous, "Missing pre-crash clock.");
+              const allowance = crash ? 0 : 20_000;
+              expect(time).toBeLessThanOrEqual(previous + allowance);
+              expect(time).toBeGreaterThan(0);
+              if (!crash) {
+                expect(time).toBeGreaterThan(previous);
+              }
+              if (index !== checkpoint.active_player_index) {
+                expect(time).toBe(previous + allowance);
+              }
+            }
           }
+          replacement.send("note", {
+            tableID,
+            order: 0,
+            note: "retained note",
+            requestID: "note-once",
+          });
+          replacement.send("tag", {
+            tableID,
+            msg: "compiled smoke",
+            room: `table${tableID}`,
+            requestID: "tag-once",
+          });
+          replacement.send("chat", {
+            room: `table${tableID}`,
+            msg: "retained authored chat",
+            requestID: "chat-once",
+          });
+          if (signal === undefined && domain === "localhost") {
+            replacement.send("tableVoteForTermination", {
+              tableID,
+              requestID: "alice-vote",
+            });
+            await replacement.receive(
+              "voteChange",
+              SERVER_COMMAND_SCHEMAS.voteChange,
+              (data) => data.vote,
+            );
+            bob.send("tableVoteForTermination", {
+              tableID,
+              requestID: "bob-vote",
+            });
+          } else {
+            replacement.send("tableTerminate", {
+              tableID,
+              requestID: "finish-once",
+            });
+          }
+          const finished = await replacement.receive(
+            "finishOngoingGame",
+            SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+          );
+          expect(finished.databaseID).toBe(checkpoint.game_id);
+          const historyRow = z
+            .object({
+              id: z.number().int(),
+              incrementNumGames: z.boolean(),
+            })
+            .readonly();
+          await replacement.receive(
+            "gameHistory",
+            historyRow.array().readonly(),
+            (rows) =>
+              rows.some(
+                (row) =>
+                  row.id === finished.databaseID && row.incrementNumGames,
+              ),
+          );
+          replacement.send("replayAction", { tableID, type: 0, segment: 1 });
+          const replayPosition = await replacement.receive(
+            "replaySegment",
+            SERVER_COMMAND_SCHEMAS.replaySegment,
+          );
+          expect(replayPosition.segment).toBe(1);
+          replacement.send("getGameInfo2", { tableID });
+          const replayHistory = await replacement.receive(
+            "gameActionList",
+            SERVER_COMMAND_SCHEMAS.gameActionList,
+          );
+          expect(
+            replayHistory.list
+              .filter((event) => event.type === "draw")
+              .every((event) => event.rank > 0),
+          ).toBe(true);
+          expect(
+            await client`SELECT id FROM games WHERE id = ${finished.databaseID}`,
+          ).toHaveLength(1);
+          expect(await client`SELECT id FROM games`).toEqual([
+            { id: checkpoint.game_id },
+          ]);
+          expect(await client`SELECT game_id FROM active_games`).toHaveLength(
+            0,
+          );
+          expect(await checkpointProgress()).toHaveLength(0);
+          expect(
+            await client`SELECT user_id FROM chat_log WHERE message = 'retained authored chat'`,
+          ).toHaveLength(1);
+          bob.send("tableUnattend", { tableID });
+          replacement.send("tableUnattend", { tableID });
+          const gone = await replacement.receive(
+            "tableGone",
+            SERVER_COMMAND_SCHEMAS.tableGone,
+          );
+          expect(gone.tableID).toBe(tableID);
+          if (signal === undefined && domain === "localhost") {
+            const banned = await fetch(`${operationsAddress}/ban`, {
+              method: "POST",
+              body: new URLSearchParams({ username: "SmokeAlice" }),
+            });
+            expect(banned.status).toBe(200);
+            await banned.text();
+            const denied = await fetch(`${address}/login`, {
+              method: "POST",
+              body: new URLSearchParams({
+                username: "SmokeAlice",
+                password: "synthetic-smoke-password",
+                version: "1",
+              }),
+            });
+            expect(denied.status).toBe(401);
+            await denied.text();
+            const stopped = once(processState.child, "close");
+            const stop = await fetch(`${operationsAddress}/shutdown`);
+            expect(stop.status).toBe(200);
+            await stop.text();
+            await bounded(stopped, "empty server scheduled shutdown", 5000);
+            expect(processState.child.exitCode).toBe(0);
+          }
+          const listeners = [
+            ...processState
+              .output()
+              .matchAll(/Server listening at http:\/\/([^\s:]+):/gu),
+          ];
+          expect(listeners.map((match) => match[1])).toEqual(
+            signal === "HTTP" ? ["127.0.0.1", "127.0.0.1"] : ["127.0.0.1"],
+          );
+        } catch (error) {
+          throw new Error(
+            `Compiled process smoke failed.\n${outputBeforeCrash}\n${processState?.output() ?? "Process not started."}`,
+            { cause: error },
+          );
         } finally {
+          for (const socket of sockets) {
+            socket.terminate();
+          }
           try {
-            await client.end({ timeout: 3 });
+            if (processState !== undefined) {
+              await stopChild(processState.child);
+            }
           } finally {
+            await redis?.close();
             try {
-              await database.close();
+              await client.end({ timeout: 3 });
             } finally {
-              if (directory !== undefined) {
-                await rm(directory, { recursive: true, force: true });
+              try {
+                await database.close();
+              } finally {
+                if (directory !== undefined) {
+                  await rm(directory, { recursive: true, force: true });
+                }
               }
             }
           }
         }
-      }
-    },
-    60_000,
-  );
-});
+      },
+      language === "rust" ? 600_000 : 60_000,
+    );
+
+    test(
+      "preserves six-player variants, characters, and shadow privacy through replay imports",
+      async () => {
+        const database = await evaluationDatabase();
+        const sql = database.connect();
+        await mkdir(path.join(ROOT, "dist"), { recursive: true });
+        const directory = await mkdtemp(path.join(ROOT, "dist/native-parity-"));
+        let state: ReturnType<typeof startProcess> | undefined;
+        let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
+        const sockets: WebSocket[] = [];
+        try {
+          await sql.unsafe(
+            await readFile(
+              path.join(ROOT, "install/database_schema.sql"),
+              "utf8",
+            ),
+          );
+          const version = expectedSchemaVersion(
+            await readdir(path.join(ROOT, "install/migrations")),
+          );
+          await sql`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
+          await sql`INSERT INTO public.schema_version VALUES (${version})`;
+          await run("bash", [path.join(ROOT, "packages/server/build.sh")], {
+            cwd: ROOT,
+            timeout: 30_000,
+          });
+          await prepareRoot(directory, database, "localhost");
+          if (language === "rust") {
+            redis = await redisFixture();
+            await appendFile(
+              path.join(directory, ".env"),
+              `REDIS_URL=${redis.url}\n`,
+            );
+            await buildRust(directory);
+          }
+          state = startProcess(directory, undefined, language === "rust");
+          let address = await bounded(
+            state.ready,
+            "six-player parity readiness",
+          );
+          const peers = await Promise.all(
+            Array.from({ length: 7 }, async (_, index) => {
+              const cookie = await login(address, `Parity${index}`);
+              const peer = socketClient(address, cookie);
+              sockets.push(peer.socket);
+              await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+              return { ...peer, cookie };
+            }),
+          );
+          const owner = peers[0];
+          const observer = peers[6];
+          assertDefined(owner, "Missing owner.");
+          assertDefined(observer, "Missing observer.");
+          owner.send("tableCreate", {
+            name: "Six-player variant parity",
+            maxPlayers: 6,
+            options: {
+              variantName: "Rainbow (6 Suits)",
+              detrimentalCharacters: true,
+              oneLessCard: true,
+              cardCycle: true,
+              emptyClues: true,
+            },
+          });
+          const { tableID } = await owner.receive(
+            "joined",
+            SERVER_COMMAND_SCHEMAS.joined,
+          );
+          const players = peers.slice(0, 6);
+          await Promise.all(
+            players.slice(1).map(async (peer) => {
+              peer.send("tableJoin", { tableID });
+              await peer.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+            }),
+          );
+          owner.send("tableStart", { tableID });
+          async function bootstrap(
+            peer: ReturnType<typeof socketClient>,
+            id: number,
+          ) {
+            peer.send("getGameInfo1", { tableID: id });
+            const init = await peer.receive(
+              "init",
+              SERVER_COMMAND_SCHEMAS.init,
+            );
+            peer.send("getGameInfo2", { tableID: id });
+            const history = await peer.receive(
+              "gameActionList",
+              SERVER_COMMAND_SCHEMAS.gameActionList,
+            );
+            peer.send("loaded", { tableID: id });
+            return { init, history };
+          }
+          const games = await Promise.all(
+            players.map(async (peer) => {
+              await peer.receive(
+                "tableStart",
+                SERVER_COMMAND_SCHEMAS.tableStart,
+              );
+              return await bootstrap(peer, tableID);
+            }),
+          );
+          for (const game of games) {
+            expect(game.init.playerNames).toHaveLength(6);
+            expect(game.init.options).toMatchObject({
+              numPlayers: 6,
+              variantName: "Rainbow (6 Suits)",
+              detrimentalCharacters: true,
+              oneLessCard: true,
+              cardCycle: true,
+              emptyClues: true,
+            });
+            expect(game.init.characterAssignments).toHaveLength(6);
+            expect(
+              game.init.characterAssignments.every((value) => value >= 0),
+            ).toBe(true);
+            const hand = game.history.list.filter(
+              (event) =>
+                event.type === "draw"
+                && event.playerIndex === game.init.ourPlayerIndex,
+            );
+            expect(hand).toHaveLength(2);
+            expect(
+              hand.every((event) => event.type === "draw" && event.rank === -1),
+            ).toBe(true);
+          }
+          observer.send("tableSpectate", { tableID, shadowingPlayerIndex: 0 });
+          await observer.receive(
+            "tableStart",
+            SERVER_COMMAND_SCHEMAS.tableStart,
+          );
+          const shadow = await bootstrap(observer, tableID);
+          expect(shadow.init).toMatchObject({
+            spectating: true,
+            shadowing: true,
+            ourPlayerIndex: 0,
+          });
+          expect(
+            shadow.history.list.filter(
+              (event) => event.type === "draw" && event.playerIndex === 0,
+            ),
+          ).toEqual([
+            expect.objectContaining({ rank: -1, suitIndex: -1 }),
+            expect.objectContaining({ rank: -1, suitIndex: -1 }),
+          ]);
+          owner.send("tableTerminate", { tableID });
+          const finished = await owner.receive(
+            "finishOngoingGame",
+            SERVER_COMMAND_SCHEMAS.finishOngoingGame,
+          );
+          expect(
+            await sql`SELECT seat FROM game_participants WHERE game_id=${finished.databaseID}`,
+          ).toHaveLength(6);
+          const exported = await fetch(
+            `${address}/export/${finished.databaseID}`,
+          );
+          expect(exported.status).toBe(200);
+          const replayJSON: unknown = await exported.json();
+          const replay = importReplay(replayJSON);
+          expect(replay.warnings).toEqual([]);
+          expect(replay.state.options.numPlayers).toBe(6);
+          expect(replay.state.options.variantName).toBe("Rainbow (6 Suits)");
+          expect(replay.state.endCondition).not.toBe(0);
+          for (const peer of peers) {
+            peer.send("tableUnattend", { tableID });
+          }
+          await owner.receive(
+            "tableGone",
+            SERVER_COMMAND_SCHEMAS.tableGone,
+            (message) => message.tableID === tableID,
+          );
+          /* eslint-disable no-await-in-loop -- One client's replay imports must complete in wire order. */
+          for (const source of ["id", "json"] as const) {
+            owner.send(
+              "replayCreate",
+              source === "id"
+                ? {
+                    source,
+                    visibility: "solo",
+                    databaseID: finished.databaseID,
+                  }
+                : { source, visibility: "shared", gameJSON: replayJSON },
+            );
+            const created = await owner.receive(
+              "tableStart",
+              SERVER_COMMAND_SCHEMAS.tableStart,
+            );
+            const imported = await bootstrap(owner, created.tableID);
+            expect(imported.init.replay).toBe(true);
+            expect(imported.init.playerNames).toHaveLength(6);
+            const original = games[0];
+            assertDefined(original, "Missing original player bootstrap.");
+            expect(imported.init.options).toMatchObject(original.init.options);
+            expect(imported.init.characterAssignments).toEqual(
+              original.init.characterAssignments,
+            );
+            expect(
+              imported.history.list
+                .filter((event) => event.type === "draw")
+                .every((event) => event.rank > 0),
+            ).toBe(true);
+            let replayPeer: ReturnType<typeof socketClient> = owner;
+            if (language === "rust" && source === "json") {
+              owner.send("tableCreate", {
+                name: "Recover this pregame",
+                password: "preserved-password",
+                maxPlayers: 3,
+                options: { variantName: "Rainbow (6 Suits)" },
+              });
+              const pending = await owner.receive(
+                "joined",
+                SERVER_COMMAND_SCHEMAS.joined,
+              );
+              const crashed = once(state.child, "close");
+              state.child.kill("SIGKILL");
+              await bounded(crashed, "pregame and replay process crash");
+              state = startProcess(directory, undefined, true);
+              address = await bounded(
+                state.ready,
+                "pregame and replay recovery",
+              );
+              const returning = socketClient(address, owner.cookie);
+              sockets.push(returning.socket);
+              await returning.receive(
+                "welcome",
+                SERVER_COMMAND_SCHEMAS.welcome,
+              );
+              returning.send("tableReattend", { tableID: pending.tableID });
+              const pregame = await returning.receive(
+                "game",
+                SERVER_COMMAND_SCHEMAS.game,
+                (message) => message.tableID === pending.tableID,
+              );
+              expect(pregame).toMatchObject({
+                name: "Recover this pregame",
+                passwordProtected: true,
+                maxPlayers: 3,
+                options: { variantName: "Rainbow (6 Suits)" },
+              });
+              const returningObserver = socketClient(address, observer.cookie);
+              sockets.push(returningObserver.socket);
+              await returningObserver.receive(
+                "welcome",
+                SERVER_COMMAND_SCHEMAS.welcome,
+              );
+              returningObserver.send("tableJoin", {
+                tableID: pending.tableID,
+                password: "preserved-password",
+              });
+              await returningObserver.receive(
+                "joined",
+                SERVER_COMMAND_SCHEMAS.joined,
+                (message) => message.tableID === pending.tableID,
+              );
+              returning.send("tableReattend", { tableID: created.tableID });
+              await returning.receive(
+                "tableStart",
+                SERVER_COMMAND_SCHEMAS.tableStart,
+                (message) => message.tableID === created.tableID,
+              );
+              const recovered = await bootstrap(returning, created.tableID);
+              expect(recovered.init).toMatchObject({
+                replay: true,
+                sharedReplay: true,
+                sharedReplaySegment: imported.init.sharedReplaySegment,
+                datetimeStarted: imported.init.datetimeStarted,
+              });
+              expect(recovered.init.characterAssignments).toEqual(
+                imported.init.characterAssignments,
+              );
+              expect(recovered.history.list).toEqual(imported.history.list);
+              returningObserver.send("tableLeave", {
+                tableID: pending.tableID,
+              });
+              returning.send("tableLeave", { tableID: pending.tableID });
+              await returning.receive(
+                "tableGone",
+                SERVER_COMMAND_SCHEMAS.tableGone,
+                (message) => message.tableID === pending.tableID,
+              );
+              replayPeer = returning;
+            }
+            replayPeer.send("tableUnattend", { tableID: created.tableID });
+            replayPeer.send("getName", {});
+            await replayPeer.receive("name", SERVER_COMMAND_SCHEMAS.name);
+          }
+          /* eslint-enable no-await-in-loop */
+        } catch (error) {
+          throw new Error(
+            `Six-player ${language} parity failed.\n${state?.output() ?? ""}`,
+            { cause: error },
+          );
+        } finally {
+          for (const socket of sockets) {
+            socket.terminate();
+          }
+          if (state !== undefined) {
+            await stopChild(state.child);
+          }
+          await redis?.close();
+          await sql.end({ timeout: 3 });
+          await database.close();
+          await rm(directory, { recursive: true, force: true });
+        }
+      },
+      language === "rust" ? 600_000 : 60_000,
+    );
+  },
+);

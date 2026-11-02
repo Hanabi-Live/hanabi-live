@@ -1,41 +1,62 @@
+//! Native browser routes and bounded WebSocket transport. Database work runs
+//! behind the drain barrier; the hub owns session-generation publication.
+#[cfg(test)]
+mod integration_tests;
+mod protocol;
+#[cfg(test)]
+pub(crate) mod test_support;
+
 use crate::{
-    actors::{Command, HubCommand},
-    cookie,
-    game::{Action, Card},
-    model::Snapshot,
+    accounts::{self, AccountConfig},
+    actors::HubCommand,
+    integrations::Integrations,
+    lobby::{self, Caller, Effect},
+    public_http::{self, PublicConfig},
     store::Store,
-    transport::{Outbound, Session, frame},
+    transport::{Inbound, InboundBudget, Outbound, Session, SessionMetadata, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
-use argon2::{
-    Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString,
-};
+use anyhow::{Context, Result, ensure};
 use axum::{
-    Form, Router,
+    Router,
     extract::{
-        ConnectInfo, DefaultBodyLimit, State,
+        ConnectInfo, Request, State,
         ws::{Message, WebSocket, WebSocketUpgrade},
     },
     http::{HeaderMap, StatusCode, header},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::get,
 };
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
-use rand::rngs::OsRng;
-use serde::Deserialize;
 use serde_json::{Value, json};
 use sqlx::Row;
 use std::{
+    collections::HashMap,
+    future::Future,
     net::SocketAddr,
     sync::{
-        Arc,
+        Arc, OnceLock, RwLock,
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
-    time::Duration,
+    task::Poll,
+    time::{Duration, Instant},
 };
 use tokio::sync::{Semaphore, mpsc, oneshot};
-use tokio_util::task::TaskTracker;
+use tokio_util::{sync::CancellationToken, task::TaskTracker};
+
+pub trait RuntimeStatus: Send + Sync {
+    fn time_left(&self) -> String;
+    fn shutting_down(&self) -> bool {
+        false
+    }
+    fn maintenance_mode(&self) -> bool {
+        false
+    }
+    fn shutdown_started_at(&self) -> Option<String> {
+        None
+    }
+}
 
 pub struct App {
     pub store: Store,
@@ -43,332 +64,326 @@ pub struct App {
     pub secret: String,
     pub version: String,
     pub accepting: AtomicBool,
-    pub generation: AtomicU64,
-    pub hashing: Arc<Semaphore>,
-    pub sockets: Arc<Semaphore>,
     pub connections: TaskTracker,
+    pub background: TaskTracker,
+    pub shutdown: CancellationToken,
+    pub lease_lost: CancellationToken,
+    pub admission: Arc<tokio::sync::RwLock<()>>,
+    generation: AtomicU64,
+    sockets: Arc<Semaphore>,
+    incoming_bytes: Arc<Semaphore>,
+    public: PublicConfig,
+    started: Instant,
+    came_online: DateTime<Utc>,
+    runtime: RwLock<Option<Arc<dyn RuntimeStatus>>>,
+    integrations: OnceLock<Arc<Integrations>>,
+    integration_started: AtomicBool,
+}
+
+impl App {
+    pub fn is_development(&self) -> bool {
+        self.public.is_dev
+    }
+
+    pub fn integration_status(&self) -> Value {
+        self.integrations
+            .get()
+            .map(|integrations| integrations.status())
+            .unwrap_or_else(|| json!({"discord":"disabled"}))
+    }
+
+    pub fn new(
+        store: Store,
+        hub: mpsc::Sender<HubCommand>,
+        public: PublicConfig,
+        lease_lost: CancellationToken,
+    ) -> Arc<Self> {
+        Arc::new(Self {
+            store,
+            hub,
+            secret: public.session_secret.to_string(),
+            version: public.client_version.to_string(),
+            accepting: AtomicBool::new(true),
+            generation: AtomicU64::new(1),
+            sockets: Arc::new(Semaphore::new(4096)),
+            incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
+            connections: TaskTracker::new(),
+            background: TaskTracker::new(),
+            shutdown: CancellationToken::new(),
+            lease_lost,
+            admission: Arc::new(tokio::sync::RwLock::new(())),
+            public,
+            started: Instant::now(),
+            came_online: Utc::now(),
+            runtime: RwLock::new(None),
+            integrations: OnceLock::new(),
+            integration_started: AtomicBool::new(false),
+        })
+    }
+
+    pub fn set_runtime(&self, runtime: Arc<dyn RuntimeStatus>) {
+        *self.runtime.write().unwrap_or_else(|e| e.into_inner()) = Some(runtime);
+    }
+
+    pub async fn start_integrations(
+        self: &Arc<Self>,
+        values: &HashMap<String, String>,
+    ) -> Result<()> {
+        ensure!(
+            self.integration_started
+                .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+                .is_ok(),
+            "Integrations already initialized"
+        );
+        let integrations = Integrations::start(self.clone(), values).await?;
+        self.integrations
+            .set(integrations)
+            .map_err(|_| anyhow::anyhow!("Integrations already initialized"))?;
+        Ok(())
+    }
+
+    pub fn healthy(&self) -> bool {
+        !self.shutdown.is_cancelled()
+            && !self.lease_lost.is_cancelled()
+            && self.store.check_state().is_ok()
+    }
+
+    pub fn telemetry(&self, operation: &'static str) {
+        if let Some(integrations) = self.integrations.get() {
+            integrations.report(operation);
+        }
+    }
+
+    pub fn public_url(&self, path: &str) -> String {
+        format!(
+            "{}://{}{path}",
+            if self.public.use_tls { "https" } else { "http" },
+            self.public.domain
+        )
+    }
 }
 
 pub fn router(app: Arc<App>) -> Router {
-    Router::new()
-        .route(
-            "/",
-            get(|| async { "Rust benchmark PoC; not a production server.\n" }),
-        )
-        .route("/login", post(login))
+    let accounts = accounts::router(
+        app.store.primary.clone(),
+        AccountConfig {
+            secret: app.secret.clone(),
+            domain: app.public.domain.to_string(),
+            use_tls: app.public.use_tls,
+            version: app.version.clone(),
+            is_dev: app.public.is_dev,
+        },
+    );
+    let authenticated = Router::new()
         .route("/ws", get(websocket))
-        .layer(DefaultBodyLimit::max(8192))
-        .with_state(app)
+        .with_state(app.clone())
+        .merge(accounts)
+        .layer(middleware::from_fn_with_state(app.clone(), check_origin));
+    public_http::router(app.store.primary.clone(), app.public.clone()).merge(authenticated)
 }
 
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Login {
-    username: String,
-    password: String,
-    version: String,
-}
-
-async fn login(
-    State(app): State<Arc<App>>,
-    ConnectInfo(address): ConnectInfo<SocketAddr>,
-    headers: HeaderMap,
-    Form(input): Form<Login>,
-) -> Response {
-    if headers.contains_key(header::ORIGIN) || !app.accepting.load(Ordering::Acquire) {
-        return (
-            StatusCode::FORBIDDEN,
-            "This PoC accepts local benchmark clients only.",
-        )
-            .into_response();
-    }
-    if input.version != app.version
-        || input.username.is_empty()
-        || input.username.len() > 15
-        || !input
-            .username
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
-        || input.password.is_empty()
-        || input.password.len() > 1024
+fn origin_allowed(headers: &HeaderMap, domain: &str, use_tls: bool) -> bool {
+    let Some(origin) = headers.get(header::ORIGIN) else {
+        return true;
+    };
+    let Some(origin) = origin.to_str().ok().and_then(|v| url::Url::parse(v).ok()) else {
+        return false;
+    };
+    if origin.scheme() != if use_tls { "https" } else { "http" }
+        || origin.path() != "/"
+        || origin.query().is_some()
+        || origin.fragment().is_some()
+        || !origin.username().is_empty()
+        || origin.password().is_some()
     {
-        return (StatusCode::BAD_REQUEST, "Unsupported login input.").into_response();
+        return false;
     }
-    let Ok(permit) = app.hashing.clone().try_acquire_owned() else {
+    let scheme = if use_tls { "https" } else { "http" };
+    let Some(configured) = url::Url::parse(&format!("{scheme}://{domain}")).ok() else {
+        return false;
+    };
+    let Some(host) = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .and_then(|host| url::Url::parse(&format!("{scheme}://{host}")).ok())
+    else {
+        return false;
+    };
+    origin.host_str() == configured.host_str()
+        && origin.host_str() == host.host_str()
+        && origin.port_or_known_default() == host.port_or_known_default()
+        && (configured.port().is_none()
+            || configured.port_or_known_default() == origin.port_or_known_default())
+}
+
+async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next) -> Response {
+    if !origin_allowed(request.headers(), &app.public.domain, app.public.use_tls) {
+        return (StatusCode::FORBIDDEN, "Invalid request origin.\n").into_response();
+    }
+    let _admission = app.admission.clone().read_owned().await;
+    if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
-            "Password worker capacity exhausted.",
+            "The server is draining for maintenance.\n",
         )
             .into_response();
-    };
-    match login_inner(&app, input, address.ip().to_string(), permit).await {
-        Ok(Some(id)) => match cookie::encode(id, &app.secret, Utc::now().timestamp()) {
-            Ok(value) => (
-                [(
-                    header::SET_COOKIE,
-                    format!(
-                        "hanabi.sid={value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000"
-                    ),
-                )],
-                "OK\n",
-            )
-                .into_response(),
-            Err(error) => {
-                eprintln!("Session encoding failed: {error}");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Session failure.").into_response()
-            }
-        },
-        Ok(None) => (
-            StatusCode::UNAUTHORIZED,
-            "That is not the correct password.",
-        )
-            .into_response(),
-        Err(error) => {
-            eprintln!("Login failed: {error}");
-            (StatusCode::INTERNAL_SERVER_ERROR, "Login failed.").into_response()
-        }
     }
+    next.run(request).await
 }
 
-async fn login_inner(
-    app: &App,
-    input: Login,
-    ip: String,
-    permit: tokio::sync::OwnedSemaphorePermit,
-) -> Result<Option<i32>> {
-    let banned: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM banned_ips WHERE ip=$1)")
-        .bind(&ip)
-        .fetch_one(&app.store.primary)
-        .await?;
-    ensure!(!banned, "Banned IP");
-    let normalized = input.username.to_ascii_lowercase();
-    let row = sqlx::query(
-        "SELECT id,password_hash,old_password_hash FROM users WHERE normalized_username=$1",
-    )
-    .bind(&normalized)
-    .fetch_optional(&app.store.primary)
-    .await?;
-    if let Some(row) = row {
-        ensure!(
-            row.try_get::<Option<String>, _>("old_password_hash")?
-                .is_none(),
-            "Legacy password upgrades are outside this PoC"
-        );
-        let id: i32 = row.try_get("id")?;
-        let hash: String = row.try_get("password_hash")?;
-        let valid = tokio::task::spawn_blocking(move || {
-            let _permit = permit;
-            PasswordHash::new(&hash)
-                .map(|hash| {
-                    Argon2::default()
-                        .verify_password(input.password.as_bytes(), &hash)
-                        .is_ok()
-                })
-                .map_err(|error| anyhow::anyhow!("Invalid stored password hash: {error}"))
-        })
-        .await??;
-        if !valid {
-            return Ok(None);
-        }
-        sqlx::query("UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1")
-            .bind(id)
-            .bind(ip)
-            .execute(&app.store.primary)
-            .await?;
-        return Ok(Some(id));
-    }
-    let password = input.password;
-    let hash = tokio::task::spawn_blocking(move || -> Result<String> {
-        let _permit = permit;
-        let params =
-            Params::new(65536, 3, 4, Some(32)).map_err(|error| anyhow::anyhow!("{error}"))?;
-        let algorithm = Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
-        Ok(algorithm
-            .hash_password(password.as_bytes(), &SaltString::generate(&mut OsRng))
-            .map_err(|error| anyhow::anyhow!("Password hash failed: {error}"))?
-            .to_string())
-    })
-    .await??;
-    let id = sqlx::query_scalar(
-        "INSERT INTO users(username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,$4)
-        ON CONFLICT(normalized_username) DO NOTHING RETURNING id",
-    )
-    .bind(input.username)
-    .bind(normalized)
-    .bind(hash)
-    .bind(ip)
-    .fetch_optional(&app.store.primary)
-    .await?;
+struct Bootstrap {
+    name: String,
+    normalized_name: String,
+    welcome: Value,
+    initial: Vec<String>,
+}
+
+async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Bootstrap> {
+    let pool = &app.store.primary;
     ensure!(
-        id.is_some(),
-        "Account was registered concurrently; retry login"
+        !accounts::is_banned(pool, ip).await?,
+        "Your IP address has been banned."
     );
-    Ok(id)
-}
-
-fn settings() -> Value {
-    json!({"desktopNotification":false,"soundMove":0,"soundTimer":true,"keldonMode":false,
-        "colorblindMode":false,"realLifeMode":false,"reverseHands":false,"styleNumbers":false,
-        "showTimerInUntimed":false,"volume":50,"speedrunPreplay":false,"speedrunMode":false,
-        "hyphenatedConventions":false,"createTableVariant":"No Variant","createTableTimed":false,
-        "createTableTimeBaseMinutes":2,"createTableTimePerTurnSeconds":20,"createTableSpeedrun":false,
-        "createTableCardCycle":false,"createTableDeckPlays":false,"createTableEmptyClues":false,
-        "createTableOneExtraCard":false,"createTableOneLessCard":false,"createTableAllOrNothing":false,
-        "createTableDetrimentalCharacters":false,"createTableMaxPlayers":5})
-}
-fn camel(input: &str) -> String {
-    let mut uppercase = false;
-    input
-        .chars()
-        .filter_map(|c| {
-            if c == '_' {
-                uppercase = true;
-                None
-            } else if uppercase {
-                uppercase = false;
-                Some(c.to_ascii_uppercase())
-            } else {
-                Some(c)
-            }
-        })
-        .collect()
-}
-
-async fn histories(store: &Store, ids: &[i32]) -> Result<Value> {
-    if ids.is_empty() {
-        return Ok(json!([]));
-    }
-    let rows=sqlx::query("SELECT g.*,
-        (SELECT jsonb_agg(u.username ORDER BY LOWER(u.username)) FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id) names,
-        (SELECT count(*) FROM games x WHERE x.seed=g.seed) seed_count,
-        (SELECT count(*) FROM game_tags WHERE game_id=g.id) tag_count
-        FROM games g WHERE EXISTS(SELECT 1 FROM game_participants p WHERE p.game_id=g.id AND p.user_id=ANY($1))
-        ORDER BY g.id DESC LIMIT 100").bind(ids).fetch_all(&store.primary).await?;
-    let mut result = Vec::new();
-    for row in rows {
-        crate::store::validate_standard_record(&row)?;
-        ensure!(
-            row.try_get::<i64, _>("tag_count")? == 0,
-            "Authored tags are outside this PoC"
-        );
-        result.push(json!({"id":row.try_get::<i32,_>("id")?,"options":crate::game::options(),
-            "seed":row.try_get::<String,_>("seed")?,"score":row.try_get::<i16,_>("score")?,
-            "numTurns":row.try_get::<i16,_>("num_turns")?,"endCondition":row.try_get::<i16,_>("end_condition")?,
-            "datetimeStarted":row.try_get::<DateTime<Utc>,_>("datetime_started")?,
-            "datetimeFinished":row.try_get::<DateTime<Utc>,_>("datetime_finished")?,
-            "numGamesOnThisSeed":row.try_get::<i64,_>("seed_count")?,"playerNames":row.try_get::<Value,_>("names")?,
-            "incrementNumGames":false,"tags":""}));
-    }
-    Ok(json!(result))
-}
-
-async fn bootstrap(store: &Store, id: i32, ip: &str) -> Result<(String, Value, Vec<String>)> {
-    let row=sqlx::query("SELECT u.username,u.datetime_created,
-        (SELECT count(*) FROM game_participants WHERE user_id=u.id) total,
-        (SELECT to_jsonb(s)-'user_id' FROM user_settings s WHERE s.user_id=u.id LIMIT 1) settings,
-        (SELECT COALESCE(jsonb_agg(f.friend_id),'[]'::jsonb) FROM user_friends f WHERE f.user_id=u.id) friends,
-        (SELECT COALESCE(jsonb_agg(v.username ORDER BY LOWER(v.username)),'[]'::jsonb) FROM user_friends f JOIN users v ON v.id=f.friend_id WHERE f.user_id=u.id) friend_names,
-        EXISTS(SELECT 1 FROM muted_ips WHERE ip=$2) muted, EXISTS(SELECT 1 FROM banned_ips WHERE ip=$2) banned
-        FROM users u WHERE u.id=$1").bind(id).bind(ip).fetch_optional(&store.primary).await?.context("Unknown account")?;
-    ensure!(!row.try_get::<bool, _>("banned")?, "Banned account");
+    let row = sqlx::query(
+        "SELECT username,normalized_username,datetime_created,
+         (SELECT COUNT(*) FROM games g JOIN game_participants p ON p.game_id=g.id
+          WHERE p.user_id=u.id AND g.end_condition=1) AS total FROM users u WHERE u.id=$1",
+    )
+    .bind(id)
+    .fetch_optional(pool)
+    .await?
+    .context("The authenticated user no longer exists.")?;
     let name: String = row.try_get("username")?;
-    let mut preferences = settings();
-    if let Some(Value::Object(stored)) = row.try_get::<Option<Value>, _>("settings")? {
-        for (key, value) in stored {
-            preferences[camel(&key)] = value;
-        }
+    let normalized_name: String = row.try_get("normalized_username")?;
+    let (settings, friends, muted) = tokio::try_join!(
+        lobby::get_settings(pool, id),
+        lobby::friends(pool, id),
+        accounts::is_muted(pool, ip)
+    )?;
+    let created: DateTime<Utc> = row.try_get("datetime_created")?;
+    let runtime = app
+        .runtime
+        .read()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone();
+    let mut welcome = json!({
+        "userID":id,"username":name,"totalGames":row.try_get::<i64,_>("total")?,
+        "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
+        "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
+        "playingAtTables":[],"randomTableName":"","shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
+        "maintenanceMode":runtime.as_ref().is_some_and(|r|r.maintenance_mode()),
+    });
+    if let Some(started) = runtime.as_ref().and_then(|r| r.shutdown_started_at()) {
+        welcome["datetimeShutdownInit"] = json!(started);
     }
-    let friend_ids: Vec<i32> = serde_json::from_value(row.try_get("friends")?)?;
-    let own_ids = [id];
-    let (own, friends) =
-        tokio::try_join!(histories(store, &own_ids), histories(store, &friend_ids))?;
-    let rows=sqlx::query("SELECT c.id,c.message,c.source,c.datetime_sent,
-        CASE WHEN c.source='discord' THEN c.discord_name ELSE COALESCE(u.username,'Hanab Live') END who
-        FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
-        WHERE c.room='lobby' AND c.deleted_at IS NULL ORDER BY c.datetime_sent DESC,c.id DESC LIMIT 50")
-        .fetch_all(&store.primary).await?;
-    let mut chat = Vec::new();
-    for row in rows.into_iter().rev() {
-        chat.push(json!({"chatID":row.try_get::<i32,_>("id")?,"msg":row.try_get::<String,_>("message")?,
-            "source":row.try_get::<String,_>("source")?,"who":row.try_get::<Option<String>,_>("who")?.unwrap_or_else(||"Hanab Live".into()),
-            "datetime":row.try_get::<DateTime<Utc>,_>("datetime_sent")?,"room":"lobby"}));
+    let mut initial = vec![];
+    if !reconnect {
+        let (chat, own_ids, friend_ids) = tokio::try_join!(
+            lobby::lobby_history(pool, 50),
+            lobby::history_ids(pool, id, 0, 10, false),
+            lobby::history_ids(pool, id, 0, 10, true)
+        )?;
+        let (own, friend_history) = tokio::try_join!(
+            lobby::get_history(pool, &own_ids, false),
+            lobby::get_history(pool, &friend_ids, false)
+        )?;
+        initial.push(frame("chatList", json!({"list":chat,"unread":0})));
+        initial.push(frame("chat",json!({
+            "msg":"Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
+            "source":"server","datetime":Utc::now(),"room":"lobby"
+        })));
+        let motd = app.public.root.join("motd.txt");
+        match tokio::fs::read_to_string(motd).await {
+            Ok(text) if !text.trim().is_empty()=>initial.push(frame("chat",json!({
+                "msg":format!("[Server Notice] {}",text.trim()),"who":"","source":"server","datetime":Utc::now(),"room":"lobby"
+            }))),
+            Ok(_)=>{},
+            Err(error) if error.kind()==std::io::ErrorKind::NotFound=>{},
+            Err(error)=>return Err(error.into()),
+        }
+        initial.push(frame("gameHistory", json!(own)));
+        if !friends.is_empty() {
+            initial.push(frame("gameHistoryFriends", json!(friend_history)));
+        }
     }
     sqlx::query("UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1")
         .bind(id)
         .bind(ip)
-        .execute(&store.primary)
+        .execute(pool)
         .await?;
-    let created: DateTime<Utc> = row.try_get("datetime_created")?;
-    let welcome = json!({"userID":id,"username":name,"totalGames":row.try_get::<i64,_>("total")?,
-        "muted":row.try_get::<bool,_>("muted")?,"firstTimeUser":(Utc::now()-created).num_seconds()<10,
-        "settings":preferences,"connectionMode":"initial","friends":row.try_get::<Value,_>("friend_names")?,
-        "playingAtTables":[],"randomTableName":"","shuttingDown":false,"maintenanceMode":false});
-    let mut initial = vec![
-        frame("chatList", json!({"list":chat,"unread":0})),
-        frame("gameHistory", own),
-    ];
-    if !friend_ids.is_empty() {
-        initial.push(frame("gameHistoryFriends", friends));
-    }
-    Ok((name, welcome, initial))
+    Ok(Bootstrap {
+        name,
+        normalized_name,
+        welcome,
+        initial,
+    })
 }
 
 async fn websocket(
     State(app): State<Arc<App>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
+    uri: axum::http::Uri,
     headers: HeaderMap,
     upgrade: WebSocketUpgrade,
 ) -> Response {
-    if headers.contains_key(header::ORIGIN) || !app.accepting.load(Ordering::Acquire) {
-        return (
-            StatusCode::FORBIDDEN,
-            "This PoC is restricted to benchmark clients.",
-        )
-            .into_response();
+    if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
+        return StatusCode::SERVICE_UNAVAILABLE.into_response();
     }
-    let encoded = headers
-        .get(header::COOKIE)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|value| {
-            value
-                .split(';')
-                .filter_map(|field| field.trim().split_once('='))
-                .find(|(name, _)| *name == cookie::NAME)
-                .map(|(_, value)| value)
-        });
-    let Some(id) =
-        encoded.and_then(|value| cookie::decode(value, &app.secret, Utc::now().timestamp()).ok())
-    else {
-        return (StatusCode::UNAUTHORIZED, "A valid session is required.").into_response();
+    let Some(id) = accounts::session_id(&headers, &app.secret) else {
+        return (StatusCode::UNAUTHORIZED, "A valid session is required.\n").into_response();
     };
+    match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
+        Ok(false) => {}
+        Ok(true) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                "Your IP address has been banned.\n",
+            )
+                .into_response();
+        }
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+    match sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)")
+        .bind(id)
+        .fetch_one(&app.store.primary)
+        .await
+    {
+        Ok(true) => {}
+        Ok(false) => return StatusCode::UNAUTHORIZED.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
-        return (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "Connection capacity exhausted.",
-        )
-            .into_response();
+        return StatusCode::SERVICE_UNAVAILABLE.into_response();
     };
-    let generation = match app
+    let Ok(generation) = app
         .generation
         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
-    {
-        Ok(id) => id,
-        Err(_) => {
-            return (StatusCode::SERVICE_UNAVAILABLE, "Session IDs exhausted.").into_response();
-        }
+    else {
+        return StatusCode::SERVICE_UNAVAILABLE.into_response();
     };
+    let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+        .any(|(key, value)| key == "reconnect" && value == "1");
     upgrade
-        .max_message_size(8192)
-        .max_frame_size(8192)
+        .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
+        .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)
         .on_upgrade(move |socket| async move {
-            let connections = app.connections.clone();
-            connections
+            let tracker = app.connections.clone();
+            tracker
                 .track_future(async move {
                     let _slot = slot;
-                    if let Err(error) =
-                        connection(socket, app, id, generation, address.ip().to_string()).await
+                    if connection(
+                        socket,
+                        app.clone(),
+                        id,
+                        generation,
+                        address.ip().to_string(),
+                        reconnect,
+                    )
+                    .await
+                    .is_err()
                     {
-                        eprintln!("WebSocket session failed: {error}");
+                        app.telemetry("websocket");
+                        eprintln!("WebSocket session failed.");
                     }
                 })
                 .await;
@@ -381,80 +396,151 @@ async fn connection(
     id: i32,
     generation: u64,
     ip: String,
+    reconnect: bool,
 ) -> Result<()> {
-    let (name, welcome, initial) = match bootstrap(&app.store, id, &ip).await {
+    let admission = app.admission.clone().read_owned().await;
+    ensure!(
+        app.accepting.load(Ordering::Acquire) && app.healthy(),
+        "Server unavailable"
+    );
+    let data = match bootstrap(&app, id, &ip, reconnect).await {
         Ok(data) => data,
         Err(error) => {
-            let _ = socket
-                .send(Message::Text(
+            let _ = tokio::time::timeout(
+                Duration::from_secs(5),
+                socket.send(Message::Text(
                     frame("error", json!({"error":"Account initialization failed."})).into(),
-                ))
-                .await;
+                )),
+            )
+            .await;
             return Err(error);
         }
     };
-    let hyphenated = welcome["settings"]["hyphenatedConventions"]
-        .as_bool()
-        .context("Malformed account settings")?;
-    let (session, mut outgoing) = Session::new(id, name, generation, hyphenated);
+    let store = app.store.clone();
+    let shutdown = app.shutdown.clone();
+    let (session, mut outgoing) = Session::with_health(
+        SessionMetadata {
+            user: id,
+            name: data.name,
+            normalized_name: data.normalized_name,
+            ip,
+            generation,
+            hyphenated: data.welcome["settings"]["hyphenatedConventions"]
+                .as_bool()
+                .unwrap_or(false),
+        },
+        app.lease_lost.clone(),
+        Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),
+    );
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();
+    let writer_shutdown = app.shutdown.clone();
     let writer = tokio::spawn(async move {
         loop {
             tokio::select! {
                 _=writer_session.cancel.cancelled()=>break,
+                _=writer_session.lease_lost.cancelled()=>break,
+                _=writer_shutdown.cancelled()=>break,
                 next=outgoing.recv()=>{
-                    let Some(Outbound{message,permit})=next else{break;};
+                    let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
+                    let send=sink.send(message);
+                    tokio::pin!(send);
+                    // Recheck the monotonic Redis deadline on every poll, including
+                    // the first poll after a stalled executor resumes.
+                    let guarded=futures_util::future::poll_fn(|cx| {
+                        if !writer_session.active() {Poll::Ready(None)}
+                        else {send.as_mut().poll(cx).map(Some)}
+                    });
                     let result=tokio::select! {
-                        _=writer_session.cancel.cancelled()=>break,
-                        result=tokio::time::timeout(Duration::from_secs(5),sink.send(message))=>result,
+                        _=writer_session.cancel.cancelled()=>None,
+                        _=writer_session.lease_lost.cancelled()=>None,
+                        _=writer_shutdown.cancelled()=>None,
+                        result=tokio::time::timeout(Duration::from_secs(5),guarded)=>result.ok().flatten(),
                     };
                     drop(permit);
-                    if !matches!(result,Ok(Ok(()))) {eprintln!("WebSocket writer failed or timed out");writer_session.cancel.cancel();break;}
+                    drop(global_permit);
+                    if !matches!(result,Some(Ok(()))) {break;}
+                    if let Some(completion)=completion {let _=completion.send(());break;}
                 }
             }
         }
+        writer_session.cancel.cancel();
         let _ = tokio::time::timeout(Duration::from_secs(1), sink.send(Message::Close(None))).await;
     });
-    let (incoming, mut commands) = mpsc::channel::<String>(64);
+    let (incoming, mut commands) = mpsc::channel::<Inbound>(64);
+    let incoming_bytes = InboundBudget::new(app.incoming_bytes.clone());
     let reader_session = session.clone();
+    let reader_shutdown = app.shutdown.clone();
     let reader = tokio::spawn(async move {
         loop {
             tokio::select! {
                 _=reader_session.cancel.cancelled()=>break,
+                _=reader_session.lease_lost.cancelled()=>break,
+                _=reader_shutdown.cancelled()=>break,
                 next=stream.next()=>match next {
                     Some(Ok(Message::Text(text)))=>{
-                        if incoming.try_send(text.to_string()).is_err() {eprintln!("Inbound command queue full");break;}
+                        let Some(message)=incoming_bytes.admit(&reader_session,&text) else {break;};
+                        if incoming.try_send(message).is_err() {
+                            eprintln!("Closing connection with a saturated input command queue.");
+                            reader_session.cancel.cancel();
+                            break;
+                        }
                     }
                     Some(Ok(Message::Ping(_)|Message::Pong(_)))=>{},
-                    Some(Ok(Message::Close(_)))|None=>break,
-                    Some(Ok(_))|Some(Err(_))=>{eprintln!("Invalid or failed WebSocket frame");break;}
+                    _=>break,
                 }
             }
         }
         reader_session.cancel.cancel();
     });
-    let result=async {
-        let (reply,received)=oneshot::channel();
-        app.hub.send(HubCommand::Register{session:session.clone(),welcome,initial,reply}).await?;
+    let result = async {
+        let (reply, received) = oneshot::channel();
+        app.hub
+            .send(HubCommand::Register {
+                session: session.clone(),
+                welcome: data.welcome,
+                initial: data.initial,
+                reply,
+            })
+            .await?;
         received.await??;
+        drop(admission);
         loop {
-            let command=tokio::select!{_=session.cancel.cancelled()=>break, command=commands.recv()=>command};
-            let Some(command)=command else{break;};
-            let result=tokio::select!{
+            let command = tokio::select! {
                 _=session.cancel.cancelled()=>break,
-                result=dispatch(&app,session.clone(),&command)=>result,
+                _=app.shutdown.cancelled()=>break,
+                command=commands.recv()=>command,
             };
-            if let Err(error)=result {
-                eprintln!("PoC command rejected: {error}");
-                let warning = if error.downcast_ref::<sqlx::Error>().is_some() {
-                    "Database operation failed.".to_owned()
-                } else { error.to_string() };
+            let Some(command) = command else {
+                break;
+            };
+            // Once admitted, finish persistence rather than dropping a transaction
+            // future on socket cancellation. Publication still checks generation.
+            if let Err(error) = dispatch(&app, session.clone(), &command.text).await {
+                if error
+                    .downcast_ref::<hanabi_engine::ActionRejected>()
+                    .is_some_and(|rejected| rejected.silent)
+                {
+                    continue;
+                }
+                let internal = error.chain().any(|cause| {
+                    cause.is::<sqlx::Error>()
+                        || cause.is::<redis::RedisError>()
+                        || cause.is::<reqwest::Error>()
+                });
+                let warning = if internal {
+                    app.telemetry("websocket-command");
+                    "Something went wrong on the server.".into()
+                } else {
+                    accounts::escape_html(&error.to_string())
+                };
                 session.emit(&frame("warning", json!({"warning":warning})));
             }
         }
-        Ok::<(),anyhow::Error>(())
-    }.await;
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    drop(commands);
     session.cancel.cancel();
     let _ = app.hub.send(HubCommand::Logout(session)).await;
     reader.await?;
@@ -462,183 +548,264 @@ async fn connection(
     result
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct TableArgs {
-    #[serde(rename = "tableID")]
-    table_id: u64,
-    #[serde(default, rename = "requestID")]
-    request_id: Option<String>,
-}
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct JoinArgs {
-    #[serde(rename = "tableID")]
-    table_id: u64,
-    #[serde(default)]
-    password: String,
-}
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct ActionArgs {
-    #[serde(rename = "tableID")]
-    table_id: u64,
-    #[serde(rename = "type")]
-    kind: u8,
-    target: i32,
-    #[serde(default)]
-    value: i32,
-    #[serde(default)]
-    #[serde(rename = "requestID")]
-    request_id: Option<String>,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct CustomDeck {
-    players: Vec<String>,
-    deck: Vec<Card>,
-}
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct CreateArgs {
-    name: String,
-    #[serde(default)]
-    #[serde(rename = "gameJSON")]
-    game_json: Option<CustomDeck>,
-    #[serde(default)]
-    options: Option<Value>,
-}
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct ReplayArgs {
-    source: String,
-    visibility: String,
-    #[serde(rename = "databaseID")]
-    database_id: i32,
+pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
+    ensure!(app.healthy(), "Server ownership unavailable");
+    let (reply, received) = oneshot::channel();
+    app.hub
+        .send(HubCommand::ExternalEffects { effects, reply })
+        .await?;
+    received.await?
 }
 
-async fn dispatch(app: &App, session: Arc<Session>, text: &str) -> Result<()> {
-    ensure!(
-        text.len() <= 8192 && app.accepting.load(Ordering::Acquire),
-        "Server unavailable or oversized input"
-    );
-    let (name, body) = text.split_once(' ').unwrap_or((text, "{}"));
+async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Result<()> {
+    let mut ordinary = vec![];
+    let mut mirrors = vec![];
+    for effect in effects {
+        match effect {
+            Effect::DiscordMirror {
+                chat_id, message, ..
+            } => mirrors.push((chat_id, message)),
+            Effect::RuntimeChat { command, args, .. } => {
+                for message in runtime_response(app, &command, &args)? {
+                    for effect in lobby::server_chat(&app.store.primary, &message).await? {
+                        if let Effect::DiscordMirror {
+                            chat_id, message, ..
+                        } = effect
+                        {
+                            mirrors.push((chat_id, message));
+                        } else {
+                            ordinary.push(effect);
+                        }
+                    }
+                }
+            }
+            effect => ordinary.push(effect),
+        }
+    }
     let (reply, received) = oneshot::channel();
-    let command = match name {
-        "getName" => {
-            ensure!(
-                serde_json::from_str::<Value>(body)? == json!({}),
-                "Invalid name request"
-            );
-            HubCommand::Name { session, reply }
+    app.hub
+        .send(HubCommand::LobbyEffects {
+            session,
+            effects: ordinary,
+            reply,
+        })
+        .await?;
+    received.await??;
+    if let Some(integrations) = app.integrations.get() {
+        for (id, raw) in mirrors {
+            integrations.mirror(id, Some(&raw)).await;
         }
-        "tableCreate" => {
-            let args: CreateArgs = serde_json::from_str(body)?;
-            ensure!(
-                !args.name.trim().is_empty()
-                    && args.name.len() <= 45
-                    && args
-                        .name
-                        .bytes()
-                        .all(|b| b.is_ascii_alphanumeric() || b == b' ' || b == b'-'),
-                "Unsupported table name or special prefix"
-            );
-            if let Some(options) = args.options {
-                ensure!(
-                    options == json!({}) || options == json!({"variantName":"No Variant"}),
-                    "Only default standard options are supported"
-                );
-            }
-            let deck = if let Some(custom) = args.game_json {
-                ensure!(
-                    custom.players.len() == 2,
-                    "Exactly two players are supported"
-                );
-                crate::game::encode_deck(&custom.deck)?;
-                Some(custom.deck)
+    }
+    Ok(())
+}
+
+pub fn runtime_response(app: &App, command: &str, args: &[String]) -> Result<Vec<String>> {
+    Ok(match command {
+        "uptime" => vec![
+            format!(
+                "The server came online at: {}",
+                app.came_online.format("%a %b %d %H:%M:%S UTC %Y")
+            ),
+            format!(
+                "Uptime: {}",
+                format_duration(app.started.elapsed().as_secs())
+            ),
+        ],
+        "timeleft" => vec![
+            app.runtime
+                .read()
+                .unwrap_or_else(|e| e.into_inner())
+                .as_ref()
+                .map(|r| r.time_left())
+                .unwrap_or_else(|| "The server is not scheduled to shutdown any time soon.".into()),
+        ],
+        "replay" => {
+            if args.is_empty() {
+                vec!["The format of the /replay command is: /replay [game ID] [turn number]".into()]
             } else {
-                None
-            };
-            let player = app.store.player(session.user, session.name.clone()).await?;
-            HubCommand::Create {
-                session,
-                player,
-                name: args.name,
-                deck,
-                reply,
+                let mut numbers = vec![];
+                for argument in args.iter().take(2) {
+                    match argument.parse::<i64>() {
+                        Ok(number) => numbers.push(number),
+                        Err(_) => {
+                            return Ok(vec![if argument.parse::<f64>().is_ok() {
+                                "The /replay command only accepts integers.".into()
+                            } else {
+                                format!("\"{}\" is not a number.", accounts::escape_html(argument))
+                            }]);
+                        }
+                    }
+                }
+                vec![app.public_url(&format!(
+                        "/replay/{}{}",
+                        numbers[0],
+                        numbers
+                            .get(1)
+                            .map(|turn| format!("#{turn}"))
+                            .unwrap_or_default()
+                    ))]
             }
         }
-        "tableJoin" => {
-            let args: JoinArgs = serde_json::from_str(body)?;
-            ensure!(
-                args.password.is_empty(),
-                "Password-protected tables are outside this PoC"
-            );
-            let player = app.store.player(session.user, session.name.clone()).await?;
-            HubCommand::Route {
-                session,
-                table: args.table_id,
-                command: Command::Join(player),
-                reply,
-            }
+        _ => anyhow::bail!("Invalid runtime chat command"),
+    })
+}
+
+fn format_duration(seconds: u64) -> String {
+    let unit =
+        |value: u64, name: &str| format!("{value} {name}{}", if value == 1 { "" } else { "s" });
+    if seconds < 60 {
+        return unit(seconds, "second");
+    }
+    if seconds < 3600 {
+        return unit((seconds + 30) / 60, "minute");
+    }
+    let total_hours = seconds / 3600;
+    let minutes = seconds / 60 - total_hours * 60;
+    let days = (total_hours - 1) / 24;
+    let hours = total_hours - days * 24;
+    if days > 0 {
+        format!(
+            "{}, {}, and {}",
+            unit(days, "day"),
+            unit(hours, "hour"),
+            unit(minutes, "minute")
+        )
+    } else {
+        format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
+    }
+}
+
+async fn dispatch(app: &App, session: Arc<Session>, input: &str) -> Result<()> {
+    let _admission = app.admission.clone().read_owned().await;
+    ensure!(
+        app.accepting.load(Ordering::Acquire) && app.healthy() && session.active(),
+        "Server unavailable"
+    );
+    let (command, mut data) = match protocol::parse(input) {
+        Ok(parsed) => parsed,
+        Err(_) => {
+            session.emit(&frame(
+                "warning",
+                json!({"warning":"Invalid command data."}),
+            ));
+            return Ok(());
         }
-        "action" => {
-            let args: ActionArgs = serde_json::from_str(body)?;
-            ensure!(args.kind <= 3, "Unsupported action");
-            HubCommand::Route {
-                session,
-                table: args.table_id,
-                command: Command::Action(
-                    Action {
-                        kind: args.kind,
-                        target: args.target,
-                        value: args.value,
-                    },
-                    args.request_id,
-                ),
-                reply,
-            }
-        }
-        "replayCreate" => {
-            let args: ReplayArgs = serde_json::from_str(body)?;
-            ensure!(
-                args.source == "id" && args.visibility == "solo" && args.database_id > 0,
-                "Only solo historical replays are supported"
-            );
-            let (allocate, allocated) = oneshot::channel();
-            app.hub.send(HubCommand::Allocate(allocate)).await?;
-            let allocation = allocated.await??;
-            let snapshot: Snapshot = app
-                .store
-                .historical(args.database_id, allocation.id, session.user)
-                .await?;
-            HubCommand::Replay {
-                session,
-                snapshot: Box::new(snapshot),
-                allocation,
-                reply,
-            }
-        }
-        "tableStart" | "loaded" | "getGameInfo1" | "getGameInfo2" | "tableReattend"
-        | "tableUnattend" => {
-            let args: TableArgs = serde_json::from_str(body)?;
-            let command = match name {
-                "tableStart" => Command::Start(args.request_id),
-                "loaded" => Command::Loaded(args.request_id),
-                "getGameInfo1" => Command::Info(1),
-                "getGameInfo2" => Command::Info(2),
-                "tableReattend" => Command::Reattend,
-                _ => Command::Unattend,
-            };
-            HubCommand::Route {
-                session,
-                table: args.table_id,
-                command,
-                reply,
-            }
-        }
-        _ => bail!("Unsupported PoC command: {name}"),
     };
-    app.hub.send(command).await?;
-    received.await?
+    let mut measurement = crate::metrics::COMMAND_METRICS.start(&command);
+    let (reply, received) = oneshot::channel();
+    app.hub
+        .send(HubCommand::Directory {
+            session: session.clone(),
+            reply,
+        })
+        .await?;
+    let online = received.await??;
+    let caller = Caller {
+        id: session.user,
+        name: session.name.clone(),
+        normalized_name: session.normalized_name.clone(),
+        ip: session.ip.clone(),
+        generation: session.generation,
+    };
+    let effects = if command == "chat" {
+        let text = data["msg"].as_str().context("Missing message")?;
+        let room = data["room"].as_str().context("Missing room")?;
+        let mut rendered = None;
+        if room == "lobby"
+            && let Ok(normalized) = accounts::normalize_chat(text)
+            && matches!(
+                lobby::classify_chat(&normalized),
+                lobby::Classification::Text | lobby::Classification::Public
+            )
+            && let Some(integrations) = app.integrations.get()
+        {
+            rendered = Some(integrations.render(&normalized).await);
+        }
+        lobby::dispatch_chat(
+            &app.store.primary,
+            &app.secret,
+            &caller,
+            text,
+            room,
+            rendered.as_deref(),
+        )
+        .await?
+    } else if lobby::handles_command(&command) {
+        lobby::dispatch(
+            &app.store.primary,
+            &app.secret,
+            &caller,
+            &online,
+            &command,
+            std::mem::take(&mut data),
+        )
+        .await?
+    } else {
+        None
+    };
+    if let Some(effects) = effects {
+        publish(app, session, effects).await?;
+        measurement.success();
+        return Ok(());
+    }
+    ensure!(
+        !accounts::is_banned(&app.store.primary, &session.ip).await?,
+        "Your IP address has been banned."
+    );
+    if command == "chat" {
+        data["publicBaseURL"] = json!(app.public_url(""));
+    }
+    if command == "chat"
+        && let Some(message) = data["msg"].as_str()
+        && let Ok(message) = accounts::normalize_chat(message)
+        && let Some(lobby::GeneralResponse::Runtime { command, args }) =
+            lobby::general_response(&message)
+    {
+        data["runtimeResponses"] = json!(runtime_response(app, &command, &args)?);
+    }
+    let (reply, received) = oneshot::channel();
+    let request = if command == "getName" {
+        HubCommand::Name { session, reply }
+    } else {
+        HubCommand::Client {
+            session,
+            command,
+            data,
+            reply,
+        }
+    };
+    app.hub.send(request).await?;
+    received.await??;
+    measurement.success();
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn origins_allow_real_browser_and_bots_but_not_cross_site() {
+        let mut headers = HeaderMap::new();
+        headers.insert(header::HOST, "example.invalid".parse().unwrap());
+        assert!(origin_allowed(&headers, "example.invalid", true));
+        headers.insert(header::ORIGIN, "https://example.invalid".parse().unwrap());
+        assert!(origin_allowed(&headers, "example.invalid", true));
+        for origin in [
+            "null",
+            "https://evil.invalid",
+            "http://example.invalid",
+            "https://example.invalid:444",
+            "https://example.invalid@evil.invalid",
+            "https://example.invalid/path",
+        ] {
+            headers.insert(header::ORIGIN, origin.parse().unwrap());
+            assert!(
+                !origin_allowed(&headers, "example.invalid", true),
+                "{origin}"
+            );
+        }
+        headers.insert(header::HOST, "localhost:8080".parse().unwrap());
+        headers.insert(header::ORIGIN, "http://localhost:8080".parse().unwrap());
+        assert!(origin_allowed(&headers, "localhost", false));
+    }
 }

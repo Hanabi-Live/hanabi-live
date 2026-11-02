@@ -1,83 +1,109 @@
-# Rust benchmark PoC
+# Native Rust server
 
-This is a benchmark-only prototype, not a production replacement. Run it through
-the shared harness; it creates disposable databases and fixture directories:
+The Rust implementation uses native rules and actor-owned tables, not a Go or
+Node backend. Go remains the production authority; functional acceptance does
+not authorize a production migration.
+
+## Running
+
+Use a separate development checkout/configuration and disposable storage before
+considering a deployment. Build the existing client assets and apply the normal
+PostgreSQL migrations. Rust uses the existing `.env` settings plus `REDIS_URL`.
+For a local Redis instance:
+
+```dotenv
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+Redis **7.2 or newer** is required, with AOF enabled and eviction disabled.
+Recommended Redis settings:
+
+```text
+bind 127.0.0.1
+appendonly yes
+appendfsync always
+maxmemory-policy noeviction
+```
+
+Do not expose Redis publicly. Authenticated TLS (`rediss://`) and local Unix
+sockets (`redis+unix:///path/to/redis.sock`) are also supported.
+
+From the repository root:
+
+```sh
+cargo build --release --locked --manifest-path experimental/rust-server/Cargo.toml
+./experimental/rust-server/target/release/hanabi-rust-poc
+```
+
+The legacy binary name is retained for script compatibility. `--version` reports
+its compiled Git commit. `--check-startup` validates local configuration,
+assets, and TLS without taking storage ownership; normal startup also validates
+the database, acquires the Redis lease, and restores durable tables.
+
+Build/install the replacement binary and paired client before requesting
+`/gracefulRestart`. The loopback control plane performs preflight, durable
+drain, and process replacement; it does not compile source inside the running
+server. SIGTERM and SIGINT also drain admitted work. Ownership/durability loss
+exits with an error rather than pretending shutdown succeeded.
+
+## Storage and ownership
+
+Redis is authoritative for recoverable pregames, live games, and replay state.
+PostgreSQL retains accounts, completed games, notes, tags, chat, and statistics;
+Rust does not mirror live checkpoints into `active_games`. Its snapshot format
+is runtime-specific. Resolve existing Go/TypeScript active games before
+switching runtimes, and preserve both Redis persistence and PostgreSQL backups.
+
+The Redis namespace includes the configured PostgreSQL host, port, and database.
+Keep that identity and the Redis endpoint stable across restarts, including the
+spelling of otherwise-equivalent database hosts. Do not discard the Redis volume
+even when no games are active: it also preserves non-reused table identities.
+
+One coordinator owns sessions and table handles; each table actor exclusively
+owns its mutable state. The coordinator never waits for table processing or
+socket writes. Queues, byte budgets, and capacity permits are bounded. Session
+generation and monotonic ownership checks guard admission and publication.
+
+Mutations follow candidate -> durable checkpoint -> publication. Terminal
+checkpoints precede idempotent PostgreSQL completion. Uncertain table writes
+freeze the table; Redis connection or lease loss closes admission for the whole
+instance. Recovery validates snapshots and completes pending archive operations.
+
+Every state mutation is fenced by an exclusive expiring owner token and
+confirmed with `WAITAOF` on the **same physical connection**. Transparent
+reconnection is deliberately disabled: reconnecting would lose the write offset
+being confirmed. Use one authoritative Redis instance with a stable clock and
+persistent volume. Acknowledgements confirm its local AOF, not replica
+durability: do not automatically fail over to a replica that can omit
+acknowledged writes. This is not a claim of multi-master safety or protection
+against losing that volume.
+
+## Verification
+
+The normal process harness uses owned PostgreSQL databases and private Redis
+processes. Put `redis-server` and `redis-cli` on `PATH`:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/server/src/mainProcess.test.ts \
-  --testNamePattern='normal-server comparison'
+  npm test -- --runInBand packages/server/src/mainProcess.test.ts
 ```
 
-The harness builds Rust in release mode using the pinned toolchain and Cargo
-lockfile. It runs the same client wire workload against Go, TypeScript, and
-Rust. See [the measurements and limitations](../../docs/server-evaluation.md).
-
-For Rust-specific checks, from this directory:
+Native checks, from this directory:
 
 ```sh
-cargo fmt --check
+cargo fmt --all --check
 cargo clippy --locked --all-targets -- -D warnings
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
   cargo test --locked
+cargo test --locked --manifest-path engine/Cargo.toml
 ```
 
-The Cargo PostgreSQL test requires a connection URI. Without it, that database
-case is skipped. The normal server harness also tests process death, failed
-writes, session replacement during persistence, and durable request
-deduplication.
+Database tests require a disposable PostgreSQL connection URI. Rules are checked
+against Go-generated decks, characters, transitions, and recipient projections.
+Process checks exercise real client messages, recovery, clock allowances,
+session replacement, and storage failures. Rust's type system alone is not a
+proof of correct concurrency.
 
-## Ownership and wait ordering
-
-The coordinator owns the session directory, generations, and table handles. Each
-table actor exclusively owns its phase and game state. Socket reader, command
-worker, and writer tasks have separate responsibilities. Immutable configuration
-is parsed without modifying process environment variables.
-
-```text
-connection worker -> coordinator --non-blocking--> table actor -> PostgreSQL
-table effects    -> coordinator --non-blocking--> socket writer
-```
-
-Table actors may wait for storage or coordinator capacity. The coordinator never
-waits for table processing or socket writes, so there is no reverse application
-wait edge. There are no shared mutable table mutexes. Bounded channels, byte
-budgets, and owned capacity permits also cover pending replay loads;
-cancellation returns capacity automatically. Slow clients are disconnected, not
-allowed to block tables.
-
-Live game commands mutate a private candidate. Checkpoint commit precedes
-publication; terminal checkpoints precede atomic game/participants/actions/deck
-completion. Storage uncertainty freezes that table until recovery. Generation
-checks at admission and publication prevent old connections from acting or
-receiving new private results. Typed events have a separate recipient
-projection; internal cards are never serialized directly to a live player.
-
-This design removes shared-table lock ordering, not every possible logical race
-or database failure. Tests cover saturation, replacement, stale writers,
-rollback, terminal recovery, and conflicting completion retries. Rust's type
-system alone is not a proof of correct concurrency.
-
-## Deliberate scope
-
-Supported: two-player untimed **No Variant**, default modifiers, ordinary plays,
-discards and clues, optional 50-card custom decks, account registration/Argon2
-login, Go-compatible signed cookies, lobby bootstrap, table start/reattend,
-historical solo replay loading, completion statistics, and crash recovery.
-
-Unsupported commands and modes are rejected. There is no full browser frontend,
-other variants/player counts, timed games, replay editing, authored notes/tags,
-chat commands/table chat, Discord, administration, Unicode account
-normalization, or legacy password upgrade. Historical reads reject unsupported
-game options and authored notes. The benchmark does not exercise these missing
-features.
-
-The binary binds only loopback and refuses non-local configuration or database
-names outside the harness's `ts_slice_` namespace. It applies no migrations. Its
-active checkpoint format is Rust-specific; never switch a real installation
-between runtimes with unresolved games. Completed standard games use the shared
-schema and sparse custom-deck encoding.
-
-The legacy RNG port uses the existing
-[Go RNG constants and license](../../packages/server/src/engine/goRandom.LICENSE).
-Go-generated cookie, random, and standard-game fixtures verify compatibility.
+See [the comparison methodology](../../docs/server-evaluation.md). The RNG port
+retains the existing
+[Go license](../../packages/server/src/engine/goRandom.LICENSE).

@@ -11,5 +11,5 @@ ongoing_tables
 backups
 letsencrypt
 dist
-experimental/rust-server/target
+experimental/rust-server/**/target
 hanabi-live

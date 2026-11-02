@@ -1,0 +1,429 @@
+use super::*;
+use axum::http::HeaderValue;
+use tokio_tungstenite::{
+    connect_async,
+    tungstenite::{Message as WireMessage, client::IntoClientRequest},
+};
+
+type Socket =
+    tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
+
+async fn login(fixture: &test_support::Fixture, name: &str) -> String {
+    let response = reqwest::Client::new()
+        .post(format!("{}/login", fixture.url))
+        .header("Origin", &fixture.url)
+        .form(&[
+            ("username", name),
+            ("password", "synthetic-password"),
+            ("version", "42"),
+        ])
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    response.headers()[header::SET_COOKIE]
+        .to_str()
+        .unwrap()
+        .split(';')
+        .next()
+        .unwrap()
+        .into()
+}
+
+async fn connect(fixture: &test_support::Fixture, cookie: &str, reconnect: bool) -> Socket {
+    let mut request = format!(
+        "ws://{}/ws{}",
+        fixture.address,
+        if reconnect { "?reconnect=1" } else { "" }
+    )
+    .into_client_request()
+    .unwrap();
+    request
+        .headers_mut()
+        .insert(header::COOKIE, HeaderValue::from_str(cookie).unwrap());
+    request
+        .headers_mut()
+        .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
+    connect_async(request).await.unwrap().0
+}
+
+async fn receive(socket: &mut Socket, command: &str) -> Value {
+    tokio::time::timeout(Duration::from_secs(10), async {
+        loop {
+            let next = socket.next().await.unwrap().unwrap();
+            let WireMessage::Text(text) = next else {
+                continue;
+            };
+            let (name, body) = text.split_once(' ').unwrap();
+            if matches!(name, "warning" | "error") {
+                panic!("Unexpected {name} while waiting for {command}: {body}");
+            }
+            if name == command {
+                return serde_json::from_str(body).unwrap();
+            }
+        }
+    })
+    .await
+    .unwrap_or_else(|_| panic!("Timed out waiting for {command}"))
+}
+
+#[tokio::test]
+async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let alice_cookie = login(&fixture, "Alicè").await;
+    let bob_cookie = login(&fixture, "Bob").await;
+    let alice_id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username='Alicè'")
+        .fetch_one(&fixture.db.pool)
+        .await
+        .unwrap();
+    let historical:i32=sqlx::query_scalar(
+        "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+         speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+         all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+         VALUES('Authored history',3,1,true,180,30,false,true,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id"
+    ).fetch_one(&fixture.db.pool).await.unwrap();
+    let participant:i32=sqlx::query_scalar(
+        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+         VALUES($1,$2,0,0,0) RETURNING id"
+    ).bind(historical).bind(alice_id).fetch_one(&fixture.db.pool).await.unwrap();
+    sqlx::query("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')")
+        .bind(participant).execute(&fixture.db.pool).await.unwrap();
+    sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,'authored')")
+        .bind(historical)
+        .bind(alice_id)
+        .execute(&fixture.db.pool)
+        .await
+        .unwrap();
+    let mut alice = connect(&fixture, &alice_cookie, false).await;
+    let welcome = receive(&mut alice, "welcome").await;
+    assert_eq!(welcome["username"], "Alicè");
+    assert_eq!(welcome["connectionMode"], "initial");
+    assert!(receive(&mut alice, "chatList").await["list"].is_array());
+    let history = receive(&mut alice, "gameHistory").await;
+    assert_eq!(history[0]["id"], historical);
+    assert_eq!(history[0]["options"]["variantName"], "6 Suits");
+    assert_eq!(history[0]["options"]["timeBase"], 180);
+    assert_eq!(history[0]["options"]["cardCycle"], true);
+    assert_eq!(history[0]["tags"], "authored");
+    let mut bob = connect(&fixture, &bob_cookie, false).await;
+    let bob_welcome = receive(&mut bob, "welcome").await;
+    let _ = receive(&mut bob, "gameHistory").await;
+    alice
+        .send(WireMessage::Text(
+            "setting {\"name\":\"hyphenatedConventions\",\"setting\":\"true\"}".into(),
+        ))
+        .await
+        .unwrap();
+    loop {
+        let user = receive(&mut alice, "user").await;
+        if user["userID"] == welcome["userID"] && user["hyphenated"] == true {
+            break;
+        }
+    }
+    alice
+        .send(WireMessage::Text(
+            "chatPM {\"msg\":\"private <content>\",\"recipient\":\"Bob\"}".into(),
+        ))
+        .await
+        .unwrap();
+    let pm = receive(&mut bob, "chat").await;
+    assert_eq!(pm["who"], "Alicè");
+    assert_eq!(pm["recipient"], "Bob");
+    assert_eq!(pm["msg"], "private &lt;content&gt;");
+    assert!(pm["pmID"].as_i64().unwrap() > 0);
+    assert!(pm.get("chatID").is_none());
+    let echo = receive(&mut alice, "chat").await;
+    assert_eq!(echo, pm);
+    alice
+        .send(WireMessage::Text(
+            "chat {\"msg\":\"/token\",\"room\":\"lobby\"}".into(),
+        ))
+        .await
+        .unwrap();
+    let token = receive(&mut alice, "chat").await;
+    assert_eq!(token["recipient"], "Alicè");
+    assert!(token["msg"].as_str().unwrap().contains("<code>"));
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log WHERE source='user'")
+            .fetch_one(&fixture.db.pool)
+            .await
+            .unwrap(),
+        0
+    );
+    alice
+        .send(WireMessage::Text(
+            "chat {\"msg\":\"/findvariant\",\"room\":\"lobby\"}".into(),
+        ))
+        .await
+        .unwrap();
+    let _ = receive(&mut alice, "chat").await;
+    assert_eq!(
+        receive(&mut alice, "chat").await["msg"],
+        "You can only perform this command while in a game."
+    );
+    alice
+        .send(WireMessage::Text(
+            "tableCreate {\"name\":\"Browser game\",\"options\":{\"variantName\":\"No Variant\"}}"
+                .into(),
+        ))
+        .await
+        .unwrap();
+    let table = receive(&mut alice, "table").await;
+    assert!(
+        table["id"]
+            .as_u64()
+            .unwrap_or_else(|| table["tableID"].as_u64().unwrap())
+            > 0
+    );
+    let mut replacement = connect(&fixture, &bob_cookie, true).await;
+    assert_eq!(
+        receive(&mut replacement, "welcome").await["connectionMode"],
+        "reconnect"
+    );
+    let alice_generation = Session::new(
+        welcome["userID"].as_i64().unwrap() as i32,
+        "Alicè".into(),
+        1,
+        true,
+    )
+    .0;
+    let (reply, received) = oneshot::channel();
+    fixture
+        .app
+        .hub
+        .send(HubCommand::LobbyEffects {
+            session: alice_generation,
+            effects: vec![Effect::ToUser {
+                id: bob_welcome["userID"].as_i64().unwrap() as i32,
+                generation: 2,
+                command: "chat".into(),
+                data: json!({"msg":"must not reroute to replacement"}),
+            }],
+            reply,
+        })
+        .await
+        .unwrap();
+    received.await.unwrap().unwrap();
+    assert!(
+        tokio::time::timeout(Duration::from_millis(50), async {
+            while let Some(Ok(WireMessage::Text(text))) = replacement.next().await {
+                assert!(
+                    !text.contains("must not reroute"),
+                    "Private reply leaked to replacement session"
+                );
+            }
+        })
+        .await
+        .is_err()
+    );
+    // Effects captured for the old recipient generation must never reach replacement.
+    let (reply, received) = oneshot::channel();
+    fixture
+        .app
+        .hub
+        .send(HubCommand::Directory {
+            session: crate::transport::Session::new(999, "stale".into(), 999, false).0,
+            reply,
+        })
+        .await
+        .unwrap();
+    assert!(received.await.unwrap().is_err());
+    assert_eq!(bob_welcome["username"], "Bob");
+    let cross = reqwest::Client::new()
+        .post(format!("{}/login", fixture.url))
+        .header("Origin", "https://evil.invalid")
+        .form(&[("username", "Nope"), ("password", "x"), ("version", "42")])
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(cross.status(), StatusCode::FORBIDDEN);
+    let _ = alice.close(None).await;
+    let _ = bob.close(None).await;
+    let _ = replacement.close(None).await;
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn native_admission_waits_for_inflight_http_and_fences_lease_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let permit = fixture.app.admission.clone().read_owned().await;
+    fixture.app.accepting.store(false, Ordering::Release);
+    assert!(
+        tokio::time::timeout(Duration::from_millis(20), fixture.app.admission.write())
+            .await
+            .is_err()
+    );
+    drop(permit);
+    drop(
+        tokio::time::timeout(Duration::from_secs(1), fixture.app.admission.write())
+            .await
+            .unwrap(),
+    );
+    let response = reqwest::Client::new()
+        .get(format!("{}/test-cookie", fixture.url))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let alice = fixture.db.user("HistorianAlice").await;
+    let bob = fixture.db.user("HistorianBob").await;
+    let mut shared = Vec::new();
+    for index in 0..5 {
+        shared.push(fixture.db.user(&format!("Historian{index:05}")).await);
+    }
+    lobby::change_friend(&fixture.db.pool, alice, bob, true)
+        .await
+        .unwrap();
+    let games:Vec<i32>=sqlx::query_scalar(
+        "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+         speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+         all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+         SELECT 'Historical game '||n,6,1,true,180,30,false,true,false,true,false,false,false,true,
+         'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id"
+    ).fetch_all(&fixture.db.pool).await.unwrap();
+    for (author, ids) in [(alice, &games[..100]), (bob, &games[100..])] {
+        let mut players = vec![author];
+        players.extend(&shared);
+        sqlx::query(
+            "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+             SELECT game_id,user_id,(position-1)::smallint,-1,0 FROM unnest($1::int[]) games(game_id)
+             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)"
+        ).bind(ids).bind(players).execute(&fixture.db.pool).await.unwrap();
+    }
+    sqlx::query(
+        "INSERT INTO game_tags(game_id,user_id,tag)
+         SELECT game_id,$2,lpad(n::text,3,'0')||repeat('t',97)
+         FROM unnest($1::int[]) games(game_id) CROSS JOIN generate_series(1,8) n",
+    )
+    .bind(&games)
+    .bind(alice)
+    .execute(&fixture.db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO chat_log(user_id,source,message,room)
+         SELECT $1,'user',$2,'lobby' FROM generate_series(1,50)",
+    )
+    .bind(alice)
+    .bind(accounts::escape_html(&"\"".repeat(300)))
+    .execute(&fixture.db.pool)
+    .await
+    .unwrap();
+
+    let prepared = bootstrap(&fixture.app, alice, "127.0.0.1", false)
+        .await
+        .unwrap();
+    let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100, false)
+        .await
+        .unwrap();
+    let friend_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100, true)
+        .await
+        .unwrap();
+    assert_eq!(own_ids.len(), 100);
+    assert_eq!(friend_ids.len(), 100);
+    let own = frame(
+        "gameHistory",
+        json!(
+            lobby::get_history(&fixture.db.pool, &own_ids, false)
+                .await
+                .unwrap()
+        ),
+    );
+    let friends = frame(
+        "gameHistoryFriends",
+        json!(
+            lobby::get_history(&fixture.db.pool, &friend_ids, false)
+                .await
+                .unwrap()
+        ),
+    );
+    // Keep the normal bootstrap order while testing complete requested history
+    // pages, without changing the initial ten-row history pagination policy.
+    let initial: Vec<_> = prepared
+        .initial
+        .into_iter()
+        .map(|message| {
+            if message.starts_with("gameHistory ") {
+                own.clone()
+            } else if message.starts_with("gameHistoryFriends ") {
+                friends.clone()
+            } else {
+                message
+            }
+        })
+        .collect();
+    let mut expected = vec![
+        "welcome".to_owned(),
+        "userList".to_owned(),
+        "tableList".to_owned(),
+    ];
+    expected.extend(
+        initial
+            .iter()
+            .map(|message| message.split_once(' ').unwrap().0.to_owned()),
+    );
+    expected.push("user".into());
+    assert!(
+        initial.iter().all(|message| message.len() < 262_144),
+        "This regression must exercise aggregate bootstrap size, not only a large single frame"
+    );
+    assert!(initial.iter().map(String::len).sum::<usize>() > 262_144);
+    let (session, mut outgoing) = Session::new(alice, prepared.name, 42, false);
+    let (reply, received) = oneshot::channel();
+    fixture
+        .app
+        .hub
+        .send(HubCommand::Register {
+            session: session.clone(),
+            welcome: prepared.welcome,
+            initial,
+            reply,
+        })
+        .await
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(2), received)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    // No receiver was polled during registration; a writer cannot mask a
+    // synchronously overflowing coordinator publication batch.
+    assert!(
+        session.active(),
+        "Full bootstrap exhausted the outbound queue"
+    );
+    let mut actual = Vec::new();
+    while let Ok(outbound) = outgoing.try_recv() {
+        let Message::Text(text) = outbound.message else {
+            panic!("Unexpected bootstrap frame");
+        };
+        let (command, body) = text.split_once(' ').unwrap();
+        actual.push(command.to_owned());
+        let data: Value = serde_json::from_str(body).unwrap();
+        match command {
+            "chatList" => assert_eq!(data["list"].as_array().unwrap().len(), 50),
+            "gameHistory" | "gameHistoryFriends" => {
+                assert_eq!(data.as_array().unwrap().len(), 100);
+                assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);
+                assert_eq!(data[0]["options"]["variantName"], "6 Suits");
+                assert_eq!(data[0]["tags"].as_str().unwrap().split(", ").count(), 8);
+            }
+            _ => {}
+        }
+    }
+    assert_eq!(actual, expected);
+    assert!(session.active());
+    fixture.close().await;
+}

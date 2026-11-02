@@ -1,0 +1,344 @@
+{% extends "layout.html" %}{% block body %}
+<style>
+  th:hover {
+    background-color: rgb(220, 220, 220);
+    cursor: pointer;
+  }
+</style>
+<div id="page-wrapper">
+  <header id="header">
+    <h1>{% include "logo.html" %}</h1>
+    <nav id="nav"></nav>
+  </header>
+  <section
+    id="main"
+    class="container max history-page"
+    data-page="{{ page }}"
+    {%
+    if
+    apiPath
+    %}data-api-path="{{ apiPath }}"
+    {%
+    endif
+    %}
+  >
+    <header>
+      <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
+    </header>
+    <div class="row uniform 100%">
+      <div class="col-12">
+        <section class="box">
+          <h2 class="align-center">
+            {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name }}'s
+            Profile{% elif page == "videos" %}List of Videos{% else %}{{ title
+            }}{% endif %}
+          </h2>
+          {% include "profile-buttons.html" %} {% if page == "videos" %}
+          <h3>Introduction</h3>
+          <ul>
+            <li>
+              <a href="https://www.youtube.com/watch?v=VrFCekQb4nY"
+                >The Rules of the Game</a
+              >
+            </li>
+          </ul>
+          <h3>Other (Old / Outdated)</h3>
+          <ul>
+            <li>
+              <a href="https://www.youtube.com/watch?v=yyrtUm9i6uM"
+                >The Perfect Game</a
+              >
+            </li>
+            <li>
+              <a href="https://www.youtube.com/watch?v=JnSLF0p4yiw"
+                >A Typical Game on Keldon</a
+              >
+            </li>
+          </ul>
+          {% elif page == "password-reset" %}
+          <p>
+            Since Hanabi Live does not ask for or store your email address, the
+            only way to reset the password for an account is for an
+            administrator to manually reset it. This process necessarily
+            involves revealing personal information about yourself to the Hanabi
+            Live administrators, so this is <em>not recommended</em>. Instead,
+            feel free to create as many extra free accounts as you need.
+          </p>
+          <p>
+            If you absolutely must recover the password to your old account,
+            then enter a new password and provide the generated hash to a
+            website administrator via a private message on
+            <a href="https://discord.gg/FADvkJp">the Discord server</a>.
+          </p>
+          <form id="password-reset-form">
+            <input
+              id="new-password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              placeholder="New Password"
+              required
+            />
+            <br /><button
+              id="generate-hash-button"
+              class="button fit"
+              type="submit"
+            >
+              <i class="fas fa-key"></i>&nbsp; Generate Hash
+            </button>
+            <br /><br /><input
+              id="generated-hash"
+              type="text"
+              placeholder="Generated Hash"
+              readonly
+            />
+            <p id="password-reset-error" role="alert" hidden></p>
+          </form>
+          <script>
+            document
+              .getElementById("password-reset-form")
+              .addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const button = document.getElementById("generate-hash-button");
+                const output = document.getElementById("generated-hash");
+                const error = document.getElementById("password-reset-error");
+                button.disabled = true;
+                output.value = "";
+                error.hidden = true;
+                try {
+                  const response = await fetch("/password-reset", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                      password: document.getElementById("new-password").value,
+                    }),
+                  });
+                  if (!response.ok) throw new Error("Unable to generate hash");
+                  output.value = await response.text();
+                  output.focus();
+                  output.select();
+                } catch (failure) {
+                  error.textContent =
+                    "Unable to generate a hash. Please try again.";
+                  error.hidden = false;
+                } finally {
+                  button.disabled = false;
+                }
+              });
+            document.getElementById("new-password").focus();
+          </script>
+          {% else %} {% if page in ["scores","variant"] %} {% if page ==
+          "variant" and stats.numGamesTotal == 0 and stats.numGamesSpeedrun == 0
+          %}
+          <p>No-one has played a game on this variant yet.</p>
+          {% endif %}
+          <div class="history-bullets">
+            <ul>
+              {% if stats.dateJoined %}
+              <li>
+                <span class="stat-description">Date joined:</span> {{
+                stats.dateJoined }}
+              </li>
+              {% endif %}
+              <li>
+                <span class="stat-description"
+                  >Games played (in non-speedruns):</span
+                >
+                {{ stats.numGamesTotal }} ({{ stats.numGamesNormal }} normally
+                finished)
+              </li>
+              <li>
+                <span class="stat-description"
+                  >Time spent playing (in non-speedruns):</span
+                >
+                {{ stats.timePlayed }}
+              </li>
+              <li>
+                <span class="stat-description"
+                  >Games played (in speedruns):</span
+                >
+                {{ stats.numGamesSpeedrun }}
+              </li>
+              <li>
+                <span class="stat-description"
+                  >Time spent playing (in speedruns):</span
+                >
+                {{ stats.timePlayedSpeedrun }}
+              </li>
+              {% if page == "scores" %}
+              <li>
+                <span class="stat-description">Total max scores:</span> {{
+                stats.total }} &nbsp;({{ stats.percentage }}%)
+              </li>
+              {% else %}
+              <li>
+                <span class="stat-description">Total perfect scores:</span> {{
+                stats.numMaxScores }} / {{ stats.numGamesTotal }} &nbsp;({{
+                stats.maxScoreRate }}%)
+              </li>
+              <li>
+                <span class="stat-description">Total strikeouts:</span> {{
+                stats.numStrikeouts }} / {{ stats.numGamesTotal }} &nbsp;({{
+                stats.strikeoutRate }}%)
+              </li>
+              <li>
+                <span class="stat-description">Average score:</span> {{
+                stats.averageScore }}
+              </li>
+              {% endif %}
+            </ul>
+            {% if page == "variant" %}
+            <ul>
+              {% for score in stats.bestScores %}
+              <li>
+                <span class="stat-description"
+                  >{{ loop.index + 1 }}-player best score:</span
+                >
+                {{ score }} / {{ stats.maxScore }}
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+          {% endif %} {% if frequencies|length > 0 %}<canvas
+            id="scoreFreqs"
+            style="width: 100%; max-width: 700px; margin: auto"
+            data-frequencies="{{ scoreFreqsJSON }}"
+          ></canvas>
+          <hr />
+          {% endif %} {% if page == "tagged" %}
+          <h3 class="align-center">
+            {% if games|length == 0 %}{% if title == "Tagged Games" %}No tagged
+            games.{% else %}No games played.{% endif %}{% else %}Total games:
+            <span id="total-number-of-games">{{ games|length }}</span>{% endif
+            %}
+          </h3>
+          {% if games|length == 0 and title == "Tagged Games" %}
+          <h4 class="align-center">
+            Get them to tag some games with the <code>/tag</code> command. (e.g.
+            <code>/tag Layered Finesse</code>)
+          </h4>
+          {% endif %} {% endif %} {% if apiPath or games|length > 0 or page ==
+          "scores" %} {% include "public-pager.html" %} {% if page == "scores"
+          %}
+          <table class="history">
+            <thead>
+              <tr>
+                <th class="filter-select">Variant</th>
+                <th class="center">Total Games</th>
+                {% for players in [2,3,4,5,6] %}
+                <th class="center sorter-current-max-score">
+                  {{ players }}-Player Best Score
+                </th>
+                {% endfor %}
+                <th class="center sorter-average-score">Average Score</th>
+                <th class="center">Strikeout Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in stats.rows %}{% if row.numGames > 0 %}
+              <tr>
+                <td><a href="/variant/{{ row.id }}">{{ row.name }}</a></td>
+                <td class="center">{{ row.numGames }}</td>
+                {% for best in row.bestScores %}
+                <td class="center">
+                  {% if best.score == row.maxScore %}<strong
+                    >{{ best.score }} / {{ row.maxScore }}</strong
+                  >
+                  {% if best.modifier == 0 %}<i
+                    class="fas fa-check score-modifier green"
+                  ></i
+                  >{% else %} {% set modifier = "allornothing" if
+                  best.modifier|bitand(16) else "oneextracard" if
+                  best.modifier|bitand(4) else "onelesscard" if
+                  best.modifier|bitand(8) else "emptyclues" if
+                  best.modifier|bitand(2) else "deckplays" %}
+                  <i
+                    class="fas fa-times score-modifier red tooltip"
+                    data-tooltip-content="#modifier-{{ modifier }}"
+                  ></i
+                  >{% endif %} {% else %}{{ best.score }} / {{ row.maxScore }}{%
+                  endif %}
+                </td>
+                {% endfor %}
+                <td class="center">{{ row.averageScore }}</td>
+                <td class="center">
+                  {{ row.strikeoutRate }}{% if row.strikeoutRate != "-" %}%{%
+                  endif %}
+                </td>
+              </tr>
+              {% endif %}{% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <table
+            id="history-table"
+            class="history {% if page == 'variant' %}variant{% else %}personal-history{% endif %}"
+          >
+            <thead>
+              <tr>
+                <th>Game ID</th>
+                <th class="filter-select filter-match"># of Players</th>
+                <th>Score</th>
+                {% if page != "variant" %}
+                <th class="filter-select">Variant</th>
+                {% endif %}
+                <th>Players</th>
+                <th class="sorter-date-and-time">Date &amp; Time</th>
+                {% if page != "seed" %}
+                <th>
+                  {% if page == "variant" %}Seed{% else %}Other Scores{% endif
+                  %}
+                </th>
+                {% endif %} {% if title == "Tagged Games" %}
+                <th>Tags</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for game in games %}
+              <tr
+                id="history-row-{{ loop.index0 }}"
+                class="history-row history-row-players-{{ game.options.numPlayers }} history-row-score-{{ game.score }}"
+                data-variant="{{ game.options.variantName }}"
+              >
+                <td><a href="/replay/{{ game.id }}">{{ game.id }}</a></td>
+                <td class="center">{{ game.options.numPlayers }}</td>
+                <td class="center">{{ game.score }}</td>
+                <td>
+                  <a href="/variant/{{ game.options.variantID }}"
+                    >{{ game.options.variantName }}</a
+                  >
+                </td>
+                <td>
+                  <a
+                    href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
+                    >{{ game.playerNames|join(", ") }}</a
+                  >
+                </td>
+                <td>{{ game.datetimeFinished|history_date }}</td>
+                <td class="center">
+                  <a href="/seed/{{ game.seed|urlencode }}"
+                    >{{ game.numGamesOnThisSeed }}</a
+                  >
+                </td>
+                {% if title == "Tagged Games" %}
+                <td class="center">{{ game.tags }}</td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %} {% include "public-pager.html" %} {% if apiPath %}
+          <div class="tableSpinner"><span class="tableSpinner"></span></div>
+          <p id="history-error" role="alert" hidden></p>
+          {% endif %} {% endif %}{% endif %}
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
+{% if page not in ["password-reset","videos"] %}{% include
+"public-table-scripts.html" %}{% endif %} {% endblock %}
