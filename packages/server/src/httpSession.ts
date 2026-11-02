@@ -1,32 +1,96 @@
-import type { SessionData } from "@fastify/secure-session";
+import type { CookieSerializeOptions } from "@fastify/cookie";
+import { fastifyCookie } from "@fastify/cookie";
 import type { UserID } from "@hanabi-live/data";
-import type { FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import { env, IS_DEV } from "./env";
+import {
+  decodeSessionCookie,
+  encodeSessionCookie,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+} from "./sessionCookie";
 
-/**
- * @see https://github.com/fastify/fastify-secure-session?tab=readme-ov-file#add-typescript-types
- */
-declare module "@fastify/secure-session" {
-  interface SessionData {
-    userID?: UserID;
+interface SessionState {
+  userID: UserID | undefined;
+  changed: boolean;
+}
+
+const states = new WeakMap<FastifyRequest, SessionState>();
+
+export async function registerHTTPSessions(
+  server: FastifyInstance,
+  useTLS: boolean,
+): Promise<void> {
+  await server.register(fastifyCookie);
+  const options = {
+    path: "/",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    // Go does not percent-decode cookie values.
+    encode: (value: string) => value,
+    ...(!IS_DEV && {
+      domain: env.DOMAIN,
+      secure: useTLS,
+      httpOnly: true,
+      sameSite: "strict",
+    }),
+  } satisfies CookieSerializeOptions;
+
+  server.addHook("onRequest", (request, _reply, done) => {
+    const cookie = request.cookies[SESSION_COOKIE_NAME];
+    states.set(request, {
+      userID:
+        cookie === undefined
+          ? undefined
+          : decodeSessionCookie(cookie, env.SESSION_SECRET),
+      changed: false,
+    });
+    done();
+  });
+  server.addHook("onSend", (request, reply, _payload, done) => {
+    const state = states.get(request);
+    if (state?.changed === true) {
+      if (state.userID === undefined) {
+        reply.clearCookie(SESSION_COOKIE_NAME, options);
+      } else {
+        reply.setCookie(
+          SESSION_COOKIE_NAME,
+          encodeSessionCookie(state.userID, env.SESSION_SECRET),
+          options,
+        );
+      }
+    }
+    done();
+  });
+}
+
+function session(request: FastifyRequest): SessionState {
+  const state = states.get(request);
+  if (state === undefined) {
+    throw new Error("HTTP session hooks were not initialized.");
   }
+  return state;
 }
 
-/** Delete the session cookie server-side (which will invalidate the cookie going forward). */
+/** Expire the browser cookie; copied signed cookies remain valid until expiry. */
 export function deleteCookie(request: FastifyRequest): void {
-  request.session.delete();
+  const state = session(request);
+  state.userID = undefined;
+  state.changed = true;
 }
 
-export function getCookieValue<T extends keyof SessionData>(
+export function getCookieValue(
   request: FastifyRequest,
-  key: T,
-): SessionData[T] | undefined {
-  return request.session.get(key);
+  key: "userID",
+): UserID | undefined {
+  return session(request)[key];
 }
 
-export function setCookieValue<T extends keyof SessionData>(
+export function setCookieValue(
   request: FastifyRequest,
-  key: T,
-  value: SessionData[T],
+  key: "userID",
+  value: UserID | undefined,
 ): void {
-  request.session.set(key, value);
+  const state = session(request);
+  state[key] = value;
+  state.changed = true;
 }

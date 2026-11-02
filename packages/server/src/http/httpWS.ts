@@ -1,5 +1,6 @@
 import { Status } from "@hanabi-live/data";
-import type { FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { StatusCodes } from "http-status-codes";
 import type { WebSocket } from "ws";
 import { isReconnectRequest } from "../connectionMode";
 import { deleteCookie, getCookieValue } from "../httpSession";
@@ -11,6 +12,22 @@ import { wsMessage } from "../wsMessage";
 import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
 import type { WSUser } from "../wsUsers";
 import { getSessionID } from "../wsUsers";
+
+export async function httpWSPreValidation(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const userID = getCookieValue(request, "userID");
+  if (
+    userID === undefined
+    || (await models.users.getUsername(userID)) === undefined
+  ) {
+    deleteCookie(request);
+    await reply.code(StatusCodes.UNAUTHORIZED).send("Unauthorized\n");
+    return;
+  }
+  await models.users.setLastLogin(userID, request.ip);
+}
 
 /**
  * Handles the second part of logic authentication. (The first step is found in "login.ts".)
@@ -118,9 +135,6 @@ async function initialize(
     httpWSError(connection, request, msg);
     return;
   }
-
-  // Record their successful login attempt in the database.
-  await models.users.setLastLogin(userID, ip);
 
   const { username, normalizedUsername, hyphenated, friends, muted } = wsData;
 

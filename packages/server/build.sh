@@ -16,9 +16,6 @@ SECONDS=0
 
 cd "$DIR"
 
-# See the comment in "esbuild.mjs".
-REPO_ROOT="$DIR/../.."
-cd "$REPO_ROOT"
 node "$DIR/esbuild.config.mjs"
 
 echo "Successfully built $PACKAGE_NAME in $SECONDS seconds."

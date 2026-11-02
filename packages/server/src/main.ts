@@ -1,5 +1,4 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
-import { bannedIPsInit } from "./bannedIPs";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { httpInit } from "./http";
 import { logger } from "./logger";
@@ -27,7 +26,6 @@ async function main() {
     process.exit(1);
   }
 
-  await bannedIPsInit();
   await redisInit();
   await httpInit();
 }

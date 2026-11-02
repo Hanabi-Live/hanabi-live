@@ -91,8 +91,8 @@ function send(connection: WebSocket, message: string) {
     connection.terminate();
     return;
   }
-  connection.send(message, (error) => {
-    if (error !== undefined) {
+  connection.send(message, (error?: Error | null) => {
+    if (error !== undefined && error !== null) {
       logger.error(`WebSocket send failed: ${String(error)}`);
       connection.terminate();
     }

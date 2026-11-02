@@ -11,7 +11,8 @@ import { db } from "../db";
 interface DatabaseUser {
   readonly id: UserID;
   readonly username: string;
-  readonly passwordHash: string;
+  readonly passwordHash: string | null;
+  readonly oldPasswordHash: string | null;
 }
 
 interface WSData {
@@ -55,6 +56,7 @@ export const users = {
         id: usersTable.id,
         username: usersTable.username,
         passwordHash: usersTable.passwordHash,
+        oldPasswordHash: usersTable.oldPasswordHash,
       })
       .from(usersTable)
       .where(eq(usersTable.username, username));
@@ -235,6 +237,7 @@ export const users = {
       .update(usersTable)
       .set({
         passwordHash,
+        oldPasswordHash: null, // eslint-disable-line unicorn/no-null
       })
       .where(eq(usersTable.id, userID));
   },

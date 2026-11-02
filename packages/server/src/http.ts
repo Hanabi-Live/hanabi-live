@@ -1,17 +1,13 @@
 import fastifyFormBody from "@fastify/formbody";
-import type { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { fastifySecureSession } from "@fastify/secure-session";
 import { fastifyStatic } from "@fastify/static";
 import { fastifyView } from "@fastify/view";
 import fastifyWebSocket from "@fastify/websocket";
-import { isObject } from "complete-common";
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import { fastify } from "fastify";
 import { fastifyFavicon } from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import path from "node:path";
-import { isBannedIP } from "./bannedIPs";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { createEta } from "./eta";
@@ -27,45 +23,10 @@ import { httpSharedMissingScores } from "./http/httpSharedMissingScores";
 import { httpAPITags } from "./http/httpTags";
 import { httpAPITagSearch } from "./http/httpTagSearch";
 import { httpTestCookie } from "./http/httpTestCookie";
-import { httpWS } from "./http/httpWS";
+import { httpWS, httpWSPreValidation } from "./http/httpWS";
+import { registerHTTPSessions } from "./httpSession";
 import { logger } from "./logger";
-
-const COOKIE_NAME = "hanabi.sid";
-
-const COOKIE_OPTIONS_BASE = {
-  /** The cookie should apply to the entire domain. */
-  path: "/",
-
-  /** 1 year in seconds. */
-  maxAge: 60 * 60 * 24 * 365,
-} as const satisfies SecureSessionPluginOptions["cookie"];
-
-const COOKIE_OPTIONS_PRODUCTION = {
-  ...COOKIE_OPTIONS_BASE,
-
-  /** Bind the cookie to this specific domain for security purposes. */
-  domain: env.DOMAIN,
-
-  /**
-   * Only send the cookie over HTTPS:
-   * https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-   */
-  secure: true,
-
-  /**
-   * Mitigate XSS attacks:
-   * https://www.owasp.org/index.php/HttpOnly
-   */
-  httpOnly: true,
-
-  /**
-   * Mitigate CSRF attacks:
-   * https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
-   */
-  sameSite: "strict",
-} as const satisfies SecureSessionPluginOptions["cookie"];
-
-const COOKIE_OPTIONS = IS_DEV ? COOKIE_OPTIONS_BASE : COOKIE_OPTIONS_PRODUCTION;
+import { models } from "./models";
 
 /**
  * The Let's Encrypt certbot will request a token from this path:
@@ -77,15 +38,24 @@ const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
 
 const eta = createEta();
 
-export async function httpInit(): Promise<void> {
+export async function httpInit(): Promise<FastifyInstance> {
   const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
   const defaultPort = useTLS ? 443 : 80;
   const port = env.PORT === 0 ? defaultPort : env.PORT;
+  const server = await createHTTPServer();
+  await server.listen({ port, host: "0.0.0.0" });
+  return server;
+}
 
+export async function createHTTPServer(): Promise<FastifyInstance> {
+  const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
+  if ((env.TLS_CERT_FILE !== "") !== (env.TLS_KEY_FILE !== "")) {
+    throw new Error("TLS_CERT_FILE and TLS_KEY_FILE must both be provided.");
+  }
   const https = useTLS
     ? {
-        ca: env.TLS_CERT_FILE,
-        key: env.TLS_KEY_FILE,
+        cert: fs.readFileSync(env.TLS_CERT_FILE),
+        key: fs.readFileSync(env.TLS_KEY_FILE),
       }
     : null; // eslint-disable-line unicorn/no-null
 
@@ -112,27 +82,23 @@ export async function httpInit(): Promise<void> {
   });
 
   httpServer.setErrorHandler(async (error, _request, reply) => {
-    let text: string | undefined;
-    if (isObject(error)) {
-      const { stack, message } = error;
-      if (typeof stack === "string" && stack !== "") {
-        text = stack;
-      } else if (typeof message === "string" && message !== "") {
-        text = message;
-      }
-    }
-    text ??= "unknown error";
-
+    logger.error(`HTTP request failed: ${String(error)}`);
     await reply
       .code(StatusCodes.INTERNAL_SERVER_ERROR)
-      .type("text/html")
-      .send(`<pre>${text}</pre>`);
+      .type("text/plain")
+      .send("Internal server error.");
   });
 
-  httpServer.addHook("preHandler", async (request, reply) => {
+  httpServer.addHook("preValidation", async (request, reply) => {
+    if (
+      request.routeOptions.url !== "/login"
+      && request.routeOptions.url !== "/ws"
+    ) {
+      return;
+    }
     const { ip } = request;
 
-    if (isBannedIP(ip)) {
+    if (await models.bannedIPs.check(ip)) {
       logger.info(
         `IP "${request.ip}" tried to send an HTTP request, but they are banned.`,
       );
@@ -146,9 +112,7 @@ export async function httpInit(): Promise<void> {
 
   registerPathHandlers(httpServer);
 
-  await httpServer.listen({
-    port,
-  });
+  return await httpServer;
 }
 
 /** Plugins are registered in alphabetical order. */
@@ -167,15 +131,7 @@ async function registerFastifyPlugins(
   // https://github.com/fastify/fastify-formbody
   await httpServer.register(fastifyFormBody);
 
-  // `@fastify/secure-session` - Needed for session management:
-  // https://github.com/fastify/fastify-secure-session/tree/master
-  // (The `@fastify/session` plugin is used for server-side data storage.)
-  await httpServer.register(fastifySecureSession, {
-    cookieName: COOKIE_NAME,
-    secret: env.SESSION_SECRET,
-    salt: "hanabiSalt123456", // Must be 16 characters long.
-    cookie: COOKIE_OPTIONS,
-  });
+  await registerHTTPSessions(httpServer, useTLS);
 
   // `@fastify/websocket` - Needed for WebSockets.
   await httpServer.register(fastifyWebSocket, {
@@ -201,6 +157,7 @@ async function registerFastifyPlugins(
     await httpServer.register(fastifyStatic, {
       root: LETS_ENCRYPT_PATH,
       prefix: LETS_ENCRYPT_PATH_PREFIX,
+      decorateReply: false,
     });
   }
 
@@ -219,7 +176,14 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   httpServer.post("/login", httpLogin);
   httpServer.get("/logout", httpLogout);
   httpServer.get("/test-cookie", httpTestCookie);
-  httpServer.get("/ws", { websocket: true }, httpWS);
+  httpServer.get(
+    "/ws",
+    {
+      websocket: true,
+      preValidation: httpWSPreValidation,
+    },
+    httpWS,
+  );
 
   // For the main website.
   httpServer.get("/", httpMain);

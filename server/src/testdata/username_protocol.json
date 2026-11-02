@@ -1,0 +1,14 @@
+[
+  { "input": " ALICE ", "normalized": "alice" },
+  { "input": "Alic\u00e8", "normalized": "alice" },
+  { "input": "\u0391lice", "normalized": "alice" },
+  { "input": "\u0410lice", "normalized": "alice" },
+  { "input": "\u4f60\u597d", "normalized": "ni hao " },
+  { "input": "\u0085Alice\u0085", "normalized": "alice" },
+  { "input": "\ufeffAlice\ufeff", "normalized": "alice" },
+  { "input": "\u00c6gir", "normalized": "aegir" },
+  { "input": "\u0130stanbul", "normalized": "istanbul" },
+  { "input": "\ud835\udd38lice", "normalized": "alice" },
+  { "input": "A\ud83d\ude00", "normalized": "a", "hasEmoji": true },
+  { "input": "A\ud83e\udd8a", "normalized": "a", "hasEmoji": false }
+]

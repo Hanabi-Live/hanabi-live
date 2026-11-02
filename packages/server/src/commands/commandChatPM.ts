@@ -5,7 +5,7 @@ import { validateAndNormalizeChatMsg } from "../chat";
 import { chatMessageToWire } from "../chatMessage";
 import { logger } from "../logger";
 import { models } from "../models";
-import { normalizeUsername } from "../utils";
+import { normalizeString } from "../utils";
 import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 import { getWSUserByNormalizedUsername } from "../wsUsers";
@@ -33,7 +33,7 @@ export async function commandChatPM(
   if (validatedRecipient === undefined) {
     return;
   }
-  const normalizedRecipient = normalizeUsername(validatedRecipient);
+  const normalizedRecipient = normalizeString(validatedRecipient);
   if (normalizedUsername === normalizedRecipient) {
     wsWarning(connection, "You cannot send a private message to yourself.");
     return;

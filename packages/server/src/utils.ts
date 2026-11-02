@@ -1,6 +1,15 @@
 /* eslint-disable complete/require-ascii */
 
-import unidecode from "unidecode";
+import { assertDefined } from "complete-common";
+import normalization from "./json/goIdentity.json";
+
+const NORMALIZATION_PAGES: Readonly<Record<string, readonly string[]>> =
+  normalization.pages;
+const USERNAME_EMOJI = new RegExp(normalization.usernameEmojiPattern, "u");
+
+export function hasUsernameEmoji(string: string): boolean {
+  return USERNAME_EMOJI.test(string);
+}
 
 /**
  * Helper function to transliterate the string to ASCII, lowercase it, and remove leading/trailing
@@ -10,12 +19,42 @@ import unidecode from "unidecode";
  * (like e.g. Alice and Alicè).
  */
 export function normalizeUsername(string: string): string {
-  return normalizeString(string).trim();
+  return normalizeString(trimUnicodeWhitespace(string));
+}
+
+export function trimUnicodeWhitespace(string: string): string {
+  const whitespace = /\p{White_Space}/u;
+  let start = -1;
+  let end = 0;
+  let offset = 0;
+  for (const character of string) {
+    if (!whitespace.test(character)) {
+      if (start === -1) {
+        start = offset;
+      }
+      end = offset + character.length;
+    }
+    offset += character.length;
+  }
+  return start === -1 ? "" : string.slice(start, end);
 }
 
 /** Transliterate a string to ASCII and lowercase it without trimming whitespace. */
 export function normalizeString(string: string): string {
-  return unidecode(string).toLowerCase();
+  let result = "";
+  for (const character of string.toWellFormed()) {
+    const codePoint = character.codePointAt(0);
+    assertDefined(codePoint, "Missing Unicode code point.");
+    if (codePoint < 0x7f) {
+      result += character;
+    } else if (codePoint <= 0xe_ff_ff) {
+      // Unmapped characters are dropped by Go's pinned transliteration library.
+      result +=
+        NORMALIZATION_PAGES[Math.floor(codePoint / 256)]?.[codePoint % 256]
+        ?? "";
+    }
+  }
+  return result.toLowerCase();
 }
 
 export function sortUsernames(names: readonly string[]): readonly string[] {

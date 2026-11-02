@@ -4,7 +4,7 @@ export const httpLoginData = z
   .object({
     username: z.string().min(1),
     password: z.string().min(1),
-    newPassword: z.string().min(1).optional(),
+    newPassword: z.string().optional(),
     version: z.string().min(1),
   })
   .strict()

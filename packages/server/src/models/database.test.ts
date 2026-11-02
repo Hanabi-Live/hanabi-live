@@ -15,12 +15,14 @@ import type postgres from "postgres";
 import * as schema from "../databaseSchema";
 import type { db } from "../db";
 import { evaluationDatabase } from "../experimental/evaluationSupport";
+import { bannedIPs } from "./bannedIPs";
 import { chatLog } from "./chatLog";
 import { chatLogPM } from "./chatLogPM";
 import { games } from "./games";
 import { userFriends } from "./userFriends";
 import { userLinkages } from "./userLinkages";
 import { userSettings } from "./userSettings";
+import { users } from "./users";
 
 let mockDatabase: typeof db;
 jest.mock("../db", () => ({
@@ -269,5 +271,28 @@ databaseDescribe("application history and settings persistence", () => {
       1 as UserID,
     );
     expect(unrelated.list).toEqual([]);
+  });
+
+  test("authentication sees newly added and removed bans without a process restart", async () => {
+    expect(await bannedIPs.check("127.0.0.2")).toBe(false);
+    await client`INSERT INTO banned_ips (ip) VALUES ('127.0.0.2')`;
+    expect(await bannedIPs.check("127.0.0.2")).toBe(true);
+    await client`DELETE FROM banned_ips WHERE ip = '127.0.0.2'`;
+    expect(await bannedIPs.check("127.0.0.2")).toBe(false);
+  });
+
+  test("legacy password migration writes the modern hash and clears the old verifier together", async () => {
+    await client`ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`;
+    await client`
+      UPDATE users SET password_hash = NULL, old_password_hash = 'synthetic-old-hash'
+      WHERE id = 1
+    `;
+    const old = await users.get("alice");
+    expect(old?.passwordHash).toBeNull();
+    expect(old?.oldPasswordHash).toBe("synthetic-old-hash");
+    await users.setPassword(1, "synthetic-modern-hash");
+    const updated = await users.get("alice");
+    expect(updated?.passwordHash).toBe("synthetic-modern-hash");
+    expect(updated?.oldPasswordHash).toBeNull();
   });
 });

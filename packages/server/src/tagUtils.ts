@@ -1,4 +1,4 @@
-import unidecode from "unidecode";
+import { normalizeString } from "./utils";
 
 const MAX_TAG_LENGTH = 100;
 const NON_SPACE_WHITESPACE =
@@ -26,5 +26,5 @@ export function sanitizeTag(tag: string): SanitizedTag {
     return { error: "Tags cannot be blank." };
   }
 
-  return { tag: unidecode(trimmed).toLowerCase() };
+  return { tag: normalizeString(trimmed) };
 }

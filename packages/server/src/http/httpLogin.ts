@@ -1,19 +1,20 @@
 import { httpLoginData, PROJECT_NAME } from "@hanabi-live/data";
 import * as argon2 from "argon2";
-import {
-  getNumConsecutiveDiacritics,
-  hasEmoji,
-  hasWhitespace,
-  parseIntSafe,
-  ReadonlySet,
-} from "complete-common";
+import { ReadonlySet } from "complete-common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "../constants";
 import { setCookieValue } from "../httpSession";
 import { logger } from "../logger";
 import { models } from "../models";
-import { normalizeUsername } from "../utils";
+import {
+  getMaxConsecutiveMarks,
+  hasUsernameEmoji,
+  normalizeString,
+  normalizeUsername,
+  trimUnicodeWhitespace,
+} from "../utils";
 import { getClientVersion } from "../version";
 
 const MIN_USERNAME_LENGTH = 2;
@@ -82,10 +83,25 @@ export async function httpLogin(
 ): Promise<FastifyReply> {
   const result = httpLoginData.safeParse(request.body);
   if (!result.success) {
-    return await reply.code(StatusCodes.UNAUTHORIZED).send(result.error);
+    const missing = ["username", "password", "version"].find((field) =>
+      result.error.issues.some((issue) => issue.path[0] === field),
+    );
+    return await reply
+      .code(StatusCodes.UNAUTHORIZED)
+      .send(
+        missing === undefined
+          ? "Invalid login parameters."
+          : `You must provide the "${missing}" parameter to log in.`,
+      );
   }
 
-  const { username, password, version, newPassword } = result.data;
+  const { password, version, newPassword } = result.data;
+  const username = trimUnicodeWhitespace(result.data.username);
+  const normalizedUsername = normalizeString(username);
+  const usernameError = validateUsername(username, normalizedUsername);
+  if (usernameError !== undefined) {
+    return await reply.code(StatusCodes.UNAUTHORIZED).send(usernameError);
+  }
 
   const versionError = validateVersion(version);
   if (versionError !== undefined) {
@@ -94,9 +110,7 @@ export async function httpLogin(
 
   let user = await models.users.get(username);
   if (user === undefined) {
-    const normalizedUsername = normalizeUsername(username);
     const newUserError = await validateNewUser(
-      username,
       normalizedUsername,
       password,
       newPassword,
@@ -122,7 +136,12 @@ export async function httpLogin(
 
     user = newUser;
   } else {
-    const isValidPassword = await argon2.verify(user.passwordHash, password);
+    const isLegacy = user.oldPasswordHash !== null;
+    const isValidPassword = await passwordMatches(
+      password,
+      user.passwordHash,
+      user.oldPasswordHash,
+    );
     if (!isValidPassword) {
       return await reply
         .code(StatusCodes.UNAUTHORIZED)
@@ -131,8 +150,12 @@ export async function httpLogin(
 
     // Password changes are handled by the same time as normal logins. `newPassword` will be
     // undefined in situations where users are logging in and not changing their password.
-    if (newPassword !== undefined && newPassword !== "") {
-      const newPasswordHash = await argon2.hash(newPassword);
+    if (isLegacy || (newPassword !== undefined && newPassword !== "")) {
+      const newPasswordHash = await argon2.hash(
+        newPassword === undefined || newPassword === ""
+          ? password
+          : newPassword,
+      );
       await models.users.setPassword(user.id, newPasswordHash);
     }
   }
@@ -144,7 +167,7 @@ export async function httpLogin(
 
   // Return a "200 OK" HTTP code. (Returning a code is not actually necessary but Firefox will
   // complain otherwise.)
-  return await reply.send(); // An empty reply will have `StatusCodes.OK`.
+  return await reply.send("OK\n");
 
   // Next, the client will attempt to establish a WebSocket connection, which is handled in
   // "websocket.ts".
@@ -159,8 +182,8 @@ function validateVersion(version: string): string | undefined {
     return undefined;
   }
 
-  const versionInt = parseIntSafe(version);
-  if (versionInt === undefined) {
+  const versionInt = Number(version);
+  if (!/^[+-]?\d+$/u.test(version) || !Number.isSafeInteger(versionInt)) {
     return "The submitted version must be an integer.";
   }
 
@@ -172,21 +195,19 @@ function validateVersion(version: string): string | undefined {
   return undefined;
 }
 
-async function validateNewUser(
+function validateUsername(
   username: string,
   normalizedUsername: string,
-  password: string,
-  newPassword: string | undefined,
-): Promise<string | undefined> {
-  if (hasWhitespace(username)) {
+): string | undefined {
+  if (/\p{White_Space}/u.test(username)) {
     return "Usernames cannot contain any whitespace characters.";
   }
 
-  if (username.length < MIN_USERNAME_LENGTH) {
+  if (Buffer.byteLength(username) < MIN_USERNAME_LENGTH) {
     return `Usernames must be ${MIN_USERNAME_LENGTH} characters or more.`;
   }
 
-  if (username.length > MAX_USERNAME_LENGTH) {
+  if (Buffer.byteLength(username) > MAX_USERNAME_LENGTH) {
     return `Usernames must be ${MAX_USERNAME_LENGTH} characters or less.`;
   }
 
@@ -194,23 +215,28 @@ async function validateNewUser(
     username.includes(char),
   );
   if (hasIllegalCharacters) {
-    return "Usernames cannot contain any special characters other than hyphens, underscores, and periods.";
+    return "Usernames cannot contain any special characters other than underscores, hyphens, and periods.";
   }
 
-  if (hasEmoji(username)) {
+  if (hasUsernameEmoji(username)) {
     return "Usernames cannot contain any emojis.";
   }
 
-  if (
-    getNumConsecutiveDiacritics(username) > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
-  ) {
-    return `Usernames cannot contain ${NUM_CONSECUTIVE_DIACRITICS_ALLOWED} or more consecutive diacritics (i.e. accents).`;
+  if (getMaxConsecutiveMarks(username) > NUM_CONSECUTIVE_DIACRITICS_ALLOWED) {
+    return "Usernames cannot contain two or more consecutive diacritics.";
   }
 
   if (RESERVED_USERNAMES.has(normalizedUsername)) {
     return "That username is reserved. Please choose a different one.";
   }
+  return undefined;
+}
 
+async function validateNewUser(
+  normalizedUsername: string,
+  password: string,
+  newPassword: string | undefined,
+): Promise<string | undefined> {
   // At this point, the normal username is longer than `MIN_USERNAME_LENGTH`, so if the normalized
   // username is blank, then it is a transliteration issue.
   if (normalizedUsername === "") {
@@ -229,9 +255,35 @@ async function validateNewUser(
   }
 
   // Validate that they are not changing their password.
-  if (newPassword !== undefined) {
+  if (newPassword !== undefined && newPassword !== "") {
     return "You cannot create an account and change a password at the same time.";
   }
 
   return undefined;
+}
+
+async function passwordMatches(
+  password: string,
+  hash: string | null,
+  legacyHash: string | null,
+): Promise<boolean> {
+  if (legacyHash !== null) {
+    return legacyPasswordMatches(password, legacyHash);
+  }
+  if (hash === null) {
+    throw new Error("The account has no usable password hash.");
+  }
+  return await argon2.verify(hash, password);
+}
+
+function legacyPasswordMatches(password: string, expected: string): boolean {
+  const digest = createHash("sha256")
+    .update(`Hanabi password ${password}`)
+    .digest("hex");
+  const actualBytes = Buffer.from(digest);
+  const expectedBytes = Buffer.from(expected);
+  return (
+    actualBytes.length === expectedBytes.length
+    && timingSafeEqual(actualBytes, expectedBytes)
+  );
 }

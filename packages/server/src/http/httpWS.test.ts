@@ -16,12 +16,13 @@ import { WebSocket } from "ws";
 import { models } from "../models";
 import { wsMessage } from "../wsMessage";
 import { enqueueWSMsg, WSQueueElementType } from "../wsQueue";
-import { httpWS } from "./httpWS";
+import { httpWS, httpWSPreValidation } from "./httpWS";
 
 jest.mock("../models", () => ({
   models: {
     users: {
       getWSData: jest.fn(),
+      getUsername: jest.fn(),
       setLastLogin: jest.fn(),
     },
   },
@@ -47,10 +48,14 @@ let serverSocket: WebSocket;
 async function connect() {
   app = fastify();
   await app.register(websocketPlugin, { options: { maxPayload: 8192 } });
-  app.get("/ws", { websocket: true }, (connection, request) => {
-    serverSocket = connection;
-    httpWS(connection, request);
-  });
+  app.get(
+    "/ws",
+    { websocket: true, preValidation: httpWSPreValidation },
+    (connection, request) => {
+      serverSocket = connection;
+      httpWS(connection, request);
+    },
+  );
   const address = await app.listen({ port: 0, host: "127.0.0.1" });
   socket = new WebSocket(`${address.replace("http:", "ws:")}/ws`);
   await once(socket, "open");
@@ -67,6 +72,7 @@ describe("WebSocket command sequencing", () => {
       muted: false,
     });
     jest.mocked(models.users.setLastLogin).mockResolvedValue(undefined);
+    jest.mocked(models.users.getUsername).mockResolvedValue("Alice");
     jest.mocked(enqueueWSMsg).mockResolvedValue(undefined);
     jest.mocked(wsMessage).mockResolvedValue(undefined);
   });
