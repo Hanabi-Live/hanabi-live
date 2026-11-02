@@ -42,9 +42,6 @@ require `pg_dump` and `pg_restore` on `PATH`, matching the database major
 version (currently PostgreSQL 18 in CI). Do not point the integration tests at
 production.
 
-See [the TypeScript server parity plan](PLAN.md) for remaining implementation
-and verification work. Production deployment is deferred.
-
 ## Creating a New Variant
 
 - First, create a GitHub issue to discuss how the variant should work and if it
