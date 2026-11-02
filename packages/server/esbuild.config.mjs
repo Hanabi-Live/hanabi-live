@@ -19,7 +19,7 @@ await build({
   sourcemap: "linked",
 
   // Native bindings and SDK/logger workers must resolve from their installed packages.
-  external: ["argon2", "discord.js", "pino"],
+  external: ["@sentry/node", "argon2", "discord.js", "pino"],
 });
 
 fs.cpSync(

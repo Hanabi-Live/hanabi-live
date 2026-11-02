@@ -20,6 +20,11 @@ development; neither the partial server nor the isolated slice in
 shared rules, client protocol behavior, and replay compatibility, and verify
 TypeScript implementations against Go rather than assuming equivalent behavior.
 
+The TypeScript server reuses `SENTRY_DSN` for optional production error
+reporting, but sends only generic errors, release identity, and stack locations,
+not log contents or player data. The retired Universal Analytics
+(`GA_TRACKING_ID`) integration is intentionally not ported.
+
 Before submitting Go server changes, run the regression tests with the race
 detector from the repository root:
 

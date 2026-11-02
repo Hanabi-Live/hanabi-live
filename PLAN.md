@@ -10,7 +10,6 @@ run lint and relevant regression suites, push to `main`, and verify CI. Audit
 reachability and shared helpers between milestones. Do not remove intentional
 maintenance paths or add speculative configuration.
 
-- [ ] Evaluate configured telemetry integrations.
 - [ ] Exercise the actual TypeScript entry point with the existing client and
       Go-authority compatibility corpus. Cover every registered Go command and
       enabled HTTP route, unsupported-input rejection, concurrency, restart,

@@ -12,6 +12,7 @@ import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { createDatabaseClient, db } from "./db";
 import { initializeDiscord } from "./discordRuntime";
 import { IS_DEV } from "./env";
+import { initializeErrorReporting } from "./errorReporting";
 import { initializeGameRuntime } from "./gameRuntime";
 import { createGameStore } from "./gameStore";
 import { httpInit } from "./http";
@@ -32,6 +33,16 @@ main();
 async function main() {
   logWelcomeMessage();
   logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`);
+  const closeErrorReporting = await initializeErrorReporting(
+    IS_DEV,
+    process.env["SENTRY_DSN"],
+    STARTING_GIT_COMMIT_SHA1,
+  );
+  if ((process.env["GA_TRACKING_ID"] ?? "") !== "") {
+    logger.warn(
+      "GA_TRACKING_ID targets retired Universal Analytics and is not used by the TypeScript server.",
+    );
+  }
 
   const runtime = await startGameRuntime();
   const discord = initializeDiscord({
@@ -51,6 +62,11 @@ async function main() {
       await shutdownServer(runtime, transports, async () => {
         await db.$client.end({ timeout: 30 });
       });
+      if (!(await closeErrorReporting())) {
+        logger.warn(
+          "Sentry reports did not finish before shutdown; consult local logs.",
+        );
+      }
       if (restart) {
         logger.info(
           "Replacing the Node process with the current compiled server.",

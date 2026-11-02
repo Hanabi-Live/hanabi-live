@@ -10,6 +10,7 @@
     "@fastify/websocket": "11.3.4",
     "@hanabi-live/data": "file:../data",
     "@hanabi-live/game": "file:../game",
+    "@sentry/node": "11.10.0",
     "argon2": "0.45.1",
     "complete-common": "2.32.0",
     "discord.js": "14.28.0",

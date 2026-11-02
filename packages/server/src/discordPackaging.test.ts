@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import path from "node:path";
 
-test("compiled disabled, invalid, and injected bridges never load the optional Discord SDK", async () => {
+test("compiled disabled integrations and injected bridges never load optional SDKs", async () => {
   const result = await build({
     absWorkingDir: path.resolve(__dirname, "../../.."),
     stdin: {
@@ -13,6 +13,10 @@ test("compiled disabled, invalid, and injected bridges never load the optional D
       sourcefile: "discord-packaging-probe.js",
       contents: `
         import { DiscordBridge } from "./discordBridge";
+        import { initializeErrorReporting, reportServerError } from "./errorReporting";
+        import assert from "node:assert/strict";
+        import { createServer } from "node:http";
+        import { gunzipSync } from "node:zlib";
         const unused = () => { throw new Error("Unexpected bridge work."); };
         const options = {
           store: {
@@ -32,6 +36,8 @@ test("compiled disabled, invalid, and injected bridges never load the optional D
           DISCORD_TRUSTED_TEACHER_ROLE_NAME: "Crew",
         };
         async function main() {
+          await initializeErrorReporting(false, undefined, "test-release");
+          await initializeErrorReporting(true, "https://synthetic@sentry.invalid/1", "test-release");
           const disabled = new DiscordBridge({ ...options, environment: {} });
           await disabled.start();
           const invalid = new DiscordBridge({
@@ -51,6 +57,41 @@ test("compiled disabled, invalid, and injected bridges never load the optional D
             disabled.status, invalid.status, injected.status,
           ]));
           await Promise.all([disabled.close(), invalid.close(), injected.close()]);
+          const received = Promise.withResolvers();
+          const receiver = createServer((request, response) => {
+            const chunks = [];
+            request.on("data", (chunk) => chunks.push(chunk));
+            request.on("end", () => {
+              const bytes = Buffer.concat(chunks);
+              const body = request.headers["content-encoding"] === "gzip"
+                ? gunzipSync(bytes) : bytes;
+              response.end("{}");
+              received.resolve(JSON.parse(body.toString().split("\\n")[2]));
+            });
+          });
+          await new Promise((resolve) => receiver.listen(0, "127.0.0.1", resolve));
+          try {
+            globalThis.allowErrorReporterSDK = true;
+            const close = await initializeErrorReporting(
+              false, "http://synthetic@127.0.0.1:" + receiver.address().port + "/1",
+              "test-release",
+            );
+            reportServerError();
+            assert.equal(await close(), true);
+            const event = await received.promise;
+            assert.equal(event.release, "test-release");
+            for (const key of ["request", "user", "extra", "breadcrumbs", "server_name"]) {
+              assert.equal(event[key], undefined);
+            }
+            assert.equal(event.exception.values[0].value, "Server error; inspect local logs.");
+            for (const frame of event.exception.values[0].stacktrace.frames) {
+              assert.equal(frame.filename.includes("/"), false);
+              assert.equal(frame.vars, undefined);
+              assert.equal(frame.context_line, undefined);
+            }
+          } finally {
+            await new Promise((resolve) => receiver.close(resolve));
+          }
         }
         main().catch((error) => { console.error(error); process.exitCode = 1; });
       `,
@@ -58,7 +99,7 @@ test("compiled disabled, invalid, and injected bridges never load the optional D
     bundle: true,
     platform: "node",
     format: "cjs",
-    external: ["discord.js"],
+    external: ["@sentry/node", "discord.js"],
     write: false,
     metafile: true,
   });
@@ -89,8 +130,9 @@ test("compiled disabled, invalid, and injected bridges never load the optional D
     child.stdin.end(`
       require("node:module").registerHooks({
         resolve(specifier, context, nextResolve) {
-          if (specifier === "discord.js") {
-            throw new Error("Optional Discord SDK was eagerly loaded.");
+          if (specifier === "discord.js" ||
+              (specifier === "@sentry/node" && !globalThis.allowErrorReporterSDK)) {
+            throw new Error("An optional SDK was eagerly loaded.");
           }
           return nextResolve(specifier, context);
         },
