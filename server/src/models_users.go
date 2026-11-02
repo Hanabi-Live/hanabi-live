@@ -146,24 +146,15 @@ func (*Users) Update(userID int, lastIP string) error {
 	return err
 }
 
-func (*Users) ChangePassword(userID int, passwordHash string) error {
-	_, err := db.Exec(context.Background(), `
-		UPDATE users
-		SET
-			password_hash = $1
-		WHERE id = $2
-	`, passwordHash, userID)
-	return err
-}
-
-// Legacy function; delete this when all users have logged in or in 2022, whichever comes first
-func (*Users) UpdatePassword(userID int, passwordHash string) error {
-	_, err := db.Exec(context.Background(), `
+func (*Users) UpdatePasswordIfUnchanged(ctx context.Context, user User, passwordHash string) (bool, error) {
+	result, err := db.Exec(ctx, `
 		UPDATE users
 		SET
 			password_hash = $1,
 			old_password_hash = NULL
 		WHERE id = $2
-	`, passwordHash, userID)
-	return err
+			AND password_hash IS NOT DISTINCT FROM $3
+			AND old_password_hash IS NOT DISTINCT FROM $4
+	`, passwordHash, user.ID, user.PasswordHash, user.OldPasswordHash)
+	return result.RowsAffected() == 1, err
 }

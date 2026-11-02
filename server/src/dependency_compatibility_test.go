@@ -32,10 +32,11 @@ func TestLegacySessionCookieSurvivesDependencyUpdates(t *testing.T) {
 	}
 }
 
+// Synthetic hash captured with the previously pinned 2021 argon2id implementation.
+// cspell:disable-next-line
+const compatibilityPasswordHash = "$argon2id$v=19$m=65536,t=1,p=2$HSb5x/B2rWrD/KfnvZ6g/Q$4I9HT3Tlhv7K5qAbHhfODmW0d8aL4tmlfkw4dOOsX2s"
+
 func TestLegacyPasswordHashSurvivesDependencyUpdates(t *testing.T) {
-	// Synthetic hash captured with the previously pinned 2021 argon2id implementation.
-	// cspell:disable-next-line
-	const hash = "$argon2id$v=19$m=65536,t=1,p=2$HSb5x/B2rWrD/KfnvZ6g/Q$4I9HT3Tlhv7K5qAbHhfODmW0d8aL4tmlfkw4dOOsX2s"
 	for _, test := range []struct {
 		password string
 		matches  bool
@@ -43,7 +44,7 @@ func TestLegacyPasswordHashSurvivesDependencyUpdates(t *testing.T) {
 		{"compatibility-password", true},
 		{"wrong-password", false},
 	} {
-		matches, err := argon2id.ComparePasswordAndHash(test.password, hash)
+		matches, err := argon2id.ComparePasswordAndHash(test.password, compatibilityPasswordHash)
 		if err != nil || matches != test.matches {
 			t.Fatalf("legacy hash comparison = %v, %v; want %v", matches, err, test.matches)
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"net"
@@ -10,7 +11,6 @@ import (
 	"unicode"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -68,21 +68,21 @@ func httpLogin(c *gin.Context) {
 	if exists {
 		// First, check to see if they have a a legacy password hash stored in the database
 		if user.OldPasswordHash.Valid {
-			if ok := httpCheckAndChangeCredentials(w, user, data); !ok {
+			if ok := httpCheckAndChangeCredentials(c.Request.Context(), w, user, data); !ok {
 				return
 			}
 		} else {
-			if ok := httpCheckCredentials(w, user, data); !ok {
+			if ok := httpCheckCredentials(c.Request.Context(), w, user, data); !ok {
 				return
 			}
 		}
 
 		// If they have provided a new password, replace the old one
-		if ok := httpCheckPasswordChange(w, user, data); !ok {
+		if ok := httpCheckPasswordChange(c.Request.Context(), w, user, data); !ok {
 			return
 		}
 	} else {
-		if v, ok := httpCreateNewUser(w, data); !ok {
+		if v, ok := httpCreateNewUser(c.Request.Context(), w, data); !ok {
 			return
 		} else {
 			user = v
@@ -113,7 +113,7 @@ func httpLogin(c *gin.Context) {
 }
 
 // Verifies user login using SHA256 and change password hashing to Argon2id
-func httpCheckAndChangeCredentials(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+func httpCheckAndChangeCredentials(ctx context.Context, w http.ResponseWriter, user User, data *HTTPLoginData) bool {
 	// This is the first time that they are logging in after the password hash transition
 	// Hash the submitted password with SHA256
 	passwordSalt := "Hanabi password "
@@ -124,17 +124,20 @@ func httpCheckAndChangeCredentials(w http.ResponseWriter, user User, data *HTTPL
 		http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
 		return false
 	}
+	if data.NewPassword != "" {
+		return true
+	}
 
 	// Create an Argon2id hash of the plain-text password
 	var passwordHash string
-	if v, ok := httpPasswordHash(w, data.Password, data.Username); !ok {
+	if v, ok := httpPasswordHash(ctx, w, data.Password, data.Username); !ok {
 		return false
 	} else {
 		passwordHash = v
 	}
 
 	// Update their password to the new Argon2 format
-	if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
+	if updated, err := models.Users.UpdatePasswordIfUnchanged(ctx, user, passwordHash); err != nil {
 		logger.Error("Failed to set the new hash for \"" + data.Username + "\": " +
 			err.Error())
 		http.Error(
@@ -143,12 +146,14 @@ func httpCheckAndChangeCredentials(w http.ResponseWriter, user User, data *HTTPL
 			http.StatusInternalServerError,
 		)
 		return false
+	} else if !updated {
+		logger.Info("Skipped legacy password upgrade after a concurrent credential change.")
 	}
 	return true
 }
 
 // Verifies user login using Argon2id
-func httpCheckCredentials(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+func httpCheckCredentials(ctx context.Context, w http.ResponseWriter, user User, data *HTTPLoginData) bool {
 	// Check to see if their password is correct
 	if !user.PasswordHash.Valid {
 		logger.Error("Failed to get the Argon2 hash from the database for " +
@@ -160,40 +165,51 @@ func httpCheckCredentials(w http.ResponseWriter, user User, data *HTTPLoginData)
 		)
 		return false
 	}
-	if match, err := argon2id.ComparePasswordAndHash(
+	match, params, err := accountPasswordCheck(
+		ctx,
 		data.Password,
 		user.PasswordHash.String,
-	); err != nil {
+	)
+	if err != nil {
 		logger.Error("Failed to compare the password to the Argon2 hash for " +
 			"\"" + data.Username + "\": " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+		accountPasswordError(w, err)
 		return false
 	} else if !match {
 		http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
 		return false
 	}
+	if data.NewPassword == "" && accountPasswordNeedsUpgrade(params) {
+		hash, ok := httpPasswordHash(ctx, w, data.Password, data.Username)
+		if !ok {
+			return false
+		}
+		if updated, err := models.Users.UpdatePasswordIfUnchanged(ctx, user, hash); err != nil {
+			logger.Error("Failed to upgrade the password hash: " + err.Error())
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return false
+		} else if !updated {
+			logger.Info("Skipped password hash upgrade after a concurrent credential change.")
+		}
+	}
 	return true
 }
 
 // Checks for password change and saves new hashed password
-func httpCheckPasswordChange(w http.ResponseWriter, user User, data *HTTPLoginData) bool {
+func httpCheckPasswordChange(ctx context.Context, w http.ResponseWriter, user User, data *HTTPLoginData) bool {
 	if data.NewPassword == "" {
 		return true
 	}
 
 	var passwordHash string
-	if v, ok := httpPasswordHash(w, data.NewPassword, data.Username); !ok {
+	if v, ok := httpPasswordHash(ctx, w, data.NewPassword, data.Username); !ok {
 		return false
 	} else {
 		passwordHash = v
 	}
 
 	// Update the user
-	if err := models.Users.ChangePassword(user.ID, passwordHash); err != nil {
+	if updated, err := models.Users.UpdatePasswordIfUnchanged(ctx, user, passwordHash); err != nil {
 		logger.Error("Failed to update user \"" + data.Username + "\" password: " + err.Error())
 		http.Error(
 			w,
@@ -201,13 +217,16 @@ func httpCheckPasswordChange(w http.ResponseWriter, user User, data *HTTPLoginDa
 			http.StatusInternalServerError,
 		)
 		return false
+	} else if !updated {
+		http.Error(w, "Your credentials changed while signing in. Please try again.", http.StatusConflict)
+		return false
 	}
 	logger.Info("Password update for user \"" + data.Username + "\"")
 	return true
 }
 
 // Checks provided data and creates a new user
-func httpCreateNewUser(w http.ResponseWriter, data *HTTPLoginData) (User, bool) {
+func httpCreateNewUser(ctx context.Context, w http.ResponseWriter, data *HTTPLoginData) (User, bool) {
 	// Check for empty password and non-empty newPassword
 	if data.Password == "" {
 		http.Error(
@@ -266,14 +285,7 @@ func httpCreateNewUser(w http.ResponseWriter, data *HTTPLoginData) (User, bool) 
 
 	// Create an Argon2id hash of the plain-text password
 	var passwordHash string
-	if v, err := argon2id.CreateHash(data.Password, argon2id.DefaultParams); err != nil {
-		logger.Error("Failed to create a hash from the submitted password for " +
-			"\"" + data.Username + "\": " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+	if v, ok := httpPasswordHash(ctx, w, data.Password, data.Username); !ok {
 		return User{}, false
 	} else {
 		passwordHash = v
@@ -526,15 +538,11 @@ func httpLoginValidate(c *gin.Context) (*HTTPLoginData, bool) {
 	return data, true
 }
 
-func httpPasswordHash(w http.ResponseWriter, password string, username string) (string, bool) {
-	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+func httpPasswordHash(ctx context.Context, w http.ResponseWriter, password string, username string) (string, bool) {
+	if v, err := accountPasswordHash(ctx, password); err != nil {
 		logger.Error("Failed to create a hash from the submitted password for " +
 			"\"" + username + "\": " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+		accountPasswordError(w, err)
 		return "", false
 	} else {
 		return v, true

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/alexedwards/argon2id"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,14 +28,10 @@ func httpPasswordResetPost(c *gin.Context) {
 
 	// Hash it with Argon2id
 	var hash string
-	if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+	if v, err := accountPasswordHash(c.Request.Context(), password); err != nil {
 		logger.Error("Failed to create a hash from the submitted password " +
 			"(in the password reset form): " + err.Error())
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+		accountPasswordError(w, err)
 		return
 	} else {
 		hash = v

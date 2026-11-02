@@ -33,6 +33,10 @@ sidecar. Its `postgresCheckpointWrites` should therefore be zero, not
 interpreted as an absence of durable checkpoints. Storage now differs between
 implementations; server RSS also excludes the Redis sidecar.
 
+New account passwords now use the same Argon2 settings in all three servers: 64
+MiB, three passes, and four lanes. Go still verifies existing hashes using their
+stored parameters and upgrades older pass counts on successful login.
+
 ## Historical PostgreSQL-backed baseline
 
 The following measurements describe commit `55643c642`, before full Rust server
