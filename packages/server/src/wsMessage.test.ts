@@ -7,6 +7,12 @@ import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
 
+jest.mock("./models", () => ({ models: {} }));
+jest.mock("./db", () => {
+  throw new Error(
+    "Command dispatch unit tests must not load the application database.",
+  );
+});
 jest.mock("./commands/commandChat", () => ({ commandChat: jest.fn() }));
 jest.mock("./commands/commandChatPM", () => ({ commandChatPM: jest.fn() }));
 jest.mock("./commands/commandChatPMHistoryGet", () => ({
