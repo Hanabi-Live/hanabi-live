@@ -15,6 +15,7 @@ export const options = z
     startingPlayer: playerIndex.default(0),
 
     variantName: z.string().min(1).default(DEFAULT_VARIANT_NAME),
+    variantID: z.number().int().nonnegative().optional(),
     timed: z.boolean().default(false),
     timeBase: z.number().default(0),
     timePerTurn: z.number().int().default(0),

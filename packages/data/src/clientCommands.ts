@@ -10,6 +10,7 @@ const clientCommandChatData = z
   .object({
     msg: z.string().min(1),
     room: z.string().min(1),
+    requestID: z.string().max(128).optional(),
   })
   .strict()
   .readonly();
@@ -47,6 +48,26 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
   typeof clientCommandChatPMHistoryGetData
 > {}
 
+const clientCommandGetNameData = z.strictObject({}).optional();
+const clientCommandHistoryData = z
+  .strictObject({
+    offset: z.number().int().default(0),
+    amount: z.number().int().default(0),
+  })
+  .readonly();
+const clientCommandHistoryGetSeedData = z
+  .strictObject({
+    seed: z.string(),
+    friends: z.boolean().default(false),
+  })
+  .readonly();
+const clientCommandInactiveData = z
+  .strictObject({ inactive: z.boolean() })
+  .readonly();
+const clientCommandSettingData = z
+  .strictObject({ name: z.string(), setting: z.string() })
+  .readonly();
+
 // -----------
 // Collections
 // -----------
@@ -55,6 +76,14 @@ export interface ClientCommandData {
   [ClientCommand.chat]: ClientCommandChatData;
   [ClientCommand.chatPM]: ClientCommandChatPMData;
   [ClientCommand.chatPMHistoryGet]: ClientCommandChatPMHistoryGetData;
+  [ClientCommand.getName]: z.infer<typeof clientCommandGetNameData>;
+  [ClientCommand.historyFriendsGet]: z.infer<typeof clientCommandHistoryData>;
+  [ClientCommand.historyGet]: z.infer<typeof clientCommandHistoryData>;
+  [ClientCommand.historyGetSeed]: z.infer<
+    typeof clientCommandHistoryGetSeedData
+  >;
+  [ClientCommand.inactive]: z.infer<typeof clientCommandInactiveData>;
+  [ClientCommand.setting]: z.infer<typeof clientCommandSettingData>;
 }
 
 interfaceSatisfiesEnum<ClientCommandData, ClientCommand>();
@@ -63,4 +92,10 @@ export const CLIENT_COMMAND_SCHEMAS = {
   [ClientCommand.chat]: clientCommandChatData,
   [ClientCommand.chatPM]: clientCommandChatPMData,
   [ClientCommand.chatPMHistoryGet]: clientCommandChatPMHistoryGetData,
+  [ClientCommand.getName]: clientCommandGetNameData,
+  [ClientCommand.historyFriendsGet]: clientCommandHistoryData,
+  [ClientCommand.historyGet]: clientCommandHistoryData,
+  [ClientCommand.historyGetSeed]: clientCommandHistoryGetSeedData,
+  [ClientCommand.inactive]: clientCommandInactiveData,
+  [ClientCommand.setting]: clientCommandSettingData,
 } as const satisfies Record<ClientCommand, unknown>;

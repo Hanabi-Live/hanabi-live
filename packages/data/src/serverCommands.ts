@@ -104,6 +104,21 @@ export interface ServerCommandErrorData extends z.infer<
 
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
+const serverCommandGameHistoryOtherScoresData = z
+  .strictObject({
+    games: serverCommandGameHistoryData,
+    variantName: z.string().min(1),
+    friends: z.boolean(),
+    seed: z.string().min(1),
+  })
+  .readonly();
+const serverCommandNameData = z
+  .strictObject({ name: z.string().min(1) })
+  .readonly();
+const serverCommandUserInactiveData = z
+  .strictObject({ userID, inactive: z.boolean() })
+  .readonly();
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandGameHistoryData extends z.infer<
   typeof serverCommandGameHistoryData
@@ -231,9 +246,15 @@ export interface ServerCommandData {
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
+  [ServerCommand.gameHistoryFriends]: ServerCommandGameHistoryData;
+  [ServerCommand.gameHistoryOtherScores]: z.infer<
+    typeof serverCommandGameHistoryOtherScoresData
+  >;
+  [ServerCommand.name]: z.infer<typeof serverCommandNameData>;
   [ServerCommand.table]: ServerCommandTableData;
   [ServerCommand.tableList]: ServerCommandTableListData;
   [ServerCommand.user]: ServerCommandUserData;
+  [ServerCommand.userInactive]: z.infer<typeof serverCommandUserInactiveData>;
   [ServerCommand.userLeft]: ServerCommandUserLeftData;
   [ServerCommand.userList]: ServerCommandUserListData;
   [ServerCommand.warning]: ServerCommandWarningData;
@@ -249,9 +270,14 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
   [ServerCommand.error]: serverCommandErrorData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
+  [ServerCommand.gameHistoryFriends]: serverCommandGameHistoryData,
+  [ServerCommand.gameHistoryOtherScores]:
+    serverCommandGameHistoryOtherScoresData,
+  [ServerCommand.name]: serverCommandNameData,
   [ServerCommand.table]: serverCommandTableData,
   [ServerCommand.tableList]: serverCommandTableListData,
   [ServerCommand.user]: serverCommandUserData,
+  [ServerCommand.userInactive]: serverCommandUserInactiveData,
   [ServerCommand.userLeft]: serverCommandUserLeftData,
   [ServerCommand.userList]: serverCommandUserListData,
   [ServerCommand.warning]: serverCommandWarningData,

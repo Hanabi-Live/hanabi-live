@@ -6,53 +6,97 @@ import {
 } from "@hanabi-live/data";
 import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
+import type { z } from "zod";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";
 import { commandChatPMHistoryGet } from "./commands/commandChatPMHistoryGet";
+import { commandGetName } from "./commands/commandGetName";
+import {
+  commandHistoryFriendsGet,
+  commandHistoryGet,
+  commandHistoryGetSeed,
+} from "./commands/commandHistory";
+import { commandInactive } from "./commands/commandInactive";
+import { commandSetting } from "./commands/commandSetting";
 import { logger } from "./logger";
-import { wsError } from "./wsHelpers";
+import { wsError, wsWarning } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
+import { wsUsers } from "./wsUsers";
 
 const CLIENT_COMMANDS_SET = new ReadonlySet(getEnumValues(ClientCommand));
 
-type ClientCommandHandlers = {
-  [Value in ClientCommand]: (
-    wsUser: WSUser,
-    data: ClientCommandData[Value],
-  ) => Promise<void>;
-};
-
 const CLIENT_COMMAND_HANDLERS = {
-  [ClientCommand.chat]: commandChat,
-  [ClientCommand.chatPM]: commandChatPM,
-  [ClientCommand.chatPMHistoryGet]: commandChatPMHistoryGet,
-} as const satisfies ClientCommandHandlers;
+  [ClientCommand.chat]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chat,
+    commandChat,
+  ),
+  [ClientCommand.chatPM]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatPM,
+    commandChatPM,
+  ),
+  [ClientCommand.chatPMHistoryGet]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatPMHistoryGet,
+    commandChatPMHistoryGet,
+  ),
+  [ClientCommand.getName]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.getName,
+    commandGetName,
+  ),
+  [ClientCommand.historyFriendsGet]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.historyFriendsGet,
+    commandHistoryFriendsGet,
+  ),
+  [ClientCommand.historyGet]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.historyGet,
+    commandHistoryGet,
+  ),
+  [ClientCommand.historyGetSeed]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.historyGetSeed,
+    commandHistoryGetSeed,
+  ),
+  [ClientCommand.inactive]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.inactive,
+    commandInactive,
+  ),
+  [ClientCommand.setting]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.setting,
+    commandSetting,
+  ),
+} as const satisfies Record<
+  ClientCommand,
+  (wsUser: WSUser, data: unknown) => Promise<void>
+>;
 
-let blockIncomingWebSocketMessages = false;
-let numWSMessages = 0;
+function validatedHandler<Data extends ClientCommandData[ClientCommand]>(
+  schema: z.ZodType<Data>,
+  handler: (wsUser: WSUser, data: Data) => void | Promise<void>,
+) {
+  return async (wsUser: WSUser, data: unknown): Promise<void> => {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      logger.warn(`Invalid WebSocket command data: ${result.error.message}`);
+      wsWarning(wsUser.connection, "Invalid command data.");
+      return;
+    }
+    await handler(wsUser, result.data);
+  };
+}
 
 export async function wsMessage(
   wsUser: WSUser,
   rawData: RawData,
 ): Promise<void> {
-  if (blockIncomingWebSocketMessages) {
+  if (
+    wsUsers.get(wsUser.userID) !== wsUser
+    || wsUser.connection.readyState !== wsUser.connection.OPEN
+  ) {
     return;
   }
-
-  numWSMessages++;
-
-  try {
-    await handleWSMessage(wsUser, rawData);
-  } finally {
-    numWSMessages--;
-  }
-}
-
-async function handleWSMessage(wsUser: WSUser, rawData: RawData) {
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   const rawDataString = rawData.toString();
   const msg = unpackWSMessage(rawDataString);
   if (msg === undefined) {
+    wsWarning(wsUser.connection, "Invalid command message.");
     return;
   }
 
@@ -66,29 +110,5 @@ async function handleWSMessage(wsUser: WSUser, rawData: RawData) {
     return;
   }
 
-  const schema = CLIENT_COMMAND_SCHEMAS[command];
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    const issues = JSON.stringify(result.error.issues, undefined, 2);
-    logger.error(
-      `Received a WebSocket command of "${command}" with invalid data: ${issues}`,
-    );
-    return;
-  }
-
-  const func = CLIENT_COMMAND_HANDLERS[command];
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-  await func(wsUser, result.data as any);
-}
-
-// TODO: export
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function setBlockIncomingWebSocketMessages() {
-  blockIncomingWebSocketMessages = true;
-}
-
-// TODO: export
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getNumWSMessages() {
-  return numWSMessages;
+  await CLIENT_COMMAND_HANDLERS[command](wsUser, data);
 }

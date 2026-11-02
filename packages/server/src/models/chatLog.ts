@@ -41,12 +41,22 @@ export const chatLog = {
     return rows;
   },
 
-  set: async (userID: UserID, message: string, room: string): Promise<void> => {
-    await db.insert(chatLogTable).values({
-      userID,
-      source: "user",
-      message,
-      room,
-    });
+  insert: async (
+    userID: UserID,
+    message: string,
+    room: string,
+  ): Promise<{ chatID: number; datetimeSent: Date }> => {
+    const rows = await db
+      .insert(chatLogTable)
+      .values({ userID, source: "user", message, room })
+      .returning({
+        chatID: chatLogTable.id,
+        datetimeSent: chatLogTable.datetimeSent,
+      });
+    const row = rows[0];
+    if (row === undefined) {
+      throw new Error("Chat insertion did not return a persisted message.");
+    }
+    return row;
   },
 };

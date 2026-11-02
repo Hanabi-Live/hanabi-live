@@ -1,16 +1,14 @@
-// TODO: implement d.Discord, d.Username
-
 import type { ClientCommandChatData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { validateAndNormalizeChatMsg } from "../chat";
 import { chatMessageToWire } from "../chatMessage";
-import type { ChatTarget } from "../chatTarget";
 import { parseChatTarget } from "../chatTarget";
 import { getCurrentDatetime } from "../date";
 import { identityTokenRegenerate } from "../identityToken";
 import { logger } from "../logger";
-import { wsSend, wsWarning } from "../wsHelpers";
+import { models } from "../models";
+import { wsSend, wsSendAll, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 
 export async function commandChat(
@@ -32,7 +30,7 @@ export async function commandChat(
 
   const target = parseChatTarget(room);
   if (target === undefined) {
-    wsWarning(wsUser.connection, "That is not a valid room");
+    wsWarning(wsUser.connection, "That is not a valid room.");
     return;
   }
 
@@ -43,8 +41,39 @@ export async function commandChat(
     return;
   }
 
+  if (target.kind === "table") {
+    wsWarning(
+      connection,
+      "Table chat is not implemented in the TypeScript server yet.",
+    );
+    return;
+  }
+  if (normalizedMsg.startsWith("/")) {
+    wsWarning(
+      connection,
+      "This chat command is not implemented in the TypeScript server yet.",
+    );
+    return;
+  }
   const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
-  await chat(wsUser, normalizedMsg, sanitizedMsg, target, false);
+  const { chatID, datetimeSent } = await models.chatLog.insert(
+    wsUser.userID,
+    sanitizedMsg,
+    "lobby",
+  );
+  logger.info(`#lobby <${wsUser.username}> ${sanitizedMsg}`);
+  wsSendAll(
+    ServerCommand.chat,
+    chatMessageToWire({
+      kind: "lobby",
+      source: "user",
+      text: sanitizedMsg,
+      who: wsUser.username,
+      datetime: datetimeSent.toISOString(),
+      room: "lobby",
+      chatID,
+    }),
+  );
 }
 
 async function chatToken(
@@ -93,33 +122,4 @@ function wsSendServerPM(wsUser: WSUser, msg: string, room: string) {
       recipient: wsUser.username,
     }),
   );
-}
-
-// eslint-disable-next-line @typescript-eslint/require-await
-async function chat(
-  wsUser: WSUser,
-  _normalizedMsg: string,
-  sanitizedMsg: string,
-  target: ChatTarget,
-  discord: boolean,
-) {
-  const { username } = wsUser;
-
-  const discordPrefix = discord ? "D" : "";
-  const room = target.kind === "lobby" ? "lobby" : `table${target.tableID}`;
-  logger.info(`#${room} ${discordPrefix}<${username}> ${sanitizedMsg}`);
-
-  if (target.kind === "table") {
-    chatTable();
-  } else {
-    chatLobby();
-  }
-}
-
-function chatTable() {
-  // TODO
-}
-
-function chatLobby() {
-  // TODO
 }

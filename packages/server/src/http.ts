@@ -180,7 +180,7 @@ async function registerFastifyPlugins(
   // `@fastify/websocket` - Needed for WebSockets.
   await httpServer.register(fastifyWebSocket, {
     options: {
-      maxPayload: 123,
+      maxPayload: 8192,
     },
   });
 

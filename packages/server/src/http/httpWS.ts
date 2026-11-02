@@ -3,8 +3,11 @@ import type { FastifyRequest } from "fastify";
 import type { WebSocket } from "ws";
 import { isReconnectRequest } from "../connectionMode";
 import { deleteCookie, getCookieValue } from "../httpSession";
+import { logger } from "../logger";
 import { models } from "../models";
+import type { SessionID } from "../types/SessionID";
 import { wsError } from "../wsHelpers";
+import { wsMessage } from "../wsMessage";
 import { WSQueueElementType, enqueueWSMsg } from "../wsQueue";
 import type { WSUser } from "../wsUsers";
 import { getSessionID } from "../wsUsers";
@@ -20,10 +23,81 @@ import { getSessionID } from "../wsUsers";
  *
  * @see https://github.com/fastify/fastify-websocket
  */
-export async function httpWS(
+export function httpWS(connection: WebSocket, request: FastifyRequest): void {
+  let accepting = true;
+  let pending = 0;
+  let initializedUser: WSUser | undefined;
+  let tail = initialize(connection, request, getSessionID())
+    .then(async (wsUser) => {
+      initializedUser = wsUser;
+      if (wsUser !== undefined) {
+        await enqueueWSMsg(WSQueueElementType.Login, wsUser);
+      }
+      return wsUser;
+    })
+    .catch((error: unknown) => {
+      failConnection(error);
+      return undefined;
+    });
+
+  connection.on("message", (rawData, isBinary) => {
+    if (!accepting) {
+      return;
+    }
+    if (isBinary || pending >= 64) {
+      accepting = false;
+      logger.warn("Closing a WebSocket with invalid or excessive input.");
+      wsError(connection, "Invalid or excessive WebSocket input.");
+      connection.close(1008);
+      return;
+    }
+    pending++;
+    tail = tail
+      .then(async (wsUser) => {
+        if (wsUser !== undefined) {
+          await wsMessage(wsUser, rawData);
+        }
+        return wsUser;
+      })
+      .catch((error: unknown) => {
+        failConnection(error);
+        return undefined;
+      })
+      .finally(() => {
+        pending--;
+      });
+  });
+  connection.on("close", () => {
+    accepting = false;
+    tail
+      .then(async () => {
+        if (initializedUser !== undefined) {
+          await enqueueWSMsg(WSQueueElementType.Logout, initializedUser);
+        }
+      })
+      .catch((error: unknown) => {
+        logger.error(`WebSocket cleanup failed: ${String(error)}`);
+      });
+  });
+  connection.on("error", (error) => {
+    accepting = false;
+    logger.error(`WebSocket transport failed: ${String(error)}`);
+    connection.terminate();
+  });
+
+  function failConnection(error: unknown) {
+    accepting = false;
+    logger.error(`WebSocket connection failed: ${String(error)}`);
+    wsError(connection, "Something went wrong on the server.");
+    connection.close(1011);
+  }
+}
+
+async function initialize(
   connection: WebSocket,
   request: FastifyRequest,
-): Promise<void> {
+  sessionID: SessionID,
+): Promise<WSUser | undefined> {
   // If they have a valid cookie, it should have the "userID" value.
   const userID = getCookieValue(request, "userID");
   if (userID === undefined) {
@@ -53,7 +127,7 @@ export async function httpWS(
   const wsUser: WSUser = {
     connection,
 
-    sessionID: getSessionID(),
+    sessionID,
     userID,
     username,
     normalizedUsername,
@@ -70,7 +144,7 @@ export async function httpWS(
     inactive: false,
   };
 
-  enqueueWSMsg(WSQueueElementType.Login, wsUser);
+  return wsUser;
 }
 
 /**

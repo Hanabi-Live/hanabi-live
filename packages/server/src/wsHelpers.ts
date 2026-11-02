@@ -56,7 +56,7 @@ export function wsSend<T extends ServerCommand>(
 ): void {
   const msg = getWSMsg(serverCommand, data);
   if (msg !== undefined) {
-    connection.send(msg);
+    send(connection, msg);
   }
 }
 
@@ -77,9 +77,26 @@ export function wsSendAll<T extends ServerCommand>(
 
   for (const wsUser of wsUsers.values()) {
     if (exceptionUserID !== wsUser.userID) {
-      wsUser.connection.send(msg);
+      send(wsUser.connection, msg);
     }
   }
+}
+
+function send(connection: WebSocket, message: string) {
+  if (connection.readyState !== connection.OPEN) {
+    return;
+  }
+  if (connection.bufferedAmount > 262_144) {
+    logger.warn("Closing a slow WebSocket client.");
+    connection.terminate();
+    return;
+  }
+  connection.send(message, (error) => {
+    if (error !== undefined) {
+      logger.error(`WebSocket send failed: ${String(error)}`);
+      connection.terminate();
+    }
+  });
 }
 
 /** Helper function to send an error to a WebSocket connection. */

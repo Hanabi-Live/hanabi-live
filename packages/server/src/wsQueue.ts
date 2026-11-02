@@ -22,7 +22,6 @@ import {
 } from "./tables";
 import { getRandomTableName } from "./words";
 import { wsError, wsSend, wsSendAll } from "./wsHelpers";
-import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
 import { getUserData, getUserList, wsUsers } from "./wsUsers";
 
@@ -31,17 +30,15 @@ export enum WSQueueElementType {
   Logout,
 }
 
-interface WSQueueElement extends WSUser {
-  type: WSQueueElementType;
-}
+type InitialMessages = Awaited<ReturnType<typeof prepareInitialMessages>>;
 
-const QUEUE_FUNCTIONS = {
-  [WSQueueElementType.Login]: login,
-  [WSQueueElementType.Logout]: logout,
-} as const satisfies Record<
-  WSQueueElementType,
-  (wsUser: WSUser) => void | Promise<void>
->;
+type WSQueueElement =
+  | {
+      type: WSQueueElementType.Login;
+      wsUser: WSUser;
+      initialMessages: InitialMessages;
+    }
+  | { type: WSQueueElementType.Logout; wsUser: WSUser };
 
 const LOBBY_CHAT_HISTORY_LENGTH = 50;
 
@@ -51,12 +48,18 @@ const wsQueue: queueAsPromised<WSQueueElement, void> = fastq.promise(
 );
 
 async function processQueue(element: WSQueueElement) {
-  const func = QUEUE_FUNCTIONS[element.type];
-  await func(element);
+  if (element.type === WSQueueElementType.Login) {
+    login(element.wsUser, element.initialMessages);
+  } else {
+    await logout(element.wsUser);
+  }
 }
 
-function login(wsUser: WSUser) {
-  const { userID, username, ip } = wsUser;
+function login(wsUser: WSUser, initialMessages: InitialMessages) {
+  const { connection, userID, username, ip } = wsUser;
+  if (connection.readyState !== connection.OPEN) {
+    return;
+  }
 
   logger.info(
     `Logging in WebSocket user ${username} (${userID}) from IP: ${ip}`,
@@ -65,6 +68,10 @@ function login(wsUser: WSUser) {
   // First, check to see if an existing WebSocket connection exists for this user.
   const existingUser = wsUsers.get(userID);
   if (existingUser !== undefined) {
+    if (existingUser.sessionID > wsUser.sessionID) {
+      connection.close();
+      return;
+    }
     wsError(
       existingUser.connection,
       "You have logged on from somewhere else, so you have been disconnected here.",
@@ -76,57 +83,70 @@ function login(wsUser: WSUser) {
   // login queue, which is the only place that this map should be mutable.
   (wsUsers as Map<UserID, WSUser>).set(userID, wsUser);
 
-  attachWebSocketEventHandlers(wsUser);
-
-  const userData = getUserData(wsUser);
-  wsSendAll(ServerCommand.user, userData, userID);
-
-  // We intentionally do not await the sending of the initial messages because we want to do
-  // database-intensive work out of the critical path.
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  sendInitialWSMessages(wsUser);
+  sendInitialWSMessages(wsUser, initialMessages);
+  wsSendAll(ServerCommand.user, getUserData(wsUser), userID);
 }
 
-function attachWebSocketEventHandlers(wsUser: WSUser) {
-  const { connection } = wsUser;
-
-  connection.on("message", (rawData) => {
-    // WebSocket callbacks are supposed to be synchronous functions, so we do not bother awaiting
-    // the results of the command.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    wsMessage(wsUser, rawData);
-  });
-
-  connection.on("close", () => {
-    enqueueWSMsg(WSQueueElementType.Logout, wsUser);
-  });
+async function prepareInitialMessages(wsUser: WSUser) {
+  const [totalGames, datetimeCreated, settings, friends, bootstrap] =
+    await Promise.all([
+      models.games.getNumGamesForUser(wsUser.userID, true),
+      models.users.getDatetimeCreated(wsUser.userID),
+      models.userSettings.get(wsUser.userID),
+      models.userFriends.getList(wsUser.userID),
+      wsUser.reconnect === true ? undefined : prepareBootstrap(wsUser),
+    ]);
+  if (datetimeCreated === undefined) {
+    throw new Error("The authenticated user no longer exists.");
+  }
+  return {
+    totalGames,
+    datetimeCreated,
+    settings: settings ?? defaultSettings,
+    friends,
+    bootstrap,
+  };
 }
 
-async function sendInitialWSMessages(wsUser: WSUser) {
-  await sendWelcomeMessage(wsUser);
-  // A reconnect probe confirms the session; a new initial connection restores state.
-  if (wsUser.reconnect === true) {
+async function prepareBootstrap(wsUser: WSUser) {
+  const [chatList, motd, history, friendHistory] = await Promise.all([
+    getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH),
+    getMessageOfTheDay(),
+    getHistory(wsUser),
+    wsUser.friends.size === 0 ? undefined : getFriendHistory(wsUser),
+  ]);
+  return { chatList, motd, history, friendHistory };
+}
+
+function sendInitialWSMessages(wsUser: WSUser, data: InitialMessages) {
+  sendWelcomeMessage(wsUser, data);
+  const { bootstrap } = data;
+  if (bootstrap === undefined) {
     return;
   }
   sendUserList(wsUser);
   sendTableList(wsUser);
-  await sendChat(wsUser);
-  await sendHistory(wsUser);
-  await sendFriendHistory(wsUser);
+  wsSend(wsUser.connection, ServerCommand.chatList, {
+    list: bootstrap.chatList,
+    unread: 0,
+  });
+  sendChatDiscordAdvertisement(wsUser);
+  sendChatMessageOfTheDay(wsUser, bootstrap.motd);
+  wsSend(wsUser.connection, ServerCommand.gameHistory, bootstrap.history);
+  if (bootstrap.friendHistory !== undefined) {
+    wsSend(
+      wsUser.connection,
+      ServerCommand.gameHistoryFriends,
+      bootstrap.friendHistory,
+    );
+  }
 }
 
-async function sendWelcomeMessage(wsUser: WSUser) {
+function sendWelcomeMessage(wsUser: WSUser, data: InitialMessages) {
   const { connection, userID, username, muted } = wsUser;
-
-  const totalGames = await models.games.getNumGamesForUser(userID, true);
-
-  const datetimeCreated =
-    (await models.users.getDatetimeCreated(userID)) ?? new Date();
+  const { totalGames, datetimeCreated, settings, friends } = data;
   const elapsedTime = Date.now() - datetimeCreated.getTime();
   const firstTimeUser = elapsedTime < 10 * SECOND_IN_MILLISECONDS;
-
-  const settings = (await models.userSettings.get(userID)) ?? defaultSettings;
-  const friends = await models.userFriends.getList(userID);
 
   const playingAtTables = getTableIDsUserPlayingAt(userID);
   const spectatingMetadata = getSpectatingMetadata(userID);
@@ -168,20 +188,6 @@ function sendTableList(wsUser: WSUser) {
   wsSend(wsUser.connection, ServerCommand.tableList, tableList);
 }
 
-async function sendChat(wsUser: WSUser) {
-  await sendChatLobbyPrevious(wsUser);
-  sendChatDiscordAdvertisement(wsUser);
-  await sendChatMessageOfTheDay(wsUser);
-}
-
-async function sendChatLobbyPrevious(wsUser: WSUser) {
-  const list = await getChatList("lobby", LOBBY_CHAT_HISTORY_LENGTH);
-  wsSend(wsUser.connection, ServerCommand.chatList, {
-    list,
-    unread: 0,
-  });
-}
-
 function sendChatDiscordAdvertisement(wsUser: WSUser) {
   const discordMsg =
     'Find teammates and discuss strategy in the <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">Discord chat</a>.';
@@ -198,8 +204,7 @@ function sendChatDiscordAdvertisement(wsUser: WSUser) {
   );
 }
 
-async function sendChatMessageOfTheDay(wsUser: WSUser) {
-  const motd = await getMessageOfTheDay();
+function sendChatMessageOfTheDay(wsUser: WSUser, motd: string | undefined) {
   if (motd !== undefined && motd !== "") {
     const motdMsg = `[Server Notice] ${motd}`;
     wsSend(
@@ -217,21 +222,19 @@ async function sendChatMessageOfTheDay(wsUser: WSUser) {
   }
 }
 
-async function sendHistory(wsUser: WSUser) {
+async function getHistory(wsUser: WSUser) {
   const gameIDs = await models.games.getGameIDsForUser(wsUser.userID, 0, 10);
-  const history = await models.games.getHistory(gameIDs);
-  wsSend(wsUser.connection, ServerCommand.gameHistory, history);
+  return await models.games.getHistory(gameIDs);
 }
 
-async function sendFriendHistory(wsUser: WSUser) {
+async function getFriendHistory(wsUser: WSUser) {
   const gameIDs = await models.games.getGameIDsForUserFriends(
     wsUser.userID,
     wsUser.friends,
     0,
     10,
   );
-  const history = await models.games.getHistory(gameIDs);
-  wsSend(wsUser.connection, ServerCommand.gameHistory, history);
+  return await models.games.getHistory(gameIDs);
 }
 
 async function logout(wsUser: WSUser) {
@@ -242,10 +245,7 @@ async function logout(wsUser: WSUser) {
   // twice, a logout will be triggered for the first connection after the second one has already
   // connected.)
   const existingWSUser = wsUsers.get(userID);
-  if (
-    existingWSUser !== undefined
-    && existingWSUser.sessionID > wsUser.sessionID
-  ) {
+  if (existingWSUser !== wsUser) {
     return;
   }
 
@@ -271,10 +271,14 @@ async function logout(wsUser: WSUser) {
 // Exported functions
 // ------------------
 
-export function enqueueWSMsg(type: WSQueueElementType, wsUser: WSUser): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  wsQueue.push({
-    ...wsUser,
-    type,
-  });
+export async function enqueueWSMsg(
+  type: WSQueueElementType,
+  wsUser: WSUser,
+): Promise<void> {
+  if (type === WSQueueElementType.Login) {
+    const initialMessages = await prepareInitialMessages(wsUser);
+    await wsQueue.push({ type, wsUser, initialMessages });
+  } else {
+    await wsQueue.push({ type, wsUser });
+  }
 }

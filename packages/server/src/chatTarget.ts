@@ -1,5 +1,5 @@
 /** An internal chat destination, parsed from the legacy WebSocket room string. */
-export type ChatTarget =
+type ChatTarget =
   | { readonly kind: "lobby" }
   | { readonly kind: "table"; readonly tableID: number };
 

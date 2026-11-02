@@ -14,10 +14,11 @@ With pull requests:
 
 ## Server Code
 
-Go is the supported production server. The partial TypeScript server and the
-isolated slice in `packages/server/src/experimental` are research code, not
-production replacements. Go changes do not need a parallel TypeScript server
-port. Preserve shared rules, client protocol behavior, and replay compatibility.
+Go is the supported production server. TypeScript server parity is under active
+development; neither the partial server nor the isolated slice in
+`packages/server/src/experimental` is a production replacement yet. Preserve
+shared rules, client protocol behavior, and replay compatibility, and verify
+TypeScript implementations against Go rather than assuming equivalent behavior.
 
 Before submitting Go server changes, run the regression tests with the race
 detector from the repository root:
@@ -35,8 +36,8 @@ tests also require `pg_dump` and `pg_restore` on `PATH`, matching the database
 major version (currently PostgreSQL 18 in CI). Do not point the integration
 tests at production.
 
-See [the remaining server rollout](PLAN.md) for production deployment and
-acceptance tasks.
+See [the TypeScript server parity plan](PLAN.md) for remaining implementation
+and verification work. Production deployment is deferred.
 
 ## Creating a New Variant
 
