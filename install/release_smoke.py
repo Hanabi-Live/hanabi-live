@@ -96,7 +96,14 @@ def main():
         )
         # Exercise all tracked forward migrations against the pre-recovery schema.
         subprocess.run(
-            ["psql", "-Xq", "-v", "ON_ERROR_STOP=1", "-c", "DROP TABLE active_games"],
+            [
+                "psql",
+                "-Xq",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-c",
+                "DROP TABLE game_custom_decks, active_games",
+            ],
             env=pg_environment,
             check=True,
         )
