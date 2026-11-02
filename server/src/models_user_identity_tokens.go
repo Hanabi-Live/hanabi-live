@@ -19,34 +19,6 @@ type UserIdentityTokenRow struct {
 	DatetimeUpdated time.Time
 }
 
-func (*UserIdentityTokens) Get(userID int) (bool, UserIdentityTokenRow, error) {
-	var row UserIdentityTokenRow
-	if err := db.QueryRow(context.Background(), `
-		SELECT
-			user_id,
-			token_hash,
-			token_lookup_hash,
-			expires_at,
-			datetime_created,
-			datetime_updated
-		FROM user_identity_tokens
-		WHERE user_id = $1
-	`, userID).Scan(
-		&row.UserID,
-		&row.TokenHash,
-		&row.TokenLookupHash,
-		&row.ExpiresAt,
-		&row.DatetimeCreated,
-		&row.DatetimeUpdated,
-	); errors.Is(err, pgx.ErrNoRows) {
-		return false, row, nil
-	} else if err != nil {
-		return false, row, err
-	}
-
-	return true, row, nil
-}
-
 func (*UserIdentityTokens) Upsert(
 	userID int,
 	tokenHash string,

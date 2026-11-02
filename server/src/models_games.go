@@ -869,41 +869,6 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 	return dbPlayers, nil
 }
 
-func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {
-	seeds := make([]string, 0)
-
-	// We want to use "DISTINCT" since it is possible for a player to play on the same seed twice
-	// with the "!seed" feature or the "!replay" feature
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), `
-		SELECT DISTINCT games.seed AS seed
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE game_participants.user_id = $1
-			AND games.variant_id = $2
-		ORDER BY seed
-	`, userID, variantID); err != nil {
-		return seeds, err
-	} else {
-		rows = v
-	}
-
-	for rows.Next() {
-		var seed string
-		if err := rows.Scan(&seed); err != nil {
-			return seeds, err
-		}
-		seeds = append(seeds, seed)
-	}
-
-	if err := rows.Err(); err != nil {
-		return seeds, err
-	}
-	rows.Close()
-
-	return seeds, nil
-}
-
 func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string, error) {
 	allPlayersNotes := make([][]string, numPlayers)
 	for i := 0; i < numPlayers; i++ {

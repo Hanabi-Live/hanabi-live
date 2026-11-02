@@ -21,7 +21,6 @@ type Models struct {
 	BannedIPs
 	ChatLog
 	ChatLogPM
-	DiscordWaiters
 	GameActions
 	GameParticipantNotes
 	GameParticipants

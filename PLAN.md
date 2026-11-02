@@ -241,11 +241,12 @@ authorization.
   ephemeral; chat command effects are not replayed, and derived seed/statistic
   refreshes remain best-effort. Reconnect still bootstraps state rather than
   resubmitting commands. No extra completed-game identifier or index.
-- Between-step audits: no TypeScript unused exports; three obsolete Go insertion
-  wrappers removed. Fifteen unreachable maintenance/disabled-route helpers still
-  require consumer review. Container startup works, but its administrative
-  shutdown still expects a missing `stop.sh`; container lifecycle handling must
-  be resolved before treating it as a production deployment replacement.
+- Between-step audits: no TypeScript unused exports; eleven obsolete Go methods
+  removed. Seven unreachable helpers are retained for the disabled statistics
+  route and manual repair recipes. Container startup works, but its
+  administrative shutdown still expects a missing `stop.sh`; container lifecycle
+  handling must be resolved before treating it as a production deployment
+  replacement.
 - Remaining: broader recovery/load measurements, recovery/queue metrics,
   dependency modernization, immutable artifact deployment, the compatibility
   corpus, a complete TypeScript slice, and the measured architecture decision.
