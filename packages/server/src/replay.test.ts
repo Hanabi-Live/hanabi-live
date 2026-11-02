@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await -- In-memory storage implements an asynchronous interface. */
-// cspell:words stest
+// cspell:words datname stest
 import websocketPlugin from "@fastify/websocket";
 import type { GameID, UserID } from "@hanabi-live/data";
 import { SERVER_COMMAND_SCHEMAS, Status } from "@hanabi-live/data";
@@ -25,6 +25,7 @@ import { WebSocket } from "ws";
 import { customDeckBytes, decodeCustomDeck } from "./customDeck";
 import * as schema from "./databaseSchema";
 import type { db } from "./db";
+import { GoRandom } from "./engine/goRandom";
 import { createShuffledDeck } from "./engine/setup";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
 import { restoreGameCheckpoint } from "./gameCheckpoint";
@@ -57,6 +58,23 @@ jest.mock("./logger", () => ({
 jest.mock("./words", () => ({ getRandomTableName: () => "Replay test" }));
 
 describe("replay import boundary", () => {
+  test("custom JSON preserves its deck without generating an unused seeded shuffle", () => {
+    const deck = Array.from({ length: 50 }, (_, index) => ({
+      suitIndex: index % 5,
+      rank: 1,
+    }));
+    const random = jest.spyOn(GoRandom.prototype, "intn");
+    try {
+      const replay = importReplay({ players: ["Alice", "Bob"], deck });
+      expect(
+        replay.state.deck.map(({ suitIndex, rank }) => ({ suitIndex, rank })),
+      ).toEqual(deck);
+      expect(random).not.toHaveBeenCalled();
+    } finally {
+      random.mockRestore();
+    }
+  });
+
   test("reconstructs stock names and the exact legacy seed; accepts matching explicit decks", () => {
     const seed = "legacy-12-p3v0s2";
     const deck = createShuffledDeck(getVariant("No Variant"), seed);
@@ -1190,6 +1208,70 @@ describe("real replay WebSocket protocol", () => {
   );
 
   databaseTest(
+    "replay reads retain one snapshot across concurrent metadata edits",
+    async () => {
+      await withReplayDatabase(async (sql, connectDatabase) => {
+        await insertPlayableHistory(sql);
+        await sql`
+          INSERT INTO game_participant_notes (game_participant_id, card_order, note)
+          SELECT id, 0, 'before' FROM game_participants WHERE game_id = 42 AND seat = 0
+        `;
+        const blocker = connectDatabase();
+        const locked = Promise.withResolvers<undefined>();
+        const release = Promise.withResolvers<undefined>();
+        const locking = blocker.begin(async (transaction) => {
+          await transaction`LOCK TABLE game_actions IN ACCESS EXCLUSIVE MODE`;
+          locked.resolve(undefined);
+          await release.promise;
+        });
+        await locked.promise;
+        const loading = models.replays.get(42);
+        const settled = Promise.allSettled([locking, loading]);
+        try {
+          const deadline = performance.now() + 5000;
+          for (;;) {
+            // eslint-disable-next-line no-await-in-loop -- Synchronize on the reader's actual lock wait.
+            const [state] = await sql<Array<{ blocked: boolean }>>`
+              SELECT EXISTS (
+                SELECT 1 FROM pg_locks WHERE relation = 'game_actions'::regclass
+                  AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+                  AND NOT granted
+              ) AS blocked
+            `;
+            assertDefined(state, "Missing replay lock observation.");
+            if (state.blocked) {
+              break;
+            }
+            if (performance.now() > deadline) {
+              throw new Error(
+                "Replay reader did not reach the locked action table.",
+              );
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await delay(10);
+          }
+          await sql`UPDATE users SET username = 'Updated Alice' WHERE id = 1`;
+          await sql`UPDATE game_participant_notes SET note = 'after'`;
+          release.resolve(undefined);
+          await locking;
+          const record = await loading;
+          expect([
+            ["Alice", "before"],
+            ["Updated Alice", "after"],
+          ]).toContainEqual([record?.players[0]?.name, record?.notes[0]?.note]);
+          const fresh = await models.replays.get(42);
+          expect(fresh?.players[0]?.name).toBe("Updated Alice");
+          expect(fresh?.notes[0]?.note).toBe("after");
+        } finally {
+          release.resolve(undefined);
+          await settled;
+          await blocker.end({ timeout: 3 });
+        }
+      });
+    },
+  );
+
+  databaseTest(
     "historical replay reads exact database seed, seats, metadata and notes without writing",
     async () => {
       const database = await evaluationDatabase();
@@ -1232,7 +1314,10 @@ describe("real replay WebSocket protocol", () => {
             actions: [{ type: 99, target: 0, value: 0 }],
           }).warnings,
         ).toEqual([expect.stringContaining("index 0")]);
+        const shuffleDraws = jest.spyOn(GoRandom.prototype, "intn");
         const replay = historicalReplay(record);
+        expect(shuffleDraws).toHaveBeenCalledTimes(replay.state.deck.length);
+        shuffleDraws.mockRestore();
         const client = await connect(1);
         client.send("replayCreate", {
           source: "id",

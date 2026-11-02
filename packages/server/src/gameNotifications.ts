@@ -28,13 +28,11 @@ export class GameMessages {
 
   status(user: WSUser, status: Status, tableID: TableID): void {
     this.statuses.push({ user, status, tableID });
-    for (const recipient of wsUsers.values()) {
-      this.add(recipient, ServerCommand.user, {
-        ...getUserData(user),
-        status,
-        tableID,
-      });
-    }
+    this.addMany(wsUsers.values(), ServerCommand.user, {
+      ...getUserData(user),
+      status,
+      tableID,
+    });
   }
 
   add<Command extends ServerCommand>(
@@ -42,9 +40,19 @@ export class GameMessages {
     command: Command,
     data: ServerCommandData[Command],
   ): void {
-    const message = getWSMsg(command, data);
-    assertDefined(message, `Invalid prepared ${command} notification.`);
-    this.messages.push({ user, message });
+    this.messages.push({ user, message: prepareMessage(command, data) });
+  }
+
+  addMany<Command extends ServerCommand>(
+    users: Iterable<WSUser>,
+    command: Command,
+    data: ServerCommandData[Command],
+  ): void {
+    let message: string | undefined;
+    for (const user of users) {
+      message ??= prepareMessage(command, data);
+      this.messages.push({ user, message });
+    }
   }
 
   publish(): void {
@@ -63,11 +71,28 @@ export class GameMessages {
 
   lobby(table: Table): void {
     if (table.visible) {
+      // The public table row differs between recipients only in its joined flag.
+      const views = new Map<boolean, string>();
       for (const user of wsUsers.values()) {
-        this.add(user, ServerCommand.table, getTableData(table, user.userID));
+        const data = getTableData(table, user.userID);
+        let message = views.get(data.joined);
+        if (message === undefined) {
+          message = prepareMessage(ServerCommand.table, data);
+          views.set(data.joined, message);
+        }
+        this.messages.push({ user, message });
       }
     }
   }
+}
+
+function prepareMessage<Command extends ServerCommand>(
+  command: Command,
+  data: ServerCommandData[Command],
+): string {
+  const message = getWSMsg(command, data);
+  assertDefined(message, `Invalid prepared ${command} notification.`);
+  return message;
 }
 
 export function attendeeUsers(
@@ -126,14 +151,12 @@ export function appendClock(
   game: Game,
   users: readonly WSUser[],
 ): void {
-  for (const user of users) {
-    messages.add(user, ServerCommand.clock, {
-      tableID: table.id,
-      times: game.clocks,
-      activePlayerIndex: game.state.activePlayerIndex,
-      timeTaken: game.state.paused ? 0 : game.turnElapsed,
-    });
-  }
+  messages.addMany(users, ServerCommand.clock, {
+    tableID: table.id,
+    times: game.clocks,
+    activePlayerIndex: game.state.activePlayerIndex,
+    timeTaken: game.state.paused ? 0 : game.turnElapsed,
+  });
 }
 
 export function appendConnected(
@@ -141,12 +164,10 @@ export function appendConnected(
   table: Table,
   users: readonly WSUser[],
 ): void {
-  for (const user of users) {
-    messages.add(user, ServerCommand.connected, {
-      tableID: table.id,
-      list: table.players.map((player) => player.present),
-    });
-  }
+  messages.addMany(users, ServerCommand.connected, {
+    tableID: table.id,
+    list: table.players.map((player) => player.present),
+  });
 }
 
 export function appendBootstrap(
@@ -341,14 +362,12 @@ export function appendReplayDetails(
   game: Game,
   users: readonly WSUser[],
 ): void {
-  for (const user of users) {
-    messages.add(user, ServerCommand.cardIdentities, {
-      tableID: table.id,
-      cardIdentities: game.state.deck.map(({ suitIndex, rank }) => ({
-        suitIndex,
-        rank,
-      })),
-    });
-  }
+  messages.addMany(users, ServerCommand.cardIdentities, {
+    tableID: table.id,
+    cardIdentities: game.state.deck.map(({ suitIndex, rank }) => ({
+      suitIndex,
+      rank,
+    })),
+  });
   appendObserverNotes(messages, table, game, users);
 }

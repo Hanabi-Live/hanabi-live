@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/require-await -- The in-memory adapter implements an asynchronous storage interface. */
 import type { GameID, TableID, UserID } from "@hanabi-live/data";
-import { SERVER_COMMAND_SCHEMAS, Status } from "@hanabi-live/data";
+import {
+  SERVER_COMMAND_SCHEMAS,
+  ServerCommand,
+  Status,
+} from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import {
   afterEach,
@@ -18,13 +22,20 @@ import { z } from "zod";
 import { sendServerChat } from "./chatPublish";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
 import { restoreGameCheckpoint } from "./gameCheckpoint";
+import { GameMessages } from "./gameNotifications";
 import type { GameRuntime } from "./gameRuntime";
 import { initializeGameRuntime } from "./gameRuntime";
 import type { ActiveCheckpoint, CompletedGame, GameStore } from "./gameStore";
 import { createGameStore } from "./gameStore";
 import { models } from "./models";
-import { getTable, getTableIDsUserPlayingAt, removeTable } from "./tables";
+import {
+  getTable,
+  getTableData,
+  getTableIDsUserPlayingAt,
+  removeTable,
+} from "./tables";
 import type { SessionID } from "./types/SessionID";
+import * as wsHelpers from "./wsHelpers";
 import { wsMessage } from "./wsMessage";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
@@ -192,6 +203,81 @@ describe("durable running table authority", () => {
     assertDefined(card, "Missing active hand.");
     return { user, action: { tableID: id, type: 0, target: card } };
   }
+
+  test("shared public frames serialize once but retain captured session ownership until publication", () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    const prepared = new GameMessages();
+    const encode = jest.spyOn(wsHelpers, "getWSMsg");
+    try {
+      prepared.status(alice.user, Status.Playing, 99 as TableID);
+      expect(encode).toHaveBeenCalledTimes(1);
+      expect(alice.user.status).toBe(Status.Lobby);
+      expect(alice.messages).toHaveLength(0);
+      const replacement = connect(2, "Bob");
+      prepared.publish();
+      expect(alice.user.status).toBe(Status.Playing);
+      expect(alice.messages).toHaveLength(1);
+      expect(bob.messages).toHaveLength(0);
+      expect(replacement.messages).toHaveLength(0);
+    } finally {
+      encode.mockRestore();
+    }
+  });
+
+  test("lobby broadcasts encode only joined and unjoined views without exposing private tables", async () => {
+    const { id, alice, bob } = await pregame();
+    const observers = [connect(3, "Charlie"), connect(4, "Dave")];
+    const recipients = [alice, bob, ...observers];
+    const table = getTable(id);
+    assertDefined(table, "Missing lobby test table.");
+    const prepared = new GameMessages();
+    const encode = jest.spyOn(wsHelpers, "getWSMsg");
+    try {
+      prepared.lobby(table);
+      expect(encode).toHaveBeenCalledTimes(2);
+      prepared.publish();
+      for (const recipient of recipients) {
+        const message = recipient.messages.at(-1);
+        assertDefined(message, "Missing public table row.");
+        expect(message.startsWith("table ")).toBe(true);
+        expect(JSON.parse(message.slice(6))).toEqual(
+          getTableData(table, recipient.user.userID),
+        );
+      }
+      const lengths = recipients.map((recipient) => recipient.messages.length);
+      table.visible = false;
+      const hidden = new GameMessages();
+      hidden.lobby(table);
+      hidden.publish();
+      expect(encode).toHaveBeenCalledTimes(2);
+      expect(recipients.map((recipient) => recipient.messages.length)).toEqual(
+        lengths,
+      );
+    } finally {
+      encode.mockRestore();
+    }
+  });
+
+  test("shared frame preparation still rejects excess private fields before buffering recipients", () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    const prepared = new GameMessages();
+    const invalid = {
+      msg: "Public notice.",
+      who: "Server",
+      source: "server" as const,
+      room: "lobby",
+      datetime: "2026-01-01T00:00:00.000Z",
+      deck: [{ suitIndex: 0, rank: 1 }],
+    };
+    expect(() => {
+      prepared.addMany([alice.user, bob.user], ServerCommand.chat, invalid);
+    }).toThrow("Invalid prepared chat notification.");
+    prepared.publish();
+    expect(alice.messages).toHaveLength(0);
+    expect(bob.messages).toHaveLength(0);
+  });
 
   test("termination votes survive recovery, deduplicate retries, and require both players in two-player games", async () => {
     const { id, alice, bob } = await started();

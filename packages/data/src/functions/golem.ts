@@ -28,17 +28,14 @@ export function unpackWSMessage(
 }
 
 /**
- * This function should only be used on the client, because the server has optimized stringification
- * functions from the "fast-json-stringify" library.
+ * This function should only be used on the client. The server validates outgoing payloads before
+ * passing them to its encoder.
  */
 export function packWSMessageOnClient(command: string, data: unknown): string {
   return packWSMessageOnServer(command, data, JSON.stringify);
 }
 
-/**
- * This function should only be used on the server, because the server has optimized stringification
- * functions from the "fast-json-stringify" library.
- */
+/** Frames an already prepared payload using the supplied encoder. */
 export function packWSMessageOnServer(
   command: string,
   data: unknown,

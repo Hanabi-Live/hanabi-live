@@ -4,23 +4,9 @@ import {
   ServerCommand,
   packWSMessageOnServer,
 } from "@hanabi-live/data";
-import type { ReadonlyRecord } from "complete-common";
-import type { AnySchema } from "fast-json-stringify";
-import fastJSONStringify from "fast-json-stringify";
 import type { WebSocket } from "ws";
-import { z } from "zod";
 import { logger } from "./logger";
 import { wsUsers } from "./wsUsers";
-
-const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
-  Object.entries(SERVER_COMMAND_SCHEMAS).map(([key, value]) => {
-    const jsonSchema = z.toJSONSchema(value, {
-      unrepresentable: "any",
-    }) as AnySchema;
-    const stringifyFunc = fastJSONStringify(jsonSchema);
-    return [key, stringifyFunc];
-  }),
-) as ReadonlyRecord<ServerCommand, (data: unknown) => string>;
 
 /** Returns a WebSocket message in the Golem protocol format. */
 export function getWSMsg<T extends ServerCommand>(
@@ -40,8 +26,7 @@ export function getWSMsg<T extends ServerCommand>(
     return undefined;
   }
 
-  const stringifyFunc = SERVER_COMMAND_STRINGIFY_FUNCS[command];
-  return packWSMessageOnServer(command, result.data, stringifyFunc);
+  return packWSMessageOnServer(command, result.data, JSON.stringify);
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { UserID } from "@hanabi-live/data";
+import { userID as userIDSchema } from "@hanabi-live/data";
 import { eq, sql } from "drizzle-orm";
 import {
   mutedIPsTable,
@@ -20,9 +21,40 @@ interface WSData {
   readonly normalizedUsername: string;
   readonly hyphenated: boolean;
   readonly friends: Set<UserID>;
-  /// readonly reverseFriends: readonly string[];
   readonly muted: boolean;
 }
+
+const friendIDsSchema = userIDSchema.array();
+
+function prepareWSDataQuery(database: typeof db) {
+  return database
+    .select({
+      username: usersTable.username,
+      normalizedUsername: usersTable.normalizedUsername,
+      hyphenated: sql<boolean>`COALESCE(${userSettingsTable.hyphenatedConventions}, false)`,
+      friends: sql`
+        (
+          SELECT COALESCE(jsonb_agg(${userFriendsTable.friendID}), '[]'::jsonb)
+          FROM ${userFriendsTable} WHERE ${userFriendsTable.userID} = ${usersTable.id}
+        )
+      `.mapWith((value: unknown) => friendIDsSchema.parse(value)),
+      muted: sql<boolean>`
+        EXISTS (
+          SELECT 1 FROM ${mutedIPsTable} WHERE ${mutedIPsTable.ip} = ${sql.placeholder("ip")}
+        )
+      `,
+    })
+    .from(usersTable)
+    .leftJoin(userSettingsTable, eq(userSettingsTable.userID, usersTable.id))
+    .where(eq(usersTable.id, sql.placeholder("id")))
+    .limit(1)
+    .prepare("websocket_user_metadata");
+}
+
+const wsDataQueries = new WeakMap<
+  typeof db,
+  ReturnType<typeof prepareWSDataQuery>
+>();
 
 export const users = {
   create: async (
@@ -132,77 +164,18 @@ export const users = {
     userID: number,
     ip: string,
   ): Promise<WSData | undefined> => {
-    // TODO: Rewrite this function to do one database call once we can do multi-select with Drizzle:
-    // https://github.com/drizzle-team/drizzle-orm/pull/1405
-
-    const usernameRows = await db
-      .select({
-        username: usersTable.username,
-        normalizedUsername: usersTable.normalizedUsername,
-      })
-      .from(usersTable)
-      .where(eq(usersTable.id, userID));
-
-    const usernameRow = usernameRows[0];
-    if (usernameRow === undefined) {
+    let query = wsDataQueries.get(db);
+    if (query === undefined) {
+      query = prepareWSDataQuery(db);
+      wsDataQueries.set(db, query);
+    }
+    const [row] = await query.execute({ id: userID, ip });
+    if (row === undefined) {
       return undefined;
     }
-    const { username, normalizedUsername } = usernameRow;
-
-    const hyphenatedRows = await db
-      .select({
-        hyphenatedConventions: userSettingsTable.hyphenatedConventions,
-      })
-      .from(userSettingsTable)
-      .where(eq(userSettingsTable.userID, userID));
-
-    const hyphenatedRow = hyphenatedRows[0];
-    const hyphenated =
-      hyphenatedRow !== undefined && hyphenatedRow.hyphenatedConventions;
-
-    const friendsRows = await db
-      .select({
-        friendID: userFriendsTable.friendID,
-      })
-      .from(userFriendsTable)
-      .where(eq(userFriendsTable.userID, userID));
-
-    const friendIDs = friendsRows.map((friendsRow) => friendsRow.friendID);
-    const friends = new Set<UserID>(friendIDs as UserID[]);
-
-    /*
-    const reverseFriendsRows = await db
-      .select({
-        username: usersTable.username,
-      })
-      .from(userReverseFriendsTable)
-      .innerJoin(
-        usersTable,
-        eq(userReverseFriendsTable.friendID, usersTable.id),
-      )
-      .where(eq(userReverseFriendsTable.userID, userID));
-
-    const reverseFriends = reverseFriendsRows.map(
-      (reverseFriendsRow) => reverseFriendsRow.username,
-    );
-    */
-
-    const mutedRows = await db
-      .select({
-        id: mutedIPsTable.id,
-      })
-      .from(mutedIPsTable)
-      .where(eq(mutedIPsTable.ip, ip));
-
-    const muted = mutedRows.length > 0;
-
     return {
-      username,
-      normalizedUsername,
-      friends,
-      /// reverseFriends,
-      hyphenated,
-      muted,
+      ...row,
+      friends: new Set(row.friends),
     };
   },
 

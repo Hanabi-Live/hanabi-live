@@ -5,6 +5,7 @@ import {
   doesVariantExist,
   EndCondition,
   getCharacter,
+  getTotalCardsInDeck,
   getVariant,
   getVariantByID,
   options,
@@ -217,19 +218,21 @@ export function parseReplaySpecification(input: unknown): ReplaySpecification {
   if (data.options.startingPlayer >= players.length) {
     throw new ActionRejected("The starting player index is out of bounds.");
   }
-  const seededDeck = createShuffledDeck(variant, data.seed);
+  const expectedCards = getTotalCardsInDeck(variant);
+  const seededDeck =
+    data.seed === "" ? undefined : createShuffledDeck(variant, data.seed);
   const deck =
-    data.deck.length === 0 && data.seed !== "" ? seededDeck : data.deck;
+    data.deck.length === 0 && seededDeck !== undefined ? seededDeck : data.deck;
   if (
-    deck.length !== seededDeck.length
+    deck.length !== expectedCards
     || deck.some((card) => card.suitIndex >= variant.suits.length)
   ) {
     throw new ActionRejected(
-      `The deck must have ${seededDeck.length} valid cards in it.`,
+      `The deck must have ${expectedCards} valid cards in it.`,
     );
   }
   if (
-    data.seed !== ""
+    seededDeck !== undefined
     && deck.some(
       (card, index) =>
         card.suitIndex !== seededDeck[index]?.suitIndex
@@ -362,9 +365,9 @@ export function historicalReplaySpecification(
       })),
     }),
   };
-  const deck = record.customDeck ?? createShuffledDeck(variant, game.seed);
+  const deckSize = record.customDeck?.length ?? getTotalCardsInDeck(variant);
   const notes = players.map(() =>
-    Array.from({ length: deck.length + variant.suits.length }, () => ""),
+    Array.from({ length: deckSize + variant.suits.length }, () => ""),
   );
   for (const note of record.notes) {
     const row = notes[note.seat];

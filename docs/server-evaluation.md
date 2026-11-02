@@ -23,21 +23,43 @@ must finish correctly; restored hands must remain private. Both use the same
 explicit played deck, persisted through the normal custom-deck path.
 
 Three local runs on a shared Linux host, with Go 1.27.0, Node 24.19.0, and
-PostgreSQL 18.6, produced these ranges:
+PostgreSQL 18.6, were repeated after profiling and optimization. The workload is
+unchanged; the Go column is from the new paired runs:
 
-| Measurement                         |          Go |  TypeScript |
-| ----------------------------------- | ----------: | ----------: |
-| Gameplay including account creation | 0.77-0.82 s | 1.47-1.55 s |
-| Play acknowledgement p95            |    11-13 ms |    21-27 ms |
-| Live reconnect p95                  |    11-19 ms |    55-61 ms |
-| Historical replay p95               |    31-38 ms |  141-154 ms |
-| Reconnect plus replay p95           |    74-83 ms |  455-488 ms |
-| Mixed historical-read phase         | 0.54-0.61 s | 2.83-2.93 s |
+| Measurement                         |          Go | TypeScript before | TypeScript after |
+| ----------------------------------- | ----------: | ----------------: | ---------------: |
+| Gameplay including account creation | 0.75-0.80 s |       1.47-1.55 s |      1.32-1.36 s |
+| Play acknowledgement p95            |    11-12 ms |          21-27 ms |         18-22 ms |
+| Live reconnect p95                  |    11-12 ms |          55-61 ms |         24-25 ms |
+| Historical replay cycle p95         |    30-35 ms |        141-154 ms |         32-41 ms |
+| Reconnect plus replay cycle p95     |    72-76 ms |        455-488 ms |       127-156 ms |
+| Mixed historical-read phase         | 0.53-0.56 s |       2.83-2.93 s |      0.70-0.74 s |
 
 These are application-path measurements, not language-only or capacity results.
-The database, client driver, and server share a host. Memory high-water marks
-include concurrent password hashing and varied substantially: about 421-613 MiB
-for Go and 460-485 MiB for Node. No memory advantage is established.
+The database, client driver, and server share a host. Replay cycles include
+bootstrap, leaving the replay, and a `getName` command used as an ordering
+barrier. They are not isolated replay-reconstruction timings.
+
+V8 profiling found that generating table names scanned and copied the
+87,000-word dictionary twice per request, consuming roughly half the initial
+replay-phase profile. The barrier amplified this cost; welcome messages also
+incurred it. Sampling without replacement now avoids those scans. Further
+improvements prepare replay and connection metadata as single SQL statements,
+reuse identical public message encodings, use native JSON after strict
+validation, and avoid generating unused decks. Only compiled queries are cached,
+not replay data, notes, friends, or moderation results.
+
+Account creation is not identical hashing work: Go's defaults use one Argon2
+pass, while Node's use three, with different parallelism. Those settings were
+not weakened. Memory peaks include this concurrent hashing and are not
+steady-state heap measurements; no language-level memory advantage is
+established.
+
+The remaining profiles are spread across socket writes, framework/serialization
+work, database I/O, and replay computation rather than a comparable single
+bottleneck. More invasive caching or protocol batching would need stronger
+workload evidence. Validation, password hardening, and durability remain
+required.
 
 ## Compatibility boundaries
 
