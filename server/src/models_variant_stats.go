@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 type VariantStats struct{}

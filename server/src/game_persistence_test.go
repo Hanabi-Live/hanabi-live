@@ -10,8 +10,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 func TestGameIDReservationDoesNotInsertGames(t *testing.T) {
@@ -223,7 +221,7 @@ func gamePersistenceDatabase(t *testing.T) *database {
 	db = database
 	config := database.pool.Config().Copy()
 	config.MaxConns = 2
-	pool, err := pgxpool.ConnectConfig(context.Background(), config)
+	pool, err := connectDatabasePool(context.Background(), config)
 	if err != nil {
 		t.Fatal(err)
 	}

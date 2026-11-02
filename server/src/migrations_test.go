@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestMigrationFileVersions(t *testing.T) {
@@ -95,7 +95,7 @@ func newMigrationTestDatabase(t *testing.T) (*database, *pgxpool.Config) {
 	config.ConnConfig.Database = name
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	pool, err := pgxpool.ConnectConfig(ctx, config)
+	pool, err := connectDatabasePool(ctx, config)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,9 +8,44 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func TestDatabaseConnectionValuesRemainLiteral(t *testing.T) {
+	host, user, name := "/tmp/test socket", "test'user", "test database"
+	password := "test ' quote \\ slash = value"
+	config, err := pgxpool.ParseConfig("host=" + quoteDatabaseValue(host) +
+		" port='5432' user=" + quoteDatabaseValue(user) +
+		" dbname=" + quoteDatabaseValue(name) +
+		" password=" + quoteDatabaseValue(password))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if config.ConnConfig.Host != host || config.ConnConfig.User != user ||
+		config.ConnConfig.Database != name || config.ConnConfig.Password != password {
+		t.Fatal("connection parsing changed literal database settings")
+	}
+}
+
+func TestDatabasePoolStartupRequiresSuccessfulConnection(t *testing.T) {
+	config, err := pgxpool.ParseConfig("host=127.0.0.1 port=1 user=test dbname=test sslmode=disable")
+	if err != nil {
+		t.Fatal(err)
+	}
+	failure := errors.New("connection rejected")
+	config.BeforeConnect = func(context.Context, *pgx.ConnConfig) error { return failure }
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	pool, err := connectDatabasePool(ctx, config)
+	if pool != nil {
+		pool.Close()
+		t.Fatal("startup accepted a lazy pool without a working connection")
+	}
+	if !errors.Is(err, failure) {
+		t.Fatalf("startup did not surface the connection failure: %v", err)
+	}
+}
 
 func TestDatabaseCopyDeadline(t *testing.T) {
 	database := newIntegrationDatabase(t, time.Second)
@@ -82,7 +117,7 @@ func newIntegrationDatabase(t *testing.T, timeout time.Duration) *database {
 	config.ConnConfig.RuntimeParams["statement_timeout"] = "0"
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	pool, err := pgxpool.ConnectConfig(ctx, config)
+	pool, err := connectDatabasePool(ctx, config)
 	if err != nil {
 		t.Fatal(err)
 	}

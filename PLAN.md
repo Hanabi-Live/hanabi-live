@@ -221,6 +221,9 @@ authorization.
 - Implemented: Go race and PostgreSQL integration checks, deterministic legacy
   deck/character fixtures, Go 1.27 and Node 24 build alignment, and container
   builds and Go static analysis in CI.
+- Implemented: refreshed Go web/authentication/runtime dependencies and pgx v5,
+  with legacy cookie/password and engine-regression coverage. The maintenance
+  server is included in CI; persisted username transliteration remains pinned.
 - Implemented: incremental lifecycle ownership through admission/draining,
   cancelable timers, stale-session protection, fail-closed login initialization,
   and registered background writes. This is not a complete table-owner rewrite.
@@ -251,10 +254,9 @@ authorization.
   administrative shutdown still expects a missing `stop.sh`; container lifecycle
   handling must be resolved before treating it as a production deployment
   replacement.
-- Remaining: broader recovery/load measurements, dependency modernization,
-  immutable artifact deployment, a complete TypeScript slice, and the measured
-  architecture decision. No production deployment or migration has been
-  performed.
+- Remaining: broader recovery/load measurements, immutable artifact deployment,
+  a complete TypeScript slice, and the measured architecture decision. No
+  production deployment or migration has been performed.
 
 ### Phase 1: Strengthen Go
 

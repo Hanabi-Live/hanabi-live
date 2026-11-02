@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestCommandMetricsAggregation(t *testing.T) {
@@ -79,7 +79,6 @@ func TestLocalhostMetrics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config.LazyConnect = true
 	config.MinConns = 0
 	config.MaxConns = 2
 	var connectionAttempts int32
@@ -87,7 +86,7 @@ func TestLocalhostMetrics(t *testing.T) {
 		atomic.AddInt32(&connectionAttempts, 1)
 		return errors.New("metrics must not open database connections")
 	}
-	pool, err := pgxpool.ConnectConfig(context.Background(), config)
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +94,7 @@ func TestLocalhostMetrics(t *testing.T) {
 	db = newDatabase(pool, defaultDatabaseTimeout)
 	recoveryConfig := config.Copy()
 	recoveryConfig.MaxConns = 3
-	recoveryPool, err := pgxpool.ConnectConfig(context.Background(), recoveryConfig)
+	recoveryPool, err := pgxpool.NewWithConfig(context.Background(), recoveryConfig)
 	if err != nil {
 		t.Fatal(err)
 	}

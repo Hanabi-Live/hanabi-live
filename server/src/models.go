@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -73,18 +73,17 @@ func modelsInit() (*Models, error) {
 
 	// Initialize the database
 	// The DSN string format is documented at:
-	// https://godoc.org/github.com/jackc/pgconn#ParseConfig
+	// https://pkg.go.dev/github.com/jackc/pgx/v5/pgconn#ParseConfig
 	dsnArray := []string{
-		"host=" + dbHost,
-		"port=" + dbPort,
-		"user=" + dbUser,
-		"password=" + dbPassword,
-		"dbname=" + dbName,
+		"host=" + quoteDatabaseValue(dbHost),
+		"port=" + quoteDatabaseValue(dbPort),
+		"user=" + quoteDatabaseValue(dbUser),
+		"password=" + quoteDatabaseValue(dbPassword),
+		"dbname=" + quoteDatabaseValue(dbName),
 	}
 	dsn := strings.Join(dsnArray, " ")
 
-	// We use "pgxpool.Connect()" instead of "pgx.Connect()" because the vanilla driver is not safe
-	// for concurrent connections (unlike the other Golang SQL drivers)
+	// Individual connections are not safe for concurrent use.
 	// https://github.com/jackc/pgx/wiki/Getting-started-with-pgx
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
@@ -93,7 +92,7 @@ func modelsInit() (*Models, error) {
 	config.ConnConfig.RuntimeParams["statement_timeout"] = strconv.FormatInt(timeout.Milliseconds(), 10)
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	if v, err := pgxpool.ConnectConfig(ctx, config); err != nil {
+	if v, err := connectDatabasePool(ctx, config); err != nil {
 		return nil, err
 	} else {
 		db = newDatabase(v, timeout)
@@ -101,7 +100,7 @@ func modelsInit() (*Models, error) {
 	recoveryConfig := config.Copy()
 	recoveryConfig.MaxConns = 2
 	recoveryConfig.MinConns = 0
-	recoveryPool, err := pgxpool.ConnectConfig(ctx, recoveryConfig)
+	recoveryPool, err := connectDatabasePool(ctx, recoveryConfig)
 	if err != nil {
 		db.Close()
 		return nil, err
@@ -110,6 +109,23 @@ func modelsInit() (*Models, error) {
 
 	// Create the model
 	return &Models{}, nil
+}
+
+func quoteDatabaseValue(value string) string {
+	return "'" + strings.NewReplacer("\\", "\\\\", "'", "\\'").Replace(value) + "'"
+}
+
+func connectDatabasePool(ctx context.Context, config *pgxpool.Config) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+	// pgx v5 constructors are lazy; retain fail-closed startup and its caller deadline.
+	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	return pool, nil
 }
 
 // Close exposes the ability to close the underlying database connection

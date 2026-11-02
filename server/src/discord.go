@@ -9,7 +9,7 @@ import (
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/bwmarrin/discordgo"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/tevino/abool"
 )
 
@@ -75,6 +75,8 @@ func discordConnect() {
 	} else {
 		discord = v
 	}
+	discord.Identify.Intents = discordgo.IntentGuilds | discordgo.IntentGuildMessages |
+		discordgo.IntentDirectMessages | discordgo.IntentMessageContent
 
 	// Register function handlers for various events
 	discord.AddHandler(discordReady)

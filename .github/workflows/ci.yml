@@ -37,6 +37,7 @@ jobs:
           go-version: "1.27.x"
           cache-dependency-path: |
             server/src/go.sum
+            maintenance/go.sum
             install/migration_files.sh
 
       - name: Prepare the pinned migration tool
@@ -58,6 +59,10 @@ jobs:
       - name: Analyze the Golang code
         run: go vet ./...
         working-directory: ./server/src
+
+      - name: Check the maintenance server
+        run: go test -race -count=1 -timeout=2m ./... && go vet ./...
+        working-directory: ./maintenance
 
   container_build:
     runs-on: ubuntu-latest

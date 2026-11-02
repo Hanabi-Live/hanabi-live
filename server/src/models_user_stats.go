@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserStats struct{}
