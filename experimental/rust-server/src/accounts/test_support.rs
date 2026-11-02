@@ -61,9 +61,30 @@ impl TestDb {
     pub async fn close(mut self) {
         self.pool.close().await;
         self.admin
-            .execute(format!("DROP DATABASE {}", self.name).as_str())
+            .execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
             .await
             .unwrap();
         self.admin.close().await.unwrap();
     }
+}
+
+#[tokio::test]
+async fn cleanup_handles_late_backend_disconnect_without_touching_other_databases_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let other = TestDb::create().await.unwrap();
+    let mut backend = PgConnection::connect_with(&db.pool.connect_options())
+        .await
+        .unwrap();
+    db.close().await;
+    assert!(backend.execute("SELECT 1").await.is_err());
+    assert_eq!(
+        sqlx::query_scalar::<_, i32>("SELECT 1")
+            .fetch_one(&other.pool)
+            .await
+            .unwrap(),
+        1
+    );
+    other.close().await;
 }

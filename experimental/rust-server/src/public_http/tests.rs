@@ -276,7 +276,7 @@ impl Database {
     async fn close(mut self) {
         self.pool.close().await;
         self.admin
-            .execute(format!("DROP DATABASE {}", self.name).as_str())
+            .execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
             .await
             .unwrap();
     }
