@@ -1,20 +1,11 @@
-import { userID } from "@hanabi-live/data";
-import { z } from "zod";
+import type { ServerCommandData, UserID } from "@hanabi-live/data";
 
-const pregameStats = z
-  .object({
-    numGames: z.number().int(),
-  })
-  .strict();
-
-export const tablePlayer = z
-  .object({
-    userID,
-    name: z.string().min(1),
-    present: z.boolean(),
-    stats: pregameStats,
-    typing: z.boolean(),
-    lastTyped: z.date(),
-    voteToKill: z.boolean(),
-  })
-  .strict();
+export interface TablePlayer {
+  userID: UserID;
+  name: string;
+  present: boolean;
+  stats: ServerCommandData["game"]["players"][number]["stats"];
+  typing: boolean;
+  lastTyped: Date;
+  voteToKill: boolean;
+}

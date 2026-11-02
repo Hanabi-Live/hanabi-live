@@ -29,6 +29,11 @@ func commandTableSetLeader(ctx context.Context, s *Session, d *CommandData) {
 		defer t.Unlock(ctx)
 	}
 
+	if !t.IsPlayerOrSpectating(s.UserID) || (t.Replay && !t.IsActivelySpectating(s.UserID)) {
+		s.Warning("You must be at the table to change its leader.")
+		return
+	}
+
 	if len(d.Name) == 0 {
 		s.Warning("You must specify the username to pass the lead to. (e.g. \"/setleader Alice\")")
 		return

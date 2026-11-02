@@ -11,6 +11,16 @@ import path from "node:path";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { createEta } from "./eta";
+import { httpExport } from "./http/httpExport";
+import {
+  httpAPIHistory,
+  httpAPIHistoryFull,
+  httpAPISeed,
+  httpAPISeedFull,
+  httpAPIVariantGames,
+  httpAPIVariants,
+  httpAPIVariantsFull,
+} from "./http/httpGameAPI";
 import {
   httpIdentityLookup,
   httpIdentityTokenGet,
@@ -19,6 +29,7 @@ import {
 import { httpLogin } from "./http/httpLogin";
 import { httpLogout } from "./http/httpLogout";
 import { httpMain } from "./http/httpMain";
+import { registerPublicPages } from "./http/httpPublicPages";
 import { httpSharedMissingScores } from "./http/httpSharedMissingScores";
 import { httpAPITags } from "./http/httpTags";
 import { httpAPITagSearch } from "./http/httpTagSearch";
@@ -39,11 +50,12 @@ const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
 const eta = createEta();
 
 export async function httpInit(): Promise<FastifyInstance> {
-  const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
-  const defaultPort = useTLS ? 443 : 80;
-  const port = env.PORT === 0 ? defaultPort : env.PORT;
+  const host =
+    env.DOMAIN === "localhost" || env.DOMAIN === "127.0.0.1"
+      ? "127.0.0.1"
+      : "0.0.0.0";
   const server = await createHTTPServer();
-  await server.listen({ port, host: "0.0.0.0" });
+  await server.listen({ port: env.PORT, host });
   return server;
 }
 
@@ -90,9 +102,11 @@ export async function createHTTPServer(): Promise<FastifyInstance> {
   });
 
   httpServer.addHook("preValidation", async (request, reply) => {
+    const isAPI = request.routeOptions.url?.startsWith("/api/v1/") === true;
     if (
       request.routeOptions.url !== "/login"
       && request.routeOptions.url !== "/ws"
+      && !isAPI
     ) {
       return;
     }
@@ -102,11 +116,12 @@ export async function createHTTPServer(): Promise<FastifyInstance> {
       logger.info(
         `IP "${request.ip}" tried to send an HTTP request, but they are banned.`,
       );
+      const message =
+        "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";
       return await reply
-        .code(StatusCodes.UNAUTHORIZED)
-        .send(
-          "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
-        );
+        .code(isAPI ? StatusCodes.BAD_REQUEST : StatusCodes.UNAUTHORIZED)
+        .type(isAPI ? "application/json" : "text/plain")
+        .send(isAPI ? JSON.stringify(message) : message);
     }
   });
 
@@ -172,6 +187,7 @@ async function registerFastifyPlugins(
 }
 
 function registerPathHandlers(httpServer: FastifyInstance) {
+  registerPublicPages(httpServer);
   // For cookies and logging in.
   httpServer.post("/login", httpLogin);
   httpServer.get("/logout", httpLogout);
@@ -195,8 +211,10 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   httpServer.get("/game/:tableID/shadow/:seat", httpMain);
   httpServer.get("/replay", httpMain);
   httpServer.get("/replay/:databaseID", httpMain);
+  httpServer.get("/replay/:databaseID/:turnID", httpMain);
   httpServer.get("/shared-replay", httpMain);
   httpServer.get("/shared-replay/:databaseID", httpMain);
+  httpServer.get("/shared-replay/:databaseID/:turnID", httpMain);
   httpServer.get("/replay-json/:string", httpMain);
   httpServer.get("/shared-replay-json/:string", httpMain);
   httpServer.get("/create-table", httpMain);
@@ -212,48 +230,26 @@ function registerPathHandlers(httpServer: FastifyInstance) {
 
   // API V1 routes.
   const api = "/api/v1";
+  httpServer.get(`${api}/variants`, httpAPIVariants);
+  httpServer.get(`${api}/variants-full`, httpAPIVariantsFull);
+  httpServer.get(`${api}/variants/:id`, httpAPIVariantGames);
+  httpServer.get(`${api}/seed/:seed`, httpAPISeed);
+  httpServer.get(`${api}/seed-full/:seed`, httpAPISeedFull);
+  let historyPath = `${api}/history`;
+  let fullHistoryPath = `${api}/history-full`;
+  for (let index = 1; index <= 6; index++) {
+    historyPath += `/:player${index}`;
+    fullHistoryPath += `/:player${index}`;
+    httpServer.get(historyPath, httpAPIHistory);
+    httpServer.get(fullHistoryPath, httpAPIHistoryFull);
+  }
   httpServer.get(`${api}/tags/:player1`, httpAPITags);
   httpServer.get(`${api}/tag/:tag`, httpAPITagSearch);
   httpServer.get(`${api}/identity/token`, httpIdentityTokenGet);
   httpServer.post(`${api}/identity/token`, httpIdentityTokenPost);
   httpServer.post(`${api}/identity`, httpIdentityLookup);
+  httpServer.get("/export", httpExport);
+  httpServer.get("/export/:databaseID", httpExport);
 
-  /*
-
-	// Path handlers for other URLs
-	fastify.get("/scores", httpScores)
-	fastify.get("/scores/:player1", httpScores)
-	fastify.get("/profile", httpScores) // "/profile" is an alias for "/scores"
-	fastify.get("/profile/:player1", httpScores)
-	fastify.get("/history", httpHistory)
-	fastify.get("/history/:player1", httpHistory)
-	fastify.get("/history/:player1/:player2", httpHistory)
-	fastify.get("/history/:player1/:player2/:player3", httpHistory)
-	fastify.get("/history/:player1/:player2/:player3/:player4", httpHistory)
-	fastify.get("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
-	fastify.get("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
-	fastify.get("/missing-scores", httpMissingScores)
-	fastify.get("/missing-scores/:player1", httpMissingScores)
-	fastify.get("/missing-scores/:player1/:numPlayers", httpMissingScores)
-	fastify.get("/tags", httpTags)
-	fastify.get("/tags/:player1", httpTags)
-	fastify.get("/seed", httpSeed)
-	fastify.get("/seed/:seed", httpSeed) // Display all games played on a given seed
-	// fastify.get("/stats", httpStats)
-	fastify.get("/variant", httpVariant)
-	fastify.get("/variant/:id", httpVariant)
-	fastify.get("/tag", httpTag)
-	fastify.get("/tag/:tag", httpTag)
-	fastify.get("/videos", httpVideos)
-	fastify.get("/password-reset", httpPasswordReset)
-	httpRouter.POST("/password-reset", httpPasswordResetPost)
-
-	// API V1 routes
-	apiSetRoutes(httpRouter)
-
-	// Path handlers for bots, developers, researchers, etc.
-	fastify.get("/export", httpExport)
-	fastify.get("/export/:databaseID", httpExport)
-
-  */
+  // The legacy global /stats page remains disabled for maintenance.
 }

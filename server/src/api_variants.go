@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -156,7 +157,7 @@ func apiGetVariantIDFromParam(c *gin.Context) (int, error) {
 	if v, err := httpGetIntVariable(c, "id"); err != nil {
 		return 0, err
 	} else if !variantsIsValidID(v) {
-		return 0, err
+		return 0, fmt.Errorf("unknown variant ID %d", v)
 	} else {
 		return v, nil
 	}

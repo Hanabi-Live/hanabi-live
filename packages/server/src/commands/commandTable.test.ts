@@ -1,0 +1,417 @@
+import type { TableID, UserID } from "@hanabi-live/data";
+import {
+  SERVER_COMMAND_SCHEMAS,
+  ServerCommand,
+  Status,
+} from "@hanabi-live/data";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from "@jest/globals";
+import type { WebSocket } from "ws";
+import type { Table } from "../interfaces/Table";
+import { models } from "../models";
+import { enqueueTableOperation, scheduleTableCleanup } from "../tableQueue";
+import {
+  getTable,
+  getTableIDsUserPlayingAt,
+  getTableList,
+  removeTable,
+} from "../tables";
+import type { SessionID } from "../types/SessionID";
+import { wsMessage } from "../wsMessage";
+import type { WSUser } from "../wsUsers";
+import { wsUsers } from "../wsUsers";
+import { cleanupDisconnectedTables } from "./commandTable";
+
+jest.mock("../models", () => ({
+  models: {
+    games: { getNumGamesForUser: jest.fn() },
+    userStats: { get: jest.fn() },
+  },
+}));
+jest.mock("../env", () => ({
+  env: { SESSION_SECRET: "synthetic-pregame-secret" },
+  IS_DEV: true,
+}));
+jest.mock("../logger", () => ({
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+}));
+jest.mock("../words", () => ({ getRandomTableName: () => "Random table" }));
+
+const users = wsUsers as Map<UserID, WSUser>;
+const zeroStats = {
+  numGames: 0,
+  averageScore: 0,
+  numStrikeouts: 0,
+  bestScores: [2, 3, 4, 5, 6].map((numPlayers) => ({
+    numPlayers,
+    score: 0,
+    modifier: 0,
+  })),
+};
+
+function connect(id: number, username: string) {
+  const messages: string[] = [];
+  const user: WSUser = {
+    connection: {
+      readyState: 1,
+      OPEN: 1,
+      bufferedAmount: 0,
+      send: (message: string) => {
+        messages.push(message);
+      },
+    } as WebSocket,
+    userID: id as UserID,
+    sessionID: id as SessionID,
+    username,
+    normalizedUsername: username.toLowerCase(),
+    ip: "127.0.0.1",
+    muted: false,
+    fakeUser: false,
+    status: Status.Lobby,
+    tableID: undefined,
+    friends: new Set(),
+    hyphenated: false,
+    inactive: false,
+  };
+  users.set(user.userID, user);
+  return { user, messages };
+}
+
+async function send(user: WSUser, command: string, data: object) {
+  await wsMessage(user, Buffer.from(`${command} ${JSON.stringify(data)}`));
+}
+
+function tableFor(user: WSUser): Table {
+  const [id] = getTableIDsUserPlayingAt(user.userID);
+  const table = id === undefined ? undefined : getTable(id);
+  if (table === undefined) {
+    throw new Error("Missing test table.");
+  }
+  return table;
+}
+
+describe("authoritative pregame table lifecycle", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    users.clear();
+    jest.mocked(models.games.getNumGamesForUser).mockResolvedValue(17);
+    jest.mocked(models.userStats.get).mockResolvedValue(zeroStats);
+  });
+
+  afterEach(() => {
+    for (const user of users.values()) {
+      for (const id of getTableIDsUserPlayingAt(user.userID)) {
+        removeTable(id);
+      }
+    }
+    users.clear();
+  });
+
+  test("normal envelopes create, password-join, transfer leadership, and leave with pregame notifications", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "tableCreate", {
+      name: "!seed compatible-seed",
+      password: "secret",
+      maxPlayers: 2,
+      options: {
+        timed: true,
+        speedrun: true,
+        timeBase: -4,
+        oneExtraCard: true,
+        oneLessCard: true,
+      },
+    });
+    const table = tableFor(alice.user);
+    expect(Number.isSafeInteger(table.id)).toBe(true);
+    expect(table.extraOptions.setSeedSuffix).toBe("compatible-seed");
+    expect(table.options).toMatchObject({
+      timed: false,
+      timeBase: 0,
+      oneExtraCard: false,
+      oneLessCard: false,
+    });
+    expect(alice.user.status).toBe(Status.PreGame);
+    await send(bob.user, "tableJoin", { tableID: table.id, password: "wrong" });
+    expect(table.players).toHaveLength(1);
+    expect(bob.messages.at(-1)).toContain("correct password");
+    await send(bob.user, "tableJoin", {
+      tableID: table.id,
+      password: "secret",
+    });
+    expect(table.players).toHaveLength(2);
+    expect(bob.user.tableID).toBe(table.id);
+    const gameMessage = bob.messages.find((message) =>
+      message.startsWith("game "),
+    );
+    expect(gameMessage).toBeDefined();
+    const gameData = SERVER_COMMAND_SCHEMAS[ServerCommand.game].parse(
+      JSON.parse(gameMessage?.slice(5) ?? "{}"),
+    );
+    expect(gameData.players.map((player) => player.you)).toEqual([false, true]);
+    expect(gameData.players[1]?.stats).toMatchObject({
+      numGames: 17,
+      variant: { numGames: 0 },
+    });
+    await send(bob.user, "tableSetLeader", { tableID: table.id, name: "bOb" });
+    expect(table.ownerID).toBe(bob.user.userID);
+    expect(table.players[0]?.name).toBe("Bob");
+    await send(bob.user, "tableTerminate", { tableID: table.id });
+    expect(bob.messages.at(-1)).toContain("has not started");
+    await send(bob.user, "tableLeave", { tableID: table.id });
+    expect(table.ownerID).toBe(alice.user.userID);
+    expect(bob.user.status).toBe(Status.Lobby);
+    await send(alice.user, "tableLeave", { tableID: table.id });
+    expect(getTable(table.id)).toBeUndefined();
+    expect(alice.messages.at(-1)).toContain("tableGone");
+  });
+
+  test("owner-only variant changes, guest proposals, limits and hidden lobby updates", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    const carol = connect(3, "Carol");
+    await send(alice.user, "tableCreate", { name: "First" });
+    const table = tableFor(alice.user);
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    await send(carol.user, "tableJoin", { tableID: table.id });
+    await send(bob.user, "tableSetVariant", {
+      tableID: table.id,
+      options: { variantName: "Black (5 Suits)" },
+    });
+    expect(bob.messages.at(-1)).toContain("Only the table owner");
+    expect(table.options.variantName).toBe("No Variant");
+    await send(bob.user, "tableUpdate", {
+      tableID: table.id,
+      name: "Proposal",
+    });
+    expect(table.name).toBe("First");
+    expect(alice.messages.at(-1)).toContain("click to apply");
+    await send(alice.user, "tableUpdate", {
+      tableID: table.id,
+      name: "Changed",
+      maxPlayers: 2,
+      hidePregame: true,
+      options: { variantName: "Black (5 Suits)" },
+    });
+    expect(table.players.map((player) => player.name)).toEqual([
+      "Alice",
+      "Bob",
+    ]);
+    expect(carol.user.status).toBe(Status.Lobby);
+    expect(table.options.variantName).toBe("Black (5 Suits)");
+    expect(getTableList(carol.user.userID)).toEqual([]);
+    await send(carol.user, "tableJoin", { tableID: table.id });
+    expect(carol.messages.at(-1)).toContain("already full");
+  });
+
+  test("outsiders cannot change leadership or inject option proposals", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    const outsider = connect(3, "Outsider");
+    await send(alice.user, "tableCreate", { name: "Members only" });
+    const table = tableFor(alice.user);
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    const chat = [...table.chat];
+    await send(outsider.user, "tableSetLeader", {
+      tableID: table.id,
+      name: "Bob",
+    });
+    await send(outsider.user, "tableUpdate", {
+      tableID: table.id,
+      name: "Unwanted proposal",
+    });
+    expect(table.ownerID).toBe(alice.user.userID);
+    expect(table.name).toBe("Members only");
+    expect(table.chat).toEqual(chat);
+    expect(
+      outsider.messages.filter((message) =>
+        message.includes("You must be at the table"),
+      ),
+    ).toHaveLength(2);
+  });
+
+  test("failed preparation never publishes create, join or option changes", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    jest
+      .mocked(models.userStats.get)
+      .mockRejectedValueOnce(new Error("database down"));
+    await expect(send(alice.user, "tableCreate", {})).rejects.toThrow(
+      "database down",
+    );
+    expect(getTableList(alice.user.userID)).toEqual([]);
+    expect(alice.user.status).toBe(Status.Lobby);
+    await send(alice.user, "tableCreate", {});
+    const table = tableFor(alice.user);
+    jest
+      .mocked(models.userStats.get)
+      .mockRejectedValueOnce(new Error("database down"));
+    await expect(
+      send(bob.user, "tableJoin", { tableID: table.id }),
+    ).rejects.toThrow("database down");
+    expect(table.players).toHaveLength(1);
+    expect(bob.user.status).toBe(Status.Lobby);
+    jest
+      .mocked(models.userStats.get)
+      .mockRejectedValueOnce(new Error("database down"));
+    await expect(
+      send(alice.user, "tableSetVariant", {
+        tableID: table.id,
+        options: { variantName: "Black (5 Suits)" },
+      }),
+    ).rejects.toThrow("database down");
+    expect(table.options.variantName).toBe("No Variant");
+  });
+
+  test("a stale or closed session cannot publish after database preparation", async () => {
+    const alice = connect(1, "Alice");
+    const stats = Promise.withResolvers<typeof zeroStats>();
+    jest.mocked(models.userStats.get).mockReturnValueOnce(stats.promise);
+    const creating = send(alice.user, "tableCreate", {});
+    await Promise.resolve();
+    const replacement = connect(1, "Alice");
+    stats.resolve(zeroStats);
+    await creating;
+    expect(getTableList(alice.user.userID)).toEqual([]);
+    expect(wsUsers.get(alice.user.userID)).toBe(replacement.user);
+    await send(alice.user, "tableCreate", {});
+    expect(getTableList(alice.user.userID)).toEqual([]);
+  });
+
+  test("disconnect cleanup is ordered, coalesced, and cannot eject a replacement session", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "tableCreate", {});
+    const table = tableFor(alice.user);
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    const blocked = Promise.withResolvers<undefined>();
+    const pending = enqueueTableOperation(table.id, async () => {
+      await blocked.promise;
+    });
+    users.delete(alice.user.userID);
+    cleanupDisconnectedTables(alice.user);
+    const replacement = connect(1, "Alice");
+    users.delete(bob.user.userID);
+    cleanupDisconnectedTables(bob.user);
+    blocked.resolve(undefined);
+    await pending;
+    expect(table.players.map((player) => player.name)).toEqual(["Alice"]);
+    expect(wsUsers.get(alice.user.userID)).toBe(replacement.user);
+    await send(replacement.user, "tableReattend", { tableID: table.id });
+    expect(replacement.user.status).toBe(Status.PreGame);
+    expect(
+      replacement.messages.some((message) => message.startsWith("joined ")),
+    ).toBe(true);
+    users.delete(replacement.user.userID);
+    cleanupDisconnectedTables(replacement.user);
+    expect(getTable(table.id)).toBeUndefined();
+  });
+
+  test("a socket closed during join cannot gain membership and later commands survive the failed operation", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "tableCreate", {});
+    const table = tableFor(alice.user);
+    const stats = Promise.withResolvers<typeof zeroStats>();
+    const entered = Promise.withResolvers<undefined>();
+    jest.mocked(models.userStats.get).mockImplementationOnce(async () => {
+      entered.resolve(undefined);
+      return await stats.promise;
+    });
+    const joining = send(bob.user, "tableJoin", { tableID: table.id });
+    await entered.promise;
+    Object.defineProperty(bob.user.connection, "readyState", { value: 3 });
+    stats.resolve(zeroStats);
+    await joining;
+    expect(table.players).toHaveLength(1);
+    expect(bob.user.status).toBe(Status.Lobby);
+    jest
+      .mocked(models.userStats.get)
+      .mockRejectedValueOnce(new Error("database down"));
+    await expect(
+      send(alice.user, "tableSetVariant", {
+        tableID: table.id,
+        options: { variantName: "Black (5 Suits)" },
+      }),
+    ).rejects.toThrow("database down");
+    await send(alice.user, "tableSetVariant", {
+      tableID: table.id,
+      options: { variantName: "Black (5 Suits)" },
+    });
+    expect(table.options.variantName).toBe("Black (5 Suits)");
+  });
+
+  test("unsupported setup and unsafe table IDs are rejected without publishing", async () => {
+    const alice = connect(1, "Alice");
+    for (const data of [
+      { name: "!replay 123" },
+      { gameJSON: {} },
+      { name: "Invalid <name>" },
+      { options: { timed: true, timeBase: 0 } },
+    ]) {
+      // eslint-disable-next-line no-await-in-loop
+      await send(alice.user, "tableCreate", data);
+    }
+    await send(alice.user, "tableJoin", {
+      tableID: Number.MAX_SAFE_INTEGER + 1,
+    });
+    expect(
+      alice.messages.filter((message) => message.startsWith("warning ")),
+    ).toHaveLength(5);
+    expect(getTableList(alice.user.userID)).toEqual([]);
+  });
+});
+
+test("per-table admission is bounded and other tables progress while one awaits I/O", async () => {
+  const blocked = Promise.withResolvers<undefined>();
+  const firstID = 10 as TableID;
+  const secondID = 11 as TableID;
+  const order: number[] = [];
+  const pending = [
+    enqueueTableOperation(firstID, async () => {
+      await blocked.promise;
+    }),
+  ];
+  for (let i = 1; i < 64; i++) {
+    pending.push(
+      enqueueTableOperation(firstID, () => {
+        order.push(i);
+      }),
+    );
+  }
+  expect(
+    await enqueueTableOperation(firstID, () => {
+      order.push(999);
+    }),
+  ).toBe(false);
+  expect(
+    await enqueueTableOperation(secondID, () => {
+      order.push(0);
+    }),
+  ).toBe(true);
+  expect(order).toEqual([0]);
+  blocked.resolve(undefined);
+  await Promise.all(pending);
+  expect(order).toEqual(Array.from({ length: 64 }, (_, index) => index));
+});
+
+test("cleanup failures reach the admitted caller and release table queue capacity", async () => {
+  const release = Promise.withResolvers<undefined>();
+  const id = 12 as TableID;
+  const pending = enqueueTableOperation(id, async () => {
+    await release.promise;
+  });
+  scheduleTableCleanup(id, () => {
+    throw new Error("cleanup failed");
+  });
+  const failed = expect(pending).rejects.toThrow("cleanup failed");
+  release.resolve(undefined);
+  await failed;
+  expect(await enqueueTableOperation(id, () => undefined)).toBe(true);
+});

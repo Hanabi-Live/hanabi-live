@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
 	"github.com/gin-gonic/gin"
@@ -128,21 +129,17 @@ func apiGetLimits(c *gin.Context) (idStart, idEnd *int) {
 func apiBuildSubquery(params APIQueryVars) (string, string, string, []interface{}) {
 	where := ""
 	args := []interface{}{}
+	conditions := make([]string, 0)
 
 	for _, filter := range params.Filters {
-		if apiIsNumeric(filter.Value) {
-			args = append(args, filter.Value)
-			where += filter.Column + " = $" + strconv.Itoa(len(args))
-		} else if filter.Value != "" {
-			args = append(args, filter.Value)
-			where += filter.Column + " = $" + strconv.Itoa(len(args))
+		if filter.Value == "" {
+			continue
 		}
-		where += " AND "
+		args = append(args, filter.Value)
+		conditions = append(conditions, filter.Column+" = $"+strconv.Itoa(len(args)))
 	}
-	if where != "" {
-		where = `
-		WHERE
-			` + where[:len(where)-len(" AND ")]
+	if len(conditions) > 0 {
+		where = "\nWHERE " + strings.Join(conditions, " AND ")
 	}
 
 	// Note that we order by descending id as a secondary sorting criterion.
@@ -198,14 +195,6 @@ func apiSetRoutes(httpRouter *gin.Engine) {
 	httpRouter.GET(api+"/identity/token", apiIdentityTokenGet)
 	httpRouter.POST(api+"/identity/token", apiIdentityTokenPost)
 	httpRouter.POST(api+"/identity", apiIdentityLookup)
-}
-
-// Checks if a string contains a numeric value
-func apiIsNumeric(s string) bool {
-	if _, err := strconv.Atoi(s); err == nil {
-		return true
-	}
-	return false
 }
 
 func apiCheckIPBanned(c *gin.Context) bool {

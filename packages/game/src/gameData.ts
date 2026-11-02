@@ -61,6 +61,10 @@ export function getVariantByID(variantID: number): Variant {
   return variant;
 }
 
+export function doesVariantIDExist(variantID: number): boolean {
+  return VARIANTS_MAP_BY_ID.has(variantID);
+}
+
 export function getDefaultVariant(): Variant {
   return getVariant(DEFAULT_VARIANT_NAME);
 }
@@ -77,4 +81,8 @@ export function getCharacter(characterID: number): Character {
   );
 
   return character;
+}
+
+export function getCharacters(): readonly Character[] {
+  return [...CHARACTERS_MAP.values()];
 }

@@ -23,7 +23,7 @@ const SERVER_COMMAND_STRINGIFY_FUNCS = Object.fromEntries(
 ) as ReadonlyRecord<ServerCommand, (data: unknown) => string>;
 
 /** Returns a WebSocket message in the Golem protocol format. */
-function getWSMsg<T extends ServerCommand>(
+export function getWSMsg<T extends ServerCommand>(
   command: T,
   data: ServerCommandData[T],
 ): string | undefined {
@@ -56,7 +56,7 @@ export function wsSend<T extends ServerCommand>(
 ): void {
   const msg = getWSMsg(serverCommand, data);
   if (msg !== undefined) {
-    send(connection, msg);
+    sendPreparedWSMessage(connection, msg);
   }
 }
 
@@ -77,12 +77,15 @@ export function wsSendAll<T extends ServerCommand>(
 
   for (const wsUser of wsUsers.values()) {
     if (exceptionUserID !== wsUser.userID) {
-      send(wsUser.connection, msg);
+      sendPreparedWSMessage(wsUser.connection, msg);
     }
   }
 }
 
-function send(connection: WebSocket, message: string) {
+export function sendPreparedWSMessage(
+  connection: WebSocket,
+  message: string,
+): void {
   if (connection.readyState !== connection.OPEN) {
     return;
   }

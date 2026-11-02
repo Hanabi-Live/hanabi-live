@@ -7,14 +7,13 @@ import type { queueAsPromised } from "fastq";
 import fastq from "fastq";
 import { getChatList } from "./chat";
 import { chatMessageToWire } from "./chatMessage";
+import { cleanupDisconnectedTables } from "./commands/commandTable";
 import { getCurrentDatetime } from "./date";
 import { logger } from "./logger";
 import { isMaintenanceMode } from "./maintenanceMode";
 import { models } from "./models";
 import { getMessageOfTheDay } from "./motd";
-import { getRedisTablesWithUser } from "./redis";
 import { getShuttingDownMetadata } from "./shutdown";
-import { enqueueSetPlayerConnected } from "./tableQueue";
 import {
   getSpectatingMetadata,
   getTableIDsUserPlayingAt,
@@ -47,11 +46,13 @@ const wsQueue: queueAsPromised<WSQueueElement, void> = fastq.promise(
   1,
 );
 
+// The fastq promise API requires a promise worker; publication itself must not yield.
+// eslint-disable-next-line @typescript-eslint/require-await
 async function processQueue(element: WSQueueElement) {
   if (element.type === WSQueueElementType.Login) {
     login(element.wsUser, element.initialMessages);
   } else {
-    await logout(element.wsUser);
+    logout(element.wsUser);
   }
 }
 
@@ -237,7 +238,7 @@ async function getFriendHistory(wsUser: WSUser) {
   return await models.games.getHistory(gameIDs);
 }
 
-async function logout(wsUser: WSUser) {
+function logout(wsUser: WSUser) {
   const { userID, username, ip } = wsUser;
 
   // Check to see if there is a newer WebSocket connection for this user that is already connected.
@@ -257,10 +258,7 @@ async function logout(wsUser: WSUser) {
   // login queue, which is the only place that this map should be mutable.
   (wsUsers as Map<UserID, WSUser>).delete(userID);
 
-  const tables = await getRedisTablesWithUser(userID);
-  for (const table of tables) {
-    enqueueSetPlayerConnected(table.id, userID, false);
-  }
+  cleanupDisconnectedTables(wsUser);
 
   wsSendAll(ServerCommand.userLeft, {
     userID,

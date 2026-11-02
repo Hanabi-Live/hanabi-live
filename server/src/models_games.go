@@ -631,12 +631,12 @@ func (*Games) GetGamesForHistoryFromGameIDs(gameIDs []int, orderBy string) ([]Ga
 			STRING_AGG(username, ', ' ORDER BY LOWER(username)) AS usernames,
 			TO_CHAR(datetime_finished, 'YYYY-MM-DD" - "HH24:MI:SS TZ') AS finished,
 			games.seed as seed,
-			MAX(seeds.num_games) as total_games
+			COALESCE(MAX(seeds.num_games), 0) as total_games
 		FROM
 			games
 			JOIN game_participants on games.id = game_id
 			JOIN users on user_id = users.id
-			JOIN seeds ON seeds.seed = games.seed
+			LEFT JOIN seeds ON seeds.seed = games.seed
 		WHERE games.id = ANY($1)
 		GROUP BY games.id
 	` + orderBy

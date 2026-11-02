@@ -1,60 +1,34 @@
-import { tableID, userID } from "@hanabi-live/data";
-import { numPlayers, options } from "@hanabi-live/game";
-import type { AnySchema } from "fast-json-stringify";
-import fastJSONStringify from "fast-json-stringify";
-import { z } from "zod";
-import { extraOptions } from "./ExtraOptions";
-import { game } from "./Game";
-import { serverSpectator } from "./ServerSpectator";
-import { tablePlayer } from "./TablePlayer";
+import type { ServerCommandChatData, TableID, UserID } from "@hanabi-live/data";
+import type { NumPlayers, Options } from "@hanabi-live/game";
+import type { z } from "zod";
+import type { extraOptions } from "./ExtraOptions";
+import type { Game } from "./Game";
+import type { ServerSpectator } from "./ServerSpectator";
+import type { TablePlayer } from "./TablePlayer";
 
-const tableChatMessage = z
-  .object({
-    userID,
-    username: z.string().min(1),
-    msg: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
-const table = z
-  .object({
-    id: tableID,
-    name: z.string().min(1),
-    initialName: z.string().min(1),
-
-    players: tablePlayer.array(),
-    maxPlayers: numPlayers,
-    spectators: serverSpectator.array(),
-    kickedPlayers: userID.array(), // We cannot use a set since it is not serializable.
-
-    ownerID: userID,
-    visible: z.boolean(),
-    passwordHash: z.string().min(1).optional(),
-    running: z.boolean(),
-    replay: z.boolean(),
-    progress: z.number().int().min(0).max(100),
-
-    datetimeCreated: z.date(),
-    datetimeLastJoined: z.date(),
-    datetimePlannedStart: z.date(),
-    datetimeLastAction: z.date(),
-
-    game,
-    options,
-    extraOptions,
-
-    chat: tableChatMessage.array(),
-    chatRead: z.record(userID, z.number().int()),
-  })
-  .strict();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Table extends z.infer<typeof table> {}
-
-const jsonSchema = z.toJSONSchema(table, {
-  unrepresentable: "any",
-}) as AnySchema;
-export const tableStringifyFunc = fastJSONStringify(jsonSchema) as (
-  table: Table,
-) => string;
+/** Mutable state owned by the registry and its per-table execution queue. */
+export interface Table {
+  id: TableID;
+  name: string;
+  initialName: string;
+  players: TablePlayer[];
+  maxPlayers: NumPlayers;
+  spectators: ServerSpectator[];
+  kickedPlayers: UserID[];
+  ownerID: UserID;
+  visible: boolean;
+  passwordHash: string | undefined;
+  running: boolean;
+  replay: boolean;
+  progress: number;
+  datetimeCreated: Date;
+  datetimeLastJoined: Date;
+  datetimePlannedStart: Date | undefined;
+  datetimeLastAction: Date;
+  game: Game | undefined;
+  recoveryBlocked?: boolean;
+  options: Options;
+  extraOptions: z.infer<typeof extraOptions>;
+  chat: Array<{ userID: number; message: ServerCommandChatData }>;
+  chatRead: Map<UserID, number>;
+}

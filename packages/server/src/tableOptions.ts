@@ -1,0 +1,108 @@
+import type { ClientCommandData } from "@hanabi-live/data";
+import type { NumPlayers, Options } from "@hanabi-live/game";
+import { doesVariantExist, isValidNumPlayers } from "@hanabi-live/game";
+import { escapeHTMLCharacters } from "complete-common";
+import { trimUnicodeWhitespace, truncateToMaxBytes } from "./utils";
+import { getRandomTableName } from "./words";
+import { wsWarning } from "./wsHelpers";
+import type { WSUser } from "./wsUsers";
+
+export function prepareTableOptions(
+  user: WSUser,
+  data: ClientCommandData["tableCreate"],
+  validateSpecialName = true,
+):
+  | { name: string; options: Options; maxPlayers: NumPlayers; seed: string }
+  | undefined {
+  const truncated =
+    Buffer.byteLength(data.name) > 45
+      ? truncateToMaxBytes(data.name, 44)
+      : data.name;
+  const trimmed = trimUnicodeWhitespace(truncated);
+  const name = trimmed === "" ? getRandomTableName() : trimmed;
+  if (!/^[\w !#$()+,\-.:;=?@]+$/u.test(name)) {
+    wsWarning(
+      user.connection,
+      "Game names can only contain English letters, numbers, spaces, and ! @ # $ ( ) - _ = + ; : , . ?",
+    );
+    return undefined;
+  }
+  if (
+    validateSpecialName
+    && data.gameJSON !== undefined
+    && data.gameJSON !== null
+  ) {
+    wsWarning(user.connection, "JSON game creation is not implemented.");
+    return undefined;
+  }
+  let seed = "";
+  if (validateSpecialName && name.startsWith("!")) {
+    const [command, ...args] = name.split(" ");
+    if (command?.toLowerCase() === "!replay") {
+      wsWarning(user.connection, "Replay game creation is not implemented.");
+      return undefined;
+    }
+    if (command?.toLowerCase() !== "!seed") {
+      wsWarning(
+        user.connection,
+        "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command.",
+      );
+      return undefined;
+    }
+    const [suffix] = args;
+    if (args.length !== 1 || suffix === undefined) {
+      wsWarning(
+        user.connection,
+        "Games on specific seeds must be created in the form: !seed [seed name]",
+      );
+      return undefined;
+    }
+    if (!/^[\d\-a-z]+$/iu.test(suffix)) {
+      wsWarning(
+        user.connection,
+        "Seed names can only contain English letters, numbers and <code>-</code>",
+      );
+      return undefined;
+    }
+    seed = suffix;
+  }
+  const options: Options = {
+    ...data.options,
+    startingPlayer: 0,
+    timed: data.options.timed && !data.options.speedrun,
+    timeBase:
+      data.options.timed && !data.options.speedrun ? data.options.timeBase : 0,
+    timePerTurn:
+      data.options.timed && !data.options.speedrun
+        ? data.options.timePerTurn
+        : 0,
+    oneExtraCard: data.options.oneExtraCard && !data.options.oneLessCard,
+    oneLessCard: data.options.oneLessCard && !data.options.oneExtraCard,
+  };
+  if (!doesVariantExist(options.variantName)) {
+    wsWarning(
+      user.connection,
+      `"${escapeHTMLCharacters(options.variantName)}" is not a valid variant.`,
+    );
+    return undefined;
+  }
+  if (
+    options.timed
+    && (options.timeBase <= 0
+      || options.timeBase > 604_800
+      || options.timePerTurn <= 0
+      || options.timePerTurn > 86_400)
+  ) {
+    wsWarning(
+      user.connection,
+      "Timed games require Base Time from 1 to 604800 seconds and Time per Turn from 1 to 86400 seconds.",
+    );
+    return undefined;
+  }
+  return {
+    name,
+    options,
+    maxPlayers: isValidNumPlayers(data.maxPlayers) ? data.maxPlayers : 5,
+    seed,
+  };
+}

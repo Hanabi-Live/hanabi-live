@@ -1,22 +1,13 @@
-import { userID } from "@hanabi-live/data";
-import { playerIndex } from "@hanabi-live/game";
-import { z } from "zod";
+import type { UserID } from "@hanabi-live/data";
+import type { PlayerIndex } from "@hanabi-live/game";
 
-export const serverSpectator = z
-  .object({
-    userID,
-    name: z.string().min(1),
-    typing: z.boolean(),
-    lastTyped: z.date(),
-
-    shadowingPlayerIndex: playerIndex.or(z.literal(-1)).optional(),
-    shadowingPlayerUsername: z.string().min(1).optional(),
-    shadowingPlayerPregameIndex: playerIndex.optional(),
-
-    notes: z.string().array().readonly(),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerSpectator extends z.infer<typeof serverSpectator> {}
+export interface ServerSpectator {
+  readonly userID: UserID;
+  readonly name: string;
+  readonly typing: boolean;
+  readonly lastTyped: Date;
+  readonly shadowingPlayerIndex?: PlayerIndex | -1;
+  readonly shadowingPlayerUsername?: string;
+  readonly shadowingPlayerPregameIndex?: PlayerIndex;
+  readonly notes: readonly string[];
+}

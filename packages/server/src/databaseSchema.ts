@@ -228,11 +228,29 @@ export const gameParticipantsTable = pgTable("game_participants", {
   characterMetadata: smallint("character_metadata").notNull(),
 });
 
-// TODO: game_participants
+export const gameParticipantNotesTable = pgTable(
+  "game_participant_notes",
+  {
+    gameParticipantID: integer("game_participant_id")
+      .notNull()
+      .references(() => gameParticipantsTable.id),
+    cardOrder: smallint("card_order").notNull(),
+    note: text("note").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.gameParticipantID, table.cardOrder] }),
+  ],
+);
 
-// TODO: game_participant_notes
-
-// TODO: game_actions
+export const gameActionsTable = pgTable("game_actions", {
+  gameID: integer("game_id")
+    .notNull()
+    .references(() => gamesTable.id),
+  turn: smallint("turn").notNull(),
+  type: smallint("type").notNull(),
+  target: smallint("target").notNull(),
+  value: smallint("value").notNull(),
+});
 
 export const gameTagsTable = pgTable("game_tags", {
   gameID: integer("game_id")
@@ -244,7 +262,18 @@ export const gameTagsTable = pgTable("game_tags", {
   tag: text("tag").notNull(),
 });
 
-// TODO: variant_stats
+export const variantStatsTable = pgTable("variant_stats", {
+  variantID: smallint("variant_id").primaryKey(),
+  numGames: integer("num_games").notNull().default(0),
+  bestScore2: smallint("best_score2").notNull().default(0),
+  bestScore3: smallint("best_score3").notNull().default(0),
+  bestScore4: smallint("best_score4").notNull().default(0),
+  bestScore5: smallint("best_score5").notNull().default(0),
+  bestScore6: smallint("best_score6").notNull().default(0),
+  numMaxScores: integer("num_max_scores").notNull().default(0),
+  averageScore: doublePrecision("average_score").notNull().default(0),
+  numStrikeouts: integer("num_strikeouts").notNull().default(0),
+});
 
 export const chatLogTable = pgTable(
   "chat_log",

@@ -55,6 +55,25 @@
         <section class="box">
           <h2 class="align-center">{{= it.namesTitle }}</h2>
 
+          {{ if (it.singleMissingScores) { const summary = JSON.parse(it.statsJSON); }}
+            {{~ include("./profile-buttons") }}
+            <h3>Current Max Scores:</h3>
+            <table class="history plain"><thead><tr>
+              {{ for (const players of [2,3,4,5,6]) { }}<th class="center">{{= players }}-player</th>{{ } }}
+              <th class="center">Total</th>
+            </tr></thead><tbody><tr>
+              {{ for (const row of summary.perType) { }}<td class="center">{{= row.total }} &nbsp;({{= row.percentage }}%)</td>{{ } }}
+              <td class="center">{{= summary.total }} &nbsp;({{= summary.percentage }}%)</td>
+            </tr></tbody></table>
+            <ul id="filter-players" class="horizontal"><li>Filter by # of Players</li><li>
+              <select id="filter-by-players" data-profile-path="/missing-scores/{{= encodeURIComponent(it.name) }}">
+                <option value="0">-</option>
+                {{ for (const players of [2,3,4,5,6]) { }}
+                  <option value="{{= players }}" {{ if (it.requestedNumPlayers === players) { }}selected{{ } }}>{{= players }}-Players</option>
+                {{ } }}
+              </select>
+            </li></ul><br /><br /><br />
+          {{ } else { }}
           <div class="advanced-filters-toggle-wrapper">
             <button
               type="button"
@@ -134,6 +153,7 @@
               </div>
             </div>
           </form>
+          {{ } }}
 
           <!-- Pagination controls -->
           <div class="pager">
@@ -173,20 +193,18 @@
                   <td class="center">{{= row.numPlayers }}</td>
                   <td class="center">
                     {{= row.score }} / {{= row.maxScore }} &nbsp;
-                    {{ if (row.modifier === 1) { }}
+                    {{ if (row.modifier & 16) { }}
+                      <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-allornothing"></i>
+                    {{ } else if (row.modifier & 4) { }}
+                      <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-oneextracard"></i>
+                    {{ } else if (row.modifier & 8) { }}
+                      <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-onelesscard"></i>
+                    {{ } else if (row.modifier & 2) { }}
+                      <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                    {{ } else if (row.modifier & 1) { }}
                       <i
                         class="fas fa-times score-modifier red tooltip"
                         data-tooltip-content="#modifier-deckplays"
-                      ></i>
-                    {{ } else if (row.modifier === 2) { }}
-                      <i
-                        class="fas fa-times score-modifier red tooltip"
-                        data-tooltip-content="#modifier-emptyclues"
-                      ></i>
-                    {{ } else if (row.modifier === 3) { }}
-                      <i
-                        class="fas fa-times score-modifier red tooltip"
-                        data-tooltip-content="#modifier-deckplays-emptyclues"
                       ></i>
                     {{ } }}
                   </td>
@@ -358,6 +376,9 @@
     .tablesorterPager(pagerOptions);
 
     initSharedMissingScoresFilters();
+    $('#filter-by-players').change(function () {
+      window.location = this.dataset.profilePath + (this.value === "0" ? "" : "/" + this.value);
+    });
   });
 
   const initSharedMissingScoresFilters = () => {

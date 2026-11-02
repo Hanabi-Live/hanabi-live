@@ -1,6 +1,6 @@
 import type { GameHistory, GameID, UserID } from "@hanabi-live/data";
 import { serverCommandGameHistoryData } from "@hanabi-live/data";
-import { getVariantByID } from "@hanabi-live/game";
+import { EndCondition, getVariantByID } from "@hanabi-live/game";
 import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { except } from "drizzle-orm/pg-core";
 import { gameParticipantsTable, gamesTable } from "../databaseSchema";
@@ -26,7 +26,13 @@ export const games = {
         gameParticipantsTable,
         eq(gamesTable.id, gameParticipantsTable.gameID),
       )
-      .where(and(eq(gameParticipantsTable.userID, userID), speedrunCondition));
+      .where(
+        and(
+          eq(gameParticipantsTable.userID, userID),
+          eq(gamesTable.endCondition, EndCondition.Normal),
+          speedrunCondition,
+        ),
+      );
 
     const row = rows[0];
     if (row === undefined) {

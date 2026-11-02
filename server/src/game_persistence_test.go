@@ -192,6 +192,15 @@ func TestHistoryUsesCompletionOrderNotReservedIDOrder(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("history details = %v; want %v", got, want)
 	}
+	apiRows, err := (&Games{}).GetGamesForHistoryFromGameIDs(ids, "ORDER BY games.id DESC")
+	if err != nil || len(apiRows) != len(ids) {
+		t.Fatalf("public history omitted games without derived seed statistics: %v, %v", apiRows, err)
+	}
+	for _, row := range apiRows {
+		if row.OtherScores != 0 {
+			t.Fatalf("unexpected missing-cache seed count: %d", row.OtherScores)
+		}
+	}
 	history, err = (&Games{}).GetHistoryCustomSort(ids, "seed")
 	if err != nil {
 		t.Fatal(err)

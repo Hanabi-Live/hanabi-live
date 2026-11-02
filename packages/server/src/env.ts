@@ -28,7 +28,7 @@ for (const [key, value] of Object.entries(process.env)) {
 const envSchema = z.object({
   DOMAIN: z.string().min(1).default("localhost"),
   SESSION_SECRET: z.string().min(128),
-  PORT: z.coerce.number().int().default(0), // We dynamically set 80 or 443 later on.
+  PORT: z.coerce.number().int().min(0).max(65_535).default(80),
   LOCALHOST_PORT: z.coerce.number().int().default(8081),
 
   TLS_CERT_FILE: z.string().default(""),

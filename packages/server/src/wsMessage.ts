@@ -10,6 +10,19 @@ import type { z } from "zod";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";
 import { commandChatPMHistoryGet } from "./commands/commandChatPMHistoryGet";
+import {
+  commandAction,
+  commandGetGameInfo1,
+  commandGetGameInfo2,
+  commandLoaded,
+  commandNote,
+  commandPause,
+  commandReplayAction,
+  commandTableSpectate,
+  commandTableStart,
+  commandTableUnattend,
+  commandTag,
+} from "./commands/commandGame";
 import { commandGetName } from "./commands/commandGetName";
 import {
   commandHistoryFriendsGet,
@@ -26,6 +39,16 @@ import {
   commandChatUnlink,
 } from "./commands/commandRelationships";
 import { commandSetting } from "./commands/commandSetting";
+import {
+  commandTableCreate,
+  commandTableJoin,
+  commandTableLeave,
+  commandTableReattend,
+  commandTableSetLeader,
+  commandTableSetVariant,
+  commandTableTerminate,
+  commandTableUpdate,
+} from "./commands/commandTable";
 import { logger } from "./logger";
 import { wsError, wsWarning } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
@@ -34,6 +57,79 @@ import { wsUsers } from "./wsUsers";
 const CLIENT_COMMANDS_SET = new ReadonlySet(getEnumValues(ClientCommand));
 
 const CLIENT_COMMAND_HANDLERS = {
+  [ClientCommand.tableStart]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableStart,
+    commandTableStart,
+  ),
+  [ClientCommand.getGameInfo1]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.getGameInfo1,
+    commandGetGameInfo1,
+  ),
+  [ClientCommand.getGameInfo2]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.getGameInfo2,
+    commandGetGameInfo2,
+  ),
+  [ClientCommand.loaded]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.loaded,
+    commandLoaded,
+  ),
+  [ClientCommand.action]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.action,
+    commandAction,
+  ),
+  [ClientCommand.pause]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.pause,
+    commandPause,
+  ),
+  [ClientCommand.note]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.note,
+    commandNote,
+  ),
+  [ClientCommand.tag]: validatedHandler(CLIENT_COMMAND_SCHEMAS.tag, commandTag),
+  [ClientCommand.tableUnattend]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableUnattend,
+    commandTableUnattend,
+  ),
+  [ClientCommand.tableSpectate]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableSpectate,
+    commandTableSpectate,
+  ),
+  [ClientCommand.replayAction]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.replayAction,
+    commandReplayAction,
+  ),
+  [ClientCommand.tableReattend]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableReattend,
+    commandTableReattend,
+  ),
+  [ClientCommand.tableCreate]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableCreate,
+    commandTableCreate,
+  ),
+  [ClientCommand.tableJoin]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableJoin,
+    commandTableJoin,
+  ),
+  [ClientCommand.tableLeave]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableLeave,
+    commandTableLeave,
+  ),
+  [ClientCommand.tableSetLeader]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableSetLeader,
+    commandTableSetLeader,
+  ),
+  [ClientCommand.tableSetVariant]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableSetVariant,
+    commandTableSetVariant,
+  ),
+  [ClientCommand.tableTerminate]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableTerminate,
+    commandTableTerminate,
+  ),
+  [ClientCommand.tableUpdate]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableUpdate,
+    commandTableUpdate,
+  ),
   [ClientCommand.chat]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.chat,
     commandChat,

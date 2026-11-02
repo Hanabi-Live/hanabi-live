@@ -45,7 +45,6 @@ func apiHistory(c *gin.Context) {
 	// Parse the player name(s) from the URL
 	var playerIDs []int
 	if v1, _, ok := httpParsePlayerNames(c); !ok {
-		c.JSON(http.StatusBadRequest, APIGamesAnswer{})
 		return
 	} else {
 		playerIDs = v1
@@ -231,7 +230,7 @@ func apiSeed(c *gin.Context) {
 
 	defaultSort := APISortColumn{Column: "score", Ascending: false}
 	initialFilter := APIColumnDescription{Column: "seed", Value: seed}
-	orderCols := []string{"games.id", "no_of_players", "score"}
+	orderCols := []string{"games.id", "num_players", "score"}
 	filterCols := []string{"games.id", "", "score"}
 
 	// Filter & sanitize
@@ -297,6 +296,9 @@ func apiGames(c *gin.Context, rowCount int, gameIDs []int, orderBy string) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, APIVariantAnswer{})
 		return
+	}
+	if dbRows == nil {
+		dbRows = make([]GamesRow, 0)
 	}
 
 	info := "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"

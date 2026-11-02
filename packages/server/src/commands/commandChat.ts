@@ -1,4 +1,4 @@
-import type { ClientCommandChatData } from "@hanabi-live/data";
+import type { ClientCommandChatData, TableID } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { chatServerSendPM, validateAndNormalizeChatMsg } from "../chat";
@@ -9,6 +9,7 @@ import { logger } from "../logger";
 import { models } from "../models";
 import { wsSendAll, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
+import { commandTableChat } from "./commandGame";
 
 export async function commandChat(
   wsUser: WSUser,
@@ -40,13 +41,6 @@ export async function commandChat(
     return;
   }
 
-  if (target.kind === "table") {
-    wsWarning(
-      connection,
-      "Table chat is not implemented in the TypeScript server yet.",
-    );
-    return;
-  }
   if (normalizedMsg.startsWith("/")) {
     wsWarning(
       connection,
@@ -55,6 +49,15 @@ export async function commandChat(
     return;
   }
   const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
+  if (target.kind === "table") {
+    await commandTableChat(
+      wsUser,
+      target.tableID as TableID,
+      sanitizedMsg,
+      data.requestID,
+    );
+    return;
+  }
   const { chatID, datetimeSent } = await models.chatLog.insert(
     wsUser.userID,
     sanitizedMsg,

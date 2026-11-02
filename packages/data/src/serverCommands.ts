@@ -5,6 +5,8 @@ import { interfaceSatisfiesEnum } from "complete-common";
 import { z } from "zod";
 import { ServerCommand } from "./enums/ServerCommand";
 import { Status } from "./enums/Status";
+import type { GameServerCommandData } from "./gameCommands";
+import { GAME_SERVER_COMMAND_SCHEMAS } from "./gameCommands";
 import { gameHistory } from "./interfaces/GameHistory";
 import { settings } from "./interfaces/Settings";
 import { spectator } from "./interfaces/Spectator";
@@ -105,6 +107,50 @@ export interface ServerCommandErrorData extends z.infer<
 const serverCommandFriendsData = z
   .strictObject({ friends: z.string().array().readonly() })
   .readonly();
+
+const pregameVariantStats = z.strictObject({
+  numGames: z.number().int(),
+  averageScore: z.number(),
+  numStrikeouts: z.number().int(),
+  bestScores: z
+    .strictObject({
+      numPlayers: z.number().int(),
+      score: z.number().int(),
+      modifier: z.number().int(),
+      deckPlays: z.boolean(),
+      emptyClues: z.boolean(),
+      oneExtraCard: z.boolean(),
+      oneLessCard: z.boolean(),
+      allOrNothing: z.boolean(),
+    })
+    .array(),
+});
+const pregameStats = z.strictObject({
+  numGames: z.number().int(),
+  variant: pregameVariantStats,
+});
+const serverCommandGameData = z.strictObject({
+  tableID,
+  name: z.string(),
+  owner: userID,
+  players: z
+    .strictObject({
+      index: z.number().int(),
+      name: z.string(),
+      you: z.boolean(),
+      present: z.boolean(),
+      stats: pregameStats,
+    })
+    .array(),
+  options,
+  passwordProtected: z.boolean(),
+  maxPlayers: z.number().int(),
+});
+const serverCommandTableIDData = z.strictObject({ tableID });
+const serverCommandSpectatorsData = z.strictObject({
+  tableID,
+  spectators: spectator.array(),
+});
 
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
@@ -243,13 +289,18 @@ export interface ServerCommandWelcomeData extends z.infer<
 // Collections
 // -----------
 
-export interface ServerCommandData {
+export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
   [ServerCommand.friends]: z.infer<typeof serverCommandFriendsData>;
+  [ServerCommand.game]: z.infer<typeof serverCommandGameData>;
+  [ServerCommand.joined]: z.infer<typeof serverCommandTableIDData>;
+  [ServerCommand.left]: z.infer<typeof serverCommandTableIDData>;
+  [ServerCommand.spectators]: z.infer<typeof serverCommandSpectatorsData>;
+  [ServerCommand.tableGone]: z.infer<typeof serverCommandTableIDData>;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryFriends]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryOtherScores]: z.infer<
@@ -269,12 +320,18 @@ export interface ServerCommandData {
 interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
+  ...GAME_SERVER_COMMAND_SCHEMAS,
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatDelete]: serverCommandChatDeleteData,
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
   [ServerCommand.error]: serverCommandErrorData,
   [ServerCommand.friends]: serverCommandFriendsData,
+  [ServerCommand.game]: serverCommandGameData,
+  [ServerCommand.joined]: serverCommandTableIDData,
+  [ServerCommand.left]: serverCommandTableIDData,
+  [ServerCommand.spectators]: serverCommandSpectatorsData,
+  [ServerCommand.tableGone]: serverCommandTableIDData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryFriends]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryOtherScores]:

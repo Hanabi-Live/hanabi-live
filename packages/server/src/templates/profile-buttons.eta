@@ -1,0 +1,13 @@
+{{ if (it.name !== undefined && it.namesTitle === undefined || it.singleMissingScores) { }}
+<ul class="actions fit" id="profile-buttons">
+  {{ for (const [route, title, icon] of [
+    ["scores", "Scores & Statistics", "chart-area"],
+    ["history", "Full Game History", "history"],
+    ["missing-scores", "Missing Scores", "question"],
+    ["tags", "Tagged Games", "tag"],
+  ]) { const selected = it.title === (route === "scores" ? "Scores" : route === "history" ? "History" : title); }}
+  <li><a class="button fit icon fa-{{= icon }}{{ if (selected) { }} disabled{{ } }}"
+    {{ if (!selected) { }}href="/{{= route }}/{{= encodeURIComponent(it.name) }}"{{ } }}>{{= title }}</a></li>
+  {{ } }}
+</ul>
+{{ } }}

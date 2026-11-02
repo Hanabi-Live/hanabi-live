@@ -1,10 +1,12 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
+import { createDatabaseClient, db } from "./db";
+import { initializeGameRuntime } from "./gameRuntime";
+import { createGameStore } from "./gameStore";
 import { httpInit } from "./http";
 import { logger } from "./logger";
 import { verifyDatabaseMigrations } from "./migrations";
 import { models } from "./models";
-import { redisInit } from "./redis";
 
 // We do not bother writing a catch block since it does not display errors correctly when there is
 // an aggregate error.
@@ -18,6 +20,14 @@ async function main() {
   try {
     await models.chatLog.testDatabase();
     await verifyDatabaseMigrations();
+    await initializeGameRuntime(
+      createGameStore(createDatabaseClient(2), db.$client),
+      {
+        getBlockedSeeds: async (users) =>
+          await models.userLinkages.getBlockedSeeds(users),
+        getCompletionHistory: async (id) => await models.games.getHistory([id]),
+      },
+    );
   } catch (error) {
     logger.error(`Failed database startup checks: ${error}`);
     logger.info(
@@ -26,7 +36,6 @@ async function main() {
     process.exit(1);
   }
 
-  await redisInit();
   await httpInit();
 }
 

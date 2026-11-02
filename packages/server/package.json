@@ -19,7 +19,6 @@
     "fastify-favicon": "5.0.0",
     "fastq": "1.20.3",
     "http-status-codes": "2.3.0",
-    "ioredis": "6.0.0",
     "pino": "10.4.0",
     "postgres": "3.4.9",
     "zod": "4.6.5"

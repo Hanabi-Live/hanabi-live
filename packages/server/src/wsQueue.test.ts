@@ -3,8 +3,8 @@ import { ServerCommand, Status } from "@hanabi-live/data";
 import { beforeEach, describe, expect, jest, test } from "@jest/globals";
 import type { WebSocket } from "ws";
 import { getChatList } from "./chat";
+import { cleanupDisconnectedTables } from "./commands/commandTable";
 import { models } from "./models";
-import { getRedisTablesWithUser } from "./redis";
 import type { SessionID } from "./types/SessionID";
 import { wsSend, wsSendAll } from "./wsHelpers";
 import { enqueueWSMsg, WSQueueElementType } from "./wsQueue";
@@ -33,8 +33,9 @@ jest.mock("./motd", () => ({
     .fn<() => Promise<undefined>>()
     .mockResolvedValue(undefined),
 }));
-jest.mock("./redis", () => ({ getRedisTablesWithUser: jest.fn() }));
-jest.mock("./tableQueue", () => ({ enqueueSetPlayerConnected: jest.fn() }));
+jest.mock("./commands/commandTable", () => ({
+  cleanupDisconnectedTables: jest.fn(),
+}));
 jest.mock("./words", () => ({ getRandomTableName: () => "Test table" }));
 jest.mock("./wsHelpers", () => ({
   wsSend: jest.fn(),
@@ -79,7 +80,6 @@ describe("WebSocket initialization ownership", () => {
     jest.mocked(models.userSettings.get).mockResolvedValue(undefined);
     jest.mocked(models.userFriends.getList).mockResolvedValue([]);
     jest.mocked(getChatList).mockResolvedValue([]);
-    jest.mocked(getRedisTablesWithUser).mockResolvedValue([]);
   });
 
   test("does not replace a healthy session or publish a partial failed login", async () => {
@@ -108,7 +108,7 @@ describe("WebSocket initialization ownership", () => {
     jest.clearAllMocks();
     await enqueueWSMsg(WSQueueElementType.Logout, first);
     expect(wsUsers.get(second.userID)).toBe(second);
-    expect(getRedisTablesWithUser).not.toHaveBeenCalled();
+    expect(cleanupDisconnectedTables).not.toHaveBeenCalled();
     expect(wsSendAll).not.toHaveBeenCalled();
     await enqueueWSMsg(WSQueueElementType.Logout, second);
     expect(wsUsers.has(second.userID)).toBe(false);

@@ -10,17 +10,23 @@ const DATABASE_TIMEOUT_SECONDS = 30;
  * first query is performed:
  * https://github.com/porsager/postgres?tab=readme-ov-file#the-connection-pool
  */
-const client = postgres({
-  host: env.DB_HOST,
-  port: env.DB_PORT,
-  user: env.DB_USER,
-  password: env.DB_PASSWORD,
-  database: env.DB_NAME,
-  connect_timeout: DATABASE_TIMEOUT_SECONDS,
-  connection: {
-    statement_timeout: DATABASE_TIMEOUT_SECONDS * 1000,
-  },
-});
+export function createDatabaseClient(max: number): postgres.Sql {
+  return postgres({
+    host: env.DB_HOST,
+    port: env.DB_PORT,
+    user: env.DB_USER,
+    password: env.DB_PASSWORD,
+    database: env.DB_NAME,
+    max,
+    connect_timeout: DATABASE_TIMEOUT_SECONDS,
+    connection: {
+      statement_timeout: DATABASE_TIMEOUT_SECONDS * 1000,
+      idle_in_transaction_session_timeout: DATABASE_TIMEOUT_SECONDS * 1000,
+    },
+  });
+}
+
+const client = createDatabaseClient(10);
 
 export const db = drizzle(client, {
   schema: databaseSchema,

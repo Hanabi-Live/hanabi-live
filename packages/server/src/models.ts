@@ -4,8 +4,11 @@
 import { bannedIPs } from "./models/bannedIPs";
 import { chatLog } from "./models/chatLog";
 import { chatLogPM } from "./models/chatLogPM";
+import { gameQueries } from "./models/gameQueries";
 import { games } from "./models/games";
 import { gameTags } from "./models/gameTags";
+import { publicStats } from "./models/publicStats";
+import { replays } from "./models/replays";
 import { userFriends } from "./models/userFriends";
 import { userIdentityTokens } from "./models/userIdentityTokens";
 import { userLinkages } from "./models/userLinkages";
@@ -19,6 +22,9 @@ export const models = {
   chatLogPM,
   games,
   gameTags,
+  gameQueries,
+  publicStats,
+  replays,
   users,
   userFriends,
   userIdentityTokens,

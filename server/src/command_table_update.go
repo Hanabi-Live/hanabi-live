@@ -41,6 +41,11 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		return
 	}
 
+	if !t.IsPlayerOrSpectating(s.UserID) || (t.Replay && !t.IsActivelySpectating(s.UserID)) {
+		s.Warning("You must be at the table to propose or change its options.")
+		return
+	}
+
 	if s.UserID != t.OwnerID {
 		// Non game host sends new options
 		// They are sent to the table chat as a proposal

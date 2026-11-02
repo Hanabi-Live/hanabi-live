@@ -20,4 +20,15 @@ export interface TemplateVariables {
   readonly excludeVariants?: string;
   readonly minEfficiency?: string;
   readonly maxEfficiency?: string;
+
+  // Public profiles, game lists and informational pages.
+  readonly page?: string;
+  readonly name?: string;
+  readonly apiPath?: string;
+  /** JSON, since the template engine does not accept objects or arrays. */
+  readonly statsJSON?: string;
+  /** JSON, since the template engine does not accept arrays. */
+  readonly scoreFreqsJSON?: string;
+  readonly singleMissingScores?: boolean;
+  readonly requestedNumPlayers?: number;
 }

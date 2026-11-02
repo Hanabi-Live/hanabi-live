@@ -1,7 +1,8 @@
 // Database fixtures intentionally exercise nullable legacy password fields.
 // cspell:words addext keyout
 /* eslint-disable unicorn/no-null */
-import type { UserID } from "@hanabi-live/data";
+import type { TableID, UserID } from "@hanabi-live/data";
+import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import {
   afterEach,
   beforeEach,
@@ -56,6 +57,7 @@ jest.mock("./models", () => ({
       setLastLogin: jest.fn(),
       getWSData: jest.fn(),
       getDatetimeCreated: jest.fn(),
+      getByNormalizedUsername: jest.fn(),
     },
     games: {
       getNumGamesForUser: jest.fn(),
@@ -63,8 +65,10 @@ jest.mock("./models", () => ({
       getHistory: jest.fn(),
     },
     userSettings: { get: jest.fn() },
+    userStats: { get: jest.fn() },
     userFriends: { getList: jest.fn() },
     chatLog: { get: jest.fn(), insert: jest.fn() },
+    gameQueries: { list: jest.fn(), fullIDs: jest.fn() },
   },
 }));
 jest.mock("./motd", () => ({
@@ -72,11 +76,6 @@ jest.mock("./motd", () => ({
 }));
 jest.mock("./version", () => ({
   getClientVersion: () => 1,
-}));
-jest.mock("./redis", () => ({
-  getRedisTablesWithUser: jest
-    .fn<() => Promise<readonly never[]>>()
-    .mockResolvedValue([]),
 }));
 
 const filename = path.resolve(
@@ -284,7 +283,7 @@ describe("actual HTTP authentication entry point", () => {
     expect(models.users.getWSData).not.toHaveBeenCalled();
   });
 
-  test("authenticates the real WebSocket route and accepts ordinary chat larger than 123 bytes", async () => {
+  test("authenticates real WebSocket chat and pregame create/leave envelopes", async () => {
     app = await createHTTPServer();
     const address = await app.listen({ host: "127.0.0.1", port: 0 });
     const closed = Promise.withResolvers<undefined>();
@@ -302,6 +301,14 @@ describe("actual HTTP authentication entry point", () => {
     });
     const welcome = Promise.withResolvers<undefined>();
     const chat = Promise.withResolvers<undefined>();
+    const joined = Promise.withResolvers<TableID>();
+    const left = Promise.withResolvers<undefined>();
+    jest.mocked(models.userStats.get).mockResolvedValue({
+      numGames: 0,
+      averageScore: 0,
+      numStrikeouts: 0,
+      bestScores: [],
+    });
     socket.on("message", (raw) => {
       if (!Buffer.isBuffer(raw)) {
         throw new TypeError("Expected a text WebSocket frame.");
@@ -312,6 +319,13 @@ describe("actual HTTP authentication entry point", () => {
       }
       if (message.startsWith("chat ") && message.includes('"chatID":1')) {
         chat.resolve(undefined);
+      }
+      if (message.startsWith("joined ")) {
+        const data: unknown = JSON.parse(message.slice(7));
+        joined.resolve(SERVER_COMMAND_SCHEMAS.joined.parse(data).tableID);
+      }
+      if (message.startsWith("left ")) {
+        left.resolve(undefined);
       }
     });
     try {
@@ -330,6 +344,12 @@ describe("actual HTTP authentication entry point", () => {
         "x".repeat(200),
         "lobby",
       );
+      socket.send(
+        'tableCreate {"name":"Browser table","options":{"variantName":"No Variant"},"maxPlayers":5,"password":""}',
+      );
+      const tableID = await joined.promise;
+      socket.send(`tableLeave ${JSON.stringify({ tableID })}`);
+      await left.promise;
     } finally {
       socket.terminate();
       await closed.promise;
@@ -407,5 +427,46 @@ describe("actual HTTP authentication entry point", () => {
       app = undefined;
       await rm(directory, { recursive: true, force: true });
     }
+  });
+
+  test("registers public history and variant APIs with correct validation and ban handling", async () => {
+    jest.mocked(models.users.getByNormalizedUsername).mockResolvedValue({
+      id: 42 as UserID,
+      username: "Alice",
+    });
+    jest
+      .mocked(models.gameQueries.list)
+      .mockResolvedValue({ totalRows: 0, rows: [] });
+    app = await createHTTPServer();
+    const variants = await app.inject({ url: "/api/v1/variants" });
+    expect(variants.statusCode).toBe(200);
+    expect(variants.json<unknown>()).toMatchObject({ 0: "No Variant" });
+    const history = await app.inject({
+      url: "/api/v1/history/ALICE?page=1&size=5&col[2]=0&fcol[0]=",
+    });
+    expect(history.statusCode).toBe(200);
+    expect(history.json<unknown>()).toMatchObject({ total_rows: 0, rows: [] });
+    expect(models.gameQueries.list).toHaveBeenLastCalledWith({
+      offset: 5,
+      size: 5,
+      order: "score",
+      ascending: true,
+      filters: [],
+      userIDs: [42 as UserID],
+    });
+    const duplicate = await app.inject({ url: "/api/v1/history/Alice/ALICE" });
+    expect(duplicate.statusCode).toBe(404);
+    const unknown = await app.inject({ url: "/api/v1/variants/999999" });
+    expect(unknown.statusCode).toBe(400);
+    const filtered = await app.inject({
+      url: "/api/v1/history/Alice?fcol[0]=not-a-number",
+    });
+    expect(filtered.statusCode).toBe(400);
+    jest.mocked(models.bannedIPs.check).mockResolvedValueOnce(true);
+    const blocked = await app.inject({ url: "/api/v1/variants" });
+    expect(blocked.statusCode).toBe(400);
+    expect(blocked.json<unknown>()).toBe(
+      "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
+    );
   });
 });

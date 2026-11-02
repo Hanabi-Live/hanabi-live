@@ -12,28 +12,103 @@ import type { Table } from "./interfaces/Table";
 
 interface SpectatingMetadata {
   tableID: TableID;
-  shadowingPlayerIndex: PlayerIndex;
+  shadowingPlayerIndex: PlayerIndex | undefined;
 }
 
 const tables = new Map<TableID, Table>();
 const spectatingMetadataMap = new Map<UserID, SpectatingMetadata>();
+let nextTableID = Date.now();
+
+export function allocateTableID(): TableID {
+  if (nextTableID >= Number.MAX_SAFE_INTEGER) {
+    throw new Error("Table ID space exhausted.");
+  }
+  nextTableID++;
+  return nextTableID as TableID;
+}
+
+export function getTable(tableID: TableID): Table | undefined {
+  return tables.get(tableID);
+}
+
+/** Publish only a fully initialized table; callers must not await during publication. */
+export function publishTable(table: Table): void {
+  if (!Number.isSafeInteger(table.id) || table.id <= 0) {
+    throw new Error("Invalid table ID.");
+  }
+  if (tables.has(table.id)) {
+    throw new Error("Duplicate table ID.");
+  }
+  tables.set(table.id, table);
+  nextTableID = Math.max(nextTableID, table.id);
+}
+
+export function removeTable(tableID: TableID): void {
+  tables.delete(tableID);
+  for (const [userID, metadata] of spectatingMetadataMap) {
+    if (metadata.tableID === tableID) {
+      spectatingMetadataMap.delete(userID);
+    }
+  }
+}
 
 export function getTableIDsUserPlayingAt(userID: UserID): readonly TableID[] {
-  const tablesUserPlayingAt = mapFilter(tables, (table) =>
-    table.players.some((player) => player.userID === userID),
+  const tablesUserPlayingAt = mapFilter(
+    tables,
+    (table) =>
+      !table.replay && table.players.some((player) => player.userID === userID),
   );
 
   return tablesUserPlayingAt.map((table) => table.id);
 }
 
+export function getTableIDsUserAttending(userID: UserID): readonly TableID[] {
+  return [...tables.values()]
+    .filter(
+      (table) =>
+        table.players.some((player) => player.userID === userID)
+        || table.spectators.some((spectator) => spectator.userID === userID),
+    )
+    .map((table) => table.id);
+}
+
 export function getSpectatingMetadata(
   userID: UserID,
 ): SpectatingMetadata | undefined {
-  return spectatingMetadataMap.get(userID);
+  for (const table of tables.values()) {
+    const spectator = table.spectators.find((entry) => entry.userID === userID);
+    if (spectator !== undefined) {
+      return {
+        tableID: table.id,
+        shadowingPlayerIndex:
+          spectator.shadowingPlayerIndex === -1
+            ? undefined
+            : spectator.shadowingPlayerIndex,
+      };
+    }
+  }
+  const previous = spectatingMetadataMap.get(userID);
+  return previous !== undefined && tables.has(previous.tableID)
+    ? previous
+    : undefined;
+}
+
+export function rememberSpectating(
+  userID: UserID,
+  metadata: SpectatingMetadata | undefined,
+): void {
+  if (metadata === undefined) {
+    spectatingMetadataMap.delete(userID);
+  } else {
+    spectatingMetadataMap.set(userID, metadata);
+  }
 }
 
 /** For the "table" and "tableList" commands. */
-function getTableData(table: Table, userID: UserID): ServerCommandTableData {
+export function getTableData(
+  table: Table,
+  userID: UserID,
+): ServerCommandTableData {
   const {
     id,
     name,
@@ -102,6 +177,9 @@ export function getTableList(
   const tableList: ServerCommandTableData[] = [];
 
   for (const table of tables.values()) {
+    if (!table.visible) {
+      continue;
+    }
     const tableData = getTableData(table, userID);
     tableList.push(tableData);
   }

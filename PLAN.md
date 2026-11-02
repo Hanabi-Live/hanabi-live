@@ -10,24 +10,19 @@ run lint and relevant regression suites, push to `main`, and verify CI. Audit
 reachability and shared helpers between milestones. Do not remove intentional
 maintenance paths or add speculative configuration.
 
-- [ ] Complete main-process startup, reconnect/disconnect table ownership, and
-      graceful draining.
-- [ ] Complete remaining lobby commands: table chat, chat commands and Discord
-      mirroring, and typing/read indicators.
-- [ ] Complete table creation, joining/leaving, ownership, updates, suggestions,
-      spectating, start/restart, termination votes, and reconnect state.
-- [ ] Implement authoritative gameplay for all supported player counts,
-      variants, options, characters, timers, pauses, notes, tags, and recipient
-      visibility. Preserve legacy seed/deck generation and replay behavior.
-- [ ] Integrate durable active-game checkpoints, request deduplication, failure
-      freezing, crash recovery, and atomic completed-game persistence with the
-      application database. Preserve authored metadata and statistics behavior.
+- [ ] Integrate application-wide command admission, graceful draining, and
+      process signals with operational shutdown and restart.
+- [ ] Complete remaining lobby commands: chat commands and Discord mirroring,
+      and typing/read indicators.
+- [ ] Complete pregame spectating, table restart, termination votes, automatic
+      spectator handoff, and spectator note writes.
+- [ ] Complete pregame/replay/typing/countdown timers and the development-mode
+      idle exemption. Preserve legacy seed/deck generation and replay behavior.
 - [ ] Complete replay creation, shared replay controls, hypothetical actions,
       replay visibility, historical imports/exports, and bot protocol behavior.
-- [ ] Complete Go-equivalent HTTP pages/APIs, administrative chat commands,
-      Discord integration, maintenance, and operational metrics. Resolve
-      competing table state in Redis and memory; keep one authoritative state
-      owner per table.
+- [ ] Complete administrative chat commands, maintenance, and operational
+      metrics. Finish HTTP transport parity, including HTTPS redirection and
+      certificate renewal, and evaluate configured telemetry integrations.
 - [ ] Exercise the actual TypeScript entry point with the existing client and
       Go-authority compatibility corpus. Cover every registered Go command and
       enabled HTTP route, unsupported-input rejection, concurrency, restart,

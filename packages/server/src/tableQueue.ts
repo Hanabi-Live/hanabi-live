@@ -1,79 +1,82 @@
-import type { TableID, UserID } from "@hanabi-live/data";
-import type { CompositionTypeSatisfiesEnum } from "complete-common";
-import type { queueAsPromised } from "fastq";
-import fastq from "fastq";
-import { getRedisTable, setRedisTable } from "./redis";
+import type { TableID } from "@hanabi-live/data";
 
-enum TableQueueElementType {
-  SetPlayerConnected,
+interface Queue {
+  tail: Promise<void>;
+  size: number;
+  cleanup: (() => void) | undefined;
 }
 
-type TableQueueElement = SetPlayerConnectedData;
+const queues = new Map<TableID, Queue>();
+let pending = 0;
 
-type _Test = CompositionTypeSatisfiesEnum<
-  TableQueueElement,
-  TableQueueElementType
->;
-
-interface SetPlayerConnectedData {
-  type: TableQueueElementType.SetPlayerConnected;
-  tableID: TableID;
-  userID: UserID;
-  connected: boolean;
-}
-
-const QUEUE_FUNCTIONS = {
-  [TableQueueElementType.SetPlayerConnected]: setPlayerConnected,
-} as const satisfies Record<
-  TableQueueElementType,
-  (element: TableQueueElement) => Promise<void>
->;
-
-const tableQueue: queueAsPromised<TableQueueElement, void> = fastq.promise(
-  processQueue,
-  1,
-);
-
-async function processQueue(element: TableQueueElement) {
-  const func = QUEUE_FUNCTIONS[element.type];
-  await func(element);
-}
-
-/** TODO: this is wrong, see "websocket_disconnect.go" */
-async function setPlayerConnected(data: SetPlayerConnectedData) {
-  const { tableID, userID, connected } = data;
-
-  const game = await getRedisTable(tableID);
-  if (game === undefined) {
-    return;
-  }
-
-  const matchingPlayer = game.players.find(
-    (player) => player.userID === userID,
-  );
-  if (matchingPlayer === undefined) {
-    return;
-  }
-
-  matchingPlayer.present = connected;
-
-  await setRedisTable(game);
-}
-
-// ------------------
-// Exported functions
-// ------------------
-
-export function enqueueSetPlayerConnected(
+/** Returns false on bounded admission failure. Different tables never await each other. */
+export async function enqueueTableOperation(
   tableID: TableID,
-  userID: UserID,
-  connected: boolean,
+  operation: () => void | Promise<void>,
+): Promise<boolean> {
+  const queue = queues.get(tableID) ?? {
+    tail: Promise.resolve(),
+    size: 0,
+    cleanup: undefined,
+  };
+  if (queue.size >= 64 || pending >= 4096) {
+    return false;
+  }
+  queues.set(tableID, queue);
+  queue.size++;
+  pending++;
+  const task = queue.tail.then(operation);
+  // eslint-disable-next-line unicorn/prefer-then-catch -- Cleanup errors must not run finalization twice.
+  const finalized = task.then(
+    () => {
+      finish(tableID, queue);
+    },
+    (error: unknown) => {
+      try {
+        finish(tableID, queue);
+      } catch (cleanupError) {
+        throw new AggregateError(
+          [error, cleanupError],
+          "Table operation and cleanup failed.",
+          { cause: cleanupError },
+        );
+      }
+      throw error;
+    },
+  );
+  // The caller receives the rejection; the queue must still advance after it.
+  queue.tail = finalized.catch(() => undefined);
+  await finalized;
+  return true;
+}
+
+function finish(tableID: TableID, queue: Queue) {
+  const currentQueue = queue;
+  currentQueue.size--;
+  pending--;
+  const { cleanup } = queue;
+  currentQueue.cleanup = undefined;
+  try {
+    cleanup?.();
+  } finally {
+    if (queue.size === 0) {
+      queues.delete(tableID);
+    }
+  }
+}
+
+/**
+ * Coalesces disconnect cleanup into one reserved slot per active table. Cleanup runs between
+ * commands, including after a failed command, and cannot be dropped by client queue saturation.
+ */
+export function scheduleTableCleanup(
+  tableID: TableID,
+  cleanup: () => void,
 ): void {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  tableQueue.push({
-    type: TableQueueElementType.SetPlayerConnected,
-    tableID,
-    userID,
-    connected,
-  });
+  const queue = queues.get(tableID);
+  if (queue === undefined) {
+    cleanup();
+  } else {
+    queue.cleanup = cleanup;
+  }
 }

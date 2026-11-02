@@ -1,10 +1,37 @@
 import type { UserID } from "@hanabi-live/data";
-import { and, eq } from "drizzle-orm";
-import { userLinkagesTable, usersTable } from "../databaseSchema";
+import { and, eq, inArray, or } from "drizzle-orm";
+import {
+  gameParticipantsTable,
+  gamesTable,
+  userLinkagesTable,
+  usersTable,
+} from "../databaseSchema";
 import { db } from "../db";
 import { sortUsernames } from "../utils";
 
 export const userLinkages = {
+  getBlockedSeeds: async (
+    userIDs: readonly UserID[],
+  ): Promise<ReadonlySet<string>> => {
+    const linked = db
+      .select({ id: userLinkagesTable.linkedID })
+      .from(userLinkagesTable)
+      .where(inArray(userLinkagesTable.userID, [...userIDs]));
+    const rows = await db
+      .selectDistinct({ seed: gamesTable.seed })
+      .from(gamesTable)
+      .innerJoin(
+        gameParticipantsTable,
+        eq(gamesTable.id, gameParticipantsTable.gameID),
+      )
+      .where(
+        or(
+          inArray(gameParticipantsTable.userID, [...userIDs]),
+          inArray(gameParticipantsTable.userID, linked),
+        ),
+      );
+    return new Set(rows.map((row) => row.seed));
+  },
   set: async (
     userID: UserID,
     linkedID: UserID,

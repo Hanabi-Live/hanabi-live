@@ -9,19 +9,24 @@ import {
   test,
 } from "@jest/globals";
 import { drizzle } from "drizzle-orm/postgres-js";
+import { fastify } from "fastify";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type postgres from "postgres";
+import { parseGameQuery } from "../apiQuery";
 import * as schema from "../databaseSchema";
 import type { db } from "../db";
 import { evaluationDatabase } from "../experimental/evaluationSupport";
+import { httpExport } from "../http/httpExport";
 import { bannedIPs } from "./bannedIPs";
 import { chatLog } from "./chatLog";
 import { chatLogPM } from "./chatLogPM";
+import { gameQueries } from "./gameQueries";
 import { games } from "./games";
 import { userFriends } from "./userFriends";
 import { userLinkages } from "./userLinkages";
 import { userSettings } from "./userSettings";
+import { userStats } from "./userStats";
 import { users } from "./users";
 
 let mockDatabase: typeof db;
@@ -29,6 +34,9 @@ jest.mock("../db", () => ({
   get db() {
     return mockDatabase;
   },
+}));
+jest.mock("../logger", () => ({
+  logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
 
 const databaseDescribe =
@@ -67,6 +75,34 @@ databaseDescribe("application history and settings persistence", () => {
   let database: Awaited<ReturnType<typeof evaluationDatabase>>;
   let client: postgres.Sql;
 
+  test("pregame stats return Go zero defaults and the requested user's variant only", async () => {
+    expect(await userStats.get(1 as UserID, 0)).toEqual({
+      numGames: 0,
+      averageScore: 0,
+      numStrikeouts: 0,
+      bestScores: [2, 3, 4, 5, 6].map((numPlayers) => ({
+        numPlayers,
+        score: 0,
+        modifier: 0,
+      })),
+    });
+    await client`
+      INSERT INTO user_stats (user_id, variant_id, num_games, best_score2, best_score2_mod, average_score, num_strikeouts)
+      VALUES (1, 0, 7, 25, 4, 22.5, 2), (2, 0, 99, 10, 0, 10, 0), (1, 1, 88, 15, 0, 15, 0)
+    `;
+    const stats = await userStats.get(1 as UserID, 0);
+    expect(stats).toMatchObject({
+      numGames: 7,
+      averageScore: 22.5,
+      numStrikeouts: 2,
+    });
+    expect(stats.bestScores[0]).toEqual({
+      numPlayers: 2,
+      score: 25,
+      modifier: 4,
+    });
+  });
+
   beforeEach(async () => {
     database = await evaluationDatabase();
     client = database.connect();
@@ -93,10 +129,14 @@ databaseDescribe("application history and settings persistence", () => {
   test("counts participation by game_id, not the unrelated participant ID", async () => {
     await insertGame(10, 3);
     await insertGame(20, 2, true);
+    await insertGame(30, 2);
+    await client`UPDATE games SET end_condition = 2, score = 0 WHERE id = 30`;
     await client`
       INSERT INTO game_participants
         (id, game_id, user_id, seat, character_assignment, character_metadata)
-      VALUES (101, 10, 1, 0, -1, 0), (102, 20, 1, 0, -1, 0)
+      VALUES
+        (101, 10, 1, 0, -1, 0), (102, 20, 1, 0, -1, 0),
+        (103, 30, 1, 0, -1, 0)
     `;
     expect(await games.getNumGamesForUser(1 as UserID, true)).toBe(2);
     expect(await games.getNumGamesForUser(1 as UserID, false)).toBe(1);
@@ -294,5 +334,99 @@ databaseDescribe("application history and settings persistence", () => {
     const updated = await users.get("alice");
     expect(updated?.passwordHash).toBe("synthetic-modern-hash");
     expect(updated?.oldPasswordHash).toBeNull();
+  });
+
+  test("public game queries intersect players, paginate, and keep games without a seed cache row", async () => {
+    await insertGame(10, 3);
+    await insertGame(20, 2);
+    await insertGame(30, 1);
+    await client`
+      INSERT INTO game_participants
+        (game_id, user_id, seat, character_assignment, character_metadata)
+      VALUES
+        (10, 1, 0, -1, 0), (10, 2, 1, -1, 0),
+        (20, 1, 0, -1, 0), (20, 3, 1, -1, 0),
+        (30, 2, 0, -1, 0), (30, 3, 1, -1, 0)
+    `;
+    const shared = await gameQueries.list({
+      ...parseGameQuery({}, "history"),
+      userIDs: [1 as UserID, 2 as UserID],
+    });
+    expect(shared.totalRows).toBe(1);
+    expect(shared.rows).toHaveLength(1);
+    expect(shared.rows[0]).toMatchObject({
+      id: 10,
+      users: "alice, Bob",
+      other_scores: 0,
+      variant: 0,
+    });
+    const page = await gameQueries.list({
+      ...parseGameQuery({ page: "1", size: "1" }, "history"),
+      userIDs: [1 as UserID],
+    });
+    expect(page.totalRows).toBe(2);
+    expect(page.rows.map((row) => row.id)).toEqual([10]);
+    expect(
+      await gameQueries.fullIDs({
+        userIDs: [1 as UserID],
+        start: 11,
+        end: 20,
+      }),
+    ).toEqual([20]);
+    const empty = await gameQueries.list({
+      ...parseGameQuery({ size: "0" }, "variant"),
+      variantID: 0,
+    });
+    expect(empty).toEqual({ totalRows: 3, rows: [] });
+  });
+
+  test("exports actual history with seeded cards, seat order, action order and authored notes", async () => {
+    await insertGame(10, 3);
+    await client`UPDATE games SET starting_player = 1, detrimental_characters = TRUE WHERE id = 10`;
+    await client`
+      INSERT INTO game_participants
+        (id, game_id, user_id, seat, character_assignment, character_metadata)
+      VALUES (301, 10, 2, 0, 0, 2), (302, 10, 1, 1, 24, 0)
+    `;
+    await client`
+      INSERT INTO game_actions (game_id, turn, type, target, value)
+      VALUES (10, 2, 0, 9, 0), (10, 1, 2, 1, 0)
+    `;
+    await client`
+      INSERT INTO game_participant_notes (game_participant_id, card_order, note)
+      VALUES (301, 0, 'first'), (301, 54, 'stack base'), (302, 2, 'Alice note')
+    `;
+    const server = fastify();
+    server.get("/export/:databaseID", httpExport);
+    try {
+      const response = await server.inject({ url: "/export/10" });
+      expect(response.statusCode).toBe(200);
+      const exported: unknown = response.json();
+      expect(exported).toMatchObject({
+        id: 10,
+        players: ["Bob", "alice"],
+        options: { startingPlayer: 1, detrimentalCharacters: true },
+        actions: [
+          { type: 2, target: 1, value: 0 },
+          { type: 0, target: 9, value: 0 },
+        ],
+        characters: [
+          { name: "Fuming", metadata: 1 },
+          { name: "Genius", metadata: -1 },
+        ],
+        notes: [
+          expect.arrayContaining(["first", "stack base"]),
+          ["", "", "Alice note"],
+        ],
+        seed: "p2v0s1",
+        deck: expect.arrayContaining([{ suitIndex: 3, rank: 5 }]),
+      });
+      const missing = await server.inject({ url: "/export/999" });
+      expect(missing.statusCode).toBe(404);
+      const invalid = await server.inject({ url: "/export/not-an-id" });
+      expect(invalid.statusCode).toBe(400);
+    } finally {
+      await server.close();
+    }
   });
 });
