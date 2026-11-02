@@ -29,10 +29,14 @@ func NewUserStatsRow() *UserStatsRow {
 	}
 }
 
-func (*UserStats) Get(userID int, variantID int) (*UserStatsRow, error) {
+func (s *UserStats) Get(userID int, variantID int) (*UserStatsRow, error) {
+	return s.get(db.databaseOperations, userID, variantID)
+}
+
+func (*UserStats) get(query *databaseOperations, userID int, variantID int) (*UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
-	if err := db.QueryRow(context.Background(), `
+	if err := query.QueryRow(context.Background(), `
 		SELECT
 			num_games,
 			best_score2,
@@ -146,38 +150,25 @@ func (*UserStats) GetAll(userID int) (map[int]*UserStatsRow, error) {
 // Update inserts or updates the row for the user's stats
 // The stats passed in as an argument do not have to contain "NumGames", "AverageScore",
 // or "NumStrikeouts"; those will be calculated from the database
-func (*UserStats) Update(userID int, variantID int, stats *UserStatsRow) error {
+func (s *UserStats) Update(userID int, variantID int, stats *UserStatsRow) error {
+	return s.update(db.databaseOperations, userID, variantID, stats)
+}
+
+func (*UserStats) update(query *databaseOperations, userID int, variantID int, stats *UserStatsRow) error {
 	// Validate that the BestScores slice contains 5 entries
 	if len(stats.BestScores) != 5 {
 		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
 	}
 
-	// First, check to see if they have a row in the stats table for this variant already
-	// If they do not, then we need to insert a new row
-	var numRows int
-	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(user_id)
-		FROM user_stats
-		WHERE user_id = $1
-			AND variant_id = $2
-	`, userID, variantID).Scan(&numRows); err != nil {
+	if _, err := query.Exec(context.Background(), `
+		INSERT INTO user_stats (user_id, variant_id)
+		VALUES ($1, $2)
+		ON CONFLICT (user_id, variant_id) DO NOTHING
+	`, userID, variantID); err != nil {
 		return err
 	}
-	if numRows > 1 {
-		return errors.New("found " + strconv.Itoa(numRows) +
-			" rows in the \"user_stats\" table for user " + strconv.Itoa(userID) +
-			" (instead of 1 row)")
-	}
-	if numRows == 0 {
-		if _, err := db.Exec(context.Background(), `
-			INSERT INTO user_stats (user_id, variant_id)
-			VALUES ($1, $2)
-		`, userID, variantID); err != nil {
-			return err
-		}
-	}
 
-	_, err := db.Exec(
+	_, err := query.Exec(
 		context.Background(),
 		`
 			UPDATE user_stats

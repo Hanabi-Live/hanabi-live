@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabstv/melody"
 	"github.com/gorilla/websocket"
+	"github.com/olahol/melody"
 )
 
 func TestActiveGameStartFailureDoesNotPublishStart(t *testing.T) {

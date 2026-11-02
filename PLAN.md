@@ -249,8 +249,9 @@ authorization.
   persistence. Fifteen shared TypeScript event-projection checks pass; these do
   not establish TypeScript command authority.
 - Between-step audits: no TypeScript unused exports; eleven obsolete Go methods
-  removed. Seven unreachable helpers are retained for the disabled statistics
-  route and manual repair recipes. Container startup works, but its
+  removed. Retained unreachable helpers support the disabled statistics route
+  and manual repair recipes. Load evaluation also exposed and fixed WebSocket
+  send/close and statistics-update races. Container startup works, but its
   administrative shutdown still expects a missing `stop.sh`; container lifecycle
   handling must be resolved before treating it as a production deployment
   replacement.

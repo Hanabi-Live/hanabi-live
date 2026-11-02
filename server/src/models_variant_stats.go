@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -28,11 +27,15 @@ func NewVariantStatsRow() VariantStatsRow {
 	}
 }
 
-func (*VariantStats) Get(variantID int) (VariantStatsRow, error) {
+func (s *VariantStats) Get(variantID int) (VariantStatsRow, error) {
+	return s.get(db.databaseOperations, variantID)
+}
+
+func (*VariantStats) get(query *databaseOperations, variantID int) (VariantStatsRow, error) {
 	stats := NewVariantStatsRow()
 
 	// If this variant has never been played, all the values will default to 0
-	if err := db.QueryRow(context.Background(), `
+	if err := query.QueryRow(context.Background(), `
 		SELECT
 			num_games,
 			best_score2,
@@ -118,37 +121,25 @@ func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
 	return statsMap, nil
 }
 
-func (*VariantStats) Update(variantID int, maxScore int, stats VariantStatsRow) error {
+func (s *VariantStats) Update(variantID int, maxScore int, stats VariantStatsRow) error {
+	return s.update(db.databaseOperations, variantID, maxScore, stats)
+}
+
+func (*VariantStats) update(query *databaseOperations, variantID int, maxScore int, stats VariantStatsRow) error {
 	// Validate that the BestScores slice contains 5 entries
 	if len(stats.BestScores) != 5 {
 		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
 	}
 
-	// First, check to see if there is a row in the table for this variant already
-	// If not, we need to insert a new one
-	var numRows int
-	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(variant_id)
-		FROM variant_stats
-		WHERE variant_id = $1
-	`, variantID).Scan(&numRows); err != nil {
+	if _, err := query.Exec(context.Background(), `
+		INSERT INTO variant_stats (variant_id)
+		VALUES ($1)
+		ON CONFLICT (variant_id) DO NOTHING
+	`, variantID); err != nil {
 		return err
 	}
-	if numRows > 1 {
-		return errors.New("found " + strconv.Itoa(numRows) +
-			" rows in the \"variant_stats\" table for variant " + strconv.Itoa(variantID) +
-			" (instead of 1 row)")
-	}
-	if numRows == 0 {
-		if _, err := db.Exec(context.Background(), `
-			INSERT INTO variant_stats (variant_id)
-			VALUES ($1)
-		`, variantID); err != nil {
-			return err
-		}
-	}
 
-	_, err := db.Exec(
+	_, err := query.Exec(
 		context.Background(),
 		`
 			UPDATE variant_stats

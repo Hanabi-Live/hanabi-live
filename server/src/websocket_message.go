@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/gabstv/melody"
+	"github.com/olahol/melody"
 )
 
 const (

@@ -12,40 +12,28 @@ import (
 type Seeds struct{}
 
 func (*Seeds) UpdateNumGames(seed string) error {
-	var numGames int
-	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(id)
-		FROM games
+	tx, err := db.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	if _, err := tx.Exec(context.Background(), `
+		INSERT INTO seeds (seed, num_games) VALUES ($1, 0)
+		ON CONFLICT (seed) DO NOTHING
+	`, seed); err != nil {
+		return err
+	}
+	// Acquire the row before taking the count's statement snapshot.
+	if _, err := tx.Exec(context.Background(), "SELECT seed FROM seeds WHERE seed = $1 FOR UPDATE", seed); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(context.Background(), `
+		UPDATE seeds SET num_games = (SELECT COUNT(*) FROM games WHERE seed = $1)
 		WHERE seed = $1
-	`, seed).Scan(&numGames); err != nil {
+	`, seed); err != nil {
 		return err
 	}
-
-	var rowExists bool
-	if err := db.QueryRow(context.Background(), `
-		SELECT EXISTS(
-			SELECT seed
-			FROM seeds
-			WHERE seed = $1
-		)
-	`, seed).Scan(&rowExists); err != nil {
-		return err
-	}
-
-	if rowExists {
-		_, err := db.Exec(context.Background(), `
-			UPDATE seeds
-			SET num_games = $1
-			WHERE seed = $2
-		`, numGames, seed)
-		return err
-	}
-
-	_, err := db.Exec(context.Background(), `
-		INSERT INTO seeds (seed, num_games)
-		VALUES ($1, $2)
-	`, seed, numGames)
-	return err
+	return tx.Commit(context.Background())
 }
 
 func (*Seeds) GetNumGames(seed string) (int, error) {

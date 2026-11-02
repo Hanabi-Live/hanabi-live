@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/gabstv/melody"
+	"github.com/olahol/melody"
 )
 
 func websocketDisconnect(ms *melody.Session) {

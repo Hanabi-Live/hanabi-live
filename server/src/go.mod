@@ -5,7 +5,6 @@ go 1.27.0
 require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/bwmarrin/discordgo v0.29.0
-	github.com/gabstv/melody v1.0.2
 	github.com/getsentry/sentry-go v0.50.0
 	github.com/getsentry/sentry-go/gin v0.50.0
 	github.com/gin-contrib/gzip v1.2.9
@@ -15,11 +14,13 @@ require (
 	github.com/jackc/pgx/v5 v5.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mozillazg/go-unidecode v0.1.1 // Persisted username normalization requires compatibility before upgrading.
+	github.com/olahol/melody v1.4.0
 	github.com/sasha-s/go-deadlock v0.3.9
 	github.com/satori/go.uuid v1.2.0
 	github.com/tevino/abool v1.2.0
 	go.uber.org/atomic v1.12.0
 	go.uber.org/zap v1.28.0
+	golang.org/x/sys v0.49.0
 	golang.org/x/text v0.43.0
 )
 
@@ -59,6 +60,5 @@ require (
 	golang.org/x/crypto v0.58.0 // indirect
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

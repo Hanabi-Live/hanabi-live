@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -357,8 +358,30 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 // Updating the stats is not as important as writing the core data for a game,
 // so it can be handled in the background
 func (g *Game) WriteDatabaseStats(players []gameDatabasePlayer) {
+	if err := g.writeDatabaseStats(players); err != nil {
+		logger.Error("Failed to refresh completed-game statistics: " + err.Error())
+	}
+}
+
+func (g *Game) writeDatabaseStats(players []gameDatabasePlayer) error {
 	// Local variables
 	variant := g.Variant
+	tx, err := db.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+	if _, err := tx.Exec(context.Background(), `
+		INSERT INTO variant_stats (variant_id) VALUES ($1)
+		ON CONFLICT (variant_id) DO NOTHING
+	`, variant.ID); err != nil {
+		return err
+	}
+	// Serialize read/modify/write refreshes for this variant, without holding table locks.
+	if _, err := tx.Exec(context.Background(),
+		"SELECT variant_id FROM variant_stats WHERE variant_id = $1 FOR UPDATE", variant.ID); err != nil {
+		return err
+	}
 	// 2-player is at index 0, 3-player is at index 1, etc.
 	bestScoreIndex := g.Options.NumPlayers - 2
 
@@ -367,9 +390,8 @@ func (g *Game) WriteDatabaseStats(players []gameDatabasePlayer) {
 	for _, p := range players {
 		// Get their current best scores
 		var userStats *UserStatsRow
-		if v, err := models.UserStats.Get(p.userID, variant.ID); err != nil {
-			logger.Error("Failed to get the stats for user " + p.name + ": " + err.Error())
-			continue
+		if v, err := models.UserStats.get(tx.databaseOperations, p.userID, variant.ID); err != nil {
+			return fmt.Errorf("get statistics for user %s: %w", p.name, err)
 		} else {
 			userStats = v
 		}
@@ -388,18 +410,15 @@ func (g *Game) WriteDatabaseStats(players []gameDatabasePlayer) {
 		// Update their stats
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
-		if err := models.UserStats.Update(p.userID, variant.ID, userStats); err != nil {
-			logger.Error("Failed to update the stats for user " + p.name + ": " + err.Error())
-			continue
+		if err := models.UserStats.update(tx.databaseOperations, p.userID, variant.ID, userStats); err != nil {
+			return fmt.Errorf("update statistics for user %s: %w", p.name, err)
 		}
 	}
 
 	// Get the current stats for this variant
 	var variantStats VariantStatsRow
-	if v, err := models.VariantStats.Get(variant.ID); err != nil {
-		logger.Error("Failed to get the stats for variant " + strconv.Itoa(variant.ID) + ": " +
-			err.Error())
-		return
+	if v, err := models.VariantStats.get(tx.databaseOperations, variant.ID); err != nil {
+		return fmt.Errorf("get statistics for variant %d: %w", variant.ID, err)
 	} else {
 		variantStats = v
 	}
@@ -415,11 +434,10 @@ func (g *Game) WriteDatabaseStats(players []gameDatabasePlayer) {
 	// Write the updated stats to the database
 	// (even if the game was played with modifiers,
 	// we still need to update the number of games played)
-	if err := models.VariantStats.Update(variant.ID, variant.MaxScore, variantStats); err != nil {
-		logger.Error("Failed to update the stats for variant " + strconv.Itoa(variant.ID) + ": " +
-			err.Error())
-		return
+	if err := models.VariantStats.update(tx.databaseOperations, variant.ID, variant.MaxScore, variantStats); err != nil {
+		return fmt.Errorf("update statistics for variant %d: %w", variant.ID, err)
 	}
+	return tx.Commit(context.Background())
 }
 
 func (t *Table) ConvertToSharedReplay(ctx context.Context, d *CommandData) {

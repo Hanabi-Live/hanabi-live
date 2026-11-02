@@ -2,15 +2,14 @@ package main
 
 import (
 	"github.com/Hanabi-Live/hanabi-live/logger"
-	"github.com/gabstv/melody"
+	"github.com/olahol/melody"
 )
 
 var (
 	// This is the Melody WebSocket router
 	// We choose Melody as a framework because it is a bit higher level than the two most popular
 	// candidates, "gorilla/websocket" and "nhooyr/websocket"
-	// We use a fork of Melody ("gabstv/melody") because the original ("olahol/melody") is
-	// unmaintained and the fork fixes some race conditions
+	// Upstream Melody keeps send queues open while closing sessions, avoiding send/close races.
 	melodyRouter *melody.Melody
 
 	// We keep track of all WebSocket sessions
@@ -26,6 +25,7 @@ func websocketInit() {
 
 	// Define a new Melody router
 	melodyRouter = melody.New()
+	melodyRouter.Config.ConcurrentMessageHandling = false
 
 	// The default maximum message size is 512 bytes,
 	// but this is not long enough to send game objects

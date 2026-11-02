@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabstv/melody"
+	"github.com/olahol/melody"
 )
 
 func TestDeferredCallbacksWaitForResume(t *testing.T) {
