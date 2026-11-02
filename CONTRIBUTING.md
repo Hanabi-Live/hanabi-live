@@ -14,11 +14,12 @@ With pull requests:
 
 ## Server Code
 
-Go is the supported production server. TypeScript server parity is under active
-development; neither the partial server nor the isolated slice in
-`packages/server/src/experimental` is a production replacement yet. Preserve
-shared rules, client protocol behavior, and replay compatibility, and verify
-TypeScript implementations against Go rather than assuming equivalent behavior.
+Go is the supported production server. The TypeScript server implements the
+normal protocol and durable gameplay, but is not yet a production replacement.
+The isolated slice in `packages/server/src/experimental` is not the normal
+server. See the [server comparison](docs/server-evaluation.md). Preserve shared
+rules, client protocol behavior, and replay compatibility, and verify TypeScript
+implementations against Go rather than assuming equivalent behavior.
 
 The TypeScript server reuses `SENTRY_DSN` for optional production error
 reporting, but sends only generic errors, release identity, and stack locations,

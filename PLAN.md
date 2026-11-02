@@ -10,16 +10,8 @@ run lint and relevant regression suites, push to `main`, and verify CI. Audit
 reachability and shared helpers between milestones. Do not remove intentional
 maintenance paths or add speculative configuration.
 
-- [ ] Exercise the actual TypeScript entry point with the existing client and
-      Go-authority compatibility corpus. Cover every registered Go command and
-      enabled HTTP route, unsupported-input rejection, concurrency, restart,
-      storage failures, and interrupted completion. Expand fixtures where
-      representative traces do not exercise a supported feature.
-- [ ] Repeat comparable gameplay/replay/reconnect load measurements and document
-      remaining behavioral differences. Do not claim parity from command counts
-      or client event projection alone.
-- [ ] Once all code and verification tasks pass CI, delete this file and remove
-      its contributor-document link.
+- [ ] Verify CI for the final normal-server comparison and API acceptance
+      changes, then delete this file and remove its contributor-document link.
 
 Production deployment, database migrations, and live acceptance are deferred by
 the user and are not completion requirements for this code-only plan.

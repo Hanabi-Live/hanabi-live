@@ -1,7 +1,7 @@
 // Database fixtures intentionally exercise nullable legacy password fields.
 // cspell:words addext keyout
 /* eslint-disable unicorn/no-null */
-import type { TableID, UserID } from "@hanabi-live/data";
+import type { GameID, TableID, UserID } from "@hanabi-live/data";
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import {
   afterEach,
@@ -66,6 +66,7 @@ jest.mock("./models", () => ({
       getNumGamesForUser: jest.fn(),
       getGameIDsForUser: jest.fn(),
       getHistory: jest.fn(),
+      getGameIDsForSeed: jest.fn(),
     },
     userSettings: { get: jest.fn() },
     userStats: { get: jest.fn() },
@@ -601,6 +602,56 @@ describe("actual HTTP authentication entry point", () => {
       await closed;
     }
   }, 20_000);
+
+  test("full history and seed routes preserve selectors, bounds, and public variant details", async () => {
+    jest.mocked(models.users.getByNormalizedUsername).mockResolvedValue({
+      id: 42 as UserID,
+      username: "Alice",
+    });
+    jest
+      .mocked(models.gameQueries.list)
+      .mockResolvedValue({ totalRows: 0, rows: [] });
+    jest.mocked(models.gameQueries.fullIDs).mockResolvedValue([9 as GameID]);
+    jest
+      .mocked(models.games.getGameIDsForSeed)
+      .mockResolvedValue([9 as GameID]);
+    app = await createHTTPServer();
+    const seed = await app.inject({ url: "/api/v1/seed/p2v0s1?size=5" });
+    expect(seed.statusCode).toBe(200);
+    expect(models.gameQueries.list).toHaveBeenLastCalledWith(
+      expect.objectContaining({ seed: "p2v0s1", size: 5 }),
+    );
+    const history = await app.inject({
+      url: "/api/v1/history-full/ALICE?start=7&end=12",
+    });
+    expect(history.statusCode).toBe(200);
+    expect(models.gameQueries.fullIDs).toHaveBeenCalledWith({
+      userIDs: [42 as UserID],
+      start: 7,
+      end: 12,
+    });
+    expect(models.games.getHistory).toHaveBeenLastCalledWith([9 as GameID]);
+    const fullSeed = await app.inject({ url: "/api/v1/seed-full/p2v0s1" });
+    expect(fullSeed.statusCode).toBe(200);
+    expect(models.games.getHistory).toHaveBeenLastCalledWith(
+      [9 as GameID],
+      "seed",
+    );
+    const variants = await app.inject({ url: "/api/v1/variants-full" });
+    expect(variants.json<unknown>()).toMatchObject({
+      0: {
+        name: "No Variant",
+        suits: ["Red", "Yellow", "Green", "Blue", "Purple"],
+        stackSize: 5,
+        maxScore: 25,
+      },
+    });
+    const duplicate = await app.inject({
+      url: "/api/v1/history-full/Alice/ALICE",
+    });
+    expect(duplicate.statusCode).toBe(404);
+    expect(models.gameQueries.fullIDs).toHaveBeenCalledTimes(1);
+  });
 
   test("registers public history and variant APIs with correct validation and ban handling", async () => {
     jest.mocked(models.users.getByNormalizedUsername).mockResolvedValue({

@@ -47,6 +47,7 @@ var (
 		CreateTableVariant:            DefaultVariantName,
 		CreateTableTimeBaseMinutes:    2,
 		CreateTableTimePerTurnSeconds: 20,
+		CreateTableMaxPlayers:         5,
 	}
 )
 

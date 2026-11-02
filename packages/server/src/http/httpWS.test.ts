@@ -14,7 +14,9 @@ import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
 import { WebSocket } from "ws";
 import { incomingCommands } from "../commandAdmission";
+import { deleteCookie } from "../httpSession";
 import { models } from "../models";
+import { wsError } from "../wsHelpers";
 import { wsMessage } from "../wsMessage";
 import { enqueueWSMsg, WSQueueElementType } from "../wsQueue";
 import { httpWS, httpWSPreValidation } from "./httpWS";
@@ -63,6 +65,16 @@ async function connect() {
 }
 
 describe("WebSocket command sequencing", () => {
+  test("a deleted account fails closed before it can enter the command queue", async () => {
+    jest.mocked(models.users.getWSData).mockResolvedValue(undefined);
+    await connect();
+    if (socket.readyState !== socket.CLOSED) {
+      await once(socket, "close");
+    }
+    expect(wsError).toHaveBeenCalled();
+    expect(deleteCookie).toHaveBeenCalled();
+    expect(enqueueWSMsg).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     jest.resetAllMocks();
     jest.mocked(models.users.getWSData).mockResolvedValue({
