@@ -1,14 +1,13 @@
 import type { ClientCommandChatData } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
-import { validateAndNormalizeChatMsg } from "../chat";
+import { chatServerSendPM, validateAndNormalizeChatMsg } from "../chat";
 import { chatMessageToWire } from "../chatMessage";
 import { parseChatTarget } from "../chatTarget";
-import { getCurrentDatetime } from "../date";
 import { identityTokenRegenerate } from "../identityToken";
 import { logger } from "../logger";
 import { models } from "../models";
-import { wsSend, wsSendAll, wsWarning } from "../wsHelpers";
+import { wsSendAll, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 
 export async function commandChat(
@@ -87,13 +86,17 @@ async function chatToken(
   }
 
   if (args.length > 0) {
-    wsSendServerPM(wsUser, "The format of the /token command is: /token", room);
+    chatServerSendPM(
+      wsUser,
+      "The format of the /token command is: /token",
+      room,
+    );
     return true;
   }
 
   try {
     const regenerated = await identityTokenRegenerate(wsUser.userID);
-    wsSendServerPM(
+    chatServerSendPM(
       wsUser,
       `Identity token (valid until ${regenerated.expiresAt.toISOString()} UTC): <code>${regenerated.token}</code>`,
       room,
@@ -106,20 +109,4 @@ async function chatToken(
   }
 
   return true;
-}
-
-function wsSendServerPM(wsUser: WSUser, msg: string, room: string) {
-  wsSend(
-    wsUser.connection,
-    ServerCommand.chat,
-    chatMessageToWire({
-      kind: "notice",
-      source: "server",
-      text: msg,
-      who: "Hanab Live",
-      datetime: getCurrentDatetime(),
-      room,
-      recipient: wsUser.username,
-    }),
-  );
 }

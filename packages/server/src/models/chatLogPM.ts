@@ -62,7 +62,7 @@ export const chatLogPM = {
       })
       .from(chatLogPMTable)
       .where(
-        beforeID === undefined
+        beforeID === undefined || beforeID <= 0
           ? participantFilter
           : and(participantFilter, lt(chatLogPMTable.id, beforeID)),
       )

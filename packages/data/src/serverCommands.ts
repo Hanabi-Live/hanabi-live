@@ -18,13 +18,13 @@ import { userID } from "./types/UserID";
 const serverCommandChatData = z
   .object({
     msg: z.string().min(1), // Pre-escaped HTML string
-    who: z.string().min(1).optional(), // plain string
+    who: z.string().optional(), // plain string
     source: z.enum(["user", "server", "discord"]),
     datetime: z.string().min(1), // new Date(x) string
     chatID: z.number().int().positive().optional(),
     pmID: z.number().int().positive().optional(),
-    room: z.string().min(1).optional(), // room code string
-    recipient: z.string().min(1).optional(), // plain string
+    room: z.string().optional(), // room code string; empty routes to the current room
+    recipient: z.string().optional(), // plain string
   })
   .strict()
   .readonly();
@@ -101,6 +101,10 @@ const serverCommandErrorData = z
 export interface ServerCommandErrorData extends z.infer<
   typeof serverCommandErrorData
 > {}
+
+const serverCommandFriendsData = z
+  .strictObject({ friends: z.string().array().readonly() })
+  .readonly();
 
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
@@ -245,6 +249,7 @@ export interface ServerCommandData {
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
+  [ServerCommand.friends]: z.infer<typeof serverCommandFriendsData>;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryFriends]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryOtherScores]: z.infer<
@@ -269,6 +274,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
   [ServerCommand.error]: serverCommandErrorData,
+  [ServerCommand.friends]: serverCommandFriendsData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryFriends]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryOtherScores]:

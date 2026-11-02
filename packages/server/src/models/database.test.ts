@@ -16,7 +16,10 @@ import * as schema from "../databaseSchema";
 import type { db } from "../db";
 import { evaluationDatabase } from "../experimental/evaluationSupport";
 import { chatLog } from "./chatLog";
+import { chatLogPM } from "./chatLogPM";
 import { games } from "./games";
+import { userFriends } from "./userFriends";
+import { userLinkages } from "./userLinkages";
 import { userSettings } from "./userSettings";
 
 let mockDatabase: typeof db;
@@ -190,5 +193,81 @@ databaseDescribe("application history and settings persistence", () => {
       username: "alice",
       message: "&lt;hello&gt;",
     });
+  });
+
+  test("concurrent friend requests create one forward and reverse relationship", async () => {
+    const changes = await Promise.all([
+      userFriends.set(1 as UserID, 2 as UserID, true),
+      userFriends.set(1 as UserID, 2 as UserID, true),
+    ]);
+    expect(changes.filter(Boolean)).toHaveLength(1);
+    const forward = await client`SELECT user_id, friend_id FROM user_friends`;
+    const reverse =
+      await client`SELECT user_id, friend_id FROM user_reverse_friends`;
+    expect([...forward]).toEqual([{ user_id: 1, friend_id: 2 }]);
+    expect([...reverse]).toEqual([{ user_id: 2, friend_id: 1 }]);
+    expect(await userFriends.getList(1 as UserID)).toEqual(["Bob"]);
+    expect(await userFriends.set(1 as UserID, 2 as UserID, false)).toBe(true);
+    expect(await userFriends.getList(1 as UserID)).toEqual([]);
+    expect(await client`SELECT user_id FROM user_reverse_friends`).toHaveLength(
+      0,
+    );
+    expect(await userFriends.set(1 as UserID, 2 as UserID, false)).toBe(false);
+  });
+
+  test("a failed reverse-friend write rolls back the forward relation", async () => {
+    await client`
+      ALTER TABLE user_reverse_friends
+      ADD CONSTRAINT injected_relation_failure CHECK (friend_id <> 1)
+    `;
+    await expect(
+      userFriends.set(1 as UserID, 2 as UserID, true),
+    ).rejects.toThrow();
+    expect(await client`SELECT user_id FROM user_friends`).toHaveLength(0);
+    expect(await client`SELECT user_id FROM user_reverse_friends`).toHaveLength(
+      0,
+    );
+    await client`
+      ALTER TABLE user_reverse_friends DROP CONSTRAINT injected_relation_failure
+    `;
+    expect(await userFriends.set(1 as UserID, 2 as UserID, true)).toBe(true);
+  });
+
+  test("account links are directional, duplicate-safe and sorted for display", async () => {
+    const changes = await Promise.all([
+      userLinkages.set(1 as UserID, 3 as UserID, true),
+      userLinkages.set(1 as UserID, 3 as UserID, true),
+    ]);
+    expect(changes.filter(Boolean)).toHaveLength(1);
+    await userLinkages.set(1 as UserID, 2 as UserID, true);
+    expect(await userLinkages.getList(1 as UserID)).toEqual(["Bob", "Other"]);
+    expect(await userLinkages.getList(2 as UserID)).toEqual([]);
+    expect(await userLinkages.set(1 as UserID, 2 as UserID, false)).toBe(true);
+    expect(await userLinkages.set(1 as UserID, 2 as UserID, false)).toBe(false);
+    expect(await userLinkages.getList(1 as UserID)).toEqual(["Other"]);
+  });
+
+  test("private history paginates only the requesting participant's messages", async () => {
+    const first = await chatLogPM.insert(1 as UserID, 2 as UserID, "first");
+    const second = await chatLogPM.insert(2 as UserID, 1 as UserID, "second");
+    await chatLogPM.insert(2 as UserID, 3 as UserID, "not visible to Alice");
+    const latest = await chatLogPM.getHistory(1 as UserID, 1, 0);
+    expect(latest.hasMore).toBe(true);
+    expect(latest.list.map((message) => message.pmID)).toEqual([second.pmID]);
+    const older = await chatLogPM.getHistory(1 as UserID, 1, second.pmID);
+    expect(older.hasMore).toBe(false);
+    expect(older.list.map((message) => message.pmID)).toEqual([first.pmID]);
+    const all = await chatLogPM.getHistory(1 as UserID, 100, -1);
+    expect(all.list.map((message) => message.pmID)).toEqual([
+      first.pmID,
+      second.pmID,
+    ]);
+    const unrelated = await chatLogPM.getHistory(
+      3 as UserID,
+      100,
+      undefined,
+      1 as UserID,
+    );
+    expect(unrelated.list).toEqual([]);
   });
 });

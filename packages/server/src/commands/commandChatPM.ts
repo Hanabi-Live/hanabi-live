@@ -29,7 +29,11 @@ export async function commandChatPM(
 
   const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
 
-  const normalizedRecipient = normalizeUsername(recipient);
+  const validatedRecipient = validateAndNormalizeChatMsg(connection, recipient);
+  if (validatedRecipient === undefined) {
+    return;
+  }
+  const normalizedRecipient = normalizeUsername(validatedRecipient);
   if (normalizedUsername === normalizedRecipient) {
     wsWarning(connection, "You cannot send a private message to yourself.");
     return;
@@ -37,7 +41,10 @@ export async function commandChatPM(
 
   const wsUserRecipient = getWSUserByNormalizedUsername(normalizedRecipient);
   if (wsUserRecipient === undefined) {
-    wsWarning(connection, `User "${recipient}" is not currently online.`);
+    wsWarning(
+      connection,
+      `User "${escapeHTMLCharacters(validatedRecipient)}" is not currently online.`,
+    );
     return;
   }
 

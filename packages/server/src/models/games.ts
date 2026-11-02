@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { except } from "drizzle-orm/pg-core";
 import { gameParticipantsTable, gamesTable } from "../databaseSchema";
 import { db } from "../db";
+import { sortUsernames } from "../utils";
 
 export const games = {
   /** Returns 0 if the provided user ID does not exist. */
@@ -182,12 +183,7 @@ export const games = {
           variantID,
           variantName: getVariantByID(variantID).name,
         },
-        playerNames: playerNames.toSorted((first, second) =>
-          Buffer.compare(
-            Buffer.from(first.toLowerCase()),
-            Buffer.from(second.toLowerCase()),
-          ),
-        ),
+        playerNames: sortUsernames(playerNames),
         incrementNumGames: false,
       })),
     );

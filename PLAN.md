@@ -13,8 +13,7 @@ maintenance paths or add speculative configuration.
 - [ ] Complete remaining entry-point and authentication/session integration,
       reconnect/disconnect table ownership, and graceful draining.
 - [ ] Complete remaining lobby commands: table chat, chat commands and Discord
-      mirroring, private-message edge cases, friends, typing/read indicators,
-      account linking, and player information.
+      mirroring, and typing/read indicators.
 - [ ] Complete table creation, joining/leaving, ownership, updates, suggestions,
       spectating, start/restart, termination votes, and reconnect state.
 - [ ] Implement authoritative gameplay for all supported player counts,

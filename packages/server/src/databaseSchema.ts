@@ -145,6 +145,19 @@ export const userReverseFriendsTable = pgTable("user_reverse_friends", {
     .references(() => usersTable.id),
 });
 
+export const userLinkagesTable = pgTable(
+  "user_linkages",
+  {
+    userID: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id),
+    linkedID: integer("linked_id")
+      .notNull()
+      .references(() => usersTable.id),
+  },
+  (table) => [primaryKey({ columns: [table.userID, table.linkedID] })],
+);
+
 export const userIdentityTokensTable = pgTable(
   "user_identity_tokens",
   {

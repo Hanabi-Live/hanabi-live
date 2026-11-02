@@ -35,10 +35,10 @@ export interface ClientCommandChatPMData extends z.infer<
 
 const clientCommandChatPMHistoryGetData = z
   .object({
-    amount: z.number().int().min(1).max(100),
-    beforeID: z.number().int().positive().optional(),
-    room: z.string().min(1).optional(),
-    username: z.string().min(1).optional(),
+    amount: z.number().int().default(0),
+    beforeID: z.number().int().optional(),
+    room: z.string().optional(),
+    username: z.string().optional(),
   })
   .strict()
   .readonly();
@@ -49,6 +49,17 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
 > {}
 
 const clientCommandGetNameData = z.strictObject({}).optional();
+const clientCommandChatUserData = z
+  .strictObject({
+    name: z.string().default(""),
+    room: z.string().default(""),
+  })
+  .readonly()
+  .default({ name: "", room: "" });
+const clientCommandChatLinkedData = z
+  .strictObject({ room: z.string().default("") })
+  .readonly()
+  .default({ room: "" });
 const clientCommandHistoryData = z
   .strictObject({
     offset: z.number().int().default(0),
@@ -74,8 +85,14 @@ const clientCommandSettingData = z
 
 export interface ClientCommandData {
   [ClientCommand.chat]: ClientCommandChatData;
+  [ClientCommand.chatFriend]: z.infer<typeof clientCommandChatUserData>;
+  [ClientCommand.chatLink]: z.infer<typeof clientCommandChatUserData>;
+  [ClientCommand.chatLinked]: z.infer<typeof clientCommandChatLinkedData>;
+  [ClientCommand.chatPlayerInfo]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.chatPM]: ClientCommandChatPMData;
   [ClientCommand.chatPMHistoryGet]: ClientCommandChatPMHistoryGetData;
+  [ClientCommand.chatUnfriend]: z.infer<typeof clientCommandChatUserData>;
+  [ClientCommand.chatUnlink]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.getName]: z.infer<typeof clientCommandGetNameData>;
   [ClientCommand.historyFriendsGet]: z.infer<typeof clientCommandHistoryData>;
   [ClientCommand.historyGet]: z.infer<typeof clientCommandHistoryData>;
@@ -90,8 +107,14 @@ interfaceSatisfiesEnum<ClientCommandData, ClientCommand>();
 
 export const CLIENT_COMMAND_SCHEMAS = {
   [ClientCommand.chat]: clientCommandChatData,
+  [ClientCommand.chatFriend]: clientCommandChatUserData,
+  [ClientCommand.chatLink]: clientCommandChatUserData,
+  [ClientCommand.chatLinked]: clientCommandChatLinkedData,
+  [ClientCommand.chatPlayerInfo]: clientCommandChatUserData,
   [ClientCommand.chatPM]: clientCommandChatPMData,
   [ClientCommand.chatPMHistoryGet]: clientCommandChatPMHistoryGetData,
+  [ClientCommand.chatUnfriend]: clientCommandChatUserData,
+  [ClientCommand.chatUnlink]: clientCommandChatUserData,
   [ClientCommand.getName]: clientCommandGetNameData,
   [ClientCommand.historyFriendsGet]: clientCommandHistoryData,
   [ClientCommand.historyGet]: clientCommandHistoryData,

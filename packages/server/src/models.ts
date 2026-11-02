@@ -8,6 +8,7 @@ import { games } from "./models/games";
 import { gameTags } from "./models/gameTags";
 import { userFriends } from "./models/userFriends";
 import { userIdentityTokens } from "./models/userIdentityTokens";
+import { userLinkages } from "./models/userLinkages";
 import { users } from "./models/users";
 import { userSettings } from "./models/userSettings";
 import { userStats } from "./models/userStats";
@@ -21,6 +22,7 @@ export const models = {
   users,
   userFriends,
   userIdentityTokens,
+  userLinkages,
   userSettings,
   userStats,
 };

@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, jest, test } from "@jest/globals";
 import { models } from "../models";
 import { wsSend, wsSendAll, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
+import { wsUsers } from "../wsUsers";
 import { commandChat } from "./commandChat";
+import { commandChatPM } from "./commandChatPM";
 import {
   commandHistoryFriendsGet,
   commandHistoryGet,
@@ -23,6 +25,7 @@ jest.mock("../models", () => ({
     },
     userSettings: { set: jest.fn() },
     chatLog: { insert: jest.fn() },
+    chatLogPM: { insert: jest.fn() },
   },
 }));
 jest.mock("../identityToken", () => ({
@@ -41,6 +44,7 @@ const user = {
   connection: {},
   userID: 1 as UserID,
   username: "Alice",
+  normalizedUsername: "alice",
   muted: false,
   friends: new Set([2 as UserID]),
   hyphenated: false,
@@ -50,6 +54,7 @@ const user = {
 describe("lobby command parity", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    (wsUsers as Map<UserID, WSUser>).clear();
     user.hyphenated = false;
     user.inactive = false;
     jest
@@ -200,5 +205,51 @@ describe("lobby command parity", () => {
       commandChat(user, { msg: "hello", room: "lobby" }),
     ).rejects.toThrow("storage failed");
     expect(wsSendAll).not.toHaveBeenCalled();
+  });
+
+  test("normalizes PM recipients using Go chat rules and echoes the persisted message", async () => {
+    const recipient = {
+      ...user,
+      userID: 2 as UserID,
+      username: "Bob",
+      normalizedUsername: "bob",
+      connection: {},
+    } as WSUser;
+    (wsUsers as Map<UserID, WSUser>).set(recipient.userID, recipient);
+    jest.mocked(models.chatLogPM.insert).mockResolvedValueOnce({
+      pmID: 17,
+      datetimeSent: new Date("2026-01-01T00:00:00Z"),
+    });
+    await commandChatPM(user, { msg: "<hello>", recipient: "B\no\tb" });
+    expect(models.chatLogPM.insert).toHaveBeenCalledWith(
+      user.userID,
+      recipient.userID,
+      "&lt;hello&gt;",
+    );
+    expect(wsSend).toHaveBeenCalledTimes(2);
+    expect(wsSend).toHaveBeenLastCalledWith(
+      recipient.connection,
+      ServerCommand.chat,
+      expect.objectContaining({
+        pmID: 17,
+        recipient: "Bob",
+        msg: "&lt;hello&gt;",
+      }),
+    );
+  });
+
+  test("rejects blank PM recipients and escapes unknown names in warnings", async () => {
+    await commandChatPM(user, { msg: "hello", recipient: "\t\n" });
+    expect(wsWarning).toHaveBeenLastCalledWith(
+      user.connection,
+      "Chat messages cannot be blank.",
+    );
+    await commandChatPM(user, { msg: "hello", recipient: "<missing>" });
+    expect(wsWarning).toHaveBeenLastCalledWith(
+      user.connection,
+      'User "&lt;missing&gt;" is not currently online.',
+    );
+    expect(models.chatLogPM.insert).not.toHaveBeenCalled();
+    expect(wsSend).not.toHaveBeenCalled();
   });
 });

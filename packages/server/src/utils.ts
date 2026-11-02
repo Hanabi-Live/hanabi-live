@@ -18,21 +18,35 @@ export function normalizeString(string: string): string {
   return unidecode(string).toLowerCase();
 }
 
-/**
- * Helper function to truncate a string to a maximum length (in UTF-16 code units) without splitting
- * a character in half.
- *
- * A plain `slice` can cut a two-code-unit character (like an emoji) in the middle of its surrogate
- * pair, leaving a lone surrogate that renders as "�".
- */
-export function truncateToMaxCodeUnits(
-  string: string,
-  maxLength: number,
-): string {
-  if (string.length <= maxLength) {
-    return string;
-  }
+export function sortUsernames(names: readonly string[]): readonly string[] {
+  return names.toSorted((first, second) =>
+    Buffer.compare(
+      Buffer.from(first.toLowerCase()),
+      Buffer.from(second.toLowerCase()),
+    ),
+  );
+}
 
-  const truncated = string.slice(0, maxLength);
-  return truncated.isWellFormed() ? truncated : truncated.slice(0, -1);
+/** Match Go's UTF-8 byte limit without splitting a character. */
+export function truncateToMaxBytes(string: string, maxBytes: number): string {
+  let bytes = 0;
+  let result = "";
+  for (const character of string.toWellFormed()) {
+    bytes += Buffer.byteLength(character);
+    if (bytes > maxBytes) {
+      break;
+    }
+    result += character;
+  }
+  return result;
+}
+
+export function getMaxConsecutiveMarks(string: string): number {
+  let current = 0;
+  let maximum = 0;
+  for (const character of string.normalize("NFD")) {
+    current = /\p{Mn}/u.test(character) ? current + 1 : 0;
+    maximum = Math.max(maximum, current);
+  }
+  return maximum;
 }

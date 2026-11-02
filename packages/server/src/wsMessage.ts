@@ -17,6 +17,14 @@ import {
   commandHistoryGetSeed,
 } from "./commands/commandHistory";
 import { commandInactive } from "./commands/commandInactive";
+import {
+  commandChatFriend,
+  commandChatLink,
+  commandChatLinked,
+  commandChatPlayerInfo,
+  commandChatUnfriend,
+  commandChatUnlink,
+} from "./commands/commandRelationships";
 import { commandSetting } from "./commands/commandSetting";
 import { logger } from "./logger";
 import { wsError, wsWarning } from "./wsHelpers";
@@ -30,6 +38,22 @@ const CLIENT_COMMAND_HANDLERS = {
     CLIENT_COMMAND_SCHEMAS.chat,
     commandChat,
   ),
+  [ClientCommand.chatFriend]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatFriend,
+    commandChatFriend,
+  ),
+  [ClientCommand.chatLink]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatLink,
+    commandChatLink,
+  ),
+  [ClientCommand.chatLinked]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatLinked,
+    commandChatLinked,
+  ),
+  [ClientCommand.chatPlayerInfo]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatPlayerInfo,
+    commandChatPlayerInfo,
+  ),
   [ClientCommand.chatPM]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.chatPM,
     commandChatPM,
@@ -37,6 +61,14 @@ const CLIENT_COMMAND_HANDLERS = {
   [ClientCommand.chatPMHistoryGet]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.chatPMHistoryGet,
     commandChatPMHistoryGet,
+  ),
+  [ClientCommand.chatUnfriend]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatUnfriend,
+    commandChatUnfriend,
+  ),
+  [ClientCommand.chatUnlink]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatUnlink,
+    commandChatUnlink,
   ),
   [ClientCommand.getName]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.getName,

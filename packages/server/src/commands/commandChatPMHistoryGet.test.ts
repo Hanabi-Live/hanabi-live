@@ -106,4 +106,38 @@ describe("commandChatPMHistoryGet", () => {
     expect(mockedGetHistory).not.toHaveBeenCalled();
     expect(mockedWSSend).not.toHaveBeenCalled();
   });
+
+  test("accepts Go's empty optional fields without inventing a peer or room", async () => {
+    mockedGetHistory.mockResolvedValue({ list: [], hasMore: false });
+    await commandChatPMHistoryGet(wsUser, {
+      amount: 10,
+      username: "",
+      room: "",
+      beforeID: 0,
+    });
+    expect(mockedGetIDByNormalizedUsername).not.toHaveBeenCalled();
+    expect(mockedGetHistory).toHaveBeenCalledWith(
+      wsUser.userID,
+      10,
+      0,
+      undefined,
+    );
+    expect(mockedWSSend).toHaveBeenCalledWith(
+      wsUser.connection,
+      ServerCommand.chatPMHistory,
+      { list: [], hasMore: false },
+    );
+  });
+
+  test.each([0, -1, 101])(
+    "rejects amount %i with the Go-compatible warning",
+    async (amount) => {
+      await commandChatPMHistoryGet(wsUser, { amount });
+      expect(mockedGetHistory).not.toHaveBeenCalled();
+      expect(mockedWSWarning).toHaveBeenCalledWith(
+        wsUser.connection,
+        "Private message history amount must be between 1 and 100.",
+      );
+    },
+  );
 });

@@ -3,8 +3,9 @@ import type {
   UserID,
 } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
+import { escapeHTMLCharacters } from "complete-common";
 import { models } from "../models";
-import { normalizeUsername } from "../utils";
+import { normalizeString } from "../utils";
 import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 
@@ -13,14 +14,24 @@ export async function commandChatPMHistoryGet(
   data: ClientCommandChatPMHistoryGetData,
 ): Promise<void> {
   const { amount, beforeID, room, username } = data;
+  if (amount < 1 || amount > 100) {
+    wsWarning(
+      wsUser.connection,
+      "Private message history amount must be between 1 and 100.",
+    );
+    return;
+  }
 
   let peerID: UserID | undefined;
-  if (username !== undefined) {
+  if (username !== undefined && username !== "") {
     peerID = await models.users.getIDByNormalizedUsername(
-      normalizeUsername(username),
+      normalizeString(username),
     );
     if (peerID === undefined) {
-      wsWarning(wsUser.connection, `User "${username}" does not exist.`);
+      wsWarning(
+        wsUser.connection,
+        `User "${escapeHTMLCharacters(username)}" does not exist.`,
+      );
       return;
     }
   }
@@ -33,6 +44,6 @@ export async function commandChatPMHistoryGet(
   );
   wsSend(wsUser.connection, ServerCommand.chatPMHistory, {
     ...history,
-    ...(room !== undefined && { room }),
+    ...(room !== undefined && room !== "" && { room }),
   });
 }

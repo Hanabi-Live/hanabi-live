@@ -1,13 +1,31 @@
 import type { ServerCommandChatData } from "@hanabi-live/data";
-import { getNumConsecutiveDiacritics, normalizeString } from "complete-common";
+import { PROJECT_NAME, ServerCommand } from "@hanabi-live/data";
 import type { WebSocket } from "ws";
 import { chatMessageToWire } from "./chatMessage";
 import { NUM_CONSECUTIVE_DIACRITICS_ALLOWED } from "./constants";
+import { getCurrentDatetime } from "./date";
 import { models } from "./models";
-import { truncateToMaxCodeUnits } from "./utils";
-import { wsWarning } from "./wsHelpers";
+import { getMaxConsecutiveMarks, truncateToMaxBytes } from "./utils";
+import { wsSend, wsWarning } from "./wsHelpers";
+import type { WSUser } from "./wsUsers";
 
 const MAX_CHAT_LENGTH = 300;
+
+export function chatServerSendPM(wsUser: WSUser, msg: string, room = ""): void {
+  wsSend(
+    wsUser.connection,
+    ServerCommand.chat,
+    chatMessageToWire({
+      kind: "notice",
+      source: "server",
+      text: msg,
+      who: PROJECT_NAME,
+      datetime: getCurrentDatetime(),
+      room,
+      recipient: wsUser.username,
+    }),
+  );
+}
 
 /** Returns undefined if validation fails. */
 export function validateAndNormalizeChatMsg(
@@ -15,8 +33,10 @@ export function validateAndNormalizeChatMsg(
   msg: string,
 ): string | undefined {
   // We truncate first to prevent wasting CPU cycles on validating extremely long messages.
-  const truncatedMsg = truncateToMaxCodeUnits(msg, MAX_CHAT_LENGTH);
-  const normalizedMsg = normalizeString(truncatedMsg);
+  const truncatedMsg = truncateToMaxBytes(msg, MAX_CHAT_LENGTH);
+  const normalizedMsg = truncatedMsg
+    .replaceAll(/[^\p{L}\p{M}\p{N}\p{P}\p{S} ]/gu, "")
+    .trim();
 
   if (normalizedMsg === "") {
     wsWarning(connection, "Chat messages cannot be blank.");
@@ -24,8 +44,7 @@ export function validateAndNormalizeChatMsg(
   }
 
   if (
-    getNumConsecutiveDiacritics(normalizedMsg)
-    > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
+    getMaxConsecutiveMarks(normalizedMsg) > NUM_CONSECUTIVE_DIACRITICS_ALLOWED
   ) {
     wsWarning(
       connection,
