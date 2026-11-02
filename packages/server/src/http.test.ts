@@ -18,17 +18,20 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { once } from "node:events";
 import fs, { readFileSync } from "node:fs";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { get } from "node:https";
+import type { ListenOptions } from "node:net";
+import { connect, Server } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { setImmediate } from "node:timers/promises";
+import { setTimeout as delay, setImmediate } from "node:timers/promises";
 import { promisify } from "node:util";
+import { gunzipSync } from "node:zlib";
 import type { pino } from "pino";
 import { WebSocket } from "ws";
 import { z } from "zod";
 import { env } from "./env";
-import { createHTTPServer } from "./http";
+import { createHTTPRedirectServer, createHTTPServer, httpInit } from "./http";
 import { models } from "./models";
 import { decodeSessionCookie, SESSION_COOKIE_NAME } from "./sessionCookie";
 
@@ -116,6 +119,7 @@ describe("actual HTTP authentication entry point", () => {
     env.SESSION_SECRET = corpus.key;
     env.TLS_CERT_FILE = "";
     env.TLS_KEY_FILE = "";
+    env.PORT = 0;
     jest.spyOn(Date, "now").mockReturnValue(sample.timestamp * 1000);
     jest.mocked(models.bannedIPs.check).mockResolvedValue(false);
     jest.mocked(models.users.get).mockResolvedValue({
@@ -375,7 +379,7 @@ describe("actual HTTP authentication entry point", () => {
     expect(response.cookies).toEqual([]);
   });
 
-  test("serves HTTPS using certificate and key file contents", async () => {
+  test("starts HTTPS on the Go-compatible ports using certificate and key contents", async () => {
     const directory = await mkdtemp(path.join(tmpdir(), "hanabi-tls-"));
     try {
       const certificate = path.join(directory, "certificate.pem");
@@ -399,14 +403,50 @@ describe("actual HTTP authentication entry point", () => {
       ]);
       env.TLS_CERT_FILE = certificate;
       env.TLS_KEY_FILE = key;
-      // This transport test must not create operator-owned ACME directories.
+      env.PORT = 80;
+      const requestedPorts: number[] = [];
+      type Listen = (
+        this: Server,
+        options: ListenOptions,
+        callback?: () => void,
+      ) => Server;
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- The native method is called with its real server receiver.
+      const listen: Listen = Server.prototype.listen;
+      jest
+        .spyOn(Server.prototype, "listen")
+        .mockImplementation(function listenOnEphemeralPort(
+          this: Server,
+          ...args: readonly unknown[]
+        ) {
+          const [options, callback] = args;
+          if (
+            typeof options !== "object"
+            || options === null
+            || !("port" in options)
+            || typeof options.port !== "number"
+          ) {
+            throw new Error("Expected explicit HTTP listener options.");
+          }
+          requestedPorts.push(options.port);
+          const ready = () => {
+            if (typeof callback === "function") {
+              Reflect.apply(callback, this, []);
+            }
+          };
+          return listen.call(this, { ...options, port: 0 }, ready);
+        });
+      // Exercise real listeners without binding privileged ports or creating operator directories.
       jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
-      app = await createHTTPServer();
-      const address = await app.listen({ host: "127.0.0.1", port: 0 });
+      app = await httpInit();
+      expect(requestedPorts).toEqual([80, 443]);
+      const address = app.server.address();
+      if (address === null || typeof address === "string") {
+        throw new Error("Missing HTTPS listener address.");
+      }
       const status = await new Promise<number | undefined>(
         (resolve, reject) => {
           const request = get(
-            `${address}/test-cookie`,
+            `https://127.0.0.1:${address.port}/test-cookie`,
             {
               ca: readFileSync(certificate),
               agent: false,
@@ -428,6 +468,139 @@ describe("actual HTTP authentication entry point", () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+
+  test("negotiates gzip responses without compressing clients that disable gzip", async () => {
+    app = await createHTTPServer();
+    const encoded = await app.inject({
+      url: "/api/v1/variants",
+      headers: { "accept-encoding": "gzip" },
+    });
+    expect(encoded.headers["content-encoding"]).toBe("gzip");
+    expect(String(encoded.headers.vary).toLowerCase()).toContain(
+      "accept-encoding",
+    );
+    const decoded: unknown = JSON.parse(
+      gunzipSync(encoded.rawPayload).toString(),
+    );
+    const plain = await app.inject({
+      url: "/api/v1/variants",
+      headers: { "accept-encoding": "gzip;q=0" },
+    });
+    expect(plain.headers["content-encoding"]).toBeUndefined();
+    expect(decoded).toEqual(plain.json<unknown>());
+  });
+
+  test("rejects malformed transport input as a client error without exposing parser details", async () => {
+    app = await createHTTPServer();
+    const response = await app.inject({
+      method: "POST",
+      url: "/login",
+      headers: { "content-type": "application/json" },
+      payload: "{",
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toBe("Bad Request.");
+    expect(models.users.get).not.toHaveBeenCalled();
+  });
+
+  test("serves HTTP certificate challenges, redirects other paths, and closes the owned listener", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "hanabi-acme-"));
+    let redirect: FastifyInstance | undefined;
+    try {
+      await writeFile(
+        path.join(directory, "synthetic-token"),
+        "synthetic-challenge",
+      );
+      redirect = await createHTTPRedirectServer(directory);
+      const ownedRedirect = redirect;
+      app = await createHTTPServer(async () => {
+        await ownedRedirect.close();
+      });
+      const address = await redirect.listen({ host: "127.0.0.1", port: 0 });
+      await app.listen({ host: "127.0.0.1", port: 0 });
+      const challenge = await fetch(
+        `${address}/.well-known/acme-challenge/synthetic-token`,
+      );
+      expect(challenge.status).toBe(200);
+      expect(await challenge.text()).toBe("synthetic-challenge");
+      const missing = await fetch(
+        `${address}/.well-known/acme-challenge/missing`,
+        { redirect: "manual" },
+      );
+      expect(missing.status).toBe(404);
+      expect(missing.headers.get("location")).toBeNull();
+      await missing.text();
+      const redirected = await fetch(`${address}/history/Alice?size=5`, {
+        redirect: "manual",
+      });
+      expect(redirected.status).toBe(301);
+      expect(redirected.headers.get("location")).toBe(
+        `${address.replace("http:", "https:")}/history/Alice?size=5`,
+      );
+      await redirected.text();
+      const posted = await redirect.inject({
+        method: "POST",
+        url: "/login",
+        headers: {
+          host: "example.test",
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        payload: "username=synthetic",
+      });
+      expect(posted.statusCode).toBe(301);
+      expect(posted.headers.location).toBe("https://example.test/login");
+      await app.close();
+      app = undefined;
+      expect(redirect.server.listening).toBe(false);
+    } finally {
+      await app?.close();
+      app = undefined;
+      await redirect?.close();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("bounds incomplete HTTP requests without expiring upgraded WebSockets", async () => {
+    app = await createHTTPServer();
+    const address = await app.listen({ host: "127.0.0.1", port: 0 });
+    const socket = new WebSocket(`${address.replace("http:", "ws:")}/ws`, {
+      headers: { Cookie: `${SESSION_COOKIE_NAME}=${sample.cookie}` },
+    });
+    const closed = once(socket, "close");
+    const slow = connect({
+      host: "127.0.0.1",
+      port: Number(new URL(address).port),
+    });
+    let response = "";
+    const finished = new Promise<string>((resolve, reject) => {
+      slow.on("data", (chunk: Buffer) => {
+        response += chunk.toString();
+      });
+      slow.once("error", reject);
+      slow.once("close", () => {
+        resolve(response);
+      });
+    });
+    const deadline = setTimeout(() => {
+      slow.destroy(new Error("Incomplete HTTP request was not bounded."));
+    }, 8000);
+    try {
+      await once(socket, "open");
+      const started = performance.now();
+      slow.write(
+        "POST /login HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 100\r\n\r\n{",
+      );
+      expect(await finished).toContain("408");
+      clearTimeout(deadline);
+      await delay(Math.max(0, 11_000 - (performance.now() - started)));
+      expect(socket.readyState).toBe(WebSocket.OPEN);
+    } finally {
+      clearTimeout(deadline);
+      slow.destroy();
+      socket.terminate();
+      await closed;
+    }
+  }, 20_000);
 
   test("registers public history and variant APIs with correct validation and ban handling", async () => {
     jest.mocked(models.users.getByNormalizedUsername).mockResolvedValue({

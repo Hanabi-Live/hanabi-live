@@ -21,8 +21,7 @@ maintenance paths or add speculative configuration.
 - [ ] Complete replay creation, shared replay controls, hypothetical actions,
       replay visibility, historical imports/exports, and bot protocol behavior.
 - [ ] Complete administrative chat commands, maintenance, and operational
-      metrics. Finish HTTP transport parity, including HTTPS redirection and
-      certificate renewal, and evaluate configured telemetry integrations.
+      metrics, and evaluate configured telemetry integrations.
 - [ ] Exercise the actual TypeScript entry point with the existing client and
       Go-authority compatibility corpus. Cover every registered Go command and
       enabled HTTP route, unsupported-input rejection, concurrency, restart,

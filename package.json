@@ -25,6 +25,7 @@
     "update": "tsx ./packages/scripts/src/update.mts"
   },
   "dependencies": {
+    "@fastify/compress": "9.3.0",
     "@fastify/cookie": "11.0.2",
     "@fastify/formbody": "9.0.1",
     "@fastify/static": "10.1.6",

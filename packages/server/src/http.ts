@@ -1,3 +1,4 @@
+import { fastifyCompress } from "@fastify/compress";
 import fastifyFormBody from "@fastify/formbody";
 import { fastifyStatic } from "@fastify/static";
 import { fastifyView } from "@fastify/view";
@@ -7,6 +8,7 @@ import { fastify } from "fastify";
 import { fastifyFavicon } from "fastify-favicon";
 import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
+import { STATUS_CODES } from "node:http";
 import path from "node:path";
 import { REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
@@ -43,23 +45,87 @@ import { models } from "./models";
  * The Let's Encrypt certbot will request a token from this path:
  * https://letsencrypt.org/docs/challenge-types/
  */
-const LETS_ENCRYPT_PATH_PREFIX = "/letsencrypt/.well-known/acme-challenge";
+const LETS_ENCRYPT_PATH_PREFIX = "/.well-known/acme-challenge/";
 
-const LETS_ENCRYPT_PATH = path.join(REPO_ROOT, LETS_ENCRYPT_PATH_PREFIX);
+const LETS_ENCRYPT_PATH = path.join(
+  REPO_ROOT,
+  "letsencrypt",
+  LETS_ENCRYPT_PATH_PREFIX,
+);
 
 const eta = createEta();
+const HTTP_TIMEOUTS = {
+  connectionTimeout: 10_000,
+  requestTimeout: 5000,
+  handlerTimeout: 10_000,
+  http: {
+    headersTimeout: 5000,
+    connectionsCheckingInterval: 1000,
+  },
+} as const;
 
 export async function httpInit(): Promise<FastifyInstance> {
   const host =
     env.DOMAIN === "localhost" || env.DOMAIN === "127.0.0.1"
       ? "127.0.0.1"
       : "0.0.0.0";
-  const server = await createHTTPServer();
-  await server.listen({ port: env.PORT, host });
-  return server;
+  const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
+  let server: FastifyInstance | undefined;
+  let redirect: FastifyInstance | undefined;
+  try {
+    if (useTLS) {
+      fs.mkdirSync(LETS_ENCRYPT_PATH, { recursive: true });
+      redirect = await createHTTPRedirectServer(LETS_ENCRYPT_PATH);
+    }
+    server = await createHTTPServer(async () => {
+      await redirect?.close();
+    });
+    await redirect?.listen({ port: 80, host });
+    await server.listen({
+      port: useTLS && env.PORT === 80 ? 443 : env.PORT,
+      host,
+    });
+    return server;
+  } catch (error) {
+    try {
+      if (server === undefined) {
+        await redirect?.close();
+      } else {
+        await server.close();
+      }
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [error, cleanupError],
+        "HTTP startup and cleanup failed.",
+        { cause: cleanupError },
+      );
+    }
+    throw error;
+  }
 }
 
-export async function createHTTPServer(): Promise<FastifyInstance> {
+export async function createHTTPRedirectServer(
+  acmeRoot: string,
+): Promise<FastifyInstance> {
+  const server = fastify(HTTP_TIMEOUTS);
+  server.addHook("onRequest", async (request, reply) => {
+    if (!request.url.startsWith(LETS_ENCRYPT_PATH_PREFIX)) {
+      await reply.redirect(
+        `https://${request.host}${request.url}`,
+        StatusCodes.MOVED_PERMANENTLY,
+      );
+    }
+  });
+  await server.register(fastifyStatic, {
+    root: acmeRoot,
+    prefix: LETS_ENCRYPT_PATH_PREFIX,
+  });
+  return await server;
+}
+
+export async function createHTTPServer(
+  onClose?: () => Promise<void>,
+): Promise<FastifyInstance> {
   const useTLS = env.TLS_CERT_FILE !== "" && env.TLS_KEY_FILE !== "";
   if ((env.TLS_CERT_FILE !== "") !== (env.TLS_KEY_FILE !== "")) {
     throw new Error("TLS_CERT_FILE and TLS_KEY_FILE must both be provided.");
@@ -68,6 +134,7 @@ export async function createHTTPServer(): Promise<FastifyInstance> {
     ? {
         cert: fs.readFileSync(env.TLS_CERT_FILE),
         key: fs.readFileSync(env.TLS_KEY_FILE),
+        ...HTTP_TIMEOUTS.http,
       }
     : null; // eslint-disable-line unicorn/no-null
 
@@ -77,12 +144,16 @@ export async function createHTTPServer(): Promise<FastifyInstance> {
   // Initialize the HTTP server using the Fastify library:
   // https://fastify.dev/
   const httpServer = fastify({
+    ...HTTP_TIMEOUTS,
     loggerInstance,
     https,
 
     // The "incoming request" and "request completed" logs are too noisy when developing.
     disableRequestLogging: IS_DEV,
   });
+  if (onClose !== undefined) {
+    httpServer.addHook("onClose", onClose);
+  }
 
   await registerFastifyPlugins(httpServer, useTLS);
 
@@ -95,10 +166,25 @@ export async function createHTTPServer(): Promise<FastifyInstance> {
 
   httpServer.setErrorHandler(async (error, _request, reply) => {
     logger.error(`HTTP request failed: ${String(error)}`);
+    const code =
+      typeof error === "object" && error !== null && "statusCode" in error
+        ? error.statusCode
+        : undefined;
+    const status =
+      typeof code === "number"
+      && Number.isSafeInteger(code)
+      && code >= 400
+      && code < 600
+        ? code
+        : StatusCodes.INTERNAL_SERVER_ERROR;
     await reply
-      .code(StatusCodes.INTERNAL_SERVER_ERROR)
+      .code(status)
       .type("text/plain")
-      .send("Internal server error.");
+      .send(
+        status === 500
+          ? "Internal server error."
+          : `${STATUS_CODES[status] ?? "Request rejected"}.`,
+      );
   });
 
   httpServer.addHook("preValidation", async (request, reply) => {
@@ -135,6 +221,11 @@ async function registerFastifyPlugins(
   httpServer: FastifyInstance,
   useTLS: boolean,
 ) {
+  await httpServer.register(fastifyCompress, {
+    encodings: ["gzip"],
+    globalDecompression: false,
+    threshold: 0,
+  });
   // `fastify-favicon` - Needed for the favicon:
   // https://github.com/smartiniOnGitHub/fastify-favicon
   await httpServer.register(fastifyFavicon, {
@@ -161,20 +252,6 @@ async function registerFastifyPlugins(
     root: path.join(REPO_ROOT, "public"),
     prefix: "/public",
   });
-
-  // Handle renewing HTTPS certificates through `certbot`:
-  // https://letsencrypt.org/docs/challenge-types/
-  if (useTLS) {
-    fs.mkdirSync(LETS_ENCRYPT_PATH, {
-      recursive: true,
-    });
-
-    await httpServer.register(fastifyStatic, {
-      root: LETS_ENCRYPT_PATH,
-      prefix: LETS_ENCRYPT_PATH_PREFIX,
-      decorateReply: false,
-    });
-  }
 
   // `@fastify/view` - Needed for the template library:
   // https://github.com/fastify/point-of-view
