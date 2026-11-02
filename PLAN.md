@@ -2,10 +2,11 @@
 
 ## Recommendation
 
-Do not start over in Rust. Keep Go in production, improve its reliability now,
-and work toward a consolidated TypeScript server with shared game logic if the
-project can sustain a deliberate migration. A modernized Go server is a valid
-permanent alternative if that migration does not justify its cost.
+Do not start over in Rust. Retain the modernized Go server as the sole
+production authority. The bounded TypeScript experiment demonstrates
+feasibility, but not production parity or a maintenance benefit sufficient to
+justify migration. Keep TypeScript for the client and shared game utilities; do
+not require a parallel server port for every Go change.
 
 The largest opportunities are architectural: durable game state, simpler
 concurrency, fewer duplicated rules, and safer deployment. A language change
@@ -16,6 +17,8 @@ covering both server implementations, shared game logic, the client/server
 protocol, persistence, replay handling, tests, and deployment tooling. It is not
 an exhaustive security certification or a production performance study.
 Production traffic, resource usage, and database query plans were not measured.
+The initial findings below describe the pre-hardening baseline; delivered work
+and the subsequent local evaluation are recorded later in this plan.
 
 ## Current Architecture
 
@@ -168,10 +171,11 @@ oversized critical sections by itself.
 
 ## Target Architecture
 
-The preferred long-term target is a modular TypeScript monolith backed by
-PostgreSQL, with one authoritative game engine and sequential command processing
-per table. Clear internal boundaries do not require separately deployed
-microservices.
+The selected target is a modular Go monolith backed by PostgreSQL, with one
+authoritative game engine and sequential command processing per table. Clear
+internal boundaries do not require separately deployed microservices. Ownership
+has been simplified incrementally, not replaced wholesale with a new actor
+framework.
 
 1. **Deterministic authoritative core.** Validated commands produce transitions
    and events. Inject time and randomness; keep networking, persistence, and
@@ -179,9 +183,10 @@ microservices.
 2. **One writer per table.** Preserve ordering within a table without blocking
    unrelated tables. Bound queues and define behavior for slow clients and
    unavailable storage.
-3. **Durable progress before acknowledgment.** Use a small per-game journal and
-   checkpoints, with command IDs and sequence numbers for deduplication and
-   recovery. No distributed messaging platform is required.
+3. **Durable progress before acknowledgment.** Use versioned per-game
+   checkpoints, command IDs, and monotonic revisions for deduplication and
+   recovery. Reuse reserved game primary keys; no additional permanent
+   identifier, journal, or distributed messaging platform is required.
 4. **Separate authoritative state and player views.** Share rules and schemas
    with the browser, but send only information the recipient may see.
 5. **Explicit compatibility boundaries.** Preserve bot APIs, historical replays,
@@ -248,16 +253,24 @@ authorization.
   variants, options, command results, recipient views, recovery, and terminal
   persistence. Fifteen shared TypeScript event-projection checks pass; these do
   not establish TypeScript command authority.
+- Implemented: paired CI release artifacts with checksums, bundled migrations,
+  stopped-service activation, and verified signal/re-exec lifecycle. Native and
+  container smoke checks cover startup, shutdown, restart, and refusal paths. A
+  real PostgreSQL dump/restore regression preserves active state, command
+  receipts, and reserved-ID sequence advancement.
+- Implemented: an isolated TypeScript slice covering a complete standard
+  two-player game, reconnect, completion, replay, deduplication, and
+  process-kill recovery. It has no production routing or shared ownership of Go
+  tables.
 - Between-step audits: no TypeScript unused exports; eleven obsolete Go methods
   removed. Retained unreachable helpers support the disabled statistics route
   and manual repair recipes. Load evaluation also exposed and fixed WebSocket
-  send/close and statistics-update races. Container startup works, but its
-  administrative shutdown still expects a missing `stop.sh`; container lifecycle
-  handling must be resolved before treating it as a production deployment
-  replacement.
-- Remaining: broader recovery/load measurements, immutable artifact deployment,
-  a complete TypeScript slice, and the measured architecture decision. No
-  production deployment or migration has been performed.
+  send/close and statistics-update races. Retained helpers are not evidence of
+  live feature support in the partial TypeScript server.
+- Decision: consolidate production on Go. The implementation and local
+  evaluation are complete; production rollout, production capacity measurement,
+  and operational acceptance remain operator-gated. No production deployment or
+  migration has been performed.
 
 ### Phase 1: Strengthen Go
 
@@ -323,7 +336,16 @@ Compare correctness, memory usage, throughput, latency, and implementation cost
 against Go under representative load. Include replay-heavy and reconnect-heavy
 scenarios, not only isolated HTTP benchmarks.
 
-### Phase 4: Migrate Whole Tables Gradually
+### Phase 4: Measured Decision and Conditional Migration
+
+**Selected outcome: retain Go; do not begin a production TypeScript migration.**
+The slice does not retire any production implementation, so it has not
+demonstrated reduced maintenance work. The existing partial TypeScript server
+and experimental slice are research code, not a second supported production
+authority. Revisit migration only with a concrete maintenance case and full
+compatibility, reliability, and capacity evidence.
+
+The following coexistence requirements apply only if that decision changes:
 
 Keep experimental tables opt-in. Assign each table exactly one authoritative
 implementation; do not dual-write gameplay or transfer engines mid-game.
@@ -335,3 +357,50 @@ supported feature set only after compatibility and recovery criteria are met.
 If TypeScript materially reduces maintenance work and meets reliability and
 capacity goals, complete the migration and retire Go. If it does not,
 consolidate on improved Go instead of maintaining an indefinite partial port.
+
+### Evaluation Evidence and Remaining Gates
+
+Three paired local runs used the same explicit standard deck, four game lanes,
+eight completed games, 200 actions, 160 replay reads, and 80 completed-game
+reconnects per run. Medians of the per-run measurements:
+
+| Metric                | Go     | TypeScript |
+| --------------------- | ------ | ---------- |
+| Actions/second        | 358.8  | 230.7      |
+| Mixed reads/second    | 1378.2 | 547.5      |
+| Action p95 (ms)       | 25.2   | 29.8       |
+| Replay p95 (ms)       | 17.0   | 41.0       |
+| Reconnect p95 (ms)    | 21.5   | 91.1       |
+| Sampled peak RSS (MB) | 41.8   | 206.0      |
+
+These are not production capacity estimates or a language-only comparison. Runs
+were short and local, with clients in the measured server process. Go performs
+fuller lifecycle/statistics work; reconnect payloads, replay query paths, pool
+arrangements, and logging differ. Historical seeded replay and global lobby
+routing were excluded. Action throughput ranged from 238-444/s for Go and
+111-283/s for TypeScript. The refreshed Go runs logged no errors. No measured
+maintenance savings offset the missing TypeScript production authentication,
+clocks, spectators, variants, options, or authored metadata.
+
+To reproduce against a disposable PostgreSQL instance, export the existing
+`HANABI_TEST_DATABASE_URL` test selector and run:
+
+```sh
+(cd server/src && go test -run '^TestStandardSliceEvaluation$' -count=1 -v -evaluate-standard-slice)
+TSX_DISABLE_CACHE=1 npx tsx packages/server/src/experimental/evaluate.ts
+```
+
+The TypeScript format is deliberately limited to standard two-player games with
+explicit decks; it does not replace legacy Go seed generation. Recovery tests
+include failed and uncertain commits, stale writers, and real process
+termination. Compatibility traces are representative, not exhaustive coverage of
+every variant/option interaction.
+
+**Operator-gated work:** authorize deployment separately, verify a current
+backup and restore procedure, review pending migrations and old snapshot
+compatibility, then perform the stopped-service artifact transition described in
+[installation instructions](docs/install.md#opt-in-ci-releases-linux-amd64).
+Observe real command latency, recovery failures, pool pressure, and storage
+growth before declaring production acceptance. Forward migrations and active
+checkpoints prohibit casual binary rollback. Derived statistics remain
+best-effort across crashes; they are not covered by a durable outbox.

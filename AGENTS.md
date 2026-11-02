@@ -20,7 +20,12 @@ The production server is `root@hanab.live`, with the repository at
 `~/hanabi-live`. The server log is at `~/hanabi-live/logs/hanabi-live.log` (use
 `./get-log.sh` to download it).
 
-### Deploying
+### Deploying from source
+
+The existing production installation uses this procedure. Opt-in CI artifact
+installations have a separate
+[deployment lifecycle](docs/install.md#opt-in-ci-releases-linux-amd64); do not
+mix the two procedures.
 
 1. Pull the latest code on the server: `git pull`
 1. Apply pending SQL migrations: `./install/migrate.sh apply`.

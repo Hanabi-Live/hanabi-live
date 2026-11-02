@@ -14,9 +14,10 @@ With pull requests:
 
 ## Server Code
 
-The long-term plan for the codebase is to migrate the server from Golang to
-TypeScript. Thus, any changes that you do to Golang code should also be
-performed to the new TypeScript server at "packages/server".
+Go is the supported production server. The partial TypeScript server and the
+isolated slice in `packages/server/src/experimental` are research code, not
+production replacements. Go changes do not need a parallel TypeScript server
+port. Preserve shared rules, client protocol behavior, and replay compatibility.
 
 Before submitting Go server changes, run the regression tests with the race
 detector from the repository root:
@@ -29,11 +30,13 @@ The race detector requires a supported platform and a C compiler. CI runs this
 command on Ubuntu as part of the existing `server_build` check, after formatting
 and compilation. Unit tests do not require PostgreSQL or Redis. Database
 integration tests run when `HANABI_TEST_DATABASE_URL` points to a disposable
-PostgreSQL instance; CI supplies an isolated PostgreSQL service. Do not point
-the integration tests at production.
+PostgreSQL instance; CI supplies an isolated PostgreSQL service. Backup/restore
+tests also require `pg_dump` and `pg_restore` on `PATH`, matching the database
+major version (currently PostgreSQL 18 in CI). Do not point the integration
+tests at production.
 
-See [the server architecture plan](PLAN.md) for the hardening and migration
-roadmap.
+See [the server architecture plan](PLAN.md) for the hardening work and measured
+architecture decision.
 
 ## Creating a New Variant
 
