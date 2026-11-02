@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { clearAllTyping } from "./chatPresence";
 import { incomingCommands } from "./commandAdmission";
 import type { GameRuntime } from "./gameRuntime";
+import { cancelPregameTimers } from "./pregameTimers";
 import { wsError, wsSend } from "./wsHelpers";
 
 interface ClosingServer {
@@ -17,8 +18,12 @@ export async function shutdownServer(
 ): Promise<void> {
   incomingCommands.pause();
   clearAllTyping();
+  cancelPregameTimers();
   runtime.quiesce();
   await incomingCommands.drain();
+  // Admitted commands may have armed timers while draining.
+  clearAllTyping();
+  cancelPregameTimers();
   await runtime.checkpointAndDrain();
 
   for (const connection of server.websocketServer.clients) {

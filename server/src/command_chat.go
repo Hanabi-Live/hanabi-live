@@ -102,9 +102,8 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 
 	d.Msg = chatFillAll(d.Msg) // Convert Discord mentions from number to username, role or channel
 
-	// Handle /token before writing to chat history.
-	if command, _ := chatParseCommand(d.Msg); command == "token" {
-		chatCommandShouldOutput(ctx, s, d, nil) // We pass nil because there is no associated table
+	// Private and unknown commands must not enter public history.
+	if !d.Server && !chatCommandShouldOutput(ctx, s, d, nil) {
 		return
 	}
 
@@ -138,11 +137,6 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 		}
 		chatID = insertResult.ID
 		datetime = insertResult.DatetimeSent
-	}
-
-	// Check for command handler
-	if !chatCommandShouldOutput(ctx, s, d, nil) { // We pass nil because there is no associated table
-		return
 	}
 
 	// Lobby messages go to everyone
@@ -187,7 +181,9 @@ func chat(ctx context.Context, s *Session, d *CommandData, target chatTarget, us
 	}
 
 	// Check for commands
-	chatCommand(ctx, s, d, nil) // We pass nil because there is no associated table
+	if !d.Server {
+		chatCommand(ctx, s, d, nil) // We pass nil because there is no associated table
+	}
 }
 
 func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID uint64) {
@@ -223,9 +219,7 @@ func commandChatTable(ctx context.Context, s *Session, d *CommandData, tableID u
 		}
 	}
 
-	// Handle /token before writing to table chat history.
-	if command, _ := chatParseCommand(d.Msg); !d.Server && command == "token" {
-		chatCommandShouldOutput(ctx, s, d, t)
+	if !d.Server && !chatCommandShouldOutput(ctx, s, d, t) {
 		return
 	}
 

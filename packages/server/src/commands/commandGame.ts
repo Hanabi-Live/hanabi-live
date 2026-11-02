@@ -187,11 +187,14 @@ export async function commandTableChat(
   id: TableID,
   text: string,
   requestID?: string,
-): Promise<void> {
+): Promise<boolean> {
   if (getTable(id)?.running === true) {
-    await runtime(user)?.chat(user, id, text, requestID);
-    return;
+    const instance = runtime(user);
+    return instance === undefined
+      ? false
+      : await instance.chat(user, id, text, requestID);
   }
+  let accepted = false;
   const admitted = await enqueueTableOperation(id, () => {
     if (
       wsUsers.get(user.userID) !== user
@@ -224,6 +227,7 @@ export async function commandTableChat(
     for (const recipient of getTableAudience(table)) {
       wsSend(recipient.connection, ServerCommand.chat, message);
     }
+    accepted = true;
   });
   if (!admitted) {
     wsWarning(
@@ -231,4 +235,5 @@ export async function commandTableChat(
       "Too many pending table commands. Please try again.",
     );
   }
+  return accepted;
 }

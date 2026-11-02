@@ -4,6 +4,7 @@ import {
   ServerCommand,
   Status,
 } from "@hanabi-live/data";
+import { getVariant, VARIANT_NAMES } from "@hanabi-live/game";
 import {
   afterEach,
   beforeEach,
@@ -31,13 +32,19 @@ import { cleanupDisconnectedTables } from "./commandTable";
 jest.mock("../models", () => ({
   models: {
     games: { getNumGamesForUser: jest.fn() },
-    userStats: { get: jest.fn() },
+    userStats: { get: jest.fn(), getAll: jest.fn() },
     replays: { get: jest.fn() },
-    gameTags: { getGameIDsForTag: jest.fn() },
+    gameTags: { getGameIDsForTag: jest.fn(), getAll: jest.fn() },
+    chatLog: { insert: jest.fn(), insertServer: jest.fn() },
   },
 }));
 jest.mock("../env", () => ({
-  env: { SESSION_SECRET: "synthetic-pregame-secret" },
+  env: {
+    SESSION_SECRET: "synthetic-pregame-secret",
+    DOMAIN: "localhost",
+    TLS_CERT_FILE: "",
+    TLS_KEY_FILE: "",
+  },
   IS_DEV: true,
 }));
 jest.mock("../logger", () => ({
@@ -98,11 +105,20 @@ function tableFor(user: WSUser): Table {
 }
 
 describe("authoritative pregame table lifecycle", () => {
+  let nextChatID = 0;
+  async function chatRow() {
+    await Promise.resolve();
+    nextChatID++;
+    return { chatID: nextChatID, datetimeSent: new Date() };
+  }
   beforeEach(() => {
     jest.clearAllMocks();
     users.clear();
     jest.mocked(models.games.getNumGamesForUser).mockResolvedValue(17);
     jest.mocked(models.userStats.get).mockResolvedValue(zeroStats);
+    nextChatID = 0;
+    jest.mocked(models.chatLog.insert).mockImplementation(chatRow);
+    jest.mocked(models.chatLog.insertServer).mockImplementation(chatRow);
   });
 
   afterEach(() => {
@@ -211,6 +227,112 @@ describe("authoritative pregame table lifecycle", () => {
     expect(response).toContain("&lt;tag&gt;");
     expect(response).toContain('"recipient":"Alice"');
     expect(bob.messages).toHaveLength(0);
+  });
+
+  test("unknown commands and private token requests never enter public history", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "chat", { msg: "/not-a-command", room: "lobby" });
+    await send(alice.user, "chat", {
+      msg: "/token private-argument",
+      room: "lobby",
+    });
+    expect(models.chatLog.insert).not.toHaveBeenCalled();
+    expect(models.chatLog.insertServer).not.toHaveBeenCalled();
+    expect(
+      alice.messages.every((message) =>
+        message.includes('"recipient":"Alice"'),
+      ),
+    ).toBe(true);
+    expect(bob.messages).toHaveLength(0);
+  });
+
+  test("help aliases echo the request but keep their response private", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "chat", { msg: "/COMMANDS", room: "lobby" });
+    expect(models.chatLog.insert).toHaveBeenCalledWith(
+      alice.user.userID,
+      "/COMMANDS",
+      "lobby",
+    );
+    expect(
+      alice.messages.some((message) => message.includes("List of commands:")),
+    ).toBe(true);
+    expect(
+      bob.messages.some((message) => message.includes("List of commands:")),
+    ).toBe(false);
+    expect(models.chatLog.insertServer).not.toHaveBeenCalled();
+    await send(alice.user, "chat", { msg: "/", room: "lobby" });
+    expect(models.chatLog.insert).toHaveBeenLastCalledWith(
+      alice.user.userID,
+      "/",
+      "lobby",
+    );
+  });
+
+  test("general chat commands publish safe replay links and full-width integer random results", async () => {
+    const alice = connect(1, "Alice");
+    await send(alice.user, "chat", { msg: "/replay 123 7", room: "lobby" });
+    expect(models.chatLog.insertServer).toHaveBeenCalledWith(
+      "http://localhost/replay/123#7",
+      "lobby",
+    );
+    await send(alice.user, "chat", {
+      msg: "/random -9223372036854775808 9223372036854775807",
+      room: "lobby",
+    });
+    const result = jest
+      .mocked(models.chatLog.insertServer)
+      .mock.calls.at(-1)?.[0];
+    expect(result).toMatch(
+      /^Random number between -9223372036854775808 and 9223372036854775807: -?\d+$/u,
+    );
+    await send(alice.user, "chat", { msg: "/random <b>", room: "lobby" });
+    expect(models.chatLog.insertServer).toHaveBeenLastCalledWith(
+      '"&lt;b&gt;" is not an integer.',
+      "lobby",
+    );
+  });
+
+  test("variant discovery uses the team and sends its actionable proposal only to the owner", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "tableCreate", { name: "Team discovery" });
+    const table = tableFor(alice.user);
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    const stats = new Map<number, typeof zeroStats>();
+    for (const name of VARIANT_NAMES) {
+      const variant = getVariant(name);
+      if (variant.id !== 0) {
+        stats.set(variant.id, {
+          ...zeroStats,
+          bestScores: zeroStats.bestScores.map((score) => ({
+            ...score,
+            score: variant.maxScore,
+          })),
+        });
+      }
+    }
+    jest.mocked(models.userStats.getAll).mockResolvedValue(stats);
+    await send(bob.user, "chat", { msg: "/fv", room: `table${table.id}` });
+    expect(
+      bob.messages.some((message) =>
+        message.includes("max score in: No Variant"),
+      ),
+    ).toBe(true);
+    expect(
+      alice.messages.some((message) => message.includes("new-options")),
+    ).toBe(true);
+    expect(
+      bob.messages.some((message) => message.includes("new-options")),
+    ).toBe(false);
+    await send(bob.user, "chat", { msg: "/missing", room: `table${table.id}` });
+    expect(
+      bob.messages.some((message) =>
+        message.includes("shared-missing-scores/2/Alice/Bob"),
+      ),
+    ).toBe(true);
   });
 
   test("normal envelopes create, password-join, transfer leadership, and leave with pregame notifications", async () => {

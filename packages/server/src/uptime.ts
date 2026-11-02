@@ -4,7 +4,7 @@ import { formatDuration } from "./publicPageUtils";
 const STARTED = new Date();
 const STARTED_MONOTONIC = performance.now();
 
-export function getCameOnline(): string {
+export function getStartedTimestamp(): string {
   const formatter = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     year: "numeric",
@@ -26,7 +26,11 @@ export function getCameOnline(): string {
   }
   const date = `${part("weekday")} ${part("month")} ${part("day")}`;
   const time = `${part("hour")}:${part("minute")}:${part("second")}`;
-  return `The server came online at: ${date} ${time} ${part("timeZoneName")} ${part("year")}`;
+  return `${date} ${time} ${part("timeZoneName")} ${part("year")}`;
+}
+
+export function getCameOnline(): string {
+  return `The server came online at: ${getStartedTimestamp()}`;
 }
 
 export function getUptimeSeconds(): number {

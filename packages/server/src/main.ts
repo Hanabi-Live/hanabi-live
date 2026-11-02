@@ -5,8 +5,12 @@ import {
   clearPregames,
   terminateActiveGames,
 } from "./administration";
+import { classifyChatMessage, executeChatCommand } from "./chatCommands";
+import { sendServerChat } from "./chatPublish";
+import { incomingCommands } from "./commandAdmission";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { createDatabaseClient, db } from "./db";
+import { initializeDiscord } from "./discordRuntime";
 import { IS_DEV } from "./env";
 import { initializeGameRuntime } from "./gameRuntime";
 import { createGameStore } from "./gameStore";
@@ -18,6 +22,7 @@ import { verifyDatabaseMigrations } from "./migrations";
 import { models } from "./models";
 import { prepareRestart, replaceProcess } from "./restart";
 import { initializeShutdown } from "./shutdown";
+import { getStartedTimestamp } from "./uptime";
 
 // We do not bother writing a catch block since it does not display errors correctly when there is
 // an aggregate error.
@@ -29,6 +34,12 @@ async function main() {
   logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`);
 
   const runtime = await startGameRuntime();
+  const discord = initializeDiscord({
+    classifyCommand: classifyChatMessage,
+    command: async (message) => {
+      await executeChatCommand(undefined, message.text, "lobby");
+    },
+  });
   const control = initializeShutdown({
     activeGames: activeGameCount,
     clearPregames,
@@ -69,7 +80,7 @@ async function main() {
   const transports = {
     websocketServer: server.websocketServer,
     async close() {
-      await Promise.all([server.close(), operations.close()]);
+      await Promise.all([server.close(), operations.close(), discord.close()]);
     },
   };
   control.activate();
@@ -85,6 +96,22 @@ async function main() {
   }
   process.on("SIGTERM", requestShutdown);
   process.on("SIGINT", requestShutdown);
+  const started = `The server has successfully started at: ${getStartedTimestamp()} (${STARTING_GIT_COMMIT_SHA1})`;
+  logger.info(started);
+  discord
+    .start()
+    .then(async () => {
+      if (discord.status === "ready") {
+        await incomingCommands.run(async () => {
+          await sendServerChat(started, "lobby", true);
+        });
+      }
+    })
+    .catch(() => {
+      logger.error(
+        "Discord startup announcement failed; inspect integration status.",
+      );
+    });
 }
 
 async function startGameRuntime() {

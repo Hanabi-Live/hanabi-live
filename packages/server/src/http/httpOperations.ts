@@ -8,6 +8,7 @@ import { announceServer } from "../administration";
 import { incomingCommands } from "../commandAdmission";
 import { HTTP_TIMEOUTS, STARTING_GIT_COMMIT_SHA1 } from "../constants";
 import { getDatabasePoolReports } from "../db";
+import { getDiscordBridge } from "../discordRuntime";
 import { env } from "../env";
 import { getGameRuntime } from "../gameRuntime";
 import { logger } from "../logger";
@@ -378,6 +379,7 @@ async function metrics(_request: FastifyRequest, reply: FastifyReply) {
     uptimeSeconds: getUptimeSeconds(),
     draining: incomingCommands.paused,
     maintenanceMode: isMaintenanceMode(),
+    discord: getDiscordBridge()?.status ?? "disabled",
     runtime: {
       heapBytes: memory.heapUsed,
       heapTotalBytes: memory.heapTotal,

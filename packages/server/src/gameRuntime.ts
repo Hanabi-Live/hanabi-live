@@ -46,6 +46,8 @@ import type { Table } from "./interfaces/Table";
 import { logger } from "./logger";
 import { isMaintenanceMode } from "./maintenanceMode";
 import { models } from "./models";
+import type { PregameStartIntent } from "./pregameStart";
+import { cancelPregameStart, isPregameStartCurrent } from "./pregameStart";
 import { getPregameStats } from "./pregameStats";
 import type { PreparedReplay } from "./replayImport";
 import { emulateGameActions } from "./replayImport";
@@ -642,8 +644,17 @@ export class GameRuntime {
     user: WSUser,
     data: ClientCommandData["tableStart"],
     prepared?: PreparedRestart,
+    expectedPregameStart?: PregameStartIntent,
   ): Promise<void> {
     await this.run(user, data.tableID, async (table) => {
+      if (
+        expectedPregameStart !== undefined
+        && (expectedPregameStart.table !== table
+          || expectedPregameStart.owner !== user
+          || !isPregameStartCurrent(expectedPregameStart))
+      ) {
+        return;
+      }
       if (this.duplicate(table, user, data.requestID)) {
         return;
       }
@@ -701,7 +712,13 @@ export class GameRuntime {
         }
         suffix = String(next);
       }
-      if (!isCurrent(user) || this.quiescing || this.closed) {
+      if (
+        !isCurrent(user)
+        || this.quiescing
+        || this.closed
+        || (expectedPregameStart !== undefined
+          && !isPregameStartCurrent(expectedPregameStart))
+      ) {
         return;
       }
       const seed =
@@ -861,6 +878,7 @@ export class GameRuntime {
         candidate,
         messages,
         () => {
+          cancelPregameStart(table);
           this.attendees.set(table.id, attendees);
         },
         attendees,
@@ -1310,7 +1328,8 @@ export class GameRuntime {
     id: TableID,
     text: string,
     requestID?: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
+    let accepted = false;
     await this.run(user, id, async (table) => {
       this.activeUser(table, user);
       if (this.duplicate(table, user, requestID)) {
@@ -1342,12 +1361,15 @@ export class GameRuntime {
         clearTyping(table, user.userID);
         messages.publish();
         this.arm(table);
+        accepted = true;
         return;
       }
       await this.commit(table, candidate, messages, () => {
         clearTyping(table, user.userID);
+        accepted = true;
       });
     });
+    return accepted;
   }
 
   async reattend(user: WSUser, id: TableID): Promise<void> {

@@ -2,8 +2,15 @@ import type { ClientCommandChatData, TableID } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
 import { escapeHTMLCharacters } from "complete-common";
 import { chatServerSendPM, validateAndNormalizeChatMsg } from "../chat";
+import {
+  classifyChatMessage,
+  executeChatCommand,
+  invalidChatCommand,
+  isSplitCommand,
+} from "../chatCommands";
 import { chatMessageToWire } from "../chatMessage";
 import { parseChatTarget } from "../chatTarget";
+import { getDiscordBridge } from "../discordRuntime";
 import { identityTokenRegenerate } from "../identityToken";
 import { logger } from "../logger";
 import { models } from "../models";
@@ -41,21 +48,30 @@ export async function commandChat(
     return;
   }
 
-  if (normalizedMsg.startsWith("/")) {
-    wsWarning(
-      connection,
-      "This chat command is not implemented in the TypeScript server yet.",
-    );
+  const classification = classifyChatMessage(normalizedMsg);
+  if (classification === "unknown") {
+    invalidChatCommand(wsUser, normalizedMsg, room);
     return;
   }
-  const sanitizedMsg = escapeHTMLCharacters(normalizedMsg);
+  if (target.kind === "table" && isSplitCommand(normalizedMsg)) {
+    await executeChatCommand(wsUser, normalizedMsg, room);
+    return;
+  }
+  const discord = getDiscordBridge();
+  const sanitizedMsg =
+    target.kind === "lobby" && discord !== undefined
+      ? await discord.renderPublicMessage(normalizedMsg)
+      : escapeHTMLCharacters(normalizedMsg);
   if (target.kind === "table") {
-    await commandTableChat(
+    const accepted = await commandTableChat(
       wsUser,
       target.tableID as TableID,
       sanitizedMsg,
       data.requestID,
     );
+    if (accepted && classification === "public") {
+      await executeChatCommand(wsUser, normalizedMsg, room);
+    }
     return;
   }
   const { chatID, datetimeSent } = await models.chatLog.insert(
@@ -76,6 +92,10 @@ export async function commandChat(
       chatID,
     }),
   );
+  await discord?.sendPublicMessage(chatID, false, normalizedMsg);
+  if (classification === "public") {
+    await executeChatCommand(wsUser, normalizedMsg, room);
+  }
 }
 
 async function chatToken(

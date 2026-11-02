@@ -7,6 +7,20 @@ import { getRandomTableName } from "./words";
 import { wsWarning } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
 
+export function optionsSuggestion(
+  options: Options & {
+    readonly tableName: string;
+    readonly maxPlayers: number;
+  },
+): string {
+  const encoded = escapeHTMLCharacters(
+    JSON.stringify(options)
+      .replaceAll("'", String.raw`\u0027`)
+      .replaceAll('"', "'"),
+  );
+  return `<span class="cp"><button class="new-options" data-new-options="${encoded}">click to apply the suggestion</button></span>`;
+}
+
 export function prepareTableOptions(
   user: WSUser,
   data: ClientCommandData["tableCreate"],

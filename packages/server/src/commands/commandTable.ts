@@ -10,16 +10,20 @@ import { getGameRuntime } from "../gameRuntime";
 import type { Table } from "../interfaces/Table";
 import type { TablePlayer } from "../interfaces/TablePlayer";
 import { isMaintenanceMode } from "../maintenanceMode";
+import type { PregameStartIntent } from "../pregameStart";
 import { getPregameStats, getVariantStats } from "../pregameStats";
+import { preparePregameStart, startPregame } from "../pregameTimers";
 import { getShutdownControl } from "../shutdown";
 import {
+  cancelPregameCountdown,
   leaveTable,
   notifyJoined,
   notifyPregame,
   notifyTable,
+  refreshPregameSpectators,
   tableNotice,
 } from "../tableNotifications";
-import { prepareTableOptions } from "../tableOptions";
+import { optionsSuggestion, prepareTableOptions } from "../tableOptions";
 import { enqueueTableOperation, scheduleTableCleanup } from "../tableQueue";
 import {
   allocateTableID,
@@ -220,6 +224,7 @@ export async function commandTableJoin(
   user: WSUser,
   data: ClientCommandData["tableJoin"],
 ): Promise<void> {
+  let intent: PregameStartIntent | undefined;
   await withPregame(user, data.tableID, false, async (table) => {
     if (table.players.some((player) => player.userID === user.userID)) {
       wsWarning(user.connection, "You have already joined this table.");
@@ -263,7 +268,12 @@ export async function commandTableJoin(
       table,
       `${escapeHTMLCharacters(user.username)} joined the game.`,
     );
+    cancelPregameCountdown(table);
+    if (table.automaticStart === table.players.length) {
+      intent = preparePregameStart(table);
+    }
   });
+  await startPregame(intent);
 }
 
 export async function commandTableLeave(
@@ -363,6 +373,7 @@ export async function commandTableSetLeader(
       return;
     }
     const currentTable = table;
+    const previousPlayers = [...table.players];
     const first = table.players[0];
     if (first === undefined) {
       throw new Error("Cannot change the leader of an empty table.");
@@ -370,6 +381,8 @@ export async function commandTableSetLeader(
     currentTable.players[0] = newLeader;
     currentTable.players[index] = first;
     currentTable.ownerID = newLeader.userID;
+    refreshPregameSpectators(table, previousPlayers);
+    cancelPregameCountdown(table);
     notifyPregame(table);
     notifyTable(table);
     tableNotice(
@@ -425,6 +438,7 @@ export async function commandTableSetVariant(
       ...table.options,
       variantName: data.options.variantName,
     };
+    cancelPregameCountdown(table);
     applyStats(table, stats);
     notifyPregame(table);
     notifyTable(table);
@@ -474,6 +488,7 @@ export async function commandTableUpdate(
       return;
     }
     const currentTable = table;
+    cancelPregameCountdown(table);
     for (const player of table.players.slice(prepared.maxPlayers)) {
       leaveTable(table, player);
       const removed = wsUsers.get(player.userID);
@@ -555,11 +570,8 @@ function proposeOptions(
       tableName: prepared.name,
       maxPlayers: prepared.maxPlayers,
     };
-    const encoded = escapeHTMLCharacters(
-      JSON.stringify(options).replaceAll('"', "'"),
-    );
     wsSend(owner.connection, ServerCommand.chat, {
-      msg: `<span class="cp"><button class="new-options" data-new-options="${encoded}">click to apply the suggestion</button></span>`,
+      msg: optionsSuggestion(options),
       who: PROJECT_NAME,
       source: "server",
       datetime: new Date().toISOString(),

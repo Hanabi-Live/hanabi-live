@@ -2,8 +2,34 @@ import type { UserID } from "@hanabi-live/data";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { chatLogTable, usersTable } from "../databaseSchema";
 import { db } from "../db";
+import { createDiscordChatStore } from "./discordChat";
+
+type DiscordChatStore = ReturnType<typeof createDiscordChatStore>;
 
 export const chatLog = {
+  insertDiscord: async (
+    username: string,
+    message: string,
+    messageID: string,
+  ): ReturnType<DiscordChatStore["insertDiscord"]> =>
+    await createDiscordChatStore(db).insertDiscord(
+      username,
+      message,
+      messageID,
+    ),
+  deleteDiscord: async (
+    messageID: string,
+  ): ReturnType<DiscordChatStore["deleteDiscord"]> =>
+    await createDiscordChatStore(db).deleteDiscord(messageID),
+  linkDiscordMessageID: async (
+    chatID: number,
+    messageID: string,
+  ): ReturnType<DiscordChatStore["linkDiscordMessageID"]> =>
+    await createDiscordChatStore(db).linkDiscordMessageID(chatID, messageID),
+  getPublicDiscordMessage: async (
+    chatID: number,
+  ): ReturnType<DiscordChatStore["getPublicDiscordMessage"]> =>
+    await createDiscordChatStore(db).getPublicDiscordMessage(chatID),
   testDatabase: async (): Promise<void> => {
     const chatLogs = await db
       .select({

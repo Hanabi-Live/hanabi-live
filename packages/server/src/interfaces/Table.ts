@@ -39,4 +39,7 @@ export interface Table {
   chat: Array<{ userID: number; message: ServerCommandChatData }>;
   chatRead: Map<UserID, number>;
   typingTimers?: Map<UserID, TableTypingEntry>;
+  automaticStart?: number;
+  pregameStartToken?: object;
+  pregameStartTimer?: ReturnType<typeof setTimeout>;
 }

@@ -1,9 +1,8 @@
-import { PROJECT_NAME, ServerCommand, Status } from "@hanabi-live/data";
+import { ServerCommand, Status } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
-import { chatMessageToWire } from "./chatMessage";
+import { sendServerChat } from "./chatPublish";
 import { getGameRuntime } from "./gameRuntime";
 import { logger } from "./logger";
-import { models } from "./models";
 import { leaveTable, tableNotice } from "./tableNotifications";
 import { enqueueTableOperation } from "./tableQueue";
 import { getTable, getTableIDs, removeTable } from "./tables";
@@ -75,19 +74,7 @@ export async function clearPregames(): Promise<void> {
 
 export async function announceServer(message: string): Promise<void> {
   const failures: unknown[] = [];
-  const stored = await models.chatLog.insertServer(message, "lobby");
-  wsSendAll(
-    ServerCommand.chat,
-    chatMessageToWire({
-      kind: "lobby",
-      source: "server",
-      text: message,
-      who: PROJECT_NAME,
-      datetime: stored.datetimeSent.toISOString(),
-      room: "lobby",
-      chatID: stored.chatID,
-    }),
-  );
+  await sendServerChat(message, "lobby");
   const runtime = getGameRuntime();
   assertDefined(runtime, "Game runtime is not initialized.");
   for (const id of getTableIDs()) {

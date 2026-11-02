@@ -18,8 +18,8 @@ await build({
   platform: "node",
   sourcemap: "linked",
 
-  // Native bindings and Pino's workers must resolve from their installed packages.
-  external: ["argon2", "pino"],
+  // Native bindings and SDK/logger workers must resolve from their installed packages.
+  external: ["argon2", "discord.js", "pino"],
 });
 
 fs.cpSync(

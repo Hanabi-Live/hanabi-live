@@ -4,6 +4,14 @@ import { gameTagsTable, gamesTable } from "../databaseSchema";
 import { db } from "../db";
 
 export const gameTags = {
+  getAll: async (gameID: GameID): Promise<readonly string[]> => {
+    const rows = await db
+      .selectDistinct({ tag: gameTagsTable.tag })
+      .from(gameTagsTable)
+      .where(eq(gameTagsTable.gameID, gameID))
+      .orderBy(asc(gameTagsTable.tag));
+    return rows.map((row) => row.tag);
+  },
   edit: async (
     gameID: GameID,
     userID: UserID,

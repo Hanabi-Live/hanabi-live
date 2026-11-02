@@ -75,6 +75,12 @@ export function publishTable(table: Table): void {
 
 export function removeTable(tableID: TableID): void {
   const table = tables.get(tableID);
+  if (table !== undefined) {
+    clearTimeout(table.pregameStartTimer);
+    table.pregameStartTimer = undefined;
+    table.pregameStartToken = undefined;
+    table.datetimePlannedStart = undefined;
+  }
   if (table?.typingTimers !== undefined) {
     for (const entry of table.typingTimers.values()) {
       clearTimeout(entry.timer);
