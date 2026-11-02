@@ -1,9 +1,11 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { createDatabaseClient, db } from "./db";
+import { IS_DEV } from "./env";
 import { initializeGameRuntime } from "./gameRuntime";
 import { createGameStore } from "./gameStore";
 import { httpInit } from "./http";
+import { shutdownServer } from "./lifecycle";
 import { logger } from "./logger";
 import { verifyDatabaseMigrations } from "./migrations";
 import { models } from "./models";
@@ -17,12 +19,44 @@ async function main() {
   logWelcomeMessage();
   logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`);
 
+  const runtime = await startGameRuntime();
+  const server = await httpInit();
+  let stopping: Promise<void> | undefined;
+  function requestShutdown() {
+    if (stopping !== undefined) {
+      return;
+    }
+    logger.info("Draining the server for shutdown.");
+    stopping = shutdownServer(runtime, server, async () => {
+      await db.$client.end({ timeout: 30 });
+    })
+      .then(() => {
+        process.off("SIGTERM", requestShutdown);
+        process.off("SIGINT", requestShutdown);
+        logger.info("The server successfully shut down.");
+        process.exitCode = 0;
+      })
+      .catch((error: unknown) => {
+        logger.error(
+          `Shutdown failed; commands remain paused. Repair the failure and retry the signal: ${String(error)}`,
+        );
+      })
+      .finally(() => {
+        stopping = undefined;
+      });
+  }
+  process.on("SIGTERM", requestShutdown);
+  process.on("SIGINT", requestShutdown);
+}
+
+async function startGameRuntime() {
   try {
     await models.chatLog.testDatabase();
     await verifyDatabaseMigrations();
-    await initializeGameRuntime(
+    return await initializeGameRuntime(
       createGameStore(createDatabaseClient(2), db.$client),
       {
+        development: IS_DEV,
         getBlockedSeeds: async (users) =>
           await models.userLinkages.getBlockedSeeds(users),
         getCompletionHistory: async (id) => await models.games.getHistory([id]),
@@ -35,8 +69,6 @@ async function main() {
     );
     process.exit(1);
   }
-
-  await httpInit();
 }
 
 function logWelcomeMessage() {

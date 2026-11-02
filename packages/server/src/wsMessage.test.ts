@@ -1,6 +1,14 @@
 import type { UserID } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
-import { beforeEach, describe, expect, jest, test } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from "@jest/globals";
+import { incomingCommands } from "./commandAdmission";
 import { commandChat } from "./commands/commandChat";
 import { wsError, wsSend, wsSendAll, wsWarning } from "./wsHelpers";
 import { wsMessage } from "./wsMessage";
@@ -34,6 +42,10 @@ const user = {
 } as WSUser;
 
 describe("authenticated command dispatch", () => {
+  afterEach(async () => {
+    await incomingCommands.drain();
+    incomingCommands.resume();
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     (wsUsers as Map<UserID, WSUser>).clear();
@@ -78,6 +90,16 @@ describe("authenticated command dispatch", () => {
       room: "lobby",
       requestID: "browser-request",
     });
+  });
+
+  test("does not dispatch lobby mutations while the server is draining", async () => {
+    incomingCommands.pause();
+    await wsMessage(user, Buffer.from('chat {"msg":"hello","room":"lobby"}'));
+    expect(commandChat).not.toHaveBeenCalled();
+    expect(wsWarning).toHaveBeenCalledWith(
+      user.connection,
+      "The server is draining for maintenance.",
+    );
   });
 
   test("accepts the payload-free name command and broadcasts authenticated presence", async () => {

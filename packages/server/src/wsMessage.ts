@@ -7,6 +7,7 @@ import {
 import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
 import type { z } from "zod";
+import { incomingCommands } from "./commandAdmission";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";
 import { commandChatPMHistoryGet } from "./commands/commandChatPMHistoryGet";
@@ -214,6 +215,15 @@ export async function wsMessage(
   wsUser: WSUser,
   rawData: RawData,
 ): Promise<void> {
+  const admitted = await incomingCommands.run(async () => {
+    await dispatchMessage(wsUser, rawData);
+  });
+  if (!admitted && wsUsers.get(wsUser.userID) === wsUser) {
+    wsWarning(wsUser.connection, "The server is draining for maintenance.");
+  }
+}
+
+async function dispatchMessage(wsUser: WSUser, rawData: RawData) {
   if (
     wsUsers.get(wsUser.userID) !== wsUser
     || wsUser.connection.readyState !== wsUser.connection.OPEN

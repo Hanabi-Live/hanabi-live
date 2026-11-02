@@ -59,6 +59,7 @@ import { wsUsers } from "./wsUsers";
 
 const IDLE_TIMEOUT = 30 * 60 * 1000;
 interface RuntimeDependencies {
+  development: boolean;
   getBlockedSeeds: (users: readonly UserID[]) => Promise<ReadonlySet<string>>;
   getCompletionHistory?: (id: GameID) => Promise<readonly GameHistory[]>;
   now?: () => number;
@@ -1323,10 +1324,13 @@ export class GameRuntime {
       table.options.timed && game.state.startedTimer && !game.state.paused
         ? (game.clocks[game.state.activePlayerIndex] ?? 0) - elapsed
         : Infinity;
-    const delay = Math.max(
-      0,
-      Math.min(game.idleRemaining - elapsed, turnRemaining),
-    );
+    const idleRemaining = this.dependencies.development
+      ? Infinity
+      : game.idleRemaining - elapsed;
+    const delay = Math.max(0, Math.min(idleRemaining, turnRemaining));
+    if (delay === Infinity) {
+      return;
+    }
     this.timerVersion++;
     const version = this.timerVersion;
     const timer = setTimeout(() => {
@@ -1350,7 +1354,7 @@ export class GameRuntime {
       const { candidate, game } = this.copy(table);
       const index = game.state.activePlayerIndex;
       const condition =
-        game.idleRemaining <= 0
+        !this.dependencies.development && game.idleRemaining <= 0
           ? EndCondition.IdleTimeout
           : EndCondition.Timeout;
       if (condition === EndCondition.Timeout && (game.clocks[index] ?? 1) > 0) {

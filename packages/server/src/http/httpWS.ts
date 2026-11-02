@@ -2,6 +2,7 @@ import { Status } from "@hanabi-live/data";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import type { WebSocket } from "ws";
+import { incomingCommands } from "../commandAdmission";
 import { isReconnectRequest } from "../connectionMode";
 import { deleteCookie, getCookieValue } from "../httpSession";
 import { logger } from "../logger";
@@ -17,6 +18,12 @@ export async function httpWSPreValidation(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  if (incomingCommands.paused) {
+    await reply
+      .code(StatusCodes.SERVICE_UNAVAILABLE)
+      .send("The server is draining for maintenance.\n");
+    return;
+  }
   const userID = getCookieValue(request, "userID");
   if (
     userID === undefined
@@ -44,18 +51,10 @@ export function httpWS(connection: WebSocket, request: FastifyRequest): void {
   let accepting = true;
   let pending = 0;
   let initializedUser: WSUser | undefined;
-  let tail = initialize(connection, request, getSessionID())
-    .then(async (wsUser) => {
-      initializedUser = wsUser;
-      if (wsUser !== undefined) {
-        await enqueueWSMsg(WSQueueElementType.Login, wsUser);
-      }
-      return wsUser;
-    })
-    .catch((error: unknown) => {
-      failConnection(error);
-      return undefined;
-    });
+  let tail = initializeConnection().catch((error: unknown) => {
+    failConnection(error);
+    return undefined;
+  });
 
   connection.on("message", (rawData, isBinary) => {
     if (!accepting) {
@@ -101,6 +100,22 @@ export function httpWS(connection: WebSocket, request: FastifyRequest): void {
     logger.error(`WebSocket transport failed: ${String(error)}`);
     connection.terminate();
   });
+
+  async function initializeConnection() {
+    const sessionID = getSessionID();
+    const admitted = await incomingCommands.run(async () => {
+      initializedUser = await initialize(connection, request, sessionID);
+      if (initializedUser !== undefined) {
+        await enqueueWSMsg(WSQueueElementType.Login, initializedUser);
+      }
+    });
+    if (!admitted) {
+      accepting = false;
+      wsError(connection, "The server is draining for maintenance.");
+      connection.close(1012);
+    }
+    return initializedUser;
+  }
 
   function failConnection(error: unknown) {
     accepting = false;

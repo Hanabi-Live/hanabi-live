@@ -13,6 +13,7 @@ import { fastify } from "fastify";
 import { once } from "node:events";
 import { setImmediate } from "node:timers/promises";
 import { WebSocket } from "ws";
+import { incomingCommands } from "../commandAdmission";
 import { models } from "../models";
 import { wsMessage } from "../wsMessage";
 import { enqueueWSMsg, WSQueueElementType } from "../wsQueue";
@@ -86,6 +87,8 @@ describe("WebSocket command sequencing", () => {
     await closed;
     await app.close();
     await setImmediate();
+    await incomingCommands.drain();
+    incomingCommands.resume();
   });
 
   test("buffers early commands until initialization and executes them in order", async () => {
@@ -169,5 +172,44 @@ describe("WebSocket command sequencing", () => {
     const closeArgs: readonly unknown[] = await once(socket, "close");
     expect(closeArgs[0]).toBe(1011);
     expect(wsMessage).not.toHaveBeenCalled();
+  });
+
+  test("drains admitted bootstraps and rejects new upgrades while paused", async () => {
+    const lookup =
+      Promise.withResolvers<
+        Awaited<ReturnType<typeof models.users.getWSData>>
+      >();
+    const started = Promise.withResolvers<undefined>();
+    jest.mocked(models.users.getWSData).mockImplementationOnce(async () => {
+      started.resolve(undefined);
+      return await lookup.promise;
+    });
+    try {
+      await connect();
+      await started.promise;
+      let drained = false;
+      const draining = incomingCommands.drain().then(() => {
+        drained = true;
+      });
+      await setImmediate();
+      expect(drained).toBe(false);
+      const rejected = await app.inject({ url: "/ws" });
+      expect(rejected.statusCode).toBe(503);
+      expect(models.users.setLastLogin).toHaveBeenCalledTimes(1);
+      lookup.resolve({
+        username: "Alice",
+        normalizedUsername: "alice",
+        hyphenated: false,
+        friends: new Set<UserID>(),
+        muted: false,
+      });
+      await draining;
+      expect(enqueueWSMsg).toHaveBeenCalledWith(
+        WSQueueElementType.Login,
+        expect.objectContaining({ username: "Alice" }),
+      );
+    } finally {
+      lookup.resolve(undefined);
+    }
   });
 });

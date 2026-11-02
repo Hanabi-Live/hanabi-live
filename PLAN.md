@@ -10,14 +10,14 @@ run lint and relevant regression suites, push to `main`, and verify CI. Audit
 reachability and shared helpers between milestones. Do not remove intentional
 maintenance paths or add speculative configuration.
 
-- [ ] Integrate application-wide command admission, graceful draining, and
-      process signals with operational shutdown and restart.
+- [ ] Wire localhost maintenance, scheduled shutdown/cancellation, and graceful
+      restart to the application-wide drain barrier.
 - [ ] Complete remaining lobby commands: chat commands and Discord mirroring,
       and typing/read indicators.
 - [ ] Complete pregame spectating, table restart, termination votes, automatic
       spectator handoff, and spectator note writes.
-- [ ] Complete pregame/replay/typing/countdown timers and the development-mode
-      idle exemption. Preserve legacy seed/deck generation and replay behavior.
+- [ ] Complete pregame/replay/typing/countdown timers. Preserve legacy seed/deck
+      generation and replay behavior.
 - [ ] Complete replay creation, shared replay controls, hypothetical actions,
       replay visibility, historical imports/exports, and bot protocol behavior.
 - [ ] Complete administrative chat commands, maintenance, and operational

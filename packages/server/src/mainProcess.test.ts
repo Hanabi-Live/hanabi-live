@@ -261,16 +261,20 @@ function socketClient(address: string, cookie: string) {
 
 databaseDescribe("compiled application entry point", () => {
   test.each([
-    ["completes real WebSocket gameplay on localhost", "localhost", false],
-    ["completes real WebSocket gameplay on 127.0.0.1", "127.0.0.1", false],
+    ["completes real WebSocket gameplay on localhost", "localhost", undefined],
+    ["completes real WebSocket gameplay on 127.0.0.1", "127.0.0.1", undefined],
     [
       "restores acknowledged gameplay and reserved ID after abrupt process death",
       "127.0.0.1",
-      true,
+      "SIGKILL",
     ],
+    ["drains and preserves timed gameplay on SIGTERM", "127.0.0.1", "SIGTERM"],
+    ["drains and preserves timed gameplay on SIGINT", "127.0.0.1", "SIGINT"],
   ] as const)(
     "%s",
-    async (_title, domain, crash) => {
+    async (_title, domain, signal) => {
+      const restart = signal !== undefined;
+      const crash = signal === "SIGKILL";
       await run("bash", [path.join(ROOT, "packages/server/build.sh")], {
         cwd: ROOT,
         timeout: 30_000,
@@ -331,7 +335,7 @@ databaseDescribe("compiled application entry point", () => {
           password: "synthetic-table-password",
           options: {
             variantName: "No Variant",
-            timed: crash,
+            timed: restart,
             timeBase: 600,
             timePerTurn: 2,
           },
@@ -423,13 +427,19 @@ databaseDescribe("compiled application entry point", () => {
         expect(checkpoint.game_id).toBeGreaterThan(0);
         expect(checkpoint.turn).toBe(1);
 
-        if (crash) {
+        if (signal !== undefined) {
           outputBeforeCrash = processState.output();
           const crashed = processState.child;
           const crashedClosed = once(crashed, "close");
-          expect(crashed.kill("SIGKILL")).toBe(true);
-          await bounded(crashedClosed, "abrupt child process death", 5000);
-          expect(crashed.signalCode).toBe("SIGKILL");
+          expect(crashed.kill(signal)).toBe(true);
+          await bounded(crashedClosed, "child process shutdown", 5000);
+          if (crash) {
+            expect(crashed.signalCode).toBe("SIGKILL");
+          } else {
+            expect(crashed.exitCode).toBe(0);
+            expect(crashed.signalCode).toBeNull();
+            expect(processState.output()).toContain("successfully shut down");
+          }
           processState = startProcess(directory);
           address = await bounded(
             processState.ready,
@@ -442,7 +452,19 @@ databaseDescribe("compiled application entry point", () => {
               checkpoint::jsonb -> 'game' -> 'clocks' AS clocks
             FROM active_games
           `;
-          expect(retained).toEqual(checkpoints);
+          if (crash) {
+            expect(retained).toEqual(checkpoints);
+          } else {
+            expect(retained).toHaveLength(1);
+            const saved = retained[0];
+            assertDefined(saved, "Missing planned shutdown checkpoint.");
+            expect(saved).toMatchObject({
+              game_id: checkpoint.game_id,
+              turn: checkpoint.turn,
+              active_player_index: checkpoint.active_player_index,
+            });
+            expect(saved.revision).toBeGreaterThan(checkpoint.revision);
+          }
           bob = socketClient(address, bobCookie);
           sockets.push(bob.socket);
         }
@@ -453,7 +475,7 @@ databaseDescribe("compiled application entry point", () => {
         }
         const replacement = socketClient(address, aliceCookie);
         sockets.push(replacement.socket);
-        const returningPeers = crash ? [replacement, bob] : [replacement];
+        const returningPeers = restart ? [replacement, bob] : [replacement];
         const [resumed, recoveredBob] = await Promise.all(
           returningPeers.map(async (peer) => {
             const returning = await peer.receive(
@@ -473,7 +495,7 @@ databaseDescribe("compiled application entry point", () => {
             (event) => event.type === "play" || event.type === "discard",
           ),
         ).toBe(true);
-        if (crash) {
+        if (restart) {
           assertDefined(recoveredBob, "Missing recovered second player.");
           expect(resumed.init.ourPlayerIndex).toBe(
             aliceGame.init.ourPlayerIndex,
@@ -501,10 +523,14 @@ databaseDescribe("compiled application entry point", () => {
           for (const [index, time] of recovered.clocks.entries()) {
             const previous: number | undefined = checkpoint.clocks[index];
             assertDefined(previous, "Missing pre-crash clock.");
-            expect(time).toBeLessThanOrEqual(previous);
+            const allowance = crash ? 0 : 20_000;
+            expect(time).toBeLessThanOrEqual(previous + allowance);
             expect(time).toBeGreaterThan(0);
+            if (!crash) {
+              expect(time).toBeGreaterThan(previous);
+            }
             if (index !== checkpoint.active_player_index) {
-              expect(time).toBe(previous);
+              expect(time).toBe(previous + allowance);
             }
           }
         }

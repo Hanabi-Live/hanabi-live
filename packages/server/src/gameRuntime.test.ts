@@ -128,6 +128,7 @@ describe("durable running table authority", () => {
   let now: number;
   const owned = new Set<TableID>();
   const dependencies = {
+    development: false,
     getBlockedSeeds: async () => new Set(["p2v0s1", "p2v0s2"]),
     now: () => now,
   };
@@ -596,6 +597,31 @@ describe("durable running table authority", () => {
       EndCondition.Timeout,
     );
   });
+
+  test.each([
+    { development: false, timed: false, end: EndCondition.IdleTimeout },
+    { development: true, timed: false, end: EndCondition.InProgress },
+    { development: true, timed: true, end: EndCondition.Timeout },
+  ])(
+    "idle expiry respects development=$development without disabling timed=$timed clocks",
+    async ({ development, timed, end }) => {
+      jest.useFakeTimers();
+      await runtime.close();
+      runtime = await initializeGameRuntime(storage.store, {
+        ...dependencies,
+        development,
+      });
+      const { id } = await started(timed);
+      now += timed ? 10_001 : 30 * 60 * 1000 + 1;
+      await jest.advanceTimersByTimeAsync(now);
+      if (end === EndCondition.InProgress) {
+        expect(storage.completed.size).toBe(0);
+        expect(tableAt(id).game.state.endCondition).toBe(end);
+      } else {
+        expect(storage.completed.values().next().value?.endCondition).toBe(end);
+      }
+    },
+  );
 
   test("incompatible runtime checkpoint data is rejected before publication", async () => {
     const { id } = await started();
