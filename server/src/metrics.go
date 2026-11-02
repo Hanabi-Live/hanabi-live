@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Hanabi-Live/hanabi-live/logger"
@@ -39,6 +40,32 @@ type commandMetricReport struct {
 }
 
 var serverCommandMetrics = newCommandMetrics()
+
+type recoveryMetrics struct {
+	operations          *commandMetrics
+	failedCheckpoints   atomic.Uint64
+	encodedBytes        atomic.Uint64
+	frozenTables        atomic.Uint64
+	pendingTransactions atomic.Int64
+}
+
+var serverRecoveryMetrics = &recoveryMetrics{operations: newCommandMetrics()}
+
+func (m *recoveryMetrics) snapshot() gin.H {
+	var pool gin.H
+	if store, ok := recoveryStore.(*postgresActiveGames); ok {
+		pool = databasePoolReport(store.db)
+	}
+	return gin.H{
+		"storageInitialized":  recoveryStore != nil,
+		"operations":          m.operations.snapshot(),
+		"failedCheckpoints":   m.failedCheckpoints.Load(),
+		"encodedBytes":        m.encodedBytes.Load(),
+		"frozenTablesTotal":   m.frozenTables.Load(),
+		"pendingTransactions": m.pendingTransactions.Load(),
+		"database":            pool,
+	}
+}
 
 func newCommandMetrics() *commandMetrics {
 	return &commandMetrics{commands: make(map[string]commandMetric)}
@@ -99,7 +126,6 @@ func httpLocalhostMetrics(c *gin.Context) {
 		return
 	}
 
-	pool := db.Stat()
 	var memory runtime.MemStats
 	runtime.ReadMemStats(&memory)
 	c.JSON(http.StatusOK, gin.H{
@@ -110,16 +136,22 @@ func httpLocalhostMetrics(c *gin.Context) {
 			"numGC":          memory.NumGC,
 		},
 		"commands": serverCommandMetrics.snapshot(),
-		"database": gin.H{
-			"acquiredConnections":    pool.AcquiredConns(),
-			"idleConnections":        pool.IdleConns(),
-			"totalConnections":       pool.TotalConns(),
-			"maxConnections":         pool.MaxConns(),
-			"constructing":           pool.ConstructingConns(),
-			"acquireCount":           pool.AcquireCount(),
-			"acquireDurationSeconds": pool.AcquireDuration().Seconds(),
-			"emptyAcquireCount":      pool.EmptyAcquireCount(),
-			"canceledAcquireCount":   pool.CanceledAcquireCount(),
-		},
+		"database": databasePoolReport(db),
+		"recovery": serverRecoveryMetrics.snapshot(),
 	})
+}
+
+func databasePoolReport(database *database) gin.H {
+	pool := database.Stat()
+	return gin.H{
+		"acquiredConnections":    pool.AcquiredConns(),
+		"idleConnections":        pool.IdleConns(),
+		"totalConnections":       pool.TotalConns(),
+		"maxConnections":         pool.MaxConns(),
+		"constructing":           pool.ConstructingConns(),
+		"acquireCount":           pool.AcquireCount(),
+		"acquireDurationSeconds": pool.AcquireDuration().Seconds(),
+		"emptyAcquireCount":      pool.EmptyAcquireCount(),
+		"canceledAcquireCount":   pool.CanceledAcquireCount(),
+	}
 }

@@ -224,9 +224,9 @@ authorization.
 - Implemented: incremental lifecycle ownership through admission/draining,
   cancelable timers, stale-session protection, fail-closed login initialization,
   and registered background writes. This is not a complete table-owner rewrite.
-- Implemented: aggregate localhost metrics, fixed database operation deadlines,
-  tracked migrations, and startup schema checks. Database deadlines bound
-  individual operations, not an entire multi-statement workflow.
+- Implemented: aggregate localhost command/recovery metrics, fixed database
+  operation deadlines, tracked migrations, and startup schema checks. Database
+  deadlines bound individual operations, not an entire multi-statement workflow.
 - Durable recovery: versioned PostgreSQL checkpoints keyed by reserved game IDs,
   monotonic revisions, and optional per-user command IDs. Accepted gameplay,
   clocks, pauses, notes, tags, and active chat are saved before table effects.
@@ -247,10 +247,10 @@ authorization.
   administrative shutdown still expects a missing `stop.sh`; container lifecycle
   handling must be resolved before treating it as a production deployment
   replacement.
-- Remaining: broader recovery/load measurements, recovery/queue metrics,
-  dependency modernization, immutable artifact deployment, the compatibility
-  corpus, a complete TypeScript slice, and the measured architecture decision.
-  No production deployment or migration has been performed.
+- Remaining: broader recovery/load measurements, dependency modernization,
+  immutable artifact deployment, the compatibility corpus, a complete TypeScript
+  slice, and the measured architecture decision. No production deployment or
+  migration has been performed.
 
 ### Phase 1: Strengthen Go
 

@@ -33,7 +33,7 @@ var recoveryStore activeGameStore
 const gameRecoveryLockSQL = "SELECT pg_advisory_xact_lock(17482, $1)"
 
 func (s *postgresActiveGames) Save(ctx context.Context, c activeGameCheckpoint) error {
-	tx, err := s.db.Begin(ctx)
+	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -57,6 +57,14 @@ func (s *postgresActiveGames) Save(ctx context.Context, c activeGameCheckpoint) 
 		return errors.New("active game checkpoint conflicts with durable revision or completion")
 	}
 	return tx.Commit(ctx)
+}
+
+func (s *postgresActiveGames) begin(ctx context.Context) (*databaseTransaction, error) {
+	metrics := serverRecoveryMetrics
+	// Includes pool acquisition and the BEGIN round trip, not just queued callers.
+	metrics.pendingTransactions.Add(1)
+	defer metrics.pendingTransactions.Add(-1)
+	return s.db.Begin(ctx)
 }
 
 func (s *postgresActiveGames) Load(ctx context.Context) ([]activeGameCheckpoint, error) {
@@ -89,7 +97,9 @@ func (t *Table) usesRecovery() bool {
 }
 
 func (t *Table) blockRecovery(err error) {
-	t.recoveryBlocked.Store(true)
+	if t.recoveryBlocked.CompareAndSwap(false, true) {
+		serverRecoveryMetrics.frozenTables.Add(1)
+	}
 	t.cancelTimers()
 	t.pendingEffects = nil
 	logger.Error(t.GetName() + "Recovery required; table frozen: " + err.Error())
@@ -176,6 +186,16 @@ func (t *Table) mutate(ctx context.Context, s *Session, d *CommandData, apply fu
 }
 
 func (t *Table) checkpoint(ctx context.Context, savedAt time.Time) error {
+	metrics := serverRecoveryMetrics
+	started := time.Now()
+	succeeded := false
+	metrics.operations.start("checkpoint")
+	defer func() {
+		if !succeeded {
+			metrics.failedCheckpoints.Add(1)
+		}
+		metrics.operations.finish("checkpoint", time.Since(started))
+	}()
 	if recoveryStore == nil || t.Game == nil || t.Game.DatabaseID <= 0 {
 		return errors.New("active game recovery storage or reserved ID is missing")
 	}
@@ -183,12 +203,14 @@ func (t *Table) checkpoint(ctx context.Context, savedAt time.Time) error {
 	if err != nil {
 		return err
 	}
+	metrics.encodedBytes.Add(uint64(len(data)))
 	err = recoveryStore.Save(ctx, activeGameCheckpoint{t.Game.DatabaseID, t.recoveryRevision + 1, data})
 	if err != nil {
 		return err
 	}
 	t.recoveryRevision++
 	t.snapshotSavedAt = savedAt
+	succeeded = true
 	return nil
 }
 
