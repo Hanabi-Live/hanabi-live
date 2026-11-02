@@ -35,8 +35,8 @@ tests also require `pg_dump` and `pg_restore` on `PATH`, matching the database
 major version (currently PostgreSQL 18 in CI). Do not point the integration
 tests at production.
 
-See [the server architecture plan](PLAN.md) for the hardening work and measured
-architecture decision.
+See [the remaining server rollout](PLAN.md) for production deployment and
+acceptance tasks.
 
 ## Creating a New Variant
 
