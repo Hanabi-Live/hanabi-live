@@ -241,6 +241,10 @@ authorization.
   ephemeral; chat command effects are not replayed, and derived seed/statistic
   refreshes remain best-effort. Reconnect still bootstraps state rather than
   resubmitting commands. No extra completed-game identifier or index.
+- Compatibility baseline: nineteen Go-authority traces cover representative
+  variants, options, command results, recipient views, recovery, and terminal
+  persistence. Fifteen shared TypeScript event-projection checks pass; these do
+  not establish TypeScript command authority.
 - Between-step audits: no TypeScript unused exports; eleven obsolete Go methods
   removed. Seven unreachable helpers are retained for the disabled statistics
   route and manual repair recipes. Container startup works, but its
@@ -248,9 +252,9 @@ authorization.
   handling must be resolved before treating it as a production deployment
   replacement.
 - Remaining: broader recovery/load measurements, dependency modernization,
-  immutable artifact deployment, the compatibility corpus, a complete TypeScript
-  slice, and the measured architecture decision. No production deployment or
-  migration has been performed.
+  immutable artifact deployment, a complete TypeScript slice, and the measured
+  architecture decision. No production deployment or migration has been
+  performed.
 
 ### Phase 1: Strengthen Go
 

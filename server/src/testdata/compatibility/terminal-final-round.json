@@ -1,0 +1,2447 @@
+{
+  "version": 1,
+  "input": {
+    "name": "terminal-final-round",
+    "seed": "JSON",
+    "options": {
+      "numPlayers": 2,
+      "startingPlayer": 0,
+      "variantID": 0,
+      "variantName": "No Variant",
+      "timed": false,
+      "timeBase": 0,
+      "timePerTurn": 0,
+      "speedrun": false,
+      "cardCycle": false,
+      "deckPlays": true,
+      "emptyClues": false,
+      "oneExtraCard": false,
+      "oneLessCard": false,
+      "allOrNothing": false,
+      "detrimentalCharacters": false
+    },
+    "swaps": null,
+    "deck": [
+      {
+        "suitIndex": 0,
+        "rank": 1
+      },
+      {
+        "suitIndex": 0,
+        "rank": 2
+      },
+      {
+        "suitIndex": 0,
+        "rank": 3
+      },
+      {
+        "suitIndex": 0,
+        "rank": 4
+      },
+      {
+        "suitIndex": 0,
+        "rank": 5
+      },
+      {
+        "suitIndex": 1,
+        "rank": 1
+      },
+      {
+        "suitIndex": 1,
+        "rank": 2
+      },
+      {
+        "suitIndex": 1,
+        "rank": 3
+      },
+      {
+        "suitIndex": 1,
+        "rank": 4
+      },
+      {
+        "suitIndex": 1,
+        "rank": 5
+      },
+      {
+        "suitIndex": 2,
+        "rank": 1
+      }
+    ],
+    "terminal": true,
+    "characters": null,
+    "commands": [
+      {
+        "label": "play",
+        "player": 0,
+        "type": 0,
+        "target": 10,
+        "value": 0,
+        "want": "accepted"
+      },
+      {
+        "label": "play",
+        "player": 1,
+        "type": 0,
+        "target": 5,
+        "value": 0,
+        "want": "accepted"
+      },
+      {
+        "label": "play",
+        "player": 0,
+        "type": 0,
+        "target": 0,
+        "value": 0,
+        "want": "accepted"
+      }
+    ]
+  },
+  "deck": [
+    {
+      "suitIndex": 0,
+      "rank": 1
+    },
+    {
+      "suitIndex": 0,
+      "rank": 2
+    },
+    {
+      "suitIndex": 0,
+      "rank": 3
+    },
+    {
+      "suitIndex": 0,
+      "rank": 4
+    },
+    {
+      "suitIndex": 0,
+      "rank": 5
+    },
+    {
+      "suitIndex": 1,
+      "rank": 1
+    },
+    {
+      "suitIndex": 1,
+      "rank": 2
+    },
+    {
+      "suitIndex": 1,
+      "rank": 3
+    },
+    {
+      "suitIndex": 1,
+      "rank": 4
+    },
+    {
+      "suitIndex": 1,
+      "rank": 5
+    },
+    {
+      "suitIndex": 2,
+      "rank": 1
+    }
+  ],
+  "initial": {
+    "state": {
+      "Actions2": [],
+      "ActivePlayerIndex": 0,
+      "Cards": [],
+      "ClueTokens": 8,
+      "DeckIndex": 10,
+      "EfficiencyMod": 0,
+      "EndCondition": 0,
+      "EndPlayer": -1,
+      "EndTurn": -1,
+      "HypoActions": [],
+      "HypoShowDrawnCards": false,
+      "Hypothetical": false,
+      "InvalidActionOccurred": false,
+      "LastClueTypeGiven": -1,
+      "MaxScore": 25,
+      "PauseCount": 0,
+      "PausePlayerIndex": -1,
+      "Paused": false,
+      "PlayStackDirections": [0, 0, 0, 0, 0],
+      "Players": [
+        {
+          "Character": "",
+          "CharacterMetadata": -1,
+          "Hand": [0, 1, 2, 3, 4],
+          "Index": 0,
+          "Name": "Alice",
+          "Notes": [
+            "Alice private",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "RequestedPause": false
+        },
+        {
+          "Character": "",
+          "CharacterMetadata": -1,
+          "Hand": [5, 6, 7, 8, 9],
+          "Index": 1,
+          "Name": "Bob",
+          "Notes": [
+            "Bob private",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "RequestedPause": false
+        }
+      ],
+      "Score": 0,
+      "Seed": "JSON",
+      "StackStarts": [0, 0, 0, 0, 0],
+      "Stacks": [0, 0, 0, 0, 0],
+      "StartedTimer": false,
+      "Strikes": 0,
+      "Tags": {},
+      "Turn": 0,
+      "TurnsInverted": false
+    },
+    "revision": 0,
+    "receipts": {},
+    "events": [
+      {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 0,
+        "suitIndex": 0,
+        "rank": 1
+      },
+      {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 1,
+        "suitIndex": 0,
+        "rank": 2
+      },
+      {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 2,
+        "suitIndex": 0,
+        "rank": 3
+      },
+      {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 3,
+        "suitIndex": 0,
+        "rank": 4
+      },
+      {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 4,
+        "suitIndex": 0,
+        "rank": 5
+      },
+      {
+        "type": "draw",
+        "playerIndex": 1,
+        "order": 5,
+        "suitIndex": 1,
+        "rank": 1
+      },
+      {
+        "type": "draw",
+        "playerIndex": 1,
+        "order": 6,
+        "suitIndex": 1,
+        "rank": 2
+      },
+      {
+        "type": "draw",
+        "playerIndex": 1,
+        "order": 7,
+        "suitIndex": 1,
+        "rank": 3
+      },
+      {
+        "type": "draw",
+        "playerIndex": 1,
+        "order": 8,
+        "suitIndex": 1,
+        "rank": 4
+      },
+      {
+        "type": "draw",
+        "playerIndex": 1,
+        "order": 9,
+        "suitIndex": 1,
+        "rank": 5
+      }
+    ],
+    "recipients": [
+      [
+        {
+          "command": "gameActionList",
+          "data": {
+            "list": [
+              {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 1,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 2,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 3,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 4,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 6,
+                "playerIndex": 1,
+                "rank": 2,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 7,
+                "playerIndex": 1,
+                "rank": 3,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 8,
+                "playerIndex": 1,
+                "rank": 4,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 9,
+                "playerIndex": 1,
+                "rank": 5,
+                "suitIndex": 1,
+                "type": "draw"
+              }
+            ],
+            "tableID": 42
+          }
+        },
+        {
+          "command": "noteListPlayer",
+          "data": {
+            "notes": [
+              "Alice private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "tableID": 42
+          }
+        }
+      ],
+      [
+        {
+          "command": "gameActionList",
+          "data": {
+            "list": [
+              {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 1,
+                "playerIndex": 0,
+                "rank": 2,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 2,
+                "playerIndex": 0,
+                "rank": 3,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 3,
+                "playerIndex": 0,
+                "rank": 4,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 4,
+                "playerIndex": 0,
+                "rank": 5,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 6,
+                "playerIndex": 1,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 7,
+                "playerIndex": 1,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 8,
+                "playerIndex": 1,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 9,
+                "playerIndex": 1,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              }
+            ],
+            "tableID": 42
+          }
+        },
+        {
+          "command": "noteListPlayer",
+          "data": {
+            "notes": [
+              "Bob private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "tableID": 42
+          }
+        }
+      ],
+      [
+        {
+          "command": "gameActionList",
+          "data": {
+            "list": [
+              {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 1,
+                "playerIndex": 0,
+                "rank": 2,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 2,
+                "playerIndex": 0,
+                "rank": 3,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 3,
+                "playerIndex": 0,
+                "rank": 4,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 4,
+                "playerIndex": 0,
+                "rank": 5,
+                "suitIndex": 0,
+                "type": "draw"
+              },
+              {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 6,
+                "playerIndex": 1,
+                "rank": 2,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 7,
+                "playerIndex": 1,
+                "rank": 3,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 8,
+                "playerIndex": 1,
+                "rank": 4,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 9,
+                "playerIndex": 1,
+                "rank": 5,
+                "suitIndex": 1,
+                "type": "draw"
+              }
+            ],
+            "tableID": 42
+          }
+        },
+        {
+          "command": "noteList",
+          "data": {
+            "notes": [
+              {
+                "isSpectator": false,
+                "name": "Alice",
+                "notes": [
+                  "Alice private",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              },
+              {
+                "isSpectator": false,
+                "name": "Bob",
+                "notes": [
+                  "Bob private",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              },
+              {
+                "isSpectator": true,
+                "name": "Observer 2",
+                "notes": [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              },
+              {
+                "isSpectator": true,
+                "name": "Observer 3",
+                "notes": [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              }
+            ],
+            "tableID": 42
+          }
+        }
+      ],
+      [
+        {
+          "command": "gameActionList",
+          "data": {
+            "list": [
+              {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 1,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 2,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 3,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 4,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 6,
+                "playerIndex": 1,
+                "rank": 2,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 7,
+                "playerIndex": 1,
+                "rank": 3,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 8,
+                "playerIndex": 1,
+                "rank": 4,
+                "suitIndex": 1,
+                "type": "draw"
+              },
+              {
+                "order": 9,
+                "playerIndex": 1,
+                "rank": 5,
+                "suitIndex": 1,
+                "type": "draw"
+              }
+            ],
+            "tableID": 42
+          }
+        },
+        {
+          "command": "noteList",
+          "data": {
+            "notes": [
+              {
+                "isSpectator": false,
+                "name": "Alice",
+                "notes": [
+                  "Alice private",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              },
+              {
+                "isSpectator": true,
+                "name": "Observer 3",
+                "notes": [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              }
+            ],
+            "tableID": 42
+          }
+        }
+      ]
+    ]
+  },
+  "steps": [
+    {
+      "state": {
+        "Actions2": [
+          {
+            "type": 0,
+            "target": 10,
+            "value": 0
+          }
+        ],
+        "ActivePlayerIndex": 1,
+        "Cards": [
+          {
+            "Order": 10,
+            "Slot": -1,
+            "Played": true
+          }
+        ],
+        "ClueTokens": 8,
+        "DeckIndex": 11,
+        "EfficiencyMod": 0,
+        "EndCondition": 0,
+        "EndPlayer": -1,
+        "EndTurn": 3,
+        "HypoActions": [],
+        "HypoShowDrawnCards": false,
+        "Hypothetical": false,
+        "InvalidActionOccurred": false,
+        "LastClueTypeGiven": -1,
+        "MaxScore": 11,
+        "PauseCount": 0,
+        "PausePlayerIndex": -1,
+        "Paused": false,
+        "PlayStackDirections": [0, 0, 0, 0, 0],
+        "Players": [
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [0, 1, 2, 3, 4],
+            "Index": 0,
+            "Name": "Alice",
+            "Notes": [
+              "Alice private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          },
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [5, 6, 7, 8, 9],
+            "Index": 1,
+            "Name": "Bob",
+            "Notes": [
+              "Bob private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          }
+        ],
+        "Score": 1,
+        "Seed": "JSON",
+        "StackStarts": [0, 0, 0, 0, 0],
+        "Stacks": [0, 0, 1, 0, 0],
+        "StartedTimer": true,
+        "Strikes": 0,
+        "Tags": {},
+        "Turn": 1,
+        "TurnsInverted": false
+      },
+      "revision": 1,
+      "receipts": {},
+      "events": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 10,
+          "suitIndex": 2,
+          "rank": 1
+        },
+        {
+          "type": "play",
+          "playerIndex": 0,
+          "order": 10,
+          "suitIndex": 2,
+          "rank": 1
+        },
+        {
+          "type": "status",
+          "clues": 8,
+          "score": 1,
+          "maxScore": 11
+        },
+        {
+          "type": "turn",
+          "num": 1,
+          "currentPlayerIndex": 1
+        }
+      ],
+      "recipients": [
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 1,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 1,
+                "num": 1,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "draw"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 1,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 1,
+                "num": 1,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "draw"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 1,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 1,
+                "num": 1,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": -1,
+                "suitIndex": -1,
+                "type": "draw"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 10,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 2,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 1,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 1,
+                "num": 1,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "state": {
+        "Actions2": [
+          {
+            "type": 0,
+            "target": 10,
+            "value": 0
+          },
+          {
+            "type": 0,
+            "target": 5,
+            "value": 0
+          }
+        ],
+        "ActivePlayerIndex": 0,
+        "Cards": [
+          {
+            "Order": 5,
+            "Slot": 5,
+            "Played": true
+          },
+          {
+            "Order": 6,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 7,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 8,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 9,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 10,
+            "Slot": -1,
+            "Played": true
+          }
+        ],
+        "ClueTokens": 8,
+        "DeckIndex": 11,
+        "EfficiencyMod": 0,
+        "EndCondition": 0,
+        "EndPlayer": -1,
+        "EndTurn": 3,
+        "HypoActions": [],
+        "HypoShowDrawnCards": false,
+        "Hypothetical": false,
+        "InvalidActionOccurred": false,
+        "LastClueTypeGiven": -1,
+        "MaxScore": 11,
+        "PauseCount": 0,
+        "PausePlayerIndex": -1,
+        "Paused": false,
+        "PlayStackDirections": [0, 0, 0, 0, 0],
+        "Players": [
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [0, 1, 2, 3, 4],
+            "Index": 0,
+            "Name": "Alice",
+            "Notes": [
+              "Alice private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          },
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [6, 7, 8, 9],
+            "Index": 1,
+            "Name": "Bob",
+            "Notes": [
+              "Bob private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          }
+        ],
+        "Score": 2,
+        "Seed": "JSON",
+        "StackStarts": [0, 0, 0, 0, 0],
+        "Stacks": [0, 1, 1, 0, 0],
+        "StartedTimer": true,
+        "Strikes": 0,
+        "Tags": {},
+        "Turn": 2,
+        "TurnsInverted": false
+      },
+      "revision": 2,
+      "receipts": {},
+      "events": [
+        {
+          "type": "play",
+          "playerIndex": 1,
+          "order": 5,
+          "suitIndex": 1,
+          "rank": 1
+        },
+        {
+          "type": "status",
+          "clues": 8,
+          "score": 2,
+          "maxScore": 11
+        },
+        {
+          "type": "turn",
+          "num": 2,
+          "currentPlayerIndex": 0
+        }
+      ],
+      "recipients": [
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 2,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 0,
+                "num": 2,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 2,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 0,
+                "num": 2,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 2,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 0,
+                "num": 2,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 5,
+                "playerIndex": 1,
+                "rank": 1,
+                "suitIndex": 1,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 2,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": 0,
+                "num": 2,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "state": {
+        "Actions2": [
+          {
+            "type": 0,
+            "target": 10,
+            "value": 0
+          },
+          {
+            "type": 0,
+            "target": 5,
+            "value": 0
+          },
+          {
+            "type": 0,
+            "target": 0,
+            "value": 0
+          }
+        ],
+        "ActivePlayerIndex": 1,
+        "Cards": [
+          {
+            "Order": 0,
+            "Slot": 5,
+            "Played": true
+          },
+          {
+            "Order": 1,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 2,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 3,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 4,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 5,
+            "Slot": 5,
+            "Played": true
+          },
+          {
+            "Order": 6,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 7,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 8,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 9,
+            "CannotBePlayed": true
+          },
+          {
+            "Order": 10,
+            "Slot": -1,
+            "Played": true
+          }
+        ],
+        "ClueTokens": 8,
+        "DeckIndex": 11,
+        "EfficiencyMod": 0,
+        "EndCondition": 1,
+        "EndPlayer": -1,
+        "EndTurn": 3,
+        "HypoActions": [],
+        "HypoShowDrawnCards": false,
+        "Hypothetical": false,
+        "InvalidActionOccurred": false,
+        "LastClueTypeGiven": -1,
+        "MaxScore": 11,
+        "PauseCount": 0,
+        "PausePlayerIndex": -1,
+        "Paused": false,
+        "PlayStackDirections": [0, 0, 0, 0, 0],
+        "Players": [
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [1, 2, 3, 4],
+            "Index": 0,
+            "Name": "Alice",
+            "Notes": [
+              "Alice private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          },
+          {
+            "Character": "",
+            "CharacterMetadata": -1,
+            "Hand": [6, 7, 8, 9],
+            "Index": 1,
+            "Name": "Bob",
+            "Notes": [
+              "Bob private",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "RequestedPause": false
+          }
+        ],
+        "Score": 3,
+        "Seed": "JSON",
+        "StackStarts": [0, 0, 0, 0, 0],
+        "Stacks": [1, 1, 1, 0, 0],
+        "StartedTimer": true,
+        "Strikes": 0,
+        "Tags": {},
+        "Turn": 3,
+        "TurnsInverted": false
+      },
+      "revision": 3,
+      "receipts": {},
+      "events": [
+        {
+          "type": "play",
+          "playerIndex": 0,
+          "order": 0,
+          "suitIndex": 0,
+          "rank": 1
+        },
+        {
+          "type": "status",
+          "clues": 8,
+          "score": 3,
+          "maxScore": 11
+        },
+        {
+          "type": "gameOver",
+          "endCondition": 1,
+          "playerIndex": -1,
+          "votes": null
+        },
+        {
+          "type": "turn",
+          "num": 3,
+          "currentPlayerIndex": -1
+        },
+        {
+          "type": "playerTimes",
+          "playerTimes": [0, 0],
+          "duration": 0
+        }
+      ],
+      "recipients": [
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 3,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "endCondition": 1,
+                "playerIndex": -1,
+                "type": "gameOver",
+                "votes": null
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": -1,
+                "num": 3,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "duration": 0,
+                "playerTimes": [0, 0],
+                "type": "playerTimes"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "noteList",
+            "data": {
+              "notes": [
+                {
+                  "isSpectator": false,
+                  "name": "Alice",
+                  "notes": [
+                    "Alice private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": false,
+                  "name": "Bob",
+                  "notes": [
+                    "Bob private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 2",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 3",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Alice",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Bob",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                }
+              ],
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 3,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "endCondition": 1,
+                "playerIndex": -1,
+                "type": "gameOver",
+                "votes": null
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": -1,
+                "num": 3,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "duration": 0,
+                "playerTimes": [0, 0],
+                "type": "playerTimes"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "noteList",
+            "data": {
+              "notes": [
+                {
+                  "isSpectator": false,
+                  "name": "Alice",
+                  "notes": [
+                    "Alice private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": false,
+                  "name": "Bob",
+                  "notes": [
+                    "Bob private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 2",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 3",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Alice",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Bob",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                }
+              ],
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 3,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "endCondition": 1,
+                "playerIndex": -1,
+                "type": "gameOver",
+                "votes": null
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": -1,
+                "num": 3,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "duration": 0,
+                "playerTimes": [0, 0],
+                "type": "playerTimes"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "noteList",
+            "data": {
+              "notes": [
+                {
+                  "isSpectator": false,
+                  "name": "Alice",
+                  "notes": [
+                    "Alice private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": false,
+                  "name": "Bob",
+                  "notes": [
+                    "Bob private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 2",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 3",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Alice",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Bob",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                }
+              ],
+              "tableID": 42
+            }
+          }
+        ],
+        [
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "order": 0,
+                "playerIndex": 0,
+                "rank": 1,
+                "suitIndex": 0,
+                "type": "play"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "clues": 8,
+                "maxScore": 11,
+                "score": 3,
+                "type": "status"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "endCondition": 1,
+                "playerIndex": -1,
+                "type": "gameOver",
+                "votes": null
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "currentPlayerIndex": -1,
+                "num": 3,
+                "type": "turn"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "gameAction",
+            "data": {
+              "action": {
+                "duration": 0,
+                "playerTimes": [0, 0],
+                "type": "playerTimes"
+              },
+              "tableID": 42
+            }
+          },
+          {
+            "command": "noteList",
+            "data": {
+              "notes": [
+                {
+                  "isSpectator": false,
+                  "name": "Alice",
+                  "notes": [
+                    "Alice private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": false,
+                  "name": "Bob",
+                  "notes": [
+                    "Bob private",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 2",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Observer 3",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Alice",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                },
+                {
+                  "isSpectator": true,
+                  "name": "Bob",
+                  "notes": [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                  ]
+                }
+              ],
+              "tableID": 42
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
