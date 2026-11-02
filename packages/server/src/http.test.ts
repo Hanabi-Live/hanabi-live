@@ -70,6 +70,9 @@ jest.mock("./models", () => ({
 jest.mock("./motd", () => ({
   getMessageOfTheDay: jest.fn(),
 }));
+jest.mock("./version", () => ({
+  getClientVersion: () => 1,
+}));
 jest.mock("./redis", () => ({
   getRedisTablesWithUser: jest
     .fn<() => Promise<readonly never[]>>()
@@ -190,6 +193,23 @@ describe("actual HTTP authentication entry point", () => {
     expect(response.body).toBe("That is not the correct password.");
     expect(response.cookies).toEqual([]);
     expect(models.users.setPassword).not.toHaveBeenCalled();
+  });
+
+  test("accepts the paired client version and rejects stale versions before authentication", async () => {
+    app = await createHTTPServer();
+    const stale = await app.inject({
+      method: "POST",
+      url: "/login",
+      payload: { ...credentials, version: "2" },
+    });
+    expect(stale.statusCode).toBe(401);
+    expect(models.users.get).not.toHaveBeenCalled();
+    const current = await app.inject({
+      method: "POST",
+      url: "/login",
+      payload: { ...credentials, version: "1" },
+    });
+    expect(current.statusCode).toBe(200);
   });
 
   test("upgrades an authenticated SHA-256 password before issuing a cookie", async () => {
