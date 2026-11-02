@@ -8,14 +8,24 @@ services:
       POSTGRES_PASSWORD: 1234567890
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 2s
   hanab-live-server:
-    image: "liubowei/hanab-live-server"
+    # Local development build; never pull the legacy server image.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: build
     depends_on:
-      - "hanab-live-db"
+      hanab-live-db:
+        condition: service_healthy
     ports:
       - "1212:80"
     volumes:
       - ./.env:/root/hanabi-live/.env
-    command: ["-c", "sleep 5 && /root/hanabi-live/hanabi-live"]
+      - ongoing_tables:/root/hanabi-live/ongoing_tables
+    stop_grace_period: 24h
 volumes:
   pgdata:
+  ongoing_tables:

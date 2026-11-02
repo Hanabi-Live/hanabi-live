@@ -4,6 +4,7 @@ package main // In Go, executable commands must always use package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -34,6 +35,16 @@ var (
 )
 
 func main() {
+	if buildRevision != "" && len(os.Args) == 2 && os.Args[1] == "--build-revision" {
+		fmt.Println(buildRevision)
+		return
+	}
+	if buildRevision != "" && len(os.Args) == 2 && os.Args[1] == "--check-migration-target" {
+		if err := checkReleaseMigrationTarget(); err != nil {
+			logger.Fatal("Migration preflight failed: " + err.Error())
+		}
+		return
+	}
 	// Initialize Sentry (in "sentry.go")
 	usingSentry = sentryInit()
 	if usingSentry {
@@ -50,6 +61,13 @@ func main() {
 		// We use "filepath.Dir()" instead of "path.Dir()" because it is platform independent
 		projectName = filepath.Base(v)
 		projectPath = filepath.Dir(v)
+	}
+
+	if buildRevision != "" {
+		if err := initializeRelease(); err != nil {
+			logger.Fatal("Failed to verify release: " + err.Error())
+			return
+		}
 	}
 
 	// Check to see if the ".env" file exists
@@ -96,12 +114,16 @@ func main() {
 	// Record the commit that corresponds with when the Golang code was compiled
 	// (this is useful to know what version of the server is running,
 	// since it is possible to update the client without restarting the server)
-	cmd := exec.Command("git", "rev-parse", "HEAD")
-	if stdout, err := cmd.Output(); err != nil {
-		logger.Fatal("Failed to perform a \"git rev-parse HEAD\": " + err.Error())
-		return
-	} else {
-		gitCommitOnStart = strings.TrimSpace(string(stdout))
+	gitCommitOnStart = buildRevision
+	if gitCommitOnStart == "" {
+		cmd := exec.Command("git", "rev-parse", "HEAD")
+		cmd.Dir = projectPath
+		if stdout, err := cmd.Output(); err != nil {
+			logger.Fatal("Failed to perform a \"git rev-parse HEAD\": " + err.Error())
+			return
+		} else {
+			gitCommitOnStart = strings.TrimSpace(string(stdout))
+		}
 	}
 	logger.Info("Current git commit: " + gitCommitOnStart)
 
@@ -202,6 +224,9 @@ func main() {
 	if err := restoreTables(); err != nil {
 		logger.Fatal("Failed to restore tables: " + err.Error())
 		return
+	}
+	if buildRevision != "" {
+		listenForReleaseSignals()
 	}
 	// External callbacks must not mutate tables until restoration is complete.
 	discordInit()

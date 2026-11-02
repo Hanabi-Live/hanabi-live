@@ -337,9 +337,72 @@ To manage the service:
   `curl http://127.0.0.1:${LOCALHOST_PORT:-8081}/gracefulRestart`
 
 Do not use `supervisorctl stop` or `supervisorctl restart` on a running game
-server: signals do not save ongoing games. Check the server log after a restart.
-See [the production instructions](../AGENTS.md) for deployment and database
-migration precautions.
+server: source builds do not save ongoing games on signals. Check the server log
+after a restart. See [the production instructions](../AGENTS.md) for deployment
+and database migration precautions.
+
+### Opt-in CI releases (Linux amd64)
+
+Existing source installations are unchanged. Trusted `main` CI runs publish
+`hanabi-live-<revision>-linux-amd64` only after the required checks pass.
+Download its archive and checksum from that successful run. `release.json`
+records the revision, client version, toolchain, workflow run, and every asset
+checksum. Checksums detect corruption, not an untrusted publisher; verify the
+repository, run, and revision before installing. Full Git history is required
+for builds.
+
+Use Python 3.12+ and Bash on the installation host; Go, Node, and Git are not
+needed at runtime. The archive includes the pinned migration executable. Example
+commands, **requiring separate operator authorization**, are:
+
+```sh
+python3 install/release.py init /opt/hanabi-live
+python3 install/release.py stage /opt/hanabi-live ./hanabi-live-REV-linux-amd64.tar.gz TRUSTED_SHA256
+python3 install/release.py activate /opt/hanabi-live REV --apply-migrations
+```
+
+For the first transition, use the **old service's `/shutdown`** and wait for its
+actual exit (this lets ongoing games finish). Only while stopped, copy its
+`.env`, `ongoing_tables`, optional `motd.txt`, and certificate directory into
+`shared/`; retain the database and original checkpoints. Review migrations,
+including the UUID-era snapshot prerequisite for migration 003. Do not
+initialize an existing database. Install the separate
+`install/supervisor/hanabi-live-release.conf`, adjusting paths/account, and
+retire the old program **while stopped**. Do not reuse its restart policy. Keep
+releases operator-owned and read-only to the service account; grant that account
+access only to shared state and the lock. Start the new program explicitly after
+successful activation and check readiness and logs.
+
+Later updates: send SIGTERM directly to the release process and wait for exit
+before staging and activation. SIGTERM drains commands and writes durable
+checkpoints; a failed checkpoint leaves the process paused, not falsely stopped.
+Never force-kill it to complete a rollout. Staging and activation refuse a
+running service. Activation deliberately runs forward migrations **before**
+atomically changing `current`; it never starts a process. Failed verification or
+migration leaves the pointer and checkpoints unchanged, but a failed migration
+may have advanced the schema: investigate before starting any old code. Exit
+status 2 reports a rename that succeeded but whose directory sync failed:
+staging may already exist, or `current` may already have changed. Keep the
+service stopped and inspect the reported path and repair storage before
+proceeding. Automatic rollback and older/equal client versions are rejected;
+recovery/schema downgrades require a separately reviewed procedure, especially
+with active games.
+
+`/gracefulRestart` in release mode verifies and re-executes the **same** paired
+release after saving checkpoints, without compilation or pointer changes.
+`/shutdown` still lets games finish, then exits successfully. The opt-in
+Supervisor policy restarts crashes, not intentional stops. Never use
+`supervisorctl stop/restart` on a running game server. Container images use the
+same verified binary lifecycle and need no Git/compiler; retain the database and
+mount `ongoing_tables`, configure a generous stop timeout, and verify exit
+rather than allowing a forced kill. Container upgrades also require deliberate
+migrations before starting new code. `docker-compose.yml` uses a local
+Dockerfile build (`pull_policy: build`); it is a development example, not a
+published production server image.
+
+For a local build: `bash install/build_release.sh dist/native`. Local dirty
+builds are marked untrusted; only clean, successful CI artifacts are deployment
+inputs.
 
 <br />
 

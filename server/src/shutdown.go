@@ -201,6 +201,10 @@ func shutdownImmediate(ctx context.Context, startedAt time.Time) {
 		resumeIncomingCommands(ctx)
 		return
 	}
+	if buildRevision != "" && !checkpointForLifecycle(ctx) {
+		logger.Error("Shutdown checkpoint failed; server remains paused. Retry with SIGTERM after repair.")
+		return
+	}
 
 	sessionList := sessions.GetList()
 	for _, s := range sessionList {
@@ -213,7 +217,9 @@ func shutdownImmediate(ctx context.Context, startedAt time.Time) {
 	msg := "The server successfully shut down at: " + getCurrentTimestamp()
 	chatServerSend(ctx, msg, "lobby", false)
 
-	if runtime.GOOS == "windows" {
+	if buildRevision != "" {
+		exitRelease()
+	} else if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")
 	} else if err := executeScript("stop.sh"); err != nil {
 		logger.Error("Failed to execute the \"stop.sh\" script: " + err.Error())

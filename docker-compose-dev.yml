@@ -29,5 +29,8 @@ services:
       SESSION_SECRET: "example secret - just for development"
     volumes:
       - .env.example:/root/hanabi-live/.env
+      - ongoing_tables:/root/hanabi-live/ongoing_tables
+    stop_grace_period: 24h
 volumes:
   pgdata:
+  ongoing_tables:

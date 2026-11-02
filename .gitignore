@@ -28,6 +28,8 @@ motd.txt*
 /letsencrypt
 /logs
 /ongoing_tables
+# cspell:words pycache
+/install/__pycache__
 
 # Development files
 *.code-workspace

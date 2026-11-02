@@ -35,5 +35,20 @@ export PGDATABASE="${DB_NAME:-hanabi}"
 export PGCONNECT_TIMEOUT=10
 export PGOPTIONS="-c statement_timeout=3600000 -c lock_timeout=5000"
 
-exec go run "github.com/jackc/tern/v2@$TERN_VERSION" "$command" \
+runner=(go run "github.com/jackc/tern/v2@$TERN_VERSION")
+if [[ -f "$DIR/../release.json" ]]; then
+  if [[ ! -x "$DIR/tern" ]]; then
+    echo "Release migration tool is missing; refusing to compile on the server." >&2
+    exit 1
+  fi
+  runner=("$DIR/tern")
+  if [[ $command == migrate ]]; then
+    "$DIR/../hanabi-live" --check-migration-target
+  fi
+elif [[ ! -f "$DIR/../server/src/go.mod" ]]; then
+  echo "Missing release metadata; refusing to compile a migration tool outside a source checkout." >&2
+  exit 1
+fi
+
+exec "${runner[@]}" "$command" \
   --config="" --migrations "$DIR/migrations" --version-table public.schema_version

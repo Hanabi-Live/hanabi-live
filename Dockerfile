@@ -1,63 +1,26 @@
-## first build the client
-FROM node:24-bookworm
+FROM golang:1.27-bookworm AS go
 
-RUN mkdir -p /root/hanabi-live
+FROM node:24-bookworm AS build
+COPY --from=go /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:${PATH}"
+RUN apt-get update && apt-get install -y --no-install-recommends python3 && apt-get clean
 WORKDIR /root/hanabi-live
-COPY .env.example .env
-COPY tsconfig.json tsconfig.json
-COPY tsconfig.monorepo.json tsconfig.monorepo.json
-COPY package.json package.json
-COPY package-lock.json package-lock.json
+COPY package.json package-lock.json tsconfig.json tsconfig.monorepo.json LICENSE ./
 COPY packages packages
-COPY public public
 COPY scripts scripts
+COPY public public
 RUN npm ci
-
-# needed only for git rev parse
-COPY .git .git
-
-RUN packages/client/build_client.sh
-
-## then build the server
-FROM golang:1.27-bookworm
-
-RUN mkdir -p /root/hanabi-live
-WORKDIR /root/hanabi-live
-COPY .env.example .env
 COPY server server
-
-# CGO_ENABLED=0 produces a static binary; a dynamically-linked binary fails on
-# the alpine runtime stage because gcompat breaks os.Executable().
-RUN CGO_ENABLED=0 server/build_server.sh
-
-## remove src code and copy build artifacts into a minimal image
+COPY install install
+COPY misc misc
+# Full history is needed only in the build stage for the client cache version.
+COPY .git .git
+RUN bash install/build_release.sh /root/artifact
 
 FROM alpine
-
-ENTRYPOINT ["/bin/sh"]
-
-# Git is needed so the server can get rev-parse HEAD.
-RUN apk add --no-cache git
-
-RUN mkdir -p /root/hanabi-live
+RUN apk add --no-cache ca-certificates bash
 WORKDIR /root/hanabi-live
-
-# will need to be mounted on startup
-RUN touch .env
-COPY packages/data packages/data
-COPY packages/game packages/game
-COPY packages/server/src/json packages/server/src/json
-COPY install/migrations install/migrations
-COPY misc misc
-RUN mkdir -p logs
-COPY --from=0 /root/hanabi-live/public public
-COPY --from=1 /root/hanabi-live/hanabi-live hanabi-live
-RUN chmod +x hanabi-live
-RUN mkdir -p server/src
-# needed at runtime, these are not compiled in
-COPY server/src/views/ server/src/views/
-
-# only needed so server knows its git hash
-COPY .git .git
-
-CMD ["-c", "/root/hanabi-live/hanabi-live"]
+COPY --from=build /root/artifact/release ./
+RUN mkdir logs ongoing_tables
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/root/hanabi-live/hanabi-live"]

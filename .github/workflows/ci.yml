@@ -1,12 +1,18 @@
 name: CI
+# cspell:words pgdg
 
 on: [push, pull_request]
+
+permissions:
+  contents: read
 
 jobs:
   client_build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
 
@@ -45,8 +51,19 @@ jobs:
           source install/migration_files.sh
           go install "github.com/jackc/tern/v2@$TERN_VERSION"
 
+      - name: Install matching PostgreSQL backup tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
       - name: Check Go formatting
         run: bash check_gofmt.sh
+
+      - name: Test release installation guards
+        run: python3 -m unittest discover -s install -p 'release_test.py'
 
       - name: Compile the Golang code
         run: bash build_server.sh
@@ -70,6 +87,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Build the production container
         run: docker build --tag hanabi-live-ci .
 
@@ -90,6 +108,20 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
@@ -142,6 +174,59 @@ jobs:
       - name: Check "package.json" files
         run: npm run lint-package-json
 
+  native_release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      [
+        client_build,
+        server_build,
+        container_build,
+        lint,
+        test,
+        format,
+        shellcheck,
+        spell_check,
+        lint_monorepo,
+      ]
+    runs-on: ubuntu-latest
+    env:
+      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/workflows/setup
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: server/src/go.sum
+      - name: Build and verify immutable native release
+        run: bash install/build_release.sh dist/native
+      - name: Test release installation guards
+        run: python3 -m unittest discover -s install -p 'release_test.py'
+      - name: Exercise local release lifecycle
+        run: python3 install/release_smoke.py dist/native/*.tar.gz
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: hanabi-live-${{ github.sha }}-linux-amd64
+          path: |
+            dist/native/*.tar.gz
+            dist/native/*.sha256
+          if-no-files-found: error
+
   deploy_docs_website:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint]
@@ -177,6 +262,7 @@ jobs:
         spell_check,
         lint_monorepo,
         deploy_docs_website,
+        native_release,
       ]
     if: failure() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

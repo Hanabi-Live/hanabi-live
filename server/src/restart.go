@@ -19,7 +19,12 @@ func gracefulRestart(ctx context.Context) {
 
 	// We build the client and the server first before kicking everyone off in order to reduce the
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
-	if runtime.GOOS != "windows" {
+	if buildRevision != "" {
+		if err := verifyRelease(projectPath, buildRevision); err != nil {
+			logger.Error("Refusing to restart an invalid release: " + err.Error())
+			return
+		}
+	} else if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
 		if err := executeScript("packages/client/build_client.sh"); err != nil {
 			logger.Error("Failed to execute the \"build_client.sh\" script: " + err.Error())
@@ -36,8 +41,12 @@ func gracefulRestart(ctx context.Context) {
 	waitForAllWebSocketCommandsToFinish()
 
 	logger.Info("Writing active table checkpoints...")
-	if !checkpointTables(ctx) {
-		abortRestart(ctx)
+	if !checkpointForLifecycle(ctx) {
+		if buildRevision == "" {
+			abortRestart(ctx)
+		} else {
+			logger.Error("Release checkpoint failed; server remains paused. Retry after repair.")
+		}
 		return
 	}
 	logger.Info("Finished writing active table checkpoints.")
@@ -58,7 +67,12 @@ func gracefulRestart(ctx context.Context) {
 	sendMessageToWebDevChannel = true
 	chatServerSend(ctx, msg, "lobby", false)
 
-	if runtime.GOOS == "windows" {
+	if buildRevision != "" {
+		if err := restartRelease(); err != nil {
+			// Checkpoints remain authoritative. Do not resume potentially frozen state.
+			logger.Error("Release restart failed; server remains paused: " + err.Error())
+		}
+	} else if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")
 	} else {
 		logger.Info("Restarting...")

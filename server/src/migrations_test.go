@@ -107,6 +107,19 @@ func newMigrationTestDatabase(t *testing.T) (*database, *pgxpool.Config) {
 func migrationTestDirectory(t *testing.T, config *pgxpool.Config) (string, []string) {
 	t.Helper()
 	root := t.TempDir()
+	// This fixture exercises the source runner, not a packaged release. Retain its
+	// source-module marker so missing release metadata cannot enable compilation.
+	moduleDirectory := filepath.Join(root, "server", "src")
+	if err := os.MkdirAll(moduleDirectory, 0700); err != nil {
+		t.Fatal(err)
+	}
+	module, err := os.ReadFile("go.mod")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(moduleDirectory, "go.mod"), module, 0600); err != nil {
+		t.Fatal(err)
+	}
 	install := filepath.Join(root, "install")
 	if err := os.MkdirAll(filepath.Join(install, "migrations"), 0700); err != nil {
 		t.Fatal(err)

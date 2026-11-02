@@ -3,3 +3,12 @@ Dockerfile
 Dockerfile.postgres
 docker-compose.yml
 docker-compose-dev.yml
+**/node_modules
+**/.env
+**/*.log
+logs
+ongoing_tables
+backups
+letsencrypt
+dist
+hanabi-live

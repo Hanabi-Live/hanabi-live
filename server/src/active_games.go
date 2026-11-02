@@ -239,9 +239,13 @@ func (t *Table) emit(s *Session, command string, payload interface{}) {
 }
 
 func checkpointTables(ctx context.Context) bool {
+	return checkpointTablesOnce(ctx, nil)
+}
+
+func checkpointTablesOnce(ctx context.Context, completed map[uint64]bool) bool {
 	for _, t := range tables.GetList(true) {
 		t.Lock(ctx)
-		if t.Running && t.usesRecovery() && !t.recoveryBlocked.Load() {
+		if !completed[t.ID] && t.Running && t.usesRecovery() && !t.recoveryBlocked.Load() {
 			if !t.mutate(ctx, nil, &CommandData{}, func() {
 				// Persist the maintenance allowance once, not on every crash restoration.
 				if t.Options.Timed && t.Game.EndCondition == EndConditionInProgress {
@@ -253,6 +257,9 @@ func checkpointTables(ctx context.Context) bool {
 			}) {
 				t.Unlock(ctx)
 				return false
+			}
+			if completed != nil {
+				completed[t.ID] = true
 			}
 		}
 		t.Unlock(ctx)
