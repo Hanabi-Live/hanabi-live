@@ -3,7 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { clearAllTyping } from "./chatPresence";
 import { incomingCommands } from "./commandAdmission";
 import type { GameRuntime } from "./gameRuntime";
-import { cancelPregameTimers } from "./pregameTimers";
+import { cancelPregameTimers } from "./pregameStart";
 import { wsError, wsSend } from "./wsHelpers";
 
 interface ClosingServer {

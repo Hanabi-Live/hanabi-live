@@ -31,6 +31,15 @@ jest.mock("../models", () => ({
 jest.mock("../identityToken", () => ({
   identityTokenRegenerate: jest.fn(),
 }));
+jest.mock("../env", () => ({
+  IS_DEV: true,
+  env: {
+    DOMAIN: "localhost",
+    SESSION_SECRET: "synthetic-lobby-secret",
+    TLS_CERT_FILE: "",
+    TLS_KEY_FILE: "",
+  },
+}));
 jest.mock("../logger", () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));

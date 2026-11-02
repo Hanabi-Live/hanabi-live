@@ -10,17 +10,8 @@ import {
 } from "./pregameStart";
 import { tableNotice } from "./tableNotifications";
 import { enqueueTableOperation } from "./tableQueue";
-import { getTable, getTableIDs } from "./tables";
+import { getTable } from "./tables";
 import { wsWarning } from "./wsHelpers";
-
-export function cancelPregameTimers(): void {
-  for (const id of getTableIDs()) {
-    const table = getTable(id);
-    if (table !== undefined) {
-      cancelPregameStart(table);
-    }
-  }
-}
 
 export function preparePregameStart(
   table: Table,

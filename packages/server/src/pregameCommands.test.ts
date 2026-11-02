@@ -18,8 +18,8 @@ import type { Table } from "./interfaces/Table";
 import { shutdownServer } from "./lifecycle";
 import { models } from "./models";
 import { runPregameCommand } from "./pregameCommands";
-import { capturePregameStart } from "./pregameStart";
-import { cancelPregameTimers, startPregame } from "./pregameTimers";
+import { cancelPregameTimers, capturePregameStart } from "./pregameStart";
+import { startPregame } from "./pregameTimers";
 import { enqueueTableOperation } from "./tableQueue";
 import {
   getTable,

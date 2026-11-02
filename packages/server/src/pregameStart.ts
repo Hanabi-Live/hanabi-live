@@ -1,5 +1,5 @@
 import type { Table } from "./interfaces/Table";
-import { getTable } from "./tables";
+import { getTable, getTableIDs } from "./tables";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
 
@@ -17,6 +17,15 @@ export function cancelPregameStart(table: Table): void {
   current.pregameStartTimer = undefined;
   current.pregameStartToken = undefined;
   current.datetimePlannedStart = undefined;
+}
+
+export function cancelPregameTimers(): void {
+  for (const id of getTableIDs()) {
+    const table = getTable(id);
+    if (table !== undefined) {
+      cancelPregameStart(table);
+    }
+  }
 }
 
 function presentOwner(table: Table) {
