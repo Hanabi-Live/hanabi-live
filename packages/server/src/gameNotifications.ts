@@ -5,8 +5,9 @@ import type {
   UserID,
 } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
-import { getCharacters } from "@hanabi-live/game";
+import { getCharacters, getVariant } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
+import { getTypingState } from "./chatPresence";
 import type { EngineEvent } from "./engine/types";
 import { eventsForRecipient } from "./engine/visibility";
 import type { Game } from "./interfaces/Game";
@@ -168,7 +169,14 @@ export function appendBootstrap(
     messages.add(user, ServerCommand.init, {
       tableID: table.id,
       playerNames: table.players.map((player) => player.name),
-      ourPlayerIndex: shadowingPlayerIndex ?? Math.max(0, index),
+      ourPlayerIndex:
+        shadowingPlayerIndex
+        ?? Math.max(
+          0,
+          index === -1
+            ? table.players.findIndex((player) => player.name === user.username)
+            : index,
+        ),
       spectating: spectator !== undefined && !table.replay,
       shadowing: shadowingPlayerIndex !== undefined,
       replay: table.replay,
@@ -196,7 +204,7 @@ export function appendBootstrap(
           ?.name
         ?? "",
       sharedReplaySegment: table.replay ? game.replaySegment : game.state.turn,
-      sharedReplayEffMod: 0,
+      sharedReplayEffMod: game.replayControls?.efficiency ?? 0,
       paused: game.state.paused,
       pausePlayerIndex: game.pausePlayerIndex,
       pauseQueued: game.queuedPauses[index] ?? false,
@@ -226,13 +234,18 @@ export function appendBootstrap(
         tableID: table.id,
         notes: game.notes[index] ?? [],
       });
-      messages.add(user, ServerCommand.voteChange, { vote: false });
+      const player = table.players[index];
+      assertDefined(player, "Missing player vote state.");
+      messages.add(user, ServerCommand.voteChange, { vote: player.voteToKill });
     }
   }
   messages.add(user, ServerCommand.chatList, {
     list: table.chat.slice(-1000).map((entry) => entry.message),
     unread: table.chat.length - (table.chatRead.get(user.userID) ?? 0),
   });
+  for (const state of getTypingState(table, user)) {
+    messages.add(user, ServerCommand.chatTyping, state);
+  }
   messages.add(user, ServerCommand.spectators, {
     tableID: table.id,
     spectators: table.spectators.map(
@@ -247,6 +260,12 @@ export function appendBootstrap(
       }),
     ),
   });
+  if (table.replay && game.replayControls?.hypothetical === true) {
+    messages.add(user, ServerCommand.hypothetical, {
+      showDrawnCards: game.replayControls.showDrawnCards,
+      actions: game.replayControls.actions,
+    });
+  }
 }
 
 export function appendObserverNotes(
@@ -254,15 +273,17 @@ export function appendObserverNotes(
   table: Table,
   game: Game,
   users: readonly WSUser[],
+  order?: number,
 ): void {
+  const notesSize =
+    game.state.deck.length + getVariant(table.options.variantName).suits.length;
   for (const user of users) {
     const shadow = table.replay
       ? undefined
       : table.spectators.find((entry) => entry.userID === user.userID)
           ?.shadowingPlayerIndex;
-    messages.add(user, ServerCommand.noteList, {
-      tableID: table.id,
-      notes: table.players.flatMap((player, index) =>
+    const notes = [
+      ...table.players.flatMap((player, index) =>
         shadow !== undefined && shadow !== -1 && shadow !== index
           ? []
           : [
@@ -273,7 +294,44 @@ export function appendObserverNotes(
               },
             ],
       ),
-    });
+      ...[
+        ...(game.spectatorNotes ?? []),
+        ...table.spectators.filter(
+          (spectator) =>
+            game.spectatorNotes?.every(
+              (entry) => entry.userID !== spectator.userID,
+            ) ?? true,
+        ),
+      ].flatMap((spectator) =>
+        shadow !== undefined
+        && shadow !== -1
+        && spectator.userID !== user.userID
+          ? []
+          : [
+              {
+                name: spectator.name,
+                notes: Array.from(
+                  { length: notesSize },
+                  (_, index) => spectator.notes[index] ?? "",
+                ),
+                isSpectator: true,
+              },
+            ],
+      ),
+    ];
+    if (order === undefined) {
+      messages.add(user, ServerCommand.noteList, { tableID: table.id, notes });
+    } else {
+      messages.add(user, ServerCommand.note, {
+        tableID: table.id,
+        order,
+        notes: notes.map((entry) => ({
+          name: entry.name,
+          text: entry.notes[order] ?? "",
+          isSpectator: entry.isSpectator,
+        })),
+      });
+    }
   }
 }
 
@@ -291,13 +349,6 @@ export function appendReplayDetails(
         rank,
       })),
     });
-    messages.add(user, ServerCommand.noteList, {
-      tableID: table.id,
-      notes: table.players.map((player, index) => ({
-        name: player.name,
-        notes: game.notes[index] ?? [],
-        isSpectator: false,
-      })),
-    });
   }
+  appendObserverNotes(messages, table, game, users);
 }

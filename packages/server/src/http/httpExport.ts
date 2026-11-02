@@ -41,7 +41,7 @@ export async function httpExport(
     throw new Error(`Game ${id} has inconsistent participant seats.`);
   }
   const variant = getVariantByID(game.variantID);
-  const deck = createShuffledDeck(variant, game.seed);
+  const deck = record.customDeck ?? createShuffledDeck(variant, game.seed);
   const notes = players.map(() =>
     Array.from({ length: deck.length + variant.suits.length }, () => ""),
   );
@@ -100,6 +100,7 @@ export async function httpExport(
       notes: trimmedNotes,
     }),
     ...(characters !== undefined && { characters }),
-    seed: game.seed,
+    // An arbitrary deck cannot be imported with a seed that reconstructs a different order.
+    ...(record.customDeck === undefined && { seed: game.seed }),
   });
 }

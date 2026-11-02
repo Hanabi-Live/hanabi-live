@@ -7,6 +7,7 @@ import { chatLogPM } from "./models/chatLogPM";
 import { gameQueries } from "./models/gameQueries";
 import { games } from "./models/games";
 import { gameTags } from "./models/gameTags";
+import { moderation } from "./models/moderation";
 import { publicStats } from "./models/publicStats";
 import { replays } from "./models/replays";
 import { userFriends } from "./models/userFriends";
@@ -23,6 +24,7 @@ export const models = {
   games,
   gameTags,
   gameQueries,
+  moderation,
   publicStats,
   replays,
   users,

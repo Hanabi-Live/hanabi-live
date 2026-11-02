@@ -93,8 +93,6 @@ func httpExport(c *gin.Context) {
 		return
 	}
 
-	// Deck specification for a particular game are not stored in the database
-	// Thus, we must recalculate the deck order based on the seed of the game
 	// Get the seed from the database
 	var seed string
 	if v, err := models.Games.GetSeed(databaseID); err != nil {
@@ -110,15 +108,26 @@ func httpExport(c *gin.Context) {
 		seed = v
 	}
 
-	// Make a deck and shuffle it
+	customDeck, err := models.GameCustomDecks.Get(databaseID, variants[options.VariantName])
+	if err != nil {
+		logger.Error("Failed to get the custom deck for game " + strconv.Itoa(databaseID) + ": " + err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	g := &Game{ // nolint: exhaustivestruct
 		Options:      options,
 		Variant:      variants[options.VariantName],
-		ExtraOptions: &ExtraOptions{},
+		ExtraOptions: &ExtraOptions{CustomDeck: customDeck, CustomDeckIsShuffled: customDeck != nil},
 		Seed:         seed,
 	}
 	g.InitDeck()
-	g.ShuffleDeck()
+	if customDeck == nil {
+		g.ShuffleDeck()
+	} else {
+		// A seed that reconstructs a different deck would make this JSON fail import validation.
+		seed = ""
+	}
 
 	// Get the actions from the database
 	var actions []*GameAction

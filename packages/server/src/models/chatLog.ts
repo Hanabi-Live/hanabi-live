@@ -45,18 +45,32 @@ export const chatLog = {
     userID: UserID,
     message: string,
     room: string,
-  ): Promise<{ chatID: number; datetimeSent: Date }> => {
-    const rows = await db
-      .insert(chatLogTable)
-      .values({ userID, source: "user", message, room })
-      .returning({
-        chatID: chatLogTable.id,
-        datetimeSent: chatLogTable.datetimeSent,
-      });
-    const row = rows[0];
-    if (row === undefined) {
-      throw new Error("Chat insertion did not return a persisted message.");
-    }
-    return row;
-  },
+  ): Promise<{ chatID: number; datetimeSent: Date }> =>
+    await insertChatMessage(userID, "user", message, room),
+
+  insertServer: async (
+    message: string,
+    room: string,
+  ): Promise<{ chatID: number; datetimeSent: Date }> =>
+    await insertChatMessage(0, "server", message, room),
 };
+
+async function insertChatMessage(
+  userID: number,
+  source: "user" | "server",
+  message: string,
+  room: string,
+) {
+  const rows = await db
+    .insert(chatLogTable)
+    .values({ userID, source, message, room })
+    .returning({
+      chatID: chatLogTable.id,
+      datetimeSent: chatLogTable.datetimeSent,
+    });
+  const row = rows[0];
+  if (row === undefined) {
+    throw new Error("Chat insertion did not return a persisted message.");
+  }
+  return row;
+}

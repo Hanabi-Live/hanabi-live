@@ -416,7 +416,7 @@ func TestGameCompletionRetryDoesNotDuplicateRecords(t *testing.T) {
 }
 
 func TestGameCompletionMetadataFailureRollsBackEverything(t *testing.T) {
-	for _, failingTable := range []string{"game_participant_notes", "chat_log", "game_tags"} {
+	for _, failingTable := range []string{"game_custom_decks", "game_participant_notes", "chat_log", "game_tags"} {
 		t.Run(failingTable, func(t *testing.T) {
 			database, table := gameCompletionTestTable(t)
 			if _, err := database.Exec(context.Background(),
@@ -432,6 +432,7 @@ func TestGameCompletionMetadataFailureRollsBackEverything(t *testing.T) {
 				SELECT (SELECT COUNT(*) FROM games) + (SELECT COUNT(*) FROM game_participants)
 					+ (SELECT COUNT(*) FROM game_actions) + (SELECT COUNT(*) FROM game_participant_notes)
 					+ (SELECT COUNT(*) FROM chat_log WHERE room = 'table42') + (SELECT COUNT(*) FROM game_tags)
+					+ (SELECT COUNT(*) FROM game_custom_decks)
 			`).Scan(&count); err != nil || count != 0 {
 				t.Fatalf("metadata failure left partially committed records: %d, %v", count, err)
 			}

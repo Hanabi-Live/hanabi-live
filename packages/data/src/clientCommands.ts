@@ -29,6 +29,10 @@ const clientCommandTableUpdateData = z.strictObject({
   tableID,
 });
 const clientCommandTableData = z.strictObject({ tableID });
+const clientCommandTagSearchData = z.strictObject({
+  msg: z.string().default(""),
+  room: z.string().default(""),
+});
 const clientCommandTableJoinData = z.strictObject({
   tableID,
   password: z.string().default(""),
@@ -120,6 +124,9 @@ const clientCommandSettingData = z
 // -----------
 
 export interface ClientCommandData extends GameClientCommandData {
+  [ClientCommand.chatRead]: z.infer<typeof clientCommandTableData>;
+  [ClientCommand.chatTyping]: z.infer<typeof clientCommandTableData>;
+  [ClientCommand.tagSearch]: z.infer<typeof clientCommandTagSearchData>;
   [ClientCommand.chat]: ClientCommandChatData;
   [ClientCommand.chatFriend]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.chatLink]: z.infer<typeof clientCommandChatUserData>;
@@ -156,6 +163,9 @@ export interface ClientCommandData extends GameClientCommandData {
 interfaceSatisfiesEnum<ClientCommandData, ClientCommand>();
 
 export const CLIENT_COMMAND_SCHEMAS = {
+  [ClientCommand.chatRead]: clientCommandTableData,
+  [ClientCommand.chatTyping]: clientCommandTableData,
+  [ClientCommand.tagSearch]: clientCommandTagSearchData,
   ...GAME_CLIENT_COMMAND_SCHEMAS,
   [ClientCommand.chat]: clientCommandChatData,
   [ClientCommand.chatFriend]: clientCommandChatUserData,

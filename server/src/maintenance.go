@@ -21,9 +21,9 @@ func maintenance(ctx context.Context, enabled bool) {
 	}
 	msg += " New game creation has been "
 	if enabled {
-		msg += "enabled."
-	} else {
 		msg += "disabled."
+	} else {
+		msg += "enabled."
 	}
 
 	chatServerSendAll(ctx, msg)

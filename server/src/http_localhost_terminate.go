@@ -14,6 +14,9 @@ func httpLocalhostTerminate(c *gin.Context) {
 	// Validate the table name / table ID
 	tableNameOrID := c.PostForm("tableID")
 	if tableNameOrID == "" {
+		tableNameOrID = c.Query("tableID")
+	}
+	if tableNameOrID == "" {
 		http.Error(w, "Error: You must specify a table name or a table ID.", http.StatusBadRequest)
 		return
 	}

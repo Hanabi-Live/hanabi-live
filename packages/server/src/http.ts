@@ -10,9 +10,10 @@ import { StatusCodes } from "http-status-codes";
 import fs from "node:fs";
 import { STATUS_CODES } from "node:http";
 import path from "node:path";
-import { REPO_ROOT } from "./constants";
+import { HTTP_TIMEOUTS, REPO_ROOT } from "./constants";
 import { IS_DEV, env } from "./env";
 import { createEta } from "./eta";
+import { getHTTPErrorStatus } from "./http/httpError";
 import { httpExport } from "./http/httpExport";
 import {
   httpAPIHistory,
@@ -54,15 +55,6 @@ const LETS_ENCRYPT_PATH = path.join(
 );
 
 const eta = createEta();
-const HTTP_TIMEOUTS = {
-  connectionTimeout: 10_000,
-  requestTimeout: 5000,
-  handlerTimeout: 10_000,
-  http: {
-    headersTimeout: 5000,
-    connectionsCheckingInterval: 1000,
-  },
-} as const;
 
 export async function httpInit(): Promise<FastifyInstance> {
   const host =
@@ -166,17 +158,7 @@ export async function createHTTPServer(
 
   httpServer.setErrorHandler(async (error, _request, reply) => {
     logger.error(`HTTP request failed: ${String(error)}`);
-    const code =
-      typeof error === "object" && error !== null && "statusCode" in error
-        ? error.statusCode
-        : undefined;
-    const status =
-      typeof code === "number"
-      && Number.isSafeInteger(code)
-      && code >= 400
-      && code < 600
-        ? code
-        : StatusCodes.INTERNAL_SERVER_ERROR;
+    const status = getHTTPErrorStatus(error);
     await reply
       .code(status)
       .type("text/plain")

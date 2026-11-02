@@ -137,27 +137,50 @@ function startProcess(directory: string) {
     stdio: ["ignore", "pipe", "pipe"],
   });
   const ready = Promise.withResolvers<string>();
+  let waiter: typeof ready | undefined = ready;
   let output = "";
+  let lineBuffer = "";
   function collect(chunk: Buffer) {
     output = (output + chunk.toString()).slice(-32_768);
-    const address = /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
-      output,
-    )?.[1];
-    if (address !== undefined) {
-      ready.resolve(address);
+    lineBuffer += chunk.toString();
+    const lines = lineBuffer.split("\n");
+    const unfinished = lines.pop();
+    assertDefined(unfinished, "Missing partial process output.");
+    lineBuffer = unfinished;
+    for (const line of lines) {
+      const address = /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
+        line,
+      )?.[1];
+      if (address !== undefined) {
+        waiter?.resolve(address);
+        waiter = undefined;
+      }
     }
   }
   child.stdout.on("data", collect);
-  child.stderr.on("data", collect);
+  child.stderr.on("data", (chunk: Buffer) => {
+    output = (output + chunk.toString()).slice(-32_768);
+  });
   child.once("error", (error) => {
-    ready.reject(error);
+    waiter?.reject(error);
   });
   child.once("exit", (code, signal) => {
-    ready.reject(
+    waiter?.reject(
       new Error(`Compiled server exited (${code ?? signal}).\n${output}`),
     );
   });
-  return { child, ready: ready.promise, output: () => output };
+  return {
+    child,
+    ready: ready.promise,
+    output: () => output,
+    async nextReady(): Promise<string> {
+      if (waiter !== undefined) {
+        throw new Error("A process readiness waiter is already registered.");
+      }
+      waiter = Promise.withResolvers<string>();
+      return await waiter.promise;
+    },
+  };
 }
 
 async function login(address: string, username: string) {
@@ -270,6 +293,11 @@ databaseDescribe("compiled application entry point", () => {
     ],
     ["drains and preserves timed gameplay on SIGTERM", "127.0.0.1", "SIGTERM"],
     ["drains and preserves timed gameplay on SIGINT", "127.0.0.1", "SIGINT"],
+    [
+      "replaces the process through gracefulRestart without losing gameplay",
+      "127.0.0.1",
+      "HTTP",
+    ],
   ] as const)(
     "%s",
     async (_title, domain, signal) => {
@@ -314,6 +342,38 @@ databaseDescribe("compiled application entry point", () => {
         });
         expect(page.status).toBe(200);
         expect(await page.text()).toContain("page-wrapper");
+        const operationsAddress =
+          /Localhost operations listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
+            processState.output(),
+          )?.[1];
+        assertDefined(
+          operationsAddress,
+          "Missing loopback operations listener.",
+        );
+        const publicMetrics = await fetch(`${address}/metrics`);
+        expect(publicMetrics.status).toBe(404);
+        await publicMetrics.text();
+        const metrics = await fetch(`${operationsAddress}/metrics`);
+        expect(metrics.status).toBe(200);
+        const poolSchema = z.object({
+          maxConnections: z.number().int().positive(),
+          totalConnections: z.number().int().positive(),
+        });
+        const reports = z
+          .object({
+            database: poolSchema,
+            recovery: z.object({
+              storageInitialized: z.literal(true),
+              database: poolSchema,
+            }),
+          })
+          .parse(await metrics.json());
+        expect(reports.database.maxConnections).toBe(10);
+        expect(reports.database.totalConnections).toBeLessThanOrEqual(10);
+        expect(reports.recovery.database.maxConnections).toBe(2);
+        expect(reports.recovery.database.totalConnections).toBeLessThanOrEqual(
+          2,
+        );
         const aliceCookie = await login(address, "SmokeAlice");
         const alice = socketClient(address, aliceCookie);
         sockets.push(alice.socket);
@@ -330,6 +390,30 @@ databaseDescribe("compiled application entry point", () => {
           SERVER_COMMAND_SCHEMAS.welcome,
         );
         expect(bobWelcome.username).toBe("SmokeBob");
+        const maintenance = await fetch(`${operationsAddress}/maintenance`);
+        expect(maintenance.status).toBe(200);
+        await maintenance.text();
+        await alice.receive(
+          "maintenance",
+          SERVER_COMMAND_SCHEMAS.maintenance,
+          (data) => data.maintenanceMode,
+        );
+        alice.send("tableCreate", { name: "Blocked during maintenance" });
+        const warning = await alice.receive(
+          "warning",
+          SERVER_COMMAND_SCHEMAS.warning,
+        );
+        expect(warning.warning).toContain("maintenance");
+        const resumedCreation = await fetch(
+          `${operationsAddress}/unmaintenance`,
+        );
+        expect(resumedCreation.status).toBe(200);
+        await resumedCreation.text();
+        await alice.receive(
+          "maintenance",
+          SERVER_COMMAND_SCHEMAS.maintenance,
+          (data) => !data.maintenanceMode,
+        );
         alice.send("tableCreate", {
           name: "Compiled smoke table",
           password: "synthetic-table-password",
@@ -391,6 +475,39 @@ databaseDescribe("compiled application entry point", () => {
           bootstrap(alice),
           bootstrap(bob),
         ]);
+        const operatorWarning = await fetch(
+          `${operationsAddress}/sendWarning`,
+          {
+            method: "POST",
+            body: new URLSearchParams({
+              username: "SmokeAlice",
+              msg: "Operator notice.",
+            }),
+          },
+        );
+        expect(operatorWarning.status).toBe(200);
+        await operatorWarning.text();
+        await alice.receive(
+          "warning",
+          SERVER_COMMAND_SCHEMAS.warning,
+          (data) => data.warning === "Operator notice.",
+        );
+        const scheduled = await fetch(`${operationsAddress}/shutdown`);
+        expect(scheduled.status).toBe(200);
+        await scheduled.text();
+        await alice.receive(
+          "shutdown",
+          SERVER_COMMAND_SCHEMAS.shutdown,
+          (data) => data.shuttingDown,
+        );
+        const canceled = await fetch(`${operationsAddress}/cancel`);
+        expect(canceled.status).toBe(200);
+        await canceled.text();
+        await alice.receive(
+          "shutdown",
+          SERVER_COMMAND_SCHEMAS.shutdown,
+          (data) => !data.shuttingDown,
+        );
         const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
         const activeGame =
           aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
@@ -429,22 +546,32 @@ databaseDescribe("compiled application entry point", () => {
 
         if (signal !== undefined) {
           outputBeforeCrash = processState.output();
-          const crashed = processState.child;
-          const crashedClosed = once(crashed, "close");
-          expect(crashed.kill(signal)).toBe(true);
-          await bounded(crashedClosed, "child process shutdown", 5000);
-          if (crash) {
-            expect(crashed.signalCode).toBe("SIGKILL");
+          if (signal === "HTTP") {
+            const ready = processState.nextReady();
+            const response = await fetch(
+              `${operationsAddress}/gracefulRestart`,
+            );
+            expect(response.status).toBe(200);
+            await response.text();
+            address = await bounded(ready, "replacement process readiness");
           } else {
-            expect(crashed.exitCode).toBe(0);
-            expect(crashed.signalCode).toBeNull();
-            expect(processState.output()).toContain("successfully shut down");
+            const crashed = processState.child;
+            const crashedClosed = once(crashed, "close");
+            expect(crashed.kill(signal)).toBe(true);
+            await bounded(crashedClosed, "child process shutdown", 5000);
+            if (crash) {
+              expect(crashed.signalCode).toBe("SIGKILL");
+            } else {
+              expect(crashed.exitCode).toBe(0);
+              expect(crashed.signalCode).toBeNull();
+              expect(processState.output()).toContain("successfully shut down");
+            }
+            processState = startProcess(directory);
+            address = await bounded(
+              processState.ready,
+              "restarted compiled server readiness",
+            );
           }
-          processState = startProcess(directory);
-          address = await bounded(
-            processState.ready,
-            "restarted compiled server readiness",
-          );
           const retained = await client<CheckpointProgress[]>`
             SELECT game_id, revision::integer AS revision,
               (checkpoint::jsonb -> 'game' -> 'state' ->> 'turn')::integer AS turn,
@@ -551,10 +678,26 @@ databaseDescribe("compiled application entry point", () => {
           msg: "retained authored chat",
           requestID: "chat-once",
         });
-        replacement.send("tableTerminate", {
-          tableID,
-          requestID: "finish-once",
-        });
+        if (signal === undefined && domain === "localhost") {
+          replacement.send("tableVoteForTermination", {
+            tableID,
+            requestID: "alice-vote",
+          });
+          await replacement.receive(
+            "voteChange",
+            SERVER_COMMAND_SCHEMAS.voteChange,
+            (data) => data.vote,
+          );
+          bob.send("tableVoteForTermination", {
+            tableID,
+            requestID: "bob-vote",
+          });
+        } else {
+          replacement.send("tableTerminate", {
+            tableID,
+            requestID: "finish-once",
+          });
+        }
         const finished = await replacement.receive(
           "finishOngoingGame",
           SERVER_COMMAND_SCHEMAS.finishOngoingGame,
@@ -607,12 +750,38 @@ databaseDescribe("compiled application entry point", () => {
           SERVER_COMMAND_SCHEMAS.tableGone,
         );
         expect(gone.tableID).toBe(tableID);
+        if (signal === undefined && domain === "localhost") {
+          const banned = await fetch(`${operationsAddress}/ban`, {
+            method: "POST",
+            body: new URLSearchParams({ username: "SmokeAlice" }),
+          });
+          expect(banned.status).toBe(200);
+          await banned.text();
+          const denied = await fetch(`${address}/login`, {
+            method: "POST",
+            body: new URLSearchParams({
+              username: "SmokeAlice",
+              password: "synthetic-smoke-password",
+              version: "1",
+            }),
+          });
+          expect(denied.status).toBe(401);
+          await denied.text();
+          const stopped = once(processState.child, "close");
+          const stop = await fetch(`${operationsAddress}/shutdown`);
+          expect(stop.status).toBe(200);
+          await stop.text();
+          await bounded(stopped, "empty server scheduled shutdown", 5000);
+          expect(processState.child.exitCode).toBe(0);
+        }
         const listeners = [
           ...processState
             .output()
             .matchAll(/Server listening at http:\/\/([^\s:]+):/gu),
         ];
-        expect(listeners.map((match) => match[1])).toEqual(["127.0.0.1"]);
+        expect(listeners.map((match) => match[1])).toEqual(
+          signal === "HTTP" ? ["127.0.0.1", "127.0.0.1"] : ["127.0.0.1"],
+        );
       } catch (error) {
         throw new Error(
           `Compiled process smoke failed.\n${outputBeforeCrash}\n${processState?.output() ?? "Process not started."}`,

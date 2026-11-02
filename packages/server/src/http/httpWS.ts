@@ -162,7 +162,6 @@ async function initialize(
     normalizedUsername,
     ip,
     muted,
-    fakeUser: false,
     reconnect: isReconnectRequest(request.url),
 
     status: Status.Lobby,

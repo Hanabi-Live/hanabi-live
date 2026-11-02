@@ -1,14 +1,23 @@
 import { PROJECT_NAME } from "@hanabi-live/data";
+import {
+  activeGameCount,
+  announceServer,
+  clearPregames,
+  terminateActiveGames,
+} from "./administration";
 import { STARTING_GIT_COMMIT_SHA1 } from "./constants";
 import { createDatabaseClient, db } from "./db";
 import { IS_DEV } from "./env";
 import { initializeGameRuntime } from "./gameRuntime";
 import { createGameStore } from "./gameStore";
 import { httpInit } from "./http";
+import { httpOperationsInit } from "./http/httpOperations";
 import { shutdownServer } from "./lifecycle";
 import { logger } from "./logger";
 import { verifyDatabaseMigrations } from "./migrations";
 import { models } from "./models";
+import { prepareRestart, replaceProcess } from "./restart";
+import { initializeShutdown } from "./shutdown";
 
 // We do not bother writing a catch block since it does not display errors correctly when there is
 // an aggregate error.
@@ -20,30 +29,59 @@ async function main() {
   logger.info(`Starting Git commit SHA1: ${STARTING_GIT_COMMIT_SHA1}`);
 
   const runtime = await startGameRuntime();
-  const server = await httpInit();
-  let stopping: Promise<void> | undefined;
+  const control = initializeShutdown({
+    activeGames: activeGameCount,
+    clearPregames,
+    terminateGames: terminateActiveGames,
+    notice: announceServer,
+    prepareRestart,
+    async stop(restart) {
+      logger.info("Draining the server for shutdown.");
+      await shutdownServer(runtime, transports, async () => {
+        await db.$client.end({ timeout: 30 });
+      });
+      if (restart) {
+        logger.info(
+          "Replacing the Node process with the current compiled server.",
+        );
+        try {
+          replaceProcess();
+        } catch (error) {
+          process.exitCode = 1;
+          throw error;
+        }
+      }
+      process.off("SIGTERM", requestShutdown);
+      process.off("SIGINT", requestShutdown);
+      logger.info("The server successfully shut down.");
+      process.exitCode = 0;
+    },
+  });
+  const operations = await httpOperationsInit();
+  const server = await httpInit().catch(async (error: unknown) => {
+    await operations.close().catch((cleanupError: unknown) => {
+      logger.error(
+        `Failed to close startup operations listener: ${String(cleanupError)}`,
+      );
+    });
+    throw error;
+  });
+  const transports = {
+    websocketServer: server.websocketServer,
+    async close() {
+      await Promise.all([server.close(), operations.close()]);
+    },
+  };
+  control.activate();
   function requestShutdown() {
-    if (stopping !== undefined) {
+    if (control.busy) {
       return;
     }
-    logger.info("Draining the server for shutdown.");
-    stopping = shutdownServer(runtime, server, async () => {
-      await db.$client.end({ timeout: 30 });
-    })
-      .then(() => {
-        process.off("SIGTERM", requestShutdown);
-        process.off("SIGINT", requestShutdown);
-        logger.info("The server successfully shut down.");
-        process.exitCode = 0;
-      })
-      .catch((error: unknown) => {
-        logger.error(
-          `Shutdown failed; commands remain paused. Repair the failure and retry the signal: ${String(error)}`,
-        );
-      })
-      .finally(() => {
-        stopping = undefined;
-      });
+    control.stop(false).catch((error: unknown) => {
+      logger.error(
+        `Shutdown failed; commands remain paused. Repair the failure and retry the signal: ${String(error)}`,
+      );
+    });
   }
   process.on("SIGTERM", requestShutdown);
   process.on("SIGINT", requestShutdown);
@@ -54,7 +92,7 @@ async function startGameRuntime() {
     await models.chatLog.testDatabase();
     await verifyDatabaseMigrations();
     return await initializeGameRuntime(
-      createGameStore(createDatabaseClient(2), db.$client),
+      createGameStore(createDatabaseClient("recovery"), db.$client),
       {
         development: IS_DEV,
         getBlockedSeeds: async (users) =>

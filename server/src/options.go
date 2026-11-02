@@ -42,6 +42,7 @@ type ExtraOptions struct {
 	CustomCharacterAssignments []*CharacterAssignment
 	CustomSeed                 string
 	CustomDeck                 []*CardIdentity
+	CustomDeckIsShuffled       bool
 	CustomActions              []*GameAction
 
 	Restarted     bool   // Whether or not this game was created by clicking "Restart" in a shared replay

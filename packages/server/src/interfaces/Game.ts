@@ -18,4 +18,11 @@ export interface Game {
   tags: Array<{ userID: UserID; tag: string }>;
   requests: Array<{ userID: UserID; id: string }>;
   replaySegment: number;
+  spectatorNotes?: Array<{ userID: UserID; name: string; notes: string[] }>;
+  replayControls?: {
+    hypothetical: boolean;
+    actions: string[];
+    showDrawnCards: boolean;
+    efficiency: number;
+  };
 }

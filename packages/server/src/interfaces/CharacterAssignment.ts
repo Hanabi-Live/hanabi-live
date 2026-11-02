@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const characterAssignment = z
   .object({
-    name: z.string().min(1),
-    metadata: z.number(),
+    name: z.string(),
+    metadata: z.int(),
   })
   .strict()
   .readonly();

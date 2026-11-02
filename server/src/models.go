@@ -22,6 +22,7 @@ type Models struct {
 	ChatLog
 	ChatLogPM
 	GameActions
+	GameCustomDecks
 	GameParticipantNotes
 	GameParticipants
 	Games

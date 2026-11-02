@@ -253,6 +253,10 @@ func applyTableStart(ctx context.Context, s *Session, d *CommandData, t *Table, 
 		s.Error(StartGameFail)
 		return
 	}
+	if t.ExtraOptions.CustomDeckIsShuffled {
+		shuffleDeck = false
+		shufflePlayers = false
+	}
 	logger.Info(t.GetName() + "Using seed: " + g.Seed)
 	logger.Info("Shuffling deck: " + strconv.FormatBool(shuffleDeck))
 	logger.Info("Shuffling players: " + strconv.FormatBool(shufflePlayers))

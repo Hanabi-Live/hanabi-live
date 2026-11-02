@@ -9,6 +9,8 @@ import { isValidPlayerIndex } from "@hanabi-live/game";
 import { mapFilter } from "complete-common";
 import type { ServerSpectator } from "./interfaces/ServerSpectator";
 import type { Table } from "./interfaces/Table";
+import type { WSUser } from "./wsUsers";
+import { wsUsers } from "./wsUsers";
 
 interface SpectatingMetadata {
   tableID: TableID;
@@ -31,6 +33,34 @@ export function getTable(tableID: TableID): Table | undefined {
   return tables.get(tableID);
 }
 
+export function getTableIDs(): readonly TableID[] {
+  return [...tables.keys()];
+}
+
+export function getTableAudience(table: Table): readonly WSUser[] {
+  const members = new Set(
+    table.spectators.map((spectator) => spectator.userID),
+  );
+  if (!table.replay) {
+    for (const player of table.players) {
+      if (player.present) {
+        members.add(player.userID);
+      }
+    }
+  }
+  const audience: WSUser[] = [];
+  for (const id of members) {
+    const user = wsUsers.get(id);
+    if (
+      user?.tableID === table.id
+      && user.connection.readyState === user.connection.OPEN
+    ) {
+      audience.push(user);
+    }
+  }
+  return audience;
+}
+
 /** Publish only a fully initialized table; callers must not await during publication. */
 export function publishTable(table: Table): void {
   if (!Number.isSafeInteger(table.id) || table.id <= 0) {
@@ -44,6 +74,13 @@ export function publishTable(table: Table): void {
 }
 
 export function removeTable(tableID: TableID): void {
+  const table = tables.get(tableID);
+  if (table?.typingTimers !== undefined) {
+    for (const entry of table.typingTimers.values()) {
+      clearTimeout(entry.timer);
+    }
+    table.typingTimers.clear();
+  }
   tables.delete(tableID);
   for (const [userID, metadata] of spectatingMetadataMap) {
     if (metadata.tableID === tableID) {

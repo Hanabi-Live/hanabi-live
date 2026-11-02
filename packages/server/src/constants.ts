@@ -15,3 +15,13 @@ export const STARTING_GIT_COMMIT_SHA1 = execSync("git rev-parse HEAD", {
   .trim();
 
 export const NUM_CONSECUTIVE_DIACRITICS_ALLOWED = 3;
+
+export const HTTP_TIMEOUTS = {
+  connectionTimeout: 10_000,
+  requestTimeout: 5000,
+  handlerTimeout: 10_000,
+  http: {
+    headersTimeout: 5000,
+    connectionsCheckingInterval: 1000,
+  },
+} as const;

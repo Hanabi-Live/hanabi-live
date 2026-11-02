@@ -7,8 +7,14 @@ import type {
   UserID,
 } from "@hanabi-live/data";
 import { PROJECT_NAME, ServerCommand, Status } from "@hanabi-live/data";
-import { EndCondition, getVariant, numPlayers } from "@hanabi-live/game";
+import {
+  EndCondition,
+  getVariant,
+  isValidPlayerIndex,
+  numPlayers,
+} from "@hanabi-live/game";
 import { assertDefined, escapeHTMLCharacters } from "complete-common";
+import { clearTyping } from "./chatPresence";
 import {
   applyAction,
   createGame,
@@ -38,10 +44,20 @@ import type { GameStore } from "./gameStore";
 import type { Game } from "./interfaces/Game";
 import type { Table } from "./interfaces/Table";
 import { logger } from "./logger";
+import { isMaintenanceMode } from "./maintenanceMode";
+import { models } from "./models";
+import { getPregameStats } from "./pregameStats";
+import type { PreparedReplay } from "./replayImport";
+import { emulateGameActions } from "./replayImport";
+import { createReplayTable } from "./replayTable";
+import { getShuttingDownMetadata } from "./shutdown";
+import { notifyJoined, notifyPregame } from "./tableNotifications";
 import { enqueueTableOperation } from "./tableQueue";
 import {
+  allocateTableID,
   getTable,
   getTableIDsUserAttending,
+  getTableIDsUserPlayingAt,
   publishTable,
   rememberSpectating,
   removeTable,
@@ -67,6 +83,10 @@ interface RuntimeDependencies {
 interface TableTimer {
   version: number;
   timer: ReturnType<typeof setTimeout>;
+}
+interface PreparedRestart {
+  databaseID: GameID;
+  seed: string;
 }
 
 let runtime: GameRuntime | undefined;
@@ -263,12 +283,14 @@ export class GameRuntime {
         table.game.clockAnchor = this.now();
         this.arm(table);
         const messages = new GameMessages();
-        appendClock(
-          messages,
-          table,
-          table.game,
-          attendeeUsers(table, this.attendance(table)),
-        );
+        if (!table.replay) {
+          appendClock(
+            messages,
+            table,
+            table.game,
+            attendeeUsers(table, this.attendance(table)),
+          );
+        }
         messages.publish();
       }
     }
@@ -378,7 +400,8 @@ export class GameRuntime {
       clockAnchor: this.now(),
     };
     if (
-      previous.state.startedTimer
+      !table.replay
+      && previous.state.startedTimer
       && !previous.state.paused
       && previous.state.endCondition === EndCondition.InProgress
     ) {
@@ -451,6 +474,7 @@ export class GameRuntime {
     candidate: Table,
     messages: GameMessages,
     afterCommit?: () => void,
+    initialAttendees?: ReadonlyMap<UserID, WSUser>,
   ) {
     const game = requireGame(candidate);
     const terminal = game.state.endCondition !== EndCondition.InProgress;
@@ -460,7 +484,7 @@ export class GameRuntime {
     const checkpoint = serializeGameCheckpoint(candidate, game);
     const completion = terminal ? completionRecord(candidate, game) : undefined;
     const replay = terminal
-      ? this.prepareReplay(candidate, messages)
+      ? this.prepareReplay(candidate, messages, initialAttendees)
       : undefined;
     this.tables.add(table.id);
     this.cancel(table.id);
@@ -490,6 +514,7 @@ export class GameRuntime {
     if (table.replay && table.spectators.length === 0) {
       removeTable(table.id);
       this.tables.delete(table.id);
+      this.attendees.delete(table.id);
     } else {
       this.arm(table);
     }
@@ -546,19 +571,29 @@ export class GameRuntime {
     this.notifications.add(pending);
   }
 
-  private prepareReplay(candidate: Table, messages: GameMessages) {
+  private prepareReplay(
+    candidate: Table,
+    messages: GameMessages,
+    initialAttendees?: ReadonlyMap<UserID, WSUser>,
+  ) {
     const game = requireGame(candidate);
-    const attendance = this.attendance(candidate);
+    const attendance = initialAttendees ?? this.attendance(candidate);
     const viewers =
       game.state.endCondition === EndCondition.IdleTimeout
         ? []
         : attendeeUsers(candidate, attendance);
     const spectators = viewers.map((user) => ({
+      ...candidate.spectators.find(
+        (spectator) => spectator.userID === user.userID,
+      ),
       userID: user.userID,
       name: user.username,
       typing: false,
       lastTyped: new Date(0),
-      notes: [],
+      notes:
+        candidate.spectators.find(
+          (spectator) => spectator.userID === user.userID,
+        )?.notes ?? [],
     }));
     const owner =
       viewers.find((user) => user.userID === candidate.ownerID) ?? viewers[0];
@@ -576,14 +611,18 @@ export class GameRuntime {
       progress: 100,
     };
     game.replaySegment = Math.max(0, game.state.turn - 1);
-    appendReplayDetails(messages, replay, game, viewers);
-    appendConnected(messages, replay, viewers);
+    if (initialAttendees === undefined) {
+      appendReplayDetails(messages, replay, game, viewers);
+      appendConnected(messages, replay, viewers);
+    }
     for (const user of viewers) {
-      messages.add(user, ServerCommand.finishOngoingGame, {
-        tableID: replay.id,
-        databaseID: game.databaseID,
-        sharedReplayLeader: owner?.username ?? "",
-      });
+      if (initialAttendees === undefined) {
+        messages.add(user, ServerCommand.finishOngoingGame, {
+          tableID: replay.id,
+          databaseID: game.databaseID,
+          sharedReplayLeader: owner?.username ?? "",
+        });
+      }
       messages.status(user, Status.SharedReplay, replay.id);
       messages.add(user, ServerCommand.spectators, {
         tableID: replay.id,
@@ -602,6 +641,7 @@ export class GameRuntime {
   async start(
     user: WSUser,
     data: ClientCommandData["tableStart"],
+    prepared?: PreparedRestart,
   ): Promise<void> {
     await this.run(user, data.tableID, async (table) => {
       if (this.duplicate(table, user, data.requestID)) {
@@ -623,6 +663,15 @@ export class GameRuntime {
         );
       }
       if (
+        table.extraOptions.customNumPlayers !== undefined
+        && (table.players.length !== table.extraOptions.customNumPlayers
+          || table.players.some((player) => !player.present))
+      ) {
+        throw new ActionRejected(
+          `This custom game requires exactly ${table.extraOptions.customNumPlayers} present players.`,
+        );
+      }
+      if (
         (data.intendedVariant !== undefined
           && data.intendedVariant !== ""
           && data.intendedVariant !== table.options.variantName)
@@ -634,11 +683,15 @@ export class GameRuntime {
       ) {
         return;
       }
-      const databaseID = await this.store.reserveID();
+      const databaseID = prepared?.databaseID ?? (await this.store.reserveID());
       const variant = getVariant(table.options.variantName);
       const prefix = `p${table.players.length}v${variant.id}s`;
       let suffix = table.extraOptions.setSeedSuffix;
-      if (suffix === "") {
+      if (
+        suffix === ""
+        && prepared === undefined
+        && table.extraOptions.customSeed === undefined
+      ) {
         const blocked = await this.dependencies.getBlockedSeeds(
           table.players.map((player) => player.userID),
         );
@@ -651,18 +704,41 @@ export class GameRuntime {
       if (!isCurrent(user) || this.quiescing || this.closed) {
         return;
       }
-      const seed = prefix + suffix;
-      const deck = createShuffledDeck(variant, seed);
+      const seed =
+        prepared?.seed ?? table.extraOptions.customSeed ?? prefix + suffix;
+      const deck = [
+        ...((table.extraOptions.customSeed === undefined
+          || table.extraOptions.customDeckIsShuffled === true)
+        && table.extraOptions.customDeck !== undefined
+          ? table.extraOptions.customDeck
+          : createShuffledDeck(variant, seed)),
+      ];
       const rng = new GoRandom(seedToInt64(seed));
       for (let index = 0; index < deck.length; index++) {
-        rng.intn(index + 1);
+        const other = rng.intn(index + 1);
+        if (
+          table.extraOptions.customSeed === undefined
+          && table.extraOptions.customDeck !== undefined
+          && table.extraOptions.customDeckIsShuffled !== true
+        ) {
+          const first = deck[index];
+          const second = deck[other];
+          assertDefined(first, "Missing custom shuffle card.");
+          assertDefined(second, "Missing custom shuffle card.");
+          deck[index] = second;
+          deck[other] = first;
+        }
       }
       const players = table.players.map((player) => ({
         ...player,
         present: false,
         typing: false,
       }));
-      for (let index = 0; index < players.length; index++) {
+      for (
+        let index = 0;
+        table.extraOptions.customSeed === undefined && index < players.length;
+        index++
+      ) {
         const other = rng.intn(index + 1);
         const first = players[index];
         const second = players[other];
@@ -680,16 +756,33 @@ export class GameRuntime {
         seed,
         deck,
         playerNames: players.map((player) => player.name),
+        characters: table.extraOptions.customCharacterAssignments,
       });
+      const clocks = players.map(() =>
+        options.timed ? options.timeBase * 1000 : 0,
+      );
+      const customActions = table.extraOptions.customActions ?? [];
+      const emulated = emulateGameActions(
+        transition.state,
+        table.extraOptions.setReplay
+          ? customActions.slice(0, table.extraOptions.setReplayTurn)
+          : customActions,
+        { playerTimes: clocks, duration: 0 },
+      );
+      const terminal = emulated.state.endCondition !== EndCondition.InProgress;
+      if (terminal) {
+        for (const player of players) {
+          const connected = wsUsers.get(player.userID);
+          player.present = connected !== undefined && isCurrent(connected);
+        }
+      }
       const game: Game = {
         databaseID,
         revision: 0,
-        state: transition.state,
+        state: emulated.state,
         datetimeStarted: new Date(),
         datetimeFinished: undefined,
-        clocks: players.map(() =>
-          options.timed ? options.timeBase * 1000 : 0,
-        ),
+        clocks,
         duration: 0,
         turnElapsed: 0,
         idleRemaining: IDLE_TIMEOUT,
@@ -704,31 +797,74 @@ export class GameRuntime {
         replaySegment: 0,
       };
       GameRuntime.remember(game, user, data.requestID);
+      const spectators = table.spectators.map((spectator) => {
+        const previousIndex = spectator.shadowingPlayerIndex;
+        const shadowID =
+          previousIndex === undefined || previousIndex === -1
+            ? undefined
+            : table.players[previousIndex]?.userID;
+        const index = players.findIndex((player) => player.userID === shadowID);
+        return {
+          ...spectator,
+          shadowingPlayerIndex: isValidPlayerIndex(index) ? index : undefined,
+          shadowingPlayerUsername: isValidPlayerIndex(index)
+            ? players[index]?.name
+            : undefined,
+        };
+      });
       const candidate: Table = {
         ...table,
         game,
         players,
+        spectators,
         options,
         running: true,
+        visible: table.extraOptions.restarted || table.visible,
         datetimeLastAction: game.datetimeStarted,
       };
       const messages = new GameMessages();
       const attendees = new Map<UserID, WSUser>();
+      for (const warning of emulated.warnings) {
+        messages.add(user, ServerCommand.warning, { warning });
+      }
       for (const player of players) {
         const connected = wsUsers.get(player.userID);
         if (connected !== undefined) {
           attendees.set(player.userID, connected);
           messages.add(connected, ServerCommand.tableStart, {
             tableID: table.id,
-            replay: false,
+            replay: terminal,
           });
-          messages.status(connected, Status.Playing, table.id);
+          if (!terminal) {
+            messages.status(connected, Status.Playing, table.id);
+          }
         }
       }
-      messages.lobby(candidate);
-      await this.commit(table, candidate, messages, () => {
-        this.attendees.set(table.id, attendees);
-      });
+      for (const spectator of candidate.spectators) {
+        const connected = this.attendance(table).get(spectator.userID);
+        if (connected !== undefined && isCurrent(connected)) {
+          attendees.set(spectator.userID, connected);
+          messages.add(connected, ServerCommand.tableStart, {
+            tableID: table.id,
+            replay: terminal,
+          });
+          if (!terminal) {
+            messages.status(connected, Status.Spectating, table.id);
+          }
+        }
+      }
+      if (!terminal) {
+        messages.lobby(candidate);
+      }
+      await this.commit(
+        table,
+        candidate,
+        messages,
+        () => {
+          this.attendees.set(table.id, attendees);
+        },
+        attendees,
+      );
     });
   }
 
@@ -853,6 +989,52 @@ export class GameRuntime {
     return messages;
   }
 
+  async vote(user: WSUser, id: TableID, requestID?: string): Promise<void> {
+    await this.run(user, id, async (table) => {
+      this.activeUser(table, user);
+      if (this.duplicate(table, user, requestID)) {
+        return;
+      }
+      liveGame(table);
+      const index = playerIndex(table, user);
+      const { candidate, game } = this.copy(table);
+      const player = candidate.players[index];
+      assertDefined(player, "Missing termination voter.");
+      player.voteToKill = !player.voteToKill;
+      GameRuntime.remember(game, user, requestID);
+      const messages = new GameMessages();
+      messages.add(user, ServerCommand.voteChange, { vote: player.voteToKill });
+      const votes = candidate.players.flatMap((entry, seat) =>
+        entry.voteToKill ? [seat] : [],
+      );
+      const quorum =
+        candidate.players.length === 2
+          ? votes.length === 2
+          : votes.length * 2 >= candidate.players.length;
+      if (quorum) {
+        const result = terminateGame(
+          game.state,
+          {
+            actorIndex: index,
+            condition: EndCondition.TerminatedByVote,
+            playerIndex: -1,
+            votes,
+          },
+          { playerTimes: game.clocks, duration: game.duration },
+        );
+        game.state = result.state;
+        appendGameEvents(
+          messages,
+          candidate,
+          game,
+          this.attendance(table),
+          result.events,
+        );
+      }
+      await this.commit(table, candidate, messages);
+    });
+  }
+
   async terminate(
     user: WSUser,
     id: TableID,
@@ -958,7 +1140,9 @@ export class GameRuntime {
       if (this.duplicate(table, user, data.requestID)) {
         return;
       }
-      const index = playerIndex(table, user);
+      const index = table.players.findIndex(
+        (player) => player.userID === user.userID,
+      );
       const text = trimUnicodeWhitespace(
         truncateToMaxBytes(data.note, 300).replaceAll(
           /[^\p{L}\p{M}\p{N}\p{P}\p{S} ]/gu,
@@ -971,7 +1155,33 @@ export class GameRuntime {
         );
       }
       const { candidate, game } = this.copy(table);
-      const notes = game.notes[index];
+      let notes = game.notes[index];
+      if (index === -1) {
+        const spectator = candidate.spectators.find(
+          (entry) => entry.userID === user.userID,
+        );
+        if (spectator === undefined) {
+          throw new ActionRejected("You are not at this table.");
+        }
+        notes = [
+          ...(game.spectatorNotes?.find((entry) => entry.userID === user.userID)
+            ?.notes
+            ?? Array.from(
+              {
+                length:
+                  game.state.deck.length
+                  + getVariant(table.options.variantName).suits.length,
+              },
+              () => "",
+            )),
+        ];
+        game.spectatorNotes = [
+          ...(game.spectatorNotes ?? []).filter(
+            (entry) => entry.userID !== user.userID,
+          ),
+          { userID: user.userID, name: user.username, notes },
+        ];
+      }
       if (notes === undefined || data.order < 0 || data.order >= notes.length) {
         throw new ActionRejected(
           "That is an invalid card order to write a note on.",
@@ -984,35 +1194,113 @@ export class GameRuntime {
         (recipient) =>
           table.spectators.some((entry) => entry.userID === recipient.userID),
       );
-      appendObserverNotes(messages, candidate, game, observers);
+      appendObserverNotes(messages, candidate, game, observers, data.order);
       await this.commit(table, candidate, messages);
     });
   }
 
-  async tag(user: WSUser, data: ClientCommandData["tag"]): Promise<void> {
+  async tag(
+    user: WSUser,
+    data: ClientCommandData["tag"],
+    operation: "add" | "delete" | "deleteAll" = "add",
+  ): Promise<void> {
     await this.run(user, data.tableID, async (table) => {
       this.activeUser(table, user);
-      liveGame(table);
+      requireGame(table);
       if (this.duplicate(table, user, data.requestID)) {
         return;
       }
-      const sanitized = sanitizeTag(data.msg);
+      const sanitized =
+        operation === "deleteAll"
+          ? { tag: "", error: undefined }
+          : sanitizeTag(data.msg);
       if (sanitized.error !== undefined) {
         throw new ActionRejected(sanitized.error);
       }
       const { candidate, game } = this.copy(table);
-      game.tags = game.tags.filter((entry) => entry.tag !== sanitized.tag);
-      game.tags.push({ userID: user.userID, tag: sanitized.tag });
-      GameRuntime.remember(game, user, data.requestID);
+      const escaped = escapeHTMLCharacters(sanitized.tag);
+      if (table.replay) {
+        if (game.databaseID <= 0) {
+          throw new ActionRejected(
+            "JSON replays do not have a database game to tag.",
+          );
+        }
+        const result = await models.gameTags.edit(
+          game.databaseID,
+          user.userID,
+          operation === "deleteAll"
+            ? { type: operation }
+            : { type: operation, tag: sanitized.tag },
+        );
+        if (result === "missing-game") {
+          throw new ActionRejected(
+            "That game no longer exists in the database.",
+          );
+        }
+        if (result === "duplicate") {
+          throw new ActionRejected(
+            `You have already tagged this game with "${escaped}".`,
+          );
+        }
+        if (result === "missing-tag") {
+          throw new ActionRejected(
+            `The tag of "${escaped}" does not exist on this game yet.`,
+          );
+        }
+      } else {
+        liveGame(table);
+        if (
+          operation === "delete"
+          && game.tags.every(
+            (entry) =>
+              entry.tag !== sanitized.tag || entry.userID !== user.userID,
+          )
+        ) {
+          throw new ActionRejected(
+            `The tag of "${escaped}" does not exist on this game yet.`,
+          );
+        }
+        game.tags = game.tags.filter((entry) =>
+          operation === "deleteAll"
+            ? entry.userID !== user.userID
+            : entry.tag !== sanitized.tag,
+        );
+        if (operation === "add") {
+          game.tags.push({ userID: user.userID, tag: sanitized.tag });
+        }
+      }
       const messages = new GameMessages();
-      messages.add(user, ServerCommand.chat, {
-        msg: `Successfully added a tag of "${escapeHTMLCharacters(sanitized.tag)}".`,
+      const verb = operation === "add" ? "added" : "deleted";
+      const privateText =
+        operation === "deleteAll"
+          ? "Successfully deleted all your tags for this game."
+          : `Successfully ${verb} ${operation === "add" ? "a" : "the"} tag of "${escaped}".`;
+      const sharedText =
+        operation === "deleteAll"
+          ? `${escapeHTMLCharacters(user.username)} has deleted all their tags for this game.`
+          : `${escapeHTMLCharacters(user.username)} has ${verb} a game tag of "${escaped}".`;
+      const message = {
+        msg: table.replay ? sharedText : privateText,
         who: PROJECT_NAME,
-        source: "server",
+        source: "server" as const,
         datetime: new Date().toISOString(),
-        room: data.room,
-        recipient: user.username,
-      });
+        room: table.replay ? `table${table.id}` : data.room,
+        ...(!table.replay && { recipient: user.username }),
+      };
+      if (table.replay) {
+        candidate.chat.push({ userID: 0, message });
+        for (const recipient of attendeeUsers(table, this.attendance(table))) {
+          messages.add(recipient, ServerCommand.chat, message);
+        }
+      } else {
+        messages.add(user, ServerCommand.chat, message);
+      }
+      GameRuntime.remember(game, user, data.requestID);
+      if (table.replay) {
+        Object.assign(table, candidate);
+        messages.publish();
+        return;
+      }
       await this.commit(table, candidate, messages);
     });
   }
@@ -1049,11 +1337,16 @@ export class GameRuntime {
         messages.add(recipient, ServerCommand.chat, message);
       }
       if (table.replay) {
+        game.idleRemaining = IDLE_TIMEOUT;
         Object.assign(table, candidate);
+        clearTyping(table, user.userID);
         messages.publish();
+        this.arm(table);
         return;
       }
-      await this.commit(table, candidate, messages);
+      await this.commit(table, candidate, messages, () => {
+        clearTyping(table, user.userID);
+      });
     });
   }
 
@@ -1082,7 +1375,11 @@ export class GameRuntime {
     data: ClientCommandData["tableSpectate"],
   ): Promise<void> {
     await this.run(user, data.tableID, (table) => {
-      const game = requireGame(table);
+      if (table.replay && !table.visible && table.ownerID !== user.userID) {
+        throw new ActionRejected(
+          "You cannot spectate another player's solo replay.",
+        );
+      }
       if (
         getTableIDsUserAttending(user.userID).some(
           (id) =>
@@ -1119,10 +1416,12 @@ export class GameRuntime {
         name: user.username,
         typing: false,
         lastTyped: new Date(0),
-        notes: [],
+        notes:
+          table.spectators.find((entry) => entry.userID === user.userID)?.notes
+          ?? [],
         shadowingPlayerIndex: shadow as 0 | 1 | 2 | 3 | 4 | 5 | undefined,
         shadowingPlayerUsername:
-          shadow === undefined ? undefined : game.state.players[shadow]?.name,
+          shadow === undefined ? undefined : table.players[shadow]?.name,
       };
       const currentTable = table;
       currentTable.spectators = table.spectators.filter(
@@ -1131,14 +1430,23 @@ export class GameRuntime {
       currentTable.spectators.push(spectator);
       rememberSpectating(user.userID, undefined);
       this.attendance(table).set(user.userID, user);
+      if (!table.running) {
+        notifyJoined(table, user, true);
+        notifyPregame(table);
+        const messages = new GameMessages();
+        messages.lobby(table);
+        messages.publish();
+        return;
+      }
       const messages = new GameMessages();
       messages.add(user, ServerCommand.tableStart, {
         tableID: table.id,
         replay: table.replay,
       });
+      const replayStatus = table.visible ? Status.SharedReplay : Status.Replay;
       messages.status(
         user,
-        table.replay ? Status.SharedReplay : Status.Spectating,
+        table.replay ? replayStatus : Status.Spectating,
         table.id,
       );
       messages.lobby(table);
@@ -1156,6 +1464,268 @@ export class GameRuntime {
     });
   }
 
+  async createReplay(
+    user: WSUser,
+    replay: PreparedReplay,
+    shared: boolean,
+  ): Promise<void> {
+    const id = allocateTableID();
+    const admitted = await enqueueTableOperation(id, () => {
+      if (!isCurrent(user) || this.closed || this.quiescing) {
+        return;
+      }
+      if (
+        getTableIDsUserAttending(user.userID).some(
+          (tableID) =>
+            getTable(tableID)?.spectators.some(
+              (spectator) => spectator.userID === user.userID,
+            ) === true,
+        )
+      ) {
+        wsWarning(
+          user.connection,
+          "Leave your other spectated table before creating a replay.",
+        );
+        return;
+      }
+      const table = createReplayTable(id, user, replay, shared, this.now());
+      const messages = new GameMessages();
+      messages.add(user, ServerCommand.tableStart, {
+        tableID: id,
+        replay: true,
+      });
+      messages.status(user, shared ? Status.SharedReplay : Status.Replay, id);
+      messages.lobby(table);
+      for (const warning of replay.warnings) {
+        messages.add(user, ServerCommand.warning, { warning });
+      }
+      publishTable(table);
+      this.tables.add(id);
+      this.attendees.set(id, new Map([[user.userID, user]]));
+      rememberSpectating(user.userID, undefined);
+      messages.publish();
+      this.arm(table);
+    });
+    if (!admitted && isCurrent(user)) {
+      wsWarning(
+        user.connection,
+        "Too many pending table commands. Please try again.",
+      );
+    }
+  }
+
+  async restart(
+    user: WSUser,
+    data: ClientCommandData["tableRestart"],
+  ): Promise<void> {
+    let nextID: TableID | undefined;
+    let prepared: PreparedRestart | undefined;
+    let intendedPlayers: string[] | undefined;
+    let intendedVariant: string | undefined;
+    await this.run(user, data.tableID, async (table) => {
+      this.activeUser(table, user);
+      if (!table.replay || !table.visible || table.ownerID !== user.userID) {
+        throw new ActionRejected(
+          "Only the leader of a shared replay can restart it.",
+        );
+      }
+      playerIndex(table, user);
+      if (table.initialName.startsWith("!replay")) {
+        throw new ActionRejected(
+          'You are not allowed to restart "!replay" games.',
+        );
+      }
+      const { shuttingDown, datetimeShutdownInit } = getShuttingDownMetadata();
+      if (
+        isMaintenanceMode()
+        || (shuttingDown
+          && datetimeShutdownInit !== undefined
+          && Date.now() - Date.parse(datetimeShutdownInit) >= 25 * 60 * 1000)
+      ) {
+        throw new ActionRejected(
+          "The server is undergoing maintenance or shutting down.",
+        );
+      }
+      const viewers = attendeeUsers(table, this.attendance(table));
+      const players = table.players.filter((player) =>
+        viewers.some((viewer) => viewer.userID === player.userID),
+      );
+      if (
+        viewers.length < 2
+        || (data.hidePregame && players.length !== table.players.length)
+      ) {
+        throw new ActionRejected(
+          "All original players must be in the replay to restart without a pregame.",
+        );
+      }
+      if (
+        players.some(
+          (player) => getTableIDsUserPlayingAt(player.userID).length > 0,
+        )
+      ) {
+        throw new ActionRejected(
+          "An original player is already playing at another table.",
+        );
+      }
+      const id = allocateTableID();
+      const refreshedPlayers: Table["players"] = [];
+      for (const player of players) {
+        // eslint-disable-next-line no-await-in-loop -- Keep each table's database fan-out bounded.
+        const stats = await getPregameStats(
+          player.userID,
+          table.options.variantName,
+        );
+        refreshedPlayers.push({
+          ...player,
+          stats,
+          present: true,
+          voteToKill: false,
+        });
+      }
+      let name: string;
+      if (table.initialName.startsWith("!seed")) {
+        const match = /^(.*\D)(\d+)$/u.exec(table.initialName);
+        name =
+          match === null
+            ? `${table.initialName}1`
+            : `${match[1]}${String(BigInt(match[2] ?? "0") + 1n).padStart(match[2]?.length ?? 0, "0")}`;
+      } else {
+        const match = /^(.*) \(#(\d+)\)$/u.exec(table.initialName);
+        const suffix = ` (#${match === null ? 2 : Number(match[2]) + 1})`;
+        name = `${truncateToMaxBytes(match?.[1] ?? table.initialName, 45 - suffix.length)}${suffix}`;
+      }
+      if (data.hidePregame) {
+        const databaseID = await this.store.reserveID();
+        const prefix = `p${players.length}v${getVariant(table.options.variantName).id}s`;
+        let suffix = name.startsWith("!seed ") ? name.slice(6) : "";
+        if (suffix === "") {
+          const blocked = await this.dependencies.getBlockedSeeds(
+            players.map((player) => player.userID),
+          );
+          let next = 1;
+          while (blocked.has(`${prefix}${next}`)) {
+            next++;
+          }
+          suffix = String(next);
+        }
+        prepared = { databaseID, seed: prefix + suffix };
+      }
+      if (!isCurrent(user) || this.closed || this.quiescing) {
+        return;
+      }
+      if (isMaintenanceMode()) {
+        throw new ActionRejected("The server is undergoing maintenance.");
+      }
+      if (
+        viewers.some((viewer) => !isCurrent(viewer))
+        || players.some(
+          (player) => getTableIDsUserPlayingAt(player.userID).length > 0,
+        )
+      ) {
+        throw new ActionRejected(
+          "The original players changed tables or reconnected. Please retry the restart.",
+        );
+      }
+      const candidate: Table = {
+        ...table,
+        id,
+        name,
+        initialName: name,
+        game: undefined,
+        running: false,
+        replay: false,
+        visible: !data.hidePregame,
+        progress: 0,
+        datetimeCreated: new Date(),
+        datetimeLastAction: new Date(),
+        datetimeLastJoined: new Date(),
+        datetimePlannedStart: undefined,
+        players: refreshedPlayers,
+        spectators: table.spectators
+          .filter((spectator) =>
+            players.every((player) => player.userID !== spectator.userID),
+          )
+          .map((spectator) => {
+            const previousIndex = spectator.shadowingPlayerIndex;
+            const shadowID =
+              previousIndex === undefined || previousIndex === -1
+                ? undefined
+                : table.players[previousIndex]?.userID;
+            const index = players.findIndex(
+              (player) => player.userID === shadowID,
+            );
+            return {
+              ...spectator,
+              notes: [],
+              shadowingPlayerIndex: isValidPlayerIndex(index)
+                ? index
+                : undefined,
+              shadowingPlayerUsername: isValidPlayerIndex(index)
+                ? players[index]?.name
+                : undefined,
+            };
+          }),
+        extraOptions: {
+          databaseID: -1 as GameID,
+          noWriteToDatabase: false,
+          jsonReplay: false,
+          restarted: true,
+          setSeedSuffix: name.startsWith("!seed ") ? name.slice(6) : "",
+          setReplay: false,
+          setReplayTurn: 0,
+        },
+        chat: [...table.chat],
+        chatRead: new Map(table.chatRead),
+      };
+      const messages = new GameMessages();
+      for (const viewer of viewers) {
+        messages.add(viewer, ServerCommand.boot, { TableID: table.id });
+      }
+      for (const recipient of wsUsers.values()) {
+        messages.add(recipient, ServerCommand.tableGone, { tableID: table.id });
+      }
+      messages.lobby(candidate);
+      publishTable(candidate);
+      this.tables.add(id);
+      this.cancel(table.id);
+      removeTable(table.id);
+      this.tables.delete(table.id);
+      this.attendees.delete(table.id);
+      this.attendees.set(
+        id,
+        new Map(viewers.map((viewer) => [viewer.userID, viewer])),
+      );
+      messages.publish();
+      for (const viewer of viewers) {
+        notifyJoined(
+          candidate,
+          viewer,
+          players.every((player) => player.userID !== viewer.userID),
+        );
+      }
+      notifyPregame(candidate);
+      nextID = id;
+      intendedPlayers = players.map((player) => player.name);
+      intendedVariant = table.options.variantName;
+    });
+    if (nextID !== undefined && data.hidePregame) {
+      await this.start(
+        user,
+        { tableID: nextID, intendedPlayers, intendedVariant },
+        prepared,
+      );
+      await this.run(user, nextID, (table) => {
+        if (!table.visible) {
+          const currentTable = table;
+          currentTable.visible = true;
+          const messages = new GameMessages();
+          messages.lobby(table);
+          messages.publish();
+        }
+      });
+    }
+  }
+
   cleanupDisconnected(table: Table): void {
     for (const [id, user] of this.attendance(table)) {
       if (!isCurrent(user)) {
@@ -1165,6 +1735,7 @@ export class GameRuntime {
   }
 
   private detach(table: Table, id: UserID, disconnected = false) {
+    clearTyping(table, id);
     const spectator = table.spectators.find((entry) => entry.userID === id);
     rememberSpectating(
       id,
@@ -1188,6 +1759,16 @@ export class GameRuntime {
       (entry) => entry.userID !== id,
     );
     const messages = new GameMessages();
+    const successor = attendeeUsers(table, this.attendance(table))[0];
+    if (table.replay && table.ownerID === id && successor !== undefined) {
+      currentTable.ownerID = successor.userID;
+      for (const user of attendeeUsers(table, this.attendance(table))) {
+        messages.add(user, ServerCommand.replayLeader, {
+          tableID: table.id,
+          name: successor.username,
+        });
+      }
+    }
     appendConnected(
       messages,
       table,
@@ -1195,13 +1776,57 @@ export class GameRuntime {
     );
     messages.lobby(table);
     if (table.replay && table.spectators.length === 0) {
+      this.cancel(table.id);
       removeTable(table.id);
       this.tables.delete(table.id);
-      for (const user of wsUsers.values()) {
-        messages.add(user, ServerCommand.tableGone, { tableID: table.id });
+      this.attendees.delete(table.id);
+      if (table.visible) {
+        for (const user of wsUsers.values()) {
+          messages.add(user, ServerCommand.tableGone, { tableID: table.id });
+        }
       }
     }
     messages.publish();
+  }
+
+  async suggest(
+    user: WSUser,
+    data: ClientCommandData["tableSuggest"],
+  ): Promise<void> {
+    await this.run(user, data.tableID, (table) => {
+      this.activeUser(table, user);
+      if (!table.replay || !table.visible) {
+        throw new ActionRejected(
+          "You can only make suggestions in a shared replay.",
+        );
+      }
+      const spectator = table.spectators.find(
+        (entry) => entry.userID === user.userID,
+      );
+      if (spectator === undefined) {
+        throw new ActionRejected("You are not spectating the shared replay.");
+      }
+      if (table.ownerID === user.userID) {
+        throw new ActionRejected(
+          "You can only make suggestions if you are not the leader.",
+        );
+      }
+      const leader = attendeeUsers(table, this.attendance(table)).find(
+        (entry) => entry.userID === table.ownerID && isCurrent(entry),
+      );
+      if (leader === undefined) {
+        throw new ActionRejected(
+          "The shared replay leader is not currently attending.",
+        );
+      }
+      const messages = new GameMessages();
+      messages.add(leader, ServerCommand.suggestion, {
+        tableID: table.id,
+        userName: spectator.name,
+        segment: data.segment,
+      });
+      messages.publish();
+    });
   }
 
   async replay(
@@ -1220,6 +1845,90 @@ export class GameRuntime {
       }
 
       const game = requireGame(table);
+      const controls = {
+        hypothetical: game.replayControls?.hypothetical ?? false,
+        actions: [...(game.replayControls?.actions ?? [])],
+        showDrawnCards: game.replayControls?.showDrawnCards ?? false,
+        efficiency: game.replayControls?.efficiency ?? 0,
+      };
+      switch (data.type) {
+        case 3: {
+          if (controls.hypothetical) {
+            throw new ActionRejected("You are already in a hypothetical.");
+          }
+          controls.hypothetical = true;
+          controls.showDrawnCards = false;
+
+          break;
+        }
+
+        case 4: {
+          if (!controls.hypothetical) {
+            throw new ActionRejected("You are not in a hypothetical.");
+          }
+          controls.hypothetical = false;
+          controls.actions = [];
+
+          break;
+        }
+
+        case 5: {
+          try {
+            JSON.parse(data.actionJSON);
+          } catch {
+            throw new ActionRejected("That is not valid action JSON.");
+          }
+          if (
+            controls.actions.length >= 4096
+            || controls.actions.reduce(
+              (size, action) => size + action.length,
+              0,
+            )
+              + data.actionJSON.length
+              > 4_194_304
+          ) {
+            throw new ActionRejected(
+              "This hypothetical contains too many actions.",
+            );
+          }
+          controls.actions.push(data.actionJSON);
+
+          break;
+        }
+
+        case 6: {
+          if (controls.actions.length === 0) {
+            return;
+          }
+          do {
+            controls.actions.pop();
+          } while (
+            controls.actions.length > 0
+            && !/"type":\s*"turn"/u.test(controls.actions.at(-1) ?? "")
+          );
+
+          break;
+        }
+
+        case 7: {
+          controls.showDrawnCards = !controls.showDrawnCards;
+
+          break;
+        }
+
+        case 8: {
+          controls.efficiency = data.value;
+
+          break;
+        }
+
+        default: {
+          if (data.type < 0 || data.type > 8) {
+            throw new ActionRejected("That is not a valid replay action type.");
+          }
+          break;
+        }
+      }
       const messages = new GameMessages();
       for (const recipient of attendeeUsers(table, this.attendance(table))) {
         switch (data.type) {
@@ -1250,22 +1959,79 @@ export class GameRuntime {
             break;
           }
 
+          case 3: {
+            messages.add(recipient, ServerCommand.hypoStart, {
+              TableID: table.id,
+            });
+            break;
+          }
+
+          case 4: {
+            messages.add(recipient, ServerCommand.hypoEnd, {
+              TableID: table.id,
+            });
+            break;
+          }
+
+          case 5: {
+            messages.add(recipient, ServerCommand.hypoAction, data.actionJSON);
+            break;
+          }
+
+          case 6: {
+            messages.add(recipient, ServerCommand.hypoBack, {
+              TableID: table.id,
+            });
+            break;
+          }
+
+          case 7: {
+            messages.add(recipient, ServerCommand.hypoShowDrawnCards, {
+              tableID: table.id,
+              showDrawnCards: controls.showDrawnCards,
+            });
+            break;
+          }
+
+          case 8: {
+            messages.add(recipient, ServerCommand.replayEfficiencyMod, {
+              tableID: table.id,
+              mod: data.value,
+            });
+            break;
+          }
+
           default: {
-            throw new ActionRejected("This replay control is not implemented.");
+            throw new ActionRejected("That is not a valid replay action type.");
           }
         }
       }
       GameRuntime.remember(game, user, data.requestID);
+      game.replayControls = controls;
+      game.idleRemaining = IDLE_TIMEOUT;
+      game.clockAnchor = this.now();
       if (data.type === 0) {
         game.replaySegment = data.segment;
+        const progress = Math.round(
+          (data.segment / Math.max(1, game.state.turn)) * 100,
+        );
+        const currentTable = table;
+        currentTable.progress = Math.max(0, Math.min(100, progress));
+        messages.lobby(table);
       }
       messages.publish();
+      this.arm(table);
     });
   }
 
   async setLeader(user: WSUser, id: TableID, name: string): Promise<void> {
     await this.run(user, id, async (table) => {
       this.activeUser(table, user);
+      if (table.replay && !table.visible) {
+        throw new ActionRejected(
+          "You cannot set a new leader in a solo replay.",
+        );
+      }
       const target = table.replay ? table.spectators : table.players;
       const leader = target.find(
         (entry) => normalizeString(entry.name) === normalizeString(name),
@@ -1298,6 +2064,147 @@ export class GameRuntime {
     });
   }
 
+  async terminateByServer(id: TableID): Promise<boolean> {
+    let terminated = false;
+    const admitted = await enqueueTableOperation(id, async () => {
+      if (this.closed || this.quiescing) {
+        throw new Error("Game runtime is paused for maintenance.");
+      }
+      const table = getTable(id);
+      if (table === undefined || !table.running || table.replay) {
+        return;
+      }
+      if (table.recoveryBlocked === true) {
+        throw new Error(
+          "Frozen games must recover before administrative termination.",
+        );
+      }
+      const { candidate, game } = this.copy(table);
+      const result = terminateGame(
+        game.state,
+        {
+          actorIndex: game.state.activePlayerIndex,
+          condition: EndCondition.TerminatedByPlayer,
+          playerIndex: -1,
+        },
+        { playerTimes: game.clocks, duration: game.duration },
+      );
+      game.state = result.state;
+      await this.commit(
+        table,
+        candidate,
+        this.transitionMessages(candidate, game, result.events),
+      );
+      if (getTable(id)?.recoveryBlocked === true) {
+        throw new Error(
+          "Administrative termination has an uncertain durable result.",
+        );
+      }
+      terminated = true;
+    });
+    if (!admitted) {
+      throw new Error(
+        "Table queue is full; administrative termination must be retried.",
+      );
+    }
+    return terminated;
+  }
+
+  async sendNotice(id: TableID, text: string): Promise<boolean> {
+    let sent = false;
+    const admitted = await enqueueTableOperation(id, async () => {
+      if (this.closed || this.quiescing) {
+        throw new Error("Game runtime is paused for maintenance.");
+      }
+      const table = getTable(id);
+      if (table === undefined || !table.running) {
+        return;
+      }
+      if (table.recoveryBlocked === true) {
+        throw new Error("Cannot change a frozen game's chat before recovery.");
+      }
+      const { candidate } = this.copy(table);
+      const message = {
+        msg: text,
+        who: PROJECT_NAME,
+        source: "server" as const,
+        datetime: new Date().toISOString(),
+        room: `table${id}`,
+      };
+      candidate.chat.push({ userID: 0, message });
+      const messages = new GameMessages();
+      for (const recipient of attendeeUsers(
+        candidate,
+        this.attendance(table),
+      )) {
+        messages.add(recipient, ServerCommand.chat, message);
+      }
+      if (table.replay) {
+        Object.assign(table, candidate);
+        messages.publish();
+        this.arm(table);
+      } else {
+        await this.commit(table, candidate, messages);
+        if (getTable(id)?.recoveryBlocked === true) {
+          throw new Error("Server notice has an uncertain durable result.");
+        }
+      }
+      sent = true;
+    });
+    if (!admitted) {
+      throw new Error("Table queue is full; server notice must be retried.");
+    }
+    return sent;
+  }
+
+  async clearEmptyTable(id: TableID): Promise<boolean> {
+    let removed = false;
+    const admitted = await enqueueTableOperation(id, () => {
+      if (this.closed || this.quiescing) {
+        throw new Error("Game runtime is paused for maintenance.");
+      }
+      const table = getTable(id);
+      if (table === undefined || table.recoveryBlocked === true) {
+        return;
+      }
+      if (table.replay) {
+        this.cleanupDisconnected(table);
+        if (getTable(id) === undefined) {
+          removed = true;
+          return;
+        }
+      }
+      const empty = table.replay
+        ? table.spectators.length === 0
+        : !table.running && table.players.length === 0;
+      if (!empty) {
+        return;
+      }
+      const messages = new GameMessages();
+      for (const user of wsUsers.values()) {
+        if (user.tableID === id) {
+          messages.status(user, Status.Lobby, 0 as TableID);
+          messages.add(user, ServerCommand.left, { tableID: id });
+        }
+        if (table.visible) {
+          messages.add(user, ServerCommand.tableGone, { tableID: id });
+        }
+      }
+      this.cancel(id);
+      this.tables.delete(id);
+      this.attendees.delete(id);
+      removeTable(id);
+      messages.publish();
+      removed = true;
+    });
+    if (!admitted) {
+      throw new Error(
+        "Table queue is full; empty-table cleanup must be retried.",
+      );
+    }
+    return removed;
+  }
+
   private cancel(id: TableID) {
     const timer = this.timers.get(id);
     if (timer !== undefined) {
@@ -1312,16 +2219,18 @@ export class GameRuntime {
     if (
       this.closed
       || this.quiescing
-      || table.replay
       || table.recoveryBlocked === true
       || game === undefined
-      || game.state.endCondition !== EndCondition.InProgress
+      || (!table.replay && game.state.endCondition !== EndCondition.InProgress)
     ) {
       return;
     }
     const elapsed = Math.max(0, Math.floor(this.now() - game.clockAnchor));
     const turnRemaining =
-      table.options.timed && game.state.startedTimer && !game.state.paused
+      !table.replay
+      && table.options.timed
+      && game.state.startedTimer
+      && !game.state.paused
         ? (game.clocks[game.state.activePlayerIndex] ?? 0) - elapsed
         : Infinity;
     const idleRemaining = this.dependencies.development
@@ -1352,6 +2261,28 @@ export class GameRuntime {
         return;
       }
       const { candidate, game } = this.copy(table);
+      if (table.replay) {
+        if (game.idleRemaining > 0) {
+          this.arm(table);
+          return;
+        }
+        const messages = new GameMessages();
+        for (const user of attendeeUsers(table, this.attendance(table))) {
+          messages.add(user, ServerCommand.boot, { TableID: table.id });
+          messages.status(user, Status.Lobby, 0 as TableID);
+        }
+        if (table.visible) {
+          for (const user of wsUsers.values()) {
+            messages.add(user, ServerCommand.tableGone, { tableID: table.id });
+          }
+        }
+        this.cancel(table.id);
+        this.tables.delete(table.id);
+        this.attendees.delete(table.id);
+        removeTable(table.id);
+        messages.publish();
+        return;
+      }
       const index = game.state.activePlayerIndex;
       const condition =
         !this.dependencies.development && game.idleRemaining <= 0

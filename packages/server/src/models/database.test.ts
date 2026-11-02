@@ -23,6 +23,7 @@ import { chatLog } from "./chatLog";
 import { chatLogPM } from "./chatLogPM";
 import { gameQueries } from "./gameQueries";
 import { games } from "./games";
+import { moderation } from "./moderation";
 import { userFriends } from "./userFriends";
 import { userLinkages } from "./userLinkages";
 import { userSettings } from "./userSettings";
@@ -74,6 +75,44 @@ async function insertGame(id: number, day: number, speedrun = false) {
 databaseDescribe("application history and settings persistence", () => {
   let database: Awaited<ReturnType<typeof evaluationDatabase>>;
   let client: postgres.Sql;
+
+  test.each(["ban", "mute"] as const)(
+    "IP %s uses canonical identity and is atomic under concurrent requests",
+    async (kind) => {
+      const results = await Promise.all([
+        moderation.set(kind, "ALICE"),
+        moderation.set(kind, "Alice"),
+      ]);
+      expect(
+        results.filter((result) => result?.inserted === true),
+      ).toHaveLength(1);
+      expect(results.every((result) => result?.userID === 1)).toBe(true);
+      expect(await moderation.set(kind, "missing")).toBeUndefined();
+      if (kind === "ban") {
+        expect(await bannedIPs.check("127.0.0.1")).toBe(true);
+        expect(await client`SELECT id FROM banned_ips`).toHaveLength(1);
+      } else {
+        const data = await users.getWSData(1, "127.0.0.1");
+        expect(data?.muted).toBe(true);
+        expect(await client`SELECT id FROM muted_ips`).toHaveLength(1);
+      }
+    },
+  );
+
+  test("server lobby notices retain their server author and database-assigned identity", async () => {
+    const inserted = await chatLog.insertServer(
+      "Scheduled maintenance.",
+      "lobby",
+    );
+    const history = await chatLog.get("lobby", 1);
+    expect(history[0]).toMatchObject({
+      chatID: inserted.chatID,
+      datetimeSent: inserted.datetimeSent,
+      source: "server",
+      userID: 0,
+      message: "Scheduled maintenance.",
+    });
+  });
 
   test("pregame stats return Go zero defaults and the requested user's variant only", async () => {
     expect(await userStats.get(1 as UserID, 0)).toEqual({

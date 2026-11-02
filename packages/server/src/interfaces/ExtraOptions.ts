@@ -1,8 +1,10 @@
 import { gameID } from "@hanabi-live/data";
-import { cardIdentity, numPlayers } from "@hanabi-live/game";
+import { numPlayers, rank, suitIndex } from "@hanabi-live/game";
 import { z } from "zod";
 import { characterAssignment } from "./CharacterAssignment";
 import { databaseGameAction } from "./DatabaseGameAction";
+
+const deckCard = z.strictObject({ suitIndex, rank }).readonly();
 
 /** Extra specifications for a table. These are not recorded to the database. */
 export const extraOptions = z
@@ -23,7 +25,8 @@ export const extraOptions = z
       .readonly()
       .optional(),
     customSeed: z.string().min(1).optional(),
-    customDeck: cardIdentity.array().readonly().optional(),
+    customDeck: deckCard.array().readonly().optional(),
+    customDeckIsShuffled: z.boolean().optional(),
     customActions: databaseGameAction.array().readonly().optional(),
 
     /** Whether or not this game was created by clicking "Restart" in a shared replay. */

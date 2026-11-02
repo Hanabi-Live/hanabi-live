@@ -60,7 +60,6 @@ function user(id = 1): WSUser & { close: () => void } {
     normalizedUsername: "alice",
     ip: "127.0.0.1",
     muted: false,
-    fakeUser: false,
     status: Status.Lobby,
     tableID: undefined,
     friends: new Set(),

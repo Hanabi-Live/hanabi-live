@@ -19,8 +19,10 @@ import (
 // Corpus v1 is a Go-authority reference, NOT a TS command-validation oracle.
 // Each file contains portable setup inputs, literal player commands, their expected
 // disposition, authoritative state, and actual recipient WebSocket game messages.
-// Setup uses a seeded full deck; optional swaps move existing cards, never invent
-// copies. Orders are assigned AFTER swaps. This permits small, purposeful traces.
+// Most setup uses a seeded full deck; optional swaps move existing cards, never
+// invent copies. Explicit short decks are trusted engine setups, not JSON imports;
+// their complete identities must still survive terminal persistence.
+// Orders are assigned AFTER swaps. This permits small, purposeful traces.
 //
 // Regenerate explicitly from server/src:
 //
@@ -550,6 +552,12 @@ func TestCompatibilityCorpus(t *testing.T) {
 				}
 				if completed != 1 || active != 0 || !table.Replay {
 					t.Fatalf("terminal transition did not commit exactly once and retire live state: %d, %d", completed, active)
+				}
+				if input.Deck != nil {
+					stored, err := models.GameCustomDecks.Get(databaseID, table.Game.Variant)
+					if err != nil || !reflect.DeepEqual(stored, fixture.Deck) {
+						t.Fatalf("terminal custom deck identities changed during persistence: %v", err)
+					}
 				}
 			}
 			checkCompatibilityFixture(t, fixture)

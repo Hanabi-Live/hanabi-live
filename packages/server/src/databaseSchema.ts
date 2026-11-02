@@ -1,10 +1,12 @@
 // The schema in this file corresponds to "database_schema.sql".
+// cspell:words bytea
 
 import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
   check,
+  customType,
   doublePrecision,
   index,
   integer,
@@ -214,6 +216,28 @@ export const gamesTable = pgTable("games", {
     withTimezone: true,
   }).notNull(),
 });
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => "bytea",
+});
+export const gameCustomDecksTable = pgTable(
+  "game_custom_decks",
+  {
+    gameID: integer("game_id")
+      .primaryKey()
+      .references(() => gamesTable.id, { onDelete: "cascade" }),
+    deck: bytea("deck").notNull(),
+  },
+  (table) => [
+    check(
+      "game_custom_decks_deck_check",
+      sql`
+        octet_length(${table.deck}) BETWEEN 2 AND 61
+                AND get_byte(${table.deck}, 0) = 128 + octet_length(${table.deck}) - 1
+      `,
+    ),
+  ],
+);
 
 export const gameParticipantsTable = pgTable("game_participants", {
   id: serial("id").primaryKey(),

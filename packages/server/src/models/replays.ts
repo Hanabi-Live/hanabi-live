@@ -1,6 +1,9 @@
+import { getVariantByID } from "@hanabi-live/game";
 import { asc, eq } from "drizzle-orm";
+import { decodeCustomDeck } from "../customDeck";
 import {
   gameActionsTable,
+  gameCustomDecksTable,
   gameParticipantNotesTable,
   gameParticipantsTable,
   gamesTable,
@@ -22,6 +25,16 @@ export const replays = {
         if (game === undefined) {
           return undefined;
         }
+        const decks = await tx
+          .select({ deck: gameCustomDecksTable.deck })
+          .from(gameCustomDecksTable)
+          .where(eq(gameCustomDecksTable.gameID, id))
+          .limit(1);
+        const storedDeck = decks[0];
+        const customDeck =
+          storedDeck === undefined
+            ? undefined
+            : decodeCustomDeck(storedDeck.deck, getVariantByID(game.variantID));
         const players = await tx
           .select({
             userID: usersTable.id,
@@ -65,7 +78,13 @@ export const replays = {
             asc(gameParticipantsTable.seat),
             asc(gameParticipantNotesTable.cardOrder),
           );
-        return { game, players, actions, notes };
+        return {
+          game,
+          players,
+          actions,
+          notes,
+          ...(customDeck !== undefined && { customDeck }),
+        };
       },
       { isolationLevel: "repeatable read", accessMode: "read only" },
     ),

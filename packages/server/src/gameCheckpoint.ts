@@ -12,6 +12,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import { z } from "zod";
+import { customDeckBytes } from "./customDeck";
 import { parseEngineState } from "./engine/types";
 import type { ActiveCheckpoint, CompletedGame } from "./gameStore";
 import { extraOptions } from "./interfaces/ExtraOptions";
@@ -29,14 +30,20 @@ const storedPlayer = z.strictObject({
   userID,
   name: z.string().min(1).max(100),
   stats: SERVER_COMMAND_SCHEMAS.game.shape.players.element.shape.stats,
+  voteToKill: z.boolean(),
 });
 const chat = z.strictObject({
   userID: z.number().int().nonnegative(),
   message: SERVER_COMMAND_SCHEMAS.chat,
 });
 const tag = z.strictObject({ userID, tag: z.string().min(1) });
+const spectatorNotes = z.strictObject({
+  userID,
+  name: z.string().min(1).max(100),
+  notes: z.string().max(300).array().max(66),
+});
 const checkpoint = z.strictObject({
-  format: z.literal("hanabi-live-typescript-engine-1"),
+  format: z.literal("hanabi-live-typescript-engine-2"),
   table: z.strictObject({
     id: tableID,
     name: z.string().min(1).max(200),
@@ -66,12 +73,40 @@ const checkpoint = z.strictObject({
     notes: z.string().max(300).array().max(66).array().min(2).max(6),
     tags: tag.array(),
     requests: request.array().max(1024),
+    spectatorNotes: spectatorNotes.array().optional(),
   }),
 });
 
+const legacyCheckpoint = checkpoint.extend({
+  format: z.literal("hanabi-live-typescript-engine-1"),
+  table: checkpoint.shape.table.extend({
+    players: storedPlayer.omit({ voteToKill: true }).array().min(2).max(6),
+  }),
+});
+
+function decodeCheckpoint(input: unknown): z.infer<typeof checkpoint> {
+  const { format } = z.object({ format: z.string() }).parse(input);
+  if (format === "hanabi-live-typescript-engine-1") {
+    const legacy = legacyCheckpoint.parse(input);
+    // Version 1 predates termination voting; no accepted runtime votes could be present.
+    return {
+      ...legacy,
+      format: "hanabi-live-typescript-engine-2",
+      table: {
+        ...legacy.table,
+        players: legacy.table.players.map((player) => ({
+          ...player,
+          voteToKill: false,
+        })),
+      },
+    };
+  }
+  return checkpoint.parse(input);
+}
+
 export function serializeGameCheckpoint(table: Table, game: Game): string {
   const data = {
-    format: "hanabi-live-typescript-engine-1",
+    format: "hanabi-live-typescript-engine-2",
     table: {
       id: table.id,
       name: table.name,
@@ -84,6 +119,7 @@ export function serializeGameCheckpoint(table: Table, game: Game): string {
         userID: entry.userID,
         name: entry.name,
         stats: entry.stats,
+        voteToKill: entry.voteToKill,
       })),
       options: table.options,
       extraOptions: table.extraOptions,
@@ -105,6 +141,7 @@ export function serializeGameCheckpoint(table: Table, game: Game): string {
       notes: game.notes,
       tags: game.tags,
       requests: game.requests,
+      spectatorNotes: game.spectatorNotes,
     },
   };
   return JSON.stringify(checkpoint.parse(data));
@@ -118,10 +155,11 @@ export function restoreGameCheckpoint(
     throw new Error("Invalid active checkpoint envelope.");
   }
   const input: unknown = JSON.parse(row.data);
-  const data = checkpoint.parse(input);
+  const data = decodeCheckpoint(input);
   const state = parseEngineState(data.game.state);
   const { players } = data.table;
   const count = players.length;
+  const votes = players.filter((player) => player.voteToKill).length;
   if (
     data.game.databaseID !== row.id
     || row.id <= 0
@@ -138,12 +176,23 @@ export function restoreGameCheckpoint(
     || data.game.clocks.length !== count
     || data.game.queuedPauses.length !== count
     || data.game.notes.length !== count
+    || (state.endCondition === EndCondition.InProgress
+      && (count === 2 ? votes === 2 : votes * 2 >= count))
     || data.game.notes.some(
       (notes: readonly string[]) =>
         notes.length
         !== state.deck.length
           + getVariant(state.options.variantName).suits.length,
     )
+    || data.game.spectatorNotes?.some(
+      (entry) =>
+        entry.userID <= 0
+        || entry.notes.length
+          !== state.deck.length
+            + getVariant(state.options.variantName).suits.length,
+    ) === true
+    || new Set(data.game.spectatorNotes?.map((entry) => entry.userID)).size
+      !== (data.game.spectatorNotes?.length ?? 0)
     || new Set(data.game.requests.map((entry) => `${entry.userID}:${entry.id}`))
       .size !== data.game.requests.length
     || (state.endCondition !== EndCondition.InProgress)
@@ -172,7 +221,6 @@ export function restoreGameCheckpoint(
       present: false,
       typing: false,
       lastTyped: new Date(0),
-      voteToKill: false,
     })),
     ownerID: data.table.ownerID,
     visible: data.table.visible,
@@ -210,11 +258,17 @@ export function completionRecord(table: Table, game: Game): CompletedGame {
   ) {
     throw new Error("Cannot complete an ongoing game.");
   }
+  const customDeck = customDeckBytes(
+    game.state.deck,
+    getVariant(game.state.options.variantName),
+    game.state.seed,
+  );
   return {
     id: game.databaseID,
     name: table.name,
     options: game.state.options,
     seed: game.state.seed,
+    ...(customDeck !== undefined && { customDeck }),
     score: game.state.score,
     numTurns: game.state.turn,
     endCondition: game.state.endCondition,

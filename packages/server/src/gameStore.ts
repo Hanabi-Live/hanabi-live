@@ -9,8 +9,14 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, getObjectKeys } from "complete-common";
 import type postgres from "postgres";
+import { customDeckBytes, decodeCustomDeck } from "./customDeck";
 import type { RecordedAction } from "./engine/types";
 import { refreshGameStatistics } from "./gameStatistics";
+import {
+  recordCheckpoint,
+  recordCheckpointFailure,
+  storageMetrics,
+} from "./operationMetrics";
 
 export interface ActiveCheckpoint {
   readonly id: GameID;
@@ -23,6 +29,7 @@ export interface CompletedGame {
   readonly name: string;
   readonly options: Options;
   readonly seed: string;
+  readonly customDeck?: Uint8Array;
   readonly score: number;
   readonly numTurns: number;
   readonly endCondition: EndCondition;
@@ -121,6 +128,7 @@ export function createGameStore(
   let closed = false;
 
   async function bounded<T>(
+    operation: string,
     work: (check: () => void) => Promise<T>,
   ): Promise<T> {
     if (closed) {
@@ -140,13 +148,23 @@ export function createGameStore(
         new Error("Game storage operation timed out; its result is uncertain."),
       );
     }, TIMEOUT);
-    const task = work(check);
+    const task = storageMetrics.measure(
+      operation,
+      async () => await work(check),
+    );
     const tracked: Promise<T> = task.finally(() => {
       clearTimeout(timer);
       pending.delete(tracked);
     });
     pending.add(tracked);
-    return await Promise.race([tracked, expired.promise]);
+    try {
+      return await Promise.race([tracked, expired.promise]);
+    } catch (error) {
+      if (operation === "checkpoint") {
+        recordCheckpointFailure();
+      }
+      throw error;
+    }
   }
 
   async function drain() {
@@ -173,6 +191,7 @@ export function createGameStore(
   return {
     reserveID: async () =>
       await bounded(
+        "reserve",
         async (check) =>
           await client.begin(async (tx) => {
             check();
@@ -190,7 +209,7 @@ export function createGameStore(
       ),
 
     load: async () =>
-      await bounded(async (check) => {
+      await bounded("load", async (check) => {
         check();
         const rows = await client<
           Array<{ game_id: number; revision: string; checkpoint: string }>
@@ -212,7 +231,7 @@ export function createGameStore(
       }),
 
     completed: async (id) =>
-      await bounded(async (check) => {
+      await bounded("completed", async (check) => {
         check();
         const rows = await client<Array<{ completed: boolean }>>`
           SELECT EXISTS(SELECT 1 FROM games WHERE id = ${id}) AS completed
@@ -233,7 +252,9 @@ export function createGameStore(
         throw new Error("Invalid active-game checkpoint identity.");
       }
       const revision = expectedRevision + 1;
+      recordCheckpoint(data);
       return await bounded(
+        "checkpoint",
         async (check) =>
           await client.begin(async (tx) => {
             check();
@@ -267,7 +288,17 @@ export function createGameStore(
         throw new Error("Invalid terminal checkpoint revision.");
       }
       const row = completionRow(game);
+      const variant = getVariant(game.options.variantName);
+      const customDeck =
+        game.customDeck === undefined
+          ? undefined
+          : customDeckBytes(
+              decodeCustomDeck(game.customDeck, variant),
+              variant,
+              game.seed,
+            );
       return await bounded(
+        "complete",
         async (check) =>
           await client.begin(async (tx) => {
             check();
@@ -279,6 +310,23 @@ export function createGameStore(
             check();
             const previous = existing[0];
             if (previous !== undefined) {
+              const decks = await tx<Array<{ deck: Uint8Array }>>`
+                SELECT deck FROM game_custom_decks WHERE game_id = ${game.id}
+              `;
+              check();
+              const stored = decks[0];
+              if (stored !== undefined) {
+                decodeCustomDeck(stored.deck, variant);
+              }
+              if (
+                (customDeck === undefined && stored !== undefined)
+                || (customDeck !== undefined
+                  && (stored === undefined || !customDeck.equals(stored.deck)))
+              ) {
+                throw new Error(
+                  "Completed-game retry conflicts with the stored custom deck.",
+                );
+              }
               for (const key of getObjectKeys(row)) {
                 if (
                   key !== "datetime_started"
@@ -347,6 +395,10 @@ export function createGameStore(
             }
             await tx`INSERT INTO games ${tx(row)}`;
             check();
+            if (customDeck !== undefined) {
+              await tx`INSERT INTO game_custom_decks (game_id, deck) VALUES (${game.id}, ${customDeck})`;
+              check();
+            }
             const characters = getCharacters();
             const participants = game.players.map((player, seat) => {
               let characterAssignment = 0;
@@ -449,7 +501,7 @@ export function createGameStore(
 
     async refreshStatistics(game) {
       completionRow(game);
-      await bounded(async (check) => {
+      await bounded("statistics", async (check) => {
         await refreshGameStatistics(statisticsClient, game, check);
       });
     },

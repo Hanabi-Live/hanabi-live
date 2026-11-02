@@ -289,7 +289,38 @@ export interface ServerCommandWelcomeData extends z.infer<
 // Collections
 // -----------
 
+const serverCommandMaintenanceData = z
+  .object({
+    maintenanceMode: z.boolean(),
+  })
+  .strict()
+  .readonly();
+const serverCommandChatTypingData = z
+  .strictObject({
+    tableID,
+    name: z.string(),
+    typing: z.boolean(),
+  })
+  .readonly();
+const serverCommandShutdownData = z
+  .object({
+    shuttingDown: z.boolean(),
+    datetimeShutdownInit: z.string().optional(),
+  })
+  .strict()
+  .readonly();
+const serverCommandSoundLobbyData = z
+  .object({
+    file: z.string().min(1),
+  })
+  .strict()
+  .readonly();
+
 export interface ServerCommandData extends GameServerCommandData {
+  [ServerCommand.chatTyping]: z.infer<typeof serverCommandChatTypingData>;
+  [ServerCommand.maintenance]: z.infer<typeof serverCommandMaintenanceData>;
+  [ServerCommand.shutdown]: z.infer<typeof serverCommandShutdownData>;
+  [ServerCommand.soundLobby]: z.infer<typeof serverCommandSoundLobbyData>;
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
   [ServerCommand.chatList]: ServerCommandChatListData;
@@ -320,7 +351,11 @@ export interface ServerCommandData extends GameServerCommandData {
 interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
+  [ServerCommand.chatTyping]: serverCommandChatTypingData,
   ...GAME_SERVER_COMMAND_SCHEMAS,
+  [ServerCommand.maintenance]: serverCommandMaintenanceData,
+  [ServerCommand.shutdown]: serverCommandShutdownData,
+  [ServerCommand.soundLobby]: serverCommandSoundLobbyData,
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatDelete]: serverCommandChatDeleteData,
   [ServerCommand.chatList]: serverCommandChatListData,

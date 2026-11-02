@@ -14,6 +14,7 @@ import { assertDefined } from "complete-common";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { WebSocket } from "ws";
+import { z } from "zod";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
 import { restoreGameCheckpoint } from "./gameCheckpoint";
 import type { GameRuntime } from "./gameRuntime";
@@ -31,6 +32,7 @@ jest.mock("./models", () => ({
   models: {
     games: { getNumGamesForUser: jest.fn() },
     userStats: { get: jest.fn() },
+    gameTags: { edit: jest.fn() },
   },
 }));
 jest.mock("./env", () => ({
@@ -62,7 +64,6 @@ function connect(id: number, username: string) {
     normalizedUsername: username.toLowerCase(),
     ip: "127.0.0.1",
     muted: false,
-    fakeUser: false,
     status: Status.Lobby,
     tableID: undefined,
     friends: new Set(),
@@ -139,6 +140,7 @@ describe("durable running table authority", () => {
     now = 0;
     storage = memoryStore();
     jest.mocked(models.games.getNumGamesForUser).mockResolvedValue(0);
+    jest.mocked(models.gameTags.edit).mockResolvedValue("changed");
     jest.mocked(models.userStats.get).mockResolvedValue({
       numGames: 0,
       averageScore: 0,
@@ -189,6 +191,181 @@ describe("durable running table authority", () => {
     assertDefined(card, "Missing active hand.");
     return { user, action: { tableID: id, type: 0, target: card } };
   }
+
+  test("termination votes survive recovery, deduplicate retries, and require both players in two-player games", async () => {
+    const { id, alice, bob } = await started();
+    const { databaseID } = tableAt(id).game;
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "alice-vote",
+    });
+    expect(storage.completed.size).toBe(0);
+    expect(alice.messages.at(-1)).toContain('"vote":true');
+    expect(
+      bob.messages.some((message) => message.startsWith("voteChange ")),
+    ).toBe(false);
+    const { revision } = tableAt(id).game;
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "alice-vote",
+    });
+    expect(tableAt(id).game.revision).toBe(revision);
+    await runtime.close();
+    runtime = await initializeGameRuntime(storage.store, dependencies);
+    await send(alice.user, "tableReattend", { tableID: id });
+    await send(alice.user, "getGameInfo2", { tableID: id });
+    await send(alice.user, "loaded", { tableID: id });
+    expect(
+      alice.messages.findLast((message) => message.startsWith("voteChange ")),
+    ).toContain('"vote":true');
+    await send(bob.user, "tableReattend", { tableID: id });
+    await send(bob.user, "loaded", { tableID: id });
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "withdraw",
+    });
+    expect(alice.messages.at(-1)).toContain('"vote":false');
+    await send(bob.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "bob-vote",
+    });
+    expect(storage.completed.size).toBe(0);
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "vote-again",
+    });
+    expect(storage.completed.get(databaseID)?.endCondition).toBe(
+      EndCondition.TerminatedByVote,
+    );
+    const ending = alice.messages.findLast((message) =>
+      message.includes('"type":"gameOver"'),
+    );
+    expect(ending).toContain('"votes":[0,1]');
+  });
+
+  test("four-player termination voting uses Go's fifty-percent threshold", async () => {
+    const { id, alice } = await pregame();
+    const cathy = connect(3, "Cathy");
+    const dave = connect(4, "Dave");
+    await send(cathy.user, "tableJoin", { tableID: id });
+    await send(dave.user, "tableJoin", { tableID: id });
+    await send(alice.user, "tableStart", { tableID: id });
+    await Promise.all(
+      [...users.values()].map(async (user) => {
+        await send(user, "loaded", { tableID: id });
+      }),
+    );
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "first",
+    });
+    expect(storage.completed.size).toBe(0);
+    await send(cathy.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "second",
+    });
+    expect(storage.completed.values().next().value?.endCondition).toBe(
+      EndCondition.TerminatedByVote,
+    );
+  });
+
+  test("uncertain votes publish no acknowledgement but recover their committed receipt", async () => {
+    const { id, alice } = await started();
+    const { save } = storage.store;
+    jest
+      .spyOn(storage.store, "save")
+      .mockImplementationOnce(async (...args) => {
+        await save(...args);
+        throw new Error("lost acknowledgement");
+      });
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "once",
+    });
+    expect(tableAt(id).table.recoveryBlocked).toBe(true);
+    expect(
+      alice.messages.some((message) => message.startsWith("voteChange ")),
+    ).toBe(false);
+    await runtime.checkpointAndDrain();
+    await runtime.close();
+    runtime = await initializeGameRuntime(storage.store, dependencies);
+    await send(alice.user, "tableReattend", { tableID: id });
+    const { revision } = tableAt(id).game;
+    await send(alice.user, "tableVoteForTermination", {
+      tableID: id,
+      requestID: "once",
+    });
+    expect(tableAt(id).game.revision).toBe(revision);
+    expect(
+      tableAt(id).table.players.find(
+        (player) => player.userID === alice.user.userID,
+      )?.voteToKill,
+    ).toBe(true);
+  });
+
+  test("legacy checkpoints explicitly upgrade absent votes while new checkpoints require them", async () => {
+    const { id } = await started();
+    const row = storage.active.get(tableAt(id).game.databaseID);
+    assertDefined(row, "Missing checkpoint.");
+    const storedPlayer = z.record(z.string(), z.unknown());
+    const storedTable = z.looseObject({ players: storedPlayer.array() });
+    const envelope = z.looseObject({ format: z.string(), table: storedTable });
+    const input = envelope.parse(JSON.parse(row.data));
+    const players = input.table.players.map((entry) => {
+      const copy = { ...entry };
+      delete copy["voteToKill"];
+      return copy;
+    });
+    const missing = { ...input, table: { ...input.table, players } };
+    expect(() =>
+      restoreGameCheckpoint({ ...row, data: JSON.stringify(missing) }, now),
+    ).toThrow();
+    const legacy = { ...missing, format: "hanabi-live-typescript-engine-1" };
+    const restored = restoreGameCheckpoint(
+      { ...row, data: JSON.stringify(legacy) },
+      now,
+    );
+    expect(restored.players.every((player) => !player.voteToKill)).toBe(true);
+  });
+
+  test("trusted notices persist before publication and administration can terminate disconnected games", async () => {
+    const { id, alice } = await started();
+    const { game, table } = tableAt(id);
+    await runtime.sendNotice(id, "Scheduled maintenance notice.");
+    expect(
+      alice.messages.some((message) =>
+        message.includes("Scheduled maintenance notice."),
+      ),
+    ).toBe(true);
+    expect(storage.active.get(game.databaseID)?.data).toContain(
+      "Scheduled maintenance notice.",
+    );
+    users.clear();
+    runtime.cleanupDisconnected(table);
+    expect(await runtime.terminateByServer(id)).toBe(true);
+    const completed = storage.completed.get(game.databaseID);
+    expect(completed?.endCondition).toBe(EndCondition.TerminatedByPlayer);
+    expect(completed?.actions.at(-1)?.target).toBe(-1);
+    expect(completed?.chat).toContainEqual({
+      userID: 0,
+      message: "Scheduled maintenance notice.",
+      room: `table${id}`,
+    });
+  });
+
+  test("an uncertain server notice freezes the table without publishing its contents", async () => {
+    const { id, alice } = await started();
+    jest
+      .spyOn(storage.store, "save")
+      .mockRejectedValueOnce(new Error("storage unavailable"));
+    await expect(runtime.sendNotice(id, "Uncommitted notice.")).rejects.toThrow(
+      "uncertain",
+    );
+    expect(tableAt(id).table.recoveryBlocked).toBe(true);
+    expect(
+      alice.messages.some((message) => message.includes("Uncommitted notice.")),
+    ).toBe(false);
+  });
 
   test("start is durable before publication, seed selection skips played seeds, and draws are scrubbed", async () => {
     const { alice, bob, id } = await pregame();
@@ -632,7 +809,7 @@ describe("durable running table authority", () => {
     ).toThrow();
     const corrupt = {
       ...row,
-      data: row.data.replace("hanabi-live-typescript-engine-1", "other-engine"),
+      data: row.data.replace("hanabi-live-typescript-engine-2", "other-engine"),
     };
     expect(() => restoreGameCheckpoint(corrupt, now)).toThrow();
     expect(tableAt(id).table.running).toBe(true);

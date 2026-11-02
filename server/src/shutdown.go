@@ -89,12 +89,14 @@ func shutdownXMinutesLeft(ctx context.Context, minutesLeft int, startedAt time.T
 func terminateAllUnstartedTables(ctx context.Context) {
 	for _, t := range tables.GetList(true) {
 		t.Lock(ctx)
-		if !t.Running {
+		for !t.Deleted && !t.Running && !t.Replay && len(t.Players) > 0 {
+			previous := len(t.Players)
 			s := t.GetOwnerSession()
-			tableID := t.ID
-			t.Unlock(ctx)
-			commandTableLeave(ctx, s, &CommandData{TableID: tableID}) // nolint: exhaustivestruct
-			continue
+			commandTableLeave(ctx, s, &CommandData{TableID: t.ID, NoTableLock: true}) // nolint: exhaustivestruct
+			if len(t.Players) >= previous {
+				logger.Error("Unable to clear pregame table " + strconv.FormatUint(t.ID, 10) + ".")
+				break
+			}
 		}
 		t.Unlock(ctx)
 	}

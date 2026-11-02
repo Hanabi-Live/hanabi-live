@@ -8,7 +8,7 @@ func (g *Game) InitDeck() {
 	// then we can simply add every card to the deck as specified
 	if g.ExtraOptions.CustomDeck != nil &&
 		len(g.ExtraOptions.CustomDeck) != 0 &&
-		g.ExtraOptions.CustomSeed == "" { // Custom seeds override custom decks
+		(g.ExtraOptions.CustomSeed == "" || g.ExtraOptions.CustomDeckIsShuffled) {
 
 		for _, card := range g.ExtraOptions.CustomDeck {
 			g.Deck = append(g.Deck, NewCard(card.SuitIndex, card.Rank))

@@ -178,7 +178,13 @@ func snapshotGameDatabaseTable(t *Table) *gameDatabaseTableSnapshot {
 }
 
 func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, error) {
-
+	if len(g.CardIdentities) != len(g.Deck) {
+		return 0, errors.New("game deck identities do not match the played deck")
+	}
+	customDeck, err := customDeckForSeed(g.CardIdentities, g.Variant, g.Seed)
+	if err != nil {
+		return 0, err
+	}
 	row := GameRow{
 		ID:               g.DatabaseID,
 		Name:             tableSnapshot.name,
@@ -208,6 +214,9 @@ func (g *Game) WriteDatabase(tableSnapshot *gameDatabaseTableSnapshot) (int, err
 		return 0, err
 	}
 	databaseID := insertedGame.ID
+	if err := models.GameCustomDecks.WriteTx(tx, databaseID, g.Variant, customDeck, insertedGame.Inserted); err != nil {
+		return 0, err
+	}
 	if !insertedGame.Inserted {
 		g.DatetimeStarted = insertedGame.DatetimeStarted
 		g.DatetimeFinished = insertedGame.DatetimeFinished

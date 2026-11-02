@@ -1,7 +1,9 @@
+import { ServerCommand } from "@hanabi-live/data";
 import type { FastifyInstance } from "fastify";
+import { clearAllTyping } from "./chatPresence";
 import { incomingCommands } from "./commandAdmission";
 import type { GameRuntime } from "./gameRuntime";
-import { wsError } from "./wsHelpers";
+import { wsError, wsSend } from "./wsHelpers";
 
 interface ClosingServer {
   readonly websocketServer: Pick<FastifyInstance["websocketServer"], "clients">;
@@ -14,11 +16,13 @@ export async function shutdownServer(
   closeDatabase: () => Promise<void>,
 ): Promise<void> {
   incomingCommands.pause();
+  clearAllTyping();
   runtime.quiesce();
   await incomingCommands.drain();
   await runtime.checkpointAndDrain();
 
   for (const connection of server.websocketServer.clients) {
+    wsSend(connection, ServerCommand.soundLobby, { file: "shutdown" });
     wsError(
       connection,
       "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.",

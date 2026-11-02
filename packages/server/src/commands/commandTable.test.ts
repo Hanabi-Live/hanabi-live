@@ -32,6 +32,8 @@ jest.mock("../models", () => ({
   models: {
     games: { getNumGamesForUser: jest.fn() },
     userStats: { get: jest.fn() },
+    replays: { get: jest.fn() },
+    gameTags: { getGameIDsForTag: jest.fn() },
   },
 }));
 jest.mock("../env", () => ({
@@ -72,7 +74,6 @@ function connect(id: number, username: string) {
     normalizedUsername: username.toLowerCase(),
     ip: "127.0.0.1",
     muted: false,
-    fakeUser: false,
     status: Status.Lobby,
     tableID: undefined,
     friends: new Set(),
@@ -111,6 +112,105 @@ describe("authoritative pregame table lifecycle", () => {
       }
     }
     users.clear();
+    jest.useRealTimers();
+  });
+
+  test("typing is limited to attendees, refreshed by input, and cleared on departure", async () => {
+    jest.useFakeTimers();
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    const outsider = connect(3, "Outsider");
+    await send(alice.user, "tableCreate", { name: "Typing table" });
+    const table = tableFor(alice.user);
+    await send(alice.user, "chatTyping", { tableID: table.id });
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    await send(outsider.user, "chatTyping", { tableID: table.id });
+    expect(
+      outsider.messages.some((message) => message.startsWith("warning ")),
+    ).toBe(true);
+    await send(alice.user, "chatTyping", { tableID: table.id });
+    expect(
+      alice.messages.filter((message) => message.startsWith("chatTyping ")),
+    ).toHaveLength(0);
+    expect(
+      bob.messages.filter((message) => message.startsWith("chatTyping ")),
+    ).toHaveLength(1);
+    await jest.advanceTimersByTimeAsync(1000);
+    await send(alice.user, "chatTyping", { tableID: table.id });
+    await jest.advanceTimersByTimeAsync(1500);
+    expect(
+      bob.messages.filter((message) => message.startsWith("chatTyping ")),
+    ).toHaveLength(1);
+    await jest.advanceTimersByTimeAsync(500);
+    const stopped = bob.messages.findLast((message) =>
+      message.startsWith("chatTyping "),
+    );
+    expect(stopped).toContain('"typing":false');
+    await send(alice.user, "chatTyping", { tableID: table.id });
+    await send(alice.user, "tableLeave", { tableID: table.id });
+    expect(table.typingTimers?.size).toBe(0);
+    expect(
+      bob.messages.findLast((message) => message.startsWith("chatTyping ")),
+    ).toContain('"typing":false');
+  });
+
+  test("replacement sessions reattend before private pregame updates and replace stale typing expiry", async () => {
+    jest.useFakeTimers();
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    await send(alice.user, "tableCreate", { name: "Presence table" });
+    const table = tableFor(alice.user);
+    await send(bob.user, "tableJoin", { tableID: table.id });
+    await send(alice.user, "chatTyping", { tableID: table.id });
+    await jest.advanceTimersByTimeAsync(1000);
+    const replacement = connect(1, "Alice");
+    await send(bob.user, "tableSetLeader", { tableID: table.id, name: "Bob" });
+    expect(
+      replacement.messages.some((message) => message.startsWith("game ")),
+    ).toBe(false);
+    await send(replacement.user, "tableReattend", { tableID: table.id });
+    expect(
+      replacement.messages.some((message) => message.startsWith("game ")),
+    ).toBe(true);
+    await send(replacement.user, "chatTyping", { tableID: table.id });
+    await jest.advanceTimersByTimeAsync(1500);
+    expect(
+      bob.messages.filter((message) => message.includes('"typing":false')),
+    ).toHaveLength(0);
+    removeTable(table.id);
+    const previous = bob.messages.length;
+    await jest.advanceTimersByTimeAsync(2000);
+    expect(bob.messages).toHaveLength(previous);
+  });
+
+  test("chat receipts update only member cursors and tolerate deleted-table delivery", async () => {
+    const alice = connect(1, "Alice");
+    const outsider = connect(2, "Outsider");
+    await send(alice.user, "tableCreate", { name: "Read table" });
+    const table = tableFor(alice.user);
+    table.chatRead.set(alice.user.userID, 0);
+    await send(alice.user, "chatRead", { tableID: table.id });
+    expect(table.chatRead.get(alice.user.userID)).toBe(table.chat.length);
+    await send(outsider.user, "chatRead", { tableID: table.id });
+    expect(table.chatRead.has(outsider.user.userID)).toBe(false);
+    removeTable(table.id);
+    const before = alice.messages.length;
+    await send(alice.user, "chatRead", { tableID: table.id });
+    expect(alice.messages).toHaveLength(before);
+  });
+
+  test("tag searches return normalized results privately", async () => {
+    const alice = connect(1, "Alice");
+    const bob = connect(2, "Bob");
+    jest.mocked(models.gameTags.getGameIDsForTag).mockResolvedValue([]);
+    await send(alice.user, "tagSearch", { msg: "<TAG>", room: "lobby" });
+    expect(models.gameTags.getGameIDsForTag).toHaveBeenCalledWith("<tag>");
+    const response = alice.messages.find((message) =>
+      message.startsWith("chat "),
+    );
+    expect(response).toContain("&lt;tag&gt;");
+    expect(response).toContain('"recipient":"Alice"');
+    expect(bob.messages).toHaveLength(0);
   });
 
   test("normal envelopes create, password-join, transfer leadership, and leave with pregame notifications", async () => {
@@ -347,7 +447,7 @@ describe("authoritative pregame table lifecycle", () => {
     expect(table.options.variantName).toBe("Black (5 Suits)");
   });
 
-  test("unsupported setup and unsafe table IDs are rejected without publishing", async () => {
+  test("missing histories, invalid setup and unsafe table IDs are rejected without publishing", async () => {
     const alice = connect(1, "Alice");
     for (const data of [
       { name: "!replay 123" },

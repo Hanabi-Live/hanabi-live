@@ -31,6 +31,7 @@ func httpLocalhostInit() {
 
 	// Create a new Gin HTTP router
 	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
+	httpRouter.Use(rejectBrowserOperations)
 
 	// Path handlers
 	mutations := httpRouter.Group("")
@@ -53,6 +54,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	mutations.GET("/shutdown", httpLocalhostShutdown)
 	mutations.GET("/terminate", httpLocalhostTerminate)
+	mutations.POST("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
 	httpRouter.GET("/uptime", httpLocalhostUptime)
 	httpRouter.GET("/version", httpLocalhostVersion)
@@ -71,6 +73,18 @@ func httpLocalhostInit() {
 		return
 	}
 	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
+}
+
+func rejectBrowserOperations(c *gin.Context) {
+	c.Header("Cache-Control", "no-store")
+	if _, hasOrigin := c.Request.Header["Origin"]; hasOrigin ||
+		c.GetHeader("Sec-Fetch-Site") == "cross-site" {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"error": "Browser requests are not allowed on the localhost operations interface.",
+		})
+		return
+	}
+	c.Next()
 }
 
 func admitAdministrativeCommand(c *gin.Context) {

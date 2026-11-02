@@ -7,6 +7,7 @@ import {
 import { ReadonlySet, getEnumValues, isEnumValue } from "complete-common";
 import type { RawData } from "ws";
 import type { z } from "zod";
+import { commandChatRead, commandChatTyping } from "./chatPresence";
 import { incomingCommands } from "./commandAdmission";
 import { commandChat } from "./commands/commandChat";
 import { commandChatPM } from "./commands/commandChatPM";
@@ -19,10 +20,16 @@ import {
   commandNote,
   commandPause,
   commandReplayAction,
+  commandReplayCreate,
+  commandTableRestart,
   commandTableSpectate,
   commandTableStart,
+  commandTableSuggest,
   commandTableUnattend,
+  commandTableVoteForTermination,
   commandTag,
+  commandTagDelete,
+  commandTagsDeleteAll,
 } from "./commands/commandGame";
 import { commandGetName } from "./commands/commandGetName";
 import {
@@ -50,7 +57,9 @@ import {
   commandTableTerminate,
   commandTableUpdate,
 } from "./commands/commandTable";
+import { commandTagSearch } from "./commands/commandTagSearch";
 import { logger } from "./logger";
+import { commandMetrics } from "./operationMetrics";
 import { wsError, wsWarning } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
 import { wsUsers } from "./wsUsers";
@@ -58,6 +67,22 @@ import { wsUsers } from "./wsUsers";
 const CLIENT_COMMANDS_SET = new ReadonlySet(getEnumValues(ClientCommand));
 
 const CLIENT_COMMAND_HANDLERS = {
+  [ClientCommand.tableVoteForTermination]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableVoteForTermination,
+    commandTableVoteForTermination,
+  ),
+  [ClientCommand.chatRead]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatRead,
+    commandChatRead,
+  ),
+  [ClientCommand.chatTyping]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.chatTyping,
+    commandChatTyping,
+  ),
+  [ClientCommand.tagSearch]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tagSearch,
+    commandTagSearch,
+  ),
   [ClientCommand.tableStart]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.tableStart,
     commandTableStart,
@@ -87,6 +112,14 @@ const CLIENT_COMMAND_HANDLERS = {
     commandNote,
   ),
   [ClientCommand.tag]: validatedHandler(CLIENT_COMMAND_SCHEMAS.tag, commandTag),
+  [ClientCommand.tagDelete]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tagDelete,
+    commandTagDelete,
+  ),
+  [ClientCommand.tagsDeleteAll]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tagsDeleteAll,
+    commandTagsDeleteAll,
+  ),
   [ClientCommand.tableUnattend]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.tableUnattend,
     commandTableUnattend,
@@ -98,6 +131,18 @@ const CLIENT_COMMAND_HANDLERS = {
   [ClientCommand.replayAction]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.replayAction,
     commandReplayAction,
+  ),
+  [ClientCommand.replayCreate]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.replayCreate,
+    commandReplayCreate,
+  ),
+  [ClientCommand.tableRestart]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableRestart,
+    commandTableRestart,
+  ),
+  [ClientCommand.tableSuggest]: validatedHandler(
+    CLIENT_COMMAND_SCHEMAS.tableSuggest,
+    commandTableSuggest,
   ),
   [ClientCommand.tableReattend]: validatedHandler(
     CLIENT_COMMAND_SCHEMAS.tableReattend,
@@ -248,5 +293,7 @@ async function dispatchMessage(wsUser: WSUser, rawData: RawData) {
     return;
   }
 
-  await CLIENT_COMMAND_HANDLERS[command](wsUser, data);
+  await commandMetrics.measure(command, async () => {
+    await CLIENT_COMMAND_HANDLERS[command](wsUser, data);
+  });
 }

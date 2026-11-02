@@ -1,8 +1,9 @@
 import { PROJECT_NAME, ServerCommand, Status } from "@hanabi-live/data";
 import { chatMessageToWire } from "./chatMessage";
+import { clearTyping, getTypingState } from "./chatPresence";
 import type { Table } from "./interfaces/Table";
 import type { TablePlayer } from "./interfaces/TablePlayer";
-import { getTableData, removeTable } from "./tables";
+import { getTableAudience, getTableData, removeTable } from "./tables";
 import { wsSend, wsSendAll } from "./wsHelpers";
 import type { WSUser } from "./wsUsers";
 import { getUserData, wsUsers } from "./wsUsers";
@@ -20,12 +21,20 @@ export function notifyTable(table: Table): void {
   }
 }
 
-export function notifyPregame(table: Table): void {
-  for (const player of table.players) {
-    const user = wsUsers.get(player.userID);
-    if (user !== undefined && player.present) {
-      sendPregame(table, user);
-    }
+export function notifyPregame(table: Table, initialUser?: WSUser): void {
+  const audience = new Set(getTableAudience(table));
+  if (
+    initialUser !== undefined
+    && wsUsers.get(initialUser.userID) === initialUser
+    && (table.players.some((player) => player.userID === initialUser.userID)
+      || table.spectators.some(
+        (spectator) => spectator.userID === initialUser.userID,
+      ))
+  ) {
+    audience.add(initialUser);
+  }
+  for (const user of audience) {
+    sendPregame(table, user);
   }
 }
 
@@ -57,17 +66,18 @@ export function tableNotice(table: Table, text: string): void {
     room: `table${table.id}`,
   });
   table.chat.push({ userID: 0, message });
-  for (const player of table.players) {
-    const user = wsUsers.get(player.userID);
-    if (user !== undefined && player.present) {
-      wsSend(user.connection, ServerCommand.chat, message);
-    }
+  for (const user of getTableAudience(table)) {
+    wsSend(user.connection, ServerCommand.chat, message);
   }
 }
 
-export function notifyJoined(table: Table, user: WSUser): void {
+export function notifyJoined(
+  table: Table,
+  user: WSUser,
+  spectating = false,
+): void {
   const wsUser = user;
-  wsUser.status = Status.PreGame;
+  wsUser.status = spectating ? Status.Spectating : Status.PreGame;
   wsUser.tableID = table.id;
   wsSendAll(ServerCommand.user, getUserData(wsUser));
   wsSend(user.connection, ServerCommand.joined, { tableID: table.id });
@@ -80,9 +90,13 @@ export function notifyJoined(table: Table, user: WSUser): void {
     tableID: table.id,
     spectators: [],
   });
+  for (const state of getTypingState(table, user)) {
+    wsSend(user.connection, ServerCommand.chatTyping, state);
+  }
 }
 
 export function leaveTable(table: Table, player: TablePlayer): void {
+  clearTyping(table, player.userID);
   const currentTable = table;
   currentTable.players = table.players.filter((entry) => entry !== player);
   currentTable.chatRead.delete(player.userID);

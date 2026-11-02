@@ -1,20 +1,17 @@
-import type {
-  ClientCommandData,
-  GameID,
-  TableID,
-  UserID,
-} from "@hanabi-live/data";
+import type { ClientCommandData, TableID, UserID } from "@hanabi-live/data";
 import { PROJECT_NAME, ServerCommand } from "@hanabi-live/data";
-import { doesVariantExist, getVariant } from "@hanabi-live/game";
+import { doesVariantExist } from "@hanabi-live/game";
 import * as argon2 from "argon2";
 import { escapeHTMLCharacters } from "complete-common";
 import { chatServerSendPM } from "../chat";
+import { prepareCustomGame } from "../customGame";
+import { ActionRejected } from "../engine/types";
 import { getGameRuntime } from "../gameRuntime";
 import type { Table } from "../interfaces/Table";
 import type { TablePlayer } from "../interfaces/TablePlayer";
 import { isMaintenanceMode } from "../maintenanceMode";
-import { models } from "../models";
-import { getShuttingDownMetadata } from "../shutdown";
+import { getPregameStats, getVariantStats } from "../pregameStats";
+import { getShutdownControl } from "../shutdown";
 import {
   leaveTable,
   notifyJoined,
@@ -62,38 +59,16 @@ function canJoinAnotherTable(user: WSUser) {
   return true;
 }
 
-async function variantStats(userID: UserID, variantName: string) {
-  const stats = await models.userStats.get(userID, getVariant(variantName).id);
-  return {
-    ...stats,
-    bestScores: stats.bestScores.map((score) => ({
-      ...score,
-      deckPlays: hasModifier(score.modifier, 1),
-      emptyClues: hasModifier(score.modifier, 2),
-      oneExtraCard: hasModifier(score.modifier, 4),
-      oneLessCard: hasModifier(score.modifier, 8),
-      allOrNothing: hasModifier(score.modifier, 16),
-    })),
-  };
-}
-
-function hasModifier(modifier: number, flag: number) {
-  return Math.floor(modifier / flag) % 2 === 1;
-}
-
 async function preparePlayer(
   user: WSUser,
   variantName: string,
 ): Promise<TablePlayer> {
-  const [numGames, variant] = await Promise.all([
-    models.games.getNumGamesForUser(user.userID, false),
-    variantStats(user.userID, variantName),
-  ]);
+  const stats = await getPregameStats(user.userID, variantName);
   return {
     userID: user.userID,
     name: user.username,
     present: true,
-    stats: { numGames, variant },
+    stats,
     typing: false,
     lastTyped: new Date(0),
     voteToKill: false,
@@ -157,12 +132,7 @@ function creationAvailable(user: WSUser) {
     );
     return false;
   }
-  const { shuttingDown, datetimeShutdownInit } = getShuttingDownMetadata();
-  if (
-    shuttingDown
-    && datetimeShutdownInit !== undefined
-    && Date.now() - Date.parse(datetimeShutdownInit) >= 25 * 60 * 1000
-  ) {
+  if (getShutdownControl()?.isImminent() === true) {
     wsWarning(
       user.connection,
       "The server is about to shut down. You cannot create a new game.",
@@ -179,8 +149,18 @@ export async function commandTableCreate(
   if (!creationAvailable(user)) {
     return;
   }
-  const prepared = prepareTableOptions(user, data);
-  if (prepared === undefined) {
+  const options = prepareTableOptions(user, data);
+  if (options === undefined) {
+    return;
+  }
+  let prepared: Awaited<ReturnType<typeof prepareCustomGame>>;
+  try {
+    prepared = await prepareCustomGame(options, data.gameJSON);
+  } catch (error) {
+    if (!(error instanceof ActionRejected)) {
+      throw error;
+    }
+    wsWarning(user.connection, error.message);
     return;
   }
   const id = allocateTableID();
@@ -219,15 +199,7 @@ export async function commandTableCreate(
       datetimeLastAction: now,
       game: undefined,
       options: prepared.options,
-      extraOptions: {
-        databaseID: -1 as GameID,
-        noWriteToDatabase: false,
-        jsonReplay: false,
-        restarted: false,
-        setSeedSuffix: prepared.seed,
-        setReplay: false,
-        setReplayTurn: 0,
-      },
+      extraOptions: prepared.extraOptions,
       chat: [],
       chatRead: new Map(),
     };
@@ -239,7 +211,7 @@ export async function commandTableCreate(
     table.players.push(player);
     publishTable(table);
     notifyTable(table);
-    notifyPregame(table);
+    notifyPregame(table, user);
     notifyJoined(table, user);
   });
 }
@@ -285,7 +257,7 @@ export async function commandTableJoin(
     currentTable.players.push(player);
     currentTable.datetimeLastJoined = new Date();
     notifyTable(table);
-    notifyPregame(table);
+    notifyPregame(table, user);
     notifyJoined(table, user);
     tableNotice(
       table,
@@ -329,7 +301,7 @@ export async function commandTableReattend(
       return;
     }
     player.present = true;
-    notifyPregame(table);
+    notifyPregame(table, user);
     notifyJoined(table, user);
   });
 }
@@ -415,7 +387,7 @@ async function refreshStats(
   for (const player of table.players) {
     // At most six queries; avoid a single table consuming the database connection pool.
     // eslint-disable-next-line no-await-in-loop
-    stats.set(player.userID, await variantStats(player.userID, variantName));
+    stats.set(player.userID, await getVariantStats(player.userID, variantName));
   }
   return stats;
 }
@@ -475,16 +447,26 @@ export async function commandTableUpdate(
       );
       return;
     }
-    const prepared = prepareTableOptions(
+    const options = prepareTableOptions(
       user,
       data,
       table.ownerID === user.userID,
     );
-    if (prepared === undefined) {
+    if (options === undefined) {
       return;
     }
     if (table.ownerID !== user.userID) {
-      proposeOptions(user, table, prepared);
+      proposeOptions(user, table, options);
+      return;
+    }
+    let prepared: Awaited<ReturnType<typeof prepareCustomGame>>;
+    try {
+      prepared = await prepareCustomGame(options, data.gameJSON);
+    } catch (error) {
+      if (!(error instanceof ActionRejected)) {
+        throw error;
+      }
+      wsWarning(user.connection, error.message);
       return;
     }
     const stats = await refreshStats(table, prepared.options.variantName);
@@ -510,10 +492,8 @@ export async function commandTableUpdate(
     currentTable.visible = !data.hidePregame;
     currentTable.maxPlayers = prepared.maxPlayers;
     currentTable.options = prepared.options;
-    currentTable.extraOptions = {
-      ...table.extraOptions,
-      setSeedSuffix: prepared.seed,
-    };
+    currentTable.extraOptions = prepared.extraOptions;
+    currentTable.initialName = prepared.name;
     applyStats(table, stats);
     notifyPregame(table);
     notifyTable(table);

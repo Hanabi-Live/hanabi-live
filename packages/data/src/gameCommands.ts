@@ -12,6 +12,18 @@ const requestID = z
   .optional();
 const tableRequest = z.strictObject({ tableID, requestID });
 export const GAME_CLIENT_COMMAND_SCHEMAS = {
+  replayCreate: z.strictObject({
+    source: z.enum(["id", "json"]),
+    databaseID: z.int().min(1).max(2_147_483_647).optional(),
+    gameJSON: z.unknown().optional(),
+    visibility: z.enum(["solo", "shared"]),
+    password: z.string().default(""),
+    shadowingPlayerIndex: z.int().default(-1),
+  }),
+  tableRestart: tableRequest.extend({
+    hidePregame: z.boolean().default(false),
+  }),
+  tableSuggest: tableRequest.extend({ segment: z.int().default(0) }),
   tableStart: tableRequest.extend({
     intendedVariant: z.string().optional(),
     intendedPlayers: z.string().array().max(6).optional(),
@@ -19,6 +31,7 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
   getGameInfo1: tableRequest,
   getGameInfo2: tableRequest,
   loaded: tableRequest,
+  tableVoteForTermination: tableRequest,
   action: tableRequest.extend({
     type: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
     target: z.number().int(),
@@ -27,6 +40,11 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
   pause: tableRequest.extend({ setting: z.string() }),
   note: tableRequest.extend({ order: z.number().int(), note: z.string() }),
   tag: tableRequest.extend({ msg: z.string(), room: z.string().default("") }),
+  tagDelete: tableRequest.extend({
+    msg: z.string(),
+    room: z.string().default(""),
+  }),
+  tagsDeleteAll: tableRequest.extend({ room: z.string().default("") }),
   tableUnattend: tableRequest,
   tableSpectate: tableRequest.extend({
     shadowingPlayerIndex: z.number().int().default(-1),
@@ -37,6 +55,7 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
     order: z.number().int().default(0),
     sound: z.string().default(""),
     value: z.number().int().default(0),
+    actionJSON: z.string().max(65_536).default(""),
   }),
 } as const;
 
@@ -104,6 +123,11 @@ const note = z.strictObject({
   notes: z.string().array(),
   isSpectator: z.boolean(),
 });
+const cardNote = z.strictObject({
+  name: z.string(),
+  text: z.string(),
+  isSpectator: z.boolean(),
+});
 const identity = z.strictObject({ suitIndex: integer, rank: integer });
 export const GAME_SERVER_COMMAND_SCHEMAS = {
   tableStart: z.strictObject({ tableID, replay: z.boolean() }),
@@ -142,6 +166,11 @@ export const GAME_SERVER_COMMAND_SCHEMAS = {
   pause: z.strictObject({ tableID, active: z.boolean(), playerIndex: integer }),
   noteListPlayer: z.strictObject({ tableID, notes: z.string().array() }),
   noteList: z.strictObject({ tableID, notes: note.array() }),
+  note: z.strictObject({
+    tableID,
+    order: integer,
+    notes: cardNote.array(),
+  }),
   voteChange: z.strictObject({ vote: z.boolean() }),
   cardIdentities: z.strictObject({ tableID, cardIdentities: identity.array() }),
   finishOngoingGame: z.strictObject({
@@ -153,6 +182,22 @@ export const GAME_SERVER_COMMAND_SCHEMAS = {
   replayIndicator: z.strictObject({ tableID, order: integer }),
   replaySound: z.strictObject({ tableID, sound: z.string() }),
   replayLeader: z.strictObject({ tableID, name: z.string() }),
+  suggestion: z.strictObject({
+    tableID,
+    userName: z.string(),
+    segment: integer,
+  }),
+  hypothetical: z.strictObject({
+    showDrawnCards: z.boolean(),
+    actions: z.string().array(),
+  }),
+  hypoStart: z.strictObject({ TableID: tableID }),
+  hypoEnd: z.strictObject({ TableID: tableID }),
+  hypoBack: z.strictObject({ TableID: tableID }),
+  hypoAction: z.string(),
+  hypoShowDrawnCards: z.strictObject({ tableID, showDrawnCards: z.boolean() }),
+  replayEfficiencyMod: z.strictObject({ tableID, mod: integer }),
+  boot: z.strictObject({ TableID: tableID }),
 } as const;
 
 export type GameServerCommandData = {

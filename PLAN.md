@@ -10,18 +10,11 @@ run lint and relevant regression suites, push to `main`, and verify CI. Audit
 reachability and shared helpers between milestones. Do not remove intentional
 maintenance paths or add speculative configuration.
 
-- [ ] Wire localhost maintenance, scheduled shutdown/cancellation, and graceful
-      restart to the application-wide drain barrier.
-- [ ] Complete remaining lobby commands: chat commands and Discord mirroring,
-      and typing/read indicators.
-- [ ] Complete pregame spectating, table restart, termination votes, automatic
-      spectator handoff, and spectator note writes.
-- [ ] Complete pregame/replay/typing/countdown timers. Preserve legacy seed/deck
-      generation and replay behavior.
-- [ ] Complete replay creation, shared replay controls, hypothetical actions,
-      replay visibility, historical imports/exports, and bot protocol behavior.
-- [ ] Complete administrative chat commands, maintenance, and operational
-      metrics, and evaluate configured telemetry integrations.
+- [ ] Complete remaining chat commands, Discord mirroring, and administrative
+      chat commands.
+- [ ] Complete pregame automatic-start/countdown commands and timers. Preserve
+      legacy seed/deck generation and replay behavior.
+- [ ] Evaluate configured telemetry integrations.
 - [ ] Exercise the actual TypeScript entry point with the existing client and
       Go-authority compatibility corpus. Cover every registered Go command and
       enabled HTTP route, unsupported-input rejection, concurrency, restart,

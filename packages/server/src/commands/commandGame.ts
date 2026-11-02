@@ -1,8 +1,12 @@
 import type { ClientCommandData, TableID } from "@hanabi-live/data";
 import { ServerCommand } from "@hanabi-live/data";
+import { clearTyping } from "../chatPresence";
+import { ActionRejected } from "../engine/types";
 import { getGameRuntime } from "../gameRuntime";
+import { models } from "../models";
+import { historicalReplay, importReplay } from "../replayImport";
 import { enqueueTableOperation } from "../tableQueue";
-import { getTable } from "../tables";
+import { getTable, getTableAudience } from "../tables";
 import { wsSend, wsWarning } from "../wsHelpers";
 import type { WSUser } from "../wsUsers";
 import { wsUsers } from "../wsUsers";
@@ -20,6 +24,13 @@ export async function commandTableStart(
   data: ClientCommandData["tableStart"],
 ): Promise<void> {
   await runtime(user)?.start(user, data);
+}
+
+export async function commandTableVoteForTermination(
+  user: WSUser,
+  data: ClientCommandData["tableVoteForTermination"],
+): Promise<void> {
+  await runtime(user)?.vote(user, data.tableID, data.requestID);
 }
 export async function commandGetGameInfo1(
   user: WSUser,
@@ -63,6 +74,18 @@ export async function commandTag(
 ): Promise<void> {
   await runtime(user)?.tag(user, data);
 }
+export async function commandTagDelete(
+  user: WSUser,
+  data: ClientCommandData["tagDelete"],
+): Promise<void> {
+  await runtime(user)?.tag(user, data, "delete");
+}
+export async function commandTagsDeleteAll(
+  user: WSUser,
+  data: ClientCommandData["tagsDeleteAll"],
+): Promise<void> {
+  await runtime(user)?.tag(user, { ...data, msg: "" }, "deleteAll");
+}
 export async function commandTableUnattend(
   user: WSUser,
   data: ClientCommandData["tableUnattend"],
@@ -80,6 +103,64 @@ export async function commandReplayAction(
   data: ClientCommandData["replayAction"],
 ): Promise<void> {
   await runtime(user)?.replay(user, data);
+}
+
+export async function commandTableSuggest(
+  user: WSUser,
+  data: ClientCommandData["tableSuggest"],
+): Promise<void> {
+  await runtime(user)?.suggest(user, data);
+}
+
+export async function commandReplayCreate(
+  user: WSUser,
+  data: ClientCommandData["replayCreate"],
+): Promise<void> {
+  const instance = runtime(user);
+  if (instance === undefined) {
+    return;
+  }
+  try {
+    if (data.password !== "") {
+      throw new ActionRejected("You cannot create a replay with a password.");
+    }
+    if (data.source === "json") {
+      await instance.createReplay(
+        user,
+        importReplay(data.gameJSON),
+        data.visibility === "shared",
+      );
+    } else {
+      if (data.databaseID === undefined) {
+        throw new ActionRejected("You must specify a database game ID.");
+      }
+      const record = await models.replays.get(data.databaseID);
+      if (record === undefined) {
+        throw new ActionRejected(
+          `Game #${data.databaseID} does not exist in the database.`,
+        );
+      }
+      await instance.createReplay(
+        user,
+        historicalReplay(record),
+        data.visibility === "shared",
+      );
+    }
+  } catch (error) {
+    if (!(error instanceof ActionRejected)) {
+      throw error;
+    }
+    if (wsUsers.get(user.userID) === user) {
+      wsWarning(user.connection, error.message);
+    }
+  }
+}
+
+export async function commandTableRestart(
+  user: WSUser,
+  data: ClientCommandData["tableRestart"],
+): Promise<void> {
+  await runtime(user)?.restart(user, data);
 }
 
 export async function commandRunningReattend(
@@ -123,7 +204,10 @@ export async function commandTableChat(
       table === undefined
       || table.running
       || table.recoveryBlocked === true
-      || table.players.every((player) => player.userID !== user.userID)
+      || (table.players.every((player) => player.userID !== user.userID)
+        && table.spectators.every(
+          (spectator) => spectator.userID !== user.userID,
+        ))
     ) {
       wsWarning(user.connection, "You are not at an available table.");
       return;
@@ -136,11 +220,9 @@ export async function commandTableChat(
       room: `table${id}`,
     };
     table.chat.push({ userID: user.userID, message });
-    for (const player of table.players) {
-      const recipient = wsUsers.get(player.userID);
-      if (recipient !== undefined) {
-        wsSend(recipient.connection, ServerCommand.chat, message);
-      }
+    clearTyping(table, user.userID);
+    for (const recipient of getTableAudience(table)) {
+      wsSend(recipient.connection, ServerCommand.chat, message);
     }
   });
   if (!admitted) {

@@ -17,6 +17,7 @@ type PreFetchedReplayData struct {
 	Options          *Options
 	Players          []*DBPlayer
 	Seed             string
+	CustomDeck       []*CardIdentity
 	Actions          []*GameAction
 	Notes            [][]string
 	DatetimeStarted  time.Time
@@ -494,10 +495,9 @@ func loadDatabaseOptionsToTable(s *Session, d *CommandData, t *Table) ([]*DBPlay
 		CustomNumPlayers:           len(dbPlayers),
 		CustomCharacterAssignments: characterAssignments,
 		CustomSeed:                 pf.Seed,
-		// Setting "CustomDeck" is not necessary because the deck is not stored in the database;
-		// the ordering of the cards is determined by using the game's seed
-		CustomDeck:    nil,
-		CustomActions: pf.Actions,
+		CustomDeck:                 pf.CustomDeck,
+		CustomDeckIsShuffled:       pf.CustomDeck != nil,
+		CustomActions:              pf.Actions,
 
 		Restarted:     false,
 		SetSeedSuffix: "",
@@ -660,6 +660,9 @@ func preFetchReplayData(s *Session, d *CommandData) bool {
 
 	variant := variants[prefetched.Options.VariantName]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
+	if prefetched.CustomDeck != nil {
+		noteSize = len(prefetched.CustomDeck) + len(variant.Suits)
+	}
 	notes, err := models.Games.GetNotes(dbID, prefetched.Options.NumPlayers, noteSize)
 	if err != nil {
 		logger.Error("Failed to get the notes for game " + strconv.Itoa(dbID) +
@@ -715,12 +718,19 @@ func preFetchReplayTableData(s *Session, dbID int) (*PreFetchedReplayData, bool)
 		s.Error(InitGameFail)
 		return nil, false
 	}
+	customDeck, err := models.GameCustomDecks.Get(dbID, variants[opts.VariantName])
+	if err != nil {
+		logger.Error("Failed to get the custom deck for game " + strconv.Itoa(dbID) + ": " + err.Error())
+		s.Error(InitGameFail)
+		return nil, false
+	}
 
 	return &PreFetchedReplayData{
-		Options: opts,
-		Players: players,
-		Seed:    seed,
-		Actions: actions,
+		Options:    opts,
+		Players:    players,
+		Seed:       seed,
+		Actions:    actions,
+		CustomDeck: customDeck,
 	}, true
 }
 
