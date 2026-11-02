@@ -295,6 +295,63 @@ describe("authoritative pregame table lifecycle", () => {
     );
   });
 
+  test.each(["join", "replace"])(
+    "variant discovery keeps its queried roster and withholds stale proposals after %s",
+    async (change) => {
+      const alice = connect(1, "Alice");
+      const bob = connect(2, "Bob");
+      const charlie = connect(3, "Charlie");
+      await send(alice.user, "tableCreate", { name: "Changing team" });
+      const table = tableFor(alice.user);
+      await send(bob.user, "tableJoin", { tableID: table.id });
+      const entered = Promise.withResolvers<undefined>();
+      const release =
+        Promise.withResolvers<
+          Awaited<ReturnType<typeof models.userStats.getAll>>
+        >();
+      jest.mocked(models.userStats.getAll).mockImplementation(async () => {
+        entered.resolve(undefined);
+        return await release.promise;
+      });
+      const finding = send(bob.user, "chat", {
+        msg: "/fv",
+        room: `table${table.id}`,
+      });
+      await entered.promise;
+      try {
+        if (change === "replace") {
+          await send(alice.user, "tableLeave", { tableID: table.id });
+        }
+        await send(charlie.user, "tableJoin", { tableID: table.id });
+        release.resolve(new Map());
+        await finding;
+        expect(models.userStats.getAll).toHaveBeenCalledTimes(2);
+        expect(models.userStats.getAll).not.toHaveBeenCalledWith(
+          charlie.user.userID,
+        );
+        expect(
+          bob.messages.some((message) =>
+            message.includes("needs the 2-player max score"),
+          ),
+        ).toBe(true);
+        expect(
+          bob.messages.some((message) =>
+            message.includes("needs the 3-player max score"),
+          ),
+        ).toBe(false);
+        expect(
+          alice.messages.some((message) => message.includes("new-options")),
+        ).toBe(false);
+        expect(
+          bob.messages.some((message) => message.includes("new-options")),
+        ).toBe(false);
+      } finally {
+        release.resolve(new Map());
+        await finding;
+      }
+    },
+  );
+
   test("variant discovery uses the team and sends its actionable proposal only to the owner", async () => {
     const alice = connect(1, "Alice");
     const bob = connect(2, "Bob");
@@ -635,5 +692,37 @@ test("cleanup failures reach the admitted caller and release table queue capacit
   const failed = expect(pending).rejects.toThrow("cleanup failed");
   release.resolve(undefined);
   await failed;
+  expect(await enqueueTableOperation(id, () => undefined)).toBe(true);
+});
+
+test("a failed operation and reserved cleanup retain both errors without blocking the next command", async () => {
+  const release = Promise.withResolvers<undefined>();
+  const id = 13 as TableID;
+  const operationError = new Error("operation failed");
+  const cleanupError = new Error("cleanup failed");
+  const order: string[] = [];
+  const pending = enqueueTableOperation(id, async () => {
+    await release.promise;
+    order.push("operation");
+    throw operationError;
+  });
+  const obsoleteCleanup = jest.fn<() => void>();
+  scheduleTableCleanup(id, obsoleteCleanup);
+  scheduleTableCleanup(id, () => {
+    order.push("cleanup");
+    throw cleanupError;
+  });
+  const next = enqueueTableOperation(id, () => {
+    order.push("next");
+  });
+  const failure = expect(pending).rejects.toMatchObject({
+    errors: [operationError, cleanupError],
+    cause: cleanupError,
+  });
+  release.resolve(undefined);
+  await failure;
+  expect(await next).toBe(true);
+  expect(order).toEqual(["operation", "cleanup", "next"]);
+  expect(obsoleteCleanup).not.toHaveBeenCalled();
   expect(await enqueueTableOperation(id, () => undefined)).toBe(true);
 });

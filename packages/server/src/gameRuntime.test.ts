@@ -15,6 +15,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { WebSocket } from "ws";
 import { z } from "zod";
+import { sendServerChat } from "./chatPublish";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
 import { restoreGameCheckpoint } from "./gameCheckpoint";
 import type { GameRuntime } from "./gameRuntime";
@@ -365,6 +366,143 @@ describe("durable running table authority", () => {
     expect(
       alice.messages.some((message) => message.includes("Uncommitted notice.")),
     ).toBe(false);
+  });
+
+  test.each([false, true])(
+    "a notice queued during start uses live durability (failed write: %s)",
+    async (failNotice) => {
+      const { alice, id } = await pregame();
+      const startEntered = Promise.withResolvers<undefined>();
+      const startRelease = Promise.withResolvers<undefined>();
+      const noticeEntered = Promise.withResolvers<undefined>();
+      const noticeRelease = Promise.withResolvers<undefined>();
+      const text = "Notice queued during game start.";
+      const save = jest.mocked(storage.store.save).getMockImplementation();
+      assertDefined(save, "Missing in-memory checkpoint writer.");
+      jest
+        .mocked(storage.store.save)
+        .mockImplementation(async (gameID, revision, data) => {
+          if (revision === 0) {
+            startEntered.resolve(undefined);
+            await startRelease.promise;
+          }
+          if (data.includes(text)) {
+            noticeEntered.resolve(undefined);
+            await noticeRelease.promise;
+            if (failNotice) {
+              throw new Error("Uncertain queued notice.");
+            }
+          }
+          return await save(gameID, revision, data);
+        });
+      const starting = send(alice.user, "tableStart", { tableID: id });
+      await startEntered.promise;
+      const loading = send(alice.user, "loaded", { tableID: id });
+      const publishing = sendServerChat(text, `table${id}`)
+        .then(() => undefined)
+        .catch((error: unknown) => error);
+      try {
+        expect(getTable(id)?.running).toBe(false);
+        startRelease.resolve(undefined);
+        await noticeEntered.promise;
+        expect(getTable(id)?.running).toBe(true);
+        expect(alice.messages.some((message) => message.includes(text))).toBe(
+          false,
+        );
+        expect(
+          getTable(id)?.chat.some((entry) => entry.message.msg === text),
+        ).toBe(false);
+        noticeRelease.resolve(undefined);
+        const result = await publishing;
+        const { game, table } = tableAt(id);
+        const checkpoint = storage.active.get(game.databaseID);
+        assertDefined(checkpoint, "Missing committed checkpoint.");
+        if (failNotice) {
+          expect(result).toBeInstanceOf(Error);
+          expect(table.recoveryBlocked).toBe(true);
+          expect(checkpoint.data).not.toContain(text);
+          expect(table.chat.some((entry) => entry.message.msg === text)).toBe(
+            false,
+          );
+          expect(alice.messages.some((message) => message.includes(text))).toBe(
+            false,
+          );
+        } else {
+          expect(result).toBeUndefined();
+          expect(checkpoint.data).toContain(text);
+          expect(
+            alice.messages.filter((message) => message.includes(text)),
+          ).toHaveLength(1);
+        }
+      } finally {
+        startRelease.resolve(undefined);
+        noticeRelease.resolve(undefined);
+        await Promise.all([starting, loading, publishing]);
+      }
+    },
+  );
+
+  test("prepared action messages never reach an old or unattended replacement session", async () => {
+    const { id, alice, bob } = await started();
+    const active = actor(id);
+    const original = active.user === alice.user ? alice : bob;
+    const other = active.user === alice.user ? bob : alice;
+    const entered = Promise.withResolvers<undefined>();
+    const release = Promise.withResolvers<undefined>();
+    const save = jest.mocked(storage.store.save).getMockImplementation();
+    assertDefined(save, "Missing in-memory checkpoint writer.");
+    jest.mocked(storage.store.save).mockImplementationOnce(async (...args) => {
+      entered.resolve(undefined);
+      await release.promise;
+      return await save(...args);
+    });
+    const previousMessages = original.messages.length;
+    const previousOtherMessages = other.messages.length;
+    const acting = send(active.user, "action", active.action);
+    await entered.promise;
+    const replacement = connect(active.user.userID, active.user.username);
+    try {
+      release.resolve(undefined);
+      await acting;
+      expect(original.messages).toHaveLength(previousMessages);
+      expect(replacement.messages).toHaveLength(0);
+      expect(
+        other.messages
+          .slice(previousOtherMessages)
+          .some((message) => message.startsWith("gameAction ")),
+      ).toBe(true);
+      const { game } = tableAt(id);
+      expect(game.state.turn).toBe(1);
+      expect(storage.active.get(game.databaseID)?.revision).toBe(game.revision);
+      await send(replacement.user, "tableReattend", { tableID: id });
+      await send(replacement.user, "getGameInfo2", { tableID: id });
+      const wire = replacement.messages.find((message) =>
+        message.startsWith("gameActionList "),
+      );
+      assertDefined(wire, "Missing reattended history.");
+      const history = SERVER_COMMAND_SCHEMAS.gameActionList.parse(
+        JSON.parse(wire.slice(15)),
+      );
+      const seat = tableAt(id).table.players.findIndex(
+        (player) => player.userID === replacement.user.userID,
+      );
+      expect(
+        history.list.filter(
+          (event) => event.type === "play" || event.type === "discard",
+        ),
+      ).toHaveLength(1);
+      expect(
+        history.list.some(
+          (event) =>
+            event.type === "draw"
+            && event.playerIndex === seat
+            && event.rank === -1,
+        ),
+      ).toBe(true);
+    } finally {
+      release.resolve(undefined);
+      await acting;
+    }
   });
 
   test("start is durable before publication, seed selection skips played seeds, and draws are scrubbed", async () => {

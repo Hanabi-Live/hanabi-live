@@ -212,7 +212,7 @@ function participants(
 }
 
 async function findVariant(table: Table, room: string) {
-  const players = participants(table);
+  const players = [...participants(table)];
   const stats = await Promise.all(
     players.map(async (player) => await models.userStats.getAll(player.userID)),
   );
@@ -235,7 +235,15 @@ async function findVariant(table: Table, room: string) {
     room,
   );
   const current = getTable(table.id);
-  if (current === table && !current.running && !current.replay) {
+  if (
+    current === table
+    && !current.running
+    && !current.replay
+    && current.players.length === players.length
+    && current.players.every((player) =>
+      players.some((queried) => queried.userID === player.userID),
+    )
+  ) {
     const owner = wsUsers.get(current.ownerID);
     if (owner?.tableID === current.id) {
       chatServerSendPM(

@@ -24,7 +24,7 @@ jest.mock("../models", () => ({
       getHistory: jest.fn(),
     },
     userSettings: { set: jest.fn() },
-    chatLog: { insert: jest.fn() },
+    chatLog: { insert: jest.fn(), insertServer: jest.fn() },
     chatLogPM: { insert: jest.fn() },
   },
 }));
@@ -213,6 +213,17 @@ describe("lobby command parity", () => {
     await expect(
       commandChat(user, { msg: "hello", room: "lobby" }),
     ).rejects.toThrow("storage failed");
+    expect(wsSendAll).not.toHaveBeenCalled();
+  });
+
+  test("failed command-echo persistence cannot execute a public chat command", async () => {
+    jest
+      .mocked(models.chatLog.insert)
+      .mockRejectedValueOnce(new Error("storage failed"));
+    await expect(
+      commandChat(user, { msg: "/random 2", room: "lobby" }),
+    ).rejects.toThrow("storage failed");
+    expect(models.chatLog.insertServer).not.toHaveBeenCalled();
     expect(wsSendAll).not.toHaveBeenCalled();
   });
 

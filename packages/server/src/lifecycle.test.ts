@@ -86,4 +86,32 @@ describe("graceful process lifecycle", () => {
     await shutdownServer(runtime, server, closeDatabase);
     expect(closeDatabase).toHaveBeenCalledTimes(1);
   });
+
+  test.each(["transport", "runtime", "database"] as const)(
+    "a failed %s close preserves admission pause and permits cleanup retry",
+    async (stage) => {
+      const { runtime, server, closeDatabase } = resources();
+      const failure = new Error(`${stage} close failed`);
+      const closing = {
+        transport: server.close,
+        runtime: runtime.close,
+        database: closeDatabase,
+      };
+      closing[stage].mockRejectedValueOnce(failure);
+      await expect(shutdownServer(runtime, server, closeDatabase)).rejects.toBe(
+        failure,
+      );
+      expect(await incomingCommands.run(() => undefined)).toBe(false);
+      if (stage === "transport") {
+        expect(runtime.close).not.toHaveBeenCalled();
+      }
+      if (stage !== "database") {
+        expect(closeDatabase).not.toHaveBeenCalled();
+      }
+      await shutdownServer(runtime, server, closeDatabase);
+      expect(closing[stage]).toHaveBeenCalledTimes(2);
+      expect(closeDatabase).toHaveBeenCalledTimes(stage === "database" ? 2 : 1);
+      expect(await incomingCommands.run(() => undefined)).toBe(false);
+    },
+  );
 });
