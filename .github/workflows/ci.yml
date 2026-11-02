@@ -134,6 +134,34 @@ jobs:
       - name: Test the TypeScript code
         run: npm run test
 
+  rust_poc:
+    runs-on: ubuntu-latest
+    env:
+      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: experimental/rust-server
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check Rust formatting
+        run: cargo fmt --check
+      - name: Check Rust ownership and lint rules
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Test Rust primitives, actors, and PostgreSQL durability
+        run: cargo test --locked
+
   format:
     runs-on: ubuntu-latest
     steps:
@@ -189,6 +217,7 @@ jobs:
         shellcheck,
         spell_check,
         lint_monorepo,
+        rust_poc,
       ]
     runs-on: ubuntu-latest
     env:

@@ -161,6 +161,11 @@ func TestEngineAuthorityTraces(t *testing.T) {
 	isDev = true
 	t.Cleanup(func() { actionFunctions, isDev = oldActions, oldDev })
 	traces := make([]engineAuthorityTrace, 0)
+	standardOptions := NewOptions()
+	standardOptions.NumPlayers = 2
+	traces = append(traces, engineAuthorityTrace{
+		Name: "standard/benchmark", Options: standardOptions, Seed: "p2v0s17",
+	})
 	variantsToTest := []string{
 		"No Variant", "Reversed (5 Suits)", "Up or Down (5 Suits)", "Sudoku (5 Suits)",
 		"Clue Starved (5 Suits)", "Throw It in a Hole (5 Suits)", "Orange (5 Suits)",

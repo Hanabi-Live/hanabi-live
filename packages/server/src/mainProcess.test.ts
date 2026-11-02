@@ -1,4 +1,6 @@
+// cspell:words classid datname locktype objid relname
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { getVariant } from "@hanabi-live/game";
 import { describe, expect, test } from "@jest/globals";
 import { assertDefined } from "complete-common";
 import type { ChildProcess } from "node:child_process";
@@ -22,10 +24,13 @@ import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { WebSocket } from "ws";
 import { z } from "zod";
+import { decodeCustomDeck } from "./customDeck";
 import { GoRandom, seedToInt64 } from "./engine/goRandom";
 import { evaluationDatabase } from "./experimental/evaluationSupport";
 import { winningDeck } from "./experimental/scenarios";
 import { expectedSchemaVersion } from "./migrationFiles";
+import { importReplay } from "./replayImport";
+import { decodeSessionCookie } from "./sessionCookie";
 
 const ROOT = path.resolve(__dirname, "../../..");
 const databaseDescribe =
@@ -141,12 +146,16 @@ async function prepareRoot(
   await writeFile(path.join(directory, ".env"), `${contents}\n`);
 }
 
-function startProcess(directory: string, goPort?: number) {
+function startProcess(directory: string, goPort?: number, rust = false) {
+  let executable = process.execPath;
+  if (rust) {
+    executable = path.join(directory, "hanabi-rust-poc");
+  } else if (goPort !== undefined) {
+    executable = path.join(directory, "hanabi-live");
+  }
   const child = spawn(
-    goPort === undefined
-      ? process.execPath
-      : path.join(directory, "hanabi-live"),
-    goPort === undefined ? ["packages/server/dist/main.js"] : [],
+    executable,
+    goPort === undefined && !rust ? ["packages/server/dist/main.js"] : [],
     {
       cwd: directory,
       env: {
@@ -246,8 +255,21 @@ async function settleLanes(tasks: ReadonlyArray<Promise<void>>) {
 }
 
 /* eslint-disable no-await-in-loop -- Each lane must follow the actual client protocol in order. */
+async function buildRust(directory: string) {
+  const crate = path.join(ROOT, "experimental/rust-server");
+  await run("cargo", ["build", "--release", "--locked"], {
+    cwd: crate,
+    timeout: 300_000,
+    maxBuffer: 2 * 1024 * 1024,
+  });
+  await cp(
+    path.join(crate, "target/release/hanabi-rust-poc"),
+    path.join(directory, "hanabi-rust-poc"),
+  );
+}
+
 databaseDescribe("normal-server comparison", () => {
-  test.each(["go", "typescript"] as const)(
+  test.each(["go", "typescript", "rust"] as const)(
     "%s executes matched gameplay, live reconnects, and cold historical replays",
     async (language) => {
       const database = await evaluationDatabase();
@@ -263,6 +285,8 @@ databaseDescribe("normal-server comparison", () => {
         liveReconnect: [] as number[],
         replay: [] as number[],
         reconnect: [] as number[],
+        replayHistoryReady: [] as number[],
+        reconnectHistoryReady: [] as number[],
       };
       let peakRSSKiB = 0;
       const completed: Array<{
@@ -287,6 +311,9 @@ databaseDescribe("normal-server comparison", () => {
           timeout: 30_000,
         });
         await prepareRoot(directory, database, "localhost");
+        if (language === "rust") {
+          await buildRust(directory);
+        }
         let goPort: number | undefined;
         if (language === "go") {
           goPort = await unusedPort();
@@ -327,7 +354,7 @@ databaseDescribe("normal-server comparison", () => {
             { cwd: path.join(ROOT, "server/src"), timeout: 120_000 },
           );
         }
-        processState = startProcess(directory, goPort);
+        processState = startProcess(directory, goPort, language === "rust");
         let address = await bounded(
           processState.ready,
           `${language} readiness`,
@@ -525,9 +552,58 @@ databaseDescribe("normal-server comparison", () => {
         expect(await sql`SELECT score FROM games`).toEqual(
           Array.from({ length: 8 }, () => ({ score: 25 })),
         );
+        expect(
+          await sql`SELECT count(*)::int AS count FROM game_actions`,
+        ).toEqual([{ count: 200 }]);
+        expect(
+          await sql`SELECT count(*)::int AS count FROM game_participants`,
+        ).toEqual([{ count: 16 }]);
+        expect(
+          await sql`SELECT count(*)::int AS count FROM game_custom_decks`,
+        ).toEqual([{ count: 8 }]);
+        expect(
+          await sql`SELECT count(*)::int AS count FROM active_games`,
+        ).toEqual([{ count: 0 }]);
+        const archives = await sql<
+          Array<{ deck: Uint8Array; actions: unknown }>
+        >`
+          SELECT d.deck, (SELECT jsonb_agg(jsonb_build_object(
+            'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
+            FROM game_actions a WHERE a.game_id=g.id) AS actions
+          FROM games g JOIN game_custom_decks d ON d.game_id=g.id
+        `;
+        for (const archive of archives) {
+          const deck = decodeCustomDeck(archive.deck, getVariant("No Variant"));
+          expect(deck).toEqual(desired);
+          const checked = importReplay({
+            players: ["Alice", "Bob"],
+            deck,
+            actions: archive.actions,
+          });
+          expect(checked.warnings).toEqual([]);
+          expect(checked.state.score).toBe(25);
+        }
+        const statsDeadline = performance.now() + 5000;
+        for (;;) {
+          const [stats] = await sql<Array<{ users: number; games: number }>>`
+            SELECT COALESCE((SELECT SUM(num_games) FROM user_stats WHERE variant_id=0),0)::int AS users,
+              COALESCE((SELECT num_games FROM variant_stats WHERE variant_id=0),0)::int AS games
+          `;
+          if (stats?.users === 16 && stats.games === 8) {
+            break;
+          }
+          if (performance.now() > statsDeadline) {
+            throw new Error("Derived statistics did not settle.");
+          }
+          await delay(10);
+        }
         await sample();
         await stopChild(processState.child);
-        processState = startProcess(directory, goPort);
+        const [writes] = await sql<Array<{ count: number }>>`
+          SELECT (n_tup_ins+n_tup_upd)::int AS count FROM pg_stat_user_tables WHERE relname='active_games'
+        `;
+        assertDefined(writes, "Missing checkpoint write statistics.");
+        processState = startProcess(directory, goPort, language === "rust");
         address = await bounded(
           processState.ready,
           `${language} cold replay readiness`,
@@ -557,7 +633,9 @@ databaseDescribe("normal-server comparison", () => {
               expect.objectContaining({ type: "status", score: 25 }),
             ]),
           );
+          const historyReady = performance.now();
           await unattend(peer, tableID);
+          return historyReady;
         }
         await settleLanes(
           completed.map(async (game) => {
@@ -566,7 +644,8 @@ databaseDescribe("normal-server comparison", () => {
               (async () => {
                 for (let index = 0; index < 20; index++) {
                   const start = performance.now();
-                  await readReplay(peer, game.databaseID);
+                  const ready = await readReplay(peer, game.databaseID);
+                  samples.replayHistoryReady.push(ready - start);
                   samples.replay.push(performance.now() - start);
                 }
               })(),
@@ -574,7 +653,8 @@ databaseDescribe("normal-server comparison", () => {
                 for (let index = 0; index < 10; index++) {
                   const start = performance.now();
                   const returning = await connect(game.aliceCookie);
-                  await readReplay(returning, game.databaseID);
+                  const ready = await readReplay(returning, game.databaseID);
+                  samples.reconnectHistoryReady.push(ready - start);
                   await close(returning);
                   samples.reconnect.push(performance.now() - start);
                 }
@@ -597,13 +677,16 @@ databaseDescribe("normal-server comparison", () => {
           "NORMAL_SERVER_EVALUATION",
           JSON.stringify({
             language,
-            node: process.version,
+            driverNode: process.version,
             scope:
-              "Separate normal server process; real login/cookies/client wire protocol; disposable local PostgreSQL. Not a capacity or language-only benchmark.",
+              language === "rust"
+                ? "Separate release-mode benchmark-only Rust PoC; same protocol workload and disposable PostgreSQL. Not a full-server or language-only comparison."
+                : "Separate normal server process; real login/cookies/client wire protocol; disposable local PostgreSQL. Not a capacity or language-only benchmark.",
             deckSHA256,
             games: completed.length,
             lanes: 4,
             peakRSSKiB,
+            checkpointWrites: writes.count,
             gameplayMilliseconds,
             mixedReadMilliseconds: performance.now() - readStart,
             latency,
@@ -626,10 +709,293 @@ databaseDescribe("normal-server comparison", () => {
         await rm(directory, { recursive: true, force: true });
       }
     },
-    180_000,
+    600_000,
   );
 });
 
+databaseDescribe("Rust actor durability and ownership", () => {
+  test.each(["crash", "failed write"] as const)(
+    "fences replaced sessions during persistence and recovers after %s",
+    async (failure) => {
+      const database = await evaluationDatabase();
+      const sql = database.connect();
+      await mkdir(path.join(ROOT, "dist"), { recursive: true });
+      const directory = await mkdtemp(path.join(ROOT, "dist/rust-recovery-"));
+      let state: ReturnType<typeof startProcess> | undefined;
+      const sockets: WebSocket[] = [];
+      try {
+        await sql.unsafe(
+          await readFile(
+            path.join(ROOT, "install/database_schema.sql"),
+            "utf8",
+          ),
+        );
+        const version = expectedSchemaVersion(
+          await readdir(path.join(ROOT, "install/migrations")),
+        );
+        await sql`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
+        await sql`INSERT INTO public.schema_version VALUES (${version})`;
+        await run("bash", [path.join(ROOT, "packages/server/build.sh")], {
+          cwd: ROOT,
+          timeout: 30_000,
+        });
+        await prepareRoot(directory, database, "localhost");
+        await buildRust(directory);
+        state = startProcess(directory, undefined, true);
+        let address = await bounded(state.ready, "Rust recovery readiness");
+        const aliceCookie = await login(address, "RecoveryAlice");
+        const bobCookie = await login(address, "RecoveryBob");
+        async function connect(cookie: string) {
+          const peer = socketClient(address, cookie);
+          sockets.push(peer.socket);
+          const frames: string[] = [];
+          peer.socket.on("message", (raw: Buffer) => {
+            frames.push(raw.toString());
+          });
+          await peer.receive("welcome", SERVER_COMMAND_SCHEMAS.welcome);
+          return { ...peer, frames };
+        }
+        let alice = await connect(aliceCookie);
+        let bob = await connect(bobCookie);
+        alice.send("tableCreate", { name: "Recovery" });
+        const { tableID } = await alice.receive(
+          "joined",
+          SERVER_COMMAND_SCHEMAS.joined,
+        );
+        bob.send("tableJoin", { tableID });
+        await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
+        alice.send("tableStart", { tableID, requestID: "start" });
+        await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+        await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
+        async function bootstrap(peer: ReturnType<typeof socketClient>) {
+          peer.send("getGameInfo1", { tableID });
+          const init = await peer.receive("init", SERVER_COMMAND_SCHEMAS.init);
+          peer.send("getGameInfo2", { tableID });
+          const history = await peer.receive(
+            "gameActionList",
+            SERVER_COMMAND_SCHEMAS.gameActionList,
+          );
+          peer.send("loaded", { tableID });
+          return { init, history };
+        }
+        const [a, b] = await Promise.all([bootstrap(alice), bootstrap(bob)]);
+        await alice.receive(
+          "connected",
+          SERVER_COMMAND_SCHEMAS.connected,
+          (data) => data.list.every(Boolean),
+        );
+        await bob.receive(
+          "connected",
+          SERVER_COMMAND_SCHEMAS.connected,
+          (data) => data.list.every(Boolean),
+        );
+        alice.send("pause", { tableID });
+        await alice.receive("warning", SERVER_COMMAND_SCHEMAS.warning, (data) =>
+          data.warning.includes("Unsupported PoC command"),
+        );
+        const activeIsAlice = a.init.ourPlayerIndex === 0;
+        const active = activeIsAlice ? alice : bob;
+        const other = activeIsAlice ? bob : alice;
+        const initial = activeIsAlice ? a : b;
+        const card = initial.history.list.find(
+          (event) => event.type === "draw" && event.playerIndex === 0,
+        );
+        assertDefined(card, "Missing active player's initial hand.");
+        if (card.type !== "draw") {
+          throw new Error("Expected a draw.");
+        }
+        const [before] = await sql<
+          Array<{ game_id: number; revision: number }>
+        >`
+          SELECT game_id, revision::int FROM active_games
+        `;
+        assertDefined(before, "Missing durable Rust start.");
+        const acquired = Promise.withResolvers<undefined>();
+        const release = Promise.withResolvers<undefined>();
+        const locking = sql.begin(async (transaction) => {
+          await transaction`SELECT pg_advisory_xact_lock(17482, ${before.game_id})`;
+          acquired.resolve(undefined);
+          await release.promise;
+        });
+        await acquired.promise;
+        const action = {
+          tableID,
+          type: 0,
+          target: card.order,
+          requestID: "accepted-once",
+        };
+        let replacement: Awaited<ReturnType<typeof connect>> | undefined;
+        try {
+          active.send("action", { ...action, target: 9999 });
+          await active.receive(
+            "warning",
+            SERVER_COMMAND_SCHEMAS.warning,
+            (data) => data.warning.includes("not in your hand"),
+          );
+          active.send("action", action);
+          const deadline = performance.now() + 5000;
+          for (;;) {
+            const [waiting] = await sql<Array<{ blocked: boolean }>>`
+              SELECT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory'
+                AND classid = 17482::oid AND objid = ${before.game_id}::oid AND NOT granted
+                AND database = (SELECT oid FROM pg_database WHERE datname = current_database())) AS blocked
+            `;
+            if (waiting?.blocked === true) {
+              break;
+            }
+            if (performance.now() > deadline) {
+              throw new Error("Rust action did not wait for its durable lock.");
+            }
+            await delay(10);
+          }
+          expect(
+            active.frames.some((message) => message.startsWith("gameAction ")),
+          ).toBe(false);
+          replacement = await connect(activeIsAlice ? aliceCookie : bobCookie);
+          release.resolve(undefined);
+          await locking;
+          await other.receive(
+            "gameAction",
+            SERVER_COMMAND_SCHEMAS.gameAction,
+            (event) =>
+              event.action.type === "play" || event.action.type === "discard",
+          );
+          expect(
+            active.frames.some((message) => message.startsWith("gameAction ")),
+          ).toBe(false);
+          expect(
+            replacement.frames.some((message) =>
+              message.startsWith("gameAction "),
+            ),
+          ).toBe(false);
+        } finally {
+          release.resolve(undefined);
+          await locking;
+        }
+        if (activeIsAlice) {
+          alice = replacement;
+        } else {
+          bob = replacement;
+        }
+        replacement.send("tableReattend", { tableID });
+        await replacement.receive(
+          "tableStart",
+          SERVER_COMMAND_SCHEMAS.tableStart,
+        );
+        await bootstrap(replacement);
+        replacement.send("action", action);
+        replacement.send("getGameInfo2", { tableID });
+        const onceOnly = await replacement.receive(
+          "gameActionList",
+          SERVER_COMMAND_SCHEMAS.gameActionList,
+        );
+        expect(
+          onceOnly.list.filter(
+            (event) => event.type === "play" || event.type === "discard",
+          ),
+        ).toHaveLength(1);
+        if (failure === "failed write") {
+          await sql`ALTER TABLE active_games RENAME TO unavailable_active_games`;
+          const next = activeIsAlice ? bob : alice;
+          const nextInitial = activeIsAlice ? b : a;
+          const nextCard = nextInitial.history.list.find(
+            (event) => event.type === "draw" && event.playerIndex === 1,
+          );
+          assertDefined(nextCard, "Missing next player's hand.");
+          if (nextCard.type !== "draw") {
+            throw new Error("Expected a draw.");
+          }
+          const offset = replacement.frames.length;
+          next.send("action", {
+            tableID,
+            type: 0,
+            target: nextCard.order,
+            requestID: "not-committed",
+          });
+          await next.receive(
+            "warning",
+            SERVER_COMMAND_SCHEMAS.warning,
+            (data) => data.warning.includes("uncertain"),
+          );
+          expect(
+            replacement.frames
+              .slice(offset)
+              .some((message) => message.startsWith("gameAction ")),
+          ).toBe(false);
+          await sql`ALTER TABLE unavailable_active_games RENAME TO active_games`;
+          next.send("getGameInfo2", { tableID });
+          await next.receive(
+            "warning",
+            SERVER_COMMAND_SCHEMAS.warning,
+            (data) => data.warning.includes("frozen"),
+          );
+          await stopChild(state.child);
+          expect(state.child.exitCode).toBe(0);
+        } else {
+          const closed = once(state.child, "close");
+          state.child.kill("SIGKILL");
+          await bounded(closed, "Rust crash");
+        }
+        const [retained] = await sql<Array<{ game_id: number; turn: number }>>`
+          SELECT game_id, (checkpoint::jsonb -> 'game' ->> 'turn')::int AS turn FROM active_games
+        `;
+        expect(retained).toEqual({ game_id: before.game_id, turn: 1 });
+        state = startProcess(directory, undefined, true);
+        address = await bounded(state.ready, "Rust cold recovery readiness");
+        const returning = await connect(
+          activeIsAlice ? aliceCookie : bobCookie,
+        );
+        returning.send("tableReattend", { tableID });
+        await returning.receive(
+          "tableStart",
+          SERVER_COMMAND_SCHEMAS.tableStart,
+        );
+        const restored = await bootstrap(returning);
+        expect(restored.init.ourPlayerIndex).toBe(0);
+        expect(
+          restored.history.list.filter(
+            (event) => event.type === "play" || event.type === "discard",
+          ),
+        ).toHaveLength(1);
+        expect(
+          restored.history.list.some(
+            (event) =>
+              event.type === "draw"
+              && event.playerIndex === 0
+              && event.rank === -1,
+          ),
+        ).toBe(true);
+        returning.send("action", action);
+        returning.send("getGameInfo2", { tableID });
+        const duplicate = await returning.receive(
+          "gameActionList",
+          SERVER_COMMAND_SCHEMAS.gameActionList,
+        );
+        expect(
+          duplicate.list.filter(
+            (event) => event.type === "play" || event.type === "discard",
+          ),
+        ).toHaveLength(1);
+      } catch (error) {
+        throw new Error(
+          `Rust actor acceptance failed.\n${state?.output() ?? ""}`,
+          { cause: error },
+        );
+      } finally {
+        for (const socket of sockets) {
+          socket.terminate();
+        }
+        if (state !== undefined) {
+          await stopChild(state.child);
+        }
+        await sql.end({ timeout: 3 });
+        await database.close();
+        await rm(directory, { recursive: true, force: true });
+      }
+    },
+    600_000,
+  );
+});
 /* eslint-enable no-await-in-loop */
 async function login(address: string, username: string) {
   const response = await fetch(`${address}/login`, {
@@ -651,6 +1017,12 @@ async function login(address: string, username: string) {
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
+  expect(
+    decodeSessionCookie(
+      cookie.slice("hanabi.sid=".length),
+      "synthetic-process-smoke-secret-".repeat(8),
+    ),
+  ).toBeGreaterThan(0);
   return cookie;
 }
 
