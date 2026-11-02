@@ -11,7 +11,7 @@ test("compiled disabled integrations and injected bridges never load optional SD
     stdin: {
       resolveDir: __dirname,
       sourcefile: "discord-packaging-probe.js",
-      contents: `
+      contents: String.raw`
         import { DiscordBridge } from "./discordBridge";
         import { initializeErrorReporting, reportServerError } from "./errorReporting";
         import assert from "node:assert/strict";
@@ -66,7 +66,7 @@ test("compiled disabled integrations and injected bridges never load optional SD
               const body = request.headers["content-encoding"] === "gzip"
                 ? gunzipSync(bytes) : bytes;
               response.end("{}");
-              received.resolve(JSON.parse(body.toString().split("\\n")[2]));
+              received.resolve(JSON.parse(body.toString().split("\n")[2]));
             });
           });
           await new Promise((resolve) => receiver.listen(0, "127.0.0.1", resolve));
