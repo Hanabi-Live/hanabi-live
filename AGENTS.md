@@ -48,6 +48,10 @@ maintenance shutdown. Use `/gracefulRestart` to restart or `/shutdown` to stop.
 
 ### Database migrations
 
+The temporary Go-to-Rust live-game cutover is documented in
+`experimental/rust-server/README.md`. Its bridge, endpoint/startup marker, and
+cutover-specific tests must be removed after the permanent Rust switch.
+
 Use `./install/migrate.sh status` to inspect migration state and
 `./install/migrate.sh apply` to apply pending migrations before restarting. The
 runner uses pinned Tern and the project's Go 1.27 toolchain, and reuses the

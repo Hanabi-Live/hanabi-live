@@ -18,6 +18,11 @@ use subtle::ConstantTimeEq;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 const HASH_WAIT: WaitDuration = WaitDuration::from_secs(10);
+const PASSWORD_MEMORY: u32 = 65536;
+const PASSWORD_PASSES: u32 = 3;
+const PASSWORD_LANES: u32 = 4;
+const PASSWORD_KEY_BYTES: usize = 32;
+const PASSWORD_SALT_BYTES: usize = 16;
 static HASH_ADMISSION: LazyLock<HashAdmission> = LazyLock::new(|| HashAdmission::new(4, 32));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -112,7 +117,13 @@ pub async fn hash_password(password: String) -> Result<String> {
     let permit = HASH_ADMISSION.acquire(HASH_WAIT).await?;
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let params = Params::new(65536, 3, 4, Some(32)).map_err(|_| HashFailure::Parameters)?;
+        let params = Params::new(
+            PASSWORD_MEMORY,
+            PASSWORD_PASSES,
+            PASSWORD_LANES,
+            Some(PASSWORD_KEY_BYTES),
+        )
+        .map_err(|_| HashFailure::Parameters)?;
         Argon2::new(Algorithm::Argon2id, Version::V0x13, params)
             .hash_password(password.as_bytes(), &SaltString::generate(&mut OsRng))
             .map(|hash| hash.to_string())
@@ -133,6 +144,23 @@ pub async fn verify_password(password: String, hash: String) -> Result<bool> {
         }
     })
     .await?
+}
+
+pub(super) fn password_needs_upgrade(hash: &str) -> Result<bool> {
+    let parsed = PasswordHash::new(hash).map_err(|_| HashFailure::StoredHash)?;
+    let params = Params::try_from(&parsed).map_err(|_| HashFailure::StoredHash)?;
+    let mut salt = [0; 64];
+    let salt_length = parsed
+        .salt
+        .ok_or(HashFailure::StoredHash)?
+        .decode_b64(&mut salt)
+        .map_err(|_| HashFailure::StoredHash)?
+        .len();
+    let key_length = parsed.hash.ok_or(HashFailure::StoredHash)?.len();
+    Ok(params.t_cost() < PASSWORD_PASSES
+        && params.m_cost() <= PASSWORD_MEMORY
+        && salt_length <= PASSWORD_SALT_BYTES
+        && key_length <= PASSWORD_KEY_BYTES)
 }
 
 pub fn verify_legacy(password: &str, expected: &str) -> bool {

@@ -8,6 +8,8 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
+#[path = "go_cutover_state.rs"]
+mod go_cutover;
 
 const MAX_PAYLOAD: usize = 4 * 1024 * 1024;
 const MAX_RECORDS: usize = 4096;

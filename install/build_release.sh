@@ -5,8 +5,13 @@ set -euo pipefail
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 cd "$DIR/.."
-if (($# != 1)) || [[ -e "$1" ]]; then
-  echo "Usage: $0 NEW_OUTPUT_DIRECTORY" >&2
+if (($# < 1 || $# > 2)) || [[ -e "$1" ]]; then
+  echo "Usage: $0 NEW_OUTPUT_DIRECTORY [go|rust]" >&2
+  exit 1
+fi
+runtime=${2:-go}
+if [[ $runtime != go && $runtime != rust ]]; then
+  echo "Runtime must be go or rust." >&2
   exit 1
 fi
 if [[ $(git rev-parse --is-shallow-repository) != false ]]; then
@@ -38,20 +43,40 @@ mkdir "$release/misc"
 cp misc/word_list.txt "$release/misc/"
 cp -a install/migrations "$release/install/"
 cp install/migrate.sh install/migration_files.sh install/release.py "$release/install/"
+cp install/database_schema.sql "$release/install/"
 cp LICENSE "$release/"
 
-(
-  cd server/src
-  CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
-    -ldflags="-s -w -X main.buildRevision=$revision" -o "$release/hanabi-live" .
-)
+if [[ $runtime == rust ]]; then
+  (
+    cd experimental/rust-server
+    if [[ $(rustc -vV | sed -n 's/^host: //p') != x86_64-unknown-linux-gnu ]]; then
+      echo "Rust release builds require a Linux amd64 host." >&2
+      exit 1
+    fi
+    cargo build --release --locked --target x86_64-unknown-linux-musl
+  )
+  cp experimental/rust-server/target/x86_64-unknown-linux-musl/release/hanabi-rust-poc "$release/hanabi-live"
+  if readelf -l "$release/hanabi-live" | grep -q INTERP; then
+    echo "Rust releases must not depend on the build host's dynamic loader." >&2
+    exit 1
+  fi
+else
+  (
+    cd server/src
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
+      -ldflags="-s -w -X main.buildRevision=$revision" -o "$release/hanabi-live" .
+  )
+fi
 # shellcheck source=./install/migration_files.sh
 source install/migration_files.sh
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOBIN="$release/install" \
   go install -trimpath "github.com/jackc/tern/v2@$TERN_VERSION"
-python3 install/release.py manifest "$release"
+python3 install/release.py manifest "$release" --runtime "$runtime"
 python3 install/release.py verify "$release"
 archive="hanabi-live-$revision-linux-amd64.tar.gz"
+if [[ $runtime == rust ]]; then
+  archive="hanabi-live-rust-$revision-linux-amd64.tar.gz"
+fi
 tar -czf "$output/$archive" -C "$release" .
 (
   cd "$output"

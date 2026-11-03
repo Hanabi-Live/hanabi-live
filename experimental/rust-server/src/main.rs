@@ -2,11 +2,11 @@ use anyhow::{Context, Result, ensure};
 use hanabi_rust_poc::{
     actors::Hub,
     config::Config,
-    game,
+    game, go_cutover,
     lifecycle::{Control, StopReason, drain_game_runtime},
     operations,
     public_http::PublicConfig,
-    restart,
+    release, restart,
     store::Store,
     tls,
     web::{App, router},
@@ -27,10 +27,37 @@ fn main() -> Result<()> {
         println!("{}", restart::version());
         return Ok(());
     }
+    if arguments == ["--check-migration-target"] {
+        let _lock = release::enter(release::Mode::Inspect)?;
+        return tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?
+            .block_on(release::check_migration_target());
+    }
+    if arguments == ["--import-go-checkpoints"] {
+        let _lock = release::enter(release::Mode::GoImport)?;
+        let config = Config::load(Path::new(".env"))?;
+        let _ = rustls::crypto::ring::default_provider().install_default();
+        return tokio::runtime::Builder::new_multi_thread().enable_all().build()?.block_on(async {
+            let store = Store::connect_for_go_import(&config).await?;
+            let result = tokio::time::timeout(Duration::from_secs(300), go_cutover::import(&store)).await;
+            let closed = store.close().await;
+            let count = result.context("Go cutover timed out; keep both servers stopped and retry")?
+                .context("Go cutover incomplete; preserve both stores, keep Go stopped, and retry the same command")?;
+            closed?;
+            println!("Imported {count} Go checkpoints. Keep Go stopped; normal Rust startup can now recover them.");
+            Ok(())
+        });
+    }
     ensure!(
         arguments.is_empty() || arguments == ["--check-startup"],
         "Only --check-startup and --version are supported"
     );
+    let _release_lock = release::enter(if arguments.is_empty() {
+        release::Mode::Run
+    } else {
+        release::Mode::Inspect
+    })?;
     // Load once before Tokio starts; dotenv values never mutate process-wide environment.
     let config = Config::load(Path::new(".env"))?;
     let version = restart::validate_assets(&config)?;

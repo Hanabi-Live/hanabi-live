@@ -46,13 +46,88 @@ drain, and process replacement; it does not compile source inside the running
 server. SIGTERM and SIGINT also drain admitted work. Ownership/durability loss
 exits with an error rather than pretending shutdown succeeded.
 
+## Immutable releases
+
+CI now publishes a separate `hanabi-live-rust-<revision>-linux-amd64` artifact.
+It contains the statically linked Rust binary named `hanabi-live`, paired client
+assets, the word list, schema/migrations, and the bundled migration tool. No Go,
+Node, Cargo, or compiler is needed on the deployment host; installation uses
+Python, Bash, PostgreSQL, and Redis.
+
+To build locally on Linux amd64, install `musl-tools`, add Rust's
+`x86_64-unknown-linux-musl` target, and run:
+
+```sh
+bash install/build_release.sh dist/rust-release rust
+```
+
+Use the existing checksum-verified release installer. Rust releases are stored
+under `<revision>-rust`, allowing Go and Rust bundles of the same commit to
+coexist. Activate with:
+
+```sh
+python3 install/release.py activate /absolute/deployment/root REVISION \
+  --runtime rust --apply-migrations
+```
+
+Activation requires the service to be stopped. Both runtimes hold the shared
+lifecycle lock while serving. Rust-to-Go activation is refused because it would
+require a reviewed reverse-state migration.
+
+## Temporary Go-to-Rust cutover
+
+**This bridge is temporary and must be deleted after the permanent Rust
+switch.** It imports the current Go version-2 checkpoints from PostgreSQL
+`active_games`, not arbitrary legacy flat files. First run the updated Go server
+so any older recovery files have been restored into its normal durable state.
+
+1. Back up PostgreSQL, stage the Rust bundle, and configure a **fresh** Redis
+   namespace with durable AOF. Preserve the Go `SESSION_SECRET` and database
+   identity in Rust's `.env` so existing cookies/accounts keep working.
+1. On the updated Go server, call:
+
+   ```sh
+   curl --fail --request POST http://127.0.0.1:${LOCALHOST_PORT:-8081}/rustCutover
+   ```
+
+   This drains commands, checkpoints the maintenance clock allowance once, and
+   stops Go without terminating games. It writes `.go-to-rust-cutover`, which
+   prevents that Go installation from restarting. Keep the service manager
+   stopped afterward; do not use `supervisorctl stop/restart` on a running Go
+   server and do not launch older binaries that lack the marker check.
+
+1. Close other clients connected to the application database. From the staged
+   Rust release, run:
+
+   ```sh
+   ./hanabi-live --import-go-checkpoints
+   ```
+
+   The command requires exclusive Redis ownership and refuses other database
+   clients. It validates Go state, persists a Redis staging journal, atomically
+   removes the PostgreSQL source rows, and promotes the native checkpoints.
+   Table/game IDs, cards, clocks, pauses, notes, tags, votes, and request
+   receipts are retained. Disconnected network sessions must reattend normally.
+
+1. Activate/start Rust only after successful import. If interrupted, keep Go
+   stopped and retry the same command against the same stores. Pending journals
+   block normal Rust startup. **Do not delete either recovery copy or remove the
+   Go marker to roll back after source removal.**
+
+After the switch is permanent, remove `go_cutover*.rs`, their CLI/Store/state
+hooks, Go's `go_rust_cutover*.go` and startup/route hooks, the cutover-specific
+fixtures/tests, and the marker entries in runtime links/ignore files. Remove
+this section and its contributor/install references too. Normal Rust recovery
+and release installation must remain.
+
 ## Storage and ownership
 
 Redis is authoritative for recoverable pregames, live games, and replay state.
 PostgreSQL retains accounts, completed games, notes, tags, chat, and statistics;
 Rust does not mirror live checkpoints into `active_games`. Its snapshot format
-is runtime-specific. Resolve existing Go/TypeScript active games before
-switching runtimes, and preserve both Redis persistence and PostgreSQL backups.
+is runtime-specific. Use the temporary bridge for Go games; TypeScript
+checkpoints are not accepted by that bridge. Preserve both Redis persistence and
+PostgreSQL backups.
 
 The Redis namespace includes the configured PostgreSQL host, port, and database.
 Keep that identity and the Redis endpoint stable across restarts, including the

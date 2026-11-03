@@ -47,6 +47,8 @@ func httpLocalhostInit() {
 	mutations.GET("/debugFunction", httpLocalhostDebugFunction)
 	httpRouter.GET("/getLongTables", httpLocalhostGetLongTables)
 	httpRouter.GET("/gracefulRestart", httpLocalhostGracefulRestart)
+	// Temporary Go-to-Rust cutover; delete after the permanent switch.
+	httpRouter.POST("/rustCutover", httpLocalhostGoRustCutover)
 	mutations.GET("/maintenance", httpLocalhostMaintenance)
 	httpRouter.GET("/memory", httpLocalhostMemory)
 	httpRouter.GET("/metrics", httpLocalhostMetrics)

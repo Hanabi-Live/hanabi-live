@@ -6,7 +6,7 @@ use axum::{
 use serde_json::Value;
 use tower::ServiceExt;
 
-fn config() -> AccountConfig {
+pub(super) fn config() -> AccountConfig {
     AccountConfig {
         secret: "synthetic-account-test-signing-key".into(),
         domain: "example.invalid".into(),
@@ -16,7 +16,7 @@ fn config() -> AccountConfig {
     }
 }
 
-async fn request(
+pub(super) async fn request(
     app: &Router,
     method: &str,
     path: &str,

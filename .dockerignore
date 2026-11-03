@@ -12,4 +12,5 @@ backups
 letsencrypt
 dist
 experimental/rust-server/**/target
+.go-to-rust-cutover
 hanabi-live

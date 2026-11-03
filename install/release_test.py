@@ -1,4 +1,4 @@
-# cspell:words arcname
+# cspell:words arcname esac
 import contextlib
 import io
 import json
@@ -81,6 +81,33 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
             release.stage(self.root, self.archive, "0" * 64)
         self.assertEqual(list((self.root / "releases").iterdir()), [])
+
+    def test_rust_bundle_coexists_with_go_and_refuses_reverse_cutover(self):
+        self.stage()
+        release.activate(self.root, self.revision)
+        self.metadata["runtime"] = "rust"
+        (self.artifact / "hanabi-live").write_text(
+            "#!/bin/sh\ncase \"$1\" in\n"
+            f" --version) echo {self.revision};;\n"
+            " --check-startup|--check-migration-target) exit 0;;\n"
+            " *) exit 2;;\n"
+            "esac\n"
+        )
+        self.metadata["files"] = release.files_in(self.artifact)
+        self.write_manifest()
+        self.pack()
+        self.stage()
+        release.activate(self.root, self.revision, "rust")
+        self.assertEqual((self.root / "current").resolve().name, self.revision + "-rust")
+        self.assertTrue((self.root / "releases" / self.revision).is_dir())
+        with self.assertRaisesRegex(ValueError, "Rust-to-Go"):
+            release.activate(self.root, self.revision)
+
+    def test_unknown_runtime_is_rejected(self):
+        self.metadata["runtime"] = "unknown"
+        self.write_manifest()
+        with self.assertRaisesRegex(ValueError, "Unsupported runtime"):
+            release.verify(self.artifact)
 
     def test_staged_rename_sync_failure_reports_changed_state(self):
         original_sync = release.sync_directory

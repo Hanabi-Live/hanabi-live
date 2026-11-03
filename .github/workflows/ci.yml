@@ -227,6 +227,9 @@ jobs:
         rust_poc,
       ]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [go, rust]
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
     services:
@@ -251,15 +254,24 @@ jobs:
         with:
           go-version: "1.27.x"
           cache-dependency-path: server/src/go.sum
+      - uses: ./.github/workflows/setup-redis
+        if: matrix.runtime == 'rust'
+      - name: Prepare static Rust release toolchain
+        if: matrix.runtime == 'rust'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+          cd experimental/rust-server
+          rustup target add x86_64-unknown-linux-musl
       - name: Build and verify immutable native release
-        run: bash install/build_release.sh dist/native
+        run: bash install/build_release.sh dist/native "${{ matrix.runtime }}"
       - name: Test release installation guards
         run: python3 -m unittest discover -s install -p 'release_test.py'
       - name: Exercise local release lifecycle
-        run: python3 install/release_smoke.py dist/native/*.tar.gz
+        run: python3 install/release_smoke.py dist/native/*.tar.gz "${{ matrix.runtime }}"
       - uses: actions/upload-artifact@v7.0.2
         with:
-          name: hanabi-live-${{ github.sha }}-linux-amd64
+          name: ${{ matrix.runtime == 'rust' && 'hanabi-live-rust' || 'hanabi-live' }}-${{ github.sha }}-linux-amd64
           path: |
             dist/native/*.tar.gz
             dist/native/*.sha256

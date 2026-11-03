@@ -25,6 +25,7 @@ motd.txt*
 
 # Various directories
 /experimental/rust-server/**/target
+/.go-to-rust-cutover
 /backups
 /letsencrypt
 /logs

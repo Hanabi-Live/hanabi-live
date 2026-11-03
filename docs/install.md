@@ -406,6 +406,19 @@ inputs.
 
 <br />
 
+### Rust release bundles and temporary cutover
+
+CI also publishes `hanabi-live-rust-<revision>-linux-amd64`, a static Rust
+server with its paired client assets and migration tool. The same release
+installer stages it separately under `<revision>-rust`; activation requires
+`--runtime rust`. The Go artifact and its existing installation commands are
+unchanged.
+
+For prerequisites, installation, and the temporary live-game transfer procedure,
+see the [Rust server runbook](../experimental/rust-server/README.md). Do not
+activate Rust over unresolved Go games without importing their checkpoints. The
+cutover bridge must be deleted after permanently switching to Rust.
+
 ### Set up `iptables` (Optional)
 
 - `sudo apt install iptables-persistent -y`

@@ -69,6 +69,10 @@ func main() {
 			return
 		}
 	}
+	if err := checkGoRustCutover(projectPath); err != nil {
+		logger.Fatal(err.Error())
+		return
+	}
 
 	// Check to see if the ".env" file exists
 	envPath := path.Join(projectPath, ".env")

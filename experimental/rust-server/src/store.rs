@@ -16,6 +16,9 @@ use sqlx::{
 use std::{collections::BTreeMap, sync::Arc, time::Duration};
 use tokio::sync::Semaphore;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
+#[cfg(test)]
+#[path = "go_cutover_tests.rs"]
+mod cutover_tests;
 
 #[derive(Clone)]
 pub struct Store {
@@ -41,6 +44,13 @@ impl Store {
         }
     }
     pub async fn connect(config: &crate::config::Config) -> Result<Self> {
+        Self::connect_mode(config, false).await
+    }
+    // Temporary entry point: remove with go_cutover after the permanent switch.
+    pub async fn connect_for_go_import(config: &crate::config::Config) -> Result<Self> {
+        Self::connect_mode(config, true).await
+    }
+    async fn connect_mode(config: &crate::config::Config, import_go: bool) -> Result<Self> {
         let options = PgConnectOptions::new()
             .host(&config.database_host)
             .port(config.database_port)
@@ -82,7 +92,7 @@ impl Store {
             .fetch_one(&primary)
             .await?;
         ensure!(
-            old == 0,
+            old == 0 || import_go,
             "Legacy PostgreSQL active_games checkpoints exist. Recover/migrate them explicitly before starting the Redis authority."
         );
         let namespace = serde_json::to_string(&(
@@ -101,13 +111,39 @@ impl Store {
             stats_slots: Arc::new(Semaphore::new(32)),
         })
     }
-    fn state(&self) -> Result<&RedisState> {
+    pub(crate) fn state(&self) -> Result<&RedisState> {
         self.state
             .as_ref()
             .context("Redis authority is not connected")
     }
     pub fn check_state(&self) -> Result<()> {
         self.state()?.check()
+    }
+    pub(crate) async fn require_offline_database(&self) -> Result<()> {
+        ensure!(
+            !self.primary_name.is_empty() && !self.archive_name.is_empty(),
+            "Cutover needs identified database connections"
+        );
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(3);
+        loop {
+            let clients: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database()
+                 AND COALESCE(backend_type,'client backend')='client backend'
+                 AND COALESCE(application_name,'') NOT IN ($1,$2)",
+            )
+            .bind(&self.primary_name)
+            .bind(&self.archive_name)
+            .fetch_one(&self.primary)
+            .await?;
+            if clients == 0 {
+                return Ok(());
+            }
+            ensure!(
+                tokio::time::Instant::now() < deadline,
+                "Stop Go and close other database clients before cutover"
+            );
+            tokio::time::sleep(Duration::from_millis(25)).await;
+        }
     }
     pub fn state_health(&self) -> Result<()> {
         self.check_state()
@@ -183,7 +219,14 @@ impl Store {
             "Legacy PostgreSQL active game checkpoints require explicit migration"
         );
         let mut output = vec![];
-        let mut queue = std::collections::VecDeque::from(self.state()?.load().await?);
+        let stored = self.state()?.load().await?;
+        ensure!(
+            stored
+                .iter()
+                .all(|record| matches!(record.id, StateId::Table(_))),
+            "Pending Go cutover: keep Go stopped and rerun --import-go-checkpoints before serving"
+        );
+        let mut queue = std::collections::VecDeque::from(stored);
         let mut seen = std::collections::HashSet::new();
         while let Some(stored) = queue.pop_front() {
             let StateId::Table(id) = stored.id else {

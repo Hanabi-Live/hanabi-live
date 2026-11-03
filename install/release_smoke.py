@@ -3,6 +3,7 @@
 # cspell:words createdb
 
 import json
+import contextlib
 import os
 from pathlib import Path
 import shlex
@@ -10,6 +11,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -56,9 +58,46 @@ def database_environment(dsn):
         "DB_PASSWORD": values.get("password", ""),
     }
 
+@contextlib.contextmanager
+def redis_fixture(runtime):
+    if runtime != "rust":
+        yield None
+        return
+    with tempfile.TemporaryDirectory(prefix="hanabi-release-redis-") as directory:
+        socket_path = Path(directory) / "redis.sock"
+        environment = {key: os.environ[key] for key in ("PATH", "LD_LIBRARY_PATH") if key in os.environ}
+        process = subprocess.Popen(
+            ["redis-server", "--port", "0", "--unixsocket", str(socket_path), "--unixsocketperm", "700",
+             "--dir", directory, "--appendonly", "yes", "--appendfsync", "always", "--save", "",
+             "--logfile", str(Path(directory) / "redis.log")],
+            env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        try:
+            wait_for(lambda: subprocess.run(
+                ["redis-cli", "-s", str(socket_path), "PING"], env=environment,
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=2,
+            ).returncode == 0, process)
+            yield f"redis+unix://{socket_path}"
+        finally:
+            process.terminate()
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=10)
+                raise
+
 
 def main():
     archive = Path(sys.argv[1]).resolve()
+    runtime = sys.argv[2] if len(sys.argv) > 2 else "go"
+    if runtime not in ("go", "rust"):
+        raise ValueError("Runtime must be go or rust")
+    with redis_fixture(runtime) as redis_url:
+        exercise(archive, runtime, redis_url)
+
+
+def exercise(archive, runtime, redis_url):
     dsn = os.environ["HANABI_TEST_DATABASE_URL"]
     database = "hanabi_release_" + uuid.uuid4().hex
     workspace = Path("dist/release-smoke", database).resolve()
@@ -74,10 +113,12 @@ def main():
     environment.update(
         DB_NAME=database,
         DOMAIN="localhost",
-        SESSION_SECRET="release-smoke-only",
+        SESSION_SECRET="release-smoke-only" * 12,
         PORT=str(public_port),
         LOCALHOST_PORT=str(local_port),
     )
+    if redis_url is not None:
+        environment["REDIS_URL"] = redis_url
     pg_environment = dict(
         os.environ,
         PGHOST=environment["DB_HOST"],
@@ -110,7 +151,7 @@ def main():
         release.init_root(str(root))
         release.stage(root, archive, release.digest(archive))
         installed = next((root / "releases").iterdir())
-        revision = installed.name
+        revision = release.verify(installed)["revision"]
 
         def write_env(db_name):
             values = dict(environment, DB_NAME=db_name)
@@ -120,14 +161,14 @@ def main():
 
         write_env(database + "_missing")
         try:
-            release.activate(root, revision)
+            release.activate(root, revision, runtime)
         except subprocess.CalledProcessError:
             pass
         else:
             raise AssertionError("A failed migration activated code")
         assert not (root / "current").exists()
         write_env(database)
-        release.activate(root, revision)
+        release.activate(root, revision, runtime)
         subprocess.run(
             ["psql", "-Xq", "-v", "ON_ERROR_STOP=1", "-c", "UPDATE schema_version SET version = 999"],
             env=pg_environment,
@@ -170,14 +211,16 @@ def main():
             ) as response:
                 assert response.read().decode().strip() == release.verify(installed)["clientVersion"]
             try:
-                release.activate(root, revision)
+                release.activate(root, revision, runtime)
             except BlockingIOError:
                 pass
             else:
                 raise AssertionError("Activation was allowed while the server was running")
             request("/gracefulRestart")
             wait_for(
-                lambda: log_path.read_text().count("Current git commit:") >= 2
+                lambda: log_path.read_text().count(
+                    "The server has successfully started" if runtime == "rust" else "Current git commit:"
+                ) >= 2
                 and request("/version").strip() == revision,
                 process,
             )
@@ -190,7 +233,7 @@ def main():
             request("/shutdown")
             assert process.wait(timeout=20) == 0
             try:
-                release.activate(root, revision)
+                release.activate(root, revision, runtime)
             except ValueError as error:
                 assert "Rollback/re-activation refused" in str(error)
             else:
@@ -211,7 +254,7 @@ def main():
             process.terminate()
             process.wait(timeout=40)
         if created:
-            subprocess.run(["dropdb", "--maintenance-db", dsn, database], check=True)
+            subprocess.run(["dropdb", "--force", "--maintenance-db", dsn, database], check=True)
         if success:
             shutil.rmtree(workspace)
         else:

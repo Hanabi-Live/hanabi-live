@@ -5,6 +5,8 @@ mod normalization;
 pub(crate) mod test_support;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod upgrade_tests;
 
 pub use crypto::{
     HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash, verify_legacy,
@@ -250,7 +252,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         if !correct {
             return Ok(unauthorized("That is not the correct password."));
         }
-        if legacy.is_some() || !input.new_password.is_empty() {
+        let automatic_upgrade = legacy.is_none()
+            && input.new_password.is_empty()
+            && original
+                .as_deref()
+                .map(crypto::password_needs_upgrade)
+                .transpose()?
+                .unwrap_or(false);
+        if legacy.is_some() || !input.new_password.is_empty() || automatic_upgrade {
             let password = if input.new_password.is_empty() {
                 input.password
             } else {
@@ -258,19 +267,19 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             };
             let hash = hash_password(password).await?;
             // Do not let a concurrent login overwrite a newer password change.
-            let changed = sqlx::query(
-                "UPDATE users SET password_hash=$2, old_password_hash=NULL WHERE id=$1
-                 AND password_hash IS NOT DISTINCT FROM $3
-                 AND old_password_hash IS NOT DISTINCT FROM $4",
+            let changed = update_password_if_unchanged(
+                &state.pool,
+                id,
+                &hash,
+                original.as_deref(),
+                legacy.as_deref(),
             )
-            .bind(id)
-            .bind(hash)
-            .bind(original)
-            .bind(legacy)
-            .execute(&state.pool)
             .await?;
-            if changed.rows_affected() != 1 {
+            if !changed && !automatic_upgrade {
                 return Ok(unauthorized("That is not the correct password."));
+            }
+            if !changed {
+                eprintln!("Skipped password hash upgrade after a concurrent credential change.");
             }
         }
     } else {
@@ -317,6 +326,28 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         "OK\n",
     )
         .into_response())
+}
+
+async fn update_password_if_unchanged(
+    pool: &PgPool,
+    id: i32,
+    hash: &str,
+    original: Option<&str>,
+    legacy: Option<&str>,
+) -> Result<bool> {
+    Ok(sqlx::query(
+        "UPDATE users SET password_hash=$2, old_password_hash=NULL WHERE id=$1
+         AND password_hash IS NOT DISTINCT FROM $3
+         AND old_password_hash IS NOT DISTINCT FROM $4",
+    )
+    .bind(id)
+    .bind(hash)
+    .bind(original)
+    .bind(legacy)
+    .execute(pool)
+    .await?
+    .rows_affected()
+        == 1)
 }
 
 async fn logout(
