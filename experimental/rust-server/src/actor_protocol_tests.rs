@@ -254,6 +254,55 @@ async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<(
 }
 
 #[tokio::test]
+async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Bot", "Alice", "Outsider"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Bot table", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let room = format!("table{id}");
+        for running in [false, true] {
+            if running {
+                h.send(0, "tableStart", json!({"tableID":id})).await?;
+                ensure!(matches!(h.snapshot(id).await?.0.phase, Phase::Live { .. }));
+            }
+            h.frames(0)?;
+            h.frames(2)?;
+            for (text, expected) in [
+                ("/setall 11", "/setall 11"),
+                ("/custom-bot <level>", "/custom-bot &lt;level&gt;"),
+            ] {
+                let before = h.snapshot(id).await?.0.chat.len();
+                h.send(1, "chat", json!({"room":room,"msg":text})).await?;
+                let messages = chat_messages(&h.frames(0)?);
+                ensure!(
+                    messages.iter().any(|message| message["msg"] == expected
+                        && message["who"] == "Alice"
+                        && message["source"] == "user"),
+                    "Bot did not receive table command"
+                );
+                let snapshot = h.snapshot(id).await?.0;
+                ensure!(
+                    snapshot.chat.len() == before + 1,
+                    "Command was not persisted"
+                );
+                ensure!(snapshot.chat[before].message["msg"] == expected);
+                ensure!(
+                    chat_messages(&h.frames(2)?).is_empty(),
+                    "Outsider received chat"
+                );
+            }
+        }
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    outcome?;
+    cleanup
+}
+
+#[tokio::test]
 async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

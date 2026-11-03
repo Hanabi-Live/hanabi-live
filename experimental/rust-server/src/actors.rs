@@ -3444,7 +3444,11 @@ impl TableActor {
             }
             return self.publish(e).await;
         }
-        if text.starts_with('/') {
+        // Unknown slash commands are ordinary table messages for bots.
+        if matches!(
+            crate::lobby::classify_chat(&text),
+            crate::lobby::Classification::Public | crate::lobby::Classification::Private
+        ) {
             return self
                 .chat_command(session, &text, data["publicBaseURL"].as_str().unwrap_or(""))
                 .await;

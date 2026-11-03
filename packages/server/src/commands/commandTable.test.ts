@@ -13,6 +13,7 @@ import {
   jest,
   test,
 } from "@jest/globals";
+import { assertDefined } from "complete-common";
 import type { WebSocket } from "ws";
 import type { Table } from "../interfaces/Table";
 import { models } from "../models";
@@ -246,6 +247,47 @@ describe("authoritative pregame table lifecycle", () => {
     ).toBe(true);
     expect(bob.messages).toHaveLength(0);
   });
+
+  test.each([
+    ["/setall 11", "/setall 11"],
+    ["/custom-bot <level>", "/custom-bot &lt;level&gt;"],
+  ])(
+    "table command %s reaches bots without exposing private commands",
+    async (msg, expected) => {
+      const alice = connect(1, "Alice");
+      const bot = connect(2, "Bot");
+      const outsider = connect(3, "Outsider");
+      await send(alice.user, "tableCreate", { name: "Bot table" });
+      const table = tableFor(alice.user);
+      await send(bot.user, "tableJoin", { tableID: table.id });
+      alice.messages.length = 0;
+      bot.messages.length = 0;
+      outsider.messages.length = 0;
+      const room = `table${table.id}`;
+      const before = table.chat.length;
+      await send(alice.user, "chat", { msg, room });
+      const message = bot.messages.findLast((frame) =>
+        frame.startsWith("chat "),
+      );
+      assertDefined(message, "Bot did not receive the table command.");
+      expect(JSON.parse(message.slice("chat ".length))).toMatchObject({
+        msg: expected,
+        who: "Alice",
+        source: "user",
+        room,
+      });
+      expect(table.chat).toHaveLength(before + 1);
+      expect(outsider.messages).toHaveLength(0);
+      const delivered = bot.messages.length;
+      await send(alice.user, "chat", { msg: "/token private-argument", room });
+      await send(outsider.user, "chat", { msg: "/setall 11", room });
+      expect(table.chat).toHaveLength(before + 1);
+      expect(bot.messages).toHaveLength(delivered);
+      expect(alice.messages.at(-1)).toContain('"recipient":"Alice"');
+      expect(outsider.messages.at(-1)).toContain("warning ");
+      expect(models.chatLog.insert).not.toHaveBeenCalled();
+    },
+  );
 
   test("help aliases echo the request but keep their response private", async () => {
     const alice = connect(1, "Alice");

@@ -38,17 +38,52 @@ func TestLobbyCommandAdmissionPrecedesPersistence(t *testing.T) {
 	}
 }
 
-func TestUnknownTableCommandDoesNotEnterChat(t *testing.T) {
+func TestUnknownTableCommandsEnterChat(t *testing.T) {
+	for _, phase := range []struct {
+		name    string
+		running bool
+	}{
+		{"pregame", false},
+		{"running", true},
+	} {
+		t.Run(phase.name, func(t *testing.T) {
+			table, ctx := newTimerTestTable(t)
+			table.Running = phase.running
+			old := chatCommandMap
+			chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table, string))
+			t.Cleanup(func() { chatCommandMap = old })
+			for _, test := range []struct{ message, want string }{
+				{"/setall 11", "/setall 11"},
+				{"/custom-bot <level>", "/custom-bot &lt;level&gt;"},
+			} {
+				before := len(table.Chat)
+				commandChat(ctx, NewFakeSession(1, "Alice"), &CommandData{
+					Msg: test.message, Room: table.GetRoomName(),
+				})
+				if len(table.Chat) != before+1 {
+					t.Fatalf("bot command %q did not enter table chat", test.message)
+				}
+				if message := table.Chat[before]; message.Msg != test.want || message.Username != "Alice" || message.Server {
+					t.Fatalf("unexpected bot command chat message: %+v", message)
+				}
+			}
+		})
+	}
+}
+
+func TestPrivateTableCommandDoesNotEnterChat(t *testing.T) {
 	table, ctx := newTimerTestTable(t)
-	table.Running = false
 	old := chatCommandMap
-	chatCommandMap = make(map[string]func(context.Context, *Session, *CommandData, *Table, string))
+	calls := 0
+	chatCommandMap = map[string]func(context.Context, *Session, *CommandData, *Table, string){
+		"token": func(context.Context, *Session, *CommandData, *Table, string) { calls++ },
+	}
 	t.Cleanup(func() { chatCommandMap = old })
 	before := len(table.Chat)
 	commandChat(ctx, NewFakeSession(1, "Alice"), &CommandData{
-		Msg: "/unknown-command", Room: table.GetRoomName(),
+		Msg: "/token", Room: table.GetRoomName(),
 	})
-	if len(table.Chat) != before {
-		t.Fatal("an unknown command entered table chat")
+	if len(table.Chat) != before || calls != 1 {
+		t.Fatal("a private command was published or not handled privately")
 	}
 }

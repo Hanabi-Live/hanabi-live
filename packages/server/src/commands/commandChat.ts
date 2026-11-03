@@ -49,7 +49,8 @@ export async function commandChat(
   }
 
   const classification = classifyChatMessage(normalizedMsg);
-  if (classification === "unknown") {
+  // Table bots can handle commands that the server does not recognize.
+  if (classification === "unknown" && target.kind === "lobby") {
     invalidChatCommand(wsUser, normalizedMsg, room);
     return;
   }

@@ -376,6 +376,7 @@
     "sentrygin",
     "serverurl",
     "serde",
+    "setall",
     "setlead",
     "setleader",
     "setname",

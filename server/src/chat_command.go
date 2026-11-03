@@ -106,6 +106,10 @@ func chatCommandShouldOutput(ctx context.Context, s *Session, d *CommandData, t 
 	// Search for existing handler
 	chatCommandFunction, ok := chatCommandMap[command]
 	if !ok {
+		// Table bots can handle commands that the server does not recognize.
+		if t != nil {
+			return true
+		}
 		// There is no handler, inform via PM
 		sendInvalidCommand(s, command, d.Room)
 		return false
