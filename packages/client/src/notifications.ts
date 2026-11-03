@@ -41,10 +41,20 @@ export function send(msg: string, tag: string | undefined): void {
     return;
   }
 
-  const notification = new Notification(`Hanab Live: ${msg}`, {
-    icon: "/public/img/favicon-32x32.png",
-    tag,
-  });
+  let notification: Notification;
+  try {
+    notification = new Notification(`Hanab Live: ${msg}`, {
+      icon: "/public/img/favicon-32x32.png",
+      tag,
+    });
+  } catch (error) {
+    // Android Chrome may expose the Notification API and grant permission while
+    // forbidding construction outside a service worker. Notifications are optional.
+    if (error instanceof TypeError) {
+      return;
+    }
+    throw error;
+  }
 
   notification.addEventListener("click", () => {
     window.focus();
