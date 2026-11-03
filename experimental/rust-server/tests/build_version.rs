@@ -59,6 +59,13 @@ fn tracks_loose_packed_detached_and_worktree_heads() -> Result<()> {
         ],
     )?;
     let head = git(&repo, &["rev-parse", "HEAD"])?;
+    // GitHub Actions checks out pull requests with a detached HEAD. Create a
+    // local symbolic reference so the loose/packed branch assertions work in CI.
+    git(
+        &repo,
+        &["symbolic-ref", "HEAD", "refs/heads/version-fixture"],
+    )?;
+    git(&repo, &["update-ref", "HEAD", &head])?;
     let tree = git(&repo, &["rev-parse", "HEAD^{tree}"])?;
     let alternate = git(
         &repo,
