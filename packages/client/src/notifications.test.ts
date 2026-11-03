@@ -11,7 +11,7 @@ interface NotificationStub {
 }
 
 function installNotificationMock(permission: NotificationPermission) {
-  const mock = jest.fn<(...args: unknown[]) => NotificationStub>();
+  const mock = jest.fn<(...args: readonly unknown[]) => NotificationStub>();
   Object.defineProperty(globalThis, "Notification", {
     configurable: true,
     value: Object.assign(mock, { permission }),
