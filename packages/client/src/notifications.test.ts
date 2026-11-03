@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, jest, test } from "@jest/globals";
 import { send } from "./notifications";
 
+jest.mock("./modals", () => ({ showWarning: jest.fn() }));
+
 const originalNotification = Object.getOwnPropertyDescriptor(
   globalThis,
   "Notification",
