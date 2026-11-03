@@ -28,6 +28,7 @@ import { z } from "zod";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
+import type { ChatChannel } from "./ChatPanel";
 import { ChatPanel } from "./ChatPanel";
 import { GameDialog } from "./GameDialog";
 import { HistoryPanel } from "./HistoryPanel";
@@ -152,6 +153,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [recipient, setRecipient] = useState("");
+  const [channel, setChannel] = useState<ChatChannel>("lobby");
   const [mobilePanel, setMobilePanel] = useState<"main" | "people" | "chat">(
     "main",
   );
@@ -175,7 +177,18 @@ export function App({ connection }: { connection: LobbyConnection }) {
     setPasswordTable(null);
     setTablePassword("");
     setRecipient("");
+    setChannel("lobby");
   }, [state.welcome?.userID]);
+
+  useEffect(() => {
+    setChannel((current) =>
+      current === "private"
+        ? current
+        : state.tableID === null
+          ? "lobby"
+          : "table",
+    );
+  }, [state.tableID]);
 
   useEffect(() => {
     function keyDown(event: KeyboardEvent) {
@@ -418,6 +431,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
 
   function message(name: string) {
     setRecipient(name);
+    setChannel("private");
     setMobilePanel("chat");
   }
 
@@ -738,10 +752,12 @@ export function App({ connection }: { connection: LobbyConnection }) {
       <aside aria-label="Community" className="community-panel">
         <PeoplePanel connection={connection} message={message} />
         <ChatPanel
+          channel={channel}
           connection={connection}
           key={state.welcome.userID}
+          onChannel={setChannel}
           onOptions={acceptOptions}
-          onRecipient={setRecipient}
+          onRecipient={message}
           recipient={recipient}
           visible={wide || mobilePanel === "chat"}
         />

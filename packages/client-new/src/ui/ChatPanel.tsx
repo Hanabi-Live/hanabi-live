@@ -9,14 +9,20 @@ import type { LobbyState } from "../store";
 import { emoteImages } from "../symbols";
 import { RichText } from "./RichText";
 
+export type ChatChannel = "lobby" | "table" | "private";
+
 export function ChatPanel({
+  channel,
   connection,
+  onChannel: setChannel,
   recipient,
   onRecipient,
   onOptions,
   visible,
 }: {
+  channel: ChatChannel;
   connection: LobbyConnection;
+  onChannel: (channel: ChatChannel) => void;
   recipient: string;
   onRecipient: (name: string) => void;
   onOptions: (json: string) => void;
@@ -42,9 +48,6 @@ export function ChatPanel({
     }),
     shallowEqual,
   );
-  const [channel, setChannel] = useState<"lobby" | "table" | "private">(
-    "lobby",
-  );
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiSearch, setEmojiSearch] = useState("");
@@ -52,21 +55,19 @@ export function ChatPanel({
   const [unread, setUnread] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const recipientRef = useRef<HTMLInputElement>(null);
   const stuckToBottom = useRef(true);
   const lastTyped = useRef(0);
   const sent = useRef<Record<string, string[]>>({});
   const historyIndex = useRef(-1);
   useEffect(() => {
-    if (recipient) {
-      setChannel("private");
+    if (
+      channel === "private"
+      && document.activeElement !== recipientRef.current
+    ) {
       inputRef.current?.focus();
     }
-  }, [recipient]);
-  useEffect(() => {
-    setChannel((current) =>
-      current === "private" ? current : tableID === null ? "lobby" : "table",
-    );
-  }, [tableID]);
+  }, [channel, recipient]);
   const room =
     channel === "table" && tableID !== null ? `table${tableID}` : "lobby";
   const draftKey =
@@ -254,6 +255,7 @@ export function ChatPanel({
               aria-label="Message recipient"
               onChange={(event) => onRecipient(event.target.value)}
               placeholder="Username"
+              ref={recipientRef}
               value={recipient}
             />
           </label>
