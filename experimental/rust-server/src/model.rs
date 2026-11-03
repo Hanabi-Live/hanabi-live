@@ -343,7 +343,7 @@ impl TableSnapshot {
                 "Invalid replay controls"
             );
             if let Some(state) = &replay.hypothetical {
-                hanabi_engine::parse_engine_state(serde_json::to_value(state)?)?;
+                hanabi_engine::validate_engine_state(state)?;
             }
         }
         if let Some(spawn) = &self.pending_spawn {

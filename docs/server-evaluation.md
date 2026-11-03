@@ -37,6 +37,37 @@ New account passwords now use the same Argon2 settings in all three servers: 64
 MiB, three passes, and four lanes. Go still verifies existing hashes using their
 stored parameters and upgrades older pass counts on successful login.
 
+## Current Rust optimization measurements
+
+Three before/after runs used the same Redis-backed Rust workload, starting from
+`a02fcc683`, with unchanged password costs, durability barriers, and client
+messages. These are local shared-host observations, not capacity guarantees.
+
+| Measurement                     |       Before |         After |
+| ------------------------------- | -----------: | ------------: |
+| Gameplay with account creation  |  1.00-1.03 s |        0.90 s |
+| Play acknowledgement p50        | 1.71-1.81 ms |  1.25-1.49 ms |
+| Play acknowledgement p95        |   4.0-4.3 ms |    2.8-5.4 ms |
+| Replay history ready p95        | 32.7-34.0 ms |  25.4-25.5 ms |
+| Reconnect and history ready p95 | 60.1-72.0 ms |  55.2-61.0 ms |
+| Mixed historical-read phase     |  0.63-0.70 s | 0.566-0.568 s |
+
+The clearest improvements are median play acknowledgement and historical reads;
+the play p95 outlier shows why these results should not be treated as a
+universal latency promise. Peak server RSS was essentially unchanged.
+
+Typed engine validation no longer constructs and parses a JSON tree again. A
+release-mode measurement of an 80-turn state with 286 events measured roughly
+280 microseconds before versus 5 microseconds afterward, while retaining
+collection limits and semantic validation. This is the validation cost, not a
+50-fold improvement to an entire request.
+
+Historical replay loading now shares one statement-snapshot archive query with
+HTTP export, replacing 10-14 sequential database operations, including
+per-player note queries. Mutable notes and tags are not cached. Shared
+custom-deck decoding also prevents HTTP export from drifting from the native
+engine's rank rules.
+
 ## Historical PostgreSQL-backed baseline
 
 The following measurements describe commit `55643c642`, before full Rust server

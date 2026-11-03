@@ -29,7 +29,7 @@ pub mod random;
 pub use anyhow::Result;
 pub use catalog::*;
 pub use game::*;
-pub use restore::parse_engine_state;
+pub use restore::{parse_engine_state, validate_engine_state};
 pub use rules::{calculate_max_score, clue_cost, has_remaining_play, touched_orders};
 pub use setup::*;
 pub use types::*;

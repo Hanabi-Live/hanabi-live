@@ -102,8 +102,7 @@ impl Game {
             .expect("validated actor recipient")
     }
     pub fn validate_recovery(&self) -> Result<()> {
-        hanabi_engine::parse_engine_state(serde_json::to_value(&self.0)?)?;
-        Ok(())
+        hanabi_engine::validate_engine_state(&self.0)
     }
     pub fn identities(&self) -> Vec<Card> {
         self.deck

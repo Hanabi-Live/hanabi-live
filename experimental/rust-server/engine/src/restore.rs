@@ -73,11 +73,34 @@ pub fn parse_engine_state(value: Value) -> Result<EngineState> {
         );
     }
     let state: EngineState = serde_json::from_value(value).context("Malformed engine state")?;
-    validate_restored_state(&state)?;
+    validate_engine_state(&state)?;
     Ok(state)
 }
 
-fn validate_restored_state(s: &EngineState) -> Result<()> {
+/// Validate an already typed state without serializing it. Untrusted JSON must
+/// still use `parse_engine_state`, which also rejects missing and unknown fields.
+pub fn validate_engine_state(s: &EngineState) -> Result<()> {
+    ensure!(
+        s.deck.len() <= 60 && s.actions.len() <= 512 && s.events.len() <= 4096,
+        "Engine state exceeds its collection bounds."
+    );
+    ensure!(
+        s.players.len() <= 6
+            && s.players.iter().all(|p| p.hand.len() <= 6)
+            && s.stacks.len() <= 6
+            && s.stack_starts.len() <= 6
+            && s.play_stack_directions.len() <= 6,
+        "Engine state exceeds its player or stack bounds."
+    );
+    for event in &s.events {
+        let bounded = match event {
+            EngineEvent::Clue { list, .. } => list.len() <= 6,
+            EngineEvent::GameOver { votes, .. } => votes.as_ref().is_none_or(|v| v.len() <= 6),
+            EngineEvent::PlayerTimes { player_times, .. } => player_times.len() <= 6,
+            _ => true,
+        };
+        ensure!(bounded, "Event exceeds its collection bounds.");
+    }
     validate_options(&s.options)?;
     let v = get_variant(&s.options.variant_name)?;
     let count = s.players.len();

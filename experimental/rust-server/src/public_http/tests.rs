@@ -536,12 +536,35 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert!(body.contains("missing-scores-row-players-6"));
-    sqlx::query("UPDATE game_custom_decks SET deck=decode('813f','hex') WHERE game_id=3")
+    let variant = hanabi_engine::get_variant("Up or Down (5 Suits)").unwrap();
+    let mut deck = hanabi_engine::create_deck(variant);
+    deck.truncate(11);
+    assert!(deck.iter().any(|card| card.rank == 7));
+    sqlx::query("UPDATE games SET variant_id=$1 WHERE id=3")
+        .bind(variant.id as i16)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE game_custom_decks SET deck=$1 WHERE game_id=3")
+        .bind(crate::game::encode_deck(&deck).unwrap())
         .execute(&db.pool)
         .await
         .unwrap();
     let (status, body) = request(app.clone(), "/export/3").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert_eq!(
+        serde_json::from_str::<Value>(&body).unwrap()["deck"],
+        json!(deck)
+    );
+    for encoded in ["813f", "8106"] {
+        sqlx::query("UPDATE game_custom_decks SET deck=decode($1,'hex') WHERE game_id=3")
+            .bind(encoded)
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        let (status, body) = request(app.clone(), "/export/3").await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+    }
     sqlx::query("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
         .execute(&db.pool)
         .await

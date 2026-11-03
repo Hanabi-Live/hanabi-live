@@ -39,6 +39,35 @@ fn restore(state: &EngineState) -> EngineState {
 }
 
 #[test]
+fn typed_validation_preserves_collection_limits_and_rejects_nonfinite_options() {
+    let original = standard();
+    validate_engine_state(&original).unwrap();
+
+    let mut oversized_history = original.clone();
+    oversized_history.events.resize(
+        4097,
+        EngineEvent::Status {
+            clues: 8,
+            score: 0,
+            max_score: 25,
+        },
+    );
+    let mut oversized_deck = original.clone();
+    while oversized_deck.deck.len() < 61 {
+        let mut card = original.deck[10].clone();
+        card.order = oversized_deck.deck.len();
+        oversized_deck.deck.push(card);
+    }
+    let mut nonfinite = original.clone();
+    nonfinite.options.time_base = f64::NAN;
+    for state in [oversized_history, oversized_deck, nonfinite] {
+        assert!(validate_engine_state(&state).is_err());
+        assert!(parse_engine_state(serde_json::to_value(&state).unwrap()).is_err());
+    }
+    assert_eq!(restore(&original), original);
+}
+
+#[test]
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     let state = standard();
     let before = serde_json::to_value(&state).unwrap();

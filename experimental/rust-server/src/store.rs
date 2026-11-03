@@ -1,5 +1,5 @@
 use crate::{
-    game::{Action, Game, Options, decode_deck, encode_deck},
+    game::{Game, Options, decode_deck, encode_deck},
     model::{
         FORMAT, PendingTag, Phase, Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag,
     },
@@ -512,24 +512,14 @@ impl Store {
         Ok((s.started, finished))
     }
     pub async fn historical(&self, id: i32, table_id: u64, owner: i32) -> Result<Snapshot> {
-        let mut tx = self.primary.begin().await?;
-        sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
-            .execute(&mut *tx)
-            .await?;
-        let row = sqlx::query("SELECT * FROM games WHERE id=$1")
-            .bind(id)
-            .fetch_optional(&mut *tx)
+        let archive = crate::archive::load(&self.primary, id)
             .await?
             .context("Unknown replay")?;
+        let row = archive.game;
         let options = options_from_record(&row)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         let seed: String = row.try_get("seed")?;
-        let custom: Option<Vec<u8>> =
-            sqlx::query_scalar("SELECT deck FROM game_custom_decks WHERE game_id=$1")
-                .bind(id)
-                .fetch_optional(&mut *tx)
-                .await?;
-        let deck = if let Some(bytes) = custom {
+        let deck = if let Some(bytes) = archive.deck {
             decode_deck(&bytes)?
         } else {
             hanabi_engine::create_shuffled_deck(variant, &seed)?
@@ -539,22 +529,19 @@ impl Store {
                 && deck.iter().all(|c| c.suit_index < variant.suits.len()),
             "Malformed stored deck"
         );
-        let rows=sqlx::query("SELECT p.*,u.username FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=$1 ORDER BY p.seat").bind(id).fetch_all(&mut *tx).await?;
+        let rows = archive.players;
         ensure!(rows.len() == options.num_players, "Invalid replay roster");
         let mut players = vec![];
         let mut characters = vec![];
-        let mut notes = vec![];
+        let mut notes = vec![vec![String::new(); deck.len() + variant.suits.len()]; rows.len()];
         for (seat, r) in rows.iter().enumerate() {
-            ensure!(
-                r.try_get::<i16, _>("seat")? == seat as i16,
-                "Invalid replay seat"
-            );
+            ensure!(r.seat == seat as i16, "Invalid replay seat");
             players.push(Player {
-                id: r.try_get("user_id")?,
-                name: r.try_get("username")?,
+                id: r.user_id,
+                name: r.name.clone(),
                 stats: zero_stats(),
             });
-            let assignment: i16 = r.try_get("character_assignment")?;
+            let assignment = r.character_assignment;
             let character = hanabi_engine::characters()
                 .iter()
                 .find(|c| c.id as i16 == assignment);
@@ -566,43 +553,23 @@ impl Store {
             characters.push(AssignedCharacter {
                 name: name.into(),
                 metadata: if matches!(name, "Fuming" | "Dumbfounded" | "Inept" | "Awkward") {
-                    i32::from(r.try_get::<i16, _>("character_metadata")?)
+                    i32::from(r.character_metadata)
                 } else {
                     -1
                 },
             });
-            let mut player_notes = vec![String::new(); deck.len() + variant.suits.len()];
-            for note in sqlx::query("SELECT card_order,note FROM game_participant_notes WHERE game_participant_id=$1 ORDER BY card_order").bind(r.try_get::<i32,_>("id")?).fetch_all(&mut *tx).await?{
-                let order=usize::try_from(note.try_get::<i16,_>("card_order")?)?;ensure!(order<player_notes.len(),"Invalid stored note");player_notes[order]=note.try_get("note")?;
-            }
-            notes.push(player_notes);
         }
-        let mut actions = vec![];
-        for r in
-            sqlx::query("SELECT type,target,value FROM game_actions WHERE game_id=$1 ORDER BY turn")
-                .bind(id)
-                .fetch_all(&mut *tx)
-                .await?
-        {
-            actions.push(Action {
-                kind: u8::try_from(r.try_get::<i16, _>("type")?)?,
-                target: i32::from(r.try_get::<i16, _>("target")?),
-                value: i32::from(r.try_get::<i16, _>("value")?),
-            });
+        for note in archive.notes {
+            let cell = notes
+                .get_mut(usize::try_from(note.seat)?)
+                .and_then(|notes| {
+                    usize::try_from(note.order)
+                        .ok()
+                        .and_then(|order| notes.get_mut(order))
+                })
+                .context("Invalid stored note")?;
+            *cell = note.note;
         }
-        let mut tags = vec![];
-        for r in
-            sqlx::query("SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag")
-                .bind(id)
-                .fetch_all(&mut *tx)
-                .await?
-        {
-            tags.push(Tag {
-                user: r.try_get("user_id")?,
-                tag: r.try_get("tag")?,
-            });
-        }
-        tx.commit().await?;
         let game = Game::replay(
             GameSetup {
                 options,
@@ -612,7 +579,7 @@ impl Store {
                 characters: Some(characters),
                 interpretation: Interpretation::LegacyReplay,
             },
-            actions,
+            archive.actions,
         )?;
         ensure!(
             game.score == i32::from(row.try_get::<i16, _>("score")?)
@@ -642,7 +609,7 @@ impl Store {
             queued_pauses: vec![false; n],
             notes,
             spectator_notes: BTreeMap::new(),
-            tags,
+            tags: archive.tags,
             votes: vec![false; n],
             maintenance_applied: false,
         })

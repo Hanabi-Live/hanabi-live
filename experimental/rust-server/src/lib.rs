@@ -1,5 +1,6 @@
 pub mod accounts;
 pub mod actors;
+mod archive;
 pub mod config;
 pub mod cookie;
 pub mod game;
