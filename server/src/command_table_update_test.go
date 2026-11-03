@@ -4,10 +4,10 @@ import "testing"
 
 func TestTimerProposalChange(t *testing.T) {
 	for _, tc := range []struct {
-		name    string
-		current Options
+		name     string
+		current  Options
 		proposed Options
-		want    string
+		want     string
 	}{
 		{
 			name: "disabled timer unchanged",
@@ -19,9 +19,9 @@ func TestTimerProposalChange(t *testing.T) {
 			want:     "<span class=\"cp\">Timed: <b>120 / 20</b></span>",
 		},
 		{
-			name:     "disable timer",
-			current:  Options{Timed: true, TimeBase: 120, TimePerTurn: 20},
-			want:     "<span class=\"cp\">Timed: <b>No</b></span>",
+			name:    "disable timer",
+			current: Options{Timed: true, TimeBase: 120, TimePerTurn: 20},
+			want:    "<span class=\"cp\">Timed: <b>No</b></span>",
 		},
 		{
 			name:     "timer unchanged when other options change",
