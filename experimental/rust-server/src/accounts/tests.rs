@@ -208,7 +208,7 @@ async fn native_accounts_http_and_identity_postgres() {
         .0,
         StatusCode::OK
     );
-    let legacy = format!("{:x}", sha2::Sha256::digest("Hanabi password legacy"));
+    let legacy = hex::encode(sha2::Sha256::digest("Hanabi password legacy"));
     sqlx::query("UPDATE users SET old_password_hash=$1 WHERE id=$2")
         .bind(legacy)
         .bind(id)

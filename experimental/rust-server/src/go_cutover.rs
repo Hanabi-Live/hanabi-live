@@ -463,7 +463,7 @@ pub(crate) fn convert(raw: &str, game_id: i32) -> Result<TableSnapshot> {
 }
 
 fn source_hash(payload: &str) -> String {
-    format!("{:x}", Sha256::digest(payload.as_bytes()))
+    hex::encode(Sha256::digest(payload.as_bytes()))
 }
 
 /// Offline only: the Go cutover endpoint must have drained/stopped the old server.

@@ -1,5 +1,5 @@
 use super::*;
-use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
+use argon2::{Argon2, PasswordHasher};
 use axum::{
     Form,
     response::{Html, Redirect},
@@ -58,7 +58,13 @@ fn render(state: &PublicState, template: &str, mut values: Value) -> Result<Resp
     values["domain"] = json!(&*state.config.domain);
     values["isDev"] = json!(state.config.is_dev);
     values["useTLS"] = json!(state.config.use_tls);
-    Ok(Html(state.templates.get_template(template)?.render(values)?).into_response())
+    Ok(Html(
+        state
+            .templates
+            .get_template(template)?
+            .render(minijinja::value::Serde(values))?,
+    )
+    .into_response())
 }
 
 pub(super) async fn main_page(
@@ -523,9 +529,8 @@ pub(super) async fn password_hash(Form(form): Form<HashMap<String, String>>) -> 
         .ok_or_else(|| Error::bad("Error: You must specify a username."))?
         .clone();
     let hash = tokio::task::spawn_blocking(move || {
-        let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
         Argon2::default()
-            .hash_password(password.as_bytes(), &salt)
+            .hash_password(password.as_bytes())
             .map(|h| h.to_string())
             .map_err(|e| anyhow::anyhow!("Password hash failed: {e}"))
     })

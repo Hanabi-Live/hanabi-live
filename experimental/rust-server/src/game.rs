@@ -196,7 +196,7 @@ mod tests {
     use serde_json::json;
     use sha2::{Digest, Sha256};
     fn hash(value: Value) -> String {
-        format!("{:x}", Sha256::digest(serde_json::to_vec(&value).unwrap()))
+        hex::encode(Sha256::digest(serde_json::to_vec(&value).unwrap()))
     }
     #[test]
     fn integrated_adapter_preserves_every_go_rule_and_recipient_trace() {

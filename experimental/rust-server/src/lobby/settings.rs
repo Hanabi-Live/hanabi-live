@@ -102,13 +102,16 @@ pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Res
     .bind(id)
     .execute(&mut *tx)
     .await?;
-    sqlx::query(&format!(
-        "UPDATE user_settings SET {column}=$2::text::{kind} WHERE user_id=$1"
-    ))
-    .bind(id)
-    .bind(value)
-    .execute(&mut *tx)
-    .await?;
+    let mut query = sqlx::QueryBuilder::<sqlx::Postgres>::new("UPDATE user_settings SET ");
+    query
+        .push(column)
+        .push("=")
+        .push_bind(value)
+        .push("::text::")
+        .push(kind)
+        .push(" WHERE user_id=")
+        .push_bind(id);
+    query.build().execute(&mut *tx).await?;
     tx.commit().await?;
     Ok(())
 }

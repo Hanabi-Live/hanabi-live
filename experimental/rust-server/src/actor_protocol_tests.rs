@@ -38,7 +38,7 @@ impl Harness {
             .connect_with(options.clone())
             .await?;
         let database = format!("ts_slice_{:032x}", rand::random::<u128>());
-        sqlx::query(&format!("CREATE DATABASE {database}"))
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {database}")))
             .execute(&admin)
             .await?;
         let pool = PgPoolOptions::new()
@@ -210,9 +210,12 @@ impl Harness {
         self.tasks.close();
         self.tasks.wait().await;
         self.store.close().await?;
-        sqlx::query(&format!("DROP DATABASE {} WITH (FORCE)", self.database))
-            .execute(&self.admin)
-            .await?;
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "DROP DATABASE {} WITH (FORCE)",
+            self.database
+        )))
+        .execute(&self.admin)
+        .await?;
         self.admin.close().await;
         Ok(())
     }

@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directories:
+      - /experimental/rust-server
+      - /experimental/rust-server/engine
+    schedule:
+      interval: weekly
+  - package-ecosystem: rust-toolchain
+    directory: /experimental/rust-server
+    schedule:
+      interval: weekly
