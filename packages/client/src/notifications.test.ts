@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "@jest/globals";
+import { afterEach, describe, expect, jest, test } from "@jest/globals";
 import { send } from "./notifications";
 
 const originalNotification = Object.getOwnPropertyDescriptor(
@@ -6,11 +6,17 @@ const originalNotification = Object.getOwnPropertyDescriptor(
   "Notification",
 );
 
-function setNotification(implementation: unknown): void {
+type NotificationStub = {
+  addEventListener: (event: string, callback: () => void) => void;
+};
+
+function installNotificationMock(permission: NotificationPermission) {
+  const mock = jest.fn<(title: string, options?: NotificationOptions) => NotificationStub>();
   Object.defineProperty(globalThis, "Notification", {
     configurable: true,
-    value: implementation,
+    value: Object.assign(mock, { permission }),
   });
+  return mock;
 }
 
 afterEach(() => {
@@ -24,71 +30,51 @@ afterEach(() => {
 describe("desktop notifications", () => {
   test("does nothing when the Notification API is unavailable", () => {
     Reflect.deleteProperty(globalThis, "Notification");
-    expect(() => send("It is your turn.", "turn")).not.toThrow();
+    expect(() => {
+      send("It is your turn.", "turn");
+    }).not.toThrow();
   });
 
   test("does nothing without permission", () => {
-    class DeniedNotification {
-      static readonly permission = "denied";
-      constructor() {
-        throw new Error("Notification must not be constructed.");
-      }
-    }
-    setNotification(DeniedNotification);
-    expect(() => send("It is your turn.", "turn")).not.toThrow();
+    const notification = installNotificationMock("denied");
+    send("It is your turn.", "turn");
+    expect(notification).not.toHaveBeenCalled();
   });
 
   test("creates a notification and attaches a click handler on desktop", () => {
-    const seen: Array<{
-      title: string;
-      options: NotificationOptions | undefined;
-      event: string;
-    }> = [];
-    class DesktopNotification {
-      static readonly permission = "granted";
-      private readonly entry: (typeof seen)[number];
+    const listener = jest.fn<(event: string, callback: () => void) => void>();
+    const notification = installNotificationMock("granted");
+    notification.mockReturnValue({ addEventListener: listener });
 
-      constructor(title: string, options?: NotificationOptions) {
-        this.entry = { title, options, event: "" };
-        seen.push(this.entry);
-      }
-
-      addEventListener(event: string): void {
-        this.entry.event = event;
-      }
-    }
-    setNotification(DesktopNotification);
     send("It is your turn.", "turn");
 
-    expect(seen).toHaveLength(1);
-    expect(seen[0]).toEqual({
-      title: "Hanab Live: It is your turn.",
-      options: { icon: "/public/img/favicon-32x32.png", tag: "turn" },
-      event: "click",
+    expect(notification).toHaveBeenCalledWith("Hanab Live: It is your turn.", {
+      icon: "/public/img/favicon-32x32.png",
+      tag: "turn",
     });
+    expect(listener).toHaveBeenCalledWith("click", expect.any(Function));
   });
 
   test("does not crash when Android Chrome forbids constructing notifications", () => {
-    class MobileNotification {
-      static readonly permission = "granted";
-      constructor() {
-        throw new TypeError(
-          "Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.",
-        );
-      }
-    }
-    setNotification(MobileNotification);
-    expect(() => send("It is your turn.", "turn")).not.toThrow();
+    const notification = installNotificationMock("granted");
+    notification.mockImplementation(() => {
+      throw new TypeError(
+        "Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.",
+      );
+    });
+    expect(() => {
+      send("It is your turn.", "turn");
+    }).not.toThrow();
+    expect(notification).toHaveBeenCalledTimes(1);
   });
 
   test("does not conceal unrelated notification failures", () => {
-    class BrokenNotification {
-      static readonly permission = "granted";
-      constructor() {
-        throw new RangeError("Unexpected notification failure.");
-      }
-    }
-    setNotification(BrokenNotification);
-    expect(() => send("It is your turn.", "turn")).toThrow(RangeError);
+    const notification = installNotificationMock("granted");
+    notification.mockImplementation(() => {
+      throw new RangeError("Unexpected notification failure.");
+    });
+    expect(() => {
+      send("It is your turn.", "turn");
+    }).toThrow(RangeError);
   });
 });

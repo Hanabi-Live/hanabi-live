@@ -48,8 +48,7 @@ export function send(msg: string, tag: string | undefined): void {
       tag,
     });
   } catch (error) {
-    // Android Chrome may expose the Notification API and grant permission while
-    // forbidding construction outside a service worker. Notifications are optional.
+    // Some Android browsers disallow constructing a notification despite granted permission.
     if (error instanceof TypeError) {
       return;
     }
