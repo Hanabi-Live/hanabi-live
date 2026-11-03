@@ -10,6 +10,7 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use rand::Rng;
+use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
@@ -28,6 +29,21 @@ mod replay_helpers;
 #[path = "actor_tests.rs"]
 mod tests;
 type Reply = oneshot::Sender<Result<()>>;
+
+#[derive(Serialize)]
+struct GameActionMessage<'a> {
+    #[serde(rename = "tableID")]
+    table_id: u64,
+    action: &'a hanabi_engine::EngineEvent,
+}
+
+#[derive(Serialize)]
+struct GameActionListMessage<'a> {
+    #[serde(rename = "tableID")]
+    table_id: u64,
+    list: &'a [hanabi_engine::EngineEvent],
+}
+
 pub struct Allocation {
     pub id: u64,
     permit: Option<OwnedSemaphorePermit>,
@@ -2833,7 +2849,10 @@ impl TableActor {
                     a.session.clone(),
                     frame(
                         "gameAction",
-                        json!({"tableID":self.table.id,"action":event}),
+                        GameActionMessage {
+                            table_id: self.table.id,
+                            action: &event,
+                        },
                     ),
                 ));
             }
@@ -3982,7 +4001,10 @@ impl TableActor {
                 session.clone(),
                 frame(
                     "gameActionList",
-                    json!({"tableID":self.table.id,"list":list}),
+                    GameActionListMessage {
+                        table_id: self.table.id,
+                        list: &list,
+                    },
                 ),
             ));
             if replay {

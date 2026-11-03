@@ -1,5 +1,5 @@
 use axum::extract::ws::{CloseFrame, Message};
-use serde_json::Value;
+use serde::Serialize;
 use std::sync::{
     Arc, LazyLock,
     atomic::{AtomicBool, Ordering},
@@ -265,8 +265,11 @@ impl Session {
     }
 }
 
-pub fn frame(command: &str, data: Value) -> String {
-    format!("{command} {data}")
+pub fn frame(command: &str, data: impl Serialize) -> String {
+    let mut buffer = command.as_bytes().to_vec();
+    buffer.push(b' ');
+    serde_json::to_writer(&mut buffer, &data).expect("JSON-serializable protocol payload");
+    String::from_utf8(buffer).expect("JSON protocol frames are UTF-8")
 }
 
 #[cfg(test)]

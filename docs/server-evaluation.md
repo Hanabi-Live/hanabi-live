@@ -39,6 +39,8 @@ stored parameters and upgrades older pass counts on successful login.
 
 ## Current Rust optimization measurements
 
+### Checkpoint validation and archive reads
+
 Three before/after runs used the same Redis-backed Rust workload, starting from
 `a02fcc683`, with unchanged password costs, durability barriers, and client
 messages. These are local shared-host observations, not capacity guarantees.
@@ -67,6 +69,30 @@ HTTP export, replacing 10-14 sequential database operations, including
 per-player note queries. Mutable notes and tags are not cached. Shared
 custom-deck decoding also prevents HTTP export from drifting from the native
 engine's rank rules.
+
+### Wire serialization
+
+A follow-up starting from `238839212` removes the intermediate JSON tree from
+`gameAction` and `gameActionList` messages. The shared frame writer also encodes
+directly into its output buffer rather than using JSON's display formatter.
+Recipient-specific privacy projection, queue limits, and durability are
+unchanged.
+
+A release-mode comparison ran both encoders in one process, measuring the median
+of seven samples of 4,000 encodings for each two-player history:
+
+| History events | Previous encoding | Direct typed encoding |
+| -------------: | ----------------: | --------------------: |
+|             10 |            5.5 us |                1.0 us |
+|             76 |           44.1 us |                6.1 us |
+|            286 |          154.7 us |               22.5 us |
+
+This improves serialization CPU cost, not whole-request latency by the same
+factor. Three fresh end-to-end runs before and after did **not** establish a
+consistent latency improvement: mixed reads were 0.609-0.703 s before versus
+0.617-0.665 s after; replay history-ready p95 was 27.7-33.7 ms versus 28.1-29.9
+ms. Gameplay including account creation was 0.910-1.004 s versus 0.955-1.078 s.
+Shared-host variability exceeds the small per-request encoding savings here.
 
 ## Historical PostgreSQL-backed baseline
 
