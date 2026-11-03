@@ -1,6 +1,6 @@
 use anyhow::{Result, bail, ensure};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE};
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, KeyInit, Mac};
 use sha2::Sha256;
 
 pub const NAME: &str = "hanabi.sid";

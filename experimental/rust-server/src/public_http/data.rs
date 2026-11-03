@@ -77,7 +77,7 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
     Ok(s)
 }
 
-fn selected(s: Selection) -> QueryBuilder<'static, Postgres> {
+fn selected(s: Selection) -> QueryBuilder<Postgres> {
     let mut qb = QueryBuilder::new("WITH selected AS (SELECT g.* FROM games g WHERE TRUE");
     for id in s.users {
         qb.push(

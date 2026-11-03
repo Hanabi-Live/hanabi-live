@@ -31,7 +31,9 @@ impl TestDb {
             DATABASE_ID.fetch_add(1, Ordering::Relaxed)
         );
         admin
-            .execute(format!("CREATE DATABASE {name}").as_str())
+            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+                "CREATE DATABASE {name}"
+            ))))
             .await
             .unwrap();
         let pool = sqlx::postgres::PgPoolOptions::new()
@@ -61,7 +63,10 @@ impl TestDb {
     pub async fn close(mut self) {
         self.pool.close().await;
         self.admin
-            .execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
+            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+                "DROP DATABASE {} WITH (FORCE)",
+                self.name
+            ))))
             .await
             .unwrap();
         self.admin.close().await.unwrap();

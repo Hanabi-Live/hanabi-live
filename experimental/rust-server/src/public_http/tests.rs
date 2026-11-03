@@ -194,7 +194,9 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
     let buttons = templates
         .get_template("profile-buttons.html")
         .unwrap()
-        .render(json!({"name":"Alice","title":"Tagged Games"}))
+        .render(minijinja::value::Serde(
+            json!({"name":"Alice","title":"Tagged Games"}),
+        ))
         .unwrap();
     let anchors = regex::Regex::new(r"(?s)<a\b([^>]*)>(.*?)</a>").unwrap();
     let tagged = anchors
@@ -210,12 +212,12 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
     let missing = templates
         .get_template("missing-scores.html")
         .unwrap()
-        .render(json!({
+        .render(minijinja::value::Serde(json!({
             "projectName":"Hanab Live","version":"1","isDev":false,"title":"Missing Scores",
             "name":"Alice","namesTitle":"Alice's Profile","singleMissingScores":true,
             "summary":{"perType":[],"total":0,"percentage":"0"},
             "requestedNumPlayers":3,"players":[],"rows":[]
-        }))
+        })))
         .unwrap();
     let options = regex::Regex::new(r"(?s)<option\b([^>]*)>.*?</option>").unwrap();
     let selected = options
@@ -259,7 +261,9 @@ impl Database {
         let mut admin = PgConnection::connect_with(&options).await.unwrap();
         let name = format!("ts_slice_rust_public_{:016x}", rand::random::<u64>());
         admin
-            .execute(format!("CREATE DATABASE {name}").as_str())
+            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+                "CREATE DATABASE {name}"
+            ))))
             .await
             .unwrap();
         let pool = PgPoolOptions::new()
@@ -276,7 +280,10 @@ impl Database {
     async fn close(mut self) {
         self.pool.close().await;
         self.admin
-            .execute(format!("DROP DATABASE {} WITH (FORCE)", self.name).as_str())
+            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
+                "DROP DATABASE {} WITH (FORCE)",
+                self.name
+            ))))
             .await
             .unwrap();
     }

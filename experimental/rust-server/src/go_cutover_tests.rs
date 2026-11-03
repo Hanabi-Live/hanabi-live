@@ -63,7 +63,7 @@ async fn import_recovers_staged_and_partially_promoted_games_without_source_loss
     let options = PgConnectOptions::from_str(&url)?;
     let mut admin = PgConnection::connect_with(&options).await?;
     let database = format!("rust_cutover_{:032x}", rand::random::<u128>());
-    sqlx::query(&format!("CREATE DATABASE {database}"))
+    sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {database}")))
         .execute(&mut admin)
         .await?;
     let pool = PgPoolOptions::new()
@@ -135,9 +135,11 @@ async fn import_recovers_staged_and_partially_promoted_games_without_source_loss
         Ok::<(),anyhow::Error>(())
     }.await;
     store.close().await?;
-    sqlx::query(&format!("DROP DATABASE {database} WITH (FORCE)"))
-        .execute(&mut admin)
-        .await?;
+    sqlx::query(sqlx::AssertSqlSafe(format!(
+        "DROP DATABASE {database} WITH (FORCE)"
+    )))
+    .execute(&mut admin)
+    .await?;
     admin.close().await?;
     result
 }

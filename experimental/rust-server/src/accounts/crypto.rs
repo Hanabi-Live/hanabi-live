@@ -1,12 +1,9 @@
 use anyhow::{Result, anyhow, ensure};
-use argon2::{
-    Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version,
-    password_hash::{SaltString, rand_core::OsRng},
-};
+use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::{DateTime, Duration, Utc};
-use hmac::{Hmac, Mac};
-use rand::RngCore;
+use hmac::{Hmac, KeyInit, Mac};
+use rand::TryRng;
 use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 use std::{
@@ -125,7 +122,7 @@ pub async fn hash_password(password: String) -> Result<String> {
         )
         .map_err(|_| HashFailure::Parameters)?;
         Argon2::new(Algorithm::Argon2id, Version::V0x13, params)
-            .hash_password(password.as_bytes(), &SaltString::generate(&mut OsRng))
+            .hash_password(password.as_bytes())
             .map(|hash| hash.to_string())
             .map_err(|_| anyhow!(HashFailure::Hashing))
     })
@@ -139,7 +136,7 @@ pub async fn verify_password(password: String, hash: String) -> Result<bool> {
         let parsed = PasswordHash::new(&hash).map_err(|_| HashFailure::StoredHash)?;
         match Argon2::default().verify_password(password.as_bytes(), &parsed) {
             Ok(()) => Ok(true),
-            Err(argon2::password_hash::Error::Password) => Ok(false),
+            Err(argon2::password_hash::Error::PasswordInvalid) => Ok(false),
             Err(_) => Err(anyhow!(HashFailure::StoredHash)),
         }
     })
@@ -149,13 +146,7 @@ pub async fn verify_password(password: String, hash: String) -> Result<bool> {
 pub(super) fn password_needs_upgrade(hash: &str) -> Result<bool> {
     let parsed = PasswordHash::new(hash).map_err(|_| HashFailure::StoredHash)?;
     let params = Params::try_from(&parsed).map_err(|_| HashFailure::StoredHash)?;
-    let mut salt = [0; 64];
-    let salt_length = parsed
-        .salt
-        .ok_or(HashFailure::StoredHash)?
-        .decode_b64(&mut salt)
-        .map_err(|_| HashFailure::StoredHash)?
-        .len();
+    let salt_length = parsed.salt.ok_or(HashFailure::StoredHash)?.as_ref().len();
     let key_length = parsed.hash.ok_or(HashFailure::StoredHash)?.len();
     Ok(params.t_cost() < PASSWORD_PASSES
         && params.m_cost() <= PASSWORD_MEMORY
@@ -164,10 +155,7 @@ pub(super) fn password_needs_upgrade(hash: &str) -> Result<bool> {
 }
 
 pub fn verify_legacy(password: &str, expected: &str) -> bool {
-    let calculated = format!(
-        "{:x}",
-        Sha256::digest(format!("Hanabi password {password}"))
-    );
+    let calculated = hex::encode(Sha256::digest(format!("Hanabi password {password}")));
     calculated.as_bytes().ct_eq(expected.as_bytes()).into()
 }
 
@@ -175,7 +163,7 @@ pub fn token_lookup_hash(secret: &str, token: &str) -> Result<String> {
     ensure!(!secret.is_empty(), "Missing signing key");
     let mut mac = Hmac::<Sha256>::new_from_slice(&Sha256::digest(secret.as_bytes()))?;
     mac.update(token.as_bytes());
-    Ok(format!("{:x}", mac.finalize().into_bytes()))
+    Ok(hex::encode(mac.finalize().into_bytes()))
 }
 
 pub struct IdentityToken {
@@ -185,7 +173,7 @@ pub struct IdentityToken {
 
 pub async fn regenerate_token(pool: &PgPool, secret: &str, id: i32) -> Result<IdentityToken> {
     let mut bytes = [0; 96];
-    rand::rngs::OsRng.fill_bytes(&mut bytes);
+    rand::rngs::SysRng.try_fill_bytes(&mut bytes)?;
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(token.clone()).await?;

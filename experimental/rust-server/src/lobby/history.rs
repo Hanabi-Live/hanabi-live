@@ -51,14 +51,16 @@ pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result
     } else {
         "g.datetime_finished DESC, g.id DESC"
     };
-    let rows: Vec<Value> = sqlx::query_scalar(&format!(
+    let mut query = sqlx::QueryBuilder::<sqlx::Postgres>::new(
         "SELECT to_jsonb(g) || jsonb_build_object(
             'playerNames', COALESCE((SELECT jsonb_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
                 FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id), '[]'::jsonb),
             'tags', COALESCE((SELECT STRING_AGG(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags WHERE game_id=g.id),''),
             'numGamesOnThisSeed', COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0))
-         FROM games g WHERE id=ANY($1) ORDER BY {order}"
-    )).bind(ids).fetch_all(pool).await?;
+         FROM games g WHERE id=ANY($1) ORDER BY "
+    );
+    query.push(order);
+    let rows: Vec<Value> = query.build_query_scalar().bind(ids).fetch_all(pool).await?;
     let mut result = Vec::new();
     for row in rows {
         let mut options = serde_json::Map::new();

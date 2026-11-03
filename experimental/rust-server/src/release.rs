@@ -71,7 +71,7 @@ fn hash_file(path: &Path) -> Result<String> {
         }
         digest.update(&buffer[..size]);
     }
-    Ok(format!("{:x}", digest.finalize()))
+    Ok(hex::encode(digest.finalize()))
 }
 
 fn inventory(root: &Path, directory: &Path, files: &mut BTreeMap<String, String>) -> Result<()> {

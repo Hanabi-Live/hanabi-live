@@ -357,7 +357,7 @@ async fn websocket(
     };
     let Ok(generation) = app
         .generation
-        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+        .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
     else {
         return StatusCode::SERVICE_UNAVAILABLE.into_response();
     };

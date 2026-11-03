@@ -9,7 +9,8 @@ use crate::{
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
-use rand::Rng;
+use rand::RngExt;
+use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
@@ -28,6 +29,21 @@ mod replay_helpers;
 #[path = "actor_tests.rs"]
 mod tests;
 type Reply = oneshot::Sender<Result<()>>;
+
+#[derive(Serialize)]
+struct GameActionMessage<'a> {
+    #[serde(rename = "tableID")]
+    table_id: u64,
+    action: &'a hanabi_engine::EngineEvent,
+}
+
+#[derive(Serialize)]
+struct GameActionListMessage<'a> {
+    #[serde(rename = "tableID")]
+    table_id: u64,
+    list: &'a [hanabi_engine::EngineEvent],
+}
+
 pub struct Allocation {
     pub id: u64,
     permit: Option<OwnedSemaphorePermit>,
@@ -1146,9 +1162,9 @@ fn random_name(words: &[String]) -> String {
         return "New Table".into();
     }
     let mut selected = vec![];
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     while selected.len() < 3 {
-        let i = rng.gen_range(0..words.len());
+        let i = rng.random_range(0..words.len());
         if !selected.contains(&i) {
             selected.push(i);
         }
@@ -1923,9 +1939,10 @@ impl TableActor {
         let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
         let store = self.store.clone();
         let query = Box::pin(async move {
-            let rows = sqlx::query(&format!(
+            // Only the validated numeric player count is interpolated; user IDs remain bound.
+            let rows = sqlx::query(sqlx::AssertSqlSafe(format!(
                 "SELECT variant_id,best_score{count} AS score FROM user_stats WHERE user_id=ANY($1)"
-            ))
+            )))
             .bind(ids)
             .fetch_all(&store.primary)
             .await?;
@@ -1946,11 +1963,7 @@ impl TableActor {
             Ok(if missing.is_empty() {
                 None
             } else {
-                Some(
-                    missing[rand::thread_rng().gen_range(0..missing.len())]
-                        .name
-                        .clone(),
-                )
+                Some(missing[rand::random_range(0..missing.len())].name.clone())
             })
         });
         Ok(VariantDiscovery {
@@ -2833,7 +2846,10 @@ impl TableActor {
                     a.session.clone(),
                     frame(
                         "gameAction",
-                        json!({"tableID":self.table.id,"action":event}),
+                        GameActionMessage {
+                            table_id: self.table.id,
+                            action: &event,
+                        },
                     ),
                 ));
             }
@@ -3639,7 +3655,7 @@ impl TableActor {
             }
             "impostor" => {
                 ensure!(players.len() > 2, "Impostor requires more than two players");
-                let chosen = rand::thread_rng().gen_range(0..players.len());
+                let chosen = rand::random_range(0..players.len());
                 let mut e = self.effects();
                 for (i, p) in players.iter().enumerate() {
                     if let Some(a) = self.attendees.get(&p.id) {
@@ -3982,7 +3998,10 @@ impl TableActor {
                 session.clone(),
                 frame(
                     "gameActionList",
-                    json!({"tableID":self.table.id,"list":list}),
+                    GameActionListMessage {
+                        table_id: self.table.id,
+                        list: &list,
+                    },
                 ),
             ));
             if replay {

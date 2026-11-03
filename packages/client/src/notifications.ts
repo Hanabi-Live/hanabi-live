@@ -41,10 +41,19 @@ export function send(msg: string, tag: string | undefined): void {
     return;
   }
 
-  const notification = new Notification(`Hanab Live: ${msg}`, {
-    icon: "/public/img/favicon-32x32.png",
-    tag,
-  });
+  let notification: Notification;
+  try {
+    notification = new Notification(`Hanab Live: ${msg}`, {
+      icon: "/public/img/favicon-32x32.png",
+      tag,
+    });
+  } catch (error) {
+    // Some Android browsers disallow constructing a notification despite granted permission.
+    if (error instanceof TypeError) {
+      return;
+    }
+    throw error;
+  }
 
   notification.addEventListener("click", () => {
     window.focus();

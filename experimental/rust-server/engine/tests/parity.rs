@@ -3,7 +3,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn digest(value: Value) -> String {
-    format!("{:x}", Sha256::digest(serde_json::to_vec(&value).unwrap()))
+    hex::encode(Sha256::digest(serde_json::to_vec(&value).unwrap()))
 }
 fn names(count: usize) -> Vec<String> {
     ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"][..count]
@@ -80,7 +80,7 @@ fn all_catalog_decks_match_go_hashes() {
             "{}",
             v.name
         );
-        let hash = format!("{:x}", Sha256::digest(serde_json::to_vec(&deck).unwrap()));
+        let hash = hex::encode(Sha256::digest(serde_json::to_vec(&deck).unwrap()));
         assert_eq!(hash, case["digest"], "{}", v.name);
     }
 }

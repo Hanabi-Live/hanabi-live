@@ -4,6 +4,96 @@ use crate::{
     test_redis::RedisFixture,
 };
 use sqlx::postgres::PgPoolOptions;
+
+#[test]
+fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<()> {
+    let mut game = Game::new(crate::game::standard_deck("p2v0s1")?)?;
+    let rank = game.deck[game.players[1].hand[0]].rank;
+    game.apply(
+        0,
+        Action {
+            kind: 3,
+            target: 1,
+            value: rank,
+        },
+    )?;
+    game.terminate(
+        0,
+        EndCondition::TerminatedByPlayer,
+        0,
+        None,
+        Some(CompletionTiming {
+            player_times: vec![1234, -5678],
+            duration: 6912,
+        }),
+    )?;
+    for (recipient, hidden) in [
+        (Recipient::Player { player_index: 0 }, Some(0)),
+        (Recipient::Player { player_index: 1 }, Some(1)),
+        (
+            Recipient::Spectator {
+                shadowing_player_index: Some(0),
+            },
+            Some(0),
+        ),
+        (
+            Recipient::Spectator {
+                shadowing_player_index: None,
+            },
+            None,
+        ),
+    ] {
+        let list = hanabi_engine::events_for_recipient(&game.0, recipient, None)?;
+        let encoded = frame(
+            "gameActionList",
+            GameActionListMessage {
+                table_id: 42,
+                list: &list,
+            },
+        );
+        let (command, body) = encoded
+            .split_once(' ')
+            .context("Missing protocol separator")?;
+        assert_eq!(command, "gameActionList");
+        let body: Value = serde_json::from_str(body)?;
+        assert_eq!(body, json!({"tableID":42,"list":list}));
+        for (event, expected) in list.iter().zip(body["list"].as_array().unwrap()) {
+            let encoded = frame(
+                "gameAction",
+                GameActionMessage {
+                    table_id: 42,
+                    action: event,
+                },
+            );
+            let (command, body) = encoded
+                .split_once(' ')
+                .context("Missing action separator")?;
+            assert_eq!(command, "gameAction");
+            let body: Value = serde_json::from_str(body)?;
+            assert_eq!(body, json!({"tableID":42,"action":expected}));
+            if expected["type"] == "draw" {
+                let player = expected["playerIndex"].as_u64().unwrap() as usize;
+                let order = expected["order"].as_u64().unwrap() as usize;
+                let (suit, rank) = if hidden == Some(player) {
+                    (-1, -1)
+                } else {
+                    (game.deck[order].suit_index as i32, game.deck[order].rank)
+                };
+                assert_eq!(expected["suitIndex"], suit);
+                assert_eq!(expected["rank"], rank);
+            }
+        }
+        let events = body["list"].as_array().unwrap();
+        let ended = events.iter().find(|e| e["type"] == "gameOver").unwrap();
+        assert_eq!(ended["endCondition"], 4);
+        assert!(ended.as_object().unwrap().get("votes").unwrap().is_null());
+        let timing = events.iter().find(|e| e["type"] == "playerTimes").unwrap();
+        assert_eq!(timing["playerTimes"], json!([1234, -5678]));
+        assert_eq!(timing["duration"], 6912);
+    }
+    Ok(())
+}
+
 #[test]
 fn countdown_preserves_go_float_syntax_and_rejects_nonfinite_values() {
     for (text, expected) in [

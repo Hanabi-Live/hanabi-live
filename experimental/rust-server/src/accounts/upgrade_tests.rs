@@ -1,5 +1,5 @@
 use super::*;
-use argon2::{Argon2, Params, PasswordHash, PasswordHasher, password_hash::SaltString};
+use argon2::{Argon2, Params, PasswordHash, PasswordHasher};
 
 // Synthetic Go one-pass fixture, shared with dependency_compatibility_test.go.
 // cspell:disable-next-line
@@ -57,13 +57,12 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
         StatusCode::OK
     );
     assert_eq!(stored().await.unwrap(), upgraded);
-    let salt = SaltString::encode_b64(b"synthetic-salt12").unwrap();
     let stronger = Argon2::new(
         argon2::Algorithm::Argon2id,
         argon2::Version::V0x13,
         Params::new(65536, 4, 4, Some(32)).unwrap(),
     )
-    .hash_password(PASSWORD.as_bytes(), &salt)
+    .hash_password_with_salt(PASSWORD.as_bytes(), b"synthetic-salt12")
     .unwrap()
     .to_string();
     sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")

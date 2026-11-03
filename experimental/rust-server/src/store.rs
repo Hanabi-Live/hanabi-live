@@ -868,7 +868,8 @@ impl Store {
             let q = format!(
                 "UPDATE user_stats SET best_score{n}=GREATEST(best_score{n},$3),best_score{n}_mod=CASE WHEN $3>best_score{n} OR ($3=best_score{n} AND $4<best_score{n}_mod) THEN $4 ELSE best_score{n}_mod END,num_games=s.n,average_score=s.avg,num_strikeouts=s.strikes FROM (SELECT count(*)::integer n,COALESCE(avg(g.score) FILTER(WHERE g.score<>0),0)::float8 avg,(count(*) FILTER(WHERE g.score=0))::integer strikes FROM games g JOIN game_participants p ON p.game_id=g.id WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s WHERE user_id=$1 AND variant_id=$2"
             );
-            sqlx::query(&q)
+            // Only a numeric player count is interpolated; stored values remain bound.
+            sqlx::query(sqlx::AssertSqlSafe(q))
                 .bind(p.id)
                 .bind(v)
                 .bind(s.game.score as i16)
@@ -879,7 +880,8 @@ impl Store {
         let q = format!(
             "UPDATE variant_stats SET best_score{n}=CASE WHEN $4::smallint=0 THEN GREATEST(best_score{n},$2) ELSE best_score{n} END,num_games=s.n,num_max_scores=s.maximum,average_score=s.avg,num_strikeouts=s.strikes FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum,COALESCE(avg(score) FILTER(WHERE score<>0),0)::float8 avg,(count(*) FILTER(WHERE score=0))::integer strikes FROM games WHERE variant_id=$1 AND NOT speedrun) s WHERE variant_id=$1"
         );
-        sqlx::query(&q)
+        // Only a numeric player count is interpolated, as in the user query.
+        sqlx::query(sqlx::AssertSqlSafe(q))
             .bind(v)
             .bind(s.game.score as i16)
             .bind(variant.max_score as i16)
@@ -1056,7 +1058,7 @@ mod tests {
             .connect_with(options.clone())
             .await?;
         let name = format!("ts_slice_{:032x}", rand::random::<u128>());
-        sqlx::query(&format!("CREATE DATABASE {name}"))
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {name}")))
             .execute(&admin)
             .await?;
         let pool = PgPoolOptions::new()
@@ -1070,9 +1072,11 @@ mod tests {
         Ok(Some((admin, pool, name)))
     }
     async fn cleanup(admin: PgPool, name: String) -> Result<()> {
-        sqlx::query(&format!("DROP DATABASE {name} WITH (FORCE)"))
-            .execute(&admin)
-            .await?;
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "DROP DATABASE {name} WITH (FORCE)"
+        )))
+        .execute(&admin)
+        .await?;
         admin.close().await;
         Ok(())
     }
@@ -1262,7 +1266,7 @@ mod tests {
             ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
             ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123456Z","Timestamp was not canonicalized before durability");
             store.save(&table,0).await?;
-            sqlx::query(&format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2])).execute(&store.primary).await?;
+            sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;
             ensure!(store.archive_chat(&table.chat).await.is_err(),"Partial archive failure was not surfaced");
             let rows:i64=sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE id=ANY($1)").bind(&ids).fetch_one(&store.primary).await?;
             ensure!(rows==0,"Failed chat batch escaped rollback");

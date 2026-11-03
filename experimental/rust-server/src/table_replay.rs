@@ -272,7 +272,7 @@ mod tests {
     use super::*;
     use sha2::{Digest, Sha256};
     fn hash(v: Value) -> String {
-        format!("{:x}", Sha256::digest(serde_json::to_vec(&v).unwrap()))
+        hex::encode(Sha256::digest(serde_json::to_vec(&v).unwrap()))
     }
     #[test]
     fn malformed_import_elements_return_errors_instead_of_panicking() {

@@ -2,7 +2,6 @@ use super::{Caller, Effect, OnlineUser, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, SecondsFormat, Utc};
-use rand::Rng;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sqlx::{PgPool, Row};
@@ -233,7 +232,7 @@ fn random_response(args: &[&str]) -> String {
     if min >= max {
         return format!("{min} is greater than or equal to {max}, so that request is nonsensical.");
     }
-    let number = rand::thread_rng().gen_range(min..=max);
+    let number = rand::random_range(min..=max);
     format!("Random number between {min} and {max}: {number}")
 }
 
