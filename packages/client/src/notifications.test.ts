@@ -6,12 +6,14 @@ const originalNotification = Object.getOwnPropertyDescriptor(
   "Notification",
 );
 
-type NotificationStub = {
+interface NotificationStub {
   addEventListener: (event: string, callback: () => void) => void;
-};
+}
 
 function installNotificationMock(permission: NotificationPermission) {
-  const mock = jest.fn<(title: string, options?: NotificationOptions) => NotificationStub>();
+  const mock = jest.fn<
+    (title: string, options?: NotificationOptions) => NotificationStub
+  >();
   Object.defineProperty(globalThis, "Notification", {
     configurable: true,
     value: Object.assign(mock, { permission }),
