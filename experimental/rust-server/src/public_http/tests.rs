@@ -1,4 +1,3 @@
-// cspell:ignore Cscript Ealert Fscript
 use super::*;
 use axum::{
     body::{Body, to_bytes},

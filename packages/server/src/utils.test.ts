@@ -1,4 +1,3 @@
-// cspell:words FEFF
 import { describe, expect, test } from "@jest/globals";
 import { readFileSync } from "node:fs";
 import path from "node:path";

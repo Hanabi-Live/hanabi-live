@@ -12,7 +12,7 @@
             <i class="fas fa-plus nav-icon"></i>
             <span class="hidden-xs"
               ><span class="nav-hotkey-indicator">N</span
-              >ew<!-- cspell:disable-line --><span class="hidden-xl">
+              >ew<span class="hidden-xl">
                 Game</span
               >
             </span>
@@ -23,7 +23,7 @@
             <i class="fas fa-history nav-icon"></i>
             <span class="hidden-xs"
               ><span class="nav-hotkey-indicator">H</span
-              >istory<!-- cspell:disable-line -->
+              >istory
             </span>
           </a>
         </li>
@@ -113,7 +113,7 @@
             ><i class="fas fa-ghost nav-icon"></i>
             <span class="hidden-xs">
               S<span class="nav-hotkey-indicator">p</span
-              >ectate<!-- cspell:disable-line -->
+              >ectate
               <span class="hidden-md"> Game</span>
             </span>
           </a>
@@ -124,7 +124,7 @@
             <span class="hidden-xs">
               <span class="hidden-md"
                 ><span class="nav-hotkey-indicator">C</span
-                >hange<!-- cspell:disable-line -->
+                >hange
                 Options
               </span></span
             >
@@ -136,7 +136,7 @@
             <span class="hidden-xs">
               <span class="hidden-md"
                 ><span class="nav-hotkey-indicator">R</span
-                >eturn<!-- cspell:disable-line -->
+                >eturn
                 to </span
               >Lobby
             </span>
@@ -147,7 +147,7 @@
             <i class="fas fa-times nav-icon"></i>
             <span class="hidden-xs">
               <span class="nav-hotkey-indicator">L</span
-              >eave<!-- cspell:disable-line -->
+              >eave
               <span class="hidden-md"> Game</span>
             </span>
           </a>
@@ -170,7 +170,7 @@
             <i class="fas fa-home nav-icon"></i>
             <span class="hidden-sm">
               <span class="nav-hotkey-indicator">R</span
-              >eturn<!-- cspell:disable-line -->
+              >eturn
               to Lobby
             </span>
           </a>
@@ -185,7 +185,7 @@
           <a id="nav-buttons-history-friends-return" class="button">
             <i class="fas fa-history nav-icon"></i>
             <span class="nav-hotkey-indicator">R</span
-            >eturn<!-- cspell:disable-line -->
+            >eturn
             to History
           </a>
         </li>
@@ -208,7 +208,7 @@
           <a id="nav-buttons-history-other-scores-return" class="button">
             <i class="fas fa-history nav-icon"></i>
             <span class="nav-hotkey-indicator">R</span
-            >eturn<!-- cspell:disable-line -->
+            >eturn
             to History
           </a>
         </li>

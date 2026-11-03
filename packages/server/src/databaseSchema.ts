@@ -1,5 +1,4 @@
 // The schema in this file corresponds to "database_schema.sql".
-// cspell:words bytea
 
 import { sql } from "drizzle-orm";
 import {

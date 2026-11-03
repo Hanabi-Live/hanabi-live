@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# cspell:words GOARCH GOBIN trimpath ldflags
 
 set -euo pipefail
 

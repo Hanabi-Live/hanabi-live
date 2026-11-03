@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Exercise a real release with an isolated database; never use a production DSN."""
-# cspell:words createdb
 
 import json
 import contextlib

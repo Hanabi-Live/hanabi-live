@@ -1,4 +1,3 @@
-// cspell:words Elts
 package main
 
 import (

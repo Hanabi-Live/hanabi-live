@@ -506,7 +506,6 @@ func sliceEvaluationLatency(samples []float64) map[string]interface{} {
 
 // Linux current RSS, rather than Go heap allocation or an all-process high-water mark.
 func sliceEvaluationRSS() (uint64, error) {
-	// cspell:ignore statm
 	data, err := os.ReadFile("/proc/self/statm")
 	if err != nil {
 		return 0, err

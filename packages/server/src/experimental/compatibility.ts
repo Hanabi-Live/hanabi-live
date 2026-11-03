@@ -1,5 +1,4 @@
 // The parser deliberately follows the nested Go corpus.
-// cspell:ignore testdata
 /* eslint-disable unicorn/max-nested-calls */
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";

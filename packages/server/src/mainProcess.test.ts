@@ -1,4 +1,3 @@
-// cspell:words classid datname locktype objid relname
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { getVariant } from "@hanabi-live/game";
 import { describe, expect, test } from "@jest/globals";

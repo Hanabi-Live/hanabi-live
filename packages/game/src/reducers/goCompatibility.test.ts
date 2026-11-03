@@ -1,4 +1,3 @@
-// cspell:ignore testdata
 /* eslint-disable unicorn/no-null */
 
 import { describe, expect, test } from "@jest/globals";

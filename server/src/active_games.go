@@ -29,7 +29,6 @@ type postgresActiveGames struct{ db *database }
 var recoveryStore activeGameStore
 
 // Completion and checkpoint writes share this namespace and reserved game ID.
-// cspell:ignore xact
 const gameRecoveryLockSQL = "SELECT pg_advisory_xact_lock(17482, $1)"
 
 func (s *postgresActiveGames) Save(ctx context.Context, c activeGameCheckpoint) error {

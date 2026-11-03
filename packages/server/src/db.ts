@@ -1,4 +1,3 @@
-// cspell:words datname
 import { assertDefined } from "complete-common";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { randomUUID } from "node:crypto";

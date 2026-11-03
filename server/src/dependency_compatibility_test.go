@@ -33,7 +33,6 @@ func TestLegacySessionCookieSurvivesDependencyUpdates(t *testing.T) {
 }
 
 // Synthetic hash captured with the previously pinned 2021 argon2id implementation.
-// cspell:disable-next-line
 const compatibilityPasswordHash = "$argon2id$v=19$m=65536,t=1,p=2$HSb5x/B2rWrD/KfnvZ6g/Q$4I9HT3Tlhv7K5qAbHhfODmW0d8aL4tmlfkw4dOOsX2s"
 
 func TestLegacyPasswordHashSurvivesDependencyUpdates(t *testing.T) {

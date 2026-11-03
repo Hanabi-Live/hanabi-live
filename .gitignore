@@ -30,7 +30,6 @@ motd.txt*
 /letsencrypt
 /logs
 /ongoing_tables
-# cspell:words pycache
 /install/__pycache__
 
 # Development files
@@ -67,7 +66,6 @@ GitHub_private_key.pem
 # ------------------------------
 # GitHub Node.gitignore template
 # https://raw.githubusercontent.com/github/gitignore/master/Node.gitignore
-# cspell:disable
 # ------------------------------
 
 # Logs

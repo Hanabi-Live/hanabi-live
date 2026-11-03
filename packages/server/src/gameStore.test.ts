@@ -1,4 +1,3 @@
-// cspell:words classid datname locktype objid xact
 import type { GameID, UserID } from "@hanabi-live/data";
 import { defaultOptions, EndCondition } from "@hanabi-live/game";
 import {

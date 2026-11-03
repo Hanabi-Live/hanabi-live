@@ -1,4 +1,3 @@
-// cspell:words nextval regclass xact
 import type { GameID, UserID } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import {

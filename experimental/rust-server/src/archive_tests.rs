@@ -1,4 +1,3 @@
-// cspell:ignore locktype classid objid
 
 use super::*;
 use crate::accounts::test_support::TestDb;

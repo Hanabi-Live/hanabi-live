@@ -1,5 +1,4 @@
 name: CI
-# cspell:words pgdg vitest
 
 on: [push, pull_request]
 

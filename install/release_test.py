@@ -1,4 +1,3 @@
-# cspell:words arcname esac
 import contextlib
 import io
 import json

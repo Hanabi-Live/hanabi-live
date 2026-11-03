@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Build verification and stopped-service installation of native releases."""
-# cspell:words RDONLY
 
 import argparse
 import contextlib

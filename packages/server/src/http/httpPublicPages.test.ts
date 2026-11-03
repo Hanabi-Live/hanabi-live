@@ -1,4 +1,3 @@
-// cspell:words lodie elodie
 import type { GameID, UserID } from "@hanabi-live/data";
 import { serverCommandGameHistoryData } from "@hanabi-live/data";
 import {

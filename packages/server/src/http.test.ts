@@ -1,5 +1,4 @@
 // Database fixtures intentionally exercise nullable legacy password fields.
-// cspell:words addext keyout
 /* eslint-disable unicorn/no-null */
 import type { GameID, TableID, UserID } from "@hanabi-live/data";
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
@@ -100,10 +99,8 @@ const sample = corpus.samples.find((row) => row.userID === 42);
 assertDefined(sample, "Missing synthetic Go session fixture.");
 
 // Synthetic fixture from the old Go password implementation.
-// cspell:disable
 const LEGACY_HASH =
   "$argon2id$v=19$m=65536,t=1,p=2$HSb5x/B2rWrD/KfnvZ6g/Q$4I9HT3Tlhv7K5qAbHhfODmW0d8aL4tmlfkw4dOOsX2s";
-// cspell:enable
 
 const credentials = {
   username: "Alice",

@@ -1,5 +1,4 @@
 // The evaluation parser mirrors nested wire payloads.
-// cspell:ignore onnotice
 /* eslint-disable unicorn/max-nested-calls */
 import { assertDefined, isArray } from "complete-common";
 import { randomUUID } from "node:crypto";

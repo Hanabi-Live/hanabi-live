@@ -1,4 +1,3 @@
-// cspell:words timestamptz lodie elodie
 import type { UserID } from "@hanabi-live/data";
 import {
   afterEach,

@@ -2,7 +2,6 @@ use super::*;
 use argon2::{Argon2, Params, PasswordHash, PasswordHasher};
 
 // Synthetic Go one-pass fixture, shared with dependency_compatibility_test.go.
-// cspell:disable-next-line
 const OLD_HASH: &str = "$argon2id$v=19$m=65536,t=1,p=2$HSb5x/B2rWrD/KfnvZ6g/Q$4I9HT3Tlhv7K5qAbHhfODmW0d8aL4tmlfkw4dOOsX2s";
 const PASSWORD: &str = "compatibility-password";
 

@@ -1,4 +1,3 @@
-// cspell:words quiescing checkpointed
 import type {
   ClientCommandData,
   GameHistory,

@@ -10,7 +10,6 @@ export const CHOP_MOVED_NOTES = [
   "cm",
   "chop move",
   "chop moved",
-  // cspell:disable
   "5cm", // 5's Chop Move
   "e5cm", // Early 5's Chop Move
   "tcm", // Trash Chop Move
@@ -27,7 +26,6 @@ export const CHOP_MOVED_NOTES = [
   "atcm", // Assisted Trash Chop Move
   "ttcm", // Time Travel Chop Move
   "bd", // Baton Discard
-  // cspell:enable
 ] as const;
 
 export const FINESSED_NOTES = [

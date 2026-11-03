@@ -1,4 +1,3 @@
-// cspell:words unstub
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LobbyConnection } from "../src/connection";
 import { createLobbyStore } from "../src/store";

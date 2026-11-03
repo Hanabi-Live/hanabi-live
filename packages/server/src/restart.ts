@@ -1,4 +1,3 @@
-// cspell:words execve
 import { assertDefined } from "complete-common";
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";

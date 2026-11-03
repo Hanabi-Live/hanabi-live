@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/require-await -- In-memory storage implements an asynchronous interface. */
-// cspell:words datname stest
 import websocketPlugin from "@fastify/websocket";
 import type { GameID, UserID } from "@hanabi-live/data";
 import { SERVER_COMMAND_SCHEMAS, Status } from "@hanabi-live/data";

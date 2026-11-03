@@ -1,4 +1,3 @@
-// cspell:ignore tablename schemaname locktype classid objid datname
 import {
   afterEach,
   beforeEach,
