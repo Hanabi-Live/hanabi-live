@@ -49,6 +49,51 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("confirms the latest preference write only after its ordered server barrier", async () => {
+    const store = createLobbyStore();
+    const navigate = vi.fn(() => true);
+    const connection = new LobbyConnection(store, navigate);
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    connection.setting("volume", 0);
+    connection.setting("volume", 3);
+    expect(store.getState().preferenceStatus).toBe("saving");
+    socket.receive("name", { name: "first acknowledgement" });
+    expect(store.getState().preferenceStatus).toBe("saving");
+    socket.receive("tableStart", { tableID: 1, replay: false });
+    expect(navigate).not.toHaveBeenCalled();
+    socket.receive("name", { name: "latest acknowledgement" });
+    expect(store.getState().preferenceStatus).toBe("saved");
+    expect(navigate).toHaveBeenCalledTimes(1);
+    connection.stop();
+  });
+
+  it("does not report rejected or disconnected preference writes as saved", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(
+      store,
+      vi.fn(() => true),
+    );
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    connection.setting("volume", 3);
+    socket.receive("warning", { warning: "Setting rejected" });
+    socket.receive("name", { name: "barrier" });
+    expect(store.getState().preferenceStatus).toBe("failed");
+    connection.setting("volume", 5);
+    socket.close();
+    expect(store.getState().preferenceStatus).toBe("failed");
+    connection.stop();
+  });
+
   it("preserves the selected shadow seat when handing off to the game", async () => {
     const store = createLobbyStore();
     const navigate = vi.fn(() => true);

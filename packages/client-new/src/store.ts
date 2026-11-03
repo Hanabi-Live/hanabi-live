@@ -34,6 +34,7 @@ export interface LobbyState {
   otherScores: HistoryGame[];
   notice: { text: string; fatal: boolean } | null;
   pending: string | null;
+  preferenceStatus: "saved" | "saving" | "failed";
   typing: Record<string, string[]>;
   pmHasMore: boolean;
   unreadPMs: Record<string, number>;
@@ -60,6 +61,7 @@ function initialState(): LobbyState {
     otherScores: [],
     notice: null,
     pending: null,
+    preferenceStatus: "saved",
     typing: {},
     pmHasMore: false,
     unreadPMs: {},
@@ -123,6 +125,12 @@ const slice = createSlice({
         state.welcome.settings = action.payload;
       }
     },
+    preferenceStatusChanged(
+      state,
+      action: PayloadAction<LobbyState["preferenceStatus"]>,
+    ) {
+      state.preferenceStatus = action.payload;
+    },
     tableUnattended(state) {
       state.tableID = null;
       state.pregame = null;
@@ -133,6 +141,7 @@ const slice = createSlice({
       const event = castDraft(payload);
       switch (event.command) {
         case "welcome": {
+          state.preferenceStatus = "saved";
           state.tableID = null;
           state.pregame = null;
           state.welcome = event.data;

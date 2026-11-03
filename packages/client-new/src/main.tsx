@@ -37,6 +37,11 @@ createRoot(root).render(
   </Provider>,
 );
 void connection.checkSession();
+globalThis.addEventListener("beforeunload", (event) => {
+  if (store.getState().preferenceStatus === "saving") {
+    event.preventDefault();
+  }
+});
 globalThis.addEventListener("pagehide", () => connection.stop());
 globalThis.addEventListener("pageshow", (event) => {
   if (event.persisted) {

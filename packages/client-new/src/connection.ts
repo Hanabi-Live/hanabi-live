@@ -23,6 +23,11 @@ export class LobbyConnection {
   private stopped = false;
   private destination: number | null = null;
   private shadowingPlayerIndex = -1;
+  private preferenceVersion = 0;
+  private readonly nameVersions: number[] = [];
+  private preferenceFailed = false;
+  private preferenceTimeout: ReturnType<typeof setTimeout> | undefined;
+  private navigationAfterPreferences: NewLobbyNavigation | undefined;
   private readonly store: LobbyStore;
   private readonly enterGame: (target: NewLobbyNavigation) => boolean;
 
@@ -159,11 +164,7 @@ export class LobbyConnection {
         return false;
       }
       // A solo replay is retired when its last viewer disconnects. Create it after handoff.
-      if (this.enterGame({ kind: "replay", request: parsed.data })) {
-        this.stop();
-        return true;
-      }
-      return false;
+      return this.navigateToGame({ kind: "replay", request: parsed.data });
     }
     if (command === "tableSpectate") {
       this.shadowingPlayerIndex =
@@ -190,6 +191,9 @@ export class LobbyConnection {
       return false;
     }
     this.socket.send(frame);
+    if (command === "getName") {
+      this.nameVersions.push(this.preferenceVersion);
+    }
     this.store.dispatch(actions.requestSent(command));
     if (command === "tableUnattend" || command === "tableLeave") {
       this.destination = null;
@@ -213,7 +217,24 @@ export class LobbyConnection {
     if (!this.send("setting", { name, setting: String(value) })) {
       return false;
     }
+    if (this.store.getState().preferenceStatus !== "saving") {
+      this.preferenceFailed = false;
+    }
+    this.preferenceVersion++;
     this.store.dispatch(actions.settingsChanged(next.data));
+    this.store.dispatch(actions.preferenceStatusChanged("saving"));
+    // All three servers process a session's commands in order. A name response is a barrier after
+    // the settings write, without introducing a new wire command.
+    this.send("getName", {});
+    clearTimeout(this.preferenceTimeout);
+    this.preferenceTimeout = setTimeout(() => {
+      this.preferenceFailed = true;
+      this.navigationAfterPreferences = undefined;
+      this.store.dispatch(actions.preferenceStatusChanged("failed"));
+      this.notice(
+        "Preferences could not be confirmed. Reconnect before trying again.",
+      );
+    }, 10_000);
     return true;
   }
 
@@ -257,6 +278,7 @@ export class LobbyConnection {
   }
 
   stop(): void {
+    this.clearPreferenceRequests();
     this.stopped = true;
     this.generation++;
     this.controller?.abort();
@@ -301,6 +323,31 @@ export class LobbyConnection {
           this.destination = null;
         }
         this.store.dispatch(actions.received(event));
+        if (
+          event.command === "warning"
+          && this.store.getState().preferenceStatus === "saving"
+        ) {
+          this.preferenceFailed = true;
+        }
+        if (event.command === "name") {
+          const version = this.nameVersions.shift();
+          if (
+            version === this.preferenceVersion
+            && this.store.getState().preferenceStatus === "saving"
+          ) {
+            clearTimeout(this.preferenceTimeout);
+            this.store.dispatch(
+              actions.preferenceStatusChanged(
+                this.preferenceFailed ? "failed" : "saved",
+              ),
+            );
+            const target = this.navigationAfterPreferences;
+            this.navigationAfterPreferences = undefined;
+            if (target !== undefined && !this.preferenceFailed) {
+              this.navigateToGame(target);
+            }
+          }
+        }
         if (event.command === "welcome") {
           clearTimeout(this.timeout);
           this.attempts = 0;
@@ -337,15 +384,11 @@ export class LobbyConnection {
             }
 
             case "tableStart": {
-              if (
-                this.enterGame({
-                  kind: "table",
-                  tableID: event.data.tableID,
-                  shadowingPlayerIndex: this.shadowingPlayerIndex,
-                })
-              ) {
-                this.stop();
-              }
+              this.navigateToGame({
+                kind: "table",
+                tableID: event.data.tableID,
+                shadowingPlayerIndex: this.shadowingPlayerIndex,
+              });
 
               break;
             }
@@ -390,6 +433,7 @@ export class LobbyConnection {
     if (this.stopped) {
       return;
     }
+    this.clearPreferenceRequests();
     clearTimeout(this.retry);
     this.store.dispatch(actions.connectionChanged("reconnecting"));
     const delay =
@@ -403,5 +447,29 @@ export class LobbyConnection {
 
   private isCurrent(generation: number): boolean {
     return !this.stopped && generation === this.generation;
+  }
+
+  private navigateToGame(target: NewLobbyNavigation): boolean {
+    if (this.store.getState().preferenceStatus === "saving") {
+      this.navigationAfterPreferences = target;
+      return true;
+    }
+    if (!this.enterGame(target)) {
+      return false;
+    }
+    this.stop();
+    return true;
+  }
+
+  private clearPreferenceRequests(): void {
+    clearTimeout(this.preferenceTimeout);
+    this.nameVersions.length = 0;
+    this.navigationAfterPreferences = undefined;
+    if (this.store.getState().preferenceStatus === "saving") {
+      this.store.dispatch(actions.preferenceStatusChanged("failed"));
+      this.notice(
+        "The connection closed before preferences were confirmed. Check them after reconnecting.",
+      );
+    }
   }
 }

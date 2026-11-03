@@ -70,9 +70,13 @@ export class LayoutChild extends Konva.Group {
       this.off("dragend");
     }
 
-    const shape = globals.stage.getIntersection(
-      globals.stage.getPointerPosition(),
-    );
+    const pointer = globals.stage.getPointerPosition();
+    // Konva 3's declaration omits the undefined result before the first pointer event.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (pointer === undefined) {
+      return;
+    }
+    const shape = globals.stage.getIntersection(pointer);
     if (shape !== null && this.card.isAncestorOf(shape)) {
       this.card.setCursor();
     }

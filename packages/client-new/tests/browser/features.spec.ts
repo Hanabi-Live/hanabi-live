@@ -34,6 +34,9 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await volume.press("ArrowRight");
   await volume.press("ArrowRight");
   await volume.press("ArrowRight");
+  await expect(
+    a.getByRole("status", { name: "Preference saving status" }),
+  ).toHaveText("Preferences saved");
   await a.reload();
   await expect(a.getByLabel("Colorblind-friendly cards")).toBeChecked();
   await expect(a.getByRole("slider")).toHaveValue("3");

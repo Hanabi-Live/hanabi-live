@@ -1,5 +1,6 @@
 import type { Settings } from "@hanabi-live/data";
 import { ArrowUpRight, Volume2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
 import type { LobbyState } from "../store";
@@ -51,6 +52,18 @@ export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
   const online = useSelector(
     (state: LobbyState) => state.connection === "online",
   );
+  const preferenceStatus = useSelector(
+    (state: LobbyState) => state.preferenceStatus,
+  );
+  const [volume, setVolume] = useState(welcome?.settings.volume ?? 50);
+  useEffect(() => {
+    setVolume(welcome?.settings.volume ?? 50);
+  }, [welcome?.settings.volume]);
+  function saveVolume(value: number) {
+    if (value !== welcome?.settings.volume) {
+      connection.setting("volume", value);
+    }
+  }
   if (!welcome) {
     return null;
   }
@@ -64,6 +77,17 @@ export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
           <p>Preferences follow your account into every game.</p>
         </div>
       </div>
+      <p aria-label="Preference saving status" role="status">
+        {online
+          ? volume === settings.volume
+            ? preferenceStatus === "saving"
+              ? "Saving preferences..."
+              : preferenceStatus === "failed"
+                ? "Preferences could not be confirmed."
+                : "Preferences saved"
+            : "Finish adjusting the slider to save."
+          : "Offline. Changes cannot be saved."}
+      </p>
       <fieldset className="panel settings-panel" disabled={!online}>
         <legend>Sound &amp; atmosphere</legend>
         <label>
@@ -80,15 +104,18 @@ export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
           </select>
         </label>
         <label>
-          Volume: {settings.volume}%
+          Volume: {volume}%
           <input
             max={100}
             min={0}
-            onChange={(event) =>
-              connection.setting("volume", Number(event.target.value))
+            onBlur={(event) => saveVolume(Number(event.currentTarget.value))}
+            onChange={(event) => setVolume(Number(event.target.value))}
+            onKeyUp={(event) => saveVolume(Number(event.currentTarget.value))}
+            onPointerUp={(event) =>
+              saveVolume(Number(event.currentTarget.value))
             }
             type="range"
-            value={settings.volume}
+            value={volume}
           />
         </label>
         <button
