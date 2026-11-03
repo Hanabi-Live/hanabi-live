@@ -87,11 +87,7 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 		if newOptions.VariantName != tableOptions.VariantName {
 			options += span + "Variant: <b>" + newOptions.VariantName + endSpan
 		}
-		if newOptions.Timed && !tableOptions.Timed {
-			options += span + "Timed: <b>" + strconv.Itoa(newOptions.TimeBase) + " / " + strconv.Itoa(newOptions.TimePerTurn) + endSpan
-		} else if tableOptions.Timed {
-			options += span + "Timed: <b>No" + endSpan
-		}
+		options += timerProposalChange(newOptions, tableOptions)
 		// Sanitize
 		d.MaxPlayers = between(d.MaxPlayers, 2, 6, 5)
 		if d.MaxPlayers != t.MaxPlayers {
@@ -265,6 +261,23 @@ func commandTableUpdate(ctx context.Context, s *Session, d *CommandData) {
 			return
 		}
 	}
+}
+
+// timerProposalChange describes a timer update only when the proposed setting changes.
+func timerProposalChange(proposed *Options, current *Options) string {
+	const span = "<span class=\"cp\">"
+	const endSpan = "</b></span>"
+
+	if proposed.Timed {
+		if !current.Timed || proposed.TimeBase != current.TimeBase ||
+			proposed.TimePerTurn != current.TimePerTurn {
+			return span + "Timed: <b>" + strconv.Itoa(proposed.TimeBase) +
+				" / " + strconv.Itoa(proposed.TimePerTurn) + endSpan
+		}
+	} else if current.Timed {
+		return span + "Timed: <b>No" + endSpan
+	}
+	return ""
 }
 
 func kickPlayersOverLimit(ctx context.Context, d *CommandData, t *Table) {
