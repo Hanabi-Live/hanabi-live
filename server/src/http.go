@@ -189,6 +189,8 @@ func httpInit() {
 	// Path handlers (for the main website)
 	httpRouter.GET("/", httpMain)
 	httpRouter.GET("/lobby", httpMain)
+	httpRouter.GET("/new", httpNewLobby)
+	httpRouter.GET("/new/*path", httpNewLobby)
 	httpRouter.GET("/pre-game", httpMain)
 	httpRouter.GET("/pre-game/:tableID", httpMain)
 	httpRouter.GET("/game", httpMain)

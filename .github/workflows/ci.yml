@@ -1,5 +1,5 @@
 name: CI
-# cspell:words pgdg
+# cspell:words pgdg vitest
 
 on: [push, pull_request]
 
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        packageName: [client, data, game, scripts, server]
+        packageName: [client, client-new, data, game, scripts, server]
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup
@@ -135,6 +135,46 @@ jobs:
 
       - name: Test the TypeScript code
         run: npm run test
+
+  client_new:
+    runs-on: ubuntu-latest
+    env:
+      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/workflows/setup
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: server/src/go.sum
+      - uses: ./.github/workflows/setup-redis
+      - run: npx playwright install --with-deps chromium
+      - run: bash packages/client/build_client.sh
+      - name: Test lobby state, transport and safe rendering
+        run: npx vitest run
+        working-directory: packages/client-new
+      - name: Test the new lobby against all three servers
+        run: npx playwright test
+        working-directory: packages/client-new
+      - uses: actions/upload-artifact@v7.0.2
+        if: failure()
+        with:
+          name: new-lobby-browser-failures
+          path: packages/client-new/test-results
 
   rust_poc:
     runs-on: ubuntu-latest
@@ -225,6 +265,7 @@ jobs:
         spell_check,
         lint_monorepo,
         rust_poc,
+        client_new,
       ]
     runs-on: ubuntu-latest
     strategy:

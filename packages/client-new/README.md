@@ -1,0 +1,40 @@
+# New lobby
+
+The opt-in lobby lives at **`/new`** on the Go, TypeScript, and Rust servers.
+The classic lobby remains at `/lobby`; production does not switch automatically.
+
+React owns the new lobby's DOM. Redux owns validated directory, chat, and
+account state; one connection service owns its WebSocket and recovery. Shared
+protocol schemas, game data, and chat symbols come from the existing packages.
+
+The existing game/replay screen remains in use. A validated, single-use
+session-storage request transfers navigation to it, then the new lobby closes
+its connection. Replay creation happens **after** this handoff so disconnecting
+cannot delete a newly created solo replay. Returning from the game opens `/new`.
+The bridge does not queue or replay mutations after connection loss.
+
+## Develop
+
+From the repository root, `npm run build-client` builds both clients. Start a
+development backend normally and open `/new`.
+
+For live UI development, run `npm run dev --prefix packages/client-new` and open
+`http://localhost:5173/new/`. Its proxy expects a local backend on port 8080.
+Use the same `localhost` hostname throughout so the legacy game screen accepts
+the development origin.
+
+## Verify
+
+Run `bash packages/client-new/lint.sh`. From this directory, `npm test` runs
+state, connection, and rendering checks.
+
+After building both clients, run `npx playwright test` here with
+`HANABI_TEST_DATABASE_URL` pointing to a **disposable local PostgreSQL
+service**. The fixture creates separate databases and processes, never reads the
+ordinary `.env`, and exercises Go, TypeScript, and Rust. Go, Cargo, Redis 7.2+
+binaries, and Playwright Chromium must be available. Use `--project=go` for a
+targeted run.
+
+Browser checks cover the game/replay handoff, reconnects, history, private chat,
+table options, settings, mobile layout, and accessibility. CI runs these before
+publishing either native release.

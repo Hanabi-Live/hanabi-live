@@ -263,6 +263,16 @@ function registerPathHandlers(httpServer: FastifyInstance) {
   // For the main website.
   httpServer.get("/", httpMain);
   httpServer.get("/lobby", httpMain);
+  httpServer.get("/new", (_request, reply) =>
+    reply
+      .header("Cache-Control", "no-cache")
+      .sendFile("client-new/index.html", { cacheControl: false }),
+  );
+  httpServer.get("/new/*", (_request, reply) =>
+    reply
+      .header("Cache-Control", "no-cache")
+      .sendFile("client-new/index.html", { cacheControl: false }),
+  );
   httpServer.get("/pre-game", httpMain);
   httpServer.get("/pre-game/:tableID", httpMain);
   httpServer.get("/game", httpMain);

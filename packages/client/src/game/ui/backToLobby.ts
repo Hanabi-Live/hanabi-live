@@ -21,5 +21,10 @@ export function backToLobby(): void {
   globals.lobby.conn!.send("tableUnattend", {
     tableID: globals.lobby.tableID,
   });
+  if (sessionStorage.getItem("hanabi-lobby") === "new") {
+    globals.lobby.conn!.close();
+    globalThis.location.assign("/new");
+    return;
+  }
   globals.game!.hide();
 }

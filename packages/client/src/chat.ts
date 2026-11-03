@@ -5,7 +5,11 @@ import type {
   ServerCommandChatData,
   ServerCommandChatPMHistoryMessageData,
 } from "@hanabi-live/data";
-import { PROJECT_NAME } from "@hanabi-live/data";
+import {
+  CHAT_EMOJIS as emojis,
+  CHAT_EMOTES as emotes,
+  PROJECT_NAME,
+} from "@hanabi-live/data";
 import {
   eRange,
   isArray,
@@ -22,8 +26,6 @@ import {
   LobbyChatDeletionState,
 } from "./chatDeletion";
 import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
-import emojis from "./json/emojis.json";
-import emotes from "./json/emotes.json";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { getHTMLInputElement } from "./utils";

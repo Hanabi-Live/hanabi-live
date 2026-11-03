@@ -35,6 +35,13 @@ export function packWSMessageOnClient(command: string, data: unknown): string {
   return packWSMessageOnServer(command, data, JSON.stringify);
 }
 
+/** Works on local HTTP development origins as well as HTTPS. */
+export function createClientRequestID(): string {
+  return Array.from(crypto.getRandomValues(new Uint32Array(4)), (word) =>
+    word.toString(16).padStart(8, "0"),
+  ).join("");
+}
+
 /** Frames an already prepared payload using the supplied encoder. */
 export function packWSMessageOnServer(
   command: string,

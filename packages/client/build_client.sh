@@ -108,3 +108,5 @@ fi
 cd "$DIR"
 
 echo "Client version $VERSION successfully built in $SECONDS seconds."
+
+bash "$REPO_ROOT/packages/client-new/build_client.sh"

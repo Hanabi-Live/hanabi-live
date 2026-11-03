@@ -19,6 +19,8 @@ cd "$DIR"
 process_ids=()
 bash "$DIR/packages/client/lint.sh" &
 process_ids+=("$!")
+bash "$DIR/packages/client-new/lint.sh" &
+process_ids+=("$!")
 bash "$DIR/packages/data/lint.sh" &
 process_ids+=("$!")
 bash "$DIR/packages/game/lint.sh" &

@@ -1,4 +1,8 @@
-import { packWSMessageOnClient, unpackWSMessage } from "@hanabi-live/data";
+import {
+  createClientRequestID,
+  packWSMessageOnClient,
+  unpackWSMessage,
+} from "@hanabi-live/data";
 
 const durableCommands = new Set([
   "action",
@@ -119,10 +123,7 @@ export class Connection {
       && data !== null
       && !("requestID" in data)
     ) {
-      const requestID = Array.from(
-        crypto.getRandomValues(new Uint32Array(4)),
-        (word) => word.toString(16).padStart(8, "0"),
-      ).join("");
+      const requestID = createClientRequestID();
       payload = { ...data, requestID };
     }
     const msg = packWSMessageOnClient(command, payload);

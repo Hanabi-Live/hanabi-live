@@ -89,6 +89,24 @@ fn encoded(s: &str) -> String {
     percent_encoding::utf8_percent_encode(s, percent_encoding::NON_ALPHANUMERIC).to_string()
 }
 
+async fn new_lobby(State(state): State<PublicState>) -> Result<Response> {
+    let html = tokio::fs::read_to_string(state.config.root.join("public/client-new/index.html"))
+        .await
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::NotFound {
+                Error::not_found("The new lobby has not been built.")
+            } else {
+                Error::from(error)
+            }
+        })?;
+    let mut response = axum::response::Html(html).into_response();
+    response.headers_mut().insert(
+        axum::http::header::CACHE_CONTROL,
+        axum::http::HeaderValue::from_static("no-cache"),
+    );
+    Ok(response)
+}
+
 pub fn router(pool: PgPool, config: PublicConfig) -> Router {
     let state = PublicState {
         pool,
@@ -96,6 +114,10 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
         templates: Arc::new(pages::templates()),
     };
     let mut router = Router::new();
+    router = router
+        .route("/new", get(new_lobby))
+        .route("/new/", get(new_lobby))
+        .route("/new/{*path}", get(new_lobby));
     for path in [
         "/",
         "/lobby",

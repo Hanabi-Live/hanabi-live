@@ -694,10 +694,10 @@ move for the current situation.
 - You can also send private messages to other players with the `/pm` command and
   revisit recent private messages with the `/pmhistory` command.
 - You can type any emoji into chat using the
-  [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emojis.json).
+  [standard emoji short-code](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emojis.json).
   For example, `:thinking:` will turn into 🤔.
 - You can type any
-  [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/client/src/json/emotes.json)
+  [Twitch emote](https://raw.githubusercontent.com/Hanabi-Live/hanabi-live/main/packages/data/src/json/emotes.json)
   into chat. For example, `Kappa` will turn into
   <img alt="Kappa" src="https://github.com/Hanabi-Live/hanabi-live/raw/main/public/img/emotes/twitch/Kappa.png">.
   (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
