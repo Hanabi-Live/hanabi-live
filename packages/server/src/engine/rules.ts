@@ -289,8 +289,9 @@ function sudokuScores(
   for (let rank = 0; rank < size; rank++) {
     if (!available.has(rank + 1)) {
       for (let write = lastDead + 1; write < rank; write++) {
-        // Preserve Go's segment-based score, not the client deduction helper's walk.
-        scores[write] = rank - lastDead - 1;
+        // A stack that is started at this rank cannot play the cards that come before it, so its
+        // sequence ends at the discarded rank.
+        scores[write] = rank - write;
       }
       scores[rank] = 0;
       lastDead = rank;
