@@ -23,6 +23,18 @@ For live UI development, run `npm run dev --prefix packages/client-new` and open
 Use the same `localhost` hostname throughout so the legacy game screen accepts
 the development origin.
 
+## Design prototypes
+
+Open `http://localhost:5173/new/prototypes.html` in the Vite dev server to
+compare ten interactive visual directions. This separate entry uses fictional
+sample data, needs no backend or login, and never connects to live games. Built
+releases include it at `/public/client-new/prototypes.html`; it does not replace
+`/new`.
+
+The studies use the Impeccable design playbooks at revision
+`9fadc41729c38fd47d7ae622b501558653f9d2e9`, without its live-mode launcher or
+hooks. The bundled prototype fonts retain their Open Font License files.
+
 ## Verify
 
 Run `bash packages/client-new/lint.sh`. From this directory, `npm test` runs

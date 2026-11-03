@@ -52,7 +52,7 @@ export default defineConfig(
     },
   },
   {
-    files: ["src/main.tsx"],
+    files: ["src/main.tsx", "src/prototypes/main.tsx"],
     rules: {
       "import-x/no-unassigned-import": ["error", { allow: ["**/*.css"] }],
     },

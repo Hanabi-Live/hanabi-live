@@ -47,6 +47,12 @@ export default defineConfig(({ command }) => ({
     CLIENT_VERSION: JSON.stringify(version),
   },
   build: {
+    rolldownOptions: {
+      input: {
+        main: fileURLToPath(new URL("index.html", import.meta.url)),
+        prototypes: fileURLToPath(new URL("prototypes.html", import.meta.url)),
+      },
+    },
     outDir: `${root}/public/client-new`,
     emptyOutDir: true,
     sourcemap: true,

@@ -2,6 +2,63 @@ import { AxeBuilder } from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, gameReady, test } from "./fixture";
 
+test("design prototypes remain interactive without opening a live session", async ({
+  page,
+  backend,
+}) => {
+  const liveRequests: string[] = [];
+  page.on("websocket", (socket) => {
+    liveRequests.push(socket.url());
+  });
+  page.on("request", (request) => {
+    if (
+      ["/login", "/logout", "/test-cookie"].includes(
+        new URL(request.url()).pathname,
+      )
+    ) {
+      liveRequests.push(request.url());
+    }
+  });
+  await page.goto(`${backend}/public/client-new/prototypes.html`);
+  await expect(
+    page.getByRole("heading", { name: /Find your kind/u }),
+  ).toBeVisible();
+  await expect(page.locator(".study-card")).toHaveCount(10);
+  await page.getByRole("link", { name: /01 Clubhouse/u }).click();
+  const preview = page.frameLocator("iframe");
+  await preview.getByLabel("Find a table").fill("not a real table");
+  await expect(
+    preview.getByRole("heading", { name: "No tables found" }),
+  ).toBeVisible();
+  await preview.getByRole("button", { name: "Clear filters" }).click();
+  await expect(preview.locator(".proto-table")).toHaveCount(5);
+  await preview.getByRole("button", { name: "Create sample table" }).click();
+  const dialog = preview.getByRole("dialog");
+  await dialog.getByLabel("Table name").fill("A sample game");
+  await dialog.getByRole("button", { name: "Create sample table" }).click();
+  await expect(
+    preview.getByRole("button", { name: "A sample game" }),
+  ).toBeVisible();
+  await preview
+    .getByLabel("Sample chat message")
+    .fill("This stays in the prototype.");
+  await preview.getByRole("button", { name: "Send sample message" }).click();
+  await expect(preview.getByRole("log")).toContainText(
+    "This stays in the prototype.",
+  );
+  await page.getByRole("button", { name: "Mobile preview" }).click();
+  await expect(page.locator("iframe")).toHaveCSS("width", "390px");
+  await page.getByLabel("Design", { exact: true }).selectOption("felt");
+  await expect(
+    preview.getByRole("heading", { name: "Pull up a chair." }),
+  ).toBeVisible();
+  await preview.getByRole("button", { name: "First game? Welcome!" }).click();
+  await expect(
+    preview.getByRole("region", { name: "Selected sample table" }),
+  ).toContainText("First game? Welcome!");
+  expect(liveRequests).toEqual([]);
+});
+
 async function login(page: Page, backend: string, name: string) {
   const response = await page.goto(`${backend}/new/`);
   expect(response?.headers()["cache-control"]).toContain("no-cache");
