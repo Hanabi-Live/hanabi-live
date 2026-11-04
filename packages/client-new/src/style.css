@@ -443,11 +443,15 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   border-radius: 5px;
   margin-bottom: 0.7em;
 }
-.global-notice {
+.global-notice,
+.connection-status {
   display: flex;
   gap: 0.5em;
   justify-content: space-between;
   align-items: center;
+}
+.connection-status .text-button {
+  text-decoration: underline;
 }
 .notice p {
   margin: 0;
