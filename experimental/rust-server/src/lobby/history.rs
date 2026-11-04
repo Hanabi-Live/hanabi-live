@@ -26,15 +26,17 @@ pub async fn history_ids(
     amount: i64,
     friends: bool,
 ) -> Result<Vec<i32>> {
+    // Filter participant IDs before sorting, rather than scanning the ordered archive for matches.
     let query = if friends {
-        "SELECT g.id FROM games g WHERE EXISTS
-         (SELECT 1 FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id
-          WHERE f.user_id=$1 AND p.game_id=g.id)
-         AND NOT EXISTS (SELECT 1 FROM game_participants p WHERE p.user_id=$1 AND p.game_id=g.id)
+        "SELECT g.id FROM games g JOIN
+         (SELECT p.game_id FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id
+          WHERE f.user_id=$1
+          EXCEPT
+          SELECT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
          ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3"
     } else {
-        "SELECT g.id FROM games g WHERE EXISTS
-         (SELECT 1 FROM game_participants p WHERE p.user_id=$1 AND p.game_id=g.id)
+        "SELECT g.id FROM games g JOIN
+         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
          ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2,0) OFFSET $3"
     };
     Ok(sqlx::query_scalar(query)

@@ -420,6 +420,58 @@ async fn game(db: &TestDb, user: i32, seed: &str, score: i16) -> i32 {
 }
 
 #[tokio::test]
+async fn lobby_history_pages_are_distinct_and_exclude_own_games_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let a = db.user("Alice").await;
+    let b = db.user("Bob").await;
+    let c = db.user("Carol").await;
+    let d = db.user("Donald").await;
+    let own = game(&db, a, "p2v0s1", 20).await;
+    let older = game(&db, b, "p2v0s2", 20).await;
+    let newer = game(&db, c, "p2v0s3", 20).await;
+    let shared = game(&db, a, "p2v0s4", 20).await;
+    let unrelated = game(&db, d, "p2v0s5", 20).await;
+    for (game_id, user_id) in [(older, c), (shared, b)] {
+        sqlx::query("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,1,0,0)")
+            .bind(game_id).bind(user_id).execute(&db.pool).await.unwrap();
+    }
+    change_friend(&db.pool, a, b, true).await.unwrap();
+    change_friend(&db.pool, a, c, true).await.unwrap();
+    sqlx::query("UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)")
+        .bind(vec![own, older, newer, shared, unrelated])
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        history_ids(&db.pool, a, 0, 10, true).await.unwrap(),
+        vec![newer, older]
+    );
+    assert_eq!(
+        history_ids(&db.pool, a, 1, 1, true).await.unwrap(),
+        vec![older]
+    );
+    assert_eq!(
+        history_ids(&db.pool, a, 99, 0, false).await.unwrap(),
+        vec![shared, own]
+    );
+    assert!(
+        history_ids(&db.pool, a, 0, 0, true)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        history_ids(&db.pool, d, 0, 10, true)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    db.close().await;
+}
+
+#[tokio::test]
 async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let Some(db) = TestDb::create().await else {
         return;
