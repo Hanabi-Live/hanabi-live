@@ -770,11 +770,13 @@ impl Store {
         self.player_for_variant(id, name, 0).await
     }
     pub async fn player_for_variant(&self, id: i32, name: String, variant: u32) -> Result<Player> {
-        let count: i64 =
-            sqlx::query_scalar("SELECT count(*) FROM game_participants WHERE user_id=$1")
-                .bind(id)
-                .fetch_one(&self.primary)
-                .await?;
+        let count: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM games g JOIN game_participants p ON p.game_id=g.id
+             WHERE p.user_id=$1 AND g.end_condition=1 AND NOT g.speedrun",
+        )
+        .bind(id)
+        .fetch_one(&self.primary)
+        .await?;
         let row = sqlx::query("SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2")
             .bind(id)
             .bind(variant as i16)

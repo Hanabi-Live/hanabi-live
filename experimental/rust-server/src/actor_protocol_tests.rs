@@ -254,6 +254,52 @@ async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<(
 }
 
 #[tokio::test]
+async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let games: Vec<i32> = sqlx::query_scalar(
+            "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,120,20,
+             n IN (8,9),false,false,false,false,false,false,false,
+             'stats-'||n,CASE WHEN n IN (1,8) THEN 25 ELSE 0 END,30,
+             CASE n WHEN 3 THEN 2 WHEN 4 THEN 3 WHEN 5 THEN 4 WHEN 6 THEN 6
+                    WHEN 7 THEN 10 WHEN 9 THEN 5 ELSE 1 END,NOW(),NOW()
+             FROM generate_series(1,9) n ORDER BY n RETURNING id",
+        )
+        .fetch_all(&h.store.primary)
+        .await?;
+        sqlx::query(
+            "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+             SELECT id,1,0,0,0 FROM unnest($1::integer[]) games(id)",
+        )
+        .bind(games)
+        .execute(&h.store.primary)
+        .await?;
+        let id = h.create(0, "Count parity", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let snapshot = h.snapshot(id).await?.0;
+        let players = snapshot.players();
+        ensure!(
+            players.iter().find(|player| player.id == 1).context("Missing Alice")?.stats["numGames"] == 2,
+            "Pregame total must count normal non-speedrun games across variants, including zero-score normal finishes"
+        );
+        ensure!(
+            players.iter().find(|player| player.id == 2).context("Missing Bob")?.stats["numGames"] == 0,
+            "Another player's history must not affect the total"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    outcome?;
+    cleanup
+}
+
+#[tokio::test]
 async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<()> {
     let Some(mut h) = Harness::new(&["Bot", "Alice", "Outsider"]).await? else {
         return Ok(());
