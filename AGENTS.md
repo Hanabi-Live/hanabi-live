@@ -14,6 +14,25 @@ documentation only for essential instructions, significant decisions, or
 non-obvious constraints. Keep it concise and relevant to the document's purpose;
 do not put unrelated operational details in installation instructions.
 
+## Before pushing
+
+Run the full repository linting suite from the repository root before every
+push:
+
+```sh
+bash lint.sh
+```
+
+This is the same entrypoint CI uses for TypeScript checks, Go vet, Rust
+formatting/Clippy, Prettier, spelling, ShellCheck, and repository consistency.
+It requires the repository's Node dependencies, Go/Rust toolchains, and
+ShellCheck, but no running PostgreSQL or Redis services.
+
+Run it against the final changes, even if package-specific checks already
+passed. Fix any failures and rerun the full suite before pushing. If a required
+check cannot run or still fails, report the blocker instead of pushing. Run the
+relevant tests and builds as well; passing lint does not replace those checks.
+
 ## Production server
 
 The production server is `root@hanab.live`, with the repository at

@@ -60,9 +60,6 @@ jobs:
           sudo apt-get install -y postgresql-client-18
           echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
 
-      - name: Check Go formatting
-        run: bash check_gofmt.sh
-
       - name: Test release installation guards
         run: python3 -m unittest discover -s install -p 'release_test.py'
 
@@ -74,12 +71,8 @@ jobs:
         run: go test -race -count=1 -timeout=2m ./...
         working-directory: ./server/src
 
-      - name: Analyze the Golang code
-        run: go vet ./...
-        working-directory: ./server/src
-
       - name: Check the maintenance server
-        run: go test -race -count=1 -timeout=2m ./... && go vet ./...
+        run: go test -race -count=1 -timeout=2m ./...
         working-directory: ./maintenance
 
   container_build:
@@ -94,18 +87,19 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        packageName: [client, client-new, data, game, scripts, server]
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: ./.github/workflows/setup
-
-      - name: Create the "version.js" file
-        run: bash ./packages/client/set_version.sh
-
-      - name: Lint the TypeScript code
-        run: bash ./packages/${{ matrix.packageName }}/lint.sh
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: |
+            server/src/go.sum
+            maintenance/go.sum
+      - name: Run the full linting suite
+        run: bash lint.sh
 
   test:
     runs-on: ubuntu-latest
@@ -197,58 +191,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup-redis
-      - name: Check Rust formatting
-        run: cargo fmt --all --check
-      - name: Check Rust ownership and lint rules
-        run: |
-          cargo clippy --locked --all-targets -- -D warnings
-          cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings
       - name: Test Rust rules, actors, and Redis/PostgreSQL durability
         run: |
           cargo test --locked
           cargo test --locked --manifest-path engine/Cargo.toml
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/workflows/setup
-
-      - name: Check that the entire repository is formatted with Prettier
-        run: npx prettier --log-level=warn --check .
-
-  shellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/workflows/setup
-
-      - name: Lint Bash files
-        run: bash check_shellcheck.sh
-
-  spell_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/workflows/setup
-
-      - name: Spell check the entire repository
-        run: bash check_spelling.sh
-
-  lint_monorepo:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/workflows/setup
-
-      - name: Check templates
-        run: bash check_templates.sh
-
-      - name: Check "variants.json" and "variants.txt"
-        run: npm run check-variant-files
-
-      - name: Check "package.json" files
-        run: npm run lint-package-json
 
   native_release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -259,10 +205,6 @@ jobs:
         container_build,
         lint,
         test,
-        format,
-        shellcheck,
-        spell_check,
-        lint_monorepo,
         rust_poc,
         client_new,
       ]
@@ -317,46 +259,35 @@ jobs:
             dist/native/*.sha256
           if-no-files-found: error
 
-  deploy_docs_website:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [lint]
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/workflows/setup
-
-      - name: Use TypeDoc to automatically generate documentation
-        run: npm run docs
-        working-directory: ./packages/game
-
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          name: github-pages-${{ github.run_attempt }}
-          path: ./packages/game/docs
-
-      - uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages-${{ github.run_attempt }}
+  # Temporarily disabled while GitHub Pages deployments stall.
+  # deploy_docs_website:
+  #   if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+  #   needs: [lint]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     pages: write
+  #     id-token: write
+  #   steps:
+  #     - uses: actions/checkout@v5
+  #     - uses: ./.github/workflows/setup
+  #
+  #     - name: Use TypeDoc to automatically generate documentation
+  #       run: npm run docs
+  #       working-directory: ./packages/game
+  #
+  #     - uses: actions/upload-pages-artifact@v4
+  #       with:
+  #         name: github-pages-${{ github.run_attempt }}
+  #         path: ./packages/game/docs
+  #
+  #     - uses: actions/deploy-pages@v4
+  #       with:
+  #         artifact_name: github-pages-${{ github.run_attempt }}
 
   discord:
     name: Discord Failure Notification
     needs:
-      [
-        client_build,
-        server_build,
-        container_build,
-        lint,
-        test,
-        format,
-        shellcheck,
-        spell_check,
-        lint_monorepo,
-        deploy_docs_website,
-        native_release,
-      ]
+      [client_build, server_build, container_build, lint, test, native_release]
     if: failure() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:

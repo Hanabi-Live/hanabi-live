@@ -14,6 +14,8 @@ SECONDS=0
 
 cd "$DIR"
 
+bash "$DIR/packages/client/set_version.sh"
+
 # Run each linting task as a background job so that we can use parallel processing to get everything
 # done fast.
 process_ids=()
@@ -29,8 +31,8 @@ bash "$DIR/packages/scripts/lint.sh" &
 process_ids+=("$!")
 bash "$DIR/packages/server/lint.sh" &
 process_ids+=("$!")
-# bash "$DIR/server/build_server.sh" &
-# (Full Golang linting is disabled until it can be rewritten in TypeScript.)
+npx prettier --log-level=warn --check . &
+process_ids+=("$!")
 bash "$DIR/check_gofmt.sh" &
 process_ids+=("$!")
 bash "$DIR/check_spelling.sh" &
@@ -48,6 +50,20 @@ status=0
 for pid in "${process_ids[@]}"; do
   wait "$pid" || status=1
 done
+
+# Keep native compiler checks out of the parallel JavaScript batch to limit peak memory in CI.
+for module in server/src maintenance; do
+  echo "Checking Go static analysis: $module"
+  (cd "$DIR/$module" && go vet ./...) || status=1
+done
+
+cd "$DIR/experimental/rust-server"
+echo "Checking Rust formatting and static analysis."
+cargo fmt --all --check || status=1
+cargo clippy --locked --all-targets -- -D warnings || status=1
+cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings || status=1
+cd "$DIR"
+
 if ((status != 0)); then
   echo "Linting failed." >&2
   exit "$status"
