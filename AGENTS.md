@@ -27,18 +27,130 @@ installations have a separate
 [deployment lifecycle](docs/install.md#opt-in-ci-releases-linux-amd64); do not
 mix the two procedures.
 
-1. Pull the latest code on the server: `git pull`
-1. Apply pending SQL migrations: `./install/migrate.sh apply`.
-1. Gracefully restart the server:
+**Do not restart the Go server for a client-only deployment.** Choose the
+deployment procedure from the actual diff and the runtime that consumes it, not
+from the fact that a new commit exists.
+
+#### Classify the change before deploying
+
+Inspect production's clean/dirty worktree, running service, deployed client
+revision, target commit, and intervening changes. Useful commands on the server:
+
+```sh
+cd ~/hanabi-live
+git status --short
+supervisorctl status hanabi-live
+cat public/js/bundles/git_revision.txt
+git fetch origin
+git log --format="%h %s" HEAD..origin/main
+git diff --stat HEAD..origin/main
+df -h /
+```
+
+The checkout, client assets, and running Go binary may represent different
+commits. Read the running revision from the startup log or the running binary's
+Go build metadata; do not assume that `git rev-parse HEAD` describes the running
+process. Compare against the relevant deployed revision, including earlier
+changes pulled but not yet built or restarted.
+
+| Change                                                                                                        | Required action                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Browser-only TypeScript/React, CSS, fonts, images, or client build changes compatible with the running server | Build and publish client assets; **no server restart**.                                                                    |
+| Go-rendered HTML templates only, with unchanged handler/data contracts                                        | Publish compatible templates/assets; **no server restart**. Go parses these templates for each request.                    |
+| Go runtime code, Go dependencies, HTTP/WebSocket handlers, or startup configuration                           | Build and deploy Go using the graceful restart procedure below.                                                            |
+| Shared rules, protocol schemas, or variant/suit JSON                                                          | Trace consumers first. Data loaded by Go at startup or changes requiring matching server behavior are **not client-only**. |
+| TypeScript/Rust server changes while production runs Go                                                       | Do not restart Go solely for changes to an inactive implementation. Check for shared runtime changes.                      |
+| Documentation, tests, or scheduled shell scripts only                                                         | Publish the changed files as appropriate; do not rebuild clients or restart Go merely to advance the checkout.             |
+
+For mixed changes, follow the procedure required by the affected running server.
+A `.ts` extension does not establish that something is browser-only, and a
+user-facing bug fix can still require a Go change. Verify rather than guessing.
+
+#### Client-only deployment: keep the server running
+
+1. Confirm the target's relevant checks pass and that it requires neither a
+   running-server change nor a migration. Record the current PID, client
+   revision, and asset version. Preserve existing worktree changes.
+1. Check disk headroom and retain a small rollback copy of the deployed client
+   assets and metadata. Do not create a full plaintext database dump for a
+   frontend deployment.
+1. Prepare the target commit in a staging checkout/worktree with full Git
+   history. Use compatible installed dependencies; if the dependency manifest or
+   lockfile changed, prepare dependencies there with `npm ci`. Ensure the
+   installed Node/npm toolchain is available in the non-interactive shell.
+1. Build **both** clients from the repository root in staging:
 
    ```sh
-   curl http://127.0.0.1:${LOCALHOST_PORT:-8081}/gracefulRestart
+   CI=1 bash packages/client/build_client.sh
+   ```
+
+   This builds the classic game/lobby bundle, CSS, pips reference, new React
+   lobby, and prototype entry. Here `CI=1` only avoids sourcing the production
+   `.env` for the client build. It does not run tests.
+
+   Do not build just `packages/client-new` for a new commit: both clients bake
+   in the Git commit-count version, and the login endpoint checks the version
+   recorded in `public/js/bundles/version.txt`.
+
+1. Inspect the staged output and test the affected UI. **Do not run the client
+   build directly against live assets for this deployment path.** The classic
+   build removes old versioned files, and Vite empties `public/client-new`; an
+   in-place build can leave browsers with missing files or a partially updated
+   release if a later build step fails.
+1. Publish the staged assets without deleting the previous versioned files. Copy
+   new versioned JS/CSS, hashed chunks, fonts, and other referenced assets
+   first. Replace files through temporary sibling files and atomic renames,
+   rather than writing directly into files that HTTP requests may be reading. Do
+   not use a destructive directory sync that removes old chunks still referenced
+   by open tabs.
+1. Fast-forward the production checkout to the verified target
+   (`git pull --ff-only`, checking the resulting SHA). If templates changed,
+   ensure their referenced assets exist before making the templates visible.
+   Publish HTML entrypoints and unversioned bundles after their dependencies,
+   then publish matching build metadata. Switch `public/js/bundles/version.txt`
+   last, only after both clients are ready.
+1. Verify the served HTML, its referenced JS/CSS/chunks, and the affected UI in
+   a browser. Check `/new`, `/lobby`, and the existing game handoff when
+   affected. Confirm the PID is unchanged and inspect logs for new errors.
+   Existing games and WebSockets must not be intentionally disconnected.
+
+For client-only changes, **do not call `/gracefulRestart` or `/shutdown`, build
+or replace the Go executable, or restart Supervisor**. The running Go server
+reads `version.txt` on demand (`getVersion` in `server/src/misc.go`) and serves
+the new lobby's HTML from disk, so new page loads can receive the updated client
+without restarting the process.
+
+Existing tabs keep their already-loaded JavaScript until refreshed; do not force
+players out of a game to update it. The startup log's Go revision will remain
+unchanged after a client-only deploy, and that is expected. If client
+publication fails, restore the matching asset entrypoints/version metadata from
+the rollback copy without restarting an otherwise healthy server.
+
+#### Go/server deployment: graceful restart required
+
+1. Verify the target and its checks, record the current runtime/client
+   revisions, check disk headroom, and back up the existing binary and assets.
+1. Prepare builds and any changed dependencies away from live assets before
+   scheduling the restart. Confirm migration requirements.
+1. Pull the verified code on the server: `git pull --ff-only`.
+1. Check pending SQL migrations with `./install/migrate.sh status`; apply
+   pending migrations with `./install/migrate.sh apply` before new code needs
+   them. Follow the large-table precautions below.
+1. Gracefully restart the server, using the configured local control port:
+
+   ```sh
+   (source .env && curl --fail --show-error \
+     "http://127.0.0.1:${LOCALHOST_PORT:-8081}/gracefulRestart")
    ```
 
    This builds the client and the server, checkpoints ongoing games, warns
    players, and restarts. The games are restored when the server starts back up.
-   Check the log afterward for the "successfully started" message and for
-   errors.
+   The endpoint returns before that work finishes; an HTTP success response
+   alone does not prove deployment succeeded.
+
+1. Verify the new PID and running Go revision, the "successfully started" log
+   message, restored games/checkpoint progress, client assets, HTTP/browser
+   health, available disk space, and absence of new application errors.
 
 **Never use `supervisorctl restart` or `supervisorctl stop` (or
 `restart_service_only.sh`) on a running server.** Signals bypass command
