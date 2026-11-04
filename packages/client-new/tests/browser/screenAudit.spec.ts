@@ -197,6 +197,7 @@ for (const theme of ["light", "dark"] as const) {
       await a.locator("#create-game-variant-dropdown2").fill("No Variant");
       await a.locator("#create-game-variant-dropdown2").press("Tab");
       await capture(a, "old-create-custom");
+      await a.locator("#createTableName").fill("Audit game");
       await a.locator("#create-game-submit").click();
       await expect(a.locator("#lobby-pregame")).toBeVisible();
       await b.goto(`${backend}/lobby`);

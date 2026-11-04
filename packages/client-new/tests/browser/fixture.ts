@@ -45,10 +45,24 @@ async function port(): Promise<number> {
   return address.port;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Playwright has no additional per-test fixtures.
-export const test = base.extend<{}, { backend: string }>({
+export const test = base.extend<
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Playwright has no additional per-test fixtures.
+  {},
+  {
+    backend: string;
+    cutover: boolean;
+    server: { url: string; cutoverToRust: () => Promise<void> };
+  }
+>({
+  cutover: [false, { option: true, scope: "worker" }],
   backend: [
-    async ({ browserName: _browserName }, useBackend, worker) => {
+    async ({ server }, useBackend) => {
+      await useBackend(server.url);
+    },
+    { scope: "worker" },
+  ],
+  server: [
+    async ({ browserName: _browserName, cutover }, useBackend, worker) => {
       const database = await evaluationDatabase();
       const sql = database.connect();
       await mkdir(path.join(ROOT, "dist"), { recursive: true });
@@ -86,7 +100,7 @@ export const test = base.extend<{}, { backend: string }>({
         );
         const httpPort = await port();
         const controlPort = await port();
-        if (worker.project.name === "rust") {
+        if (worker.project.name === "rust" || cutover) {
           redis = await redisFixture();
         }
         const config = {
@@ -108,8 +122,9 @@ export const test = base.extend<{}, { backend: string }>({
             .join("\n"),
         );
         let executable = path.join(directory, "hanabi-live");
+        const rustExecutable = path.join(directory, "hanabi-rust-poc");
         let args: string[] = [];
-        if (worker.project.name === "rust") {
+        if (worker.project.name === "rust" || cutover) {
           const crate = path.join(ROOT, "experimental/rust-server");
           await run("cargo", ["build", "--release", "--locked"], {
             cwd: crate,
@@ -117,8 +132,11 @@ export const test = base.extend<{}, { backend: string }>({
           });
           await cp(
             path.join(crate, "target/release/hanabi-rust-poc"),
-            executable,
+            rustExecutable,
           );
+        }
+        if (worker.project.name === "rust") {
+          executable = rustExecutable;
         } else if (worker.project.name === "typescript") {
           await run("bash", ["packages/server/build.sh"], {
             cwd: ROOT,
@@ -141,31 +159,56 @@ export const test = base.extend<{}, { backend: string }>({
             timeout: 120_000,
           });
         }
-        child = spawn(executable, args, {
-          cwd: directory,
-          env: {
-            PATH: process.env.PATH,
-            HOME: directory,
-            TMPDIR: directory,
-          },
-          stdio: ["ignore", "pipe", "pipe"],
-        });
         let output = "";
-        child.stdout?.on("data", (data) => {
-          output = (output + String(data)).slice(-32_000);
-        });
-        child.stderr?.on("data", (data) => {
-          output = (output + String(data)).slice(-32_000);
-        });
         const url = `http://localhost:${httpPort}`;
-        await expect(async () => {
-          if (child?.exitCode !== null) {
-            throw new Error(output);
-          }
-          const response = await fetch(`${url}/test-cookie`);
-          expect([200, 204]).toContain(response.status);
-        }).toPass({ timeout: 30_000 });
-        await useBackend(url);
+        async function start(file: string, arguments_: readonly string[]) {
+          child = spawn(file, arguments_, {
+            cwd: directory,
+            env: {
+              PATH: process.env.PATH,
+              HOME: directory,
+              TMPDIR: directory,
+            },
+            stdio: ["ignore", "pipe", "pipe"],
+          });
+          child.stdout?.on("data", (data) => {
+            output = (output + String(data)).slice(-32_000);
+          });
+          child.stderr?.on("data", (data) => {
+            output = (output + String(data)).slice(-32_000);
+          });
+          await expect(async () => {
+            if (child?.exitCode !== null) {
+              throw new Error(output);
+            }
+            const response = await fetch(`${url}/test-cookie`);
+            expect([200, 204]).toContain(response.status);
+          }).toPass({ timeout: 30_000 });
+        }
+        await start(executable, args);
+        await useBackend({
+          url,
+          cutoverToRust: async () => {
+            if (!cutover || worker.project.name !== "go" || !child) {
+              throw new Error("This fixture is not a Go-to-Rust cutover.");
+            }
+            const stopped = once(child, "close");
+            const response = await fetch(
+              `http://127.0.0.1:${controlPort}/rustCutover`,
+              { method: "POST" },
+            );
+            expect(response.status, await response.text()).toBe(200);
+            await stopped;
+            expect(child.exitCode).toBe(0);
+            await sql.end({ timeout: 3 });
+            await run(rustExecutable, ["--import-go-checkpoints"], {
+              cwd: directory,
+              env: { PATH: process.env.PATH, HOME: directory },
+              timeout: 30_000,
+            });
+            await start(rustExecutable, []);
+          },
+        });
       } finally {
         if (child && child.exitCode === null) {
           const closed = once(child, "close");
