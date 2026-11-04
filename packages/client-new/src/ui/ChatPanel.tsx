@@ -265,6 +265,7 @@ export function ChatPanel({
               onChange={(event) => onRecipient(event.target.value)}
               placeholder="Username"
               ref={recipientRef}
+              type="text"
               value={recipient}
             />
           </label>

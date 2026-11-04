@@ -74,6 +74,7 @@ export function ClassicHeader({
                 {!player && (
                   <li>
                     <button
+                      aria-label="Join game"
                       className="button"
                       disabled={
                         !online || pending !== null || !tables[game.tableID]
@@ -174,7 +175,11 @@ export function ClassicHeader({
                       Shown games: {historyCount} / {welcome.totalGames}
                     </li>
                     <li>
-                      <Link className="button" to="/history?friends=1">
+                      <Link
+                        aria-label="Show History of Friends"
+                        className="button"
+                        to="/history?friends=1"
+                      >
                         <i
                           aria-hidden="true"
                           className="fas fa-heart nav-icon"

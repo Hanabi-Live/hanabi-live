@@ -1,5 +1,4 @@
 import { isArray } from "complete-common";
-import { ArrowRight, FileJson } from "lucide-react";
 import type { SubmitEvent } from "react";
 import { useState } from "react";
 import type { LobbyConnection } from "../connection";
@@ -21,7 +20,7 @@ export function ReplayPanel({
     setError("");
     if (source === "id") {
       const match =
-        /^(?:https?:\/\/[^/]+\/(?:shared-)?replay\/)?(\d+)(?:\/\d+)?\/?$/u.exec(
+        /^(?:https?:\/\/[^#/?]+\/(?:shared-)?replay\/)?(\d+)(?:\/\d+)?\/?(?:[#?].*)?$/u.exec(
           id.trim(),
         );
       const databaseID = Number(match?.[1]);
@@ -69,29 +68,42 @@ export function ReplayPanel({
         </div>
       </div>
       <form className="panel form-grid replay-form" onSubmit={submit}>
-        <div aria-label="Replay source" className="filter-tabs">
-          <button
-            aria-pressed={source === "id"}
-            onClick={() => setSource("id")}
-            type="button"
-          >
-            Game ID or link
-          </button>
-          <button
-            aria-pressed={source === "json"}
-            onClick={() => setSource("json")}
-            type="button"
-          >
-            <FileJson size={16} /> JSON file
-          </button>
+        <div className="replay-choice-row">
+          <span id="replay-source-label">
+            <i aria-hidden="true" className="fas fa-database" /> Source
+          </span>
+          <div aria-labelledby="replay-source-label" role="radiogroup">
+            <label>
+              <input
+                checked={source === "id"}
+                name="replay-source"
+                onChange={() => setSource("id")}
+                type="radio"
+              />
+              Database ID
+            </label>
+            <label>
+              <input
+                checked={source === "json"}
+                name="replay-source"
+                onChange={() => setSource("json")}
+                type="radio"
+              />
+              JSON Data
+            </label>
+          </div>
         </div>
         {source === "id" ? (
           <label>
-            Game ID or replay link
+            <span>
+              <i aria-hidden="true" className="fas fa-fingerprint" /> ID
+            </span>
             <input
+              aria-label="Game ID or replay link"
               onChange={(event) => setID(event.target.value)}
               placeholder="For example, 2055474"
               required
+              type="text"
               value={id}
             />
           </label>
@@ -122,35 +134,53 @@ export function ReplayPanel({
               />
             </label>
             <label>
-              Replay JSON
+              <span>
+                <i aria-hidden="true" className="fas fa-th" /> JSON
+              </span>
               <textarea
+                aria-label="Replay JSON"
                 maxLength={3_000_000}
                 onChange={(event) => setJSON(event.target.value)}
                 placeholder='{"players": ["Alice", "Bob"], "seed": "..."}'
                 required
-                rows={10}
+                rows={3}
                 value={json}
               />
             </label>
           </>
         )}
-        <label>
-          Who is watching?
-          <select
-            onChange={(event) => setVisibility(event.target.value)}
-            value={visibility}
-          >
-            <option value="solo">Just me - private replay</option>
-            <option value="shared">Everyone - shared replay table</option>
-          </select>
-        </label>
+        <div className="replay-choice-row">
+          <span id="replay-visibility-label">
+            <i aria-hidden="true" className="fas fa-users" /> Visibility
+          </span>
+          <div aria-labelledby="replay-visibility-label" role="radiogroup">
+            <label>
+              <input
+                checked={visibility === "solo"}
+                name="replay-visibility"
+                onChange={() => setVisibility("solo")}
+                type="radio"
+              />
+              Solo
+            </label>
+            <label>
+              <input
+                checked={visibility === "shared"}
+                name="replay-visibility"
+                onChange={() => setVisibility("shared")}
+                type="radio"
+              />
+              Shared
+            </label>
+          </div>
+        </div>
         {error && (
           <p className="field-error" role="alert">
             {error}
           </p>
         )}
-        <button className="primary" disabled={disabled}>
-          Open replay <ArrowRight size={17} />
+        <button aria-label="Open replay" className="button" disabled={disabled}>
+          <i aria-hidden="true" className="fas fa-eye" /> Watch
         </button>
       </form>
     </section>

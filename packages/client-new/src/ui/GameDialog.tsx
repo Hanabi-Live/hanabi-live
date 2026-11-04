@@ -94,6 +94,9 @@ export function GameDialog({
       ?? preferences.createTableDetrimentalCharacters,
   });
   const [json, setJSON] = useState("");
+  const [extraOptions, setExtraOptions] = useState(
+    () => speedrun || Object.values(flags).some(Boolean),
+  );
   const [error, setError] = useState("");
   const shuffleRequested = useRef(false);
   useEffect(() => {
@@ -354,9 +357,16 @@ export function GameDialog({
             </label>
           )}
         </div>
-        <details>
+        <details
+          onToggle={(event) => setExtraOptions(event.currentTarget.open)}
+          open={extraOptions}
+        >
           <summary className="button small">
-            <i aria-hidden="true" className="fas fa-plus" /> Show Extra Options
+            <i
+              aria-hidden="true"
+              className={`fas fa-${extraOptions ? "minus" : "plus"}`}
+            />{" "}
+            {extraOptions ? "Hide" : "Show"} Extra Options
           </summary>
           <div className="option-list">
             <label className="check">

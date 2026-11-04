@@ -1,3 +1,4 @@
+import { getVariant } from "@hanabi-live/game";
 import { Play, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -5,12 +6,14 @@ import { useSearchParams } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { HistoryGame } from "../protocol";
 import type { LobbyState } from "../store";
+import { GameOptionIcons } from "./GameOptionIcons";
 import { Modal } from "./Modal";
 
 function finished(date: string): string {
   return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).format(new Date(date));
 }
 
@@ -62,7 +65,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
     });
   }
 
-  function rows(list: readonly HistoryGame[]) {
+  function rows(list: readonly HistoryGame[], comparison = false) {
     return (
       <table className="alt history-table">
         <thead>
@@ -72,7 +75,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
             <th>Score</th>
             <th>Variant</th>
             <th>Options</th>
-            <th>Other Players</th>
+            <th>{friends || comparison ? "Players" : "Other Players"}</th>
             <th>Date Played</th>
             <th>Watch Replay</th>
             <th>Share Replay</th>
@@ -82,57 +85,53 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
         <tbody>
           {list.map((game) => (
             <tr className="history-card" key={game.id}>
-              <td>{game.id}</td>
+              <td>#{game.id}</td>
               <td>{game.playerNames.length}</td>
-              <td>{game.score}</td>
-              <td>{game.options.variantName}</td>
               <td>
-                {game.options.timed && (
-                  <i
-                    aria-label="Timed"
-                    className="fas fa-clock"
-                    title="Timed"
-                  />
-                )}
-                {game.options.speedrun && (
-                  <i
-                    aria-label="Speedrun"
-                    className="fas fa-running"
-                    title="Speedrun"
-                  />
-                )}
+                {game.score}/{getVariant(game.options.variantName).maxScore}
+              </td>
+              <td>{game.options.variantName}</td>
+              <td className="lobby-games-table-options">
+                <GameOptionIcons options={game.options} />
               </td>
               <td>
                 {game.playerNames
-                  .filter((name) => name !== state.welcome?.username)
+                  .filter(
+                    (name) =>
+                      friends || comparison || name !== state.welcome?.username,
+                  )
                   .join(", ")}
               </td>
               <td>{finished(game.datetimeFinished)}</td>
               <td>
                 <button
-                  className="classic-history-action"
+                  className="button fit margin0"
                   disabled={
                     state.connection !== "online" || state.pending !== null
                   }
                   onClick={() => replay(game, "solo")}
                 >
-                  <i aria-hidden="true" className="fas fa-play" />
+                  <i aria-hidden="true" className="fas fa-eye" />
                   <span className="sr-only">Replay</span>
                 </button>
               </td>
               <td>
                 <button
                   aria-label={`Start shared replay ${game.id}`}
-                  className="classic-history-action"
-                  disabled={state.connection !== "online"}
+                  className="button fit margin0"
+                  disabled={
+                    state.connection !== "online" || state.pending !== null
+                  }
                   onClick={() => replay(game, "shared")}
                 >
-                  <i aria-hidden="true" className="fas fa-eye" />
+                  <i aria-hidden="true" className="fas fa-users" />
                 </button>
               </td>
               <td>
                 <button
-                  className="classic-history-action"
+                  aria-label="Compare seed"
+                  className="button fit margin0"
+                  disabled={state.connection !== "online"}
                   onClick={() => {
                     setSeed(game.seed);
                     connection.send("historyGetSeed", {
@@ -141,8 +140,8 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                     });
                   }}
                 >
-                  <i aria-hidden="true" className="fas fa-chart-area" />
-                  <span className="sr-only">Compare seed</span>
+                  <i aria-hidden="true" className="fas fa-chart-bar" />{" "}
+                  {Math.max(0, game.numGamesOnThisSeed - 1)}
                 </button>
               </td>
             </tr>
@@ -213,7 +212,12 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
           description={seed}
           title="Other Scores"
         >
-          {rows(state.otherScores.filter((game) => game.seed === seed))}
+          <div className="classic-history-scroll">
+            {rows(
+              state.otherScores.filter((game) => game.seed === seed),
+              true,
+            )}
+          </div>
         </Modal>
       )}
     </section>

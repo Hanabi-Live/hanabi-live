@@ -24,6 +24,10 @@
 .client-new-classic {
   color: #707070;
 }
+html:not([data-theme="dark"]) .client-new-classic {
+  --color-name-me: #9d6000;
+  --color-friend: #ac2f69;
+}
 .client-new-classic input,
 .client-new-classic textarea {
   color: #707070;
@@ -203,7 +207,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .classic-row-name i {
   margin-right: 0.5em;
 }
-#lobby-games-table .lobby-games-table-options i {
+.lobby-games-table-options i {
   margin-right: 0.5em;
 }
 .classic-spectators {
@@ -373,9 +377,14 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   flex: 1;
   margin: 0;
   font-size: 0.85em;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
 }
 .pm-controls input {
   height: 2.3em;
+  min-width: 0;
 }
 .pm-controls button {
   height: 2.3em;
@@ -571,7 +580,8 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   padding: 0 1em;
   width: 100%;
 }
-.client-new-classic input[type="checkbox"] {
+.client-new-classic input[type="checkbox"],
+.client-new-classic .replay-form input[type="radio"] {
   z-index: 0;
   appearance: none;
   opacity: 1;
@@ -587,11 +597,13 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   accent-color: #308943;
   flex-shrink: 0;
 }
-.client-new-classic input[type="checkbox"]:checked {
+.client-new-classic input[type="checkbox"]:checked,
+.client-new-classic .replay-form input[type="radio"]:checked {
   background: #666;
   border-color: #666;
 }
-.client-new-classic input[type="checkbox"]:checked::after {
+.client-new-classic input[type="checkbox"]:checked::after,
+.client-new-classic .replay-form input[type="radio"]:checked::after {
   content: "\f00c";
   font: 900 1em "Font Awesome 5 Free";
   color: white;
@@ -768,23 +780,17 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .signin-panel .login-submit {
   display: block;
-  width: 58.333%;
-  margin: 1.5em 16.666% 0 auto;
+  width: calc(58.333% - 0.875em);
+  margin: 2.5em 0 0 calc(25% + 0.875em);
 }
 .signin-links {
-  margin-left: 25%;
-  width: 58.333%;
+  margin-left: calc(25% + 0.875em);
+  width: calc(58.333% - 0.875em);
   text-align: center;
 }
 .signin-links .text-button {
   color: blue;
   text-decoration: underline;
-}
-.signin-links .text-button::after {
-  content: " | ";
-  color: #777;
-  text-decoration: none;
-  white-space: pre;
 }
 .signin-panel .notice {
   margin: 1em 0;
@@ -793,7 +799,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   margin-bottom: 0;
 }
 .signin-shell > .row + .row {
-  margin-top: 2em;
+  margin-top: 4em;
 }
 .signin-shell .login-text a {
   color: white;
@@ -844,7 +850,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .classic-history-scroll {
   overflow: auto;
-  flex: 1;
   min-height: 0;
 }
 .classic-history-footer {
@@ -855,16 +860,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .history-table .history-card {
   display: table-row;
-}
-.client-new-classic .classic-history-action {
-  background: transparent;
-  color: inherit;
-  padding: 0;
-  font-size: 1.5em;
-}
-.client-new-classic .classic-history-action:hover {
-  background: transparent;
-  color: #308943;
 }
 .score-badge {
   text-align: center;
@@ -884,8 +879,38 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   display: flex;
   gap: 1em;
 }
+.replay-choice-row {
+  display: grid;
+  grid-template-columns: 10em minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5em;
+}
+.replay-choice-row > span > .fas {
+  margin-right: 0.7em;
+}
+.replay-choice-row > div,
+.replay-choice-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0;
+  font-weight: 400;
+}
+.replay-choice-row > div {
+  gap: 2em;
+  flex-wrap: wrap;
+}
+.client-new-classic .replay-form input[type="radio"] {
+  border-radius: 50%;
+  margin: 0;
+}
 .resource-grid {
   display: block;
+  max-width: 550px;
+}
+.resource-description {
+  display: block;
+  white-space: pre-line;
 }
 .resource {
   display: block;
@@ -987,8 +1012,15 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .client-new-classic .name-button:disabled {
   opacity: 1;
 }
+.chat-panel:has(.pm-controls) {
+  display: flex;
+  flex-direction: column;
+}
 .chat-panel:has(.pm-controls) .chat-messages {
-  height: calc(100% - 10em);
+  height: auto;
+}
+.pm-controls {
+  flex-shrink: 0;
 }
 .player-stats > span {
   display: block;
@@ -1029,6 +1061,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .classic-filters[open],
 .classic-filters:focus-within,
 .classic-games-view:hover .classic-filters,
+.classic-history:hover .classic-filters,
 .people-panel:hover .classic-filters,
 .chat-panel:hover .chat-header .filter-tabs,
 .chat-header .filter-tabs:focus-within,
@@ -1102,7 +1135,11 @@ html[data-theme="dark"] .form-grid input[type="number"] {
 }
 html[data-theme="dark"]
   .client-new-classic
-  input[type="checkbox"]:not(:checked) {
+  input[type="checkbox"]:not(:checked),
+html[data-theme="dark"]
+  .client-new-classic
+  .replay-form
+  input[type="radio"]:not(:checked) {
   background: var(--dm-surface-2);
   border-color: var(--dm-border);
 }
@@ -1217,6 +1254,7 @@ html[data-theme="dark"] .seat {
     min-width: 0;
   }
   .form-grid > label,
+  .replay-choice-row,
   .form-columns > label:not(.check) {
     grid-template-columns: 8em minmax(0, 1fr);
   }

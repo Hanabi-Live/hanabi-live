@@ -134,6 +134,15 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .click();
   await expect(b.locator(".classic-room-info")).toContainText("6 Suits");
   await expect(b.locator(".classic-room-info")).toContainText("2 / 4");
+  await b.getByRole("button", { name: "Suggest options" }).click();
+  await expect(b.getByLabel(/^Empty clues/u)).toBeVisible();
+  await expect(b.getByLabel(/^Empty clues/u)).toBeChecked();
+  await b.keyboard.press("Alt+l");
+  await expect(b.getByRole("dialog")).toBeVisible();
+  await expect(b).toHaveURL(/\/new\/table\/\d+$/u);
+  await b.keyboard.press("Escape");
+  await expect(b.getByRole("dialog")).toHaveCount(0);
+  await expect(b).toHaveURL(/\/new\/table\/\d+$/u);
   await b.getByRole("button", { name: "Back to tables" }).click();
   await b.getByRole("link", { name: "History", exact: true }).click();
   await b.getByRole("link", { name: "Play", exact: true }).click();
@@ -278,7 +287,7 @@ test("JSON replay import enters the existing replay and returns to the new UI", 
   const page = await context.newPage();
   await login(page, backend, "testUIReplay");
   await page.getByRole("link", { name: "Replays", exact: true }).click();
-  await page.getByRole("button", { name: "JSON file" }).click();
+  await page.getByRole("radio", { name: "JSON Data" }).check();
   await page
     .getByLabel("Replay JSON", { exact: true })
     .fill(JSON.stringify({ players: ["Alice", "Bob"], seed: "p2v0s1" }));

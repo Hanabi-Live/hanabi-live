@@ -3,17 +3,7 @@ import { shallowEqual, useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
-import { optionFlags } from "./GameDialog";
-
-const optionIcons = [
-  "sync-alt",
-  "blind",
-  "expand",
-  "plus-circle",
-  "minus-circle",
-  "layer-group",
-  "chess-knight",
-] as const;
+import { GameOptionIcons } from "./GameOptionIcons";
 
 export function TablesPanel({
   connection,
@@ -244,31 +234,7 @@ export function TablesPanel({
                   </td>
                   <td>{table.variant}</td>
                   <td className="lobby-games-table-options">
-                    {table.timed && (
-                      <i
-                        aria-label="Timed"
-                        className="fas fa-clock"
-                        title={`Timed: ${table.timeBase / 60}m + ${table.timePerTurn}s`}
-                      />
-                    )}
-                    {table.options.speedrun && (
-                      <i
-                        aria-label="Speedrun"
-                        className="fas fa-running"
-                        title="Speedrun"
-                      />
-                    )}
-                    {optionFlags.map(
-                      ([key, title], index) =>
-                        table.options[key] && (
-                          <i
-                            aria-label={title}
-                            className={`fas fa-${optionIcons[index]}`}
-                            key={key}
-                            title={title}
-                          />
-                        ),
-                    )}
+                    <GameOptionIcons options={table.options} />
                   </td>
                   <td>
                     {table.sharedReplay

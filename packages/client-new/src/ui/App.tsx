@@ -32,6 +32,53 @@ const suggestedOptions = options
   .extend({ numPlayers: z.number().int().min(0).max(6) });
 const resources = [
   [
+    "The Hanab Live Manual & List of Features",
+    "Get answers to the most common questions.",
+    "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md",
+  ],
+  [
+    "The Rules / How to Play",
+    "This website does not have a tutorial on how to play, so watch this video instead.",
+    "https://www.youtube.com/watch?v=VrFCekQb4nY",
+  ],
+  [
+    "The H-Group Discord Server",
+    "A place to find teammates and discuss strategy.",
+    "https://discord.gg/FADvkJp",
+  ],
+  [
+    "Strategies and Conventions",
+    "This is a document that lists the strategies and conventions used by the H-Group.\n(You don't have to use them if you don't want to.)",
+    "https://hanabi.github.io/",
+  ],
+  [
+    "Hanabi Central Wiki",
+    "This wiki contains even more convention systems.",
+    "https://hanabi.wiki/",
+  ],
+  [
+    "The Code Repository",
+    "This client and server are open-source, hosted on GitHub.",
+    "https://github.com/Hanabi-Live/hanabi-live",
+  ],
+  [
+    "File a Bug Report",
+    "Report bugs by opening a new issue on GitHub.\n(You will need to create a free GitHub account.)\nMake sure that someone else has not already opened the same issue.",
+    "https://github.com/Hanabi-Live/hanabi-live/issues",
+  ],
+  [
+    "Speedrun.com Leaderboards",
+    "The fastest times in the world are tracked here.",
+    "https://www.speedrun.com/hanabi",
+  ],
+  [
+    "Make the World a Better Place",
+    "Hanab Live is hosted free of charge and does not have any advertisements.\nIf you enjoy the website and want to help out, consider donating to effective charities recommended by GiveWell.",
+    "https://www.givewell.org/charities/top-charities",
+  ],
+] as const;
+const additionalResources = [
+  [
     "Learn the rules",
     "Everything you need for your first good game.",
     "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/rules.md",
@@ -40,11 +87,6 @@ const resources = [
     "Beginner's guide",
     "Build confidence, one clue at a time.",
     "https://hanabi.github.io/beginner",
-  ],
-  [
-    "Community conventions",
-    "Discover the language behind the clues.",
-    "https://hanabi.github.io/",
   ],
   [
     "Variant reference",
@@ -61,40 +103,23 @@ const resources = [
     "Meet your next interesting restriction.",
     "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/characters.md",
   ],
-  [
-    "Join the Discord",
-    "Find teammates, ask questions, and share a great solve.",
-    "https://discord.gg/FADvkJp",
-  ],
-  [
-    "Hanabi wiki",
-    "Community knowledge for curious players.",
-    "https://hanabi.wiki/",
-  ],
-  [
-    "Features & shortcuts",
-    "Get more out of your time at the table.",
-    "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md",
-  ],
-  [
-    "Watch a tutorial",
-    "See a game explained from the first clue.",
-    "https://www.youtube.com/watch?v=VrFCekQb4nY",
-  ],
-  [
-    "Speedrun community",
-    "A little faster, together.",
-    "https://www.speedrun.com/hanabi",
-  ],
-  [
-    "Contribute & report a bug",
-    "Help make this a better place to play.",
-    "https://github.com/Hanabi-Live/hanabi-live",
-  ],
 ] as const;
 
-function classic() {
-  sessionStorage.removeItem("hanabi-lobby");
+function resourceLinks(
+  items: ReadonlyArray<readonly [string, string, string]>,
+) {
+  return (
+    <ul className="resource-grid">
+      {items.map(([title, description, href]) => (
+        <li key={title}>
+          <a href={href} rel="noreferrer" target="_blank">
+            {title}
+          </a>
+          <span className="resource-description">{description}</span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function themePreference(): "light" | "dark" | "system" {
@@ -189,7 +214,9 @@ export function App({ connection }: { connection: LobbyConnection }) {
   useEffect(() => {
     function keyDown(event: KeyboardEvent) {
       if (
-        event.ctrlKey
+        event.defaultPrevented
+        || document.querySelector('[role="dialog"]') !== null
+        || event.ctrlKey
         || event.shiftKey
         || event.metaKey
         || dialog
@@ -517,6 +544,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
                     <span className="sr-only">Username</span>
                     <input
                       autoComplete="username"
+                      autoFocus
                       maxLength={15}
                       onChange={(event) => setUsername(event.target.value)}
                       placeholder="Username"
@@ -573,6 +601,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
                       || state.connection === "checking"
                     }
                   >
+                    <i aria-hidden="true" className="fas fa-sign-in-alt" />{" "}
                     {state.connection === "connecting"
                       ? "Signing in..."
                       : changingPassword
@@ -587,6 +616,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
                   >
                     {changingPassword ? "Back to sign in" : "Change password"}
                   </button>
+                  <span aria-hidden="true"> | </span>
                   <a href="/password-reset">Forgot password?</a>
                 </div>
                 {state.notice && (
@@ -605,14 +635,19 @@ export function App({ connection }: { connection: LobbyConnection }) {
               <p>
                 This site has no affiliation with the card game Hanabi, no
                 affiliation with Antoine Bauza (the creator of Hanabi), and no
-                affiliation with any of the real-life publishers of Hanabi.
+                affiliation with any of the real-life publishers of Hanabi (of
+                which there are many).
               </p>
               <p>
                 This website is free of charge, has no advertisements, and is
-                not monetized in any way. We urge you to purchase a physical
-                copy of Hanabi if you enjoy playing the variants of it online.
+                not monetized in any way. Since this website is inspired by
+                Hanabi, we urge you to purchase a physical copy of that game if
+                you enjoy playing the variants of it online.
               </p>
               <p>
+                Discord is a voice and text chat application that you can run in
+                a browser.
+                <br />
                 If the server is down, you can probably find out why in{" "}
                 <a
                   href="https://discord.gg/FADvkJp"
@@ -623,8 +658,16 @@ export function App({ connection }: { connection: LobbyConnection }) {
                 </a>
                 .
               </p>
-              <a href="/lobby" onClick={classic}>
-                Use the classic lobby
+              <a
+                href="https://discord.gg/FADvkJp"
+                rel="noreferrer"
+                target="_blank"
+              >
+                <img
+                  alt="Discord community"
+                  id="title-discord"
+                  src="/public/img/discord.png"
+                />
               </a>
             </div>
           </div>
@@ -776,9 +819,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
                           }}
                           theme={theme}
                         />
-                        <a href="/lobby" onClick={classic}>
-                          Use the classic client
-                        </a>
                       </Modal>
                     }
                     path="settings"
@@ -792,20 +832,11 @@ export function App({ connection }: { connection: LobbyConnection }) {
                         description="Rules, references, and community links."
                         title="Resources"
                       >
-                        <ul className="resource-grid">
-                          {resources.map(([title, description, href]) => (
-                            <li key={title}>
-                              <a
-                                href={href}
-                                rel="noreferrer"
-                                target="_blank"
-                                title={description}
-                              >
-                                {title}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
+                        {resourceLinks(resources)}
+                        <details>
+                          <summary>Additional references</summary>
+                          {resourceLinks(additionalResources)}
+                        </details>
                       </Modal>
                     }
                     path="resources"
