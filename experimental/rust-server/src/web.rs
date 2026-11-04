@@ -22,7 +22,7 @@ use axum::{
         ConnectInfo, Request, State,
         ws::{Message, WebSocket, WebSocketUpgrade},
     },
-    http::{HeaderMap, StatusCode, header},
+    http::{HeaderMap, StatusCode, Uri, header},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -182,7 +182,7 @@ pub fn router(app: Arc<App>) -> Router {
     public_http::router(app.store.primary.clone(), app.public.clone()).merge(authenticated)
 }
 
-fn origin_allowed(headers: &HeaderMap, domain: &str, use_tls: bool) -> bool {
+fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -> bool {
     let Some(origin) = headers.get(header::ORIGIN) else {
         return true;
     };
@@ -202,14 +202,57 @@ fn origin_allowed(headers: &HeaderMap, domain: &str, use_tls: bool) -> bool {
     let Some(configured) = url::Url::parse(&format!("{scheme}://{domain}")).ok() else {
         return false;
     };
-    let Some(host) = headers
-        .get(header::HOST)
-        .and_then(|h| h.to_str().ok())
-        .and_then(|host| url::Url::parse(&format!("{scheme}://{host}")).ok())
+    let header_host = match headers.get(header::HOST) {
+        Some(value) => match value.to_str() {
+            Ok(value) => Some(value),
+            Err(_) => return false,
+        },
+        None => None,
+    };
+    let parse_host = |value: &str| {
+        url::Url::parse(&format!("{scheme}://{value}"))
+            .ok()
+            .filter(|host| {
+                host.path() == "/"
+                    && host.query().is_none()
+                    && host.fragment().is_none()
+                    && host.username().is_empty()
+                    && host.password().is_none()
+            })
+    };
+    // HTTP/2 carries :authority in the request URI, not necessarily in a Host header.
+    let Some(host) = uri
+        .authority()
+        .map(|authority| authority.as_str())
+        .or(header_host)
+        .and_then(parse_host)
     else {
         return false;
     };
-    origin.host_str() == configured.host_str()
+    if let Some(value) = header_host {
+        let Some(header_host) = parse_host(value) else {
+            return false;
+        };
+        if header_host.host_str() != host.host_str()
+            || header_host.port_or_known_default() != host.port_or_known_default()
+        {
+            return false;
+        }
+    }
+    const SITE_HOSTS: [&str; 4] = [
+        "hanab.live",
+        "hanabi.live",
+        "www.hanab.live",
+        "www.hanabi.live",
+    ];
+    let configured_host = origin.host_str() == configured.host_str()
+        || (configured
+            .host_str()
+            .is_some_and(|host| SITE_HOSTS.contains(&host))
+            && origin
+                .host_str()
+                .is_some_and(|host| SITE_HOSTS.contains(&host)));
+    configured_host
         && origin.host_str() == host.host_str()
         && origin.port_or_known_default() == host.port_or_known_default()
         && (configured.port().is_none()
@@ -217,7 +260,12 @@ fn origin_allowed(headers: &HeaderMap, domain: &str, use_tls: bool) -> bool {
 }
 
 async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next) -> Response {
-    if !origin_allowed(request.headers(), &app.public.domain, app.public.use_tls) {
+    if !origin_allowed(
+        request.headers(),
+        request.uri(),
+        &app.public.domain,
+        app.public.use_tls,
+    ) {
         return (StatusCode::FORBIDDEN, "Invalid request origin.\n").into_response();
     }
     let _admission = app.admission.clone().read_owned().await;
@@ -785,11 +833,12 @@ mod tests {
     use super::*;
     #[test]
     fn origins_allow_real_browser_and_bots_but_not_cross_site() {
+        let uri = Uri::from_static("/login");
         let mut headers = HeaderMap::new();
         headers.insert(header::HOST, "example.invalid".parse().unwrap());
-        assert!(origin_allowed(&headers, "example.invalid", true));
+        assert!(origin_allowed(&headers, &uri, "example.invalid", true));
         headers.insert(header::ORIGIN, "https://example.invalid".parse().unwrap());
-        assert!(origin_allowed(&headers, "example.invalid", true));
+        assert!(origin_allowed(&headers, &uri, "example.invalid", true));
         for origin in [
             "null",
             "https://evil.invalid",
@@ -800,12 +849,52 @@ mod tests {
         ] {
             headers.insert(header::ORIGIN, origin.parse().unwrap());
             assert!(
-                !origin_allowed(&headers, "example.invalid", true),
+                !origin_allowed(&headers, &uri, "example.invalid", true),
                 "{origin}"
             );
         }
         headers.insert(header::HOST, "localhost:8080".parse().unwrap());
         headers.insert(header::ORIGIN, "http://localhost:8080".parse().unwrap());
-        assert!(origin_allowed(&headers, "localhost", false));
+        assert!(origin_allowed(&headers, &uri, "localhost", false));
+    }
+
+    #[test]
+    fn origins_support_http2_and_site_aliases_without_allowing_cross_origin_requests() {
+        for host in [
+            "hanab.live",
+            "hanabi.live",
+            "www.hanab.live",
+            "www.hanabi.live",
+        ] {
+            let mut headers = HeaderMap::new();
+            headers.insert(header::ORIGIN, format!("https://{host}").parse().unwrap());
+            let uri: Uri = format!("https://{host}/login").parse().unwrap();
+            assert!(origin_allowed(&headers, &uri, "hanab.live", true));
+            assert!(!origin_allowed(&headers, &uri, "example.invalid", true));
+            headers.insert(header::HOST, host.parse().unwrap());
+            assert!(origin_allowed(
+                &headers,
+                &Uri::from_static("/login"),
+                "hanab.live",
+                true
+            ));
+            headers.insert(header::HOST, "evil.invalid".parse().unwrap());
+            assert!(!origin_allowed(&headers, &uri, "hanab.live", true));
+        }
+        let mut headers = HeaderMap::new();
+        headers.insert(header::ORIGIN, "https://hanabi.live".parse().unwrap());
+        assert!(!origin_allowed(
+            &headers,
+            &Uri::from_static("https://hanab.live/login"),
+            "hanab.live",
+            true
+        ));
+        headers.insert(header::ORIGIN, "https://evil.invalid".parse().unwrap());
+        assert!(!origin_allowed(
+            &headers,
+            &Uri::from_static("https://evil.invalid/login"),
+            "hanab.live",
+            true
+        ));
     }
 }

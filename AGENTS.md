@@ -39,7 +39,34 @@ The production server is `root@hanab.live`, with the repository at
 `~/hanabi-live`. The server log is at `~/hanabi-live/logs/hanabi-live.log` (use
 `./get-log.sh` to download it).
 
-### Deploying from source
+### Current Rust deployment
+
+Production now runs the native Rust binary at `~/hanabi-live/hanabi-live`. Use a
+successful CI Rust release with its paired client assets, verify it with
+`/opt/hanabi-python/bin/python3` and the bundled `install/release.py`, and run
+`--check-startup` against the staged configuration before publication. Publish
+assets atomically, install the replacement binary through a sibling file and
+rename, then request `/gracefulRestart`. Rust does not build code during that
+operation. Verify the served revision and recovery health afterward.
+
+Rust currently loads the client version at startup. A new client version needs a
+Rust graceful restart; do not apply the Go-only asset deployment procedure below
+unchanged.
+
+Live state is authoritative in the separate `hanabi-redis.service`, using
+`redis+unix:///run/hanabi-redis/redis.sock`, with persistence in
+`/var/lib/hanabi-redis`. Do not delete that data or use the unrelated legacy
+Redis service. `database_backup.sh` backs up PostgreSQL only: recovery also
+requires Redis state and cross-store consistency. Retain coordinated cutover
+backups and the Go restart-blocking marker. Do not restart Go against a
+post-cutover database or assume a binary rollback can convert live state.
+
+Production validation must exercise authenticated browser traffic against
+production-sized data, including sparse histories, users without friends,
+HTTP/2, all supported host names, and simultaneous reconnects. A successful
+checkpoint import or anonymous health request alone is not sufficient.
+
+### Deploying Go from source (legacy/reference)
 
 The existing production installation uses this procedure. Opt-in CI artifact
 installations have a separate

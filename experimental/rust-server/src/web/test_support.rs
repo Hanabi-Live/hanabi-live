@@ -20,6 +20,7 @@ pub struct Fixture {
 impl Fixture {
     pub async fn start() -> Option<Self> {
         std::env::var_os("HANABI_TEST_DATABASE_URL")?;
+        let _ = rustls::crypto::ring::default_provider().install_default();
         let redis = RedisFixture::start(true).await.unwrap();
         let db = TestDb::create().await?;
         let state = RedisState::connect(&redis.url, "web-integration")

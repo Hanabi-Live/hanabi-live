@@ -4,6 +4,7 @@ use tokio_tungstenite::{
     connect_async,
     tungstenite::{Message as WireMessage, client::IntoClientRequest},
 };
+use tower::ServiceExt;
 
 type Socket =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
@@ -65,6 +66,32 @@ async fn receive(socket: &mut Socket, command: &str) -> Value {
     })
     .await
     .unwrap_or_else(|_| panic!("Timed out waiting for {command}"))
+}
+
+#[tokio::test]
+async fn http2_login_accepts_uri_authority_without_host_header_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let response = router(fixture.app.clone())
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .version(axum::http::Version::HTTP_2)
+                .uri(format!("{}/login", fixture.url))
+                .header(header::ORIGIN, &fixture.url)
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .extension(ConnectInfo(fixture.address))
+                .body(axum::body::Body::from(
+                    "username=Http2User&password=synthetic-password&version=42",
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response.headers().contains_key(header::SET_COOKIE));
+    fixture.close().await;
 }
 
 #[tokio::test]
