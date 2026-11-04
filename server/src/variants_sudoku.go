@@ -185,8 +185,11 @@ func sudokuWalkUpAll(allDiscarded [5]bool, stackSize int) (bool, [5]int) {
 	for curVal := 0; curVal < stackSize; curVal++ {
 		if allDiscarded[curVal%stackSize] {
 			// We hit a new dead card
+			// A stack that is started at one of these values cannot play the cards that come
+			// before it, so its sequence ends at the dead rank instead of running for the whole
+			// segment.
 			for writeVal := lastDead + 1; writeVal < curVal; writeVal++ {
-				maxScores[writeVal] = curVal - lastDead - 1
+				maxScores[writeVal] = curVal - writeVal
 			}
 			maxScores[curVal] = 0
 			lastDead = curVal
