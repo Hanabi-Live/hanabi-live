@@ -1,0 +1,20 @@
+runs:
+  using: composite
+  steps:
+    - name: Select the repository's Rust toolchain
+      shell: bash
+      working-directory: experimental/rust-server
+      run: |
+        rustup show
+        echo "RUSTUP_TOOLCHAIN=$(rustup show active-toolchain | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
+
+    - name: Cache Cargo dependencies
+      uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+      with:
+        workspaces: |
+          experimental/rust-server -> target
+          experimental/rust-server/engine -> target
+        # Keep job-specific profiles/targets separate and rebuild our revision-stamped binaries.
+        cache-workspace-crates: false
+        cache-bin: false
+        save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

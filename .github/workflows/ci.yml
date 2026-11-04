@@ -98,6 +98,7 @@ jobs:
           cache-dependency-path: |
             server/src/go.sum
             maintenance/go.sum
+      - uses: ./.github/workflows/setup-rust
       - name: Run the full linting suite
         run: bash lint.sh
 
@@ -125,6 +126,8 @@ jobs:
         run: bash ./packages/client/set_version.sh
 
       - uses: ./.github/workflows/setup-redis
+
+      - uses: ./.github/workflows/setup-rust
 
       - name: Test the TypeScript code
         run: npm run test
@@ -155,6 +158,7 @@ jobs:
           go-version: "1.27.x"
           cache-dependency-path: server/src/go.sum
       - uses: ./.github/workflows/setup-redis
+      - uses: ./.github/workflows/setup-rust
       - run: npx playwright install --with-deps chromium
       - run: bash packages/client/build_client.sh
       - name: Test lobby state, transport and safe rendering
@@ -191,6 +195,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup-redis
+      - uses: ./.github/workflows/setup-rust
       - name: Test Rust rules, actors, and Redis/PostgreSQL durability
         run: |
           cargo test --locked
@@ -237,6 +242,8 @@ jobs:
           go-version: "1.27.x"
           cache-dependency-path: server/src/go.sum
       - uses: ./.github/workflows/setup-redis
+        if: matrix.runtime == 'rust'
+      - uses: ./.github/workflows/setup-rust
         if: matrix.runtime == 'rust'
       - name: Prepare static Rust release toolchain
         if: matrix.runtime == 'rust'
