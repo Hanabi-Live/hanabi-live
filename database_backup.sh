@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+umask 077
+
 # Redirect all output to syslog (but skip this if we are on Windows).
 # https://www.urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/
 if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
@@ -16,7 +19,7 @@ REPO_NAME="$(basename "$DIR")"
 
 # Configuration
 BACKUPS_DIR="$DIR/backups"
-FILENAME=$REPO_NAME-$(date +%s).sql # "date +%s" returns the epoch timestamp.
+FILENAME=$REPO_NAME-$(date +%s).sql.gz # "date +%s" returns the epoch timestamp.
 
 # Import the database information.
 ENV_PATH="$DIR/.env"
@@ -33,27 +36,71 @@ if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 
-# Back up the database and gzip it.
 mkdir -p "$BACKUPS_DIR"
-echo "Dumping the database..."
-if ! PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"; then
+MAX_BACKUP_KB=""
+if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
+  exec 9> "$BACKUPS_DIR/.backup.lock"
+  if ! flock -n 9; then
+    echo "Another database backup is already running." >&2
+    exit 1
+  fi
+  AVAILABLE_KB=$(df -Pk "$BACKUPS_DIR" | awk 'NR == 2 { print $4 }')
+  # Leave at least 1 GiB for PostgreSQL and application writes.
+  MAX_BACKUP_KB=$((AVAILABLE_KB - 1048576))
+  if ((MAX_BACKUP_KB <= 0)); then
+    echo "Not enough disk space for a backup while preserving 1 GiB of free space." >&2
+    exit 1
+  fi
+fi
+
+PARTIAL_PATH=$(mktemp "$BACKUPS_DIR/.$FILENAME.XXXXXX.partial")
+trap 'rm -f -- "$PARTIAL_PATH"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+function compress_dump {
+  if [[ -n $MAX_BACKUP_KB ]]; then
+    # Bash uses KiB for this limit unless POSIXLY_CORRECT is set.
+    unset POSIXLY_CORRECT || return
+    ulimit -f "$MAX_BACKUP_KB" || return
+  fi
+  gzip -c
+}
+
+echo "Streaming a compressed database backup..."
+if ! PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" \
+  | compress_dump > "$PARTIAL_PATH"; then
+  echo "Database backup failed; removing the incomplete compressed file." >&2
   exit 1
 fi
-echo "Zipping the backup..."
-gzip "$BACKUPS_DIR/$FILENAME"
+gzip -t "$PARTIAL_PATH"
+mv -- "$PARTIAL_PATH" "$BACKUPS_DIR/$FILENAME"
+echo "Completed database backup: $FILENAME"
 
 # Delete old backups if the hard drive is getting full (but skip this if we are on Windows).
 function delete_file_if_near_full_local {
-  AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
-  echo "Local hard drive amount full: $AMOUNT_FULL"
-  if [[ $AMOUNT_FULL -gt 75 ]]; then
-    # Delete the oldest file in the backups directory.
-    # shellcheck disable=SC2012
-    OLDEST_FILE=$(ls --sort=time "$BACKUPS_DIR" | tail -1)
-    rm -f "$BACKUPS_DIR/$OLDEST_FILE"
-    echo "Hard drive over 80% full; deleted the oldest backup: $OLDEST_FILE"
-    delete_file_if_near_full_local
-  fi
+  local amount_full oldest_file file
+  while true; do
+    amount_full=$(df -Pk "$BACKUPS_DIR" | awk 'NR == 2 { sub(/%$/, "", $5); print $5 }')
+    echo "Local hard drive amount full: $amount_full"
+    if ((amount_full <= 75)); then
+      return
+    fi
+    oldest_file=""
+    for file in "$BACKUPS_DIR/$REPO_NAME-"*.sql.gz; do
+      if [[ -f $file && $file != "$BACKUPS_DIR/$FILENAME" ]]; then
+        if [[ -z $oldest_file || $file -ot $oldest_file ]]; then
+          oldest_file=$file
+        fi
+      fi
+    done
+    if [[ -z $oldest_file ]]; then
+      echo "No older backups remain to prune; keeping the newest completed backup." >&2
+      return
+    fi
+    rm -- "$oldest_file"
+    echo "Hard drive over 75% full; deleted the oldest backup: $oldest_file"
+  done
 }
 if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
   delete_file_if_near_full_local
@@ -100,4 +147,4 @@ function delete_file_if_near_full_gdrive {
 delete_file_if_near_full_gdrive
 
 # Upload the file to Google Drive.
-$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"
+$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"

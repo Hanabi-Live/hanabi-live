@@ -447,6 +447,14 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 0 0 * * * /root/hanabi-live/database_backup.sh
 ```
 
+Backups stream directly into gzip and are published only after the dump and
+compression succeed. On Linux, concurrent backups are locked out and the output
+size is capped using the initial free space minus a 1 GiB reserve for
+PostgreSQL. Failed runs remove their partial file. Disk-pressure cleanup never
+deletes the newest completed backup; if older backups cannot free enough space,
+increase storage or reclaim unrelated disposable files rather than deleting
+recovery data.
+
 <br />
 
 ### Set up Secondary Automated Database Backups to Google Drive (optional)
