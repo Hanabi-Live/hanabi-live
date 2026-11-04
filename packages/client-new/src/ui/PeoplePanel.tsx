@@ -1,5 +1,5 @@
 import { StatusText } from "@hanabi-live/data";
-import { ArrowUpRight, Eye, MessageCircle, Star, Users } from "lucide-react";
+import { ArrowUpRight, Eye, MessageCircle, Star } from "lucide-react";
 import { useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
@@ -51,107 +51,117 @@ export function PeoplePanel({
       )
     : [];
   return (
-    <section className="people-panel">
-      <h2>
-        <Users size={17} /> Good company{" "}
-        <span>{Object.keys(users).length}</span>
-      </h2>
-      <div className="filter-tabs">
-        <button
-          aria-pressed={!friendsOnly}
-          onClick={() => setFriendsOnly(false)}
-        >
-          Everyone
-        </button>
-        <button aria-pressed={friendsOnly} onClick={() => setFriendsOnly(true)}>
-          Friends
-        </button>
-      </div>
-      <input
-        aria-label="Find a player"
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder="Find a player..."
-        type="search"
-        value={search}
-      />
-      <div className="online-list">
-        {online.map((user) => (
-          <div className="person" key={user.userID}>
-            <button
-              aria-expanded={selected === user.name}
-              className="person-main"
-              onClick={() =>
-                setSelected(selected === user.name ? null : user.name)
-              }
-            >
-              <span className="avatar">{user.name.slice(0, 1)}</span>
-              <span>
-                <strong>
-                  {user.name}
-                  {user.hyphenated && <small> /h</small>}
-                </strong>
-                <small>
-                  {user.inactive ? "Away" : StatusText[user.status]}
-                </small>
-              </span>
-              {welcome.friends.includes(user.name) && (
-                <Star className="friend-star" size={13} />
-              )}
-              <span className={`status-dot ${user.inactive ? "" : "online"}`} />
-            </button>
-            {selected === user.name && (
-              <div className="person-actions">
-                <a
-                  className="button-link"
-                  href={`/scores/${encodeURIComponent(user.name)}`}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <ArrowUpRight size={14} /> Profile
-                </a>
-                {user.name !== welcome.username && (
-                  <>
-                    <button
-                      disabled={status !== "online"}
-                      onClick={() => message(user.name)}
-                    >
-                      <MessageCircle size={14} /> Message
-                    </button>
-                    <button
-                      disabled={status !== "online"}
-                      onClick={() =>
-                        connection.send(
-                          welcome.friends.includes(user.name)
-                            ? "chatUnfriend"
-                            : "chatFriend",
-                          { name: user.name, room: "lobby" },
-                        )
-                      }
-                    >
-                      <Star size={14} />
-                      {welcome.friends.includes(user.name)
-                        ? "Unfriend"
-                        : "Add friend"}
-                    </button>
-                  </>
-                )}
-                {user.tableID && (
+    <section className="people-panel box">
+      <h3 className="lobby-title">
+        Online Users ({Object.keys(users).length})
+      </h3>
+      <details className="classic-filters people-filters">
+        <summary aria-label="Filter players" title="Filter players">
+          <i aria-hidden="true" className="fas fa-filter" />
+        </summary>
+        <div className="filter-tabs">
+          <button
+            aria-pressed={!friendsOnly}
+            onClick={() => setFriendsOnly(false)}
+          >
+            Everyone
+          </button>
+          <button
+            aria-pressed={friendsOnly}
+            onClick={() => setFriendsOnly(true)}
+          >
+            Friends
+          </button>
+        </div>
+        <input
+          aria-label="Find a player"
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Find a player..."
+          type="search"
+          value={search}
+        />
+      </details>
+      <div className="online-list" id="lobby-users-container">
+        <table className="slim-table" id="lobby-users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {online.map((user) => (
+              <tr className="person" key={user.userID}>
+                <td>
                   <button
-                    disabled={status !== "online"}
+                    aria-expanded={selected === user.name}
+                    className={`person-main ${user.name === welcome.username ? "name-me" : welcome.friends.includes(user.name) ? "friend" : ""}`}
                     onClick={() =>
-                      connection.send("tableSpectate", {
-                        tableID: user.tableID,
-                        shadowingPlayerIndex: -1,
-                      })
+                      setSelected(selected === user.name ? null : user.name)
                     }
                   >
-                    <Eye size={14} /> Watch
+                    <span>
+                      {user.name}
+                      {user.hyphenated && <small> /h</small>}
+                    </span>
                   </button>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+                  {selected === user.name && (
+                    <div className="person-actions">
+                      <a
+                        className="button-link"
+                        href={`/scores/${encodeURIComponent(user.name)}`}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <ArrowUpRight size={14} /> Profile
+                      </a>
+                      {user.name !== welcome.username && (
+                        <>
+                          <button
+                            disabled={status !== "online"}
+                            onClick={() => message(user.name)}
+                          >
+                            <MessageCircle size={14} /> Message
+                          </button>
+                          <button
+                            disabled={status !== "online"}
+                            onClick={() =>
+                              connection.send(
+                                welcome.friends.includes(user.name)
+                                  ? "chatUnfriend"
+                                  : "chatFriend",
+                                { name: user.name, room: "lobby" },
+                              )
+                            }
+                          >
+                            <Star size={14} />
+                            {welcome.friends.includes(user.name)
+                              ? "Unfriend"
+                              : "Add friend"}
+                          </button>
+                        </>
+                      )}
+                      {user.tableID && (
+                        <button
+                          disabled={status !== "online"}
+                          onClick={() =>
+                            connection.send("tableSpectate", {
+                              tableID: user.tableID,
+                              shadowingPlayerIndex: -1,
+                            })
+                          }
+                        >
+                          <Eye size={14} /> Watch
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </td>
+                <td>{user.inactive ? "Away" : StatusText[user.status]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         {offline.map((name) => (
           <div className="offline-person" key={name}>
             <span className="avatar">{name.slice(0, 1)}</span>

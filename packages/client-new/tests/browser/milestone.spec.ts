@@ -25,10 +25,8 @@ test("sign in, join, play, return, and recover the new lobby", async ({
       await page.goto(`${backend}/new`);
       await page.getByLabel("Username", { exact: true }).fill(name);
       await page.getByLabel("Password", { exact: true }).fill(name);
-      await page.getByRole("button", { name: "Take a seat" }).click();
-      await expect(
-        page.getByRole("heading", { name: "Find your next table." }),
-      ).toBeVisible();
+      await page.getByRole("button", { name: "Sign In", exact: true }).click();
+      await expect(page.locator("#lobby-games")).toBeVisible();
     }),
   );
   await a.getByRole("button", { name: "Create a table" }).click();
@@ -57,21 +55,17 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   await a.screenshot({ path: test.info().outputPath("legacy-game.png") });
   await a.keyboard.press("Alt+l");
   await expect(a).toHaveURL(/\/new$/u);
-  await expect(
-    a.getByRole("heading", { name: "Find your next table." }),
-  ).toBeVisible();
+  await expect(a.locator("#lobby-games")).toBeVisible();
   await alice.setOffline(true);
   await expect(a.getByText("Reconnecting...", { exact: true })).toBeVisible();
   await alice.setOffline(false);
   await expect(a.getByText("Connected", { exact: true })).toBeVisible();
+  await expect(a.locator("#lobby-games")).toBeVisible();
   await expect(
-    a.getByRole("heading", { name: "Find your next table." }),
-  ).toBeVisible();
-  await expect(
-    a.getByRole("button", { name: /Your game is waiting/u }),
+    a.getByRole("button", { name: "Resume", exact: true }),
   ).toBeVisible();
   const resumed = gameReady(a);
-  await a.getByRole("button", { name: /Your game is waiting/u }).click();
+  await a.getByRole("button", { name: "Resume", exact: true }).click();
   await resumed;
   await expect(a.locator("canvas").first()).toBeVisible();
   await a.keyboard.press("Alt+c");

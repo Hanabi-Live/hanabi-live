@@ -1,24 +1,10 @@
 import { options } from "@hanabi-live/game";
-import {
-  ArrowRight,
-  BookOpen,
-  History,
-  LogOut,
-  MessageCircle,
-  Moon,
-  Play,
-  Settings2,
-  Sparkles,
-  Sun,
-  Users,
-  X,
-} from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import type { SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import {
   Link,
-  NavLink,
   Route,
   Routes,
   useLocation,
@@ -30,6 +16,7 @@ import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
 import type { ChatChannel } from "./ChatPanel";
 import { ChatPanel } from "./ChatPanel";
+import { ClassicHeader } from "./ClassicHeader";
 import { GameDialog } from "./GameDialog";
 import { HistoryPanel } from "./HistoryPanel";
 import { Modal } from "./Modal";
@@ -43,13 +30,6 @@ import { TablesPanel } from "./TablesPanel";
 const suggestedOptions = options
   .unwrap()
   .extend({ numPlayers: z.number().int().min(0).max(6) });
-const navigation = [
-  ["/", "Play", Play],
-  ["/history", "History", History],
-  ["/replays", "Replays", Play],
-  ["/settings", "Settings", Settings2],
-  ["/resources", "Learn & connect", BookOpen],
-] as const;
 const resources = [
   [
     "Learn the rules",
@@ -117,12 +97,22 @@ function classic() {
   sessionStorage.removeItem("hanabi-lobby");
 }
 
-function lightPreference(): boolean {
+function themePreference(): "light" | "dark" | "system" {
   try {
-    return localStorage.getItem("hanabi-new-theme") === "light";
+    const stored = localStorage.getItem("darkMode");
+    if (stored === "system") {
+      return "system";
+    }
+    return (
+      stored === null
+        ? localStorage.getItem("hanabi-new-theme") === "dark"
+        : stored === "true"
+    )
+      ? "dark"
+      : "light";
   } catch (error) {
     console.warn("Unable to read theme preference", error);
-    return false;
+    return "light";
   }
 }
 
@@ -154,14 +144,30 @@ export function App({ connection }: { connection: LobbyConnection }) {
   const [changingPassword, setChangingPassword] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [channel, setChannel] = useState<ChatChannel>("lobby");
-  const [mobilePanel, setMobilePanel] = useState<"main" | "people" | "chat">(
-    "main",
+  const [mobilePanel, setMobilePanel] = useState<
+    "main" | "people" | "chat" | "game-chat"
+  >("main");
+  const [theme, setTheme] = useState(themePreference);
+  const [systemDark, setSystemDark] = useState(false);
+  const light = theme === "light" || (theme === "system" && !systemDark);
+  useEffect(() => {
+    if (typeof globalThis.matchMedia !== "function") {
+      return undefined;
+    }
+    const preference = globalThis.matchMedia("(prefers-color-scheme: dark)");
+    function update() {
+      setSystemDark(preference.matches);
+    }
+    update();
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
+  const [wide, setWide] = useState(
+    globalThis.innerWidth > 620 && globalThis.innerHeight > 530,
   );
-  const [light, setLight] = useState(lightPreference);
-  const [wide, setWide] = useState(globalThis.innerWidth > 1200);
   useEffect(() => {
     function resize() {
-      setWide(globalThis.innerWidth > 1200);
+      setWide(globalThis.innerWidth > 620 && globalThis.innerHeight > 530);
     }
     globalThis.addEventListener("resize", resize);
     return () => globalThis.removeEventListener("resize", resize);
@@ -179,16 +185,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
     setRecipient("");
     setChannel("lobby");
   }, [state.welcome?.userID]);
-
-  useEffect(() => {
-    setChannel((current) =>
-      current === "private"
-        ? current
-        : state.tableID === null
-          ? "lobby"
-          : "table",
-    );
-  }, [state.tableID]);
 
   useEffect(() => {
     function keyDown(event: KeyboardEvent) {
@@ -340,11 +336,19 @@ export function App({ connection }: { connection: LobbyConnection }) {
   ]);
 
   useEffect(() => {
-    if (!online || state.tableID !== null) {
+    if (!online) {
+      return;
+    }
+    if (state.tableID !== null) {
+      handledInvitation.current = String(state.tableID);
       return;
     }
     const match = /^\/table\/(\d+)$/u.exec(pathname);
-    if (!match?.[1] || handledInvitation.current === match[1]) {
+    if (!match?.[1]) {
+      handledInvitation.current = "";
+      return;
+    }
+    if (handledInvitation.current === match[1]) {
       return;
     }
     const table = state.tables[Number(match[1])];
@@ -461,389 +465,496 @@ export function App({ connection }: { connection: LobbyConnection }) {
 
   if (!state.welcome) {
     return (
-      <main className="signin-shell">
-        <section className="signin-story">
-          <div className="brand">
-            <Sparkles /> hanab<span>live</span>
-          </div>
-          <span className="eyebrow">A LITTLE TRUST. A LITTLE MAGIC.</span>
-          <h1>
-            Better
-            <br />
-            together.
-          </h1>
-          <p>
-            You can see everyone's cards except your own.
-            <br />
-            Find your people. Build something brilliant.
-          </p>
-          <div aria-hidden="true" className="card-fan">
-            {["red", "yellow", "green", "blue", "purple"].map((color, i) => (
-              <div className={`hanabi-card ${color}`} key={color}>
-                <Sparkles />
-                <b>{i + 1}</b>
-              </div>
-            ))}
-          </div>
-          <a href="https://hanabi.github.io/" rel="noreferrer" target="_blank">
-            New to Hanabi? Learn to play <ArrowRight size={16} />
-          </a>
-        </section>
-        <section className="signin-panel">
-          <span className="eyebrow">WELCOME TO THE TABLE</span>
-          <h2>{changingPassword ? "A fresh password." : "Let's play."}</h2>
-          <p>Sign in, or choose a new username to create your account.</p>
-          <form onSubmit={signIn}>
-            <label>
-              Username
-              <input
-                autoComplete="username"
-                maxLength={15}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-                value={username}
+      <div className="client-new-classic" id="page-wrapper">
+        <ClassicHeader
+          connection={connection}
+          create={() => setDialog("create")}
+          edit={() => setDialog("edit")}
+          join={join}
+        />
+        <main className="container signin-shell" id="main-login">
+          <header className="login-header">
+            <h2 className="align-center-v">
+              <img
+                alt="Hanab Live"
+                className="login-logo"
+                src="/public/img/logos/header.svg"
               />
-            </label>
-            <label>
-              {changingPassword ? "Current password" : "Password"}
-              <input
-                autoComplete="current-password"
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                type="password"
-                value={password}
-              />
-            </label>
-            {changingPassword && (
-              <label>
-                New password
-                <input
-                  autoComplete="new-password"
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  required
-                  type="password"
-                  value={newPassword}
-                />
-              </label>
-            )}
-            {state.notice && (
-              <div className="notice" role="alert">
-                <RichText html={state.notice.text} />
-              </div>
-            )}
-            <button
-              className="primary"
-              disabled={
-                state.connection === "connecting"
-                || state.connection === "checking"
-              }
-            >
-              {state.connection === "connecting"
-                ? "Signing in..."
-                : changingPassword
-                  ? "Sign in & change password"
-                  : "Take a seat"}{" "}
-              <ArrowRight size={17} />
-            </button>
-          </form>
-          <div className="signin-links">
-            <button
-              className="text-button"
-              onClick={() => setChangingPassword(!changingPassword)}
-            >
-              {changingPassword ? "Back to sign in" : "Change password"}
-            </button>
-            <a href="/password-reset">Forgot password?</a>
+            </h2>
+            <p id="title-sub">
+              A place to play <strong>Hanab</strong> online,
+              <br />a cooperative card game of logic and reasoning
+            </p>
+          </header>
+          <div className="row">
+            <div className="col-8 off-2 login-box">
+              <section className="signin-panel box align-center">
+                <h3>
+                  {changingPassword
+                    ? "Change Password"
+                    : "Sign In / Create Account"}
+                </h3>
+                <p>
+                  To create a new account, simply login with a new username and
+                  select a password.
+                  <br />
+                  Do <strong>NOT</strong> reuse any of your{" "}
+                  <a
+                    href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/passwords.md"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    previous passwords
+                  </a>
+                  !
+                </p>
+                <form onSubmit={signIn}>
+                  <label className="login-field">
+                    <i
+                      aria-hidden="true"
+                      className="fas fa-user fa-2x login-icon"
+                    />
+                    <span className="sr-only">Username</span>
+                    <input
+                      autoComplete="username"
+                      maxLength={15}
+                      onChange={(event) => setUsername(event.target.value)}
+                      placeholder="Username"
+                      required
+                      type="text"
+                      value={username}
+                    />
+                  </label>
+                  <label className="login-field">
+                    <i
+                      aria-hidden="true"
+                      className="fas fa-key fa-2x login-icon"
+                    />
+                    <span className="sr-only">
+                      {changingPassword ? "Current password" : "Password"}
+                    </span>
+                    <input
+                      autoComplete="current-password"
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder={
+                        changingPassword ? "Current password" : "Password"
+                      }
+                      required
+                      type="password"
+                      value={password}
+                    />
+                  </label>
+                  {changingPassword && (
+                    <label className="login-field">
+                      <i
+                        aria-hidden="true"
+                        className="fas fa-sync fa-2x login-icon"
+                      />
+                      <span className="sr-only">New password</span>
+                      <input
+                        autoComplete="new-password"
+                        onChange={(event) => setNewPassword(event.target.value)}
+                        placeholder="New Password"
+                        required
+                        type="password"
+                        value={newPassword}
+                      />
+                    </label>
+                  )}
+                  {state.notice && (
+                    <div className="notice" role="alert">
+                      <RichText html={state.notice.text} />
+                    </div>
+                  )}
+                  <button
+                    className="button login-submit"
+                    disabled={
+                      state.connection === "connecting"
+                      || state.connection === "checking"
+                    }
+                  >
+                    {state.connection === "connecting"
+                      ? "Signing in..."
+                      : changingPassword
+                        ? "Sign in & change password"
+                        : "Sign In"}
+                  </button>
+                </form>
+                <div className="signin-links">
+                  <button
+                    className="text-button"
+                    onClick={() => setChangingPassword(!changingPassword)}
+                  >
+                    {changingPassword ? "Back to sign in" : "Change password"}
+                  </button>
+                  <a href="/password-reset">Forgot password?</a>
+                </div>
+                {state.notice && (
+                  <button
+                    className="text-button"
+                    onClick={() => connection.retryNow()}
+                  >
+                    Retry saved session
+                  </button>
+                )}
+              </section>
+            </div>
           </div>
-          <button className="text-button" onClick={() => connection.retryNow()}>
-            Retry saved session
-          </button>
-          <a href="/lobby" onClick={classic}>
-            Use the classic lobby
-          </a>
-        </section>
-      </main>
+          <div className="row">
+            <div className="col-8 off-2 login-text">
+              <p>
+                This site has no affiliation with the card game Hanabi, no
+                affiliation with Antoine Bauza (the creator of Hanabi), and no
+                affiliation with any of the real-life publishers of Hanabi.
+              </p>
+              <p>
+                This website is free of charge, has no advertisements, and is
+                not monetized in any way. We urge you to purchase a physical
+                copy of Hanabi if you enjoy playing the variants of it online.
+              </p>
+              <p>
+                If the server is down, you can probably find out why in{" "}
+                <a
+                  href="https://discord.gg/FADvkJp"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  the Discord server
+                </a>
+                .
+              </p>
+              <a href="/lobby" onClick={classic}>
+                Use the classic lobby
+              </a>
+            </div>
+          </div>
+        </main>
+      </div>
     );
   }
+  const pregameOpen = pathname.startsWith("/table/") && state.pregame !== null;
   return (
-    <div className={`app-shell panel-${mobilePanel}`}>
-      <a className="skip-link" href="#main-content">
-        Skip to content
-      </a>
-      <aside aria-label="Navigation" className="sidebar">
-        <Link className="brand" to="/">
-          <Sparkles /> hanab<span>live</span>
-        </Link>
-        <span className="eyebrow">YOUR NEXT GOOD GAME</span>
-        <nav aria-label="Main navigation">
-          {navigation.map(([to, label, Icon]) => (
-            <NavLink
-              className={({ isActive }) => (isActive ? "nav-active" : "")}
-              end={to === "/"}
-              key={to}
-              to={to}
-            >
-              <Icon size={18} />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <a className="classic-link" href="/lobby" onClick={classic}>
-          Back to classic lobby <ArrowRight size={13} />
+    <div className="client-new-classic" id="page-wrapper">
+      <ClassicHeader
+        connection={connection}
+        create={() => setDialog("create")}
+        edit={() => setDialog("edit")}
+        join={join}
+      />
+      <div
+        className={`container max app-shell panel-${mobilePanel} ${pregameOpen ? "in-pregame" : ""} ${pathname === "/history" ? "classic-full-page" : ""}`}
+        id="lobby"
+      >
+        <a className="skip-link" href="#main-content">
+          Skip to content
         </a>
-        <div className="sidebar-bottom">
-          <span className="avatar">{state.welcome.username.slice(0, 1)}</span>
-          <strong>{state.welcome.username}</strong>
-          <button
-            aria-label="Sign out"
-            className="icon-button"
-            onClick={() => {
-              void connection.logout();
-            }}
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </aside>
-      <main className="main-panel" id="main-content">
-        <header className="top-bar">
-          <span>
-            <span className={`status-dot ${online ? "online" : ""}`} />
-            <span role="status">
-              {online
-                ? "Connected"
-                : state.connection === "stopped"
-                  ? "Disconnected"
-                  : "Reconnecting..."}
-            </span>
-            {!online && (
-              <button
-                className="text-button"
-                onClick={() => connection.retryNow()}
-              >
-                Retry
-              </button>
-            )}
-          </span>
-          <div className="top-bar-actions">
-            <span>{Object.keys(state.users).length} online</span>
-            <button
-              aria-label={
-                light ? "Switch to dark theme" : "Switch to light theme"
-              }
-              className="icon-button"
-              onClick={() => setLight(!light)}
+        <div className="row lobby-half toggle-active" id="lobby-top-half">
+          <div className="col-12">
+            <section
+              className="box main-panel"
+              id={pregameOpen ? "lobby-pregame" : "lobby-games"}
             >
-              {light ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-          </div>
-        </header>
-        {state.welcome.maintenanceMode && (
-          <div className="notice" role="status">
-            The server is in maintenance mode. New games are temporarily
-            unavailable.
-          </div>
-        )}
-        {state.welcome.shuttingDown && (
-          <div className="notice" role="status">
-            The server is preparing for maintenance. Finish your current game;
-            new games may be unavailable.
-          </div>
-        )}
-        {state.notice && (
-          <div className="notice global-notice" role="alert">
-            <RichText html={state.notice.text} />
-            <button
-              aria-label="Dismiss notice"
-              className="icon-button"
-              onClick={() => connection.dismiss()}
-            >
-              <X size={16} />
-            </button>
-            {state.notice.fatal && (
-              <button onClick={() => connection.retryNow()}>Reconnect</button>
-            )}
-          </div>
-        )}
-        <Routes>
-          <Route
-            element={
-              <TablesPanel
-                connection={connection}
-                create={() => setDialog("create")}
-                join={join}
-              />
-            }
-            index
-          />
-          <Route
-            element={
-              <PregamePanel
-                connection={connection}
-                edit={() => setDialog("edit")}
-                join={join}
-              />
-            }
-            path="table/:id"
-          />
-          <Route
-            element={<HistoryPanel connection={connection} />}
-            path="history"
-          />
-          <Route
-            element={
-              <ReplayPanel
-                connection={connection}
-                disabled={!online || state.pending !== null}
-              />
-            }
-            path="replays"
-          />
-          <Route
-            element={<SettingsPanel connection={connection} />}
-            path="settings"
-          />
-          <Route
-            element={
-              <section>
-                <div className="page-heading">
-                  <div>
-                    <span className="eyebrow">
-                      THERE'S ALWAYS MORE TO DISCOVER
-                    </span>
-                    <h1>Grow your game.</h1>
-                    <p>
-                      A welcoming community, a clever convention, a new favorite
-                      variant.
-                    </p>
-                  </div>
-                </div>
-                <div className="resource-grid">
-                  {resources.map(([title, description, href]) => (
-                    <a
-                      className="panel resource"
-                      href={href}
-                      key={title}
-                      rel="noreferrer"
-                      target="_blank"
+              <main id="main-content">
+                <div
+                  className={online ? "sr-only" : "notice connection-status"}
+                >
+                  <span aria-label="Connection status" role="status">
+                    {online
+                      ? "Connected"
+                      : state.connection === "stopped"
+                        ? "Disconnected"
+                        : "Reconnecting..."}
+                  </span>
+                  {!online && (
+                    <button
+                      className="text-button"
+                      onClick={() => connection.retryNow()}
                     >
-                      <BookOpen size={22} />
-                      <h2>{title}</h2>
-                      <p>{description}</p>
-                      <ArrowRight size={16} />
-                    </a>
-                  ))}
+                      Retry
+                    </button>
+                  )}
                 </div>
-              </section>
-            }
-            path="resources"
-          />
-          <Route
-            element={
-              <div className="empty">
-                <h1>This seat doesn't exist.</h1>
-                <Link to="/">Return to the lobby</Link>
-              </div>
-            }
-            path="*"
-          />
-        </Routes>
-      </main>
-      <aside aria-label="Community" className="community-panel">
-        <PeoplePanel connection={connection} message={message} />
-        <ChatPanel
-          channel={channel}
-          connection={connection}
-          key={state.welcome.userID}
-          onChannel={setChannel}
-          onOptions={acceptOptions}
-          onRecipient={message}
-          recipient={recipient}
-          visible={wide || mobilePanel === "chat"}
-        />
-      </aside>
-      <nav aria-label="Mobile panels" className="mobile-tabs">
-        <button
-          aria-pressed={mobilePanel === "main"}
-          onClick={() => setMobilePanel("main")}
+                {state.welcome.maintenanceMode && (
+                  <div className="notice" role="status">
+                    The server is in maintenance mode. New games are temporarily
+                    unavailable.
+                  </div>
+                )}
+                {state.welcome.shuttingDown && (
+                  <div className="notice" role="status">
+                    The server is preparing for maintenance. Finish your current
+                    game; new games may be unavailable.
+                  </div>
+                )}
+                {state.notice && (
+                  <div className="notice global-notice" role="alert">
+                    <RichText html={state.notice.text} />
+                    <button
+                      aria-label="Dismiss notice"
+                      className="icon-button"
+                      onClick={() => connection.dismiss()}
+                    >
+                      <X size={16} />
+                    </button>
+                    {state.notice.fatal && (
+                      <button onClick={() => connection.retryNow()}>
+                        Reconnect
+                      </button>
+                    )}
+                  </div>
+                )}
+                {["/replays", "/resources", "/settings"].includes(pathname) && (
+                  <TablesPanel
+                    connection={connection}
+                    create={() => setDialog("create")}
+                    join={join}
+                  />
+                )}
+                <Routes>
+                  <Route
+                    element={
+                      <TablesPanel
+                        connection={connection}
+                        create={() => setDialog("create")}
+                        join={join}
+                      />
+                    }
+                    index
+                  />
+                  <Route
+                    element={<PregamePanel connection={connection} />}
+                    path="table/:id"
+                  />
+                  <Route
+                    element={<HistoryPanel connection={connection} />}
+                    path="history"
+                  />
+                  <Route
+                    element={
+                      <Modal
+                        close={() => {
+                          void navigate("/");
+                        }}
+                        description="Open an existing game or import a replay."
+                        title="Watch a Replay"
+                      >
+                        <ReplayPanel
+                          connection={connection}
+                          disabled={!online || state.pending !== null}
+                        />
+                      </Modal>
+                    }
+                    path="replays"
+                  />
+                  <Route
+                    element={
+                      <Modal
+                        close={() => {
+                          void navigate("/");
+                        }}
+                        description="Account and game preferences."
+                        id="settings-modal"
+                        title="Settings"
+                      >
+                        <SettingsPanel
+                          connection={connection}
+                          onTheme={(value) => {
+                            setTheme(value);
+                            try {
+                              localStorage.setItem(
+                                "darkMode",
+                                value === "system"
+                                  ? "system"
+                                  : String(value === "dark"),
+                              );
+                            } catch (error) {
+                              console.warn(
+                                "Unable to save theme preference",
+                                error,
+                              );
+                            }
+                          }}
+                          theme={theme}
+                        />
+                        <a href="/lobby" onClick={classic}>
+                          Use the classic client
+                        </a>
+                      </Modal>
+                    }
+                    path="settings"
+                  />
+                  <Route
+                    element={
+                      <Modal
+                        close={() => {
+                          void navigate("/");
+                        }}
+                        description="Rules, references, and community links."
+                        title="Resources"
+                      >
+                        <ul className="resource-grid">
+                          {resources.map(([title, description, href]) => (
+                            <li key={title}>
+                              <a
+                                href={href}
+                                rel="noreferrer"
+                                target="_blank"
+                                title={description}
+                              >
+                                {title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </Modal>
+                    }
+                    path="resources"
+                  />
+                  <Route
+                    element={
+                      <div className="empty">
+                        <h1>This seat doesn't exist.</h1>
+                        <Link to="/">Return to the lobby</Link>
+                      </div>
+                    }
+                    path="*"
+                  />
+                </Routes>
+              </main>
+            </section>
+          </div>
+        </div>
+        <div className="row" id="lobby-separator" />
+        <div
+          aria-label="Community"
+          className="row lobby-half community-panel"
+          id="lobby-bottom-half"
         >
-          <Play size={18} />
-          Tables
-        </button>
-        <button
-          aria-pressed={mobilePanel === "people"}
-          onClick={() => setMobilePanel("people")}
-        >
-          <Users size={18} />
-          People
-        </button>
-        <button
-          aria-pressed={mobilePanel === "chat"}
-          onClick={() => setMobilePanel("chat")}
-        >
-          <MessageCircle size={18} />
-          Chat{" "}
-          {Object.values(state.unreadPMs).reduce((sum, count) => sum + count, 0)
-            > 0 && (
-            <span className="unread-badge">
-              {Object.values(state.unreadPMs).reduce(
-                (sum, count) => sum + count,
-                0,
-              )}
-            </span>
-          )}
-        </button>
-        <Link onClick={() => setMobilePanel("main")} to="/settings">
-          <Settings2 size={18} />
-          Settings
-        </Link>
-      </nav>
-      {dialog && (
-        <GameDialog
-          connection={connection}
-          welcome={state.welcome}
-          {...(dialog === "edit" && state.pregame
-            ? { game: state.pregame }
-            : {})}
-          close={() => setDialog(null)}
-        />
-      )}
-      {passwordTable && (
-        <Modal
-          close={() => setPasswordTable(null)}
-          description={`Enter the password for ${passwordTable.name}.`}
-          title="A seat at a private table"
-        >
-          <form
-            className="form-grid"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (
-                connection.send("tableJoin", {
-                  tableID: passwordTable.id,
-                  password: tablePassword,
-                })
-              ) {
-                setPasswordTable(null);
-              }
-            }}
+          <div
+            className={pregameOpen ? "col-4" : "col-8"}
+            id="lobby-chat-container"
           >
-            <label>
-              Table password
-              <input
-                autoComplete="off"
-                onChange={(event) => setTablePassword(event.target.value)}
-                required
-                type="password"
-                value={tablePassword}
-              />
-            </label>
-            <button className="primary" disabled={!online}>
-              Join table <ArrowRight size={16} />
+            <ChatPanel
+              channel={channel === "private" ? "private" : "lobby"}
+              connection={connection}
+              key={state.welcome.userID}
+              onChannel={setChannel}
+              onOptions={acceptOptions}
+              onRecipient={message}
+              recipient={recipient}
+              visible={
+                pathname !== "/history" && (wide || mobilePanel === "chat")
+              }
+            />
+          </div>
+          <div
+            className={`col-4 ${pregameOpen ? "" : "hidden"}`}
+            hidden={!pregameOpen}
+            id="lobby-chat-pregame-container"
+          >
+            <ChatPanel
+              channel="table"
+              connection={connection}
+              onChannel={setChannel}
+              onOptions={acceptOptions}
+              onRecipient={message}
+              recipient={recipient}
+              visible={pregameOpen && (wide || mobilePanel === "game-chat")}
+            />
+          </div>
+          <div
+            className="col-4 lobby-users-box-container"
+            id="lobby-online-users"
+          >
+            <PeoplePanel connection={connection} message={message} />
+          </div>
+        </div>
+        <nav aria-label="Mobile panels" className="mobile-tabs">
+          <button
+            aria-pressed={mobilePanel === "main"}
+            onClick={() => setMobilePanel("main")}
+          >
+            Tables
+          </button>
+          <button
+            aria-pressed={mobilePanel === "people"}
+            onClick={() => setMobilePanel("people")}
+          >
+            Who's Online
+          </button>
+          <button
+            aria-pressed={mobilePanel === "chat"}
+            onClick={() => setMobilePanel("chat")}
+          >
+            Chat{" "}
+            {Object.values(state.unreadPMs).reduce(
+              (sum, count) => sum + count,
+              0,
+            ) > 0 && (
+              <span className="unread-badge">
+                {Object.values(state.unreadPMs).reduce(
+                  (sum, count) => sum + count,
+                  0,
+                )}
+              </span>
+            )}
+          </button>
+          {pregameOpen && (
+            <button
+              aria-pressed={mobilePanel === "game-chat"}
+              onClick={() => setMobilePanel("game-chat")}
+            >
+              Game Chat
             </button>
-          </form>
-        </Modal>
-      )}
+          )}
+        </nav>
+        {dialog && (
+          <GameDialog
+            connection={connection}
+            welcome={state.welcome}
+            {...(dialog === "edit" && state.pregame
+              ? { game: state.pregame }
+              : {})}
+            close={() => setDialog(null)}
+          />
+        )}
+        {passwordTable && (
+          <Modal
+            close={() => setPasswordTable(null)}
+            description={`Enter the password for ${passwordTable.name}.`}
+            title="A seat at a private table"
+          >
+            <form
+              className="form-grid"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (
+                  connection.send("tableJoin", {
+                    tableID: passwordTable.id,
+                    password: tablePassword,
+                  })
+                ) {
+                  setPasswordTable(null);
+                }
+              }}
+            >
+              <label>
+                Table password
+                <input
+                  autoComplete="off"
+                  onChange={(event) => setTablePassword(event.target.value)}
+                  required
+                  type="password"
+                  value={tablePassword}
+                />
+              </label>
+              <button className="primary" disabled={!online}>
+                Join table <ArrowRight size={16} />
+              </button>
+            </form>
+          </Modal>
+        )}
+      </div>
     </div>
   );
 }

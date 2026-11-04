@@ -1,20 +1,19 @@
-import {
-  ArrowRight,
-  Eye,
-  LockKeyhole,
-  Plus,
-  Search,
-  Sparkles,
-  Timer,
-  Users,
-} from "lucide-react";
 import { useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
 import { optionFlags } from "./GameDialog";
+
+const optionIcons = [
+  "sync-alt",
+  "blind",
+  "expand",
+  "plus-circle",
+  "minus-circle",
+  "layer-group",
+  "chess-knight",
+] as const;
 
 export function TablesPanel({
   connection,
@@ -25,18 +24,11 @@ export function TablesPanel({
   create: () => void;
   join: (table: Table) => void;
 }) {
-  const {
-    tables,
-    users,
-    welcome,
-    connection: status,
-    pending,
-  } = useSelector(
+  const { tables, welcome, online, pending } = useSelector(
     (state: LobbyState) => ({
       tables: state.tables,
-      users: state.users,
       welcome: state.welcome,
-      connection: state.connection,
+      online: state.connection === "online",
       pending: state.pending,
     }),
     shallowEqual,
@@ -47,14 +39,7 @@ export function TablesPanel({
   if (!welcome) {
     return null;
   }
-  const online = status === "online";
   const all = Object.values(tables);
-  const openCount = all.filter(
-    (table) =>
-      !table.running
-      && !table.sharedReplay
-      && table.numPlayers < table.maxPlayers,
-  ).length;
   const visible = all
     .filter((table) => {
       if (
@@ -106,254 +91,267 @@ export function TablesPanel({
         || Number(a.running) - Number(b.running)
         || b.id - a.id,
     );
+  function activate(table: Table) {
+    if (!online || pending !== null) {
+      return;
+    }
+    if (table.joined) {
+      connection.attend(table.id);
+    } else if (
+      table.running
+      || table.sharedReplay
+      || table.numPlayers >= table.maxPlayers
+    ) {
+      connection.send("tableSpectate", {
+        tableID: table.id,
+        shadowingPlayerIndex: -1,
+      });
+    } else {
+      join(table);
+    }
+  }
+  if (all.length === 0) {
+    return (
+      <div className="classic-empty">
+        <h3>No current games.</h3>
+      </div>
+    );
+  }
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">GOOD COMPANY. GREAT CLUES.</span>
-          <h1>Find your next table.</h1>
-          <p>A familiar group or a new connection. There's a seat for you.</p>
-        </div>
-        <button
-          className="primary"
-          disabled={
-            !online
-            || pending !== null
-            || welcome.maintenanceMode
-            || welcome.shuttingDown
-          }
-          onClick={create}
-        >
-          <Plus size={18} /> Create a table
-        </button>
-      </div>
-      {welcome.firstTimeUser && (
-        <details className="welcome-guide">
-          <summary>New around here? Your first good clue starts here.</summary>
-          <p>
-            You can see everyone's cards except your own. Give clues, build each
-            color from 1 to 5, and trust your teammates. Start with "No Variant"
-            and let your table know you're learning.
-          </p>
-          <a
-            href="https://hanabi.github.io/beginner"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Read the beginner's guide <ArrowRight size={14} />
-          </a>
-        </details>
-      )}
-      {welcome.playingAtTables.map((id) => (
-        <button
-          className="resume"
-          disabled={!online}
-          key={id}
-          onClick={() => connection.attend(id)}
-        >
-          Your game is waiting. Resume table {id} <ArrowRight size={16} />
-        </button>
-      ))}
-      <div className="lobby-stats">
-        <span>
-          <i className="status-dot online" />
-          {openCount} open {openCount === 1 ? "table" : "tables"}
-        </span>
-        <span>
-          {all.filter((table) => table.running && !table.sharedReplay).length}{" "}
-          games in progress
-        </span>
-        <span>{Object.keys(users).length} people online</span>
-      </div>
-      <div className="table-toolbar">
-        <label className="search-label">
-          <Search size={16} />
-          <input
-            aria-label="Find a game"
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search tables, players, or variants..."
-            type="search"
-            value={search}
-          />
-        </label>
-        <label className="compact-label">
-          Players
-          <select
-            onChange={(event) => setPlayers(event.target.value)}
-            value={players}
-          >
-            <option value="any">Any size</option>
-            {[2, 3, 4, 5, 6].map((value) => (
-              <option key={value} value={value}>
-                {value} players
-              </option>
+    <section aria-label="Available tables" className="classic-games-view">
+      <h3 className="lobby-title">List of games</h3>
+      <details className="classic-filters">
+        <summary aria-label="Filter games" title="Filter games">
+          <i aria-hidden="true" className="fas fa-filter" />
+        </summary>
+        <div className="table-toolbar">
+          <label>
+            Search
+            <input
+              aria-label="Find a game"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Tables, players, or variants"
+              type="search"
+              value={search}
+            />
+          </label>
+          <label>
+            Players
+            <select
+              onChange={(event) => setPlayers(event.target.value)}
+              value={players}
+            >
+              <option value="any">Any size</option>
+              {[2, 3, 4, 5, 6].map((value) => (
+                <option key={value} value={value}>
+                  {value} players
+                </option>
+              ))}
+            </select>
+          </label>
+          <div aria-label="Table filters" className="filter-tabs table-filters">
+            {(
+              [
+                ["all", "All tables"],
+                ["open", "Open seats"],
+                ["playing", "In progress"],
+                ["replays", "Replays"],
+                ["friends", "With friends"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                aria-pressed={filter === value}
+                key={value}
+                onClick={() => setFilter(value)}
+              >
+                {label}
+              </button>
             ))}
-          </select>
-        </label>
-      </div>
-      <div aria-label="Table filters" className="filter-tabs table-filters">
-        {(
-          [
-            ["all", "All tables"],
-            ["open", "Open seats"],
-            ["playing", "In progress"],
-            ["replays", "Replays"],
-            ["friends", "With friends"],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            aria-pressed={filter === value}
-            key={value}
-            onClick={() => setFilter(value)}
-          >
-            {label}
-          </button>
-        ))}
-        <span>{visible.length}</span>
-      </div>
-      <div aria-label="Available tables" className="table-list">
+          </div>
+        </div>
+      </details>
+      <div className="lobby-table-container">
+        <table className="alt" id="lobby-games-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th># of Players</th>
+              <th>Variant</th>
+              <th>Options</th>
+              <th>Status</th>
+              <th>Players</th>
+              <th>Spectators</th>
+            </tr>
+          </thead>
+          <tbody id="lobby-games-table-tbody">
+            {visible.map((table) => {
+              const kind = table.sharedReplay
+                ? "replay"
+                : table.joined
+                  ? "joined"
+                  : table.running
+                    ? "started"
+                    : table.passwordProtected
+                      ? "unstarted-password"
+                      : "unstarted";
+              const action = table.joined
+                ? "Resume"
+                : table.running
+                    || table.sharedReplay
+                    || table.numPlayers >= table.maxPlayers
+                  ? "Watch"
+                  : "Join";
+              return (
+                <tr
+                  aria-label={`${action} ${table.name}`}
+                  className={`table-card lobby-games-table-${kind} ${table.numPlayers >= table.maxPlayers ? "full" : ""}`}
+                  key={table.id}
+                  onClick={() => activate(table)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.target === event.currentTarget
+                      && (event.key === "Enter" || event.key === " ")
+                    ) {
+                      event.preventDefault();
+                      activate(table);
+                    }
+                  }}
+                  tabIndex={online && pending === null ? 0 : -1}
+                >
+                  <td>
+                    <button
+                      aria-label={action}
+                      className="classic-row-name"
+                      disabled={!online || pending !== null}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        activate(table);
+                      }}
+                    >
+                      {table.passwordProtected && !table.running && (
+                        <i
+                          aria-label="Password protected"
+                          className="fas fa-key"
+                        />
+                      )}{" "}
+                      {table.name}
+                    </button>
+                  </td>
+                  <td>
+                    {table.running || table.sharedReplay
+                      ? table.numPlayers
+                      : `${table.numPlayers} / ${table.maxPlayers}`}
+                  </td>
+                  <td>{table.variant}</td>
+                  <td className="lobby-games-table-options">
+                    {table.timed && (
+                      <i
+                        aria-label="Timed"
+                        className="fas fa-clock"
+                        title={`Timed: ${table.timeBase / 60}m + ${table.timePerTurn}s`}
+                      />
+                    )}
+                    {table.options.speedrun && (
+                      <i
+                        aria-label="Speedrun"
+                        className="fas fa-running"
+                        title="Speedrun"
+                      />
+                    )}
+                    {optionFlags.map(
+                      ([key, title], index) =>
+                        table.options[key] && (
+                          <i
+                            aria-label={title}
+                            className={`fas fa-${optionIcons[index]}`}
+                            key={key}
+                            title={title}
+                          />
+                        ),
+                    )}
+                  </td>
+                  <td>
+                    {table.sharedReplay
+                      ? "Reviewing"
+                      : table.running
+                        ? "Running"
+                        : "Not Started"}
+                  </td>
+                  <td>
+                    {table.players.map((name, index) => (
+                      <span key={name}>
+                        {index > 0 && ", "}
+                        {!table.joined && !table.sharedReplay ? (
+                          <button
+                            aria-label={`Shadow ${name}`}
+                            className={`name-button shadow ${name === welcome.username ? "name-me" : welcome.friends.includes(name) ? "friend" : ""}`}
+                            disabled={!online}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              connection.send("tableSpectate", {
+                                tableID: table.id,
+                                shadowingPlayerIndex: index,
+                              });
+                            }}
+                          >
+                            {name}
+                          </button>
+                        ) : (
+                          <span
+                            className={
+                              name === welcome.username
+                                ? "name-me"
+                                : welcome.friends.includes(name)
+                                  ? "friend"
+                                  : ""
+                            }
+                          >
+                            {name}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </td>
+                  <td>
+                    <button
+                      aria-label="Watch table"
+                      className="name-button classic-spectators"
+                      disabled={!online}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        connection.send("tableSpectate", {
+                          tableID: table.id,
+                          shadowingPlayerIndex: -1,
+                        });
+                      }}
+                    >
+                      {table.spectators.map((person) => person.name).join(", ")
+                        || "\u{A0}"}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
         {visible.length === 0 && (
           <div className="empty">
-            <Sparkles />
-            <h2>
-              {all.length > 0
-                ? "No tables match just yet."
-                : "A little quiet right now."}
-            </h2>
-            <p>
-              {all.length > 0
-                ? "Try another filter, or create exactly the game you want."
-                : "Create a table and invite someone to play."}
-            </p>
+            <h3>No matching games.</h3>
             <button
-              disabled={!online || welcome.maintenanceMode}
-              onClick={create}
+              onClick={() => {
+                setSearch("");
+                setFilter("all");
+                setPlayers("any");
+              }}
             >
-              Start a new table
+              Clear filters
+            </button>
+            <button disabled={!online} onClick={create}>
+              New Game
             </button>
           </div>
         )}
-        {visible.map((table) => (
-          <article className="table-card" key={table.id}>
-            <div className={`table-mark ${table.running ? "running" : ""}`}>
-              <Sparkles />
-            </div>
-            <div className="table-info">
-              <h2>
-                {table.name}
-                {table.passwordProtected && (
-                  <LockKeyhole aria-label="Password protected" size={13} />
-                )}
-              </h2>
-              <span>{table.variant}</span>
-              <p className="table-player-names">
-                {table.players.map((name, index) => (
-                  <span key={name}>
-                    {index > 0 && " \u{B7} "}
-                    {!table.joined && !table.sharedReplay ? (
-                      <button
-                        aria-label={`Shadow ${name}`}
-                        className="name-button"
-                        disabled={!online}
-                        onClick={() =>
-                          connection.send("tableSpectate", {
-                            tableID: table.id,
-                            shadowingPlayerIndex: index,
-                          })
-                        }
-                        title={`Watch from ${name}'s perspective`}
-                      >
-                        {name}
-                      </button>
-                    ) : (
-                      name
-                    )}
-                  </span>
-                ))}
-              </p>
-              <div className="table-badges">
-                {table.timed && (
-                  <span>
-                    <Timer size={12} />
-                    {table.timeBase / 60}m + {table.timePerTurn}s
-                  </span>
-                )}
-                {table.options.speedrun && <span>Speedrun</span>}
-                {optionFlags
-                  .filter(([key]) => table.options[key])
-                  .map(([key, title]) => (
-                    <span key={key}>{title}</span>
-                  ))}
-                {table.joined && <span className="mine-badge">Your table</span>}
-              </div>
-            </div>
-            <div className="table-meta">
-              <span>
-                <Users size={15} />
-                {table.numPlayers}/{table.maxPlayers}
-              </span>
-              <small>
-                {table.sharedReplay
-                  ? "Shared replay"
-                  : table.running
-                    ? `${table.progress}% complete`
-                    : "Open table"}
-              </small>
-              {table.spectators.length > 0 && (
-                <small>
-                  <Eye size={12} /> {table.spectators.length} watching
-                </small>
-              )}
-            </div>
-            <div className="table-actions">
-              <button
-                disabled={!online || pending !== null}
-                onClick={() =>
-                  table.joined
-                    ? connection.attend(table.id)
-                    : table.running
-                        || table.sharedReplay
-                        || table.numPlayers >= table.maxPlayers
-                      ? connection.send("tableSpectate", {
-                          tableID: table.id,
-                          shadowingPlayerIndex: -1,
-                        })
-                      : join(table)
-                }
-              >
-                {table.joined
-                  ? "Resume"
-                  : table.running
-                      || table.sharedReplay
-                      || table.numPlayers >= table.maxPlayers
-                    ? "Watch"
-                    : "Join"}{" "}
-                <ArrowRight size={16} />
-              </button>
-              {!table.running && !table.sharedReplay && !table.joined && (
-                <button
-                  className="text-button"
-                  disabled={!online}
-                  onClick={() =>
-                    connection.send("tableSpectate", {
-                      tableID: table.id,
-                      shadowingPlayerIndex: -1,
-                    })
-                  }
-                >
-                  Watch table
-                </button>
-              )}
-            </div>
-          </article>
-        ))}
       </div>
-      <footer className="lobby-footer">
-        <span>Every good game begins with a little trust.</span>
-        <Link to="/resources">
-          Rules, conventions &amp; community <ArrowRight size={13} />
-        </Link>
-      </footer>
     </section>
   );
 }

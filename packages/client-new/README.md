@@ -7,6 +7,13 @@ React owns the new lobby's DOM. Redux owns validated directory, chat, and
 account state; one connection service owns its WebSocket and recovery. Shared
 protocol schemas, game data, and chat symbols come from the existing packages.
 
+The React lobby uses the classic lobby's layout, fonts, artwork, and shared
+stylesheets from `public/css`. It does not load the classic JavaScript or
+jQuery. Tailwind utilities remain available without a second CSS reset. Light
+mode is the default; the appearance selector shares the classic client's
+`darkMode` preference, including following the system theme. Lobby and pregame
+chat have separate panes, and private-message drafts remain isolated.
+
 The existing game/replay screen remains in use. A validated, single-use
 session-storage request transfers navigation to it, then the new lobby closes
 its connection. Replay creation happens **after** this handoff so disconnecting

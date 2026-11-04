@@ -1,5 +1,5 @@
 import { CHAT_EMOJIS as emojis } from "@hanabi-live/data";
-import { ArrowDown, MessageCircle, Send, Smile, X } from "lucide-react";
+import { ArrowDown, Send, X } from "lucide-react";
 import type { KeyboardEvent, SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -62,6 +62,15 @@ export function ChatPanel({
   const historyIndex = useRef(-1);
   useEffect(() => {
     if (
+      (channel === "table" || (channel === "lobby" && tableID === null))
+      && visible
+      && document.activeElement === document.body
+    ) {
+      inputRef.current?.focus();
+    }
+  }, [channel, tableID, visible, welcome?.userID]);
+  useEffect(() => {
+    if (
       channel === "private"
       && document.activeElement !== recipientRef.current
     ) {
@@ -103,13 +112,14 @@ export function ChatPanel({
     }
     if (
       channel === "table"
+      && visible
       && tableID !== null
       && status === "online"
       && document.visibilityState === "visible"
     ) {
       connection.send("chatRead", { tableID });
     }
-  }, [chat, channel, tableID, status, connection]);
+  }, [chat, channel, tableID, status, connection, visible]);
   useEffect(() => {
     stuckToBottom.current = true;
     setUnread(false);
@@ -210,42 +220,41 @@ export function ChatPanel({
     message.pmID ? [message.pmID] : [],
   );
   return (
-    <section aria-label="Chat" className="chat-panel">
+    <section
+      aria-label={channel === "table" ? "Pre-game Chat" : "Chat"}
+      className="chat-panel box"
+      id={channel === "table" ? "lobby-chat-pregame" : "lobby-chat"}
+    >
       <header className="chat-header">
-        <h2>
-          <MessageCircle size={17} /> Conversation
-        </h2>
-        <div className="filter-tabs">
-          <button
-            aria-pressed={channel === "lobby"}
-            onClick={() => setChannel("lobby")}
-          >
-            Lobby
-          </button>
-          {tableID !== null && (
-            <button
-              aria-pressed={channel === "table"}
-              onClick={() => setChannel("table")}
-            >
-              Table
-            </button>
-          )}
-          <button
-            aria-pressed={channel === "private"}
-            onClick={() => setChannel("private")}
-          >
-            Messages{" "}
-            {Object.values(unreadPMs).reduce((sum, count) => sum + count, 0)
-              > 0 && (
-              <span className="unread-badge">
-                {Object.values(unreadPMs).reduce(
-                  (sum, count) => sum + count,
-                  0,
-                )}
-              </span>
+        <h3 className="lobby-title">
+          {channel === "table"
+            ? "Pre-game Chat"
+            : channel === "private"
+              ? "Private Messages"
+              : "Lobby Chat"}
+        </h3>
+        {channel !== "table" && (
+          <div className="filter-tabs">
+            {channel === "private" && (
+              <button onClick={() => setChannel("lobby")}>Lobby</button>
             )}
-          </button>
-        </div>
+            <button
+              aria-pressed={channel === "private"}
+              onClick={() => setChannel("private")}
+            >
+              Messages{" "}
+              {Object.values(unreadPMs).reduce((sum, count) => sum + count, 0)
+                > 0 && (
+                <span className="unread-badge">
+                  {Object.values(unreadPMs).reduce(
+                    (sum, count) => sum + count,
+                    0,
+                  )}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </header>
       {channel === "private" && (
         <div className="pm-controls">
@@ -291,7 +300,7 @@ export function ChatPanel({
       <div
         aria-label={`${channel} messages`}
         aria-live="polite"
-        className="chat-messages"
+        className="chat-messages lobby-chat-text-box"
         onScroll={() => {
           const box = messagesRef.current;
           if (box) {
@@ -304,12 +313,11 @@ export function ChatPanel({
         }}
         ref={messagesRef}
         role="log"
+        tabIndex={0}
       >
-        {messages.length === 0 && (
+        {messages.length === 0 && channel === "private" && (
           <p className="chat-empty">
-            {channel === "private"
-              ? "A quieter corner. Private messages are only visible to you and the recipient."
-              : "Say hello. Your next teammate might be here."}
+            Private messages are only visible to you and the recipient.
           </p>
         )}
         {messages.map((message, index) => (
@@ -323,42 +331,42 @@ export function ChatPanel({
                   : `${message.datetime}-${index}`
             }
           >
-            <div>
-              <button
-                className="name-button"
-                disabled={
-                  message.source === "server"
-                  || message.who === undefined
-                  || message.who === ""
-                }
-                onClick={() => {
-                  if (message.who && message.source !== "server") {
-                    onRecipient(
-                      message.who === welcome.username
-                        ? (message.recipient ?? "")
-                        : message.who,
-                    );
-                  }
-                }}
-              >
-                {message.who === ""
-                  ? "Hanab Live"
-                  : (message.who ?? "Hanab Live")}
-              </button>
-              {message.recipient && <small>to {message.recipient}</small>}
-              <time dateTime={message.datetime}>
-                {new Date(message.datetime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </time>
-            </div>
-            <p>
+            <time dateTime={message.datetime}>
+              [
+              {new Date(message.datetime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })}
+              ]
+            </time>{" "}
+            {message.who && (
+              <>
+                {message.recipient ? "[PM " : "<"}
+                <button
+                  className="name-button"
+                  disabled={message.source === "server"}
+                  onClick={() => {
+                    if (message.who && message.source !== "server") {
+                      onRecipient(
+                        message.who === welcome.username
+                          ? (message.recipient ?? "")
+                          : message.who,
+                      );
+                    }
+                  }}
+                >
+                  {message.who}
+                </button>
+                {message.recipient ? ` to ${message.recipient}] ` : "> "}
+              </>
+            )}
+            <span className="message-content">
               <RichText
                 html={message.msg}
                 {...(message.source === "server" ? { onOptions } : {})}
               />
-            </p>
+            </span>
           </article>
         ))}
       </div>
@@ -379,11 +387,13 @@ export function ChatPanel({
       <div aria-live="polite" className="typing">
         {names.length > 0
           ? `${names.join(", ")} ${names.length === 1 ? "is" : "are"} typing...`
-          : "\u{A0}"}
+          : ""}
       </div>
       <form className="chat-composer" onSubmit={submit}>
         <textarea
-          aria-label="Chat message"
+          aria-label={
+            channel === "table" ? "Pre-game chat message" : "Chat message"
+          }
           disabled={status !== "online" || welcome.muted}
           maxLength={300}
           onChange={(event) => {
@@ -402,27 +412,30 @@ export function ChatPanel({
             welcome.muted
               ? "Chat is muted for this account."
               : channel === "private"
-                ? "Write a private message..."
-                : "Say something kind..."
+                ? "Private message"
+                : "Chat"
           }
           ref={inputRef}
-          rows={2}
+          rows={1}
           value={text}
         />
         <div className="composer-actions">
           <button
             aria-expanded={emojiOpen}
-            aria-label="Choose emoji"
-            className="icon-button"
+            aria-label={
+              channel === "table" ? "Choose pre-game emoji" : "Choose emoji"
+            }
+            className="icon-button emoji-button"
             onClick={() => setEmojiOpen(!emojiOpen)}
             type="button"
           >
-            <Smile size={18} />
+            <i aria-hidden="true" className="fas fa-smile" />
           </button>
-          <small>Enter to send &middot; /help for commands</small>
           <button
-            aria-label="Send message"
-            className="primary icon-button"
+            aria-label={
+              channel === "table" ? "Send pre-game message" : "Send message"
+            }
+            className="sr-only focusable-send"
             disabled={status !== "online" || !text.trim() || welcome.muted}
             type="submit"
           >

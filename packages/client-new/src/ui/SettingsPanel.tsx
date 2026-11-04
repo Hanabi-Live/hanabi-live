@@ -1,5 +1,4 @@
 import type { Settings } from "@hanabi-live/data";
-import { ArrowUpRight, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
@@ -9,45 +8,53 @@ const toggles = [
   [
     "desktopNotification",
     "Desktop notifications",
-    "Get a notification when it is your turn.",
+    "Show a desktop notification when it reaches your turn",
   ],
-  ["soundTimer", "Timer sounds", "Hear a warning when time is running low."],
   [
-    "colorblindMode",
-    "Colorblind-friendly cards",
-    "Use additional visual cues for suit colors.",
+    "soundTimer",
+    "Timer sounds",
+    "Play a sound when a timer is below 10 seconds",
   ],
-  ["styleNumbers", "Numbers instead of pips", "Show numeric ranks on cards."],
+  ["keldonMode", "Keldon mode", "Keldon mode (hands spread around the table)"],
+  ["colorblindMode", "Colorblind-friendly cards", "Colorblind mode"],
+  ["realLifeMode", "Real-life mode", "Real-life mode (no extra UI elements)"],
   [
     "reverseHands",
     "Reverse hand order",
-    "Display hands in the opposite direction.",
+    "Reverse hand direction (new cards go on the right)",
   ],
   [
-    "realLifeMode",
-    "Real-life mode",
-    "Hide extra information for a tabletop-like experience.",
+    "styleNumbers",
+    "Numbers instead of pips",
+    "Make numbers on cards match the art style",
   ],
   [
     "showTimerInUntimed",
     "Show the untimed-game clock",
-    "Keep track of time even without a timer.",
+    "Show turn timers in untimed games",
   ],
-  ["keldonMode", "Keldon mode", "Use the alternative game layout."],
+  ["speedrunPreplay", "Speedrun preplays", "Enable pre-playing cards"],
+  [
+    "speedrunMode",
+    "Speedrun controls",
+    "Enable speedrun features in non-speedrun games",
+  ],
   [
     "hyphenatedConventions",
     "Hyphenated conventions",
-    "Display your convention preference to other players.",
+    "Enable H-Group features",
   ],
-  [
-    "speedrunPreplay",
-    "Speedrun preplays",
-    "Enable preplays in speedrun games.",
-  ],
-  ["speedrunMode", "Speedrun controls", "Use speedrun-friendly game controls."],
 ] as const satisfies ReadonlyArray<readonly [keyof Settings, string, string]>;
 
-export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
+export function SettingsPanel({
+  connection,
+  theme,
+  onTheme,
+}: {
+  connection: LobbyConnection;
+  theme: "light" | "dark" | "system";
+  onTheme: (theme: "light" | "dark" | "system") => void;
+}) {
   const welcome = useSelector((state: LobbyState) => state.welcome);
   const online = useSelector(
     (state: LobbyState) => state.connection === "online",
@@ -68,16 +75,58 @@ export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
     return null;
   }
   const { settings } = welcome;
+  function toggle([key, title, label]: (typeof toggles)[number]) {
+    return (
+      <p key={key}>
+        <label className="check">
+          <input
+            aria-label={title}
+            checked={settings[key]}
+            disabled={!online}
+            onChange={(event) => {
+              const { checked } = event.target;
+              if (key === "desktopNotification" && checked) {
+                if (!("Notification" in globalThis)) {
+                  connection.notice(
+                    "This browser does not support desktop notifications.",
+                  );
+                  return;
+                }
+                void Notification.requestPermission()
+                  .then((permission) => {
+                    if (permission === "granted") {
+                      connection.setting(key, true);
+                    } else {
+                      connection.notice(
+                        "Notifications were not enabled. You can change browser permissions and try again.",
+                      );
+                    }
+                  })
+                  .catch(() =>
+                    connection.notice(
+                      "Unable to request notification permission.",
+                    ),
+                  );
+              } else {
+                connection.setting(key, checked);
+              }
+            }}
+            type="checkbox"
+          />
+          <span>{label}</span>
+        </label>
+      </p>
+    );
+  }
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">MAKE YOURSELF COMFORTABLE</span>
-          <h1>Your kind of table.</h1>
-          <p>Preferences follow your account into every game.</p>
-        </div>
-      </div>
-      <p aria-label="Preference saving status" role="status">
+    <section className="classic-settings">
+      <p
+        aria-label="Preference saving status"
+        className={
+          preferenceStatus === "saved" && online ? "sr-only" : "notice"
+        }
+        role="status"
+      >
         {online
           ? volume === settings.volume
             ? preferenceStatus === "saving"
@@ -88,121 +137,94 @@ export function SettingsPanel({ connection }: { connection: LobbyConnection }) {
             : "Finish adjusting the slider to save."
           : "Offline. Changes cannot be saved."}
       </p>
-      <fieldset className="panel settings-panel" disabled={!online}>
-        <legend>Sound &amp; atmosphere</legend>
-        <label>
-          Game sounds
-          <select
-            onChange={(event) =>
-              connection.setting("soundMove", Number(event.target.value))
-            }
-            value={settings.soundMove}
-          >
-            <option value={0}>All turns</option>
-            <option value={1}>Only my turn</option>
-            <option value={2}>No turn sounds</option>
-          </select>
-        </label>
-        <label>
-          Volume: {volume}%
-          <input
-            max={100}
-            min={0}
-            onBlur={(event) => saveVolume(Number(event.currentTarget.value))}
-            onChange={(event) => setVolume(Number(event.target.value))}
-            onKeyUp={(event) => saveVolume(Number(event.currentTarget.value))}
-            onPointerUp={(event) =>
-              saveVolume(Number(event.currentTarget.value))
-            }
-            type="range"
-            value={volume}
-          />
-        </label>
-        <button
-          onClick={() => {
-            const audio = new Audio("/public/sounds/us.mp3");
-            audio.volume = settings.volume / 100;
-            void audio
-              .play()
-              .catch(() =>
-                connection.notice("The browser could not play the sound."),
-              );
-          }}
-          type="button"
-        >
-          <Volume2 size={16} /> Test sound
-        </button>
-      </fieldset>
-      <fieldset className="panel settings-panel" disabled={!online}>
-        <legend>At the table</legend>
-        {toggles.map(([key, title, description]) => (
-          <label className="check setting-row" key={key}>
-            <span>
-              {title}
-              <small>{description}</small>
-            </span>
-            <input
-              checked={settings[key]}
+      <div className="settings-content">
+        <div>
+          <h5>Notifications</h5>
+          {toggles.filter(([key]) => key === "desktopNotification").map(toggle)}
+          <p>
+            <select
+              aria-label="Game sounds"
+              disabled={!online}
+              onChange={(event) =>
+                connection.setting("soundMove", Number(event.target.value))
+              }
+              value={settings.soundMove}
+            >
+              <option value={0}>Play a sound when a move is made</option>
+              <option value={1}>Play a sound when it's my turn</option>
+              <option value={2}>No Sound</option>
+            </select>
+          </p>
+          {toggles.filter(([key]) => key === "soundTimer").map(toggle)}
+        </div>
+        <div>
+          <h5>Appearance</h5>
+          <p>
+            <select
+              aria-label="Appearance"
               onChange={(event) => {
-                const { checked } = event.target;
-                if (key === "desktopNotification" && checked) {
-                  if (!("Notification" in globalThis)) {
-                    connection.notice(
-                      "This browser does not support desktop notifications.",
-                    );
-                    return;
-                  }
-                  void Notification.requestPermission()
-                    .then((permission) => {
-                      if (permission === "granted") {
-                        connection.setting(key, true);
-                      } else {
-                        connection.notice(
-                          "Notifications were not enabled. You can change browser permissions and try again.",
-                        );
-                      }
-                    })
-                    .catch(() =>
-                      connection.notice(
-                        "Unable to request notification permission.",
-                      ),
-                    );
+                const { value } = event.target;
+                if (
+                  value === "light"
+                  || value === "dark"
+                  || value === "system"
+                ) {
+                  onTheme(value);
                 } else {
-                  connection.setting(key, checked);
+                  connection.notice(
+                    "Choose Light, Dark, or System appearance.",
+                  );
                 }
               }}
-              type="checkbox"
-            />
-          </label>
-        ))}
-      </fieldset>
-      <section className="panel account-panel">
-        <h2>Your account</h2>
-        <p>
-          Signed in as <strong>{welcome.username}</strong>.
-        </p>
-        <div className="actions">
-          <a
-            className="button-link"
-            href={`/scores/${encodeURIComponent(welcome.username)}`}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Public profile <ArrowUpRight size={16} />
-          </a>
-          <button
-            onClick={() => {
-              void connection.logout();
-            }}
-          >
-            Sign out
-          </button>
+              value={theme}
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="system">System (follow OS)</option>
+            </select>
+          </p>
+          {toggles.slice(2, 8).map(toggle)}
         </div>
-        <p>
-          To change your password, sign out and choose "Change password" on the
-          sign-in screen.
-        </p>
-      </section>
+        <div>
+          <h5>Expert Features</h5>
+          {toggles.slice(8).map(toggle)}
+        </div>
+        <div>
+          <h5>Volume</h5>
+          <div className="classic-volume">
+            <input
+              aria-label="Volume"
+              disabled={!online}
+              max={100}
+              min={0}
+              onBlur={(event) => saveVolume(Number(event.currentTarget.value))}
+              onChange={(event) => setVolume(Number(event.target.value))}
+              onKeyUp={(event) => saveVolume(Number(event.currentTarget.value))}
+              onPointerUp={(event) =>
+                saveVolume(Number(event.currentTarget.value))
+              }
+              step={5}
+              type="range"
+              value={volume}
+            />
+            <span>{volume}%</span>
+            <button
+              onClick={() => {
+                const audio = new Audio("/public/sounds/us.mp3");
+                audio.volume = settings.volume / 100;
+                void audio
+                  .play()
+                  .catch(() =>
+                    connection.notice("The browser could not play the sound."),
+                  );
+              }}
+              type="button"
+            >
+              Test
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

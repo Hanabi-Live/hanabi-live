@@ -73,7 +73,7 @@ it("selects the private recipient and channel in the same commit, including reop
   fireEvent.click(screen.getByRole("button", { name: "Lobby" }));
   expect(
     screen.getByLabelText("Chat message").getAttribute("placeholder"),
-  ).toBe("Say something kind...");
+  ).toBe("Chat");
   fireEvent.click(screen.getByRole("button", { name: "Message" }));
   expect(screen.getByRole("log").getAttribute("aria-label")).toBe(
     "private messages",

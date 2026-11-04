@@ -64,10 +64,8 @@ async function login(page: Page, backend: string, name: string) {
   expect(response?.headers()["cache-control"]).toContain("no-cache");
   await page.getByLabel("Username", { exact: true }).fill(name);
   await page.getByLabel("Password", { exact: true }).fill(name);
-  await page.getByRole("button", { name: "Take a seat" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Find your next table." }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
 test("creation options, protected joins, invitations, friends, private chat and settings persist", async ({
@@ -96,18 +94,19 @@ test("creation options, protected joins, invitations, friends, private chat and 
   ).toHaveText("Preferences saved");
   await a.reload();
   await expect(a.getByLabel("Colorblind-friendly cards")).toBeChecked();
-  await expect(a.getByRole("slider")).toHaveValue("3");
+  await expect(a.getByRole("slider")).toHaveValue("15");
+  await a.keyboard.press("Escape");
   await a.getByRole("link", { name: "Play", exact: true }).click();
   await a.getByRole("button", { name: "Create a table", exact: true }).click();
   const dialog = a.getByRole("dialog");
   await dialog.getByLabel("Table name", { exact: true }).fill("Private garden");
-  await dialog.getByLabel(/^Variant/u).fill("6 Suits");
-  await dialog.getByLabel("Maximum players").selectOption("3");
+  await dialog.getByLabel("Variant", { exact: true }).selectOption("6 Suits");
+  await dialog.getByLabel("Maximum players").fill("3");
   await dialog.getByLabel(/^Table password/u).fill("cards");
   await dialog.getByLabel("Timed game").check();
   await dialog.getByLabel("Base time (minutes)").fill("3");
   await dialog.getByLabel("Seconds per turn").fill("15");
-  await dialog.getByText("More ways to play", { exact: true }).click();
+  await dialog.getByText("Show Extra Options", { exact: true }).click();
   await dialog.getByLabel(/^Empty clues/u).check();
   await dialog
     .getByRole("button", { name: "Create table", exact: true })
@@ -128,12 +127,14 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(a.locator(".seat:not(.empty-seat)")).toHaveCount(2);
   await expect(b.getByText("Timed: 3m + 15s", { exact: true })).toBeVisible();
   await a.getByRole("button", { name: "Table options", exact: true }).click();
-  await a.getByRole("dialog").getByLabel("Maximum players").selectOption("4");
+  await a.getByRole("dialog").getByLabel("Maximum players").fill("4");
   await a
     .getByRole("dialog")
     .getByRole("button", { name: "Update table" })
     .click();
-  await expect(b.getByText("6 Suits \u{B7} 2 / 4 seats")).toBeVisible();
+  await expect(b.locator(".classic-room-info")).toContainText("6 Suits");
+  await expect(b.locator(".classic-room-info")).toContainText("2 / 4");
+  await b.getByRole("button", { name: "Back to tables" }).click();
   await b.getByRole("link", { name: "History", exact: true }).click();
   await b.getByRole("link", { name: "Play", exact: true }).click();
   await b
@@ -159,7 +160,7 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await b
     .getByLabel("Chat message", { exact: true })
     .fill("Only the host should see this.");
-  await b.getByRole("button", { name: "Send message" }).click();
+  await b.getByLabel("Chat message", { exact: true }).press("Enter");
   await expect(a.getByRole("button", { name: /^Messages/u })).toContainText(
     "1",
   );
@@ -207,6 +208,14 @@ test("mobile navigation, accessible dialogs and safe chat rendering", async ({
     .getByRole("button", { name: "Create a table", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Variant", { exact: true })
+    .selectOption("custom");
+  await page
+    .getByRole("dialog")
+    .getByLabel("Variant", { exact: true })
+    .fill("No Variant");
   const modalAudit = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -218,11 +227,14 @@ test("mobile navigation, accessible dialogs and safe chat rendering", async ({
   ).toEqual([]);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
+  await page.getByLabel("Appearance", { exact: true }).selectOption("dark");
   await page.reload();
-  await expect(
-    page.getByRole("button", { name: "Switch to dark theme" }),
-  ).toBeVisible();
+  await expect(page.getByLabel("Appearance", { exact: true })).toHaveValue(
+    "dark",
+  );
+  await page.getByLabel("Appearance", { exact: true }).selectOption("light");
+  await page.keyboard.press("Escape");
   await page
     .getByRole("navigation", { name: "Mobile panels" })
     .getByRole("button", { name: "Chat", exact: true })
@@ -230,7 +242,7 @@ test("mobile navigation, accessible dialogs and safe chat rendering", async ({
   await page
     .getByLabel("Chat message", { exact: true })
     .fill('<img src=x onerror="alert(1)">');
-  await page.getByRole("button", { name: "Send message" }).click();
+  await page.getByLabel("Chat message", { exact: true }).press("Enter");
   await expect(
     page
       .getByRole("log")
@@ -250,12 +262,9 @@ test("mobile navigation, accessible dialogs and safe chat rendering", async ({
     path: test.info().outputPath("new-lobby-mobile.png"),
     fullPage: true,
   });
-  await page
-    .getByRole("navigation", { name: "Mobile panels" })
-    .getByRole("link", { name: "Settings" })
-    .click();
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Your kind of table." }),
+    page.getByRole("dialog", { name: "Settings", exact: true }),
   ).toBeVisible();
   expect(pageErrors).toEqual([]);
   await context.close();
@@ -280,8 +289,6 @@ test("JSON replay import enters the existing replay and returns to the new UI", 
   await expect(page.locator("canvas").first()).toBeVisible();
   await page.keyboard.press("Alt+l");
   await expect(page).toHaveURL(/\/new$/u);
-  await expect(
-    page.getByRole("heading", { name: "Find your next table." }),
-  ).toBeVisible();
+  await expect(page.locator("#lobby-games")).toBeVisible();
   await context.close();
 });

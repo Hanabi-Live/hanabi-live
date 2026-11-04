@@ -58,6 +58,9 @@ export default defineConfig(({ command }) => ({
     sourcemap: true,
   },
   server: {
+    fs: {
+      allow: [`${root}/packages`, `${root}/public`, `${root}/node_modules`],
+    },
     proxy: {
       "/login": "http://127.0.0.1:8080",
       "/logout": "http://127.0.0.1:8080",

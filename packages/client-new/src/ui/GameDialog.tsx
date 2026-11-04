@@ -1,7 +1,7 @@
 import type { Settings } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
-import { isArray } from "complete-common";
-import { ArrowRight, Shuffle } from "lucide-react";
+import { getRandomArrayElement, isArray } from "complete-common";
+import { Shuffle } from "lucide-react";
 import type { SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { LobbyConnection } from "../connection";
@@ -22,6 +22,12 @@ export const optionFlags = [
   ],
 ] as const;
 type Flag = (typeof optionFlags)[number][0];
+const basicVariants: readonly string[] = [
+  "No Variant",
+  "6 Suits",
+  "Black (6 Suits)",
+  "Rainbow (6 Suits)",
+];
 const settingNames: Record<Flag, keyof Settings> = {
   cardCycle: "createTableCardCycle",
   deckPlays: "createTableDeckPlays",
@@ -47,6 +53,9 @@ export function GameDialog({
   const [name, setName] = useState(game?.name ?? welcome.randomTableName);
   const [variant, setVariant] = useState(
     game?.options.variantName ?? preferences.createTableVariant,
+  );
+  const [searchVariants, setSearchVariants] = useState(
+    () => !basicVariants.includes(variant),
   );
   const [maxPlayers, setMaxPlayers] = useState(
     game?.maxPlayers ?? preferences.createTableMaxPlayers,
@@ -182,16 +191,21 @@ export function GameDialog({
           ? "Update the options before the first card is dealt."
           : "Choose your game. Your next teammates will find you in the lobby."
       }
-      title={game ? "Make this table yours" : "Start something good"}
+      id="create-game-modal"
+      title={game ? "Change Game Options" : "Create a New Game"}
     >
       <form className="form-grid" onSubmit={submit}>
         <label>
-          Table name
+          <span>
+            <i aria-hidden="true" className="fas fa-signature" /> Name
+          </span>
           <div className="input-action">
             <input
+              aria-label="Table name"
               maxLength={100}
               onChange={(event) => setName(event.target.value)}
               required
+              type="text"
               value={name}
             />
             <button
@@ -206,93 +220,153 @@ export function GameDialog({
           </div>
         </label>
         <label>
-          Variant
-          <input
-            list="variant-suggestions"
-            onChange={(event) => setVariant(event.target.value)}
-            required
-            value={variant}
-          />
+          <span>
+            <i aria-hidden="true" className="fas fa-rainbow" /> Variant
+          </span>
+          <div className="classic-variant-input">
+            {searchVariants ? (
+              <input
+                aria-label="Variant"
+                autoFocus
+                list="variant-suggestions"
+                onChange={(event) => setVariant(event.target.value)}
+                required
+                type="text"
+                value={variant}
+              />
+            ) : (
+              <select
+                aria-label="Variant"
+                onChange={(event) => {
+                  if (event.target.value === "custom") {
+                    setVariant("");
+                    setSearchVariants(true);
+                  } else {
+                    setVariant(event.target.value);
+                  }
+                }}
+                value={variant}
+              >
+                {basicVariants.map((variantName) => (
+                  <option key={variantName} value={variantName}>
+                    {variantName}
+                  </option>
+                ))}
+                <option disabled>{"\u{2500}".repeat(15)}</option>
+                <option value="custom">Search custom variants...</option>
+              </select>
+            )}
+            {searchVariants && (
+              <button
+                aria-label="Choose a random variant"
+                onClick={() => setVariant(getRandomArrayElement(VARIANT_NAMES))}
+                type="button"
+              >
+                <i aria-hidden="true" className="fas fa-dice" />
+              </button>
+            )}
+            <a
+              aria-label="Variant help"
+              href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md"
+              rel="noreferrer"
+              target="_blank"
+            >
+              <i aria-hidden="true" className="fas fa-question-circle" />
+            </a>
+          </div>
           <datalist id="variant-suggestions">
             {variants.map((value) => (
               <option key={value} value={value} />
             ))}
           </datalist>
-          <small>
-            Search all {VARIANT_NAMES.length.toLocaleString()} variants.
-          </small>
         </label>
-        <div className="form-columns">
+        <div className="classic-timing-row">
+          <label className="check">
+            <i aria-hidden="true" className="fas fa-clock" /> Timed
+            <input
+              aria-label="Timed game"
+              checked={timed}
+              onChange={(event) => setTimed(event.target.checked)}
+              type="checkbox"
+            />
+          </label>
+          {timed && (
+            <>
+              <label>
+                Base Time
+                <br />
+                (in minutes)
+                <input
+                  aria-label="Base time (minutes)"
+                  disabled={!timed}
+                  min="0"
+                  onChange={(event) => setMinutes(event.target.value)}
+                  step="0.1"
+                  type="number"
+                  value={minutes}
+                />
+              </label>
+              <label>
+                Time per Turn
+                <br />
+                (in seconds)
+                <input
+                  aria-label="Seconds per turn"
+                  disabled={!timed}
+                  min="0"
+                  onChange={(event) => setSeconds(event.target.value)}
+                  step="1"
+                  type="number"
+                  value={seconds}
+                />
+              </label>
+            </>
+          )}
+        </div>
+        <div className="form-columns classic-game-identity">
           <label>
-            Maximum players
-            <select
+            <span>
+              <i aria-hidden="true" className="fas fa-users" /> Max Players
+            </span>
+            <input
+              aria-label="Maximum players"
+              max={6}
+              min={2}
               onChange={(event) => setMaxPlayers(Number(event.target.value))}
+              required
+              type="number"
               value={maxPlayers}
-            >
-              {[2, 3, 4, 5, 6].map((value) => (
-                <option key={value} value={value}>
-                  {value} players
-                </option>
-              ))}
-            </select>
+            />
           </label>
           {!game && (
             <label>
-              Table password <small>Optional</small>
+              <span>
+                <i aria-hidden="true" className="fas fa-key" /> Password
+              </span>
               <input
+                aria-label="Table password"
                 autoComplete="new-password"
                 onChange={(event) => setPassword(event.target.value)}
+                placeholder="Password (optional)"
                 type="password"
                 value={password}
               />
             </label>
           )}
         </div>
-        <div className="form-columns">
-          <label className="check">
-            <input
-              checked={timed}
-              onChange={(event) => setTimed(event.target.checked)}
-              type="checkbox"
-            />
-            Timed game
-          </label>
-          <label className="check">
-            <input
-              checked={speedrun}
-              onChange={(event) => setSpeedrun(event.target.checked)}
-              type="checkbox"
-            />
-            Speedrun
-          </label>
-        </div>
-        {timed && (
-          <div className="form-columns">
-            <label>
-              Base time (minutes)
-              <input
-                min="0"
-                onChange={(event) => setMinutes(event.target.value)}
-                step="0.1"
-                type="number"
-                value={minutes}
-              />
-            </label>
-            <label>
-              Seconds per turn
-              <input
-                min="0"
-                onChange={(event) => setSeconds(event.target.value)}
-                step="1"
-                type="number"
-                value={seconds}
-              />
-            </label>
-          </div>
-        )}
         <details>
-          <summary>More ways to play</summary>
+          <summary className="button small">
+            <i aria-hidden="true" className="fas fa-plus" /> Show Extra Options
+          </summary>
           <div className="option-list">
+            <label className="check">
+              <input
+                checked={speedrun}
+                onChange={(event) => setSpeedrun(event.target.checked)}
+                type="checkbox"
+              />
+              Speedrun
+            </label>
             {optionFlags.map(([key, title, description]) => (
               <label className="check" key={key}>
                 <input
@@ -335,12 +409,11 @@ export function GameDialog({
           </p>
         )}
         <div className="dialog-actions">
-          <button onClick={close} type="button">
-            Cancel
-          </button>
-          <button className="primary">
-            {game ? "Update table" : "Create table"}
-            <ArrowRight size={17} />
+          <button
+            aria-label={game ? "Update table" : "Create table"}
+            className="button"
+          >
+            {game ? "Change" : "Create"}
           </button>
         </div>
       </form>

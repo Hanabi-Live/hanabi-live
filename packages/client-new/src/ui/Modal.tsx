@@ -7,11 +7,13 @@ export function Modal({
   description,
   close,
   children,
+  id,
 }: {
   title: string;
   description: string;
   close: () => void;
   children: ReactNode;
+  id?: string;
 }) {
   return (
     <Dialog.Root
@@ -24,7 +26,7 @@ export function Modal({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="dialog-overlay" />
-        <Dialog.Content className="dialog-content">
+        <Dialog.Content className="client-new-classic dialog-content" id={id}>
           <div className="dialog-heading">
             <div>
               <Dialog.Title>{title}</Dialog.Title>
