@@ -99,7 +99,11 @@ export const test = base.extend<
           }),
         );
         const httpPort = await port();
-        const controlPort = await port();
+        let controlPort = await port();
+        while (controlPort === httpPort) {
+          // eslint-disable-next-line no-await-in-loop -- Each candidate must be checked before allocating another.
+          controlPort = await port();
+        }
         if (worker.project.name === "rust" || cutover) {
           redis = await redisFixture();
         }
