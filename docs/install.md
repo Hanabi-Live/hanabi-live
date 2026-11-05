@@ -343,6 +343,13 @@ and database migration precautions.
 
 ### Opt-in CI releases (Linux amd64)
 
+Release construction runs in parallel with CI validation. Intermediate
+`candidate-` artifacts are retained for seven days and must not be deployed.
+After every required check and release build succeeds, `publish_native_release`
+verifies the candidate checksums and publishes the normal release artifacts
+without rebuilding. Failed checks block publication; successful candidates can
+be reused when retrying failed checks within their retention period.
+
 Existing source installations are unchanged. Trusted `main` CI runs publish
 `hanabi-live-<revision>-linux-amd64` only after the required checks pass.
 Download its archive and checksum from that successful run. `release.json`

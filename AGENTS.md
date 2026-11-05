@@ -49,6 +49,11 @@ assets atomically, install the replacement binary through a sibling file and
 rename, then request `/gracefulRestart`. Rust does not build code during that
 operation. Verify the served revision and recovery health afterward.
 
+Release builds run in parallel with validation. Artifacts prefixed `candidate-`
+are unapproved build outputs, not deployment releases. Only
+`publish_native_release` publishes the normal release artifact names after all
+required checks succeed.
+
 Rust currently loads the client version at startup. A new client version needs a
 Rust graceful restart; do not apply the Go-only asset deployment procedure below
 unchanged.
