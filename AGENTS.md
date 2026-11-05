@@ -16,6 +16,10 @@ do not put unrelated operational details in installation instructions.
 
 ## Before pushing
 
+Never add inline CSpell word lists, ignores, or disable directives to files. Add
+legitimate project vocabulary to the `words` list in `cspell.config.jsonc`
+instead.
+
 Run the full repository linting suite from the repository root before every
 push:
 

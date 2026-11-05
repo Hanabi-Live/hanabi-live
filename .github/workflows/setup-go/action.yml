@@ -1,4 +1,3 @@
-# cspell:ignore GOCACHE GOMODCACHE
 name: Set up Go with build-specific caching
 description: Keep normal, race, and static build caches separate.
 inputs:

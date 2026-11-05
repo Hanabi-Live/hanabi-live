@@ -1,4 +1,3 @@
-# cspell:ignore buildx cacheonly
 name: CI
 
 on: [push, pull_request]
