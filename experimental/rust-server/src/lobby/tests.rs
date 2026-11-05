@@ -193,13 +193,19 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &online,
         "chatPM",
-        json!({"msg":" <secret> ","recipient":"bób"}),
+        json!({"msg":" <secret> ","recipient":"bób","room":"table999"}),
     )
     .await;
     let message = self_data(&effects, "chat");
     assert_eq!(message["msg"], "&lt;secret&gt;");
     assert_eq!(message["recipient"], "Bob");
     assert!(message.get("chatID").is_none());
+    assert_eq!(effects.len(), 2);
+    assert!(effects.iter().all(|effect| match effect {
+        Effect::ToSelf { .. } => true,
+        Effect::ToUser { id, .. } => *id == b,
+        _ => false,
+    }));
     assert!(
         effects
             .iter()

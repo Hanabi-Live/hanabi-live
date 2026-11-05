@@ -231,6 +231,9 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
             );
             if name == "chat" {
                 fields.request()?;
+            } else {
+                // Classic clients include their current room; PM delivery remains recipient-only.
+                fields.field("room", Kind::String, None, true)?;
             }
         }
         "tagSearch" => {
@@ -392,6 +395,24 @@ mod tests {
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
         }
     }
+    #[test]
+    fn private_messages_accept_classic_room_metadata_but_reject_invalid_fields() {
+        for room in [None, Some("lobby"), Some("table123")] {
+            let mut data = json!({"msg":"hello","recipient":"Alice"});
+            if let Some(room) = room {
+                data["room"] = json!(room);
+            }
+            assert!(parse(&format!("chatPM {data}")).is_ok());
+        }
+        for data in [
+            json!({"msg":"hello","recipient":"Alice","room":123}),
+            json!({"msg":"hello","recipient":"Alice","room":null}),
+            json!({"msg":"hello","recipient":"Alice","room":"lobby","admin":true}),
+        ] {
+            assert!(parse(&format!("chatPM {data}")).is_err());
+        }
+    }
+
     #[test]
     fn strict_types_limits_and_defaults() {
         for input in [
