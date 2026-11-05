@@ -25,6 +25,7 @@ motd.txt*
 
 # Various directories
 /experimental/rust-server/**/target
+/experimental/rust-server/__pycache__
 /.go-to-rust-cutover
 /backups
 /letsencrypt
