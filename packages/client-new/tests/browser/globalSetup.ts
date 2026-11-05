@@ -23,7 +23,15 @@ export default async function globalSetup(): Promise<void> {
       {
         name: "Rust",
         file: "cargo",
-        args: ["build", "--locked"],
+        // Keep password hashing fast without optimizing our code on every rebuild.
+        args: [
+          "build",
+          "--locked",
+          "--config",
+          'profile.dev.package."*".opt-level=3',
+          "--config",
+          "profile.dev.debug=0",
+        ],
         cwd: path.join(ROOT, "experimental/rust-server"),
       },
       {
