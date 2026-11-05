@@ -195,7 +195,7 @@ impl Harness {
             }
         }).await?
     }
-    async fn close(self) -> Result<()> {
+    async fn stop_hub(&self) -> Result<()> {
         let (reply, received) = oneshot::channel();
         self.hub.send(HubCommand::Quiesce(reply)).await?;
         for handle in received.await? {
@@ -209,6 +209,29 @@ impl Harness {
         received.await?;
         self.tasks.close();
         self.tasks.wait().await;
+        Ok(())
+    }
+    async fn restart(&mut self) -> Result<()> {
+        self.stop_hub().await?;
+        self.tasks = TaskTracker::new();
+        self.hub = Hub::start(
+            self.store.clone(),
+            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
+            self.tasks.clone(),
+        )
+        .await?;
+        for index in 0..self.users.len() {
+            let old = &self.users[index];
+            let (session, outgoing) =
+                Session::new(old.user, old.name.clone(), old.generation + 1, false);
+            self.register(session.clone()).await?;
+            self.users[index] = session;
+            self.outgoing[index] = outgoing;
+        }
+        Ok(())
+    }
+    async fn close(self) -> Result<()> {
+        self.stop_hub().await?;
         self.store.close().await?;
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "DROP DATABASE {} WITH (FORCE)",
@@ -220,6 +243,69 @@ impl Harness {
         Ok(())
     }
 }
+#[tokio::test]
+async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Chat recovery", json!({})).await?;
+        let room = format!("table{id}");
+        h.send(0, "chat", json!({"room":room,"msg":"Before Bob joined"}))
+            .await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let history = h.receive(1, "chatList").await?;
+        ensure!(history["list"][0]["msg"] == "Before Bob joined");
+        ensure!(history["list"][1]["msg"] == "Bob joined the game.");
+        ensure!(history["list"][1]["source"] == "server");
+        ensure!(
+            chat_messages(&h.frames(0)?)
+                .iter()
+                .any(|m| m["msg"] == "Bob joined the game.")
+        );
+        h.send(1, "chat", json!({"room":room,"msg":"Bob's message"}))
+            .await?;
+        h.send(1, "tableUnattend", json!({"tableID":id})).await?;
+        h.frames(1)?;
+        h.send(0, "chat", json!({"room":room,"msg":"While Bob was away"}))
+            .await?;
+        h.send(1, "tableReattend", json!({"tableID":id})).await?;
+        let history = h.receive(1, "chatList").await?;
+        ensure!(history["list"].as_array().unwrap().len() == 4);
+        ensure!(history["list"][3]["msg"] == "While Bob was away");
+        h.send(1, "tableLeave", json!({"tableID":id})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let history = h.receive(1, "chatList").await?;
+        ensure!(history["list"][4]["msg"] == "Bob left the game.");
+        ensure!(history["list"][5]["msg"] == "Bob joined the game.");
+        ensure!(
+            h.frames(2)?
+                .iter()
+                .all(|(name, _)| name != "chat" && name != "chatList"),
+            "Table chat leaked to an outsider"
+        );
+        let snapshot = h.snapshot(id).await?.0;
+        ensure!(snapshot.chat.len() == 6 && snapshot.chat_archived == 6);
+        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE room=$1")
+            .bind(&room)
+            .fetch_one(&h.store.primary)
+            .await?;
+        ensure!(count == 6, "Pregame messages were not archived");
+        h.restart().await?;
+        h.send(0, "tableReattend", json!({"tableID":id})).await?;
+        let restored = h.receive(0, "chatList").await?;
+        ensure!(
+            restored["list"] == history["list"],
+            "Recovery changed pregame history"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
 fn chat_messages(frames: &[(String, Value)]) -> Vec<Value> {
     frames
         .iter()

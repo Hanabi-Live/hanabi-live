@@ -231,6 +231,11 @@ const slice = createSlice({
         }
 
         case "joined": {
+          state.chat = state.chat.filter(
+            (message) =>
+              message.room !== `table${event.data.tableID}`
+              || Boolean(message.recipient),
+          );
           state.tableID = event.data.tableID;
           state.roomNavigation++;
           state.pending = null;

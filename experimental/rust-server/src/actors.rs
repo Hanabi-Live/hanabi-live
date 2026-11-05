@@ -1181,6 +1181,23 @@ fn server_chat(id: u64, message: &str) -> Value {
 fn chat_time() -> String {
     Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
 }
+
+fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
+    if table.chat.len() >= 4096 {
+        eprintln!(
+            "Table {} membership notice omitted: chat history is full.",
+            table.id
+        );
+        return None;
+    }
+    let message = server_chat(table.id, text);
+    table.chat.push(TableChat {
+        id: None,
+        user: 0,
+        message: message.clone(),
+    });
+    Some(message)
+}
 fn parse_start_minutes(argument: &str) -> Option<f64> {
     let value = format!("0{argument}");
     let decimal =
@@ -1675,6 +1692,18 @@ impl TableActor {
         "players":self.table.players().iter().enumerate().map(|(i,p)|json!({"index":i,"name":p.name,"you":p.id==a.session.user,"present":self.attendees.get(&p.id).is_some_and(|a|a.session.active()&&!a.spectator),"stats":p.stats})).collect::<Vec<_>>(),"options":self.table.options,"passwordProtected":self.table.password_hash.is_some(),"maxPlayers":self.table.max_players}))));
         }
     }
+    fn chat_history(&self, e: &mut Effects, session: &Arc<Session>, read: usize) {
+        e.messages.push((
+            session.clone(),
+            frame(
+                "chatList",
+                json!({
+                    "list":self.table.chat.iter().map(|chat| &chat.message).collect::<Vec<_>>(),
+                    "unread":self.table.chat.len().saturating_sub(read)
+                }),
+            ),
+        ));
+    }
     fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
         let delta = self.anchor.elapsed().as_millis().min(9_007_199_254_740_991) as i64;
@@ -1814,6 +1843,7 @@ impl TableActor {
             self.pregame_messages(&mut e);
             e.messages
                 .push((s.clone(), frame("joined", json!({"tableID":self.table.id}))));
+            self.chat_history(&mut e, &s, 0);
         } else {
             e.statuses.push((
                 s.clone(),
@@ -2481,9 +2511,24 @@ impl TableActor {
         if let Phase::Pregame { players, .. } = &mut next.phase {
             players.push(player);
         }
+        let message = membership_notice(
+            &mut next,
+            &format!(
+                "{} joined the game.",
+                crate::accounts::escape_html(&session.name)
+            ),
+        );
         next.remember(session.user, data["requestID"].as_str())?;
         self.persist(next).await?;
-        self.initialize(session, vec![]).await
+        self.initialize(session.clone(), vec![]).await?;
+        let mut e = self.effects();
+        if let Some(message) = message {
+            for attendee in self.audience().filter(|a| a.session.user != session.user) {
+                e.messages
+                    .push((attendee.session.clone(), frame("chat", message.clone())));
+            }
+        }
+        self.publish(e).await
     }
     async fn reattend(
         &mut self,
@@ -2549,8 +2594,11 @@ impl TableActor {
         ));
         if pregame {
             self.pregame_messages(&mut e);
-            e.messages
-                .push((session, frame("joined", json!({"tableID":self.table.id}))));
+            e.messages.push((
+                session.clone(),
+                frame("joined", json!({"tableID":self.table.id})),
+            ));
+            self.chat_history(&mut e, &session, 0);
         } else {
             e.messages.push((
                 session,
@@ -2570,6 +2618,7 @@ impl TableActor {
     async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
         ensure!(self.attending(&session), "You are not attending this table");
         let mut next = self.candidate();
+        let mut notice = None;
         next.shadows.remove(&session.user);
         if remove
             && let Phase::Pregame {
@@ -2584,6 +2633,13 @@ impl TableActor {
             if next.owner == session.user {
                 next.owner = players[0].id;
             }
+            notice = membership_notice(
+                &mut next,
+                &format!(
+                    "{} left the game.",
+                    crate::accounts::escape_html(&session.name)
+                ),
+            );
         }
         if matches!(next.phase, Phase::Replay { .. })
             && next.owner == session.user
@@ -2602,6 +2658,9 @@ impl TableActor {
             .push((session, frame("left", json!({"tableID":self.table.id}))));
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
+        }
+        if let Some(message) = notice {
+            self.add_all(&mut e, "chat", message);
         }
         self.publish(e).await?;
         if matches!(self.table.phase, Phase::Replay { .. }) && self.attendees.is_empty() {
@@ -4046,7 +4105,7 @@ impl TableActor {
                 e.messages
                     .push((session.clone(), frame("clock", self.clock())));
             }
-            e.messages.push((session.clone(),frame("chatList",json!({"list":self.table.chat.iter().map(|c|&c.message).collect::<Vec<_>>(),"unread":self.table.chat.len().saturating_sub(a.chat_read)}))));
+            self.chat_history(&mut e, &session, a.chat_read);
             e.messages.push((
                 session.clone(),
                 frame(

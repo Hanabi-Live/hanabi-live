@@ -114,6 +114,13 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(
     a.getByRole("heading", { name: "Private garden", exact: true }),
   ).toBeVisible();
+  await a
+    .getByLabel("Pre-game chat message", { exact: true })
+    .fill("Saved before joining.");
+  await a.getByLabel("Pre-game chat message", { exact: true }).press("Enter");
+  await expect(
+    a.getByText("Saved before joining.", { exact: true }),
+  ).toBeVisible();
   const invitation = a.url();
   await b.goto(invitation);
   await b
@@ -126,6 +133,9 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .click();
   await expect(a.locator(".seat:not(.empty-seat)")).toHaveCount(2);
   await expect(b.getByText("Timed: 3m + 15s", { exact: true })).toBeVisible();
+  await expect(
+    b.getByText("Saved before joining.", { exact: true }),
+  ).toHaveCount(1);
   await a.getByRole("button", { name: "Table options", exact: true }).click();
   await a.getByRole("dialog").getByLabel("Maximum players").fill("4");
   await a
@@ -153,6 +163,9 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .click();
   await expect(b).toHaveURL(/\/new\/table\/\d+$/u);
   const host = b.locator(".person").filter({ hasText: "testUIHost" });
+  await expect(
+    b.getByText("Saved before joining.", { exact: true }),
+  ).toHaveCount(1);
   await host.locator(".person-main").click();
   await host.getByRole("button", { name: "Add friend" }).click();
   await expect(host.getByRole("button", { name: "Unfriend" })).toBeVisible();

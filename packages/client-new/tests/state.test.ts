@@ -1,3 +1,4 @@
+import { tableID } from "@hanabi-live/data";
 import { options } from "@hanabi-live/game";
 import { describe, expect, it } from "vitest";
 import { decodeEvent } from "../src/protocol";
@@ -5,6 +6,49 @@ import { actions, createLobbyStore } from "../src/store";
 import { welcome } from "./messages";
 
 describe("authoritative lobby state", () => {
+  it("replaces pregame history when returning without deleting private or other-room chat", () => {
+    const store = createLobbyStore();
+    const message = {
+      source: "user" as const,
+      msg: "Saved pregame message",
+      who: "Bob",
+      datetime: "2026-11-03T10:00:00Z",
+      room: "table7",
+      recipient: "",
+    };
+    for (const data of [
+      message,
+      { ...message, room: "lobby" },
+      { ...message, pmID: 10, recipient: "Alice" },
+    ]) {
+      store.dispatch(actions.received({ command: "chat", data }));
+    }
+    for (let i = 0; i < 2; i++) {
+      store.dispatch(
+        actions.received({
+          command: "joined",
+          data: { tableID: tableID.parse(7) },
+        }),
+      );
+      store.dispatch(
+        actions.received({
+          command: "chatList",
+          data: { list: [message], unread: 0 },
+        }),
+      );
+    }
+    expect(store.getState().chat).toHaveLength(3);
+    expect(
+      store
+        .getState()
+        .chat.filter((entry) => entry.room === "table7" && !entry.recipient),
+    ).toEqual([message]);
+    expect(store.getState().chat.some((entry) => entry.pmID === 10)).toBe(true);
+    expect(store.getState().chat.some((entry) => entry.room === "lobby")).toBe(
+      true,
+    );
+  });
+
   it("accepts a one-player Go pregame without weakening started-game rules", () => {
     const gameOptions = options.parse({});
     const raw = {
