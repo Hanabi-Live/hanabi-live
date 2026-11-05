@@ -316,6 +316,13 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);
         INSERT INTO variant_stats(variant_id,num_games,best_score2,num_max_scores) VALUES(0,2,25,1);")
         .execute(&db.pool).await.unwrap();
+    crate::accounts::test_support::legacy_column_order(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
     let app = router(db.pool.clone(), config());
     for (path, total, len) in [
         ("/api/v1/history/Alice?size=1", 3, 1),
@@ -341,6 +348,11 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
     let full: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(full.as_array().unwrap().len(), 1);
+    assert_eq!(
+        full[0]["datetimeStarted"],
+        "2026-01-01T00:00:00.12345+00:00"
+    );
+    assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00+00:00");
     for key in [
         "timed",
         "speedrun",
@@ -514,7 +526,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
         SELECT id,'Player'||id,'player'||id,'test','127.0.0.1' FROM generate_series(4,8) id;
-        INSERT INTO games SELECT 4,name,6,starting_player,variant_id,timed,time_base,time_per_turn,
+        INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
+        speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+        detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+        SELECT 4,name,6,starting_player,variant_id,timed,time_base,time_per_turn,
         speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,'six-player',score,num_turns,end_condition,datetime_started,datetime_finished
         FROM games WHERE id=1;

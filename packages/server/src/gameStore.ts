@@ -8,6 +8,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, getObjectKeys } from "complete-common";
 import type postgres from "postgres";
+import { z } from "zod";
 import { customDeckBytes, decodeCustomDeck } from "./customDeck";
 import type { RecordedAction } from "./engine/types";
 import { refreshGameStatistics } from "./gameStatistics";
@@ -74,6 +75,32 @@ export interface GameStore {
 }
 
 const TIMEOUT = 30_000;
+
+// Preserve the recovery client's native Date parsers while validating returned SQL rows.
+const completedRowSchema = z.object({
+  id: z.int(),
+  name: z.string(),
+  num_players: z.int(),
+  starting_player: z.int(),
+  variant_id: z.int(),
+  timed: z.boolean(),
+  time_base: z.int(),
+  time_per_turn: z.int(),
+  speedrun: z.boolean(),
+  card_cycle: z.boolean(),
+  deck_plays: z.boolean(),
+  empty_clues: z.boolean(),
+  one_extra_card: z.boolean(),
+  one_less_card: z.boolean(),
+  all_or_nothing: z.boolean(),
+  detrimental_characters: z.boolean(),
+  seed: z.string(),
+  score: z.int(),
+  num_turns: z.int(),
+  end_condition: z.int(),
+  datetime_started: z.date(),
+  datetime_finished: z.date(),
+});
 
 function isDatabaseGameID(id: number): id is GameID {
   return Number.isSafeInteger(id) && id > 0 && id <= 2_147_483_647;
@@ -303,9 +330,15 @@ export function createGameStore(
             check();
             await tx`SELECT pg_advisory_xact_lock(17482, ${game.id})`;
             check();
-            const existing = await tx<Array<ReturnType<typeof completionRow>>>`
-          SELECT * FROM games WHERE id = ${game.id}
-        `;
+            const existing = completedRowSchema.array().parse(
+              await tx`
+              SELECT id, name, num_players, starting_player, variant_id, timed,
+                time_base, time_per_turn, speedrun, card_cycle, deck_plays, empty_clues,
+                one_extra_card, one_less_card, all_or_nothing, detrimental_characters,
+                seed, score, num_turns, end_condition, datetime_started, datetime_finished
+              FROM games WHERE id = ${game.id}
+            `,
+            );
             check();
             const previous = existing[0];
             if (previous !== undefined) {

@@ -1,9 +1,18 @@
 use super::*;
+use crate::archive::GameRecord;
 use sqlx::{Postgres, QueryBuilder};
+
+const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.variant_id,
+    g.timed,g.time_base,g.time_per_turn,g.speedrun,g.card_cycle,g.deck_plays,g.empty_clues,
+    g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
+    g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
 #[derive(sqlx::FromRow)]
 struct HistoryRow {
-    game: Value,
+    #[sqlx(flatten)]
+    game: GameRecord,
+    started: String,
+    finished: String,
     names: Vec<String>,
     seed_count: i32,
     tags: String,
@@ -88,7 +97,8 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
 }
 
 fn selected(s: Selection) -> QueryBuilder<Postgres> {
-    let mut qb = QueryBuilder::new("WITH selected AS (SELECT g.* FROM games g WHERE TRUE");
+    let mut qb = QueryBuilder::new("WITH selected AS (SELECT ");
+    qb.push(GAME_COLUMNS).push(" FROM games g WHERE TRUE");
     for id in s.users {
         qb.push(
             " AND EXISTS (SELECT 1 FROM game_participants gp WHERE gp.game_id=g.id AND gp.user_id=",
@@ -178,7 +188,7 @@ pub(super) async fn list(
                 .push_bind(value);
         }
     }
-    qb.push("), paged AS (SELECT * FROM selected ORDER BY ").push(order)
+    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
         .push(") SELECT jsonb_build_object('total_rows',(SELECT count(*) FROM selected),'rows',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'num_players',g.num_players,'score',g.score,");
@@ -197,39 +207,25 @@ pub(super) async fn list(
     Ok(result)
 }
 
-pub(super) fn options(g: &Value) -> Result<Value> {
-    let variant = catalog::variant(
-        g["variant_id"]
-            .as_i64()
-            .ok_or_else(|| anyhow::anyhow!("Missing variant"))?,
-    )
-    .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
-    let mut options = json!({"variantID":g["variant_id"],"variantName":variant["name"]});
-    for (db, wire) in OPTION_FIELDS {
-        options[wire] = g[db].clone();
-    }
-    Ok(options)
+fn options(g: &GameRecord) -> Result<Value> {
+    let variant = catalog::variant(i64::from(g.variant_id))
+        .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
+    Ok(json!({
+        "variantID":g.variant_id,"variantName":variant["name"],
+        "numPlayers":g.num_players,"timed":g.timed,"timeBase":g.time_base,
+        "timePerTurn":g.time_per_turn,"speedrun":g.speedrun,"cardCycle":g.card_cycle,
+        "deckPlays":g.deck_plays,"emptyClues":g.empty_clues,"oneExtraCard":g.one_extra_card,
+        "oneLessCard":g.one_less_card,"allOrNothing":g.all_or_nothing,
+        "detrimentalCharacters":g.detrimental_characters,"startingPlayer":g.starting_player
+    }))
 }
-pub(super) const OPTION_FIELDS: [(&str, &str); 13] = [
-    ("num_players", "numPlayers"),
-    ("timed", "timed"),
-    ("time_base", "timeBase"),
-    ("time_per_turn", "timePerTurn"),
-    ("speedrun", "speedrun"),
-    ("card_cycle", "cardCycle"),
-    ("deck_plays", "deckPlays"),
-    ("empty_clues", "emptyClues"),
-    ("one_extra_card", "oneExtraCard"),
-    ("one_less_card", "oneLessCard"),
-    ("all_or_nothing", "allOrNothing"),
-    ("detrimental_characters", "detrimentalCharacters"),
-    ("starting_player", "startingPlayer"),
-];
 
 pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) -> Result<Value> {
     let tag_user = s.tag_user;
     let mut qb = selected(s);
-    qb.push(") SELECT to_jsonb(g) AS game, ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY lower(u.username),u.username) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT string_agg(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags WHERE game_id=g.id");
+    qb.push(") SELECT ").push(GAME_COLUMNS);
+    // Keep PostgreSQL's existing timestamp text, including fractional-second precision.
+    qb.push(",to_jsonb(g.datetime_started)#>>'{}' AS started,to_jsonb(g.datetime_finished)#>>'{}' AS finished, ARRAY(SELECT u.username FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id ORDER BY lower(u.username),u.username) AS names, COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS seed_count, COALESCE((SELECT string_agg(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags WHERE game_id=g.id");
     if let Some(user) = tag_user {
         qb.push(" AND user_id=").push_bind(user);
     }
@@ -248,9 +244,9 @@ pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) 
         let g = row.game;
         let options = options(&g)?;
         result.push(json!({
-            "id":g["id"],"options":options,"seed":g["seed"],"score":g["score"],
-            "numTurns":g["num_turns"],"endCondition":g["end_condition"],
-            "datetimeStarted":g["datetime_started"],"datetimeFinished":g["datetime_finished"],
+            "id":g.id,"options":options,"seed":g.seed,"score":g.score,
+            "numTurns":g.num_turns,"endCondition":g.end_condition,
+            "datetimeStarted":row.started,"datetimeFinished":row.finished,
             "numGamesOnThisSeed":row.seed_count,
             "playerNames":row.names,
             "tags":row.tags,"incrementNumGames":false

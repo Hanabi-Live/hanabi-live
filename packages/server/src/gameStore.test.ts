@@ -193,6 +193,26 @@ databaseDescribe("durable application game storage", () => {
     ).rejects.toThrow("actions");
   });
 
+  test("rejects completed rows with incompatible timestamp types", async () => {
+    const id = await store.reserveID();
+    const record = completed(id);
+    await store.save(id, 0, "terminal");
+    await store.complete(record, 1);
+    await client`
+      ALTER TABLE games ALTER COLUMN datetime_finished TYPE text
+      USING datetime_finished::text
+    `;
+    const recovering = createGameStore(database.connect(), statisticsClient);
+    try {
+      await expect(recovering.complete(record, 1)).rejects.toThrow(
+        "datetime_finished",
+      );
+    } finally {
+      await recovering.close();
+    }
+    expect(await client`SELECT id FROM games`).toHaveLength(1);
+  });
+
   test("metadata failure rolls back the game and retains its recovery checkpoint", async () => {
     const id = await store.reserveID();
     const record = completed(id);

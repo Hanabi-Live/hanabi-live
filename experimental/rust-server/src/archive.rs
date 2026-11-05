@@ -23,7 +23,7 @@ pub(crate) struct ArchiveNote {
     pub note: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, sqlx::FromRow)]
 pub struct GameRecord {
     pub id: i32,
     pub name: String,
