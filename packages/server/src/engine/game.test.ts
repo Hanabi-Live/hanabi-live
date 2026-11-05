@@ -1,25 +1,22 @@
 import {
-  DEFAULT_PLAYER_NAMES,
   EndCondition,
   getVariant,
   options,
   rank,
   suitIndex,
-  VALID_NUM_PLAYERS,
-  VARIANT_NAMES,
 } from "@hanabi-live/game";
 import { describe, expect, test } from "@jest/globals";
 import { isArray } from "complete-common";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { applyAction, createGame, terminateGame } from "./game";
+import { checkpointRoundTrip } from "./gameTestSupport";
 import { at } from "./rules";
 import { createShuffledDeck } from "./setup";
 import type { EngineState } from "./types";
-import { ActionRejected, parseEngineState } from "./types";
+import { ActionRejected } from "./types";
 import type { Recipient } from "./visibility";
 import { eventsForRecipient } from "./visibility";
 
@@ -158,12 +155,6 @@ function readTraces(): ReadonlyArray<z.infer<typeof traceSchema>> {
   const filename = path.resolve(corpusDirectory, "../engine_authority.json");
   const raw: unknown = JSON.parse(readFileSync(filename, "utf8"));
   return z.array(traceSchema).parse(raw);
-}
-
-function checkpointRoundTrip(state: EngineState): EngineState {
-  const serialized = JSON.stringify(state);
-  const raw: unknown = JSON.parse(serialized);
-  return parseEngineState(raw);
 }
 
 function digest(value: unknown): string {
@@ -408,44 +399,4 @@ describe("Go-generated character and modifier traces", () => {
     }
     expect(checkpointRoundTrip(transition.state)).toEqual(transition.state);
   });
-});
-
-describe("checkpoint coverage of the entire variant catalog", () => {
-  test.each(VARIANT_NAMES)(
-    "restores every supported player/hand size in %s",
-    (variantName) => {
-      const variant = getVariant(variantName);
-      for (const count of VALID_NUM_PLAYERS) {
-        const seed = `p${count}v${variant.id}s1`;
-        const deck = createShuffledDeck(variant, seed);
-        const playerNames = DEFAULT_PLAYER_NAMES.slice(0, count);
-        for (const handSizeOptions of [
-          {},
-          { oneExtraCard: true },
-          { oneLessCard: true },
-        ]) {
-          const { state } = createGame({
-            options: options.parse({
-              variantName,
-              numPlayers: count,
-              startingPlayer: count - 1,
-              detrimentalCharacters: true,
-              ...handSizeOptions,
-            }),
-            seed,
-            deck,
-            playerNames,
-            // Slow-Witted maximizes the initial event count by revealing every second slot.
-            characters: playerNames.map((_, index) => ({
-              name: index === 0 ? "Slow-Witted" : "n/a",
-              metadata: -1,
-            })),
-          });
-          expect(isDeepStrictEqual(checkpointRoundTrip(state), state)).toBe(
-            true,
-          );
-        }
-      }
-    },
-  );
 });

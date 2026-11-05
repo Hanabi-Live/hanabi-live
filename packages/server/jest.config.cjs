@@ -18,6 +18,7 @@ const tsconfig = jsoncParser.parse(tsconfigString);
 const config = {
   preset: "ts-jest",
   testEnvironment: "node",
+  globalSetup: "<rootDir>/src/mainProcessSetup.ts",
 
   // From: https://kulshekhar.github.io/ts-jest/docs/getting-started/paths-mapping/
   roots: ["<rootDir>"],

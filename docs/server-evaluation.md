@@ -12,7 +12,7 @@ PostgreSQL service available:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/server/src/mainProcess.test.ts \
+  npm test -- --runInBand packages/server/src/mainProcessComparison.test.ts \
   --testNamePattern='normal-server comparison'
 ```
 
