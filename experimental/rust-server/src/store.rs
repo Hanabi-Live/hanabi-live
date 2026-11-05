@@ -1044,6 +1044,23 @@ mod tests {
         };
         Ok(())
     }
+    #[test]
+    fn checkpoint_statistics_round_trip_without_false_completion_mismatches() -> Result<()> {
+        let mut table = pregame(1);
+        terminal(&mut table)?;
+        for denominator in 2..100 {
+            table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
+                json!(25.0 / f64::from(denominator));
+            let encoded = serde_json::to_string(&table)?;
+            let restored = TableSnapshot::decode(&encoded)?;
+            ensure!(
+                serde_json::to_value(table.game())? == serde_json::to_value(restored.game())?,
+                "Checkpoint changed fractional statistics for denominator {denominator}"
+            );
+        }
+        Ok(())
+    }
+
     async fn database() -> Result<Option<(PgPool, PgPool, String)>> {
         let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
             eprintln!("PostgreSQL integration requires HANABI_TEST_DATABASE_URL");
@@ -1108,7 +1125,15 @@ mod tests {
                 .await?;
             ensure!(old == 0, "PG active mirror exists");
             terminal(&mut table)?;
+            table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
+                json!(25.0 / 27.0);
             let revision = store.save(&table, 2).await?;
+            let mut changed = table.game().unwrap().clone();
+            changed.players[0].stats["variant"]["averageScore"] = json!(1.0);
+            ensure!(
+                store.complete(&changed, revision).await.is_err(),
+                "Completion accepted statistics that differ from the durable checkpoint"
+            );
             sqlx::query("ALTER TABLE game_actions ADD CONSTRAINT reject_native_test CHECK(type<0)")
                 .execute(&store.primary)
                 .await?;
