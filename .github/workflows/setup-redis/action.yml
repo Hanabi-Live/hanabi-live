@@ -1,11 +1,37 @@
+name: Set up Redis
+description: Install pinned Redis binaries with durable AOF support.
 runs:
   using: composite
   steps:
-    - name: Install Redis with WAITAOF support
+    - name: Identify the runner image
+      id: platform
+      shell: bash
+      run: echo "image=$ImageOS" >> "$GITHUB_OUTPUT"
+    - name: Restore Redis binaries
+      id: redis
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/hanabi-redis
+        key: redis-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ hashFiles('.github/workflows/setup-redis/action.yml') }}
+    - name: Extract Redis with WAITAOF support
+      if: steps.redis.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-        sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-        sudo apt-get update
-        sudo apt-get install -y redis-server redis-tools
+        directory="$RUNNER_TEMP/hanabi-redis"
+        mkdir -p "$directory"
+        container=$(docker create redis:7.2.17-bookworm@sha256:5b816bb37d9707a70f10ef5002ecf8ee431750d397010fc4314c93dca887962f)
+        trap 'docker rm "$container" > /dev/null' EXIT
+        docker cp "$container:/usr/local/bin/redis-server" "$directory/redis-server"
+        docker cp "$container:/usr/local/bin/redis-cli" "$directory/redis-cli"
+    - name: Verify Redis and expose its binaries
+      shell: bash
+      run: |
+        "$RUNNER_TEMP/hanabi-redis/redis-server" --version | grep -F 'v=7.2.17 '
+        "$RUNNER_TEMP/hanabi-redis/redis-cli" --version | grep -Fx 'redis-cli 7.2.17'
+        echo "$RUNNER_TEMP/hanabi-redis" >> "$GITHUB_PATH"
+    - name: Cache verified Redis binaries
+      if: steps.redis.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/hanabi-redis
+        key: ${{ steps.redis.outputs.cache-primary-key }}
