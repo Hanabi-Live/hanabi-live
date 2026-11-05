@@ -378,7 +378,7 @@ pub fn duration(seconds: u64) -> String {
     }
 }
 
-pub async fn drain_game_runtime(app: &App, tables: &TaskTracker) -> Result<()> {
+pub async fn drain_game_runtime(app: &App, tables: &TaskTracker, restart: bool) -> Result<()> {
     app.accepting.store(false, Ordering::Release);
     let mut failures = Vec::new();
     let (reply, received) = oneshot::channel();
@@ -418,6 +418,9 @@ pub async fn drain_game_runtime(app: &App, tables: &TaskTracker) -> Result<()> {
         failures.push(format!("State ownership was lost during drain: {error:#}"));
     }
     if failures.is_empty() {
+        if restart {
+            app.announce_restart().await;
+        }
         let (reply, closed) = oneshot::channel();
         if app
             .hub

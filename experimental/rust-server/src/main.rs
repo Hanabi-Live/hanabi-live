@@ -258,7 +258,12 @@ async fn run(config: Config, version: String) -> Result<bool> {
         let admitted = app.admission.write().await;
         drop(admitted);
     }
-    match tokio::time::timeout(Duration::from_secs(120), drain_game_runtime(&app, &tables)).await {
+    match tokio::time::timeout(
+        Duration::from_secs(120),
+        drain_game_runtime(&app, &tables, replace),
+    )
+    .await
+    {
         Ok(Ok(())) => {}
         Ok(Err(error)) => failures.push(format!("{error:#}")),
         Err(_) => failures.push(

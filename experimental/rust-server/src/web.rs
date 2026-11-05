@@ -91,6 +91,12 @@ impl App {
             .unwrap_or_else(|| json!({"discord":"disabled"}))
     }
 
+    pub async fn announce_restart(&self) {
+        if let Some(integrations) = self.integrations.get() {
+            integrations.announce_restart(self.started.elapsed()).await;
+        }
+    }
+
     pub fn new(
         store: Store,
         hub: mpsc::Sender<HubCommand>,

@@ -569,6 +569,25 @@ impl Bridge {
         Ok(())
     }
 
+    async fn announce(&self, message: &str) -> Result<()> {
+        self.app()?;
+        self.publish_effects(lobby::server_chat(&self.pool, message).await?)
+            .await?;
+        self.send_to(&self.config.development, message, true)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn announce_restart(&self, uptime: Duration) -> Result<()> {
+        self.announce(&format!(
+            "The server went down for a restart at: {} ({}) - Uptime: {}",
+            Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+            crate::restart::version(),
+            crate::lifecycle::duration(uptime.as_secs()),
+        ))
+        .await
+    }
+
     pub async fn event(&self, event: Value) -> Result<()> {
         let _guard = self.incoming.lock().await;
         self.app()?;
@@ -577,16 +596,12 @@ impl Bridge {
             Some("READY" | "RESUMED") => {
                 self.status.store(2, Ordering::Release);
                 if !self.announced.swap(true, Ordering::AcqRel) {
-                    let app = self.app()?;
                     let message = format!(
-                        "The server has successfully started at: {} (v{})",
+                        "The server has successfully started at: {} ({})",
                         Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
-                        app.version
+                        crate::restart::version(),
                     );
-                    self.publish_effects(lobby::server_chat(&self.pool, &message).await?)
-                        .await?;
-                    self.send_to(&self.config.development, &message, true)
-                        .await?;
+                    self.announce(&message).await?;
                 }
             }
             Some("TRANSPORT_DISCONNECTED") => {

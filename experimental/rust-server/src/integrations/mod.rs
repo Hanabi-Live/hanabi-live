@@ -6,7 +6,7 @@ pub mod telemetry;
 
 use crate::web::App;
 use anyhow::Result;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
@@ -66,6 +66,29 @@ impl Integrations {
             bridge.degrade();
             self.telemetry.report();
             eprintln!("Discord send failed; integration is degraded.");
+        }
+    }
+
+    pub async fn announce_restart(&self, uptime: Duration) {
+        if let Some(bridge) = &self.discord {
+            // An optional notification must not prevent a safely checkpointed restart.
+            match tokio::time::timeout(Duration::from_secs(5), bridge.announce_restart(uptime))
+                .await
+            {
+                Ok(Ok(())) => {}
+                result => {
+                    bridge.degrade();
+                    self.telemetry.report();
+                    eprintln!(
+                        "Discord restart announcement {}; continuing the drained restart.",
+                        if result.is_err() {
+                            "timed out"
+                        } else {
+                            "failed"
+                        }
+                    );
+                }
+            }
         }
     }
 

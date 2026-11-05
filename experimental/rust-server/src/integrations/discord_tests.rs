@@ -86,6 +86,71 @@ fn configuration() -> Configuration {
 }
 
 #[tokio::test]
+async fn discord_lifecycle_announcements_match_go_postgres() {
+    let Some(fixture) = Fixture::start().await else {
+        return;
+    };
+    let mock = Arc::new(MockTransport::default());
+    let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
+        .await
+        .unwrap();
+    bridge.event(json!({"t":"READY"})).await.unwrap();
+    bridge.event(json!({"t":"RESUMED"})).await.unwrap();
+    fixture.app.accepting.store(false, Ordering::Release);
+    let (reply, quiesced) = tokio::sync::oneshot::channel();
+    fixture
+        .app
+        .hub
+        .send(crate::actors::HubCommand::Quiesce(reply))
+        .await
+        .unwrap();
+    assert!(quiesced.await.unwrap().is_empty());
+    bridge
+        .announce_restart(Duration::from_secs(4680))
+        .await
+        .unwrap();
+    let requests = mock.requests.lock().await;
+    for channel in ["555555555555555555", "666666666666666666"] {
+        let messages: Vec<_> = requests
+            .iter()
+            .filter_map(|(method, path, body)| {
+                if *method == Method::POST && path == &format!("/channels/{channel}/messages") {
+                    body.as_ref().and_then(|body| body["content"].as_str())
+                } else {
+                    None
+                }
+            })
+            .collect();
+        assert_eq!(
+            messages.len(),
+            2,
+            "Lifecycle messages must be sent once per channel"
+        );
+        assert!(messages[0].starts_with("The server has successfully started at: "));
+        assert!(messages[0].ends_with(&format!("({})", crate::restart::version())));
+        assert!(!messages[0].contains("(v42)"));
+        assert!(messages[1].starts_with("The server went down for a restart at: "));
+        assert!(messages[1].ends_with(&format!(
+            "({}) - Uptime: 1 hour and 18 minutes",
+            crate::restart::version()
+        )));
+    }
+    drop(requests);
+    let messages: Vec<String> =
+        sqlx::query_scalar("SELECT message FROM chat_log WHERE source='server' ORDER BY id")
+            .fetch_all(&fixture.db.pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        messages.len(),
+        2,
+        "Both notices must also remain in lobby history"
+    );
+    assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
+    fixture.close().await;
+}
+
+#[tokio::test]
 async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;

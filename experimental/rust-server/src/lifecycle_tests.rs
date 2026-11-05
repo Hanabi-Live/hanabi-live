@@ -92,8 +92,11 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
             },
             store.state_lost(),
         );
-        let result =
-            tokio::time::timeout(Duration::from_secs(3), drain_game_runtime(&app, &tasks)).await?;
+        let result = tokio::time::timeout(
+            Duration::from_secs(3),
+            drain_game_runtime(&app, &tasks, true),
+        )
+        .await?;
         assert_eq!(result.is_ok(), successful);
         if !successful {
             let error = format!("{:#}", result.unwrap_err());
