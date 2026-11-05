@@ -85,7 +85,7 @@ jobs:
           target: dependencies
           outputs: type=cacheonly
           cache-from: type=gha,scope=hanabi-container
-          cache-to: type=gha,scope=hanabi-container,mode=max,ignore-error=true
+          cache-to: type=gha,scope=hanabi-container,mode=min,ignore-error=true
       - name: Build the production container
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
