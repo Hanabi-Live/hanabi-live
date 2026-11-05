@@ -199,43 +199,65 @@ export function startProcess(
   const ready = Promise.withResolvers<string>();
   let waiter: typeof ready | undefined = ready;
   let output = "";
-  let lineBuffer = "";
-  function collect(chunk: Buffer) {
-    output = (output + chunk.toString()).slice(-32_768);
-    lineBuffer += chunk.toString();
-    const lines = lineBuffer.split("\n");
+  let publicAddress: string | undefined;
+  let operationsReady = goPort !== undefined;
+  const lineBuffers = { stdout: "", stderr: "" };
+  function getOutput() {
+    return `${output}${lineBuffers.stdout}${lineBuffers.stderr}`.slice(-32_768);
+  }
+
+  function collect(stream: "stdout" | "stderr", chunk: Buffer) {
+    lineBuffers[stream] += chunk.toString();
+    const lines = lineBuffers[stream].split("\n");
     const unfinished = lines.pop();
     assertDefined(unfinished, "Missing partial process output.");
-    lineBuffer = unfinished;
+    lineBuffers[stream] = unfinished;
     for (const line of lines) {
+      output = `${output}${line}\n`.slice(-32_768);
       const address =
         goPort !== undefined && line.includes(`Listening on port ${goPort}.`)
           ? `http://127.0.0.1:${goPort}`
           : /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(line)?.[1];
       if (address !== undefined) {
-        waiter?.resolve(address);
+        publicAddress = address;
+      }
+      if (
+        /Localhost operations listening at http:\/\/127\.0\.0\.1:\d+/u.test(
+          line,
+        )
+      ) {
+        operationsReady = true;
+      }
+      if (publicAddress !== undefined && operationsReady) {
+        waiter?.resolve(publicAddress);
         waiter = undefined;
       }
     }
   }
-  child.stdout.on("data", collect);
-  child.stderr.on("data", collect);
+  child.stdout.on("data", (chunk: Buffer) => {
+    collect("stdout", chunk);
+  });
+  child.stderr.on("data", (chunk: Buffer) => {
+    collect("stderr", chunk);
+  });
   child.once("error", (error) => {
     waiter?.reject(error);
   });
   child.once("exit", (code, signal) => {
     waiter?.reject(
-      new Error(`Compiled server exited (${code ?? signal}).\n${output}`),
+      new Error(`Compiled server exited (${code ?? signal}).\n${getOutput()}`),
     );
   });
   return {
     child,
     ready: ready.promise,
-    output: () => output,
+    output: getOutput,
     async nextReady(): Promise<string> {
       if (waiter !== undefined) {
         throw new Error("A process readiness waiter is already registered.");
       }
+      publicAddress = undefined;
+      operationsReady = goPort !== undefined;
       waiter = Promise.withResolvers<string>();
       return await waiter.promise;
     },
