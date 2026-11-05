@@ -285,6 +285,7 @@ impl Store {
             {
                 if !table.extra.no_write_to_database {
                     self.complete(snapshot, revision).await?;
+                    self.refresh_background((**snapshot).clone());
                 }
                 let snapshot = snapshot.clone();
                 let segment = snapshot.game.turn;
@@ -1349,6 +1350,14 @@ mod tests {
                 recovered.len() == 1 && matches!(recovered[0].0.phase, Phase::Replay { .. }),
                 "Cross-store terminal retry failed"
             );
+            store.stats.close();
+            store.stats.wait().await;
+            let games: Option<i32> = sqlx::query_scalar(
+                "SELECT num_games FROM user_stats WHERE user_id=1 AND variant_id=0",
+            )
+            .fetch_optional(&store.primary)
+            .await?;
+            ensure!(games == Some(1), "Recovered completion did not refresh statistics");
             let actions: i64 = sqlx::query_scalar("SELECT count(*) FROM game_actions")
                 .fetch_one(&store.primary)
                 .await?;
