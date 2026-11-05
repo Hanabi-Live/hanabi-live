@@ -892,7 +892,7 @@ impl Store {
             }
         });
     }
-    async fn refresh(&self, s: &Snapshot) -> Result<()> {
+    pub(crate) async fn refresh(&self, s: &Snapshot) -> Result<()> {
         let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
         let v = variant.id as i16;
         let n = s.players.len();

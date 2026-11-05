@@ -1588,6 +1588,14 @@ export class GameRuntime {
           "An original player is already playing at another table.",
         );
       }
+      if (
+        table.game !== undefined
+        && table.game.databaseID > 0
+        && !table.extraOptions.noWriteToDatabase
+      ) {
+        // The replay may be visible before completion's background statistics finish.
+        await this.store.refreshStatistics(completionRecord(table, table.game));
+      }
       const id = allocateTableID();
       const refreshedPlayers: Table["players"] = [];
       for (const player of players) {

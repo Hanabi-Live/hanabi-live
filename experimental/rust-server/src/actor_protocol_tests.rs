@@ -244,6 +244,98 @@ impl Harness {
     }
 }
 #[tokio::test]
+async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Fresh restart statistics", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.send(2, "tableSpectate", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            h.send(index, "loaded", json!({"tableID":id})).await?;
+        }
+        let mut lock = h.store.primary.begin().await?;
+        sqlx::query("SELECT pg_advisory_xact_lock(17483,0)")
+            .execute(&mut *lock)
+            .await?;
+        let score = loop {
+            let (table, _) = h.snapshot(id).await?;
+            let snapshot = table.game().context("Missing game")?;
+            let game = &snapshot.game;
+            if game.end_condition != EndCondition::InProgress {
+                ensure!(game.score > 0, "Expected an improved personal best");
+                break game.score;
+            }
+            ensure!(game.turn < 150, "Game did not reach its final round");
+            let active = game.active_player_index;
+            let hand = &game.players[active].hand;
+            let playable = hand.iter().find(|&&order| {
+                let card = &game.deck[order];
+                card.rank == game.stacks[card.suit_index] + 1
+            });
+            let action = if let Some(order) = playable {
+                json!({"tableID":id,"type":0,"target":order})
+            } else if game.clue_tokens == 8 {
+                let target = 1 - active;
+                let card = &game.deck[game.players[target].hand[0]];
+                json!({"tableID":id,"type":3,"target":target,"value":card.rank})
+            } else {
+                json!({"tableID":id,"type":1,"target":hand[0]})
+            };
+            let actor = snapshot.players[active].id as usize - 1;
+            h.send(actor, "action", action).await?;
+            for index in 0..3 {
+                h.frames(index)?;
+            }
+        };
+        for index in 0..3 {
+            h.barrier(index).await?;
+            h.frames(index)?;
+        }
+        let mut pending = h
+            .begin(0, "tableRestart", json!({"tableID":id,"hidePregame":false}))
+            .await?;
+        ensure!(
+            tokio::time::timeout(Duration::from_millis(50), &mut pending)
+                .await
+                .is_err(),
+            "Remake finished while statistics were blocked"
+        );
+        // Release the delayed completion refresh only after the remake is requested.
+        lock.rollback().await?;
+        pending.await??;
+        let mut remade = 0;
+        for index in 0..3 {
+            let frame = h.receive(index, "game").await?;
+            remade = frame["tableID"].as_u64().context("Missing remade table")?;
+            let players = frame["players"].as_array().context("Missing players")?;
+            ensure!(players.len() == 2, "Spectator became a player");
+            for player in players {
+                ensure!(
+                    player["stats"]["numGames"] == 1
+                        && player["stats"]["variant"]["numGames"] == 1
+                        && player["stats"]["variant"]["bestScores"][0]["score"] == score,
+                    "Remade table published stale player statistics: {player}"
+                );
+            }
+        }
+        let (saved, _) = h.snapshot(remade).await?;
+        for player in saved.players() {
+            ensure!(
+                player.stats["variant"]["bestScores"][0]["score"] == score,
+                "Fresh statistics were not persisted"
+            );
+        }
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
         return Ok(());

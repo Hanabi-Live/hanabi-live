@@ -91,6 +91,33 @@ func TestConcurrentStatisticsRefreshPreservesBestResults(t *testing.T) {
 	}
 }
 
+func TestRestartPrefetchRefreshesAllPlayerStatistics(t *testing.T) {
+	games, participants := statisticsTestGames(t, 25)
+	if err := games[0].writeDatabaseStats(participants); err != nil {
+		t.Fatal(err)
+	}
+	players := []*Player{
+		{UserID: 1, Name: "Alice", Stats: &PregameStats{}},
+		{UserID: 2, Name: "Bob", Stats: &PregameStats{}},
+	}
+	_, _, stats, ok := preFetchTableRestartData(NewFakeSession(1, "Alice"), &tableRestartData{
+		players: players, variantName: DefaultVariantName,
+	})
+	if !ok {
+		t.Fatal("restart statistics prefetch failed")
+	}
+	for _, player := range players {
+		current := stats[player.UserID]
+		if current == nil || current.Variant == nil || current.NumGames != 1 ||
+			current.Variant.NumGames != 1 || current.Variant.BestScores[0].Score != 25 {
+			t.Fatalf("player %s did not receive current statistics: %+v", player.Name, current)
+		}
+		if player.Stats.NumGames != 0 {
+			t.Fatal("prefetch changed the historical replay snapshot")
+		}
+	}
+}
+
 func TestStatisticsRefreshFailureRollsBackUserAndVariantCaches(t *testing.T) {
 	games, players := statisticsTestGames(t, 25)
 	if _, err := db.Exec(context.Background(), `

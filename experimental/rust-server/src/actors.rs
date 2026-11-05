@@ -3962,7 +3962,7 @@ impl TableActor {
             "Cannot restart !replay games"
         );
         let hide = data["hidePregame"].as_bool().unwrap_or(false);
-        let players = self
+        let mut players = self
             .table
             .players()
             .iter()
@@ -3976,6 +3976,23 @@ impl TableActor {
         ensure!(
             players.len() >= 2 && (!hide || players.len() == self.table.players().len()),
             "Original players must attend to restart"
+        );
+        let snapshot = self.table.game().context("Missing completed game")?;
+        if snapshot.game_id > 0 && !self.table.extra.no_write_to_database {
+            // The replay may be visible before its background statistics finish.
+            self.store.refresh(snapshot).await?;
+        }
+        let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
+        for player in &mut players {
+            player.stats = self
+                .store
+                .player_for_variant(player.id, player.name.clone(), variant.id)
+                .await?
+                .stats;
+        }
+        ensure!(
+            session.active(),
+            "Session changed while refreshing restart statistics"
         );
         let allocation = self.allocation().await?;
         let mut destination = self.table.clone();

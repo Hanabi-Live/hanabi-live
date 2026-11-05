@@ -75,7 +75,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 		t.Unlock(ctx)
 		tableLocked = false
 
-		precomputedSeed, databaseID, creatorPregameStats, success := preFetchTableRestartData(s, restartData)
+		precomputedSeed, databaseID, pregameStats, success := preFetchTableRestartData(s, restartData)
 		if !success {
 			return
 		}
@@ -103,7 +103,7 @@ func commandTableRestart(ctx context.Context, s *Session, d *CommandData) {
 				currentData.spectatorShadowingUserID,
 				precomputedSeed,
 				databaseID,
-				creatorPregameStats,
+				pregameStats,
 			)
 			t.Unlock(ctx)
 			tableLocked = false
@@ -269,7 +269,7 @@ func (d *tableRestartData) hasSameDatabaseInputs(other *tableRestartData) bool {
 func preFetchTableRestartData(
 	s *Session,
 	restartData *tableRestartData,
-) (string, int, *PregameStats, bool) {
+) (string, int, map[int]*PregameStats, bool) {
 	var databaseID int
 	if restartData.reserveGameID {
 		id, err := models.Games.ReserveID()
@@ -295,28 +295,26 @@ func preFetchTableRestartData(
 		}
 	}
 
-	// Pre-fetch the creator's pregame stats for when they join the new table via
-	// commandTableCreate → tableCreate → commandTableJoin → tableJoin.
+	// Fetch all original players outside table locks; replay snapshots predate the result.
 	variant := variants[restartData.variantName]
-	var creatorNumGames int
-	if v, err := models.Games.GetUserNumGames(s.UserID, false); err != nil {
-		logger.Error("Failed to pre-fetch game count for \"" + s.Username + "\": " + err.Error())
-		s.Error(StartGameFail)
-		return "", 0, nil, false
-	} else {
-		creatorNumGames = v
+	pregameStats := make(map[int]*PregameStats, len(restartData.players))
+	for _, player := range restartData.players {
+		numGames, err := models.Games.GetUserNumGames(player.UserID, false)
+		if err != nil {
+			logger.Error("Failed to pre-fetch game count for \"" + player.Name + "\": " + err.Error())
+			s.Error(StartGameFail)
+			return "", 0, nil, false
+		}
+		variantStats, err := models.UserStats.Get(player.UserID, variant.ID)
+		if err != nil {
+			logger.Error("Failed to pre-fetch variant stats for \"" + player.Name + "\": " + err.Error())
+			s.Error(StartGameFail)
+			return "", 0, nil, false
+		}
+		pregameStats[player.UserID] = &PregameStats{NumGames: numGames, Variant: variantStats}
 	}
-	var creatorVariantStats *UserStatsRow
-	if v, err := models.UserStats.Get(s.UserID, variant.ID); err != nil {
-		logger.Error("Failed to pre-fetch variant stats for \"" + s.Username + "\": " + err.Error())
-		s.Error(StartGameFail)
-		return "", 0, nil, false
-	} else {
-		creatorVariantStats = v
-	}
-	creatorPregameStats := &PregameStats{NumGames: creatorNumGames, Variant: creatorVariantStats}
 
-	return precomputedSeed, databaseID, creatorPregameStats, true
+	return precomputedSeed, databaseID, pregameStats, true
 }
 
 func tableRestart(
@@ -329,7 +327,7 @@ func tableRestart(
 	spectatorShadowingUserID []int,
 	precomputedSeed string,
 	databaseID int,
-	creatorPregameStats *PregameStats,
+	pregameStats map[int]*PregameStats,
 ) *Table {
 	// Since this is a function that changes a user's relationship to tables,
 	// we must acquire the tables lock to prevent race conditions
@@ -415,7 +413,7 @@ func tableRestart(
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby.
-	// Pass creatorPregameStats so that commandTableCreate skips its own DB pre-fetch and
+	// Pass prefetched stats so that commandTableCreate skips its own DB pre-fetch and
 	// tableJoin uses these stats directly, avoiding any DB calls while locks are held.
 	commandTableCreate(ctx, s, &CommandData{ // nolint: exhaustivestruct
 		Name:    newTableName,
@@ -427,7 +425,7 @@ func tableRestart(
 		MaxPlayers:     t.MaxPlayers,
 		PasswordHash:   passwordHash,
 		BypassPassword: true,
-		PregameStats:   creatorPregameStats,
+		PregameStats:   pregameStats[s.UserID],
 	})
 
 	// Find the newly created table by name.
@@ -481,26 +479,18 @@ func tableRestart(
 	t2.ChatRead[s.UserID] = len(t2.Chat)
 
 	// Emulate the other players joining the game.
-	// Reuse each player's existing PregameStats from the original table so that tableJoin
-	// skips its DB calls, which would block while tables.Lock, t.Lock, and t2.Lock are held.
+	// Use fresh prefetched stats without issuing DB calls under the table locks.
 	for _, s2 := range playerSessions {
 		if s2.UserID == s.UserID {
 			// The creator of the game does not need to join
 			continue
-		}
-		var existingStats *PregameStats
-		for _, p := range t.Players {
-			if p.UserID == s2.UserID {
-				existingStats = p.Stats
-				break
-			}
 		}
 		commandTableJoin(ctx, s2, &CommandData{ // nolint: exhaustivestruct
 			TableID:        t2.ID,
 			NoTableLock:    true,
 			NoTablesLock:   true,
 			BypassPassword: true,
-			PregameStats:   existingStats,
+			PregameStats:   pregameStats[s2.UserID],
 		})
 	}
 

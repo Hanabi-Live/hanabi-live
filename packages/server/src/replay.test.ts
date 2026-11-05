@@ -685,6 +685,16 @@ describe("real replay WebSocket protocol", () => {
           (entry) => entry.name === "Alice" && !entry.isSpectator,
         )?.notes[0],
       ).toBe("player memo");
+      jest.mocked(store.refreshStatistics).mockImplementation(async () => {
+        await setImmediate();
+        jest.mocked(models.games.getNumGamesForUser).mockResolvedValue(1);
+        jest.mocked(models.userStats.get).mockResolvedValue({
+          numGames: 1,
+          averageScore: 25,
+          numStrikeouts: 0,
+          bestScores: [{ numPlayers: 2, score: 25, modifier: 0 }],
+        });
+      });
       if (hidePregame) {
         jest
           .mocked(store.reserveID)
@@ -704,6 +714,16 @@ describe("real replay WebSocket protocol", () => {
       const joined = SERVER_COMMAND_SCHEMAS.joined.parse(
         await owner.next("joined"),
       );
+      expect(
+        getTable(joined.tableID)?.players.map((player) => ({
+          total: player.stats.numGames,
+          games: player.stats.variant.numGames,
+          best: player.stats.variant.bestScores[0]?.score,
+        })),
+      ).toEqual([
+        { total: 1, games: 1, best: 25 },
+        { total: 1, games: 1, best: 25 },
+      ]);
       if (!hidePregame) {
         expect(getTable(joined.tableID)?.running).toBe(false);
         expect(
