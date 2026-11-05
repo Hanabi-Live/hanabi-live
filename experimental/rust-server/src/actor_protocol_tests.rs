@@ -313,6 +313,65 @@ fn chat_messages(frames: &[(String, Value)]) -> Vec<Value> {
         .map(|(_, data)| data.clone())
         .collect()
 }
+
+#[tokio::test]
+async fn finished_game_publishes_replay_leader_candidates_without_reconnecting() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Outsider"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Leader candidates", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.send(2, "tableSpectate", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            h.send(index, "loaded", json!({"tableID":id})).await?;
+        }
+        h.barrier(0).await?;
+        for index in 0..4 {
+            h.frames(index)?;
+        }
+        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            let roster = h.receive(index, "spectators").await?;
+            let names = roster["spectators"]
+                .as_array()
+                .context("Missing roster")?
+                .iter()
+                .map(|p| p["name"].as_str().unwrap())
+                .collect::<std::collections::BTreeSet<_>>();
+            ensure!(
+                names == std::collections::BTreeSet::from(["Alice", "Bob", "Observer"]),
+                "Finished-game players were missing from replay leader candidates"
+            );
+        }
+        ensure!(
+            h.frames(3)?.iter().all(|(name, _)| name != "spectators"),
+            "Replay roster was sent to a non-attendee"
+        );
+        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Bob"}))
+            .await?;
+        ensure!(h.receive(0, "replayLeader").await?["name"] == "Bob");
+        ensure!(h.snapshot(id).await?.0.owner == 2);
+        h.send(2, "tableUnattend", json!({"tableID":id})).await?;
+        let roster = h.receive(0, "spectators").await?;
+        ensure!(roster["spectators"].as_array().unwrap().len() == 2);
+        ensure!(
+            roster["spectators"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|p| p["name"] != "Observer"),
+            "Departed attendee remained a leader candidate"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
 fn suggestion(value: &Value) -> Result<Value> {
     let text = value["msg"].as_str().context("Missing suggestion")?;
     let encoded = text

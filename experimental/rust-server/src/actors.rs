@@ -1639,6 +1639,13 @@ impl TableActor {
     fn spectators(&self) -> Vec<Value> {
         self.attendees.values().filter(|a|a.spectator&&a.session.active()).map(|a|json!({"name":a.session.name,"shadowingPlayerIndex":a.shadow.map(|v|v as i32).unwrap_or(-1),"shadowingPlayerUsername":a.shadow.and_then(|i|self.table.players().get(i)).map(|p|p.name.as_str()).unwrap_or("")})).collect()
     }
+    fn spectator_messages(&self, e: &mut Effects) {
+        self.add_all(
+            e,
+            "spectators",
+            json!({"tableID":self.table.id,"spectators":self.spectators()}),
+        );
+    }
     fn effects(&self) -> Effects {
         Effects {
             table: self.table.id,
@@ -2081,11 +2088,7 @@ impl TableActor {
                 self.typing_messages(&mut e, id, &name, false);
             }
             self.add_all(&mut e, "connected", self.connected());
-            self.add_all(
-                &mut e,
-                "spectators",
-                json!({"tableID":self.table.id,"spectators":self.spectators()}),
-            );
+            self.spectator_messages(&mut e);
             self.publish(e).await?;
         }
         Ok(())
@@ -2608,11 +2611,7 @@ impl TableActor {
                 ),
             ));
         }
-        self.add_all(
-            &mut e,
-            "spectators",
-            json!({"tableID":self.table.id,"spectators":self.spectators()}),
-        );
+        self.spectator_messages(&mut e);
         self.publish(e).await
     }
     async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
@@ -2662,6 +2661,7 @@ impl TableActor {
         if let Some(message) = notice {
             self.add_all(&mut e, "chat", message);
         }
+        self.spectator_messages(&mut e);
         self.publish(e).await?;
         if matches!(self.table.phase, Phase::Replay { .. }) && self.attendees.is_empty() {
             self.retire().await?;
@@ -2916,6 +2916,7 @@ impl TableActor {
             }
         }
         if replay {
+            self.spectator_messages(&mut e);
             let count = if s.game_id > 0 {
                 self.store.seed_count(&s.seed).await?
             } else {

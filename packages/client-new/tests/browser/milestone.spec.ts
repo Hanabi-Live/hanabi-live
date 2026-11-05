@@ -1,5 +1,14 @@
 import { expect, gameReady, test } from "./fixture";
 
+type GameWindow = typeof globalThis & {
+  globals: {
+    elements: {
+      sharedReplayLeaderLabel: { fire: (event: string) => void } | null;
+    };
+    state: { replay: { shared: { leader: string } | null } };
+  };
+};
+
 test("sign in, join, play, return, and recover the new lobby", async ({
   browser,
   backend,
@@ -73,6 +82,29 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   await a.locator("#game-chat-input").press("Enter");
   await expect(a).toHaveURL(/\/shared-replay\/\d+(?:#\d+)?$/u);
   await a.keyboard.press("Escape");
+  await a.evaluate(() => {
+    const crown = (globalThis as GameWindow).globals.elements
+      .sharedReplayLeaderLabel;
+    if (crown === null) {
+      throw new Error("Missing replay crown");
+    }
+    crown.fire("click");
+  });
+  const leaderDialog = a.locator("#set-leader-modal");
+  await expect(
+    leaderDialog.getByRole("button", { name: "testLobbyBob", exact: true }),
+  ).toBeVisible();
+  await expect(
+    leaderDialog.getByRole("button", { name: "testLobbyAlice", exact: true }),
+  ).toHaveCount(0);
+  await leaderDialog
+    .getByRole("button", { name: "testLobbyBob", exact: true })
+    .click();
+  await a.waitForFunction(
+    () =>
+      (globalThis as GameWindow).globals.state.replay.shared?.leader
+      === "testLobbyBob",
+  );
   await a.keyboard.press("Alt+l");
   await expect(a).toHaveURL(/\/new$/u);
   await a.getByRole("link", { name: "History", exact: true }).click();
