@@ -359,7 +359,7 @@ impl Store {
             stored.revision == revision,
             "Completion requires the current checkpoint"
         );
-        let durable: TableSnapshot = serde_json::from_str(&stored.payload)?;
+        let durable = TableSnapshot::decode(&stored.payload)?;
         let saved = durable.game().context("Missing terminal game")?;
         ensure!(
             serde_json::to_value(saved)? == serde_json::to_value(s)?,
@@ -1096,6 +1096,29 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn spectator_note_owners_round_trip_and_reject_invalid_keys() -> Result<()> {
+        let mut table = pregame(1);
+        terminal(&mut table)?;
+        let owner = crate::model::NoteOwner {
+            name: "Spectator".into(),
+            notes: vec![String::new(); 55],
+        };
+        table
+            .game_mut()
+            .unwrap()
+            .spectator_notes
+            .insert(3, owner.clone());
+        let payload = serde_json::to_string(&table)?;
+        let decoded = TableSnapshot::decode(&payload)?;
+        let direct: TableSnapshot = serde_json::from_str(&payload)?;
+        ensure!(serde_json::to_value(&decoded)? == serde_json::to_value(&table)?);
+        ensure!(serde_json::to_value(&direct)? == serde_json::to_value(&table)?);
+        let mut invalid = serde_json::to_value(&table)?;
+        invalid["phase"]["snapshot"]["spectator_notes"] = json!({"not-a-user":owner});
+        ensure!(TableSnapshot::decode(&invalid.to_string()).is_err());
+        Ok(())
+    }
+    #[test]
     fn checkpoint_statistics_round_trip_without_false_completion_mismatches() -> Result<()> {
         let mut table = pregame(1);
         terminal(&mut table)?;
@@ -1278,6 +1301,13 @@ mod tests {
             terminal(&mut table)?;
             table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
                 json!(25.0 / 27.0);
+            table.game_mut().unwrap().spectator_notes.insert(
+                3,
+                crate::model::NoteOwner {
+                    name: "Spectator".into(),
+                    notes: vec![String::new(); 55],
+                },
+            );
             let revision = store.save(&table, 2).await?;
             let mut changed = table.game().unwrap().clone();
             changed.players[0].stats["variant"]["averageScore"] = json!(1.0);

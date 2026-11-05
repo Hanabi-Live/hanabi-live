@@ -57,6 +57,7 @@ pub struct Snapshot {
     pub pause_player_index: i32,
     pub queued_pauses: Vec<bool>,
     pub notes: Vec<Vec<String>>,
+    #[serde(deserialize_with = "deserialize_note_owners")]
     pub spectator_notes: BTreeMap<i32, NoteOwner>,
     pub tags: Vec<Tag>,
     pub votes: Vec<bool>,
@@ -67,6 +68,17 @@ pub struct Snapshot {
 pub struct NoteOwner {
     pub name: String,
     pub notes: Vec<String>,
+}
+
+fn deserialize_note_owners<'de, D>(
+    deserializer: D,
+) -> std::result::Result<BTreeMap<i32, NoteOwner>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    // Tagged phases buffer object keys as strings; restore JSON's integer-key decoding.
+    let value = Value::deserialize(deserializer)?;
+    serde_json::from_value(value).map_err(serde::de::Error::custom)
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
