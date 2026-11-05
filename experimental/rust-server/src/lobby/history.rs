@@ -27,42 +27,47 @@ pub async fn history_ids(
     friends: bool,
 ) -> Result<Vec<i32>> {
     // Filter participant IDs before sorting, rather than scanning the ordered archive for matches.
-    let query = if friends {
-        "SELECT g.id FROM games g JOIN
+    Ok(if friends {
+        sqlx::query_scalar!(
+            "SELECT g.id FROM games g JOIN
          (SELECT p.game_id FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id
           WHERE f.user_id=$1
           EXCEPT
           SELECT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
-         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3"
-    } else {
-        "SELECT g.id FROM games g JOIN
-         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
-         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2,0) OFFSET $3"
-    };
-    Ok(sqlx::query_scalar(query)
-        .bind(id)
-        .bind(amount)
-        .bind(if !friends && amount == 0 { 0 } else { offset })
+         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3",
+            id,
+            amount,
+            offset
+        )
         .fetch_all(pool)
-        .await?)
+        .await?
+    } else {
+        sqlx::query_scalar!("SELECT g.id FROM games g JOIN
+         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
+         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
+         id, amount, if amount == 0 { 0 } else { offset })
+         .fetch_all(pool).await?
+    })
 }
 
 pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result<Vec<Value>> {
-    let order = if seed_order {
-        "g.score DESC, g.datetime_finished, g.id"
-    } else {
-        "g.datetime_finished DESC, g.id DESC"
-    };
-    let mut query = sqlx::QueryBuilder::<sqlx::Postgres>::new(
+    macro_rules! rows {
+        ($order:literal) => {
+            sqlx::query_scalar!(
         "SELECT to_jsonb(g) || jsonb_build_object(
             'playerNames', COALESCE((SELECT jsonb_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
                 FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id), '[]'::jsonb),
             'tags', COALESCE((SELECT STRING_AGG(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags WHERE game_id=g.id),''),
-            'numGamesOnThisSeed', COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0))
-         FROM games g WHERE id=ANY($1) ORDER BY "
-    );
-    query.push(order);
-    let rows: Vec<Value> = query.build_query_scalar().bind(ids).fetch_all(pool).await?;
+            'numGamesOnThisSeed', COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0)) AS \"history!\"
+         FROM games g WHERE id=ANY($1) ORDER BY " + $order, ids
+            ).fetch_all(pool).await?
+        };
+    }
+    let rows = if seed_order {
+        rows!("g.score DESC, g.datetime_finished, g.id")
+    } else {
+        rows!("g.datetime_finished DESC, g.id DESC")
+    };
     let mut result = Vec::new();
     for row in rows {
         let mut options = serde_json::Map::new();
@@ -105,12 +110,12 @@ pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result
 
 /// Seed scope is directed, exactly one hop. A→B→C must not block C's seeds for A.
 pub async fn blocked_seeds(pool: &PgPool, user_ids: &[i32]) -> Result<Vec<String>> {
-    Ok(sqlx::query_scalar(
+    Ok(sqlx::query_scalar!(
         "SELECT DISTINCT g.seed FROM games g JOIN game_participants p ON p.game_id=g.id
          WHERE p.user_id=ANY($1) OR p.user_id IN
          (SELECT linked_id FROM user_linkages WHERE user_id=ANY($1))",
+        user_ids
     )
-    .bind(user_ids)
     .fetch_all(pool)
     .await?)
 }

@@ -30,7 +30,6 @@ use axum::{
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{Value, json};
-use sqlx::Row;
 use std::{
     collections::HashMap,
     future::Future,
@@ -292,30 +291,29 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         !accounts::is_banned(pool, ip).await?,
         "Your IP address has been banned."
     );
-    let row = sqlx::query(
-        "SELECT username,normalized_username,datetime_created,
-         (SELECT COUNT(*) FROM games g JOIN game_participants p ON p.game_id=g.id
-          WHERE p.user_id=u.id AND g.end_condition=1) AS total FROM users u WHERE u.id=$1",
+    let row = sqlx::query!(
+        "SELECT username,normalized_username,datetime_created FROM users WHERE id=$1",
+        id
     )
-    .bind(id)
     .fetch_optional(pool)
     .await?
     .context("The authenticated user no longer exists.")?;
-    let name: String = row.try_get("username")?;
-    let normalized_name: String = row.try_get("normalized_username")?;
-    let (settings, friends, muted) = tokio::try_join!(
+    let name: String = row.username.clone();
+    let normalized_name: String = row.normalized_username.clone();
+    let (settings, friends, muted, total) = tokio::try_join!(
         lobby::get_settings(pool, id),
         lobby::friends(pool, id),
-        accounts::is_muted(pool, ip)
+        accounts::is_muted(pool, ip),
+        crate::database::normal_game_count(pool, id, true)
     )?;
-    let created: DateTime<Utc> = row.try_get("datetime_created")?;
+    let created: DateTime<Utc> = row.datetime_created;
     let runtime = app
         .runtime
         .read()
         .unwrap_or_else(|e| e.into_inner())
         .clone();
     let mut welcome = json!({
-        "userID":id,"username":name,"totalGames":row.try_get::<i64,_>("total")?,
+        "userID":id,"username":name,"totalGames":total,
         "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
         "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
         "playingAtTables":[],"randomTableName":"","shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
@@ -354,11 +352,13 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
             initial.push(frame("gameHistoryFriends", json!(friend_history)));
         }
     }
-    sqlx::query("UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1")
-        .bind(id)
-        .bind(ip)
-        .execute(pool)
-        .await?;
+    sqlx::query!(
+        "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
+        id,
+        ip
+    )
+    .execute(pool)
+    .await?;
     Ok(Bootstrap {
         name,
         normalized_name,
@@ -391,10 +391,12 @@ async fn websocket(
         }
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
-    match sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)")
-        .bind(id)
-        .fetch_one(&app.store.primary)
-        .await
+    match sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM users WHERE id=$1) AS \"value!\"",
+        id
+    )
+    .fetch_one(&app.store.primary)
+    .await
     {
         Ok(true) => {}
         Ok(false) => return StatusCode::UNAUTHORIZED.into_response(),

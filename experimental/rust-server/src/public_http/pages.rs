@@ -4,7 +4,6 @@ use axum::{
     Form,
     response::{Html, Redirect},
 };
-use sqlx::Row;
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
@@ -89,8 +88,7 @@ pub(super) async fn main_page(
             .ok()
         });
     let username = if let Some(id) = user_id {
-        sqlx::query_scalar::<_, String>("SELECT username FROM users WHERE id=$1")
-            .bind(id)
+        sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
             .fetch_optional(&state.pool)
             .await?
     } else {
@@ -193,8 +191,7 @@ pub(super) async fn page(
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
             v["apiPath"] = json!(api);
-            let rows: Vec<Value> = sqlx::query_scalar("SELECT jsonb_build_object('score',score,'numTimes',count(*)) FROM games WHERE seed=$1 GROUP BY score ORDER BY score")
-                .bind(seed).fetch_all(&state.pool).await?;
+            let rows: Vec<Value> = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numTimes',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed).fetch_all(&state.pool).await?;
             v["scoreFreqsJSON"] = json!(serde_json::to_string(&rows)?);
             v["frequencies"] = json!(rows);
         }
@@ -218,12 +215,15 @@ pub(super) async fn page(
             ));
             v["apiPath"] = json!(api);
             let mut stats = aggregate(&state, None, Some(id)).await?;
-            let row: Option<Value> = sqlx::query_scalar(
-                "SELECT to_jsonb(v) FROM variant_stats v WHERE variant_id::bigint=$1",
+            let row = sqlx::query_as!(
+                crate::database::VariantStats,
+                "SELECT * FROM variant_stats WHERE variant_id::bigint=$1",
+                id
             )
-            .bind(id)
             .fetch_optional(&state.pool)
-            .await?;
+            .await?
+            .map(serde_json::to_value)
+            .transpose()?;
             let row = row.unwrap_or(json!({}));
             let games = number(&row, "num_games");
             stats["numMaxScores"] = json!(number(&row, "num_max_scores"));
@@ -320,29 +320,26 @@ fn names_title(names: &[String]) -> String {
 }
 
 async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>) -> Result<Value> {
-    let row = sqlx::query(
-        "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS normal,
-        count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS other,
-        count(*) FILTER(WHERE speedrun) AS speed,
+    let row = sqlx::query!(    "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
+    count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
+    count(*) FILTER(WHERE speedrun) AS \"speed!\",
         COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
           CASE WHEN $1::integer IS NULL THEN (SELECT count(*) FROM game_participants WHERE game_id=g.id) ELSE 1 END)
-          FILTER(WHERE NOT speedrun),0)::bigint AS duration,
+          FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
         COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
           CASE WHEN $1::integer IS NULL THEN (SELECT count(*) FROM game_participants WHERE game_id=g.id) ELSE 1 END)
-          FILTER(WHERE speedrun),0)::bigint AS speed_duration
+          FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
         FROM games g WHERE ($1::integer IS NULL OR EXISTS(SELECT 1 FROM game_participants WHERE game_id=g.id AND user_id=$1))
-        AND ($2::bigint IS NULL OR variant_id::bigint=$2)")
-        .bind(user).bind(variant).fetch_one(&state.pool).await?;
-    let normal: i64 = row.try_get("normal")?;
-    let other: i64 = row.try_get("other")?;
+        AND ($2::bigint IS NULL OR variant_id::bigint=$2)", user, variant).fetch_one(&state.pool).await?;
+    let normal: i64 = row.normal;
+    let other: i64 = row.other;
     let mut stats = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
-        "numGamesSpeedrun":row.try_get::<i64,_>("speed")?,"timePlayed":duration(row.try_get("duration")?),
-        "timePlayedSpeedrun":duration(row.try_get("speed_duration")?)});
+        "numGamesSpeedrun":row.speed,"timePlayed":duration(row.duration),
+        "timePlayedSpeedrun":duration(row.speed_duration)});
     if let Some(user) = user {
         use chrono::Datelike;
         let date: chrono::DateTime<chrono::Utc> =
-            sqlx::query_scalar("SELECT datetime_created FROM users WHERE id=$1")
-                .bind(user)
+            sqlx::query_scalar!("SELECT datetime_created FROM users WHERE id=$1", user)
                 .fetch_one(&state.pool)
                 .await?;
         let suffix = match date.day() {
@@ -363,15 +360,16 @@ async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>)
 }
 
 async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>> {
-    let rows: Vec<Value> =
-        sqlx::query_scalar("SELECT to_jsonb(s) FROM user_stats s WHERE user_id=$1")
-            .bind(id)
-            .fetch_all(&state.pool)
-            .await?;
-    Ok(rows
-        .into_iter()
-        .map(|v| (number(&v, "variant_id"), v))
-        .collect())
+    let rows = sqlx::query_as!(
+        crate::database::UserStats,
+        "SELECT * FROM user_stats WHERE user_id=$1",
+        id
+    )
+    .fetch_all(&state.pool)
+    .await?;
+    rows.into_iter()
+        .map(|row| Ok((i64::from(row.variant_id), serde_json::to_value(row)?)))
+        .collect()
 }
 async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let stats = user_stats(state, id).await?;

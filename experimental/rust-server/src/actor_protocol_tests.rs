@@ -291,6 +291,10 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
             players.iter().find(|player| player.id == 2).context("Missing Bob")?.stats["numGames"] == 0,
             "Another player's history must not affect the total"
         );
+        ensure!(
+            crate::database::normal_game_count(&h.store.primary, 1, true).await? == 3,
+            "Welcome/history totals must also include normally completed speedruns"
+        );
         Ok::<(), anyhow::Error>(())
     }
     .await;

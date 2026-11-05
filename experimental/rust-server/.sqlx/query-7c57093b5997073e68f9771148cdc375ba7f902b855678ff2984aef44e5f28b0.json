@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT u.username FROM user_friends f JOIN users u ON u.id=f.friend_id\n         WHERE f.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "username"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7c57093b5997073e68f9771148cdc375ba7f902b855678ff2984aef44e5f28b0"
+}

@@ -1,6 +1,6 @@
 use anyhow::{Result, bail, ensure};
 use serde_json::{Value, json};
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 
 // SQL identifiers only come from this closed list; values are always bound.
 const FIELDS: &[(&str, &str, &str)] = &[
@@ -61,11 +61,15 @@ const FIELDS: &[(&str, &str, &str)] = &[
 ];
 
 pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Value> {
-    let row: Option<Value> =
-        sqlx::query_scalar("SELECT to_jsonb(s) FROM user_settings s WHERE user_id=$1 LIMIT 1")
-            .bind(id)
-            .fetch_optional(pool)
-            .await?;
+    let row = sqlx::query_as!(
+        crate::database::UserSettings,
+        "SELECT * FROM user_settings WHERE user_id=$1 LIMIT 1",
+        id
+    )
+    .fetch_optional(pool)
+    .await?
+    .map(serde_json::to_value)
+    .transpose()?;
     let mut result = serde_json::Map::new();
     for (name, column, kind) in FIELDS {
         let value = row
@@ -90,16 +94,15 @@ pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Value> {
 pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Result<()> {
     let (column, kind) = validate_setting(name, value)?;
     let mut tx = pool.begin().await?;
-    let user = sqlx::query("SELECT id FROM users WHERE id=$1 FOR UPDATE")
-        .bind(id)
+    let user = sqlx::query!("SELECT id FROM users WHERE id=$1 FOR UPDATE", id)
         .fetch_one(&mut *tx)
         .await?;
-    let _: i32 = user.try_get("id")?;
-    sqlx::query(
+    let _: i32 = user.id;
+    sqlx::query!(
         "INSERT INTO user_settings(user_id) SELECT $1 WHERE NOT EXISTS
          (SELECT 1 FROM user_settings WHERE user_id=$1)",
+        id
     )
-    .bind(id)
     .execute(&mut *tx)
     .await?;
     let mut query = sqlx::QueryBuilder::<sqlx::Postgres>::new("UPDATE user_settings SET ");

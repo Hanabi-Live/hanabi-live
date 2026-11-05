@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT g.seed FROM games g JOIN game_participants p ON p.game_id=g.id\n         WHERE p.user_id=ANY($1) OR p.user_id IN\n         (SELECT linked_id FROM user_linkages WHERE user_id=ANY($1))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "seed",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "seed"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "df6c96fe2ec6c28f7ea50f73905c26b63621002d2dcce9b6b18f7a377f42cc67"
+}

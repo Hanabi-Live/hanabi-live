@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')\n             RETURNING id,datetime_sent",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "chat_log",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "datetime_sent",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "chat_log",
+            "name": "datetime_sent"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "3050901f9cdc3eae077b7d89bc1ae810a016eb79965d32a722e51b7bd427a3e6"
+}

@@ -209,7 +209,11 @@ async fn native_accounts_http_and_identity_postgres() {
         StatusCode::OK
     );
     let legacy = hex::encode(sha2::Sha256::digest("Hanabi password legacy"));
-    sqlx::query("UPDATE users SET old_password_hash=$1 WHERE id=$2")
+    sqlx::query("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE users SET old_password_hash=$1,password_hash=NULL WHERE id=$2")
         .bind(legacy)
         .bind(id)
         .execute(&db.pool)
@@ -444,3 +448,4 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
 }
 
 use sha2::Digest;
+use sqlx::Row;

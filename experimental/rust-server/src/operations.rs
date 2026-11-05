@@ -61,7 +61,6 @@ use axum::{
     routing::{get, post},
 };
 use serde_json::json;
-use sqlx::Row;
 use std::{
     collections::HashMap,
     net::SocketAddr,
@@ -276,31 +275,38 @@ async fn user_action(
         .get("username")
         .filter(|v| !v.is_empty())
         .ok_or_else(|| bad("Error: You must specify a username."))?;
-    let account = sqlx::query("SELECT id,username,last_ip FROM users WHERE normalized_username=$1")
-        .bind(crate::accounts::normalize_string(name))
-        .fetch_optional(&control.pool)
-        .await
-        .map_err(anyhow::Error::from)?;
+    let account = sqlx::query!(
+        "SELECT id,username,last_ip FROM users WHERE normalized_username=$1",
+        crate::accounts::normalize_string(name)
+    )
+    .fetch_optional(&control.pool)
+    .await
+    .map_err(anyhow::Error::from)?;
     let Some(account) = account else {
         return Ok(format!("User \"{name}\" does not exist in the database.\n").into_response());
     };
-    let id: i32 = account.try_get("id").map_err(anyhow::Error::from)?;
-    let username: String = account.try_get("username").map_err(anyhow::Error::from)?;
+    let id: i32 = account.id;
+    let username: String = account.username.clone();
     if matches!(path, "/ban" | "/mute") {
-        let ip: String = account.try_get("last_ip").map_err(anyhow::Error::from)?;
-        let statement = if path == "/ban" {
-            "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING"
-        } else {
-            "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING"
-        };
-        let inserted = sqlx::query(statement)
-            .bind(&ip)
-            .bind(id)
+        let ip: String = account.last_ip.clone();
+        let result = if path == "/ban" {
+            sqlx::query!(
+                "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+                &ip,
+                id
+            )
             .execute(&control.pool)
             .await
-            .map_err(anyhow::Error::from)?
-            .rows_affected()
-            > 0;
+        } else {
+            sqlx::query!(
+                "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+                &ip,
+                id
+            )
+            .execute(&control.pool)
+            .await
+        };
+        let inserted = result.map_err(anyhow::Error::from)?.rows_affected() > 0;
         if !inserted {
             return Ok(format!(
                 "User \"{username}\" has an IP of \"{ip}\", but it is already {}.\n",
@@ -357,7 +363,7 @@ async fn metrics_report(control: &Control) -> Result<Response> {
     let database: std::result::Result<Value, anyhow::Error> = if let Some(store) = control.store() {
         store.database_reports().await
     } else {
-        match sqlx::query_scalar::<_, i32>("SELECT 1")
+        match sqlx::query_scalar!("SELECT 1 AS \"value!\"")
             .fetch_one(&control.pool)
             .await
         {

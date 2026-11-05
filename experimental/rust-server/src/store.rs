@@ -10,7 +10,7 @@ use chrono::{DateTime, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use serde_json::{Value, json};
 use sqlx::{
-    PgPool, Row,
+    PgPool,
     postgres::{PgConnectOptions, PgPoolOptions, PgSslMode},
 };
 use std::{collections::BTreeMap, sync::Arc, time::Duration};
@@ -67,10 +67,10 @@ impl Store {
                 .acquire_timeout(Duration::from_secs(30))
                 .after_connect(|c, _| {
                     Box::pin(async move {
-                        sqlx::query("SET statement_timeout = 30000")
+                        sqlx::query!("SET statement_timeout = 30000")
                             .execute(&mut *c)
                             .await?;
-                        sqlx::query("SET idle_in_transaction_session_timeout = 30000")
+                        sqlx::query!("SET idle_in_transaction_session_timeout = 30000")
                             .execute(c)
                             .await?;
                         Ok(())
@@ -81,14 +81,14 @@ impl Store {
         }
         let primary = pool(options.clone().application_name(&primary_name), 10).await?;
         let archive = pool(options.application_name(&archive_name), 2).await?;
-        let version: i32 = sqlx::query_scalar("SELECT version FROM schema_version")
+        let version: i32 = sqlx::query_scalar!("SELECT version FROM schema_version")
             .fetch_one(&primary)
             .await?;
         ensure!(
             version == 5,
             "Native server requires database schema version 5"
         );
-        let old: i64 = sqlx::query_scalar("SELECT count(*) FROM active_games")
+        let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
             .fetch_one(&primary)
             .await?;
         ensure!(
@@ -126,13 +126,9 @@ impl Store {
         );
         let deadline = tokio::time::Instant::now() + Duration::from_secs(3);
         loop {
-            let clients: i64 = sqlx::query_scalar(
-                "SELECT count(*) FROM pg_stat_activity WHERE datname=current_database()
+            let clients: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM pg_stat_activity WHERE datname=current_database()
                  AND COALESCE(backend_type,'client backend')='client backend'
-                 AND COALESCE(application_name,'') NOT IN ($1,$2)",
-            )
-            .bind(&self.primary_name)
-            .bind(&self.archive_name)
+                 AND COALESCE(application_name,'') NOT IN ($1,$2)", &self.primary_name, &self.archive_name)
             .fetch_one(&self.primary)
             .await?;
             if clients == 0 {
@@ -163,16 +159,18 @@ impl Store {
     }
     pub async fn reserve(&self) -> Result<i32> {
         self.check_state()?;
-        let id: i64 = sqlx::query_scalar("SELECT nextval(pg_get_serial_sequence('games','id'))")
-            .fetch_one(&self.archive)
-            .await?;
+        let id: i64 = sqlx::query_scalar!(
+            "SELECT nextval(pg_get_serial_sequence('games','id')) AS \"value!\""
+        )
+        .fetch_one(&self.archive)
+        .await?;
         Ok(i32::try_from(id)?)
     }
     pub async fn database_reports(&self) -> Result<Value> {
         async fn report(pool: &PgPool, name: &str) -> Result<Value> {
-            let row=sqlx::query("SELECT count(*)::bigint total,count(*) FILTER(WHERE state='active')::bigint active,count(*) FILTER(WHERE state='idle')::bigint idle,count(*) FILTER(WHERE state LIKE 'idle in transaction%')::bigint idle_transaction FROM pg_stat_activity WHERE datname=current_database() AND application_name=$1").bind(name).fetch_one(pool).await?;
+            let row=sqlx::query!("SELECT count(*)::bigint total,count(*) FILTER(WHERE state='active')::bigint active,count(*) FILTER(WHERE state='idle')::bigint idle,count(*) FILTER(WHERE state LIKE 'idle in transaction%')::bigint idle_transaction FROM pg_stat_activity WHERE datname=current_database() AND application_name=$1", name).fetch_one(pool).await?;
             Ok(
-                json!({"maxConnections":pool.options().get_max_connections(),"totalConnections":row.try_get::<i64,_>("total")?,"activeConnections":row.try_get::<i64,_>("active")?,"idleConnections":row.try_get::<i64,_>("idle")?,"idleTransactionConnections":row.try_get::<i64,_>("idle_transaction")?}),
+                json!({"maxConnections":pool.options().get_max_connections(),"totalConnections":row.total,"activeConnections":row.active,"idleConnections":row.idle,"idleTransactionConnections":row.idle_transaction}),
             )
         }
         let (primary, recovery) = tokio::try_join!(
@@ -211,7 +209,7 @@ impl Store {
         self.state()?.remove(StateId::Table(id), revision).await
     }
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
-        let old: i64 = sqlx::query_scalar("SELECT count(*) FROM active_games")
+        let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
             .fetch_one(&self.primary)
             .await?;
         ensure!(
@@ -371,15 +369,17 @@ impl Store {
         let o = &s.game.options;
         let variant = hanabi_engine::get_variant(&o.variant_name)?;
         let mut tx = self.archive.begin().await?;
-        sqlx::query("SELECT pg_advisory_xact_lock(17482,$1)")
-            .bind(s.game_id)
+        sqlx::query!("SELECT pg_advisory_xact_lock(17482,$1)", s.game_id)
             .execute(&mut *tx)
             .await?;
         self.check_state()?;
-        let existing = sqlx::query("SELECT * FROM games WHERE id=$1")
-            .bind(s.game_id)
-            .fetch_optional(&mut *tx)
-            .await?;
+        let existing = sqlx::query_as!(
+            crate::archive::GameRecord,
+            "SELECT * FROM games WHERE id=$1",
+            s.game_id
+        )
+        .fetch_optional(&mut *tx)
+        .await?;
         if let Some(row) = existing {
             let existing_options = options_from_record(&row)?;
             let mut expected = o.clone();
@@ -389,18 +389,14 @@ impl Store {
             expected.max_players = None;
             ensure!(
                 existing_options == expected
-                    && row.try_get::<String, _>("seed")? == s.seed
-                    && row.try_get::<String, _>("name")? == s.name
-                    && i32::from(row.try_get::<i16, _>("score")?) == s.game.score
-                    && i32::from(row.try_get::<i16, _>("end_condition")?)
-                        == s.game.end_condition as i32
-                    && i32::from(row.try_get::<i16, _>("num_turns")?) == s.game.turn,
+                    && row.seed.clone() == s.seed
+                    && row.name.clone() == s.name
+                    && i32::from(row.score) == s.game.score
+                    && i32::from(row.end_condition) == s.game.end_condition as i32
+                    && i32::from(row.num_turns) == s.game.turn,
                 "Conflicting completed game"
             );
-            let players = sqlx::query(
-                "SELECT user_id,seat,character_assignment,character_metadata FROM game_participants WHERE game_id=$1 ORDER BY seat",
-            )
-            .bind(s.game_id)
+            let players = sqlx::query!("SELECT user_id,seat,character_assignment,character_metadata FROM game_participants WHERE game_id=$1 ORDER BY seat", s.game_id)
             .fetch_all(&mut *tx)
             .await?;
             ensure!(players.len() == s.players.len(), "Conflicting participants");
@@ -419,14 +415,14 @@ impl Store {
                     0
                 };
                 ensure!(
-                    row.try_get::<i32, _>("user_id")? == player.id
-                        && row.try_get::<i16, _>("seat")? == seat as i16
-                        && row.try_get::<i16, _>("character_assignment")? == assignment
-                        && row.try_get::<i16, _>("character_metadata")? == metadata,
+                    row.user_id == player.id
+                        && row.seat == seat as i16
+                        && row.character_assignment == assignment
+                        && row.character_metadata == metadata,
                     "Conflicting participant identity"
                 );
             }
-            let notes=sqlx::query("SELECT p.seat,n.card_order,n.note FROM game_participant_notes n JOIN game_participants p ON p.id=n.game_participant_id WHERE p.game_id=$1 ORDER BY p.seat,n.card_order").bind(s.game_id).fetch_all(&mut *tx).await?;
+            let notes=sqlx::query!("SELECT p.seat,n.card_order,n.note FROM game_participant_notes n JOIN game_participants p ON p.id=n.game_participant_id WHERE p.game_id=$1 ORDER BY p.seat,n.card_order", s.game_id).fetch_all(&mut *tx).await?;
             let expected_notes = s
                 .notes
                 .iter()
@@ -445,16 +441,16 @@ impl Store {
             );
             for (row, (seat, order, note)) in notes.iter().zip(expected_notes) {
                 ensure!(
-                    row.try_get::<i16, _>("seat")? == seat as i16
-                        && row.try_get::<i16, _>("card_order")? == order as i16
-                        && row.try_get::<String, _>("note")? == *note,
+                    row.seat == seat as i16
+                        && row.card_order == order as i16
+                        && row.note.clone() == *note,
                     "Conflicting authored note"
                 );
             }
-            let rows = sqlx::query(
+            let rows = sqlx::query!(
                 "SELECT type,target,value FROM game_actions WHERE game_id=$1 ORDER BY turn",
+                s.game_id
             )
-            .bind(s.game_id)
             .fetch_all(&mut *tx)
             .await?;
             ensure!(
@@ -463,27 +459,25 @@ impl Store {
             );
             for (row, a) in rows.iter().zip(&s.game.actions) {
                 ensure!(
-                    i32::from(row.try_get::<i16, _>("type")?) == a.action_type
-                        && i32::from(row.try_get::<i16, _>("target")?) == a.target
-                        && i32::from(row.try_get::<i16, _>("value")?) == a.value,
+                    i32::from(row.r#type) == a.action_type
+                        && i32::from(row.target) == a.target
+                        && i32::from(row.value) == a.value,
                     "Conflicting action"
                 );
             }
-            let deck: Option<Vec<u8>> =
-                sqlx::query_scalar("SELECT deck FROM game_custom_decks WHERE game_id=$1")
-                    .bind(s.game_id)
-                    .fetch_optional(&mut *tx)
-                    .await?;
+            let deck: Option<Vec<u8>> = sqlx::query_scalar!(
+                "SELECT deck FROM game_custom_decks WHERE game_id=$1",
+                s.game_id
+            )
+            .fetch_optional(&mut *tx)
+            .await?;
             let actual = if let Some(bytes) = deck {
                 decode_deck(&bytes)?
             } else {
                 hanabi_engine::create_shuffled_deck(variant, &s.seed)?
             };
             ensure!(actual == s.game.identities(), "Conflicting deck");
-            let times = (
-                row.try_get::<DateTime<Utc>, _>("datetime_started")?,
-                row.try_get::<DateTime<Utc>, _>("datetime_finished")?,
-            );
+            let times = (row.datetime_started, row.datetime_finished);
             ensure!(
                 times.0.timestamp_micros() == s.started.timestamp_micros()
                     && times.1.timestamp_micros() == finished.timestamp_micros(),
@@ -492,8 +486,7 @@ impl Store {
             tx.commit().await?;
             return Ok(times);
         }
-        sqlx::query("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)")
-            .bind(s.game_id).bind(&s.name).bind(o.num_players as i16).bind(o.starting_player as i16).bind(variant.id as i16).bind(o.timed).bind(o.time_base as i32).bind(o.time_per_turn as i32).bind(o.speedrun).bind(o.card_cycle).bind(o.deck_plays).bind(o.empty_clues).bind(o.one_extra_card).bind(o.one_less_card).bind(o.all_or_nothing).bind(o.detrimental_characters).bind(&s.seed).bind(s.game.score as i16).bind(s.game.turn as i16).bind(s.game.end_condition as i16).bind(s.started).bind(finished).execute(&mut *tx).await?;
+        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)", s.game_id, &s.name, o.num_players as i16, o.starting_player as i16, variant.id as i16, o.timed, o.time_base as i32, o.time_per_turn as i32, o.speedrun, o.card_cycle, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, s.game.score as i16, s.game.turn as i16, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
         for (seat, p) in s.players.iter().enumerate() {
             let character = &s.game.players[seat];
             let assignment = hanabi_engine::characters()
@@ -508,13 +501,13 @@ impl Store {
             } else {
                 0
             };
-            let participant:i32=sqlx::query_scalar("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id").bind(s.game_id).bind(p.id).bind(seat as i16).bind(assignment).bind(metadata).fetch_one(&mut *tx).await?;
+            let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, seat as i16, assignment, metadata).fetch_one(&mut *tx).await?;
             for (order, note) in s.notes[seat]
                 .iter()
                 .enumerate()
                 .filter(|(_, n)| !n.is_empty())
             {
-                sqlx::query("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)").bind(participant).bind(order as i16).bind(note).execute(&mut *tx).await?;
+                sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, order as i16, note).execute(&mut *tx).await?;
             }
         }
         let kinds: Vec<i16> = s
@@ -525,21 +518,25 @@ impl Store {
             .collect();
         let targets: Vec<i16> = s.game.actions.iter().map(|a| a.target as i16).collect();
         let values: Vec<i16> = s.game.actions.iter().map(|a| a.value as i16).collect();
-        sqlx::query("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)").bind(s.game_id).bind(kinds).bind(targets).bind(values).execute(&mut *tx).await?;
+        sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut *tx).await?;
         if s.game.identities() != hanabi_engine::create_shuffled_deck(variant, &s.seed)? {
-            sqlx::query("INSERT INTO game_custom_decks(game_id,deck) VALUES($1,$2)")
-                .bind(s.game_id)
-                .bind(encode_deck(&s.game.identities())?)
-                .execute(&mut *tx)
-                .await?;
+            sqlx::query!(
+                "INSERT INTO game_custom_decks(game_id,deck) VALUES($1,$2)",
+                s.game_id,
+                encode_deck(&s.game.identities())?
+            )
+            .execute(&mut *tx)
+            .await?;
         }
         for tag in &s.tags {
-            sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)")
-                .bind(s.game_id)
-                .bind(tag.user)
-                .bind(&tag.tag)
-                .execute(&mut *tx)
-                .await?;
+            sqlx::query!(
+                "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
+                s.game_id,
+                tag.user,
+                &tag.tag
+            )
+            .execute(&mut *tx)
+            .await?;
         }
         tx.commit().await?;
         self.check_state()?;
@@ -552,7 +549,7 @@ impl Store {
         let row = archive.game;
         let options = options_from_record(&row)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
-        let seed: String = row.try_get("seed")?;
+        let seed: String = row.seed.clone();
         let deck = if let Some(bytes) = archive.deck {
             decode_deck(&bytes)?
         } else {
@@ -616,22 +613,22 @@ impl Store {
             archive.actions,
         )?;
         ensure!(
-            game.score == i32::from(row.try_get::<i16, _>("score")?)
-                && game.end_condition as i32 == i32::from(row.try_get::<i16, _>("end_condition")?),
+            game.score == i32::from(row.score)
+                && game.end_condition as i32 == i32::from(row.end_condition),
             "Historical replay result mismatch"
         );
         let n = players.len();
         Ok(Snapshot {
             format: FORMAT.into(),
             table_id,
-            game_id: id,
+            game_id: row.id,
             owner,
-            name: row.try_get("name")?,
+            name: row.name.clone(),
             players,
             seed,
             created: Utc::now(),
-            started: row.try_get("datetime_started")?,
-            finished: Some(row.try_get("datetime_finished")?),
+            started: row.datetime_started,
+            finished: Some(row.datetime_finished),
             game,
             clocks: vec![0; n],
             duration: 0,
@@ -662,7 +659,7 @@ impl Store {
             return Ok(());
         }
         ensure!(pending.len() <= 4096, "Oversized chat reservation");
-        let ids:Vec<i64>=sqlx::query_scalar("SELECT nextval(pg_get_serial_sequence('chat_log','id')) FROM generate_series(1,$1::integer)").bind(pending.len() as i32).fetch_all(&self.archive).await?;
+        let ids:Vec<i64>=sqlx::query_scalar!("SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)", pending.len() as i32).fetch_all(&self.archive).await?;
         self.check_state()?;
         ensure!(
             ids.len() == pending.len(),
@@ -690,8 +687,7 @@ impl Store {
         for entry in entries {
             let id = entry.id.context("Missing durable chat identity")?;
             ensure!(id > 0, "Invalid durable chat identity");
-            sqlx::query("SELECT pg_advisory_xact_lock(17484,$1)")
-                .bind(id)
+            sqlx::query!("SELECT pg_advisory_xact_lock(17484,$1)", id)
                 .execute(&mut *tx)
                 .await?;
             self.check_state()?;
@@ -718,20 +714,19 @@ impl Store {
                 datetime.timestamp_subsec_nanos() % 1000 == 0,
                 "Chat timestamp must use PostgreSQL precision before checkpointing"
             );
-            sqlx::query("INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING")
-                .bind(id).bind(entry.user).bind(msg).bind(room).bind(source).bind(datetime).execute(&mut *tx).await?;
-            let existing = sqlx::query(
+            sqlx::query!("INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING", id, entry.user, msg, room, source, datetime).execute(&mut *tx).await?;
+            let existing = sqlx::query!(
                 "SELECT user_id,message,room,source,datetime_sent FROM chat_log WHERE id=$1",
+                id
             )
-            .bind(id)
             .fetch_one(&mut *tx)
             .await?;
             ensure!(
-                existing.try_get::<i32, _>("user_id")? == entry.user
-                    && existing.try_get::<String, _>("message")? == msg
-                    && existing.try_get::<String, _>("room")? == room
-                    && existing.try_get::<String, _>("source")? == source
-                    && existing.try_get::<DateTime<Utc>, _>("datetime_sent")? == datetime,
+                existing.user_id == entry.user
+                    && existing.message.clone() == msg
+                    && existing.room.clone() == room
+                    && existing.source.clone() == source
+                    && existing.datetime_sent == datetime,
                 "Conflicting archived chat identity"
             );
         }
@@ -742,42 +737,46 @@ impl Store {
     pub async fn apply_tag(&self, edit: &PendingTag) -> Result<Vec<Tag>> {
         self.check_state()?;
         let mut tx = self.archive.begin().await?;
-        sqlx::query("SELECT id FROM games WHERE id=$1 FOR UPDATE")
-            .bind(edit.game_id)
+        sqlx::query!("SELECT id FROM games WHERE id=$1 FOR UPDATE", edit.game_id)
             .fetch_one(&mut *tx)
             .await?;
         self.check_state()?;
         match edit.operation.as_str() {
             "tag" => {
-                sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)").bind(edit.game_id).bind(edit.user_id).bind(&edit.tag).execute(&mut *tx).await?;
+                sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id, &edit.tag).execute(&mut *tx).await?;
             }
             "tagDelete" => {
-                sqlx::query("DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3")
-                    .bind(edit.game_id)
-                    .bind(edit.user_id)
-                    .bind(&edit.tag)
-                    .execute(&mut *tx)
-                    .await?;
+                sqlx::query!(
+                    "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
+                    edit.game_id,
+                    edit.user_id,
+                    &edit.tag
+                )
+                .execute(&mut *tx)
+                .await?;
             }
             "tagsDeleteAll" => {
-                sqlx::query("DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2")
-                    .bind(edit.game_id)
-                    .bind(edit.user_id)
-                    .execute(&mut *tx)
-                    .await?;
+                sqlx::query!(
+                    "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
+                    edit.game_id,
+                    edit.user_id
+                )
+                .execute(&mut *tx)
+                .await?;
             }
             _ => anyhow::bail!("Invalid durable tag operation"),
         }
         let mut tags = vec![];
-        for row in
-            sqlx::query("SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag")
-                .bind(edit.game_id)
-                .fetch_all(&mut *tx)
-                .await?
+        for row in sqlx::query!(
+            "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",
+            edit.game_id
+        )
+        .fetch_all(&mut *tx)
+        .await?
         {
             tags.push(Tag {
-                user: row.try_get("user_id")?,
-                tag: row.try_get("tag")?,
+                user: row.user_id,
+                tag: row.tag.clone(),
             });
         }
         tx.commit().await?;
@@ -785,15 +784,15 @@ impl Store {
         Ok(tags)
     }
     pub async fn tags_for_game(&self, id: i32) -> Result<Option<Vec<Tag>>> {
-        let rows=sqlx::query("SELECT t.user_id,t.tag FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag").bind(id).fetch_all(&self.primary).await?;
+        let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id).fetch_all(&self.primary).await?;
         if rows.is_empty() {
             return Ok(None);
         }
         let mut tags = vec![];
         for row in rows {
-            if let Some(tag) = row.try_get::<Option<String>, _>("tag")? {
+            if let Some(tag) = row.tag.clone() {
                 tags.push(Tag {
-                    user: row.try_get::<i32, _>("user_id")?,
+                    user: row.user_id.context("Missing tag author")?,
                     tag,
                 });
             }
@@ -804,14 +803,7 @@ impl Store {
         self.player_for_variant(id, name, 0).await
     }
     async fn completed_game_counts(&self, ids: &[i32]) -> Result<BTreeMap<i32, i64>> {
-        let counts: Vec<(i32, i64)> = sqlx::query_as(
-            "SELECT p.user_id, count(*) FROM game_participants p JOIN games g ON g.id=p.game_id
-             WHERE p.user_id=ANY($1) AND g.end_condition=1 AND NOT g.speedrun GROUP BY p.user_id",
-        )
-        .bind(ids)
-        .fetch_all(&self.primary)
-        .await?;
-        Ok(counts.into_iter().collect())
+        crate::database::normal_game_counts(&self.primary, ids, false).await
     }
     pub async fn player_for_variant(&self, id: i32, name: String, variant: u32) -> Result<Player> {
         let count = self
@@ -820,31 +812,42 @@ impl Store {
             .get(&id)
             .copied()
             .unwrap_or(0);
-        let row = sqlx::query("SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2")
-            .bind(id)
-            .bind(variant as i16)
-            .fetch_optional(&self.primary)
-            .await?;
+        let row = sqlx::query_as!(
+            crate::database::UserStats,
+            "SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2",
+            id,
+            variant as i16
+        )
+        .fetch_optional(&self.primary)
+        .await?;
         let mut stats = zero_stats();
         stats["numGames"] = json!(count);
         if let Some(row) = row {
-            stats["variant"]["numGames"] = json!(row.try_get::<i32, _>("num_games")?);
-            stats["variant"]["averageScore"] = json!(row.try_get::<f64, _>("average_score")?);
-            stats["variant"]["numStrikeouts"] = json!(row.try_get::<i32, _>("num_strikeouts")?);
-            for count in 2..=6 {
-                stats["variant"]["bestScores"][count - 2]["score"] =
-                    json!(row.try_get::<i16, _>(format!("best_score{count}").as_str())?);
+            stats["variant"]["numGames"] = json!(row.num_games);
+            stats["variant"]["averageScore"] = json!(row.average_score);
+            stats["variant"]["numStrikeouts"] = json!(row.num_strikeouts);
+            for (index, score) in [
+                row.best_score2,
+                row.best_score3,
+                row.best_score4,
+                row.best_score5,
+                row.best_score6,
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                stats["variant"]["bestScores"][index]["score"] = json!(score);
             }
         }
         Ok(Player { id, name, stats })
     }
     pub async fn seed_count(&self, seed: &str) -> Result<i64> {
-        Ok(
-            sqlx::query_scalar("SELECT count(*) FROM games WHERE seed=$1")
-                .bind(seed)
-                .fetch_one(&self.primary)
-                .await?,
+        Ok(sqlx::query_scalar!(
+            "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
+            seed
         )
+        .fetch_one(&self.primary)
+        .await?)
     }
     pub async fn next_seed(
         &self,
@@ -858,7 +861,7 @@ impl Store {
             return Ok(prefix + suffix);
         }
         let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
-        let seeds:Vec<String>=sqlx::query_scalar("SELECT DISTINCT g.seed FROM games g JOIN game_participants p ON p.game_id=g.id WHERE p.user_id=ANY($1) OR p.user_id IN (SELECT linked_id FROM user_linkages WHERE user_id=ANY($1))").bind(ids).fetch_all(&self.primary).await?;
+        let seeds = crate::lobby::blocked_seeds(&self.primary, &ids).await?;
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
         for next in 1_u64.. {
             let seed = format!("{prefix}{next}");
@@ -888,26 +891,27 @@ impl Store {
         let v = variant.id as i16;
         let n = s.players.len();
         let mut tx = self.archive.begin().await?;
-        sqlx::query("SELECT pg_advisory_xact_lock(17483,$1)")
-            .bind(i32::from(v))
+        sqlx::query!("SELECT pg_advisory_xact_lock(17483,$1)", i32::from(v))
             .execute(&mut *tx)
             .await?;
-        sqlx::query("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games").bind(&s.seed).execute(&mut *tx).await?;
-        sqlx::query("INSERT INTO variant_stats(variant_id) VALUES($1) ON CONFLICT DO NOTHING")
-            .bind(v)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", &s.seed).execute(&mut *tx).await?;
+        sqlx::query!(
+            "INSERT INTO variant_stats(variant_id) VALUES($1) ON CONFLICT DO NOTHING",
+            v
+        )
+        .execute(&mut *tx)
+        .await?;
         let modifier = i16::from(s.game.options.deck_plays)
             + 2 * i16::from(s.game.options.empty_clues)
             + 4 * i16::from(s.game.options.one_extra_card)
             + 8 * i16::from(s.game.options.one_less_card)
             + 16 * i16::from(s.game.options.all_or_nothing);
         for p in &s.players {
-            sqlx::query(
+            sqlx::query!(
                 "INSERT INTO user_stats(user_id,variant_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+                p.id,
+                v
             )
-            .bind(p.id)
-            .bind(v)
             .execute(&mut *tx)
             .await?;
             let q = format!(
@@ -952,30 +956,29 @@ impl Store {
 pub fn zero_stats() -> Value {
     json!({"numGames":0,"variant":{"numGames":0,"averageScore":0,"numStrikeouts":0,"bestScores":(2..=6).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
 }
-pub fn options_from_record(row: &sqlx::postgres::PgRow) -> Result<Options> {
-    let variant =
-        hanabi_engine::get_variant_by_id(u32::try_from(row.try_get::<i16, _>("variant_id")?)?)?;
+pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
+    let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
     Ok(Options {
-        num_players: usize::try_from(row.try_get::<i16, _>("num_players")?)?,
-        starting_player: usize::try_from(row.try_get::<i16, _>("starting_player")?)?,
+        num_players: usize::try_from(row.num_players)?,
+        starting_player: usize::try_from(row.starting_player)?,
         variant_name: variant.name.clone(),
         variant_id: Some(variant.id),
-        timed: row.try_get("timed")?,
-        time_base: f64::from(row.try_get::<i32, _>("time_base")?),
-        time_per_turn: i64::from(row.try_get::<i32, _>("time_per_turn")?),
-        speedrun: row.try_get("speedrun")?,
-        card_cycle: row.try_get("card_cycle")?,
-        deck_plays: row.try_get("deck_plays")?,
-        empty_clues: row.try_get("empty_clues")?,
-        one_extra_card: row.try_get("one_extra_card")?,
-        one_less_card: row.try_get("one_less_card")?,
-        all_or_nothing: row.try_get("all_or_nothing")?,
-        detrimental_characters: row.try_get("detrimental_characters")?,
+        timed: row.timed,
+        time_base: f64::from(row.time_base),
+        time_per_turn: i64::from(row.time_per_turn),
+        speedrun: row.speedrun,
+        card_cycle: row.card_cycle,
+        deck_plays: row.deck_plays,
+        empty_clues: row.empty_clues,
+        one_extra_card: row.one_extra_card,
+        one_less_card: row.one_less_card,
+        all_or_nothing: row.all_or_nothing,
+        detrimental_characters: row.detrimental_characters,
         table_name: None,
         max_players: None,
     })
 }
-pub fn validate_standard_record(row: &sqlx::postgres::PgRow) -> Result<()> {
+pub fn validate_standard_record(row: &crate::archive::GameRecord) -> Result<()> {
     options_from_record(row)?;
     Ok(())
 }

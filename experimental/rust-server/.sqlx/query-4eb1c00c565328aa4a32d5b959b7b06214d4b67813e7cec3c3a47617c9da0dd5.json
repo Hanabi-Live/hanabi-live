@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM active_games WHERE game_id=$1 AND revision=$2 AND checkpoint=$3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4eb1c00c565328aa4a32d5b959b7b06214d4b67813e7cec3c3a47617c9da0dd5"
+}

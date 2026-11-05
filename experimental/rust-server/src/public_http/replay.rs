@@ -1,5 +1,4 @@
 use super::*;
-use sqlx::Row;
 
 pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value> {
     let raw = params
@@ -18,7 +17,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
         .ok_or_else(|| Error::not_found("Error: That game does not exist in the database."))?;
     let row = archive.game;
     let players = archive.players;
-    if players.len() != usize::try_from(row.try_get::<i16, _>("num_players")?)?
+    if players.len() != usize::try_from(row.num_players)?
         || !players
             .iter()
             .enumerate()
@@ -26,11 +25,11 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     {
         return Err(anyhow::anyhow!("Inconsistent historical participant seats").into());
     }
-    let variant_id = i64::from(row.try_get::<i16, _>("variant_id")?);
+    let variant_id = i64::from(row.variant_id);
     let variant = catalog::variant(variant_id)
         .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
     let custom = archive.deck;
-    let seed: String = row.try_get("seed")?;
+    let seed: String = row.seed.clone();
     let deck = if let Some(bytes) = &custom {
         let cards = crate::game::decode_deck(bytes)?;
         if cards.len() > (state.config.deck_size)(variant_id as i32)? {
@@ -67,31 +66,31 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
         }
     }
     let mut options = serde_json::Map::new();
-    let starting_player: i16 = row.try_get("starting_player")?;
+    let starting_player: i16 = row.starting_player;
     if starting_player != 0 {
         options.insert("startingPlayer".into(), json!(starting_player));
     }
     if variant_id != 0 {
         options.insert("variant".into(), variant["name"].clone());
     }
-    for (db, wire) in data::OPTION_FIELDS {
-        if !matches!(
-            db,
-            "num_players" | "time_base" | "time_per_turn" | "starting_player"
-        ) && row.try_get::<bool, _>(db)?
-        {
+    for (enabled, wire) in [
+        (row.timed, "timed"),
+        (row.speedrun, "speedrun"),
+        (row.card_cycle, "cardCycle"),
+        (row.deck_plays, "deckPlays"),
+        (row.empty_clues, "emptyClues"),
+        (row.one_extra_card, "oneExtraCard"),
+        (row.one_less_card, "oneLessCard"),
+        (row.all_or_nothing, "allOrNothing"),
+        (row.detrimental_characters, "detrimentalCharacters"),
+    ] {
+        if enabled {
             options.insert(wire.into(), json!(true));
         }
     }
-    if row.try_get::<bool, _>("timed")? {
-        options.insert(
-            "timeBase".into(),
-            json!(row.try_get::<i32, _>("time_base")?),
-        );
-        options.insert(
-            "timePerTurn".into(),
-            json!(row.try_get::<i32, _>("time_per_turn")?),
-        );
+    if row.timed {
+        options.insert("timeBase".into(), json!(row.time_base));
+        options.insert("timePerTurn".into(), json!(row.time_per_turn));
     }
     let mut result = json!({"id":id,"players":players.iter().map(|p| &p.name).collect::<Vec<_>>(),
         "deck":deck,"actions":archive.actions});
@@ -104,7 +103,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     if custom.is_none() {
         result["seed"] = json!(seed);
     }
-    if row.try_get::<bool, _>("detrimental_characters")? {
+    if row.detrimental_characters {
         let mut characters = Vec::new();
         for p in &players {
             let id = i64::from(p.character_assignment);

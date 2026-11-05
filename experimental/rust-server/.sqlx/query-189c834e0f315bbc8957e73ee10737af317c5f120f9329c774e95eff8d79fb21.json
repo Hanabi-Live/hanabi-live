@@ -1,0 +1,340 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM user_settings WHERE user_id=$1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "user_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "desktop_notification",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "desktop_notification"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "sound_move",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "sound_move"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "sound_timer",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "sound_timer"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "keldon_mode",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "keldon_mode"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "colorblind_mode",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "colorblind_mode"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "real_life_mode",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "real_life_mode"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "reverse_hands",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "reverse_hands"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "style_numbers",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "style_numbers"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "show_timer_in_untimed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "show_timer_in_untimed"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "speedrun_preplay",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "speedrun_preplay"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "speedrun_mode",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "speedrun_mode"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "hyphenated_conventions",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "hyphenated_conventions"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
+        "name": "volume",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "volume"
+          }
+        }
+      },
+      {
+        "ordinal": 14,
+        "name": "create_table_variant",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_variant"
+          }
+        }
+      },
+      {
+        "ordinal": 15,
+        "name": "create_table_timed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_timed"
+          }
+        }
+      },
+      {
+        "ordinal": 16,
+        "name": "create_table_time_base_minutes",
+        "type_info": "Float8",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_time_base_minutes"
+          }
+        }
+      },
+      {
+        "ordinal": 17,
+        "name": "create_table_time_per_turn_seconds",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_time_per_turn_seconds"
+          }
+        }
+      },
+      {
+        "ordinal": 18,
+        "name": "create_table_speedrun",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_speedrun"
+          }
+        }
+      },
+      {
+        "ordinal": 19,
+        "name": "create_table_card_cycle",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_card_cycle"
+          }
+        }
+      },
+      {
+        "ordinal": 20,
+        "name": "create_table_deck_plays",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_deck_plays"
+          }
+        }
+      },
+      {
+        "ordinal": 21,
+        "name": "create_table_empty_clues",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_empty_clues"
+          }
+        }
+      },
+      {
+        "ordinal": 22,
+        "name": "create_table_one_extra_card",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_one_extra_card"
+          }
+        }
+      },
+      {
+        "ordinal": 23,
+        "name": "create_table_one_less_card",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_one_less_card"
+          }
+        }
+      },
+      {
+        "ordinal": 24,
+        "name": "create_table_all_or_nothing",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_all_or_nothing"
+          }
+        }
+      },
+      {
+        "ordinal": 25,
+        "name": "create_table_detrimental_characters",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_detrimental_characters"
+          }
+        }
+      },
+      {
+        "ordinal": 26,
+        "name": "create_table_max_players",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_settings",
+            "name": "create_table_max_players"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "189c834e0f315bbc8957e73ee10737af317c5f120f9329c774e95eff8d79fb21"
+}

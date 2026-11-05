@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET password_hash=$2, old_password_hash=NULL WHERE id=$1\n         AND password_hash IS NOT DISTINCT FROM $3\n         AND old_password_hash IS NOT DISTINCT FROM $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "924ad04e9859f3875045cd30a6fd07e55a9484543181d131fe904017fbc9984d"
+}

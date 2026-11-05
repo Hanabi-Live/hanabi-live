@@ -9,7 +9,9 @@ use futures_util::{SinkExt, StreamExt, future::BoxFuture};
 use regex::Regex;
 use reqwest::Method;
 use serde_json::{Value, json};
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
+#[cfg(test)]
+use sqlx::Row;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -486,22 +488,16 @@ impl Bridge {
     pub async fn mirror(&self, chat_id: i32, supplied: Option<&str>) -> Result<()> {
         let _guard = self.outbound.lock().await;
         self.app()?;
-        let row=sqlx::query(
-            "SELECT c.message,c.source,c.discord_message_id,u.username FROM chat_log c
-             LEFT JOIN users u ON u.id=c.user_id WHERE c.id=$1 AND c.room='lobby' AND c.deleted_at IS NULL"
-        ).bind(chat_id).fetch_optional(&self.pool).await?;
+        let row=sqlx::query!("SELECT c.message,c.source,c.discord_message_id,u.username FROM chat_log c
+             LEFT JOIN users u ON u.id=c.user_id WHERE c.id=$1 AND c.room='lobby' AND c.deleted_at IS NULL", chat_id).fetch_optional(&self.pool).await?;
         let Some(row) = row else {
             return Ok(());
         };
-        let source: String = row.try_get("source")?;
-        if source == "discord"
-            || row
-                .try_get::<Option<String>, _>("discord_message_id")?
-                .is_some()
-        {
+        let source: String = row.source.clone();
+        if source == "discord" || row.discord_message_id.clone().is_some() {
             return Ok(());
         }
-        let message: String = row.try_get("message")?;
+        let message: String = row.message.clone();
         let persisted = if source == "user" {
             decode_html(&message)
         } else {
@@ -528,8 +524,7 @@ impl Bridge {
         let username = if source == "server" {
             String::new()
         } else {
-            row.try_get::<Option<String>, _>("username")?
-                .unwrap_or_default()
+            row.username.clone().unwrap_or_default()
         };
         let id = self.send(&outbound_text(&username, raw), true).await?;
         if link_copy(&self.pool, chat_id, &id).await? {
@@ -730,41 +725,39 @@ pub async fn insert_message(
 ) -> Result<Option<(i32, DateTime<Utc>)>> {
     let mut tx = pool.begin().await?;
     if let Some(id) = message_id {
-        sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
-            .bind(id)
+        sqlx::query!("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id)
             .execute(&mut *tx)
             .await?;
     }
-    let result = sqlx::query_as(
+    let result = sqlx::query!(
         "INSERT INTO chat_log(user_id,source,discord_name,message,room,discord_message_id)
          VALUES(0,'discord',$1,$2,'lobby',$3)
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL DO NOTHING
          RETURNING id,datetime_sent",
+        name,
+        text,
+        message_id,
     )
-    .bind(name)
-    .bind(text)
-    .bind(message_id)
     .fetch_optional(&mut *tx)
     .await?;
     tx.commit().await?;
-    Ok(result)
+    Ok(result.map(|row| (row.id, row.datetime_sent)))
 }
 
 pub async fn delete_message(pool: &PgPool, id: &str) -> Result<Option<i32>> {
     ensure!(!id.is_empty(), "Missing Discord identity");
     let mut tx = pool.begin().await?;
-    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
-        .bind(id)
+    sqlx::query!("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id)
         .execute(&mut *tx)
         .await?;
-    let result = sqlx::query_scalar(
+    let result = sqlx::query_scalar!(
         "INSERT INTO chat_log(user_id,source,message,room,discord_message_id,deleted_at)
          VALUES(0,'discord','','lobby',$1,NOW())
          ON CONFLICT(discord_message_id) WHERE discord_message_id IS NOT NULL
          DO UPDATE SET message='',discord_name=NULL,deleted_at=EXCLUDED.deleted_at
          WHERE chat_log.deleted_at IS NULL RETURNING id",
+        id
     )
-    .bind(id)
     .fetch_optional(&mut *tx)
     .await?;
     tx.commit().await?;
@@ -777,28 +770,26 @@ pub async fn link_copy(pool: &PgPool, chat_id: i32, id: &str) -> Result<bool> {
         "Invalid Discord copy identity"
     );
     let mut tx = pool.begin().await?;
-    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))")
-        .bind(id)
+    sqlx::query!("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", id)
         .execute(&mut *tx)
         .await?;
-    let existing = sqlx::query("SELECT id,deleted_at FROM chat_log WHERE discord_message_id=$1")
-        .bind(id)
-        .fetch_optional(&mut *tx)
-        .await?;
+    let existing = sqlx::query!(
+        "SELECT id,deleted_at FROM chat_log WHERE discord_message_id=$1",
+        id
+    )
+    .fetch_optional(&mut *tx)
+    .await?;
     let mut deleted = false;
     if let Some(row) = existing
-        && row.try_get::<i32, _>("id")? != chat_id
+        && row.id != chat_id
     {
         ensure!(
-            row.try_get::<Option<DateTime<Utc>>, _>("deleted_at")?
-                .is_some(),
+            row.deleted_at.is_some(),
             "Discord copy belongs to another live message"
         );
-        deleted=sqlx::query("UPDATE chat_log SET message='',discord_name=NULL,deleted_at=NOW() WHERE id=$1 AND room='lobby' AND deleted_at IS NULL")
-            .bind(chat_id).execute(&mut *tx).await?.rows_affected()>0;
+        deleted=sqlx::query!("UPDATE chat_log SET message='',discord_name=NULL,deleted_at=NOW() WHERE id=$1 AND room='lobby' AND deleted_at IS NULL", chat_id).execute(&mut *tx).await?.rows_affected()>0;
     } else {
-        sqlx::query("UPDATE chat_log SET discord_message_id=$2 WHERE id=$1 AND room='lobby' AND deleted_at IS NULL")
-            .bind(chat_id).bind(id).execute(&mut *tx).await?;
+        sqlx::query!("UPDATE chat_log SET discord_message_id=$2 WHERE id=$1 AND room='lobby' AND deleted_at IS NULL", chat_id, id).execute(&mut *tx).await?;
     }
     tx.commit().await?;
     Ok(deleted)

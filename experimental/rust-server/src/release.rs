@@ -235,17 +235,18 @@ pub async fn check_migration_target() -> Result<()> {
         .database(&field("PGDATABASE")?)
         .ssl_mode(PgSslMode::Disable);
     let mut connection = PgConnection::connect_with(&options).await?;
-    let exists: bool =
-        sqlx::query_scalar("SELECT to_regclass('public.schema_version') IS NOT NULL")
-            .fetch_one(&mut connection)
-            .await?;
+    let exists: bool = sqlx::query_scalar!(
+        "SELECT to_regclass('public.schema_version') IS NOT NULL AS \"value!\""
+    )
+    .fetch_one(&mut connection)
+    .await?;
     if exists {
-        let (version, count): (i32, i64) =
-            sqlx::query_as("SELECT COALESCE(MIN(version),-1),count(*) FROM schema_version")
+        let row =
+            sqlx::query!("SELECT COALESCE(MIN(version),-1) AS \"version!\",count(*) AS \"count!\" FROM schema_version")
                 .fetch_one(&mut connection)
                 .await?;
         ensure!(
-            count == 1 && version >= 0 && version <= target,
+            row.count == 1 && row.version >= 0 && row.version <= target,
             "Refusing schema downgrade or invalid schema version"
         );
     }

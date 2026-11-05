@@ -14,7 +14,6 @@ use hanabi_engine::{EndCondition, EngineState};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use sqlx::Row;
 use std::collections::{BTreeMap, HashSet};
 
 const STAGE_FORMAT: &str = "hanabi-go-cutover-1";
@@ -470,18 +469,18 @@ fn source_hash(payload: &str) -> String {
 pub async fn import(store: &Store) -> Result<usize> {
     let state = store.state()?;
     let mut transaction = store.archive.begin().await?;
-    sqlx::query("SET LOCAL idle_in_transaction_session_timeout=300000")
+    sqlx::query!("SET LOCAL idle_in_transaction_session_timeout=300000")
         .execute(&mut *transaction)
         .await?;
-    sqlx::query("SELECT pg_advisory_xact_lock(17482,0)")
+    sqlx::query!("SELECT pg_advisory_xact_lock(17482,0)")
         .execute(&mut *transaction)
         .await?;
-    sqlx::query("LOCK TABLE active_games IN SHARE ROW EXCLUSIVE MODE")
+    sqlx::query!("LOCK TABLE active_games IN SHARE ROW EXCLUSIVE MODE")
         .execute(&mut *transaction)
         .await?;
     store.require_offline_database().await?;
-    let rows = sqlx::query(
-        "SELECT game_id,revision,checkpoint FROM active_games ORDER BY game_id LIMIT 257",
+    let rows = sqlx::query!(
+        "SELECT game_id,revision,checkpoint FROM active_games ORDER BY game_id LIMIT 257"
     )
     .fetch_all(&mut *transaction)
     .await?;
@@ -531,16 +530,16 @@ pub async fn import(store: &Store) -> Result<usize> {
                 "Go cutover requires a fresh Redis namespace"
             );
         }
-        let ids: HashSet<i32> = rows.iter().map(|row| row.get("game_id")).collect();
+        let ids: HashSet<i32> = rows.iter().map(|row| row.game_id).collect();
         ensure!(
             stages.keys().all(|id| ids.contains(id)),
             "Go source changed since staging; do not discard either recovery copy"
         );
         let mut converted = vec![];
         for row in &rows {
-            let id: i32 = row.try_get("game_id")?;
-            let revision: i64 = row.try_get("revision")?;
-            let payload: String = row.try_get("checkpoint")?;
+            let id: i32 = row.game_id;
+            let revision: i64 = row.revision;
+            let payload: String = row.checkpoint.clone();
             ensure!(revision > 0, "Invalid Go checkpoint revision");
             if let Some((staged, _)) = stages.get(&id) {
                 ensure!(
@@ -556,11 +555,11 @@ pub async fn import(store: &Store) -> Result<usize> {
         }
         for (id, revision, payload, mut table) in converted {
             for player in table.players() {
-                let exists: bool = sqlx::query_scalar(
-                    "SELECT EXISTS(SELECT 1 FROM users WHERE id=$1 AND username=$2)",
+                let exists: bool = sqlx::query_scalar!(
+                    "SELECT EXISTS(SELECT 1 FROM users WHERE id=$1 AND username=$2) AS \"value!\"",
+                    player.id,
+                    &player.name
                 )
-                .bind(player.id)
-                .bind(&player.name)
                 .fetch_one(&mut *transaction)
                 .await?;
                 ensure!(exists, "Go player does not match the account database");
@@ -586,17 +585,19 @@ pub async fn import(store: &Store) -> Result<usize> {
         "Conflicting Go/Rust table identities"
     );
     for (id, (stage, _)) in &stages {
-        let completed: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM games WHERE id=$1)")
-            .bind(id)
-            .fetch_one(&mut *transaction)
-            .await?;
+        let completed: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM games WHERE id=$1) AS \"value!\"",
+            id
+        )
+        .fetch_one(&mut *transaction)
+        .await?;
         ensure!(
             !completed,
             "A staged game was completed outside the cutover; refusing resurrection"
         );
         ensure!(stage.table.id > 0, "Invalid staged table ID");
     }
-    let sequence: i64 = sqlx::query_scalar("SELECT last_value FROM games_id_seq")
+    let sequence: i64 = sqlx::query_scalar!("SELECT last_value FROM games_id_seq")
         .fetch_one(&mut *transaction)
         .await?;
     ensure!(
@@ -605,12 +606,12 @@ pub async fn import(store: &Store) -> Result<usize> {
     );
     store.require_offline_database().await?;
     for row in &rows {
-        let deleted = sqlx::query(
+        let deleted = sqlx::query!(
             "DELETE FROM active_games WHERE game_id=$1 AND revision=$2 AND checkpoint=$3",
+            row.game_id,
+            row.revision,
+            row.checkpoint.clone()
         )
-        .bind(row.try_get::<i32, _>("game_id")?)
-        .bind(row.try_get::<i64, _>("revision")?)
-        .bind(row.try_get::<String, _>("checkpoint")?)
         .execute(&mut *transaction)
         .await?;
         ensure!(

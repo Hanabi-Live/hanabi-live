@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)\n         VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET\n         token_hash=EXCLUDED.token_hash, token_lookup_hash=EXCLUDED.token_lookup_hash,\n         expires_at=EXCLUDED.expires_at, datetime_updated=NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d665bacae52d735976b95c38fdbfcfb5e14f717f253b4a4841dd2202bdb35549"
+}

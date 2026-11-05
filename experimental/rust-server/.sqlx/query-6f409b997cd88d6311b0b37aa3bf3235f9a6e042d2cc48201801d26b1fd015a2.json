@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id\n             WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "username"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6f409b997cd88d6311b0b37aa3bf3235f9a6e042d2cc48201801d26b1fd015a2"
+}

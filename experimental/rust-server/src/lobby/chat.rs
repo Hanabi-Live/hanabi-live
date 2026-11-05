@@ -4,7 +4,7 @@ use anyhow::{Result, ensure};
 use chrono::{DateTime, SecondsFormat, Utc};
 use serde::Deserialize;
 use serde_json::{Value, json};
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 use std::sync::LazyLock;
 
 #[derive(Deserialize)]
@@ -267,19 +267,19 @@ pub async fn private_message(
         ))]);
     };
     let message = escape_html(&message);
-    let row = sqlx::query(
+    let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)
          RETURNING id, datetime_sent",
+        caller.id,
+        target.id,
+        &message
     )
-    .bind(caller.id)
-    .bind(target.id)
-    .bind(&message)
     .fetch_one(pool)
     .await?;
     let data = json!({
         "msg":message, "who":caller.name, "source":"user", "recipient":target.name,
-        "pmID":row.try_get::<i32,_>("id")?,
-        "datetime":datetime(row.try_get("datetime_sent")?),
+        "pmID":row.id,
+        "datetime":datetime(row.datetime_sent),
     });
     Ok(vec![
         Effect::ToSelf {
@@ -306,10 +306,12 @@ pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Re
     let peer: Option<i32> = if username.is_empty() {
         None
     } else {
-        let found = sqlx::query_scalar("SELECT id FROM users WHERE normalized_username=$1")
-            .bind(normalize_string(username))
-            .fetch_optional(pool)
-            .await?;
+        let found = sqlx::query_scalar!(
+            "SELECT id FROM users WHERE normalized_username=$1",
+            normalize_string(username)
+        )
+        .fetch_optional(pool)
+        .await?;
         if found.is_none() {
             return Ok(vec![warning(&format!(
                 "User \"{}\" does not exist.",
@@ -319,7 +321,7 @@ pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Re
         found
     };
     let before = data["beforeID"].as_i64().unwrap_or(0);
-    let rows = sqlx::query(
+    let rows = sqlx::query!(
         "SELECT c.id, c.message, c.datetime_sent,
          COALESCE(u.username, 'Deleted user #' || c.user_id) AS who,
          COALESCE(r.username, 'Deleted user #' || c.recipient_id) AS recipient
@@ -330,20 +332,20 @@ pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Re
                 OR (c.user_id=$2 AND c.recipient_id=$1))
            AND ($3::bigint <= 0 OR c.id < $3)
          ORDER BY c.id DESC LIMIT $4",
+        caller.id,
+        peer,
+        before,
+        amount + 1
     )
-    .bind(caller.id)
-    .bind(peer)
-    .bind(before)
-    .bind(amount + 1)
     .fetch_all(pool)
     .await?;
     let more = rows.len() > amount as usize;
     let mut list = Vec::new();
     for row in rows.iter().take(amount as usize).rev() {
         list.push(json!({
-            "pmID":row.try_get::<i32,_>("id")?, "msg":row.try_get::<String,_>("message")?,
-            "who":row.try_get::<String,_>("who")?, "recipient":row.try_get::<String,_>("recipient")?,
-            "datetime":datetime(row.try_get("datetime_sent")?),
+            "pmID":row.id, "msg":row.message.clone(),
+            "who":row.who.clone(), "recipient":row.recipient.clone(),
+            "datetime":datetime(row.datetime_sent),
         }));
     }
     let mut response = json!({"list":list,"hasMore":more});
@@ -459,20 +461,20 @@ pub async fn lobby_chat(
     ))
     .chain(public_response.map(|r| (0, "server", "Hanab Live", r.clone(), r)))
     {
-        let row = sqlx::query(
+        let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')
              RETURNING id,datetime_sent",
+            id,
+            source,
+            &content
         )
-        .bind(id)
-        .bind(source)
-        .bind(&content)
         .fetch_one(&mut *tx)
         .await?;
-        let chat_id: i32 = row.try_get("id")?;
+        let chat_id: i32 = row.id;
         effects.push(Effect::Broadcast {
             command: "chat".into(),
             data: json!({"msg":content,"who":who,"source":source,"room":"lobby","chatID":chat_id,
-                "datetime":datetime(row.try_get("datetime_sent")?)}),
+                "datetime":datetime(row.datetime_sent)}),
         });
         effects.push(Effect::DiscordMirror {
             chat_id,
@@ -489,18 +491,15 @@ pub async fn lobby_chat(
 
 pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
     ensure!(count >= 0, "Invalid history count");
-    let rows = sqlx::query(
-        "SELECT c.*, u.username FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
+    let rows = sqlx::query!(    "SELECT c.*, u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
          WHERE c.room='lobby' AND c.deleted_at IS NULL
-         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
-    )
-    .bind(count)
+         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1", count)
     .fetch_all(pool)
     .await?;
     let mut result = Vec::new();
     for row in rows.iter().rev() {
-        let source: String = row.try_get("source")?;
-        let message: String = row.try_get("message")?;
+        let source: String = row.source.clone();
+        let message: String = row.message.clone();
         // Defend against private commands left in history by older servers.
         if source != "server"
             && let Some((command, _)) = parsed(&message)
@@ -521,16 +520,15 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
         }
         let who = match source.as_str() {
             "server" => "__server".into(),
-            "discord" => row
-                .try_get::<Option<String>, _>("discord_name")?
-                .unwrap_or_default(),
+            "discord" => row.discord_name.clone().unwrap_or_default(),
             _ => row
-                .try_get::<Option<String>, _>("username")?
-                .unwrap_or_else(|| format!("Deleted user #{}", row.get::<i32, _>("user_id"))),
+                .username
+                .clone()
+                .unwrap_or_else(|| format!("Deleted user #{}", row.user_id)),
         };
         result.push(json!({
-            "chatID":row.try_get::<i32,_>("id")?, "msg":message, "who":who,
-            "source":source, "room":"lobby", "datetime":datetime(row.try_get("datetime_sent")?),
+            "chatID":row.id, "msg":message, "who":who,
+            "source":source, "room":"lobby", "datetime":datetime(row.datetime_sent),
         }));
     }
     Ok(result)
@@ -538,20 +536,20 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
 
 /// Persist a runtime-generated lobby response before publishing it.
 pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
-    let row = sqlx::query(
+    let row = sqlx::query!(
         "INSERT INTO chat_log(user_id,source,message,room) VALUES(0,'server',$1,'lobby')
          RETURNING id, datetime_sent",
+        message
     )
-    .bind(message)
     .fetch_one(pool)
     .await?;
-    let chat_id: i32 = row.try_get("id")?;
+    let chat_id: i32 = row.id;
     Ok(vec![
         Effect::Broadcast {
             command: "chat".into(),
             data: json!({
                 "msg":message,"who":"Hanab Live","source":"server","room":"lobby",
-                "chatID":chat_id,"datetime":datetime(row.try_get("datetime_sent")?)
+                "chatID":chat_id,"datetime":datetime(row.datetime_sent)
             }),
         },
         Effect::DiscordMirror {

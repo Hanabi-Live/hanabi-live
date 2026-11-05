@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM user_reverse_friends WHERE user_id=$2 AND friend_id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4e3cd84b71b0d1a1efe2d496e6f91a66c762f97e220046b76ec7d6dc3ba0290f"
+}

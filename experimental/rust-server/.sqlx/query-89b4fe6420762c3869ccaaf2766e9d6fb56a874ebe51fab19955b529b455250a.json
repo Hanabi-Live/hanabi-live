@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT g.id FROM games g JOIN\n         (SELECT p.game_id FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id\n          WHERE f.user_id=$1\n          EXCEPT\n          SELECT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id\n         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "89b4fe6420762c3869ccaaf2766e9d6fb56a874ebe51fab19955b529b455250a"
+}

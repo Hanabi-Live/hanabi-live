@@ -29,7 +29,7 @@ use axum::{
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::json;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
 #[derive(Clone)]
@@ -72,21 +72,21 @@ pub fn session_id(headers: &HeaderMap, secret: &str) -> Option<i32> {
 }
 
 pub async fn is_banned(pool: &PgPool, ip: &str) -> Result<bool> {
-    Ok(
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM banned_ips WHERE ip=$1)")
-            .bind(ip)
-            .fetch_one(pool)
-            .await?,
+    Ok(sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM banned_ips WHERE ip=$1) AS \"value!\"",
+        ip
     )
+    .fetch_one(pool)
+    .await?)
 }
 
 pub async fn is_muted(pool: &PgPool, ip: &str) -> Result<bool> {
-    Ok(
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM muted_ips WHERE ip=$1)")
-            .bind(ip)
-            .fetch_one(pool)
-            .await?,
+    Ok(sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM muted_ips WHERE ip=$1) AS \"value!\"",
+        ip
     )
+    .fetch_one(pool)
+    .await?)
 }
 
 fn cookie_header(config: &AccountConfig, value: &str, clear: bool) -> String {
@@ -232,15 +232,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         }
     }
     let existing =
-        sqlx::query("SELECT id, password_hash, old_password_hash FROM users WHERE username=$1")
-            .bind(username)
+        sqlx::query!("SELECT id, password_hash AS \"password_hash?\", old_password_hash FROM users WHERE username=$1", username)
             .fetch_optional(&state.pool)
             .await?;
     let id: i32;
     if let Some(user) = existing {
-        id = user.try_get("id")?;
-        let legacy: Option<String> = user.try_get("old_password_hash")?;
-        let original: Option<String> = user.try_get("password_hash")?;
+        id = user.id;
+        let legacy: Option<String> = user.old_password_hash.clone();
+        let original: Option<String> = user.password_hash.clone();
         let correct = if let Some(ref legacy) = legacy {
             verify_legacy(&input.password, legacy)
         } else if let Some(ref original) = original {
@@ -294,11 +293,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
                 "That username cannot be transliterated to ASCII. Please try using a simpler username or try using less special characters.",
             ));
         }
-        let similar: Option<String> =
-            sqlx::query_scalar("SELECT username FROM users WHERE normalized_username=$1")
-                .bind(&normalized)
-                .fetch_optional(&state.pool)
-                .await?;
+        let similar: Option<String> = sqlx::query_scalar!(
+            "SELECT username FROM users WHERE normalized_username=$1",
+            &normalized
+        )
+        .fetch_optional(&state.pool)
+        .await?;
         if let Some(similar) = similar {
             return Ok(unauthorized(format!(
                 "That username is too similar to the existing user of \"{}\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
@@ -306,14 +306,14 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             )));
         }
         let hash = hash_password(input.password).await?;
-        id = sqlx::query_scalar(
+        id = sqlx::query_scalar!(
             "INSERT INTO users (username, normalized_username, password_hash, last_ip)
              VALUES ($1,$2,$3,$4) RETURNING id",
+            username,
+            normalized,
+            hash,
+            ip
         )
-        .bind(username)
-        .bind(normalized)
-        .bind(hash)
-        .bind(ip)
         .fetch_one(&state.pool)
         .await?;
     }
@@ -335,15 +335,15 @@ async fn update_password_if_unchanged(
     original: Option<&str>,
     legacy: Option<&str>,
 ) -> Result<bool> {
-    Ok(sqlx::query(
+    Ok(sqlx::query!(
         "UPDATE users SET password_hash=$2, old_password_hash=NULL WHERE id=$1
          AND password_hash IS NOT DISTINCT FROM $3
          AND old_password_hash IS NOT DISTINCT FROM $4",
+        id,
+        hash,
+        original,
+        legacy
     )
-    .bind(id)
-    .bind(hash)
-    .bind(original)
-    .bind(legacy)
     .execute(pool)
     .await?
     .rows_affected()
@@ -406,10 +406,10 @@ async fn identity_token(
                 "You must be logged in.",
             ));
         };
-        let username: Option<String> = sqlx::query_scalar("SELECT username FROM users WHERE id=$1")
-            .bind(id)
-            .fetch_optional(&state.pool)
-            .await?;
+        let username: Option<String> =
+            sqlx::query_scalar!("SELECT username FROM users WHERE id=$1", id)
+                .fetch_optional(&state.pool)
+                .await?;
         let Some(username) = username else {
             return Ok(api_error(
                 StatusCode::UNAUTHORIZED,
@@ -446,19 +446,17 @@ async fn identity(
             ));
         };
         let lookup = token_lookup_hash(&state.config.secret, &token)?;
-        let row = sqlx::query(
+        let row = sqlx::query!(
             "SELECT u.username, t.token_hash, t.expires_at FROM user_identity_tokens t
              JOIN users u ON u.id=t.user_id WHERE t.token_lookup_hash=$1",
+            lookup
         )
-        .bind(lookup)
         .fetch_optional(&state.pool)
         .await?;
         if let Some(row) = row {
-            let expiry: DateTime<Utc> = row.try_get("expires_at")?;
-            if expiry > Utc::now() && verify_password(token, row.try_get("token_hash")?).await? {
-                return Ok(
-                    Json(json!({"username":row.try_get::<String,_>("username")?})).into_response(),
-                );
+            let expiry: DateTime<Utc> = row.expires_at;
+            if expiry > Utc::now() && verify_password(token, row.token_hash.clone()).await? {
+                return Ok(Json(json!({"username":row.username.clone()})).into_response());
             }
         }
         Ok(api_error(

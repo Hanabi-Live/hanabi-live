@@ -214,11 +214,12 @@ async fn ban_check(
 ) -> Result<Response> {
     // Forwarded headers are deliberately not trusted. The listener supplies the peer address.
     if let Some(peer) = request.extensions().get::<ConnectInfo<SocketAddr>>() {
-        let banned: bool =
-            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM banned_ips WHERE ip = $1)")
-                .bind(peer.0.ip().to_string())
-                .fetch_one(&state.pool)
-                .await?;
+        let banned: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM banned_ips WHERE ip = $1) AS \"value!\"",
+            peer.0.ip().to_string()
+        )
+        .fetch_one(&state.pool)
+        .await?;
         if banned {
             return Ok((StatusCode::BAD_REQUEST, Json("Your IP address has been banned. Please contact an administrator if you think this is a mistake.")).into_response());
         }

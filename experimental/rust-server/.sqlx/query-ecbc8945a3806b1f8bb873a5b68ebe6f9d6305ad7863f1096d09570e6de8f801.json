@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ecbc8945a3806b1f8bb873a5b68ebe6f9d6305ad7863f1096d09570e6de8f801"
+}

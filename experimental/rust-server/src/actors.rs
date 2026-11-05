@@ -1940,7 +1940,12 @@ impl TableActor {
         let store = self.store.clone();
         let query = Box::pin(async move {
             // Only the validated numeric player count is interpolated; user IDs remain bound.
-            let rows = sqlx::query(sqlx::AssertSqlSafe(format!(
+            #[derive(sqlx::FromRow)]
+            struct VariantScore {
+                variant_id: i16,
+                score: i16,
+            }
+            let rows = sqlx::query_as::<_, VariantScore>(sqlx::AssertSqlSafe(format!(
                 "SELECT variant_id,best_score{count} AS score FROM user_stats WHERE user_id=ANY($1)"
             )))
             .bind(ids)
@@ -1948,11 +1953,8 @@ impl TableActor {
             .await?;
             let mut completed = HashSet::new();
             for row in rows {
-                use sqlx::Row;
-                let id = u32::try_from(row.try_get::<i16, _>("variant_id")?)?;
-                if i32::from(row.try_get::<i16, _>("score")?)
-                    == hanabi_engine::get_variant_by_id(id)?.max_score
-                {
+                let id = u32::try_from(row.variant_id)?;
+                if i32::from(row.score) == hanabi_engine::get_variant_by_id(id)?.max_score {
                     completed.insert(id);
                 }
             }

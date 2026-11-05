@@ -31,5 +31,6 @@ keldon
 
 # Specially formatted JSON files
 example_game_with_comments.jsonc
+experimental/rust-server/.sqlx
 
 # @template-customization-end

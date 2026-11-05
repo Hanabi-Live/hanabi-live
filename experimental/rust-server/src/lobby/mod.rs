@@ -249,8 +249,7 @@ pub async fn dispatch(
             if let Some(error) = error {
                 return Ok(Some(vec![warning(error)]));
             }
-            let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM games WHERE seed=$1")
-                .bind(seed)
+            let ids: Vec<i32> = sqlx::query_scalar!("SELECT id FROM games WHERE seed=$1", seed)
                 .fetch_all(pool)
                 .await?;
             let games = get_history(pool, &ids, true).await?;
@@ -281,10 +280,10 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning("Tags cannot be blank.")]));
             }
             let tag = normalize_string(trimmed);
-            let ids: Vec<i32> = sqlx::query_scalar(
+            let ids: Vec<i32> = sqlx::query_scalar!(
                 "SELECT DISTINCT game_id FROM game_tags WHERE tag=$1 ORDER BY game_id",
+                &tag
             )
-            .bind(&tag)
             .fetch_all(pool)
             .await?;
             let list = ids

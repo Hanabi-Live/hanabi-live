@@ -1,5 +1,13 @@
 use super::*;
-use sqlx::{Postgres, QueryBuilder, Row};
+use sqlx::{Postgres, QueryBuilder};
+
+#[derive(sqlx::FromRow)]
+struct HistoryRow {
+    game: Value,
+    names: Vec<String>,
+    seed_count: i32,
+    tags: String,
+}
 
 #[derive(Default)]
 pub(super) struct Selection {
@@ -32,11 +40,13 @@ pub(super) async fn players(
                 "Error: You can not specify the same player twice.",
             ));
         }
-        let user: Option<(i32, String)> =
-            sqlx::query_as("SELECT id, username FROM users WHERE normalized_username = $1")
-                .bind(normalized)
-                .fetch_optional(&state.pool)
-                .await?;
+        let user = sqlx::query!(
+            "SELECT id, username FROM users WHERE normalized_username = $1",
+            normalized
+        )
+        .fetch_optional(&state.pool)
+        .await?
+        .map(|row| (row.id, row.username));
         users.push(user.ok_or_else(|| {
             Error::not_found(if multiple {
                 format!("Error: The player of \"{name}\" does not exist in the database.")
@@ -230,16 +240,20 @@ pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) 
         "g.datetime_finished DESC,g.id DESC"
     });
     let mut result = Vec::new();
-    for row in qb.build().fetch_all(&state.pool).await? {
-        let g: Value = row.try_get("game")?;
+    for row in qb
+        .build_query_as::<HistoryRow>()
+        .fetch_all(&state.pool)
+        .await?
+    {
+        let g = row.game;
         let options = options(&g)?;
         result.push(json!({
             "id":g["id"],"options":options,"seed":g["seed"],"score":g["score"],
             "numTurns":g["num_turns"],"endCondition":g["end_condition"],
             "datetimeStarted":g["datetime_started"],"datetimeFinished":g["datetime_finished"],
-            "numGamesOnThisSeed":row.try_get::<i32,_>("seed_count")?,
-            "playerNames":row.try_get::<Vec<String>,_>("names")?,
-            "tags":row.try_get::<String,_>("tags")?,"incrementNumGames":false
+            "numGamesOnThisSeed":row.seed_count,
+            "playerNames":row.names,
+            "tags":row.tags,"incrementNumGames":false
         }));
     }
     Ok(json!(result))

@@ -1,0 +1,197 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "user_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "variant_id",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "variant_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "num_games",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "num_games"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "best_score2",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score2"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "best_score2_mod",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score2_mod"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "best_score3",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score3"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "best_score3_mod",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score3_mod"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "best_score4",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score4"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "best_score4_mod",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score4_mod"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "best_score5",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score5"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "best_score5_mod",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score5_mod"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "best_score6",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score6"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "best_score6_mod",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score6_mod"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
+        "name": "average_score",
+        "type_info": "Float8",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "average_score"
+          }
+        }
+      },
+      {
+        "ordinal": 14,
+        "name": "num_strikeouts",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "num_strikeouts"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "49ea445a5d59e10b53680cffd6c235aabafd92339a7859780b815123d979b369"
+}

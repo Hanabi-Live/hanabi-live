@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT game_id,revision,checkpoint FROM active_games ORDER BY game_id LIMIT 257",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "game_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "active_games",
+            "name": "game_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "revision",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "active_games",
+            "name": "revision"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "checkpoint",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "active_games",
+            "name": "checkpoint"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4fea8e38c454e386861552b11f5e1b7974265d1245d0b95403e335dd7cf47bf4"
+}

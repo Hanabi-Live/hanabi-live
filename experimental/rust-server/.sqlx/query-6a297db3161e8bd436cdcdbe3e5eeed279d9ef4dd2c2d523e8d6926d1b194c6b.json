@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6a297db3161e8bd436cdcdbe3e5eeed279d9ef4dd2c2d523e8d6926d1b194c6b"
+}

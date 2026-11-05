@@ -46,6 +46,36 @@ drain, and process replacement; it does not compile source inside the running
 server. SIGTERM and SIGINT also drain admitted work. Ownership/durability loss
 exits with an error rather than pretending shutdown succeeded.
 
+## Database queries
+
+Static production SQL uses SQLx checked macros. Shared game records, statistics,
+and settings have typed rows; completed-game counts and linked-account seed
+selection share their business definitions. Dynamic filters and allowlisted
+column updates remain parameterized SQL.
+
+Ordinary builds and lint use committed `.sqlx` metadata, with offline mode
+enabled in the repository's `.cargo/config.toml`. No database is required. After
+changing a query or schema, install the pinned preparation tool:
+
+```sh
+cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features rustls,postgres
+```
+
+Set `HANABI_TEST_DATABASE_URL` to a disposable local PostgreSQL administrator
+connection, then run from the repository root:
+
+```sh
+python3 experimental/rust-server/sqlx_schema.py --write
+python3 experimental/rust-server/sqlx_schema.py
+```
+
+The script creates a unique database, loads the canonical schema and migration
+version, prepares all Rust targets, and drops that database afterward. It
+refuses remote database hosts and does not read the application's `.env`. Commit
+the regenerated `.sqlx` files. CI runs the check-only command to reject missing
+or stale metadata. Keep nullable password hashes compatible with legacy
+accounts, and explicitly mark nullable outer-join columns.
+
 ## Immutable releases
 
 CI now publishes a separate `hanabi-live-rust-<revision>-linux-amd64` artifact.

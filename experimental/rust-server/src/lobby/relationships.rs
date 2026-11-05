@@ -2,22 +2,21 @@ use super::{Caller, Effect, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use anyhow::Result;
 use serde_json::json;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 
 pub async fn friends(pool: &PgPool, id: i32) -> Result<Vec<String>> {
-    Ok(sqlx::query_scalar(
+    Ok(sqlx::query_scalar!(
         "SELECT u.username FROM user_friends f JOIN users u ON u.id=f.friend_id
          WHERE f.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+        id
     )
-    .bind(id)
     .fetch_all(pool)
     .await?)
 }
 
 pub async fn friend_ids(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
     Ok(
-        sqlx::query_scalar("SELECT friend_id FROM user_friends WHERE user_id=$1")
-            .bind(id)
+        sqlx::query_scalar!("SELECT friend_id FROM user_friends WHERE user_id=$1", id)
             .fetch_all(pool)
             .await?,
     )
@@ -25,39 +24,43 @@ pub async fn friend_ids(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
 
 pub async fn change_friend(pool: &PgPool, id: i32, target: i32, add: bool) -> Result<bool> {
     let mut tx = pool.begin().await?;
-    sqlx::query("SELECT id FROM users WHERE id=$1 FOR UPDATE")
-        .bind(id)
+    sqlx::query!("SELECT id FROM users WHERE id=$1 FOR UPDATE", id)
         .fetch_one(&mut *tx)
         .await?;
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM user_friends WHERE user_id=$1 AND friend_id=$2)",
+    let exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM user_friends WHERE user_id=$1 AND friend_id=$2) AS \"value!\"",
+        id,
+        target
     )
-    .bind(id)
-    .bind(target)
     .fetch_one(&mut *tx)
     .await?;
     if exists == add {
         return Ok(false);
     }
     if add {
-        sqlx::query("INSERT INTO user_friends(user_id,friend_id) VALUES($1,$2)")
-            .bind(id)
-            .bind(target)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("INSERT INTO user_reverse_friends(user_id,friend_id) VALUES($2,$1) ON CONFLICT DO NOTHING")
-            .bind(id).bind(target).execute(&mut *tx).await?;
+        sqlx::query!(
+            "INSERT INTO user_friends(user_id,friend_id) VALUES($1,$2)",
+            id,
+            target
+        )
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query!("INSERT INTO user_reverse_friends(user_id,friend_id) VALUES($2,$1) ON CONFLICT DO NOTHING", id, target).execute(&mut *tx).await?;
     } else {
-        sqlx::query("DELETE FROM user_friends WHERE user_id=$1 AND friend_id=$2")
-            .bind(id)
-            .bind(target)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("DELETE FROM user_reverse_friends WHERE user_id=$2 AND friend_id=$1")
-            .bind(id)
-            .bind(target)
-            .execute(&mut *tx)
-            .await?;
+        sqlx::query!(
+            "DELETE FROM user_friends WHERE user_id=$1 AND friend_id=$2",
+            id,
+            target
+        )
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query!(
+            "DELETE FROM user_reverse_friends WHERE user_id=$2 AND friend_id=$1",
+            id,
+            target
+        )
+        .execute(&mut *tx)
+        .await?;
     }
     tx.commit().await?;
     Ok(true)
@@ -71,11 +74,11 @@ pub async fn relationship(
     room: &str,
 ) -> Result<Vec<Effect>> {
     if command == "chatLinked" {
-        let names: Vec<String> = sqlx::query_scalar(
+        let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
              WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+            caller.id
         )
-        .bind(caller.id)
         .fetch_all(pool)
         .await?;
         let message = if names.is_empty() {
@@ -108,27 +111,23 @@ pub async fn relationship(
     if verb != "info" && normalized == caller.normalized_name {
         return Ok(vec![warning(&format!("You cannot {verb} yourself."))]);
     }
-    let user = sqlx::query("SELECT id, username FROM users WHERE normalized_username=$1")
-        .bind(normalized)
-        .fetch_optional(pool)
-        .await?;
+    let user = sqlx::query!(
+        "SELECT id, username FROM users WHERE normalized_username=$1",
+        normalized
+    )
+    .fetch_optional(pool)
+    .await?;
     let Some(user) = user else {
         return Ok(vec![warning(&format!(
             "The username of \"{}\" does not exist in the database.",
             escape_html(name)
         ))]);
     };
-    let target: i32 = user.try_get("id")?;
+    let target: i32 = user.id;
     let escaped = escape_html(name);
     if verb == "info" {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM games g JOIN game_participants p ON p.game_id=g.id
-             WHERE p.user_id=$1 AND NOT g.speedrun AND g.end_condition=1",
-        )
-        .bind(target)
-        .fetch_one(pool)
-        .await?;
-        let canonical: String = user.try_get("username")?;
+        let count = crate::database::normal_game_count(pool, target, false).await?;
+        let canonical: String = user.username.clone();
         let url: String = canonical
             .bytes()
             .map(|b| {
@@ -153,18 +152,24 @@ pub async fn relationship(
     let changed = if friend {
         change_friend(pool, caller.id, target, add).await?
     } else {
-        let query = if add {
-            "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING"
-        } else {
-            "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2"
-        };
-        sqlx::query(query)
-            .bind(caller.id)
-            .bind(target)
+        let result = if add {
+            sqlx::query!(
+                "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+                caller.id,
+                target
+            )
             .execute(pool)
             .await?
-            .rows_affected()
-            != 0
+        } else {
+            sqlx::query!(
+                "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
+                caller.id,
+                target
+            )
+            .execute(pool)
+            .await?
+        };
+        result.rows_affected() != 0
     };
     if !changed {
         let message = match (friend, add) {

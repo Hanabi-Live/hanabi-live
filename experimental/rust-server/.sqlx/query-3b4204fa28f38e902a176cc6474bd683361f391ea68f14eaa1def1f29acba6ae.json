@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_settings(user_id) SELECT $1 WHERE NOT EXISTS\n         (SELECT 1 FROM user_settings WHERE user_id=$1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3b4204fa28f38e902a176cc6474bd683361f391ea68f14eaa1def1f29acba6ae"
+}

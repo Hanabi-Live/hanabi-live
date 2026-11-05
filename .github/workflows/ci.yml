@@ -196,6 +196,12 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
+      - name: Install pinned SQLx metadata tooling
+        run: cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features rustls,postgres
+      - name: Check SQLx metadata against a disposable schema
+        run: |
+          python3 -m unittest discover -s . -p sqlx_schema_test.py
+          python3 sqlx_schema.py
       - name: Test Rust rules, actors, and Redis/PostgreSQL durability
         run: |
           cargo test --locked

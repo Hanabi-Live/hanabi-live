@@ -178,16 +178,16 @@ pub async fn regenerate_token(pool: &PgPool, secret: &str, id: i32) -> Result<Id
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(token.clone()).await?;
     let expires_at = Utc::now() + Duration::hours(24);
-    sqlx::query(
+    sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)
          VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET
          token_hash=EXCLUDED.token_hash, token_lookup_hash=EXCLUDED.token_lookup_hash,
          expires_at=EXCLUDED.expires_at, datetime_updated=NOW()",
+        id,
+        hash,
+        lookup,
+        expires_at
     )
-    .bind(id)
-    .bind(hash)
-    .bind(lookup)
-    .bind(expires_at)
     .execute(pool)
     .await?;
     Ok(IdentityToken { token, expires_at })
