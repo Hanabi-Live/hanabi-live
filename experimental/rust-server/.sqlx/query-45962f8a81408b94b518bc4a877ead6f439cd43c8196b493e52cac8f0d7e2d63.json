@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM user_stats WHERE user_id=$1",
+  "query": "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,\n         best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod,\n         average_score,num_strikeouts FROM user_stats WHERE user_id=$1",
   "describe": {
     "columns": [
       {
@@ -192,5 +192,5 @@
       false
     ]
   },
-  "hash": "508df3c511d7585cefb38af059d69ac9b2f430114b8839e24a7b7a1925588068"
+  "hash": "45962f8a81408b94b518bc4a877ead6f439cd43c8196b493e52cac8f0d7e2d63"
 }

@@ -217,7 +217,8 @@ pub(super) async fn page(
             let mut stats = aggregate(&state, None, Some(id)).await?;
             let row = sqlx::query_as!(
                 crate::database::VariantStats,
-                "SELECT * FROM variant_stats WHERE variant_id::bigint=$1",
+                "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,
+                 num_max_scores,average_score,num_strikeouts FROM variant_stats WHERE variant_id::bigint=$1",
                 id
             )
             .fetch_optional(&state.pool)
@@ -362,7 +363,9 @@ async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>)
 async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>> {
     let rows = sqlx::query_as!(
         crate::database::UserStats,
-        "SELECT * FROM user_stats WHERE user_id=$1",
+        "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
+         best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod,
+         average_score,num_strikeouts FROM user_stats WHERE user_id=$1",
         id
     )
     .fetch_all(&state.pool)

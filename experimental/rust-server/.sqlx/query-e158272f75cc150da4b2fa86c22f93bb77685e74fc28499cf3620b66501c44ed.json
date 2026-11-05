@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM user_settings WHERE user_id=$1 LIMIT 1",
+  "query": "SELECT user_id,desktop_notification,sound_move,sound_timer,keldon_mode,colorblind_mode,\n         real_life_mode,reverse_hands,style_numbers,show_timer_in_untimed,speedrun_preplay,speedrun_mode,\n         hyphenated_conventions,volume,create_table_variant,create_table_timed,create_table_time_base_minutes,\n         create_table_time_per_turn_seconds,create_table_speedrun,create_table_card_cycle,create_table_deck_plays,\n         create_table_empty_clues,create_table_one_extra_card,create_table_one_less_card,create_table_all_or_nothing,\n         create_table_detrimental_characters,create_table_max_players FROM user_settings WHERE user_id=$1 LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -336,5 +336,5 @@
       false
     ]
   },
-  "hash": "189c834e0f315bbc8957e73ee10737af317c5f120f9329c774e95eff8d79fb21"
+  "hash": "e158272f75cc150da4b2fa86c22f93bb77685e74fc28499cf3620b66501c44ed"
 }

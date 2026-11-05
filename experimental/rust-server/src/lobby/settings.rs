@@ -63,7 +63,12 @@ const FIELDS: &[(&str, &str, &str)] = &[
 pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Value> {
     let row = sqlx::query_as!(
         crate::database::UserSettings,
-        "SELECT * FROM user_settings WHERE user_id=$1 LIMIT 1",
+        "SELECT user_id,desktop_notification,sound_move,sound_timer,keldon_mode,colorblind_mode,
+         real_life_mode,reverse_hands,style_numbers,show_timer_in_untimed,speedrun_preplay,speedrun_mode,
+         hyphenated_conventions,volume,create_table_variant,create_table_timed,create_table_time_base_minutes,
+         create_table_time_per_turn_seconds,create_table_speedrun,create_table_card_cycle,create_table_deck_plays,
+         create_table_empty_clues,create_table_one_extra_card,create_table_one_less_card,create_table_all_or_nothing,
+         create_table_detrimental_characters,create_table_max_players FROM user_settings WHERE user_id=$1 LIMIT 1",
         id
     )
     .fetch_optional(pool)

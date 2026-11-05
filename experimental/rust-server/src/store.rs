@@ -375,7 +375,10 @@ impl Store {
         self.check_state()?;
         let existing = sqlx::query_as!(
             crate::archive::GameRecord,
-            "SELECT * FROM games WHERE id=$1",
+            "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
+             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished
+             FROM games WHERE id=$1",
             s.game_id
         )
         .fetch_optional(&mut *tx)
@@ -814,7 +817,9 @@ impl Store {
             .unwrap_or(0);
         let row = sqlx::query_as!(
             crate::database::UserStats,
-            "SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2",
+            "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
+             best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod,
+             average_score,num_strikeouts FROM user_stats WHERE user_id=$1 AND variant_id=$2",
             id,
             variant as i16
         )
@@ -1249,6 +1254,7 @@ mod tests {
         let Some((admin, pool, name)) = database().await? else {
             return Ok(());
         };
+        crate::accounts::test_support::legacy_column_order(&pool).await?;
         let redis = RedisFixture::start(true).await?;
         let state = RedisState::connect(&redis.url, "native-store-integration").await?;
         let store = Store::fixture(pool, state);

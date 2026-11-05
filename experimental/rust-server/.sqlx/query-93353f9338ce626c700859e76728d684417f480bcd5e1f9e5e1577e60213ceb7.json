@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM games WHERE id=$1",
+  "query": "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,\n             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,\n             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished\n             FROM games WHERE id=$1",
   "describe": {
     "columns": [
       {
@@ -276,5 +276,5 @@
       false
     ]
   },
-  "hash": "10c6e5223eb1bcf8b9c8fdf6228d7917f05ebeed51a7905811b61da2de5ff61e"
+  "hash": "93353f9338ce626c700859e76728d684417f480bcd5e1f9e5e1577e60213ceb7"
 }

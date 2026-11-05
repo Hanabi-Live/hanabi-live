@@ -8,6 +8,14 @@ import sqlx_schema
 
 
 class SchemaPreparationTests(unittest.TestCase):
+    def test_positional_queries_cannot_depend_on_physical_column_order(self):
+        for query in ("SELECT * FROM games", "SELECT c.*, u.username FROM chat_log c",
+                      "SELECT c.id, c.* FROM chat_log c"):
+            with self.subTest(query=query), self.assertRaises(ValueError):
+                sqlx_schema.require_explicit_columns(query)
+        sqlx_schema.require_explicit_columns("SELECT count(*) FROM games")
+        sqlx_schema.require_explicit_columns("SELECT g.id,g.score FROM games g")
+
     def test_only_local_connections_are_accepted(self):
         for url in (
             "",

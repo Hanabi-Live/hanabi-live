@@ -491,9 +491,13 @@ pub async fn lobby_chat(
 
 pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
     ensure!(count >= 0, "Invalid history count");
-    let rows = sqlx::query!(    "SELECT c.*, u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
+    let rows = sqlx::query!(
+        "SELECT c.id,c.user_id,c.source,c.message,c.discord_name,c.datetime_sent,
+         u.username AS \"username?\" FROM chat_log c LEFT JOIN users u ON u.id=c.user_id
          WHERE c.room='lobby' AND c.deleted_at IS NULL
-         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1", count)
+         ORDER BY c.datetime_sent DESC,c.id DESC LIMIT $1",
+        count
+    )
     .fetch_all(pool)
     .await?;
     let mut result = Vec::new();

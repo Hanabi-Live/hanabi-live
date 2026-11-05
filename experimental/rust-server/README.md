@@ -53,6 +53,11 @@ and settings have typed rows; completed-game counts and linked-account seed
 selection share their business definitions. Dynamic filters and allowlisted
 column updates remain parameterized SQL.
 
+Checked macros decode by column position. Always list columns explicitly:
+production tables upgraded over time can have a different physical column order
+than a fresh schema. The metadata check rejects wildcard projections; runtime
+regressions also exercise reordered columns.
+
 Ordinary builds and lint use committed `.sqlx` metadata, with offline mode
 enabled in the repository's `.cargo/config.toml`. No database is required. After
 changing a query or schema, install the pinned preparation tool:

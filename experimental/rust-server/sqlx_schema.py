@@ -2,8 +2,10 @@
 """Generate or check SQLx metadata using a fresh, disposable local database."""
 
 import argparse
+import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 from urllib.parse import parse_qs, urlsplit, urlunsplit
@@ -12,6 +14,11 @@ import uuid
 SQLX_VERSION = "0.9.0"
 ROOT = Path(__file__).resolve().parents[2]
 CRATE = Path(__file__).resolve().parent
+
+
+def require_explicit_columns(query):
+    if re.search(r"(?:\bSELECT|,)\s*(?:\w+\.)?\*\s*(?:,|\bFROM)", query, re.IGNORECASE):
+        raise ValueError("SQLx checked queries must name columns explicitly, not SELECT *")
 
 
 def database_urls(url):
@@ -73,6 +80,8 @@ def main():
             env=env,
             check=True,
         )
+        for path in (CRATE / ".sqlx").glob("query-*.json"):
+            require_explicit_columns(json.loads(path.read_text())["query"])
     finally:
         subprocess.run(
             ["dropdb", "--force", "--maintenance-db", admin, name],

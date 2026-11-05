@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM variant_stats WHERE variant_id::bigint=$1",
+  "query": "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,\n                 num_max_scores,average_score,num_strikeouts FROM variant_stats WHERE variant_id::bigint=$1",
   "describe": {
     "columns": [
       {
@@ -132,5 +132,5 @@
       false
     ]
   },
-  "hash": "3588d4c090f1a2efc32ff537f12338fd4bbd20bc746ccb9992ad49531c9aba5e"
+  "hash": "03aecec581936075fa2cf6b4192871d0a116130f217baa3672af5de291957cc4"
 }
