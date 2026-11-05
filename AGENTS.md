@@ -66,6 +66,11 @@ production-sized data, including sparse histories, users without friends,
 HTTP/2, all supported host names, and simultaneous reconnects. A successful
 checkpoint import or anonymous health request alone is not sufficient.
 
+Legacy Go reused table IDs, so a `chat_log` room such as `table123` can contain
+unrelated historical messages. Capture diagnostic chat row IDs and delete only
+those exact IDs after verifying ownership. Never clean up chat by room or source
+alone.
+
 ### Deploying Go from source (legacy/reference)
 
 The existing production installation uses this procedure. Opt-in CI artifact
