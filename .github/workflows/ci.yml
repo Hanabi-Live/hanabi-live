@@ -92,6 +92,8 @@ jobs:
           context: .
           load: true
           tags: hanabi-live-ci
+          # A cache-only prepare does not materialize layers for this separate build.
+          cache-from: type=gha,scope=hanabi-container
 
   lint:
     runs-on: ubuntu-latest
@@ -140,22 +142,8 @@ jobs:
 
       - uses: ./.github/workflows/setup-go
 
-      # Cache scheduling hints only; all tests still execute against fresh transforms.
-      - name: Restore test scheduling history
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: dist/jest-cache/perf-cache-*
-          key: jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-${{ github.sha }}
-          restore-keys: |
-            jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-
       - name: Test the TypeScript code
-        run: npm run test -- --cacheDirectory="$GITHUB_WORKSPACE/dist/jest-cache"
-      - name: Save test scheduling history
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: dist/jest-cache/perf-cache-*
-          key: jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-${{ github.sha }}
+        run: npm run test
 
   client_new:
     runs-on: ubuntu-latest

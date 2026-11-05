@@ -56,6 +56,7 @@ run_parallel 1 bash "$DIR/check_shellcheck.sh"
 run_parallel 1 bash "$DIR/check_templates.sh"
 run_parallel 2 npm run check-variant-files
 run_parallel 1 npm run lint-package-json
+run_parallel 1 npx eslint --max-warnings 0 jest.config.cjs jest-sequencer.config.cjs
 
 status=0
 for pid in "${process_ids[@]}"; do

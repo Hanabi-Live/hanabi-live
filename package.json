@@ -96,6 +96,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@jest/test-sequencer": "30.5.2",
     "@types/jest": "30.0.0",
     "complete-cli": "1.5.35",
     "complete-lint": "5.27.0",
