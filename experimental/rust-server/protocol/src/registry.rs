@@ -1,0 +1,126 @@
+use crate::*;
+use anyhow::{Context, Result, bail};
+use serde::de::DeserializeOwned;
+use serde_json::Value;
+use std::{collections::BTreeMap, sync::LazyLock};
+
+macro_rules! client_contracts {
+    ($apply:ident) => {
+        $apply! {
+            "chat" => ChatRequest, ChatRequest;
+            "chatPM" => ChatPmRequest, LegacyChatPmRequest;
+            "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
+            "chatFriend" => ChatUserRequest, ChatUserRequest;
+            "chatUnfriend" => ChatUserRequest, ChatUserRequest;
+            "chatLink" => ChatUserRequest, ChatUserRequest;
+            "chatUnlink" => ChatUserRequest, ChatUserRequest;
+            "chatPlayerInfo" => ChatUserRequest, ChatUserRequest;
+            "chatLinked" => ChatLinkedRequest, ChatLinkedRequest;
+            "chatRead" => TableRequest, TableRequest;
+            "chatTyping" => TableRequest, TableRequest;
+            "tableJoin" => TableJoinRequest, TableJoinRequest;
+            "tableLeave" => TableRequest, TableRequest;
+            "tableReattend" => TableRequest, TableRequest;
+            "tableSetLeader" => TableLeaderRequest, TableLeaderRequest;
+            "tableSetVariant" => TableVariantRequest, TableVariantRequest;
+            "tableStart" => TableStartRequest, TableStartRequest;
+            "tableRestart" => TableRestartRequest, TableRestartRequest;
+            "tableSuggest" => TableSuggestRequest, TableSuggestRequest;
+            "tableSpectate" => TableSpectateRequest, TableSpectateRequest;
+            "tableUnattend" => TableCommand, TableCommand;
+            "tableTerminate" => TableCommand, TableCommand;
+        }
+    };
+}
+
+macro_rules! server_contracts {
+    ($apply:ident) => {
+        $apply! {
+            "chat" => Chat, Chat;
+            "chatDelete" => ChatDelete, ChatDelete;
+            "chatList" => ChatList, ChatList;
+            "chatPMHistory" => ChatHistory, ChatHistory;
+            "chatTyping" => ChatTyping, ChatTyping;
+            "joined" => TableRequest, TableRequest;
+            "left" => TableRequest, TableRequest;
+            "tableGone" => TableRequest, TableRequest;
+            "tableStart" => TableStarted, TableStarted;
+        }
+    };
+}
+
+static VALIDATORS: LazyLock<BTreeMap<String, jsonschema::Validator>> = LazyLock::new(|| {
+    schemas()
+        .into_iter()
+        .map(|(name, schema)| {
+            let validator = jsonschema::options()
+                .with_format("utf8-request-id", |value: &str| {
+                    value.len() <= MAX_REQUEST_ID_BYTES
+                })
+                .should_validate_formats(true)
+                .build(&schema)
+                .expect("Wire DTO schemas must be valid");
+            (name, validator)
+        })
+        .collect()
+});
+
+/// Validate before deserializing: serde's Option alone would accept explicit null.
+pub fn validate<T: JsonSchema>(value: &Value) -> Result<()> {
+    let name = T::schema_name();
+    let validator = VALIDATORS
+        .get(name.as_ref())
+        .context("Unregistered wire DTO")?;
+    if let Err(error) = validator.validate(value) {
+        // Do not put private message contents in parser errors or logs.
+        bail!("Invalid {name} payload at {}", error.instance_path());
+    }
+    Ok(())
+}
+
+pub fn decode<T: JsonSchema + DeserializeOwned>(value: &Value) -> Result<T> {
+    validate::<T>(value)?;
+    T::deserialize(value).with_context(|| format!("Invalid {} representation", T::schema_name()))
+}
+
+pub fn decode_client(name: &str, value: &Value) -> Result<Option<Value>> {
+    macro_rules! dispatch {
+        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+            match name {
+                $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
+                _ => Ok(None),
+            }
+        };
+    }
+    client_contracts!(dispatch)
+}
+
+pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
+    macro_rules! dispatch {
+        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+            match name {
+                $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
+                _ => Ok(None),
+            }
+        };
+    }
+    server_contracts!(dispatch)
+}
+
+pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
+    macro_rules! names {
+        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+            BTreeMap::from([$(( $command, stringify!($canonical) )),+])
+        };
+    }
+    client_contracts!(names)
+}
+
+pub fn server_contracts() -> BTreeMap<&'static str, &'static str> {
+    macro_rules! names {
+        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+            BTreeMap::from([$(( $command, stringify!($canonical) )),+])
+        };
+    }
+    server_contracts!(names)
+}

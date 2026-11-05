@@ -532,7 +532,10 @@ impl Bridge {
                 self.app()?.as_ref(),
                 vec![Effect::Broadcast {
                     command: "chatDelete".into(),
-                    data: json!({"chatID":chat_id,"room":"lobby"}),
+                    data: json!(hanabi_protocol::ChatDelete {
+                        chat_id: i64::from(chat_id),
+                        room: hanabi_protocol::LobbyRoom::Lobby
+                    }),
                 }],
             )
             .await?;
@@ -654,9 +657,20 @@ impl Bridge {
                     self.subscribe(author, &name, subscription == "/subscribe")
                         .await?;
                 } else {
-                    self.publish_effects(vec![Effect::Broadcast {command:"chat".into(),data:json!({
-                        "chatID":chat_id,"msg":rendered,"who":name,"source":"discord","room":"lobby","datetime":time
-                    })}]).await?;
+                    self.publish_effects(vec![Effect::Broadcast {
+                        command: "chat".into(),
+                        data: json!(hanabi_protocol::Chat {
+                            chat_id: Some(i64::from(chat_id)),
+                            who: Some(name.clone()),
+                            room: Some("lobby".into()),
+                            ..hanabi_protocol::Chat::new(
+                                rendered,
+                                hanabi_protocol::ChatSource::Discord,
+                                time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true)
+                            )
+                        }),
+                    }])
+                    .await?;
                     if class == lobby::Classification::Public {
                         self.publish_effects(lobby::external_command(&self.pool, &text).await?)
                             .await?;
@@ -676,7 +690,10 @@ impl Bridge {
                     if let Some(chat_id) = delete_message(&self.pool, id).await? {
                         self.publish_effects(vec![Effect::Broadcast {
                             command: "chatDelete".into(),
-                            data: json!({"chatID":chat_id,"room":"lobby"}),
+                            data: json!(hanabi_protocol::ChatDelete {
+                                chat_id: i64::from(chat_id),
+                                room: hanabi_protocol::LobbyRoom::Lobby
+                            }),
                         }])
                         .await?;
                     }
@@ -724,7 +741,20 @@ impl Bridge {
         let notice = format!("@{name} {action} the @Ping Crew.");
         let rendered = self.render(&notice).await;
         if let Some((id, time)) = insert_message(&self.pool, "", &rendered, None).await? {
-            self.publish_effects(vec![Effect::Broadcast {command:"chat".into(),data:json!({"chatID":id,"msg":rendered,"who":"","source":"discord","room":"lobby","datetime":time})}]).await?;
+            self.publish_effects(vec![Effect::Broadcast {
+                command: "chat".into(),
+                data: json!(hanabi_protocol::Chat {
+                    chat_id: Some(i64::from(id)),
+                    who: Some(String::new()),
+                    room: Some("lobby".into()),
+                    ..hanabi_protocol::Chat::new(
+                        rendered,
+                        hanabi_protocol::ChatSource::Discord,
+                        time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true)
+                    )
+                }),
+            }])
+            .await?;
         }
         self.send(&format!("`@{name}` {action} the `@Ping Crew`."), false)
             .await?;

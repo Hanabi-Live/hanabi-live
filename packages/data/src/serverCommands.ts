@@ -1,3 +1,12 @@
+import type { chatHistoryMessageSchema as serverCommandChatPMHistoryMessageData } from "./generated/protocol";
+import {
+  chatSchema as serverCommandChatData,
+  chatDeleteSchema as serverCommandChatDeleteData,
+  chatListSchema as serverCommandChatListData,
+  chatHistorySchema as serverCommandChatPMHistoryData,
+  chatTypingSchema as serverCommandChatTypingData,
+  tableRequestSchema as serverCommandTableIDData,
+} from "./generated/protocol";
 // Datetime properties are in the form: "2023-12-29T18:21:43.812446Z"
 
 import { options } from "@hanabi-live/game";
@@ -17,75 +26,25 @@ import { userID } from "./types/UserID";
 // Data definitions
 // ----------------
 
-const serverCommandChatData = z
-  .object({
-    msg: z.string().min(1), // Pre-escaped HTML string
-    who: z.string().optional(), // plain string
-    source: z.enum(["user", "server", "discord"]),
-    datetime: z.string().min(1), // new Date(x) string
-    chatID: z.number().int().positive().optional(),
-    pmID: z.number().int().positive().optional(),
-    room: z.string().optional(), // room code string; empty routes to the current room
-    recipient: z.string().optional(), // plain string
-  })
-  .strict()
-  .readonly();
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandChatData extends z.infer<
   typeof serverCommandChatData
 > {}
-
-const serverCommandChatDeleteData = z
-  .object({
-    chatID: z.number().int().positive(),
-    room: z.literal("lobby"),
-  })
-  .strict()
-  .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandChatDeleteData extends z.infer<
   typeof serverCommandChatDeleteData
 > {}
 
-const serverCommandChatListData = z
-  .object({
-    list: serverCommandChatData.array().readonly(),
-    unread: z.number().int(),
-  })
-  .strict()
-  .readonly();
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandChatListData extends z.infer<
   typeof serverCommandChatListData
 > {}
 
-const serverCommandChatPMHistoryMessageData = z
-  .object({
-    pmID: z.number().int().positive(),
-    msg: z.string().min(1),
-    who: z.string().min(1),
-    recipient: z.string().min(1),
-    datetime: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandChatPMHistoryMessageData extends z.infer<
   typeof serverCommandChatPMHistoryMessageData
 > {}
-
-const serverCommandChatPMHistoryData = z
-  .object({
-    list: serverCommandChatPMHistoryMessageData.array().readonly(),
-    hasMore: z.boolean(),
-    room: z.string().min(1).optional(),
-  })
-  .strict()
-  .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerCommandChatPMHistoryData extends z.infer<
@@ -146,7 +105,7 @@ const serverCommandGameData = z.strictObject({
   passwordProtected: z.boolean(),
   maxPlayers: z.number().int(),
 });
-const serverCommandTableIDData = z.strictObject({ tableID });
+
 const serverCommandSpectatorsData = z.strictObject({
   tableID,
   spectators: spectator.array(),
@@ -295,13 +254,7 @@ const serverCommandMaintenanceData = z
   })
   .strict()
   .readonly();
-const serverCommandChatTypingData = z
-  .strictObject({
-    tableID,
-    name: z.string(),
-    typing: z.boolean(),
-  })
-  .readonly();
+
 const serverCommandShutdownData = z
   .object({
     shuttingDown: z.boolean(),

@@ -9,6 +9,7 @@ use crate::{
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
+use hanabi_protocol::{Chat, ChatSource, ChatTyping, TableId, TableRequest, TableStarted};
 use rand::RngExt;
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -1106,7 +1107,12 @@ impl Hub {
                     entry.view = effects.view;
                     entry.published = true;
                     if hidden {
-                        self.broadcast(&frame("tableGone", json!({"tableID":effects.table})));
+                        self.broadcast(&frame(
+                            "tableGone",
+                            json!(TableRequest {
+                                table_id: TableId(effects.table)
+                            }),
+                        ));
                     }
                     for (session, status, table) in effects.statuses {
                         if self.current(&session) {
@@ -1138,7 +1144,12 @@ impl Hub {
                 }
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
-                        self.broadcast(&frame("tableGone", json!({"tableID":id})));
+                        self.broadcast(&frame(
+                            "tableGone",
+                            json!(TableRequest {
+                                table_id: TableId(id)
+                            }),
+                        ));
                     }
                 }
                 HubCommand::Quiesce(reply) => {
@@ -1176,7 +1187,26 @@ fn random_name(words: &[String]) -> String {
         .join(" ")
 }
 fn server_chat(id: u64, message: &str) -> Value {
-    json!({"msg":message,"who":"Hanab Live","source":"server","datetime":chat_time(),"room":if id==0{"lobby".into()}else{format!("table{id}")}})
+    json!(Chat {
+        who: Some("Hanab Live".into()),
+        room: Some(if id == 0 {
+            "lobby".into()
+        } else {
+            format!("table{id}")
+        }),
+        ..Chat::new(message, ChatSource::Server, chat_time())
+    })
+}
+fn authored_chat(id: u64, name: &str, message: &str) -> Value {
+    json!(Chat {
+        who: Some(name.into()),
+        room: Some(format!("table{id}")),
+        ..Chat::new(
+            crate::accounts::escape_html(message),
+            ChatSource::User,
+            chat_time()
+        )
+    })
 }
 fn chat_time() -> String {
     Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
@@ -1687,7 +1717,11 @@ impl TableActor {
     fn typing_messages(&self, e: &mut Effects, author: i32, name: &str, typing: bool) {
         let message = frame(
             "chatTyping",
-            json!({"tableID":self.table.id,"name":name,"typing":typing}),
+            ChatTyping {
+                table_id: TableId(self.table.id),
+                name: name.into(),
+                typing,
+            },
         );
         for a in self.audience().filter(|a| a.session.user != author) {
             e.messages.push((a.session.clone(), message.clone()));
@@ -1849,8 +1883,15 @@ impl TableActor {
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             e.statuses.push((s.clone(), 1, Some(self.table.id)));
             self.pregame_messages(&mut e);
-            e.messages
-                .push((s.clone(), frame("joined", json!({"tableID":self.table.id}))));
+            e.messages.push((
+                s.clone(),
+                frame(
+                    "joined",
+                    json!(TableRequest {
+                        table_id: TableId(self.table.id)
+                    }),
+                ),
+            ));
             self.chat_history(&mut e, &s, 0);
         } else {
             e.statuses.push((
@@ -1860,7 +1901,13 @@ impl TableActor {
             ));
             e.messages.push((
                 s.clone(),
-                frame("tableStart", json!({"tableID":self.table.id,"replay":true})),
+                frame(
+                    "tableStart",
+                    json!(TableStarted {
+                        table_id: TableId(self.table.id),
+                        replay: true
+                    }),
+                ),
             ));
         }
         for warning in warnings {
@@ -2603,7 +2650,12 @@ impl TableActor {
             self.pregame_messages(&mut e);
             e.messages.push((
                 session.clone(),
-                frame("joined", json!({"tableID":self.table.id})),
+                frame(
+                    "joined",
+                    json!(TableRequest {
+                        table_id: TableId(self.table.id)
+                    }),
+                ),
             ));
             self.chat_history(&mut e, &session, 0);
         } else {
@@ -2611,7 +2663,10 @@ impl TableActor {
                 session,
                 frame(
                     "tableStart",
-                    json!({"tableID":self.table.id,"replay":replay}),
+                    json!(TableStarted {
+                        table_id: TableId(self.table.id),
+                        replay
+                    }),
                 ),
             ));
         }
@@ -2657,8 +2712,15 @@ impl TableActor {
         self.attendees.remove(&session.user);
         let mut e = self.effects();
         e.statuses.push((session.clone(), 0, None));
-        e.messages
-            .push((session, frame("left", json!({"tableID":self.table.id}))));
+        e.messages.push((
+            session,
+            frame(
+                "left",
+                json!(TableRequest {
+                    table_id: TableId(self.table.id)
+                }),
+            ),
+        ));
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
         }
@@ -2832,7 +2894,10 @@ impl TableActor {
                 a.session.clone(),
                 frame(
                     "tableStart",
-                    json!({"tableID":self.table.id,"replay":replay}),
+                    json!(TableStarted {
+                        table_id: TableId(self.table.id),
+                        replay
+                    }),
                 ),
             ));
         }
@@ -3484,9 +3549,7 @@ impl TableActor {
                     })
                     .collect::<Result<Vec<_>>>()?,
             };
-            let mut messages = vec![
-                json!({"msg":crate::accounts::escape_html(&text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)}),
-            ];
+            let mut messages = vec![authored_chat(self.table.id, &session.name, &text)];
             messages.extend(
                 responses
                     .iter()
@@ -3521,7 +3584,7 @@ impl TableActor {
                 .chat_command(session, &text, data["publicBaseURL"].as_str().unwrap_or(""))
                 .await;
         }
-        let message = json!({"msg":crate::accounts::escape_html(&text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)});
+        let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
         ensure!(next.chat.len() < 4096, "Chat history is full");
         next.chat.push(TableChat {
@@ -3747,7 +3810,7 @@ impl TableActor {
             }
             _ => bail!("Unknown table chat command: /{command}"),
         }
-        let authored = json!({"msg":crate::accounts::escape_html(text),"who":session.name,"source":"user","datetime":chat_time(),"room":format!("table{}",self.table.id)});
+        let authored = authored_chat(self.table.id, &session.name, text);
         let notice = server_chat(self.table.id, &notice);
         next.chat.push(TableChat {
             id: None,
@@ -4145,7 +4208,11 @@ impl TableActor {
                     session.clone(),
                     frame(
                         "chatTyping",
-                        json!({"tableID":self.table.id,"name":a.session.name,"typing":true}),
+                        ChatTyping {
+                            table_id: TableId(self.table.id),
+                            name: a.session.name.clone(),
+                            typing: true,
+                        },
                     ),
                 ));
             }

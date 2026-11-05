@@ -38,6 +38,15 @@ passed. Fix any failures and rerun the full suite before pushing. If a required
 check cannot run or still fails, report the blocker instead of pushing. Run the
 relevant tests and builds as well; passing lint does not replace those checks.
 
+## Wire contracts
+
+Migrated public payloads are owned by `experimental/rust-server/protocol`,
+without database, actor, or game-engine dependencies. Update the Rust DTOs and
+shared compatibility fixtures, then run
+`bash scripts/bash/generate_protocol.sh`. Commit the generated TypeScript file;
+do not edit it by hand. `bash lint.sh` checks for generation drift. Keep legacy
+compatibility differences explicit.
+
 ## Production server
 
 The production server is `root@hanab.live`, with the repository at

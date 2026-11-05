@@ -1,0 +1,413 @@
+[
+  {
+    "name": "chat preserves escaped text and empty request ID",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "&lt;hello&gt;", "room": "lobby", "requestID": "" },
+    "valid": true
+  },
+  {
+    "name": "chat omits missing optional request ID",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "hello", "room": "table0" },
+    "valid": true
+  },
+  {
+    "name": "chat rejects explicit null request ID",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "hello", "room": "lobby", "requestID": null },
+    "valid": false
+  },
+  {
+    "name": "chat rejects empty messages",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "", "room": "lobby" },
+    "valid": false
+  },
+  {
+    "name": "chat rejects missing room",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "hello" },
+    "valid": false
+  },
+  {
+    "name": "chat rejects unknown fields",
+    "direction": "client",
+    "command": "chat",
+    "input": { "msg": "hello", "room": "lobby", "admin": true },
+    "valid": false
+  },
+  {
+    "name": "canonical private message",
+    "direction": "client",
+    "command": "chatPM",
+    "input": { "msg": "hello", "recipient": "Alice" },
+    "valid": true
+  },
+  {
+    "name": "classic private message room is native-only metadata",
+    "direction": "client",
+    "command": "chatPM",
+    "input": { "msg": "hello", "recipient": "Alice", "room": "table12" },
+    "valid": false,
+    "nativeValid": true
+  },
+  {
+    "name": "classic room cannot be null",
+    "direction": "client",
+    "command": "chatPM",
+    "input": { "msg": "hello", "recipient": "Alice", "room": null },
+    "valid": false
+  },
+  {
+    "name": "private history defaults amount but preserves absent filters",
+    "direction": "client",
+    "command": "chatPMHistoryGet",
+    "input": {},
+    "valid": true,
+    "normalized": { "amount": 0 }
+  },
+  {
+    "name": "private history accepts signed safe boundaries",
+    "direction": "client",
+    "command": "chatPMHistoryGet",
+    "input": {
+      "amount": -9007199254740991,
+      "beforeID": 9007199254740991,
+      "room": "",
+      "username": ""
+    },
+    "valid": true
+  },
+  {
+    "name": "private history rejects unsafe integers",
+    "direction": "client",
+    "command": "chatPMHistoryGet",
+    "input": { "amount": 9007199254740992 },
+    "valid": false
+  },
+  {
+    "name": "private history rejects null filters",
+    "direction": "client",
+    "command": "chatPMHistoryGet",
+    "input": { "beforeID": null },
+    "valid": false
+  },
+  {
+    "name": "native parser retains integral float token rejection",
+    "direction": "client",
+    "command": "chatPMHistoryGet",
+    "input": { "amount": 1.0 },
+    "valid": true,
+    "nativeValid": false
+  },
+  {
+    "name": "friend defaults",
+    "direction": "client",
+    "command": "chatFriend",
+    "input": {},
+    "valid": true,
+    "normalized": { "name": "", "room": "" }
+  },
+  {
+    "name": "linked defaults",
+    "direction": "client",
+    "command": "chatLinked",
+    "input": {},
+    "valid": true,
+    "normalized": { "room": "" }
+  },
+  {
+    "name": "join defaults password without coercing table ID",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": 0 },
+    "valid": true,
+    "normalized": { "tableID": 0, "password": "" }
+  },
+  {
+    "name": "join permits safe maximum table ID",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": 9007199254740991, "password": "secret" },
+    "valid": true
+  },
+  {
+    "name": "join rejects unsafe table ID",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": 9007199254740992 },
+    "valid": false
+  },
+  {
+    "name": "join rejects negative table ID",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": -1 },
+    "valid": false
+  },
+  {
+    "name": "join rejects string table ID",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": "1" },
+    "valid": false
+  },
+  {
+    "name": "join rejects null password instead of defaulting",
+    "direction": "client",
+    "command": "tableJoin",
+    "input": { "tableID": 1, "password": null },
+    "valid": false
+  },
+  {
+    "name": "leader defaults name",
+    "direction": "client",
+    "command": "tableSetLeader",
+    "input": { "tableID": 1 },
+    "valid": true,
+    "normalized": { "tableID": 1, "name": "" }
+  },
+  {
+    "name": "variant defaults nested options",
+    "direction": "client",
+    "command": "tableSetVariant",
+    "input": { "tableID": 1 },
+    "valid": true,
+    "normalized": { "tableID": 1, "options": { "variantName": "" } }
+  },
+  {
+    "name": "variant defaults supplied empty options",
+    "direction": "client",
+    "command": "tableSetVariant",
+    "input": { "tableID": 1, "options": {} },
+    "valid": true,
+    "normalized": { "tableID": 1, "options": { "variantName": "" } }
+  },
+  {
+    "name": "variant rejects null options",
+    "direction": "client",
+    "command": "tableSetVariant",
+    "input": { "tableID": 1, "options": null },
+    "valid": false
+  },
+  {
+    "name": "variant rejects unknown nested options",
+    "direction": "client",
+    "command": "tableSetVariant",
+    "input": {
+      "tableID": 1,
+      "options": { "variantName": "No Variant", "extra": true }
+    },
+    "valid": false
+  },
+  {
+    "name": "start preserves empty legacy intentions",
+    "direction": "client",
+    "command": "tableStart",
+    "input": {
+      "tableID": 1,
+      "intendedVariant": "",
+      "intendedPlayers": ["", "", "", "", "", ""]
+    },
+    "valid": true
+  },
+  {
+    "name": "start rejects seven intended players",
+    "direction": "client",
+    "command": "tableStart",
+    "input": {
+      "tableID": 1,
+      "intendedPlayers": ["a", "b", "c", "d", "e", "f", "g"]
+    },
+    "valid": false
+  },
+  {
+    "name": "start rejects null intentions",
+    "direction": "client",
+    "command": "tableStart",
+    "input": { "tableID": 1, "intendedPlayers": null },
+    "valid": false
+  },
+  {
+    "name": "restart defaults hidePregame",
+    "direction": "client",
+    "command": "tableRestart",
+    "input": { "tableID": 1 },
+    "valid": true,
+    "normalized": { "tableID": 1, "hidePregame": false }
+  },
+  {
+    "name": "spectate defaults legacy shadow seat",
+    "direction": "client",
+    "command": "tableSpectate",
+    "input": { "tableID": 1 },
+    "valid": true,
+    "normalized": { "tableID": 1, "shadowingPlayerIndex": -1 }
+  },
+  {
+    "name": "suggest defaults segment",
+    "direction": "client",
+    "command": "tableSuggest",
+    "input": { "tableID": 1 },
+    "valid": true,
+    "normalized": { "tableID": 1, "segment": 0 }
+  },
+  {
+    "name": "terminate retains optional receipt ID",
+    "direction": "client",
+    "command": "tableTerminate",
+    "input": { "tableID": 1, "requestID": "receipt" },
+    "valid": true
+  },
+  {
+    "name": "read rejects unknown fields",
+    "direction": "client",
+    "command": "chatRead",
+    "input": { "tableID": 1, "extra": false },
+    "valid": false
+  },
+  {
+    "name": "missing server chat fields stay omitted",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "msg": "&amp;",
+      "source": "server",
+      "datetime": "legacy date string"
+    },
+    "valid": true
+  },
+  {
+    "name": "server chat keeps empty routing fields",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "msg": "hello",
+      "source": "user",
+      "datetime": "date",
+      "who": "",
+      "room": "",
+      "recipient": "",
+      "chatID": 9007199254740991,
+      "pmID": 1
+    },
+    "valid": true
+  },
+  {
+    "name": "server chat rejects null optional fields",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "msg": "hello",
+      "source": "server",
+      "datetime": "date",
+      "who": null
+    },
+    "valid": false
+  },
+  {
+    "name": "server chat rejects unknown sources",
+    "direction": "server",
+    "command": "chat",
+    "input": { "msg": "hello", "source": "other", "datetime": "date" },
+    "valid": false
+  },
+  {
+    "name": "server chat rejects zero IDs",
+    "direction": "server",
+    "command": "chat",
+    "input": {
+      "msg": "hello",
+      "source": "user",
+      "datetime": "date",
+      "chatID": 0
+    },
+    "valid": false
+  },
+  {
+    "name": "chat deletion stays lobby-only",
+    "direction": "server",
+    "command": "chatDelete",
+    "input": { "chatID": 1, "room": "lobby" },
+    "valid": true
+  },
+  {
+    "name": "chat deletion rejects table room",
+    "direction": "server",
+    "command": "chatDelete",
+    "input": { "chatID": 1, "room": "table1" },
+    "valid": false
+  },
+  {
+    "name": "chat lists retain signed integer semantics",
+    "direction": "server",
+    "command": "chatList",
+    "input": { "list": [], "unread": -1 },
+    "valid": true
+  },
+  {
+    "name": "private history keeps absent room",
+    "direction": "server",
+    "command": "chatPMHistory",
+    "input": {
+      "list": [
+        {
+          "pmID": 1,
+          "msg": "hi",
+          "who": "Alice",
+          "recipient": "Bob",
+          "datetime": "date"
+        }
+      ],
+      "hasMore": false
+    },
+    "valid": true
+  },
+  {
+    "name": "private history rejects empty explicit room",
+    "direction": "server",
+    "command": "chatPMHistory",
+    "input": { "list": [], "hasMore": false, "room": "" },
+    "valid": false
+  },
+  {
+    "name": "typing retains empty names",
+    "direction": "server",
+    "command": "chatTyping",
+    "input": { "tableID": 0, "name": "", "typing": false },
+    "valid": true
+  },
+  {
+    "name": "joined notification",
+    "direction": "server",
+    "command": "joined",
+    "input": { "tableID": 0 },
+    "valid": true
+  },
+  {
+    "name": "table start notification",
+    "direction": "server",
+    "command": "tableStart",
+    "input": { "tableID": 1, "replay": true },
+    "valid": true
+  },
+  {
+    "name": "table start requires replay flag",
+    "direction": "server",
+    "command": "tableStart",
+    "input": { "tableID": 1 },
+    "valid": false
+  },
+  {
+    "name": "table gone rejects extra metadata",
+    "direction": "server",
+    "command": "tableGone",
+    "input": { "tableID": 1, "name": "old" },
+    "valid": false
+  }
+]

@@ -1,3 +1,14 @@
+import {
+  chatRequestSchema as clientCommandChatData,
+  chatLinkedRequestSchema as clientCommandChatLinkedData,
+  chatPmRequestSchema as clientCommandChatPMData,
+  chatHistoryRequestSchema as clientCommandChatPMHistoryGetData,
+  chatUserRequestSchema as clientCommandChatUserData,
+  tableRequestSchema as clientCommandTableData,
+  tableJoinRequestSchema as clientCommandTableJoinData,
+  tableLeaderRequestSchema as clientCommandTableSetLeaderData,
+  tableVariantRequestSchema as clientCommandTableSetVariantData,
+} from "./generated/protocol";
 // ----------------
 // Data definitions
 // ----------------
@@ -28,60 +39,21 @@ const clientCommandTableUpdateData = z.strictObject({
   ...tableCreationFields,
   tableID,
 });
-const clientCommandTableData = z.strictObject({ tableID });
+
 const clientCommandTagSearchData = z.strictObject({
   msg: z.string().default(""),
   room: z.string().default(""),
 });
-const clientCommandTableJoinData = z.strictObject({
-  tableID,
-  password: z.string().default(""),
-});
-const clientCommandTableSetLeaderData = z.strictObject({
-  tableID,
-  name: z.string().default(""),
-});
-const clientCommandTableSetVariantData = z.strictObject({
-  tableID,
-  options: z.strictObject({ variantName: z.string().default("") }).prefault({}),
-});
-
-const clientCommandChatData = z
-  .object({
-    msg: z.string().min(1),
-    room: z.string().min(1),
-    requestID: GAME_CLIENT_COMMAND_SCHEMAS.loaded.shape.requestID,
-  })
-  .strict()
-  .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatData extends z.infer<
   typeof clientCommandChatData
 > {}
 
-const clientCommandChatPMData = z
-  .object({
-    msg: z.string().min(1),
-    recipient: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatPMData extends z.infer<
   typeof clientCommandChatPMData
 > {}
-
-const clientCommandChatPMHistoryGetData = z
-  .object({
-    amount: z.number().int().default(0),
-    beforeID: z.number().int().optional(),
-    room: z.string().optional(),
-    username: z.string().optional(),
-  })
-  .strict()
-  .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatPMHistoryGetData extends z.infer<
@@ -89,17 +61,7 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
 > {}
 
 const clientCommandGetNameData = z.strictObject({}).optional();
-const clientCommandChatUserData = z
-  .strictObject({
-    name: z.string().default(""),
-    room: z.string().default(""),
-  })
-  .readonly()
-  .default({ name: "", room: "" });
-const clientCommandChatLinkedData = z
-  .strictObject({ room: z.string().default("") })
-  .readonly()
-  .default({ room: "" });
+
 const clientCommandHistoryData = z
   .strictObject({
     offset: z.number().int().default(0),

@@ -70,11 +70,15 @@ if [[ $shard != 1 ]]; then
     (cd "$DIR/$module" && go vet ./...) || status=1
   done
 
+  echo "Checking generated wire contracts."
+  bash "$DIR/scripts/bash/generate_protocol.sh" --check || status=1
+
   cd "$DIR/experimental/rust-server"
   echo "Checking Rust formatting and static analysis."
   cargo fmt --all --check || status=1
   cargo clippy --locked --all-targets -- -D warnings || status=1
   cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings || status=1
+  cargo clippy --locked --manifest-path protocol/Cargo.toml --all-targets -- -D warnings || status=1
   cd "$DIR"
 fi
 

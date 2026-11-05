@@ -84,9 +84,15 @@ fn warning(message: &str) -> Effect {
 fn notice(caller: &Caller, message: &str, room: &str) -> Effect {
     Effect::ToSelf {
         command: "chat".into(),
-        data: json!({
-            "msg":message, "who":"Hanab Live", "source":"server",
-            "datetime":chat::datetime(chrono::Utc::now()), "room":room, "recipient":caller.name
+        data: json!(hanabi_protocol::Chat {
+            who: Some("Hanab Live".into()),
+            room: Some(room.into()),
+            recipient: Some(caller.name.clone()),
+            ..hanabi_protocol::Chat::new(
+                message,
+                hanabi_protocol::ChatSource::Server,
+                chat::datetime(chrono::Utc::now())
+            )
         }),
     }
 }
@@ -177,28 +183,18 @@ pub async fn dispatch(
             ]
         }
         "chat" => {
-            return chat::lobby_chat(
-                pool,
-                secret,
-                caller,
-                text(&data, "msg")?,
-                text(&data, "room")?,
-                None,
-            )
-            .await;
+            let request = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
+            return chat::lobby_chat(pool, secret, caller, &request.msg, &request.room, None).await;
         }
 
         "chatPM" => {
-            chat::private_message(
-                pool,
-                caller,
-                online,
-                text(&data, "msg")?,
-                text(&data, "recipient")?,
-            )
-            .await?
+            let request = hanabi_protocol::decode::<hanabi_protocol::LegacyChatPmRequest>(&data)?;
+            chat::private_message(pool, caller, online, &request.msg, &request.recipient).await?
         }
-        "chatPMHistoryGet" => chat::private_history(pool, caller, &data).await?,
+        "chatPMHistoryGet" => {
+            let request = hanabi_protocol::decode::<hanabi_protocol::ChatHistoryRequest>(&data)?;
+            chat::private_history(pool, caller, &request).await?
+        }
         "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatLinked"
         | "chatPlayerInfo" => {
             relationships::relationship(

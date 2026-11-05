@@ -340,18 +340,31 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
             lobby::get_history(pool, &friend_ids, false)
         )?;
         initial.push(frame("chatList", json!({"list":chat,"unread":0})));
-        initial.push(frame("chat",json!({
-            "msg":"Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
-            "source":"server","datetime":Utc::now(),"room":"lobby"
-        })));
+        initial.push(frame("chat", hanabi_protocol::Chat {
+            room: Some("lobby".into()),
+            ..hanabi_protocol::Chat::new(
+                "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
+                hanabi_protocol::ChatSource::Server,
+                Utc::now().to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+            )
+        }));
         let motd = app.public.root.join("motd.txt");
         match tokio::fs::read_to_string(motd).await {
-            Ok(text) if !text.trim().is_empty()=>initial.push(frame("chat",json!({
-                "msg":format!("[Server Notice] {}",text.trim()),"who":"","source":"server","datetime":Utc::now(),"room":"lobby"
-            }))),
-            Ok(_)=>{},
-            Err(error) if error.kind()==std::io::ErrorKind::NotFound=>{},
-            Err(error)=>return Err(error.into()),
+            Ok(text) if !text.trim().is_empty() => initial.push(frame(
+                "chat",
+                hanabi_protocol::Chat {
+                    who: Some(String::new()),
+                    room: Some("lobby".into()),
+                    ..hanabi_protocol::Chat::new(
+                        format!("[Server Notice] {}", text.trim()),
+                        hanabi_protocol::ChatSource::Server,
+                        Utc::now().to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                    )
+                },
+            )),
+            Ok(_) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
         }
         initial.push(frame("gameHistory", json!(own)));
         if !friends.is_empty() {
@@ -764,8 +777,9 @@ async fn dispatch(app: &App, session: Arc<Session>, input: &str) -> Result<()> {
         generation: session.generation,
     };
     let effects = if command == "chat" {
-        let text = data["msg"].as_str().context("Missing message")?;
-        let room = data["room"].as_str().context("Missing room")?;
+        let request = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
+        let text = request.msg.as_str();
+        let room = request.room.as_str();
         let mut rendered = None;
         if room == "lobby"
             && let Ok(normalized) = accounts::normalize_chat(text)

@@ -1,7 +1,8 @@
 use super::{Caller, Effect, OnlineUser, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SecondsFormat, Utc};
+use hanabi_protocol::{Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sqlx::PgPool;
@@ -276,10 +277,11 @@ pub async fn private_message(
     )
     .fetch_one(pool)
     .await?;
-    let data = json!({
-        "msg":message, "who":caller.name, "source":"user", "recipient":target.name,
-        "pmID":row.id,
-        "datetime":datetime(row.datetime_sent),
+    let data = json!(Chat {
+        who: Some(caller.name.clone()),
+        recipient: Some(target.name.clone()),
+        pm_id: Some(i64::from(row.id)),
+        ..Chat::new(message, ChatSource::User, datetime(row.datetime_sent))
     });
     Ok(vec![
         Effect::ToSelf {
@@ -295,14 +297,18 @@ pub async fn private_message(
     ])
 }
 
-pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Result<Vec<Effect>> {
-    let amount = data["amount"].as_i64().unwrap_or(0);
+pub async fn private_history(
+    pool: &PgPool,
+    caller: &Caller,
+    data: &ChatHistoryRequest,
+) -> Result<Vec<Effect>> {
+    let amount = data.amount;
     if !(1..=100).contains(&amount) {
         return Ok(vec![warning(
             "Private message history amount must be between 1 and 100.",
         )]);
     }
-    let username = data["username"].as_str().unwrap_or("");
+    let username = data.username.as_deref().unwrap_or("");
     let peer: Option<i32> = if username.is_empty() {
         None
     } else {
@@ -320,7 +326,7 @@ pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Re
         }
         found
     };
-    let before = data["beforeID"].as_i64().unwrap_or(0);
+    let before = data.before_id.unwrap_or(0);
     let rows = sqlx::query!(
         "SELECT c.id, c.message, c.datetime_sent,
          COALESCE(u.username, 'Deleted user #' || c.user_id) AS who,
@@ -342,16 +348,22 @@ pub async fn private_history(pool: &PgPool, caller: &Caller, data: &Value) -> Re
     let more = rows.len() > amount as usize;
     let mut list = Vec::new();
     for row in rows.iter().take(amount as usize).rev() {
-        list.push(json!({
-            "pmID":row.id, "msg":row.message.clone(),
-            "who":row.who.clone(), "recipient":row.recipient.clone(),
-            "datetime":datetime(row.datetime_sent),
-        }));
+        list.push(ChatHistoryMessage {
+            pm_id: i64::from(row.id),
+            msg: row.message.clone(),
+            who: row.who.clone().context("Missing private message author")?,
+            recipient: row
+                .recipient
+                .clone()
+                .context("Missing private message recipient")?,
+            datetime: datetime(row.datetime_sent),
+        });
     }
-    let mut response = json!({"list":list,"hasMore":more});
-    if let Some(room) = data["room"].as_str().filter(|s| !s.is_empty()) {
-        response["room"] = json!(room);
-    }
+    let response = json!(ChatHistory {
+        list,
+        has_more: more,
+        room: data.room.clone().filter(|room| !room.is_empty()),
+    });
     Ok(vec![Effect::ToSelf {
         command: "chatPMHistory".into(),
         data: response,
@@ -473,8 +485,16 @@ pub async fn lobby_chat(
         let chat_id: i32 = row.id;
         effects.push(Effect::Broadcast {
             command: "chat".into(),
-            data: json!({"msg":content,"who":who,"source":source,"room":"lobby","chatID":chat_id,
-                "datetime":datetime(row.datetime_sent)}),
+            data: json!(Chat {
+                who: Some(who.into()),
+                room: Some("lobby".into()),
+                chat_id: Some(i64::from(chat_id)),
+                ..Chat::new(
+                    content,
+                    serde_json::from_value(json!(source))?,
+                    datetime(row.datetime_sent)
+                )
+            }),
         });
         effects.push(Effect::DiscordMirror {
             chat_id,
@@ -530,9 +550,15 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
                 .clone()
                 .unwrap_or_else(|| format!("Deleted user #{}", row.user_id)),
         };
-        result.push(json!({
-            "chatID":row.id, "msg":message, "who":who,
-            "source":source, "room":"lobby", "datetime":datetime(row.datetime_sent),
+        result.push(json!(Chat {
+            chat_id: Some(i64::from(row.id)),
+            who: Some(who),
+            room: Some("lobby".into()),
+            ..Chat::new(
+                message,
+                serde_json::from_value(json!(source))?,
+                datetime(row.datetime_sent)
+            )
         }));
     }
     Ok(result)
@@ -551,9 +577,11 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
     Ok(vec![
         Effect::Broadcast {
             command: "chat".into(),
-            data: json!({
-                "msg":message,"who":"Hanab Live","source":"server","room":"lobby",
-                "chatID":chat_id,"datetime":datetime(row.datetime_sent)
+            data: json!(Chat {
+                who: Some("Hanab Live".into()),
+                room: Some("lobby".into()),
+                chat_id: Some(i64::from(chat_id)),
+                ..Chat::new(message, ChatSource::Server, datetime(row.datetime_sent))
             }),
         },
         Effect::DiscordMirror {

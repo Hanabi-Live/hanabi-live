@@ -1,16 +1,13 @@
 import { options } from "@hanabi-live/game";
 import { z } from "zod";
+import {
+  CLIENT_WIRE_SCHEMAS,
+  SERVER_WIRE_SCHEMAS,
+  tableCommandSchema,
+} from "./generated/protocol";
 import { tableID } from "./types/TableID";
 
-const requestID = z
-  .string()
-  .max(128)
-  .refine(
-    (value) => new TextEncoder().encode(value).length <= 128,
-    "Request IDs cannot exceed 128 UTF-8 bytes.",
-  )
-  .optional();
-const tableRequest = z.strictObject({ tableID, requestID });
+const tableRequest = tableCommandSchema;
 export const GAME_CLIENT_COMMAND_SCHEMAS = {
   replayCreate: z.strictObject({
     source: z.enum(["id", "json"]),
@@ -20,14 +17,9 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
     password: z.string().default(""),
     shadowingPlayerIndex: z.int().default(-1),
   }),
-  tableRestart: tableRequest.extend({
-    hidePregame: z.boolean().default(false),
-  }),
-  tableSuggest: tableRequest.extend({ segment: z.int().default(0) }),
-  tableStart: tableRequest.extend({
-    intendedVariant: z.string().optional(),
-    intendedPlayers: z.string().array().max(6).optional(),
-  }),
+  tableRestart: CLIENT_WIRE_SCHEMAS.tableRestart,
+  tableSuggest: CLIENT_WIRE_SCHEMAS.tableSuggest,
+  tableStart: CLIENT_WIRE_SCHEMAS.tableStart,
   getGameInfo1: tableRequest,
   getGameInfo2: tableRequest,
   loaded: tableRequest,
@@ -45,10 +37,8 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
     room: z.string().default(""),
   }),
   tagsDeleteAll: tableRequest.extend({ room: z.string().default("") }),
-  tableUnattend: tableRequest,
-  tableSpectate: tableRequest.extend({
-    shadowingPlayerIndex: z.number().int().default(-1),
-  }),
+  tableUnattend: CLIENT_WIRE_SCHEMAS.tableUnattend,
+  tableSpectate: CLIENT_WIRE_SCHEMAS.tableSpectate,
   replayAction: tableRequest.extend({
     type: z.number().int(),
     segment: z.number().int().default(0),
@@ -130,7 +120,7 @@ const cardNote = z.strictObject({
 });
 const identity = z.strictObject({ suitIndex: integer, rank: integer });
 export const GAME_SERVER_COMMAND_SCHEMAS = {
-  tableStart: z.strictObject({ tableID, replay: z.boolean() }),
+  tableStart: SERVER_WIRE_SCHEMAS.tableStart,
   init: z.strictObject({
     tableID,
     playerNames: z.string().array(),

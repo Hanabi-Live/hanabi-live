@@ -108,13 +108,9 @@ impl Fields<'_> {
     }
     fn request(&mut self) -> Result<()> {
         self.field("requestID", Kind::String, None, true)?;
-        ensure!(
-            self.data
-                .get("requestID")
-                .and_then(Value::as_str)
-                .is_none_or(|id| id.len() <= 128),
-            "Invalid requestID"
-        );
+        if let Some(value) = self.data.get("requestID") {
+            hanabi_protocol::validate::<hanabi_protocol::RequestId>(value)?;
+        }
         Ok(())
     }
     fn finish(&self) -> Result<()> {
@@ -187,6 +183,9 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
     let (name, body) = input.split_once(' ').unwrap_or((input, "{}"));
     ensure!(COMMANDS.contains(&name), "Unknown client command");
     let mut data: Value = serde_json::from_str(body)?;
+    if let Some(parsed) = hanabi_protocol::decode_client(name, &data)? {
+        return Ok((name.into(), parsed));
+    }
     let map = data
         .as_object_mut()
         .ok_or_else(|| anyhow::anyhow!("Invalid command data"))?;
@@ -208,33 +207,6 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
         "historyGetSeed" => {
             fields.string("seed", None)?;
             fields.boolean("friends", Some(false))?;
-        }
-        "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo" => {
-            fields.string("name", Some(""))?;
-            fields.string("room", Some(""))?;
-        }
-        "chatLinked" => fields.string("room", Some(""))?,
-        "chatPMHistoryGet" => {
-            fields.integer("amount", Some(0))?;
-            fields.field("beforeID", Kind::Integer, None, true)?;
-            fields.field("room", Kind::String, None, true)?;
-            fields.field("username", Kind::String, None, true)?;
-        }
-        "chat" | "chatPM" => {
-            fields.string("msg", None)?;
-            let target = if name == "chat" { "room" } else { "recipient" };
-            fields.string(target, None)?;
-            ensure!(
-                !fields.data["msg"].as_str().unwrap().is_empty()
-                    && !fields.data[target].as_str().unwrap().is_empty(),
-                "Blank message"
-            );
-            if name == "chat" {
-                fields.request()?;
-            } else {
-                // Classic clients include their current room; PM delivery remains recipient-only.
-                fields.field("room", Kind::String, None, true)?;
-            }
         }
         "tagSearch" => {
             fields.string("msg", Some(""))?;
@@ -276,91 +248,49 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
         }
         _ => {
             fields.table()?;
+            fields.request()?;
             match name {
-                "chatRead" | "chatTyping" | "tableLeave" | "tableReattend" => {}
-                "tableJoin" => fields.string("password", Some(""))?,
-                "tableSetLeader" => fields.string("name", Some(""))?,
-                "tableSetVariant" => {
-                    fields.field("options", Kind::Any, Some(json!({})), false)?;
-                    let options = fields
-                        .data
-                        .get_mut("options")
-                        .unwrap()
-                        .as_object_mut()
-                        .ok_or_else(|| anyhow::anyhow!("Invalid options"))?;
-                    let mut options = Fields {
-                        data: options,
-                        allowed: vec![],
-                    };
-                    options.string("variantName", Some(""))?;
-                    options.finish()?;
+                "action" => {
+                    fields.integer("type", None)?;
+                    fields.integer("target", None)?;
+                    fields.integer("value", Some(0))?;
+                    ensure!(
+                        fields.data["type"]
+                            .as_i64()
+                            .is_some_and(|n| (0..=3).contains(&n)),
+                        "Invalid action type"
+                    );
                 }
-                _ => {
-                    fields.request()?;
-                    match name {
-                        "tableStart" => {
-                            fields.field("intendedVariant", Kind::String, None, true)?;
-                            fields.field("intendedPlayers", Kind::Any, None, true)?;
-                            ensure!(
-                                fields.data.get("intendedPlayers").is_none_or(|v| v
-                                    .as_array()
-                                    .is_some_and(
-                                        |a| a.len() <= 6 && a.iter().all(Value::is_string)
-                                    )),
-                                "Invalid intendedPlayers"
-                            );
-                        }
-                        "tableRestart" => fields.boolean("hidePregame", Some(false))?,
-                        "tableSuggest" => fields.integer("segment", Some(0))?,
-                        "tableSpectate" => fields.integer("shadowingPlayerIndex", Some(-1))?,
-                        "action" => {
-                            fields.integer("type", None)?;
-                            fields.integer("target", None)?;
-                            fields.integer("value", Some(0))?;
-                            ensure!(
-                                fields.data["type"]
-                                    .as_i64()
-                                    .is_some_and(|n| (0..=3).contains(&n)),
-                                "Invalid action type"
-                            );
-                        }
-                        "pause" => fields.string("setting", None)?,
-                        "note" => {
-                            fields.integer("order", None)?;
-                            fields.string("note", None)?;
-                        }
-                        "tag" | "tagDelete" => {
-                            fields.string("msg", None)?;
-                            fields.string("room", Some(""))?;
-                        }
-                        "tagsDeleteAll" => fields.string("room", Some(""))?,
-                        "replayAction" => {
-                            fields.integer("type", None)?;
-                            for name in ["segment", "order", "value"] {
-                                fields.integer(name, Some(0))?;
-                            }
-                            for name in ["sound", "actionJSON"] {
-                                fields.string(name, Some(""))?;
-                            }
-                            ensure!(
-                                fields.data["actionJSON"]
-                                    .as_str()
-                                    .unwrap()
-                                    .encode_utf16()
-                                    .count()
-                                    <= 65536,
-                                "Invalid actionJSON"
-                            );
-                        }
-                        "getGameInfo1"
-                        | "getGameInfo2"
-                        | "loaded"
-                        | "tableVoteForTermination"
-                        | "tableUnattend"
-                        | "tableTerminate" => {}
-                        _ => bail!("Unknown client command"),
+                "pause" => fields.string("setting", None)?,
+                "note" => {
+                    fields.integer("order", None)?;
+                    fields.string("note", None)?;
+                }
+                "tag" | "tagDelete" => {
+                    fields.string("msg", None)?;
+                    fields.string("room", Some(""))?;
+                }
+                "tagsDeleteAll" => fields.string("room", Some(""))?,
+                "replayAction" => {
+                    fields.integer("type", None)?;
+                    for name in ["segment", "order", "value"] {
+                        fields.integer(name, Some(0))?;
                     }
+                    for name in ["sound", "actionJSON"] {
+                        fields.string(name, Some(""))?;
+                    }
+                    ensure!(
+                        fields.data["actionJSON"]
+                            .as_str()
+                            .unwrap()
+                            .encode_utf16()
+                            .count()
+                            <= 65536,
+                        "Invalid actionJSON"
+                    );
                 }
+                "getGameInfo1" | "getGameInfo2" | "loaded" | "tableVoteForTermination" => {}
+                _ => bail!("Unknown client command"),
             }
         }
     }
@@ -371,6 +301,31 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn shared_client_compatibility_fixtures() {
+        let cases: Vec<Value> =
+            serde_json::from_str(include_str!("../../protocol/fixtures/compatibility.json"))
+                .unwrap();
+        for case in cases.iter().filter(|case| case["direction"] == "client") {
+            let result = parse(&format!(
+                "{} {}",
+                case["command"].as_str().unwrap(),
+                case["input"]
+            ));
+            let valid = case["nativeValid"]
+                .as_bool()
+                .unwrap_or(case["valid"].as_bool().unwrap());
+            assert_eq!(result.is_ok(), valid, "{}", case["name"]);
+            if let Ok((_, data)) = result {
+                assert_eq!(
+                    data,
+                    case.get("normalized").unwrap_or(&case["input"]).clone(),
+                    "{}",
+                    case["name"]
+                );
+            }
+        }
+    }
     #[test]
     fn every_registered_command_has_a_parser() {
         assert_eq!(COMMANDS.len(), 43);
