@@ -152,7 +152,8 @@ export async function evaluationDatabase(): Promise<EvaluationDatabase> {
     connect_timeout: 3,
     idle_timeout: 3,
     connection: {
-      statement_timeout: 2000,
+      // Database DDL can wait for a forced checkpoint during parallel tests.
+      statement_timeout: 30_000,
       lock_timeout: 2000,
       idle_in_transaction_session_timeout: 3000,
     },

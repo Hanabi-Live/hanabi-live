@@ -16,6 +16,12 @@ do not put unrelated operational details in installation instructions.
 
 ## Before pushing
 
+Use a topic branch and pull request for changes; do not push directly to `main`.
+Run relevant tests locally with the services and runtime settings CI uses, in
+addition to lint. Require a successful CI run for the exact PR revision before
+merging. A successful retry is not evidence that an intermittent failure was
+fixed; investigate it and distinguish infrastructure failures from regressions.
+
 Run the full repository linting suite from the repository root before every
 push:
 
