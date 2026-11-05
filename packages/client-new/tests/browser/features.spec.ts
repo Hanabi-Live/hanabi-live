@@ -72,6 +72,53 @@ async function login(page: Page, backend: string, name: string) {
   await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
+test("classic replies ignore server notices without losing the last user PM", async ({
+  browser,
+  backend,
+}) => {
+  const owner = await browser.newContext();
+  const guest = await browser.newContext();
+  try {
+    const alice = await owner.newPage();
+    const bob = await guest.newPage();
+    await alice.goto(`${backend}/lobby`);
+    await alice.locator("#login-username").fill("testReplyAlice");
+    await alice.locator("#login-password").fill("testReplyAlice");
+    await alice.locator("#login-button").click();
+    await alice.locator("#tutorial-no").click();
+    await expect(alice.locator("#lobby")).toBeVisible();
+    const input = alice.locator("#lobby-chat-input");
+    await input.fill("/friends");
+    await input.press("Enter");
+    await expect(alice.locator("#lobby-chat-text")).toContainText(
+      "Currently, you do not have any friends",
+    );
+    await input.fill("/r ");
+    await expect(input).toHaveValue("/r ");
+
+    await login(bob, backend, "testReplyBob");
+    await bob
+      .getByLabel("Chat message", { exact: true })
+      .fill("/pm testReplyAlice A private greeting.");
+    await bob.getByLabel("Chat message", { exact: true }).press("Enter");
+    await expect(alice.locator("#lobby-chat-text")).toContainText(
+      "A private greeting.",
+    );
+    await input.fill("/friends");
+    await input.press("Enter");
+    await expect(
+      alice.locator('#lobby-chat-text [id^="chat-line-"]').filter({
+        hasText: "Currently, you do not have any friends on your friends list.",
+      }),
+    ).toHaveCount(2);
+    await input.fill("/r ");
+    await expect(input).toHaveValue("/pm testReplyBob ");
+  } finally {
+    await owner.close();
+    await guest.close();
+  }
+});
+
 test("creation options, protected joins, invitations, friends, private chat and settings persist", async ({
   browser,
   backend,

@@ -552,6 +552,7 @@ function addInternal(
   // If we are receiving a private message (PM), record who it is from.
   if (
     updateLiveState
+    && data.source === "user"
     && data.recipient === globals.username
     && data.who !== undefined
   ) {

@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { SERVER_COMMAND_SCHEMAS, Status } from "@hanabi-live/data";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Profiler } from "react";
 import { Provider } from "react-redux";
@@ -49,7 +55,7 @@ function lobby(onRender: () => void) {
     </Provider>,
   );
   fireEvent.click(screen.getByRole("button", { name: /Bob/u }));
-  return send;
+  return { send, store };
 }
 
 it("selects the private recipient and channel in the same commit, including reopening the same person", () => {
@@ -82,7 +88,7 @@ it("selects the private recipient and channel in the same commit, including reop
 });
 
 it("keeps recipient edits focused and isolates private drafts from public chat and other recipients", async () => {
-  const send = lobby(vi.fn());
+  const { send } = lobby(vi.fn());
   const user = userEvent.setup();
   await user.click(screen.getByRole("button", { name: "Message" }));
   await user.type(screen.getByLabelText("Chat message"), "For Bob only");
@@ -107,4 +113,86 @@ it("keeps recipient edits focused and isolates private drafts from public chat a
   expect(screen.getByDisplayValue("Hello lobby")).toBeDefined();
   await user.click(screen.getByRole("button", { name: "Message" }));
   expect(screen.getByDisplayValue("For Bob only")).toBeDefined();
+});
+
+it("replies to the latest incoming user PM, ignoring notices, public messages and sent PMs", () => {
+  const { send, store } = lobby(vi.fn());
+  act(() => {
+    for (const message of [
+      { who: "Bob", recipient: "Alice", source: "user" },
+      { who: "Hanab Live", recipient: "Alice", source: "server" },
+      { who: "Alice", recipient: "Carol", source: "user" },
+      { who: "Dave", room: "lobby", source: "user" },
+    ]) {
+      store.dispatch(
+        actions.received({
+          command: "chat",
+          data: SERVER_COMMAND_SCHEMAS.chat.parse({
+            ...message,
+            msg: "A message.",
+            datetime: "2026-01-01T00:00:00Z",
+          }),
+        }),
+      );
+    }
+  });
+  fireEvent.change(screen.getByLabelText("Chat message"), {
+    target: { value: "/r Reply to Bob" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  expect(send).toHaveBeenLastCalledWith("chatPM", {
+    recipient: "Bob",
+    msg: "Reply to Bob",
+  });
+
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "chat",
+        data: SERVER_COMMAND_SCHEMAS.chat.parse({
+          who: "Carol",
+          recipient: "Alice",
+          source: "user",
+          msg: "A newer PM.",
+          datetime: "2026-01-01T00:01:00Z",
+        }),
+      }),
+    );
+  });
+  fireEvent.change(screen.getByLabelText("Chat message"), {
+    target: { value: "/r Reply to Carol" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  expect(send).toHaveBeenLastCalledWith("chatPM", {
+    recipient: "Carol",
+    msg: "Reply to Carol",
+  });
+});
+
+it("does not treat a server notice as a previous private correspondent", () => {
+  const { send, store } = lobby(vi.fn());
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "chat",
+        data: SERVER_COMMAND_SCHEMAS.chat.parse({
+          who: "Hanab Live",
+          recipient: "Alice",
+          source: "server",
+          msg: "Your friends list is empty.",
+          datetime: "2026-01-01T00:00:00Z",
+        }),
+      }),
+    );
+  });
+  fireEvent.change(screen.getByLabelText("Chat message"), {
+    target: { value: "/r Hello" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  expect(send).not.toHaveBeenCalledWith("chatPM", expect.anything());
+  expect(
+    screen.getByText(
+      "There is no previous private message to reply to, or the reply is empty.",
+    ),
+  ).toBeDefined();
 });

@@ -150,10 +150,12 @@ export function ChatPanel({
       return;
     }
     const lastPM = chat.findLast(
-      (message) => message.recipient !== undefined && message.recipient !== "",
+      (message) =>
+        message.source === "user"
+        && message.recipient === welcome.username
+        && message.who !== undefined,
     );
-    const replyTo =
-      lastPM?.who === welcome.username ? lastPM.recipient : lastPM?.who;
+    const replyTo = lastPM?.who;
     const delivered =
       channel === "private"
       && !/^\/(?:pm|pmhistory|r|w|whisper)(?:\s|$)/u.test(text)
