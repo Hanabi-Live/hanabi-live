@@ -600,16 +600,14 @@ mod tests {
     #[tokio::test]
     async fn ownership_replacement_fences_writes_and_old_owner_release() -> Result<()> {
         let fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "fence").await?;
+        let first = RedisState::connect(&fixture.url, "fence").await?;
         let id = StateId::Table(first.allocate_table().await?);
         first.save(id, 0, "owned").await?;
-        let occupied = RedisState::connect_timed(
-            &fixture.url,
-            "fence",
-            Duration::from_millis(500),
-            Duration::ZERO,
-        )
-        .await;
+        // Replacement must reject a second owner even when polling is briefly delayed.
+        std::thread::sleep(Duration::from_millis(650));
+        first.check()?;
+        let occupied =
+            RedisState::connect_timed(&fixture.url, "fence", LEASE_TIME, Duration::ZERO).await;
         ensure!(occupied.is_err(), "Two owners acquired the same namespace");
         let mut control = redis::Client::open(fixture.url.as_str())?
             .get_multiplexed_async_connection()
@@ -618,7 +616,7 @@ mod tests {
             .arg(&first.owner.key)
             .query_async::<i64>(&mut control)
             .await?;
-        let second = connect(&fixture, "fence").await?;
+        let second = RedisState::connect(&fixture.url, "fence").await?;
         ensure!(
             first.save(id, 1, "old owner").await.is_err(),
             "Missing ownership fence"

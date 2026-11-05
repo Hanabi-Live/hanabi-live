@@ -61,6 +61,9 @@ CI runs the browsers in the official Playwright container, matched to the
 installed package version, while keeping backend processes on the host. Failure
 screenshots and traces are retained.
 
+CI runs `@audit` cases and the remaining flows on separate runners; both groups
+must pass. New untagged tests automatically join the flow group.
+
 Browser checks cover the game/replay handoff, reconnects, history, private chat,
 table options, settings, mobile layout, and accessibility. CI runs these before
 publishing either native release.
