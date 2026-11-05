@@ -4,7 +4,7 @@ const config = {
   projects: [
     "<rootDir>/packages/client",
     "<rootDir>/packages/game",
-    "<rootDir>/packages/server",
+    "<rootDir>/packages/testing",
   ],
 };
 

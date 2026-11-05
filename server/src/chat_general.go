@@ -34,13 +34,16 @@ func chatMapAddSimpleResponses() {
 	}
 
 	// Load external one-line responses
-	source := path.Join(jsonPath, "..", "..", "..", "server", "src", "json", "chatReplyCommands.json")
-	var contents []byte
-	if c, err := os.ReadFile(source); err != nil {
+	source := path.Join(jsonPath, "..", "..", "..", "data", "src", "json", "chatReplyCommands.json")
+	contents, err := os.ReadFile(source)
+	if os.IsNotExist(err) {
+		// Retain compatibility with previously published immutable releases.
+		source = path.Join(jsonPath, "..", "..", "..", "server", "src", "json", "chatReplyCommands.json")
+		contents, err = os.ReadFile(source)
+	}
+	if err != nil {
 		logger.Error("Error reading file: " + source)
 		return
-	} else {
-		contents = c
 	}
 
 	var responses []SimpleResponse

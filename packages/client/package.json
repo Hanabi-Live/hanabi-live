@@ -23,6 +23,7 @@
     "@types/linkifyjs": "2.1.7",
     "@types/lodash": "4.17.26",
     "@types/tooltipster": "0.0.35",
+    "esbuild": "0.28.2",
     "grunt": "1.6.3",
     "grunt-contrib-concat": "2.1.0",
     "grunt-contrib-cssmin": "5.0.0",

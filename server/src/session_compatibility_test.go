@@ -118,7 +118,7 @@ func TestUsernameMappingCompatibility(t *testing.T) {
 		UsernameEmojiPattern string            `json:"usernameEmojiPattern"`
 	}
 	expected := mapping{unidecode.Version(), table.Tables, strings.ReplaceAll(EmojiPattern, "\\x{", "\\u{")}
-	filename := filepath.Join("..", "..", "packages", "server", "src", "json", "goIdentity.json")
+	filename := filepath.Join("..", "..", "packages", "data", "src", "json", "goIdentity.json")
 	if *updateCompatibility {
 		encoded, err := json.MarshalIndent(expected, "", "  ")
 		if err != nil {

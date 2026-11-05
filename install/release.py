@@ -140,13 +140,18 @@ def verify(directory):
         "install/tern",
         "install/migrate.sh",
         "install/migration_files.sh",
-        "packages/server/src/json/chatReplyCommands.json",
         "public/js/bundles/version.txt",
         "public/js/bundles/git_revision.txt",
         f"public/js/bundles/main.{metadata['clientVersion']}.min.js",
         f"public/css/main.{metadata['clientVersion']}.min.css",
     ):
         require(name in expected, f"Missing required file: {name}")
+    # Previously published immutable releases retain the old asset layout.
+    require(
+        "packages/data/src/json/chatReplyCommands.json" in expected
+        or "packages/server/src/json/chatReplyCommands.json" in expected,
+        "Missing required file: packages/data/src/json/chatReplyCommands.json",
+    )
     for name, value in (("git_revision.txt", revision), ("version.txt", metadata["clientVersion"])):
         require(
             (directory / "public/js/bundles" / name).read_text().strip() == value,

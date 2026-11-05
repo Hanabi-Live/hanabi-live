@@ -34,12 +34,6 @@ export default async function globalSetup(): Promise<void> {
         ],
         cwd: path.join(ROOT, "experimental/rust-server"),
       },
-      {
-        name: "TypeScript",
-        file: "bash",
-        args: ["packages/server/build.sh"],
-        cwd: ROOT,
-      },
     ].map(async ({ name, file, args, cwd }) => {
       const started = performance.now();
       await run(file, args, { cwd, timeout: 300_000 });

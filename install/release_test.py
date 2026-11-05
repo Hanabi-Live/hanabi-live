@@ -31,7 +31,7 @@ class ReleaseTest(unittest.TestCase):
             "install/tern": "#!/bin/sh\nexit 0\n",
             "install/migrate.sh": "#!/bin/sh\nexit 0\n",
             "install/migration_files.sh": "# migration helper\n",
-            "packages/server/src/json/chatReplyCommands.json": "[]\n",
+            "packages/data/src/json/chatReplyCommands.json": "[]\n",
             "public/js/bundles/version.txt": "10\n",
             "public/js/bundles/git_revision.txt": self.revision + "\n",
             "public/js/bundles/main.10.min.js": "client",
@@ -148,8 +148,20 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual((self.root / "current").resolve().name, self.revision)
         self.assertEqual((self.root / "shared/ongoing_tables/retained.json").read_text(), "authoritative")
 
+    def test_legacy_chat_layout_retains_checksum_validation(self):
+        current = self.artifact / "packages/data/src/json/chatReplyCommands.json"
+        legacy = self.artifact / "packages/server/src/json/chatReplyCommands.json"
+        legacy.parent.mkdir(parents=True)
+        current.rename(legacy)
+        self.metadata["files"] = release.files_in(self.artifact)
+        self.write_manifest()
+        release.verify(self.artifact)
+        legacy.write_text("corrupt")
+        with self.assertRaisesRegex(ValueError, "checksums or file set differ"):
+            release.verify(self.artifact)
+
     def test_missing_chat_commands_are_rejected_even_with_matching_hashes(self):
-        (self.artifact / "packages/server/src/json/chatReplyCommands.json").unlink()
+        (self.artifact / "packages/data/src/json/chatReplyCommands.json").unlink()
         self.metadata["files"] = release.files_in(self.artifact)
         self.write_manifest()
         with self.assertRaisesRegex(ValueError, "Missing required file: .*chatReplyCommands.json"):

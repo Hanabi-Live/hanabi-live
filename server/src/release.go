@@ -88,11 +88,19 @@ func verifyRelease(directory, revision string) error {
 	}
 	for _, name := range []string{
 		"hanabi-live", "public/js/bundles/version.txt", "public/js/bundles/git_revision.txt",
-		"packages/server/src/json/chatReplyCommands.json",
 	} {
 		if _, ok := metadata.Files[name]; !ok {
 			return fmt.Errorf("release manifest is missing %q", name)
 		}
+	}
+	chatCommands := "packages/data/src/json/chatReplyCommands.json"
+	if _, err := os.Lstat(filepath.Join(directory, chatCommands)); os.IsNotExist(err) {
+		chatCommands = "packages/server/src/json/chatReplyCommands.json"
+	} else if err != nil {
+		return err
+	}
+	if _, ok := metadata.Files[chatCommands]; !ok {
+		return fmt.Errorf("release manifest is missing %q", chatCommands)
 	}
 	for name, expected := range metadata.Files {
 		if filepath.IsAbs(name) || filepath.ToSlash(filepath.Clean(name)) != name ||

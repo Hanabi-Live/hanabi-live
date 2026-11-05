@@ -5,25 +5,20 @@ choices, and instructions for development.
 
 ## Architecture
 
-Hanab Live follows a monorepo structure with a Go backend and a
-TypeScript/jQuery frontend.
+Hanab Live follows a monorepo structure with a Rust backend, a legacy Go
+reference server, and TypeScript clients.
 
 ### Backend
 
-- **Language:** [Go](https://go.dev/)
-- **Web Framework:** [Gin](https://gin-gonic.com/)
-- **Real-time Communication:** WebSockets via the
-  [Melody](https://github.com/olahol/melody) framework.
+- **Language:** [Rust](https://www.rust-lang.org/)
+- **Web Framework:** [Axum](https://github.com/tokio-rs/axum), including
+  WebSockets.
 - **Database:** [PostgreSQL](https://www.postgresql.org/) for persistent data
   (users, games, history).
-- **Caching/State:** [Redis](https://redis.io/) is used for transient data like
-  banned IPs.
-- **Location:** The primary backend code is in the `server/` directory.
-
-> **Note:** There is a newer backend implementation in `packages/server` using
-> Node.js, Fastify, and Drizzle ORM. The migration approach is incremental:
-> production still runs the Go server, and server-side changes are currently
-> expected to be mirrored in both implementations until migration is complete.
+- **Live State:** [Redis](https://redis.io/) with AOF persistence holds
+  authoritative recoverable game state; it is not a disposable cache.
+- **Location:** `experimental/rust-server/`. The legacy Go implementation
+  remains in `server/` for reference and compatibility checks.
 
 ### Frontend
 
@@ -42,8 +37,9 @@ TypeScript/jQuery frontend.
 
 - Core game rules and data structures are located in `packages/game/` and
   `packages/data/`. These are shared across the TypeScript client and the
-  Node.js packages. (The Go server maintains its own implementation of the game
-  rules in Go.)
+  Node.js packages. Go and Rust maintain native implementations of the game
+  rules, checked against shared variant and replay corpora. Native process tests
+  and disposable service fixtures live in `packages/testing/`.
 
 ---
 
@@ -51,15 +47,17 @@ TypeScript/jQuery frontend.
 
 ### Prerequisites
 
-- Go (for the backend)
+- Rust (for the production backend) and Go (for reference/compatibility checks)
 - Node.js & npm (for the frontend and build tools)
 - PostgreSQL
 - Redis
 
 ### Running the Development Server
 
-To start both the backend and the frontend watch process, run the following
-script from the root of the repository:
+For the Rust backend, follow its
+[development instructions](experimental/rust-server/README.md). To start the
+legacy Go backend and frontend watch process, run the following script from the
+root of the repository:
 
 ```bash
 ./dev.sh

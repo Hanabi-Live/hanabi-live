@@ -14,8 +14,6 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
-      - name: Compile the TypeScript server
-        run: bash ./packages/server/build.sh
 
   server_build:
     runs-on: ubuntu-latest
@@ -201,7 +199,7 @@ jobs:
         if: matrix.suite == 'flows'
         run: npx vitest run
         working-directory: packages/client-new
-      - name: Test the new lobby against all three servers
+      - name: Test the new lobby against both native servers
         run: npx playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
         working-directory: packages/client-new
         env:

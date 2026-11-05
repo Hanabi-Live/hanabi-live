@@ -1,4 +1,4 @@
-// Derived from Go's legacy math/rand; see packages/server/src/engine/goRandom.LICENSE.
+// Derived from Go's legacy math/rand; see packages/data/src/json/goRandom.LICENSE.
 use anyhow::{Result, ensure};
 use std::sync::OnceLock;
 
@@ -36,7 +36,7 @@ impl GoRandom {
         static COOKED: OnceLock<Vec<i64>> = OnceLock::new();
         let cooked = COOKED.get_or_init(|| {
             let words: Vec<String> = serde_json::from_str(include_str!(
-                "../../../packages/server/src/engine/goRandom.json"
+                "../../../packages/data/src/json/goRandom.json"
             ))
             .expect("checked-in Go random constants");
             assert_eq!(words.len(), 607);

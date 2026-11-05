@@ -22,7 +22,7 @@ struct SimpleResponse {
 
 static RESPONSES: LazyLock<Vec<SimpleResponse>> = LazyLock::new(|| {
     serde_json::from_str(include_str!(
-        "../../../../packages/server/src/json/chatReplyCommands.json"
+        "../../../../packages/data/src/json/chatReplyCommands.json"
     ))
     .unwrap()
 });

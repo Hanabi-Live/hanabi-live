@@ -1,9 +1,8 @@
 # Server comparison
 
-Go remains the production authority. TypeScript and the
-[native Rust server](../experimental/rust-server/README.md) are alternate
-implementations. Neither functional acceptance nor these measurements authorize
-a production migration.
+The [native Rust server](../experimental/rust-server/README.md) runs in
+production; Go remains the reference implementation. The TypeScript server has
+been removed. Historical measurements below retain its results for context.
 
 ## Reproducible workload
 
@@ -12,7 +11,7 @@ PostgreSQL service available:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/server/src/mainProcessComparison.test.ts \
+  npm test -- --runInBand packages/testing/src/mainProcessComparison.test.ts \
   --testNamePattern='normal-server comparison'
 ```
 
@@ -22,10 +21,10 @@ lanes, eight 25-point games, 200 plays, eight live reconnects, and, after
 restarting the process, 160 historical replay reads and 80 reconnect/replay
 reads.
 
-Every game must finish correctly and restored hands must remain private. All
-three use the same explicit played deck through the normal custom-deck storage
+Every game must finish correctly and restored hands must remain private. Both
+servers use the same explicit played deck through the normal custom-deck storage
 path. The harness verifies stored actions, participants, custom decks, settled
-statistics, and independent reconstruction with the existing TypeScript engine.
+statistics, and reconstruction through each native server after restart.
 
 The current Rust implementation uses Redis AOF/`WAITAOF` for recoverable state
 and PostgreSQL for accounts/history. The harness creates its private Redis
@@ -33,7 +32,7 @@ sidecar. Its `postgresCheckpointWrites` should therefore be zero, not
 interpreted as an absence of durable checkpoints. Storage now differs between
 implementations; server RSS also excludes the Redis sidecar.
 
-New account passwords now use the same Argon2 settings in all three servers: 64
+New account passwords use the same Argon2 settings in both native servers: 64
 MiB, three passes, and four lanes. Go still verifies existing hashes using their
 stored parameters and upgrades older pass counts on successful login.
 
@@ -161,13 +160,11 @@ character corpora; server parity has separate real-process acceptance checks.
 
 Active checkpoint formats are runtime-specific: do not switch implementations
 with unresolved active games. Old custom decks that were never saved cannot be
-reconstructed. Go's legacy replay interpretation is retained by TypeScript and
-the native Rust engine.
+reconstructed. Go's legacy replay interpretation is retained by the native Rust
+engine.
 
-TypeScript's and Rust's process signals drain admitted work; existing Go source
-deployments still require their documented graceful shutdown procedure.
-TypeScript intentionally omits retired Universal Analytics and excludes player
-data from optional Sentry reports.
+Rust's process signals drain admitted work; existing Go source deployments still
+require their documented graceful shutdown procedure.
 
 The full-server acceptance suite also covers the variant/character/replay
 corpus, command and HTTP handlers, malformed input, recipient isolation, storage

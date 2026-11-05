@@ -120,7 +120,7 @@ changes pulled but not yet built or restarted.
 | Go-rendered HTML templates only, with unchanged handler/data contracts                                        | Publish compatible templates/assets; **no server restart**. Go parses these templates for each request.                    |
 | Go runtime code, Go dependencies, HTTP/WebSocket handlers, or startup configuration                           | Build and deploy Go using the graceful restart procedure below.                                                            |
 | Shared rules, protocol schemas, or variant/suit JSON                                                          | Trace consumers first. Data loaded by Go at startup or changes requiring matching server behavior are **not client-only**. |
-| TypeScript/Rust server changes while production runs Go                                                       | Do not restart Go solely for changes to an inactive implementation. Check for shared runtime changes.                      |
+| Rust server changes while running the Go reference server                                                     | Do not restart Go solely for changes to an inactive implementation. Check for shared runtime changes.                      |
 | Documentation, tests, or scheduled shell scripts only                                                         | Publish the changed files as appropriate; do not rebuild clients or restart Go merely to advance the checkout.             |
 
 For mixed changes, follow the procedure required by the affected running server.

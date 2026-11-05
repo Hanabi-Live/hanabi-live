@@ -13,5 +13,5 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   reporter: [["list"]],
-  projects: [{ name: "go" }, { name: "typescript" }, { name: "rust" }],
+  projects: [{ name: "go" }, { name: "rust" }],
 });

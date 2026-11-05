@@ -63,69 +63,90 @@ func TestReleaseCheckpointFailureRetainsAuthorityAndPause(t *testing.T) {
 }
 
 func TestReleaseVerificationRejectsMixedOrCorruptAssets(t *testing.T) {
-	directory := t.TempDir()
-	revision := strings.Repeat("a", 40)
-	contents := map[string]string{
-		"hanabi-live":                                     "binary",
-		"public/js/bundles/version.txt":                   "10\n",
-		"public/js/bundles/git_revision.txt":              revision + "\n",
-		"packages/server/src/json/chatReplyCommands.json": "[]\n",
-	}
-	metadata := releaseMetadata{Format: 1, Revision: revision, ClientVersion: "10", Files: make(map[string]string)}
-	for name, content := range contents {
-		filename := filepath.Join(directory, name)
-		if err := os.MkdirAll(filepath.Dir(filename), 0700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filename, []byte(content), 0600); err != nil {
-			t.Fatal(err)
-		}
-		hash := sha256.Sum256([]byte(content))
-		metadata.Files[name] = hex.EncodeToString(hash[:])
-	}
-	writeManifest := func() {
-		t.Helper()
-		data, err := json.Marshal(metadata)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(directory, "release.json"), data, 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
-	writeManifest()
-	if err := verifyRelease(directory, revision); err != nil {
-		t.Fatal(err)
-	}
-	const chatCommands = "packages/server/src/json/chatReplyCommands.json"
-	chatHash := metadata.Files[chatCommands]
-	delete(metadata.Files, chatCommands)
-	writeManifest()
-	if err := verifyRelease(directory, revision); err == nil {
-		t.Fatal("accepted a release without the chat response commands")
-	}
-	metadata.Files[chatCommands] = chatHash
-	writeManifest()
-	if err := verifyRelease(directory, strings.Repeat("b", 40)); err == nil {
-		t.Fatal("accepted mismatched compiled revision")
-	}
-	metadata.ClientVersion = "11"
-	writeManifest()
-	if err := verifyRelease(directory, revision); err == nil {
-		t.Fatal("accepted mismatched client version")
-	}
-	metadata.ClientVersion = "10"
-	metadata.Files["../escape"] = "unused"
-	writeManifest()
-	if err := verifyRelease(directory, revision); err == nil {
-		t.Fatal("accepted a manifest path outside the release")
-	}
-	delete(metadata.Files, "../escape")
-	writeManifest()
-	if err := os.WriteFile(filepath.Join(directory, "hanabi-live"), []byte("corrupt"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := verifyRelease(directory, revision); err == nil {
-		t.Fatal("accepted corrupt binary")
+	for _, chatCommands := range []string{
+		"packages/data/src/json/chatReplyCommands.json",
+		"packages/server/src/json/chatReplyCommands.json",
+	} {
+		t.Run(chatCommands, func(t *testing.T) {
+			directory := t.TempDir()
+			revision := strings.Repeat("a", 40)
+			contents := map[string]string{
+				"hanabi-live":                        "binary",
+				"public/js/bundles/version.txt":      "10\n",
+				"public/js/bundles/git_revision.txt": revision + "\n",
+				chatCommands:                         "[]\n",
+			}
+			metadata := releaseMetadata{Format: 1, Revision: revision, ClientVersion: "10", Files: make(map[string]string)}
+			for name, content := range contents {
+				filename := filepath.Join(directory, name)
+				if err := os.MkdirAll(filepath.Dir(filename), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filename, []byte(content), 0600); err != nil {
+					t.Fatal(err)
+				}
+				hash := sha256.Sum256([]byte(content))
+				metadata.Files[name] = hex.EncodeToString(hash[:])
+			}
+			writeManifest := func() {
+				t.Helper()
+				data, err := json.Marshal(metadata)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(directory, "release.json"), data, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			writeManifest()
+			if err := verifyRelease(directory, revision); err != nil {
+				t.Fatal(err)
+			}
+			if strings.Contains(chatCommands, "/server/") {
+				unsigned := filepath.Join(directory, "packages/data/src/json/chatReplyCommands.json")
+				if err := os.MkdirAll(filepath.Dir(unsigned), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(unsigned, []byte("[]\n"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				if err := verifyRelease(directory, revision); err == nil {
+					t.Fatal("accepted an unsigned current asset shadowing the verified legacy asset")
+				}
+				if err := os.Remove(unsigned); err != nil {
+					t.Fatal(err)
+				}
+			}
+			chatHash := metadata.Files[chatCommands]
+			delete(metadata.Files, chatCommands)
+			writeManifest()
+			if err := verifyRelease(directory, revision); err == nil {
+				t.Fatal("accepted a release without the chat response commands")
+			}
+			metadata.Files[chatCommands] = chatHash
+			writeManifest()
+			if err := verifyRelease(directory, strings.Repeat("b", 40)); err == nil {
+				t.Fatal("accepted mismatched compiled revision")
+			}
+			metadata.ClientVersion = "11"
+			writeManifest()
+			if err := verifyRelease(directory, revision); err == nil {
+				t.Fatal("accepted mismatched client version")
+			}
+			metadata.ClientVersion = "10"
+			metadata.Files["../escape"] = "unused"
+			writeManifest()
+			if err := verifyRelease(directory, revision); err == nil {
+				t.Fatal("accepted a manifest path outside the release")
+			}
+			delete(metadata.Files, "../escape")
+			writeManifest()
+			if err := os.WriteFile(filepath.Join(directory, "hanabi-live"), []byte("corrupt"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := verifyRelease(directory, revision); err == nil {
+				t.Fatal("accepted corrupt binary")
+			}
+		})
 	}
 }

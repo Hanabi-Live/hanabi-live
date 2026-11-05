@@ -14,17 +14,12 @@ With pull requests:
 
 ## Server Code
 
-Go is the supported production server. The TypeScript server implements the
-normal protocol and durable gameplay, but is not yet a production replacement.
-The isolated slice in `packages/server/src/experimental` is not the normal
-server. See the [server comparison](docs/server-evaluation.md). Preserve shared
-rules, client protocol behavior, and replay compatibility, and verify TypeScript
-implementations against Go rather than assuming equivalent behavior.
-
-The TypeScript server reuses `SENTRY_DSN` for optional production error
-reporting, but sends only generic errors, release identity, and stack locations,
-not log contents or player data. The retired Universal Analytics
-(`GA_TRACKING_ID`) integration is intentionally not ported.
+The [native Rust server](experimental/rust-server/README.md) runs in production.
+Go remains the reference implementation in `server/`. Preserve shared rules,
+client protocol behavior, and replay compatibility. Native cross-runtime process
+tests and disposable database/Redis fixtures live in `packages/testing`; they do
+not implement another server. See the
+[server comparison](docs/server-evaluation.md).
 
 Before submitting Go server changes, run the regression tests with the race
 detector from the repository root:

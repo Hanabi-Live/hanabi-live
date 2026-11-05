@@ -1,7 +1,7 @@
 # New lobby
 
-The opt-in lobby lives at **`/new`** on the Go, TypeScript, and Rust servers.
-The classic lobby remains at `/lobby`; production does not switch automatically.
+The opt-in lobby lives at **`/new`** on the Go and Rust servers. The classic
+lobby remains at `/lobby`; production does not switch automatically.
 
 React owns the new lobby's DOM. Redux owns validated directory, chat, and
 account state; one connection service owns its WebSocket and recovery. Shared
@@ -50,9 +50,8 @@ state, connection, and rendering checks.
 After building both clients, run `npx playwright test` here with
 `HANABI_TEST_DATABASE_URL` pointing to a **disposable local PostgreSQL
 service**. The fixture creates separate databases and processes, never reads the
-ordinary `.env`, and exercises Go, TypeScript, and Rust. Go, Cargo, Redis 7.2+
-binaries, and Playwright Chromium must be available. Use `--project=go` for a
-targeted run.
+ordinary `.env`, and exercises Go and Rust. Go, Cargo, Redis 7.2+ binaries, and
+Playwright Chromium must be available. Use `--project=go` for a targeted run.
 
 Backend binaries are built once before the two isolated browser workers start.
 Browser tests use unoptimized Rust application code with optimized dependencies

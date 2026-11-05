@@ -54,7 +54,7 @@ func TestLegacyRandomSourceData(t *testing.T) {
 	if len(cooked) != 607 {
 		t.Fatalf("unexpected Go RNG state size: %d", len(cooked))
 	}
-	filename := filepath.Join("..", "..", "packages", "server", "src", "engine", "goRandom.json")
+	filename := filepath.Join("..", "..", "packages", "data", "src", "json", "goRandom.json")
 	checkRandomFixture(t, filename, cooked)
 }
 

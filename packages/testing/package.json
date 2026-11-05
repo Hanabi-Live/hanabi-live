@@ -1,0 +1,16 @@
+{
+  "name": "@hanabi-live/testing",
+  "private": true,
+  "devDependencies": {
+    "@hanabi-live/data": "file:../data",
+    "@hanabi-live/game": "file:../game",
+    "@jest/globals": "30.5.2",
+    "@types/ws": "8.18.2",
+    "complete-common": "2.32.0",
+    "jsonc-parser": "3.3.1",
+    "postgres": "3.4.9",
+    "ts-jest": "29.4.14",
+    "ws": "8.20.0",
+    "zod": "4.6.5"
+  }
+}

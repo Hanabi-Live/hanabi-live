@@ -25,6 +25,7 @@
     "paths": {
       "@hanabi-live/data": ["./packages/data/src/index.ts"],
       "@hanabi-live/game": ["./packages/game/src/index.ts"],
+      "@hanabi-live/testing": ["./packages/testing/src/index.ts"],
     },
   },
 }

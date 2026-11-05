@@ -48,7 +48,7 @@ run_parallel 1 bash "$DIR/packages/client-new/lint.sh"
 run_parallel 2 bash "$DIR/packages/data/lint.sh"
 run_parallel 2 bash "$DIR/packages/game/lint.sh"
 run_parallel 2 bash "$DIR/packages/scripts/lint.sh"
-run_parallel 1 bash "$DIR/packages/server/lint.sh"
+run_parallel 1 bash "$DIR/packages/testing/lint.sh"
 run_parallel 1 npx prettier --log-level=warn --check .
 run_parallel 2 bash "$DIR/check_gofmt.sh"
 run_parallel 2 bash "$DIR/check_spelling.sh"

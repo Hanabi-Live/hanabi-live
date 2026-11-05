@@ -195,7 +195,7 @@ processes. Put `redis-server` and `redis-cli` on `PATH`:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/server/src/mainProcess
+  npm test -- --runInBand packages/testing/src/mainProcess
 ```
 
 Native checks, from this directory:
@@ -216,4 +216,4 @@ proof of correct concurrency.
 
 See [the comparison methodology](../../docs/server-evaluation.md). The RNG port
 retains the existing
-[Go license](../../packages/server/src/engine/goRandom.LICENSE).
+[Go license](../../packages/data/src/json/goRandom.LICENSE).

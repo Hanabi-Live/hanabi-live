@@ -11,10 +11,10 @@ struct IdentityData {
 }
 
 // Use the pinned Go unidecode tables, not a superficially similar transliterator.
-// The accompanying license is packages/server/src/json/goUnidecode.LICENSE.
+// The accompanying license is packages/data/src/json/goUnidecode.LICENSE.
 static IDENTITY: LazyLock<IdentityData> = LazyLock::new(|| {
     serde_json::from_str(include_str!(
-        "../../../../packages/server/src/json/goIdentity.json"
+        "../../../../packages/data/src/json/goIdentity.json"
     ))
     .expect("checked-in Go identity data")
 });

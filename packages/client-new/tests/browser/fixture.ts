@@ -1,3 +1,4 @@
+import { evaluationDatabase, redisFixture } from "@hanabi-live/testing";
 import type { Page } from "@playwright/test";
 import { test as base, expect } from "@playwright/test";
 import { execFile, spawn } from "node:child_process";
@@ -15,10 +16,6 @@ import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-// eslint-disable-next-line import-x/no-relative-packages -- Reuse the repository's disposable integration fixtures without a production export.
-import { evaluationDatabase } from "../../../server/src/experimental/evaluationSupport";
-// eslint-disable-next-line import-x/no-relative-packages -- This is test-only process ownership and cleanup.
-import { redisFixture } from "../../../server/src/experimental/redisFixture";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores execFile's ChildProcess return value.
@@ -83,7 +80,7 @@ export const test = base.extend<
         await Promise.all(
           [
             "packages/game/src/json",
-            "packages/server/src/json",
+            "packages/data/src/json",
             "server/src/views",
             "install/migrations",
             "misc/word_list.txt",
@@ -127,7 +124,6 @@ export const test = base.extend<
         );
         let executable = path.join(directory, "hanabi-live");
         const rustExecutable = path.join(directory, "hanabi-rust-poc");
-        let args: string[] = [];
         if (worker.project.name === "rust" || cutover) {
           await cp(
             path.join(
@@ -139,18 +135,6 @@ export const test = base.extend<
         }
         if (worker.project.name === "rust") {
           executable = rustExecutable;
-        } else if (worker.project.name === "typescript") {
-          await cp(
-            path.join(ROOT, "packages/server/dist"),
-            path.join(directory, "packages/server/dist"),
-            { recursive: true },
-          );
-          await symlink(
-            path.join(ROOT, "node_modules"),
-            path.join(directory, "node_modules"),
-          );
-          executable = process.execPath;
-          args = ["packages/server/dist/main.js"];
         } else {
           await cp(
             path.join(ROOT, "dist/browser-backends/hanabi-live"),
@@ -183,7 +167,7 @@ export const test = base.extend<
             expect([200, 204]).toContain(response.status);
           }).toPass({ timeout: 30_000 });
         }
-        await start(executable, args);
+        await start(executable, []);
         await useBackend({
           url,
           cutoverToRust: async () => {

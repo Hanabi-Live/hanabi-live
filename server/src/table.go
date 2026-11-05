@@ -39,7 +39,7 @@ type Table struct {
 	Replay         bool
 	Ending         bool `json:"-"`
 	EndingFailed   bool `json:"-"`
-	AutomaticStart int  // See "chatTable.go" (this will not be reimplemented in the TypeScript server)
+	AutomaticStart int  // See "chatTable.go"
 	Progress       int  // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated      time.Time
