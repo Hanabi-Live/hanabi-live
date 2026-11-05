@@ -1,13 +1,38 @@
+import type { Page } from "@playwright/test";
 import { expect, gameReady, test } from "./fixture";
 
 type GameWindow = typeof globalThis & {
   globals: {
     elements: {
       sharedReplayLeaderLabel: { fire: (event: string) => void } | null;
+      nameFrames: Array<{ playerName: { fill: () => string } }>;
+      timer1: { visible: () => boolean } | null;
+      timer2: { visible: () => boolean } | null;
     };
     state: { replay: { shared: { leader: string } | null } };
+    timerID: number | null;
   };
 };
+
+async function expectStoppedReplay(page: Page) {
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => {
+          const { globals } = globalThis as GameWindow;
+          return {
+            redNames: globals.elements.nameFrames.filter(
+              (frame) => frame.playerName.fill() === "#e8233d",
+            ).length,
+            ticking: globals.timerID !== null,
+            timerVisible:
+              (globals.elements.timer1?.visible() ?? false)
+              || (globals.elements.timer2?.visible() ?? false),
+          };
+        }),
+    )
+    .toEqual({ redNames: 0, ticking: false, timerVisible: false });
+}
 
 test("sign in, join, play, return, and recover the new lobby", async ({
   browser,
@@ -105,6 +130,34 @@ test("sign in, join, play, return, and recover the new lobby", async ({
       (globalThis as GameWindow).globals.state.replay.shared?.leader
       === "testLobbyBob",
   );
+  const bobReloaded = gameReady(b);
+  await b.reload();
+  await bobReloaded;
+  await b.evaluate(() => {
+    const crown = (globalThis as GameWindow).globals.elements
+      .sharedReplayLeaderLabel;
+    if (crown === null) {
+      throw new Error("Missing replay crown");
+    }
+    crown.fire("click");
+  });
+  const candidate = b.locator("#set-leader-modal").getByRole("button").first();
+  const nextLeader = await candidate.innerText();
+  await candidate.click();
+  await b.waitForFunction(
+    (name) =>
+      (globalThis as GameWindow).globals.state.replay.shared?.leader === name,
+    nextLeader,
+  );
+  await a.waitForFunction(
+    (name) =>
+      (globalThis as GameWindow).globals.state.replay.shared?.leader === name,
+    nextLeader,
+  );
+  await expectStoppedReplay(a);
+  await expectStoppedReplay(b);
+  await a.setViewportSize({ width: 1300, height: 900 });
+  await expectStoppedReplay(a);
   await a.keyboard.press("Alt+l");
   await expect(a).toHaveURL(/\/new$/u);
   await a.getByRole("link", { name: "History", exact: true }).click();
@@ -117,6 +170,7 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   await replayReady;
   await expect(a).toHaveURL(/\/replay\/\d+(?:#\d+)?$/u);
   await expect(a.locator("canvas").first()).toBeVisible();
+  await expectStoppedReplay(a);
   expect(errors).toEqual([]);
   await alice.close();
   await bob.close();

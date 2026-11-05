@@ -333,6 +333,10 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
         }
         h.send(0, "tableTerminate", json!({"tableID":id})).await?;
         for index in 0..3 {
+            ensure!(
+                h.receive(index, "connected").await?["list"] == json!([true, true]),
+                "Finished-game names must not be shown as disconnected"
+            );
             let roster = h.receive(index, "spectators").await?;
             let names = roster["spectators"]
                 .as_array()
@@ -343,6 +347,11 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
             ensure!(
                 names == std::collections::BTreeSet::from(["Alice", "Bob", "Observer"]),
                 "Finished-game players were missing from replay leader candidates"
+            );
+            let clock = h.receive(index, "clock").await?;
+            ensure!(
+                clock["activePlayerIndex"] == -1 && clock["timeTaken"] == 0,
+                "Completion did not stop the active clock"
             );
         }
         ensure!(
@@ -364,6 +373,60 @@ async fn finished_game_publishes_replay_leader_candidates_without_reconnecting()
                 .all(|p| p["name"] != "Observer"),
             "Departed attendee remained a leader candidate"
         );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
+async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.replay(0).await?;
+        let initial = h.snapshot(id).await?.0;
+        h.barrier(0).await?;
+        h.frames(0)?;
+        h.send(0, "loaded", json!({"tableID":id})).await?;
+        ensure!(h.receive(0, "connected").await?["list"] == json!([true, true]));
+        h.barrier(0).await?;
+        ensure!(h.frames(0)?.iter().all(|(command, _)| command != "clock"));
+        tokio::time::sleep(Duration::from_millis(25)).await;
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableID":id,"type":0,"segment":0}),
+        )
+        .await?;
+        let snapshot = h.snapshot(id).await?.0;
+        let replay = snapshot.game().unwrap();
+        let before = initial.game().unwrap();
+        ensure!(!replay.timer_started && !replay.game.started_timer);
+        ensure!(
+            replay.clocks == before.clocks
+                && replay.turn_elapsed == before.turn_elapsed
+                && replay.duration == before.duration,
+            "Replay navigation advanced game clocks"
+        );
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
+        h.send(1, "getGameInfo2", json!({"tableID":id})).await?;
+        ensure!(h.receive(1, "connected").await?["list"] == json!([true, true]));
+        h.send(1, "loaded", json!({"tableID":id})).await?;
+        h.barrier(0).await?;
+        for index in 0..2 {
+            let frames = h.frames(index)?;
+            ensure!(
+                frames.iter().all(|(command, _)| command != "clock"),
+                "Loading another replay viewer sent a live clock"
+            );
+            for (_, data) in frames.iter().filter(|(command, _)| command == "connected") {
+                ensure!(data["list"] == json!([true, true]));
+            }
+        }
         Ok::<(), anyhow::Error>(())
     }
     .await;

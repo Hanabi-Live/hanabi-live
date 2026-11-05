@@ -1713,10 +1713,11 @@ impl TableActor {
     }
     fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
+        let live = matches!(next.phase, Phase::Live { .. });
         let delta = self.anchor.elapsed().as_millis().min(9_007_199_254_740_991) as i64;
         if let Some(s) = next.game_mut() {
             s.idle_remaining = (s.idle_remaining - delta).max(0);
-            if s.game.end_condition == EndCondition::InProgress {
+            if live && s.game.end_condition == EndCondition::InProgress {
                 s.duration = s.duration.saturating_add(delta);
                 if s.timer_started && !s.game.paused {
                     let active = s.game.active_player_index;
@@ -2094,12 +2095,15 @@ impl TableActor {
         Ok(())
     }
     fn connected(&self) -> Value {
-        json!({"tableID":self.table.id,"list":self.table.players().iter().map(|p|self.attendees.get(&p.id).is_some_and(|a|a.loaded&&!a.spectator&&a.session.active())).collect::<Vec<_>>()})
+        let replay = matches!(self.table.phase, Phase::Replay { .. });
+        json!({"tableID":self.table.id,"list":self.table.players().iter().map(|p|replay || self.attendees.get(&p.id).is_some_and(|a|a.loaded&&!a.spectator&&a.session.active())).collect::<Vec<_>>()})
     }
     fn clock(&self) -> Value {
         let next = self.candidate();
         let s = next.game().expect("game clock");
-        json!({"tableID":self.table.id,"times":s.clocks,"activePlayerIndex":s.game.active_player_index,"timeTaken":if s.game.paused{0}else{s.turn_elapsed}})
+        let live = matches!(next.phase, Phase::Live { .. })
+            && s.game.end_condition == EndCondition::InProgress;
+        json!({"tableID":self.table.id,"times":s.clocks,"activePlayerIndex":if live{s.game.active_player_index as i32}else{-1},"timeTaken":if !live || s.game.paused{0}else{s.turn_elapsed}})
     }
     async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
         ensure!(!self.frozen, "Table is frozen until recovery");
@@ -2165,7 +2169,7 @@ impl TableActor {
             "loaded" => {
                 ensure!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
-                if let Some(s) = next.game_mut()
+                if let Phase::Live { snapshot: s } = &mut next.phase
                     && s.game.end_condition == EndCondition::InProgress
                     && s.players[s.game.active_player_index].id == session.user
                 {
@@ -2179,7 +2183,7 @@ impl TableActor {
                 }
                 let mut e = self.effects();
                 self.add_all(&mut e, "connected", self.connected());
-                if self.table.game().is_some() {
+                if matches!(self.table.phase, Phase::Live { .. }) {
                     self.add_all(&mut e, "clock", self.clock());
                 }
                 self.publish(e).await
@@ -2916,6 +2920,7 @@ impl TableActor {
             }
         }
         if replay {
+            self.add_all(&mut e, "connected", self.connected());
             self.spectator_messages(&mut e);
             let count = if s.game_id > 0 {
                 self.store.seed_count(&s.seed).await?
@@ -2950,6 +2955,7 @@ impl TableActor {
                     ),
                 ));
             }
+            self.add_all(&mut e, "clock", self.clock());
         } else {
             self.add_all(&mut e, "clock", self.clock());
             if s.game.paused {
@@ -4100,9 +4106,9 @@ impl TableActor {
                     frame("voteChange", json!({"vote":s.votes[seat]})),
                 ));
             }
+            e.messages
+                .push((session.clone(), frame("connected", self.connected())));
             if !replay {
-                e.messages
-                    .push((session.clone(), frame("connected", self.connected())));
                 e.messages
                     .push((session.clone(), frame("clock", self.clock())));
             }

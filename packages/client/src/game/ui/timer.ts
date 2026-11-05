@@ -37,6 +37,14 @@ export function update(data: ClockData): void {
     return;
   }
 
+  if (globals.state.finished) {
+    globals.activePlayerIndex = -1;
+    globals.elements.timer1.hide();
+    globals.elements.timer2.hide();
+    globals.layers.timer.batchDraw();
+    return;
+  }
+
   // We do not need to update the timers if the game is paused. (The server will send another
   // "clock" message when the game becomes unpaused.)
   if (globals.state.pause.active) {
@@ -135,7 +143,11 @@ export function stop(): void {
  * message.
  */
 export function resumeAfterResize(): void {
-  if (globals.playerTimes.length === 0 || globals.activePlayerIndex === -1) {
+  if (
+    globals.state.finished
+    || globals.playerTimes.length === 0
+    || globals.activePlayerIndex === -1
+  ) {
     return;
   }
 
