@@ -3,11 +3,37 @@ runs:
 
   steps:
     - name: Setup Node.js
+      id: node
       uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
         node-version: "24"
         cache: npm
 
+    - name: Identify the runner image
+      id: platform
+      run: echo "image=$ImageOS" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - name: Restore installed dependencies
+      id: dependencies
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: node_modules
+        key: node-modules-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ steps.node.outputs.node-version }}-${{ hashFiles('package-lock.json', 'package.json', 'packages/*/package.json', '.npmrc', 'patches/**', '.github/workflows/setup/action.yml') }}
+
     - name: Install dependencies
+      if: steps.dependencies.outputs.cache-hit != 'true'
       run: npm ci
       shell: bash # Composite jobs must specify the shell.
+
+    - name: Restore repository lifecycle setup
+      if: steps.dependencies.outputs.cache-hit == 'true'
+      run: npm run prepare
+      shell: bash
+
+    - name: Cache the clean installation
+      if: steps.dependencies.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: node_modules
+        key: ${{ steps.dependencies.outputs.cache-primary-key }}

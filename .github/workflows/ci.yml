@@ -39,13 +39,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Golang
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: "1.27.x"
-          cache-dependency-path: |
-            server/src/go.sum
-            maintenance/go.sum
-            install/migration_files.sh
+        uses: ./.github/workflows/setup-go
 
       - name: Prepare the pinned migration tool
         run: |
@@ -92,12 +86,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: "1.27.x"
-          cache-dependency-path: |
-            server/src/go.sum
-            maintenance/go.sum
+      - uses: ./.github/workflows/setup-go
       - uses: ./.github/workflows/setup-rust
       - name: Run the full linting suite
         run: bash lint.sh
@@ -129,6 +118,8 @@ jobs:
 
       - uses: ./.github/workflows/setup-rust
 
+      - uses: ./.github/workflows/setup-go
+
       - name: Test the TypeScript code
         run: npm run test
 
@@ -153,10 +144,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: "1.27.x"
-          cache-dependency-path: server/src/go.sum
+      - uses: ./.github/workflows/setup-go
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Start version-matched preinstalled browsers
@@ -228,8 +216,30 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
+      - name: Identify the SQLx cache platform
+        id: platform
+        run: |
+          echo "image=$ImageOS" >> "$GITHUB_OUTPUT"
+          echo "bin=${CARGO_HOME:-$HOME/.cargo}/bin" >> "$GITHUB_OUTPUT"
+      - name: Restore pinned SQLx tooling
+        id: sqlx
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ steps.platform.outputs.bin }}/sqlx
+            ${{ steps.platform.outputs.bin }}/cargo-sqlx
+          key: sqlx-cli-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ hashFiles('experimental/rust-server/rust-toolchain.toml', 'experimental/rust-server/sqlx_schema.py') }}
       - name: Install pinned SQLx metadata tooling
+        if: steps.sqlx.outputs.cache-hit != 'true'
         run: cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features rustls,postgres
+      - name: Cache pinned SQLx tooling
+        if: steps.sqlx.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ${{ steps.platform.outputs.bin }}/sqlx
+            ${{ steps.platform.outputs.bin }}/cargo-sqlx
+          key: ${{ steps.sqlx.outputs.cache-primary-key }}
       - name: Check SQLx metadata against a disposable schema
         run: |
           python3 -m unittest discover -s . -p sqlx_schema_test.py
@@ -265,10 +275,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/workflows/setup
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: ./.github/workflows/setup-go
         with:
-          go-version: "1.27.x"
-          cache-dependency-path: server/src/go.sum
+          cache-key: ${{ matrix.runtime }}
       - uses: ./.github/workflows/setup-redis
         if: matrix.runtime == 'rust'
       - uses: ./.github/workflows/setup-rust
