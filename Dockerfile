@@ -1,12 +1,15 @@
 FROM golang:1.27-bookworm AS go
 
-FROM node:24-bookworm AS build
+FROM node:24-bookworm AS dependencies
 COPY --from=go /usr/local/go /usr/local/go
 ENV PATH="/usr/local/go/bin:${PATH}"
 RUN apt-get update && apt-get install -y --no-install-recommends python3 && apt-get clean
 WORKDIR /root/hanabi-live
 COPY package.json package-lock.json tsconfig.json tsconfig.monorepo.json LICENSE ./
+COPY patches patches
 RUN npm ci
+
+FROM dependencies AS build
 COPY packages packages
 COPY scripts scripts
 COPY public public

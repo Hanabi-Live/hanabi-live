@@ -1,4 +1,4 @@
-# cspell:ignore buildx
+# cspell:ignore buildx cacheonly
 name: CI
 
 on: [push, pull_request]
@@ -78,14 +78,20 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Cache container dependencies
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: dependencies
+          outputs: type=cacheonly
+          cache-from: type=gha,scope=hanabi-container
+          cache-to: type=gha,scope=hanabi-container,mode=max,ignore-error=true
       - name: Build the production container
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           load: true
           tags: hanabi-live-ci
-          cache-from: type=gha,scope=hanabi-container
-          cache-to: type=gha,scope=hanabi-container,mode=max
 
   lint:
     runs-on: ubuntu-latest
@@ -134,6 +140,7 @@ jobs:
 
       - uses: ./.github/workflows/setup-go
 
+      # Cache scheduling hints only; all tests still execute against fresh transforms.
       - name: Restore test scheduling history
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
