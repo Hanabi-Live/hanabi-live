@@ -305,6 +305,40 @@ impl Store {
             }
             output.push((table, revision));
         }
+        let users = output
+            .iter()
+            .filter_map(|(table, _)| match &table.phase {
+                Phase::Pregame { players, .. } => Some(players),
+                _ => None,
+            })
+            .flatten()
+            .map(|player| player.id)
+            .collect::<std::collections::BTreeSet<_>>();
+        if !users.is_empty() {
+            let counts = self
+                .completed_game_counts(&users.into_iter().collect::<Vec<_>>())
+                .await?;
+            for (table, revision) in &mut output {
+                let Phase::Pregame { players, .. } = &mut table.phase else {
+                    continue;
+                };
+                let mut changed = false;
+                for player in players {
+                    let count = counts.get(&player.id).copied().unwrap_or(0);
+                    let stats = player
+                        .stats
+                        .as_object_mut()
+                        .context("Invalid cached pregame statistics")?;
+                    if stats.get("numGames").and_then(Value::as_i64) != Some(count) {
+                        stats.insert("numGames".into(), json!(count));
+                        changed = true;
+                    }
+                }
+                if changed {
+                    *revision = self.save(table, *revision).await?;
+                }
+            }
+        }
         Ok(output)
     }
     /// Redis terminal state is fsynced first. PostgreSQL commits all archive rows
@@ -769,14 +803,23 @@ impl Store {
     pub async fn player(&self, id: i32, name: String) -> Result<Player> {
         self.player_for_variant(id, name, 0).await
     }
-    pub async fn player_for_variant(&self, id: i32, name: String, variant: u32) -> Result<Player> {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM games g JOIN game_participants p ON p.game_id=g.id
-             WHERE p.user_id=$1 AND g.end_condition=1 AND NOT g.speedrun",
+    async fn completed_game_counts(&self, ids: &[i32]) -> Result<BTreeMap<i32, i64>> {
+        let counts: Vec<(i32, i64)> = sqlx::query_as(
+            "SELECT p.user_id, count(*) FROM game_participants p JOIN games g ON g.id=p.game_id
+             WHERE p.user_id=ANY($1) AND g.end_condition=1 AND NOT g.speedrun GROUP BY p.user_id",
         )
-        .bind(id)
-        .fetch_one(&self.primary)
+        .bind(ids)
+        .fetch_all(&self.primary)
         .await?;
+        Ok(counts.into_iter().collect())
+    }
+    pub async fn player_for_variant(&self, id: i32, name: String, variant: u32) -> Result<Player> {
+        let count = self
+            .completed_game_counts(&[id])
+            .await?
+            .get(&id)
+            .copied()
+            .unwrap_or(0);
         let row = sqlx::query("SELECT * FROM user_stats WHERE user_id=$1 AND variant_id=$2")
             .bind(id)
             .bind(variant as i16)
@@ -1098,6 +1141,105 @@ mod tests {
         .await?;
         admin.close().await;
         Ok(())
+    }
+    #[tokio::test]
+    async fn recovery_refreshes_only_pregame_totals_and_persists_them_once() -> Result<()> {
+        let Some((admin, pool, name)) = database().await? else {
+            return Ok(());
+        };
+        let redis = RedisFixture::start(true).await?;
+        let state = RedisState::connect(&redis.url, "pregame-count-recovery").await?;
+        let store = Store::fixture(pool, state.clone());
+        let result = async {
+            sqlx::query(
+                "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+                 speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+                 all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+                 SELECT 'Recovery stats',2,0,false,120,20,false,false,false,false,false,false,
+                 false,false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
+                 FROM generate_series(1,2) n",
+            )
+            .execute(&store.primary)
+            .await?;
+            sqlx::query(
+                "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+                 SELECT id,1,0,0,0 FROM games",
+            )
+            .execute(&store.primary)
+            .await?;
+            let mut table = pregame(store.allocate_table().await?);
+            let Phase::Pregame { players, .. } = &mut table.phase else {
+                unreachable!();
+            };
+            players[0].stats["numGames"] = json!(727);
+            players[0].stats["variant"]["averageScore"] = json!(25.0 / 27.0);
+            players.push(Player {
+                id: 2,
+                name: "Bob".into(),
+                stats: zero_stats(),
+            });
+            players[1].stats["numGames"] = json!(572);
+            let original_revision = store.save(&table, 0).await?;
+            let mut replay = pregame(store.allocate_table().await?);
+            terminal(&mut replay)?;
+            replay.game_mut().unwrap().players[0].stats["numGames"] = json!(727);
+            replay.phase = Phase::Replay {
+                snapshot: Box::new(replay.game().unwrap().clone()),
+                replay: ReplayState {
+                    leader: 1,
+                    segment: 0,
+                    efficiency_modifier: 0,
+                    hypothetical: None,
+                    hypothetical_actions: vec![],
+                    show_drawn_cards: false,
+                },
+            };
+            let replay_revision = store.save(&replay, 0).await?;
+            let restored = store.load().await?;
+            let (actual, revision) = restored
+                .iter()
+                .find(|(saved, _)| saved.id == table.id)
+                .context("Missing restored pregame")?;
+            let Phase::Pregame { players, .. } = &mut table.phase else {
+                unreachable!();
+            };
+            players[0].stats["numGames"] = json!(1);
+            players[1].stats["numGames"] = json!(0);
+            ensure!(
+                serde_json::to_value(actual)? == serde_json::to_value(&table)?,
+                "Recovery must refresh totals without changing other pregame data"
+            );
+            ensure!(*revision == original_revision + 1);
+            let durable = state
+                .get(StateId::Table(table.id))
+                .await?
+                .context("Missing durable pregame")?;
+            ensure!(
+                durable.revision == *revision
+                    && serde_json::from_str::<Value>(&durable.payload)?
+                        == serde_json::to_value(&table)?,
+                "Refreshed totals were not durably saved"
+            );
+            let (saved_replay, saved_revision) = restored
+                .iter()
+                .find(|(saved, _)| saved.id == replay.id)
+                .context("Missing replay")?;
+            ensure!(
+                *saved_revision == replay_revision
+                    && serde_json::to_value(saved_replay)? == serde_json::to_value(&replay)?,
+                "Recovery changed historical replay statistics"
+            );
+            let again = store.load().await?;
+            ensure!(
+                again.iter().find(|(saved, _)| saved.id == table.id).unwrap().1 == *revision,
+                "Unchanged totals caused another checkpoint write"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        cleanup(admin, name).await?;
+        result
     }
     #[tokio::test]
     async fn redis_is_sole_authority_and_terminal_archive_is_atomic_and_retryable() -> Result<()> {
