@@ -4,15 +4,16 @@ import { expect, gameReady, test } from "./fixture";
 
 test.use({ actionTimeout: 10_000 });
 
-async function capture(page: Page, name: string, chat?: "lobby" | "table") {
+async function auditViewport(
+  page: Page,
+  name: string,
+  chat?: "lobby" | "table",
+) {
   await page.evaluate(async () => await globalThis.document.fonts.ready);
   const cover = page.locator("#page-cover");
   if (await cover.isVisible()) {
     await expect(cover).toHaveCSS("opacity", "1");
   }
-  await page.screenshot({
-    path: test.info().outputPath(`${name}-desktop.png`),
-  });
   await page.setViewportSize({ width: 390, height: 844 });
   if (chat) {
     if (name.startsWith("old-")) {
@@ -32,28 +33,6 @@ async function capture(page: Page, name: string, chat?: "lobby" | "table") {
         })
         .click();
     }
-  }
-  await page.screenshot({
-    path: test.info().outputPath(`${name}-mobile.png`),
-  });
-  const popup = page
-    .locator(".dialog-content:visible, #page-cover .modal:visible")
-    .first();
-  if (
-    (await popup.count()) > 0
-    && (await popup.evaluate(
-      (element) => element.scrollHeight > element.clientHeight,
-    ))
-  ) {
-    await popup.evaluate((element) => {
-      element.scrollTop = element.scrollHeight;
-    });
-    await page.screenshot({
-      path: test.info().outputPath(`${name}-mobile-bottom.png`),
-    });
-    await popup.evaluate((element) => {
-      element.scrollTop = 0;
-    });
   }
   expect
     .soft(
@@ -110,7 +89,7 @@ for (const theme of ["light", "dark"] as const) {
   }, info) => {
     test.skip(
       info.project.name !== "go",
-      "Use the production Go client as the screenshot reference.",
+      "Run the comprehensive UI audit once against the reference backend.",
     );
     test.setTimeout(180_000);
     const owner = await browser.newContext();
@@ -140,23 +119,23 @@ for (const theme of ["light", "dark"] as const) {
     try {
       await a.goto(`${backend}/lobby`);
       await expect(a.locator("#login-username")).toBeVisible();
-      await capture(a, "old-login");
+      await auditViewport(a, "old-login");
       await a.locator("#change-password-link").click();
       await expect(a.locator("#change-password")).toBeVisible();
       await a.locator("#change-password").click({ trial: true });
-      await capture(a, "old-change-password");
+      await auditViewport(a, "old-change-password");
       await a.locator("#change-password-link").click();
 
       await b.goto(`${backend}/new`);
       await expect(b.getByLabel("Username", { exact: true })).toBeVisible();
-      await capture(b, "new-login");
+      await auditViewport(b, "new-login");
       await expect(
         b.getByRole("link", { name: /Use the classic/u }),
       ).toHaveCount(0);
       await b
         .getByRole("button", { name: "Change password", exact: true })
         .click();
-      await capture(b, "new-change-password");
+      await auditViewport(b, "new-change-password");
       await b.getByRole("button", { name: "Back to sign in" }).click();
 
       await a.locator("#login-username").fill(ownerName);
@@ -164,39 +143,39 @@ for (const theme of ["light", "dark"] as const) {
       await a.locator("#login-button").click();
       await a.locator("#tutorial-no").click();
       await expect(a.locator("#lobby")).toBeVisible();
-      await capture(a, "old-empty-lobby");
+      await auditViewport(a, "old-empty-lobby");
       await a.locator("#nav-buttons-lobby-settings").click();
       await expect(a.locator("#settings-modal")).toBeVisible();
-      await capture(a, "old-settings");
+      await auditViewport(a, "old-settings");
       await a.keyboard.press("Escape");
       await a.locator("#nav-buttons-lobby-resources").click();
       await expect(a.locator("#resources-modal")).toBeVisible();
-      await capture(a, "old-resources");
+      await auditViewport(a, "old-resources");
       await a.keyboard.press("Escape");
       await a.locator("#nav-buttons-lobby-replay").click();
       await expect(a.locator("#replay-modal")).toBeVisible();
-      await capture(a, "old-replay-id");
+      await auditViewport(a, "old-replay-id");
       await a.locator('label[for="replay-source-json"]').click();
       await a.locator("#replay-json").fill('{"players":["Alice","Bob"]}');
-      await capture(a, "old-replay-json");
+      await auditViewport(a, "old-replay-json");
       await a.keyboard.press("Escape");
 
       await a.locator("#nav-buttons-lobby-create-game").click();
       await expect(a.locator("#createTableName")).not.toHaveValue("");
       await a.locator("#createTableName").fill("Audit game");
-      await capture(a, "old-create-basic");
+      await auditViewport(a, "old-create-basic");
       await toggleClassic(a, "createTableTimed");
-      await capture(a, "old-create-timed");
+      await auditViewport(a, "old-create-timed");
       await toggleClassic(a, "createTableTimed");
       await a.locator("#create-game-show-extra-options").click();
       await toggleClassic(a, "createTableEmptyClues");
-      await capture(a, "old-create-extra");
+      await auditViewport(a, "old-create-extra");
       await a
         .locator("#create-game-variant-dropdown1")
         .selectOption({ label: "Search custom variants..." });
       await a.locator("#create-game-variant-dropdown2").fill("No Variant");
       await a.locator("#create-game-variant-dropdown2").press("Tab");
-      await capture(a, "old-create-custom");
+      await auditViewport(a, "old-create-custom");
       await a.locator("#createTableName").fill("Audit game");
       await a.locator("#create-game-submit").click();
       await expect(a.locator("#lobby-pregame")).toBeVisible();
@@ -206,19 +185,19 @@ for (const theme of ["light", "dark"] as const) {
       await b.locator("#login-button").click();
       await b.locator("#tutorial-no").click();
       await expect(b.locator("#lobby-games-table")).toContainText("Audit game");
-      await capture(b, "old-populated-lobby");
+      await auditViewport(b, "old-populated-lobby");
       await b
         .locator("#lobby-games-table tbody tr")
         .filter({ hasText: "Audit game" })
         .click();
       await expect(b.locator("#lobby-pregame")).toBeVisible();
-      await capture(b, "old-guest-pregame");
+      await auditViewport(b, "old-guest-pregame");
       const oldGuest = b;
       b = await guest.newPage();
       await b.goto(`${backend}/new`);
       await expect(b.locator("#lobby-games")).toBeVisible();
       await oldGuest.close();
-      await capture(b, "new-populated-lobby");
+      await auditViewport(b, "new-populated-lobby");
       await b
         .locator(".table-card")
         .filter({ hasText: "Audit game" })
@@ -236,10 +215,10 @@ for (const theme of ["light", "dark"] as const) {
         b.locator(".seat").filter({ hasText: guestName }),
       ).toHaveCount(1);
       await expect(a.locator("#lobby-pregame-player-2")).toBeVisible();
-      await capture(a, "old-owner-pregame");
-      await capture(b, "new-guest-pregame");
+      await auditViewport(a, "old-owner-pregame");
+      await auditViewport(b, "new-guest-pregame");
       await b.getByRole("button", { name: "Suggest options" }).click();
-      await capture(b, "new-guest-options");
+      await auditViewport(b, "new-guest-options");
       await b.keyboard.press("Escape");
       await expect(b).toHaveURL(/\/new\/table\/\d+$/u);
       await a
@@ -249,12 +228,12 @@ for (const theme of ["light", "dark"] as const) {
       await expect(a.locator("#lobby-chat-pregame-text")).toContainText(
         "Private audit message",
       );
-      await capture(a, "old-private-chat", "table");
+      await auditViewport(a, "old-private-chat", "table");
       await b.getByRole("button", { name: /^Messages/u }).click();
       await expect(
         b.getByRole("log", { name: "private messages" }),
       ).toContainText("Private audit message");
-      await capture(b, "new-private-chat", "lobby");
+      await auditViewport(b, "new-private-chat", "lobby");
       await b.setViewportSize({ width: 390, height: 360 });
       expect(
         await b
@@ -273,9 +252,6 @@ for (const theme of ["light", "dark"] as const) {
             );
           }),
       ).toBe(true);
-      await b.screenshot({
-        path: info.outputPath("new-private-chat-short.png"),
-      });
       await b.setViewportSize({ width: 1440, height: 1000 });
 
       await loginNew(c, backend, observerName);
@@ -285,7 +261,7 @@ for (const theme of ["light", "dark"] as const) {
         .getByRole("button", { name: "Watch table" })
         .click();
       await expect(c.locator("#lobby-pregame")).toBeVisible();
-      await capture(c, "new-spectator-pregame");
+      await auditViewport(c, "new-spectator-pregame");
       await c.setViewportSize({ width: 390, height: 844 });
       await expect
         .soft(c.getByRole("button", { name: /Join game/iu }))
@@ -340,46 +316,46 @@ for (const theme of ["light", "dark"] as const) {
           a.getByRole("button", { name: "Table options" }),
         ).toBeVisible();
       }
-      await capture(a, "new-owner-pregame");
+      await auditViewport(a, "new-owner-pregame");
       await expect(a.locator(".seat .name-me")).toHaveText(ownerName);
       await a.getByRole("button", { name: "Table options" }).click();
       await expect(a.getByLabel(/^Empty clues/u)).toBeVisible();
       await expect(a.getByLabel(/^Empty clues/u)).toBeChecked();
-      await capture(a, "new-owner-options");
+      await auditViewport(a, "new-owner-options");
       await a.keyboard.press("Escape");
       await a.getByRole("button", { name: "Back to tables" }).click();
       await a.getByRole("link", { name: "Settings", exact: true }).click();
       await expect(
         a.getByRole("dialog", { name: "Settings", exact: true }),
       ).toBeVisible();
-      await capture(a, "new-settings");
+      await auditViewport(a, "new-settings");
       await expect(
         a.getByRole("link", { name: /Use the classic/u }),
       ).toHaveCount(0);
       await a.keyboard.press("Escape");
       await a.getByRole("link", { name: "Resources", exact: true }).click();
-      await capture(a, "new-resources");
+      await auditViewport(a, "new-resources");
       await a.keyboard.press("Escape");
       await a.getByRole("link", { name: "Replays", exact: true }).click();
-      await capture(a, "new-replay-id");
+      await auditViewport(a, "new-replay-id");
       await a.getByRole("radio", { name: "JSON Data" }).check();
       await a
         .getByLabel("Replay JSON", { exact: true })
         .fill('{"players":["Alice","Bob"]}');
-      await capture(a, "new-replay-json");
+      await auditViewport(a, "new-replay-json");
       await a.keyboard.press("Escape");
       await a.getByRole("button", { name: "Create a table" }).click();
       await a.getByLabel("Table name", { exact: true }).fill("Audit game");
       await a.getByText("Hide Extra Options", { exact: true }).click();
-      await capture(a, "new-create-basic");
+      await auditViewport(a, "new-create-basic");
       await a.getByLabel("Timed game", { exact: true }).check();
-      await capture(a, "new-create-timed");
+      await auditViewport(a, "new-create-timed");
       await a.getByLabel("Timed game", { exact: true }).uncheck();
       await a.getByText("Show Extra Options", { exact: true }).click();
-      await capture(a, "new-create-extra");
+      await auditViewport(a, "new-create-extra");
       await a.getByLabel("Variant", { exact: true }).selectOption("custom");
       await a.getByLabel("Variant", { exact: true }).fill("No Variant");
-      await capture(a, "new-create-custom");
+      await auditViewport(a, "new-create-custom");
       await a.keyboard.press("Escape");
 
       await a
@@ -408,7 +384,7 @@ for (const theme of ["light", "dark"] as const) {
         "opacity",
         "1",
       );
-      await capture(a, "new-history");
+      await auditViewport(a, "new-history");
       await a
         .getByRole("button", { name: "Compare seed", exact: true })
         .click();
@@ -416,17 +392,17 @@ for (const theme of ["light", "dark"] as const) {
         a.getByRole("dialog", { name: "Other Scores" }),
       ).toBeVisible();
       await expect(a.getByRole("dialog")).toContainText(ownerName);
-      await capture(a, "new-other-scores");
+      await auditViewport(a, "new-other-scores");
       const seed = await a.locator(".dialog-heading p").innerText();
       await a.keyboard.press("Escape");
       await expect.soft(a).toHaveURL(/\/new\/history$/u);
       await a.goto(`${backend}/new/history?friends=1`);
-      await capture(a, "new-friends-history");
+      await auditViewport(a, "new-friends-history");
       await a.goto(`${backend}/lobby`);
       await expect(a.locator("#nav-buttons-lobby-history")).toBeVisible();
       await a.locator("#nav-buttons-lobby-history").click();
       await expect(a.locator("#lobby-history-table-tbody tr")).toHaveCount(1);
-      await capture(a, "old-history");
+      await auditViewport(a, "old-history");
       await a.goto(
         `${backend}/lobby#history-other-scores-${encodeURIComponent(seed)}`,
       );
@@ -436,21 +412,21 @@ for (const theme of ["light", "dark"] as const) {
           .locator("#lobby-history-other-scores-table-tbody tr")
           .filter({ hasText: ownerName }),
       ).toHaveCount(1);
-      await capture(a, "old-other-scores");
+      await auditViewport(a, "old-other-scores");
       await a.goto(`${backend}/lobby#history-friends`);
       await expect(a.locator("#lobby-history")).toBeVisible();
-      await capture(a, "old-friends-history");
+      await auditViewport(a, "old-friends-history");
       await a.goto(`${backend}/new/table/999999`);
       await expect(
         a.getByRole("heading", { name: "That table is no longer available." }),
       ).toBeVisible();
-      await capture(a, "new-unavailable-table");
+      await auditViewport(a, "new-unavailable-table");
       await a.getByRole("link", { name: "Return to the lobby" }).click();
       await owner.setOffline(true);
       await expect(
         a.getByText("Reconnecting...", { exact: true }),
       ).toBeVisible();
-      await capture(a, "new-reconnecting");
+      await auditViewport(a, "new-reconnecting");
       await owner.setOffline(false);
       await expect(a.getByText("Connected", { exact: true })).toBeVisible();
     } finally {

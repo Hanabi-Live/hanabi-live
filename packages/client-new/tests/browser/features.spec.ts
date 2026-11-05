@@ -5,7 +5,11 @@ import { expect, gameReady, test } from "./fixture";
 test("design prototypes remain interactive without opening a live session", async ({
   page,
   backend,
-}) => {
+}, info) => {
+  test.skip(
+    info.project.name !== "rust",
+    "Prototype behavior is backend-independent.",
+  );
   const liveRequests: string[] = [];
   page.on("websocket", (socket) => {
     liveRequests.push(socket.url());
@@ -194,10 +198,6 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(
     c.getByText("Only the host should see this.", { exact: true }),
   ).toHaveCount(0);
-  await a.screenshot({
-    path: test.info().outputPath("pregame-private-chat.png"),
-    fullPage: true,
-  });
   await owner.close();
   await guest.close();
   await outsider.close();
@@ -280,10 +280,6 @@ test("mobile navigation, accessible dialogs and safe chat rendering", async ({
       nodes: issue.nodes.map((node) => node.html),
     })),
   ).toEqual([]);
-  await page.screenshot({
-    path: test.info().outputPath("new-lobby-mobile.png"),
-    fullPage: true,
-  });
   await page.getByRole("link", { name: "Settings", exact: true }).click();
   await expect(
     page.getByRole("dialog", { name: "Settings", exact: true }),

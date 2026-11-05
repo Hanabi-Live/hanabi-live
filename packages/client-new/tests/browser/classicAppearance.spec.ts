@@ -1,5 +1,7 @@
 import { expect, test } from "./fixture";
 
+test.skip(() => test.info().project.name !== "rust");
+
 for (const theme of ["light", "dark"] as const) {
   test(`React lobby uses the classic layout, palette, and typography (${theme})`, async ({
     page,
@@ -15,9 +17,6 @@ for (const theme of ["light", "dark"] as const) {
     await page.locator("#tutorial-no").click();
     await expect(page.locator("#lobby")).toBeVisible();
     await page.evaluate(async () => await globalThis.document.fonts.ready);
-    await page.screenshot({
-      path: test.info().outputPath("classic-lobby.png"),
-    });
     const reference = await page.evaluate(() => {
       const elements = [
         "#header",
@@ -45,16 +44,10 @@ for (const theme of ["light", "dark"] as const) {
     await page.locator("#nav-buttons-lobby-create-game").click();
     await expect(page.locator("#createTableName")).not.toHaveValue("");
     await page.locator("#createTableName").fill("Style reference");
-    await page.screenshot({
-      path: test.info().outputPath("classic-create.png"),
-    });
     await page.locator("#create-game-submit").click();
     await expect(page.locator("#lobby-pregame-player-1")).toContainText(
       "Total games:",
     );
-    await page.screenshot({
-      path: test.info().outputPath("classic-pregame.png"),
-    });
     const headings = await page
       .locator("#lobby-games-table th")
       .allTextContents();
@@ -65,9 +58,6 @@ for (const theme of ["light", "dark"] as const) {
     await page.goto(`${backend}/new`);
     await expect(page.locator("#lobby-games")).toBeVisible();
     await page.evaluate(async () => await globalThis.document.fonts.ready);
-    await page.screenshot({
-      path: test.info().outputPath("react-classic-lobby.png"),
-    });
     const actual = await page.evaluate(() =>
       [
         "#header",
@@ -102,9 +92,6 @@ for (const theme of ["light", "dark"] as const) {
     await page
       .getByLabel("Table name", { exact: true })
       .fill("Style reference");
-    await page.screenshot({
-      path: test.info().outputPath("react-classic-create.png"),
-    });
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Create table", exact: true })
@@ -116,9 +103,6 @@ for (const theme of ["light", "dark"] as const) {
     await expect(
       page.getByRole("textbox", { name: "Chat message", exact: true }),
     ).toBeVisible();
-    await page.screenshot({
-      path: test.info().outputPath("react-classic-pregame.png"),
-    });
     await page.getByRole("button", { name: "Back to tables" }).click();
     await expect(page.locator("#lobby-games-table")).toContainText(
       "Style reference",
@@ -126,9 +110,6 @@ for (const theme of ["light", "dark"] as const) {
     expect(
       await page.locator("#lobby-games-table th").allTextContents(),
     ).toEqual(headings);
-    await page.screenshot({
-      path: test.info().outputPath("react-classic-tables.png"),
-    });
     await page
       .locator(".table-card")
       .filter({ hasText: "Style reference" })

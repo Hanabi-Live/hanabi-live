@@ -54,6 +54,12 @@ ordinary `.env`, and exercises Go, TypeScript, and Rust. Go, Cargo, Redis 7.2+
 binaries, and Playwright Chromium must be available. Use `--project=go` for a
 targeted run.
 
+Backend binaries are built once before the two isolated browser workers start.
+Browser tests use a debug Rust binary; native release jobs still validate the
+optimized release. CI runs the browsers in the official Playwright container,
+matched to the installed package version, while keeping backend processes on the
+host. Failure screenshots and traces are retained.
+
 Browser checks cover the game/replay handoff, reconnects, history, private chat,
 table options, settings, mobile layout, and accessibility. CI runs these before
 publishing either native release.

@@ -129,23 +129,17 @@ export const test = base.extend<
         const rustExecutable = path.join(directory, "hanabi-rust-poc");
         let args: string[] = [];
         if (worker.project.name === "rust" || cutover) {
-          const crate = path.join(ROOT, "experimental/rust-server");
-          await run("cargo", ["build", "--release", "--locked"], {
-            cwd: crate,
-            timeout: 300_000,
-          });
           await cp(
-            path.join(crate, "target/release/hanabi-rust-poc"),
+            path.join(
+              ROOT,
+              "experimental/rust-server/target/debug/hanabi-rust-poc",
+            ),
             rustExecutable,
           );
         }
         if (worker.project.name === "rust") {
           executable = rustExecutable;
         } else if (worker.project.name === "typescript") {
-          await run("bash", ["packages/server/build.sh"], {
-            cwd: ROOT,
-            timeout: 120_000,
-          });
           await cp(
             path.join(ROOT, "packages/server/dist"),
             path.join(directory, "packages/server/dist"),
@@ -158,10 +152,10 @@ export const test = base.extend<
           executable = process.execPath;
           args = ["packages/server/dist/main.js"];
         } else {
-          await run("go", ["build", "-o", executable, "."], {
-            cwd: path.join(ROOT, "server/src"),
-            timeout: 120_000,
-          });
+          await cp(
+            path.join(ROOT, "dist/browser-backends/hanabi-live"),
+            executable,
+          );
         }
         let output = "";
         const url = `http://localhost:${httpPort}`;

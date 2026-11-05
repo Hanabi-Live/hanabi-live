@@ -73,10 +73,6 @@ test("sign in, join, play, return, and recover the new lobby", async ({
     .locator(".table-card")
     .filter({ hasText: "A good first table" });
   await expect(table).toHaveCount(1);
-  await b.screenshot({
-    path: test.info().outputPath("new-lobby-desktop.png"),
-    fullPage: true,
-  });
   await table.getByRole("button", { name: "Join", exact: true }).click();
   await expect(a.locator(".seat:not(.empty-seat)")).toHaveCount(2);
   const aReady = gameReady(a);
@@ -86,7 +82,6 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   await expect(a).toHaveURL(/\/game\/\d+(?:#\d+)?$/u);
   await expect(b).toHaveURL(/\/game\/\d+(?:#\d+)?$/u);
   await expect(a.locator("canvas").first()).toBeVisible();
-  await a.screenshot({ path: test.info().outputPath("legacy-game.png") });
   await a.keyboard.press("Alt+l");
   await expect(a).toHaveURL(/\/new$/u);
   await expect(a.locator("#lobby-games")).toBeVisible();

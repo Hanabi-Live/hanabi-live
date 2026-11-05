@@ -155,9 +155,6 @@ test("open classic and React-launched games automatically resume across Go-to-Ru
         expect(records[index]?.history.at(-1)?.list).toEqual(
           before[index]?.actions,
         );
-        await page.screenshot({
-          path: test.info().outputPath(`resumed-${index}.png`),
-        });
       }),
     );
     const second = pages[1 - first];
