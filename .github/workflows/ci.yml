@@ -1,3 +1,4 @@
+# cspell:ignore buildx
 name: CI
 
 on: [push, pull_request]
@@ -76,20 +77,33 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build the production container
-        run: docker build --tag hanabi-live-ci .
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          tags: hanabi-live-ci
+          cache-from: type=gha,scope=hanabi-container
+          cache-to: type=gha,scope=hanabi-container,mode=max
 
   lint:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
       - uses: ./.github/workflows/setup-go
+        if: matrix.shard == 2
       - uses: ./.github/workflows/setup-rust
-      - name: Run the full linting suite
-        run: bash lint.sh
+        if: matrix.shard == 2
+      - name: Run the lint shard
+        run: bash lint.sh --shard=${{ matrix.shard }}/2
 
   test:
     runs-on: ubuntu-latest
@@ -120,8 +134,21 @@ jobs:
 
       - uses: ./.github/workflows/setup-go
 
+      - name: Restore test scheduling history
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dist/jest-cache/perf-cache-*
+          key: jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-${{ github.sha }}
+          restore-keys: |
+            jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-
       - name: Test the TypeScript code
-        run: npm run test
+        run: npm run test -- --cacheDirectory="$GITHUB_WORKSPACE/dist/jest-cache"
+      - name: Save test scheduling history
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: dist/jest-cache/perf-cache-*
+          key: jest-timing-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', '**/jest.config.cjs') }}-${{ github.sha }}
 
   client_new:
     runs-on: ubuntu-latest

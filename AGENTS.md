@@ -25,6 +25,7 @@ bash lint.sh
 
 This is the same entrypoint CI uses for TypeScript checks, Go vet, Rust
 formatting/Clippy, Prettier, spelling, ShellCheck, and repository consistency.
+CI runs complementary shards; run the no-argument command above before pushing.
 It requires the repository's Node dependencies, Go/Rust toolchains, and
 ShellCheck, but no running PostgreSQL or Redis services.
 

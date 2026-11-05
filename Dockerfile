@@ -6,10 +6,10 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 RUN apt-get update && apt-get install -y --no-install-recommends python3 && apt-get clean
 WORKDIR /root/hanabi-live
 COPY package.json package-lock.json tsconfig.json tsconfig.monorepo.json LICENSE ./
+RUN npm ci
 COPY packages packages
 COPY scripts scripts
 COPY public public
-RUN npm ci
 COPY server server
 COPY install install
 COPY misc misc
