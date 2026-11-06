@@ -20,7 +20,7 @@ if [[ ${GITHUB_ACTIONS:-false} == true ]]; then
     exit 1
   fi
 fi
-revision=$(git rev-parse HEAD)
+revision=$(bash packages/client/get-version.sh)
 mkdir -p "$1"
 output=$(cd -- "$1" && pwd)
 release="$output/release"

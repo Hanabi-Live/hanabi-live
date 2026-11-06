@@ -325,6 +325,23 @@ reinitialization. Do not delete PostgreSQL or Redis volumes to update a
 container. Container deployments require deliberate migration and orderly
 shutdown, not a forced kill.
 
+Container builds exclude `.git` and require `HANABI_BUILD_REVISION`, passed as a
+Docker build argument to both clients, Rust, and the release manifest. Check
+checkout cleanliness on the host first:
+
+```sh
+status=$(git status --porcelain --untracked-files=normal) \
+  && test -z "$status" \
+  && docker build --build-arg HANABI_BUILD_REVISION="$(git rev-parse HEAD)" .
+```
+
+For Compose, run the same cleanliness check and export
+`HANABI_BUILD_REVISION=$(git rev-parse HEAD)` before
+`docker compose up --build`. Ordinary source builds still discover the revision
+from Git. Container manifests record cleanliness as unknown (`dirty: null`), not
+as verified clean; they do not replace approved native CI artifacts for
+source-layout production deployments.
+
 ### Backups and TLS
 
 `database-backup.sh` streams PostgreSQL backups into gzip with disk-space and

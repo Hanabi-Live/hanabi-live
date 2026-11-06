@@ -49,7 +49,20 @@ fn git_path(root: &Path, name: &str) -> Result<PathBuf, String> {
     .map(PathBuf::from)
 }
 
-pub fn discover(root: &Path) -> Result<Version, String> {
+pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version, String> {
+    if let Some(commit) = supplied_revision {
+        if commit.len() != 40
+            || !commit
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        {
+            return Err("HANABI_BUILD_REVISION must be a full lowercase Git SHA".into());
+        }
+        return Ok(Version {
+            commit: commit.into(),
+            watched: BTreeSet::new(),
+        });
+    }
     let marker = root
         .ancestors()
         .map(|parent| parent.join(".git"))
@@ -111,8 +124,14 @@ pub fn discover(root: &Path) -> Result<Version, String> {
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-env-changed=HANABI_BUILD_REVISION");
     let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("Cargo manifest directory"));
-    let version = discover(&root).expect("Unable to determine the compiled server commit");
+    let supplied_revision = env::var_os("HANABI_BUILD_REVISION");
+    let supplied_revision = supplied_revision
+        .as_deref()
+        .map(|value| value.to_str().expect("Invalid build revision encoding"));
+    let version =
+        discover(&root, supplied_revision).expect("Unable to determine the compiled server commit");
     for path in version.watched {
         println!("cargo:rerun-if-changed={}", path.display());
     }

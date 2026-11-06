@@ -38,14 +38,13 @@ RUN test "$(bun --version)" = "$(bun -p 'require("./package.json").packageManage
   && bun install --frozen-lockfile
 
 FROM dependencies AS build
+ARG HANABI_BUILD_REVISION
 COPY packages packages
 COPY scripts scripts
 COPY public public
 COPY server server
 COPY install install
-# Git metadata identifies the paired client/server release; a shallow checkout is sufficient.
-COPY .git .git
-RUN bash install/build-release.sh /root/artifact
+RUN HANABI_BUILD_REVISION="$HANABI_BUILD_REVISION" bash install/build-release.sh /root/artifact
 
 FROM alpine
 RUN apk add --no-cache ca-certificates bash

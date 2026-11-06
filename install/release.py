@@ -126,14 +126,21 @@ def files_in(directory):
 
 def manifest(directory, runtime="rust"):
     require(runtime == "rust", "Only Rust releases are supported")
-    revision = git("rev-parse", "HEAD")
+    revision = os.environ.get("HANABI_BUILD_REVISION")
+    if revision is None:
+        revision = git("rev-parse", "HEAD")
+        dirty = bool(git("status", "--porcelain", "--untracked-files=normal"))
+    else:
+        # A supplied revision identifies source but cannot attest checkout cleanliness.
+        dirty = None
+    require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid build revision")
     metadata = {
         "format": 2,
         "runtime": runtime,
         "platform": "linux-amd64",
         "revision": revision,
         "clientVersion": (directory / "public/js/bundles/version.txt").read_text().strip(),
-        "dirty": bool(git("status", "--porcelain", "--untracked-files=normal")),
+        "dirty": dirty,
         "workflowRun": (
             f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
             f"{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ['GITHUB_RUN_ATTEMPT']}"
@@ -150,8 +157,8 @@ def manifest(directory, runtime="rust"):
             ["rustc", "--version"], cwd="server", text=True
         ).strip()
     require(
-        os.environ.get("GITHUB_ACTIONS") != "true" or not metadata["dirty"],
-        "CI build modified the source checkout",
+        os.environ.get("GITHUB_ACTIONS") != "true" or metadata["dirty"] is False,
+        "CI releases require a verified clean source checkout",
     )
     (directory / "release.json").write_text(json.dumps(metadata, indent=2) + "\n")
 

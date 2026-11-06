@@ -181,6 +181,83 @@ class ReleaseTest(unittest.TestCase):
         )
         self.assertEqual(version, expected)
 
+    def test_supplied_client_revision_does_not_invoke_git(self):
+        tools = self.workspace / "bin"
+        tools.mkdir()
+        marker = self.workspace / "git-invoked"
+        fake_git = tools / "git"
+        fake_git.write_text(f"#!/bin/sh\ntouch '{marker}'\nexit 99\n")
+        fake_git.chmod(0o755)
+        environment = dict(
+            os.environ, PATH=str(tools) + os.pathsep + os.environ["PATH"],
+            HANABI_BUILD_REVISION=self.revision,
+        )
+        script = str(Path("packages/client/get-version.sh").resolve())
+        for arguments in (
+            ["bash", script],
+            ["bash", "-c", 'source "$1"; printf "%s\\n" "$VERSION"', "--", script],
+        ):
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(arguments, env=environment, text=True, capture_output=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), self.revision)
+        for invalid in ("", "abc", "A" * 40, "g" * 40, "a" * 64):
+            with self.subTest(invalid=invalid):
+                result = subprocess.run(
+                    ["bash", script], env=dict(environment, HANABI_BUILD_REVISION=invalid),
+                    text=True, capture_output=True,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("full lowercase Git SHA", result.stderr)
+        self.assertFalse(marker.exists())
+
+    def test_supplied_manifest_revision_does_not_claim_verified_cleanliness(self):
+        with patch.dict(os.environ, HANABI_BUILD_REVISION=self.revision, GITHUB_ACTIONS="false"), \
+             patch.object(release, "git", side_effect=AssertionError("Git must not be invoked")), \
+             patch.object(release.subprocess, "check_output", return_value="tool version\n"):
+            release.manifest(self.artifact)
+        metadata = release.verify(self.artifact)
+        self.assertEqual(metadata["revision"], self.revision)
+        self.assertIsNone(metadata["dirty"])
+        self.assertEqual(metadata["workflowRun"], "local-untrusted")
+
+    def test_native_ci_cannot_treat_supplied_revision_as_clean_provenance(self):
+        with patch.dict(
+            os.environ, HANABI_BUILD_REVISION=self.revision, GITHUB_ACTIONS="true",
+            GITHUB_REPOSITORY=release.REPOSITORY, GITHUB_RUN_ID="1", GITHUB_RUN_ATTEMPT="1",
+        ), patch.object(
+            release, "git", side_effect=AssertionError("Git must not be invoked")
+        ), patch.object(
+            release.subprocess, "check_output", return_value="tool version\n"
+        ), self.assertRaisesRegex(ValueError, "verified clean source checkout"):
+            release.manifest(self.artifact)
+
+    def test_native_ci_still_requires_a_clean_git_checkout(self):
+        environment = {
+            "GITHUB_ACTIONS": "true", "GITHUB_REPOSITORY": release.REPOSITORY,
+            "GITHUB_RUN_ID": "1", "GITHUB_RUN_ATTEMPT": "1",
+        }
+        for status in ("", " M source.rs"):
+            with self.subTest(status=status), patch.dict(os.environ, environment, clear=True), \
+                 patch.object(release, "git", side_effect=[self.revision, status]), \
+                 patch.object(release.subprocess, "check_output", return_value="tool version\n"):
+                if status:
+                    with self.assertRaisesRegex(ValueError, "verified clean source checkout"):
+                        release.manifest(self.artifact)
+                else:
+                    release.manifest(self.artifact)
+                    metadata = json.loads((self.artifact / "release.json").read_text())
+                    self.assertIs(metadata["dirty"], False)
+                    self.assertEqual(metadata["revision"], self.revision)
+
+    def test_manifest_rejects_invalid_supplied_revision_without_git_fallback(self):
+        for invalid in ("", "abc", "A" * 40, "g" * 40):
+            with self.subTest(invalid=invalid), \
+                 patch.dict(os.environ, HANABI_BUILD_REVISION=invalid), \
+                 patch.object(release, "git", side_effect=AssertionError("Git must not be invoked")), \
+                 self.assertRaisesRegex(ValueError, "Invalid build revision"):
+                release.manifest(self.artifact)
+
     def test_staged_rename_sync_failure_reports_changed_state(self):
         original_sync = release.sync_directory
 
