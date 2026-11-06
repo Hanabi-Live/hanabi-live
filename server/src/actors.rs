@@ -31,6 +31,7 @@ mod tests;
 type Reply = oneshot::Sender<Result<()>>;
 
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
+const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 
 #[derive(Serialize)]
 struct GameActionMessage<'a> {
@@ -1625,6 +1626,7 @@ struct TableActor {
     attendees: HashMap<i32, Attendance>,
     chat_read: HashMap<i32, usize>,
     pregame_absent_until: HashMap<i32, Instant>,
+    replay_absent_until: Option<Instant>,
     cleanup: Arc<Notify>,
     store: Store,
     hub: mpsc::Sender<HubCommand>,
@@ -1648,6 +1650,7 @@ impl TableActor {
             attendees: HashMap::new(),
             chat_read: HashMap::new(),
             pregame_absent_until: HashMap::new(),
+            replay_absent_until: None,
             cleanup: Arc::new(Notify::new()),
             store,
             hub,
@@ -1900,6 +1903,7 @@ impl TableActor {
                 typing_until: None,
             },
         );
+        self.replay_absent_until = None;
         let mut e = self.effects();
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             e.statuses.push((s.clone(), 1, Some(self.table.id)));
@@ -2181,6 +2185,16 @@ impl TableActor {
             .map(|a| (a.session.user, a.session.name.clone()))
             .collect::<Vec<_>>();
         self.attendees.retain(|_, a| a.session.active());
+        if matches!(self.table.phase, Phase::Replay { .. }) && self.attendees.is_empty() {
+            let deadline = self
+                .replay_absent_until
+                .get_or_insert(now + REPLAY_RECONNECT_GRACE);
+            if now >= *deadline {
+                return self.retire().await;
+            }
+        } else {
+            self.replay_absent_until = None;
+        }
         let successor = self.audience().next().map(|a| a.session.user);
         if before != self.attendees.len()
             && matches!(self.table.phase, Phase::Replay { .. })
@@ -2731,6 +2745,7 @@ impl TableActor {
                 typing_until: None,
             },
         );
+        self.replay_absent_until = None;
         let mut e = self.effects();
         e.statuses.push((
             session.clone(),

@@ -128,6 +128,10 @@ recovery. Disconnected players are then removed, ownership passes to a remaining
 player, and empty pregames are durably deleted. Connected-but-AFK players keep
 their seats. This cleanup does not expire players from ongoing games.
 
+Replay rooms with no connected viewers also expire after a 60-second reconnect
+grace, including after server recovery. Rejoining cancels that deadline;
+explicitly leaving the last seat still removes the room immediately.
+
 Review rooms have a 30-minute idle window. Joining or reconnecting, replay
 controls, and user chat in shared reviews refresh it; server announcements do
 not. Normal game completion starts a fresh review window, including recovery of

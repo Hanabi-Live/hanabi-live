@@ -449,6 +449,99 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
 }
 
 #[tokio::test]
+async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        for recovered in [false, true] {
+            let id = h.store.allocate_table().await?;
+            let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+            let revision = h.store.save(&table, 0).await?;
+            let (hub, mut notifications) = mpsc::channel(32);
+            let capacity = Arc::new(Semaphore::new(1));
+            let mut actor = TableActor::new(
+                table,
+                revision,
+                h.store.clone(),
+                hub,
+                capacity.try_acquire_owned()?,
+            );
+            if !recovered {
+                actor.initialize(h.users[0].clone(), vec![]).await?;
+                h.users[0].cancel.cancel();
+            }
+            actor
+                .cleanup(Instant::now() - Duration::from_secs(61))
+                .await?;
+            ensure!(
+                !actor.retired,
+                "Empty review did not receive a reconnect grace period"
+            );
+            let (_sender, receiver) = mpsc::channel(4);
+            tokio::time::timeout(Duration::from_secs(2), actor.run(receiver, None))
+                .await
+                .context("Abandoned review did not expire on its own timer")?;
+            ensure!(
+                h.state.get(StateId::Table(id)).await?.is_none(),
+                "Expired review remains in Redis"
+            );
+            let mut retired = false;
+            while let Ok(event) = notifications.try_recv() {
+                retired |= matches!(event, HubCommand::Retire(retired_id) if retired_id == id);
+            }
+            ensure!(retired, "Expired review was not removed from the lobby");
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.store.allocate_table().await?;
+        let mut table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        table.game_mut().unwrap().idle_remaining = 1;
+        let revision = h.store.save(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(32);
+        let capacity = Arc::new(Semaphore::new(1));
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+        );
+        actor
+            .cleanup(Instant::now() - Duration::from_secs(61))
+            .await?;
+        actor.reattend(h.users[1].clone(), &json!({}), true).await?;
+        actor.tick().await?;
+        ensure!(!actor.retired, "Rejoining a review immediately closed it");
+        ensure!(actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS);
+        h.users[1].cancel.cancel();
+        let now = Instant::now();
+        actor.cleanup(now).await?;
+        ensure!(
+            !actor.retired,
+            "A later disconnect reused the old cleanup deadline"
+        );
+        actor.cleanup(now + REPLAY_RECONNECT_GRACE).await?;
+        ensure!(actor.retired, "Disconnected review did not expire");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
