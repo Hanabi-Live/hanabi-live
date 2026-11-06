@@ -72,6 +72,65 @@ async function login(page: Page, backend: string, name: string) {
   await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
+for (const [minutes, seconds, minuteLabel, secondLabel] of [
+  [1, 20, "minute", "seconds"],
+  [2, 1, "minutes", "second"],
+] as const) {
+  test(`both clients pluralize timed game units for ${minutes}m and ${seconds}s`, async ({
+    browser,
+    backend,
+  }) => {
+    const creator = await browser.newContext();
+    const observer = await browser.newContext();
+    try {
+      const a = await creator.newPage();
+      const b = await observer.newPage();
+      await login(a, backend, `testTimer${minutes}`);
+      await b.goto(`${backend}/lobby`);
+      await b.locator("#login-username").fill(`testClock${minutes}`);
+      await b.locator("#login-password").fill(`testClock${minutes}`);
+      await b.locator("#login-button").click();
+      await b.locator("#tutorial-no").click();
+      await expect(b.locator("#lobby")).toBeVisible();
+      await a
+        .getByRole("button", { name: "Create a table", exact: true })
+        .click();
+      const dialog = a.getByRole("dialog");
+      const name = `Timed table ${minutes}`;
+      await dialog.getByLabel("Table name", { exact: true }).fill(name);
+      await dialog.getByLabel("Timed game").check();
+      await dialog.getByLabel("Base time (minutes)").fill(String(minutes));
+      await dialog.getByLabel("Seconds per turn").fill(String(seconds));
+      await dialog
+        .getByRole("button", { name: "Create table", exact: true })
+        .click();
+      await a
+        .getByRole("button", { name: "Back to tables", exact: true })
+        .click();
+      await expect(
+        a
+          .locator(".table-card")
+          .filter({ hasText: name })
+          .getByLabel("Timed", { exact: true }),
+      ).toHaveAttribute(
+        "title",
+        `Timed: ${minutes} ${minuteLabel} + ${seconds} ${secondLabel} per turn`,
+      );
+      await b
+        .locator("#lobby-games-table tr")
+        .filter({ hasText: name })
+        .locator('[id*="-options-timer-"]')
+        .hover();
+      await expect(b.locator(".tooltipster-content")).toHaveText(
+        `This is a Timed Game. The base time is ${minutes}:00 ${minuteLabel} plus ${seconds} ${secondLabel} per turn.`,
+      );
+    } finally {
+      await creator.close();
+      await observer.close();
+    }
+  });
+}
+
 for (const route of ["lobby", "new"]) {
   test(`${route} keeps spectators scoped to the current pregame table`, async ({
     browser,

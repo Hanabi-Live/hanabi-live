@@ -198,9 +198,9 @@ export function getOptionIcons(
         <div id="${idPrefix}-tooltip-timer-${rowId}" class="${idPrefix}-tooltip-icon">
           This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
             options.timeBase,
-          )} minute(s)</strong> plus <strong>${
+          )} minute${options.timeBase === 60 ? "" : "s"}</strong> plus <strong>${
             options.timePerTurn
-          } second(s)</strong> per turn.
+          } second${options.timePerTurn === 1 ? "" : "s"}</strong> per turn.
         </div>
       </div>
     `;

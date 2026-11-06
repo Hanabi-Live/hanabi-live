@@ -36,7 +36,7 @@ export function GameOptionIcons({
         <i
           aria-label="Timed"
           className="fas fa-clock"
-          title={`Timed: ${options.timeBase / 60}m + ${options.timePerTurn}s`}
+          title={`Timed: ${options.timeBase / 60} minute${options.timeBase === 60 ? "" : "s"} + ${options.timePerTurn} second${options.timePerTurn === 1 ? "" : "s"} per turn`}
         />
       )}
       {options.speedrun && (
