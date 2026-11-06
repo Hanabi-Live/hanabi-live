@@ -58,10 +58,7 @@ def database_environment(dsn):
     }
 
 @contextlib.contextmanager
-def redis_fixture(runtime):
-    if runtime != "rust":
-        yield None
-        return
+def redis_fixture():
     with tempfile.TemporaryDirectory(prefix="hanabi-release-redis-") as directory:
         socket_path = Path(directory) / "redis.sock"
         environment = {key: os.environ[key] for key in ("PATH", "LD_LIBRARY_PATH") if key in os.environ}
@@ -89,14 +86,13 @@ def redis_fixture(runtime):
 
 def main():
     archive = Path(sys.argv[1]).resolve()
-    runtime = sys.argv[2] if len(sys.argv) > 2 else "go"
-    if runtime not in ("go", "rust"):
-        raise ValueError("Runtime must be go or rust")
-    with redis_fixture(runtime) as redis_url:
-        exercise(archive, runtime, redis_url)
+    if len(sys.argv) > 2 and sys.argv[2] != "rust":
+        raise ValueError("Only Rust releases are supported")
+    with redis_fixture() as redis_url:
+        exercise(archive, redis_url)
 
 
-def exercise(archive, runtime, redis_url):
+def exercise(archive, redis_url):
     dsn = os.environ["HANABI_TEST_DATABASE_URL"]
     database = "hanabi_release_" + uuid.uuid4().hex
     workspace = Path("dist/release-smoke", database).resolve()
@@ -116,8 +112,7 @@ def exercise(archive, runtime, redis_url):
         PORT=str(public_port),
         LOCALHOST_PORT=str(local_port),
     )
-    if redis_url is not None:
-        environment["REDIS_URL"] = redis_url
+    environment["REDIS_URL"] = redis_url
     pg_environment = dict(
         os.environ,
         PGHOST=environment["DB_HOST"],
@@ -160,14 +155,14 @@ def exercise(archive, runtime, redis_url):
 
         write_env(database + "_missing")
         try:
-            release.activate(root, revision, runtime)
+            release.activate(root, revision)
         except subprocess.CalledProcessError:
             pass
         else:
             raise AssertionError("A failed migration activated code")
         assert not (root / "current").exists()
         write_env(database)
-        release.activate(root, revision, runtime)
+        release.activate(root, revision)
         subprocess.run(
             ["psql", "-Xq", "-v", "ON_ERROR_STOP=1", "-c", "UPDATE schema_version SET version = 999"],
             env=pg_environment,
@@ -210,7 +205,7 @@ def exercise(archive, runtime, redis_url):
             ) as response:
                 assert response.read().decode().strip() == release.verify(installed)["clientVersion"]
             try:
-                release.activate(root, revision, runtime)
+                release.activate(root, revision)
             except BlockingIOError:
                 pass
             else:
@@ -218,7 +213,7 @@ def exercise(archive, runtime, redis_url):
             request("/gracefulRestart")
             wait_for(
                 lambda: log_path.read_text().count(
-                    "The server has successfully started" if runtime == "rust" else "Current git commit:"
+                    "The server has successfully started"
                 ) >= 2
                 and request("/version").strip() == revision,
                 process,
@@ -232,7 +227,7 @@ def exercise(archive, runtime, redis_url):
             request("/shutdown")
             assert process.wait(timeout=20) == 0
             try:
-                release.activate(root, revision, runtime)
+                release.activate(root, revision)
             except ValueError as error:
                 assert "Rollback/re-activation refused" in str(error)
             else:

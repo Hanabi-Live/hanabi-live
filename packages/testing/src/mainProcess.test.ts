@@ -108,7 +108,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           `REDIS_URL=${redis.url}\n`,
         );
         await buildRust(directory);
-        processState = startProcess(directory, undefined);
+        processState = startProcess(directory);
         let address = await bounded(
           processState.ready,
           "compiled server readiness",
@@ -354,7 +354,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
               expect(crashed.signalCode).toBeNull();
               expect(processState.output()).toContain("successfully shut down");
             }
-            processState = startProcess(directory, undefined);
+            processState = startProcess(directory);
             address = await bounded(
               processState.ready,
               "restarted compiled server readiness",
@@ -615,7 +615,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         `REDIS_URL=${redis.url}\n`,
       );
       await buildRust(directory);
-      state = startProcess(directory, undefined);
+      state = startProcess(directory);
       let address = await bounded(state.ready, "six-player parity readiness");
       const peers = await Promise.all(
         Array.from({ length: 7 }, async (_, index) => {
@@ -790,7 +790,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           const crashed = once(state.child, "close");
           state.child.kill("SIGKILL");
           await bounded(crashed, "pregame and replay process crash");
-          state = startProcess(directory, undefined);
+          state = startProcess(directory);
           address = await bounded(state.ready, "pregame and replay recovery");
           const returning = socketClient(address, owner.cookie);
           sockets.push(returning.socket);

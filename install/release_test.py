@@ -24,6 +24,7 @@ class ReleaseTest(unittest.TestCase):
         (self.root / "shared/.env").write_text("DB_NAME=release_test\n")
         (self.root / "shared/ongoing_tables/retained.json").write_text("authoritative")
         self.revision = "a" * 40
+        self.release_name = self.revision + "-rust"
         self.artifact = self.workspace / "artifact"
         self.artifact.mkdir()
         contents = {
@@ -44,6 +45,7 @@ class ReleaseTest(unittest.TestCase):
         (self.artifact / "hanabi-live").chmod(0o755)
         self.metadata = {
             "format": 1,
+            "runtime": "rust",
             "platform": "linux-amd64",
             "revision": self.revision,
             "clientVersion": "10",
@@ -68,7 +70,7 @@ class ReleaseTest(unittest.TestCase):
         self.stage()
         self.assertFalse((self.root / "current").exists())
         release.activate(self.root, self.revision)
-        self.assertEqual((self.root / "current").resolve().name, self.revision)
+        self.assertEqual((self.root / "current").resolve().name, self.release_name)
         self.assertEqual(
             (self.root / "current/ongoing_tables/retained.json").read_text(),
             "authoritative",
@@ -81,26 +83,22 @@ class ReleaseTest(unittest.TestCase):
             release.stage(self.root, self.archive, "0" * 64)
         self.assertEqual(list((self.root / "releases").iterdir()), [])
 
-    def test_rust_bundle_coexists_with_go_and_refuses_reverse_cutover(self):
-        self.stage()
-        release.activate(self.root, self.revision)
-        self.metadata["runtime"] = "rust"
-        (self.artifact / "hanabi-live").write_text(
-            "#!/bin/sh\ncase \"$1\" in\n"
-            f" --version) echo {self.revision};;\n"
-            " --check-startup|--check-migration-target) exit 0;;\n"
-            " *) exit 2;;\n"
-            "esac\n"
-        )
-        self.metadata["files"] = release.files_in(self.artifact)
+    def test_go_bundles_cannot_be_staged_or_activated(self):
+        self.metadata["runtime"] = "go"
         self.write_manifest()
         self.pack()
+        with self.assertRaisesRegex(ValueError, "Only Rust releases"):
+            self.stage()
+        with self.assertRaisesRegex(ValueError, "Only Rust releases"):
+            release.activate(self.root, self.revision, "go")
+
+    def test_existing_rust_release_marker_remains_verifiable(self):
         self.stage()
-        release.activate(self.root, self.revision, "rust")
-        self.assertEqual((self.root / "current").resolve().name, self.revision + "-rust")
-        self.assertTrue((self.root / "releases" / self.revision).is_dir())
-        with self.assertRaisesRegex(ValueError, "Rust-to-Go"):
-            release.activate(self.root, self.revision)
+        installed = self.root / "releases" / self.release_name
+        (installed / ".go-to-rust-cutover").symlink_to("../../shared/.go-to-rust-cutover")
+        release.verify(installed)
+        release.activate(self.root, self.revision)
+        self.assertEqual((self.root / "current").resolve(), installed)
 
     def test_unknown_runtime_is_rejected(self):
         self.metadata["runtime"] = "unknown"
@@ -128,7 +126,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn("Staged release was renamed", error_output.getvalue())
         self.assertIn("current was NOT changed", error_output.getvalue())
         self.assertNotIn("operation refused", error_output.getvalue())
-        self.assertTrue((self.root / "releases" / self.revision).is_dir())
+        self.assertTrue((self.root / "releases" / self.release_name).is_dir())
         self.assertFalse((self.root / "current").exists())
 
     def test_activation_sync_failure_reports_changed_pointer(self):
@@ -145,7 +143,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn(f"current was changed to {self.revision}", error_output.getvalue())
         self.assertIn("Activation durability is uncertain", error_output.getvalue())
         self.assertNotIn("operation refused", error_output.getvalue())
-        self.assertEqual((self.root / "current").resolve().name, self.revision)
+        self.assertEqual((self.root / "current").resolve().name, self.release_name)
         self.assertEqual((self.root / "shared/ongoing_tables/retained.json").read_text(), "authoritative")
 
     def test_legacy_chat_layout_retains_checksum_validation(self):
@@ -192,7 +190,7 @@ class ReleaseTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Rollback/re-activation refused"):
                 release.activate(self.root, older_revision)
             self.assertFalse(any(call.args[0][0] == "bash" for call in calls.call_args_list))
-        self.assertEqual((self.root / "current").resolve().name, self.revision)
+        self.assertEqual((self.root / "current").resolve().name, self.release_name)
 
     def test_corrupt_or_unpaired_assets_never_stage(self):
         (self.artifact / "public/js/bundles/version.txt").write_text("11\n")
@@ -295,7 +293,7 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             release.deployment_root(str(linked_root))
         self.stage()
-        binary = self.root / "releases" / self.revision / "hanabi-live"
+        binary = self.root / "releases" / self.release_name / "hanabi-live"
         binary.write_text("corrupt")
         with patch.object(release.subprocess, "run") as migrate:
             with self.assertRaisesRegex(ValueError, "checksums"):

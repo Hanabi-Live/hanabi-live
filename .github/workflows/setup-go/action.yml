@@ -1,5 +1,5 @@
-name: Set up Go with build-specific caching
-description: Keep normal, race, and static build caches separate.
+name: Set up Go for migration tooling
+description: Cache the pinned Tern migration tool dependencies.
 inputs:
   cache-key:
     description: Distinguishes different builds within a matrix job.
@@ -24,6 +24,6 @@ runs:
         path: |
           ${{ steps.paths.outputs.build }}
           ${{ steps.paths.outputs.modules }}
-        key: go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-${{ hashFiles('server/src/go.sum', 'maintenance/go.sum', 'install/migration_files.sh', '.github/workflows/setup-go/action.yml') }}
+        key: go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-${{ hashFiles('install/migration_files.sh', '.github/workflows/setup-go/action.yml') }}
         restore-keys: |
           go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-

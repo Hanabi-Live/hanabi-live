@@ -1,0 +1,59 @@
+[package]
+name = "hanabi-live"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-only"
+
+[workspace]
+members = ["protocol"]
+exclude = ["engine"]
+resolver = "3"
+
+[dependencies]
+anyhow = "1"
+argon2 = "0.6"
+axum = { version = "0.8", features = ["ws"] }
+axum-server = { version = "0.8", default-features = false, features = ["tls-rustls-no-provider"] }
+base64 = "0.23"
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+futures-util = "0.3"
+hmac = "0.13"
+hex = "0.4"
+hyper-util = { version = "0.1", features = ["tokio"] }
+hanabi_engine = { path = "engine" }
+hanabi_protocol = { path = "protocol" }
+minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
+percent-encoding = "2"
+rand = "0.10"
+redis = { version = "1", default-features = false, features = ["script", "tokio-rustls-comp", "tls-rustls-webpki-roots"] }
+regex = "1"
+reqwest = { version = "0.13", default-features = false, features = ["form", "json", "rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+sha2 = "0.11"
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "postgres", "chrono", "json", "macros", "derive"] }
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
+unicode-normalization = "0.1"
+subtle = "2"
+tower-http = { version = "0.7", features = ["fs", "timeout"] }
+url = "2"
+
+[dev-dependencies]
+rcgen = "0.14"
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+tower = { version = "0.5", features = ["util"] }
+
+# Keep real password costs without debug-only hashing latency exhausting admission in tests.
+[profile.test.package.argon2]
+opt-level = 3
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+await_holding_lock = "deny"

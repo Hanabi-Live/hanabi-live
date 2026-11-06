@@ -9,7 +9,7 @@ import { bounded, startProcess, stopChild } from "./mainProcessSupport";
 test("process readiness waits for both listeners on every start", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "hanabi-readiness-"));
   await writeFile(
-    path.join(directory, "hanabi-rust-poc"),
+    path.join(directory, "hanabi-live"),
     `#!${process.execPath}\n${String.raw`
 let phase = 0;
 process.on("SIGUSR2", () => {

@@ -9,7 +9,7 @@
 .DS_Store
 thumbs.db
 
-# The compiled Golang binary
+# The installed server binary
 hanabi-live
 hanabi-live~
 hanabi-live.exe
@@ -24,8 +24,10 @@ motd.txt*
 /packages/data/src/version.js
 
 # Various directories
-/experimental/rust-server/**/target
-/experimental/rust-server/__pycache__
+/server/**/target
+/server/__pycache__
+/maintenance/__pycache__
+hanabi-live.next
 /.go-to-rust-cutover
 /backups
 /letsencrypt

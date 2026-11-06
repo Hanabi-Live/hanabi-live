@@ -10,7 +10,7 @@ temporary=$(mktemp)
 trap 'rm -f "$temporary"' EXIT
 output=packages/data/src/generated/protocol.ts
 (
-  cd "$ROOT/experimental/rust-server/protocol"
+  cd "$ROOT/server/protocol"
   cargo run --quiet --locked --bin generate
 ) \
   | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"

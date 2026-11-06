@@ -1,30 +1,30 @@
 # Server comparison
 
-The [native Rust server](../experimental/rust-server/README.md) runs in
-production; Go remains the reference implementation. The TypeScript server has
-been removed. Historical measurements below retain its results for context.
+The [native Rust server](../server/README.md) runs in production. The Go and
+TypeScript servers have been removed. Historical measurements below retain their
+results for context; compatibility fixtures are preserved under
+`server/testdata`.
 
 ## Reproducible workload
 
-With Go, Node.js, Bun, Rust/rustup, Redis 7.2+ binaries, and a disposable local
-PostgreSQL service available:
+With Bun, Rust/rustup, Redis 7.2+ binaries, and a disposable local PostgreSQL
+service available:
 
 ```sh
-HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  bun run test --runInBand packages/testing/src/mainProcessComparison.test.ts \
-  --testNamePattern='normal-server comparison'
+export HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable'
+bun packages/testing/src/mainProcessSetup.ts
+bun test --isolate --tsconfig-override tsconfig.monorepo.json packages/testing/src/mainProcessComparison.test.ts
 ```
 
-Each implementation runs in a separate process; Rust is built in release mode.
-The same browser wire messages exercise login, signed cookies, four concurrent
-lanes, eight 25-point games, 200 plays, eight live reconnects, and, after
-restarting the process, 160 historical replay reads and 80 reconnect/replay
-reads.
+Rust runs in a separate release-mode process. Browser wire messages exercise
+login, signed cookies, four concurrent lanes, eight 25-point games, 200 plays,
+eight live reconnects, and, after restarting the process, 160 historical replay
+reads and 80 reconnect/replay reads.
 
 Every game must finish correctly and restored hands must remain private. Both
-servers use the same explicit played deck through the normal custom-deck storage
-path. The harness verifies stored actions, participants, custom decks, settled
-statistics, and reconstruction through each native server after restart.
+the current server uses the explicit played deck through the normal custom-deck
+storage path. The harness verifies stored actions, participants, custom decks,
+settled statistics, and reconstruction after restart.
 
 The current Rust implementation uses Redis AOF/`WAITAOF` for recoverable state
 and PostgreSQL for accounts/history. The harness creates its private Redis
@@ -32,9 +32,9 @@ sidecar. Its `postgresCheckpointWrites` should therefore be zero, not
 interpreted as an absence of durable checkpoints. Storage now differs between
 implementations; server RSS also excludes the Redis sidecar.
 
-New account passwords use the same Argon2 settings in both native servers: 64
-MiB, three passes, and four lanes. Go still verifies existing hashes using their
-stored parameters and upgrades older pass counts on successful login.
+New account passwords use Argon2 with 64 MiB, three passes, and four lanes.
+Existing hashes are verified using their stored parameters and upgraded after a
+successful login when necessary.
 
 ## Current Rust optimization measurements
 
@@ -163,8 +163,8 @@ with unresolved active games. Old custom decks that were never saved cannot be
 reconstructed. Go's legacy replay interpretation is retained by the native Rust
 engine.
 
-Rust's process signals drain admitted work; existing Go source deployments still
-require their documented graceful shutdown procedure.
+Rust's process signals drain admitted work. The Go live-state importer has been
+retired; unresolved legacy checkpoints require a compatible earlier release.
 
 The full-server acceptance suite also covers the variant/character/replay
 corpus, command and HTTP handlers, malformed input, recipient isolation, storage

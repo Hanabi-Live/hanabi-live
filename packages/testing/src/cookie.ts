@@ -1,4 +1,4 @@
-// Test-only verification of the Go-compatible cookies issued by both native servers.
+// Test-only verification of the legacy-compatible cookies issued by the server.
 import type { UserID } from "@hanabi-live/data";
 import { createHmac, timingSafeEqual } from "node:crypto";
 

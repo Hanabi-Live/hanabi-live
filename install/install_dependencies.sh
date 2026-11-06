@@ -24,7 +24,7 @@ fi
 bun install --frozen-lockfile
 bash "$REPO_ROOT/packages/client/build_client.sh"
 
-# Build the server, which will automatically install the Golang dependencies.
+# Build the native server using its pinned Rust toolchain.
 bash "$REPO_ROOT/server/build_server.sh"
 
 echo "Successfully installed dependencies."

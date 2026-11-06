@@ -29,7 +29,7 @@ function getTotalCardsInSuit(variant: Variant, suit: Suit): number {
 /**
  * Returns how many copies of this card should exist in the deck.
  *
- * This implementation mirrors `numCopiesOfCard` in "server/src/game_deck.go".
+ * This implementation mirrors the native deck rules in "server/engine/src/catalog.rs".
  */
 export function getNumCopiesOfCard(
   suit: Suit,

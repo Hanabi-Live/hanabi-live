@@ -8,7 +8,7 @@
 
     // @template-customization-start
     "oven.bun-vscode", // Bun runtime and test support
-    "golang.go", // Golang language server
+    "rust-lang.rust-analyzer", // Rust language server
     "ms-python.python", // Python language server
     // @template-customization-end
   ],

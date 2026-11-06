@@ -10,5 +10,5 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
 REPO_NAME="$(basename "$DIR")"
 
-"$DIR/server/build_server.sh"
+bash "$DIR/server/build_server.sh"
 supervisorctl start "$REPO_NAME"

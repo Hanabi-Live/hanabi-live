@@ -1,11 +1,33 @@
 version: "3"
 services:
+  hanab-live-redis:
+    image: redis:8-alpine
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--appendfsync",
+        "always",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 2s
   hanab-live-db:
-    image: "liubowei/hanab-live-db"
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: "hanab-live-db"
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
-      POSTGRES_PASSWORD: 1234567890
+      POSTGRES_USER: "${DB_USER:-hanabiuser}"
+      POSTGRES_DB: "${DB_NAME:-hanabi}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-1234567890}"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,12 +42,22 @@ services:
     depends_on:
       hanab-live-db:
         condition: service_healthy
+      hanab-live-redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: hanab-live-db
+      DB_PORT: 5432
+      DB_USER: "${DB_USER:-hanabiuser}"
+      DB_NAME: "${DB_NAME:-hanabi}"
+      DB_PASSWORD: "${DB_PASSWORD:-1234567890}"
+      REDIS_URL: redis://hanab-live-redis:6379
+      LISTEN_HOST: 0.0.0.0
+      PORT: 80
     ports:
       - "1212:80"
     volumes:
       - ./.env:/root/hanabi-live/.env
-      - ongoing_tables:/root/hanabi-live/ongoing_tables
     stop_grace_period: 24h
 volumes:
   pgdata:
-  ongoing_tables:
+  redisdata:

@@ -19,7 +19,7 @@ const fixture = z.strictObject({
 const contents = readFileSync(
   path.resolve(
     __dirname,
-    "../../../experimental/rust-server/protocol/fixtures/compatibility.json",
+    "../../../server/protocol/fixtures/compatibility.json",
   ),
   "utf8",
 );

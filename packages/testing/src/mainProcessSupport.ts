@@ -6,7 +6,6 @@ import type { ChildProcess } from "node:child_process";
 import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
 import { cp, mkdir, symlink, writeFile } from "node:fs/promises";
-import { createServer } from "node:net";
 import path from "node:path";
 import { promisify } from "node:util";
 
@@ -159,11 +158,8 @@ export async function prepareRoot(
   await writeFile(path.join(directory, ".env"), `${contents}\n`);
 }
 
-export function startProcess(directory: string, goPort?: number): ProcessState {
-  const executable = path.join(
-    directory,
-    goPort === undefined ? "hanabi-rust-poc" : "hanabi-live",
-  );
+export function startProcess(directory: string): ProcessState {
+  const executable = path.join(directory, "hanabi-live");
   const child = spawn(executable, [], {
     cwd: directory,
     env: {
@@ -178,7 +174,7 @@ export function startProcess(directory: string, goPort?: number): ProcessState {
   let waiter: typeof ready | undefined = ready;
   let output = "";
   let publicAddress: string | undefined;
-  let operationsReady = goPort !== undefined;
+  let operationsReady = false;
   const lineBuffers = { stdout: "", stderr: "" };
   function getOutput() {
     return `${output}${lineBuffers.stdout}${lineBuffers.stderr}`.slice(-32_768);
@@ -192,10 +188,9 @@ export function startProcess(directory: string, goPort?: number): ProcessState {
     lineBuffers[stream] = unfinished;
     for (const line of lines) {
       output = `${output}${line}\n`.slice(-32_768);
-      const address =
-        goPort !== undefined && line.includes(`Listening on port ${goPort}.`)
-          ? `http://127.0.0.1:${goPort}`
-          : /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(line)?.[1];
+      const address = /Server listening at (http:\/\/127\.0\.0\.1:\d+)/u.exec(
+        line,
+      )?.[1];
       if (address !== undefined) {
         publicAddress = address;
       }
@@ -235,32 +230,11 @@ export function startProcess(directory: string, goPort?: number): ProcessState {
         throw new Error("A process readiness waiter is already registered.");
       }
       publicAddress = undefined;
-      operationsReady = goPort !== undefined;
+      operationsReady = false;
       waiter = Promise.withResolvers<string>();
       return await waiter.promise;
     },
   };
-}
-
-export async function unusedPort(): Promise<number> {
-  const server = createServer();
-  await new Promise<void>((resolve) => {
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  const address = server.address();
-  if (address === null || typeof address === "string") {
-    throw new Error("Missing ephemeral listener.");
-  }
-  await new Promise<void>((resolve, reject) => {
-    server.close((error) => {
-      if (error === undefined) {
-        resolve();
-      } else {
-        reject(error);
-      }
-    });
-  });
-  return address.port;
 }
 
 export function summary(values: readonly number[]): {
@@ -290,36 +264,13 @@ export async function settleLanes(
   }
 }
 
-/* eslint-disable no-await-in-loop -- Each lane must follow the actual client protocol in order. */
 export async function buildRust(directory: string): Promise<void> {
   await cp(
-    path.join(ROOT, "experimental/rust-server/target/release/hanabi-rust-poc"),
-    path.join(directory, "hanabi-rust-poc"),
-  );
-}
-
-export async function buildGo(directory: string): Promise<void> {
-  for (const relative of [
-    "packages/game/src/json",
-    "packages/data/src/json",
-    "server/src/views",
-  ]) {
-    await mkdir(path.dirname(path.join(directory, relative)), {
-      recursive: true,
-    });
-    await symlink(
-      path.join(ROOT, relative),
-      path.join(directory, relative),
-      "dir",
-    );
-  }
-  await cp(
-    path.join(ROOT, "dist/process-backends/hanabi-live"),
+    path.join(ROOT, "server/target/release/hanabi-live"),
     path.join(directory, "hanabi-live"),
   );
 }
 
-/* eslint-enable no-await-in-loop */
 export async function login(
   address: string,
   username: string,

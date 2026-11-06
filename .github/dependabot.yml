@@ -6,11 +6,11 @@ updates:
       interval: weekly
   - package-ecosystem: cargo
     directories:
-      - /experimental/rust-server
-      - /experimental/rust-server/engine
+      - /server
+      - /server/engine
     schedule:
       interval: weekly
   - package-ecosystem: rust-toolchain
-    directory: /experimental/rust-server
+    directory: /
     schedule:
       interval: weekly

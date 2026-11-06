@@ -3,7 +3,7 @@ runs:
   steps:
     - name: Select the repository's Rust toolchain
       shell: bash
-      working-directory: experimental/rust-server
+      working-directory: server
       run: |
         rustup show
         echo "RUSTUP_TOOLCHAIN=$(rustup show active-toolchain | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
@@ -14,8 +14,8 @@ runs:
         # Do not reuse the immutable release-only cache for browser debug builds.
         key: ${{ github.job == 'client_new' && 'browser-debug-optimized-deps' || '' }}
         workspaces: |
-          experimental/rust-server -> target
-          experimental/rust-server/engine -> target
+          server -> target
+          server/engine -> target
         # Keep job-specific profiles/targets separate and rebuild our revision-stamped binaries.
         cache-workspace-crates: false
         cache-bin: false

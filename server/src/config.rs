@@ -1,0 +1,208 @@
+use anyhow::{Context, Result, ensure};
+use std::{
+    collections::HashMap,
+    net::IpAddr,
+    path::{Path, PathBuf},
+};
+
+#[derive(Clone)]
+pub struct Config {
+    pub root: PathBuf,
+    secret: String,
+    port: u16,
+    listen_host: String,
+    pub localhost_port: u16,
+    pub domain: String,
+    pub tls_cert_file: Option<PathBuf>,
+    pub tls_key_file: Option<PathBuf>,
+    pub integrations: HashMap<String, String>,
+    pub(crate) redis_url: String,
+    pub(crate) database: String,
+    pub(crate) database_host: String,
+    pub(crate) database_port: u16,
+    pub(crate) database_user: String,
+    pub(crate) database_password: String,
+}
+
+impl Config {
+    pub fn secret(&self) -> &str {
+        &self.secret
+    }
+    pub fn port(&self) -> u16 {
+        if self.use_tls() && self.port == 80 {
+            443
+        } else {
+            self.port
+        }
+    }
+    pub fn use_tls(&self) -> bool {
+        self.tls_cert_file.is_some()
+    }
+    pub fn is_dev(&self) -> bool {
+        matches!(self.domain.as_str(), "localhost" | "127.0.0.1" | "::1")
+            || self.domain.starts_with("192.168.")
+            || self.domain.starts_with("10.")
+    }
+    pub fn listen_host(&self) -> &str {
+        &self.listen_host
+    }
+
+    /// Loads an immutable configuration snapshot; never modifies process environment.
+    pub fn load(path: &Path) -> Result<Self> {
+        let mut values = dotenvy::from_path_iter(path)?.collect::<Result<HashMap<_, _>, _>>()?;
+        values.extend(std::env::vars());
+        let root = path
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(Path::new("."))
+            .canonicalize()?;
+        Self::from_values(root, values)
+    }
+
+    pub fn from_values(root: PathBuf, values: HashMap<String, String>) -> Result<Self> {
+        let field = |key: &str, default: &str| {
+            values
+                .get(key)
+                .filter(|s| !s.is_empty())
+                .map(String::as_str)
+                .unwrap_or(default)
+                .to_owned()
+        };
+        let domain = field("DOMAIN", "localhost");
+        let listen_host = field(
+            "LISTEN_HOST",
+            match domain.as_str() {
+                "localhost" | "127.0.0.1" => "127.0.0.1",
+                "::1" => "::1",
+                _ => "0.0.0.0",
+            },
+        );
+        listen_host
+            .parse::<IpAddr>()
+            .context("LISTEN_HOST must be an IP address")?;
+        ensure!(
+            domain.parse::<IpAddr>().is_ok()
+                || domain.split('.').all(|part| !part.is_empty()
+                    && part.len() <= 63
+                    && !part.starts_with('-')
+                    && !part.ends_with('-')
+                    && part.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-')),
+            "Invalid DOMAIN"
+        );
+        let secret = field("SESSION_SECRET", "");
+        ensure!(secret.len() >= 128, "Session signing key is too short");
+        let redis_url = field("REDIS_URL", "");
+        ensure!(
+            !redis_url.is_empty(),
+            "Missing REDIS_URL: durable Redis state is required"
+        );
+        let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
+        ensure!(
+            matches!(redis.scheme(), "redis" | "rediss" | "unix" | "redis+unix"),
+            "REDIS_URL must use redis, rediss, or redis+unix"
+        );
+        let cert = field("TLS_CERT_FILE", "");
+        let key = field("TLS_KEY_FILE", "");
+        ensure!(
+            cert.is_empty() == key.is_empty(),
+            "TLS_CERT_FILE and TLS_KEY_FILE must both be provided"
+        );
+        let resolve = |value: &str| {
+            if value.is_empty() {
+                None
+            } else {
+                Some(root.join(value))
+            }
+        };
+        let mut integrations = HashMap::new();
+        for key in [
+            "DISCORD_TOKEN",
+            "DISCORD_GUILD_ID",
+            "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
+            "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
+            "DISCORD_PING_CREW_ROLE_NAME",
+            "DISCORD_TRUSTED_TEACHER_ROLE_NAME",
+            "SENTRY_DSN",
+            "GA_TRACKING_ID",
+        ] {
+            if let Some(value) = values.get(key).filter(|v| !v.is_empty()) {
+                integrations.insert(key.into(), value.clone());
+            }
+        }
+        Ok(Self {
+            root: root.clone(),
+            secret,
+            port: field("PORT", "80").parse().context("Invalid PORT")?,
+            localhost_port: field("LOCALHOST_PORT", "8081")
+                .parse()
+                .context("Invalid LOCALHOST_PORT")?,
+            domain,
+            listen_host,
+            tls_cert_file: resolve(&cert),
+            tls_key_file: resolve(&key),
+            integrations,
+            redis_url,
+            database: field("DB_NAME", "hanabi"),
+            database_host: field("DB_HOST", "localhost"),
+            database_port: field("DB_PORT", "5432")
+                .parse()
+                .context("Invalid DB_PORT")?,
+            database_user: field("DB_USER", "hanabiuser"),
+            database_password: field("DB_PASSWORD", "1234567890"),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn validates_runtime_configuration_without_mutating_environment() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let values: HashMap<String, String> = [
+            ("SESSION_SECRET", "synthetic".repeat(32)),
+            ("REDIS_URL", "redis://127.0.0.1:6379".into()),
+            ("DOMAIN", "example.invalid".into()),
+            ("DB_HOST", "database.example.invalid".into()),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.into(), v))
+        .collect();
+        let before = std::env::var("DOMAIN");
+        let config = Config::from_values(root.clone(), values.clone()).unwrap();
+        assert_eq!(config.listen_host(), "0.0.0.0");
+        assert_eq!(config.port(), 80);
+        assert_eq!(std::env::var("DOMAIN"), before);
+        for (key, value) in [
+            ("DOMAIN", "bad/name"),
+            ("LISTEN_HOST", "not-an-address"),
+            ("PORT", "65536"),
+            ("LOCALHOST_PORT", "-1"),
+            ("SESSION_SECRET", "short"),
+            ("REDIS_URL", "http://localhost"),
+            ("TLS_CERT_FILE", "cert.pem"),
+        ] {
+            let mut values = values.clone();
+            values.insert(key.into(), value.into());
+            assert!(Config::from_values(root.clone(), values).is_err(), "{key}");
+        }
+        let mut values = values;
+        values.insert("DOMAIN".into(), "localhost".into());
+        assert_eq!(
+            Config::from_values(root.clone(), values.clone())
+                .unwrap()
+                .listen_host(),
+            "127.0.0.1"
+        );
+        values.insert("LISTEN_HOST".into(), "0.0.0.0".into());
+        assert_eq!(
+            Config::from_values(root.clone(), values.clone())
+                .unwrap()
+                .listen_host(),
+            "0.0.0.0"
+        );
+        values.insert("TLS_CERT_FILE".into(), "cert.pem".into());
+        values.insert("TLS_KEY_FILE".into(), "key.pem".into());
+        assert_eq!(Config::from_values(root, values).unwrap().port(), 443);
+    }
+}
