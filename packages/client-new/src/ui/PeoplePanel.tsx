@@ -38,10 +38,11 @@ export function PeoplePanel({
     )
     .toSorted(
       (a, b) =>
-        Number(welcome.friends.includes(b.name))
+        Number(b.name === welcome.username)
+          - Number(a.name === welcome.username)
+        || Number(welcome.friends.includes(b.name))
           - Number(welcome.friends.includes(a.name))
-        || Number(a.inactive) - Number(b.inactive)
-        || a.name.localeCompare(b.name),
+        || a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
     );
   const offline = friendsOnly
     ? welcome.friends.filter(

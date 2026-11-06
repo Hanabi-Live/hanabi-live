@@ -1,10 +1,12 @@
 import { getVariant } from "@hanabi-live/game";
 import { Play, Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { HistoryGame } from "../protocol";
+import { wireHistory } from "../protocol";
 import type { LobbyState } from "../store";
 import { GameOptionIcons } from "./GameOptionIcons";
 import { Modal } from "./Modal";
@@ -17,6 +19,102 @@ function finished(date: string): string {
   }).format(new Date(date));
 }
 
+function SeedComparison({
+  seed,
+  renderRows,
+}: {
+  seed: string;
+  renderRows: (games: readonly HistoryGame[]) => ReactNode;
+}) {
+  const [page, setPage] = useState(0);
+  const [attempt, setAttempt] = useState(0);
+  const [games, setGames] = useState<HistoryGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    setGames([]);
+    async function load() {
+      try {
+        const response = await fetch(
+          `/api/v1/seed-full/${encodeURIComponent(seed)}?size=10&page=${page}`,
+          {
+            signal: AbortSignal.any([
+              controller.signal,
+              AbortSignal.timeout(10_000),
+            ]),
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`Unable to load seed history (${response.status}).`);
+        }
+        const data: unknown = await response.json();
+        const parsed = wireHistory.array().parse(data);
+        if (!controller.signal.aborted) {
+          setGames(parsed);
+        }
+      } catch (error_) {
+        if (!controller.signal.aborted) {
+          console.error("Unable to load seed history", error_);
+          setError(
+            error_ instanceof Error
+              ? error_.message
+              : "Unable to load seed history.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+    void load();
+    return () => controller.abort();
+  }, [seed, page, attempt]);
+  return (
+    <>
+      {loading ? (
+        <p role="status">Loading other scores...</p>
+      ) : error ? (
+        <div role="alert">
+          <p>{error}</p>
+          <button onClick={() => setAttempt((value) => value + 1)}>
+            Retry comparison
+          </button>
+        </div>
+      ) : games.length === 0 ? (
+        <p>No more games for this seed.</p>
+      ) : (
+        <div className="classic-history-scroll">{renderRows(games)}</div>
+      )}
+      <div className="actions">
+        <button
+          disabled={loading || page === 0}
+          onClick={() => setPage((value) => value - 1)}
+        >
+          Previous page
+        </button>
+        <span>Page {page + 1}</span>
+        <button
+          disabled={loading || error !== "" || games.length < 10}
+          onClick={() => setPage((value) => value + 1)}
+        >
+          Next page
+        </button>
+        <a
+          href={`/seed/${encodeURIComponent(seed)}`}
+          rel="noreferrer"
+          target="_blank"
+        >
+          View seed data
+        </a>
+      </div>
+    </>
+  );
+}
+
 export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
   const state = useSelector(
     (value: LobbyState) => ({
@@ -26,7 +124,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
       pending: value.pending,
       history: value.history,
       friendHistory: value.friendHistory,
-      otherScores: value.otherScores,
       historyLoading: value.historyLoading,
       friendHistoryLoading: value.friendHistoryLoading,
       historyHasMore: value.historyHasMore,
@@ -135,10 +232,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                   disabled={state.connection !== "online"}
                   onClick={() => {
                     setSeed(game.seed);
-                    connection.send("historyGetSeed", {
-                      seed: game.seed,
-                      friends,
-                    });
                   }}
                 >
                   <i aria-hidden="true" className="fas fa-chart-bar" />{" "}
@@ -230,12 +323,11 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
           description={seed}
           title="Other Scores"
         >
-          <div className="classic-history-scroll">
-            {rows(
-              state.otherScores.filter((game) => game.seed === seed),
-              true,
-            )}
-          </div>
+          <SeedComparison
+            key={seed}
+            renderRows={(comparisonGames) => rows(comparisonGames, true)}
+            seed={seed}
+          />
         </Modal>
       )}
     </section>

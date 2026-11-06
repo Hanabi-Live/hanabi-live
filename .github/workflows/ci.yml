@@ -147,7 +147,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [flows, audits]
+        suite: [flows, audits, restart]
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
     services:
@@ -200,8 +200,15 @@ jobs:
         if: matrix.suite == 'flows'
         run: bunx --bun --no-install vitest run
         working-directory: packages/client-new
-      - name: Test the new lobby against both native servers
-        run: bunx --bun --no-install playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
+      - name: Test browser behavior and restart latency
+        run: |
+          case "${{ matrix.suite }}" in
+            flows) selectors=(--grep-invert '@audit|@restart') ;;
+            audits) selectors=(--grep '@audit') ;;
+            restart) selectors=(--grep '@restart' --project rust --workers 1) ;;
+            *) echo "Unknown browser suite." >&2; exit 1 ;;
+          esac
+          bunx --bun --no-install playwright test "${selectors[@]}"
         working-directory: packages/client-new
         env:
           PW_TEST_CONNECT_WS_ENDPOINT: ws://127.0.0.1:3000/

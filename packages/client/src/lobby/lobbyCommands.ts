@@ -18,6 +18,7 @@ import {
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
 import type { SoundType } from "../game/types/SoundType";
+import { finishReturningToNewLobby } from "../game/ui/backToLobby";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as modals from "../modals";
 import * as sounds from "../sounds";
@@ -173,7 +174,10 @@ lobbyCommands.set("joined", (data: JoinedData) => {
   pregame.show();
 });
 
-lobbyCommands.set("left", () => {
+lobbyCommands.set("left", (data: { tableID: number }) => {
+  if (finishReturningToNewLobby(data.tableID)) {
+    return;
+  }
   // We left a table, so transition between screens.
   pregame.hide();
 });

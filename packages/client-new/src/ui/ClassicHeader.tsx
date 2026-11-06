@@ -85,7 +85,10 @@ export function ClassicHeader({
                       aria-label="Join game"
                       className="button"
                       disabled={
-                        !online || pending !== null || !tables[game.tableID]
+                        !online
+                        || pending !== null
+                        || !tables[game.tableID]
+                        || game.players.length >= game.maxPlayers
                       }
                       onClick={() => {
                         const table = tables[game.tableID];
@@ -261,6 +264,7 @@ export function ClassicHeader({
                 </li>
                 <li className="hidden-xs">
                   <a
+                    aria-label="Stats"
                     className="button"
                     href="/stats"
                     rel="noreferrer"

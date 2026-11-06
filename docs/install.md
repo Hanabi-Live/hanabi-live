@@ -57,8 +57,9 @@ run `bun install`, and commit the manifest and lockfile. `bun run update` honors
 the existing version locks and update cooldown. Dependency lifecycle scripts are
 restricted to the explicit `trustedDependencies` list.
 
-`bunfig.toml` disables automatic `.env` loading and preserves the existing
-shared root `node_modules` layout. The Nix shell and CI use the same pinned Bun
+`bunfig.toml` disables automatic `.env` loading. The migrated lockfile's
+`configVersion: 0` retains hoisted installs, including with workspaces, without
+an explicit linker setting. The Nix shell and CI use the same pinned Bun
 version; Docker verifies its Bun image against the manifest pin.
 
 <br />

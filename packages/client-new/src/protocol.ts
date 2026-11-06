@@ -9,7 +9,7 @@ import {
 import { options } from "@hanabi-live/game";
 import { z } from "zod";
 
-const wireHistory = gameHistory.unwrap().extend({
+export const wireHistory = gameHistory.unwrap().extend({
   datetimeStarted: z
     .string()
     .refine(

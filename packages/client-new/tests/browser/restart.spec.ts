@@ -29,7 +29,7 @@ async function login(page: Page, url: string, name: string) {
   await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
-test("restart restores playable game state before large-archive lobby reads", async ({
+test("restart restores playable game state before large-archive lobby reads @restart", async ({
   browser,
   server,
 }, info) => {
@@ -85,12 +85,7 @@ test("restart restores playable game state before large-archive lobby reads", as
     const samples: number[] = [];
     for (let attempt = 0; attempt < 5; attempt++) {
       const connectionsBefore = pages.map((page) => connections.get(page) ?? 0);
-      const start = performance.now();
-      const resumed = [gameReady(a), gameReady(b)];
-      // eslint-disable-next-line no-await-in-loop
-      await server.restart();
-      // eslint-disable-next-line no-await-in-loop
-      await Promise.all(resumed);
+      // Select the player before timing so controller round trips do not inflate recovery latency.
       // eslint-disable-next-line no-await-in-loop
       const ownerTurn = await a.evaluate(() => {
         const { globals } = globalThis as GameWindow;
@@ -100,6 +95,12 @@ test("restart restores playable game state before large-archive lobby reads", as
         );
       });
       const actor = ownerTurn ? a : b;
+      const start = performance.now();
+      const resumed = [gameReady(a), gameReady(b)];
+      // eslint-disable-next-line no-await-in-loop
+      await server.restart();
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all(resumed);
       // Verify acceptance through the rendered authoritative clue count, not socket readiness.
       // eslint-disable-next-line no-await-in-loop
       const turn = await actor.evaluate(() => {

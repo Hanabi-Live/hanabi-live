@@ -52,5 +52,8 @@ The Rust browser restart regression uses a two-million-game archive, empty and
 sparse accounts, large friend histories, and simultaneous authenticated clients.
 It measures restart-request-to-accepted-game-action time across five actual
 process replacements, checks that canvases survive, and enforces a one-second
-upper bound for every sample. Results are printed in CI. This is a controlled
-regression budget, not a guarantee for arbitrary client networks or outages.
+upper bound for every sample. CI runs this gate in its own job, without
+competing browser suites; locally, select
+`--grep @restart --project rust --workers 1`. Results are printed in CI. This is
+a controlled regression budget, not a guarantee for arbitrary client networks or
+outages.

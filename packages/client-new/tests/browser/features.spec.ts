@@ -72,6 +72,42 @@ async function login(page: Page, backend: string, name: string) {
   await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
+for (const route of ["lobby", "new"]) {
+  test(`${route} Stats link opens the simplified global statistics page`, async ({
+    page,
+    backend,
+  }) => {
+    const username = `testStats${route}`;
+    await page.goto(`${backend}/lobby`);
+    await page.locator("#login-username").fill(username);
+    await page.locator("#login-password").fill(username);
+    await page.locator("#login-button").click();
+    await page.locator("#tutorial-no").click();
+    await expect(page.locator("#lobby")).toBeVisible();
+
+    if (route === "new") {
+      await page.goto(`${backend}/new`);
+    }
+    const link = page.getByRole("link", { name: "Stats", exact: true });
+    await expect(link).toBeVisible();
+    const popupPromise = page.waitForEvent("popup");
+    await link.click();
+    const stats = await popupPromise;
+    await expect(stats).toHaveURL(`${backend}/stats`);
+    await expect(
+      stats.getByRole("heading", { name: "Global Statistics", exact: true }),
+    ).toBeVisible();
+    await expect(stats.locator(".stat-description")).toHaveText([
+      "Games played (in non-speedruns):",
+      "Time spent playing (in non-speedruns):",
+      "Games played (in speedruns):",
+      "Time spent playing (in speedruns):",
+    ]);
+    await expect(stats.locator("table")).toHaveCount(0);
+    await stats.close();
+  });
+}
+
 test("classic replies ignore server notices without losing the last user PM", async ({
   browser,
   backend,
@@ -150,6 +186,13 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await a.getByRole("link", { name: "Play", exact: true }).click();
   await a.getByRole("button", { name: "Create a table", exact: true }).click();
   const dialog = a.getByRole("dialog");
+  const originalName = await dialog
+    .getByLabel("Table name", { exact: true })
+    .inputValue();
+  await dialog.getByRole("button", { name: "Use a random table name" }).click();
+  await expect(
+    dialog.getByLabel("Table name", { exact: true }),
+  ).not.toHaveValue(originalName);
   await dialog.getByLabel("Table name", { exact: true }).fill("Private garden");
   await dialog.getByLabel("Variant", { exact: true }).selectOption("6 Suits");
   await dialog.getByLabel("Maximum players").fill("3");
@@ -195,6 +238,26 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .click();
   await expect(b.locator(".classic-room-info")).toContainText("6 Suits");
   await expect(b.locator(".classic-room-info")).toContainText("2 / 4");
+  await a.getByRole("button", { name: "Table options", exact: true }).click();
+  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await a.getByRole("dialog").getByLabel("Maximum players").fill("2");
+  await a.getByRole("button", { name: "Update table" }).click();
+  await a.getByRole("button", { name: "Table options", exact: true }).click();
+  await a.getByRole("dialog").getByLabel("Timed game").check();
+  await expect(a.getByLabel("Base time (minutes)")).toHaveValue("3");
+  await expect(a.getByLabel("Seconds per turn")).toHaveValue("15");
+  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await a.getByRole("button", { name: "Update table" }).click();
+  await expect(a.getByRole("alert")).toHaveCount(0);
+  await c
+    .locator(".table-card")
+    .filter({ hasText: "Private garden" })
+    .getByRole("button", { name: "Watch table", exact: true })
+    .click();
+  await expect(
+    c.getByRole("button", { name: "Join game", exact: true }),
+  ).toBeDisabled();
+  await c.getByRole("button", { name: "Stop watching", exact: true }).click();
   await b.getByRole("button", { name: "Suggest options" }).click();
   await expect(b.getByLabel(/^Empty clues/u)).toBeVisible();
   await expect(b.getByLabel(/^Empty clues/u)).toBeChecked();

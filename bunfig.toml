@@ -3,7 +3,3 @@ env = false
 
 [run]
 bun = true
-
-[install]
-# The repository uses a shared root installation, not isolated workspace installs.
-linker = "hoisted"

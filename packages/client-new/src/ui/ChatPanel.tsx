@@ -343,14 +343,13 @@ export function ChatPanel({
               })}
               ]
             </time>{" "}
-            {message.who && (
+            {message.who && message.source !== "server" && (
               <>
                 {message.recipient ? "[PM " : "<"}
                 <button
                   className="name-button"
-                  disabled={message.source === "server"}
                   onClick={() => {
-                    if (message.who && message.source !== "server") {
+                    if (message.who) {
                       onRecipient(
                         message.who === welcome.username
                           ? (message.recipient ?? "")

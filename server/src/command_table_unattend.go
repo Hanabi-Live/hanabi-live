@@ -24,6 +24,7 @@ func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	// the server after the respective table has already been deleted
 	t, exists := getTableAndLock(ctx, nil, d.TableID, !d.NoTableLock, !d.NoTablesLock)
 	if !exists {
+		s.Emit("left", map[string]uint64{"tableID": d.TableID})
 		return
 	}
 	if !d.NoTableLock {
@@ -59,6 +60,7 @@ func commandTableUnattend(ctx context.Context, s *Session, d *CommandData) {
 	} else {
 		tableUnattendSpectator(ctx, s, d, t, spectatorIndex)
 	}
+	s.Emit("left", map[string]uint64{"tableID": d.TableID})
 }
 
 func tableUnattendPlayer(ctx context.Context, s *Session, d *CommandData, t *Table, i int) {

@@ -30,6 +30,24 @@ export function TablesPanel({
     return null;
   }
   const all = Object.values(tables);
+  const friendNames = welcome.friends;
+  function priority(table: Table): number {
+    if (table.joined && !table.sharedReplay) {
+      return 0;
+    }
+    const friends = [
+      ...table.players,
+      ...table.spectators.map((person) => person.name),
+    ].some((name) => friendNames.includes(name));
+    const kind = table.sharedReplay
+      ? 4
+      : table.running
+        ? 3
+        : table.passwordProtected
+          ? 2
+          : 1;
+    return kind + (friends ? 0 : 4);
+  }
   const visible = all
     .filter((table) => {
       if (
@@ -75,12 +93,7 @@ export function TablesPanel({
         }
       }
     })
-    .toSorted(
-      (a, b) =>
-        Number(b.joined) - Number(a.joined)
-        || Number(a.running) - Number(b.running)
-        || b.id - a.id,
-    );
+    .toSorted((a, b) => priority(a) - priority(b) || a.id - b.id);
   function activate(table: Table) {
     if (!online || pending !== null) {
       return;

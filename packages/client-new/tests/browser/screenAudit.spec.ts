@@ -88,8 +88,8 @@ for (const theme of ["light", "dark"] as const) {
     { tag: "@audit" },
     async ({ browser, backend }, info) => {
       test.skip(
-        info.project.name !== "go",
-        "Run the comprehensive UI audit once against the reference backend.",
+        info.project.name !== "rust",
+        "Run the comprehensive UI audit against the production backend.",
       );
       test.setTimeout(180_000);
       const owner = await browser.newContext();

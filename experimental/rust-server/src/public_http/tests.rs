@@ -159,10 +159,6 @@ async fn shell_routes_metadata_and_static_files() {
             .0,
         StatusCode::NOT_FOUND
     );
-    assert_eq!(
-        request(app.clone(), "/stats").await.0,
-        StatusCode::NOT_FOUND
-    );
     for (path, hook) in [
         ("/videos", "VrFCekQb4nY"),
         ("/password-reset", "id=\"password-reset-form\""),
@@ -185,6 +181,17 @@ async fn shell_routes_metadata_and_static_files() {
     assert!(!body.contains("<script>alert(7)</script>"));
     assert!(!body.contains("<script>alert(8)</script>"));
     assert!(body.contains("&lt;script&gt;"));
+}
+
+#[tokio::test]
+async fn stats_database_failure_is_not_an_empty_success() {
+    let pool = PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    pool.close().await;
+    let (status, body) = request(router(pool, config()), "/stats").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(body, "Internal server error.");
 }
 
 #[test]
@@ -293,6 +300,24 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let Some(db) = Database::create().await else {
         return;
     };
+    let app = router(db.pool.clone(), config());
+    let (status, body) = request(app.clone(), "/stats").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let stats = regex::Regex::new(
+        r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#,
+    )
+    .unwrap();
+    let normalize = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let stats_values = |html: &str| {
+        stats
+            .captures_iter(html)
+            .map(|item| normalize(&item[2]))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        stats_values(&body),
+        ["0 (0 normally finished)", "-", "0", "-"]
+    );
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES
         (1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),
@@ -323,7 +348,33 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let app = router(db.pool.clone(), config());
+    let (status, body) = request(app.clone(), "/stats").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert!(body.contains("Global Statistics"));
+    assert_eq!(
+        stats_values(&body),
+        [
+            "2 (1 normally finished)",
+            "4 hours and 0 minutes",
+            "1",
+            "2 hours and 0 minutes",
+        ]
+    );
+    for removed in [
+        "Number of variants",
+        "max scores",
+        "perfect scores",
+        "strikeouts",
+        "Average score",
+        "<table",
+        "class=\"pager\"",
+        "tablesorter",
+    ] {
+        assert!(
+            !body.contains(removed),
+            "Stats page still contains {removed}"
+        );
+    }
     for (path, total, len) in [
         ("/api/v1/history/Alice?size=1", 3, 1),
         ("/api/v1/history/Alice/Bob?fcol%5B2%5D=25", 1, 1),
@@ -353,6 +404,29 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "2026-01-01T00:00:00.12345+00:00"
     );
     assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00+00:00");
+    for (page, expected) in [(0, vec![1]), (1, vec![2]), (2, vec![])] {
+        let (status, body) = request(
+            app.clone(),
+            &format!("/api/v1/seed-full/same?size=1&page={page}"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        let games: Vec<Value> = serde_json::from_str(&body).unwrap();
+        assert_eq!(
+            games
+                .iter()
+                .map(|game| game["id"].as_i64().unwrap())
+                .collect::<Vec<_>>(),
+            expected
+        );
+        for game in games {
+            assert_eq!(game["playerNames"].as_array().unwrap().len(), 2);
+            assert!(game["options"]["variantName"].is_string());
+        }
+    }
+    let (status, body) = request(app.clone(), "/api/v1/seed-full/same").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(serde_json::from_str::<Vec<Value>>(&body).unwrap().len(), 2);
     for key in [
         "timed",
         "speedrun",
@@ -455,6 +529,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "offset is too large",
         ),
         ("/variant/no", 400, "must be a number"),
+        ("/api/v1/seed-full/same?size=0", 400, "Page size"),
+        ("/api/v1/seed-full/same?size=101", 400, "Page size"),
+        ("/api/v1/seed-full/same?page=-1", 400, "nonnegative"),
+        (
+            "/api/v1/seed-full/same?size=100&page=9223372036854775807",
+            400,
+            "offset",
+        ),
         ("/variant/99999", 400, "not a valid variant"),
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
