@@ -1,16 +1,14 @@
+import type { APIResponse } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
+import { backendProxy } from "../../vite.config";
 import { expect, test } from "./fixture";
 
 test(
   "Vite development entry uses the real backend session",
   { tag: "@audit" },
-  async ({ browser, backend }, info) => {
-    test.skip(
-      info.project.name !== "go",
-      "One development-proxy check is sufficient.",
-    );
+  async ({ browser, backend }) => {
     const root = fileURLToPath(new URL("../..", import.meta.url));
     const server = await createServer({
       root,
@@ -18,14 +16,7 @@ test(
       server: {
         host: "127.0.0.1",
         port: 0,
-        proxy: {
-          "/login": backend,
-          "/logout": backend,
-          "/test-cookie": backend,
-          "/public": backend,
-          "/game": backend,
-          "/ws": { target: backend.replace("http:", "ws:"), ws: true },
-        },
+        proxy: backendProxy(backend),
       },
     });
     const context = await browser.newContext();
@@ -54,6 +45,17 @@ test(
       await expect(page.locator("#lobby-games")).toBeVisible();
       await page.evaluate(async () => await globalThis.document.fonts.ready);
       expect(failedAssets).toEqual([]);
+      const history: APIResponse<unknown> = await page.request.get(
+        `http://localhost:${address.port}/api/v1/seed-full/missing-development-seed?size=10&page=0`,
+      );
+      expect(history.status()).toBe(200);
+      const games: unknown = await history.json();
+      expect(games).toEqual([]);
+      const rejected: APIResponse<unknown> = await page.request.post(
+        `http://localhost:${address.port}/login`,
+        { headers: { Origin: "https://evil.invalid" }, data: {} },
+      );
+      expect(rejected.status()).toBe(403);
     } finally {
       try {
         await context.close();

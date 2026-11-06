@@ -47,17 +47,14 @@ export const test = base.extend<
   {},
   {
     backend: string;
-    cutover: boolean;
     restartLoad: boolean;
     server: {
       url: string;
-      cutoverToRust: () => Promise<void>;
       restart: () => Promise<void>;
       seedHistories: () => Promise<void>;
     };
   }
 >({
-  cutover: [false, { option: true, scope: "worker" }],
   restartLoad: [false, { option: true, scope: "worker" }],
   backend: [
     async ({ server }, useBackend) => {
@@ -66,11 +63,7 @@ export const test = base.extend<
     { scope: "worker" },
   ],
   server: [
-    async (
-      { browserName: _browserName, cutover, restartLoad },
-      useBackend,
-      worker,
-    ) => {
+    async ({ browserName: _browserName, restartLoad }, useBackend) => {
       const database = await evaluationDatabase();
       const sql = database.connect();
       await mkdir(path.join(ROOT, "dist"), { recursive: true });
@@ -111,7 +104,7 @@ export const test = base.extend<
             );
           });
           await run("cargo", ["build", "--release", "--locked"], {
-            cwd: path.join(ROOT, "experimental/rust-server"),
+            cwd: path.join(ROOT, "server"),
             timeout: 300_000,
           });
         }
@@ -119,7 +112,6 @@ export const test = base.extend<
           [
             "packages/game/src/json",
             "packages/data/src/json",
-            "server/src/views",
             "install/migrations",
             "misc/word_list.txt",
             "public",
@@ -139,9 +131,7 @@ export const test = base.extend<
           // eslint-disable-next-line no-await-in-loop -- Each candidate must be checked before allocating another.
           controlPort = await port();
         }
-        if (worker.project.name === "rust" || cutover) {
-          redis = await redisFixture();
-        }
+        redis = await redisFixture();
         const config = {
           DOMAIN: "localhost",
           SESSION_SECRET: "synthetic-browser-only-secret".repeat(8),
@@ -152,7 +142,7 @@ export const test = base.extend<
           DB_USER: database.connection.username,
           DB_PASSWORD: database.connection.password || "local-trust",
           DB_NAME: database.connection.database,
-          ...(redis && { REDIS_URL: redis.url }),
+          REDIS_URL: redis.url,
         };
         await writeFile(
           path.join(directory, ".env"),
@@ -160,25 +150,14 @@ export const test = base.extend<
             .map(([key, value]) => `${key}=${JSON.stringify(String(value))}`)
             .join("\n"),
         );
-        let executable = path.join(directory, "hanabi-live");
-        const rustExecutable = path.join(directory, "hanabi-rust-poc");
-        if (worker.project.name === "rust" || cutover) {
-          await cp(
-            path.join(
-              ROOT,
-              `experimental/rust-server/target/${restartLoad ? "release" : "debug"}/hanabi-rust-poc`,
-            ),
-            rustExecutable,
-          );
-        }
-        if (worker.project.name === "rust") {
-          executable = rustExecutable;
-        } else {
-          await cp(
-            path.join(ROOT, "dist/browser-backends/hanabi-live"),
-            executable,
-          );
-        }
+        const executable = path.join(directory, "hanabi-live");
+        await cp(
+          path.join(
+            ROOT,
+            `server/target/${restartLoad ? "release" : "debug"}/hanabi-live`,
+          ),
+          executable,
+        );
         let output = "";
         const url = `http://localhost:${httpPort}`;
         async function start(file: string, arguments_: readonly string[]) {
@@ -234,33 +213,10 @@ export const test = base.extend<
             });
           },
           restart: async () => {
-            if (worker.project.name !== "rust") {
-              throw new Error("Native restart measurement requires Rust.");
-            }
             const response = await fetch(
               `http://127.0.0.1:${controlPort}/gracefulRestart`,
             );
             expect(response.status, await response.text()).toBe(200);
-          },
-          cutoverToRust: async () => {
-            if (!cutover || worker.project.name !== "go" || !child) {
-              throw new Error("This fixture is not a Go-to-Rust cutover.");
-            }
-            const stopped = once(child, "close");
-            const response = await fetch(
-              `http://127.0.0.1:${controlPort}/rustCutover`,
-              { method: "POST" },
-            );
-            expect(response.status, await response.text()).toBe(200);
-            await stopped;
-            expect(child.exitCode).toBe(0);
-            await sql.end({ timeout: 3 });
-            await run(rustExecutable, ["--import-go-checkpoints"], {
-              cwd: directory,
-              env: { PATH: process.env.PATH, HOME: directory },
-              timeout: 30_000,
-            });
-            await start(rustExecutable, []);
           },
         });
       } finally {

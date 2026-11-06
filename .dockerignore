@@ -11,6 +11,6 @@ ongoing_tables
 backups
 letsencrypt
 dist
-experimental/rust-server/**/target
+server/**/target
 .go-to-rust-cutover
 hanabi-live

@@ -15,57 +15,17 @@ jobs:
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build_client.sh
 
-  server_build:
+  release_tests:
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./server
-      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     steps:
       - name: Checkout the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install Golang
-        uses: ./.github/workflows/setup-go
-
-      - name: Prepare the pinned migration tool
-        run: |
-          source install/migration_files.sh
-          go install "github.com/jackc/tern/v2@$TERN_VERSION"
-
-      - name: Install matching PostgreSQL backup tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-common
-          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-          sudo apt-get install -y postgresql-client-18
-          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
-
       - name: Test release installation and deployment guards
         run: python3 -m unittest discover -s install -p '*_test.py'
 
-      - name: Compile the Golang code
-        run: bash build_server.sh
-        working-directory: ${{ env.working-directory }}
-
-      - name: Test the Golang code with the race detector
-        run: go test -race -count=1 -timeout=2m ./...
-        working-directory: ./server/src
-
-      - name: Check the maintenance server
-        run: go test -race -count=1 -timeout=2m ./...
-        working-directory: ./maintenance
+      - name: Test the maintenance server
+        run: python3 -m unittest discover -s maintenance -p '*_test.py'
 
   container_build:
     runs-on: ubuntu-latest
@@ -103,8 +63,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
-      - uses: ./.github/workflows/setup-go
-        if: matrix.shard == 2
       - uses: ./.github/workflows/setup-rust
         if: matrix.shard == 2
       - name: Run the lint shard
@@ -137,8 +95,6 @@ jobs:
 
       - uses: ./.github/workflows/setup-rust
 
-      - uses: ./.github/workflows/setup-go
-
       - name: Test the TypeScript code
         run: bun run test
 
@@ -167,7 +123,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup
-      - uses: ./.github/workflows/setup-go
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Start version-matched preinstalled browsers
@@ -200,7 +155,7 @@ jobs:
         if: matrix.suite == 'flows'
         run: bunx --bun --no-install vitest run
         working-directory: packages/client-new
-      - name: Test browser behavior and restart latency
+      - name: Test both clients and restart latency against Rust
         run: |
           case "${{ matrix.suite }}" in
             flows) selectors=(--grep-invert '@audit|@restart') ;;
@@ -225,7 +180,7 @@ jobs:
           name: new-lobby-browser-failures-${{ matrix.suite }}
           path: packages/client-new/test-results
 
-  rust_poc:
+  server_build:
     runs-on: ubuntu-latest
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
@@ -243,7 +198,7 @@ jobs:
           --health-retries 10
     defaults:
       run:
-        working-directory: experimental/rust-server
+        working-directory: server
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/workflows/setup-redis
@@ -260,7 +215,7 @@ jobs:
           path: |
             ${{ steps.platform.outputs.bin }}/sqlx
             ${{ steps.platform.outputs.bin }}/cargo-sqlx
-          key: sqlx-cli-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ hashFiles('experimental/rust-server/rust-toolchain.toml', 'experimental/rust-server/sqlx_schema.py') }}
+          key: sqlx-cli-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ hashFiles('rust-toolchain.toml', 'server/sqlx_schema.py') }}
       - name: Install pinned SQLx metadata tooling
         if: steps.sqlx.outputs.cache-hit != 'true'
         run: cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features rustls,postgres
@@ -285,9 +240,6 @@ jobs:
   native_release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        runtime: [go, rust]
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
     services:
@@ -310,27 +262,24 @@ jobs:
       - uses: ./.github/workflows/setup
       - uses: ./.github/workflows/setup-go
         with:
-          cache-key: ${{ matrix.runtime }}
+          cache-key: migration-tool
       - uses: ./.github/workflows/setup-redis
-        if: matrix.runtime == 'rust'
       - uses: ./.github/workflows/setup-rust
-        if: matrix.runtime == 'rust'
       - name: Prepare static Rust release toolchain
-        if: matrix.runtime == 'rust'
         run: |
           sudo apt-get update
           sudo apt-get install -y musl-tools
-          cd experimental/rust-server
+          cd server
           rustup target add x86_64-unknown-linux-musl
       - name: Build and verify immutable native release
-        run: bash install/build_release.sh dist/native "${{ matrix.runtime }}"
+        run: bash install/build_release.sh dist/native
       - name: Test release installation guards
         run: python3 -m unittest discover -s install -p 'release_test.py'
       - name: Exercise local release lifecycle
-        run: python3 install/release_smoke.py dist/native/*.tar.gz "${{ matrix.runtime }}"
+        run: python3 install/release_smoke.py dist/native/*.tar.gz
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: candidate-${{ matrix.runtime == 'rust' && 'hanabi-live-rust' || 'hanabi-live' }}-${{ github.sha }}-linux-amd64
+          name: candidate-hanabi-live-rust-${{ github.sha }}-linux-amd64
           path: |
             dist/native/*.tar.gz
             dist/native/*.sha256
@@ -347,25 +296,22 @@ jobs:
         container_build,
         lint,
         test,
-        rust_poc,
+        release_tests,
         client_new,
         native_release,
       ]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        runtime: [go, rust]
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: candidate-${{ matrix.runtime == 'rust' && 'hanabi-live-rust' || 'hanabi-live' }}-${{ github.sha }}-linux-amd64
+          name: candidate-hanabi-live-rust-${{ github.sha }}-linux-amd64
           path: dist/native
       - name: Verify candidate checksums before publication
         working-directory: dist/native
         run: sha256sum --check ./*.sha256
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ matrix.runtime == 'rust' && 'hanabi-live-rust' || 'hanabi-live' }}-${{ github.sha }}-linux-amd64
+          name: hanabi-live-rust-${{ github.sha }}-linux-amd64
           path: |
             dist/native/*.tar.gz
             dist/native/*.sha256
@@ -406,7 +352,7 @@ jobs:
         container_build,
         lint,
         test,
-        rust_poc,
+        release_tests,
         client_new,
         native_release,
         publish_native_release,

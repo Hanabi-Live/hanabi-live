@@ -11,7 +11,6 @@
   "files.associations": {
     ".env*": "shellscript", // e.g., ".env.example" is the same as ".env".
     // @template-customization-start
-    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files.
     "post-merge": "shellscript",
     // @template-customization-end
   },
@@ -141,10 +140,10 @@
   },
   // @template-customization-start
   "npm.packageManager": "bun",
-  "[go]": {
+  "[rust]": {
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
-    "editor.insertSpaces": false,
+    "editor.insertSpaces": true,
   },
   "[python]": {
     "editor.formatOnSave": true,

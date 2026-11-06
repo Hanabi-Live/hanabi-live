@@ -46,7 +46,9 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             go
-            postgresql_16
+            rustup
+            python3
+            postgresql_18
             redis
             gnumake
             gcc
@@ -62,24 +64,16 @@
             
             mkdir -p "$PGDATA" "$REDISDATA"
 
-            # Setup PostgreSQL
-            if [ ! -d "$PGDATA" ] || [ -z "$(ls -A "$PGDATA")" ]; then
-              initdb -D "$PGDATA"
-              echo "unix_socket_directories = '$PGDATA'" >> "$PGDATA/postgresql.conf"
-              pg_ctl -D "$PGDATA" -l "$PGDATA/log" -o "-k $PGDATA" start
-              # Wait for postgres to start
-              sleep 2
-              createdb -h localhost hanabi || true
-              psql -h localhost -d hanabi -f install/database_schema.sql || true
-              pg_ctl -D "$PGDATA" stop
-            fi
-
             echo "---------------------------------------------------"
             echo "Hanabi Live Dev Shell"
             echo "---------------------------------------------------"
+            if [ ! -f "$PGDATA/PG_VERSION" ]; then
+              echo "Initialize PostgreSQL once: initdb -D \$PGDATA"
+              echo "Then create the application database and apply its schema as in docs/install.md."
+            fi
             echo "To start the services, run:"
             echo "  pg_ctl -D \$PGDATA -l \$PGDATA/log -o \"-k \$PGDATA\" start"
-            echo "  redis-server --dir \$REDISDATA --port 6379 --daemonize yes"
+            echo "  redis-server --dir \$REDISDATA --port 6379 --appendonly yes --appendfsync always --maxmemory-policy noeviction"
             echo ""
             echo "Then run the development server:"
             echo "  ./dev.sh"

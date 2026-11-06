@@ -46,16 +46,15 @@ normal site and continue the same game.
 The existing architecture assumes same-origin client + server.
 
 - Login uses `POST /login` and writes a secure session cookie.
-  - Code: `packages/client/src/lobby/login.ts`,
-    `experimental/rust-server/src/accounts/mod.rs`
+  - Code: `packages/client/src/lobby/login.ts`, `server/src/accounts/mod.rs`
 - WebSocket auth uses cookie-backed session state.
-  - Code: `experimental/rust-server/src/web.rs`
+  - Code: `server/src/web.rs`
 - Client hard-checks hostname against server-rendered domain in `#domain`.
   - Code: `packages/client/src/websocketInit.ts`
 - Production cookies use `SameSite=Strict` and the configured domain.
-  - Code: `experimental/rust-server/src/accounts/mod.rs`
+  - Code: `server/src/accounts/mod.rs`
 - Login rejects mismatched client version.
-  - Code: `experimental/rust-server/src/accounts/mod.rs`
+  - Code: `server/src/accounts/mod.rs`
 
 These are all correct for normal production safety, but they block a GitHub
 Pages preview model.
@@ -271,7 +270,7 @@ Only publish GitHub Pages preview for PRs that modify client-only paths.
 
 If a PR touches server or shared protocol paths, do not publish preview:
 
-- `experimental/rust-server/**`
+- `server/**`
 - `packages/data/**`
 - `packages/game/**` (unless explicitly proven client-safe for production server
   compatibility)

@@ -14,28 +14,25 @@ With pull requests:
 
 ## Server Code
 
-The [native Rust server](experimental/rust-server/README.md) runs in production.
-Go remains the reference implementation in `server/`. Preserve shared rules,
-client protocol behavior, and replay compatibility. Native cross-runtime process
-tests and disposable database/Redis fixtures live in `packages/testing`; they do
-not implement another server. See the
+The [native Rust server](server/README.md) runs in production. Preserve shared
+rules, client protocol behavior, and replay compatibility. Historical
+compatibility corpora live in `server/testdata`; process tests and disposable
+database/Redis fixtures live in `packages/testing`. See the
 [server comparison](docs/server-evaluation.md).
 
-Before submitting Go server changes, run the regression tests with the race
-detector from the repository root:
+Before submitting server changes, run:
 
 ```sh
-(cd server/src && go test -race -count=1 -timeout=2m ./...)
+cargo test --locked --manifest-path server/Cargo.toml
+cargo test --locked --manifest-path server/engine/Cargo.toml
+bash lint.sh
 ```
 
-The race detector requires a supported platform and a C compiler. CI runs this
-command on Ubuntu as part of the existing `server_build` check, after formatting
-and compilation. Unit tests do not require PostgreSQL. Database integration
-tests run when `HANABI_TEST_DATABASE_URL` points to a disposable PostgreSQL
-instance; CI supplies an isolated PostgreSQL service. Backup/restore tests also
-require `pg_dump` and `pg_restore` on `PATH`, matching the database major
-version (currently PostgreSQL 18 in CI). Do not point the integration tests at
-production.
+Database integration tests require `HANABI_TEST_DATABASE_URL` pointing to a
+disposable local PostgreSQL instance. Native and process/browser tests start
+private Redis instances using `redis-server` and `redis-cli` on `PATH`. Never
+point integration tests at production. Follow the server runbook for SQLx
+metadata regeneration after query or schema changes.
 
 ## Creating a New Variant
 

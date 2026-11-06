@@ -62,8 +62,7 @@ export default defineConfig(
        * https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/no-null.md
        *
        * The codebase uses many cases of null. In the long term, this should be refactored to
-       * undefined where possible. (We want to wait until the server is rewritten in TypeScript
-       * first to avoid having to make changes to Golang code.)
+       * undefined where possible, without changing established wire contracts.
        */
       "unicorn/no-null": "off",
 

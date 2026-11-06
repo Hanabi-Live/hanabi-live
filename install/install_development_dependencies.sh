@@ -15,7 +15,5 @@ done
 
 # The client linter is installed automatically during a "bun install", which happens automatically
 # in the "install_dependencies.sh" script.
-# We don't current care about linting Golang, so the below script is commented out.
-# "$DIR/../server/install_server_linter.sh"
 
 echo "Successfully installed development dependencies."

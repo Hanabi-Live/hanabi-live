@@ -50,7 +50,6 @@ run_parallel 2 bash "$DIR/packages/game/lint.sh"
 run_parallel 2 bash "$DIR/packages/scripts/lint.sh"
 run_parallel 1 bash "$DIR/packages/testing/lint.sh"
 run_parallel 1 bunx --bun --no-install prettier --log-level=warn --check .
-run_parallel 2 bash "$DIR/check_gofmt.sh"
 run_parallel 2 bash "$DIR/check_spelling.sh"
 run_parallel 1 bash "$DIR/check_shellcheck.sh"
 run_parallel 1 bash "$DIR/check_templates.sh"
@@ -64,15 +63,10 @@ done
 
 # Keep native compiler checks out of the parallel JavaScript batch to limit peak memory in CI.
 if [[ $shard != 1 ]]; then
-  for module in server/src maintenance; do
-    echo "Checking Go static analysis: $module"
-    (cd "$DIR/$module" && go vet ./...) || status=1
-  done
-
   echo "Checking generated wire contracts."
   bash "$DIR/scripts/bash/generate_protocol.sh" --check || status=1
 
-  cd "$DIR/experimental/rust-server"
+  cd "$DIR/server"
   echo "Checking Rust formatting and static analysis."
   cargo fmt --all --check || status=1
   cargo clippy --locked --all-targets -- -D warnings || status=1

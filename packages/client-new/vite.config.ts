@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import type { ProxyOptions } from "vite";
 import { defineConfig } from "vite";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
@@ -11,6 +12,40 @@ const version = execFileSync("git", ["rev-list", "--count", "HEAD"], {
   .toString()
   .trim();
 const versionModule = "\u{0}hanabi-client-version";
+
+export function backendProxy(target: string): Record<string, ProxyOptions> {
+  const proxy: Record<string, ProxyOptions> = {};
+  for (const route of [
+    "/login",
+    "/logout",
+    "/test-cookie",
+    "/ws",
+    "/public",
+    "/api",
+    "/game",
+    "/pre-game",
+    "/lobby",
+    "/replay",
+    "/shared-replay",
+    "/stats",
+    "/history",
+    "/scores",
+    "/profile",
+    "/seed",
+    "/variant",
+    "/missing-scores",
+    "/shared-missing-scores",
+    "/tags",
+    "/tag",
+    "/export",
+    "/videos",
+    "/password-reset",
+  ]) {
+    // Rust compares the browser's Origin with Host; do not rewrite only one of them.
+    proxy[route] = { target, changeOrigin: false, ws: route === "/ws" };
+  }
+  return proxy;
+}
 
 export default defineConfig(({ command }) => ({
   base: command === "serve" ? "/new/" : "/public/client-new/",
@@ -61,13 +96,6 @@ export default defineConfig(({ command }) => ({
     fs: {
       allow: [`${root}/packages`, `${root}/public`, `${root}/node_modules`],
     },
-    proxy: {
-      "/login": "http://127.0.0.1:8080",
-      "/logout": "http://127.0.0.1:8080",
-      "/test-cookie": "http://127.0.0.1:8080",
-      "/ws": { target: "ws://127.0.0.1:8080", ws: true },
-      "/game": "http://127.0.0.1:8080",
-      "/public": "http://127.0.0.1:8080",
-    },
+    proxy: backendProxy("http://127.0.0.1:8080"),
   },
 }));

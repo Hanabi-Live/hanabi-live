@@ -19,9 +19,6 @@ bun.lock
 # Images
 *.svg
 
-# Special Golang files
-go.mod
-
 # Temporary files
 critical.css
 grunt_output
@@ -31,6 +28,6 @@ keldon
 
 # Specially formatted JSON files
 example_game_with_comments.jsonc
-experimental/rust-server/.sqlx
+server/.sqlx
 
 # @template-customization-end

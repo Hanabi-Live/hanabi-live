@@ -9,7 +9,10 @@ type GameWindow = typeof globalThis & {
     metadata: { ourPlayerIndex: number };
     lobby: {
       tableID: number;
-      conn: { send: (command: string, data: object) => void };
+      conn: {
+        ws: WebSocket;
+        send: (command: string, data: object) => void;
+      };
     };
     state: {
       ongoingGame: {
@@ -20,6 +23,69 @@ type GameWindow = typeof globalThis & {
     };
   };
 };
+
+async function measureAcceptedAction(page: Page) {
+  return await page.evaluate(
+    async () =>
+      await new Promise<{ elapsed: number; turn: number }>(
+        (resolve, reject) => {
+          const { globals } = globalThis as GameWindow;
+          const game = globals.state.ongoingGame;
+          const before = game.turn.currentPlayerIndex;
+          if (globals.metadata.ourPlayerIndex !== before) {
+            throw new Error(
+              "Recovery changed the player whose action was prepared.",
+            );
+          }
+          const target = (before + 1) % game.hands.length;
+          const order = game.hands[target]?.[0];
+          const value = order === undefined ? null : game.deck[order]?.rank;
+          if (value === null || value === undefined) {
+            throw new Error("Missing visible card.");
+          }
+          const socket = globals.lobby.conn.ws;
+          const timer = globalThis.setTimeout(() => {
+            cleanup();
+            reject(
+              new Error(
+                "The restarted server did not acknowledge the probe action.",
+              ),
+            );
+          }, 10_000);
+          function cleanup() {
+            globalThis.clearTimeout(timer);
+            socket.removeEventListener("message", accepted);
+          }
+          const started = globalThis.performance.now();
+          function accepted(event: MessageEvent<unknown>) {
+            const turn = globals.state.ongoingGame.turn.currentPlayerIndex;
+            if (
+              typeof event.data === "string"
+              && event.data.startsWith("gameAction ")
+              && turn !== before
+            ) {
+              const elapsed = globalThis.performance.now() - started;
+              cleanup();
+              resolve({ elapsed, turn });
+            }
+          }
+          // The connection's earlier message listener applies authoritative game state first.
+          socket.addEventListener("message", accepted);
+          try {
+            globals.lobby.conn.send("action", {
+              tableID: globals.lobby.tableID,
+              type: 3,
+              target,
+              value,
+            });
+          } catch (error) {
+            cleanup();
+            reject(error instanceof Error ? error : new Error(String(error)));
+          }
+        },
+      ),
+  );
+}
 
 async function login(page: Page, url: string, name: string) {
   await page.goto(`${url}/new`);
@@ -83,6 +149,11 @@ test("restart restores playable game state before large-archive lobby reads @res
       ),
     );
     const samples: number[] = [];
+    const phases: Array<{
+      loaded: number;
+      action: number;
+      controller: number;
+    }> = [];
     for (let attempt = 0; attempt < 5; attempt++) {
       const connectionsBefore = pages.map((page) => connections.get(page) ?? 0);
       // Select the player before timing so controller round trips do not inflate recovery latency.
@@ -95,39 +166,34 @@ test("restart restores playable game state before large-archive lobby reads @res
         );
       });
       const actor = ownerTurn ? a : b;
-      const start = performance.now();
       const resumed = [gameReady(a), gameReady(b)];
+      const start = performance.now();
       // eslint-disable-next-line no-await-in-loop
       await server.restart();
       // eslint-disable-next-line no-await-in-loop
       await Promise.all(resumed);
-      // Verify acceptance through the rendered authoritative clue count, not socket readiness.
+      const loaded = performance.now() - start;
+      // Exclude controller round trips and trace snapshots between readiness and the probe. Action
+      // timing begins at send and ends after the authoritative turn update in the browser.
       // eslint-disable-next-line no-await-in-loop
-      const turn = await actor.evaluate(() => {
-        const { globals } = globalThis as GameWindow;
-        const game = globals.state.ongoingGame;
-        const target = (game.turn.currentPlayerIndex + 1) % game.hands.length;
-        const order = game.hands[target]?.[0];
-        const value = order === undefined ? null : game.deck[order]?.rank;
-        if (value === null || value === undefined) {
-          throw new Error("Missing visible card.");
-        }
-        globals.lobby.conn.send("action", {
-          tableID: globals.lobby.tableID,
-          type: 3,
-          target,
-          value,
-        });
-        return game.turn.currentPlayerIndex;
+      const measurement = await measureAcceptedAction(actor);
+      samples.push(loaded + measurement.elapsed);
+      phases.push({
+        loaded,
+        action: measurement.elapsed,
+        controller: performance.now() - start,
       });
       // eslint-disable-next-line no-await-in-loop
-      await actor.waitForFunction(
-        (before) =>
-          (globalThis as GameWindow).globals.state.ongoingGame.turn
-            .currentPlayerIndex !== before,
-        turn,
+      await Promise.all(
+        [a, b].map(async (page) => {
+          await page.waitForFunction(
+            (turn) =>
+              (globalThis as GameWindow).globals.state.ongoingGame.turn
+                .currentPlayerIndex === turn,
+            measurement.turn,
+          );
+        }),
       );
-      samples.push(performance.now() - start);
       // eslint-disable-next-line no-await-in-loop
       await Promise.all(
         pages.slice(2).map(async (page, index) => {
@@ -150,10 +216,10 @@ test("restart restores playable game state before large-archive lobby reads @res
     const p95 = Math.max(...samples);
     console.info(
       "Restart-to-accepted-action milliseconds:",
-      JSON.stringify({ samples, p95 }),
+      JSON.stringify({ samples, p95, phases }),
     );
     await info.attach("restart-latency", {
-      body: JSON.stringify({ archiveGames: 2_000_000, samples, p95 }),
+      body: JSON.stringify({ archiveGames: 2_000_000, samples, p95, phases }),
       contentType: "application/json",
     });
     expect(errors).toEqual([]);

@@ -64,7 +64,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           `REDIS_URL=${redis.url}\n`,
         );
         await buildRust(directory);
-        state = startProcess(directory, undefined);
+        state = startProcess(directory);
         let address = await bounded(state.ready, "Rust recovery readiness");
         const aliceCookie = await login(address, "RecoveryAlice");
         const bobCookie = await login(address, "RecoveryBob");
@@ -235,7 +235,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           await bounded(closed, "Rust crash");
         }
         expect(await redis.states(namespace)).toEqual(acknowledged);
-        state = startProcess(directory, undefined);
+        state = startProcess(directory);
         address = await bounded(state.ready, "Rust cold recovery readiness");
         const returning = await connect(
           activeIsAlice ? aliceCookie : bobCookie,

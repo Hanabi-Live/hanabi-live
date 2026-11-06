@@ -5,8 +5,8 @@ choices, and instructions for development.
 
 ## Architecture
 
-Hanab Live follows a monorepo structure with a Rust backend, a legacy Go
-reference server, and TypeScript clients.
+Hanab Live follows a monorepo structure with a Rust backend and TypeScript
+clients.
 
 ### Backend
 
@@ -17,8 +17,8 @@ reference server, and TypeScript clients.
   (users, games, history).
 - **Live State:** [Redis](https://redis.io/) with AOF persistence holds
   authoritative recoverable game state; it is not a disposable cache.
-- **Location:** `experimental/rust-server/`. The legacy Go implementation
-  remains in `server/` for reference and compatibility checks.
+- **Location:** `server/`. Historical compatibility fixtures are retained in
+  `server/testdata/`; there is no Go application server.
 
 ### Frontend
 
@@ -33,13 +33,16 @@ reference server, and TypeScript clients.
   and [Grunt](https://gruntjs.com/) for CSS concatenation/minification.
 - **Location:** `packages/client/`.
 
+The React lobby lives in `packages/client-new/`, uses Redux Toolkit and Vite,
+and is served at `/new`. It hands off gameplay to the shared Konva game screen.
+
 ### Shared Logic
 
 - Core game rules and data structures are located in `packages/game/` and
   `packages/data/`. These are shared across the TypeScript client and the
-  Node.js packages. Go and Rust maintain native implementations of the game
-  rules, checked against shared variant and replay corpora. Native process tests
-  and disposable service fixtures live in `packages/testing/`.
+  Node.js packages. Rust's native game rules live in `server/engine`, checked
+  against shared variant and replay corpora. Native process tests and disposable
+  service fixtures live in `packages/testing/`.
 
 ---
 
@@ -47,17 +50,15 @@ reference server, and TypeScript clients.
 
 ### Prerequisites
 
-- Rust (for the production backend) and Go (for reference/compatibility checks)
-- Node.js & Bun (for the frontend and build tools)
+- Rust (pinned in `rust-toolchain.toml`); Go only for building Tern
+- Bun (for the frontend and build tools)
 - PostgreSQL
 - Redis
 
 ### Running the Development Server
 
-For the Rust backend, follow its
-[development instructions](experimental/rust-server/README.md). To start the
-legacy Go backend and frontend watch process, run the following script from the
-root of the repository:
+Follow the [installation instructions](docs/install.md) and
+[server runbook](server/README.md). To run Rust and the classic-client watcher:
 
 ```bash
 ./dev.sh
@@ -65,8 +66,8 @@ root of the repository:
 
 This script performs two main actions:
 
-1. **Starts the Go Server:** Executes `./run.sh`, which builds the Go binary and
-   starts the server.
+1. **Starts the Rust Server:** Executes `./run.sh`, which builds the native
+   binary and starts the server.
 2. **Starts Frontend Watch:** Executes `./packages/client/esbuild_dev.sh`, which
    watches the TypeScript files in `packages/client/src/` and automatically
    rebuilds the bundle in `public/js/bundles/main.min.js` whenever a change is
@@ -81,9 +82,9 @@ in your `.env` file).
 
 ### Can I run a frontend dev server that connects to the live backend?
 
-**Strictly speaking, no.** The frontend is not designed to be run in a
-standalone "dev server" (like Vite or Webpack Dev Server). It is served as
-static files by the Go backend.
+The classic client is served by Rust. The React lobby has a Vite development
+server (`bun run dev` in `packages/client-new`) that proxies to a local Rust
+backend on port 8080.
 
 However, if you want to test local frontend changes against the live production
 data, you should be aware of several hurdles:

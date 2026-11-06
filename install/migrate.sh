@@ -45,7 +45,7 @@ if [[ -f "$DIR/../release.json" ]]; then
   if [[ $command == migrate ]]; then
     "$DIR/../hanabi-live" --check-migration-target
   fi
-elif [[ ! -f "$DIR/../server/src/go.mod" ]]; then
+elif [[ ! -f "$DIR/../server/Cargo.toml" ]]; then
   echo "Missing release metadata; refusing to compile a migration tool outside a source checkout." >&2
   exit 1
 fi

@@ -20,12 +20,16 @@
   - A lot of the code was originally taken from
     [Keldon Jones'](http://keldon.net/) implementation of the game. (His site no
     longer exists.)
-- The server is programmed in [Go](https://golang.org/). It is located in the
-  [`server`](server) subdirectory.
+- The server is programmed in [Rust](https://www.rust-lang.org/). It is located
+  in the [`server`](server) subdirectory.
   - It uses a [PostgreSQL](https://www.postgresql.org/) database to store
-    information about the users and games.
+    information about users and completed games, and durable Redis storage for
+    recoverable live games.
 - The core game logic is located in the [`packages/game`](packages/game)
-  directory.
+  directory for TypeScript consumers and [`server/engine`](server/engine) for
+  the native server.
+- The React lobby is located in [`packages/client-new`](packages/client-new) and
+  is served at `/new`; the classic lobby remains available at `/lobby`.
 
 <br>
 
