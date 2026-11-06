@@ -275,6 +275,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     crate::accounts::test_support::legacy_column_order(&fixture.db.pool)
         .await
         .unwrap();
+    // Intentionally use Unicode to verify the username survives login, storage, and WebSocket messages.
     let alice_cookie = login(&fixture, "Alicè").await;
     let bob_cookie = login(&fixture, "Bob").await;
     let alice_id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username='Alicè'")
