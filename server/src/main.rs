@@ -151,8 +151,13 @@ async fn run(config: Config, version: String) -> Result<bool> {
     let startup: Result<()> = async {
         let public_handle = axum_server::Handle::new();
         handles.push(public_handle.clone());
-        let service = request_timeout(router(app.clone()))
-            .into_make_service_with_connect_info::<SocketAddr>();
+        let routes = router(app.clone());
+        let routes = if config.use_tls() {
+            tls::canonical_host_router(routes, &config.domain, address.port())
+        } else {
+            routes
+        };
+        let service = request_timeout(routes).into_make_service_with_connect_info::<SocketAddr>();
         if let Some(tls) = tls_config {
             let mut server = axum_server::from_tcp_rustls(public, tls)?
                 .map(|acceptor| {

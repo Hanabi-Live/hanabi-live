@@ -2,12 +2,20 @@ use crate::config::Config;
 use anyhow::{Context, Result, ensure};
 use axum::{
     Router,
-    extract::{Path, State},
-    http::{StatusCode, Uri},
-    response::{IntoResponse, Response},
+    extract::{Path, Request, State},
+    http::{Method, StatusCode, Uri, header, uri::Authority},
+    middleware::{self, Next},
+    response::{IntoResponse, Redirect, Response},
     routing::get,
 };
 use std::{collections::HashSet, path::PathBuf, sync::Arc};
+
+pub(crate) const SITE_HOSTS: [&str; 4] = [
+    "hanab.live",
+    "hanabi.live",
+    "www.hanab.live",
+    "www.hanabi.live",
+];
 
 pub async fn configuration(
     config: &Config,
@@ -73,17 +81,77 @@ struct RedirectState {
     origin: Arc<str>,
     acme: PathBuf,
 }
-pub fn redirect_router(root: PathBuf, domain: &str, https_port: u16) -> Router {
+fn https_origin(domain: &str, https_port: u16) -> String {
     let host = if domain.contains(':') {
         format!("[{domain}]")
     } else {
         domain.into()
     };
-    let origin = if https_port == 443 {
+    if https_port == 443 {
         format!("https://{host}")
     } else {
         format!("https://{host}:{https_port}")
-    };
+    }
+}
+
+pub fn canonical_host_router(router: Router, domain: &str, https_port: u16) -> Router {
+    if domain != "hanab.live" {
+        return router;
+    }
+    router.layer(middleware::from_fn_with_state(
+        Arc::<str>::from(https_origin(domain, https_port)),
+        canonical_host,
+    ))
+}
+
+async fn canonical_host(State(origin): State<Arc<str>>, request: Request, next: Next) -> Response {
+    let path = request.uri().path();
+    // Keep existing alias tabs' sockets and background requests working. New page requests
+    // move to the cookie domain before either client attempts to sign in or connect.
+    let navigation = matches!(*request.method(), Method::GET | Method::HEAD)
+        && path != "/ws"
+        && path != "/test-cookie"
+        && !path.starts_with("/api/")
+        && !request.headers().contains_key(header::UPGRADE)
+        && request
+            .headers()
+            .get("sec-fetch-mode")
+            .is_none_or(|mode| mode == "navigate");
+    let authority = request.uri().authority().cloned().or_else(|| {
+        request
+            .headers()
+            .get(header::HOST)
+            .and_then(|host| host.to_str().ok())
+            .and_then(|host| host.parse::<Authority>().ok())
+    });
+    if navigation
+        && authority.is_some_and(|authority| {
+            let host = authority.host();
+            !host.eq_ignore_ascii_case("hanab.live")
+                && SITE_HOSTS
+                    .iter()
+                    .any(|alias| host.eq_ignore_ascii_case(alias))
+        })
+    {
+        let mut response = Redirect::permanent(&format!(
+            "{origin}{}",
+            request
+                .uri()
+                .path_and_query()
+                .map_or("/", |path| path.as_str())
+        ))
+        .into_response();
+        response.headers_mut().insert(
+            header::VARY,
+            axum::http::HeaderValue::from_static("Sec-Fetch-Mode, Upgrade"),
+        );
+        return response;
+    }
+    next.run(request).await
+}
+
+pub fn redirect_router(root: PathBuf, domain: &str, https_port: u16) -> Router {
+    let origin = https_origin(domain, https_port);
     Router::new()
         .route("/.well-known/acme-challenge/{token}", get(challenge))
         .fallback(redirect)
@@ -151,6 +219,118 @@ mod tests {
         http::Request,
     };
     use tower::ServiceExt;
+
+    fn canonical_router(domain: &str, port: u16) -> Router {
+        canonical_host_router(
+            Router::new().fallback(|| async { "unchanged" }),
+            domain,
+            port,
+        )
+    }
+
+    #[tokio::test]
+    async fn alias_navigation_redirects_before_login_over_http1_and_http2() -> Result<()> {
+        for host in [
+            "hanabi.live",
+            "www.hanab.live",
+            "www.hanabi.live",
+            "HANABI.LIVE",
+        ] {
+            for http2 in [false, true] {
+                let path = "/new/table/12?name=a%2Fb&return=%2F12";
+                let request = if http2 {
+                    Request::builder()
+                        .version(axum::http::Version::HTTP_2)
+                        .uri(format!("https://{host}{path}"))
+                } else {
+                    Request::builder().uri(path).header(header::HOST, host)
+                };
+                let response = canonical_router("hanab.live", 443)
+                    .oneshot(request.body(Body::empty())?)
+                    .await?;
+                assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+                assert_eq!(
+                    response.headers()[header::LOCATION],
+                    format!("https://hanab.live{path}")
+                );
+                assert!(!response.headers().contains_key(header::SET_COOKIE));
+            }
+        }
+        let response = canonical_router("hanab.live", 8443)
+            .oneshot(
+                Request::builder()
+                    .method(Method::HEAD)
+                    .uri("/game/12")
+                    .header(header::HOST, "hanabi.live:8443")
+                    .header("sec-fetch-mode", "navigate")
+                    .body(Body::empty())?,
+            )
+            .await?;
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+        assert_eq!(
+            response.headers()[header::LOCATION],
+            "https://hanab.live:8443/game/12"
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn canonical_redirect_preserves_existing_alias_connections_and_requests() -> Result<()> {
+        for request in [
+            Request::builder().uri("/ws?fastResume=1"),
+            Request::builder()
+                .method(Method::CONNECT)
+                .uri("https://hanabi.live/ws"),
+            Request::builder().uri("/test-cookie"),
+            Request::builder().uri("/api/v1/identity/token"),
+            Request::builder().method(Method::POST).uri("/login"),
+            Request::builder()
+                .uri("/public/main.js")
+                .header("sec-fetch-mode", "no-cors"),
+            Request::builder()
+                .uri("/new")
+                .header("sec-fetch-mode", "cors"),
+            Request::builder()
+                .uri("/")
+                .header(header::UPGRADE, "websocket"),
+        ] {
+            let response = canonical_router("hanab.live", 443)
+                .oneshot(
+                    request
+                        .header(header::HOST, "hanabi.live")
+                        .body(Body::empty())?,
+                )
+                .await?;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert!(!response.headers().contains_key(header::LOCATION));
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn canonical_redirect_does_not_change_other_deployments_or_trust_arbitrary_hosts()
+    -> Result<()> {
+        for (domain, host) in [
+            ("hanab.live", "hanab.live"),
+            ("hanab.live", "hanab.live:443"),
+            ("hanab.live", "evil.invalid"),
+            ("hanab.live", "hanabi.live.evil.invalid"),
+            ("localhost", "hanabi.live"),
+            ("example.invalid", "www.hanab.live"),
+        ] {
+            let response = canonical_router(domain, 443)
+                .oneshot(
+                    Request::builder()
+                        .uri("/new")
+                        .header(header::HOST, host)
+                        .body(Body::empty())?,
+                )
+                .await?;
+            assert_eq!(response.status(), StatusCode::OK);
+        }
+        Ok(())
+    }
+
     fn config(root: PathBuf) -> Config {
         Config::from_values(
             root,

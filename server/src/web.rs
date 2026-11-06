@@ -248,12 +248,7 @@ fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -
             return false;
         }
     }
-    const SITE_HOSTS: [&str; 4] = [
-        "hanab.live",
-        "hanabi.live",
-        "www.hanab.live",
-        "www.hanabi.live",
-    ];
+    use crate::tls::SITE_HOSTS;
     let configured_host = origin.host_str() == configured.host_str()
         || (configured
             .host_str()

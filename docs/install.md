@@ -143,6 +143,12 @@ graceful restart. Never rebuild assets in place while they are being served.
 Build and verify both clients in staging, preserve old versioned assets for open
 tabs, and publish paired assets and binaries atomically.
 
+With TLS and `DOMAIN=hanab.live`, page requests on `hanabi.live`,
+`www.hanab.live`, and `www.hanabi.live` redirect to `hanab.live`, preserving the
+path and query. Keep certificates valid for all four names. Existing WebSocket
+handshakes and background browser requests are not redirected, so open alias
+tabs can reconnect.
+
 ### Dedicated production Redis
 
 The templates in [`install/redis/`](../install/redis/) reproduce the dedicated
