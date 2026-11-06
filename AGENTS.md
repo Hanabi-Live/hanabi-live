@@ -9,10 +9,18 @@ justified, explain the use case and why a fixed behavior is insufficient.
 
 ## Documentation
 
-Do not document every small change or implementation detail. Add or update
-documentation only for essential instructions, significant decisions, or
-non-obvious constraints. Keep it concise and relevant to the document's purpose;
-do not put unrelated operational details in installation instructions.
+Default to no documentation changes. Update prose only when explicitly requested
+or when existing instructions would otherwise become incorrect or unusable. A
+code change is not, by itself, a reason to add documentation.
+
+Before adding documentation, identify the concrete reader action it enables. If
+there is none, put the explanation in the commit or pull request instead. Do not
+use documentation as a changelog or a place to narrate implementation details,
+internal data flow, CI behavior, or build metadata.
+
+Keep installation instructions limited to the steps and configuration needed to
+install and run the server. When a command changes, update that command rather
+than adding paragraphs explaining the implementation behind it.
 
 ## Browser testing
 
