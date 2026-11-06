@@ -229,6 +229,8 @@ const serverCommandWelcomeData = z
     disconSpectatingTable: tableID.optional(),
     disconShadowingSeat: z.number().int().optional(),
 
+    // Kept on the wire for older clients; current clients choose their own default table name.
+    randomTableName: z.string().min(1).optional(),
     // Older open clients require these fields; the retired modes are always disabled.
     shuttingDown: z.literal(false),
     maintenanceMode: z.literal(false),

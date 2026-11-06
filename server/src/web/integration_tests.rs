@@ -302,6 +302,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let mut alice = connect(&fixture, &alice_cookie, false).await;
     let welcome = receive(&mut alice, "welcome").await;
     assert_eq!(welcome["username"], "Alicè");
+    assert_eq!(welcome["randomTableName"], "Alicè's table");
     assert_eq!(welcome["connectionMode"], "initial");
     assert!(receive(&mut alice, "chatList").await["list"].is_array());
     alice
