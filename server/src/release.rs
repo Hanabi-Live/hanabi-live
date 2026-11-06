@@ -13,14 +13,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-const RUNTIME_FILES: &[&str] = &[
-    ".env",
-    "logs",
-    "ongoing_tables",
-    "motd.txt",
-    "letsencrypt",
-    ".lifecycle.lock",
-];
+const RUNTIME_FILES: &[&str] = &[".env", "logs", "motd.txt", "letsencrypt", ".lifecycle.lock"];
 
 pub enum Mode {
     Run,
@@ -53,7 +46,7 @@ fn private_path(name: &str) -> bool {
         part == ".git"
             || part == ".env"
             || part.starts_with(".env.")
-            || matches!(part, "logs" | "ongoing_tables" | "GitHub_private_key.pem")
+            || matches!(part, "logs" | "GitHub_private_key.pem")
     })
 }
 

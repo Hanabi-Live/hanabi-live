@@ -7,7 +7,6 @@ docker-compose-dev.yml
 **/.env
 **/*.log
 logs
-ongoing_tables
 backups
 letsencrypt
 dist
