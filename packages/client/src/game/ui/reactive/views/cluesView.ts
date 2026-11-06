@@ -43,7 +43,10 @@ function updateArrows(
     return;
   }
 
-  const clue = msgClueToClue(clueForSegment, globals.variant);
+  const clue =
+    clueForSegment.type === -1
+      ? clueForSegment
+      : msgClueToClue(clueForSegment, globals.variant);
 
   for (const [i, order] of clueForSegment.list.entries()) {
     const card = getCardOrStackBase(order);

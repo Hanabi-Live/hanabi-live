@@ -244,6 +244,163 @@ impl Harness {
     }
 }
 #[tokio::test]
+async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_completed_replays()
+-> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Observer", "Shadow"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h
+            .create(0, "Duck privacy", json!({"variantName":"Duck (5 Suits)"}))
+            .await?;
+        for index in 1..3 {
+            h.send(index, "tableJoin", json!({"tableID":id})).await?;
+        }
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.send(3, "tableSpectate", json!({"tableID":id})).await?;
+        h.send(
+            4,
+            "tableSpectate",
+            json!({"tableID":id,"shadowingPlayerIndex":0}),
+        )
+        .await?;
+        ensure!(
+            h.send(0, "tableSpectate", json!({"tableID":id}))
+                .await
+                .is_err(),
+            "Player obtained an unrestricted spectator view"
+        );
+        for index in 0..5 {
+            h.send(index, "loaded", json!({"tableID":id})).await?;
+        }
+        h.barrier(0).await?;
+        for index in 0..5 {
+            h.frames(index)?;
+        }
+        let mut originals = vec![];
+        for kind in [2, 3] {
+            let (table, _) = h.snapshot(id).await?;
+            let game = &table.game().unwrap().game.0;
+            let seat = game.active_player_index;
+            let target = (seat + 1) % game.players.len();
+            let values = if kind == 2 { 0..5 } else { 1..6 };
+            let action = values
+                .map(|value| hanabi_engine::PlayerAction {
+                    action_type: kind,
+                    target: target as i32,
+                    value,
+                })
+                .find(|action| !hanabi_engine::touched_orders(game, action).is_empty())
+                .context("Missing legal clue")?;
+            let index = h
+                .users
+                .iter()
+                .position(|user| user.user == table.players()[seat].id)
+                .unwrap();
+            h.send(
+                index,
+                "action",
+                json!({"tableID":id,"type":kind,"target":target,"value":action.value}),
+            )
+            .await?;
+            h.barrier(index).await?;
+            let clue = json!({"type":kind-2,"value":action.value});
+            originals.push(clue.clone());
+            for index in 0..5 {
+                let events = h
+                    .frames(index)?
+                    .into_iter()
+                    .filter(|(name, body)| name == "gameAction" && body["action"]["type"] == "clue")
+                    .map(|(_, body)| body["action"].clone())
+                    .collect::<Vec<_>>();
+                ensure!(events.len() == 1, "Missing live clue event");
+                ensure!(
+                    events[0]["clue"]
+                        == if index == 3 {
+                            clue.clone()
+                        } else {
+                            json!({"type":-1,"value":-1})
+                        },
+                    "Live clue identity leaked or spectator view changed"
+                );
+                ensure!(
+                    events[0]["list"]
+                        .as_array()
+                        .is_some_and(|list| !list.is_empty()),
+                    "Public touched cards were lost"
+                );
+            }
+        }
+        for recovered in [false, true] {
+            if recovered {
+                h.restart().await?;
+                for index in 0..3 {
+                    h.send(index, "tableReattend", json!({"tableID":id}))
+                        .await?;
+                }
+                h.send(3, "tableSpectate", json!({"tableID":id})).await?;
+                h.send(
+                    4,
+                    "tableSpectate",
+                    json!({"tableID":id,"shadowingPlayerIndex":0}),
+                )
+                .await?;
+            }
+            for index in 0..5 {
+                h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+                let history = h.receive(index, "gameActionList").await?;
+                let clues = history["list"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|event| event["type"] == "clue")
+                    .map(|event| event["clue"].clone())
+                    .collect::<Vec<_>>();
+                let expected = if index == 3 {
+                    originals.clone()
+                } else {
+                    vec![json!({"type":-1,"value":-1}); 2]
+                };
+                ensure!(
+                    clues == expected,
+                    "Clue identity leaked through history or recovery"
+                );
+            }
+        }
+        let (table, _) = h.snapshot(id).await?;
+        let authoritative = serde_json::to_value(&table.game().unwrap().game.events)?;
+        let saved = authoritative
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|event| event["type"] == "clue")
+            .map(|event| event["clue"].clone())
+            .collect::<Vec<_>>();
+        ensure!(
+            saved == originals,
+            "Recipient filtering changed authoritative history"
+        );
+        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+        for index in 0..5 {
+            h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+            let history = h.receive(index, "gameActionList").await?;
+            let clues = history["list"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter(|event| event["type"] == "clue")
+                .map(|event| event["clue"].clone())
+                .collect::<Vec<_>>();
+            ensure!(clues == originals, "Completed replay lost the actual clues");
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn shared_review_chat_refreshes_idle_but_server_notices_do_not() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());

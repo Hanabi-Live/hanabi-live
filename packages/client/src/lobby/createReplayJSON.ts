@@ -39,6 +39,18 @@ export function createJSONFromReplay(room: string): void {
     );
     return;
   }
+  if (
+    globals.state.replay.actions.some(
+      (action) => action.type === "clue" && action.clue.type === -1,
+    )
+  ) {
+    sendSelfPMFromServer(
+      "The completed clue history is still loading. Please try again after it loads.",
+      room,
+      SelfChatMessageType.Error,
+    );
+    return;
+  }
 
   // Anonymize the players
   const game: JSONGame = {
@@ -173,6 +185,12 @@ function getGameActionsFromState(source: ReplayState): readonly ClientAction[] {
 
       case "clue": {
         switch (action.clue.type) {
+          case -1: {
+            throw new Error(
+              "Cannot export a replay with concealed clue identities.",
+            );
+          }
+
           case ClueType.Color: {
             actions.push({
               type: ActionType.ColorClue,

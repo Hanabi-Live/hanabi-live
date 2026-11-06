@@ -56,6 +56,9 @@ export function getSoundType(
 
   switch (action.type) {
     case "clue": {
+      if (action.clue.type === -1) {
+        return SoundType.Quack;
+      }
       if (metadata.options.detrimentalCharacters) {
         const giverCharacterName = getCharacterNameForPlayer(
           action.giver,

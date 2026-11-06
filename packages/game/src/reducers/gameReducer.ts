@@ -100,6 +100,21 @@ function gameReducerFunction(
       // Even though the objects for each clue type are the exact same, a switch statement is needed
       // to satisfy the TypeScript compiler.
       switch (action.clue.type) {
+        case -1: {
+          gameState.clues.push(
+            castDraft({
+              type: -1,
+              value: -1,
+              giver: action.giver,
+              target: action.target,
+              segment: gameState.turn.segment,
+              list: action.list,
+              negativeList,
+            }),
+          );
+          break;
+        }
+
         case ClueType.Color: {
           const clue = castDraft({
             type: action.clue.type,

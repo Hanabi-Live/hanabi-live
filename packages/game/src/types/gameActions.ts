@@ -2,6 +2,7 @@ import type { Tuple } from "complete-common";
 import type { EndCondition } from "../enums/EndCondition";
 import type { SpectatorNote } from "../interfaces/SpectatorNote";
 import type { CardOrder } from "./CardOrder";
+import type { HiddenClue } from "./HiddenClue";
 import type { MsgClue } from "./MsgClue";
 import type { NumPlayers } from "./NumPlayers";
 import type { PlayerIndex } from "./PlayerIndex";
@@ -51,7 +52,7 @@ export interface ActionCardIdentity {
 
 export interface ActionClue {
   readonly type: "clue";
-  readonly clue: MsgClue;
+  readonly clue: MsgClue | HiddenClue;
 
   /** The player index of the person giving the clue. */
   readonly giver: PlayerIndex;

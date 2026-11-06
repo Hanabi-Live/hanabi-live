@@ -90,7 +90,8 @@ export function cardsReducer(
     }
 
     case "clue": {
-      const clue = msgClueToClue(action.clue, variant);
+      const clue =
+        action.clue.type === -1 ? null : msgClueToClue(action.clue, variant);
 
       const hand = game.hands[action.target];
       assertDefined(hand, `Failed to find the hand at index: ${action.target}`);
@@ -98,7 +99,10 @@ export function cardsReducer(
       // eslint-disable-next-line func-style
       const applyClue = (order: CardOrder, positive: boolean) => {
         // Clues do not have to be applied in certain situations.
-        if (!shouldApplyClue(action.giver, metadata, variant)) {
+        if (
+          clue === null
+          || !shouldApplyClue(action.giver, metadata, variant)
+        ) {
           return;
         }
 

@@ -63,6 +63,7 @@ export * from "./types/CardOrder";
 export * from "./types/Clue";
 export * from "./types/ColorIndex";
 export type * from "./types/gameActions";
+export type * from "./types/HiddenClue";
 export type * from "./types/MsgClue";
 export * from "./types/NumPlayers";
 export type * from "./types/NumSuits";

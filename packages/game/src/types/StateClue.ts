@@ -1,6 +1,7 @@
 import type { ClueType } from "../enums/ClueType";
 import type { CardOrder } from "./CardOrder";
 import type { ColorIndex } from "./ColorIndex";
+import type { HiddenClue } from "./HiddenClue";
 import type { PlayerIndex } from "./PlayerIndex";
 import type { RankClueNumber } from "./RankClueNumber";
 
@@ -26,4 +27,6 @@ export interface StateRankClue extends StateClueBase {
   readonly value: RankClueNumber;
 }
 
-export type StateClue = StateColorClue | StateRankClue;
+export type StateHiddenClue = StateClueBase & HiddenClue;
+
+export type StateClue = StateColorClue | StateRankClue | StateHiddenClue;

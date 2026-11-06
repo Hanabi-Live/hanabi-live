@@ -3,6 +3,14 @@ package main
 // CheckScrub removes some information from the action to prevent players having more knowledge
 // than they should have, if necessary (e.g. when a card is drawn to a player's hand)
 func CheckScrub(t *Table, action interface{}, userID int) interface{} {
+	if clue, ok := action.(ActionClue); ok && clue.Type == "clue" {
+		if !t.Replay && t.Game.Variant.Duck && getEquivalentPlayer(t, userID) != nil {
+			clue.Clue.Type = -1
+			clue.Clue.Value = -1
+		}
+		return clue
+	}
+
 	cardIdentityAction, ok := action.(ActionCardIdentity)
 	if ok && cardIdentityAction.Type == "cardIdentity" {
 		cardIdentityAction.Scrub(t, userID)

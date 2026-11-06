@@ -17,11 +17,14 @@ import type { RankClueNumber } from "../types/RankClueNumber";
 import type { SuitIndex } from "../types/SuitIndex";
 
 export function getClueName(
-  clueType: ClueType,
+  clueType: ClueType | -1,
   clueValue: number,
   variant: Variant,
   characterName: string,
 ): string {
+  if (clueType === -1) {
+    return "Quack";
+  }
   if (variant.cowAndPig) {
     switch (clueType) {
       case ClueType.Color: {

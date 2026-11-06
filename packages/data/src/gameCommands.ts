@@ -56,6 +56,13 @@ export type GameClientCommandData = {
 };
 
 const integer = z.number().int();
+const receivedClue = z.union([
+  z.strictObject({
+    type: z.literal([0, 1]),
+    value: integer,
+  }),
+  z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
+]);
 const identityFields = {
   playerIndex: integer,
   order: integer,
@@ -73,7 +80,7 @@ const event = z.discriminatedUnion("type", [
   }),
   z.strictObject({
     type: z.literal("clue"),
-    clue: z.strictObject({ type: integer, value: integer }),
+    clue: receivedClue,
     giver: integer,
     target: integer,
     list: integer.array().readonly(),

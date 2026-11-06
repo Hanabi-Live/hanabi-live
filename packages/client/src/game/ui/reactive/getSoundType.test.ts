@@ -16,6 +16,26 @@ import { SoundType } from "../../types/SoundType";
 import { getSoundType } from "./getSoundType";
 
 const VARIANT_NAME = "Pink & Dark Omni (5 Suits)";
+test("concealed Duck clues play the quack sound", () => {
+  const metadata = getDefaultMetadata(2, "Duck (5 Suits)");
+  const state = getInitialGameState(metadata);
+  expect(
+    getSoundType(
+      state,
+      state,
+      {
+        type: "clue",
+        clue: { type: -1, value: -1 },
+        giver: 0,
+        target: 1,
+        list: [],
+        ignoreNegative: false,
+      },
+      metadata,
+    ),
+  ).toBe(SoundType.Quack);
+});
+
 const metadata = getDefaultMetadata(2, VARIANT_NAME);
 const variant = getVariant(VARIANT_NAME);
 const omniSuitIndex = variant.suits.findIndex(

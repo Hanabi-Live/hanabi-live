@@ -110,6 +110,16 @@ gameCommands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
     sharedReplayLeader: data.sharedReplayLeader,
     datetimeFinished: new Date().toString(),
   });
+  if (
+    globals.state.replay.actions.some(
+      (action) => action.type === "clue" && action.clue.type === -1,
+    )
+  ) {
+    // Completed replays may reveal clues; replace the restricted history before exporting it.
+    globals.lobby.conn!.send("getGameInfo2", {
+      tableID: globals.lobby.tableID,
+    });
+  }
 });
 
 interface HypotheticalData {

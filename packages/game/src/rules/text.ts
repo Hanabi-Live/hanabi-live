@@ -6,6 +6,7 @@ import { getVariant } from "../gameData";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Variant } from "../interfaces/Variant";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";
+import type { HiddenClue } from "../types/HiddenClue";
 import type { MsgClue } from "../types/MsgClue";
 import type { NumPlayers } from "../types/NumPlayers";
 import type { PlayerIndex } from "../types/PlayerIndex";
@@ -58,7 +59,12 @@ export function getClueText(
     action.giver,
     metadata.characterAssignments,
   );
-  if (variant.cowAndPig || variant.duck || characterName === "Quacker") {
+  if (
+    action.clue.type === -1
+    || variant.cowAndPig
+    || variant.duck
+    || characterName === "Quacker"
+  ) {
     const actionName = getClueActionName(action.clue, variant, characterName);
     const targetSuffix = target.endsWith("s") ? "'" : "'s";
 
@@ -93,10 +99,13 @@ export function getClueText(
 }
 
 function getClueActionName(
-  msgClue: MsgClue,
+  msgClue: MsgClue | HiddenClue,
   variant: Variant,
   characterName: string,
 ): string {
+  if (msgClue.type === -1) {
+    return "quacks";
+  }
   if (variant.cowAndPig) {
     switch (msgClue.type) {
       case ClueType.Color: {

@@ -133,6 +133,10 @@ export function loadGameJSON(gameJSON: JSONGame): State {
 
     switch (a.type) {
       case "clue": {
+        if (a.clue.type === -1) {
+          throw new Error("A test replay cannot reconstruct a hidden clue.");
+        }
+        const clue = msgClueToClue(a.clue, variant);
         // Fix the list of touched cards.
         const hand = s.hands[a.target];
         assertDefined(hand, `Failed to find the hand at index: ${a.target}`);
@@ -143,8 +147,6 @@ export function loadGameJSON(gameJSON: JSONGame): State {
             jsonCard,
             `Failed to find the JSON card at index: ${order}`,
           );
-
-          const clue = msgClueToClue(a.clue, variant);
 
           return isCardTouchedByClue(
             variant,

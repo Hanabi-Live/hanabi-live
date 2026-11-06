@@ -1,7 +1,13 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
-import type { CardOrder, Clue, PlayerIndex, Suit } from "@hanabi-live/game";
+import type {
+  CardOrder,
+  Clue,
+  HiddenClue,
+  PlayerIndex,
+  Suit,
+} from "@hanabi-live/game";
 import {
   ClueType,
   getCharacterNameForPlayer,
@@ -79,7 +85,7 @@ export function set(
   i: number,
   element: Konva.Node | null,
   giverPlayerIndex: PlayerIndex | null,
-  clue: Clue | null,
+  clue: Clue | HiddenClue | null,
   preview = false,
   immediate = false,
 ): void {
@@ -147,7 +153,8 @@ export function set(
       globals.metadata.characterAssignments,
     );
     if (
-      globals.variant.duck
+      clue.type === -1
+      || globals.variant.duck
       || (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
       // Do not show the circle in variants where the clue types are supposed to be hidden.

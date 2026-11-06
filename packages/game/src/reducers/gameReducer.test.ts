@@ -12,6 +12,7 @@ import {
   strike,
 } from "../testActions";
 import type { Rank } from "../types/Rank";
+import type { ActionClue } from "../types/gameActions";
 import { gameReducer } from "./gameReducer";
 import { getInitialGameState } from "./initialStates/initialGameState";
 import { getInitialGameStateTest } from "./initialStates/initialGameStateTest";
@@ -26,6 +27,49 @@ const CLUE_STARVED_METADATA = getDefaultMetadata(
 const SUDOKU_METADATA = getDefaultMetadata(NUM_PLAYERS, "Sudoku (5 Suits)");
 
 describe("gameReducer", () => {
+  test("hidden Duck clues retain public markings and logs without identity deductions", () => {
+    const metadata = getDefaultMetadata(2, "Duck (5 Suits)");
+    let state = getInitialGameStateTest(metadata);
+    const first = draw(1, 0, 0, 1);
+    for (const action of [first, draw(1, 1, 1, 2)]) {
+      state = gameReducer(state, action, true, false, false, false, metadata);
+    }
+    const action: ActionClue = {
+      type: "clue",
+      clue: { type: -1, value: -1 },
+      giver: 0,
+      target: 1,
+      list: [first.order],
+      ignoreNegative: false,
+    };
+    const updated = gameReducer(
+      state,
+      action,
+      true,
+      false,
+      false,
+      false,
+      metadata,
+    );
+    expect(updated.clues.at(-1)).toMatchObject({
+      type: -1,
+      value: -1,
+      giver: 0,
+      target: 1,
+      list: [0],
+      negativeList: [1],
+    });
+    expect(updated.log.at(-1)?.text).toContain("quacks");
+    expect(updated.clueTokens).toBe(state.clueTokens - 1);
+    expect(updated.deck[0]?.numPositiveClues).toBe(1);
+    expect(updated.deck[1]?.hasClueApplied).toBe(true);
+    for (const [index, card] of updated.deck.entries()) {
+      expect(card.possibleCards).toEqual(state.deck[index]?.possibleCards);
+      expect(card.positiveColorClues).toEqual([]);
+      expect(card.positiveRankClues).toEqual([]);
+    }
+  });
+
   test("does not mutate state", () => {
     const state = getInitialGameState(DEFAULT_METADATA);
     const unchangedState = getInitialGameState(DEFAULT_METADATA);

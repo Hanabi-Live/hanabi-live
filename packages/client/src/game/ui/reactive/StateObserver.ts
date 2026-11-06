@@ -240,10 +240,10 @@ const ongoingGameObservers: Subscriptions = [
   ),
 
   // Alternating Clues UI
-  subAfterInit(
-    (s) => s.visibleState!.clues.at(-1)?.type,
-    turnView.onLastClueTypeChanged,
-  ),
+  subAfterInit((s) => {
+    const type = s.visibleState!.clues.at(-1)?.type;
+    return type === -1 ? null : type;
+  }, turnView.onLastClueTypeChanged),
 
   // Segment + current player index.
   subAfterInit(

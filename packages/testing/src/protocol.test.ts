@@ -64,7 +64,25 @@ test("legacy absent relationship payloads retain their defaults", () => {
     name: "",
     room: "",
   });
+
   expect(CLIENT_COMMAND_SCHEMAS.chatLinked.parse(undefined)).toEqual({
     room: "",
   });
+});
+
+test("hidden clue frames require both identity fields to be concealed", () => {
+  const action = { type: "clue", giver: 0, target: 1, list: [5], turn: 0 };
+  const schema = SERVER_COMMAND_SCHEMAS.gameAction;
+  expect(
+    schema.safeParse({
+      tableID: 1,
+      action: { ...action, clue: { type: -1, value: -1 } },
+    }).success,
+  ).toBe(true);
+  expect(
+    schema.safeParse({
+      tableID: 1,
+      action: { ...action, clue: { type: -1, value: 3 } },
+    }).success,
+  ).toBe(false);
 });
