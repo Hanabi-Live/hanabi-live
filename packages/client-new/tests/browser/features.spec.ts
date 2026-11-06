@@ -252,17 +252,14 @@ for (const route of ["lobby", "new"]) {
       } else {
         await b.goto(a.url());
       }
-      const spectators =
-        route === "lobby"
-          ? b.locator("#lobby-pregame-spectators")
-          : b
-              .locator(".classic-room-info h4")
-              .filter({ hasText: "Spectators:" })
-              .locator("span");
+      const spectators = b.locator("#lobby-pregame-spectators");
       await expect(spectators).toContainText(spectator);
       if (route === "lobby") {
         await b.locator("#nav-buttons-pregame-leave").click();
         await b.locator("#nav-buttons-lobby-create-game").click();
+        await expect(b.locator("#createTableName")).toHaveValue(
+          `testGuest${route}'s table`,
+        );
         await b.locator("#createTableName").fill(secondTable);
         await b.locator("#create-game-submit").click();
         await expect(b.locator("#lobby-pregame-name")).toHaveText(secondTable);
@@ -505,7 +502,9 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .getByRole("button", { name: "Join table" })
     .click();
   await expect(a.locator(".seat:not(.empty-seat)")).toHaveCount(2);
-  await expect(b.getByText("Timed: 3m + 15s", { exact: true })).toBeVisible();
+  await expect(b.locator("#lobby-pregame-options")).toContainText(
+    "(3:00 + 0:15)",
+  );
   await expect(
     b.getByText("Saved before joining.", { exact: true }),
   ).toHaveCount(1);
@@ -538,8 +537,12 @@ test("creation options, protected joins, invitations, friends, private chat and 
   ).toBeDisabled();
   await c.getByRole("button", { name: "Stop watching", exact: true }).click();
   await b.getByRole("button", { name: "Suggest options" }).click();
-  await expect(b.getByLabel(/^Empty clues/u)).toBeVisible();
-  await expect(b.getByLabel(/^Empty clues/u)).toBeChecked();
+  await expect(
+    b.getByRole("checkbox", { name: /^Empty clues/u }),
+  ).toBeVisible();
+  await expect(
+    b.getByRole("checkbox", { name: /^Empty clues/u }),
+  ).toBeChecked();
   await b.keyboard.press("Alt+l");
   await expect(b.getByRole("dialog")).toBeVisible();
   await expect(b).toHaveURL(/\/new\/table\/\d+$/u);
@@ -559,7 +562,7 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(
     b.getByText("Saved before joining.", { exact: true }),
   ).toHaveCount(1);
-  await host.locator(".person-main").click();
+  await host.getByRole("button", { name: "Actions for testUIHost" }).click();
   await host.getByRole("button", { name: "Add friend" }).click();
   await expect(host.getByRole("button", { name: "Unfriend" })).toBeVisible();
   await host.getByRole("button", { name: "Message", exact: true }).click();

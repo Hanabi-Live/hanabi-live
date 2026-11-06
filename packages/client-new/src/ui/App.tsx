@@ -1,6 +1,6 @@
 import { errorDetails, validationErrorDetails } from "@hanabi-live/data";
 import { options } from "@hanabi-live/game";
-import { ArrowRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import type { SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -310,7 +310,9 @@ export function App({ connection }: { connection: LobbyConnection }) {
             if (open) {
               if (open.passwordProtected) {
                 setPasswordTable(open);
-                setTablePassword("");
+                setTablePassword(
+                  localStorage.getItem("joinTablePassword") ?? "",
+                );
               } else {
                 connection.send("tableJoin", { tableID: open.id });
               }
@@ -395,7 +397,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
       });
     } else if (table.passwordProtected) {
       setPasswordTable(table);
-      setTablePassword("");
+      setTablePassword(localStorage.getItem("joinTablePassword") ?? "");
     } else {
       connection.send("tableJoin", { tableID: table.id });
     }
@@ -456,7 +458,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
 
   function join(table: Table) {
     if (table.passwordProtected) {
-      setTablePassword("");
+      setTablePassword(localStorage.getItem("joinTablePassword") ?? "");
       setPasswordTable(table);
     } else {
       connection.send("tableJoin", { tableID: table.id });
@@ -915,7 +917,11 @@ export function App({ connection }: { connection: LobbyConnection }) {
             className="col-4 lobby-users-box-container"
             id="lobby-online-users"
           >
-            <PeoplePanel connection={connection} message={message} />
+            <PeoplePanel
+              connection={connection}
+              join={join}
+              message={message}
+            />
           </div>
         </div>
         <nav aria-label="Mobile panels" className="mobile-tabs">
@@ -969,14 +975,15 @@ export function App({ connection }: { connection: LobbyConnection }) {
         )}
         {passwordTable && (
           <Modal
+            className="classic-password-dialog"
             close={() => setPasswordTable(null)}
-            description={`Enter the password for ${passwordTable.name}.`}
-            title="A seat at a private table"
+            description="Enter the password for this game:"
+            title="Enter Password"
           >
             <form
-              className="form-grid"
               onSubmit={(event) => {
                 event.preventDefault();
+                localStorage.setItem("joinTablePassword", tablePassword);
                 if (
                   connection.send("tableJoin", {
                     tableID: passwordTable.id,
@@ -987,19 +994,36 @@ export function App({ connection }: { connection: LobbyConnection }) {
                 }
               }}
             >
-              <label>
-                Table password
-                <input
-                  autoComplete="off"
-                  onChange={(event) => setTablePassword(event.target.value)}
-                  required
-                  type="password"
-                  value={tablePassword}
-                />
-              </label>
-              <button className="primary" disabled={!online}>
-                Join table <ArrowRight size={16} />
-              </button>
+              <input
+                aria-label="Table password"
+                autoComplete="off"
+                onChange={(event) => setTablePassword(event.target.value)}
+                onFocus={(event) => event.target.select()}
+                placeholder="Password"
+                type="text"
+                value={tablePassword}
+              />
+              <br />
+              <ul className="actions">
+                <li>
+                  <button
+                    aria-label="Join table"
+                    className="button small"
+                    disabled={!online}
+                  >
+                    Submit
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="button small"
+                    onClick={() => setPasswordTable(null)}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </li>
+              </ul>
             </form>
           </Modal>
         )}

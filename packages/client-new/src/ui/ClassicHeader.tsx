@@ -104,27 +104,27 @@ export function ClassicHeader({
                     </button>
                   </li>
                 )}
-                <li>
-                  <button
-                    aria-label="Watch instead"
-                    className="button"
-                    disabled={!online || (player && game.players.length < 2)}
-                    onClick={() => {
-                      if (player) {
+                {player && (
+                  <li>
+                    <button
+                      aria-label="Watch instead"
+                      className="button"
+                      disabled={!online || game.players.length < 2}
+                      onClick={() => {
                         connection.send("tableLeave", {
                           tableID: game.tableID,
                         });
-                      }
-                      connection.send("tableSpectate", {
-                        tableID: game.tableID,
-                        shadowingPlayerIndex: -1,
-                      });
-                    }}
-                  >
-                    <i aria-hidden="true" className="fas fa-ghost nav-icon" />
-                    <span className="hidden-xs">Spectate Game</span>
-                  </button>
-                </li>
+                        connection.send("tableSpectate", {
+                          tableID: game.tableID,
+                          shadowingPlayerIndex: -1,
+                        });
+                      }}
+                    >
+                      <i aria-hidden="true" className="fas fa-ghost nav-icon" />
+                      <span className="hidden-xs">Spectate Game</span>
+                    </button>
+                  </li>
+                )}
                 <li>
                   <button
                     aria-label={owner ? "Table options" : "Suggest options"}
