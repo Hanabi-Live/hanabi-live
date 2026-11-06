@@ -130,7 +130,7 @@ export function ClassicHeader({
                   <button
                     aria-label={owner ? "Table options" : "Suggest options"}
                     className="button"
-                    disabled={!online}
+                    disabled={!online || pending !== null}
                     onClick={edit}
                   >
                     <i aria-hidden="true" className="fas fa-rainbow nav-icon" />

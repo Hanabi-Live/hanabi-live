@@ -1,19 +1,32 @@
 // @vitest-environment jsdom
 import { SERVER_COMMAND_SCHEMAS, Status } from "@hanabi-live/data";
 import { options } from "@hanabi-live/game";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { LobbyConnection } from "../src/connection";
 import { decodeEvent } from "../src/protocol";
 import { actions, createLobbyStore } from "../src/store";
+import { App } from "../src/ui/App";
 import { GameDialog } from "../src/ui/GameDialog";
 import { PeoplePanel } from "../src/ui/PeoplePanel";
 import { TablesPanel } from "../src/ui/TablesPanel";
 import { welcome } from "./messages";
 
-afterEach(cleanup);
+beforeEach(() => {
+  HTMLElement.prototype.scrollTo = vi.fn();
+});
+afterEach(() => {
+  cleanup();
+  Reflect.deleteProperty(HTMLElement.prototype, "scrollTo");
+});
 
 it("keeps the current user and friends first without moving away users out of alphabetical order", () => {
   const store = createLobbyStore();
@@ -166,5 +179,61 @@ it("uses saved timer preferences when editing an untimed table rather than its u
   expect(setting).not.toHaveBeenCalledWith(
     "createTableTimeBaseMinutes",
     expect.anything(),
+  );
+});
+
+it("waits for updated table options before reopening the editor by button or keyboard", () => {
+  const store = createLobbyStore();
+  store.dispatch(actions.received({ command: "welcome", data: welcome() }));
+  const event = decodeEvent(
+    `game ${JSON.stringify({
+      tableID: 7,
+      name: "Waiting for options",
+      owner: 1,
+      maxPlayers: 4,
+      passwordProtected: false,
+      players: [],
+      options: { ...options.parse({}), numPlayers: 0 },
+    })}`,
+  );
+  if (event?.command !== "game") {
+    throw new Error("Missing pregame event");
+  }
+  store.dispatch(actions.received(event));
+  const connection = new LobbyConnection(store, vi.fn());
+  vi.spyOn(connection, "send").mockImplementation((command) => {
+    store.dispatch(actions.requestSent(command));
+    return true;
+  });
+  vi.spyOn(connection, "setting").mockReturnValue(true);
+  render(
+    <Provider store={store}>
+      <MemoryRouter initialEntries={["/table/7"]}>
+        <App connection={connection} />
+      </MemoryRouter>
+    </Provider>,
+  );
+  const edit = screen.getByRole("button", { name: "Table options" });
+  fireEvent.click(edit);
+  fireEvent.change(screen.getByLabelText("Maximum players"), {
+    target: { value: "2" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Update table" }));
+  expect(edit.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(edit);
+  fireEvent.keyDown(document.body, { code: "KeyC", altKey: true });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "game",
+        data: { ...event.data, maxPlayers: 2 },
+      }),
+    );
+  });
+  expect(edit.hasAttribute("disabled")).toBe(false);
+  fireEvent.keyDown(document.body, { code: "KeyC", altKey: true });
+  expect(screen.getByLabelText("Maximum players").getAttribute("value")).toBe(
+    "2",
   );
 });

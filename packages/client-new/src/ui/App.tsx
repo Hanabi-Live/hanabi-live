@@ -266,7 +266,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
           }
 
           case "KeyC": {
-            if (table) {
+            if (table && state.pending === null) {
               setDialog("edit");
             }
             break;
@@ -332,6 +332,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
     state.tableID,
     state.tables,
     state.pregame,
+    state.pending,
     state.welcome,
     pathname,
     connection,
