@@ -12,6 +12,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 git bzi
 WORKDIR /root/hanabi-live
 COPY rust-toolchain.toml ./
 RUN rustup target add x86_64-unknown-linux-musl
+COPY .cargo .cargo
+COPY server/Cargo.toml server/Cargo.lock server/
+COPY server/engine/Cargo.toml server/engine/Cargo.toml
+COPY server/protocol/Cargo.toml server/protocol/Cargo.toml
+# Compile external dependencies without source or Git metadata. Remove local
+# placeholder artifacts so the release build cannot reuse a dummy binary.
+RUN mkdir -p server/src server/engine/src server/protocol/src \
+  && printf 'fn main() {}\n' > server/src/main.rs \
+  && touch server/src/lib.rs server/engine/src/lib.rs server/protocol/src/lib.rs \
+  && cd server \
+  && cargo build --release --locked --target x86_64-unknown-linux-musl \
+  && cargo clean --release --target x86_64-unknown-linux-musl \
+    -p hanabi-live -p hanabi_engine -p hanabi_protocol \
+  && rm src/main.rs src/lib.rs engine/src/lib.rs protocol/src/lib.rs
 COPY package.json bun.lock bunfig.toml tsconfig.json tsconfig.monorepo.json LICENSE ./
 COPY packages/client/package.json packages/client/package.json
 COPY packages/client-new/package.json packages/client-new/package.json
@@ -28,7 +42,6 @@ COPY packages packages
 COPY scripts scripts
 COPY public public
 COPY server server
-COPY .cargo .cargo
 COPY install install
 COPY misc misc
 # Full history is needed only in the build stage for the client cache version.
