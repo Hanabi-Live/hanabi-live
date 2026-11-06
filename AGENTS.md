@@ -62,6 +62,18 @@ The production server is `root@hanab.live`, with the repository at
 
 ### Current Rust deployment
 
+For the current source-layout Rust installation, `./deploy_rust.sh --check`
+downloads and verifies the approved release for current `main` without
+deploying. Run `./deploy_rust.sh` to publish and gracefully restart; reviewed
+pending migrations require `--apply-migrations`. It requires an
+artifact-readable `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+,
+Git, and PostgreSQL client tools, not Node, Bun, Cargo, or the GitHub CLI. It
+fast-forwards the clean checkout without dependency-install hooks and retains
+deployment records and overwritten-file backups in `backups/deploy-rust-*`.
+These file backups do not replace coordinated PostgreSQL/Redis backups. Never
+automatically roll back an interrupted deployment; inspect its recorded phase
+and recovery state first.
+
 Production now runs the native Rust binary at `~/hanabi-live/hanabi-live`. Use a
 successful CI Rust release with its paired client assets, verify it with
 `/opt/hanabi-python/bin/python3` and the bundled `install/release.py`, and run

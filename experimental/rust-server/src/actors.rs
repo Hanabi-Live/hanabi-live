@@ -31,7 +31,7 @@ mod replay_helpers;
 mod tests;
 type Reply = oneshot::Sender<Result<()>>;
 
-const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(30);
+const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 
 #[derive(Serialize)]
 struct GameActionMessage<'a> {

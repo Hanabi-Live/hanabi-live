@@ -324,6 +324,7 @@
     "pidfile",
     "pids",
     "pingable",
+    "pipefail",
     "playerinfo",
     "prefault",
     "PMID",

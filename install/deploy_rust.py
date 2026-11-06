@@ -1,0 +1,334 @@
+"""Deploy approved Rust CI bundles to an already-running source-layout installation."""
+
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+import zipfile
+
+import release
+
+
+REPOSITORY = "Hanabi-Live/hanabi-live"
+API = f"https://api.github.com/repos/{REPOSITORY}"
+RESERVE_BYTES = 256 * 1024 * 1024
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def command(root, *arguments):
+    return subprocess.check_output(arguments, cwd=root, text=True).strip()
+
+
+class SafeRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, new_url):
+        require(urllib.parse.urlsplit(new_url).scheme == "https", "Insecure artifact redirect")
+        redirected = super().redirect_request(request, fp, code, message, headers, new_url)
+        if urllib.parse.urlsplit(new_url).netloc != urllib.parse.urlsplit(request.full_url).netloc:
+            redirected.remove_header("Authorization")
+        return redirected
+
+
+class GitHub:
+    def __init__(self):
+        token = next((os.environ[key] for key in (
+            "GH_TOKEN", "GITHUB_TOKEN_PERSONAL_CLASSIC", "GITHUB_TOKEN"
+        ) if os.environ.get(key)), None)
+        require(token, "Set GH_TOKEN or GITHUB_TOKEN_PERSONAL_CLASSIC to download CI artifacts.")
+        self.headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        self.opener = urllib.request.build_opener(SafeRedirect())
+
+    def open(self, path):
+        request = urllib.request.Request(API + path, headers=self.headers)
+        return self.opener.open(request, timeout=120)
+
+    def json(self, path):
+        with self.open(path) as response:
+            return json.load(response)
+
+
+def approved_run(runs, revision):
+    for run in runs:
+        if (
+            run["head_sha"] == revision
+            and run["head_branch"] == "main"
+            and run["event"] == "push"
+            and run["status"] == "completed"
+            and run["conclusion"] == "success"
+            and run["path"] == ".github/workflows/ci.yml"
+            and run["head_repository"]["full_name"] == REPOSITORY
+        ):
+            return run
+    raise ValueError("Current main has no successful CI run. Wait for CI; no older release was selected.")
+
+
+def download(github, run, revision, work):
+    name = f"hanabi-live-rust-{revision}-linux-amd64"
+    artifacts = github.json(f"/actions/runs/{run['id']}/artifacts?per_page=100")
+    matches = [item for item in artifacts["artifacts"] if item["name"] == name and not item["expired"]]
+    require(len(matches) == 1, "The approved Rust release artifact is missing or ambiguous.")
+    artifact = matches[0]
+    require(shutil.disk_usage(work).free > artifact["size_in_bytes"] * 4 + RESERVE_BYTES,
+            "Insufficient disk headroom for staging and backups.")
+    archive = work / f"{name}.tar.gz"
+    checksum_file = archive.name + ".sha256"
+    zip_path = work / "artifact.zip"
+    with github.open(f"/actions/artifacts/{artifact['id']}/zip") as response, zip_path.open("wb") as output:
+        shutil.copyfileobj(response, output)
+    with zipfile.ZipFile(zip_path) as bundle:
+        require(sorted(bundle.namelist()) == sorted([archive.name, checksum_file]),
+                "Unexpected release artifact contents.")
+        require(sum(info.file_size for info in bundle.infolist()) + RESERVE_BYTES
+                < shutil.disk_usage(work).free, "Insufficient disk space to unpack the artifact.")
+        checksum = bundle.read(checksum_file).decode().split()
+        require(len(checksum) == 2 and re.fullmatch(r"[a-f0-9]{64}", checksum[0])
+                and checksum[1] == archive.name, "Invalid release checksum file.")
+        with bundle.open(archive.name) as source, archive.open("wb") as output:
+            shutil.copyfileobj(source, output)
+    store = work / "staging"
+    release.init_root(str(store))
+    release.stage(store, archive, checksum[0])
+    staged = store / "releases" / f"{revision}-rust"
+    metadata = release.verify(staged)
+    require(metadata.get("runtime") == "rust" and metadata["revision"] == revision
+            and metadata.get("dirty") is False, "Release identity or clean-build provenance differs.")
+    require(re.fullmatch(
+        re.escape(f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}/attempts/") + r"[1-9][0-9]*",
+        metadata.get("workflowRun", ""),
+    ), "Release was built by a different workflow run.")
+    return staged, metadata
+
+
+def control(port, path):
+    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=30) as response:
+        text = response.read().decode()
+    return json.loads(text) if path == "/metrics" else text.strip()
+
+
+def healthy(metrics):
+    recovery = metrics["recovery"]
+    return (
+        metrics["draining"] is False
+        and recovery["storageInitialized"] is True
+        and recovery["stateHealthy"] is True
+        and recovery["frozenTables"] == 0
+        and recovery["pendingTransactions"] == 0
+    )
+
+
+def runtime_files(metadata):
+    prefixes = ("public/", "misc/", "server/src/views/", "packages/game/src/json/",
+                "packages/data/src/json/")
+    names = [name for name in metadata["files"]
+             if name == "hanabi-live" or name.startswith(prefixes)]
+    versions = ["public/js/bundles/git_revision.txt", "public/js/bundles/version.txt"]
+    supporting = sorted(name for name in names if name not in versions
+                        and name != "hanabi-live" and not name.endswith(".html"))
+    html = sorted(name for name in names if name.endswith(".html"))
+    return supporting + ["hanabi-live"] + html + versions
+
+
+def safe_target(root, name):
+    require(release.safe_name(name), f"Unsafe publication path: {name}")
+    target = root / name
+    require(target.resolve().is_relative_to(root), f"Publication path escapes installation: {name}")
+    require(not target.is_symlink(), f"Publication target is a symlink: {name}")
+    return target
+
+
+def backup(root, staged, metadata, work):
+    names = runtime_files(metadata)
+    required = RESERVE_BYTES
+    for name in names:
+        target = safe_target(root, name)
+        required += (staged / name).stat().st_size
+        if target.exists():
+            required += target.stat().st_size
+    require(shutil.disk_usage(root).free > required, "Insufficient disk headroom for publication.")
+    destination = work / "previous"
+    destination.mkdir()
+    for name in names:
+        target = safe_target(root, name)
+        if target.exists():
+            saved = destination / name
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target, saved)
+            with saved.open("rb") as stream:
+                os.fsync(stream.fileno())
+    return destination
+
+
+def publish(root, staged, metadata):
+    for name in runtime_files(metadata):
+        source = staged / name
+        require(release.digest(source) == metadata["files"][name], f"Staged file changed: {name}")
+    for name in runtime_files(metadata):
+        target = safe_target(root, name)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        descriptor, temporary = tempfile.mkstemp(prefix=f".{target.name}.", dir=target.parent)
+        os.close(descriptor)
+        temporary = Path(temporary)
+        try:
+            shutil.copy2(staged / name, temporary)
+            with temporary.open("rb") as stream:
+                os.fsync(stream.fileno())
+            os.replace(temporary, target)
+            release.sync_directory(target.parent)
+        finally:
+            temporary.unlink(missing_ok=True)
+
+
+def schema_version(root):
+    value = command(root, "bash", "-c", """
+set -euo pipefail
+source .env
+export PGPASSWORD="$DB_PASSWORD"
+psql -X --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" \
+  --username="$DB_USER" --dbname="$DB_NAME" -v ON_ERROR_STOP=1 -At \
+  -c 'SELECT version FROM public.schema_version'
+""")
+    require(re.fullmatch(r"[0-9]+", value), "Missing or invalid database schema version.")
+    return int(value)
+
+
+def prepare(root, staged):
+    shared = staged.parent.parent / "shared"
+    (shared / ".env").symlink_to(root / ".env")
+    if (root / "letsencrypt").exists():
+        (shared / "letsencrypt").rmdir()
+        (shared / "letsencrypt").symlink_to(root / "letsencrypt", target_is_directory=True)
+    subprocess.run([str(staged / "hanabi-live"), "--check-startup"], cwd=staged, check=True)
+    subprocess.run(["bash", str(staged / "install/migrate.sh"), "status"], check=True)
+    target = max(int(path.name.split("_")[0]) for path in (staged / "install/migrations").glob("*.sql"))
+    current = schema_version(root)
+    require(current <= target, "Database is newer than this release; refusing a schema downgrade.")
+    return current != target
+
+
+def await_restart(port, revision, timeout=180):
+    deadline = time.monotonic() + timeout
+    last = "Waiting for the replacement server"
+    while time.monotonic() < deadline:
+        try:
+            serving = control(port, "/version")
+            if serving == revision and healthy(control(port, "/metrics")):
+                return
+            detail = f"Serving {serving}; target revision and healthy recovery are required"
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+            detail = f"Waiting for restart: {error}"
+        if detail != last:
+            print(detail, flush=True)
+            last = detail
+        time.sleep(2)
+    raise ValueError(f"Restart was not verified within {timeout} seconds. {last}")
+
+
+def deploy(root, check, apply_migrations):
+    require(not (root / "release.json").exists(),
+            "This script is for the running source-layout installation, not the opt-in release store.")
+    require((root / ".env").is_file(), "Missing production .env.")
+    require(not command(root, "git", "status", "--porcelain"), "Source checkout is dirty; preserve and resolve changes first.")
+    port = int(command(root, "bash", "-c", 'set -e; source .env; printf "%s" "${LOCALHOST_PORT:-8081}"'))
+    require(1 <= port <= 65535, "Invalid control port.")
+    running = control(port, "/version")
+    require(re.fullmatch(r"[a-f0-9]{40}", running), "Running server did not identify a Rust revision.")
+    require(command(root, str(root / "hanabi-live"), "--version") == running,
+            "Installed and running binaries differ. Investigate the unfinished deployment first.")
+    require(healthy(control(port, "/metrics")), "Recovery is unhealthy, frozen, or draining; refusing deployment.")
+    github = GitHub()
+    revision = github.json("/commits/main")["sha"]
+    require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid main revision.")
+    runs = github.json(f"/actions/workflows/ci.yml/runs?event=push&branch=main&head_sha={revision}&per_page=100")
+    run = approved_run(runs["workflow_runs"], revision)
+    print(f"Approved main revision {revision}, CI run {run['id']}", flush=True)
+    if running == revision:
+        print("Already serving the approved revision with healthy recovery.")
+        return
+    command(root, "git", "fetch", "--quiet", "origin", revision)
+    subprocess.run(["git", "merge-base", "--is-ancestor", "HEAD", revision], cwd=root, check=True)
+    subprocess.run(["git", "merge-base", "--is-ancestor", running, revision], cwd=root, check=True)
+    backups = root / "backups"
+    backups.mkdir(exist_ok=True)
+    with (backups / ".deploy-rust.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        work = Path(tempfile.mkdtemp(prefix="deploy-rust-", dir=backups))
+        print(f"Deployment records and file backups: {work}", flush=True)
+        journal = work / "deployment.json"
+        record = {"previous": running, "revision": revision, "run": run["id"], "phase": "staging"}
+
+        def phase(value):
+            record["phase"] = value
+            journal.write_text(json.dumps(record, indent=2) + "\n")
+            print(value, flush=True)
+
+        try:
+            staged, metadata = download(github, run, revision, work)
+            require(metadata["commitCount"] > int((root / "public/js/bundles/version.txt").read_text()),
+                    "Client version would not advance; refusing rollback or mismatched installation.")
+            pending = prepare(root, staged)
+            if check:
+                print(f"Preflight passed; pending migrations: {pending}. No deployment or restart performed.")
+                phase("checked")
+                return
+            require(not pending or apply_migrations,
+                    "Pending migrations require review and --apply-migrations. No live files were changed.")
+            require(control(port, "/version") == running and healthy(control(port, "/metrics")),
+                    "Server state changed during staging; refusing publication.")
+            record["checkout"] = command(root, "git", "rev-parse", "HEAD")
+            backup(root, staged, metadata, work)
+            phase("backed-up")
+            if pending:
+                phase("migrating")
+                subprocess.run(["bash", str(staged / "install/migrate.sh"), "apply"], check=True)
+            phase("publishing")
+            # CI supplied built artifacts; post-merge dependency/build hooks must not run on production.
+            subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "merge", "--ff-only", revision],
+                           cwd=root, check=True)
+            publish(root, staged, metadata)
+            subprocess.run([str(root / "hanabi-live"), "--check-startup"], cwd=root, check=True)
+            phase("restarting")
+            require(control(port, "/gracefulRestart") == "success", "Restart request was not acknowledged.")
+            await_restart(port, revision)
+            for name in runtime_files(metadata):
+                require(release.digest(root / name) == metadata["files"][name], f"Published file differs: {name}")
+            phase("verified")
+            print(f"Deployed {revision}; running revision, paired files, and recovery health verified.")
+            print("Verify authenticated browser reconnects and review fresh server logs.")
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile):
+            print(f"Deployment stopped in phase {record['phase']}. Preserve {work}; "
+                  "no automatic rollback, forced restart, or state deletion was attempted.", file=sys.stderr)
+            raise
+
+
+def main():
+    require(sys.version_info >= (3, 12), "Python 3.12+ is required; install /opt/hanabi-python/bin/python3.")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true", help="Download and verify without publication or restart")
+    parser.add_argument("--apply-migrations", action="store_true", help="Approve pending forward migrations")
+    args = parser.parse_args()
+    os.umask(0o077)
+    deploy(Path(__file__).resolve().parent.parent, args.check, args.apply_migrations)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile) as error:
+        sys.exit(f"Rust deployment refused: {error}")
