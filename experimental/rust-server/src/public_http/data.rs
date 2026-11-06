@@ -27,6 +27,7 @@ pub(super) struct Selection {
     pub end: Option<i64>,
     pub tag: Option<String>,
     pub tag_user: Option<i32>,
+    pub page: Option<(i64, i64)>,
 }
 
 pub(super) async fn players(
@@ -222,6 +223,7 @@ fn options(g: &GameRecord) -> Result<Value> {
 
 pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) -> Result<Value> {
     let tag_user = s.tag_user;
+    let page = s.page;
     let mut qb = selected(s);
     qb.push(") SELECT ").push(GAME_COLUMNS);
     // Keep PostgreSQL's existing timestamp text, including fractional-second precision.
@@ -235,6 +237,12 @@ pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) 
     } else {
         "g.datetime_finished DESC,g.id DESC"
     });
+    if let Some((size, offset)) = page {
+        qb.push(" LIMIT ")
+            .push_bind(size)
+            .push(" OFFSET ")
+            .push_bind(offset);
+    }
     let mut result = Vec::new();
     for row in qb
         .build_query_as::<HistoryRow>()

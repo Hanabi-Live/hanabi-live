@@ -69,14 +69,16 @@ export function GameDialog({
   );
   const [minutes, setMinutes] = useState(
     String(
-      game
+      game?.options.timed === true
         ? game.options.timeBase / 60
         : preferences.createTableTimeBaseMinutes,
     ),
   );
   const [seconds, setSeconds] = useState(
     String(
-      game?.options.timePerTurn ?? preferences.createTableTimePerTurnSeconds,
+      game?.options.timed === true
+        ? game.options.timePerTurn
+        : preferences.createTableTimePerTurnSeconds,
     ),
   );
   const [flags, setFlags] = useState<Record<Flag, boolean>>({

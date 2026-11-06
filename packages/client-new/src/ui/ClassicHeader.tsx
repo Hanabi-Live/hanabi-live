@@ -77,7 +77,10 @@ export function ClassicHeader({
                       aria-label="Join game"
                       className="button"
                       disabled={
-                        !online || pending !== null || !tables[game.tableID]
+                        !online
+                        || pending !== null
+                        || !tables[game.tableID]
+                        || game.players.length >= game.maxPlayers
                       }
                       onClick={() => {
                         const table = tables[game.tableID];

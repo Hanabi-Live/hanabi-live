@@ -6,6 +6,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Profiler } from "react";
@@ -185,6 +186,7 @@ it("does not treat a server notice as a previous private correspondent", () => {
       }),
     );
   });
+
   fireEvent.change(screen.getByLabelText("Chat message"), {
     target: { value: "/r Hello" },
   });
@@ -195,4 +197,27 @@ it("does not treat a server notice as a previous private correspondent", () => {
       "There is no previous private message to reply to, or the reply is empty.",
     ),
   ).toBeDefined();
+});
+
+it("renders system messages without exposing an internal sender as a player", () => {
+  const { store } = lobby(vi.fn());
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "chat",
+        data: SERVER_COMMAND_SCHEMAS.chat.parse({
+          who: "__server",
+          source: "server",
+          msg: "The server has started.",
+          datetime: "2026-01-01T00:00:00Z",
+        }),
+      }),
+    );
+  });
+  expect(
+    within(screen.getByRole("log", { name: "lobby messages" })).getByText(
+      "The server has started.",
+    ),
+  ).toBeDefined();
+  expect(screen.queryByText("__server")).toBeNull();
 });

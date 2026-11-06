@@ -28,7 +28,7 @@ export function GameOptionIcons({
     && !options.speedrun
     && optionFlags.every(([key]) => !options[key])
   ) {
-    return "[none]";
+    return null;
   }
   return (
     <>

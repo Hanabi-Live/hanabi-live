@@ -404,6 +404,29 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "2026-01-01T00:00:00.12345+00:00"
     );
     assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00+00:00");
+    for (page, expected) in [(0, vec![1]), (1, vec![2]), (2, vec![])] {
+        let (status, body) = request(
+            app.clone(),
+            &format!("/api/v1/seed-full/same?size=1&page={page}"),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        let games: Vec<Value> = serde_json::from_str(&body).unwrap();
+        assert_eq!(
+            games
+                .iter()
+                .map(|game| game["id"].as_i64().unwrap())
+                .collect::<Vec<_>>(),
+            expected
+        );
+        for game in games {
+            assert_eq!(game["playerNames"].as_array().unwrap().len(), 2);
+            assert!(game["options"]["variantName"].is_string());
+        }
+    }
+    let (status, body) = request(app.clone(), "/api/v1/seed-full/same").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(serde_json::from_str::<Vec<Value>>(&body).unwrap().len(), 2);
     for key in [
         "timed",
         "speedrun",
@@ -506,6 +529,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
             "offset is too large",
         ),
         ("/variant/no", 400, "must be a number"),
+        ("/api/v1/seed-full/same?size=0", 400, "Page size"),
+        ("/api/v1/seed-full/same?size=101", 400, "Page size"),
+        ("/api/v1/seed-full/same?page=-1", 400, "nonnegative"),
+        (
+            "/api/v1/seed-full/same?size=100&page=9223372036854775807",
+            400,
+            "offset",
+        ),
         ("/variant/99999", 400, "not a valid variant"),
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
