@@ -32,6 +32,10 @@ first if detached or on `main` in a linked worktree. Update an existing pull
 request for that branch rather than opening a duplicate. Include only changes
 for the task; do not commit unrelated work.
 
+Use Conventional Commits for commit messages:
+`type(optional-scope): description`, for example
+`fix(client): clear stale spectators` or `docs: update setup instructions`.
+
 ## Before pushing
 
 Use `GITHUB_TOKEN_PERSONAL_CLASSIC` for GitHub CLI authentication:
