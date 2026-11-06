@@ -91,11 +91,7 @@ impl Config {
         );
         let secret = field("SESSION_SECRET", "");
         ensure!(secret.len() >= 128, "Session signing key is too short");
-        let redis_url = field("REDIS_URL", "");
-        ensure!(
-            !redis_url.is_empty(),
-            "Missing REDIS_URL: durable Redis state is required"
-        );
+        let redis_url = field("REDIS_URL", "redis://127.0.0.1:6379");
         let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
         ensure!(
             matches!(redis.scheme(), "redis" | "rediss" | "unix" | "redis+unix"),
@@ -156,6 +152,27 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn redis_defaults_when_missing_or_blank_and_preserves_explicit_endpoint() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        for (configured, expected) in [
+            (None, "redis://127.0.0.1:6379"),
+            (Some(""), "redis://127.0.0.1:6379"),
+            (
+                Some("redis+unix:///run/hanabi-redis/redis.sock"),
+                "redis+unix:///run/hanabi-redis/redis.sock",
+            ),
+        ] {
+            let mut values = HashMap::from([("SESSION_SECRET".into(), "synthetic".repeat(32))]);
+            if let Some(value) = configured {
+                values.insert("REDIS_URL".into(), value.into());
+            }
+            let config = Config::from_values(root.clone(), values).unwrap();
+            assert_eq!(config.redis_url, expected);
+        }
+    }
+
     #[test]
     fn validates_runtime_configuration_without_mutating_environment() {
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

@@ -61,7 +61,7 @@ installs the full schema and records its migration version. Existing databases
 must use `./install/migrate.sh status` and `./install/migrate.sh apply`.
 
 Redis is authoritative live-game storage, not a disposable cache. For local
-development, configure `REDIS_URL=redis://127.0.0.1:6379` and run Redis with:
+development, `REDIS_URL` defaults to `redis://127.0.0.1:6379`; run Redis with:
 
 ```text
 bind 127.0.0.1
