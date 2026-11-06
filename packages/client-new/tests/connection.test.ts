@@ -82,7 +82,7 @@ describe("connection ownership and recovery", () => {
     await connection.checkSession();
     const socket = Socket.instances[0];
     expect(socket?.url).toBe(
-      `ws://localhost/ws?fastResume=1&version=${encodeURIComponent(CLIENT_VERSION)}`,
+      `ws://localhost/ws?version=${encodeURIComponent(CLIENT_VERSION)}`,
     );
     socket?.receive("welcome", welcome());
     socket?.close();

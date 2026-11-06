@@ -277,7 +277,7 @@ mod tests {
     #[tokio::test]
     async fn canonical_redirect_preserves_existing_alias_connections_and_requests() -> Result<()> {
         for request in [
-            Request::builder().uri("/ws?fastResume=1"),
+            Request::builder().uri("/ws?version=42"),
             Request::builder()
                 .method(Method::CONNECT)
                 .uri("https://hanabi.live/ws"),

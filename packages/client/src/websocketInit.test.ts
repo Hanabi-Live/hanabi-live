@@ -152,7 +152,7 @@ describe("initial WebSocket handshake watchdog", () => {
     websocketInit();
     expect(sockets).toHaveLength(1);
     expect(sockets[0]?.url).toBe(
-      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+      `wss://localhost/ws?version=${encodeURIComponent(VERSION)}`,
     );
 
     await clock.tickAsync(14_999);
@@ -162,7 +162,7 @@ describe("initial WebSocket handshake watchdog", () => {
     expect(sockets[0]?.closed).toBe(true);
     expect(sockets).toHaveLength(2);
     expect(sockets[1]?.url).toBe(
-      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+      `wss://localhost/ws?version=${encodeURIComponent(VERSION)}`,
     );
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
@@ -198,7 +198,7 @@ describe("initial WebSocket handshake watchdog", () => {
     expect(request).toHaveBeenCalledTimes(2);
     expect(sockets).toHaveLength(2);
     expect(sockets[1]?.url).toBe(
-      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+      `wss://localhost/ws?version=${encodeURIComponent(VERSION)}`,
     );
   });
 
