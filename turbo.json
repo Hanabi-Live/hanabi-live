@@ -1,0 +1,27 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "cacheDir": ".turbo/cache",
+  "globalDependencies": [
+    ".gitignore",
+    "bunfig.toml",
+    "eslint.config.mjs",
+    "patches/**",
+    "tsconfig*.json"
+  ],
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "@hanabi-live/game#transit": {
+      "dependsOn": ["^transit"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/server/testdata/compatibility/*.json"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    }
+  }
+}

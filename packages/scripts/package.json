@@ -1,6 +1,9 @@
 {
   "name": "@hanabi-live/scripts",
   "private": true,
+  "scripts": {
+    "lint": "bash ./lint.sh"
+  },
   "dependencies": {
     "@hanabi-live/game": "workspace:*",
     "complete-common": "catalog:",

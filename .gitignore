@@ -27,6 +27,7 @@ motd.txt*
 /server/**/target
 /server/__pycache__
 /maintenance/__pycache__
+/scripts/__pycache__
 hanabi-live.next
 /backups
 /letsencrypt
@@ -124,6 +125,9 @@ web_modules/
 
 # Optional eslint cache
 .eslintcache
+
+# Package lint cache and task logs
+.turbo/
 
 # Optional stylelint cache
 .stylelintcache

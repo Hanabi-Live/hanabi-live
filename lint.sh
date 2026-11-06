@@ -43,12 +43,12 @@ run_parallel() {
   fi
 }
 
-run_parallel 2 bash "$DIR/packages/client/lint.sh"
-run_parallel 1 bash "$DIR/packages/client-new/lint.sh"
-run_parallel 2 bash "$DIR/packages/data/lint.sh"
-run_parallel 2 bash "$DIR/packages/game/lint.sh"
-run_parallel 2 bash "$DIR/packages/scripts/lint.sh"
-run_parallel 1 bash "$DIR/packages/testing/lint.sh"
+lint_filters=()
+case "$shard" in
+  1) lint_filters=(--filter=@hanabi-live/client-new --filter=@hanabi-live/testing) ;;
+  2) lint_filters=(--filter=@hanabi-live/client --filter=@hanabi-live/data --filter=@hanabi-live/game --filter=@hanabi-live/scripts) ;;
+esac
+run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
 run_parallel 1 bunx --bun --no-install prettier --log-level=warn --check .
 run_parallel 2 bash "$DIR/check_spelling.sh"
 run_parallel 1 bash "$DIR/check_shellcheck.sh"
