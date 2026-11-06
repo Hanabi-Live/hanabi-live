@@ -185,5 +185,5 @@ exercise real client messages, recovery, clock allowances, session replacement,
 and storage failures. Rust's type system alone is not a proof of correct
 concurrency.
 
-See [the evaluation methodology](../docs/server-evaluation.md). The RNG port
-retains the existing [Go license](../packages/data/src/json/goRandom.LICENSE).
+The RNG port retains the existing
+[Go license](../packages/data/src/json/goRandom.LICENSE).
