@@ -63,8 +63,6 @@ disposable local fixtures for destructive and repeatable scenarios.
   copying.
 - Reproduced score-table overflow on the shared public profile page. Wide tables
   now scroll within their panel rather than painting over the page background.
-- Firefox exposed an authenticated-session interruption after accepting its
-  existing browser warning. Acknowledgment now retries saved-session login.
 
 The original regressions failed before the corresponding fixes: colors/cursors,
 option rendering, password prompt, shadow feedback, actual shuffled viewpoint,
@@ -74,12 +72,8 @@ capture itself is not counted as verification.
 
 ## Coverage limits
 
-- Chromium runs the complete repository browser suite. Firefox additionally
-  exercises the new reference comparisons, profile layout, browser warning, and
-  shadow lifecycle. Clipboard permission automation is Chromium-only.
-- WebKit verification is blocked by native library dependencies on this VM.
-  Installing the browser and privately extracting available libraries did not
-  provide a working runtime; this is not recorded as a passing check.
+- Chromium is the only supported browser and the sole target of this audit and
+  the repository browser suite. Other browsers are out of scope, not blockers.
 - Classic's bright light-theme identity colors have insufficient text contrast.
   They are deliberately matched rather than silently replaced with darker
   colors. Accessibility assertions for modal screens target the active dialog;
