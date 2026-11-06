@@ -3,6 +3,7 @@
 
 import {
   SERVER_COMMAND_SCHEMAS,
+  VERSION,
   httpError,
   tableID as tableIDSchema,
 } from "@hanabi-live/data";
@@ -195,7 +196,7 @@ function reconnectAfterTimeout(conn: Connection) {
 }
 
 function openConnection(isReconnect: boolean) {
-  const url = `${websocketURL}?fastResume=1`;
+  const url = `${websocketURL}?fastResume=1&version=${encodeURIComponent(VERSION)}`;
   const conn = new Connection(url, true);
   conn.setReady(!isReconnect);
   clearConnectTimer();

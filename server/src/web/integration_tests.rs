@@ -66,7 +66,7 @@ async fn websocket_handshake_database_failure_has_a_diagnostic_response_postgres
     };
     let cookie = login(&fixture, "HandshakeError").await;
     fixture.app.store.primary.close().await;
-    let mut request = format!("ws://{}/ws", fixture.address)
+    let mut request = format!("ws://{}/ws?version=42", fixture.address)
         .into_client_request()
         .unwrap();
     request
@@ -110,13 +110,22 @@ async fn login(fixture: &test_support::Fixture, name: &str) -> String {
 }
 
 async fn connect(fixture: &test_support::Fixture, cookie: &str, reconnect: bool) -> Socket {
-    let mut request = format!(
-        "ws://{}/ws{}",
-        fixture.address,
-        if reconnect { "?reconnect=1" } else { "" }
+    connect_query(
+        fixture,
+        cookie,
+        if reconnect {
+            "version=42&reconnect=1"
+        } else {
+            "version=42"
+        },
     )
-    .into_client_request()
-    .unwrap();
+    .await
+}
+
+async fn connect_query(fixture: &test_support::Fixture, cookie: &str, query: &str) -> Socket {
+    let mut request = format!("ws://{}/ws?{query}", fixture.address)
+        .into_client_request()
+        .unwrap();
     request
         .headers_mut()
         .insert(header::COOKIE, HeaderValue::from_str(cookie).unwrap());
@@ -124,6 +133,48 @@ async fn connect(fixture: &test_support::Fixture, cookie: &str, reconnect: bool)
         .headers_mut()
         .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
     connect_async(request).await.unwrap().0
+}
+
+#[tokio::test]
+async fn websocket_checks_client_version_with_existing_cookie_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "ClientVersion").await;
+    for query in [
+        "",
+        "version=",
+        "version=41",
+        "version=41&fastResume=1",
+        "version=41&reconnect=1",
+    ] {
+        let mut socket = connect_query(&fixture, &cookie, query).await;
+        tokio::time::timeout(Duration::from_secs(5), async {
+            let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
+                panic!("Expected version error before any bootstrap messages");
+            };
+            let body = text.strip_prefix("error ").unwrap();
+            let payload: Value = serde_json::from_str(body).unwrap();
+            assert!(payload["error"].as_str().unwrap().contains("hard-refresh"));
+            assert!(matches!(
+                socket.next().await.unwrap().unwrap(),
+                WireMessage::Close(_)
+            ));
+        })
+        .await
+        .unwrap();
+    }
+    for query in [
+        "version=42",
+        "version=42&fastResume=1",
+        "version=42&reconnect=1",
+        "version=bot",
+    ] {
+        let mut socket = connect_query(&fixture, &cookie, query).await;
+        receive(&mut socket, "welcome").await;
+        socket.close(None).await.unwrap();
+    }
+    fixture.close().await;
 }
 
 async fn receive(socket: &mut Socket, command: &str) -> Value {
