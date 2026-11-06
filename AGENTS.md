@@ -14,6 +14,14 @@ documentation only for essential instructions, significant decisions, or
 non-obvious constraints. Keep it concise and relevant to the document's purpose;
 do not put unrelated operational details in installation instructions.
 
+## Browser testing
+
+When authenticated browser checks need test accounts, use the existing shared
+accounts: `test` / `test`, `test2` / `test2`, and so on (username / password).
+Choose an account that is not already in use. Do not change these accounts'
+passwords or delete them during cleanup. Keep test interactions confined to test
+accounts and their own tables.
+
 ## Before pushing
 
 Use `GITHUB_TOKEN_PERSONAL_CLASSIC` for GitHub CLI authentication:
