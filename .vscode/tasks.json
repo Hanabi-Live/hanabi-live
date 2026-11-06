@@ -9,7 +9,7 @@
     {
       "label": "Hanabi Client",
       "type": "shell",
-      "command": "./packages/client/esbuild_dev.sh",
+      "command": "./packages/client/esbuild-dev.sh",
       "presentation": {
         "reveal": "always",
         "panel": "new",

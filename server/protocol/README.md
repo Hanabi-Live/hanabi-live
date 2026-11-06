@@ -19,14 +19,14 @@ interfaces remain available through `@hanabi-live/data`.
 1. From the repository root, run:
 
    ```sh
-   bash scripts/bash/generate_protocol.sh
+   bash scripts/bash/generate-protocol.sh
    ```
 
 1. Commit `packages/data/src/generated/protocol.ts` with the source changes.
 
 Ordinary client builds use the committed output and do not need Rust. Generation
 builds only this small crate and formats one file. Full lint and CI's second
-lint shard run `generate_protocol.sh --check`. The crate shares the server's
+lint shard run `generate-protocol.sh --check`. The crate shares the server's
 Cargo workspace, lockfile, and dependency cache, so generation and runtime use
 the same schema-library versions. Neither generation nor these contract tests
 needs PostgreSQL or Redis.

@@ -1,4 +1,4 @@
-// Generated from server/protocol. Run bash scripts/bash/generate_protocol.sh.
+// Generated from server/protocol. Run bash scripts/bash/generate-protocol.sh.
 import { z } from "zod";
 
 const chatSourceSchema = z.enum(["user", "server", "discord"]);

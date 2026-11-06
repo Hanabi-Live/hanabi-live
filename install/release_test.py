@@ -31,7 +31,7 @@ class ReleaseTest(unittest.TestCase):
             "hanabi-live": f"#!/bin/sh\necho {self.revision}\n",
             "install/tern": "#!/bin/sh\nexit 0\n",
             "install/migrate.sh": "#!/bin/sh\nexit 0\n",
-            "install/migration_files.sh": "# migration helper\n",
+            "install/migration-files.sh": "# migration helper\n",
             "packages/data/src/json/chatReplyCommands.json": "[]\n",
             "public/js/bundles/version.txt": "10\n",
             "public/js/bundles/git_revision.txt": self.revision + "\n",
@@ -82,6 +82,19 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
             release.stage(self.root, self.archive, "0" * 64)
         self.assertEqual(list((self.root / "releases").iterdir()), [])
+
+    def test_existing_release_with_underscore_migration_helper_remains_verifiable(self):
+        helper = self.artifact / "install/migration-files.sh"
+        previous = helper.with_name("migration_files.sh")
+        helper.rename(previous)
+        self.metadata["files"] = release.files_in(self.artifact)
+        self.write_manifest()
+        self.pack()
+        self.stage()
+        release.verify(self.root / "releases" / self.release_name)
+        previous.write_text("changed after verification\n")
+        with self.assertRaisesRegex(ValueError, "checksums"):
+            release.verify(self.artifact)
 
     def test_go_bundles_cannot_be_staged_or_activated(self):
         self.metadata["runtime"] = "go"
@@ -207,7 +220,7 @@ class ReleaseTest(unittest.TestCase):
     def test_missing_release_metadata_never_falls_back_to_compilation(self):
         (self.artifact / "release.json").unlink()
         (self.artifact / ".env").write_text("DB_NAME=release_test\n")
-        for name in ("migrate.sh", "migration_files.sh"):
+        for name in ("migrate.sh", "migration-files.sh"):
             shutil.copyfile(Path("install") / name, self.artifact / "install" / name)
         migrations = self.artifact / "install/migrations"
         migrations.mkdir()

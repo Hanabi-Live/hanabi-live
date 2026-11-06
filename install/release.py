@@ -137,13 +137,16 @@ def verify(directory):
         "hanabi-live",
         "install/tern",
         "install/migrate.sh",
-        "install/migration_files.sh",
         "public/js/bundles/version.txt",
         "public/js/bundles/git_revision.txt",
         f"public/js/bundles/main.{metadata['clientVersion']}.min.js",
         f"public/css/main.{metadata['clientVersion']}.min.css",
     ):
         require(name in expected, f"Missing required file: {name}")
+    require(
+        "install/migration-files.sh" in expected or "install/migration_files.sh" in expected,
+        "Missing required file: install/migration-files.sh",
+    )
     # Previously published immutable releases retain the old asset layout.
     require(
         "packages/data/src/json/chatReplyCommands.json" in expected

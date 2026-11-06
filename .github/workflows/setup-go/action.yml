@@ -24,6 +24,6 @@ runs:
         path: |
           ${{ steps.paths.outputs.build }}
           ${{ steps.paths.outputs.modules }}
-        key: go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-${{ hashFiles('install/migration_files.sh', '.github/workflows/setup-go/action.yml') }}
+        key: go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-${{ hashFiles('install/migration-files.sh', '.github/workflows/setup-go/action.yml') }}
         restore-keys: |
           go-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.paths.outputs.image }}-${{ steps.go.outputs.go-version }}-${{ github.job }}-${{ inputs.cache-key }}-

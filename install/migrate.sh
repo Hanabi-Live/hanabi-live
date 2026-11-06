@@ -3,8 +3,7 @@
 set -euo pipefail
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-# shellcheck source=./install/migration_files.sh
-source "$DIR/migration_files.sh"
+source "$DIR/migration-files.sh"
 
 if (($# > 1)); then
   echo "Usage: $0 [status|apply]" >&2

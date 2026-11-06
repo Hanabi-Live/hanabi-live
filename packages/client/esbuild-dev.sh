@@ -8,7 +8,7 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd "$DIR"
 
-# We copy the esbuild commands from "build_client.sh" and add the "--watch" flag.
+# We copy the esbuild commands from "build-client.sh" and add the "--watch" flag.
 REPO_ROOT="$DIR/../.."
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 # Unlike when in production, we do not append the version number to the bundle. This is because the

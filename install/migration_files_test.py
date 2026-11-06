@@ -11,7 +11,7 @@ class MigrationFilesTest(unittest.TestCase):
                 (Path(directory) / name).write_text(contents)
             return subprocess.run(
                 ["bash", "-c", 'source "$1"; get_migration_version "$2"', "--",
-                 str(Path(__file__).with_name("migration_files.sh")), directory],
+                 str(Path(__file__).with_name("migration-files.sh")), directory],
                 capture_output=True, text=True, timeout=10,
             )
 

@@ -122,7 +122,7 @@ pub fn verify(root: &Path) -> Result<()> {
         "hanabi-live",
         "install/tern",
         "install/migrate.sh",
-        "install/migration_files.sh",
+        "install/migration-files.sh",
         "public/js/bundles/version.txt",
         "public/js/bundles/git_revision.txt",
     ] {

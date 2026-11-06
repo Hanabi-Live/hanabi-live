@@ -16,7 +16,7 @@ JS_BUNDLE_MAP_PATH="$JS_BUNDLE_PATH.map"
 
 if [[ ! -f $JS_BUNDLE_MAP_PATH ]]; then
   echo "The JavaScript bundle map does not exist at: $JS_BUNDLE_MAP_PATH"
-  echo "Try running the \"build_client.sh\" script."
+  echo "Try running the \"build-client.sh\" script."
   exit 1
 fi
 

@@ -15,7 +15,7 @@ trap cleanup EXIT
 
 bash ./run.sh &
 pids+=("$!")
-bash ./packages/client/esbuild_dev.sh &
+bash ./packages/client/esbuild-dev.sh &
 pids+=("$!")
 
 wait "${pids[@]}"

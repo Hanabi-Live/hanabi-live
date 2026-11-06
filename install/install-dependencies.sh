@@ -22,9 +22,9 @@ if ! command -v bun > /dev/null; then
   exit 1
 fi
 bun install --frozen-lockfile
-bash "$REPO_ROOT/packages/client/build_client.sh"
+bash "$REPO_ROOT/packages/client/build-client.sh"
 
 # Build the native server using its pinned Rust toolchain.
-bash "$REPO_ROOT/server/build_server.sh"
+bash "$REPO_ROOT/server/build-server.sh"
 
 echo "Successfully installed dependencies."

@@ -45,7 +45,7 @@ COPY server server
 COPY install install
 # Full history is needed only in the build stage for the client cache version.
 COPY .git .git
-RUN bash install/build_release.sh /root/artifact
+RUN bash install/build-release.sh /root/artifact
 
 FROM alpine
 RUN apk add --no-cache ca-certificates bash

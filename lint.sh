@@ -29,7 +29,7 @@ esac
 
 cd "$DIR"
 
-bash "$DIR/packages/client/set_version.sh"
+bash "$DIR/packages/client/set-version.sh"
 
 # Run each linting task as a background job so that we can use parallel processing to get everything
 # done fast.
@@ -50,9 +50,9 @@ run_parallel 2 bash "$DIR/packages/game/lint.sh"
 run_parallel 2 bash "$DIR/packages/scripts/lint.sh"
 run_parallel 1 bash "$DIR/packages/testing/lint.sh"
 run_parallel 1 bunx --bun --no-install prettier --log-level=warn --check .
-run_parallel 2 bash "$DIR/check_spelling.sh"
-run_parallel 1 bash "$DIR/check_shellcheck.sh"
-run_parallel 1 bash "$DIR/check_templates.sh"
+run_parallel 2 bash "$DIR/check-spelling.sh"
+run_parallel 1 bash "$DIR/check-shellcheck.sh"
+run_parallel 1 bash "$DIR/check-templates.sh"
 run_parallel 2 bun run check-variant-files
 run_parallel 1 bun run lint-package-json
 
@@ -64,7 +64,7 @@ done
 # Keep native compiler checks out of the parallel JavaScript batch to limit peak memory in CI.
 if [[ $shard != 1 ]]; then
   echo "Checking generated wire contracts."
-  bash "$DIR/scripts/bash/generate_protocol.sh" --check || status=1
+  bash "$DIR/scripts/bash/generate-protocol.sh" --check || status=1
 
   cd "$DIR/server"
   echo "Checking Rust formatting and static analysis."

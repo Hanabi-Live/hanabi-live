@@ -27,7 +27,7 @@ class BackupTest(unittest.TestCase):
                     backups = root / "backups"
                     binaries.mkdir(parents=True)
                     backups.mkdir()
-                    shutil.copyfile(ROOT / "database_backup.sh", root / "database_backup.sh")
+                    shutil.copyfile(ROOT / "database-backup.sh", root / "database-backup.sh")
                     (root / ".env").write_text(
                         "DB_HOST=localhost\nDB_PORT=5432\nDB_USER=fixture\nDB_PASSWORD=fixture\n"
                         "DB_NAME=fixture\nGOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME=\n"
@@ -54,7 +54,7 @@ class BackupTest(unittest.TestCase):
                     previous.write_text("previous completed backup")
                     (backups / "unrelated.txt").write_text("do not remove")
                     result = subprocess.run(
-                        ["bash", "database_backup.sh"], cwd=root,
+                        ["bash", "database-backup.sh"], cwd=root,
                         env=dict(os.environ, PATH=str(binaries) + os.pathsep + os.environ["PATH"]),
                         capture_output=True, timeout=10,
                     )

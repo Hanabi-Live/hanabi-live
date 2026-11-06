@@ -15,7 +15,7 @@ class AdminCommandsTest(unittest.TestCase):
         (self.root / "admin").mkdir()
         source = Path(__file__).resolve().parent.parent
         for name in ("admin/common.sh", "admin/gracefulRestart.sh", "admin/gracefulStop.sh",
-                     "restart_service_only.sh"):
+                     "restart-service-only.sh"):
             (self.root / name).write_text((source / name).read_text())
         self.requests = []
         requests = self.requests
@@ -90,7 +90,7 @@ class AdminCommandsTest(unittest.TestCase):
         for script, endpoint in (
             ("admin/gracefulRestart.sh", "/gracefulRestart"),
             ("admin/gracefulStop.sh", "/gracefulStop"),
-            ("restart_service_only.sh", "/gracefulRestart"),
+            ("restart-service-only.sh", "/gracefulRestart"),
         ):
             for status in (200, 503):
                 with self.subTest(script=script, status=status):

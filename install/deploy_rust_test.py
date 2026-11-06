@@ -40,7 +40,7 @@ class DeployWrapperTest(unittest.TestCase):
         }
         for key in ("GH_TOKEN", "GITHUB_TOKEN_PERSONAL_CLASSIC", "GITHUB_TOKEN"):
             self.environment.pop(key, None)
-        self.script = Path(__file__).resolve().parent.parent / "deploy_rust.sh"
+        self.script = Path(__file__).resolve().parent.parent / "deploy-rust.sh"
 
     def run_wrapper(self, *arguments):
         return subprocess.run(
@@ -60,7 +60,7 @@ class DeployWrapperTest(unittest.TestCase):
                 remote = self.input.read_text()
                 self.assertIn("cd /root/hanabi-live", remote)
                 self.assertIn('exec "$python" install/deploy_rust.py "$@"', remote)
-                self.assertNotIn("./deploy_rust.sh", remote)
+                self.assertNotIn("./deploy-rust.sh", remote)
                 self.assertIn("root@hanab.live:/root/hanabi-live", result.stdout)
                 self.assertIn("remote output", result.stdout)
                 self.assertIn("remote error", result.stderr)

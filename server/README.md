@@ -97,7 +97,7 @@ To build locally on Linux amd64, install `musl-tools`, add Rust's
 `x86_64-unknown-linux-musl` target, and run:
 
 ```sh
-bash install/build_release.sh dist/rust-release
+bash install/build-release.sh dist/rust-release
 ```
 
 Use the checksum-verified release installer. Existing artifact names and the

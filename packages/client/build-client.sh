@@ -26,10 +26,10 @@ fi
 
 # Get the "VERSION" environment variable.
 # shellcheck disable=SC1091
-source "$DIR/get_version.sh"
+source "$DIR/get-version.sh"
 
 # Prepare the "version.js" file.
-bash "$DIR/set_version.sh"
+bash "$DIR/set-version.sh"
 
 if ! command -v bun > /dev/null; then
   export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
@@ -51,7 +51,7 @@ bunx --bun --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDL
 # Also produce the unversioned bundle name that the server serves in dev mode. (Normally it is
 # only created by the esbuild watch script, but the Docker image runs in dev mode.)
 cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
-bash "$REPO_ROOT/scripts/bash/build_pips_reference.sh"
+bash "$REPO_ROOT/scripts/bash/build-pips-reference.sh"
 echo
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
@@ -102,4 +102,4 @@ cd "$DIR"
 
 echo "Client version $VERSION successfully built in $SECONDS seconds."
 
-bash "$REPO_ROOT/packages/client-new/build_client.sh"
+bash "$REPO_ROOT/packages/client-new/build-client.sh"

@@ -6,10 +6,6 @@ set -euo pipefail # Exit on errors and undefined variables.
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# shellcheck disable=SC1091
-source "$DIR/get_version.sh"
+cd "$DIR"
 
-VERSION_PATH="$REPO_ROOT/packages/data/src/version.js"
-echo "// @ts-nocheck" > "$VERSION_PATH"
-echo >> "$VERSION_PATH"
-echo "module.exports = { VERSION: \"$VERSION\" };" >> "$VERSION_PATH"
+find . \( -name ".husky" -o -name "node_modules" -o -path "./dist" \) -prune -o -type f -name "*.sh" -exec shellcheck {} +

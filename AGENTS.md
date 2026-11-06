@@ -94,7 +94,7 @@ for source installations and release bundles.
 
 Migrated public payloads are owned by `server/protocol`, without database,
 actor, or game-engine dependencies. Update the Rust DTOs and shared
-compatibility fixtures, then run `bash scripts/bash/generate_protocol.sh`.
+compatibility fixtures, then run `bash scripts/bash/generate-protocol.sh`.
 Commit the generated TypeScript file; do not edit it by hand. `bash lint.sh`
 checks for generation drift. Keep legacy compatibility differences explicit.
 
@@ -104,10 +104,10 @@ The production server is `root@hanab.live`, with the repository at
 `~/hanabi-live`. The server log is at `~/hanabi-live/logs/hanabi-live.log` (use
 `./get-log.sh` to download it).
 
-Run `./deploy_rust.sh` from your laptop; it always uses SSH to deploy the
+Run `./deploy-rust.sh` from your laptop; it always uses SSH to deploy the
 source-layout installation at `root@hanab.live:/root/hanabi-live`.
-`./deploy_rust.sh --check` downloads and verifies the approved release for
-current `main` without deploying. `./deploy_rust.sh` publishes and gracefully
+`./deploy-rust.sh --check` downloads and verifies the approved release for
+current `main` without deploying. `./deploy-rust.sh` publishes and gracefully
 restarts; reviewed pending migrations require `--apply-migrations`. Both wait up
 to five minutes for `publish_native_release` on the selected `main` revision's
 latest CI run attempt and refuse deployment if publication fails or times out.
@@ -145,14 +145,14 @@ for compatibility with the installed deployment tooling.
 
 Rust loads the client version at startup. A new client version requires a
 graceful restart even if only TypeScript changed. Prepare both clients away from
-live assets using `CI=1 bash packages/client/build_client.sh`; do not run a
+live assets using `CI=1 bash packages/client/build-client.sh`; do not run a
 destructive client build against served assets. Keep prior versioned assets
 available to existing tabs and do not force players out of games to refresh.
 
 Live state is authoritative in `hanabi-redis.service`, using
 `redis+unix:///run/hanabi-redis/redis.sock`, with persistence in
 `/var/lib/hanabi-redis`. Do not delete that data or use the unrelated legacy
-Redis service. `database_backup.sh` backs up PostgreSQL only: recovery also
+Redis service. `database-backup.sh` backs up PostgreSQL only: recovery also
 requires Redis state and cross-store consistency. Keep the Redis endpoint,
 database identity, and namespace stable. A binary rollback cannot convert live
 state to another format.

@@ -10,6 +10,6 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # (If it does not exist, Supervisor will fail to start the service.)
 mkdir -p "$DIR/logs"
 
-bash "$DIR/server/build_server.sh"
+bash "$DIR/server/build-server.sh"
 cd "$DIR"
 exec "$DIR/hanabi-live"

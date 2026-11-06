@@ -68,7 +68,7 @@ This script performs two main actions:
 
 1. **Starts the Rust Server:** Executes `./run.sh`, which builds the native
    binary and starts the server.
-2. **Starts Frontend Watch:** Executes `./packages/client/esbuild_dev.sh`, which
+2. **Starts Frontend Watch:** Executes `./packages/client/esbuild-dev.sh`, which
    watches the TypeScript files in `packages/client/src/` and automatically
    rebuilds the bundle in `public/js/bundles/main.min.js` whenever a change is
    detected.

@@ -14,6 +14,6 @@ for EXTENSION in $EXTENSIONS; do
 done
 
 # The client linter is installed automatically during a "bun install", which happens automatically
-# in the "install_dependencies.sh" script.
+# in the "install-dependencies.sh" script.
 
 echo "Successfully installed development dependencies."

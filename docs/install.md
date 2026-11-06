@@ -56,7 +56,7 @@ choose an unprivileged HTTP port such as `PORT=8080`. `LOCALHOST_PORT` must be
 different. Configure the PostgreSQL host, database, user, and password.
 
 Create a dedicated database owned by the application user. Run
-`./install/install_database_schema.sh` **only for a new, empty database**; it
+`./install/install-database-schema.sh` **only for a new, empty database**; it
 installs the full schema and records its migration version. Existing databases
 must use `./install/migrate.sh status` and `./install/migrate.sh apply`.
 
@@ -82,7 +82,7 @@ cookie domain. It does not expose the separate localhost control listener.
 Build both clients and the server:
 
 ```sh
-./install/install_dependencies.sh
+./install/install-dependencies.sh
 ./run.sh
 ```
 
@@ -128,13 +128,18 @@ Prefer approved, immutable Rust releases. PostgreSQL and Redis must be backed up
 together with cross-store consistency. Preserve the Redis namespace, configured
 database identity, cookies' `SESSION_SECRET`, and live-state data.
 
-Run `./deploy_rust.sh` from your laptop to deploy the existing source-layout
+Run `./deploy-rust.sh` from your laptop to deploy the existing source-layout
 installation over SSH to `root@hanab.live:/root/hanabi-live`. Deployment
 credentials and dependencies stay on production; export the GitHub token in its
-login-shell environment. `./deploy_rust.sh --check` verifies the approved
-current-main release without deploying. `./deploy_rust.sh` publishes it and
+login-shell environment. `./deploy-rust.sh --check` verifies the approved
+current-main release without deploying. `./deploy-rust.sh` publishes it and
 requests a graceful restart; reviewed pending migrations require
 `--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production safeguards.
+
+Bash filenames use hyphens. When upgrading an existing installation, update
+external cron jobs and certificate-renewal hooks to the renamed scripts,
+including `database-backup.sh` and `renew-cert.sh`; old underscore paths are not
+retained as wrappers.
 
 Rust loads its client version at startup, so client-only changes also require a
 graceful restart. Never rebuild assets in place while they are being served.
@@ -208,7 +213,7 @@ server.
 
 ### Service management
 
-`./install/install_supervisor.sh` installs the source-layout service; inspect
+`./install/install-supervisor.sh` installs the source-layout service; inspect
 its paths and account before running it. Start only an already stopped service:
 `supervisorctl start hanabi-live`.
 
@@ -224,7 +229,7 @@ server. An HTTP success response does not establish that restart completed:
 verify the running revision, client assets, restored tables, and logs.
 `/gracefulRestart` drains and replaces the prepared binary; it does not compile.
 
-`./restart_service_only.sh` delegates to `admin/gracefulRestart.sh`, which
+`./restart-service-only.sh` delegates to `admin/gracefulRestart.sh`, which
 requests the Rust lifecycle endpoint without pulling source or rebuilding.
 
 For a short maintenance pause with active games, use
@@ -292,7 +297,7 @@ To build a local bundle on Linux amd64, install `musl-tools`, add Rust target
 `x86_64-unknown-linux-musl`, and run:
 
 ```sh
-bash install/build_release.sh dist/native
+bash install/build-release.sh dist/native
 ```
 
 Local dirty builds are untrusted; only successful clean CI artifacts are
@@ -310,7 +315,7 @@ shutdown, not a forced kill.
 
 ### Backups and TLS
 
-`database_backup.sh` streams PostgreSQL backups into gzip with disk-space and
+`database-backup.sh` streams PostgreSQL backups into gzip with disk-space and
 concurrency guards. It does **not** back up Redis. Retain coordinated backups of
 both stores; never discard the newest completed backup just to free disk space.
 Its optional Google Drive upload uses the configured service account and
@@ -318,7 +323,7 @@ installed `gdrive` tool.
 
 Set `TLS_CERT_FILE` and `TLS_KEY_FILE` together to enable HTTPS. The server also
 serves certificate challenges and HTTP-to-HTTPS redirects. If using
-`renew_cert.sh`, configure certificate renewal through its deploy hook so a
+`renew-cert.sh`, configure certificate renewal through its deploy hook so a
 graceful restart loads the new certificate; avoid a competing renewal timer that
 renews certificates without restarting the server. Keep database, Redis, and
 control ports private.

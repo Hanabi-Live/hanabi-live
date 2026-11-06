@@ -31,14 +31,14 @@ release="$output/release"
 mkdir "$release"
 
 # CI mode avoids sourcing the operator's .env while building static assets.
-CI=true bash packages/client/build_client.sh
+CI=true bash packages/client/build-client.sh
 mkdir -p "$release/packages/game/src" "$release/install"
 cp -a public "$release/"
 cp -a packages/game/src/json "$release/packages/game/src/"
 mkdir -p "$release/packages/data/src/json"
 cp packages/data/src/json/chatReplyCommands.json "$release/packages/data/src/json/"
 cp -a install/migrations "$release/install/"
-cp install/migrate.sh install/migration_files.sh install/release.py "$release/install/"
+cp install/migrate.sh install/migration-files.sh install/release.py "$release/install/"
 cp install/database_schema.sql "$release/install/"
 cp LICENSE "$release/"
 
@@ -55,8 +55,8 @@ if readelf -l "$release/hanabi-live" | grep -q INTERP; then
   echo "Rust releases must not depend on the build host's dynamic loader." >&2
   exit 1
 fi
-# shellcheck source=./install/migration_files.sh
-source install/migration_files.sh
+# shellcheck source=migration-files.sh
+source install/migration-files.sh
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOBIN="$release/install" \
   go install -trimpath "github.com/jackc/tern/v2@$TERN_VERSION"
 python3 install/release.py manifest "$release" --runtime "$runtime"
