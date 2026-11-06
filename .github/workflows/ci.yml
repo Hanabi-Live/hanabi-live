@@ -28,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup
       - run: bash ./packages/client/build-client.sh
 
@@ -36,6 +38,8 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Test release installation and deployment guards
         run: python3 -m unittest discover -s install -p '*_test.py'
@@ -48,6 +52,8 @@ jobs:
         shard: [1, 2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup
       - uses: ./.github/workflows/setup-rust
         if: matrix.shard == 2
@@ -89,6 +95,8 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup
 
       - name: Create the "version.js" file
@@ -124,6 +132,8 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
@@ -202,6 +212,8 @@ jobs:
         working-directory: server
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Identify the SQLx cache platform
@@ -330,6 +342,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: ./.github/workflows/setup
 
       - name: Use TypeDoc to automatically generate documentation
