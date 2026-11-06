@@ -495,8 +495,6 @@ async fn websocket(
     };
     let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "reconnect" && value == "1");
-    let fast_resume = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
-        .any(|(key, value)| key == "fastResume" && value == "1");
     let version = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .find_map(|(key, value)| (key == "version").then(|| value.into_owned()))
         .unwrap_or_default();
@@ -518,7 +516,6 @@ async fn websocket(
                                 generation,
                                 address.ip().to_string(),
                                 reconnect,
-                                fast_resume,
                             )
                             .await
                         }
@@ -560,25 +557,13 @@ async fn connection(
     generation: u64,
     ip: String,
     reconnect: bool,
-    fast_resume: bool,
 ) -> Result<()> {
     let admission = app.admission.clone().read_owned().await;
     ensure!(
         app.accepting.load(Ordering::Acquire) && app.healthy(),
         "Server unavailable"
     );
-    let data = match async {
-        let mut data = bootstrap(&app, id, &ip, reconnect).await?;
-        if !fast_resume {
-            // Older clients require a numeric total and the original bootstrap ordering.
-            let (initial, total) = lobby_initial(&app, id, reconnect).await?;
-            data.welcome["totalGames"] = json!(total);
-            data.initial = initial;
-        }
-        Ok::<_, anyhow::Error>(data)
-    }
-    .await
-    {
+    let data = match bootstrap(&app, id, &ip, reconnect).await {
         Ok(data) => data,
         Err(error) => {
             let _ = tokio::time::timeout(
@@ -680,9 +665,7 @@ async fn connection(
             .await?;
         received.await??;
         drop(admission);
-        if fast_resume {
-            load_lobby(app.clone(), session.clone(), false);
-        }
+        load_lobby(app.clone(), session.clone(), false);
         loop {
             let command = tokio::select! {
                 _=session.cancel.cancelled()=>break,

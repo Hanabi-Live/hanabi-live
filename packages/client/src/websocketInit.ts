@@ -196,7 +196,7 @@ function reconnectAfterTimeout(conn: Connection) {
 }
 
 function openConnection(isReconnect: boolean) {
-  const url = `${websocketURL}?fastResume=1&version=${encodeURIComponent(VERSION)}`;
+  const url = `${websocketURL}?version=${encodeURIComponent(VERSION)}`;
   const conn = new Connection(url, true);
   conn.setReady(!isReconnect);
   clearConnectTimer();

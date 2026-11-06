@@ -2,18 +2,18 @@
 
 ## Fast recovery
 
-Current clients connect using `/ws?fastResume=1` both initially and after a
-disconnect. Both cases require the same session cookie, account, and IP checks.
-These parameters grant no additional access.
+Current clients connect using `/ws?version=<client-version>` both initially and
+after a disconnect. Both cases require the same session cookie, account, IP, and
+client-version checks.
 
 Authentication and table membership precede optional lobby reads. `welcome`
 contains `totalGames: null` while statistics are unknown. The Rust-owned
 `lobbyStatus` contract reports `loading`, `ready` with the real total, or
 `error` with a diagnostic message when available. `lobbyLoad {}` retries failed
-optional loading without reconnecting the game. Legacy clients that omit
-`fastResume` retain the numeric total and original bootstrap ordering. The
-legacy `reconnect=1` welcome-only probe remains supported for old clients, but
-current clients request fresh user/table directories.
+optional loading without reconnecting the game. Lobby loading is asynchronous
+for every connection. The legacy `reconnect=1` welcome-only probe remains
+supported for old clients, but current clients request fresh user/table
+directories.
 
 Personal history pages are requested only when the history screen is opened
 (including direct history links), never during login, reconnect, or `lobbyLoad`.

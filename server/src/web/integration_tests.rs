@@ -141,13 +141,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         return;
     };
     let cookie = login(&fixture, "ClientVersion").await;
-    for query in [
-        "",
-        "version=",
-        "version=41",
-        "version=41&fastResume=1",
-        "version=41&reconnect=1",
-    ] {
+    for query in ["", "version=", "version=41", "version=41&reconnect=1"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
@@ -164,12 +158,7 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
         .await
         .unwrap();
     }
-    for query in [
-        "version=42",
-        "version=42&fastResume=1",
-        "version=42&reconnect=1",
-        "version=bot",
-    ] {
+    for query in ["version=42", "version=42&reconnect=1", "version=bot"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         receive(&mut socket, "welcome").await;
         socket.close(None).await.unwrap();
@@ -208,6 +197,10 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     let mut bob = connect(&fixture, &bob_cookie, false).await;
     receive(&mut alice, "welcome").await;
     receive(&mut bob, "welcome").await;
+    for socket in [&mut alice, &mut bob] {
+        receive(socket, "chatList").await;
+        assert_eq!(receive(socket, "lobbyStatus").await["state"], "ready");
+    }
     alice
         .send(WireMessage::Text(
             "tableCreate {\"name\":\"Private uptime\"}".into(),
@@ -356,6 +349,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(welcome["username"], "Alicè");
     assert_eq!(welcome["connectionMode"], "initial");
     assert!(receive(&mut alice, "chatList").await["list"].is_array());
+    assert_eq!(receive(&mut alice, "lobbyStatus").await["state"], "ready");
     alice
         .send(WireMessage::Text(
             "historyGet {\"offset\":0,\"amount\":10}".into(),
@@ -371,6 +365,8 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let mut bob = connect(&fixture, &bob_cookie, false).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
     let _ = receive(&mut bob, "user").await;
+    receive(&mut bob, "chatList").await;
+    assert_eq!(receive(&mut bob, "lobbyStatus").await["state"], "ready");
     alice
         .send(WireMessage::Text(
             "setting {\"name\":\"hyphenatedConventions\",\"setting\":\"true\"}".into(),
@@ -535,6 +531,32 @@ async fn native_admission_waits_for_inflight_http_and_fences_lease_postgres() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "DeferredLobby").await;
+    let mut lock = fixture.db.pool.begin().await.unwrap();
+    sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
+        .execute(&mut *lock)
+        .await
+        .unwrap();
+    let mut socket = connect(&fixture, &cookie, false).await;
+    let welcome = tokio::time::timeout(Duration::from_secs(1), receive(&mut socket, "welcome"))
+        .await
+        .expect("Archive reads blocked the welcome");
+    assert_eq!(welcome["totalGames"], Value::Null);
+    let loading = receive(&mut socket, "lobbyStatus").await;
+    assert_eq!(loading["state"], "loading");
+    lock.rollback().await.unwrap();
+    let ready = receive(&mut socket, "lobbyStatus").await;
+    assert_eq!(ready["state"], "ready");
+    assert_eq!(ready["totalGames"], 0);
+    socket.close(None).await.unwrap();
     fixture.close().await;
 }
 
