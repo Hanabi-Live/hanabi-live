@@ -72,6 +72,42 @@ async function login(page: Page, backend: string, name: string) {
   await expect(page.locator("#lobby-games")).toBeVisible();
 }
 
+for (const route of ["lobby", "new"]) {
+  test(`${route} Stats link opens the simplified global statistics page`, async ({
+    page,
+    backend,
+  }) => {
+    const username = `testStats${route}`;
+    await page.goto(`${backend}/lobby`);
+    await page.locator("#login-username").fill(username);
+    await page.locator("#login-password").fill(username);
+    await page.locator("#login-button").click();
+    await page.locator("#tutorial-no").click();
+    await expect(page.locator("#lobby")).toBeVisible();
+
+    if (route === "new") {
+      await page.goto(`${backend}/new`);
+    }
+    const link = page.getByRole("link", { name: "Stats", exact: true });
+    await expect(link).toBeVisible();
+    const popupPromise = page.waitForEvent("popup");
+    await link.click();
+    const stats = await popupPromise;
+    await expect(stats).toHaveURL(`${backend}/stats`);
+    await expect(
+      stats.getByRole("heading", { name: "Global Statistics", exact: true }),
+    ).toBeVisible();
+    await expect(stats.locator(".stat-description")).toHaveText([
+      "Games played (in non-speedruns):",
+      "Time spent playing (in non-speedruns):",
+      "Games played (in speedruns):",
+      "Time spent playing (in speedruns):",
+    ]);
+    await expect(stats.locator("table")).toHaveCount(0);
+    await stats.close();
+  });
+}
+
 test("classic replies ignore server notices without losing the last user PM", async ({
   browser,
   backend,
