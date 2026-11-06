@@ -60,10 +60,6 @@ type TemplateData struct {
 	AdvancedFiltersActive      bool                         // Used on the "Missing Scores" page
 	VariantStats               []*UserVariantStats
 
-	// Stats
-	NumVariants int
-	Variants    []*VariantStatsData
-
 	// Variants
 	VariantID     int
 	VariantsNames map[int]string

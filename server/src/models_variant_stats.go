@@ -67,60 +67,6 @@ func (*VariantStats) get(query *databaseOperations, variantID int) (VariantStats
 	return stats, nil
 }
 
-func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
-	statsMap := make(map[int]VariantStatsRow)
-
-	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), `
-		SELECT
-			variant_id,
-			num_games,
-			best_score2,
-			best_score3,
-			best_score4,
-			best_score5,
-			best_score6,
-			num_max_scores,
-			average_score,
-			num_strikeouts
-		FROM variant_stats
-	`); err != nil {
-		return statsMap, err
-	} else {
-		rows = v
-	}
-
-	// Go through the stats for each variant
-	for rows.Next() {
-		stats := NewVariantStatsRow()
-
-		var variantID int
-		if err := rows.Scan(
-			&variantID,
-			&stats.NumGames,
-			&stats.BestScores[0].Score, // 2-player
-			&stats.BestScores[1].Score, // 3-player
-			&stats.BestScores[2].Score, // 4-player
-			&stats.BestScores[3].Score, // 5-player
-			&stats.BestScores[4].Score, // 6-player
-			&stats.NumMaxScores,
-			&stats.AverageScore,
-			&stats.NumStrikeouts,
-		); err != nil {
-			return statsMap, err
-		}
-
-		statsMap[variantID] = stats
-	}
-
-	if err := rows.Err(); err != nil {
-		return statsMap, err
-	}
-	rows.Close()
-
-	return statsMap, nil
-}
-
 func (s *VariantStats) Update(variantID int, maxScore int, stats VariantStatsRow) error {
 	return s.update(db.databaseOperations, variantID, maxScore, stats)
 }
