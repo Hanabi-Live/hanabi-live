@@ -100,10 +100,11 @@ jobs:
 
   client_new:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
-        suite: [flows, audits, restart]
+        suite: [flows, audits]
     env:
       HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
     services:
@@ -155,12 +156,11 @@ jobs:
         if: matrix.suite == 'flows'
         run: bunx --bun --no-install vitest run
         working-directory: packages/client-new
-      - name: Test both clients and restart latency against Rust
+      - name: Test both clients against Rust
         run: |
           case "${{ matrix.suite }}" in
-            flows) selectors=(--grep-invert '@audit|@restart') ;;
+            flows) selectors=(--grep-invert '@audit') ;;
             audits) selectors=(--grep '@audit') ;;
-            restart) selectors=(--grep '@restart' --project rust --workers 1) ;;
             *) echo "Unknown browser suite." >&2; exit 1 ;;
           esac
           bunx --bun --no-install playwright test "${selectors[@]}"
