@@ -125,54 +125,17 @@ checks for generation drift. Keep legacy compatibility differences explicit.
 
 ## Production server
 
-The production server is `root@hanab.live`, with the repository at
-`~/hanabi-live`. The server log is at `~/hanabi-live/logs/hanabi-live.log` (use
-`./get-log.sh` to download it).
+You can SSH to the production server with `ssh root@hanab.live`. The repository
+is at `~/hanabi-live`. The server log is at
+`~/hanabi-live/logs/hanabi-live.log`. (You can use `./get-log.sh` to download
+it.)
 
-Run `./deploy-rust.sh` from your laptop; it always uses SSH to deploy the
-source-layout installation at `root@hanab.live:/root/hanabi-live`.
-`./deploy-rust.sh --check` downloads and verifies the approved release for
-current `main` without deploying. `./deploy-rust.sh` publishes and gracefully
-restarts; reviewed pending migrations require `--apply-migrations`. Both wait up
-to five minutes for `publish_native_release` on the selected `main` revision's
-latest CI run attempt and refuse deployment if publication fails or times out.
-Container builds and documentation deployment do not gate release publication or
-deployment. The laptop needs Bash and SSH. Production requires an
-artifact-readable `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+,
-Git, and PostgreSQL client tools, not Node, Bun, Cargo, or the GitHub CLI. The
-wrapper forwards the first nonempty local `GH_TOKEN`,
-`GITHUB_TOKEN_PERSONAL_CLASSIC`, or `GITHUB_TOKEN` through encrypted SSH input
-for that deployment only. Without a local token, it uses the remote login-shell
-environment. For direct execution on production, run
-`/opt/hanabi-python/bin/python3 install/deploy_rust.py` from `~/hanabi-live`
-with the same flags. It fast-forwards the clean checkout without
-dependency-install hooks and retains deployment records and overwritten-file
-backups in `backups/deploy-rust-*`.
+To deploy a new copy of the client code or the server code to production, run
+`./deploy-rust.sh` from your laptop, which uses SSH to connect and run the
+necessary commands. If needed, you can inspect that file for more information.
 
-After an SSH disconnect, the deployment outcome is unknown; do not automatically
-retry. Never automatically roll back an interrupted deployment. Inspect its
-recorded phase and recovery state first. File backups do not replace coordinated
-PostgreSQL and Redis backups. The importer is retired, not a way to roll back.
-
-Production runs `~/hanabi-live/hanabi-live`. Use a successful CI release with
-its paired client assets, verify it with `/opt/hanabi-python/bin/python3` and
-the bundled `install/release.py`, and run `--check-startup` against staged
-configuration before publication. Publish assets atomically and install the
-replacement binary through a sibling file and rename, then request
-`/gracefulRestart`. Rust does not build code during that operation. Verify the
-served revision and recovery health afterward.
-
-Release builds run in parallel with validation. Artifacts prefixed `candidate-`
-are unapproved build outputs, not deployment releases. Only
-`publish_native_release` publishes normal release artifact names after all
-required checks succeed. The `hanabi-live-rust-*` artifact names are retained
-for compatibility with the installed deployment tooling.
-
-Rust loads the client version at startup. A new client version requires a
-graceful restart even if only TypeScript changed. Prepare both clients away from
-live assets using `CI=1 bash packages/client/build-client.sh`; do not run a
-destructive client build against served assets. Keep prior versioned assets
-available to existing tabs and do not force players out of games to refresh.
+(A new client version requires a graceful restart even if only TypeScript
+changed.)
 
 Live state is authoritative in `hanabi-redis.service`, using
 `redis+unix:///run/hanabi-redis/redis.sock`, with persistence in
@@ -191,23 +154,12 @@ stopped. An HTTP success response does not prove a graceful restart has
 finished: verify the new PID, running revision, restored tables, client assets,
 and logs.
 
-Production validation must exercise authenticated browser traffic against
-production-sized data, including sparse histories, users without friends,
-HTTP/2, all supported host names, and simultaneous reconnects. Anonymous health
-requests alone are not sufficient.
-
-Historical table IDs were reused, so a `chat_log` room such as `table123` can
-contain unrelated historical messages. Capture diagnostic chat row IDs and
-delete only those exact IDs after verifying ownership. Never clean up chat by
-room or source alone.
-
 ## Database migrations
 
 Use `./install/migrate.sh status` to inspect migration state and
-`./install/migrate.sh apply` to apply pending migrations before restarting.
-Source installations use pinned Tern with Go 1.27; immutable releases include
-the compiled migration tool. The runner reuses existing `.env` database
-settings. Migrations never run automatically during server startup.
+`./install/migrate.sh apply` to apply pending migrations before restarting. We
+use the Tern tool to handle migrations. The runner reuses existing `.env`
+database settings. Migrations never run automatically during server startup.
 
 Applied migrations are immutable: do not edit or delete them. Keep new files
 numbered consecutively from `001_name.sql`, use forward migrations without a
@@ -215,16 +167,11 @@ down-migration section, and update `install/database_schema.sql` in the same
 change. Fresh installations record the schema version already represented by
 that complete schema.
 
-Legacy `active_games` records and unsupported Redis checkpoints remain
-startup-blocking. Recover them with a compatible earlier release; do not delete
-them to make startup pass. No schema or persisted-state format changes are
-implied by moving Rust into `server/`.
-
 Migrations normally run in transactions. Operations such as concurrent index
 creation require `---- tern: disable-tx ----` and safe recovery after partial
 failure.
 
-Some tables, such as `chat_log` (~90 million rows), are very large:
+Some tables (such as `chat_log`) are very large:
 
 - Adding a nullable column or a constant default is safe while the server is
   online.

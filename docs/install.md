@@ -1,8 +1,5 @@
 # Hanab Live Installation
 
-The production server is Rust in `server/`. The classic client (`/lobby`) and
-React lobby (`/new`) share the same server and game screen.
-
 ## Prerequisites
 
 Use Linux for production. Development also supports macOS; on Windows, use WSL2
