@@ -32,7 +32,6 @@ hanabi-live.next
 /backups
 /letsencrypt
 /logs
-/ongoing_tables
 /install/__pycache__
 
 # Development files

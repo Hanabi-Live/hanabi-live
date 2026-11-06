@@ -18,7 +18,6 @@ import tarfile
 RUNTIME_LINKS = {
     ".env": ".env",
     "logs": "logs",
-    "ongoing_tables": "ongoing_tables",
     "motd.txt": "motd.txt",
     "letsencrypt": "letsencrypt",
     ".lifecycle.lock": ".lifecycle.lock",
@@ -57,7 +56,7 @@ def safe_name(name):
 def sensitive_path(name):
     return any(
         part == ".git" or part == ".env" or part.startswith(".env.")
-        or part in ("logs", "ongoing_tables", "GitHub_private_key.pem")
+        or part in ("logs", "GitHub_private_key.pem")
         for part in name.split("/")
     )
 
@@ -205,7 +204,7 @@ def init_root(value):
     (root / ".hanabi-releases").touch()
     (root / "releases").mkdir()
     (root / "shared").mkdir(mode=0o750)
-    for name in ("logs", "ongoing_tables", "letsencrypt"):
+    for name in ("logs", "letsencrypt"):
         (root / "shared" / name).mkdir(mode=0o750)
     (root / "shared/.lifecycle.lock").touch(mode=0o600)
     print(f"Initialized {root}; provision shared/.env and retained runtime state while the OLD service is stopped.")
