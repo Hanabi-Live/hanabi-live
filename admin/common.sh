@@ -12,8 +12,9 @@ if [[ -z ${LOCALHOST_PORT-} ]]; then
 fi
 
 function admin_request {
+  # Omit --fail to preserve HTTP error bodies; check the status below for a nonzero exit.
   local response status
-  if response=$(curl --silent --show-error --write-out $'\n%{http_code}' "$@"); then
+  if response=$(curl --silent --show-error --location --write-out $'\n%{http_code}' "$@"); then
     status=${response##*$'\n'}
     printf '%s\n' "${response%$'\n'*}"
     if ((status >= 400)); then

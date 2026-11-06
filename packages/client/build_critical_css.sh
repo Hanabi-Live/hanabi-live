@@ -28,7 +28,7 @@ fi
 URL="http://$DOMAIN:$PORT"
 
 # Test to see if the server is running
-if ! curl --silent "$URL" > /dev/null; then
+if ! curl --silent --fail --show-error --location "$URL" > /dev/null; then
   echo "You must ensure that the server is running before running this script."
   exit 1
 fi

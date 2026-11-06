@@ -18,6 +18,11 @@ class AdminCommandsTest(unittest.TestCase):
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
+                if self.path == "/redirect":
+                    self.send_response(302)
+                    self.send_header("Location", "/success")
+                    self.end_headers()
+                    return
                 self.send_response(503 if self.path == "/failure" else 200)
                 self.end_headers()
                 self.wfile.write(b"Database unavailable [Reference: abc123]" if self.path == "/failure" else b"ok")
@@ -54,6 +59,11 @@ class AdminCommandsTest(unittest.TestCase):
                 self.assertIn("Reference: abc123", result.stdout)
                 self.assertIn("HTTP 503", result.stderr)
         result = self.request("admin_command success")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "ok\n")
+
+    def test_redirects_are_followed(self):
+        result = self.request("admin_command redirect")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "ok\n")
 

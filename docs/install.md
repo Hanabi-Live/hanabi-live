@@ -152,8 +152,8 @@ its paths and account before running it. Start only an already stopped service:
 Use the configured loopback control port:
 
 ```sh
-curl --fail http://127.0.0.1:8081/gracefulRestart
-curl --fail http://127.0.0.1:8081/shutdown
+curl --silent --fail --show-error --location http://127.0.0.1:8081/gracefulRestart
+curl --silent --fail --show-error --location http://127.0.0.1:8081/shutdown
 ```
 
 Do not use `supervisorctl stop` or `supervisorctl restart` on a running game
