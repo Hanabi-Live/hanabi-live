@@ -31,9 +31,8 @@ source "$DIR/get_version.sh"
 # Prepare the "version.js" file.
 bash "$DIR/set_version.sh"
 
-# If we need to, add the NPM directory to the path. (The Golang process will execute this script
-# during a graceful restart and it will not have it in the path by default.)
-if ! command -v npm > /dev/null; then
+# The legacy Go restart may run without the interactive shell's Node/Bun paths.
+if ! command -v node > /dev/null; then
   # Assume that Node Version Manager (fnm) is being used on this system.
   # https://github.com/schniz/fnm
   HOME="${HOME:-/root}"
@@ -46,6 +45,14 @@ if ! command -v npm > /dev/null; then
   eval "$("$FNM_PATH" env --shell bash)"
 fi
 
+if ! command -v bun > /dev/null; then
+  export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
+fi
+if ! command -v bun > /dev/null; then
+  echo "Bun is required to build the clients. See docs/install.md." >&2
+  exit 1
+fi
+
 cd "$DIR"
 
 # The client is written in TypeScript and spread out across many files. We need to pack it into one
@@ -54,7 +61,7 @@ echo "Packing the TypeScript using esbuild..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
-npx esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
+bunx --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
 # Also produce the unversioned bundle name that the server serves in dev mode. (Normally it is
 # only created by the esbuild watch script, but the Docker image runs in dev mode.)
 cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
@@ -66,14 +73,14 @@ echo
 if [[ ${1-} == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
-  npx grunt critical --url="http://localhost:$PORT"
+  bunx --no-install grunt critical --url="http://localhost:$PORT"
   echo
   echo "Remember to commit the \"critical.min.css\" file if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npx grunt
+  bunx --no-install grunt
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"

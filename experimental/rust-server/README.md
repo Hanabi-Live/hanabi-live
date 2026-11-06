@@ -205,7 +205,7 @@ processes. Put `redis-server` and `redis-cli` on `PATH`:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/testing/src/mainProcess
+  bun run test --runInBand packages/testing/src/mainProcess
 ```
 
 Native checks, from this directory:

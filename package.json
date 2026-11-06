@@ -93,7 +93,14 @@
     "tsx": "4.23.15",
     "typescript": "6.0.3"
   },
+  "packageManager": "bun@1.4.4",
   "patchedDependencies": {
     "konva@3.4.1": "patches/konva@3.4.1.patch"
-  }
+  },
+  "trustedDependencies": [
+    "@parcel/watcher",
+    "esbuild",
+    "phantomjs-prebuilt",
+    "unrs-resolver"
+  ]
 }

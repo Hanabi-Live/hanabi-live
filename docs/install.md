@@ -16,6 +16,7 @@ editor. Some adjustments will be needed if you are using a different editor.
 ## Table of Contents
 
 1. [Hardware Prerequisites](#hardware-prerequisites)
+1. [JavaScript Tooling](#javascript-tooling)
 1. [Installation for Development (Windows)](#installation-for-development-windows)
 1. [Installation for Development (MacOS)](#installation-for-development-macos)
 1. [Installation for Development/Production (Linux)](#installation-for-developmentproduction-linux)
@@ -31,6 +32,31 @@ at least 2 GB of RAM.
 
 <br />
 
+## JavaScript Tooling
+
+Bun manages JavaScript dependencies; `package.json` pins its version and
+`bun.lock` pins the dependency graph. Node.js 24 remains the runtime for Jest,
+Vite, ESLint, and the other existing tools. From the repository root:
+
+```sh
+bun install --frozen-lockfile
+bun run build-client
+bun run test
+bash lint.sh
+```
+
+Use `bun run test`, not `bun test`: the latter selects a different test runner.
+Use `bunx --no-install` for installed tools so checks cannot silently download
+unlocked versions. For intentional dependency changes, run `bun install` and
+commit the updated manifest and lockfile. Dependency lifecycle scripts are
+restricted to the explicit `trustedDependencies` list.
+
+`bunfig.toml` disables automatic `.env` loading and preserves the existing
+shared root `node_modules` layout. The Nix shell and CI use the same pinned Bun
+version; Docker verifies its Bun image against the manifest pin.
+
+<br />
+
 ## Installation for Development (Windows)
 
 - Open a
@@ -42,6 +68,8 @@ at least 2 GB of RAM.
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it
   installed):
   - `winget install --accept-source-agreements --silent --exact --id OpenJS.NodeJS.LTS`
+- Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
+  - `winget install --exact --id Oven-sh.Bun --version 1.4.4`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not
   already have it installed):
   - `winget install --accept-source-agreements --silent --exact --id Microsoft.VisualStudioCode`
@@ -122,6 +150,9 @@ at least 2 GB of RAM.
 - Install [Node.js](https://nodejs.org/en/) (if you do not already have it
   installed):
   - `brew install node`
+- Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
+  - `curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"`
+  - `export PATH="$HOME/.bun/bin:$PATH"`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not
   already have it installed):
   - `brew cask install visual-studio-code`
@@ -212,6 +243,10 @@ needed if you are on a different flavor of Linux.
   - `export PATH="$HOME/.local/share/fnm:$PATH"`
   - `eval "$(fnm env --shell bash)"`
   - `fnm install --lts` <br /> (this installs the latest version)
+- Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
+  - `sudo apt install unzip -y`
+  - `curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"`
+  - `export PATH="$HOME/.bun/bin:$PATH"`
 - Configure Git:
   - `git config --global user.name "Your_GitHub_Username"`
   - `git config --global user.email "your@email.com"`

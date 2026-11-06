@@ -94,6 +94,7 @@ def manifest(directory, runtime="go"):
         ),
         "goVersion": subprocess.check_output(["go", "version"], text=True).strip(),
         "nodeVersion": subprocess.check_output(["node", "--version"], text=True).strip(),
+        "bunVersion": subprocess.check_output(["bun", "--version"], text=True).strip(),
         "files": files_in(directory),
     }
     if runtime == "rust":

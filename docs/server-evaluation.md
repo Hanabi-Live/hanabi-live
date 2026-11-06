@@ -6,12 +6,12 @@ been removed. Historical measurements below retain its results for context.
 
 ## Reproducible workload
 
-With Go, Node, Rust/rustup, Redis 7.2+ binaries, and a disposable local
+With Go, Node.js, Bun, Rust/rustup, Redis 7.2+ binaries, and a disposable local
 PostgreSQL service available:
 
 ```sh
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  npm test -- --runInBand packages/testing/src/mainProcessComparison.test.ts \
+  bun run test --runInBand packages/testing/src/mainProcessComparison.test.ts \
   --testNamePattern='normal-server comparison'
 ```
 

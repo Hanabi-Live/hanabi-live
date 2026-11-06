@@ -17,7 +17,7 @@ If you want to use the game logic in a bot or some other Hanab-related program,
 then you can install it from npm:
 
 ```sh
-npm install @hanabi-live/game --save
+bun add @hanabi-live/game
 ```
 
 <br>

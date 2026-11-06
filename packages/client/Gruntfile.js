@@ -85,8 +85,9 @@ module.exports = function Gruntfile(grunt) {
 
   grunt.registerTask("default", ["concat", "cssmin:main", "check-cssmin"]);
 
-  // Generating critical CSS is slow and infrequent.
-  // Run manually when the CSS changes with "npx grunt critical --url=http://localhost"
+  // Generating critical CSS is slow and infrequent. Run manually when the CSS changes with "bunx
+  // --no-install Grunt critical
+  // --url=http://localhost"
   // and commit the resulting file (critical.min.css).
   grunt.registerTask("critical", [
     "concat",

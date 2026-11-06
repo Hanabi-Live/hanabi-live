@@ -21,4 +21,4 @@ if [[ ! -f $JS_BUNDLE_MAP_PATH ]]; then
 fi
 
 # https://github.com/mifi/stacktracify
-npx stacktracify "$JS_BUNDLE_MAP_PATH"
+bunx --no-install stacktracify "$JS_BUNDLE_MAP_PATH"

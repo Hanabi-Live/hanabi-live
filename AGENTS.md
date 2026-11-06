@@ -16,6 +16,13 @@ do not put unrelated operational details in installation instructions.
 
 ## Before pushing
 
+Use Bun for JavaScript dependency management; its version is pinned in the root
+`package.json`. Use `bun install --frozen-lockfile`, `bun run <script>`, and
+`bunx --no-install <tool>`. Commit `bun.lock`, not an npm lockfile. Node.js 24
+remains the runtime for the existing tools and tests: use `bun run test`, not
+Bun's separate `bun test` runner. Keep automatic `.env` loading disabled in
+`bunfig.toml`; applications and build scripts manage their own configuration.
+
 Never add inline CSpell word lists, ignores, or disable directives to files. Add
 legitimate project vocabulary to the `words` list in `cspell.config.jsonc`
 instead.
@@ -30,8 +37,8 @@ bash lint.sh
 This is the same entrypoint CI uses for TypeScript checks, Go vet, Rust
 formatting/Clippy, Prettier, spelling, ShellCheck, and repository consistency.
 CI runs complementary shards; run the no-argument command above before pushing.
-It requires the repository's Node dependencies, Go/Rust toolchains, and
-ShellCheck, but no running PostgreSQL or Redis services.
+It requires Bun, the repository's JavaScript dependencies, Node.js, Go/Rust
+toolchains, and ShellCheck, but no running PostgreSQL or Redis services.
 
 Run it against the final changes, even if package-specific checks already
 passed. Fix any failures and rerun the full suite before pushing. If a required
@@ -146,8 +153,9 @@ user-facing bug fix can still require a Go change. Verify rather than guessing.
    frontend deployment.
 1. Prepare the target commit in a staging checkout/worktree with full Git
    history. Use compatible installed dependencies; if the dependency manifest or
-   lockfile changed, prepare dependencies there with `npm ci`. Ensure the
-   installed Node/npm toolchain is available in the non-interactive shell.
+   lockfile changed, prepare dependencies there with
+   `bun install --frozen-lockfile`. Ensure the installed Node/Bun toolchain is
+   available in the non-interactive shell.
 1. Build **both** clients from the repository root in staging:
 
    ```sh

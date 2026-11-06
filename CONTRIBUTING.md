@@ -52,7 +52,7 @@ production.
   use an existing function as a template.)
 - Note that the clue color palate will add clue colors from left to right for
   the variant in the order that the suits are listed for that variant.
-- Once your modifications are complete, run `npm run create-variants-json` to
+- Once your modifications are complete, run `bun run create-variants-json` to
   create a new version of "variants.json" and "variants.txt". (The
   "variants.json" file is used by the server as the list of allowed variant
   combinations.)

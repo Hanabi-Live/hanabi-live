@@ -15,14 +15,14 @@ SECONDS=0
 cd "$DIR"
 
 # Ensure that the code passes the TypeScript compiler.
-npx tsc --noEmit
+bunx --no-install tsc --noEmit
 
 # Use ESLint to lint the TypeScript.
 # "--max-warnings 0" makes warnings fail in CI, since we set all ESLint errors to warnings.
-npx eslint --max-warnings 0 .
+bunx --no-install eslint --max-warnings 0 .
 
 # Check for unused exports.
 # "--error" makes it return an error code of 1 if unused exports are found.
-npx ts-prune --error --ignore "index.ts"
+bunx --no-install ts-prune --error --ignore "index.ts"
 
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."

@@ -41,13 +41,13 @@ async function checkVariantFiles() {
   // Compare the text file first since the diff will be cleaner.
   if (oldVariantsTXT !== newVariantsTXT) {
     throw new Error(
-      'The "variants.txt" file is not up to date. Run: npm run create-variants-json',
+      'The "variants.txt" file is not up to date. Run: bun run create-variants-json',
     );
   }
 
   if (oldVariantsJSON !== newVariantsJSON) {
     throw new Error(
-      'The "variants.json" file is not up to date. Run: npm run create-variants-json',
+      'The "variants.json" file is not up to date. Run: bun run create-variants-json',
     );
   }
 }

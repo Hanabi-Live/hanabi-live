@@ -1,0 +1,6 @@
+# Keep package-manager commands from implicitly loading application configuration.
+env = false
+
+[install]
+# The repository uses a shared root installation, not isolated workspace installs.
+linker = "hoisted"

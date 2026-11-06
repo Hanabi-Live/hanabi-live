@@ -140,6 +140,7 @@
     "editor.formatOnSave": true,
   },
   // @template-customization-start
+  "npm.packageManager": "bun",
   "[go]": {
     "editor.formatOnSave": true,
     "editor.tabSize": 4,

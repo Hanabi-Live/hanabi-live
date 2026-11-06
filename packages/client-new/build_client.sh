@@ -2,4 +2,4 @@
 set -euo pipefail
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 cd "$DIR"
-npx vite build
+bunx --no-install vite build

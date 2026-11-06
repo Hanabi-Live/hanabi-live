@@ -16,9 +16,16 @@ fi
 
 # Install the JavaScript/TypeScript dependencies and build the client.
 cd "$REPO_ROOT"
-npm install -g npm@latest
-npm ci
-npm run prepare
+if ! command -v node > /dev/null; then
+  echo "Node.js 24 is required by the project tools. See docs/install.md." >&2
+  exit 1
+fi
+export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
+if ! command -v bun > /dev/null; then
+  echo "Install Bun using docs/install.md before installing project dependencies." >&2
+  exit 1
+fi
+bun install --frozen-lockfile
 bash "$REPO_ROOT/packages/client/build_client.sh"
 
 # Build the server, which will automatically install the Golang dependencies.

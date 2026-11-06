@@ -48,7 +48,7 @@ reference server, and TypeScript clients.
 ### Prerequisites
 
 - Rust (for the production backend) and Go (for reference/compatibility checks)
-- Node.js & npm (for the frontend and build tools)
+- Node.js & Bun (for the frontend and build tools)
 - PostgreSQL
 - Redis
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Requirements:
-# npm install -g wscat
+# bun add --global wscat
 
 set -euo pipefail # Exit on errors and undefined variables.
 

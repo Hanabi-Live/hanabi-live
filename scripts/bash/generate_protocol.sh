@@ -13,7 +13,7 @@ output=packages/data/src/generated/protocol.ts
   cd "$ROOT/experimental/rust-server/protocol"
   cargo run --quiet --locked --bin generate
 ) \
-  | npx prettier --stdin-filepath "$output" > "$temporary"
+  | bunx --no-install prettier --stdin-filepath "$output" > "$temporary"
 if [[ ${1:-} == --check ]]; then
   if ! diff -u "$output" "$temporary"; then
     echo "Wire contracts are stale. Run bash scripts/bash/generate_protocol.sh." >&2

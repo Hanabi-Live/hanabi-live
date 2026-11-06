@@ -13,7 +13,7 @@ for EXTENSION in $EXTENSIONS; do
   code --install-extension "$EXTENSION"
 done
 
-# The client linter is installed automatically during an "npm install", which happens automatically
+# The client linter is installed automatically during a "bun install", which happens automatically
 # in the "install_dependencies.sh" script.
 # We don't current care about linting Golang, so the below script is commented out.
 # "$DIR/../server/install_server_linter.sh"

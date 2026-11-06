@@ -22,10 +22,10 @@ The bridge does not queue or replay mutations after connection loss.
 
 ## Develop
 
-From the repository root, `npm run build-client` builds both clients. Start a
+From the repository root, `bun run build-client` builds both clients. Start a
 development backend normally and open `/new`.
 
-For live UI development, run `npm run dev --prefix packages/client-new` and open
+For live UI development, run `bun run --cwd packages/client-new dev` and open
 `http://localhost:5173/new/`. Its proxy expects a local backend on port 8080.
 Use the same `localhost` hostname throughout so the legacy game screen accepts
 the development origin.
@@ -44,10 +44,10 @@ hooks. The bundled prototype fonts retain their Open Font License files.
 
 ## Verify
 
-Run `bash packages/client-new/lint.sh`. From this directory, `npm test` runs
+Run `bash packages/client-new/lint.sh`. From this directory, `bun run test` runs
 state, connection, and rendering checks.
 
-After building both clients, run `npx playwright test` here with
+After building both clients, run `bunx --no-install playwright test` here with
 `HANABI_TEST_DATABASE_URL` pointing to a **disposable local PostgreSQL
 service**. The fixture creates separate databases and processes, never reads the
 ordinary `.env`, and exercises Go and Rust. Go, Cargo, Redis 7.2+ binaries, and

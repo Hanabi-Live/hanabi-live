@@ -140,7 +140,7 @@ jobs:
       - uses: ./.github/workflows/setup-go
 
       - name: Test the TypeScript code
-        run: npm run test
+        run: bun run test
 
   client_new:
     runs-on: ubuntu-latest
@@ -197,10 +197,10 @@ jobs:
       - run: bash packages/client/build_client.sh
       - name: Test lobby state, transport and safe rendering
         if: matrix.suite == 'flows'
-        run: npx vitest run
+        run: bunx --no-install vitest run
         working-directory: packages/client-new
       - name: Test the new lobby against both native servers
-        run: npx playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
+        run: bunx --no-install playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
         working-directory: packages/client-new
         env:
           PW_TEST_CONNECT_WS_ENDPOINT: ws://127.0.0.1:3000/
@@ -377,7 +377,7 @@ jobs:
   #     - uses: ./.github/workflows/setup
   #
   #     - name: Use TypeDoc to automatically generate documentation
-  #       run: npm run docs
+  #       run: bun run docs
   #       working-directory: ./packages/game
   #
   #     - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
