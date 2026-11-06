@@ -16,6 +16,9 @@ do not put unrelated operational details in installation instructions.
 
 ## Browser testing
 
+Chromium is the only supported browser and browser-test target. Do not add tests
+or audit requirements for Firefox, WebKit, or other browsers.
+
 When authenticated browser checks need test accounts, use the existing shared
 accounts: `test` / `test`, `test2` / `test2`, and so on (username / password).
 Choose an account that is not already in use. Do not change these accounts'

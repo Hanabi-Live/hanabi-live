@@ -4,38 +4,7 @@ import { expect, test } from "./fixture";
 
 test.use({ actionTimeout: 10_000 });
 
-test(
-  "Firefox warning acknowledgment resumes the existing authenticated session",
-  { tag: "@audit" },
-  async ({ browser, backend }) => {
-    await using context = await browser.newContext({
-      userAgent: "Mozilla/5.0 Firefox/145.0",
-    });
-    const page = await context.newPage();
-    await page.goto(`${backend}/new`);
-    await page.getByLabel("Username", { exact: true }).fill("testWarning");
-    await page.getByLabel("Password", { exact: true }).fill("testWarning");
-    await page.getByRole("button", { name: "Sign In", exact: true }).click();
-    await expect(page.locator("#lobby-games")).toBeVisible();
-    await page.goto(`${backend}/lobby`);
-    await expect(page.locator("#firefox-warning")).toBeVisible();
-    await page.locator("#firefox-warning-button").click();
-    await expect(
-      page
-        .locator("#tutorial-no")
-        .or(page.locator("#lobby"))
-        .filter({ visible: true })
-        .first(),
-    ).toBeVisible();
-    await expect(page.locator("#sign-in")).toBeHidden();
-  },
-);
-
 async function login(page: Page, backend: string, name: string) {
-  const firefoxWarning = page.locator("#firefox-warning-button");
-  await page.addLocatorHandler(firefoxWarning, async () => {
-    await firefoxWarning.click();
-  });
   await page.goto(`${backend}/new`);
   await page.getByLabel("Username", { exact: true }).fill(name);
   await page.getByLabel("Password", { exact: true }).fill(name);
