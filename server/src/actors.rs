@@ -1340,6 +1340,77 @@ fn options_suggestion(options: &Options, name: &str, max_players: usize) -> Resu
         "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"{encoded}\">click to apply the suggestion</button></span>"
     ))
 }
+fn option_changes(
+    table: &TableSnapshot,
+    options: &Options,
+    name: &str,
+    max_players: usize,
+) -> String {
+    let current = &table.options;
+    let mut changes = String::new();
+    let mut add = |label: &str, value: &str| {
+        changes.push_str(&format!(
+            "<span class=\"cp\">{label}: <b>{}</b></span>",
+            crate::accounts::escape_html(value)
+        ));
+    };
+    if name != table.name {
+        add("Table Name", name);
+    }
+    if options.variant_name != current.variant_name {
+        add("Variant", &options.variant_name);
+    }
+    if options.timed {
+        if !current.timed
+            || options.time_base != current.time_base
+            || options.time_per_turn != current.time_per_turn
+        {
+            add(
+                "Timed",
+                &format!("{} / {}", options.time_base, options.time_per_turn),
+            );
+        }
+    } else if current.timed {
+        add("Timed", "No");
+    }
+    if max_players != table.max_players {
+        add("Max Players", &max_players.to_string());
+        if max_players < table.players().len() {
+            add("Warning", "Players above the new limit will be removed.");
+        }
+    }
+    for (label, proposed, previous) in [
+        ("Speedrun", options.speedrun, current.speedrun),
+        ("Card Cycling", options.card_cycle, current.card_cycle),
+        ("Bottom-Deck", options.deck_plays, current.deck_plays),
+        ("Empty Clues", options.empty_clues, current.empty_clues),
+        (
+            "One Extra Card",
+            options.one_extra_card,
+            current.one_extra_card,
+        ),
+        (
+            "One Less Card",
+            options.one_less_card,
+            current.one_less_card,
+        ),
+        (
+            "All or Nothing",
+            options.all_or_nothing,
+            current.all_or_nothing,
+        ),
+        (
+            "Detrimental Characters",
+            options.detrimental_characters,
+            current.detrimental_characters,
+        ),
+    ] {
+        if proposed != previous {
+            add(label, if proposed { "Yes" } else { "No" });
+        }
+    }
+    changes
+}
 fn is_variant_discovery(command: &Command) -> bool {
     let Command::Wire { name, data } = command else {
         return false;
@@ -2563,24 +2634,12 @@ impl TableActor {
         options.variant_id = Some(variant.id);
         max_players = max_players.max(extra.custom_num_players.unwrap_or(2));
         if session.user != self.table.owner {
-            ensure!(
-                name != self.table.name
-                    || options != self.table.options
-                    || max_players != self.table.max_players,
-                "There are no new options proposed."
-            );
-            let mut suggested = serde_json::to_value(&options)?;
-            suggested["tableName"] = json!(name);
-            suggested["maxPlayers"] = json!(max_players);
-            let encoded = crate::accounts::escape_html(
-                &serde_json::to_string(&suggested)?
-                    .replace('\'', "\\u0027")
-                    .replace('"', "'"),
-            );
+            let changes = option_changes(&self.table, &options, &name, max_players);
+            ensure!(!changes.is_empty(), "There are no new options proposed.");
             let message = server_chat(
                 self.table.id,
                 &format!(
-                    "{} proposes new game options.",
+                    "{} proposes the following options:{changes}",
                     crate::accounts::escape_html(&session.name)
                 ),
             );
@@ -2596,9 +2655,7 @@ impl TableActor {
             if let Some(owner) = self.attendees.get(&self.table.owner) {
                 let mut suggestion = server_chat(
                     self.table.id,
-                    &format!(
-                        "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"{encoded}\">click to apply the suggestion</button></span>"
-                    ),
+                    &options_suggestion(&options, &name, max_players)?,
                 );
                 suggestion["recipient"] = json!(owner.session.name);
                 e.messages

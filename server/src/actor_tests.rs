@@ -95,6 +95,66 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
 }
 
 #[test]
+fn option_summaries_include_only_changes_and_escape_values() {
+    let mut table = pregame(1);
+    table.options.timed = true;
+    table.options.time_base = 120.0;
+    table.options.time_per_turn = 20;
+    let mut options = table.options.clone();
+    assert_eq!(
+        option_changes(&table, &options, &table.name, table.max_players),
+        ""
+    );
+    options.time_base = 150.5;
+    assert_eq!(
+        option_changes(&table, &options, &table.name, table.max_players),
+        "<span class=\"cp\">Timed: <b>150.5 / 20</b></span>"
+    );
+    options.time_base = 120.0;
+    options.time_per_turn = 30;
+    assert!(option_changes(&table, &options, &table.name, table.max_players).contains("120 / 30"));
+    options.timed = false;
+    assert_eq!(
+        option_changes(&table, &options, &table.name, table.max_players),
+        "<span class=\"cp\">Timed: <b>No</b></span>"
+    );
+    table.options.timed = false;
+    options.timed = true;
+    assert!(option_changes(&table, &options, &table.name, table.max_players).contains("120 / 30"));
+    options.timed = false;
+    options.card_cycle = true;
+    options.deck_plays = true;
+    options.empty_clues = true;
+    options.one_extra_card = true;
+    options.one_less_card = true;
+    options.all_or_nothing = true;
+    options.speedrun = true;
+    options.detrimental_characters = true;
+    let summary = option_changes(&table, &options, "<new>", 2);
+    assert!(summary.contains("Table Name: <b>&lt;new&gt;</b>"));
+    assert!(summary.contains("Max Players: <b>2</b>"));
+    assert!(!summary.contains("Timed:"));
+    for label in [
+        "Card Cycling",
+        "Bottom-Deck",
+        "Empty Clues",
+        "One Extra Card",
+        "One Less Card",
+        "All or Nothing",
+        "Speedrun",
+        "Detrimental Characters",
+    ] {
+        assert!(summary.contains(&format!("{label}: <b>Yes</b>")));
+    }
+    table.options = options.clone();
+    options.card_cycle = false;
+    assert_eq!(
+        option_changes(&table, &options, &table.name, table.max_players),
+        "<span class=\"cp\">Card Cycling: <b>No</b></span>"
+    );
+}
+
+#[test]
 fn countdown_preserves_go_float_syntax_and_rejects_nonfinite_values() {
     for (text, expected) in [
         (".5", 0.5),
