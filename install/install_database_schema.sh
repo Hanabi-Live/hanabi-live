@@ -5,12 +5,10 @@ set -euo pipefail # Exit on errors and undefined variables.
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# shellcheck source=./install/migration_files.sh
 source "$DIR/migration_files.sh"
 migration_version="$(get_migration_version "$DIR/migrations")"
 
 # Import the database information.
-# shellcheck source=/dev/null
 source "$DIR/../.env"
 
 if [[ -z ${DB_HOST-} ]]; then

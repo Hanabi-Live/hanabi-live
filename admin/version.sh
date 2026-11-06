@@ -7,6 +7,5 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # Get the name of the script and trim the ".sh".
 COMMAND=$(basename "$0" | cut -f 1 -d '.')
 
-# shellcheck source=/dev/null
 source "$DIR/common.sh"
 admin_command "$COMMAND"

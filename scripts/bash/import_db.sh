@@ -12,7 +12,6 @@ fi
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Import the database information.
-# shellcheck source=/dev/null
 source "$DIR/../../.env"
 if [[ -z ${DB_HOST-} ]]; then
   DB_HOST=localhost
