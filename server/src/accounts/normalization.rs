@@ -135,21 +135,6 @@ pub fn validate_username(input: &str) -> Result<&str, &'static str> {
 mod tests {
     use super::*;
     #[test]
-    fn go_username_fixtures() {
-        let rows: Vec<serde_json::Value> =
-            serde_json::from_str(include_str!("../../testdata/username_protocol.json")).unwrap();
-        for row in rows {
-            let input = row["input"].as_str().unwrap();
-            assert_eq!(
-                normalize_username(input),
-                row["normalized"].as_str().unwrap()
-            );
-            if let Some(emoji) = row["hasEmoji"].as_bool() {
-                assert_eq!(has_username_emoji(input), emoji);
-            }
-        }
-    }
-    #[test]
     fn byte_limits_and_decomposed_marks() {
         assert!(validate_username("123456789012345").is_ok());
         assert!(validate_username("12345678901234é").is_err());

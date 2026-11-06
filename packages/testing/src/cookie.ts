@@ -126,7 +126,7 @@ function signature(secret: string, value: string | Buffer): Buffer {
     .digest();
 }
 
-/** Decode only the signed userID map emitted by Go, not arbitrary gob objects. */
+/** Decode only the server's signed userID map, not arbitrary gob objects. */
 export function decodeSessionCookie(
   encoded: string,
   secret: string,

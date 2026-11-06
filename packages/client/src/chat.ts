@@ -274,8 +274,7 @@ function sendText(room: string, msgRaw: string) {
   typedChatHistoryPrefix = "";
   typedChatHistoryIndex = null;
 
-  // Check for chat commands. Each chat command should also have an error handler in
-  // "chat_command.go" (in case someone tries to use the command from Discord).
+  // Check for chat commands.
   const args = msg.split(" ");
   const firstArg = args[0];
   if (firstArg !== undefined && firstArg.startsWith("/")) {

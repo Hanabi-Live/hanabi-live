@@ -29,8 +29,7 @@ type WebSocketCallbacks = WebSocketCallbackCommands & {
  * Manages a WebSocket connection to the server.
  *
  * On top of the WebSocket protocol, the client and the server communicate using a specific format
- * based on the protocol that the Golem WebSocket framework uses. For more information, see
- * "websocketMessage.go".
+ * based on the protocol that the Golem WebSocket framework uses: `command JSON`.
  *
  * Based on: https://github.com/trevex/golem_client/blob/master/golem.js
  */

@@ -196,7 +196,7 @@ fn configuration() -> Configuration {
 }
 
 #[tokio::test]
-async fn discord_lifecycle_announcements_match_go_postgres() {
+async fn discord_lifecycle_announcements_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;
     };

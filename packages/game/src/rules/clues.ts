@@ -86,7 +86,6 @@ export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   }
 }
 
-/** This mirrors the function `variantIsCardTouched` in "variants.go". */
 export function isCardTouchedByClue(
   variant: Variant,
   clue: Clue,

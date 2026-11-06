@@ -172,8 +172,7 @@ def verify(directory):
     revision = metadata.get("revision", "")
     require(metadata.get("format") in (1, 2), "Unsupported release format")
     require(metadata.get("platform") == "linux-amd64", "Unsupported platform")
-    runtime = metadata.get("runtime", "go")
-    require(runtime in ("go", "rust"), "Unsupported runtime")
+    require(metadata.get("runtime") == "rust", "Only Rust releases are supported")
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
     if metadata["format"] == 1:
         # Keep already-published releases verifiable during the tooling transition.
@@ -221,7 +220,7 @@ def verify(directory):
         )
     require(
         subprocess.check_output(
-            [str(directory / "hanabi-live"), "--version" if runtime == "rust" else "--build-revision"],
+            [str(directory / "hanabi-live"), "--version"],
             stderr=subprocess.STDOUT,
             text=True,
             timeout=10,
@@ -302,7 +301,7 @@ def stage(root, archive, checksum):
                 stream.extractall(staging, members=members, filter="data")
             metadata = verify(staging)
             require(metadata.get("runtime") == "rust", "Only Rust releases can be staged")
-            release_name = metadata["revision"] + ("-rust" if metadata.get("runtime") == "rust" else "")
+            release_name = metadata["revision"] + "-rust"
             destination = root / "releases" / release_name
             require(not destination.exists(), "This revision is already installed")
             for name, target in RUNTIME_LINKS.items():
@@ -338,10 +337,10 @@ def activate(root, revision, runtime="rust"):
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
     require(runtime == "rust", "Only Rust releases can be activated")
     with locked(root):
-        release_name = revision + ("-rust" if runtime == "rust" else "")
+        release_name = revision + "-rust"
         release = root / "releases" / release_name
         metadata = verify(release)
-        require(metadata.get("runtime", "go") == runtime, "Release runtime mismatch")
+        require(metadata.get("runtime") == runtime, "Release runtime mismatch")
         for name, target in RUNTIME_LINKS.items():
             require(
                 (release / name).is_symlink()
@@ -355,8 +354,6 @@ def activate(root, revision, runtime="rust"):
             previous = current.resolve()
             require(previous.parent == root / "releases", "Current escapes the release store")
             old = verify(previous)
-            require(old.get("runtime") == "rust",
-                    "Legacy Go releases require migration with a pre-promotion release")
             require_forward_revision(old["revision"], revision)
         pending = root / ".current-next"
         require(not pending.exists() and not pending.is_symlink(), "Pending activation already exists")

@@ -41,8 +41,6 @@ class LintCacheTests(unittest.TestCase):
                 "echo ran >> .turbo/executions\n"
                 "test ! -f fail.txt\n",
             )
-        self.fixture = "server/testdata/compatibility/cache-test.json"
-        self.write(self.fixture, "{}\n")
         subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
 
@@ -100,7 +98,6 @@ class LintCacheTests(unittest.TestCase):
                     "export const changed = true;\n",
                     consumers,
                 )
-        self.assert_invalidates(self.fixture, '{"changed": true}\n', self.packages)
 
     def test_shared_inputs_and_ignored_runtime_version(self):
         for name in (

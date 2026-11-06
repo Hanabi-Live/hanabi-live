@@ -165,7 +165,7 @@ fn option_summaries_include_only_changes_and_escape_values() {
 }
 
 #[test]
-fn countdown_preserves_go_float_syntax_and_rejects_nonfinite_values() {
+fn countdown_accepts_float_syntax_and_rejects_nonfinite_values() {
     for (text, expected) in [
         (".5", 0.5),
         ("1_0", 10.0),

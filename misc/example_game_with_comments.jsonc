@@ -147,7 +147,7 @@
 
     // Any other website option can be specified, such as "cardCycle" or "emptyClues". A full list
     // of options can be found in the "OptionsJSON" struct, located here:
-    // https://github.com/Hanabi-Live/hanabi-live/blob/main/src/options.go
+    // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/engine/src/types.rs
     // The various options are documented here:
     // https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#custom-game-options
     // If an option is not specified, the default will be assumed (e.g. false or 0).

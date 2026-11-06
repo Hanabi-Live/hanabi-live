@@ -298,17 +298,15 @@ and atomically changes `current`; it never starts a process. Failed migrations
 may advance the schema even when the pointer is unchanged. Exit status 2
 indicates that a rename succeeded but directory durability could not be
 confirmed. Inspect the recorded state and repair storage; never automatically
-roll back or restart an older binary. Existing Rust releases remain verifiable,
-but Go releases can no longer be staged or activated. Upgrades require GitHub
-API access and `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC` to verify that the
-target revision descends from the current revision. An unavailable ancestry
-check refuses activation before migrations; hashes are never compared
-numerically or lexicographically.
+roll back or restart an older binary. Only Rust releases can be verified,
+staged, or activated. Upgrades require GitHub API access and `GH_TOKEN` or
+`GITHUB_TOKEN_PERSONAL_CLASSIC` to verify that the target revision descends from
+the current revision. An unavailable ancestry check refuses activation before
+migrations; hashes are never compared numerically or lexicographically.
 
-The Go-to-Rust importer is retired. Unresolved old checkpoints require recovery
-with a compatible pre-promotion release, not deletion or a new empty Redis
-namespace. Applied migrations and persisted Rust formats are unchanged by this
-source-layout cleanup.
+Unresolved old checkpoints require recovery with a compatible pre-promotion
+release, not deletion or a new empty Redis namespace. Applied migrations and
+persisted Rust formats are unchanged by this source-layout cleanup.
 
 To build a local bundle on Linux amd64, install `musl-tools`, add Rust target
 `x86_64-unknown-linux-musl`, and run:

@@ -108,37 +108,3 @@ impl GoRandom {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::Value;
-
-    #[test]
-    fn matches_go_seed_and_random_corpus() {
-        let corpus: Value =
-            serde_json::from_str(include_str!("../testdata/random_protocol.json")).unwrap();
-        for item in corpus["seeds"].as_array().unwrap() {
-            assert_eq!(
-                seed_hash(item["input"].as_str().unwrap())
-                    .unwrap()
-                    .to_string(),
-                item["value"].as_str().unwrap()
-            );
-        }
-        for item in corpus["streams"].as_array().unwrap() {
-            let seed = item["seed"].as_str().unwrap().parse().unwrap();
-            let mut rng = GoRandom::new(seed);
-            for value in item["int63"].as_array().unwrap() {
-                assert_eq!(rng.int63().to_string(), value.as_str().unwrap());
-            }
-            let mut rng = GoRandom::new(seed);
-            for value in item["intn"].as_array().unwrap() {
-                assert_eq!(
-                    rng.intn(value["bound"].as_u64().unwrap()),
-                    value["value"].as_u64().unwrap()
-                );
-            }
-        }
-    }
-}

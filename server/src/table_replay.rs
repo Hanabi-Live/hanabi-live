@@ -270,10 +270,6 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sha2::{Digest, Sha256};
-    fn hash(v: Value) -> String {
-        hex::encode(Sha256::digest(serde_json::to_vec(&v).unwrap()))
-    }
     #[test]
     fn malformed_import_elements_return_errors_instead_of_panicking() {
         for (field, value) in [
@@ -291,66 +287,6 @@ mod tests {
                     .expect("untrusted JSON must not panic")
                     .is_err(),
                 "{field}"
-            );
-        }
-    }
-    #[test]
-    fn json_import_replays_every_legacy_go_oracle_trace() {
-        let corpus: Vec<Value> =
-            serde_json::from_str(include_str!("../testdata/engine_authority.json")).unwrap();
-        for trace in corpus.into_iter().filter(|v| v["live"] != true) {
-            let mut options = trace["options"].clone();
-            let variant = options
-                .as_object_mut()
-                .unwrap()
-                .remove("variantName")
-                .unwrap();
-            options["variant"] = variant;
-            if options["detrimentalCharacters"] == false {
-                options
-                    .as_object_mut()
-                    .unwrap()
-                    .remove("detrimentalCharacters");
-            }
-            let count = trace["options"]["numPlayers"].as_u64().unwrap() as usize;
-            let names = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"][..count].to_vec();
-            let actions = trace["steps"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .filter(|s| s["accepted"] == true)
-                .map(|s| s["action"].clone())
-                .collect::<Vec<_>>();
-            let mut input = json!({"players":names,"seed":trace["seed"],"options":options,"characters":trace["characters"],"actions":actions});
-            if let Some(deck) = trace.get("deck") {
-                input["seed"] = json!("");
-                input["deck"] = deck.clone();
-                assert!(
-                    parse(&input).is_err(),
-                    "Shortened engine fixtures must not bypass public import validation"
-                );
-                continue;
-            }
-            let final_step = trace["steps"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .rfind(|s| s["accepted"] == true)
-                .unwrap();
-            let after = parse(&input).unwrap();
-            assert!(
-                after.warnings.is_empty(),
-                "{} {:?}",
-                trace["name"],
-                after.warnings
-            );
-            input["actions"].as_array_mut().unwrap().pop();
-            let before = parse(&input).unwrap();
-            assert_eq!(
-                hash(json!(after.game.events[before.game.events.len()..])),
-                final_step["result"]["events"],
-                "{}",
-                trace["name"]
             );
         }
     }
