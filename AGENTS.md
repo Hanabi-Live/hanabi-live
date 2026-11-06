@@ -22,6 +22,16 @@ Choose an account that is not already in use. Do not change these accounts'
 passwords or delete them during cleanup. Keep test interactions confined to test
 accounts and their own tables.
 
+## Delivering changes
+
+After making changes, complete the required checks, commit, and push
+automatically. In the primary checkout on `main`, push directly to `main`. In a
+linked worktree, on any other branch, or with detached HEAD, push a feature
+branch and open a pull request against `main` instead. Create a feature branch
+first if detached or on `main` in a linked worktree. Update an existing pull
+request for that branch rather than opening a duplicate. Include only changes
+for the task; do not commit unrelated work.
+
 ## Before pushing
 
 Use `GITHUB_TOKEN_PERSONAL_CLASSIC` for GitHub CLI authentication:
@@ -89,13 +99,15 @@ Run `./deploy_rust.sh` from your laptop; it always uses SSH to deploy the
 source-layout installation at `root@hanab.live:/root/hanabi-live`.
 `./deploy_rust.sh --check` downloads and verifies the approved release for
 current `main` without deploying. `./deploy_rust.sh` publishes and gracefully
-restarts; reviewed pending migrations require `--apply-migrations`. The laptop
-needs Bash and SSH. Production requires an artifact-readable `GH_TOKEN` or
-`GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+, Git, and PostgreSQL client tools,
-not Node, Bun, Cargo, or the GitHub CLI. The wrapper forwards the first nonempty
-local `GH_TOKEN`, `GITHUB_TOKEN_PERSONAL_CLASSIC`, or `GITHUB_TOKEN` through
-encrypted SSH input for that deployment only. Without a local token, it uses the
-remote login-shell environment. For direct execution on production, run
+restarts; reviewed pending migrations require `--apply-migrations`. Both wait up
+to five minutes for CI on the selected `main` revision and refuse deployment on
+CI failure or timeout. The laptop needs Bash and SSH. Production requires an
+artifact-readable `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+,
+Git, and PostgreSQL client tools, not Node, Bun, Cargo, or the GitHub CLI. The
+wrapper forwards the first nonempty local `GH_TOKEN`,
+`GITHUB_TOKEN_PERSONAL_CLASSIC`, or `GITHUB_TOKEN` through encrypted SSH input
+for that deployment only. Without a local token, it uses the remote login-shell
+environment. For direct execution on production, run
 `/opt/hanabi-python/bin/python3 install/deploy_rust.py` from `~/hanabi-live`
 with the same flags. It fast-forwards the clean checkout without
 dependency-install hooks and retains deployment records and overwritten-file

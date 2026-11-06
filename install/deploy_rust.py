@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -64,8 +65,8 @@ class GitHub:
             return json.load(response)
 
 
-def approved_run(runs, revision):
-    matches = [
+def matching_runs(runs, revision):
+    return [
         run for run in runs
         if run["head_sha"] == revision
         and run["head_branch"] == "main"
@@ -73,6 +74,10 @@ def approved_run(runs, revision):
         and run["path"] == ".github/workflows/ci.yml"
         and run["head_repository"]["full_name"] == REPOSITORY
     ]
+
+
+def approved_run(runs, revision):
+    matches = matching_runs(runs, revision)
     for run in matches:
         if run["status"] == "completed" and run["conclusion"] == "success":
             return run
@@ -86,6 +91,38 @@ def approved_run(runs, revision):
         message += (f"\nNo CI run found for main {revision}. Check "
                     f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
     raise ValueError(message)
+
+
+def await_approved_run(github, revision):
+    detail = (f"CI for main {revision}: "
+              f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
+    last = None
+
+    def timed_out(_signal_number, _frame):
+        raise TimeoutError(f"CI wait timed out after 5 minutes; no deployment performed.\n{detail}")
+
+    previous_handler = signal.signal(signal.SIGALRM, timed_out)
+    # Bound stalled API requests as well as the polling sleeps.
+    signal.setitimer(signal.ITIMER_REAL, 300)
+    try:
+        while True:
+            runs = github.json(
+                f"/actions/workflows/ci.yml/runs?event=push&branch=main&head_sha={revision}&per_page=100"
+            )["workflow_runs"]
+            try:
+                return approved_run(runs, revision)
+            except ValueError as error:
+                matches = matching_runs(runs, revision)
+                if matches and all(run["status"] == "completed" for run in matches):
+                    raise
+                detail = str(error)
+            if detail != last:
+                print(f"Waiting for CI (5-minute limit).\n{detail}", flush=True)
+                last = detail
+            time.sleep(5)
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
 
 
 def download(github, run, revision, work):
@@ -264,8 +301,7 @@ def deploy(root, check, apply_migrations):
     github = GitHub()
     revision = github.json("/commits/main")["sha"]
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid main revision.")
-    runs = github.json(f"/actions/workflows/ci.yml/runs?event=push&branch=main&head_sha={revision}&per_page=100")
-    run = approved_run(runs["workflow_runs"], revision)
+    run = await_approved_run(github, revision)
     print(f"Approved main revision {revision}, CI run {run['id']}", flush=True)
     if running == revision:
         print("Already serving the approved revision with healthy recovery.")

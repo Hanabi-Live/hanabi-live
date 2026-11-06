@@ -6,7 +6,7 @@ import shlex
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import urllib.request
 
 import deploy_rust as deploy
@@ -192,6 +192,71 @@ class DeployTest(unittest.TestCase):
             self.assertIn(f"No CI run found for main {self.revision}", message)
             self.assertIn(f"https://github.com/{deploy.REPOSITORY}/actions/workflows/ci.yml", message)
             self.assertNotIn("/actions/runs/", message)
+
+    def test_ci_waits_for_matching_revision_then_returns_approved_run(self):
+        github = Mock()
+        github.json.side_effect = [
+            {"workflow_runs": [{**self.run, "head_sha": "c" * 40}]},
+            {"workflow_runs": [{**self.run, "status": "queued", "conclusion": None}]},
+            {"workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}]},
+            {"workflow_runs": [self.run]},
+        ]
+        previous_handler = deploy.signal.getsignal(deploy.signal.SIGALRM)
+        with patch.object(deploy.time, "sleep") as sleep, \
+             patch.object(deploy.signal, "setitimer") as timer, \
+             patch("builtins.print") as output:
+            self.assertEqual(deploy.await_approved_run(github, self.revision), self.run)
+        self.assertEqual(sleep.call_count, 3)
+        for call in github.json.call_args_list:
+            self.assertIn(f"head_sha={self.revision}", call.args[0])
+        self.assertTrue(any("/actions/runs/123" in call.args[0] for call in output.call_args_list))
+        self.assertEqual(timer.call_args_list[0].args, (deploy.signal.ITIMER_REAL, 300))
+        self.assertEqual(timer.call_args_list[-1].args, (deploy.signal.ITIMER_REAL, 0))
+        self.assertEqual(deploy.signal.getsignal(deploy.signal.SIGALRM), previous_handler)
+
+    def test_ci_completed_failure_stops_without_waiting(self):
+        for conclusion in ("failure", "cancelled", "timed_out", "skipped"):
+            github = Mock()
+            github.json.return_value = {
+                "workflow_runs": [{**self.run, "conclusion": conclusion}],
+            }
+            with self.subTest(conclusion=conclusion), \
+                 patch.object(deploy.time, "sleep") as sleep, \
+                 self.assertRaisesRegex(ValueError, "no successful CI"):
+                deploy.await_approved_run(github, self.revision)
+            sleep.assert_not_called()
+
+    def test_ci_deadline_interrupts_polling_and_stalled_requests(self):
+        def expire(*args):
+            deploy.signal.getsignal(deploy.signal.SIGALRM)(deploy.signal.SIGALRM, None)
+
+        for stalled_request in (False, True):
+            github = Mock()
+            github.json.return_value = {
+                "workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}],
+            }
+            if stalled_request:
+                github.json.side_effect = expire
+            previous_handler = deploy.signal.getsignal(deploy.signal.SIGALRM)
+            with self.subTest(stalled_request=stalled_request), \
+                 patch.object(deploy.time, "sleep", side_effect=expire), \
+                 patch.object(deploy.signal, "setitimer") as timer, \
+                 self.assertRaisesRegex(TimeoutError, "timed out after 5 minutes") as error:
+                deploy.await_approved_run(github, self.revision)
+            self.assertIn(self.revision, str(error.exception))
+            if not stalled_request:
+                self.assertIn("/actions/runs/123", str(error.exception))
+            self.assertEqual(timer.call_args_list[-1].args, (deploy.signal.ITIMER_REAL, 0))
+            self.assertEqual(deploy.signal.getsignal(deploy.signal.SIGALRM), previous_handler)
+
+    def test_ci_api_errors_fail_instead_of_retrying(self):
+        github = Mock()
+        github.json.side_effect = urllib.error.HTTPError("https://api.github.com", 403, "Forbidden", {}, None)
+        self.addCleanup(github.json.side_effect.close)
+        with patch.object(deploy.time, "sleep") as sleep, \
+             self.assertRaises(urllib.error.HTTPError):
+            deploy.await_approved_run(github, self.revision)
+        sleep.assert_not_called()
 
     def test_artifact_redirect_does_not_forward_github_token(self):
         request = urllib.request.Request("https://api.github.com/example",
