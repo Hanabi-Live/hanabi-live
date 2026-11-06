@@ -30,9 +30,6 @@ export class Globals {
   settings = defaultSettings;
 
   friends: readonly string[] = [];
-  shuttingDown = false;
-  datetimeShutdownInit: Date | undefined;
-  maintenanceMode = false;
 
   // -----------------------
   // Miscellaneous variables

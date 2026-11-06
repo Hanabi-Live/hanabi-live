@@ -176,30 +176,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           SERVER_COMMAND_SCHEMAS.welcome,
         );
         expect(bobWelcome.username).toBe("SmokeBob");
-        const maintenance = await fetch(`${operationsAddress}/maintenance`);
-        expect(maintenance.status).toBe(200);
-        await maintenance.text();
-        await alice.receive(
-          "maintenance",
-          SERVER_COMMAND_SCHEMAS.maintenance,
-          (data) => data.maintenanceMode,
-        );
-        alice.send("tableCreate", { name: "Blocked during maintenance" });
-        const warning = await alice.receive(
-          "warning",
-          SERVER_COMMAND_SCHEMAS.warning,
-        );
-        expect(warning.warning).toContain("maintenance");
-        const resumedCreation = await fetch(
-          `${operationsAddress}/unmaintenance`,
-        );
-        expect(resumedCreation.status).toBe(200);
-        await resumedCreation.text();
-        await alice.receive(
-          "maintenance",
-          SERVER_COMMAND_SCHEMAS.maintenance,
-          (data) => !data.maintenanceMode,
-        );
         alice.send("tableCreate", {
           name: "Compiled smoke table",
           password: "synthetic-table-password",
@@ -275,39 +251,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           bootstrap(alice),
           bootstrap(bob),
         ]);
-        const operatorWarning = await fetch(
-          `${operationsAddress}/sendWarning`,
-          {
-            method: "POST",
-            body: new URLSearchParams({
-              username: "SmokeAlice",
-              msg: "Operator notice.",
-            }),
-          },
-        );
-        expect(operatorWarning.status).toBe(200);
-        await operatorWarning.text();
-        await alice.receive(
-          "warning",
-          SERVER_COMMAND_SCHEMAS.warning,
-          (data) => data.warning === "Operator notice.",
-        );
-        const scheduled = await fetch(`${operationsAddress}/shutdown`);
-        expect(scheduled.status).toBe(200);
-        await scheduled.text();
-        await alice.receive(
-          "shutdown",
-          SERVER_COMMAND_SCHEMAS.shutdown,
-          (data) => data.shuttingDown,
-        );
-        const canceled = await fetch(`${operationsAddress}/cancel`);
-        expect(canceled.status).toBe(200);
-        await canceled.text();
-        await alice.receive(
-          "shutdown",
-          SERVER_COMMAND_SCHEMAS.shutdown,
-          (data) => !data.shuttingDown,
-        );
         const active = aliceGame.init.ourPlayerIndex === 0 ? alice : bob;
         const activeGame =
           aliceGame.init.ourPlayerIndex === 0 ? aliceGame : bobGame;
@@ -572,10 +515,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           expect(denied.status).toBe(401);
           await denied.text();
           const stopped = once(processState.child, "close");
-          const stop = await fetch(`${operationsAddress}/shutdown`);
+          const stop = await fetch(`${operationsAddress}/gracefulStop`);
           expect(stop.status).toBe(200);
           await stop.text();
-          await bounded(stopped, "empty server scheduled shutdown", 5000);
+          await bounded(stopped, "empty server graceful stop", 5000);
           expect(processState.child.exitCode).toBe(0);
         }
         const listeners = [

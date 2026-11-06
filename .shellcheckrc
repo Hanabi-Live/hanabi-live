@@ -1,0 +1,21 @@
+# This is the configuration file for shellcheck, a Bash linter:
+# https://github.com/koalaman/shellcheck
+
+shell=bash
+external-sources=true # Needed for shellcheck to follow "source" commands.
+source-path=SCRIPTDIR
+
+# Optional rules can be enumerated with: shellcheck --list
+# https://github.com/koalaman/shellcheck/issues/3368
+enable=add-default-case # SC2249
+enable=avoid-negated-conditions # SC2335
+enable=avoid-nullary-conditions # SC2243
+enable=check-extra-masked-return # SC2312
+disable=SC2310 # check-set-e-suppressed
+disable=SC2154 # check-unassigned-uppercase
+enable=deprecate-which # SC2230
+enable=quote-safe-variables # SC2223
+enable=require-double-brackets # SC2292
+enable=require-double-equals # SC2338
+disable=SC2250 # enable=require-variable-braces
+enable=useless-use-of-cat # SC2002

@@ -449,7 +449,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
 }
 
 #[tokio::test]
-async fn shared_review_chat_refreshes_idle_but_server_notices_do_not() -> Result<()> {
+async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
     };
@@ -486,15 +486,6 @@ async fn shared_review_chat_refreshes_idle_but_server_notices_do_not() -> Result
         next.game_mut().unwrap().idle_remaining = 1000;
         actor.persist(next).await?;
         actor.anchor = Instant::now() - Duration::from_millis(900);
-        actor
-            .operation(TableOperation::Notice(
-                "Automatic server announcement".into(),
-            ))
-            .await?;
-        ensure!(
-            actor.table.game().unwrap().idle_remaining <= 1000,
-            "A server announcement kept an idle review alive"
-        );
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(

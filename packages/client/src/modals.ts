@@ -4,11 +4,9 @@ import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";
-import { SoundType } from "./game/types/SoundType";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import * as lobbyNav from "./lobby/nav";
-import * as sounds from "./sounds";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
 /** Used by the morph dialog. */
@@ -288,11 +286,6 @@ export function showError(msg: string): void {
   // eslint-disable-next-line unicorn/no-unsafe-dom-html
   errorModalDescription.innerHTML = msg;
   showModal("#error-modal", false);
-
-  // Play a sound if the server has shut down.
-  if (msg.includes("The server is going down for scheduled maintenance.")) {
-    sounds.play(SoundType.DoubleDiscard);
-  }
 }
 
 /** Initializes a modal for a specific element. */

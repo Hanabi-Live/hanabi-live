@@ -25,6 +25,53 @@ fn self_data(effects: &[Effect], command: &str) -> Value {
         .unwrap_or_else(|| panic!("Missing {command} in {effects:?}"))
 }
 
+#[tokio::test]
+async fn uptime_is_private_before_history_or_discord_publication_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let user = db.user("Alice").await;
+    let who = caller(user, "Alice");
+    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chat_log")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let history_before = lobby_history(&db.pool, 100).await.unwrap();
+    for room in ["lobby", "table42"] {
+        let effects = dispatch_chat(&db.pool, "secret", &who, "/UpTiMe", room, None)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(matches!(effects.as_slice(),
+            [Effect::RuntimeChat { command, room: response_room, .. }]
+            if command == "uptime" && response_room == room
+        ));
+    }
+    assert!(matches!(classify_chat("/UpTiMe"), Classification::Private));
+    assert!(
+        external_command(&db.pool, "/uptime")
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap(),
+        before
+    );
+    sqlx::query(
+        "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/UpTiMe','lobby')",
+    )
+    .bind(user)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(lobby_history(&db.pool, 100).await.unwrap(), history_before);
+    db.close().await;
+}
+
 async fn run(
     pool: &PgPool,
     caller: &Caller,

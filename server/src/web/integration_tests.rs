@@ -147,6 +147,101 @@ async fn receive(socket: &mut Socket, command: &str) -> Value {
 }
 
 #[tokio::test]
+async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let alice_cookie = login(&fixture, "Alice").await;
+    let bob_cookie = login(&fixture, "Bob").await;
+    let mut alice = connect(&fixture, &alice_cookie, false).await;
+    let mut bob = connect(&fixture, &bob_cookie, false).await;
+    receive(&mut alice, "welcome").await;
+    receive(&mut bob, "welcome").await;
+    alice
+        .send(WireMessage::Text(
+            "tableCreate {\"name\":\"Private uptime\"}".into(),
+        ))
+        .await
+        .unwrap();
+    let table = receive(&mut alice, "joined").await["tableID"]
+        .as_u64()
+        .unwrap();
+    bob.send(WireMessage::Text(
+        format!("tableJoin {{\"tableID\":{table}}}").into(),
+    ))
+    .await
+    .unwrap();
+    receive(&mut bob, "joined").await;
+    alice
+        .send(WireMessage::Text("sync {}".into()))
+        .await
+        .unwrap();
+    receive(&mut alice, "synced").await;
+    bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
+    receive(&mut bob, "synced").await;
+    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chat_log")
+        .fetch_one(&fixture.db.pool)
+        .await
+        .unwrap();
+    let tables_before = fixture.app.store.load().await.unwrap();
+    for room in ["lobby".to_owned(), format!("table{table}")] {
+        let payload = json!({"msg":"/UpTiMe","room":room});
+        alice
+            .send(WireMessage::Text(format!("chat {payload}").into()))
+            .await
+            .unwrap();
+        for prefix in ["The server came online at:", "Uptime:"] {
+            let reply = receive(&mut alice, "chat").await;
+            assert_eq!(reply["who"], "Hanab Live");
+            assert_eq!(reply["recipient"], "Alice");
+            assert_eq!(reply["room"], room);
+            assert_eq!(reply["source"], "server");
+            assert!(reply["msg"].as_str().unwrap().starts_with(prefix));
+            assert!(reply.get("chatID").is_none());
+        }
+        bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
+        tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                let WireMessage::Text(text) = bob.next().await.unwrap().unwrap() else {
+                    continue;
+                };
+                let (command, _) = text.split_once(' ').unwrap();
+                assert_ne!(
+                    command, "chat",
+                    "Private uptime leaked to another player: {text}"
+                );
+                if command == "synced" {
+                    break;
+                }
+            }
+        })
+        .await
+        .unwrap();
+    }
+    assert_eq!(
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log")
+            .fetch_one(&fixture.db.pool)
+            .await
+            .unwrap(),
+        before
+    );
+    let tables_after = fixture.app.store.load().await.unwrap();
+    assert_eq!(
+        tables_before
+            .iter()
+            .map(|(table, _)| (table.id, table.chat.len()))
+            .collect::<Vec<_>>(),
+        tables_after
+            .iter()
+            .map(|(table, _)| (table.id, table.chat.len()))
+            .collect::<Vec<_>>()
+    );
+    alice.close(None).await.unwrap();
+    bob.close(None).await.unwrap();
+    fixture.close().await;
+}
+
+#[tokio::test]
 async fn http2_login_accepts_uri_authority_without_host_header_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;

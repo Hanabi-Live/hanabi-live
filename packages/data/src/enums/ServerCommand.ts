@@ -50,8 +50,6 @@ export enum ServerCommand {
   userLeft = "userLeft",
   userList = "userList",
   warning = "warning",
-  maintenance = "maintenance",
-  shutdown = "shutdown",
   soundLobby = "soundLobby",
   welcome = "welcome",
 }

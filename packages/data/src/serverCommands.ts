@@ -229,9 +229,9 @@ const serverCommandWelcomeData = z
     disconSpectatingTable: tableID.optional(),
     disconShadowingSeat: z.number().int().optional(),
 
-    shuttingDown: z.boolean(),
-    datetimeShutdownInit: z.string().min(1).optional(),
-    maintenanceMode: z.boolean(),
+    // Older open clients require these fields; the retired modes are always disabled.
+    shuttingDown: z.literal(false),
+    maintenanceMode: z.literal(false),
   })
   .strict()
   .readonly();
@@ -245,20 +245,6 @@ export interface ServerCommandWelcomeData extends z.infer<
 // Collections
 // -----------
 
-const serverCommandMaintenanceData = z
-  .object({
-    maintenanceMode: z.boolean(),
-  })
-  .strict()
-  .readonly();
-
-const serverCommandShutdownData = z
-  .object({
-    shuttingDown: z.boolean(),
-    datetimeShutdownInit: z.string().optional(),
-  })
-  .strict()
-  .readonly();
 const serverCommandSoundLobbyData = z
   .object({
     file: z.string().min(1),
@@ -270,8 +256,6 @@ export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.restart]: z.infer<typeof emptySchema>;
   [ServerCommand.lobbyStatus]: z.infer<typeof lobbyStatus>;
   [ServerCommand.chatTyping]: z.infer<typeof serverCommandChatTypingData>;
-  [ServerCommand.maintenance]: z.infer<typeof serverCommandMaintenanceData>;
-  [ServerCommand.shutdown]: z.infer<typeof serverCommandShutdownData>;
   [ServerCommand.soundLobby]: z.infer<typeof serverCommandSoundLobbyData>;
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
@@ -306,8 +290,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.lobbyStatus]: lobbyStatus,
   [ServerCommand.chatTyping]: serverCommandChatTypingData,
   ...GAME_SERVER_COMMAND_SCHEMAS,
-  [ServerCommand.maintenance]: serverCommandMaintenanceData,
-  [ServerCommand.shutdown]: serverCommandShutdownData,
   [ServerCommand.soundLobby]: serverCommandSoundLobbyData,
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatDelete]: serverCommandChatDeleteData,

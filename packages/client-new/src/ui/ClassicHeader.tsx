@@ -195,12 +195,7 @@ export function ClassicHeader({
                   <button
                     aria-label="Create a table"
                     className="button"
-                    disabled={
-                      !online
-                      || pending !== null
-                      || welcome.maintenanceMode
-                      || welcome.shuttingDown
-                    }
+                    disabled={!online || pending !== null}
                     onClick={create}
                   >
                     <i aria-hidden="true" className="fas fa-plus nav-icon" />

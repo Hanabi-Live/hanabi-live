@@ -1,4 +1,5 @@
 use super::*;
+use std::time::Duration;
 
 #[tokio::test]
 async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Result<()> {
@@ -122,45 +123,6 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
 }
 
 #[tokio::test]
-async fn scheduled_shutdown_warns_clears_terminates_and_stops_after_empty_grace() {
-    let pool = sqlx::postgres::PgPoolOptions::new()
-        .connect_lazy("postgres://unused@127.0.0.1/unused")
-        .unwrap();
-    let mut h = crate::operations_tests::Harness::new(pool);
-    h.control.schedule().await.unwrap();
-    {
-        let mut scheduled = h.control.schedule.lock().unwrap();
-        scheduled.as_mut().unwrap().deadline = Instant::now() - Duration::from_secs(1);
-    }
-    h.control.tick().await.unwrap();
-    assert!(
-        h.operations
-            .lock()
-            .unwrap()
-            .iter()
-            .any(|o| matches!(o, Operation::ClearPregames))
-    );
-    assert!(
-        h.operations
-            .lock()
-            .unwrap()
-            .iter()
-            .any(|o| matches!(o, Operation::TerminateGames))
-    );
-    h.active.store(0, Ordering::Release);
-    h.control
-        .schedule
-        .lock()
-        .unwrap()
-        .as_mut()
-        .unwrap()
-        .empty_since = Some(Instant::now() - Duration::from_secs(11));
-    h.control.tick().await.unwrap();
-    assert!(matches!(h.stops.recv().await, Some(StopReason::Shutdown)));
-    h.close().await;
-}
-
-#[tokio::test]
 async fn orderly_drain_waits_for_admitted_operations() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
@@ -184,30 +146,19 @@ async fn orderly_drain_waits_for_admitted_operations() {
 }
 
 #[tokio::test]
-async fn graceful_stop_cancels_scheduled_termination_without_waiting_for_games() {
+async fn graceful_stop_does_not_wait_for_or_terminate_games() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     let mut h = crate::operations_tests::Harness::new(pool);
-    h.control.schedule().await.unwrap();
+    assert_eq!(h.active.load(Ordering::Acquire), 1);
     h.control.graceful_stop().await.unwrap();
     assert!(matches!(
         h.stops.recv().await,
         Some(StopReason::GracefulStop)
     ));
-    assert!(h.control.schedule.lock().unwrap().is_none());
     assert!(h.control.draining.load(Ordering::Acquire));
-    h.control.tick().await.unwrap();
-    assert!(
-        !h.operations
-            .lock()
-            .unwrap()
-            .iter()
-            .any(|operation| matches!(
-                operation,
-                Operation::ClearPregames | Operation::TerminateGames
-            ))
-    );
+    assert!(h.operations.lock().unwrap().is_empty());
     assert!(h.control.graceful_stop().await.is_err());
     h.close().await;
 }

@@ -15,7 +15,6 @@ import {
   isValidNumPlayers,
 } from "@hanabi-live/game";
 import {
-  MINUTE_IN_MILLISECONDS,
   ReadonlySet,
   getRandomArrayElement,
   parseFloatSafe,
@@ -23,7 +22,6 @@ import {
 } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
-import { SHUTDOWN_TIMEOUT_MINUTES } from "../constants";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLInputElement } from "../utils";
@@ -487,43 +485,6 @@ export function checkSettingChanged<T extends keyof Settings>(
       setting: value.toString(), // The server expects the value of all settings as strings.
     });
   }
-}
-
-// This function is executed every time the "Create Game" button is clicked (before the tooltip is
-// added to the DOM).
-export function before(): boolean {
-  if (globals.shuttingDown && globals.datetimeShutdownInit !== undefined) {
-    const now = new Date();
-    const elapsedTimeMilliseconds =
-      now.getTime() - globals.datetimeShutdownInit.getTime();
-    const shutdownTimeoutMilliseconds =
-      SHUTDOWN_TIMEOUT_MINUTES * MINUTE_IN_MILLISECONDS;
-    const millisecondsLeft =
-      shutdownTimeoutMilliseconds - elapsedTimeMilliseconds;
-    const minutesLeft = new Date(millisecondsLeft).getMinutes();
-    if (minutesLeft <= 5) {
-      let msg = "The server is shutting down ";
-      if (minutesLeft <= 0) {
-        msg += "momentarily";
-      } else if (minutesLeft === 1) {
-        msg += "in 1 minute";
-      } else {
-        msg += `in ${minutesLeft} minutes`;
-      }
-      msg += ". You cannot start any new games for the time being.";
-      modals.showWarning(msg);
-      return false;
-    }
-  }
-
-  if (globals.maintenanceMode) {
-    modals.showWarning(
-      "The server is currently in maintenance mode. You cannot start any new games for the time being.",
-    );
-    return false;
-  }
-
-  return true;
 }
 
 // This function is executed every time the "Create Game" button is clicked (after the tooltip is

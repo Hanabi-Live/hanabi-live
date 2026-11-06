@@ -246,7 +246,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
         const table = state.pregame;
         switch (event.code) {
           case "KeyN": {
-            if (!table && state.welcome?.maintenanceMode === false) {
+            if (!table && state.welcome) {
               setDialog("create");
             }
             break;
@@ -724,18 +724,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
                     </button>
                   )}
                 </div>
-                {state.welcome.maintenanceMode && (
-                  <div className="notice" role="status">
-                    The server is in maintenance mode. New games are temporarily
-                    unavailable.
-                  </div>
-                )}
-                {state.welcome.shuttingDown && (
-                  <div className="notice" role="status">
-                    The server is preparing for maintenance. Finish your current
-                    game; new games may be unavailable.
-                  </div>
-                )}
                 {state.lobbyError && (
                   <div className="notice" role="alert">
                     {state.lobbyError}

@@ -46,10 +46,6 @@ impl Harness {
                             json!({"activeGames":count.load(Ordering::Acquire),"users":[],"tables":[
                             {"id":7,"name":"Old table","created":"2020-01-01T00:00:00Z","running":true,"replay":false,"frozen":false}]})
                         }
-                        Operation::Warning {
-                            user_id: Some(_), ..
-                        } => json!({"missing":true}),
-                        Operation::Warning { user_id: None, .. } => json!({"sent":2,"total":3}),
                         Operation::Terminate { identifier } => {
                             json!({"found":identifier=="7","terminated":identifier=="7"})
                         }
@@ -144,7 +140,7 @@ async fn graceful_stop_is_loopback_only_and_rejects_repeated_requests() {
     h.close().await;
 }
 #[tokio::test]
-async fn loopback_routes_admission_and_schedule() {
+async fn loopback_routes_admission() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
@@ -152,17 +148,14 @@ async fn loopback_routes_admission_and_schedule() {
     let app = router(h.control.clone());
     for (path, text) in [
         ("/version", "test-commit"),
-        ("/uptime", "Uptime:"),
-        ("/timeLeft", "not scheduled"),
         ("/getLongTables", "Table ID: 7"),
-        ("/memory", "RSS"),
     ] {
         let (status, body) = request(app.clone(), path, None).await;
         assert_eq!(status, StatusCode::OK, "{body}");
         assert!(body.contains(text), "{body}");
     }
     let mut browser = Request::builder()
-        .uri("/shutdown")
+        .uri("/gracefulStop")
         .header("Origin", "")
         .body(Body::empty())
         .unwrap();
@@ -174,7 +167,7 @@ async fn loopback_routes_admission_and_schedule() {
         StatusCode::FORBIDDEN
     );
     let mut remote = Request::builder()
-        .uri("/shutdown")
+        .uri("/gracefulStop")
         .body(Body::empty())
         .unwrap();
     remote
@@ -183,28 +176,6 @@ async fn loopback_routes_admission_and_schedule() {
     assert_eq!(
         app.clone().oneshot(remote).await.unwrap().status(),
         StatusCode::FORBIDDEN
-    );
-    assert_eq!(
-        request(app.clone(), "/maintenance", None).await.0,
-        StatusCode::OK
-    );
-    assert_eq!(
-        request(app.clone(), "/maintenance", None).await.0,
-        StatusCode::BAD_REQUEST
-    );
-    assert_eq!(
-        request(app.clone(), "/unmaintenance", None).await.0,
-        StatusCode::OK
-    );
-    assert_eq!(
-        request(app.clone(), "/unmaintenance", None).await.0,
-        StatusCode::BAD_REQUEST
-    );
-    assert_eq!(
-        request(app.clone(), "/sendWarningAll", Some("msg=hello"))
-            .await
-            .1,
-        "Message sent to 2 out of 3 found online."
     );
     assert_eq!(
         request(app.clone(), "/terminate?tableID=7", None).await.0,
@@ -220,35 +191,9 @@ async fn loopback_routes_admission_and_schedule() {
         request(app.clone(), "/terminate", None).await.0,
         StatusCode::BAD_REQUEST
     );
-    assert_eq!(
-        request(app.clone(), "/shutdown", None).await.0,
-        StatusCode::OK
-    );
-    assert_eq!(
-        request(app.clone(), "/shutdown", None).await.0,
-        StatusCode::BAD_REQUEST
-    );
-    assert!(
-        request(app.clone(), "/timeLeft", None)
-            .await
-            .1
-            .contains("Time left until")
-    );
-    assert_eq!(
-        request(app.clone(), "/cancel", None).await.0,
-        StatusCode::OK
-    );
-    assert_eq!(
-        request(app.clone(), "/cancel", None).await.0,
-        StatusCode::BAD_REQUEST
-    );
-    assert_eq!(
-        request(app.clone(), "/saveTables", None).await.0,
-        StatusCode::GONE
-    );
     h.control.begin_drain().await;
     assert_eq!(
-        request(app, "/maintenance", None).await.0,
+        request(app, "/gracefulStop", None).await.0,
         StatusCode::SERVICE_UNAVAILABLE
     );
     h.close().await;
@@ -299,16 +244,6 @@ async fn moderation_uses_canonical_accounts_and_persists_ip_actions() {
             .await
             .1
             .contains("does not exist")
-    );
-    assert_eq!(
-        request(
-            app.clone(),
-            "/sendWarning",
-            Some("username=Alice&msg=hello")
-        )
-        .await
-        .0,
-        StatusCode::INTERNAL_SERVER_ERROR
     );
     let (status, body) = request(app, "/metrics", None).await;
     assert_eq!(status, StatusCode::OK, "{body}");

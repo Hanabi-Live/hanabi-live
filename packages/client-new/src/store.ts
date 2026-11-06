@@ -281,20 +281,6 @@ const slice = createSlice({
           break;
         }
 
-        case "maintenance": {
-          if (state.welcome) {
-            state.welcome.maintenanceMode = event.data.maintenanceMode;
-          }
-          break;
-        }
-
-        case "shutdown": {
-          if (state.welcome) {
-            state.welcome.shuttingDown = event.data.shuttingDown;
-          }
-          break;
-        }
-
         case "chat": {
           if (
             (!event.data.chatID

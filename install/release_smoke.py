@@ -224,7 +224,7 @@ def exercise(archive, redis_url):
                     raise AssertionError("Restart lost the shared lifecycle lock")
             except BlockingIOError:
                 pass
-            request("/shutdown")
+            request("/gracefulStop")
             assert process.wait(timeout=20) == 0
             try:
                 release.activate(root, revision)

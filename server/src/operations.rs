@@ -2,56 +2,20 @@ use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub enum Operation {
-    Broadcast {
-        message: String,
-    },
-    Kick {
-        user_id: i32,
-    },
-    Ban {
-        user_id: i32,
-    },
-    Unban {
-        user_id: i32,
-    },
-    Mute {
-        user_id: i32,
-    },
-    Unmute {
-        user_id: i32,
-    },
-    Warning {
-        user_id: Option<i32>,
-        message: String,
-        error: bool,
-    },
-    Maintenance {
-        enabled: bool,
-    },
-    Shutdown {
-        scheduled: bool,
-        started_at: Option<String>,
-        imminent: bool,
-    },
+    Kick { user_id: i32 },
+    Ban { user_id: i32 },
+    Unban { user_id: i32 },
+    Mute { user_id: i32 },
+    Unmute { user_id: i32 },
     Inspect,
-    Drained {
-        reconnect: bool,
-    },
+    Drained { reconnect: bool },
     LongTables,
-    ClearEmptyTables,
-    ClearPregames,
-    TerminateGames,
-    Terminate {
-        identifier: String,
-    },
+    Terminate { identifier: String },
 }
 
 pub type OperationReply = tokio::sync::oneshot::Sender<anyhow::Result<Value>>;
 
-use crate::{
-    lifecycle::{Control, duration},
-    metrics,
-};
+use crate::{lifecycle::Control, metrics};
 use anyhow::Context;
 use axum::{
     Json, Router,
@@ -71,32 +35,15 @@ use std::{
 
 pub fn router(control: Arc<Control>) -> Router {
     let mut router = Router::new();
-    for path in [
-        "/ban",
-        "/mute",
-        "/sendError",
-        "/sendWarning",
-        "/sendWarningAll",
-    ] {
+    for path in ["/ban", "/mute"] {
         router = router.route(path, post(handle));
     }
     for path in [
-        "/cancel",
-        "/clearEmptyTables",
-        "/debugFunction",
         "/getLongTables",
         "/gracefulRestart",
         "/gracefulStop",
-        "/maintenance",
-        "/memory",
         "/metrics",
-        "/print",
-        "/saveTables",
-        "/shutdown",
-        "/timeLeft",
-        "/uptime",
         "/version",
-        "/unmaintenance",
     ] {
         router = router.route(path, get(handle));
     }
@@ -108,22 +55,7 @@ pub fn router(control: Arc<Control>) -> Router {
 }
 
 fn mutating(path: &str) -> bool {
-    matches!(
-        path,
-        "/ban"
-            | "/mute"
-            | "/sendError"
-            | "/sendWarning"
-            | "/sendWarningAll"
-            | "/cancel"
-            | "/clearEmptyTables"
-            | "/debugFunction"
-            | "/maintenance"
-            | "/unmaintenance"
-            | "/shutdown"
-            | "/gracefulStop"
-            | "/terminate"
-    )
+    matches!(path, "/ban" | "/mute" | "/gracefulStop" | "/terminate")
 }
 async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next) -> Response {
     let peer = request.extensions().get::<ConnectInfo<SocketAddr>>();
@@ -216,69 +148,66 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
     })?;
     let body = parameters(&body);
     match path.as_str() {
-        "/ban"|"/mute"|"/sendError"|"/sendWarning"=>return user_action(&control,&path,&body).await,
-        "/sendWarningAll"=>{
-            let message=body.get("msg").filter(|v|!v.is_empty()).ok_or_else(||bad("You must send a \"msg\" POST parameter."))?;
-            let result=control.operation(Operation::Warning{user_id:None,message:message.clone(),error:false}).await?;
-            let total=result["total"].as_u64().context("Hub did not report connected users")?;
-            let sent=result["sent"].as_u64().context("Hub did not report warning deliveries")?;
-            return Ok(if total==0{"No users found online\n".into()}else{format!("Message sent to {sent} out of {total} found online.")}.into_response());
+        "/ban" | "/mute" => return user_action(&control, &path, &body).await,
+        "/terminate" => {
+            let id = body
+                .get("tableID")
+                .filter(|v| !v.is_empty())
+                .or_else(|| query.get("tableID").filter(|v| !v.is_empty()))
+                .ok_or_else(|| bad("Error: You must specify a table name or a table ID."))?;
+            let result = control
+                .operation(Operation::Terminate {
+                    identifier: id.clone(),
+                })
+                .await?;
+            if result["found"] == false {
+                return Ok(format!("Table \"{id}\" does not exist.\n").into_response());
+            }
+            if result["terminated"] != true {
+                return Err(bad("That table is not an ongoing game."));
+            }
         }
-        "/terminate"=>{
-            let id=body.get("tableID").filter(|v|!v.is_empty()).or_else(||query.get("tableID").filter(|v|!v.is_empty()))
-                .ok_or_else(||bad("Error: You must specify a table name or a table ID."))?;
-            let result=control.operation(Operation::Terminate{identifier:id.clone()}).await?;
-            if result["found"]==false{return Ok(format!("Table \"{id}\" does not exist.\n").into_response())}
-            if result["terminated"]!=true{return Err(bad("That table is not an ongoing game."))}
-        }
-        "/clearEmptyTables"=>{control.operation(Operation::ClearEmptyTables).await?;}
-        "/debugFunction"=>eprintln!("Debug functions complete; no manual repair is enabled."),
-        "/getLongTables"=>{
-            let value=control.operation(Operation::LongTables).await?;
-            let tables=value["tables"].as_array().context("Hub table inspection is unavailable")?;
-            let mut lines=vec!["Long tables:".to_owned()];
+        "/getLongTables" => {
+            let value = control.operation(Operation::LongTables).await?;
+            let tables = value["tables"]
+                .as_array()
+                .context("Hub table inspection is unavailable")?;
+            let mut lines = vec!["Long tables:".to_owned()];
             for table in tables {
-                let created=table["created"].as_str().context("Table creation date is missing")?;
-                let date=chrono::DateTime::parse_from_rfc3339(created).map_err(anyhow::Error::from)?;
-                if chrono::Utc::now().signed_duration_since(date).num_minutes()>=150 {
-                    lines.push(format!("{}) Table ID: {}, Name: {}",lines.len(),table["id"],table["name"].as_str().context("Table name is missing")?));
+                let created = table["created"]
+                    .as_str()
+                    .context("Table creation date is missing")?;
+                let date =
+                    chrono::DateTime::parse_from_rfc3339(created).map_err(anyhow::Error::from)?;
+                if chrono::Utc::now().signed_duration_since(date).num_minutes() >= 150 {
+                    lines.push(format!(
+                        "{}) Table ID: {}, Name: {}",
+                        lines.len(),
+                        table["id"],
+                        table["name"].as_str().context("Table name is missing")?
+                    ));
                 }
             }
-            return Ok(format!("{}\n",lines.join("\n")).into_response())
+            return Ok(format!("{}\n", lines.join("\n")).into_response());
         }
-        "/gracefulRestart"=>{
-            if !control.accepting.load(Ordering::Acquire){return Err(Error(StatusCode::SERVICE_UNAVAILABLE,"The server is not ready for lifecycle operations.\n".into()))}
-            if control.draining.load(Ordering::Acquire){return Err(bad("The server is already draining."))}
-            control.request_stop(crate::lifecycle::StopReason::Restart).await?;
-        }
-        "/gracefulStop"=>control.graceful_stop().await?,
-        "/maintenance"|"/unmaintenance"=>{
-            let enabled=path=="/maintenance";
-            if !control.set_maintenance(enabled).await? {
-                return Err(bad(if enabled{"The server is already in maintenance mode."}else{"The server is not in maintenance mode, so you cannot unmaintenance it."}));
+        "/gracefulRestart" => {
+            if !control.accepting.load(Ordering::Acquire) {
+                return Err(Error(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "The server is not ready for lifecycle operations.\n".into(),
+                ));
             }
+            if control.draining.load(Ordering::Acquire) {
+                return Err(bad("The server is already draining."));
+            }
+            control
+                .request_stop(crate::lifecycle::StopReason::Restart)
+                .await?;
         }
-        "/memory"=>{
-            let memory=metrics::memory().await?;
-            return Ok(format!("\nMemory Report:\n  RSS = {} MiB\n  Virtual = {} MiB\n",
-                memory["residentBytes"].as_u64().context("Missing RSS")?/1024/1024,
-                memory["virtualBytes"].as_u64().context("Missing process size")?/1024/1024).into_response())
-        }
-        "/metrics"=>return metrics_report(&control).await,
-        "/print"=>{eprintln!("Current application state: {}",control.operation(Operation::Inspect).await?);}
-        "/saveTables"=>return Ok((StatusCode::GONE,"Emergency table saves are retired; no save was performed. Accepted progress uses continuous Redis recovery. Use /gracefulRestart for planned maintenance or recovery of frozen tables.\n").into_response()),
-        "/shutdown"=>{
-            if control.metadata()["shuttingDown"]==true{return Err(bad("The server is already shutting down."))}
-            control.schedule().await?;
-        }
-        "/cancel"=>{
-            if control.metadata()["shuttingDown"]!=true{return Err(bad("The server is not awaiting shutdown, so you cannot cancel it."))}
-            control.cancel_schedule().await?;
-        }
-        "/timeLeft"=>return Ok(format!("{}\n",control.time_left()).into_response()),
-        "/uptime"=>return Ok(format!("The server came online at: {}\nUptime: {}\n",control.started.format("%a %b %d %H:%M:%S UTC %Y"),duration(control.monotonic_started.elapsed().as_secs())).into_response()),
-        "/version"=>return Ok(format!("{}\n",control.version).into_response()),
-        _=>return Err(Error(StatusCode::NOT_FOUND,"404 not found\n".into()))
+        "/gracefulStop" => control.graceful_stop().await?,
+        "/metrics" => return metrics_report(&control).await,
+        "/version" => return Ok(format!("{}\n", control.version).into_response()),
+        _ => return Err(Error(StatusCode::NOT_FOUND, "404 not found\n".into())),
     }
     Ok("success\n".into_response())
 }
@@ -303,59 +232,39 @@ async fn user_action(
     };
     let id: i32 = account.id;
     let username: String = account.username.clone();
-    if matches!(path, "/ban" | "/mute") {
-        let ip: String = account.last_ip.clone();
-        let result = if path == "/ban" {
-            sqlx::query!(
-                "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
-                &ip,
-                id
-            )
-            .execute(&control.pool)
-            .await
-        } else {
-            sqlx::query!(
-                "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
-                &ip,
-                id
-            )
-            .execute(&control.pool)
-            .await
-        };
-        let inserted = result.map_err(anyhow::Error::from)?.rows_affected() > 0;
-        if !inserted {
-            return Ok(format!(
-                "User \"{username}\" has an IP of \"{ip}\", but it is already {}.\n",
-                if path == "/ban" { "banned" } else { "muted" }
-            )
-            .into_response());
-        }
-        control
-            .operation(if path == "/ban" {
-                Operation::Ban { user_id: id }
-            } else {
-                Operation::Mute { user_id: id }
-            })
-            .await?;
+    let ip: String = account.last_ip.clone();
+    let result = if path == "/ban" {
+        sqlx::query!(
+            "INSERT INTO banned_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+            &ip,
+            id
+        )
+        .execute(&control.pool)
+        .await
     } else {
-        let message = body
-            .get("msg")
-            .filter(|v| !v.is_empty())
-            .ok_or_else(|| bad("You must send a \"msg\" POST parameter."))?;
-        let result = control
-            .operation(Operation::Warning {
-                user_id: Some(id),
-                message: message.clone(),
-                error: path == "/sendError",
-            })
-            .await?;
-        if result["missing"] == true {
-            return Err(Error(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to get the session for the user ID of \"{id}\"."),
-            ));
-        }
+        sqlx::query!(
+            "INSERT INTO muted_ips(ip,user_id) VALUES($1,$2) ON CONFLICT(ip) DO NOTHING",
+            &ip,
+            id
+        )
+        .execute(&control.pool)
+        .await
+    };
+    let inserted = result.map_err(anyhow::Error::from)?.rows_affected() > 0;
+    if !inserted {
+        return Ok(format!(
+            "User \"{username}\" has an IP of \"{ip}\", but it is already {}.\n",
+            if path == "/ban" { "banned" } else { "muted" }
+        )
+        .into_response());
     }
+    control
+        .operation(if path == "/ban" {
+            Operation::Ban { user_id: id }
+        } else {
+            Operation::Mute { user_id: id }
+        })
+        .await?;
     Ok("success\n".into_response())
 }
 async fn metrics_report(control: &Control) -> Result<Response> {
@@ -373,7 +282,7 @@ async fn metrics_report(control: &Control) -> Result<Response> {
             .count()
     );
     let mut report = json!({"uptimeSeconds":control.monotonic_started.elapsed().as_secs_f64(),
-        "draining":control.draining.load(Ordering::Acquire),"maintenanceMode":control.maintenance.load(Ordering::Acquire),
+        "draining":control.draining.load(Ordering::Acquire),
         "discord":control.integration_status()["discord"],
         "runtime":metrics::memory().await?,"commands":metrics::COMMAND_METRICS.snapshot(),"recovery":recovery});
     let database: std::result::Result<Value, anyhow::Error> = if let Some(store) = control.store() {

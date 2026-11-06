@@ -264,9 +264,7 @@ pub enum TableCommand {
     },
 }
 pub enum TableOperation {
-    Notice(String),
     Terminate,
-    Clear { pregames: bool, empty: bool },
     Kick(i32),
 }
 pub struct Hub {
@@ -275,8 +273,6 @@ pub struct Hub {
     sessions: HashMap<i32, Presence>,
     tables: HashMap<u64, Entry>,
     closing: bool,
-    maintenance: bool,
-    shutdown_imminent: bool,
     store: Store,
     tasks: TaskTracker,
     capacity: Arc<Semaphore>,
@@ -292,8 +288,6 @@ impl Hub {
             sessions: HashMap::new(),
             tables: HashMap::new(),
             closing: false,
-            maintenance: false,
-            shutdown_imminent: false,
             store,
             tasks: tasks.clone(),
             capacity: Arc::new(Semaphore::new(256)),
@@ -439,10 +433,8 @@ impl Hub {
         }
     }
     fn create(&self, s: Arc<Session>, command: String, data: Value, reply: Reply) {
-        if self.closing || self.maintenance || self.shutdown_imminent || !self.current(&s) {
-            let message = if self.maintenance {
-                "The server is undergoing maintenance."
-            } else if self.closing || self.shutdown_imminent {
+        if self.closing || !self.current(&s) {
+            let message = if self.closing {
                 "The server is shutting down."
             } else {
                 "Your session is no longer current."
@@ -604,47 +596,6 @@ impl Hub {
             Operation::Inspect | Operation::LongTables => Ok(
                 json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
             ),
-            Operation::Maintenance { enabled } => {
-                self.maintenance = enabled;
-                self.broadcast(&frame("maintenance", json!({"maintenanceMode":enabled})));
-                Ok(json!({"enabled":enabled}))
-            }
-            Operation::Shutdown {
-                scheduled,
-                started_at,
-                imminent,
-            } => {
-                self.shutdown_imminent = scheduled && imminent;
-                let mut metadata = json!({"shuttingDown":scheduled});
-                if let Some(started_at) = started_at {
-                    metadata["datetimeShutdownInit"] = json!(started_at);
-                }
-                self.broadcast(&frame("shutdown", metadata));
-                Ok(json!({}))
-            }
-            Operation::Warning {
-                user_id,
-                message,
-                error,
-            } => {
-                let command = if error { "error" } else { "warning" };
-                let data = if error {
-                    json!({"error":message})
-                } else {
-                    json!({"warning":message})
-                };
-                if let Some(id) = user_id {
-                    if let Some(p) = self.sessions.get(&id) {
-                        p.session.emit(&frame(command, data));
-                        Ok(json!({"sent":1,"total":self.sessions.len()}))
-                    } else {
-                        Ok(json!({"missing":true}))
-                    }
-                } else {
-                    self.broadcast(&frame(command, data));
-                    Ok(json!({"sent":self.sessions.len(),"total":self.sessions.len()}))
-                }
-            }
             Operation::Kick { user_id }
             | Operation::Ban { user_id }
             | Operation::Mute { user_id } => {
@@ -662,31 +613,6 @@ impl Hub {
                     p.session.emit(&frame(
                         "warning",
                         json!({"warning":"Your moderation settings have changed."}),
-                    ));
-                }
-                Ok(json!({}))
-            }
-            Operation::Broadcast { message } => {
-                self.broadcast(&frame("chat", server_chat(0, &message)));
-                for e in self.tables.values() {
-                    jobs.push((e.handle.clone(), TableOperation::Notice(message.clone())));
-                }
-                Ok(json!({}))
-            }
-            Operation::ClearEmptyTables | Operation::ClearPregames | Operation::TerminateGames => {
-                let (pregames, empty, terminate) = match command {
-                    Operation::ClearPregames => (true, false, false),
-                    Operation::ClearEmptyTables => (false, true, false),
-                    _ => (false, false, true),
-                };
-                for e in self.tables.values() {
-                    jobs.push((
-                        e.handle.clone(),
-                        if terminate {
-                            TableOperation::Terminate
-                        } else {
-                            TableOperation::Clear { pregames, empty }
-                        },
                     ));
                 }
                 Ok(json!({}))
@@ -878,10 +804,8 @@ impl Hub {
                     except,
                     reply,
                 } => {
-                    let result = if self.closing || self.maintenance || self.shutdown_imminent {
-                        Err(anyhow::anyhow!(
-                            "The server is undergoing maintenance or shutting down."
-                        ))
+                    let result = if self.closing {
+                        Err(anyhow::anyhow!("The server is shutting down."))
                     } else if users
                         .iter()
                         .any(|user| self.playing_elsewhere(*user, Some(except)))
@@ -4517,20 +4441,6 @@ impl TableActor {
         self.store.check_state()?;
         ensure!(!self.frozen, "Table frozen until recovery");
         match operation {
-            TableOperation::Notice(message) => {
-                let mut next = self.candidate();
-                let message = server_chat(self.table.id, &message);
-                next.chat.push(TableChat {
-                    id: None,
-                    user: 0,
-                    message: message.clone(),
-                });
-                self.persist(next).await?;
-                let mut e = self.effects();
-                self.add_all(&mut e, "chat", message);
-                self.publish(e).await?;
-                Ok(json!({"sent":true}))
-            }
             TableOperation::Terminate => {
                 if !matches!(self.table.phase, Phase::Live { .. }) {
                     return Ok(json!({"terminated":false}));
@@ -4551,16 +4461,6 @@ impl TableActor {
                 self.persist(next).await?;
                 self.transitions(from).await?;
                 Ok(json!({"terminated":true}))
-            }
-            TableOperation::Clear { pregames, empty } => {
-                let clear = (pregames && matches!(self.table.phase, Phase::Pregame { .. }))
-                    || (empty
-                        && self.attendees.is_empty()
-                        && !matches!(self.table.phase, Phase::Live { .. }));
-                if clear {
-                    self.retire().await?;
-                }
-                Ok(json!({"removed":clear}))
             }
             TableOperation::Kick(user) => {
                 if let Some(a) = self.attendees.remove(&user) {

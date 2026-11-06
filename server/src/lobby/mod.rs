@@ -65,8 +65,8 @@ pub enum Effect {
         server: bool,
         message: String,
     },
-    /// Runtime-specific replies need the parent's domain, uptime or shutdown
-    /// state. The original public command has already been persisted.
+    /// Runtime-specific replies need the parent's domain or uptime.
+    /// Public commands are already persisted; uptime is private and is not.
     RuntimeChat {
         command: String,
         args: Vec<String>,
@@ -81,13 +81,13 @@ fn warning(message: &str) -> Effect {
     }
 }
 
-fn notice(caller: &Caller, message: &str, room: &str) -> Effect {
+pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
     Effect::ToSelf {
         command: "chat".into(),
         data: json!(hanabi_protocol::Chat {
             who: Some("Hanab Live".into()),
             room: Some(room.into()),
-            recipient: Some(caller.name.clone()),
+            recipient: Some(recipient.into()),
             ..hanabi_protocol::Chat::new(
                 message,
                 hanabi_protocol::ChatSource::Server,
@@ -281,7 +281,7 @@ pub async fn dispatch(
                 .collect::<Vec<_>>()
                 .join(", ");
             vec![notice(
-                caller,
+                &caller.name,
                 &format!("Games matching \"{}\": {list}", escape_html(&tag)),
                 data["room"].as_str().unwrap_or(""),
             )]
