@@ -16,7 +16,7 @@ async function login(page: Page, backend: string, name: string) {
 }
 
 for (const lobby of ["lobby", "new"]) {
-  test(`${lobby} requests personal and friends history only when opened`, async ({
+  test(`${lobby} requests personal history on demand without offering friends history`, async ({
     browser,
     backend,
   }) => {
@@ -87,20 +87,18 @@ for (const lobby of ["lobby", "new"]) {
       }
       await expect.poll(() => history).toEqual(["gameHistory"]);
       expect(requests).toEqual(["historyGet"]);
+      await expect(
+        page.getByText("Show History of Friends", { exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.locator("#nav-buttons-history-show-friends"),
+      ).toHaveCount(0);
+      await page.reload();
       if (lobby === "lobby") {
-        await page.locator("#nav-buttons-history-show-friends").click();
-        await expect(page.locator("#lobby-history-no")).toHaveText(
-          "None of your friends have played any games yet.",
-        );
-      } else {
-        await page
-          .getByRole("link", { name: "Show History of Friends", exact: true })
-          .click();
+        await page.locator("#nav-buttons-lobby-history").click();
       }
-      await expect
-        .poll(() => history)
-        .toEqual(["gameHistory", "gameHistoryFriends"]);
-      expect(requests).toEqual(["historyGet", "historyFriendsGet"]);
+      await expect.poll(() => history).toEqual(["gameHistory", "gameHistory"]);
+      expect(requests).toEqual(["historyGet", "historyGet"]);
       if (lobby === "new") {
         await context.setOffline(true);
         await expect(
@@ -109,12 +107,8 @@ for (const lobby of ["lobby", "new"]) {
         await context.setOffline(false);
         await expect
           .poll(() => history)
-          .toEqual(["gameHistory", "gameHistoryFriends", "gameHistoryFriends"]);
-        expect(requests).toEqual([
-          "historyGet",
-          "historyFriendsGet",
-          "historyFriendsGet",
-        ]);
+          .toEqual(["gameHistory", "gameHistory", "gameHistory"]);
+        expect(requests).toEqual(["historyGet", "historyGet", "historyGet"]);
       }
     } finally {
       await context.close();

@@ -402,8 +402,6 @@ for (const theme of ["light", "dark"] as const) {
         const seed = await a.locator(".dialog-heading p").innerText();
         await a.keyboard.press("Escape");
         await expect.soft(a).toHaveURL(/\/new\/history$/u);
-        await a.goto(`${backend}/new/history?friends=1`);
-        await auditViewport(a, "new-friends-history");
         await a.goto(`${backend}/lobby`);
         await expect(a.locator("#nav-buttons-lobby-history")).toBeVisible();
         await a.locator("#nav-buttons-lobby-history").click();
@@ -419,9 +417,6 @@ for (const theme of ["light", "dark"] as const) {
             .filter({ hasText: ownerName }),
         ).toHaveCount(1);
         await auditViewport(a, "old-other-scores");
-        await a.goto(`${backend}/lobby#history-friends`);
-        await expect(a.locator("#lobby-history")).toBeVisible();
-        await auditViewport(a, "old-friends-history");
         await a.goto(`${backend}/new/table/999999`);
         await expect(
           a.getByRole("heading", {

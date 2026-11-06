@@ -37,7 +37,6 @@ export enum ServerCommand {
   friends = "friends",
   game = "game",
   gameHistory = "gameHistory",
-  gameHistoryFriends = "gameHistoryFriends",
   gameHistoryOtherScores = "gameHistoryOtherScores",
   name = "name",
   joined = "joined",

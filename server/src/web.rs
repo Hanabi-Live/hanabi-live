@@ -883,7 +883,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
     } else if lobby::handles_command(&command) {
         let history = matches!(
             command.as_str(),
-            "historyGet" | "historyFriendsGet" | "historyGetSeed" | "chatPlayerInfo"
+            "historyGet" | "historyGetSeed" | "chatPlayerInfo"
         );
         let work = lobby::dispatch(
             if history {

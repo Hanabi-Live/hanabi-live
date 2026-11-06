@@ -108,7 +108,6 @@ const COMMANDS: &[&str] = &[
     "inactive",
     "historyGet",
     "historyGetSeed",
-    "historyFriendsGet",
     "chatPM",
     "chatPMHistoryGet",
     "chatFriend",
@@ -206,7 +205,7 @@ pub async fn dispatch(
             )
             .await?
         }
-        "historyGet" | "historyFriendsGet" => {
+        "historyGet" => {
             let offset = data["offset"]
                 .as_i64()
                 .ok_or_else(|| anyhow::anyhow!("Invalid offset"))?;
@@ -219,15 +218,9 @@ pub async fn dispatch(
             if amount < 0 {
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
-            let friends = command == "historyFriendsGet";
-            let ids = history_ids(pool, caller.id, offset, amount, friends).await?;
+            let ids = history_ids(pool, caller.id, offset, amount).await?;
             vec![Effect::ToSelf {
-                command: if friends {
-                    "gameHistoryFriends"
-                } else {
-                    "gameHistory"
-                }
-                .into(),
+                command: "gameHistory".into(),
                 data: json!(get_history(pool, &ids, false).await?),
             }]
         }
@@ -256,7 +249,7 @@ pub async fn dispatch(
             vec![Effect::ToSelf {
                 command: "gameHistoryOtherScores".into(),
                 data: json!({
-                    "games":games, "variantName":variant, "friends":data["friends"].as_bool().unwrap_or(false), "seed":seed
+                    "games":games, "variantName":variant, "seed":seed
                 }),
             }]
         }

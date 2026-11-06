@@ -5,7 +5,6 @@ import type { GameJSON } from "./hypoCompress";
 
 await mock.module("./history", () => ({
   show: mock(),
-  showFriends: mock(),
   showOtherScoresFromURL: mock(),
 }));
 await mock.module("../Globals", () => ({
@@ -77,32 +76,23 @@ describe("replay URL loading", () => {
     expect(globalThis.location.hash).toBe("#42");
   });
 
-  test.each([
-    ["#history", false],
-    ["#history-friends", true],
-  ])("restores lobby history route %s", (hash, friends) => {
+  test("restores the personal history route", () => {
     const show = spyOn(history, "show");
-    const showFriends = spyOn(history, "showFriends");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
-      value: new URL(`https://hanab.live/lobby${hash}`),
+      value: new URL("https://hanab.live/lobby#history"),
     });
 
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
 
     expect(show).toHaveBeenCalledTimes(1);
-    expect(showFriends).toHaveBeenCalledTimes(friends ? 1 : 0);
-    if (friends) {
-      expect(show).toHaveBeenCalledWith(false);
-      expect(showFriends).toHaveBeenCalledWith();
-    }
+    expect(show).toHaveBeenCalledWith();
   });
 
   test("restores the other scores history route", () => {
     const show = spyOn(history, "show");
-    const showFriends = spyOn(history, "showFriends");
     const showOtherScores = spyOn(history, "showOtherScoresFromURL");
-    const url = "https://hanab.live/lobby#history-other-scores-friends-p4v0s1";
+    const url = "https://hanab.live/lobby#history-other-scores-p4v0s1";
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(url),
@@ -111,10 +101,8 @@ describe("replay URL loading", () => {
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
 
     expect(show).toHaveBeenCalledTimes(1);
-    expect(showFriends).toHaveBeenCalledTimes(1);
-    expect(showOtherScores).toHaveBeenCalledWith("p4v0s1", true);
+    expect(showOtherScores).toHaveBeenCalledWith("p4v0s1");
     expect(show).toHaveBeenCalledWith(false);
-    expect(showFriends).toHaveBeenCalledWith(false);
   });
 
   test.each([

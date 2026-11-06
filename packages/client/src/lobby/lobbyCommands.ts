@@ -119,7 +119,7 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
 
   // Only redraw the screen that requested this page; late responses must not switch views.
   if (globals.currentScreen === Screen.History) {
-    history.draw(false);
+    history.draw();
   }
 
   const shownGames = globals.history.size;
@@ -135,32 +135,15 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
   }
 });
 
-lobbyCommands.set("gameHistoryFriends", (dataArray: readonly GameHistory[]) => {
-  // `data` will be an array of all of the games that our friends have previously played.
-  for (const data of dataArray) {
-    globals.historyFriends.set(data.id, data);
-  }
-
-  if (globals.currentScreen === Screen.HistoryFriends) {
-    history.draw(true);
-  }
-});
-
 interface GameHistoryOtherScoresData {
   games: GameHistory[];
   variantName: string;
-  friends: boolean;
   seed: string;
 }
 lobbyCommands.set(
   "gameHistoryOtherScores",
   (data: GameHistoryOtherScoresData) => {
-    history.drawOtherScores(
-      data.games,
-      data.variantName,
-      data.friends,
-      data.seed,
-    );
+    history.drawOtherScores(data.games, data.variantName, data.seed);
   },
 );
 

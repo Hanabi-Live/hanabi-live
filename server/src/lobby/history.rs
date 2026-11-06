@@ -19,47 +19,15 @@ static VARIANTS: LazyLock<HashMap<i64, String>> = LazyLock::new(|| {
         .collect()
 });
 
-pub async fn history_ids(
-    pool: &PgPool,
-    id: i32,
-    offset: i64,
-    amount: i64,
-    friends: bool,
-) -> Result<Vec<i32>> {
+pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Result<Vec<i32>> {
     // OFFSET 0 keeps each archive lookup dependent on the participant set. Without this boundary,
-    // a generic plan can scan the entire games archive even for a user with no friends.
-    Ok(if friends {
-        if !sqlx::query_scalar!(
-            "SELECT EXISTS(SELECT 1 FROM user_friends WHERE user_id=$1) AS \"value!\"",
-            id
-        )
-        .fetch_one(pool)
-        .await?
-        {
-            return Ok(vec![]);
-        }
-        sqlx::query_scalar!(
-            "SELECT g.id FROM
-         (SELECT p.game_id FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id
-          WHERE f.user_id=$1
-          EXCEPT
-          SELECT game_id FROM game_participants WHERE user_id=$1) played
-         CROSS JOIN LATERAL (SELECT id,datetime_finished FROM games WHERE id=played.game_id OFFSET 0) g
-         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3",
-            id,
-            amount,
-            offset
-        )
-        .fetch_all(pool)
-        .await?
-    } else {
-        sqlx::query_scalar!("SELECT g.id FROM
+    // a generic plan can scan the entire games archive even for a user with no games.
+    Ok(sqlx::query_scalar!("SELECT g.id FROM
          (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played
          CROSS JOIN LATERAL (SELECT id,datetime_finished FROM games WHERE id=played.game_id OFFSET 0) g
          ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
          id, amount, if amount == 0 { 0 } else { offset })
-         .fetch_all(pool).await?
-    })
+         .fetch_all(pool).await?)
 }
 
 pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result<Vec<Value>> {

@@ -119,7 +119,6 @@ const serverCommandGameHistoryOtherScoresData = z
   .strictObject({
     games: serverCommandGameHistoryData,
     variantName: z.string().min(1),
-    friends: z.boolean(),
     seed: z.string().min(1),
   })
   .readonly();
@@ -290,7 +289,6 @@ export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.spectators]: z.infer<typeof serverCommandSpectatorsData>;
   [ServerCommand.tableGone]: z.infer<typeof serverCommandTableIDData>;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
-  [ServerCommand.gameHistoryFriends]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryOtherScores]: z.infer<
     typeof serverCommandGameHistoryOtherScoresData
   >;
@@ -327,7 +325,6 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.spectators]: serverCommandSpectatorsData,
   [ServerCommand.tableGone]: serverCommandTableIDData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
-  [ServerCommand.gameHistoryFriends]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryOtherScores]:
     serverCommandGameHistoryOtherScoresData,
   [ServerCommand.name]: serverCommandNameData,

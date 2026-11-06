@@ -367,14 +367,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         return;
     };
     let alice = fixture.db.user("HistorianAlice").await;
-    let bob = fixture.db.user("HistorianBob").await;
     let mut shared = Vec::new();
     for index in 0..5 {
         shared.push(fixture.db.user(&format!("Historian{index:05}")).await);
     }
-    lobby::change_friend(&fixture.db.pool, alice, bob, true)
-        .await
-        .unwrap();
     let games:Vec<i32>=sqlx::query_scalar(
         "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
          speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
@@ -382,15 +378,13 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
          SELECT 'Historical game '||n,6,1,true,180,30,false,true,false,true,false,false,false,true,
          'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id"
     ).fetch_all(&fixture.db.pool).await.unwrap();
-    for (author, ids) in [(alice, &games[..100]), (bob, &games[100..])] {
-        let mut players = vec![author];
-        players.extend(&shared);
-        sqlx::query(
-            "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+    let mut players = vec![alice];
+    players.extend(&shared);
+    sqlx::query(
+        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
              SELECT game_id,user_id,(position-1)::smallint,-1,0 FROM unnest($1::int[]) games(game_id)
              CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)"
-        ).bind(ids).bind(players).execute(&fixture.db.pool).await.unwrap();
-    }
+    ).bind(&games).bind(players).execute(&fixture.db.pool).await.unwrap();
     sqlx::query(
         "INSERT INTO game_tags(game_id,user_id,tag)
          SELECT game_id,$2,lpad(n::text,3,'0')||repeat('t',97)
@@ -415,7 +409,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .await
         .unwrap();
     let mut history_lock = fixture.db.pool.begin().await.unwrap();
-    sqlx::query("LOCK TABLE user_friends, game_tags IN ACCESS EXCLUSIVE MODE")
+    sqlx::query("LOCK TABLE game_tags IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *history_lock)
         .await
         .unwrap();
@@ -425,9 +419,9 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
             lobby_initial(&fixture.app, alice, reconnect),
         )
         .await
-        .expect("Lobby initialization queried personal or friends history")
+        .expect("Lobby initialization queried personal history")
         .unwrap();
-        assert_eq!(total, 100);
+        assert_eq!(total, 200);
         assert!(
             messages
                 .iter()
@@ -435,14 +429,14 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         );
     }
     history_lock.rollback().await.unwrap();
-    let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100, false)
+    let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100)
         .await
         .unwrap();
-    let friend_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100, true)
+    let next_ids = lobby::history_ids(&fixture.db.pool, alice, 100, 100)
         .await
         .unwrap();
     assert_eq!(own_ids.len(), 100);
-    assert_eq!(friend_ids.len(), 100);
+    assert_eq!(next_ids.len(), 100);
     let own = frame(
         "gameHistory",
         json!(
@@ -451,10 +445,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    let friends = frame(
-        "gameHistoryFriends",
+    let next = frame(
+        "gameHistory",
         json!(
-            lobby::get_history(&fixture.db.pool, &friend_ids, false)
+            lobby::get_history(&fixture.db.pool, &next_ids, false)
                 .await
                 .unwrap()
         ),
@@ -466,7 +460,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
             .all(|message| !message.starts_with("gameHistory"))
     );
     // Requested full history pages must still fit in the outbound queue.
-    initial.extend([own, friends]);
+    initial.extend([own, next]);
     let mut expected = vec![
         "welcome".to_owned(),
         "userList".to_owned(),
@@ -517,7 +511,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         let data: Value = serde_json::from_str(body).unwrap();
         match command {
             "chatList" => assert_eq!(data["list"].as_array().unwrap().len(), 50),
-            "gameHistory" | "gameHistoryFriends" => {
+            "gameHistory" => {
                 assert_eq!(data.as_array().unwrap().len(), 100);
                 assert_eq!(data[0]["playerNames"].as_array().unwrap().len(), 6);
                 assert_eq!(data[0]["options"]["variantName"], "6 Suits");

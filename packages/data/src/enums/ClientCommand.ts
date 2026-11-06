@@ -30,7 +30,6 @@ export enum ClientCommand {
   chatUnfriend = "chatUnfriend",
   chatUnlink = "chatUnlink",
   getName = "getName",
-  historyFriendsGet = "historyFriendsGet",
   historyGet = "historyGet",
   historyGetSeed = "historyGetSeed",
   inactive = "inactive",

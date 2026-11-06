@@ -21,7 +21,6 @@ describe("authoritative lobby state", () => {
       }),
     );
     expect(store.getState().historyLoading).toBe(false);
-    expect(store.getState().friendHistoryLoading).toBe(false);
     store.dispatch(
       actions.received({
         command: "lobbyStatus",

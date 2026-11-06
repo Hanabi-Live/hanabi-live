@@ -3,7 +3,6 @@ import { Play, Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { HistoryGame } from "../protocol";
 import { wireHistory } from "../protocol";
@@ -122,30 +121,23 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
       connection: value.connection,
       pending: value.pending,
       history: value.history,
-      friendHistory: value.friendHistory,
       historyLoading: value.historyLoading,
-      friendHistoryLoading: value.friendHistoryLoading,
       historyHasMore: value.historyHasMore,
-      friendHistoryHasMore: value.friendHistoryHasMore,
     }),
     shallowEqual,
   );
-  const [parameters] = useSearchParams();
-  const friends = parameters.get("friends") === "1";
   const [search, setSearch] = useState("");
   const [seed, setSeed] = useState<string | null>(null);
   useEffect(() => {
     if (state.connection !== "online") {
       return;
     }
-    connection.send(friends ? "historyFriendsGet" : "historyGet", {
+    connection.send("historyGet", {
       offset: 0,
       amount: 10,
     });
-  }, [friends, connection, state.connection]);
-  const allGames = Object.values(
-    friends ? state.friendHistory : state.history,
-  ).toSorted(
+  }, [connection, state.connection]);
+  const allGames = Object.values(state.history).toSorted(
     (a, b) =>
       Date.parse(b.datetimeFinished) - Date.parse(a.datetimeFinished)
       || b.id - a.id,
@@ -155,8 +147,8 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
-  const loading = friends ? state.friendHistoryLoading : state.historyLoading;
-  const hasMore = friends ? state.friendHistoryHasMore : state.historyHasMore;
+  const loading = state.historyLoading;
+  const hasMore = state.historyHasMore;
   function replay(game: HistoryGame, visibility: "solo" | "shared") {
     connection.send("replayCreate", {
       source: "id",
@@ -175,7 +167,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
             <th>Score</th>
             <th>Variant</th>
             <th>Options</th>
-            <th>{friends || comparison ? "Players" : "Other Players"}</th>
+            <th>{comparison ? "Players" : "Other Players"}</th>
             <th>Date Played</th>
             <th>Watch Replay</th>
             <th>Share Replay</th>
@@ -197,8 +189,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
               <td>
                 {game.playerNames
                   .filter(
-                    (name) =>
-                      friends || comparison || name !== state.welcome?.username,
+                    (name) => comparison || name !== state.welcome?.username,
                   )
                   .join(", ")}
               </td>
@@ -284,7 +275,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
             className="load-more"
             disabled={loading || state.connection !== "online"}
             onClick={() =>
-              connection.send(friends ? "historyFriendsGet" : "historyGet", {
+              connection.send("historyGet", {
                 offset: allGames.length,
                 amount: 10,
               })

@@ -53,23 +53,16 @@ export type Chat = ServerCommandData[ServerCommand.chat];
 
 type WirePayloads = Omit<
   ServerCommandData,
-  | "gameHistory"
-  | "gameHistoryFriends"
-  | "gameHistoryOtherScores"
-  | "table"
-  | "tableList"
-  | "game"
+  "gameHistory" | "gameHistoryOtherScores" | "table" | "tableList" | "game"
 > & {
   table: Table;
   tableList: Table[];
   game: Pregame;
   tableProgress: { tableID: number; progress: number };
   gameHistory: HistoryGame[];
-  gameHistoryFriends: HistoryGame[];
   gameHistoryOtherScores: {
     games: HistoryGame[];
     variantName: string;
-    friends: boolean;
     seed: string;
   };
 };
@@ -80,7 +73,6 @@ export type ServerEvent = {
 const otherScores = z.object({
   games: wireHistory.array(),
   variantName: z.string(),
-  friends: z.boolean(),
   seed: z.string(),
 });
 
@@ -103,7 +95,7 @@ export function decodeEvent(text: string): ServerEvent | undefined {
   if (command === "game") {
     return { command, data: pregameSchema.parse(data) };
   }
-  if (command === "gameHistory" || command === "gameHistoryFriends") {
+  if (command === "gameHistory") {
     return { command, data: wireHistory.array().parse(data) };
   }
   if (command === "gameHistoryOtherScores") {

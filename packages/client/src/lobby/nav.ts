@@ -223,19 +223,9 @@ export function init(): void {
     }
   });
 
-  // The "Show History of Friends" button (from the "History" screen).
-  $("#nav-buttons-history-show-friends").on("click", () => {
-    history.showFriends();
-  });
-
   // The "Return to Lobby" button (from the "History" screen).
   $("#nav-buttons-history-return").on("click", () => {
     history.hide();
-  });
-
-  // The "Return to History" button (from the "History of Friends" screen).
-  $("#nav-buttons-history-friends-return").on("click", () => {
-    history.hideFriends();
   });
 
   // The "Return to History" button from the "History Details" screen. This is initialized in the
@@ -258,13 +248,7 @@ function watchSpecificReplayFocus() {
 }
 
 export function show(target: string): void {
-  const navTypes = [
-    "lobby",
-    "pregame",
-    "history",
-    "history-friends",
-    "history-other-scores",
-  ];
+  const navTypes = ["lobby", "pregame", "history", "history-other-scores"];
   for (const navType of navTypes) {
     $(`#nav-buttons-${navType}`).hide();
   }

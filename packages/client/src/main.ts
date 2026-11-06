@@ -67,32 +67,15 @@ $(document).ready(() => {
     }
 
     if (hash.startsWith("#history")) {
-      if (
-        hash === "#history"
-        && globals.currentScreen === Screen.HistoryFriends
-      ) {
-        lobbyHistory.hideFriends();
-      } else {
-        lobbyHistory.show();
-      }
-      if (hash === "#history-friends") {
-        lobbyHistory.showFriends();
-      } else if (hash.startsWith("#history-other-scores-")) {
-        const match = /^#history-other-scores-(friends-)?(.+)$/u.exec(hash);
-        if (match !== null && match[2] !== undefined) {
-          const friends = match[1] !== undefined;
-          if (friends) {
-            lobbyHistory.showFriends();
-          }
-          lobbyHistory.showOtherScoresFromURL(
-            decodeURIComponent(match[2]),
-            friends,
-          );
+      lobbyHistory.show();
+      if (hash.startsWith("#history-other-scores-")) {
+        const match = /^#history-other-scores-(.+)$/u.exec(hash);
+        if (match !== null && match[1] !== undefined) {
+          lobbyHistory.showOtherScoresFromURL(decodeURIComponent(match[1]));
         }
       }
     } else if (
       globals.currentScreen === Screen.History
-      || globals.currentScreen === Screen.HistoryFriends
       || globals.currentScreen === Screen.HistoryOtherScores
     ) {
       lobbyHistory.hide();

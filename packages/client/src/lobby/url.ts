@@ -192,18 +192,14 @@ function restoreLobbyHistoryView(): boolean {
     return false;
   }
 
-  const scoresMatch = /^#history-other-scores-(friends-)?(.+)$/u.exec(
+  const scoresMatch = /^#history-other-scores-(.+)$/u.exec(
     globalThis.location.hash,
   );
   if (scoresMatch !== null) {
-    const friends = scoresMatch[1] !== undefined;
-    const seed = scoresMatch[2];
+    const seed = scoresMatch[1];
     if (seed !== undefined) {
       history.show(false);
-      if (friends) {
-        history.showFriends(false);
-      }
-      history.showOtherScoresFromURL(decodeURIComponent(seed), friends);
+      history.showOtherScoresFromURL(decodeURIComponent(seed));
       return true;
     }
   }
@@ -211,12 +207,6 @@ function restoreLobbyHistoryView(): boolean {
   switch (globalThis.location.hash) {
     case "#history": {
       history.show();
-      return true;
-    }
-
-    case "#history-friends": {
-      history.show(false);
-      history.showFriends();
       return true;
     }
 

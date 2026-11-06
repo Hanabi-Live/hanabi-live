@@ -19,19 +19,11 @@ import * as usersDraw from "./usersDraw";
 
 export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
-    let command: string;
-    let offset: number;
-    if (globals.currentScreen === Screen.History) {
-      command = "historyGet";
-      offset = globals.history.size;
-    } else if (globals.currentScreen === Screen.HistoryFriends) {
-      command = "historyFriendsGet";
-      offset = globals.historyFriends.size;
-    } else {
+    if (globals.currentScreen !== Screen.History) {
       return;
     }
-    globals.conn!.send(command, {
-      offset,
+    globals.conn!.send("historyGet", {
+      offset: globals.history.size,
       amount: 10,
     });
   });
@@ -55,29 +47,21 @@ export function show(requestHistory = true): void {
 
   // Update the nav.
   nav.show("history");
-  if (globals.friends.length === 0) {
-    $("#nav-buttons-history-show-friends").hide();
-  } else {
-    $("#nav-buttons-history-show-friends").show();
-  }
-
-  // It might be hidden if we are returning from the "Show History of Friends" view.
-  $("#lobby-history-show-all").show();
   $("#lobby-history-show-all").attr("href", `/history/${globals.username}`);
 
   // Draw the history table.
-  draw(false);
+  draw();
   if (requestHistory) {
-    request(false);
+    request();
   }
 }
 
-function request(friends: boolean) {
-  globals.conn!.send(friends ? "historyFriendsGet" : "historyGet", {
+function request() {
+  globals.conn!.send("historyGet", {
     offset: 0,
     amount: 10,
   });
-  if ((friends ? globals.historyFriends : globals.history).size === 0) {
+  if (globals.history.size === 0) {
     $("#lobby-history-no").text("Loading history...");
   }
 }
@@ -97,26 +81,18 @@ export function hide(): void {
   nav.show("lobby");
 }
 
-export function draw(friends: boolean): void {
+export function draw(): void {
   const tbody = $("#lobby-history-table-tbody");
 
   // Clear all of the existing rows.
   tbody.html("");
 
-  const games = [
-    ...(friends ? globals.historyFriends : globals.history).values(),
-  ].toSorted(compareGameHistory);
+  const games = [...globals.history.values()].toSorted(compareGameHistory);
 
   // Handle if the user has no history.
   if (games.length === 0) {
     $("#lobby-history-no").show();
-    if (friends) {
-      $("#lobby-history-no").html(
-        "None of your friends have played any games yet.",
-      );
-    } else {
-      $("#lobby-history-no").html("No game history. Play some games!");
-    }
+    $("#lobby-history-no").html("No game history. Play some games!");
     $("#lobby-history").addClass("align-center-v");
     $("#lobby-history-table-container").hide();
     return;
@@ -149,15 +125,10 @@ export function draw(friends: boolean): void {
     const options = makeOptions(i, gameData.options, false);
     $("<td>").html(options).appendTo(row);
 
-    // Column 6 - Other Players / Players (depending on if we are in the "Friends" view or not).
-    const playerNames = [...gameData.playerNames];
-    let playerNamesString = playerNames.join(", ");
-    if (!friends) {
-      // Remove our name from the list of players.
-      const ourIndex = gameData.playerNames.indexOf(globals.username);
-      playerNames.splice(ourIndex, 1);
-      playerNamesString = playerNames.join(", ");
-    }
+    // Column 6 - Other Players.
+    const playerNamesString = gameData.playerNames
+      .filter((name) => name !== globals.username)
+      .join(", ");
     $("<td>").html(playerNamesString).appendTo(row);
 
     // Column 7 - Date Played.
@@ -208,13 +179,11 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
     button.addClass("disabled");
   } else {
     button.on("click", () => {
-      const friends = globals.currentScreen === Screen.HistoryFriends;
-      globals.conn!.send("historyGetSeed", { seed, friends });
+      globals.conn!.send("historyGetSeed", { seed });
       showOtherScores();
-      const friendPrefix = friends ? "friends-" : "";
       setBrowserAddressBarPath(
         "/lobby",
-        `#history-other-scores-${friendPrefix}${encodeURIComponent(seed)}`,
+        `#history-other-scores-${encodeURIComponent(seed)}`,
         "push",
       );
     });
@@ -223,32 +192,8 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
   return button;
 }
 
-export function showFriends(requestHistory = true): void {
-  globals.currentScreen = Screen.HistoryFriends;
-  if (globalThis.location.hash === "#history") {
-    setBrowserAddressBarPath("/lobby", "#history-friends");
-  }
-  nav.show("history-friends");
-  $("#lobby-history-table-players").html("Players");
-  $("#lobby-history-show-all").hide();
-  draw(true);
-  if (requestHistory) {
-    request(true);
-  }
-}
-
-export function hideFriends(): void {
-  globals.currentScreen = Screen.History;
-  setBrowserAddressBarPath("/lobby", "#history", "push");
-  nav.show("history");
-  $("#lobby-history-table-players").html("Other Players");
-  $("#lobby-history-show-all").show();
-  draw(false);
-  request(false);
-}
-
-export function showOtherScoresFromURL(seed: string, friends: boolean): void {
-  globals.conn!.send("historyGetSeed", { seed, friends });
+export function showOtherScoresFromURL(seed: string): void {
+  globals.conn!.send("historyGetSeed", { seed });
   showOtherScores();
 }
 
@@ -267,18 +212,9 @@ function hideOtherScores() {
   nav.show("history");
 }
 
-function hideOtherScoresToFriends() {
-  globals.currentScreen = Screen.HistoryFriends;
-  setBrowserAddressBarPath("/lobby", "#history-friends", "push");
-  $("#lobby-history").show();
-  $("#lobby-history-other-scores").hide();
-  nav.show("history-friends");
-}
-
 export function drawOtherScores(
   games: readonly GameHistory[],
   variantName: string,
-  friends: boolean,
   seed: string,
 ): void {
   if (globals.currentScreen !== Screen.HistoryOtherScores) {
@@ -286,15 +222,9 @@ export function drawOtherScores(
   }
 
   // Define the functionality of the "Return to History" button.
-  if (friends) {
-    $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScoresToFriends();
-    });
-  } else {
-    $("#nav-buttons-history-other-scores-return").on("click", () => {
-      hideOtherScores();
-    });
-  }
+  $("#nav-buttons-history-other-scores-return")
+    .off("click")
+    .on("click", hideOtherScores);
 
   // Set the link for the "View seed data" button.
   $("#nav-buttons-history-other-scores-view-all").attr("href", `/seed/${seed}`);

@@ -4,6 +4,5 @@ export enum Screen {
   PreGame,
   Game,
   History,
-  HistoryFriends,
   HistoryOtherScores,
 }

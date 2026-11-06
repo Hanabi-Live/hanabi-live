@@ -31,7 +31,6 @@ export interface LobbyState {
   chat: Chat[];
   deletedChatIDs: number[];
   history: Record<number, HistoryGame>;
-  friendHistory: Record<number, HistoryGame>;
   otherScores: HistoryGame[];
   notice: { text: string; fatal: boolean } | null;
   pending: string | null;
@@ -40,9 +39,7 @@ export interface LobbyState {
   pmHasMore: boolean;
   unreadPMs: Record<string, number>;
   historyLoading: boolean;
-  friendHistoryLoading: boolean;
   historyHasMore: boolean;
-  friendHistoryHasMore: boolean;
 }
 
 function initialState(): LobbyState {
@@ -59,7 +56,6 @@ function initialState(): LobbyState {
     chat: [],
     deletedChatIDs: [],
     history: {},
-    friendHistory: {},
     otherScores: [],
     notice: null,
     pending: null,
@@ -68,9 +64,7 @@ function initialState(): LobbyState {
     pmHasMore: false,
     unreadPMs: {},
     historyLoading: false,
-    friendHistoryLoading: false,
     historyHasMore: true,
-    friendHistoryHasMore: true,
   };
 }
 
@@ -83,7 +77,6 @@ const slice = createSlice({
       if (action.payload !== "online") {
         state.pending = null;
         state.historyLoading = false;
-        state.friendHistoryLoading = false;
       }
     },
     notify(state, action: PayloadAction<{ text: string; fatal?: boolean }>) {
@@ -118,8 +111,6 @@ const slice = createSlice({
       }
       if (action.payload === "historyGet") {
         state.historyLoading = true;
-      } else if (action.payload === "historyFriendsGet") {
-        state.friendHistoryLoading = true;
       }
     },
     settingsChanged(state, action: PayloadAction<Settings>) {
@@ -162,7 +153,6 @@ const slice = createSlice({
           state.chat = [];
           state.deletedChatIDs = [];
           state.history = {};
-          state.friendHistory = {};
           state.otherScores = [];
           state.unreadPMs = {};
           state.typing = {};
@@ -395,15 +385,6 @@ const slice = createSlice({
           }
           state.historyLoading = false;
           state.historyHasMore = event.data.length >= 10;
-          break;
-        }
-
-        case "gameHistoryFriends": {
-          for (const game of event.data) {
-            state.friendHistory[game.id] = game;
-          }
-          state.friendHistoryLoading = false;
-          state.friendHistoryHasMore = event.data.length >= 10;
           break;
         }
 

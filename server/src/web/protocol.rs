@@ -17,7 +17,6 @@ pub const COMMANDS: &[&str] = &[
     "getGameInfo1",
     "getGameInfo2",
     "getName",
-    "historyFriendsGet",
     "historyGet",
     "historyGetSeed",
     "inactive",
@@ -201,13 +200,12 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
             fields.string("setting", None)?;
         }
         "inactive" => fields.boolean("inactive", None)?,
-        "historyGet" | "historyFriendsGet" => {
+        "historyGet" => {
             fields.integer("offset", Some(0))?;
             fields.integer("amount", Some(0))?;
         }
         "historyGetSeed" => {
             fields.string("seed", None)?;
-            fields.boolean("friends", Some(false))?;
         }
         "tagSearch" => {
             fields.string("msg", Some(""))?;
@@ -329,7 +327,7 @@ mod tests {
     }
     #[test]
     fn every_registered_command_has_a_parser() {
-        assert_eq!(COMMANDS.len(), 44);
+        assert_eq!(COMMANDS.len(), 43);
         for command in COMMANDS {
             let value = match *command {
                 "setting" => json!({"name":"volume","setting":"50"}),
@@ -343,9 +341,9 @@ mod tests {
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":0}),
-                "getName" | "lobbyLoad" | "tableCreate" | "historyGet" | "historyFriendsGet"
-                | "chatLinked" | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink"
-                | "chatPlayerInfo" | "chatPMHistoryGet" | "tagSearch" => json!({}),
+                "getName" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
+                | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
+                | "chatPMHistoryGet" | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
@@ -378,6 +376,7 @@ mod tests {
             "setting {\"name\":\"volume\",\"setting\":50}",
             "getName []",
             "unknown {}",
+            "historyFriendsGet {\"offset\":0,\"amount\":10}",
         ] {
             assert!(parse(input).is_err(), "{input}");
         }

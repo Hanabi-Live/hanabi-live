@@ -49,7 +49,6 @@ export class Globals {
   history = new Map<number, GameHistory>();
 
   /** Keys are IDs. */
-  historyFriends = new Map<number, GameHistory>();
 
   totalGamesFriends = 0;
 

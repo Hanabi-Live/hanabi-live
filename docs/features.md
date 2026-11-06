@@ -720,8 +720,6 @@ move for the current situation.
 - Your friends will be listed alphabetically at the top of the user list.
 - Games that contain one or more of your friends will be sorted at the top of
   the games list.
-- If you have one or more friends, a "Show History of Friends" button will
-  appear on the history screen.
 
 ## Linked Accounts
 

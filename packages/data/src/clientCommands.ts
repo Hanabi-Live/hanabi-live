@@ -72,7 +72,6 @@ const clientCommandHistoryData = z
 const clientCommandHistoryGetSeedData = z
   .strictObject({
     seed: z.string(),
-    friends: z.boolean().default(false),
   })
   .readonly();
 const clientCommandInactiveData = z
@@ -101,7 +100,6 @@ export interface ClientCommandData extends GameClientCommandData {
   [ClientCommand.chatUnfriend]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.chatUnlink]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.getName]: z.infer<typeof clientCommandGetNameData>;
-  [ClientCommand.historyFriendsGet]: z.infer<typeof clientCommandHistoryData>;
   [ClientCommand.historyGet]: z.infer<typeof clientCommandHistoryData>;
   [ClientCommand.historyGetSeed]: z.infer<
     typeof clientCommandHistoryGetSeedData
@@ -142,7 +140,6 @@ export const CLIENT_COMMAND_SCHEMAS = {
   [ClientCommand.chatUnfriend]: clientCommandChatUserData,
   [ClientCommand.chatUnlink]: clientCommandChatUserData,
   [ClientCommand.getName]: clientCommandGetNameData,
-  [ClientCommand.historyFriendsGet]: clientCommandHistoryData,
   [ClientCommand.historyGet]: clientCommandHistoryData,
   [ClientCommand.historyGetSeed]: clientCommandHistoryGetSeedData,
   [ClientCommand.inactive]: clientCommandInactiveData,

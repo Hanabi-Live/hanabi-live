@@ -35,8 +35,7 @@ export function ClassicHeader({
     }),
     shallowEqual,
   );
-  const { pathname, search }: { pathname: string; search: string } =
-    useLocation();
+  const { pathname }: { pathname: string } = useLocation();
   const game = pathname.startsWith("/table/") ? pregame : null;
   const player = game?.players.some((person) => person.you) ?? false;
   const owner = game?.owner === welcome?.userID;
@@ -170,63 +169,25 @@ export function ClassicHeader({
               </>
             ) : pathname === "/history" ? (
               <>
-                {new URLSearchParams(search).get("friends") === "1" ? (
-                  <li>
-                    <Link className="button" to="/history">
-                      <i
-                        aria-hidden="true"
-                        className="fas fa-history nav-icon"
-                      />
-                      Return to History
-                    </Link>
-                  </li>
-                ) : (
-                  <>
-                    <li className="hidden-sm">
-                      Shown games: {historyCount} /{" "}
-                      {welcome.totalGames
-                        ?? (lobbyStatus === "error"
-                          ? "unavailable"
-                          : "loading...")}
-                      {lobbyStatus === "error" && (
-                        <button
-                          onClick={() => connection.send("lobbyLoad", {})}
-                          type="button"
-                        >
-                          Retry statistics
-                        </button>
-                      )}
-                    </li>
-                    <li>
-                      <Link
-                        aria-label="Show History of Friends"
-                        className="button"
-                        to="/history?friends=1"
-                      >
-                        <i
-                          aria-hidden="true"
-                          className="fas fa-heart nav-icon"
-                        />
-                        <span className="hidden-sm">
-                          Show History of Friends
-                        </span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        aria-label="Return to Lobby"
-                        className="button"
-                        to="/"
-                      >
-                        <i
-                          aria-hidden="true"
-                          className="fas fa-home nav-icon"
-                        />
-                        Return to Lobby
-                      </Link>
-                    </li>
-                  </>
-                )}
+                <li className="hidden-sm">
+                  Shown games: {historyCount} /{" "}
+                  {welcome.totalGames
+                    ?? (lobbyStatus === "error" ? "unavailable" : "loading...")}
+                  {lobbyStatus === "error" && (
+                    <button
+                      onClick={() => connection.send("lobbyLoad", {})}
+                      type="button"
+                    >
+                      Retry statistics
+                    </button>
+                  )}
+                </li>
+                <li>
+                  <Link aria-label="Return to Lobby" className="button" to="/">
+                    <i aria-hidden="true" className="fas fa-home nav-icon" />
+                    Return to Lobby
+                  </Link>
+                </li>
               </>
             ) : (
               <>
