@@ -1010,6 +1010,61 @@ async fn unknown_table_commands_are_persisted_and_delivered_to_bots() -> Result<
 }
 
 #[tokio::test]
+async fn option_proposals_publish_changed_values_but_keep_apply_button_private() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob<&>", "Carol", "Outsider"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Original", json!({})).await?;
+        for index in 1..3 {
+            h.send(index, "tableJoin", json!({"tableID":id})).await?;
+        }
+        h.barrier(0).await?;
+        for index in 0..4 {
+            h.frames(index)?;
+        }
+        h.send(1, "tableUpdate", json!({
+            "tableID":id,"name":"Proposal","maxPlayers":2,
+            "options":{"variantName":"6 Suits","timed":true,"timeBase":120,"timePerTurn":20,"emptyClues":true}
+        })).await?;
+        h.barrier(0).await?;
+        for index in 0..3 {
+            let messages = chat_messages(&h.frames(index)?);
+            let summary = messages.iter().find(|m| m.get("recipient").is_none()).context("Missing public summary")?;
+            let text = summary["msg"].as_str().context("Missing summary text")?;
+            for expected in ["Bob&lt;&amp;&gt; proposes the following options:", "Table Name: <b>Proposal</b>", "Variant: <b>6 Suits</b>", "Timed: <b>120 / 20</b>", "Max Players: <b>2</b>", "Empty Clues: <b>Yes</b>", "Players above the new limit will be removed."] {
+                ensure!(text.contains(expected), "Missing proposal detail: {expected}");
+            }
+            ensure!(!text.contains("Speedrun:") && !text.contains("Card Cycling:"));
+            let button = messages.iter().find(|m| m["msg"].as_str().is_some_and(|s| s.contains("new-options")));
+            if index == 0 {
+                let button = button.context("Owner is missing the apply button")?;
+                ensure!(button["recipient"] == "Alice");
+                let options = suggestion(button)?;
+                ensure!(options["variantName"] == "6 Suits" && options["maxPlayers"] == 2 && options["tableName"] == "Proposal");
+            } else {
+                ensure!(button.is_none(), "Apply button leaked to a non-owner");
+            }
+        }
+        ensure!(chat_messages(&h.frames(3)?).is_empty());
+        let table = h.snapshot(id).await?.0;
+        ensure!(table.options.variant_name == "No Variant" && table.name == "Original" && table.max_players == 5);
+        let message = &table.chat.last().context("Summary was not persisted")?.message;
+        ensure!(message["msg"].as_str().unwrap().contains("Variant: <b>6 Suits</b>"));
+        ensure!(message.get("recipient").is_none());
+        let before = table.chat.len();
+        let error = h.send(1, "tableUpdate", json!({"tableID":id,"name":"Original","maxPlayers":5,"options":{}}))
+            .await.expect_err("Unchanged options should be rejected");
+        ensure!(error.to_string() == "There are no new options proposed.");
+        ensure!(h.snapshot(id).await?.0.chat.len() == before);
+        Ok::<(), anyhow::Error>(())
+    }.await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
