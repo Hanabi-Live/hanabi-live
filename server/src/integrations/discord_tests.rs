@@ -36,7 +36,10 @@ impl Transport for MockTransport {
                 && body
                     .as_ref()
                     .and_then(|body| body["content"].as_str())
-                    .is_some_and(|text| text.starts_with("The server went down for a restart at:"));
+                    .is_some_and(|text| {
+                        text.starts_with("The server went down for a restart at:")
+                            || text.starts_with("The server is stopping gracefully at:")
+                    });
             self.requests
                 .lock()
                 .await
@@ -84,7 +87,7 @@ impl Transport for MockTransport {
 }
 
 #[tokio::test]
-async fn restart_announcements_reach_both_channels_despite_network_latency_postgres() {
+async fn lifecycle_announcements_reach_both_channels_despite_network_latency_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;
     };
@@ -109,16 +112,18 @@ async fn restart_announcements_reach_both_channels_despite_network_latency_postg
         )
         .unwrap(),
     };
-    tokio::time::timeout(
-        Duration::from_secs(2),
-        integrations.announce_restart(Duration::from_secs(4680)),
-    )
+    tokio::time::timeout(Duration::from_secs(2), async {
+        integrations
+            .announce_restart(Duration::from_secs(4680))
+            .await;
+        integrations.announce_stop(Duration::from_secs(4680)).await;
+    })
     .await
     .unwrap();
     assert_eq!(
         mock.next.load(Ordering::Relaxed),
-        4,
-        "Both notices must finish delivery to both channels"
+        6,
+        "All lifecycle notices must finish delivery to both channels"
     );
     assert_eq!(bridge.status(), "ready");
     let requests = mock.requests.lock().await;
@@ -196,7 +201,7 @@ fn configuration() -> Configuration {
 }
 
 #[tokio::test]
-async fn discord_lifecycle_announcements_postgres() {
+async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     let Some(fixture) = Fixture::start().await else {
         return;
     };
@@ -219,6 +224,10 @@ async fn discord_lifecycle_announcements_postgres() {
         .announce_restart(Duration::from_secs(4680))
         .await
         .unwrap();
+    bridge
+        .announce_stop(Duration::from_secs(4680))
+        .await
+        .unwrap();
     let requests = mock.requests.lock().await;
     for channel in ["555555555555555555", "666666666666666666"] {
         let messages: Vec<_> = requests
@@ -233,7 +242,7 @@ async fn discord_lifecycle_announcements_postgres() {
             .collect();
         assert_eq!(
             messages.len(),
-            2,
+            3,
             "Lifecycle messages must be sent once per channel"
         );
         assert!(messages[0].starts_with("The server has successfully started at: "));
@@ -244,6 +253,14 @@ async fn discord_lifecycle_announcements_postgres() {
             "({}) - Uptime: 1 hour and 18 minutes",
             crate::restart::version()
         )));
+        assert!(messages[2].starts_with("The server is stopping gracefully at: "));
+        assert!(messages[2].contains(&format!(
+            "({}) - Uptime: 1 hour and 18 minutes.",
+            crate::restart::version()
+        )));
+        assert!(messages[2].ends_with(
+            "Active game progress has been saved; the server will remain stopped until explicitly started."
+        ));
     }
     drop(requests);
     let messages: Vec<String> =
@@ -253,8 +270,8 @@ async fn discord_lifecycle_announcements_postgres() {
             .unwrap();
     assert_eq!(
         messages.len(),
-        2,
-        "Both notices must also remain in lobby history"
+        3,
+        "All lifecycle notices must also remain in lobby history"
     );
     assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
     fixture.close().await;

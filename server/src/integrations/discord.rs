@@ -638,6 +638,16 @@ impl Bridge {
         .await
     }
 
+    pub async fn announce_stop(&self, uptime: Duration) -> Result<()> {
+        self.announce(&format!(
+            "The server is stopping gracefully at: {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.",
+            Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+            crate::restart::version(),
+            crate::lifecycle::duration(uptime.as_secs()),
+        ))
+        .await
+    }
+
     pub async fn event(&self, event: Value) -> Result<()> {
         let _guard = self.incoming.lock().await;
         self.app()?;

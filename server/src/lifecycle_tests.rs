@@ -4,7 +4,12 @@ use std::time::Duration;
 #[tokio::test]
 async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Result<()> {
     let redis = crate::test_redis::RedisFixture::start(true).await?;
-    for successful in [true, false] {
+    for (successful, reason) in [
+        (true, StopReason::Restart),
+        (false, StopReason::Restart),
+        (true, StopReason::GracefulStop),
+        (false, StopReason::GracefulStop),
+    ] {
         let state =
             crate::state::RedisState::connect(&redis.url, &format!("lifecycle-{successful}"))
                 .await?;
@@ -95,7 +100,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         );
         let result = tokio::time::timeout(
             Duration::from_secs(3),
-            drain_game_runtime(&app, &tasks, &StopReason::Restart),
+            drain_game_runtime(&app, &tasks, &reason),
         )
         .await?;
         assert_eq!(result.is_ok(), successful);

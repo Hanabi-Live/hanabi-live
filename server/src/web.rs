@@ -85,6 +85,12 @@ impl App {
         }
     }
 
+    pub async fn announce_stop(&self) {
+        if let Some(integrations) = self.integrations.get() {
+            integrations.announce_stop(self.started.elapsed()).await;
+        }
+    }
+
     pub fn new(
         store: Store,
         hub: mpsc::Sender<HubCommand>,

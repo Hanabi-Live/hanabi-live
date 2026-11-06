@@ -71,23 +71,40 @@ impl Integrations {
     }
 
     pub async fn announce_restart(&self, uptime: Duration) {
+        self.announce_shutdown(uptime, false).await;
+    }
+
+    pub async fn announce_stop(&self, uptime: Duration) {
+        self.announce_shutdown(uptime, true).await;
+    }
+
+    async fn announce_shutdown(&self, uptime: Duration, graceful_stop: bool) {
         if let Some(bridge) = &self.discord {
-            // An optional notification must not prevent a safely checkpointed restart.
-            match tokio::time::timeout(Duration::from_secs(5), bridge.announce_restart(uptime))
-                .await
-            {
+            let announcement = async {
+                if graceful_stop {
+                    bridge.announce_stop(uptime).await
+                } else {
+                    bridge.announce_restart(uptime).await
+                }
+            };
+            // An optional notification must not prevent a safely checkpointed stop.
+            match tokio::time::timeout(Duration::from_secs(5), announcement).await {
                 Ok(Ok(())) => {}
                 result => {
                     bridge.degrade();
                     let error = match result {
                         Err(_) => crate::errors::Fault::new("discord_announcement_timeout",
-                            "Discord restart announcement exceeded five seconds; continuing the drained restart.",
+                            "Discord lifecycle announcement exceeded five seconds; continuing the drained shutdown.",
                             axum::http::StatusCode::GATEWAY_TIMEOUT).into(),
                         Ok(Err(error)) => error,
                         Ok(Ok(())) => unreachable!(),
                     };
                     let report = crate::errors::Report::from_error(
-                        "Announcing restart to Discord",
+                        if graceful_stop {
+                            "Announcing graceful stop to Discord"
+                        } else {
+                            "Announcing restart to Discord"
+                        },
                         &error,
                         None,
                     );

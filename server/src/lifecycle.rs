@@ -198,6 +198,8 @@ pub async fn drain_game_runtime(
     if failures.is_empty() {
         if matches!(reason, StopReason::Restart) {
             app.announce_restart().await;
+        } else if matches!(reason, StopReason::GracefulStop) {
+            app.announce_stop().await;
         }
         let (reply, closed) = oneshot::channel();
         if app
