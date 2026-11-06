@@ -5,6 +5,7 @@
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Import the localhost port.
+# shellcheck source=/dev/null
 source "$DIR/../.env"
 if [[ -z ${LOCALHOST_PORT-} ]]; then
   LOCALHOST_PORT=8081

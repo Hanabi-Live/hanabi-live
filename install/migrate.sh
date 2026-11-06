@@ -24,6 +24,7 @@ if ((version == 0)); then
   exit 0
 fi
 
+# shellcheck source=/dev/null
 source "$DIR/../.env"
 export PGHOST="${DB_HOST:-localhost}"
 export PGPORT="${DB_PORT:-5432}"

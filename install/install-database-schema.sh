@@ -9,6 +9,7 @@ source "$DIR/migration-files.sh"
 migration_version="$(get_migration_version "$DIR/migrations")"
 
 # Import the database information.
+# shellcheck source=/dev/null
 source "$DIR/../.env"
 
 if [[ -z ${DB_HOST-} ]]; then
