@@ -50,11 +50,12 @@ def publication_job(github, run):
         response = github.json(
             f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100&page={page}"
         )
-        matches.extend(job for job in response["jobs"] if job["name"] == "publish_native_release")
+        matches.extend(job for job in response["jobs"]
+                       if job["name"] in ("publish-native-release", "publish_native_release"))
         if page * 100 >= response["total_count"]:
             break
         page += 1
-    require(len(matches) <= 1, "Ambiguous publish_native_release jobs; refusing deployment.")
+    require(len(matches) <= 1, "Ambiguous native release publication jobs; refusing deployment.")
     if not matches:
         return None
     job = matches[0]
@@ -87,7 +88,7 @@ def await_approved_run(github, revision):
                           f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}")
                 job = publication_job(github, run)
                 if job is not None:
-                    detail += f"\npublish_native_release: {job['conclusion'] or job['status']}"
+                    detail += f"\n{job['name']}: {job['conclusion'] or job['status']}"
                     if job["status"] == "completed":
                         require(job["conclusion"] == "success",
                                 f"Release publication did not succeed; no deployment performed.\n{detail}")

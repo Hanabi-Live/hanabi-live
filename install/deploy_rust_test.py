@@ -169,7 +169,7 @@ class DeployTest(unittest.TestCase):
             "head_repository": {"full_name": deploy.REPOSITORY},
         }
         self.job = {
-            "name": "publish_native_release", "run_id": 123, "run_attempt": 2,
+            "name": "publish-native-release", "run_id": 123, "run_attempt": 2,
             "head_sha": self.revision, "status": "completed", "conclusion": "success",
         }
         self.jobs = {"jobs": [self.job], "total_count": 1}
@@ -221,6 +221,12 @@ class DeployTest(unittest.TestCase):
                  patch.object(deploy.time, "sleep") as sleep:
                 self.assertEqual(deploy.await_approved_run(github, self.revision), run)
             sleep.assert_not_called()
+
+    def test_publication_supports_existing_underscore_named_runs(self):
+        github = Mock()
+        legacy = {**self.job, "name": "publish_native_release"}
+        github.json.return_value = {"jobs": [legacy], "total_count": 1}
+        self.assertEqual(deploy.publication_job(github, self.run), legacy)
 
     def test_ci_waits_for_matching_revision_then_returns_approved_run(self):
         github = Mock()
