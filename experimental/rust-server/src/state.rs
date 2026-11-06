@@ -561,7 +561,7 @@ mod tests {
     #[tokio::test]
     async fn durable_cas_survives_abrupt_redis_restart_without_resurrection() -> Result<()> {
         let mut fixture = RedisFixture::start(true).await?;
-        let first = connect(&fixture, "cas").await?;
+        let first = RedisState::connect(&fixture.url, "cas").await?;
         let id = StateId::Game(1);
         first.reserve(id).await?;
         ensure!(
@@ -574,8 +574,14 @@ mod tests {
         ensure!(committed.revision == 2, "Wrong committed revision");
         fixture.kill()?;
         fixture.restart().await?;
-        let recovered = connect(&fixture, "cas").await?;
-        let restored = recovered.get(id).await?.context("Lost durable state")?;
+        let recovered = RedisState::connect(&fixture.url, "cas").await?;
+        // A brief scheduler stall must not invalidate this functional recovery test's lease.
+        std::thread::sleep(Duration::from_millis(400));
+        let restored = recovered
+            .get(id)
+            .await
+            .context("Reading the recovered checkpoint after a scheduling stall")?
+            .context("Lost durable state")?;
         ensure!(
             restored.payload == committed.payload && restored.revision == 2,
             "AOF recovery changed acknowledged state"
