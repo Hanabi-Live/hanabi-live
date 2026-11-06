@@ -26,10 +26,9 @@ CREATE TABLE users (
      * PostgreSQL is not case-sensitive unique by default, meaning that it will allow a username of
      * "Alice" and "alice" to exist. Furthermore, because of Unicode, it would be possible for
      * "Αlice" with a Greek letter A (0x391) and "Alice" with a normal A (0x41) to exist. To guard
-     * against users impersonating each other & phishing attacks, we also store a normalized version
-     * of the username that is transliterated to ASCII with the `go-unidecode` library and then
-     * lower-cased. Importantly, we must verify that all new usernames are unique in code before
-     * adding them to the database.
+     * against users impersonating each other and phishing attacks, we also store a normalized
+     * version of the username that is transliterated to ASCII and then lower-cased. Importantly, we
+     * must verify that all new usernames are unique in code before adding them to the database.
      */
     normalized_username  TEXT         NOT NULL  UNIQUE,
 
