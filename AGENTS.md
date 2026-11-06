@@ -92,9 +92,10 @@ current `main` without deploying. `./deploy_rust.sh` publishes and gracefully
 restarts; reviewed pending migrations require `--apply-migrations`. The laptop
 needs Bash and SSH. Production requires an artifact-readable `GH_TOKEN` or
 `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+, Git, and PostgreSQL client tools,
-not Node, Bun, Cargo, or the GitHub CLI. Export the token in the remote
-login-shell environment; local credentials are not forwarded. For direct
-execution on production, run
+not Node, Bun, Cargo, or the GitHub CLI. The wrapper forwards the first nonempty
+local `GH_TOKEN`, `GITHUB_TOKEN_PERSONAL_CLASSIC`, or `GITHUB_TOKEN` through
+encrypted SSH input for that deployment only. Without a local token, it uses the
+remote login-shell environment. For direct execution on production, run
 `/opt/hanabi-python/bin/python3 install/deploy_rust.py` from `~/hanabi-live`
 with the same flags. It fast-forwards the clean checkout without
 dependency-install hooks and retains deployment records and overwritten-file

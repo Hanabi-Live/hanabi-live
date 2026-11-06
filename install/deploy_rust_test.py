@@ -37,6 +37,8 @@ class DeployWrapperTest(unittest.TestCase):
             "SSH_TEST_INPUT": str(self.input),
             "SSH_TEST_STATUS": "0",
         }
+        for key in ("GH_TOKEN", "GITHUB_TOKEN_PERSONAL_CLASSIC", "GITHUB_TOKEN"):
+            self.environment.pop(key, None)
         self.script = Path(__file__).resolve().parent.parent / "deploy_rust.sh"
 
     def run_wrapper(self, *arguments):
@@ -68,6 +70,43 @@ class DeployWrapperTest(unittest.TestCase):
                 result = self.run_wrapper(flag)
                 self.assertEqual(result.returncode, 0 if flag in ("-h", "--help") else 2)
                 self.assertFalse(self.arguments.exists())
+
+    def test_local_token_precedence_and_encrypted_input(self):
+        cases = (
+            ({"GH_TOKEN": "primary", "GITHUB_TOKEN_PERSONAL_CLASSIC": "classic",
+              "GITHUB_TOKEN": "fallback"}, "primary"),
+            ({"GH_TOKEN": "", "GITHUB_TOKEN_PERSONAL_CLASSIC": "classic",
+              "GITHUB_TOKEN": "fallback"}, "classic"),
+            ({"GITHUB_TOKEN": "fallback"}, "fallback"),
+            ({"GH_TOKEN": "synthetic ' \" \\ $HOME $(printf expanded)\nnext"},
+             "synthetic ' \" \\ $HOME $(printf expanded)\nnext"),
+        )
+        for environment, expected in cases:
+            with self.subTest(environment=environment):
+                with patch.dict(self.environment, environment):
+                    result = self.run_wrapper("--check")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn(expected, self.arguments.read_text())
+                self.assertNotIn(expected, result.stdout + result.stderr)
+                prefix = self.input.read_text().split("cd /root/hanabi-live", 1)[0]
+                remote = subprocess.run(
+                    ["bash", "-c", prefix + 'printf "%s" "$GH_TOKEN"'],
+                    env=self.environment, text=True, capture_output=True,
+                )
+                self.assertEqual(remote.returncode, 0, remote.stderr)
+                self.assertEqual(remote.stdout, expected)
+
+    def test_no_local_token_preserves_remote_environment(self):
+        result = self.run_wrapper()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        prefix = self.input.read_text().split("cd /root/hanabi-live", 1)[0]
+        remote = subprocess.run(
+            ["bash", "-c", prefix + 'printf "%s" "$GH_TOKEN"'],
+            env={**self.environment, "GH_TOKEN": "remote-token"},
+            text=True, capture_output=True,
+        )
+        self.assertEqual(remote.returncode, 0, remote.stderr)
+        self.assertEqual(remote.stdout, "remote-token")
 
     def test_remote_failure_and_disconnect_preserve_exit_status(self):
         for status in (42, 255):

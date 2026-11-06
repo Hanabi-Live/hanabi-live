@@ -19,8 +19,13 @@ for argument in "$@"; do
 done
 
 echo "Deployment target: root@hanab.live:/root/hanabi-live"
-# Only the fixed flags above may enter the remote shell command.
-if ssh -T root@hanab.live "bash -l -s -- $*" << 'REMOTE'; then
+# Send credentials on encrypted stdin, never in SSH command-line arguments.
+if {
+  token=${GH_TOKEN:-${GITHUB_TOKEN_PERSONAL_CLASSIC:-${GITHUB_TOKEN:-}}}
+  if [[ -n $token ]]; then
+    printf 'export GH_TOKEN=%q\n' "$token"
+  fi
+  cat << 'REMOTE'
 set -euo pipefail
 cd /root/hanabi-live
 python=python3
@@ -29,6 +34,7 @@ if [[ -x /opt/hanabi-python/bin/python3 ]]; then
 fi
 exec "$python" install/deploy_rust.py "$@"
 REMOTE
+} | ssh -T root@hanab.live "bash -l -s -- $*"; then
   exit 0
 else
   status=$?
