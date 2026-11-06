@@ -50,10 +50,18 @@ during disconnection. Spectator shadows retain their restricted viewpoint.
 
 The Rust browser restart regression uses a two-million-game archive, empty and
 sparse accounts, large friend histories, and simultaneous authenticated clients.
-It measures restart-request-to-accepted-game-action time across five actual
+It measures recovery plus accepted-game-action latency across five actual
 process replacements, checks that canvases survive, and enforces a one-second
 upper bound for every sample. CI runs this gate in its own job, without
 competing browser suites; locally, select
 `--grep @restart --project rust --workers 1`. Results are printed in CI. This is
 a controlled regression budget, not a guarantee for arbitrary client networks or
 outages.
+
+The recovery phase runs from the restart request until both game clients send
+`loaded`. The action phase is measured inside the active player's browser, from
+sending one action through its normal connection until the authoritative turn
+changes. The budget applies to the sum of those durations, not Playwright
+controller round trips or trace snapshots between them or after acknowledgment.
+Both phases and the overall controller duration are recorded separately; both
+game clients must apply the action, and the lobby clients must still recover.
