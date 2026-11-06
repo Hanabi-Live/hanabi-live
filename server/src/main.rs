@@ -143,7 +143,6 @@ async fn run(config: Config, version: String) -> Result<bool> {
         restart::version().into(),
         stops,
     );
-    app.set_runtime(control.clone());
     control.attach_application(Arc::downgrade(&app));
     let mut failures = Vec::new();
     let mut handles = Vec::new();

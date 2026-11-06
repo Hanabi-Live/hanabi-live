@@ -35,7 +35,7 @@ use std::{
     future::Future,
     net::SocketAddr,
     sync::{
-        Arc, OnceLock, RwLock,
+        Arc, OnceLock,
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
     task::Poll,
@@ -43,19 +43,6 @@ use std::{
 };
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
-
-pub trait RuntimeStatus: Send + Sync {
-    fn time_left(&self) -> String;
-    fn shutting_down(&self) -> bool {
-        false
-    }
-    fn maintenance_mode(&self) -> bool {
-        false
-    }
-    fn shutdown_started_at(&self) -> Option<String> {
-        None
-    }
-}
 
 pub struct App {
     pub store: Store,
@@ -76,7 +63,6 @@ pub struct App {
     public: PublicConfig,
     started: Instant,
     came_online: DateTime<Utc>,
-    runtime: RwLock<Option<Arc<dyn RuntimeStatus>>>,
     integrations: OnceLock<Arc<Integrations>>,
     integration_started: AtomicBool,
 }
@@ -124,14 +110,9 @@ impl App {
             public,
             started: Instant::now(),
             came_online: Utc::now(),
-            runtime: RwLock::new(None),
             integrations: OnceLock::new(),
             integration_started: AtomicBool::new(false),
         })
-    }
-
-    pub fn set_runtime(&self, runtime: Arc<dyn RuntimeStatus>) {
-        *self.runtime.write().unwrap_or_else(|e| e.into_inner()) = Some(runtime);
     }
 
     pub async fn start_integrations(
@@ -311,21 +292,15 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         accounts::is_muted(pool, ip)
     )?;
     let created: DateTime<Utc> = row.datetime_created;
-    let runtime = app
-        .runtime
-        .read()
-        .unwrap_or_else(|e| e.into_inner())
-        .clone();
-    let mut welcome = json!({
+    let welcome = json!({
         "userID":id,"username":name,"totalGames":null,
         "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
         "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
-        "playingAtTables":[],"shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
-        "maintenanceMode":runtime.as_ref().is_some_and(|r|r.maintenance_mode()),
+        "playingAtTables":[],
+        // Required by already-open clients; neither retired mode can be enabled.
+        "shuttingDown":false,
+        "maintenanceMode":false,
     });
-    if let Some(started) = runtime.as_ref().and_then(|r| r.shutdown_started_at()) {
-        welcome["datetimeShutdownInit"] = json!(started);
-    }
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
         id,
@@ -755,8 +730,16 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Resu
             Effect::DiscordMirror {
                 chat_id, message, ..
             } => mirrors.push((chat_id, message)),
-            Effect::RuntimeChat { command, args, .. } => {
+            Effect::RuntimeChat {
+                command,
+                args,
+                room,
+            } => {
                 for message in runtime_response(app, &command, &args)? {
+                    if command == "uptime" {
+                        ordinary.push(lobby::notice(&session.name, &message, &room));
+                        continue;
+                    }
                     for effect in lobby::server_chat(&app.store.primary, &message).await? {
                         if let Effect::DiscordMirror {
                             chat_id, message, ..
@@ -800,14 +783,6 @@ pub fn runtime_response(app: &App, command: &str, args: &[String]) -> Result<Vec
                 "Uptime: {}",
                 format_duration(app.started.elapsed().as_secs())
             ),
-        ],
-        "timeleft" => vec![
-            app.runtime
-                .read()
-                .unwrap_or_else(|e| e.into_inner())
-                .as_ref()
-                .map(|r| r.time_left())
-                .unwrap_or_else(|| "The server is not scheduled to shutdown any time soon.".into()),
         ],
         "replay" => {
             if args.is_empty() {

@@ -1,1 +1,3 @@
-The scripts in this directory send messages to the localhost-only HTTP server. See "src/httpLocalhost.go".
+These scripts call the Rust server's loopback-only HTTP control interface, defined in "server/src/operations.rs".
+"admin/common.sh" reads LOCALHOST_PORT from the repository's .env file, defaulting to 8081.
+See "docs/install.md" for graceful restart and game-preserving stop behavior.

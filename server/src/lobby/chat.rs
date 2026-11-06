@@ -143,7 +143,7 @@ pub fn general_response(message: &str) -> Option<GeneralResponse> {
     if command == "random" {
         return Some(GeneralResponse::Public(random_response(&args)));
     }
-    if ["replay", "uptime", "timeleft"].contains(&command.as_str()) {
+    if command == "replay" {
         return Some(GeneralResponse::Runtime {
             command,
             args: args.iter().map(|arg| (*arg).into()).collect(),
@@ -156,13 +156,14 @@ pub fn classify_chat(message: &str) -> Classification {
     let Some((command, _)) = parsed(message) else {
         return Classification::Text;
     };
-    if command == "token" || simple(&command).is_some_and(|r| r.private) {
+    if matches!(command.as_str(), "token" | "uptime") || simple(&command).is_some_and(|r| r.private)
+    {
         return Classification::Private;
     }
     if simple(&command).is_some()
         || WEBSITE.contains(&command.as_str())
         || DELEGATED.contains(&command.as_str())
-        || ["random", "replay", "uptime", "timeleft"].contains(&command.as_str())
+        || ["random", "replay"].contains(&command.as_str())
     {
         Classification::Public
     } else {
@@ -183,7 +184,7 @@ pub async fn external_command(pool: &PgPool, message: &str) -> Result<Vec<Effect
         "You cannot perform that command from Discord; please use the website instead.".into()
     } else if command == "random" {
         random_response(&args)
-    } else if ["replay", "uptime", "timeleft"].contains(&command.as_str()) {
+    } else if command == "replay" {
         return Ok(vec![Effect::RuntimeChat {
             command,
             args: args.iter().map(|s| (*s).into()).collect(),
@@ -199,7 +200,7 @@ fn help() -> String {
     let mut names: Vec<_> = WEBSITE
         .iter()
         .chain(DELEGATED)
-        .chain(["random", "replay", "uptime", "timeleft", "token"].iter())
+        .chain(["random", "replay", "uptime", "token"].iter())
         .map(|s| format!("/{s}"))
         .collect();
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
@@ -371,7 +372,7 @@ pub async fn private_history(
 }
 
 /// Returns None for table chat and table/replay-owned commands. Never persists
-/// those messages here. /token is intercepted before either delegation path.
+/// those messages here. Private runtime commands are intercepted before delegation.
 pub async fn lobby_chat(
     pool: &PgPool,
     secret: &str,
@@ -406,7 +407,16 @@ pub async fn lobby_chat(
                 token.token
             )
         };
-        return Ok(Some(vec![notice(caller, &response, room)]));
+        return Ok(Some(vec![notice(&caller.name, &response, room)]));
+    }
+    if let Some((command, args)) = &command
+        && command == "uptime"
+    {
+        return Ok(Some(vec![Effect::RuntimeChat {
+            command: command.clone(),
+            args: args.iter().map(|arg| (*arg).into()).collect(),
+            room: room.into(),
+        }]));
     }
     if room != "lobby" {
         return Ok(None);
@@ -439,7 +449,7 @@ pub async fn lobby_chat(
             );
         } else if command == "random" {
             public_response = Some(random_response(args));
-        } else if matches!(command.as_str(), "uptime" | "timeleft" | "replay") {
+        } else if command == "replay" {
             runtime = Some(Effect::RuntimeChat {
                 command: command.clone(),
                 args: args.iter().map(|s| (*s).to_owned()).collect(),
@@ -447,7 +457,7 @@ pub async fn lobby_chat(
             });
         } else {
             return Ok(Some(vec![notice(
-                caller,
+                &caller.name,
                 &format!(
                     "The chat command of <code>/{}</code> is not valid. Use <code>/help</code> to get a list of available commands.",
                     escape_html(command)
@@ -458,7 +468,7 @@ pub async fn lobby_chat(
     }
     // Private commands, including help, do not enter public history.
     if let Some(response) = private_response {
-        return Ok(Some(vec![notice(caller, &response, room)]));
+        return Ok(Some(vec![notice(&caller.name, &response, room)]));
     }
     let mut tx = pool.begin().await?;
     let mut effects = Vec::new();
@@ -528,14 +538,16 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
         if source != "server"
             && let Some((command, _)) = parsed(&message)
         {
-            if command == "token" || simple(&command).is_some_and(|r| r.private) {
+            if matches!(command.as_str(), "token" | "uptime")
+                || simple(&command).is_some_and(|r| r.private)
+            {
                 continue;
             }
 
             if simple(&command).is_none()
                 && !WEBSITE.contains(&command.as_str())
                 && !DELEGATED.contains(&command.as_str())
-                && !["random", "replay", "uptime", "timeleft"].contains(&command.as_str())
+                && !["random", "replay"].contains(&command.as_str())
                 && !(source == "discord"
                     && ["subscribe", "unsubscribe"].contains(&command.as_str()))
             {

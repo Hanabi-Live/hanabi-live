@@ -41,9 +41,6 @@ jobs:
       - name: Test release installation and deployment guards
         run: python3 -m unittest discover -s install -p '*_test.py'
 
-      - name: Test the maintenance server
-        run: python3 -m unittest discover -s maintenance -p '*_test.py'
-
   lint:
     runs-on: ubuntu-latest
     strategy:

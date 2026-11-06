@@ -26,7 +26,6 @@ motd.txt*
 # Various directories
 /server/**/target
 /server/__pycache__
-/maintenance/__pycache__
 hanabi-live.next
 /backups
 /letsencrypt

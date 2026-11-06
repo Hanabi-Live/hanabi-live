@@ -46,9 +46,9 @@ Build/install the replacement binary and paired client before requesting
 drain, and process replacement; it does not compile source inside the running
 server. `/gracefulStop` uses the same durable drain but exits without
 replacement, preserving active games and allowing clients to reconnect after an
-explicit start. It cancels scheduled shutdown rather than terminating unfinished
-games. SIGTERM and SIGINT also drain admitted work. Ownership/durability loss
-exits with an error rather than pretending shutdown succeeded.
+explicit start. It never terminates unfinished games. SIGTERM and SIGINT also
+drain admitted work. Ownership/durability loss exits with an error rather than
+pretending shutdown succeeded.
 
 ## Database queries
 

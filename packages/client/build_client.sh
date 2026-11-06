@@ -87,14 +87,14 @@ rm -rf "$GRUNT_OUTPUT_DIR"
 # results.)
 cd "$JS_BUNDLES_DIR"
 # shellcheck disable=SC2010,SC2143
-if [[ $(ls | grep -v "main.$VERSION" | grep -v "main.min.js" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
+if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "main.min.js" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
   ls | grep -v "main.$VERSION" | grep -v "main.min.js" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
 fi
 
 # Clean up the files in the CSS directory.
 cd "$CSS_DIR"
 # shellcheck disable=SC2010,SC2143
-if [[ $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
+if [[ -n $(ls main.*.min.css | grep -v "main.$VERSION.min.css") ]]; then
   ls main.*.min.css | grep -v "main.$VERSION.min.css" | xargs rm
 fi
 

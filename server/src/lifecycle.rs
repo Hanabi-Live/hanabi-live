@@ -9,13 +9,13 @@ use sqlx::PgPool;
 use std::{
     path::PathBuf,
     sync::{
-        Arc, Mutex, OnceLock, Weak,
+        Arc, OnceLock, Weak,
         atomic::{AtomicBool, Ordering},
     },
-    time::{Duration, Instant},
+    time::Instant,
 };
 use tokio::sync::{RwLock, mpsc, oneshot};
-use tokio_util::{sync::CancellationToken, task::TaskTracker};
+use tokio_util::task::TaskTracker;
 
 #[derive(Debug)]
 pub enum StopReason {
@@ -24,13 +24,6 @@ pub enum StopReason {
     GracefulStop,
     LeaseLost,
     Failure(String),
-}
-struct Schedule {
-    started_at: String,
-    deadline: Instant,
-    empty_since: Option<Instant>,
-    warned_ten: bool,
-    warned_five: bool,
 }
 pub struct Control {
     pub hub: mpsc::Sender<HubCommand>,
@@ -42,12 +35,7 @@ pub struct Control {
     pub admission: Arc<RwLock<()>>,
     pub accepting: AtomicBool,
     pub draining: AtomicBool,
-    pub maintenance: AtomicBool,
     stops: mpsc::Sender<StopReason>,
-    schedule: Mutex<Option<Schedule>>,
-    ordered: tokio::sync::Mutex<()>,
-    cancel: CancellationToken,
-    tasks: TaskTracker,
     application: OnceLock<Weak<App>>,
 }
 impl Control {
@@ -69,11 +57,6 @@ impl Control {
             admission: Arc::new(RwLock::new(())),
             accepting: AtomicBool::new(false),
             draining: AtomicBool::new(false),
-            maintenance: AtomicBool::new(false),
-            schedule: Mutex::new(None),
-            ordered: tokio::sync::Mutex::new(()),
-            cancel: CancellationToken::new(),
-            tasks: TaskTracker::new(),
             application: OnceLock::new(),
         })
     }
@@ -102,18 +85,8 @@ impl Control {
             .map(|app| app.integration_status())
             .unwrap_or_else(|| json!({"discord":"disabled"}))
     }
-    pub fn activate(self: &Arc<Self>) {
+    pub fn activate(&self) {
         self.accepting.store(true, Ordering::Release);
-        let control = self.clone();
-        self.tasks.spawn(async move {
-            let mut tick = tokio::time::interval(Duration::from_secs(1));
-            loop {
-                tokio::select! { _=control.cancel.cancelled()=>break,_=tick.tick()=>{} }
-                if let Err(error) = control.tick().await {
-                    eprintln!("Scheduled shutdown failed: {error:#}");
-                }
-            }
-        });
     }
     pub async fn operation(&self, command: Operation) -> Result<Value> {
         let (reply, received) = oneshot::channel();
@@ -123,97 +96,8 @@ impl Control {
             .context("Hub stopped")?;
         received.await.context("Hub operation was interrupted")?
     }
-    pub fn time_left(&self) -> String {
-        let schedule = self.schedule.lock().unwrap_or_else(|e| e.into_inner());
-        match schedule.as_ref() {
-            None => "The server is not scheduled to shutdown any time soon.".into(),
-            Some(schedule) => format!(
-                "Time left until server shutdown: {}",
-                duration(
-                    schedule
-                        .deadline
-                        .saturating_duration_since(Instant::now())
-                        .as_secs()
-                )
-            ),
-        }
-    }
-    pub fn metadata(&self) -> Value {
-        let schedule = self.schedule.lock().unwrap_or_else(|e| e.into_inner());
-        match schedule.as_ref() {
-            Some(s) => json!({"shuttingDown":true,"datetimeShutdownInit":s.started_at}),
-            None => json!({"shuttingDown":false}),
-        }
-    }
-    pub async fn schedule(&self) -> Result<()> {
-        let _ordered = self.ordered.lock().await;
-        ensure!(
-            self.accepting.load(Ordering::Acquire),
-            "The server is not ready for lifecycle operations."
-        );
-        {
-            let mut schedule = self.schedule.lock().unwrap_or_else(|e| e.into_inner());
-            ensure!(
-                schedule.is_none() && !self.draining.load(Ordering::Acquire),
-                "The server is already shutting down."
-            );
-            *schedule = Some(Schedule {
-                started_at: chrono::Utc::now().to_rfc3339(),
-                deadline: Instant::now() + Duration::from_secs(1800),
-                empty_since: None,
-                warned_ten: false,
-                warned_five: false,
-            });
-        }
-        let started_at = self.metadata()["datetimeShutdownInit"]
-            .as_str()
-            .map(str::to_owned);
-        if let Err(error) = self
-            .operation(Operation::Shutdown {
-                scheduled: true,
-                started_at,
-                imminent: false,
-            })
-            .await
-        {
-            *self.schedule.lock().unwrap_or_else(|e| e.into_inner()) = None;
-            return Err(error);
-        }
-        self.notice("The server will shutdown in 30 minutes.")
-            .await?;
-        if self.active_games().await? == 0 {
-            self.request_stop(StopReason::Shutdown).await?;
-        }
-        Ok(())
-    }
-    pub async fn cancel_schedule(&self) -> Result<()> {
-        let _ordered = self.ordered.lock().await;
-        ensure!(
-            !self.draining.load(Ordering::Acquire),
-            "The server is already draining."
-        );
-        ensure!(
-            self.schedule
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .is_some(),
-            "The server is not awaiting shutdown, so you cannot cancel it."
-        );
-        self.operation(Operation::Shutdown {
-            scheduled: false,
-            started_at: None,
-            imminent: false,
-        })
-        .await?;
-        *self.schedule.lock().unwrap_or_else(|e| e.into_inner()) = None;
-        self.notice("Server shutdown has been canceled.").await?;
-        Ok(())
-    }
     pub async fn graceful_stop(&self) -> Result<()> {
-        let _ordered = self.ordered.lock().await;
-        self.request_stop(StopReason::GracefulStop).await?;
-        *self.schedule.lock().unwrap_or_else(|e| e.into_inner()) = None;
-        Ok(())
+        self.request_stop(StopReason::GracefulStop).await
     }
     pub async fn request_stop(&self, reason: StopReason) -> Result<()> {
         ensure!(
@@ -236,126 +120,11 @@ impl Control {
         }
         Ok(())
     }
-    pub async fn notice(&self, message: &str) -> Result<()> {
-        self.operation(Operation::Broadcast {
-            message: message.into(),
-        })
-        .await?;
-        Ok(())
-    }
-    pub async fn set_maintenance(&self, enabled: bool) -> Result<bool> {
-        let _ordered = self.ordered.lock().await;
-        if self.maintenance.load(Ordering::Acquire) == enabled {
-            return Ok(false);
-        }
-        self.operation(Operation::Maintenance { enabled }).await?;
-        self.maintenance.store(enabled, Ordering::Release);
-        self.notice(if enabled {
-            "The server is entering maintenance mode. New game creation has been disabled."
-        } else {
-            "Server maintenance is complete. New game creation has been enabled."
-        })
-        .await?;
-        Ok(true)
-    }
-    async fn active_games(&self) -> Result<u64> {
-        self.operation(Operation::Inspect).await?["activeGames"]
-            .as_u64()
-            .context("Hub did not report active game count")
-    }
-    async fn tick(&self) -> Result<()> {
-        if !self.accepting.load(Ordering::Acquire) || self.draining.load(Ordering::Acquire) {
-            return Ok(());
-        }
-        let _admitted = self.admission.read().await;
-        if !self.accepting.load(Ordering::Acquire) {
-            return Ok(());
-        }
-        let _ordered = self.ordered.lock().await;
-        if self
-            .schedule
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .is_none()
-        {
-            return Ok(());
-        }
-        let active = self.active_games().await?;
-        let (ten, five, expired, stop, started_at) = {
-            let mut schedule = self.schedule.lock().unwrap_or_else(|e| e.into_inner());
-            let Some(s) = schedule.as_mut() else {
-                return Ok(());
-            };
-            let now = Instant::now();
-            let left = s.deadline.saturating_duration_since(now);
-            let ten = !s.warned_ten && left <= Duration::from_secs(600);
-            let five = !s.warned_five && left <= Duration::from_secs(300);
-            s.warned_ten |= ten;
-            s.warned_five |= five;
-            if active == 0 {
-                s.empty_since.get_or_insert(now);
-            } else {
-                s.empty_since = None;
-            }
-            (
-                ten,
-                five,
-                now >= s.deadline,
-                s.empty_since
-                    .is_some_and(|empty| now.duration_since(empty) >= Duration::from_secs(10)),
-                s.started_at.clone(),
-            )
-        };
-        if ten {
-            self.notice("The server will shutdown in 10 minutes. Finish your game soon or it will be automatically terminated!").await?;
-        }
-        if five {
-            self.operation(Operation::Shutdown {
-                scheduled: true,
-                started_at: Some(started_at),
-                imminent: true,
-            })
-            .await?;
-            self.operation(Operation::ClearPregames).await?;
-            self.notice("The server will shutdown in 5 minutes. Finish your game soon or it will be automatically terminated!").await?;
-        }
-        if expired && active > 0 {
-            self.operation(Operation::TerminateGames).await?;
-        }
-        if stop {
-            self.request_stop(StopReason::Shutdown).await?;
-        }
-        Ok(())
-    }
     pub async fn begin_drain(&self) {
         self.accepting.store(false, Ordering::Release);
         self.draining.store(true, Ordering::Release);
-        self.cancel.cancel();
         let drained = self.admission.write().await;
         drop(drained);
-        self.tasks.close();
-        self.tasks.wait().await;
-    }
-}
-impl crate::web::RuntimeStatus for Control {
-    fn time_left(&self) -> String {
-        self.time_left()
-    }
-    fn shutting_down(&self) -> bool {
-        self.schedule
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .is_some()
-    }
-    fn maintenance_mode(&self) -> bool {
-        self.maintenance.load(Ordering::Acquire)
-    }
-    fn shutdown_started_at(&self) -> Option<String> {
-        self.schedule
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .as_ref()
-            .map(|schedule| schedule.started_at.clone())
     }
 }
 

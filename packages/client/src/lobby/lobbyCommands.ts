@@ -175,22 +175,6 @@ lobbyCommands.set("left", (data: { tableID: number }) => {
   pregame.hide();
 });
 
-interface MaintenanceData {
-  maintenanceMode: boolean;
-}
-lobbyCommands.set("maintenance", (data: MaintenanceData) => {
-  globals.maintenanceMode = data.maintenanceMode;
-});
-
-interface ShutdownData {
-  shuttingDown: boolean;
-  datetimeShutdownInit: string;
-}
-lobbyCommands.set("shutdown", (data: ShutdownData) => {
-  globals.shuttingDown = data.shuttingDown;
-  globals.datetimeShutdownInit = new Date(data.datetimeShutdownInit);
-});
-
 interface SoundLobbyData {
   file: SoundType;
 }
@@ -362,12 +346,6 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;
-  globals.shuttingDown = data.shuttingDown;
-  globals.datetimeShutdownInit =
-    data.datetimeShutdownInit === undefined
-      ? undefined
-      : new Date(data.datetimeShutdownInit);
-  globals.maintenanceMode = data.maintenanceMode;
 
   // Update various elements of the UI to reflect our settings.
   $("#nav-buttons-history-total-games").text(

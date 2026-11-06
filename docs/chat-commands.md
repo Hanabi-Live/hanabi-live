@@ -26,7 +26,6 @@ If you need general help with the website, then read the
 | `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others                                                                   |
 | `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/community-guidelines.md)     |
 | `/shrug`                              | Displays a single line ASCII art                                                                                                   |
-| `/timeleft`                           | Get how much time is left before the server shuts down                                                                             |
 | `/uptime`                             | Get how long the server has been online                                                                                            |
 
 <br />

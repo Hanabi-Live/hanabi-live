@@ -15,7 +15,7 @@ export function init(): void {
     "#nav-buttons-lobby-create-game",
     "#create-game-modal",
     createGame.ready,
-    createGame.before,
+    undefined,
     "#create-game-variant-dropdown1",
   );
 
@@ -23,7 +23,7 @@ export function init(): void {
     "#nav-buttons-pregame-change-options",
     "#create-game-modal",
     createGame.ready,
-    createGame.before,
+    undefined,
     "#create-game-variant-dropdown1",
   );
 

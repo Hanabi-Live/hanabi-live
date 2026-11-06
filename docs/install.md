@@ -97,9 +97,7 @@ and shared game assets to that local server. Refresh after changing client code;
 rebuild and restart after changing Rust.
 
 Use `nix develop` for the supplied Nix tool environment. Its local Redis
-instance must use the persistence settings above. The standalone maintenance
-page can be served with `bash maintenance/run.sh` after gracefully stopping the
-application; it uses Python and does not access the database.
+instance must use the persistence settings above.
 
 ## Checks
 
@@ -218,7 +216,7 @@ Use the configured loopback control port:
 
 ```sh
 curl --silent --fail --show-error --location http://127.0.0.1:8081/gracefulRestart
-curl --silent --fail --show-error --location http://127.0.0.1:8081/shutdown
+curl --silent --fail --show-error --location http://127.0.0.1:8081/gracefulStop
 ```
 
 Do not use `supervisorctl stop` or `supervisorctl restart` on a running game
@@ -228,16 +226,13 @@ verify the running revision, client assets, restored tables, and logs.
 
 `./restart_service_only.sh` delegates to `admin/gracefulRestart.sh`, which
 requests the Rust lifecycle endpoint without pulling source or rebuilding.
-`./stop.sh` delegates to `admin/shutdown.sh`. Shutdown is scheduled: it waits
-for games to finish, but terminates remaining games after 30 minutes. Do not use
-it as an immediate, state-preserving migration handoff while games are active.
 
 For a short maintenance pause with active games, use
 `bash admin/gracefulStop.sh` (the loopback `/gracefulStop` endpoint). It
-immediately drains admitted work, saves active games and clocks durably, cancels
-any scheduled shutdown, tells clients to reconnect, and exits without replacing
-the process or terminating games. Existing restart clock grace still applies;
-time while the process is stopped is not charged to players.
+immediately drains admitted work, saves active games and clocks durably, tells
+clients to reconnect, and exits without replacing the process or terminating
+games. Existing restart clock grace still applies; time while the process is
+stopped is not charged to players.
 
 The HTTP response only acknowledges the request. Before maintaining PostgreSQL
 or copying state, verify the process exited successfully, the log reports

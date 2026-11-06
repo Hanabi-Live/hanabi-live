@@ -640,8 +640,6 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         sessions: HashMap::new(),
         tables: HashMap::new(),
         closing: false,
-        maintenance: false,
-        shutdown_imminent: false,
         store: store.clone(),
         tasks: TaskTracker::new(),
         capacity: Arc::new(Semaphore::new(1)),

@@ -93,7 +93,7 @@ pub async fn relationship(
                     .join(", ")
             )
         };
-        return Ok(vec![notice(caller, &message, room)]);
+        return Ok(vec![notice(&caller.name, &message, room)]);
     }
     let verb = match command {
         "chatFriend" => "friend",
@@ -139,7 +139,7 @@ pub async fn relationship(
             })
             .collect();
         return Ok(vec![notice(
-            caller,
+            &caller.name,
             &format!(
                 "\"{escaped}\" has played {count} non-speedrun games. More stats <a href=\"/scores/{}\" target=\"_blank\" rel=\"noopener noreferrer\">here</a>.",
                 escape_html(&url)
@@ -194,7 +194,7 @@ pub async fn relationship(
             "linked users"
         }
     );
-    let mut effects = vec![notice(caller, &message, room)];
+    let mut effects = vec![notice(&caller.name, &message, room)];
     if friend {
         effects.push(Effect::RelationshipChanged {
             user_id: caller.id,
