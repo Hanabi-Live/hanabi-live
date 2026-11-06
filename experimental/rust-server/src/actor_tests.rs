@@ -115,7 +115,7 @@ async fn fixture_store(namespace: &str) -> Result<(RedisFixture, Store, RedisSta
     let pool = PgPoolOptions::new().connect_lazy("postgres://unused@127.0.0.1/unused")?;
     Ok((fixture, Store::fixture(pool, state.clone()), state))
 }
-fn pregame(id: u64) -> TableSnapshot {
+pub(super) fn pregame(id: u64) -> TableSnapshot {
     TableSnapshot {
         format: FORMAT.into(),
         id,
@@ -145,6 +145,181 @@ fn pregame(id: u64) -> TableSnapshot {
         retire_after_spawn: false,
         pending_tag: None,
     }
+}
+
+fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
+    Attendance {
+        session,
+        spectator,
+        loaded: false,
+        shadow: None,
+        chat_read: 0,
+        typing_until: None,
+    }
+}
+
+#[tokio::test]
+async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -> Result<()> {
+    let (_redis, store, state) = fixture_store("abandoned-pregames").await?;
+    for protected in [false, true] {
+        let id = store.allocate_table().await?;
+        let mut table = pregame(id);
+        table.password_hash = protected.then(|| "unused-test-password-hash".into());
+        let revision = store.save(&table, 0).await?;
+        let capacity = Arc::new(Semaphore::new(1));
+        let (hub, mut notifications) = mpsc::channel(32);
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            store.clone(),
+            hub,
+            capacity.clone().try_acquire_owned()?,
+        );
+        let (owner, _owner_frames) = Session::new(1, "Alice".into(), 1, false);
+        let (observer, _observer_frames) = Session::new(2, "Observer".into(), 1, false);
+        actor.attendees.insert(1, attendance(owner.clone(), false));
+        actor.attendees.insert(2, attendance(observer, true));
+        let now = Instant::now();
+        actor.cleanup(now).await?;
+        owner.cancel.cancel();
+        actor.cleanup(now).await?;
+        actor
+            .cleanup(now + PREGAME_RECONNECT_GRACE - Duration::from_millis(1))
+            .await?;
+        ensure!(
+            !actor.retired && state.get(StateId::Table(id)).await?.is_some(),
+            "Disconnected player lost the reconnect grace period"
+        );
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
+        ensure!(actor.retired, "Abandoned pregame did not retire");
+        ensure!(
+            state.load().await?.is_empty(),
+            "Abandoned pregame remained in durable storage"
+        );
+        let mut removed = false;
+        let mut observer_booted = false;
+        while let Ok(notification) = notifications.try_recv() {
+            match notification {
+                HubCommand::Retire(table) => removed |= table == id,
+                HubCommand::Effects(effects) => {
+                    observer_booted |= effects
+                        .messages
+                        .iter()
+                        .any(|(session, message)| session.user == 2 && message.starts_with("boot "))
+                }
+                _ => {}
+            }
+        }
+        ensure!(
+            removed && observer_booted,
+            "Retirement did not notify the directory and remaining spectator"
+        );
+        drop(actor);
+        ensure!(
+            capacity.available_permits() == 1,
+            "Abandoned table retained capacity"
+        );
+    }
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> Result<()> {
+    let (_redis, store, state) = fixture_store("pregame-reconnect-grace").await?;
+    let id = store.allocate_table().await?;
+    let mut table = pregame(id);
+    table.created = Utc::now() - ChronoDuration::days(1);
+    let revision = store.save(&table, 0).await?;
+    let (hub, _notifications) = mpsc::channel(32);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table,
+        revision,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+    );
+    let now = Instant::now();
+    actor.cleanup(now).await?;
+    ensure!(
+        !actor.retired,
+        "Recovery immediately deleted an old pregame"
+    );
+    let (owner, _frames) = Session::new(1, "Alice".into(), 2, false);
+    actor.reattend(owner.clone(), &json!({}), false).await?;
+    owner.set_inactive(true);
+    let later = now + PREGAME_RECONNECT_GRACE;
+    actor.cleanup(later).await?;
+    ensure!(
+        !actor.retired && state.get(StateId::Table(id)).await?.is_some(),
+        "Connected AFK player lost the table"
+    );
+    owner.cancel.cancel();
+    actor.cleanup(later).await?;
+    actor
+        .cleanup(later + PREGAME_RECONNECT_GRACE - Duration::from_millis(1))
+        .await?;
+    ensure!(
+        !actor.retired,
+        "Reconnecting did not reset the disconnect grace period"
+    );
+    actor.cleanup(later + PREGAME_RECONNECT_GRACE).await?;
+    ensure!(
+        actor.retired && state.load().await?.is_empty(),
+        "Recovered table survived permanent abandonment"
+    );
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> Result<()> {
+    let (_redis, store, state) = fixture_store("pregame-cleanup-fence").await?;
+    let id = store.allocate_table().await?;
+    let table = pregame(id);
+    let revision = store.save(&table, 0).await?;
+    let (hub, mut notifications) = mpsc::channel(32);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table.clone(),
+        revision,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+    );
+    let now = Instant::now();
+    actor.cleanup(now).await?;
+    actor.frozen = true;
+    ensure!(
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await.is_err(),
+        "Frozen pregame was cleaned up"
+    );
+    actor.frozen = false;
+    let newer = store.save(&table, revision).await?;
+    ensure!(
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await.is_err(),
+        "Cleanup overwrote a newer checkpoint"
+    );
+    ensure!(
+        actor.frozen && !actor.retired,
+        "Uncertain cleanup did not preserve the table"
+    );
+    ensure!(
+        state
+            .get(StateId::Table(id))
+            .await?
+            .context("Checkpoint deleted")?
+            .revision
+            == newer,
+        "Cleanup removed newer authoritative state"
+    );
+    ensure!(
+        notifications.try_recv().is_err(),
+        "Failed cleanup announced retirement"
+    );
+    store.close().await?;
+    Ok(())
 }
 #[tokio::test]
 async fn canceled_reservations_and_uninstalled_tables_release_capacity_after_durable_cleanup()

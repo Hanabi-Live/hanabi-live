@@ -244,6 +244,146 @@ impl Harness {
     }
 }
 #[tokio::test]
+async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        h.send(
+            0,
+            "tableCreate",
+            json!({"name":"Abandoned private table","password":"fixture","options":{}}),
+        )
+        .await?;
+        let id = h.receive(0, "joined").await?["tableID"]
+            .as_u64()
+            .context("Missing table")?;
+        h.hub.send(HubCommand::Logout(h.users[0].clone())).await?;
+        tokio::time::timeout(PREGAME_RECONNECT_GRACE + Duration::from_secs(5), async {
+            loop {
+                if h.state.get(StateId::Table(id)).await?.is_none() {
+                    return Ok::<(), anyhow::Error>(());
+                }
+                tokio::time::sleep(Duration::from_millis(100)).await;
+            }
+        })
+        .await
+        .context("Disconnected pregame was never removed")??;
+        let gone = h.receive(1, "tableGone").await?;
+        ensure!(gone["tableID"] == id, "Lobby removed the wrong table");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_survive()
+-> Result<()> {
+    let Some(h) = Harness::new(&["Alice", "Bob", "Carol", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.store.allocate_table().await?;
+        let mut table = super::tests::pregame(id);
+        if let Phase::Pregame {
+            players,
+            countdown,
+            automatic_start,
+            ..
+        } = &mut table.phase
+        {
+            for user in &h.users[1..3] {
+                players.push(Player {
+                    id: user.user,
+                    name: user.name.clone(),
+                    stats: crate::store::zero_stats(),
+                });
+            }
+            *countdown = Some(Utc::now() + ChronoDuration::minutes(5));
+            *automatic_start = Some(3);
+        }
+        let revision = h.store.save(&table, 0).await?;
+        let capacity = Arc::new(Semaphore::new(1));
+        let (hub, mut notifications) = mpsc::channel(64);
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+        );
+        for user in &h.users[..3] {
+            actor.initialize(user.clone(), vec![]).await?;
+        }
+        actor
+            .reattend(h.users[3].clone(), &json!({"shadowingPlayerIndex":1}), true)
+            .await?;
+        while notifications.try_recv().is_ok() {}
+        h.users[0].cancel.cancel();
+        let now = Instant::now();
+        actor.cleanup(now).await?;
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE).await?;
+        let (restored, _) = h.snapshot(id).await?;
+        ensure!(
+            restored.players().iter().map(|p| p.id).collect::<Vec<_>>() == vec![2, 3],
+            "Disconnected owner kept a pregame seat"
+        );
+        ensure!(
+            restored.owner == 2,
+            "Ownership did not pass to a remaining player"
+        );
+        ensure!(
+            matches!(
+                restored.phase,
+                Phase::Pregame {
+                    countdown: None,
+                    ..
+                }
+            ),
+            "Departure did not cancel the start countdown"
+        );
+        ensure!(
+            restored.shadows.get(&4) == Some(&Some(0)),
+            "Departure changed the spectator's shadow target"
+        );
+        let mut published_owner = false;
+        while let Ok(notification) = notifications.try_recv() {
+            if let HubCommand::Effects(effects) = notification {
+                for (session, message) in effects.messages {
+                    if session.user == 2
+                        && let Some(body) = message.strip_prefix("game ")
+                    {
+                        let game: Value = serde_json::from_str(body)?;
+                        published_owner |= game["owner"] == 2
+                            && game["players"].as_array().is_some_and(|p| p.len() == 2);
+                    }
+                }
+            }
+        }
+        ensure!(
+            published_owner,
+            "Remaining clients did not receive the updated pregame"
+        );
+        actor.start(h.users[1].clone(), None).await?;
+        for user in &h.users {
+            user.cancel.cancel();
+        }
+        actor.cleanup(now + PREGAME_RECONNECT_GRACE * 3).await?;
+        let (ongoing, _) = h.snapshot(id).await?;
+        ensure!(
+            !actor.retired && matches!(ongoing.phase, Phase::Live { .. }),
+            "Disconnect cleanup deleted an ongoing game"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer"]).await? else {
         return Ok(());

@@ -31,6 +31,8 @@ mod replay_helpers;
 mod tests;
 type Reply = oneshot::Sender<Result<()>>;
 
+const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(30);
+
 #[derive(Serialize)]
 struct GameActionMessage<'a> {
     #[serde(rename = "tableID")]
@@ -1212,6 +1214,43 @@ fn chat_time() -> String {
     Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
 }
 
+fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> Vec<Value> {
+    let Phase::Pregame {
+        players, countdown, ..
+    } = &mut table.phase
+    else {
+        return vec![];
+    };
+    let names = players
+        .iter()
+        .filter(|p| removed.contains(&p.id))
+        .map(|p| p.name.clone())
+        .collect::<Vec<_>>();
+    if names.is_empty() {
+        return vec![];
+    }
+    players.retain(|p| !removed.contains(&p.id));
+    *countdown = None;
+    if players.is_empty() {
+        return vec![];
+    }
+    if !players.iter().any(|p| p.id == table.owner) {
+        table.owner = players[0].id;
+    }
+    for id in removed {
+        table.shadows.remove(id);
+    }
+    names
+        .into_iter()
+        .filter_map(|name| {
+            membership_notice(
+                table,
+                &format!("{} left the game.", crate::accounts::escape_html(&name)),
+            )
+        })
+        .collect()
+}
+
 fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
     if table.chat.len() >= 4096 {
         eprintln!(
@@ -1606,6 +1645,7 @@ struct TableActor {
     frozen: bool,
     retired: bool,
     attendees: HashMap<i32, Attendance>,
+    pregame_absent_until: HashMap<i32, Instant>,
     cleanup: Arc<Notify>,
     store: Store,
     hub: mpsc::Sender<HubCommand>,
@@ -1627,6 +1667,7 @@ impl TableActor {
             frozen: false,
             retired: false,
             attendees: HashMap::new(),
+            pregame_absent_until: HashMap::new(),
             cleanup: Arc::new(Notify::new()),
             store,
             hub,
@@ -1862,6 +1903,7 @@ impl TableActor {
         }
     }
     async fn initialize(&mut self, s: Arc<Session>, warnings: Vec<String>) -> Result<()> {
+        self.pregame_absent_until.remove(&s.user);
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         if replay {
             let mut next = self.candidate();
@@ -1971,7 +2013,7 @@ impl TableActor {
                         TableCommand::Operation{operation,reply}=>{let result=self.operation(operation).await;let _=reply.send(result);},
                     }
                 },
-                _=self.cleanup.notified()=>{if let Err(e)=self.cleanup().await{eprintln!("Table cleanup: {e}");}},
+                _=self.cleanup.notified()=>{if let Err(e)=self.cleanup(Instant::now()).await{eprintln!("Table cleanup: {e}");}},
                 _=tick.tick()=>{if !self.frozen&&self.store.check_state().is_ok()&&let Err(e)=self.tick().await{eprintln!("Table timer: {e}");}},
             }
         }
@@ -2108,7 +2150,9 @@ impl TableActor {
         }
         self.publish(effects).await
     }
-    async fn cleanup(&mut self) -> Result<()> {
+    async fn cleanup(&mut self, now: Instant) -> Result<()> {
+        self.store.check_state()?;
+        ensure!(!self.frozen, "Frozen table cannot be cleaned up");
         let before = self.attendees.len();
         let expired = self
             .attendees
@@ -2139,7 +2183,55 @@ impl TableActor {
             self.spectator_messages(&mut e);
             self.publish(e).await?;
         }
-        Ok(())
+        self.cleanup_pregame(now).await
+    }
+    async fn cleanup_pregame(&mut self, now: Instant) -> Result<()> {
+        let Phase::Pregame { players, .. } = &self.table.phase else {
+            self.pregame_absent_until.clear();
+            return Ok(());
+        };
+        let absent = players
+            .iter()
+            .filter(|p| {
+                !self
+                    .attendees
+                    .get(&p.id)
+                    .is_some_and(|a| !a.spectator && a.session.active())
+            })
+            .map(|p| p.id)
+            .collect::<HashSet<_>>();
+        self.pregame_absent_until
+            .retain(|id, _| absent.contains(id));
+        for id in absent {
+            // Recovered pregames also get a fresh grace period for reconnecting clients.
+            self.pregame_absent_until
+                .entry(id)
+                .or_insert(now + PREGAME_RECONNECT_GRACE);
+        }
+        let removed = self
+            .pregame_absent_until
+            .iter()
+            .filter(|(_, deadline)| now >= **deadline)
+            .map(|(id, _)| *id)
+            .collect::<HashSet<_>>();
+        if removed.is_empty() {
+            return Ok(());
+        }
+        let mut next = self.candidate();
+        let notices = remove_pregame_players(&mut next, &removed);
+        if next.players().is_empty() {
+            return self.retire().await;
+        }
+        self.persist(next).await?;
+        self.pregame_absent_until
+            .retain(|id, _| !removed.contains(id));
+        let mut effects = self.effects();
+        self.pregame_messages(&mut effects);
+        self.spectator_messages(&mut effects);
+        for message in notices {
+            self.add_all(&mut effects, "chat", message);
+        }
+        self.publish(effects).await
     }
     fn connected(&self) -> Value {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
@@ -2621,6 +2713,9 @@ impl TableActor {
         next.shadows.insert(session.user, shadow.map(|v| v as i32));
         self.persist(next).await?;
         let pregame = matches!(self.table.phase, Phase::Pregame { .. });
+        if pregame && !spectating && session.active() {
+            self.pregame_absent_until.remove(&session.user);
+        }
         self.attendees.insert(
             session.user,
             Attendance {
@@ -2676,28 +2771,13 @@ impl TableActor {
     async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
         ensure!(self.attending(&session), "You are not attending this table");
         let mut next = self.candidate();
-        let mut notice = None;
+        let mut notices = vec![];
         next.shadows.remove(&session.user);
-        if remove
-            && let Phase::Pregame {
-                players, countdown, ..
-            } = &mut next.phase
-        {
-            players.retain(|p| p.id != session.user);
-            *countdown = None;
-            if players.is_empty() {
+        if remove && matches!(next.phase, Phase::Pregame { .. }) {
+            notices = remove_pregame_players(&mut next, &HashSet::from([session.user]));
+            if next.players().is_empty() {
                 return self.retire().await;
             }
-            if next.owner == session.user {
-                next.owner = players[0].id;
-            }
-            notice = membership_notice(
-                &mut next,
-                &format!(
-                    "{} left the game.",
-                    crate::accounts::escape_html(&session.name)
-                ),
-            );
         }
         if matches!(next.phase, Phase::Replay { .. })
             && next.owner == session.user
@@ -2724,7 +2804,7 @@ impl TableActor {
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
         }
-        if let Some(message) = notice {
+        for message in notices {
             self.add_all(&mut e, "chat", message);
         }
         self.spectator_messages(&mut e);
@@ -4225,7 +4305,10 @@ impl TableActor {
         self.publish(e).await
     }
     async fn tick(&mut self) -> Result<()> {
-        self.cleanup().await?;
+        self.cleanup(Instant::now()).await?;
+        if self.retired {
+            return Ok(());
+        }
         let mut expired = vec![];
         for a in self.attendees.values_mut() {
             if a.typing_until.is_some_and(|t| Instant::now() >= t) {
