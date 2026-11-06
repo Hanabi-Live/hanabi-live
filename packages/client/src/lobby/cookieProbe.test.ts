@@ -76,7 +76,9 @@ describe("cached login cookie check", () => {
     await clock.tickAsync(3000);
 
     expect(await pending).toEqual(
-      new Error("Cookie check failed with status 503."),
+      new Error(
+        "Checking your saved session failed (HTTP 503). The server returned no explanation.",
+      ),
     );
     expect(request).toHaveBeenCalledTimes(3);
     expect(clock.countTimers()).toBe(0);

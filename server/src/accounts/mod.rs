@@ -9,8 +9,8 @@ mod tests;
 mod upgrade_tests;
 
 pub use crypto::{
-    HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash, verify_legacy,
-    verify_password,
+    HashFailure, HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash,
+    verify_legacy, verify_password,
 };
 pub use normalization::{
     escape_html, has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
@@ -121,70 +121,22 @@ fn unauthorized(message: impl Into<String>) -> Response {
     (StatusCode::UNAUTHORIZED, format!("{}\n", message.into())).into_response()
 }
 
-fn internal_error() -> Response {
-    (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error\n").into_response()
-}
-
+#[cfg(test)]
 fn failure_diagnostic(error: &anyhow::Error) -> String {
-    if let Some(overload) = error.downcast_ref::<HashOverload>() {
-        return overload.diagnostic().into();
-    }
-    if let Some(failure) = error.downcast_ref::<crypto::HashFailure>() {
-        return failure.diagnostic().into();
-    }
-    if error.downcast_ref::<tokio::task::JoinError>().is_some() {
-        return "password worker stopped unexpectedly".into();
-    }
-    if let Some(database) = error.downcast_ref::<sqlx::Error>() {
-        return match database {
-            sqlx::Error::PoolTimedOut => "database pool admission timed out".into(),
-            sqlx::Error::PoolClosed => "database pool is closed".into(),
-            sqlx::Error::Database(database) => {
-                let code = database.code().filter(|code| {
-                    code.len() == 5 && code.bytes().all(|c| c.is_ascii_alphanumeric())
-                });
-                format!(
-                    "database operation failed (SQLSTATE {})",
-                    code.as_deref().unwrap_or("unknown")
-                )
-            }
-            _ => "database transport or decoding failed".into(),
-        };
-    }
-    "internal account operation failed".into()
+    crate::errors::Report::from_error("Account operation", error, Some(30)).description
 }
 
 fn account_failure(operation: &'static str, error: anyhow::Error, json_response: bool) -> Response {
-    // Error messages can contain SQL values, hashes, tokens or passwords.
-    // Log a typed category/SQLSTATE instead of formatting the original error.
-    eprintln!(
-        "Account {operation} failed: {}.",
-        failure_diagnostic(&error)
-    );
+    let report =
+        crate::errors::Report::from_error(format!("Account {operation}"), &error, Some(30));
+    let mut response = report.response(json_response);
     if error.downcast_ref::<HashOverload>().is_some() {
-        let mut response = if json_response {
-            api_error(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "Password processing is temporarily busy. Please try again.",
-            )
-        } else {
-            (
-                StatusCode::SERVICE_UNAVAILABLE,
-                "Password processing is temporarily busy. Please try again.\n",
-            )
-                .into_response()
-        };
         response.headers_mut().insert(
             header::RETRY_AFTER,
             axum::http::HeaderValue::from_static("1"),
         );
-        return response;
     }
-    if json_response {
-        api_error(StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
-    } else {
-        internal_error()
-    }
+    response
 }
 
 async fn login(
@@ -245,8 +197,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         } else if let Some(ref original) = original {
             verify_password(input.password.clone(), original.clone()).await?
         } else {
-            eprintln!("Account login failed: stored password hash is missing.");
-            return Ok(internal_error());
+            return Err(crypto::HashFailure::StoredHash.into());
         };
         if !correct {
             return Ok(unauthorized("That is not the correct password."));

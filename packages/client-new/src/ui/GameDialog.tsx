@@ -1,4 +1,5 @@
 import type { Settings } from "@hanabi-live/data";
+import { errorDetails } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { getRandomArrayElement, isArray } from "complete-common";
 import type { SubmitEvent } from "react";
@@ -126,8 +127,8 @@ export function GameDialog({
     if (json.trim()) {
       try {
         gameJSON = JSON.parse(json);
-      } catch {
-        setError("The custom game JSON is invalid.");
+      } catch (error_) {
+        setError(errorDetails(error_, "Parsing custom game JSON"));
         return;
       }
       if (
@@ -156,10 +157,9 @@ export function GameDialog({
           password,
           ...(gameJSON !== undefined && { gameJSON }),
         };
-    if (!connection.send(game ? "tableUpdate" : "tableCreate", payload)) {
-      setError(
-        "Unable to send these options. Check your connection or reduce the JSON size.",
-      );
+    if (
+      !connection.send(game ? "tableUpdate" : "tableCreate", payload, setError)
+    ) {
       return;
     }
     const changed: Array<[keyof Settings, Settings[keyof Settings]]> = [

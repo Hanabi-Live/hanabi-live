@@ -28,6 +28,27 @@ afterEach(() => {
   Reflect.deleteProperty(HTMLElement.prototype, "scrollTo");
 });
 
+it("keeps the exact table-send error in the open form", () => {
+  const connection = new LobbyConnection(createLobbyStore(), vi.fn());
+  vi.spyOn(connection, "send").mockImplementation(
+    (_command, _data, onError) => {
+      onError?.("Cannot send tableCreate: maxPlayers must be a number.");
+      return false;
+    },
+  );
+  const close = vi.fn();
+  render(
+    <MemoryRouter>
+      <GameDialog close={close} connection={connection} welcome={welcome()} />
+    </MemoryRouter>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Create table" }));
+  expect(screen.getByRole("alert").textContent).toBe(
+    "Cannot send tableCreate: maxPlayers must be a number.",
+  );
+  expect(close).not.toHaveBeenCalled();
+});
+
 it("keeps the current user and friends first without moving away users out of alphabetical order", () => {
   const store = createLobbyStore();
   store.dispatch(
@@ -175,6 +196,7 @@ it("uses saved timer preferences when editing an untimed table rather than its u
   expect(send).toHaveBeenCalledWith(
     "tableUpdate",
     expect.objectContaining({ tableID: 7 }),
+    expect.any(Function),
   );
   expect(setting).not.toHaveBeenCalledWith(
     "createTableTimeBaseMinutes",

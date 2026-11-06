@@ -9,6 +9,84 @@ use tower::ServiceExt;
 type Socket =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
 
+#[tokio::test]
+async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "ErrorDetails").await;
+    let mut socket = connect(&fixture, &cookie, false).await;
+    receive(&mut socket, "welcome").await;
+    for (request, expected) in [
+        (
+            "historyGet {\"offset\":\"bad\",\"amount\":10}",
+            "Invalid offset: expected a safe integer",
+        ),
+        (
+            "historyGet {\"offset\":0,\"amount\":10}",
+            "database connection pool is closed",
+        ),
+    ] {
+        if request.contains("\"offset\":0") {
+            fixture.app.store.primary.close().await;
+        }
+        socket
+            .send(WireMessage::Text(request.into()))
+            .await
+            .unwrap();
+        let warning = tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                let message = socket.next().await.unwrap().unwrap();
+                if let WireMessage::Text(text) = message
+                    && let Some(body) = text.strip_prefix("warning ")
+                {
+                    break serde_json::from_str::<Value>(body).unwrap()["warning"]
+                        .as_str()
+                        .unwrap()
+                        .to_owned();
+                }
+            }
+        })
+        .await
+        .unwrap();
+        assert!(warning.contains(expected), "{warning}");
+        if request.contains("\"offset\":0") {
+            assert!(warning.contains("Loading game history"));
+            assert!(warning.contains("Reference:"));
+        }
+    }
+    socket.close(None).await.unwrap();
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn websocket_handshake_database_failure_has_a_diagnostic_response_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "HandshakeError").await;
+    fixture.app.store.primary.close().await;
+    let mut request = format!("ws://{}/ws", fixture.address)
+        .into_client_request()
+        .unwrap();
+    request
+        .headers_mut()
+        .insert(header::COOKIE, HeaderValue::from_str(&cookie).unwrap());
+    request
+        .headers_mut()
+        .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
+    let error = connect_async(request).await.unwrap_err();
+    let tokio_tungstenite::tungstenite::Error::Http(response) = error else {
+        panic!("Expected HTTP rejection");
+    };
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    assert!(response.headers().contains_key("x-error-id"));
+    let body = String::from_utf8(response.into_body().unwrap()).unwrap();
+    assert!(body.contains("Checking live-connection access"));
+    assert!(body.contains("database connection pool is closed"));
+    fixture.close().await;
+}
+
 async fn login(fixture: &test_support::Fixture, name: &str) -> String {
     let response = reqwest::Client::new()
         .post(format!("{}/login", fixture.url))
@@ -352,10 +430,22 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(
-        message.message.to_text().unwrap(),
-        frame("lobbyStatus", json!({"state":"error","totalGames":null}))
+    let body = message
+        .message
+        .to_text()
+        .unwrap()
+        .strip_prefix("lobbyStatus ")
+        .unwrap();
+    let status: Value = serde_json::from_str(body).unwrap();
+    assert_eq!(status["state"], "error");
+    assert_eq!(status["totalGames"], Value::Null);
+    assert!(
+        status["message"]
+            .as_str()
+            .unwrap()
+            .contains("lobby read queue is full")
     );
+    assert!(status["message"].as_str().unwrap().contains("Reference:"));
     drop(slots);
     lock.rollback().await.unwrap();
     fixture.close().await;

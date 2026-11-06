@@ -1,4 +1,5 @@
 import copy
+import io
 import json
 import os
 from pathlib import Path
@@ -290,6 +291,19 @@ class DeployTest(unittest.TestCase):
              self.assertRaises(urllib.error.HTTPError):
             deploy.await_approved_run(github, self.revision)
         sleep.assert_not_called()
+
+    def test_control_error_preserves_server_explanation_and_remains_retryable(self):
+        error = urllib.error.HTTPError(
+            "http://127.0.0.1:8081/metrics", 503, "Unavailable", {},
+            io.BytesIO(b"Recovery storage unavailable [Reference: abc123]"),
+        )
+        with patch.object(deploy.urllib.request, "urlopen", side_effect=error), \
+             self.assertRaises(urllib.error.URLError) as failure:
+            deploy.control(8081, "/metrics")
+        self.assertIn("HTTP 503", str(failure.exception))
+        self.assertIn("/metrics", str(failure.exception))
+        self.assertIn("Recovery storage unavailable", str(failure.exception))
+        self.assertIn("Reference: abc123", str(failure.exception))
 
     def test_artifact_redirect_does_not_forward_github_token(self):
         request = urllib.request.Request("https://api.github.com/example",

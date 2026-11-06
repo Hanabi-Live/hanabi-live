@@ -102,6 +102,7 @@ pub fn router(control: Arc<Control>) -> Router {
     router
         .route("/terminate", get(handle).post(handle))
         .layer(middleware::from_fn_with_state(control.clone(), guard))
+        .layer(middleware::from_fn(crate::errors::http_context))
         .with_state(control)
 }
 
@@ -137,16 +138,24 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
         } else {
             None
         };
-        if admission.is_some()
-            && (!control.accepting.load(Ordering::Acquire)
-                || control.draining.load(Ordering::Acquire)
-                || !control.storage_healthy())
-        {
-            (
+        if admission.is_some() && !control.storage_healthy() {
+            crate::errors::Report::known(
+                crate::errors::http_operation("Localhost operation"),
+                "live_state_unavailable",
+                "Live-state recovery is unhealthy or ownership was lost. No new operation was admitted; inspect recovery before retrying.",
                 StatusCode::SERVICE_UNAVAILABLE,
-                Json(json!({"error":"The server is draining for maintenance."})),
+            ).response(true)
+        } else if admission.is_some()
+            && (!control.accepting.load(Ordering::Acquire)
+                || control.draining.load(Ordering::Acquire))
+        {
+            crate::errors::Report::known(
+                crate::errors::http_operation("Localhost operation"),
+                "server_draining",
+                "The server is draining for maintenance. Wait for the restart to complete.",
+                StatusCode::SERVICE_UNAVAILABLE,
             )
-                .into_response()
+            .response(true)
         } else {
             let mut metric = metrics::COMMAND_METRICS.start(request.uri().path());
             let response = next.run(request).await;
@@ -167,11 +176,13 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
 struct Error(StatusCode, String);
 impl From<anyhow::Error> for Error {
     fn from(error: anyhow::Error) -> Self {
-        eprintln!("Localhost operation failed: {error:#}");
-        Self(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal server error.\n".into(),
-        )
+        let report = crate::errors::Report::from_error(
+            crate::errors::http_operation("Localhost operation"),
+            &error,
+            Some(30),
+        );
+        report.log();
+        Self(report.status, report.text())
     }
 }
 impl IntoResponse for Error {

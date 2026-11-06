@@ -54,7 +54,13 @@ impl Configuration {
                 .get(key)
                 .map(|v| v.trim().to_owned())
                 .filter(|v| !v.is_empty())
-                .context("Invalid Discord configuration")
+                .with_context(|| {
+                    crate::errors::Fault::new(
+                        "discord_configuration",
+                        format!("Required configuration field {key} is missing or empty."),
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    )
+                })
         };
         let config = Self {
             token: value(KEYS[0])?,
@@ -64,11 +70,19 @@ impl Configuration {
             ping_role: value(KEYS[4])?,
             teacher_role: value(KEYS[5])?,
         };
-        for id in [&config.guild, &config.lobby, &config.development] {
-            ensure!(
-                (17..=20).contains(&id.len()) && id.bytes().all(|b| b.is_ascii_digit()),
-                "Invalid Discord configuration"
-            );
+        for (key, id) in [
+            (KEYS[1], &config.guild),
+            (KEYS[2], &config.lobby),
+            (KEYS[3], &config.development),
+        ] {
+            if !(17..=20).contains(&id.len()) || !id.bytes().all(|b| b.is_ascii_digit()) {
+                return Err(crate::errors::Fault::new(
+                    "discord_configuration",
+                    format!("{key} must contain a 17-20 digit Discord identifier."),
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                )
+                .into());
+            }
         }
         Ok(Some(config))
     }
@@ -132,11 +146,23 @@ impl Transport for NativeTransport {
             if let Some(body) = body {
                 request = request.json(&body);
             }
-            let mut response = request
-                .send()
-                .await
-                .map_err(|_| anyhow::anyhow!("Discord transport failed"))?;
-            ensure!(response.status().is_success(), "Discord request failed");
+            let mut response = request.send().await?;
+            if !response.status().is_success() {
+                return Err(crate::errors::Fault::new(
+                    "discord_http_error",
+                    format!(
+                        "Discord returned HTTP {}{}.",
+                        response.status().as_u16(),
+                        if response.status().as_u16() == 429 {
+                            " (rate limited)"
+                        } else {
+                            ""
+                        }
+                    ),
+                    axum::http::StatusCode::BAD_GATEWAY,
+                )
+                .into());
+            }
             let mut bytes = Vec::new();
             while let Some(chunk) = response.chunk().await? {
                 ensure!(
@@ -232,8 +258,9 @@ impl Transport for NativeTransport {
                 let result =
                     tokio::select! {_=cancel.cancelled()=>return Ok(()),result=attempt=>result};
                 let _ = events.try_send(json!({"t":"TRANSPORT_DISCONNECTED"}));
-                if result.is_err() {
-                    eprintln!("Discord gateway unavailable; reconnecting.");
+                if let Err(error) = result {
+                    crate::errors::Report::from_error("Reconnecting Discord gateway", &error, None)
+                        .log();
                 }
                 tokio::select! {_=cancel.cancelled()=>break,_=tokio::time::sleep(Duration::from_secs(5))=>{}}
             }
@@ -281,19 +308,31 @@ impl Bridge {
                 role["name"].as_str().context("Role name missing")?.into(),
             );
         }
-        ensure!(
-            roles.values().any(|name| name == &config.ping_role)
-                && roles.values().any(|name| name == &config.teacher_role),
-            "Configured Discord roles unavailable"
-        );
-        for channel in [&config.lobby, &config.development] {
+        for (key, configured) in [
+            ("DISCORD_PING_CREW_ROLE_NAME", &config.ping_role),
+            ("DISCORD_TRUSTED_TEACHER_ROLE_NAME", &config.teacher_role),
+        ] {
+            if !roles.values().any(|name| name == configured) {
+                return Err(crate::errors::Fault::new(
+                    "discord_role_missing",
+                    format!("The role configured by {key} was not found in the Discord guild."),
+                    axum::http::StatusCode::BAD_GATEWAY,
+                )
+                .into());
+            }
+        }
+        for (key, channel) in [
+            ("DISCORD_CHANNEL_SYNC_WITH_LOBBY", &config.lobby),
+            ("DISCORD_CHANNEL_WEBSITE_DEVELOPMENT", &config.development),
+        ] {
             let data = transport
                 .request(Method::GET, format!("/channels/{channel}"), None)
                 .await?;
-            ensure!(
-                data["guild_id"] == config.guild && matches!(data["type"].as_i64(), Some(0 | 5)),
-                "Discord channel unavailable"
-            );
+            if data["guild_id"] != config.guild || !matches!(data["type"].as_i64(), Some(0 | 5)) {
+                return Err(crate::errors::Fault::new("discord_channel_invalid",
+                    format!("The channel configured by {key} is not a text/announcement channel in the configured guild."),
+                    axum::http::StatusCode::BAD_GATEWAY).into());
+            }
         }
         let bridge = Arc::new(Self {
             app: Arc::downgrade(&app),
@@ -313,7 +352,9 @@ impl Bridge {
         app.background.spawn(async move {
             tokio::select! {
                 _=lost.cancelled()=>{},
-                result=gateway.gateway(events,cancel)=>{if result.is_err(){eprintln!("Discord gateway stopped.");}}
+                result=gateway.gateway(events,cancel)=>{if let Err(error)=result {
+                    crate::errors::Report::from_error("Discord gateway", &error, None).log();
+                }}
             }
         });
         let inbound = bridge.clone();
@@ -335,10 +376,12 @@ impl Bridge {
                 if !app.accepting.load(std::sync::atomic::Ordering::Acquire) || !app.healthy() {
                     continue;
                 }
-                if inbound.event(event).await.is_err() {
+                if let Err(error) = inbound.event(event).await {
                     inbound.status.store(3, Ordering::Release);
-                    app.telemetry("discord");
-                    eprintln!("Discord event failed; integration is degraded.");
+                    let report =
+                        crate::errors::Report::from_error("Processing Discord event", &error, None);
+                    report.log();
+                    app.telemetry(&report);
                 }
             }
             inbound.status.store(4, Ordering::Release);
@@ -722,11 +765,18 @@ impl Bridge {
                 None,
             )
             .await;
-        if response.is_err() {
+        if let Err(error) = response {
+            let report = crate::errors::Report::from_error(
+                "Updating Discord subscription role",
+                &error,
+                None,
+            );
+            report.log();
             self.send(
                 &format!(
-                    "Error: the `@Ping Crew` role could not be {} your profile.",
-                    if add { "added to" } else { "removed from" }
+                    "Error: the `@Ping Crew` role could not be {} your profile. {}",
+                    if add { "added to" } else { "removed from" },
+                    report.text()
                 ),
                 false,
             )

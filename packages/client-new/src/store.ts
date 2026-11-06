@@ -22,6 +22,7 @@ export interface LobbyState {
     | "stopped";
   welcome: Welcome | null;
   lobbyStatus: "loading" | "ready" | "error";
+  lobbyError: string | null;
   tables: Record<number, Table>;
   directoryReady: boolean;
   users: Record<number, User>;
@@ -47,6 +48,7 @@ function initialState(): LobbyState {
     connection: "checking",
     welcome: null,
     lobbyStatus: "ready",
+    lobbyError: null,
     tables: {},
     directoryReady: false,
     users: {},
@@ -135,6 +137,11 @@ const slice = createSlice({
       switch (event.command) {
         case "lobbyStatus": {
           state.lobbyStatus = event.data.state;
+          state.lobbyError =
+            event.data.state === "error"
+              ? (event.data.message
+                ?? "Loading lobby statistics failed without a server explanation. Retry statistics.")
+              : null;
           if (state.welcome && event.data.state === "ready") {
             state.welcome.totalGames = event.data.totalGames;
           }
@@ -142,6 +149,7 @@ const slice = createSlice({
         }
 
         case "welcome": {
+          state.lobbyError = null;
           state.preferenceStatus = "saved";
           state.tableID = null;
           state.pregame = null;

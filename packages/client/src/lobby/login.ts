@@ -1,7 +1,7 @@
 // The initial login page.
 
 import type { HTTPLoginData } from "@hanabi-live/data";
-import { VERSION } from "@hanabi-live/data";
+import { VERSION, errorDetails } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
@@ -133,12 +133,12 @@ function send(
 
 function getAjaxError(jqXHR: JQuery.jqXHR) {
   if (jqXHR.readyState === 0) {
-    return "A network error occurred. The server might be down!";
+    return "The browser could not complete the network request. Check your connection and browser network diagnostics.";
   }
   if (jqXHR.responseText === "") {
-    return "An unknown error occurred.";
+    return `HTTP ${jqXHR.status}${jqXHR.statusText === "" ? "" : ` ${jqXHR.statusText}`}; the server returned no explanation.`;
   }
-  return jqXHR.responseText;
+  return `HTTP ${jqXHR.status}: ${jqXHR.responseText}`;
 }
 
 export function automaticLogin(): void {
@@ -160,9 +160,7 @@ export function automaticLogin(): void {
       // Handle only failures of the cookie check; a later WebSocket error is separate.
       console.error(`Failed to fetch "${testCookiePath}":`, error);
       const alert = $("#login-alert");
-      alert.text(
-        "Unable to check your saved session. You can sign in or retry.",
-      );
+      alert.text(errorDetails(error, "Checking your saved session"));
       const retryButton = $("<button>", { type: "button" }).text("Retry");
       retryButton.on("click", () => {
         alert.hide();

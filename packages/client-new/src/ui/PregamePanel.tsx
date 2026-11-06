@@ -1,3 +1,4 @@
+import { errorDetails } from "@hanabi-live/data";
 import { Copy, Crown, Eye } from "lucide-react";
 import { shallowEqual, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
@@ -110,9 +111,9 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
                 `${globalThis.location.origin}/new/table/${game.tableID}`,
               )
               .then(() => connection.notice("Table invitation copied."))
-              .catch(() =>
+              .catch((error: unknown) =>
                 connection.notice(
-                  "Unable to copy the invitation. Copy this page's address instead.",
+                  `${errorDetails(error, "Copying the invitation")} Copy this page's address instead.`,
                 ),
               );
           }}

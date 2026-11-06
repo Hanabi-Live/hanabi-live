@@ -157,9 +157,9 @@ impl App {
             && self.store.check_state().is_ok()
     }
 
-    pub fn telemetry(&self, operation: &'static str) {
+    pub fn telemetry(&self, report: &crate::errors::Report) {
         if let Some(integrations) = self.integrations.get() {
-            integrations.report(operation);
+            integrations.report(report);
         }
     }
 
@@ -399,13 +399,17 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
     tracker.spawn(async move {
         let _session_slot = session_slot;
         let result = async {
-            let _slot = slot.context("Lobby read queue is full")?;
+            let _slot = slot.map_err(|_| crate::errors::Fault::new(
+                "lobby_queue_full", "The lobby read queue is full. Please retry statistics shortly.",
+                StatusCode::SERVICE_UNAVAILABLE))?;
             tokio::time::timeout(
                 Duration::from_secs(10),
                 lobby_initial(&app, session.user, reconnect),
             )
             .await
-            .context("Lobby loading timed out")?
+            .map_err(|_| crate::errors::Fault::new(
+                "lobby_load_timeout", "Loading lobby statistics exceeded the 10-second deadline. Please retry statistics.",
+                StatusCode::GATEWAY_TIMEOUT))?
         };
         let result = tokio::select! {
             _ = session.cancel.cancelled() => return,
@@ -427,13 +431,11 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 ));
             }
             Err(error) => {
-                eprintln!(
-                    "Deferred lobby loading failed for user {}: {error:#}",
-                    session.user
-                );
+                let report = crate::errors::Report::from_error("Loading lobby statistics", &error, Some(2));
+                report.log();
                 session.emit(&frame(
                     "lobbyStatus",
-                    hanabi_protocol::LobbyStatus::Error { total_games: () },
+                    hanabi_protocol::LobbyStatus::Error { total_games: (), message: Some(report.text()) },
                 ));
             }
         }
@@ -448,7 +450,10 @@ async fn websocket(
     upgrade: WebSocketUpgrade,
 ) -> Response {
     if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
-        return StatusCode::SERVICE_UNAVAILABLE.into_response();
+        return crate::errors::Report::known("Opening a live connection", "server_unavailable",
+            if !app.healthy() { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." }
+            else { "The server is not accepting connections while it starts or drains for maintenance." },
+            StatusCode::SERVICE_UNAVAILABLE).response(false);
     }
     let Some(id) = accounts::session_id(&headers, &app.secret) else {
         return (StatusCode::UNAUTHORIZED, "A valid session is required.\n").into_response();
@@ -462,7 +467,14 @@ async fn websocket(
             )
                 .into_response();
         }
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(error) => {
+            return crate::errors::Report::from_error(
+                "Checking live-connection access",
+                &error,
+                Some(30),
+            )
+            .response(false);
+        }
     }
     match sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM users WHERE id=$1) AS \"value!\"",
@@ -472,17 +484,38 @@ async fn websocket(
     .await
     {
         Ok(true) => {}
-        Ok(false) => return StatusCode::UNAUTHORIZED.into_response(),
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Ok(false) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                "The account for this session no longer exists. Please sign in again.",
+            )
+                .into_response();
+        }
+        Err(error) => {
+            return crate::errors::Report::from_error(
+                "Checking the live-connection account",
+                &error.into(),
+                Some(30),
+            )
+            .response(false);
+        }
     }
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
-        return StatusCode::SERVICE_UNAVAILABLE.into_response();
+        return crate::errors::Report::known(
+            "Opening a live connection",
+            "connection_limit",
+            "The server has reached its live-connection limit. Please retry shortly.",
+            StatusCode::SERVICE_UNAVAILABLE,
+        )
+        .response(false);
     };
     let Ok(generation) = app
         .generation
         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
     else {
-        return StatusCode::SERVICE_UNAVAILABLE.into_response();
+        return crate::errors::Report::known("Opening a live connection", "session_generation_exhausted",
+            "The server's session identifier space is exhausted. An administrator must restart the server.",
+            StatusCode::SERVICE_UNAVAILABLE).response(false);
     };
     let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "reconnect" && value == "1");
@@ -507,8 +540,13 @@ async fn websocket(
                     )
                     .await
                     {
-                        app.telemetry("websocket");
-                        eprintln!("WebSocket session failed: {error:#}");
+                        let report = crate::errors::Report::from_error(
+                            "WebSocket session",
+                            &error,
+                            Some(30),
+                        );
+                        report.log();
+                        app.telemetry(&report);
                     }
                 })
                 .await;
@@ -667,10 +705,27 @@ async fn connection(
                     cause.is::<sqlx::Error>()
                         || cause.is::<redis::RedisError>()
                         || cause.is::<reqwest::Error>()
+                        || cause.is::<crate::errors::Fault>()
+                        || cause.is::<std::io::Error>()
+                        || cause.is::<tokio::time::error::Elapsed>()
+                        || cause.is::<tokio::task::JoinError>()
                 });
                 let warning = if internal {
-                    app.telemetry("websocket-command");
-                    "Something went wrong on the server.".into()
+                    let name = protocol::command_name(&command.text).unwrap_or("unknown command");
+                    let operation = match name {
+                        "historyGet" => "Loading game history".to_owned(),
+                        "historyGetSeed" => "Loading seed history".to_owned(),
+                        "setting" => "Saving preferences".to_owned(),
+                        _ => format!("Command {name}"),
+                    };
+                    let report = crate::errors::Report::from_error(
+                        operation,
+                        &error,
+                        Some(if history_command(name) { 2 } else { 30 }),
+                    );
+                    report.log();
+                    app.telemetry(&report);
+                    accounts::escape_html(&report.text())
                 } else {
                     accounts::escape_html(&error.to_string())
                 };
@@ -815,18 +870,45 @@ fn format_duration(seconds: u64) -> String {
     }
 }
 
+fn history_command(command: &str) -> bool {
+    matches!(command, "historyGet" | "historyGetSeed" | "chatPlayerInfo")
+}
+
 async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<()> {
     let _admission = app.admission.clone().read_owned().await;
+    if !app.healthy() {
+        return Err(crate::errors::Fault::new("live_state_unavailable",
+            "Live-state recovery or ownership is unavailable. Do not repeat game actions; wait for recovery.",
+            StatusCode::SERVICE_UNAVAILABLE).into());
+    }
+    if !app.accepting.load(Ordering::Acquire) {
+        return Err(crate::errors::Fault::new(
+            "server_draining",
+            "The server is not accepting new commands during startup or maintenance.",
+            StatusCode::SERVICE_UNAVAILABLE,
+        )
+        .into());
+    }
     ensure!(
-        app.accepting.load(Ordering::Acquire) && app.healthy() && session.active(),
-        "Server unavailable"
+        session.active(),
+        "This session was replaced or disconnected. Reconnect before sending commands."
     );
     let (command, mut data) = match protocol::parse(input) {
         Ok(parsed) => parsed,
-        Err(_) => {
+        Err(error) => {
+            let detail = if let Some(json) = error.downcast_ref::<serde_json::Error>() {
+                format!(
+                    "Invalid JSON at line {}, column {}.",
+                    json.line(),
+                    json.column()
+                )
+            } else {
+                error.to_string()
+            };
+            let command = protocol::command_name(input).unwrap_or("unrecognized command");
             session.emit(&frame(
                 "warning",
-                json!({"warning":"Invalid command data."}),
+                json!({"warning":accounts::escape_html(&format!("Cannot process {command}: {detail}"))}),
             ));
             return Ok(());
         }
@@ -881,10 +963,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         )
         .await?
     } else if lobby::handles_command(&command) {
-        let history = matches!(
-            command.as_str(),
-            "historyGet" | "historyGetSeed" | "chatPlayerInfo"
-        );
+        let history = history_command(&command);
         let work = lobby::dispatch(
             if history {
                 &app.store.lobby_reads

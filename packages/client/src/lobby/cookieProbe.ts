@@ -1,3 +1,4 @@
+import { httpError } from "@hanabi-live/data";
 import { ReconnectBackoff } from "../reconnect";
 
 const MAX_ATTEMPTS = 3;
@@ -17,7 +18,7 @@ async function checkCookieAttempt(
     if (response.status < 500 && response.status !== 429) {
       return response;
     }
-    throw new Error(`Cookie check failed with status ${response.status}.`);
+    throw await httpError(response, "Checking your saved session");
   } catch (error: unknown) {
     if (attemptsRemaining === 1) {
       throw error;

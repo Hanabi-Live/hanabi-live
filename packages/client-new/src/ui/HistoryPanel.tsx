@@ -1,3 +1,4 @@
+import { errorDetails, httpError } from "@hanabi-live/data";
 import { getVariant } from "@hanabi-live/game";
 import { Play, Search } from "lucide-react";
 import type { ReactNode } from "react";
@@ -47,7 +48,7 @@ function SeedComparison({
           },
         );
         if (!response.ok) {
-          throw new Error(`Unable to load seed history (${response.status}).`);
+          throw await httpError(response, "Loading seed history");
         }
         const data: unknown = await response.json();
         const parsed = wireHistory.array().parse(data);
@@ -57,11 +58,7 @@ function SeedComparison({
       } catch (error_) {
         if (!controller.signal.aborted) {
           console.error("Unable to load seed history", error_);
-          setError(
-            error_ instanceof Error
-              ? error_.message
-              : "Unable to load seed history.",
-          );
+          setError(errorDetails(error_, "Loading seed history"));
         }
       } finally {
         if (!controller.signal.aborted) {

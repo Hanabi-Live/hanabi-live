@@ -4,6 +4,7 @@ mod archive;
 pub mod config;
 pub mod cookie;
 mod database;
+pub mod errors;
 pub mod game;
 pub mod integrations;
 pub mod lifecycle;

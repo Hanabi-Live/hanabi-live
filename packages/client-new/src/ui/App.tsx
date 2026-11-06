@@ -1,3 +1,4 @@
+import { errorDetails, validationErrorDetails } from "@hanabi-live/data";
 import { options } from "@hanabi-live/game";
 import { ArrowRight, X } from "lucide-react";
 import type { SubmitEvent } from "react";
@@ -147,6 +148,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
       welcome: value.welcome,
       connection: value.connection,
       notice: value.notice,
+      lobbyError: value.lobbyError,
       tables: value.tables,
       users: value.users,
       pregame: value.pregame,
@@ -486,8 +488,12 @@ export function App({ connection }: { connection: LobbyConnection }) {
         maxPlayers: parsed.maxPlayers ?? state.pregame.maxPlayers,
         options: parsed,
       });
-    } catch {
-      connection.notice("The suggested options are invalid.");
+    } catch (error) {
+      connection.notice(
+        error instanceof z.ZodError
+          ? `Cannot accept suggested options: ${validationErrorDetails(error)}`
+          : errorDetails(error, "Parsing suggested options"),
+      );
     }
   }
 
@@ -728,6 +734,17 @@ export function App({ connection }: { connection: LobbyConnection }) {
                   <div className="notice" role="status">
                     The server is preparing for maintenance. Finish your current
                     game; new games may be unavailable.
+                  </div>
+                )}
+                {state.lobbyError && (
+                  <div className="notice" role="alert">
+                    {state.lobbyError}
+                    <button
+                      onClick={() => connection.send("lobbyLoad", {})}
+                      type="button"
+                    >
+                      Retry statistics
+                    </button>
                   </div>
                 )}
                 {state.notice && (

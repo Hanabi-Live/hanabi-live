@@ -29,6 +29,9 @@ pub enum LobbyStatus {
     },
     Error {
         total_games: (),
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[schemars(with = "String")]
+        message: Option<String>,
     },
     Ready {
         #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]

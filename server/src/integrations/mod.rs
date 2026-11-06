@@ -29,14 +29,14 @@ impl Integrations {
         let discord = match discord::Configuration::read(values) {
             Ok(Some(config)) => match discord::Bridge::start(app.clone(), config, None).await {
                 Ok(bridge) => Some(bridge),
-                Err(_) => {
-                    eprintln!("Discord initialization failed; integration is degraded.");
+                Err(error) => {
+                    crate::errors::Report::from_error("Initializing Discord", &error, None).log();
                     None
                 }
             },
             Ok(None) => None,
-            Err(_) => {
-                eprintln!("Invalid Discord configuration; integration is degraded.");
+            Err(error) => {
+                crate::errors::Report::from_error("Configuring Discord", &error, None).log();
                 None
             }
         };
@@ -51,8 +51,8 @@ impl Integrations {
         }))
     }
 
-    pub fn report(&self, _operation: &'static str) {
-        self.telemetry.report();
+    pub fn report(&self, report: &crate::errors::Report) {
+        self.telemetry.report(report);
     }
 
     pub fn status(&self) -> serde_json::Value {
@@ -61,11 +61,12 @@ impl Integrations {
 
     pub async fn mirror(&self, chat_id: i32, raw: Option<&str>) {
         if let Some(bridge) = &self.discord
-            && bridge.mirror(chat_id, raw).await.is_err()
+            && let Err(error) = bridge.mirror(chat_id, raw).await
         {
             bridge.degrade();
-            self.telemetry.report();
-            eprintln!("Discord send failed; integration is degraded.");
+            let report = crate::errors::Report::from_error("Sending Discord message", &error, None);
+            report.log();
+            self.telemetry.report(&report);
         }
     }
 
@@ -78,15 +79,20 @@ impl Integrations {
                 Ok(Ok(())) => {}
                 result => {
                     bridge.degrade();
-                    self.telemetry.report();
-                    eprintln!(
-                        "Discord restart announcement {}; continuing the drained restart.",
-                        if result.is_err() {
-                            "timed out"
-                        } else {
-                            "failed"
-                        }
+                    let error = match result {
+                        Err(_) => crate::errors::Fault::new("discord_announcement_timeout",
+                            "Discord restart announcement exceeded 250 milliseconds; continuing the drained restart.",
+                            axum::http::StatusCode::GATEWAY_TIMEOUT).into(),
+                        Ok(Err(error)) => error,
+                        Ok(Ok(())) => unreachable!(),
+                    };
+                    let report = crate::errors::Report::from_error(
+                        "Announcing restart to Discord",
+                        &error,
+                        None,
                     );
+                    report.log();
+                    self.telemetry.report(&report);
                 }
             }
         }

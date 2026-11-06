@@ -1,5 +1,16 @@
 [
   {
+    "name": "deferred lobby failure includes a safe diagnostic",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": {
+      "state": "error",
+      "totalGames": null,
+      "message": "Loading statistics failed: database query timed out after 2 seconds. [Reference: test123]"
+    },
+    "valid": true
+  },
+  {
     "name": "ordered command barrier has an empty request",
     "direction": "client",
     "command": "sync",

@@ -94,7 +94,8 @@ it("reports comparison failures and retries rather than showing an empty success
   history();
   const dialog = within(screen.getByRole("dialog"));
   const alert = await dialog.findByRole("alert");
-  expect(alert.textContent).toContain("Unable to load seed history (503).");
+  expect(alert.textContent).toContain("Loading seed history failed (HTTP 503)");
+  expect(alert.textContent).toContain("Unavailable");
   expect(log).toHaveBeenCalled();
   fireEvent.click(dialog.getByRole("button", { name: "Retry comparison" }));
   expect(await dialog.findByText("#20")).toBeDefined();

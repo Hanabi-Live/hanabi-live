@@ -41,27 +41,31 @@ struct PublicState {
 }
 
 #[derive(Debug)]
-struct Error(StatusCode, String);
+struct Error(StatusCode, String, Option<Box<crate::errors::Report>>);
 impl Error {
     fn not_found(message: impl Into<String>) -> Self {
-        Self(StatusCode::NOT_FOUND, message.into())
+        Self(StatusCode::NOT_FOUND, message.into(), None)
     }
     fn bad(message: impl Into<String>) -> Self {
-        Self(StatusCode::BAD_REQUEST, message.into())
+        Self(StatusCode::BAD_REQUEST, message.into(), None)
     }
 }
 impl<E: Into<anyhow::Error>> From<E> for Error {
     fn from(error: E) -> Self {
-        eprintln!("Public HTTP failure: {:#}", error.into());
-        Self(
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal server error.".into(),
-        )
+        let report = crate::errors::Report::from_error(
+            crate::errors::http_operation("Loading public data"),
+            &error.into(),
+            Some(30),
+        );
+        Self(report.status, report.text(), Some(Box::new(report)))
     }
 }
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        (self.0, self.1).into_response()
+        match self.2 {
+            Some(report) => report.response(false),
+            None => (self.0, self.1).into_response(),
+        }
     }
 }
 type Result<T> = std::result::Result<T, Error>;
@@ -208,6 +212,7 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
             tower_http::services::ServeFile::new(config.root.join("public/img/favicon.ico")),
         )
         .with_state(state)
+        .layer(axum::middleware::from_fn(crate::errors::http_context))
 }
 
 async fn ban_check(

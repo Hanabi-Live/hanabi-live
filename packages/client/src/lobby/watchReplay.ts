@@ -1,10 +1,12 @@
 // The "Watch Specific Replay" nav button.
 
+import { errorDetails } from "@hanabi-live/data";
 import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
+import { escapeHtml } from "../utils";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected.
@@ -102,8 +104,8 @@ function submit() {
   if (source === "json") {
     try {
       gameJSON = JSON.parse(gameJSONString);
-    } catch {
-      showReplayError("Error: That is not a valid JSON object.");
+    } catch (error) {
+      showReplayError(escapeHtml(errorDetails(error, "Parsing replay JSON")));
       return;
     }
     if (typeof gameJSON !== "object") {

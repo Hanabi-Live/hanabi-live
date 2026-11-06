@@ -132,6 +132,79 @@ for (const [minutes, seconds, minuteLabel, secondLabel] of [
 }
 
 for (const route of ["lobby", "new"]) {
+  test(`${route} shows HTTP status and the server explanation when login fails`, async ({
+    page,
+    backend,
+  }) => {
+    let responseBody =
+      "The database connection pool is closed. [Reference: abc123]";
+    await page.route("**/login", async (request) => {
+      await request.fulfill({
+        status: 503,
+        contentType: "text/plain",
+        body: responseBody,
+      });
+    });
+    await page.goto(`${backend}/${route}`);
+    if (route === "lobby") {
+      await page.locator("#login-username").fill("test");
+      await page.locator("#login-password").fill("test");
+      await page.locator("#login-button").click();
+    } else {
+      await page.getByLabel("Username", { exact: true }).fill("test");
+      await page.getByLabel("Password", { exact: true }).fill("test");
+      await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    }
+    const error = page.locator(
+      route === "lobby" ? "#login-alert" : '[role="alert"]',
+    );
+    await expect(error).toContainText("503");
+    await expect(error).toContainText("database connection pool is closed");
+    await expect(error).toContainText("Reference: abc123");
+    responseBody = "";
+    if (route === "lobby") {
+      await page.locator("#login-button").click();
+    } else {
+      await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    }
+    await expect(error).toContainText("503");
+    await expect(error).toContainText("no explanation");
+  });
+
+  test(`${route} displays deferred lobby timeout details`, async ({
+    page,
+    backend,
+  }) => {
+    const detail =
+      "Loading lobby statistics failed: The database query timed out after 2 seconds. [Reference: abc123]";
+    await page.routeWebSocket("**/ws*", (socket) => {
+      const server = socket.connectToServer();
+      server.onMessage((message) => {
+        const text = message.toString();
+        socket.send(
+          text.startsWith("lobbyStatus ") && text.includes('"ready"')
+            ? `lobbyStatus ${JSON.stringify({ state: "error", totalGames: null, message: detail })}`
+            : message,
+        );
+      });
+    });
+    await page.goto(`${backend}/${route}`);
+    if (route === "lobby") {
+      await page.locator("#login-username").fill(`testErr${route}`);
+      await page.locator("#login-password").fill(`testErr${route}`);
+      await page.locator("#login-button").click();
+    } else {
+      await page
+        .getByLabel("Username", { exact: true })
+        .fill(`testErr${route}`);
+      await page
+        .getByLabel("Password", { exact: true })
+        .fill(`testErr${route}`);
+      await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    }
+    await expect(page.getByText(detail)).toBeVisible();
+  });
+
   test(`${route} keeps spectators scoped to the current pregame table`, async ({
     browser,
     backend,

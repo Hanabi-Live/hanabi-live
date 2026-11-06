@@ -351,7 +351,11 @@ impl RedisState {
     async fn acknowledge(&self, connection: &mut MultiplexedConnection) -> Result<()> {
         if let Err(error) = durable(connection).await {
             self.owner.lost.cancel();
-            return Err(error.context("Redis write result is uncertain"));
+            return Err(error.context(crate::errors::Fault::new(
+                "persistence_uncertain",
+                "The live-state write may have been saved, but durability could not be confirmed. Do not repeat game actions; wait for recovery.",
+                axum::http::StatusCode::SERVICE_UNAVAILABLE,
+            )));
         }
         self.check()
     }
@@ -367,7 +371,11 @@ impl RedisState {
             Ok(value) => Ok(value),
             Err(error) => {
                 self.owner.lost.cancel();
-                Err(anyhow::Error::from(error).context("Redis state operation is uncertain"))
+                Err(anyhow::Error::from(error).context(crate::errors::Fault::new(
+                    "persistence_uncertain",
+                    "The live-state operation may have completed without confirmation. Do not repeat game actions; wait for recovery.",
+                    axum::http::StatusCode::SERVICE_UNAVAILABLE,
+                )))
             }
         }
     }

@@ -6,6 +6,7 @@ export * from "./enums/ClientCommand";
 export * from "./enums/ServerCommand";
 export * from "./enums/SoundMove";
 export * from "./enums/Status";
+export * from "./functions/errors";
 export * from "./functions/golem";
 export * from "./functions/history";
 export * from "./generated/protocol";

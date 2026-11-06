@@ -11,6 +11,20 @@ if [[ -z ${LOCALHOST_PORT-} ]]; then
   LOCALHOST_PORT=8081
 fi
 
+function admin_request {
+  local response status
+  if response=$(curl --silent --show-error --write-out $'\n%{http_code}' "$@"); then
+    status=${response##*$'\n'}
+    printf '%s\n' "${response%$'\n'*}"
+    if ((status >= 400)); then
+      printf 'Admin request failed with HTTP %s.\n' "$status" >&2
+      return 22
+    fi
+  else
+    return "$?"
+  fi
+}
+
 function admin_command {
   if [[ $# -ne 1 ]]; then
     echo "usage: admin_command [command]"
@@ -18,7 +32,7 @@ function admin_command {
   fi
 
   # Perform a GET request.
-  curl --silent "http://localhost:$LOCALHOST_PORT/$1"
+  admin_request "http://localhost:$LOCALHOST_PORT/$1"
 }
 
 function admin_command_post {
@@ -28,5 +42,5 @@ function admin_command_post {
   fi
 
   # Perform a POST request (since we include the "data" flag).
-  curl --silent "http://localhost:$LOCALHOST_PORT/$1" --data "$2"
+  admin_request "http://localhost:$LOCALHOST_PORT/$1" --data "$2"
 }

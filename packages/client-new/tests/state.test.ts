@@ -24,10 +24,16 @@ describe("authoritative lobby state", () => {
     store.dispatch(
       actions.received({
         command: "lobbyStatus",
-        data: { state: "error", totalGames: null },
+        data: {
+          state: "error",
+          totalGames: null,
+          message:
+            "The database query timed out after 2 seconds. [Reference: test123]",
+        },
       }),
     );
     expect(store.getState().connection).toBe("online");
+    expect(store.getState().lobbyError).toContain("timed out after 2 seconds");
     expect(store.getState().welcome?.totalGames).toBeNull();
     expect(store.getState().historyLoading).toBe(false);
     store.dispatch(
@@ -38,6 +44,7 @@ describe("authoritative lobby state", () => {
     );
     expect(store.getState().welcome?.totalGames).toBe(0);
     expect(store.getState().lobbyStatus).toBe("ready");
+    expect(store.getState().lobbyError).toBeNull();
   });
 
   it("replaces pregame history when returning without deleting private or other-room chat", () => {

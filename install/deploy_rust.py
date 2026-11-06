@@ -177,8 +177,15 @@ def download(github, run, revision, work):
 
 
 def control(port, path):
-    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=30) as response:
-        text = response.read().decode()
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=30) as response:
+            text = response.read().decode()
+    except urllib.error.HTTPError as error:
+        with error:
+            detail = error.read(8192).decode(errors="replace").strip()
+        raise urllib.error.URLError(
+            f"Control request {path} returned HTTP {error.code}: {detail or error.reason}"
+        ) from error
     return json.loads(text) if path == "/metrics" else text.strip()
 
 

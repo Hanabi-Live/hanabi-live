@@ -3,8 +3,11 @@ import {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
   createClientRequestID,
+  errorDetails,
+  httpError,
   packWSMessageOnClient,
   settings,
+  validationErrorDetails,
 } from "@hanabi-live/data";
 import { z } from "zod";
 import { decodeEvent } from "./protocol";
@@ -61,26 +64,13 @@ export class LobbyConnection {
       } else if ([204, 401, 403].includes(response.status)) {
         this.store.dispatch(actions.signedOut());
       } else {
-        throw new Error(
-          `Session check failed (${response.status}). Please retry.`,
-        );
+        throw await httpError(response, "Checking your saved session");
       }
     } catch (error) {
       if (!this.isCurrent(generation)) {
         return;
       }
-      if (this.store.getState().welcome) {
-        console.warn("Session recovery check failed", error);
-      } else {
-        this.store.dispatch(
-          actions.notify({
-            text:
-              error instanceof Error
-                ? error.message
-                : "Unable to check your session.",
-          }),
-        );
-      }
+      this.notice(errorDetails(error, "Checking your saved session"));
       this.scheduleReconnect();
     }
   }
@@ -113,9 +103,7 @@ export class LobbyConnection {
         return;
       }
       if (!response.ok) {
-        throw new Error(
-          (await response.text()) || `Sign in failed (${response.status}).`,
-        );
+        throw await httpError(response, "Signing in");
       }
       this.connect();
     } catch (error) {
@@ -125,7 +113,7 @@ export class LobbyConnection {
       this.store.dispatch(actions.connectionChanged("signed-out"));
       this.store.dispatch(
         actions.notify({
-          text: error instanceof Error ? error.message : "Sign in failed.",
+          text: errorDetails(error, "Signing in"),
         }),
       );
     }
@@ -136,31 +124,42 @@ export class LobbyConnection {
     this.send("tableReattend", { tableID });
   }
 
-  send(command: string, data: object): boolean {
+  send(
+    command: string,
+    data: object,
+    onError?: (message: string) => void,
+  ): boolean {
+    const fail = (message: string): false => {
+      this.notice(message);
+      onError?.(message);
+      return false;
+    };
     if (
       this.store.getState().connection !== "online"
       || this.socket?.readyState !== WebSocket.OPEN
     ) {
-      this.store.dispatch(
-        actions.notify({
-          text: "You are offline. Wait for reconnection, then try again. Nothing was sent.",
-        }),
+      return fail(
+        "You are offline. Wait for reconnection, then try again. Nothing was sent.",
       );
-      return false;
     }
     const name = commandName.safeParse(command);
-    if (
-      !name.success
-      || !CLIENT_COMMAND_SCHEMAS[name.data].safeParse(data).success
-    ) {
-      this.notice("That request is not valid. Check the form and try again.");
-      return false;
+    if (!name.success) {
+      return fail(
+        `Unrecognized client command: ${command.slice(0, 80)}. Nothing was sent.`,
+      );
+    }
+    const validated = CLIENT_COMMAND_SCHEMAS[name.data].safeParse(data);
+    if (!validated.success) {
+      return fail(
+        `Cannot send ${command}: ${validationErrorDetails(validated.error)}`,
+      );
     }
     if (command === "replayCreate") {
       const parsed = CLIENT_COMMAND_SCHEMAS.replayCreate.safeParse(data);
       if (!parsed.success) {
-        this.notice("That replay request is not valid.");
-        return false;
+        return fail(
+          `Cannot open replay: ${validationErrorDetails(parsed.error)}`,
+        );
       }
       // A solo replay is retired when its last viewer disconnects. Create it after handoff.
       return this.navigateToGame({ kind: "replay", request: parsed.data });
@@ -186,10 +185,15 @@ export class LobbyConnection {
         : data;
     const frame = packWSMessageOnClient(command, payload);
     if (new TextEncoder().encode(frame).length > 4 * 1024 * 1024) {
-      this.notice("This request is larger than the 4 MB server limit.");
-      return false;
+      return fail(
+        `Cannot send ${command}: the request exceeds the 4 MB server limit.`,
+      );
     }
-    this.socket.send(frame);
+    try {
+      this.socket.send(frame);
+    } catch (error) {
+      return fail(errorDetails(error, `Sending ${command}`));
+    }
     if (command === "sync") {
       this.syncVersions.push(this.preferenceVersion);
     }
@@ -210,7 +214,7 @@ export class LobbyConnection {
     }
     const next = settings.safeParse({ ...current, [name]: value });
     if (!next.success) {
-      this.notice("That setting is not valid.");
+      this.notice(`Cannot save ${name}: ${validationErrorDetails(next.error)}`);
       return false;
     }
     if (!this.send("setting", { name, setting: String(value) })) {
@@ -255,14 +259,12 @@ export class LobbyConnection {
         signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) {
-        throw new Error("Unable to sign out. Please retry.");
+        throw await httpError(response, "Signing out");
       }
       this.store.dispatch(actions.signedOut());
     } catch (error) {
       this.store.dispatch(actions.connectionChanged("stopped"));
-      this.notice(
-        error instanceof Error ? error.message : "Unable to sign out.",
-      );
+      this.notice(errorDetails(error, "Signing out"));
     }
   }
 
@@ -301,6 +303,7 @@ export class LobbyConnection {
     const socket = new WebSocket(
       `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws?fastResume=1`,
     );
+    let welcomed = false;
     this.socket = socket;
     this.timeout = setTimeout(() => {
       socket.close();
@@ -347,6 +350,7 @@ export class LobbyConnection {
           }
         }
         if (event.command === "welcome") {
+          welcomed = true;
           clearTimeout(this.timeout);
           this.attempts = 0;
           if (this.destination !== null) {
@@ -413,7 +417,7 @@ export class LobbyConnection {
         );
         this.store.dispatch(
           actions.notify({
-            text: "An incompatible server message was received. Reload to update the client.",
+            text: errorDetails(error, "Processing a server message"),
             fatal: true,
           }),
         );
@@ -421,11 +425,16 @@ export class LobbyConnection {
         this.store.dispatch(actions.connectionChanged("stopped"));
       }
     });
-    socket.addEventListener("close", () => {
+    socket.addEventListener("close", (event) => {
       if (!this.isCurrent(generation)) {
         return;
       }
       clearTimeout(this.timeout);
+      if (!welcomed) {
+        this.notice(
+          `The live connection closed before the server welcome (WebSocket code ${event.code || 1006}). The browser did not expose the server's handshake response; check the /ws request in browser network diagnostics.`,
+        );
+      }
       this.scheduleReconnect();
     });
     socket.addEventListener("error", () => {

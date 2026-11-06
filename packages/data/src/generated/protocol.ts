@@ -106,7 +106,11 @@ export const chatUserRequestSchema = z
 export const emptySchema = z.strictObject({});
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
-  z.strictObject({ state: z.literal("error"), totalGames: z.null() }),
+  z.strictObject({
+    message: z.string().optional(),
+    state: z.literal("error"),
+    totalGames: z.null(),
+  }),
   z.strictObject({
     state: z.literal("ready"),
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),

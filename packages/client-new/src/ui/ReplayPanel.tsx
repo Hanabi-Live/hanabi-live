@@ -1,3 +1,4 @@
+import { errorDetails } from "@hanabi-live/data";
 import { isArray } from "complete-common";
 import type { SubmitEvent } from "react";
 import { useState } from "react";
@@ -38,8 +39,8 @@ export function ReplayPanel({
       let gameJSON: unknown;
       try {
         gameJSON = JSON.parse(json);
-      } catch {
-        setError("The replay JSON is invalid.");
+      } catch (error_) {
+        setError(errorDetails(error_, "Parsing replay JSON"));
         return;
       }
       if (
@@ -128,7 +129,9 @@ export function ReplayPanel({
                       setJSON(text);
                       setError("");
                     })
-                    .catch(() => setError("Unable to read this file."));
+                    .catch((error_: unknown) =>
+                      setError(errorDetails(error_, "Reading replay file")),
+                    );
                 }}
                 type="file"
               />

@@ -48,6 +48,44 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("reports the invalid request field to both the form and global notice", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(
+      store,
+      vi.fn(() => true),
+    );
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    const failed = vi.fn<(message: string) => void>();
+    expect(
+      connection.send("historyGet", { offset: "bad", amount: 10 }, failed),
+    ).toBe(false);
+    expect(socket.sent).toEqual([]);
+    expect(store.getState().notice?.text).toContain("offset");
+    expect(store.getState().notice?.text).toContain("number");
+    expect(failed).toHaveBeenCalledWith(store.getState().notice?.text);
+    connection.stop();
+  });
+
+  it("preserves logout HTTP failure explanations", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(
+      store,
+      vi.fn(() => true),
+    );
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response("Database maintenance [Reference: abc123]", { status: 503 }),
+    );
+    await connection.logout();
+    expect(store.getState().notice?.text).toContain("HTTP 503");
+    expect(store.getState().notice?.text).toContain("Database maintenance");
+    expect(store.getState().notice?.text).toContain("Reference: abc123");
+  });
+
   it("retries a transient first session check without discarding authentication", async () => {
     const store = createLobbyStore();
     const connection = new LobbyConnection(store, () => true);

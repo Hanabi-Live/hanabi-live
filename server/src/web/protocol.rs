@@ -76,17 +76,21 @@ impl Fields<'_> {
             }
         }
         let value = &self.data[name];
-        ensure!(
-            match kind {
-                Kind::String => value.is_string(),
-                Kind::Boolean => value.is_boolean(),
-                Kind::Integer => value
-                    .as_i64()
-                    .is_some_and(|n| n.unsigned_abs() <= 9_007_199_254_740_991),
-                Kind::Any => true,
-            },
-            "Invalid {name}"
-        );
+        let valid = match kind {
+            Kind::String => value.is_string(),
+            Kind::Boolean => value.is_boolean(),
+            Kind::Integer => value
+                .as_i64()
+                .is_some_and(|n| n.unsigned_abs() <= 9_007_199_254_740_991),
+            Kind::Any => true,
+        };
+        let expected = match kind {
+            Kind::String => "a string",
+            Kind::Boolean => "a boolean",
+            Kind::Integer => "a safe integer",
+            Kind::Any => "a value",
+        };
+        ensure!(valid, "Invalid {name}: expected {expected}");
         Ok(())
     }
     fn string(&mut self, name: &'static str, default: Option<&str>) -> Result<()> {
@@ -114,12 +118,14 @@ impl Fields<'_> {
         Ok(())
     }
     fn finish(&self) -> Result<()> {
-        ensure!(
-            self.data
-                .keys()
-                .all(|key| self.allowed.contains(&key.as_str())),
-            "Unexpected command field"
-        );
+        if let Some(key) = self
+            .data
+            .keys()
+            .find(|key| !self.allowed.contains(&key.as_str()))
+        {
+            let field: String = key.chars().take(80).collect();
+            anyhow::bail!("Unexpected command field: {field}");
+        }
         Ok(())
     }
 }
@@ -175,6 +181,14 @@ fn table_options(value: &mut Value) -> Result<()> {
     fields.finish()
 }
 
+pub fn command_name(input: &str) -> Option<&'static str> {
+    let name = input.split_once(' ').map_or(input, |(name, _)| name);
+    COMMANDS
+        .iter()
+        .copied()
+        .find(|candidate| *candidate == name)
+}
+
 pub fn parse(input: &str) -> Result<(String, Value)> {
     ensure!(
         input.len() <= crate::transport::MAX_MESSAGE_BYTES,
@@ -188,7 +202,7 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
     }
     let map = data
         .as_object_mut()
-        .ok_or_else(|| anyhow::anyhow!("Invalid command data"))?;
+        .ok_or_else(|| anyhow::anyhow!("Command arguments must be a JSON object"))?;
     let mut fields = Fields {
         data: map,
         allowed: vec![],

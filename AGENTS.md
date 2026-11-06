@@ -77,6 +77,11 @@ relevant tests and builds as well; passing lint does not replace those checks.
 
 ## Server and wire contracts
 
+Report failures with the operation, a safe typed cause, and a diagnostic ID
+using `server/src/errors.rs`. Preserve actionable details in clients; do not
+replace them with generic errors. Never expose raw SQL, credentials, private
+payloads, or arbitrary exception strings through public errors or telemetry.
+
 The production server is Rust in `server/`; its binary is `hanabi-live`.
 `server/engine` owns native game rules. Historical Go-generated compatibility
 fixtures remain in `server/testdata`, but there is no Go application server. The

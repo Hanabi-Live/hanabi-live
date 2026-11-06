@@ -1,4 +1,5 @@
 import type { Settings } from "@hanabi-live/data";
+import { errorDetails } from "@hanabi-live/data";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
@@ -102,9 +103,9 @@ export function SettingsPanel({
                       );
                     }
                   })
-                  .catch(() =>
+                  .catch((error: unknown) =>
                     connection.notice(
-                      "Unable to request notification permission.",
+                      errorDetails(error, "Requesting notification permission"),
                     ),
                   );
               } else {
@@ -214,8 +215,10 @@ export function SettingsPanel({
                 audio.volume = settings.volume / 100;
                 void audio
                   .play()
-                  .catch(() =>
-                    connection.notice("The browser could not play the sound."),
+                  .catch((error: unknown) =>
+                    connection.notice(
+                      errorDetails(error, "Playing the test sound"),
+                    ),
                   );
               }}
               type="button"

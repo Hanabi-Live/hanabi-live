@@ -3,6 +3,7 @@
 
 import {
   SERVER_COMMAND_SCHEMAS,
+  httpError,
   tableID as tableIDSchema,
 } from "@hanabi-live/data";
 import { commands } from "./commands";
@@ -129,8 +130,10 @@ async function attemptReconnect() {
       return;
     }
     if (!response.ok) {
-      shouldRetry = true;
-      return;
+      throw await httpError(
+        response,
+        "Checking the live session before reconnecting",
+      );
     }
     if (canRetryNow()) {
       openConnection(true);
@@ -181,7 +184,9 @@ function reconnectAfterTimeout(conn: Connection) {
 
   clearConnectTimer();
   clearWelcomeTimer();
-  console.warn("WebSocket handshake timed out; attempting to reconnect.");
+  console.warn(
+    "WebSocket handshake exceeded its 15-second deadline; attempting to reconnect.",
+  );
   // Do not depend on a browser emitting close for a stalled CONNECTING socket.
   activeConnection = undefined;
   recovering = true;

@@ -6,7 +6,13 @@ use tokio::sync::mpsc;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
 pub struct Telemetry {
-    queue: Option<mpsc::Sender<()>>,
+    queue: Option<mpsc::Sender<Diagnostic>>,
+}
+
+struct Diagnostic {
+    operation: String,
+    code: &'static str,
+    id: String,
 }
 
 fn endpoint(dsn: &str) -> Result<(url::Url, String)> {
@@ -39,12 +45,13 @@ fn endpoint(dsn: &str) -> Result<(url::Url, String)> {
     Ok((url, key))
 }
 
-fn event(release: &str) -> Value {
+fn event(release: &str, diagnostic: &Diagnostic) -> Value {
     json!({
         "event_id":format!("{:032x}",rand::random::<u128>()),
         "timestamp":Utc::now().timestamp(),
         "platform":"native","level":"error","release":release,
-        "exception":{"values":[{"type":"Error","value":"Server error; inspect local logs."}]}
+        "exception":{"values":[{"type":"Error","value":diagnostic.code}]},
+        "tags":{"operation":diagnostic.operation,"error_code":diagnostic.code,"diagnostic_id":diagnostic.id}
     })
 }
 
@@ -65,13 +72,12 @@ impl Telemetry {
             .redirect(reqwest::redirect::Policy::none())
             .timeout(Duration::from_secs(2))
             .build()?;
-        let (queue, mut events) = mpsc::channel::<()>(30);
+        let (queue, mut events) = mpsc::channel::<Diagnostic>(30);
         tracker.spawn(async move {
             let sending=async {
-              while let Some(())=events.recv().await {
-                // Deliberately never accept exception strings, URLs, request data,
-                // SQL, credentials, usernames, cards or chat as telemetry input.
-                let _ = client
+              while let Some(diagnostic)=events.recv().await {
+                // Only server-defined operation/category and a random correlation ID leave the process.
+                let result = client
                     .post(endpoint.clone())
                     .header(
                         "X-Sentry-Auth",
@@ -79,9 +85,14 @@ impl Telemetry {
                             "Sentry sentry_version=7,sentry_key={key},sentry_client=hanabi-rust/1"
                         ),
                     )
-                    .json(&event(&release))
+                    .json(&event(&release, &diagnostic))
                     .send()
                     .await;
+                match result {
+                    Ok(response) if response.status().is_success() => {}
+                    Ok(response) => eprintln!("Telemetry delivery failed: HTTP {}.", response.status().as_u16()),
+                    Err(error) => crate::errors::Report::from_error("Telemetry delivery", &error.into(), None).log(),
+                }
               }
             };
             tokio::pin!(sending);
@@ -93,9 +104,20 @@ impl Telemetry {
         Ok(Arc::new(Self { queue: Some(queue) }))
     }
 
-    pub fn report(&self) {
-        if let Some(queue) = &self.queue {
-            let _ = queue.try_send(());
+    pub fn report(&self, report: &crate::errors::Report) {
+        if let Some(queue) = &self.queue
+            && queue
+                .try_send(Diagnostic {
+                    operation: report.operation.clone(),
+                    code: report.code,
+                    id: report.diagnostic_id.clone(),
+                })
+                .is_err()
+        {
+            eprintln!(
+                "Telemetry queue unavailable; diagnostic {} remains in local logs.",
+                report.diagnostic_id
+            );
         }
     }
 }
@@ -105,8 +127,23 @@ mod tests {
     use super::*;
     #[test]
     fn telemetry_has_no_sensitive_input_surface() {
-        let data = event("test-version");
-        assert_eq!(data.as_object().unwrap().len(), 6);
+        let report = crate::errors::Report::from_error(
+            "Loading game history",
+            &anyhow::anyhow!("password-token-SQL-private-chat"),
+            None,
+        );
+        let data = event(
+            "test-version",
+            &Diagnostic {
+                operation: report.operation.clone(),
+                code: report.code,
+                id: report.diagnostic_id.clone(),
+            },
+        );
+        assert_eq!(data.as_object().unwrap().len(), 7);
+        assert_eq!(data["tags"]["operation"], "Loading game history");
+        assert_eq!(data["tags"]["diagnostic_id"], report.diagnostic_id);
+        assert!(!data.to_string().contains("password-token-SQL-private-chat"));
         assert!(data.get("request").is_none());
         assert!(data.get("user").is_none());
         assert!(data.get("breadcrumbs").is_none());

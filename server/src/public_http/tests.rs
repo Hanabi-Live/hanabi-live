@@ -190,8 +190,10 @@ async fn stats_database_failure_is_not_an_empty_success() {
         .unwrap();
     pool.close().await;
     let (status, body) = request(router(pool, config()), "/stats").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(body, "Internal server error.");
+    assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+    assert!(body.contains("GET /stats failed"));
+    assert!(body.contains("database connection pool is closed"));
+    assert!(body.contains("Reference:"));
 }
 
 #[test]

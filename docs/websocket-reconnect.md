@@ -9,11 +9,11 @@ These parameters grant no additional access.
 Authentication and table membership precede optional lobby reads. `welcome`
 contains `totalGames: null` while statistics are unknown. The Rust-owned
 `lobbyStatus` contract reports `loading`, `ready` with the real total, or
-`error`. `lobbyLoad {}` retries failed optional loading without reconnecting the
-game. Legacy clients that omit `fastResume` retain the numeric total and
-original bootstrap ordering. The legacy `reconnect=1` welcome-only probe remains
-supported for old clients, but current clients request fresh user/table
-directories.
+`error` with a diagnostic message when available. `lobbyLoad {}` retries failed
+optional loading without reconnecting the game. Legacy clients that omit
+`fastResume` retain the numeric total and original bootstrap ordering. The
+legacy `reconnect=1` welcome-only probe remains supported for old clients, but
+current clients request fresh user/table directories.
 
 Personal history pages are requested only when the history screen is opened
 (including direct history links), never during login, reconnect, or `lobbyLoad`.
