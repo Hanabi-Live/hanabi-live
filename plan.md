@@ -61,6 +61,10 @@ disposable local fixtures for destructive and repeatable scenarios.
 - Restored visible table timers, the Characters icon, score tooltips, friend
   progress indicators, direct online profile links, and control-click URL
   copying.
+- Continued Chromium comparisons caught three creation-dialog differences:
+  Speedrun must hide timer controls, extra/less-card choices must disable the
+  conflicting option, and creation passwords must be shared between clients.
+  `gameDialogParity.spec.ts` now verifies those behaviors against classic.
 - Reproduced score-table overflow on the shared public profile page. Wide tables
   now scroll within their panel rather than painting over the page background.
 - Firefox exposed an authenticated-session interruption after accepting its
