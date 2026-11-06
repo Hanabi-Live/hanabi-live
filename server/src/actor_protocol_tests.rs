@@ -764,6 +764,71 @@ fn chat_messages(frames: &[(String, Value)]) -> Vec<Value> {
 }
 
 #[tokio::test]
+async fn pregame_leader_moves_to_first_seat_without_reordering_live_players() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Leader seating", json!({})).await?;
+        for index in 1..3 {
+            h.send(index, "tableJoin", json!({"tableID":id})).await?;
+        }
+        h.barrier(0).await?;
+        for index in 0..3 {
+            h.frames(index)?;
+        }
+        h.send(0, "tableSetLeader", json!({"tableID":id,"name":"Carol"}))
+            .await?;
+        for index in 0..3 {
+            let game = h.receive(index, "game").await?;
+            ensure!(game["owner"] == 3);
+            let players = game["players"].as_array().context("Missing players")?;
+            for (seat, name) in ["Carol", "Bob", "Alice"].iter().enumerate() {
+                ensure!(
+                    players[seat]["name"] == *name && players[seat]["index"] == seat,
+                    "Leader transfer did not swap the new leader into the first seat"
+                );
+                ensure!(players[seat]["you"] == (*name == h.users[index].name));
+            }
+        }
+        let expected = vec![3, 2, 1];
+        ensure!(
+            h.snapshot(id)
+                .await?
+                .0
+                .players()
+                .iter()
+                .map(|p| p.id)
+                .collect::<Vec<_>>()
+                == expected,
+            "Leader seating was not persisted"
+        );
+        h.send(2, "tableStart", json!({"tableID":id})).await?;
+        let live_players = h
+            .snapshot(id)
+            .await?
+            .0
+            .players()
+            .iter()
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+        h.send(2, "tableSetLeader", json!({"tableID":id,"name":"Alice"}))
+            .await?;
+        let table = h.snapshot(id).await?.0;
+        ensure!(table.owner == 1);
+        ensure!(
+            table.players().iter().map(|p| p.id).collect::<Vec<_>>() == live_players,
+            "Changing a live game's leader changed the seats"
+        );
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn finished_game_publishes_replay_leader_candidates_without_reconnecting() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer", "Outsider"]).await? else {
         return Ok(());
