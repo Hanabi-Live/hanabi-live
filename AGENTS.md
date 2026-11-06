@@ -16,6 +16,10 @@ do not put unrelated operational details in installation instructions.
 
 ## Before pushing
 
+Use `GITHUB_TOKEN_PERSONAL_CLASSIC` for GitHub CLI authentication:
+`GH_TOKEN="$GITHUB_TOKEN_PERSONAL_CLASSIC" gh <command>`. Do not print or commit
+the token.
+
 Use Bun for JavaScript dependency management; its version is pinned in the root
 `package.json`. Use `bun install --frozen-lockfile`, `bun run <script>`, and
 `bunx --no-install <tool>`. Commit `bun.lock`, not an npm lockfile. Node.js 24
