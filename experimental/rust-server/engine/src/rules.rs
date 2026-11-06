@@ -240,7 +240,7 @@ fn sudoku_scores(available: &HashSet<i32>, size: i32) -> Vec<i32> {
     for rank in 0..size {
         if !available.contains(&(rank + 1)) {
             for write in last_dead + 1..rank {
-                scores[write as usize] = rank - last_dead - 1;
+                scores[write as usize] = rank - write;
             }
             scores[rank as usize] = 0;
             last_dead = rank;

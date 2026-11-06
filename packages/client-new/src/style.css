@@ -533,17 +533,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   gap: 0.5em;
 }
 .input-action > button {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-.input-action:hover > button,
-.input-action > button:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
+  flex: none;
 }
 .input-action input {
   flex: 1;
@@ -627,6 +617,23 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   width: 12.5em;
   min-width: 0;
   flex: 1;
+}
+.classic-volume input[type="range"] {
+  appearance: auto;
+  background: transparent;
+}
+.classic-volume input[type="range"]::-webkit-slider-runnable-track {
+  background: #ddd;
+  border-radius: 2px;
+  height: 4px;
+}
+.classic-volume input[type="range"]::-webkit-slider-thumb {
+  margin-top: -6px;
+}
+.classic-volume input[type="range"]::-moz-range-track {
+  background: #ddd;
+  border-radius: 2px;
+  height: 4px;
 }
 .classic-volume button {
   font-size: 0.8em;

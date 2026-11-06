@@ -186,6 +186,13 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await a.getByRole("link", { name: "Play", exact: true }).click();
   await a.getByRole("button", { name: "Create a table", exact: true }).click();
   const dialog = a.getByRole("dialog");
+  const originalName = await dialog
+    .getByLabel("Table name", { exact: true })
+    .inputValue();
+  await dialog.getByRole("button", { name: "Use a random table name" }).click();
+  await expect(
+    dialog.getByLabel("Table name", { exact: true }),
+  ).not.toHaveValue(originalName);
   await dialog.getByLabel("Table name", { exact: true }).fill("Private garden");
   await dialog.getByLabel("Variant", { exact: true }).selectOption("6 Suits");
   await dialog.getByLabel("Maximum players").fill("3");
@@ -231,6 +238,26 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .click();
   await expect(b.locator(".classic-room-info")).toContainText("6 Suits");
   await expect(b.locator(".classic-room-info")).toContainText("2 / 4");
+  await a.getByRole("button", { name: "Table options", exact: true }).click();
+  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await a.getByRole("dialog").getByLabel("Maximum players").fill("2");
+  await a.getByRole("button", { name: "Update table" }).click();
+  await a.getByRole("button", { name: "Table options", exact: true }).click();
+  await a.getByRole("dialog").getByLabel("Timed game").check();
+  await expect(a.getByLabel("Base time (minutes)")).toHaveValue("3");
+  await expect(a.getByLabel("Seconds per turn")).toHaveValue("15");
+  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await a.getByRole("button", { name: "Update table" }).click();
+  await expect(a.getByRole("alert")).toHaveCount(0);
+  await c
+    .locator(".table-card")
+    .filter({ hasText: "Private garden" })
+    .getByRole("button", { name: "Watch table", exact: true })
+    .click();
+  await expect(
+    c.getByRole("button", { name: "Join game", exact: true }),
+  ).toBeDisabled();
+  await c.getByRole("button", { name: "Stop watching", exact: true }).click();
   await b.getByRole("button", { name: "Suggest options" }).click();
   await expect(b.getByLabel(/^Empty clues/u)).toBeVisible();
   await expect(b.getByLabel(/^Empty clues/u)).toBeChecked();

@@ -267,6 +267,19 @@ async fn api_handler(
                 if !seed {
                     s.start = first(&q, "start").and_then(integer);
                     s.end = first(&q, "end").and_then(integer);
+                } else if first(&q, "size").is_some() || first(&q, "page").is_some() {
+                    let size = first(&q, "size").unwrap_or("10");
+                    let size = integer(size)
+                        .filter(|n| (1..=100).contains(n))
+                        .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?;
+                    let page = integer(first(&q, "page").unwrap_or("0"))
+                        .filter(|n| *n >= 0)
+                        .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?;
+                    let offset = page
+                        .checked_mul(size)
+                        .filter(|n| *n <= 9_007_199_254_740_991)
+                        .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
+                    s.page = Some((size, offset));
                 }
                 data::history(&state, s, seed).await?
             }

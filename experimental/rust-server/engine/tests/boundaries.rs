@@ -657,3 +657,53 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
     assert_eq!(state.score, 0);
     assert!(state.actions.len() > 60 && state.actions.len() <= 2 * state.deck.len() + 9);
 }
+
+#[test]
+fn sudoku_max_score_counts_only_cards_reachable_from_distinct_starts() {
+    for (name, discarded, expected) in [
+        ("Sudoku (5 Suits)", vec![5], 10),
+        ("Sudoku (5 Suits)", vec![3], 10),
+        ("Sudoku (5 Suits)", vec![2, 5], 4),
+        ("Sudoku (4 Suits)", vec![4], 6),
+        ("Sudoku (4 Suits)", vec![3], 6),
+        ("Sudoku (4 Suits)", vec![1, 4], 3),
+    ] {
+        let mut state = create_game(setup(
+            Options {
+                variant_name: name.into(),
+                ..Options::default()
+            },
+            None,
+        ))
+        .unwrap()
+        .state;
+        for card in &mut state.deck {
+            card.discarded = discarded.contains(&card.rank);
+        }
+        assert_eq!(
+            calculate_max_score(&state),
+            expected,
+            "{name}, discarded ranks {discarded:?}"
+        );
+    }
+}
+
+#[test]
+fn sudoku_started_stack_cannot_count_available_ranks_before_its_start() {
+    let mut state = create_game(setup(
+        Options {
+            variant_name: "Sudoku (5 Suits)".into(),
+            ..Options::default()
+        },
+        None,
+    ))
+    .unwrap()
+    .state;
+    state.stack_starts[0] = 3;
+    for card in &mut state.deck {
+        if card.suit_index == 0 && card.rank == 5 {
+            card.discarded = true;
+        }
+    }
+    assert_eq!(calculate_max_score(&state), 22);
+}
