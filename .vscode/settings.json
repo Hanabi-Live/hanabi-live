@@ -80,6 +80,11 @@
   // work similar to other compiled languages like Golang or Rust.
   "js/ts.tsserver.experimental.enableProjectDiagnostics": true,
 
+  // @template-customization-start
+  "npm.packageManager": "bun",
+  "python.terminal.useEnvFile": true,
+  // @template-customization-end
+
   // Automatically run the formatter when certain files are saved. We intentionally do not group
   // languages together because of this bug: https://github.com/microsoft/vscode/issues/168411
   "[javascript]": {
@@ -139,7 +144,6 @@
     "editor.formatOnSave": true,
   },
   // @template-customization-start
-  "npm.packageManager": "bun",
   "[rust]": {
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
