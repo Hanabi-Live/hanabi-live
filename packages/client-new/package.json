@@ -5,6 +5,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite --host 127.0.0.1",
+    "lint": "bash ./lint.sh",
     "test": "vitest run"
   },
   "dependencies": {

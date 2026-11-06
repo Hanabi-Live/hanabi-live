@@ -2,6 +2,9 @@
   "name": "@hanabi-live/data",
   "private": true,
   "exports": "./src/index.ts",
+  "scripts": {
+    "lint": "bash ./lint.sh"
+  },
   "dependencies": {
     "@hanabi-live/game": "workspace:*",
     "complete-common": "catalog:",

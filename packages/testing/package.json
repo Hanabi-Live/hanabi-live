@@ -2,6 +2,9 @@
   "name": "@hanabi-live/testing",
   "private": true,
   "exports": "./src/index.ts",
+  "scripts": {
+    "lint": "bash ./lint.sh"
+  },
   "devDependencies": {
     "@hanabi-live/data": "workspace:*",
     "@hanabi-live/game": "workspace:*",

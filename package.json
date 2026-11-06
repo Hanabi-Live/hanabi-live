@@ -72,6 +72,7 @@
       "tooltipster": "4.2.8",
       "ts-prune-2": "0.10.7",
       "tslib": "2.8.1",
+      "turbo": "2.11.10",
       "typedoc": "0.28.20",
       "typescript": "6.0.3",
       "vite": "8.3.5",
@@ -153,6 +154,7 @@
     "prettier-plugin-sh": "catalog:",
     "stacktracify": "catalog:",
     "ts-prune-2": "catalog:",
+    "turbo": "catalog:",
     "typescript": "catalog:"
   },
   "packageManager": "bun@1.4.4",
