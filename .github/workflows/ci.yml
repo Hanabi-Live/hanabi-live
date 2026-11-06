@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
       - run: bash ./packages/client/build-client.sh
 
   release_tests:
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-rust
         if: matrix.shard == 2
       - name: Restore successful package lint results
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
 
       - name: Create the "version.js" file
         run: bash ./packages/client/set-version.sh
@@ -134,7 +134,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Start version-matched preinstalled browsers
@@ -271,7 +271,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-go
         with:
           cache-key: migration-tool
@@ -344,7 +344,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup
+      - uses: ./.github/workflows/setup-bun
 
       - name: Use TypeDoc to automatically generate documentation
         run: bun run docs
