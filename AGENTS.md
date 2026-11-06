@@ -85,17 +85,24 @@ The production server is `root@hanab.live`, with the repository at
 `~/hanabi-live`. The server log is at `~/hanabi-live/logs/hanabi-live.log` (use
 `./get-log.sh` to download it).
 
-For the source-layout installation, `./deploy_rust.sh --check` downloads and
-verifies the approved release for current `main` without deploying.
-`./deploy_rust.sh` publishes and gracefully restarts; reviewed pending
-migrations require `--apply-migrations`. It requires an artifact-readable
-`GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+, Git, and PostgreSQL
-client tools, not Node, Bun, Cargo, or the GitHub CLI. It fast-forwards the
-clean checkout without dependency-install hooks and retains deployment records
-and overwritten-file backups in `backups/deploy-rust-*`.
+Run `./deploy_rust.sh` from your laptop; it always uses SSH to deploy the
+source-layout installation at `root@hanab.live:/root/hanabi-live`.
+`./deploy_rust.sh --check` downloads and verifies the approved release for
+current `main` without deploying. `./deploy_rust.sh` publishes and gracefully
+restarts; reviewed pending migrations require `--apply-migrations`. The laptop
+needs Bash and SSH. Production requires an artifact-readable `GH_TOKEN` or
+`GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+, Git, and PostgreSQL client tools,
+not Node, Bun, Cargo, or the GitHub CLI. Export the token in the remote
+login-shell environment; local credentials are not forwarded. For direct
+execution on production, run
+`/opt/hanabi-python/bin/python3 install/deploy_rust.py` from `~/hanabi-live`
+with the same flags. It fast-forwards the clean checkout without
+dependency-install hooks and retains deployment records and overwritten-file
+backups in `backups/deploy-rust-*`.
 
-Never automatically roll back an interrupted deployment. Inspect its recorded
-phase and recovery state first. File backups do not replace coordinated
+After an SSH disconnect, the deployment outcome is unknown; do not automatically
+retry. Never automatically roll back an interrupted deployment. Inspect its
+recorded phase and recovery state first. File backups do not replace coordinated
 PostgreSQL and Redis backups. Retain the old Go restart-blocking marker on
 existing installations; the importer is retired, not a way to roll back.
 

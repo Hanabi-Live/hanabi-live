@@ -130,11 +130,13 @@ Prefer approved, immutable Rust releases. PostgreSQL and Redis must be backed up
 together with cross-store consistency. Preserve the Redis namespace, configured
 database identity, cookies' `SESSION_SECRET`, and live-state data.
 
-For the existing source-layout installation, `./deploy_rust.sh --check` verifies
-the approved current-main release without deploying. `./deploy_rust.sh`
-publishes it and requests a graceful restart; reviewed pending migrations
-require `--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production
-safeguards.
+Run `./deploy_rust.sh` from your laptop to deploy the existing source-layout
+installation over SSH to `root@hanab.live:/root/hanabi-live`. Deployment
+credentials and dependencies stay on production; export the GitHub token in its
+login-shell environment. `./deploy_rust.sh --check` verifies the approved
+current-main release without deploying. `./deploy_rust.sh` publishes it and
+requests a graceful restart; reviewed pending migrations require
+`--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production safeguards.
 
 Rust loads its client version at startup, so client-only changes also require a
 graceful restart. Never rebuild assets in place while they are being served.

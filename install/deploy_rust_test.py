@@ -1,6 +1,9 @@
 import copy
 import json
+import os
 from pathlib import Path
+import shlex
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -8,6 +11,74 @@ import urllib.request
 
 import deploy_rust as deploy
 import release
+
+
+class DeployWrapperTest(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="hanabi-deploy-wrapper-test-")
+        self.addCleanup(temporary.cleanup)
+        self.workspace = Path(temporary.name).resolve()
+        self.arguments = self.workspace / "arguments"
+        self.input = self.workspace / "input"
+        ssh = self.workspace / "ssh"
+        ssh.write_text(
+            '#!/bin/bash\n'
+            'printf "%s\\n" "$@" > "$SSH_TEST_ARGS"\n'
+            'cat > "$SSH_TEST_INPUT"\n'
+            'echo "remote output"\n'
+            'echo "remote error" >&2\n'
+            'exit "$SSH_TEST_STATUS"\n'
+        )
+        ssh.chmod(0o755)
+        self.environment = {
+            **os.environ,
+            "PATH": f"{self.workspace}:{os.environ['PATH']}",
+            "SSH_TEST_ARGS": str(self.arguments),
+            "SSH_TEST_INPUT": str(self.input),
+            "SSH_TEST_STATUS": "0",
+        }
+        self.script = Path(__file__).resolve().parent.parent / "deploy_rust.sh"
+
+    def run_wrapper(self, *arguments):
+        return subprocess.run(
+            ["bash", str(self.script), *arguments], cwd=self.workspace,
+            env=self.environment, text=True, capture_output=True,
+        )
+
+    def test_remote_target_and_flag_forwarding(self):
+        for flags in ((), ("--check",), ("--apply-migrations",),
+                      ("--check", "--apply-migrations")):
+            with self.subTest(flags=flags):
+                result = self.run_wrapper(*flags)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                arguments = self.arguments.read_text().splitlines()
+                self.assertEqual(arguments[:2], ["-T", "root@hanab.live"])
+                self.assertEqual(shlex.split(arguments[2]), ["bash", "-l", "-s", "--", *flags])
+                remote = self.input.read_text()
+                self.assertIn("cd /root/hanabi-live", remote)
+                self.assertIn('exec "$python" install/deploy_rust.py "$@"', remote)
+                self.assertNotIn("./deploy_rust.sh", remote)
+                self.assertIn("root@hanab.live:/root/hanabi-live", result.stdout)
+                self.assertIn("remote output", result.stdout)
+                self.assertIn("remote error", result.stderr)
+
+    def test_help_and_invalid_arguments_never_connect(self):
+        for flag in ("-h", "--help", "--unknown", "--check; exit 0", ""):
+            with self.subTest(flag=flag):
+                result = self.run_wrapper(flag)
+                self.assertEqual(result.returncode, 0 if flag in ("-h", "--help") else 2)
+                self.assertFalse(self.arguments.exists())
+
+    def test_remote_failure_and_disconnect_preserve_exit_status(self):
+        for status in (42, 255):
+            with self.subTest(status=status):
+                self.environment["SSH_TEST_STATUS"] = str(status)
+                result = self.run_wrapper()
+                self.assertEqual(result.returncode, status)
+                self.assertEqual("outcome is unknown" in result.stderr, status == 255)
+                if status == 255:
+                    self.assertIn("deployment.json", result.stderr)
+                    self.assertIn("Do not retry or roll back automatically", result.stderr)
 
 
 class DeployTest(unittest.TestCase):
