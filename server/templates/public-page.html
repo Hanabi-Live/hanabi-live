@@ -223,114 +223,128 @@
           {% endif %} {% endif %} {% if apiPath or games|length > 0 or page ==
           "scores" %} {% include "public-pager.html" %} {% if page == "scores"
           %}
-          <table class="history">
-            <thead>
-              <tr>
-                <th class="filter-select">Variant</th>
-                <th class="center">Total Games</th>
-                {% for players in [2,3,4,5,6] %}
-                <th class="center sorter-current-max-score">
-                  {{ players }}-Player Best Score
-                </th>
-                {% endfor %}
-                <th class="center sorter-average-score">Average Score</th>
-                <th class="center">Strikeout Rate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in stats.rows %}{% if row.numGames > 0 %}
-              <tr>
-                <td><a href="/variant/{{ row.id }}">{{ row.name }}</a></td>
-                <td class="center">{{ row.numGames }}</td>
-                {% for best in row.bestScores %}
-                <td class="center">
-                  {% if best.score == row.maxScore %}<strong
-                    >{{ best.score }} / {{ row.maxScore }}</strong
-                  >
-                  {% if best.modifier == 0 %}<i
-                    class="fas fa-check score-modifier green"
-                  ></i
-                  >{% else %} {% set modifier = "allornothing" if
-                  best.modifier|bitand(16) else "oneextracard" if
-                  best.modifier|bitand(4) else "onelesscard" if
-                  best.modifier|bitand(8) else "emptyclues" if
-                  best.modifier|bitand(2) else "deckplays" %}
-                  <i
-                    class="fas fa-times score-modifier red tooltip"
-                    data-tooltip-content="#modifier-{{ modifier }}"
-                  ></i
-                  >{% endif %} {% else %}{{ best.score }} / {{ row.maxScore }}{%
-                  endif %}
-                </td>
-                {% endfor %}
-                <td class="center">{{ row.averageScore }}</td>
-                <td class="center">
-                  {{ row.strikeoutRate }}{% if row.strikeoutRate != "-" %}%{%
-                  endif %}
-                </td>
-              </tr>
-              {% endif %}{% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <table
-            id="history-table"
-            class="history {% if page == 'variant' %}variant{% else %}personal-history{% endif %}"
+          <div
+            class="public-table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Scores"
           >
-            <thead>
-              <tr>
-                <th>Game ID</th>
-                <th class="filter-select filter-match"># of Players</th>
-                <th>Score</th>
-                {% if page != "variant" %}
-                <th class="filter-select">Variant</th>
-                {% endif %}
-                <th>Players</th>
-                <th class="sorter-date-and-time">Date &amp; Time</th>
-                {% if page != "seed" %}
-                <th>
-                  {% if page == "variant" %}Seed{% else %}Other Scores{% endif
-                  %}
-                </th>
-                {% endif %} {% if title == "Tagged Games" %}
-                <th>Tags</th>
-                {% endif %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for game in games %}
-              <tr
-                id="history-row-{{ loop.index0 }}"
-                class="history-row history-row-players-{{ game.options.numPlayers }} history-row-score-{{ game.score }}"
-                data-variant="{{ game.options.variantName }}"
-              >
-                <td><a href="/replay/{{ game.id }}">{{ game.id }}</a></td>
-                <td class="center">{{ game.options.numPlayers }}</td>
-                <td class="center">{{ game.score }}</td>
-                <td>
-                  <a href="/variant/{{ game.options.variantID }}"
-                    >{{ game.options.variantName }}</a
-                  >
-                </td>
-                <td>
-                  <a
-                    href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
-                    >{{ game.playerNames|join(", ") }}</a
-                  >
-                </td>
-                <td>{{ game.datetimeFinished|history_date }}</td>
-                <td class="center">
-                  <a href="/seed/{{ game.seed|urlencode }}"
-                    >{{ game.numGamesOnThisSeed }}</a
-                  >
-                </td>
-                {% if title == "Tagged Games" %}
-                <td class="center">{{ game.tags }}</td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+            <table class="history">
+              <thead>
+                <tr>
+                  <th class="filter-select">Variant</th>
+                  <th class="center">Total Games</th>
+                  {% for players in [2,3,4,5,6] %}
+                  <th class="center sorter-current-max-score">
+                    {{ players }}-Player Best Score
+                  </th>
+                  {% endfor %}
+                  <th class="center sorter-average-score">Average Score</th>
+                  <th class="center">Strikeout Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in stats.rows %}{% if row.numGames > 0 %}
+                <tr>
+                  <td><a href="/variant/{{ row.id }}">{{ row.name }}</a></td>
+                  <td class="center">{{ row.numGames }}</td>
+                  {% for best in row.bestScores %}
+                  <td class="center">
+                    {% if best.score == row.maxScore %}<strong
+                      >{{ best.score }} / {{ row.maxScore }}</strong
+                    >
+                    {% if best.modifier == 0 %}<i
+                      class="fas fa-check score-modifier green"
+                    ></i
+                    >{% else %} {% set modifier = "allornothing" if
+                    best.modifier|bitand(16) else "oneextracard" if
+                    best.modifier|bitand(4) else "onelesscard" if
+                    best.modifier|bitand(8) else "emptyclues" if
+                    best.modifier|bitand(2) else "deckplays" %}
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-{{ modifier }}"
+                    ></i
+                    >{% endif %} {% else %}{{ best.score }} / {{ row.maxScore
+                    }}{% endif %}
+                  </td>
+                  {% endfor %}
+                  <td class="center">{{ row.averageScore }}</td>
+                  <td class="center">
+                    {{ row.strikeoutRate }}{% if row.strikeoutRate != "-" %}%{%
+                    endif %}
+                  </td>
+                </tr>
+                {% endif %}{% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div
+            class="public-table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Game history"
+          >
+            <table
+              id="history-table"
+              class="history {% if page == 'variant' %}variant{% else %}personal-history{% endif %}"
+            >
+              <thead>
+                <tr>
+                  <th>Game ID</th>
+                  <th class="filter-select filter-match"># of Players</th>
+                  <th>Score</th>
+                  {% if page != "variant" %}
+                  <th class="filter-select">Variant</th>
+                  {% endif %}
+                  <th>Players</th>
+                  <th class="sorter-date-and-time">Date &amp; Time</th>
+                  {% if page != "seed" %}
+                  <th>
+                    {% if page == "variant" %}Seed{% else %}Other Scores{% endif
+                    %}
+                  </th>
+                  {% endif %} {% if title == "Tagged Games" %}
+                  <th>Tags</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for game in games %}
+                <tr
+                  id="history-row-{{ loop.index0 }}"
+                  class="history-row history-row-players-{{ game.options.numPlayers }} history-row-score-{{ game.score }}"
+                  data-variant="{{ game.options.variantName }}"
+                >
+                  <td><a href="/replay/{{ game.id }}">{{ game.id }}</a></td>
+                  <td class="center">{{ game.options.numPlayers }}</td>
+                  <td class="center">{{ game.score }}</td>
+                  <td>
+                    <a href="/variant/{{ game.options.variantID }}"
+                      >{{ game.options.variantName }}</a
+                    >
+                  </td>
+                  <td>
+                    <a
+                      href="/history/{% for name in game.playerNames %}{{ name|urlencode }}{% if not loop.last %}/{% endif %}{% endfor %}"
+                      >{{ game.playerNames|join(", ") }}</a
+                    >
+                  </td>
+                  <td>{{ game.datetimeFinished|history_date }}</td>
+                  <td class="center">
+                    <a href="/seed/{{ game.seed|urlencode }}"
+                      >{{ game.numGamesOnThisSeed }}</a
+                    >
+                  </td>
+                  {% if title == "Tagged Games" %}
+                  <td class="center">{{ game.tags }}</td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
           {% endif %} {% include "public-pager.html" %} {% if apiPath %}
           <div class="tableSpinner"><span class="tableSpinner"></span></div>
           <p id="history-error" role="alert" hidden></p>

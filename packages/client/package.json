@@ -1,6 +1,9 @@
 {
   "name": "@hanabi-live/client",
   "private": true,
+  "scripts": {
+    "lint": "bash ./lint.sh"
+  },
   "dependencies": {
     "@hanabi-live/data": "workspace:*",
     "@hanabi-live/game": "workspace:*",

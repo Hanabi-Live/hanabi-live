@@ -1752,6 +1752,11 @@ section.history-page {
   padding: 0 !important;
 }
 
+.public-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .history-page > header {
   margin: 0 !important;
 }

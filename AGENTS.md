@@ -79,6 +79,15 @@ passed. Fix any failures and rerun the full suite before pushing. If a required
 check cannot run or still fails, report the blocker instead of pushing. Run the
 relevant tests and builds as well; passing lint does not replace those checks.
 
+The root lint entrypoint caches package lint scripts in Turborepo's local
+`.turbo/cache`; CI restores results from trusted `main` runs. Source changes
+invalidate dependent packages through transit tasks, including the game
+package's imported server compatibility fixtures. Keep shared lint configuration
+in `turbo.json` inputs. The generated client version stays outside the cache
+inputs: lint uses its tracked type declaration, not its changing runtime value.
+Rust and repository-wide checks still run normally. To bypass package caching,
+run `bunx --bun --no-install turbo run lint --force --cache=local:rw`.
+
 ## Server and wire contracts
 
 Report failures with the operation, a safe typed cause, and a diagnostic ID

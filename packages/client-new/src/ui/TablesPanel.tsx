@@ -1,3 +1,4 @@
+import { errorDetails } from "@hanabi-live/data";
 import { useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
@@ -31,14 +32,17 @@ export function TablesPanel({
   }
   const all = Object.values(tables);
   const friendNames = welcome.friends;
+  function tableHasFriends(table: Table): boolean {
+    return [
+      ...(table.sharedReplay ? [] : table.players),
+      ...table.spectators.map((person) => person.name),
+    ].some((name) => friendNames.includes(name));
+  }
+
   function priority(table: Table): number {
     if (table.joined && !table.sharedReplay) {
       return 0;
     }
-    const friends = [
-      ...table.players,
-      ...table.spectators.map((person) => person.name),
-    ].some((name) => friendNames.includes(name));
     const kind = table.sharedReplay
       ? 4
       : table.running
@@ -46,7 +50,7 @@ export function TablesPanel({
         : table.passwordProtected
           ? 2
           : 1;
-    return kind + (friends ? 0 : 4);
+    return kind + (tableHasFriends(table) ? 0 : 4);
   }
   const visible = all
     .filter((table) => {
@@ -82,10 +86,7 @@ export function TablesPanel({
         }
 
         case "friends": {
-          return [
-            ...table.players,
-            ...table.spectators.map((person) => person.name),
-          ].some((name) => welcome.friends.includes(name));
+          return tableHasFriends(table);
         }
 
         default: {
@@ -94,8 +95,22 @@ export function TablesPanel({
       }
     })
     .toSorted((a, b) => priority(a) - priority(b) || a.id - b.id);
-  function activate(table: Table) {
+  function activate(table: Table, copy = false) {
     if (!online || pending !== null) {
+      return;
+    }
+    if (copy) {
+      const path = table.sharedReplay
+        ? `/shared-replay/${table.name.slice("Shared replay for game #".length)}`
+        : table.running || table.joined
+          ? `/game/${table.id}`
+          : `/pre-game/${table.id}`;
+      void navigator.clipboard
+        .writeText(`${globalThis.location.origin}${path}`)
+        .then(() => connection.notice("Table link copied."))
+        .catch((error: unknown) =>
+          connection.notice(errorDetails(error, "Copying the table link")),
+        );
       return;
     }
     if (table.joined) {
@@ -204,19 +219,20 @@ export function TablesPanel({
                     || table.numPlayers >= table.maxPlayers
                   ? "Watch"
                   : "Join";
+              const hasFriends = tableHasFriends(table);
               return (
                 <tr
                   aria-label={`${action} ${table.name}`}
                   className={`table-card lobby-games-table-${kind} ${table.numPlayers >= table.maxPlayers ? "full" : ""}`}
                   key={table.id}
-                  onClick={() => activate(table)}
+                  onClick={(event) => activate(table, event.ctrlKey)}
                   onKeyDown={(event) => {
                     if (
                       event.target === event.currentTarget
                       && (event.key === "Enter" || event.key === " ")
                     ) {
                       event.preventDefault();
-                      activate(table);
+                      activate(table, event.ctrlKey);
                     }
                   }}
                   tabIndex={online && pending === null ? 0 : -1}
@@ -228,7 +244,7 @@ export function TablesPanel({
                       disabled={!online || pending !== null}
                       onClick={(event) => {
                         event.stopPropagation();
-                        activate(table);
+                        activate(table, event.ctrlKey);
                       }}
                     >
                       {table.passwordProtected && !table.running && (
@@ -247,7 +263,9 @@ export function TablesPanel({
                   </td>
                   <td>{table.variant}</td>
                   <td className="lobby-games-table-options">
-                    <GameOptionIcons options={table.options} />
+                    <ul className="classic-option-list">
+                      <GameOptionIcons options={table.options} />
+                    </ul>
                   </td>
                   <td>
                     {table.sharedReplay
@@ -255,6 +273,9 @@ export function TablesPanel({
                       : table.running
                         ? "Running"
                         : "Not Started"}
+                    {(table.running || table.sharedReplay)
+                      && hasFriends
+                      && ` (${table.progress}%)`}
                   </td>
                   <td>
                     {table.players.map((name, index) => (
@@ -280,7 +301,8 @@ export function TablesPanel({
                             className={
                               name === welcome.username
                                 ? "name-me"
-                                : welcome.friends.includes(name)
+                                : !table.sharedReplay
+                                    && welcome.friends.includes(name)
                                   ? "friend"
                                   : ""
                             }
@@ -291,22 +313,60 @@ export function TablesPanel({
                       </span>
                     ))}
                   </td>
-                  <td>
-                    <button
-                      aria-label="Watch table"
-                      className="name-button classic-spectators"
-                      disabled={!online}
-                      onClick={(event) => {
-                        event.stopPropagation();
+                  <td
+                    className={table.joined ? "" : "lobbySpectators"}
+                    onClick={(event) => {
+                      if (table.joined) {
+                        return;
+                      }
+                      event.stopPropagation();
+                      if (online && pending === null) {
                         connection.send("tableSpectate", {
                           tableID: table.id,
                           shadowingPlayerIndex: -1,
                         });
-                      }}
-                    >
-                      {table.spectators.map((person) => person.name).join(", ")
-                        || "\u{A0}"}
-                    </button>
+                      }
+                    }}
+                  >
+                    {table.joined ? (
+                      table.spectators.map((person, index) => (
+                        <span key={person.name}>
+                          {index > 0 && ", "}
+                          <span
+                            className={
+                              welcome.friends.includes(person.name)
+                                ? "friend"
+                                : ""
+                            }
+                          >
+                            {person.name}
+                          </span>
+                        </span>
+                      ))
+                    ) : (
+                      <button
+                        aria-label="Watch table"
+                        className="name-button classic-spectators"
+                        disabled={!online || pending !== null}
+                      >
+                        {table.spectators.length === 0
+                          ? "\u{A0}"
+                          : table.spectators.map((person, index) => (
+                              <span key={person.name}>
+                                {index > 0 && ", "}
+                                <span
+                                  className={
+                                    welcome.friends.includes(person.name)
+                                      ? "friend"
+                                      : ""
+                                  }
+                                >
+                                  {person.name}
+                                </span>
+                              </span>
+                            ))}
+                      </button>
+                    )}
                   </td>
                 </tr>
               );

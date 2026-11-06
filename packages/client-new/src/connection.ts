@@ -25,7 +25,7 @@ export class LobbyConnection {
   private attempts = 0;
   private stopped = false;
   private destination: number | null = null;
-  private shadowingPlayerIndex = -1;
+  private handoffTableID: number | null = null;
   private preferenceVersion = 0;
   private readonly syncVersions: number[] = [];
   private preferenceFailed = false;
@@ -164,13 +164,6 @@ export class LobbyConnection {
       // A solo replay is retired when its last viewer disconnects. Create it after handoff.
       return this.navigateToGame({ kind: "replay", request: parsed.data });
     }
-    if (command === "tableSpectate") {
-      this.shadowingPlayerIndex =
-        "shadowingPlayerIndex" in data
-        && typeof data.shadowingPlayerIndex === "number"
-          ? data.shadowingPlayerIndex
-          : -1;
-    }
     const durable = [
       "chat",
       "tableStart",
@@ -200,6 +193,8 @@ export class LobbyConnection {
     this.store.dispatch(actions.requestSent(command));
     if (command === "tableUnattend" || command === "tableLeave") {
       this.destination = null;
+      this.handoffTableID = null;
+      this.navigationAfterPreferences = undefined;
     }
     if (command === "tableUnattend") {
       this.store.dispatch(actions.tableUnattended());
@@ -278,6 +273,7 @@ export class LobbyConnection {
   }
 
   stop(): void {
+    this.handoffTableID = null;
     this.clearPreferenceRequests();
     this.stopped = true;
     this.generation++;
@@ -292,6 +288,7 @@ export class LobbyConnection {
     if (this.stopped) {
       return;
     }
+    this.handoffTableID = null;
     this.generation++;
     const { generation } = this;
     this.socket?.close();
@@ -392,10 +389,22 @@ export class LobbyConnection {
             }
 
             case "tableStart": {
+              this.handoffTableID = event.data.tableID;
+              this.send("getGameInfo1", { tableID: event.data.tableID });
+              break;
+            }
+
+            case "init": {
+              if (this.handoffTableID !== event.data.tableID) {
+                break;
+              }
+              this.handoffTableID = null;
               this.navigateToGame({
                 kind: "table",
                 tableID: event.data.tableID,
-                shadowingPlayerIndex: this.shadowingPlayerIndex,
+                shadowingPlayerIndex: event.data.shadowing
+                  ? event.data.ourPlayerIndex
+                  : -1,
               });
 
               break;

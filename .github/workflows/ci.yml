@@ -54,8 +54,25 @@ jobs:
       - uses: ./.github/workflows/setup
       - uses: ./.github/workflows/setup-rust
         if: matrix.shard == 2
+      - name: Restore successful package lint results
+        id: lint-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
+          restore-keys: |
+            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+      - name: Test package lint cache invalidation
+        if: matrix.shard == 1
+        run: python3 -m unittest discover -s scripts -p 'lint_cache_test.py'
       - name: Run the lint shard
         run: bash lint.sh --shard=${{ matrix.shard }}/2
+      - name: Cache successful package lint results
+        if: steps.lint-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: ${{ steps.lint-cache.outputs.cache-primary-key }}
 
   test:
     runs-on: ubuntu-latest

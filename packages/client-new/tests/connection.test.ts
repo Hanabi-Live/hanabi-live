@@ -3,6 +3,32 @@ import { LobbyConnection } from "../src/connection";
 import { createLobbyStore } from "../src/store";
 import { welcome } from "./messages";
 
+function gameInit(tableID: number, shadowing = false, ourPlayerIndex = 0) {
+  return {
+    tableID,
+    playerNames: ["Alice", "Bob"],
+    ourPlayerIndex,
+    spectating: shadowing,
+    shadowing,
+    replay: false,
+    databaseID: -1,
+    hasCustomSeed: false,
+    seed: "p2v0s1",
+    datetimeStarted: "",
+    datetimeFinished: "",
+    options: {},
+    characterAssignments: [],
+    characterMetadata: [],
+    sharedReplay: false,
+    sharedReplayLeader: "",
+    sharedReplaySegment: 0,
+    sharedReplayEffMod: 0,
+    paused: false,
+    pausePlayerIndex: -1,
+    pauseQueued: false,
+  };
+}
+
 class Socket extends EventTarget {
   static OPEN = 1;
   static instances: Socket[] = [];
@@ -119,6 +145,7 @@ describe("connection ownership and recovery", () => {
     socket.receive("synced", {});
     expect(store.getState().preferenceStatus).toBe("saving");
     socket.receive("tableStart", { tableID: 1, replay: false });
+    socket.receive("init", gameInit(1));
     expect(navigate).not.toHaveBeenCalled();
     socket.receive("synced", {});
     expect(store.getState().preferenceStatus).toBe("saved");
@@ -148,7 +175,7 @@ describe("connection ownership and recovery", () => {
     connection.stop();
   });
 
-  it("preserves the selected shadow seat when handing off to the game", async () => {
+  it("uses the authoritative shuffled shadow seat when handing off to the game", async () => {
     const store = createLobbyStore();
     const navigate = vi.fn(() => true);
     const connection = new LobbyConnection(store, navigate);
@@ -160,10 +187,15 @@ describe("connection ownership and recovery", () => {
     socket.receive("welcome", welcome());
     connection.send("tableSpectate", { tableID: 1, shadowingPlayerIndex: 1 });
     socket.receive("tableStart", { tableID: 1, replay: false });
+    expect(socket.sent.at(-1)).toBe('getGameInfo1 {"tableID":1}');
+    expect(navigate).not.toHaveBeenCalled();
+    socket.receive("init", gameInit(2, true, 1));
+    expect(navigate).not.toHaveBeenCalled();
+    socket.receive("init", gameInit(1, true, 0));
     expect(navigate).toHaveBeenCalledWith({
       kind: "table",
       tableID: 1,
-      shadowingPlayerIndex: 1,
+      shadowingPlayerIndex: 0,
     });
     connection.stop();
   });
@@ -190,6 +222,23 @@ describe("connection ownership and recovery", () => {
       expect.objectContaining({ kind: "replay" }),
     );
     expect(socket.readyState).toBe(3);
+    connection.stop();
+  });
+
+  it("does not enter a game after leaving while authoritative handoff data is pending", async () => {
+    const store = createLobbyStore();
+    const navigate = vi.fn(() => true);
+    const connection = new LobbyConnection(store, navigate);
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    socket.receive("tableStart", { tableID: 1, replay: false });
+    connection.send("tableUnattend", { tableID: 1 });
+    socket.receive("init", gameInit(1, true, 0));
+    expect(navigate).not.toHaveBeenCalled();
     connection.stop();
   });
 
