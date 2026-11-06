@@ -28,13 +28,7 @@ impl Fixture {
             .unwrap();
         let store = Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(
-            store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks.clone(),
-        )
-        .await
-        .unwrap();
+        let hub = Hub::start(store.clone(), tasks.clone()).await.unwrap();
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let config = PublicConfig {

@@ -10,7 +10,6 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{Chat, ChatSource, ChatTyping, TableId, TableRequest, TableStarted};
-use rand::RngExt;
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
@@ -218,7 +217,7 @@ pub enum HubCommand {
         command: Command,
         reply: Reply,
     },
-    Name {
+    Sync {
         session: Arc<Session>,
         reply: Reply,
     },
@@ -279,17 +278,12 @@ pub struct Hub {
     maintenance: bool,
     shutdown_imminent: bool,
     store: Store,
-    words: Arc<Vec<String>>,
     tasks: TaskTracker,
     capacity: Arc<Semaphore>,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
 }
 impl Hub {
-    pub async fn start(
-        store: Store,
-        words: Arc<Vec<String>>,
-        tasks: TaskTracker,
-    ) -> Result<mpsc::Sender<HubCommand>> {
+    pub async fn start(store: Store, tasks: TaskTracker) -> Result<mpsc::Sender<HubCommand>> {
         let restored = store.load_for_startup().await?;
         let (sender, receiver) = mpsc::channel(512);
         let mut hub = Self {
@@ -301,7 +295,6 @@ impl Hub {
             maintenance: false,
             shutdown_imminent: false,
             store,
-            words,
             tasks: tasks.clone(),
             capacity: Arc::new(Semaphore::new(256)),
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
@@ -482,10 +475,9 @@ impl Hub {
         };
         let store = self.store.clone();
         let hub = self.sender.clone();
-        let words = self.words.clone();
         let tasks = self.tasks.clone();
         self.tasks.spawn(async move {
-            let prepared = prepare_table(&store, &s, &command, data, &words).await;
+            let prepared = prepare_table(&store, &s, &command, data).await;
             match prepared {
                 Ok((table, revision, warnings)) => {
                     let id = table.id;
@@ -788,7 +780,6 @@ impl Hub {
                         welcome["disconSpectatingTable"] = json!(id);
                         welcome["disconShadowingSeat"] = json!(shadow.unwrap_or(-1));
                     }
-                    welcome["randomTableName"] = json!(random_name(&self.words));
                     self.sessions.insert(
                         session.user,
                         Presence {
@@ -1095,9 +1086,9 @@ impl Hub {
                     command,
                     reply,
                 } => self.route(session, table, command, reply),
-                HubCommand::Name { session, reply } => {
+                HubCommand::Sync { session, reply } => {
                     let result = if self.current(&session) && !self.closing {
-                        session.emit(&frame("name", json!({"name":random_name(&self.words)})));
+                        session.emit(&frame("synced", json!({})));
                         Ok(())
                     } else {
                         Err(anyhow::anyhow!("Session unavailable"))
@@ -1177,23 +1168,14 @@ impl Hub {
     }
 }
 
-fn random_name(words: &[String]) -> String {
-    if words.len() < 3 {
-        return "New Table".into();
-    }
-    let mut selected = vec![];
-    let mut rng = rand::rng();
-    while selected.len() < 3 {
-        let i = rng.random_range(0..words.len());
-        if !selected.contains(&i) {
-            selected.push(i);
-        }
-    }
-    selected
-        .iter()
-        .map(|i| words[*i].as_str())
-        .collect::<Vec<_>>()
-        .join(" ")
+fn validate_table_name(name: &str) -> Result<()> {
+    ensure!(
+        name.chars().all(|c| c.is_alphanumeric()
+            || unicode_normalization::char::is_combining_mark(c)
+            || " _!#$'()+,-.:;=?@".contains(c)),
+        "Invalid table name"
+    );
+    Ok(())
 }
 fn server_chat(id: u64, message: &str) -> Value {
     json!(Chat {
@@ -1501,7 +1483,6 @@ async fn prepare_table(
     session: &Session,
     command: &str,
     data: Value,
-    words: &[String],
 ) -> Result<(TableSnapshot, i64, Vec<String>)> {
     store.check_state()?;
     ensure!(session.active(), "Stale session");
@@ -1545,13 +1526,9 @@ async fn prepare_table(
             name.pop();
         }
         if name.is_empty() {
-            name = random_name(words);
+            name = format!("{}'s table", session.name);
         }
-        ensure!(
-            name.chars()
-                .all(|c| c.is_ascii_alphanumeric() || " _!#$()+,-.:;=?@".contains(c)),
-            "Invalid table name"
-        );
+        validate_table_name(&name)?;
         let mut options: Options =
             serde_json::from_value(data.get("options").cloned().unwrap_or(json!({})))?;
         options.starting_player = 0;
@@ -2528,11 +2505,7 @@ impl TableActor {
         if name.is_empty() {
             name = self.table.name.clone();
         }
-        ensure!(
-            name.chars()
-                .all(|c| c.is_ascii_alphanumeric() || " _!#$()+,-.:;=?@".contains(c)),
-            "Invalid table name"
-        );
+        validate_table_name(&name)?;
         let mut max_players = if variant_only {
             self.table.max_players
         } else {

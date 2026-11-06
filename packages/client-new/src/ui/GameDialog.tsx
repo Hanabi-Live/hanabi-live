@@ -1,9 +1,8 @@
 import type { Settings } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { getRandomArrayElement, isArray } from "complete-common";
-import { Shuffle } from "lucide-react";
 import type { SubmitEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { LobbyConnection } from "../connection";
 import type { Pregame, Welcome } from "../protocol";
 import { Modal } from "./Modal";
@@ -50,7 +49,7 @@ export function GameDialog({
   close: () => void;
 }) {
   const preferences = welcome.settings;
-  const [name, setName] = useState(game?.name ?? welcome.randomTableName);
+  const [name, setName] = useState(game?.name ?? `${welcome.username}'s table`);
   const [variant, setVariant] = useState(
     game?.options.variantName ?? preferences.createTableVariant,
   );
@@ -100,13 +99,6 @@ export function GameDialog({
     () => speedrun || Object.values(flags).some(Boolean),
   );
   const [error, setError] = useState("");
-  const shuffleRequested = useRef(false);
-  useEffect(() => {
-    if (shuffleRequested.current) {
-      setName(welcome.randomTableName);
-      shuffleRequested.current = false;
-    }
-  }, [welcome.randomTableName]);
   const variants = VARIANT_NAMES.filter((value) =>
     value.toLowerCase().includes(variant.toLowerCase()),
   ).slice(0, 100);
@@ -204,25 +196,14 @@ export function GameDialog({
           <span>
             <i aria-hidden="true" className="fas fa-signature" /> Name
           </span>
-          <div className="input-action">
-            <input
-              aria-label="Table name"
-              maxLength={100}
-              onChange={(event) => setName(event.target.value)}
-              required
-              type="text"
-              value={name}
-            />
-            <button
-              aria-label="Use a random table name"
-              onClick={() => {
-                shuffleRequested.current = connection.send("getName", {});
-              }}
-              type="button"
-            >
-              <Shuffle size={17} />
-            </button>
-          </div>
+          <input
+            aria-label="Table name"
+            maxLength={100}
+            onChange={(event) => setName(event.target.value)}
+            required
+            type="text"
+            value={name}
+          />
         </label>
         <label>
           <span>

@@ -38,7 +38,7 @@ export enum ServerCommand {
   game = "game",
   gameHistory = "gameHistory",
   gameHistoryOtherScores = "gameHistoryOtherScores",
-  name = "name",
+  synced = "synced",
   joined = "joined",
   left = "left",
   spectators = "spectators",

@@ -71,12 +71,18 @@ describe("connection ownership and recovery", () => {
     socket.receive("welcome", welcome());
     connection.setting("volume", 0);
     connection.setting("volume", 3);
+    expect(socket.sent).toEqual([
+      'setting {"name":"volume","setting":"0"}',
+      "sync {}",
+      'setting {"name":"volume","setting":"3"}',
+      "sync {}",
+    ]);
     expect(store.getState().preferenceStatus).toBe("saving");
-    socket.receive("name", { name: "first acknowledgement" });
+    socket.receive("synced", {});
     expect(store.getState().preferenceStatus).toBe("saving");
     socket.receive("tableStart", { tableID: 1, replay: false });
     expect(navigate).not.toHaveBeenCalled();
-    socket.receive("name", { name: "latest acknowledgement" });
+    socket.receive("synced", {});
     expect(store.getState().preferenceStatus).toBe("saved");
     expect(navigate).toHaveBeenCalledTimes(1);
     connection.stop();
@@ -96,7 +102,7 @@ describe("connection ownership and recovery", () => {
     socket.receive("welcome", welcome());
     connection.setting("volume", 3);
     socket.receive("warning", { warning: "Setting rejected" });
-    socket.receive("name", { name: "barrier" });
+    socket.receive("synced", {});
     expect(store.getState().preferenceStatus).toBe("failed");
     connection.setting("volume", 5);
     socket.close();

@@ -6,6 +6,16 @@ use crate::{
 use sqlx::postgres::PgPoolOptions;
 
 #[test]
+fn table_names_allow_owner_defaults_but_reject_markup() {
+    for name in ["Alice's table", "Ren\u{e9}'s table", "Rene\u{301}'s table"] {
+        assert!(validate_table_name(name).is_ok(), "{name}");
+    }
+    for name in ["<script>", "unsafe\nname", "\"attribute\""] {
+        assert!(validate_table_name(name).is_err(), "{name}");
+    }
+}
+
+#[test]
 fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<()> {
     let mut game = Game::new(crate::game::standard_deck("p2v0s1")?)?;
     let rank = game.deck[game.players[1].hand[0]].rank;
@@ -633,7 +643,6 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         maintenance: false,
         shutdown_imminent: false,
         store: store.clone(),
-        words: Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
         tasks: TaskTracker::new(),
         capacity: Arc::new(Semaphore::new(1)),
         playing_claims: Arc::new(Mutex::new(HashSet::new())),
@@ -675,7 +684,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     );
     let (reply, received) = oneshot::channel();
     sender
-        .send(HubCommand::Name {
+        .send(HubCommand::Sync {
             session: old.clone(),
             reply,
         })
@@ -704,7 +713,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .await?;
     let (reply, received) = oneshot::channel();
     sender
-        .send(HubCommand::Name {
+        .send(HubCommand::Sync {
             session: new.clone(),
             reply,
         })

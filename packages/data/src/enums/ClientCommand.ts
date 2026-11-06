@@ -29,7 +29,7 @@ export enum ClientCommand {
   chatPMHistoryGet = "chatPMHistoryGet",
   chatUnfriend = "chatUnfriend",
   chatUnlink = "chatUnlink",
-  getName = "getName",
+  sync = "sync",
   historyGet = "historyGet",
   historyGetSeed = "historyGetSeed",
   inactive = "inactive",

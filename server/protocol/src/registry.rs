@@ -8,6 +8,7 @@ macro_rules! client_contracts {
     ($apply:ident) => {
         $apply! {
             "lobbyLoad" => Empty, Empty;
+            "sync" => Empty, Empty;
             "chat" => ChatRequest, ChatRequest;
             "chatPM" => ChatPmRequest, LegacyChatPmRequest;
             "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
@@ -38,6 +39,7 @@ macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
             "restart" => Empty, Empty;
+            "synced" => Empty, Empty;
             "lobbyStatus" => LobbyStatus, LobbyStatus;
             "chat" => Chat, Chat;
             "chatDelete" => ChatDelete, ChatDelete;

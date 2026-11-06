@@ -20,7 +20,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
   // Automatically create a table if we are using a "/create-table" URL.
   if (globalThis.location.pathname === "/create-table") {
     const urlParams = new URLSearchParams(globalThis.location.search);
-    const name = urlParams.get("name") ?? globals.randomTableName;
+    const name = urlParams.get("name") ?? `${globals.username}'s table`;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get("timed") === "true";
     const timeBaseString = urlParams.get("timeBase") ?? "120";

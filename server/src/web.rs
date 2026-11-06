@@ -325,7 +325,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         "userID":id,"username":name,"totalGames":null,
         "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
         "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
-        "playingAtTables":[],"randomTableName":"","shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
+        "playingAtTables":[],"shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
         "maintenanceMode":runtime.as_ref().is_some_and(|r|r.maintenance_mode()),
     });
     if let Some(started) = runtime.as_ref().and_then(|r| r.shutdown_started_at()) {
@@ -929,8 +929,8 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         data["runtimeResponses"] = json!(runtime_response(app, &command, &args)?);
     }
     let (reply, received) = oneshot::channel();
-    let request = if command == "getName" {
-        HubCommand::Name { session, reply }
+    let request = if command == "sync" {
+        HubCommand::Sync { session, reply }
     } else {
         HubCommand::Client {
             session,

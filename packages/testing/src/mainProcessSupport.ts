@@ -120,16 +120,11 @@ export async function prepareRoot(
   await mkdir(path.join(directory, "public/js/bundles"), { recursive: true });
   await mkdir(path.join(directory, "public/img"), { recursive: true });
   await mkdir(path.join(directory, "install"), { recursive: true });
-  await mkdir(path.join(directory, "misc"), { recursive: true });
   await Promise.all([
     symlink(
       path.join(ROOT, "install/migrations"),
       path.join(directory, "install/migrations"),
       "dir",
-    ),
-    symlink(
-      path.join(ROOT, "misc/word_list.txt"),
-      path.join(directory, "misc/word_list.txt"),
     ),
     symlink(
       path.join(ROOT, "public/img/favicon.ico"),

@@ -121,10 +121,11 @@ WebSocket with full lobby bootstrap, not the optional lean-reconnect path. There
 are only eight live reconnects per run, so that row's p95 is effectively the
 largest sample.
 
-Cycle timings include bootstrap, leaving the replay, and a `getName` command
-used as an ordering barrier; reconnect cycles also include closing the socket.
-The history-ready measurements stop when the initial game history is received,
-before teardown. Neither measures browser rendering or internet latency.
+Those cycle timings included bootstrap, leaving the replay, and the former
+`getName` command used as an ordering barrier (now replaced by `sync`);
+reconnect cycles also included closing the socket. The history-ready
+measurements stop when the initial game history is received, before teardown.
+Neither measures browser rendering or internet latency.
 
 ## Interpretation
 

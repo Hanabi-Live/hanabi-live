@@ -43,7 +43,6 @@ COPY scripts scripts
 COPY public public
 COPY server server
 COPY install install
-COPY misc misc
 # Full history is needed only in the build stage for the client cache version.
 COPY .git .git
 RUN bash install/build_release.sh /root/artifact

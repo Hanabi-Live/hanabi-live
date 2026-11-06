@@ -1600,12 +1600,7 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-auto-chat-retire").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(
-            store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks.clone(),
-        )
-        .await?;
+        let hub = Hub::start(store.clone(), tasks.clone()).await?;
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
@@ -1670,12 +1665,7 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-split-replay").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(
-            store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks.clone(),
-        )
-        .await?;
+        let hub = Hub::start(store.clone(), tasks.clone()).await?;
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
@@ -1819,12 +1809,7 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-actors-integration").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(
-            store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks.clone(),
-        )
-        .await?;
+        let hub = Hub::start(store.clone(), tasks.clone()).await?;
         let mut users = vec![];
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {

@@ -56,12 +56,7 @@ impl Harness {
         let state = RedisState::connect(&redis.url, "actor-protocol").await?;
         let store = Store::fixture(pool, state.clone());
         let tasks = TaskTracker::new();
-        let hub = Hub::start(
-            store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            tasks.clone(),
-        )
-        .await?;
+        let hub = Hub::start(store.clone(), tasks.clone()).await?;
         let mut h = Self {
             admin,
             database,
@@ -214,12 +209,7 @@ impl Harness {
     async fn restart(&mut self) -> Result<()> {
         self.stop_hub().await?;
         self.tasks = TaskTracker::new();
-        self.hub = Hub::start(
-            self.store.clone(),
-            Arc::new(vec!["alpha".into(), "beta".into(), "gamma".into()]),
-            self.tasks.clone(),
-        )
-        .await?;
+        self.hub = Hub::start(self.store.clone(), self.tasks.clone()).await?;
         for index in 0..self.users.len() {
             let old = &self.users[index];
             let (session, outgoing) =
@@ -546,6 +536,40 @@ async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> R
         .context("Disconnected pregame was never removed")??;
         let gone = h.receive(1, "tableGone").await?;
         ensure!(gone["tableID"] == id, "Lobby removed the wrong table");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn default_table_names_use_the_creator_and_remain_editable() -> Result<()> {
+    let names = ["Alice", "Ren\u{e9}"];
+    let Some(mut h) = Harness::new(&names).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        for (index, name) in names.iter().enumerate() {
+            let id = h.create(index, "", json!({})).await?;
+            let expected = format!("{name}'s table");
+            ensure!(
+                h.snapshot(id).await?.0.name == expected,
+                "Incorrect default table name"
+            );
+            h.send(
+                index,
+                "tableUpdate",
+                json!({
+                    "tableID": id, "name": expected, "options": {}, "maxPlayers": 5
+                }),
+            )
+            .await?;
+            ensure!(
+                h.snapshot(id).await?.0.name == expected,
+                "Editing changed the table name"
+            );
+        }
         Ok(())
     }
     .await;

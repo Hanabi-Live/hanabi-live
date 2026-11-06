@@ -172,13 +172,6 @@ lobbyCommands.set("maintenance", (data: MaintenanceData) => {
   globals.maintenanceMode = data.maintenanceMode;
 });
 
-interface NameData {
-  name: string;
-}
-lobbyCommands.set("name", (data: NameData) => {
-  globals.randomTableName = data.name;
-});
-
 interface ShutdownData {
   shuttingDown: boolean;
   datetimeShutdownInit: string;
@@ -350,7 +343,6 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   globals.muted = data.muted;
   globals.settings = data.settings;
   globals.friends = data.friends;
-  globals.randomTableName = data.randomTableName;
   globals.shuttingDown = data.shuttingDown;
   globals.datetimeShutdownInit =
     data.datetimeShutdownInit === undefined

@@ -1,5 +1,26 @@
 [
   {
+    "name": "ordered command barrier has an empty request",
+    "direction": "client",
+    "command": "sync",
+    "input": {},
+    "valid": true
+  },
+  {
+    "name": "ordered command barrier rejects extra fields",
+    "direction": "client",
+    "command": "sync",
+    "input": { "name": "unused" },
+    "valid": false
+  },
+  {
+    "name": "ordered command acknowledgement has an empty response",
+    "direction": "server",
+    "command": "synced",
+    "input": {},
+    "valid": true
+  },
+  {
     "name": "deferred lobby request is empty and strict",
     "direction": "client",
     "command": "lobbyLoad",

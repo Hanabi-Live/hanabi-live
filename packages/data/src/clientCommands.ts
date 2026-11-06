@@ -61,8 +61,6 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
   typeof clientCommandChatPMHistoryGetData
 > {}
 
-const clientCommandGetNameData = z.strictObject({}).optional();
-
 const clientCommandHistoryData = z
   .strictObject({
     offset: z.number().int().default(0),
@@ -99,7 +97,7 @@ export interface ClientCommandData extends GameClientCommandData {
   [ClientCommand.chatPMHistoryGet]: ClientCommandChatPMHistoryGetData;
   [ClientCommand.chatUnfriend]: z.infer<typeof clientCommandChatUserData>;
   [ClientCommand.chatUnlink]: z.infer<typeof clientCommandChatUserData>;
-  [ClientCommand.getName]: z.infer<typeof clientCommandGetNameData>;
+  [ClientCommand.sync]: z.infer<typeof emptySchema>;
   [ClientCommand.historyGet]: z.infer<typeof clientCommandHistoryData>;
   [ClientCommand.historyGetSeed]: z.infer<
     typeof clientCommandHistoryGetSeedData
@@ -139,7 +137,7 @@ export const CLIENT_COMMAND_SCHEMAS = {
   [ClientCommand.chatPMHistoryGet]: clientCommandChatPMHistoryGetData,
   [ClientCommand.chatUnfriend]: clientCommandChatUserData,
   [ClientCommand.chatUnlink]: clientCommandChatUserData,
-  [ClientCommand.getName]: clientCommandGetNameData,
+  [ClientCommand.sync]: emptySchema,
   [ClientCommand.historyGet]: clientCommandHistoryData,
   [ClientCommand.historyGetSeed]: clientCommandHistoryGetSeedData,
   [ClientCommand.inactive]: clientCommandInactiveData,

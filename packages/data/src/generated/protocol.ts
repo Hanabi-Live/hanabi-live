@@ -180,6 +180,7 @@ export const CLIENT_WIRE_SCHEMAS = {
   chatUnfriend: chatUserRequestSchema,
   chatUnlink: chatUserRequestSchema,
   lobbyLoad: emptySchema,
+  sync: emptySchema,
   tableJoin: tableJoinRequestSchema,
   tableLeave: tableRequestSchema,
   tableReattend: tableRequestSchema,
@@ -202,6 +203,7 @@ export const SERVER_WIRE_SCHEMAS = {
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
   restart: emptySchema,
+  synced: emptySchema,
   tableGone: tableRequestSchema,
   tableStart: tableStartedSchema,
 } as const;

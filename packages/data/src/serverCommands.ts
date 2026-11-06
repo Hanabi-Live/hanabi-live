@@ -122,9 +122,6 @@ const serverCommandGameHistoryOtherScoresData = z
     seed: z.string().min(1),
   })
   .readonly();
-const serverCommandNameData = z
-  .strictObject({ name: z.string().min(1) })
-  .readonly();
 const serverCommandUserInactiveData = z
   .strictObject({ userID, inactive: z.boolean() })
   .readonly();
@@ -232,7 +229,6 @@ const serverCommandWelcomeData = z
     disconSpectatingTable: tableID.optional(),
     disconShadowingSeat: z.number().int().optional(),
 
-    randomTableName: z.string().min(1),
     shuttingDown: z.boolean(),
     datetimeShutdownInit: z.string().min(1).optional(),
     maintenanceMode: z.boolean(),
@@ -292,7 +288,7 @@ export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.gameHistoryOtherScores]: z.infer<
     typeof serverCommandGameHistoryOtherScoresData
   >;
-  [ServerCommand.name]: z.infer<typeof serverCommandNameData>;
+  [ServerCommand.synced]: z.infer<typeof emptySchema>;
   [ServerCommand.table]: ServerCommandTableData;
   [ServerCommand.tableList]: ServerCommandTableListData;
   [ServerCommand.user]: ServerCommandUserData;
@@ -327,7 +323,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryOtherScores]:
     serverCommandGameHistoryOtherScoresData,
-  [ServerCommand.name]: serverCommandNameData,
+  [ServerCommand.synced]: emptySchema,
   [ServerCommand.table]: serverCommandTableData,
   [ServerCommand.tableList]: serverCommandTableListData,
   [ServerCommand.user]: serverCommandUserData,

@@ -851,8 +851,8 @@ databaseDescribe("compiled application entry point (rust)", () => {
           replayPeer = returning;
         }
         replayPeer.send("tableUnattend", { tableID: created.tableID });
-        replayPeer.send("getName", {});
-        await replayPeer.receive("name", SERVER_COMMAND_SCHEMAS.name);
+        replayPeer.send("sync", {});
+        await replayPeer.receive("synced", SERVER_COMMAND_SCHEMAS.synced);
       }
       /* eslint-enable no-await-in-loop */
     } catch (error) {

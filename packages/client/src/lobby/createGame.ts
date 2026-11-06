@@ -21,7 +21,6 @@ import {
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { SHUTDOWN_TIMEOUT_MINUTES } from "../constants";
-import * as debug from "../debug";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { getHTMLInputElement } from "../utils";
@@ -533,14 +532,7 @@ export function ready(): boolean {
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game
-    if (debug.amTestUser(globals.username)) {
-      gameName = "test game";
-    } else {
-      gameName = globals.randomTableName;
-
-      // Get a new random name from the server for the next time we click the button.
-      globals.conn!.send("getName", {});
-    }
+    gameName = `${globals.username}'s table`;
     dialogOptions = globals.settings;
 
     // Show the password row.

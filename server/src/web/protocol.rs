@@ -16,7 +16,7 @@ pub const COMMANDS: &[&str] = &[
     "chatUnlink",
     "getGameInfo1",
     "getGameInfo2",
-    "getName",
+    "sync",
     "historyGet",
     "historyGetSeed",
     "inactive",
@@ -194,7 +194,7 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
         allowed: vec![],
     };
     match name {
-        "getName" | "lobbyLoad" => {}
+        "sync" | "lobbyLoad" => {}
         "setting" => {
             fields.string("name", None)?;
             fields.string("setting", None)?;
@@ -341,7 +341,7 @@ mod tests {
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":0}),
-                "getName" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
+                "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
                 | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
                 | "chatPMHistoryGet" | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
@@ -374,7 +374,7 @@ mod tests {
             "chat {\"msg\":\"x\",\"room\":\"lobby\",\"admin\":true}",
             "tableStart {\"tableID\":9007199254740992}",
             "setting {\"name\":\"volume\",\"setting\":50}",
-            "getName []",
+            "sync []",
             "unknown {}",
             "historyFriendsGet {\"offset\":0,\"amount\":10}",
         ] {

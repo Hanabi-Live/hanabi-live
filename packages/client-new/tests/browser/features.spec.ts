@@ -73,6 +73,53 @@ async function login(page: Page, backend: string, name: string) {
 }
 
 for (const route of ["lobby", "new"]) {
+  test(`${route} creates a table named after its owner without random names`, async ({
+    page,
+    backend,
+  }) => {
+    const username = `testName${route}`;
+    const expectedName = `${username}'s table`;
+    const commands: string[] = [];
+    page.on("websocket", (socket) => {
+      socket.on("framesent", ({ payload }) => {
+        commands.push(payload.toString().split(" ", 1)[0] ?? "");
+      });
+    });
+    await page.goto(`${backend}/lobby`);
+    await page.locator("#login-username").fill(username);
+    await page.locator("#login-password").fill(username);
+    await page.locator("#login-button").click();
+    await page.locator("#tutorial-no").click();
+    await expect(page.locator("#lobby")).toBeVisible();
+    if (route === "new") {
+      await page.goto(`${backend}/new`);
+      await page
+        .getByRole("button", { name: "Create a table", exact: true })
+        .click();
+      const dialog = page.getByRole("dialog");
+      await expect(
+        dialog.getByLabel("Table name", { exact: true }),
+      ).toHaveValue(expectedName);
+      await expect(
+        dialog.getByRole("button", { name: "Use a random table name" }),
+      ).toHaveCount(0);
+      await dialog
+        .getByRole("button", { name: "Create table", exact: true })
+        .click();
+      await expect(
+        page.getByRole("heading", { name: expectedName, exact: true }),
+      ).toBeVisible();
+    } else {
+      await page.locator("#nav-buttons-lobby-create-game").click();
+      await expect(page.locator("#createTableName")).toHaveValue(expectedName);
+      await page.locator("#create-game-submit").click();
+      await expect(page.locator("#lobby-pregame-name")).toHaveText(
+        expectedName,
+      );
+    }
+    expect(commands).not.toContain("getName");
+  });
+
   test(`${route} Stats link opens the simplified global statistics page`, async ({
     page,
     backend,
@@ -186,13 +233,12 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await a.getByRole("link", { name: "Play", exact: true }).click();
   await a.getByRole("button", { name: "Create a table", exact: true }).click();
   const dialog = a.getByRole("dialog");
-  const originalName = await dialog
-    .getByLabel("Table name", { exact: true })
-    .inputValue();
-  await dialog.getByRole("button", { name: "Use a random table name" }).click();
+  await expect(dialog.getByLabel("Table name", { exact: true })).toHaveValue(
+    "testUIHost's table",
+  );
   await expect(
-    dialog.getByLabel("Table name", { exact: true }),
-  ).not.toHaveValue(originalName);
+    dialog.getByRole("button", { name: "Use a random table name" }),
+  ).toHaveCount(0);
   await dialog.getByLabel("Table name", { exact: true }).fill("Private garden");
   await dialog.getByLabel("Variant", { exact: true }).selectOption("6 Suits");
   await dialog.getByLabel("Maximum players").fill("3");

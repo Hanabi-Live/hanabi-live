@@ -18,14 +18,6 @@ pub fn validate_assets(config: &Config) -> Result<String> {
                 .is_ok_and(|v| v <= 9_007_199_254_740_991),
         "Invalid paired client version"
     );
-    let words = std::fs::read_to_string(config.root.join("misc/word_list.txt"))
-        .context("Missing game-name dictionary")?;
-    let distinct: std::collections::HashSet<_> = words
-        .lines()
-        .map(str::trim)
-        .filter(|word| !word.is_empty())
-        .collect();
-    ensure!(distinct.len() >= 3, "Dictionary has too few distinct words");
     Ok(version.to_owned())
 }
 
@@ -82,10 +74,9 @@ pub fn version() -> &'static str {
 mod tests {
     use super::*;
     #[test]
-    fn restart_preflight_checks_version_and_dictionary_without_sources() -> Result<()> {
+    fn restart_preflight_checks_version_without_sources() -> Result<()> {
         let root = crate::tls::fixture_root("restart")?;
         std::fs::create_dir_all(root.join("public/js/bundles"))?;
-        std::fs::create_dir(root.join("misc"))?;
         let config = Config::from_values(
             root.clone(),
             [
@@ -96,9 +87,8 @@ mod tests {
             .map(|(k, v)| (k.into(), v))
             .collect(),
         )?;
-        std::fs::write(root.join("public/js/bundles/version.txt"), "123\n")?;
         assert!(validate_assets(&config).is_err());
-        std::fs::write(root.join("misc/word_list.txt"), "one\ntwo\nthree\n")?;
+        std::fs::write(root.join("public/js/bundles/version.txt"), "123\n")?;
         assert_eq!(validate_assets(&config)?, "123");
         std::fs::write(
             root.join("public/js/bundles/version.txt"),

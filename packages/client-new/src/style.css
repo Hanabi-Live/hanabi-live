@@ -522,22 +522,9 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .form-grid label > input,
 .form-grid label > select,
-.form-grid label > textarea,
-.form-grid label > .input-action {
+.form-grid label > textarea {
   grid-column: 2;
   grid-row: 1;
-}
-.input-action {
-  position: relative;
-  display: flex;
-  gap: 0.5em;
-}
-.input-action > button {
-  flex: none;
-}
-.input-action input {
-  flex: 1;
-  min-width: 0;
 }
 .classic-variant-input {
   grid-column: 2;

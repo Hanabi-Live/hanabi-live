@@ -11,7 +11,6 @@ export function welcome(userID = 1): Welcome {
     settings: defaultSettings,
     friends: [],
     playingAtTables: [],
-    randomTableName: "A nice table",
     shuttingDown: false,
     maintenanceMode: false,
   });

@@ -273,13 +273,6 @@ const slice = createSlice({
           break;
         }
 
-        case "name": {
-          if (state.welcome) {
-            state.welcome.randomTableName = event.data.name;
-          }
-          break;
-        }
-
         case "maintenance": {
           if (state.welcome) {
             state.welcome.maintenanceMode = event.data.maintenanceMode;

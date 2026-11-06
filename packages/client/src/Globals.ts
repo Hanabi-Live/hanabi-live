@@ -25,7 +25,6 @@ export class Globals {
   username = "";
   totalGames: number | null = null;
   muted = false;
-  randomTableName = "";
 
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings = defaultSettings;

@@ -58,7 +58,6 @@
     // Most emote names are not words.
     "emotes.json",
     // Word lists
-    "word_list.txt",
     "words.txt",
     // @template-customization-end
   ],

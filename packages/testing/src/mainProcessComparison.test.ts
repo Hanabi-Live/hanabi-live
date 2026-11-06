@@ -114,8 +114,8 @@ databaseDescribe("normal-server protocol workload", () => {
       ) {
         peer.send("tableUnattend", { tableID });
         // Unattend has no direct acknowledgement; use an ordinary ordered command.
-        peer.send("getName", {});
-        await peer.receive("name", SERVER_COMMAND_SCHEMAS.name);
+        peer.send("sync", {});
+        await peer.receive("synced", SERVER_COMMAND_SCHEMAS.synced);
       }
 
       async function bootstrap(

@@ -80,7 +80,6 @@ export const test = base.extend<
             "packages/game/src/json",
             "packages/data/src/json",
             "install/migrations",
-            "misc/word_list.txt",
             "public",
           ].map(async (relative) => {
             await mkdir(path.dirname(path.join(directory, relative)), {

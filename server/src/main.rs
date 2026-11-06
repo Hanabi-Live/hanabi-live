@@ -12,7 +12,6 @@ use hanabi_live::{
     web::{App, router},
 };
 use std::{
-    collections::HashSet,
     net::{SocketAddr, TcpListener},
     path::Path,
     sync::{Arc, atomic::Ordering},
@@ -109,18 +108,9 @@ async fn run(config: Config, version: String) -> Result<bool> {
     } else {
         None
     };
-    let text = tokio::fs::read_to_string(config.root.join("misc/word_list.txt")).await?;
-    let mut seen = HashSet::new();
-    let words: Vec<String> = text
-        .lines()
-        .map(str::trim)
-        .filter(|word| !word.is_empty() && seen.insert((*word).to_owned()))
-        .map(str::to_owned)
-        .collect();
-    ensure!(words.len() >= 3, "Dictionary has too few distinct words");
     let store = Store::connect(&config).await?;
     let tables = TaskTracker::new();
-    let hub = match Hub::start(store.clone(), Arc::new(words), tables.clone()).await {
+    let hub = match Hub::start(store.clone(), tables.clone()).await {
         Ok(hub) => hub,
         Err(error) => {
             if let Err(close) = store.close().await {

@@ -24,7 +24,7 @@ export class LobbyConnection {
   private destination: number | null = null;
   private shadowingPlayerIndex = -1;
   private preferenceVersion = 0;
-  private readonly nameVersions: number[] = [];
+  private readonly syncVersions: number[] = [];
   private preferenceFailed = false;
   private preferenceTimeout: ReturnType<typeof setTimeout> | undefined;
   private navigationAfterPreferences: NewLobbyNavigation | undefined;
@@ -190,8 +190,8 @@ export class LobbyConnection {
       return false;
     }
     this.socket.send(frame);
-    if (command === "getName") {
-      this.nameVersions.push(this.preferenceVersion);
+    if (command === "sync") {
+      this.syncVersions.push(this.preferenceVersion);
     }
     this.store.dispatch(actions.requestSent(command));
     if (command === "tableUnattend" || command === "tableLeave") {
@@ -222,9 +222,8 @@ export class LobbyConnection {
     this.preferenceVersion++;
     this.store.dispatch(actions.settingsChanged(next.data));
     this.store.dispatch(actions.preferenceStatusChanged("saving"));
-    // All three servers process a session's commands in order. A name response is a barrier after
-    // the settings write, without introducing a new wire command.
-    this.send("getName", {});
+    // The server acknowledges sync only after preceding commands have completed.
+    this.send("sync", {});
     clearTimeout(this.preferenceTimeout);
     this.preferenceTimeout = setTimeout(() => {
       this.preferenceFailed = true;
@@ -328,8 +327,8 @@ export class LobbyConnection {
         ) {
           this.preferenceFailed = true;
         }
-        if (event.command === "name") {
-          const version = this.nameVersions.shift();
+        if (event.command === "synced") {
+          const version = this.syncVersions.shift();
           if (
             version === this.preferenceVersion
             && this.store.getState().preferenceStatus === "saving"
@@ -470,7 +469,7 @@ export class LobbyConnection {
 
   private clearPreferenceRequests(): void {
     clearTimeout(this.preferenceTimeout);
-    this.nameVersions.length = 0;
+    this.syncVersions.length = 0;
     this.navigationAfterPreferences = undefined;
     if (this.store.getState().preferenceStatus === "saving") {
       this.store.dispatch(actions.preferenceStatusChanged("failed"));
