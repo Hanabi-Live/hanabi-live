@@ -1,6 +1,6 @@
 use crate::{
     game::{Action, Card, Game, Options},
-    model::{ExtraOptions, FORMAT, Player, Snapshot},
+    model::{ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
     store::zero_stats,
 };
 use anyhow::{Context, Result, ensure};
@@ -256,7 +256,7 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
         turn_elapsed: 0,
         timer_started: false,
         receipts: vec![],
-        idle_remaining: 1_800_000,
+        idle_remaining: IDLE_TIMEOUT_MS,
         pause_player_index: -1,
         queued_pauses: vec![false; n],
         notes: imported.notes,

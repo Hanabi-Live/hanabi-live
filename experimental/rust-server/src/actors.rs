@@ -1806,6 +1806,16 @@ impl TableActor {
     async fn persist(&mut self, mut next: TableSnapshot) -> Result<()> {
         self.store.check_state()?;
         ensure!(!self.frozen, "Table is frozen until recovery");
+        if next.visible
+            && next
+                .chat
+                .iter()
+                .skip(self.table.chat.len())
+                .any(|chat| chat.user > 0)
+            && let Phase::Replay { snapshot, .. } = &mut next.phase
+        {
+            snapshot.idle_remaining = IDLE_TIMEOUT_MS;
+        }
         let old_ids = self
             .table
             .players()
@@ -1855,19 +1865,7 @@ impl TableActor {
                     self.store.complete(snapshot, revision).await?;
                     self.store.refresh_background((**snapshot).clone());
                 }
-                let snapshot = snapshot.clone();
-                let segment = snapshot.game.turn;
-                next.phase = Phase::Replay {
-                    snapshot,
-                    replay: ReplayState {
-                        leader: next.owner,
-                        segment,
-                        efficiency_modifier: 0,
-                        hypothetical: None,
-                        hypothetical_actions: vec![],
-                        show_drawn_cards: false,
-                    },
-                };
+                next.convert_to_replay()?;
                 for a in self.audience() {
                     next.shadows.insert(a.session.user, None);
                 }
@@ -1907,6 +1905,7 @@ impl TableActor {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         if replay {
             let mut next = self.candidate();
+            next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
             next.shadows.insert(s.user, None);
             self.persist(next).await?;
         }
@@ -2711,6 +2710,9 @@ impl TableActor {
         };
         let mut next = self.candidate();
         next.shadows.insert(session.user, shadow.map(|v| v as i32));
+        if replay {
+            next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
+        }
         self.persist(next).await?;
         let pregame = matches!(self.table.phase, Phase::Pregame { .. });
         if pregame && !spectating && session.active() {
@@ -2937,7 +2939,7 @@ impl TableActor {
             turn_elapsed: 0,
             timer_started: false,
             receipts: vec![],
-            idle_remaining: 1_800_000,
+            idle_remaining: IDLE_TIMEOUT_MS,
             pause_player_index: -1,
             queued_pauses: vec![false; n],
             notes: vec![vec![String::new(); size]; n],
@@ -3016,7 +3018,7 @@ impl TableActor {
         s.game.apply_timed(seat, &a, Some(timing))?;
         s.timer_started = true;
         s.turn_elapsed = 0;
-        s.idle_remaining = 1_800_000;
+        s.idle_remaining = IDLE_TIMEOUT_MS;
         s.maintenance_applied = false;
         let active = s.game.active_player_index;
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
@@ -3580,7 +3582,7 @@ impl TableActor {
             }
             _ => bail!("Invalid replay action"),
         };
-        snapshot.idle_remaining = 1_800_000;
+        snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         next.remember(session.user, data["requestID"].as_str())?;
         self.persist(next).await?;
         let mut e = self.effects();

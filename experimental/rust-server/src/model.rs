@@ -7,6 +7,7 @@ use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-native-rust-2";
+pub const IDLE_TIMEOUT_MS: i64 = 1_800_000;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Player {
@@ -222,6 +223,33 @@ impl TableSnapshot {
             Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => Some(snapshot),
         }
     }
+    pub fn convert_to_replay(&mut self) -> Result<()> {
+        let Phase::Live { snapshot } = &self.phase else {
+            anyhow::bail!("Only a completed live game can become a review");
+        };
+        ensure!(
+            snapshot.game.end_condition != EndCondition::InProgress,
+            "Game is not finished"
+        );
+        let mut snapshot = snapshot.clone();
+        // An idle-ended game must still expire rather than gain another idle window.
+        if snapshot.game.end_condition != EndCondition::IdleTimeout {
+            snapshot.idle_remaining = IDLE_TIMEOUT_MS;
+        }
+        let segment = snapshot.game.turn;
+        self.phase = Phase::Replay {
+            snapshot,
+            replay: ReplayState {
+                leader: self.owner,
+                segment,
+                efficiency_modifier: 0,
+                hypothetical: None,
+                hypothetical_actions: vec![],
+                show_drawn_cards: false,
+            },
+        };
+        Ok(())
+    }
     pub fn duplicate(&self, user: i32, id: Option<&str>) -> bool {
         id.is_some_and(|id| self.receipts.iter().any(|r| r.user == user && r.id == id))
     }
@@ -435,7 +463,7 @@ impl Snapshot {
                     .clocks
                     .iter()
                     .all(|clock| (-9_007_199_254_740_991..=9_007_199_254_740_991).contains(clock))
-                && (0..=1_800_000).contains(&self.idle_remaining),
+                && (0..=IDLE_TIMEOUT_MS).contains(&self.idle_remaining),
             "Invalid runtime timing"
         );
         ensure!(

@@ -1,7 +1,7 @@
 use crate::{
     game::{Game, Options, decode_deck, encode_deck},
     model::{
-        FORMAT, PendingTag, Phase, Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag,
+        FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag,
     },
     state::{RedisState, StateId},
 };
@@ -287,19 +287,7 @@ impl Store {
                     self.complete(snapshot, revision).await?;
                     self.refresh_background((**snapshot).clone());
                 }
-                let snapshot = snapshot.clone();
-                let segment = snapshot.game.turn;
-                table.phase = Phase::Replay {
-                    snapshot,
-                    replay: ReplayState {
-                        leader: table.owner,
-                        segment,
-                        efficiency_modifier: 0,
-                        hypothetical: None,
-                        hypothetical_actions: vec![],
-                        show_drawn_cards: false,
-                    },
-                };
+                table.convert_to_replay()?;
                 revision = self.save(&table, revision).await?;
             }
             output.push((table, revision));
@@ -639,7 +627,7 @@ impl Store {
             turn_elapsed: 0,
             timer_started: false,
             receipts: vec![],
-            idle_remaining: 1_800_000,
+            idle_remaining: IDLE_TIMEOUT_MS,
             pause_player_index: -1,
             queued_pauses: vec![false; n],
             notes,
@@ -1081,7 +1069,7 @@ mod tests {
                 turn_elapsed: 0,
                 timer_started: true,
                 receipts: vec![],
-                idle_remaining: 1_800_000,
+                idle_remaining: IDLE_TIMEOUT_MS,
                 pause_player_index: -1,
                 queued_pauses: vec![false, false],
                 notes: vec![vec![String::new(); 55]; 2],
@@ -1217,7 +1205,7 @@ mod tests {
             replay.game_mut().unwrap().players[0].stats["numGames"] = json!(727);
             replay.phase = Phase::Replay {
                 snapshot: Box::new(replay.game().unwrap().clone()),
-                replay: ReplayState {
+                replay: crate::model::ReplayState {
                     leader: 1,
                     segment: 0,
                     efficiency_modifier: 0,
@@ -1300,6 +1288,7 @@ mod tests {
                 .await?;
             ensure!(old == 0, "PG active mirror exists");
             terminal(&mut table)?;
+            table.game_mut().unwrap().idle_remaining = 0;
             table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
                 json!(25.0 / 27.0);
             table.game_mut().unwrap().spectator_notes.insert(
@@ -1350,6 +1339,8 @@ mod tests {
                 recovered.len() == 1 && matches!(recovered[0].0.phase, Phase::Replay { .. }),
                 "Cross-store terminal retry failed"
             );
+            ensure!(recovered[0].0.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+                "Recovered completion inherited an expired live-game idle budget");
             store.stats.close();
             store.stats.wait().await;
             let games: Option<i32> = sqlx::query_scalar(

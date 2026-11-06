@@ -244,6 +244,66 @@ impl Harness {
     }
 }
 #[tokio::test]
+async fn shared_review_chat_refreshes_idle_but_server_notices_do_not() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.store.allocate_table().await?;
+        let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        let revision = h.store.save(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(32);
+        let capacity = Arc::new(Semaphore::new(1));
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+        );
+        actor.initialize(h.users[0].clone(), vec![]).await?;
+        for text in ["We are still discussing this game.", "/random 1"] {
+            let mut next = actor.candidate();
+            next.game_mut().unwrap().idle_remaining = 1000;
+            actor.persist(next).await?;
+            actor.anchor = Instant::now() - Duration::from_millis(900);
+            actor.chat(h.users[0].clone(), &json!({"msg":text})).await?;
+            let (saved, _) = h.snapshot(id).await?;
+            ensure!(
+                saved.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+                "Accepted user chat did not renew the shared review"
+            );
+            actor.anchor -= Duration::from_secs(2);
+            actor.tick().await?;
+            ensure!(!actor.retired, "Active discussion was closed");
+        }
+        let mut next = actor.candidate();
+        next.game_mut().unwrap().idle_remaining = 1000;
+        actor.persist(next).await?;
+        actor.anchor = Instant::now() - Duration::from_millis(900);
+        actor
+            .operation(TableOperation::Notice(
+                "Automatic server announcement".into(),
+            ))
+            .await?;
+        ensure!(
+            actor.table.game().unwrap().idle_remaining <= 1000,
+            "A server announcement kept an idle review alive"
+        );
+        actor.anchor -= Duration::from_secs(2);
+        actor.tick().await?;
+        ensure!(
+            actor.retired && h.state.get(StateId::Table(id)).await?.is_none(),
+            "Inactive review did not expire automatically"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
         return Ok(());

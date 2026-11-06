@@ -169,6 +169,11 @@ recovery. Disconnected players are then removed, ownership passes to a remaining
 player, and empty pregames are durably deleted. Connected-but-AFK players keep
 their seats. This cleanup does not expire players from ongoing games.
 
+Review rooms have a 30-minute idle window. Joining or reconnecting, replay
+controls, and user chat in shared reviews refresh it; server announcements do
+not. Normal game completion starts a fresh review window, including recovery of
+an interrupted completion. Idle-ended games retain their expiry behavior.
+
 The Redis namespace includes the configured PostgreSQL host, port, and database.
 Keep that identity and the Redis endpoint stable across restarts, including the
 spelling of otherwise-equivalent database hosts. Do not discard the Redis volume

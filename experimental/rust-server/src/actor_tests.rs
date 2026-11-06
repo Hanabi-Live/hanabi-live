@@ -159,6 +159,194 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
 }
 
 #[tokio::test]
+async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() -> Result<()> {
+    let (_redis, store, state) = fixture_store("review-join-idle").await?;
+    for shared in [true, false] {
+        let id = store.allocate_table().await?;
+        let mut table = review(id, EndCondition::TerminatedByPlayer)?;
+        table.visible = shared;
+        table.game_mut().unwrap().idle_remaining = 1000;
+        let finished = table.game().unwrap().finished;
+        let duration = table.game().unwrap().duration;
+        let clocks = table.game().unwrap().clocks.clone();
+        let revision = store.save(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(16);
+        let capacity = Arc::new(Semaphore::new(1));
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+        );
+        actor.anchor = Instant::now() - Duration::from_millis(900);
+        let (viewer, _frames) = Session::new(if shared { 3 } else { 1 }, "Viewer".into(), 1, false);
+        actor.reattend(viewer, &json!({}), shared).await?;
+        actor.anchor -= Duration::from_secs(2);
+        actor.tick().await?;
+        ensure!(
+            !actor.retired,
+            "Joining an old review immediately closed it"
+        );
+        let saved = state
+            .get(StateId::Table(id))
+            .await?
+            .context("Review was deleted")?;
+        let restored = TableSnapshot::decode(&saved.payload)?;
+        let snapshot = restored.game().context("Missing review")?;
+        ensure!(
+            snapshot.idle_remaining == 1_800_000,
+            "Viewer did not receive a fresh review window"
+        );
+        ensure!(
+            snapshot.finished == finished
+                && snapshot.duration == duration
+                && snapshot.clocks == clocks,
+            "Joining rewrote the completed game's timing"
+        );
+        actor.retire().await?;
+    }
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
+    let (_redis, store, state) = fixture_store("review-idle-tick").await?;
+    let id = store.allocate_table().await?;
+    let mut table = review(id, EndCondition::TerminatedByPlayer)?;
+    table.game_mut().unwrap().idle_remaining = 1000;
+    let revision = store.save(&table, 0).await?;
+    let (hub, mut notifications) = mpsc::channel(16);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table,
+        revision,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+    );
+    actor.anchor = Instant::now() - Duration::from_secs(2);
+    actor.tick().await?;
+    ensure!(
+        actor.retired && state.get(StateId::Table(id)).await?.is_none(),
+        "Idle review required a visitor before expiring"
+    );
+    let mut removed = false;
+    while let Ok(notification) = notifications.try_recv() {
+        if let HubCommand::Retire(table) = notification {
+            removed |= table == id;
+        }
+    }
+    ensure!(removed, "Idle review remained in the lobby");
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() -> Result<()> {
+    let (_redis, store, state) = fixture_store("review-transition-idle").await?;
+    for condition in [EndCondition::TerminatedByPlayer, EndCondition::IdleTimeout] {
+        let id = store.allocate_table().await?;
+        let mut table = review(id, condition)?;
+        let Phase::Replay { snapshot, .. } = table.phase else {
+            unreachable!()
+        };
+        table.phase = Phase::Live { snapshot };
+        table.extra.no_write_to_database = true;
+        table.game_mut().unwrap().idle_remaining = 0;
+        let revision = store.save(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(16);
+        let capacity = Arc::new(Semaphore::new(1));
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+        );
+        actor.persist(actor.candidate()).await?;
+        let idle_ended = condition == EndCondition::IdleTimeout;
+        let expected = if idle_ended { 0 } else { IDLE_TIMEOUT_MS };
+        ensure!(
+            matches!(actor.table.phase, Phase::Replay { .. }),
+            "Completion did not become a review"
+        );
+        ensure!(
+            actor.table.game().unwrap().idle_remaining == expected,
+            "Review inherited the wrong idle budget"
+        );
+        actor.tick().await?;
+        ensure!(
+            actor.retired == idle_ended,
+            "Completion changed idle-end cleanup semantics"
+        );
+        if !actor.retired {
+            actor.retire().await?;
+        }
+        ensure!(
+            state.load().await?.is_empty(),
+            "Test review remained indexed"
+        );
+    }
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<()> {
+    let (_redis, store, _state) = fixture_store("live-spectator-idle").await?;
+    let id = store.allocate_table().await?;
+    let imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    snapshot.idle_remaining = 1000;
+    let mut table = pregame(id);
+    table.options = snapshot.game.options.clone();
+    table.phase = Phase::Live {
+        snapshot: Box::new(snapshot),
+    };
+    let revision = store.save(&table, 0).await?;
+    let (hub, _notifications) = mpsc::channel(16);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table,
+        revision,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+    );
+    actor.anchor = Instant::now() - Duration::from_millis(900);
+    let (viewer, _frames) = Session::new(3, "Viewer".into(), 1, false);
+    actor.reattend(viewer, &json!({}), true).await?;
+    ensure!(
+        actor.table.game().unwrap().idle_remaining <= 1000,
+        "A spectator kept an idle live game alive"
+    );
+    store.close().await?;
+    Ok(())
+}
+
+pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> {
+    let mut imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    imported.game.terminate(0, condition, -1, None, None)?;
+    let snapshot = replay_helpers::snapshot(imported, id, 1);
+    let mut table = pregame(id);
+    table.options = snapshot.game.options.clone();
+    table.phase = Phase::Replay {
+        replay: ReplayState {
+            leader: 1,
+            segment: snapshot.game.turn,
+            efficiency_modifier: 0,
+            hypothetical: None,
+            hypothetical_actions: vec![],
+            show_drawn_cards: false,
+        },
+        snapshot: Box::new(snapshot),
+    };
+    Ok(table)
+}
+
+#[tokio::test]
 async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -> Result<()> {
     let (_redis, store, state) = fixture_store("abandoned-pregames").await?;
     for protected in [false, true] {
