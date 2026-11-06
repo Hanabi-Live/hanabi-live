@@ -237,6 +237,7 @@ pub enum HubCommand {
         revision: i64,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
+        chat_read: HashMap<i32, usize>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
     Stop(oneshot::Sender<()>),
@@ -1057,17 +1058,19 @@ impl Hub {
                     revision,
                     allocation,
                     attendees,
+                    chat_read,
                 } => {
                     if self.closing {
                         continue;
                     }
-                    let actor = TableActor::new(
+                    let mut actor = TableActor::new(
                         *table,
                         revision,
                         self.store.clone(),
                         self.sender.clone(),
                         allocation.into_permit(),
                     );
+                    actor.chat_read = chat_read;
                     let id = actor.table.id;
                     let view = actor.view();
                     let handle = self.spawn(actor, None);
@@ -1640,7 +1643,6 @@ struct Attendance {
     loaded: bool,
     spectator: bool,
     shadow: Option<usize>,
-    chat_read: usize,
     typing_until: Option<Instant>,
 }
 struct TableActor {
@@ -1649,6 +1651,7 @@ struct TableActor {
     frozen: bool,
     retired: bool,
     attendees: HashMap<i32, Attendance>,
+    chat_read: HashMap<i32, usize>,
     pregame_absent_until: HashMap<i32, Instant>,
     cleanup: Arc<Notify>,
     store: Store,
@@ -1671,6 +1674,7 @@ impl TableActor {
             frozen: false,
             retired: false,
             attendees: HashMap::new(),
+            chat_read: HashMap::new(),
             pregame_absent_until: HashMap::new(),
             cleanup: Arc::new(Notify::new()),
             store,
@@ -1778,7 +1782,8 @@ impl TableActor {
         "players":self.table.players().iter().enumerate().map(|(i,p)|json!({"index":i,"name":p.name,"you":p.id==a.session.user,"present":self.attendees.get(&p.id).is_some_and(|a|a.session.active()&&!a.spectator),"stats":p.stats})).collect::<Vec<_>>(),"options":self.table.options,"passwordProtected":self.table.password_hash.is_some(),"maxPlayers":self.table.max_players}))));
         }
     }
-    fn chat_history(&self, e: &mut Effects, session: &Arc<Session>, read: usize) {
+    fn chat_history(&self, e: &mut Effects, session: &Arc<Session>) {
+        let read = self.chat_read.get(&session.user).copied().unwrap_or(0);
         e.messages.push((
             session.clone(),
             frame(
@@ -1920,7 +1925,6 @@ impl TableActor {
                 loaded: false,
                 spectator: replay,
                 shadow: None,
-                chat_read: 0,
                 typing_until: None,
             },
         );
@@ -1937,7 +1941,7 @@ impl TableActor {
                     }),
                 ),
             ));
-            self.chat_history(&mut e, &s, 0);
+            self.chat_history(&mut e, &s);
         } else {
             e.statuses.push((
                 s.clone(),
@@ -2770,7 +2774,6 @@ impl TableActor {
                 loaded: false,
                 spectator: spectating || replay,
                 shadow,
-                chat_read: 0,
                 typing_until: None,
             },
         );
@@ -2799,7 +2802,7 @@ impl TableActor {
                     }),
                 ),
             ));
-            self.chat_history(&mut e, &session, 0);
+            self.chat_history(&mut e, &session);
         } else {
             e.messages.push((
                 session,
@@ -3641,7 +3644,7 @@ impl TableActor {
         if typing {
             a.typing_until = Some(Instant::now() + Duration::from_secs(2));
         } else {
-            a.chat_read = self.table.chat.len();
+            self.chat_read.insert(session.user, self.table.chat.len());
         }
         if notify {
             let mut e = self.effects();
@@ -4041,6 +4044,14 @@ impl TableActor {
                 table: Box::new(destination),
                 revision: destination_revision,
                 allocation,
+                chat_read: moving
+                    .iter()
+                    .filter_map(|(session, _, _)| {
+                        self.chat_read
+                            .get(&session.user)
+                            .map(|read| (session.user, *read))
+                    })
+                    .collect(),
                 attendees: moving,
             })
             .await?;
@@ -4319,7 +4330,7 @@ impl TableActor {
                 e.messages
                     .push((session.clone(), frame("clock", self.clock())));
             }
-            self.chat_history(&mut e, &session, a.chat_read);
+            self.chat_history(&mut e, &session);
             e.messages.push((
                 session.clone(),
                 frame(

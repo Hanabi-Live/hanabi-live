@@ -153,7 +153,6 @@ fn attendance(session: Arc<Session>, spectator: bool) -> Attendance {
         spectator,
         loaded: false,
         shadow: None,
-        chat_read: 0,
         typing_until: None,
     }
 }

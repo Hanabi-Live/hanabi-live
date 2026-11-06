@@ -693,6 +693,80 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
 }
 
 #[tokio::test]
+async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Read history", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(1, "chatRead", json!({"tableID":id})).await?;
+        let bob_read = h.snapshot(id).await?.0.chat.len();
+        h.send(
+            0,
+            "chat",
+            json!({"room":format!("table{id}"),"msg":"One unread message"}),
+        )
+        .await?;
+        h.send(0, "chatRead", json!({"tableID":id})).await?;
+        let alice_read = h.snapshot(id).await?.0.chat.len();
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        for index in 0..2 {
+            h.barrier(index).await?;
+            h.frames(index)?;
+            h.send(index, "tableReattend", json!({"tableID":id}))
+                .await?;
+            h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
+            let history = h.receive(index, "chatList").await?;
+            ensure!(
+                history["unread"] == if index == 0 { 0 } else { 1 },
+                "Game start reset the chat read position: {history}"
+            );
+            h.send(index, "loaded", json!({"tableID":id})).await?;
+        }
+        h.send(1, "tableUnattend", json!({"tableID":id})).await?;
+        h.replace(1).await?;
+        h.send(1, "tableReattend", json!({"tableID":id})).await?;
+        h.send(1, "getGameInfo2", json!({"tableID":id})).await?;
+        ensure!(
+            h.receive(1, "chatList").await?["unread"] == 1,
+            "Reconnect reset the chat read position"
+        );
+        h.send(1, "loaded", json!({"tableID":id})).await?;
+        h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+        for index in 0..2 {
+            h.barrier(index).await?;
+            h.frames(index)?;
+        }
+        h.send(0, "tableRestart", json!({"tableID":id,"hidePregame":true}))
+            .await?;
+        let started = h.receive(0, "tableStart").await?;
+        let remade = started["tableID"]
+            .as_u64()
+            .context("Missing remade table")?;
+        ensure!(remade != id);
+        for (index, read) in [alice_read, bob_read].into_iter().enumerate() {
+            h.replace(index).await?;
+            h.send(index, "tableReattend", json!({"tableID":remade}))
+                .await?;
+            h.send(index, "getGameInfo2", json!({"tableID":remade}))
+                .await?;
+            let history = h.receive(index, "chatList").await?;
+            let total = history["list"].as_array().context("Missing history")?.len();
+            ensure!(
+                history["unread"] == total - read,
+                "Remake reset the chat read position: {history}"
+            );
+        }
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Outsider"]).await? else {
         return Ok(());
