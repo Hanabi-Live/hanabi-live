@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, jest, test } from "@jest/globals";
+import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { LocalStorageStub } from "./testLocalStorage";
 import { getStoredPreference, isDarkMode } from "./theme";
 
@@ -36,7 +36,7 @@ describe("theme", () => {
   beforeEach(() => {
     localStorageStub.clear();
     matchMediaMock.matches = false;
-    jest.restoreAllMocks();
+    mock.restore();
   });
 
   describe("getStoredPreference", () => {
@@ -65,7 +65,7 @@ describe("theme", () => {
     });
 
     test("returns null when localStorage throws", () => {
-      jest.spyOn(localStorageStub, "getItem").mockImplementation(() => {
+      spyOn(localStorageStub, "getItem").mockImplementation(() => {
         throw new Error("unavailable");
       });
       expect(getStoredPreference()).toBeNull();

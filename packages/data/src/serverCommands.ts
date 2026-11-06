@@ -1,5 +1,7 @@
 import type { chatHistoryMessageSchema as serverCommandChatPMHistoryMessageData } from "./generated/protocol";
 import {
+  emptySchema,
+  lobbyStatusSchema as lobbyStatus,
   chatSchema as serverCommandChatData,
   chatDeleteSchema as serverCommandChatDeleteData,
   chatListSchema as serverCommandChatListData,
@@ -220,7 +222,7 @@ const serverCommandWelcomeData = z
   .object({
     userID,
     username: z.string().min(1),
-    totalGames: z.number().int(),
+    totalGames: z.number().int().nullable(),
     muted: z.boolean(),
     firstTimeUser: z.boolean(),
     settings,
@@ -270,6 +272,8 @@ const serverCommandSoundLobbyData = z
   .readonly();
 
 export interface ServerCommandData extends GameServerCommandData {
+  [ServerCommand.restart]: z.infer<typeof emptySchema>;
+  [ServerCommand.lobbyStatus]: z.infer<typeof lobbyStatus>;
   [ServerCommand.chatTyping]: z.infer<typeof serverCommandChatTypingData>;
   [ServerCommand.maintenance]: z.infer<typeof serverCommandMaintenanceData>;
   [ServerCommand.shutdown]: z.infer<typeof serverCommandShutdownData>;
@@ -304,6 +308,8 @@ export interface ServerCommandData extends GameServerCommandData {
 interfaceSatisfiesEnum<ServerCommandData, ServerCommand>();
 
 export const SERVER_COMMAND_SCHEMAS = {
+  [ServerCommand.restart]: emptySchema,
+  [ServerCommand.lobbyStatus]: lobbyStatus,
   [ServerCommand.chatTyping]: serverCommandChatTypingData,
   ...GAME_SERVER_COMMAND_SCHEMAS,
   [ServerCommand.maintenance]: serverCommandMaintenanceData,

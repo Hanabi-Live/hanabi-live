@@ -1,12 +1,12 @@
 import { draw, getDefaultMetadata } from "@hanabi-live/game";
-import { describe, expect, jest, test } from "@jest/globals";
-import { replayEnter } from "../../../test/testActions";
-import { initialState } from "./initialStates/initialState";
-import { stateReducer } from "./stateReducer";
+import { describe, expect, mock, test } from "bun:test";
 
-jest.mock("./uiReducer", () => ({
-  uiReducer: jest.fn(),
+await mock.module("./uiReducer", () => ({
+  uiReducer: mock(),
 }));
+const { replayEnter } = await import("../../../test/testActions");
+const { initialState } = await import("./initialStates/initialState");
+const { stateReducer } = await import("./stateReducer");
 
 const numPlayers = 3;
 const defaultMetadata = getDefaultMetadata(numPlayers);

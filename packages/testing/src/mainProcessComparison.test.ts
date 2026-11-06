@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
-import { expect, test } from "@jest/globals";
+import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { createHash } from "node:crypto";
 import { once } from "node:events";
@@ -257,7 +257,7 @@ databaseDescribe("normal-server comparison", () => {
               );
               const finished = await bootstrap(alice, tableID);
               expect(finished.init.replay).toBe(true);
-              expect(finished.history.list).toEqual(
+              expect(finished.history.list).toEqual<unknown>(
                 expect.arrayContaining([
                   expect.objectContaining({ type: "status", score: 25 }),
                 ]),
@@ -275,21 +275,21 @@ databaseDescribe("normal-server comparison", () => {
           }),
         );
         const gameplayMilliseconds = performance.now() - gameplayStart;
-        expect(await sql`SELECT score FROM games`).toEqual(
+        expect(await sql`SELECT score FROM games`).toEqual<unknown>(
           Array.from({ length: 8 }, () => ({ score: 25 })),
         );
         expect(
           await sql`SELECT count(*)::int AS count FROM game_actions`,
-        ).toEqual([{ count: 200 }]);
+        ).toEqual<unknown>([{ count: 200 }]);
         expect(
           await sql`SELECT count(*)::int AS count FROM game_participants`,
-        ).toEqual([{ count: 16 }]);
+        ).toEqual<unknown>([{ count: 16 }]);
         expect(
           await sql`SELECT count(*)::int AS count FROM game_custom_decks`,
-        ).toEqual([{ count: 8 }]);
+        ).toEqual<unknown>([{ count: 8 }]);
         expect(
           await sql`SELECT count(*)::int AS count FROM active_games`,
-        ).toEqual([{ count: 0 }]);
+        ).toEqual<unknown>([{ count: 0 }]);
         const archives = await sql<
           Array<{ deck: Uint8Array; actions: unknown }>
         >`
@@ -360,7 +360,7 @@ databaseDescribe("normal-server comparison", () => {
           expect(
             replay.history.list.filter((event) => event.type === "play"),
           ).toHaveLength(25);
-          expect(replay.history.list).toEqual(
+          expect(replay.history.list).toEqual<unknown>(
             expect.arrayContaining([
               expect.objectContaining({ type: "status", score: 25 }),
             ]),
@@ -409,7 +409,7 @@ databaseDescribe("normal-server comparison", () => {
           "NORMAL_SERVER_EVALUATION",
           JSON.stringify({
             language,
-            driverNode: process.version,
+            driverBun: process.versions.bun,
             scope:
               language === "rust"
                 ? "Separate release-mode Rust server; same protocol workload, Redis AOF/WAITAOF state and disposable PostgreSQL history. Storage differs from Go; not a language-only or capacity comparison."

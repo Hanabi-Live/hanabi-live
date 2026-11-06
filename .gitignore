@@ -45,7 +45,7 @@ GitHub_private_key.pem
 # Grunt output
 /packages/client/grunt_output
 
-# Jest Code coverage
+# Client test coverage
 /packages/client/coverage
 /public/client-new
 /packages/client-new/test-results

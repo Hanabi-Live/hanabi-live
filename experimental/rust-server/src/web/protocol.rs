@@ -22,6 +22,7 @@ pub const COMMANDS: &[&str] = &[
     "historyGetSeed",
     "inactive",
     "loaded",
+    "lobbyLoad",
     "note",
     "pause",
     "replayAction",
@@ -194,7 +195,7 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
         allowed: vec![],
     };
     match name {
-        "getName" => {}
+        "getName" | "lobbyLoad" => {}
         "setting" => {
             fields.string("name", None)?;
             fields.string("setting", None)?;
@@ -328,7 +329,7 @@ mod tests {
     }
     #[test]
     fn every_registered_command_has_a_parser() {
-        assert_eq!(COMMANDS.len(), 43);
+        assert_eq!(COMMANDS.len(), 44);
         for command in COMMANDS {
             let value = match *command {
                 "setting" => json!({"name":"volume","setting":"50"}),
@@ -342,9 +343,9 @@ mod tests {
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":0}),
-                "getName" | "tableCreate" | "historyGet" | "historyFriendsGet" | "chatLinked"
-                | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
-                | "chatPMHistoryGet" | "tagSearch" => json!({}),
+                "getName" | "lobbyLoad" | "tableCreate" | "historyGet" | "historyFriendsGet"
+                | "chatLinked" | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink"
+                | "chatPlayerInfo" | "chatPMHistoryGet" | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));

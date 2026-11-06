@@ -14,7 +14,7 @@ JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 # Unlike when in production, we do not append the version number to the bundle. This is because the
 # latest Git commit will vary during development and we do not want to have to be forced to restart
 # the server in order to update it.
-bunx --no-install esbuild \
+bunx --bun --no-install esbuild \
   "$DIR/src/main.ts" \
   "$DIR/src/standalone/pips-reference.ts" \
   --bundle \

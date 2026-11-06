@@ -23,7 +23,7 @@ export class Globals {
 
   userID = -1;
   username = "";
-  totalGames = 0;
+  totalGames: number | null = null;
   muted = false;
   randomTableName = "";
 

@@ -11,7 +11,7 @@ import {
   getInitialGameState,
   getVariant,
 } from "@hanabi-live/game";
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { SoundType } from "../../types/SoundType";
 import { getSoundType } from "./getSoundType";
 

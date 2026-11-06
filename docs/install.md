@@ -34,9 +34,9 @@ at least 2 GB of RAM.
 
 ## JavaScript Tooling
 
-Bun manages JavaScript dependencies; `package.json` pins its version and
-`bun.lock` pins the dependency graph. Node.js 24 remains the runtime for Jest,
-Vite, ESLint, and the other existing tools. From the repository root:
+Bun manages JavaScript dependencies and runs the JavaScript tools;
+`package.json` pins its version and `bun.lock` pins the dependency graph. From
+the repository root:
 
 ```sh
 bun install --frozen-lockfile
@@ -45,8 +45,11 @@ bun run test
 bash lint.sh
 ```
 
-Use `bun run test`, not `bun test`: the latter selects a different test runner.
-Use `bunx --no-install` for installed tools so checks cannot silently download
+`bun run test` prepares the Go/Rust process-test backends when a disposable
+`HANABI_TEST_DATABASE_URL` is supplied, then runs the migrated suites with
+native Bun tests and per-file isolation. For a focused unit test, use
+`bun test --isolate --tsconfig-override tsconfig.monorepo.json PATH`. Use
+`bunx --bun --no-install` for installed tools so checks cannot silently download
 unlocked versions. For intentional dependency changes, run `bun install` and
 commit the updated manifest and lockfile. Dependency lifecycle scripts are
 restricted to the explicit `trustedDependencies` list.
@@ -65,9 +68,6 @@ version; Docker verifies its Bun image against the manifest pin.
   - `winget install --accept-source-agreements --silent --exact --id Git.Git`
 - Install [Golang](https://golang.org/) 1.27 or newer:
   - `winget install --accept-source-agreements --silent --exact --id GoLang.Go`
-- Install [Node.js](https://nodejs.org/en/) (if you do not already have it
-  installed):
-  - `winget install --accept-source-agreements --silent --exact --id OpenJS.NodeJS.LTS`
 - Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
   - `winget install --exact --id Oven-sh.Bun --version 1.4.4`
 - Install [Visual Studio Code](https://code.visualstudio.com/) (if you do not
@@ -147,9 +147,6 @@ version; Docker verifies its Bun image against the manifest pin.
   - `brew install git`
 - Install [Golang](https://golang.org/) 1.27 or newer:
   - `brew install golang`
-- Install [Node.js](https://nodejs.org/en/) (if you do not already have it
-  installed):
-  - `brew install node`
 - Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
   - `curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"`
   - `export PATH="$HOME/.bun/bin:$PATH"`
@@ -237,12 +234,6 @@ needed if you are on a different flavor of Linux.
   - `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   - `GRANT ALL ON SCHEMA public TO hanabiuser;`
   - `\q`
-- Install [fnm](https://github.com/schniz/fnm) and
-  [Node.js](https://nodejs.org/en/):
-  - `curl --silent --fail --show-error --location https://fnm.vercel.app/install | bash -s -- --skip-shell`
-  - `export PATH="$HOME/.local/share/fnm:$PATH"`
-  - `eval "$(fnm env --shell bash)"`
-  - `fnm install --lts` <br /> (this installs the latest version)
 - Install [Bun](https://bun.sh/) at the version pinned in `package.json`:
   - `sudo apt install unzip -y`
   - `curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"`
@@ -288,8 +279,8 @@ needed if you are on a different flavor of Linux.
 
 If you use [Nix](https://nixos.org/) (for example on NixOS or on macOS with
 nix-darwin), you can use the provided `flake.nix` file to set up a development
-environment with all of the necessary dependencies (including Go, Node.js,
-PostgreSQL, Redis, and Bun).
+environment with all of the necessary dependencies (including Go, PostgreSQL,
+Redis, and Bun).
 
 - Install Nix (if you do not already have it installed):
   - `curl -L https://nixos.org/nix/install | sh`

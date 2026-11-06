@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { Connection } from "./Connection";
 
 describe("WebSocket resume safety", () => {
@@ -63,6 +63,14 @@ describe("WebSocket resume safety", () => {
       expect(sockets[1]?.sent[3]).toContain("original-request");
       initial.send("tagDelete", { tableID: 123, msg: "private tag" });
       expect(sockets[1]?.sent[5]).toMatch(/"requestID":"[\da-f]{32}"/u);
+      initial.setReady(false);
+      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      expect(sockets[1]?.sent).toHaveLength(6);
+      initial.send("getGameInfo2", { tableID: 123 });
+      expect(sockets[1]?.sent).toHaveLength(7);
+      initial.setReady(true);
+      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      expect(sockets[1]?.sent).toHaveLength(8);
     } finally {
       globalThis.WebSocket = originalWebSocket;
       if (originalRandomUUID === undefined) {

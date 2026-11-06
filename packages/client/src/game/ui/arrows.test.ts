@@ -1,55 +1,58 @@
 import { ClueType, getDefaultVariant } from "@hanabi-live/game";
-import { describe, expect, jest, test } from "@jest/globals";
+import { describe, expect, mock, test } from "bun:test";
 import type Konva from "konva";
-import { globals } from "./UIGlobals";
-import { set } from "./arrows";
+
 import type { Arrow } from "./controls/Arrow";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("./HanabiCard", () => ({ HanabiCard: Date }));
-jest.mock("./CardLayout", () => ({ CardLayout: Date }));
-jest.mock("./controls/StrikeSquare", () => ({ StrikeSquare: Date }));
-jest.mock("./getCardOrStackBase", () => ({}));
-jest.mock("./konvaHelpers", () => ({}));
-jest.mock("./drawPip", () => ({}));
-jest.mock("../../tooltips", () => ({}));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("./HanabiCard", () => ({ HanabiCard: Date }));
+await mock.module("./CardLayout", () => ({ CardLayout: Date }));
+await mock.module("./controls/StrikeSquare", () => ({ StrikeSquare: Date }));
+await mock.module("./getCardOrStackBase", () => ({
+  getCardOrStackBase: mock(),
+}));
+await mock.module("./konvaHelpers", () => ({}));
+await mock.module("./drawPip", () => ({ drawPip: mock() }));
+await mock.module("../../tooltips", () => ({}));
+const { globals } = await import("./UIGlobals");
+const { set } = await import("./arrows");
 
 describe("clue arrow suit pips", () => {
   test("clears a reused color pip for a Quacker clue and a highlight", () => {
     let pipVisible = false;
     const suitPip = {
-      sceneFunc: jest.fn(),
-      show: jest.fn(() => {
+      sceneFunc: mock(),
+      show: mock(() => {
         pipVisible = true;
       }),
-      hide: jest.fn(() => {
+      hide: mock(() => {
         pipVisible = false;
       }),
     };
     const arrow = {
       pointingTo: null,
       tween: null,
-      show: jest.fn(),
-      moveToTop: jest.fn(),
-      rotation: jest.fn(),
+      show: mock(),
+      moveToTop: mock(),
+      rotation: mock(),
       text: {
-        rotation: jest.fn(),
-        hide: jest.fn(),
-        show: jest.fn(),
-        text: jest.fn(),
+        rotation: mock(),
+        hide: mock(),
+        show: mock(),
+        text: mock(),
       },
       circle: {
-        hide: jest.fn(),
-        show: jest.fn(),
-        stroke: jest.fn(),
-        fill: jest.fn(),
+        hide: mock(),
+        show: mock(),
+        stroke: mock(),
+        fill: mock(),
       },
       base: {
-        stroke: jest.fn(),
-        fill: jest.fn(),
+        stroke: mock(),
+        fill: mock(),
       },
       suitPip,
-      setAbsolutePosition: jest.fn(),
+      setAbsolutePosition: mock(),
     } as unknown as Arrow;
     const deck = {
       getAbsolutePosition: () => ({ x: 10, y: 20 }),
@@ -59,7 +62,7 @@ describe("clue arrow suit pips", () => {
     const variant = getDefaultVariant();
     Object.assign(globals, {
       elements: { arrows: [arrow], deck },
-      layers: { arrow: { batchDraw: jest.fn() } },
+      layers: { arrow: { batchDraw: mock() } },
       lobby: { settings: { colorblindMode: true } },
       // Character ID 34 is Quacker; player 1 has no character.
       metadata: { characterAssignments: [34, null] },

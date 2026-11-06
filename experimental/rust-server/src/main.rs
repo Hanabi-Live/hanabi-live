@@ -174,7 +174,6 @@ async fn run(config: Config, version: String) -> Result<bool> {
     let mut handles = Vec::new();
     let mut services = JoinSet::new();
     let startup: Result<()> = async {
-        app.start_integrations(&config.integrations).await?;
         let public_handle = axum_server::Handle::new();
         handles.push(public_handle.clone());
         let service = request_timeout(router(app.clone()))
@@ -218,6 +217,18 @@ async fn run(config: Config, version: String) -> Result<bool> {
         }
         app.store.state_health()?;
         control.activate();
+        let integration_app = app.clone();
+        let integrations = config.integrations.clone();
+        app.background.spawn(async move {
+            tokio::select! {
+                _ = integration_app.shutdown.cancelled() => {},
+                result = integration_app.start_integrations(&integrations) => {
+                    if let Err(error) = result {
+                        eprintln!("Optional integrations failed to initialize: {error:#}");
+                    }
+                }
+            }
+        });
         println!(
             "Server listening at {}://{address}",
             if config.use_tls() { "https" } else { "http" }
@@ -253,6 +264,11 @@ async fn run(config: Config, version: String) -> Result<bool> {
         _ => {}
     }
     app.accepting.store(false, Ordering::Release);
+    app.read_shutdown.cancel();
+    match tokio::time::timeout(Duration::from_millis(250), app.store.cancel_lobby_reads()).await {
+        Ok(Ok(())) => {}
+        result => eprintln!("Optional read cancellation did not complete: {result:?}"),
+    }
     control.begin_drain().await;
     {
         let admitted = app.admission.write().await;

@@ -1,23 +1,19 @@
 import type { CardOrder, GameMetadata, GameState } from "@hanabi-live/game";
 import { draw, rankClue } from "@hanabi-live/game";
-import { beforeAll, describe, expect, jest, test } from "@jest/globals";
+import { beforeAll, describe, expect, mock, test } from "bun:test";
 import { assertDefined, assertNotNull } from "complete-common";
-import { loadGameJSON } from "../../../test/loadGameJSON";
-import {
-  hypoAction,
-  hypoBack,
-  hypoEnd,
-  hypoStart,
-  init,
-} from "../../../test/testActions";
+
 import testGame from "../../../test_data/up_or_down.json";
 import type { State } from "../types/State";
-import { replayReducer } from "./replayReducer";
-import { stateReducer } from "./stateReducer";
 
-jest.mock("./uiReducer", () => ({
-  uiReducer: jest.fn(),
+await mock.module("./uiReducer", () => ({
+  uiReducer: mock(),
 }));
+const { loadGameJSON } = await import("../../../test/loadGameJSON");
+const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =
+  await import("../../../test/testActions");
+const { replayReducer } = await import("./replayReducer");
+const { stateReducer } = await import("./stateReducer");
 
 let testState: State;
 let metadata: GameMetadata;
@@ -46,7 +42,7 @@ describe("replayReducer", () => {
 
       assertNotNull(state.hypothetical, "Failed to start the hypothetical.");
 
-      expect(state.hypothetical.ongoing).toBe(
+      expect(state.hypothetical.ongoing).toBe<unknown>(
         testState.replay.states[testState.replay.segment],
       );
       expect(state.hypothetical.states.length).toBe(1);
@@ -308,7 +304,7 @@ describe("replayReducer", () => {
       state = replayReducer(state, hypoBack(), false, metadata);
 
       const originalState = testState.visibleState;
-      expect(state.hypothetical?.ongoing).toBe(originalState);
+      expect(state.hypothetical?.ongoing).toBe<unknown>(originalState);
     });
 
     test("can end hypothetical after giving a clue", () => {

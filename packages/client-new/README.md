@@ -47,8 +47,8 @@ hooks. The bundled prototype fonts retain their Open Font License files.
 Run `bash packages/client-new/lint.sh`. From this directory, `bun run test` runs
 state, connection, and rendering checks.
 
-After building both clients, run `bunx --no-install playwright test` here with
-`HANABI_TEST_DATABASE_URL` pointing to a **disposable local PostgreSQL
+After building both clients, run `bunx --bun --no-install playwright test` here
+with `HANABI_TEST_DATABASE_URL` pointing to a **disposable local PostgreSQL
 service**. The fixture creates separate databases and processes, never reads the
 ordinary `.env`, and exercises Go and Rust. Go, Cargo, Redis 7.2+ binaries, and
 Playwright Chromium must be available. Use `--project=go` for a targeted run.

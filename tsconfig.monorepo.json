@@ -4,6 +4,7 @@
 
   // https://www.typescriptlang.org/docs/handbook/compiler-options.html
   "compilerOptions": {
+    "types": ["bun"],
     "rootDir": ".",
 
     // Performance optimization; see: https://www.npmjs.com/package/tslib
@@ -17,10 +18,9 @@
     // false.
     "resolveJsonModule": true,
 
-    // "node16" supports JSON imports in CommonJS mode (which all packages in this monorepo use)
-    // without requiring import assertion syntax changes.
-    "module": "node16",
-    "moduleResolution": "node16",
+    // Bun executes TypeScript directly; browser entrypoints are bundled.
+    "module": "preserve",
+    "moduleResolution": "bundler",
 
     "paths": {
       "@hanabi-live/data": ["./packages/data/src/index.ts"],

@@ -72,7 +72,7 @@ impl Integrations {
     pub async fn announce_restart(&self, uptime: Duration) {
         if let Some(bridge) = &self.discord {
             // An optional notification must not prevent a safely checkpointed restart.
-            match tokio::time::timeout(Duration::from_secs(5), bridge.announce_restart(uptime))
+            match tokio::time::timeout(Duration::from_millis(250), bridge.announce_restart(uptime))
                 .await
             {
                 Ok(Ok(())) => {}

@@ -46,7 +46,6 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             go
-            nodejs_24
             postgresql_16
             redis
             gnumake

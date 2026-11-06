@@ -15,18 +15,26 @@ export function ClassicHeader({
   edit: () => void;
   join: (table: Table) => void;
 }) {
-  const { welcome, pregame, tables, pending, online, historyCount } =
-    useSelector(
-      (state: LobbyState) => ({
-        welcome: state.welcome,
-        pregame: state.pregame,
-        tables: state.tables,
-        pending: state.pending,
-        online: state.connection === "online",
-        historyCount: Object.keys(state.history).length,
-      }),
-      shallowEqual,
-    );
+  const {
+    welcome,
+    pregame,
+    tables,
+    pending,
+    online,
+    historyCount,
+    lobbyStatus,
+  } = useSelector(
+    (state: LobbyState) => ({
+      welcome: state.welcome,
+      lobbyStatus: state.lobbyStatus,
+      pregame: state.pregame,
+      tables: state.tables,
+      pending: state.pending,
+      online: state.connection === "online",
+      historyCount: Object.keys(state.history).length,
+    }),
+    shallowEqual,
+  );
   const { pathname, search }: { pathname: string; search: string } =
     useLocation();
   const game = pathname.startsWith("/table/") ? pregame : null;
@@ -172,7 +180,19 @@ export function ClassicHeader({
                 ) : (
                   <>
                     <li className="hidden-sm">
-                      Shown games: {historyCount} / {welcome.totalGames}
+                      Shown games: {historyCount} /{" "}
+                      {welcome.totalGames
+                        ?? (lobbyStatus === "error"
+                          ? "unavailable"
+                          : "loading...")}
+                      {lobbyStatus === "error" && (
+                        <button
+                          onClick={() => connection.send("lobbyLoad", {})}
+                          type="button"
+                        >
+                          Retry history
+                        </button>
+                      )}
                     </li>
                     <li>
                       <Link

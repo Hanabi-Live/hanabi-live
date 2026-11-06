@@ -1,6 +1,6 @@
 import type { SuitRankTuple } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { iRange } from "complete-common";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 

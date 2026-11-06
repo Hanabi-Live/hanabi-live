@@ -1,45 +1,45 @@
-import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
+import { afterEach, beforeEach, expect, mock, spyOn, test } from "bun:test";
 import { assertNotNull } from "complete-common";
-import { globals } from "./UIGlobals";
-import { resumeAfterResize, update } from "./timer";
 
-jest.mock("../../tooltips", () => ({}));
-jest.mock("./konvaHelpers", () => ({ drawLayer: jest.fn() }));
-jest.mock("./UIGlobals", () => ({
+await mock.module("../../tooltips", () => ({}));
+await mock.module("./konvaHelpers", () => ({ drawLayer: mock() }));
+await mock.module("./UIGlobals", () => ({
   globals: {
     state: { finished: true },
     elements: {
-      timer1: { hide: jest.fn() },
-      timer2: { hide: jest.fn() },
+      timer1: { hide: mock() },
+      timer2: { hide: mock() },
     },
-    layers: { timer: { batchDraw: jest.fn() } },
+    layers: { timer: { batchDraw: mock() } },
     timerID: null,
     playerTimes: [],
     activePlayerIndex: -1,
     timeTaken: 0,
   },
 }));
+const { globals } = await import("./UIGlobals");
+const { resumeAfterResize, update } = await import("./timer");
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  mock.clearAllMocks();
   globals.playerTimes = [10_000, 20_000];
   globals.activePlayerIndex = 0;
   globals.timerID = null;
 });
 afterEach(() => {
-  jest.restoreAllMocks();
+  mock.restore();
 });
 
 test("a late live clock cannot restart timers in a finished replay", () => {
   globals.timerID = 123;
-  const clear = jest.spyOn(globalThis, "clearInterval");
-  const start = jest.spyOn(globalThis, "setInterval");
+  const clear = spyOn(globalThis, "clearInterval");
+  const start = spyOn(globalThis, "setInterval");
   const first = globals.elements.timer1;
   const second = globals.elements.timer2;
   assertNotNull(first, "Missing first timer fixture.");
   assertNotNull(second, "Missing second timer fixture.");
-  const hideFirst = jest.spyOn(first, "hide");
-  const hideSecond = jest.spyOn(second, "hide");
+  const hideFirst = spyOn(first, "hide");
+  const hideSecond = spyOn(second, "hide");
   update({
     times: [10_000, 20_000],
     activePlayerIndex: 0,
@@ -54,7 +54,7 @@ test("a late live clock cannot restart timers in a finished replay", () => {
 });
 
 test("resizing a replay does not resume a stale active-player clock", () => {
-  const start = jest.spyOn(globalThis, "setInterval");
+  const start = spyOn(globalThis, "setInterval");
   resumeAfterResize();
   expect(start).not.toHaveBeenCalled();
   expect(globals.timerID).toBeNull();

@@ -1,33 +1,28 @@
-import { beforeEach, describe, expect, jest, test } from "@jest/globals";
-import { globals } from "../../UIGlobals";
-import * as ourHand from "../../ourHand";
-import * as replay from "../../replay";
-import * as cluesView from "./cluesView";
-import { onActiveChanged } from "./replayView";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 
-jest.mock("konva", () => ({}));
-jest.mock("../../../../tooltips", () => ({}));
-jest.mock("../../../../utils", () => ({}));
-jest.mock("../../konvaTooltips", () => ({}));
-jest.mock("../../timer", () => ({}));
-jest.mock("../../zen", () => ({}));
-jest.mock("../../ourHand", () => ({
-  checkSetDraggableAll: jest.fn(),
+await mock.module("konva", () => ({ default: {} }));
+await mock.module("../../../../tooltips", () => ({}));
+await mock.module("../../../../utils", () => ({ escapeHtml: mock() }));
+await mock.module("../../konvaTooltips", () => ({}));
+await mock.module("../../timer", () => ({}));
+await mock.module("../../zen", () => ({ toggleZen: mock() }));
+await mock.module("../../ourHand", () => ({
+  checkSetDraggableAll: mock(),
 }));
-jest.mock("../../replay", () => ({
-  adjustShuttles: jest.fn(),
+await mock.module("../../replay", () => ({
+  adjustShuttles: mock(),
 }));
-jest.mock("./cluesView", () => ({
-  refreshArrows: jest.fn(),
+await mock.module("./cluesView", () => ({
+  refreshArrows: mock(),
 }));
-jest.mock("../../UIGlobals", () => ({
+await mock.module("../../UIGlobals", () => ({
   globals: {
     elements: {
       replayArea: {
-        visible: jest.fn(),
+        visible: mock(),
       },
       premoveCancelButton: {
-        show: jest.fn(),
+        show: mock(),
       },
     },
     state: {
@@ -35,15 +30,20 @@ jest.mock("../../UIGlobals", () => ({
     },
     layers: {
       UI: {
-        batchDraw: jest.fn(),
+        batchDraw: mock(),
       },
     },
   },
 }));
+const { globals } = await import("../../UIGlobals");
+const ourHand = await import("../../ourHand");
+const replay = await import("../../replay");
+const cluesView = await import("./cluesView");
+const { onActiveChanged } = await import("./replayView");
 
 describe("replay activation", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    mock.clearAllMocks();
   });
 
   test("keeps replay controls hidden in a hypothetical when observers reinitialize", () => {

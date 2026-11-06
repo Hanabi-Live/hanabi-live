@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { describe, expect, jest, test } from "@jest/globals";
+import { describe, expect, spyOn, test } from "bun:test";
 import type { Tuple } from "complete-common";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
@@ -41,7 +41,7 @@ const THIRD_CARD = getInitialCardState(2 as CardOrder, VARIANT, NUM_PLAYERS);
 const FOURTH_CARD = getInitialCardState(3 as CardOrder, VARIANT, NUM_PLAYERS);
 const FIFTH_CARD = getInitialCardState(4 as CardOrder, VARIANT, NUM_PLAYERS);
 
-jest.spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
+spyOn(deckRules, "isInitialDealFinished").mockReturnValue(true);
 
 describe("cardsReducer", () => {
   describe("location", () => {

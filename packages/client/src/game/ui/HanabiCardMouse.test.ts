@@ -1,17 +1,24 @@
-import { describe, expect, jest, test } from "@jest/globals";
+import { describe, expect, mock, test } from "bun:test";
 import type { HanabiCard } from "./HanabiCard";
-import { registerMouseHandlers, setEmpathyOnHand } from "./HanabiCardMouse";
-import { globals } from "./UIGlobals";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("../../tooltips", () => ({}));
-jest.mock("./HanabiCardClick", () => ({}));
-jest.mock("./HanabiCardClickSpeedrun", () => ({}));
-jest.mock("./HanabiCardTouchActions", () => ({}));
-jest.mock("./arrows", () => ({}));
-jest.mock("./cursor", () => ({}));
-jest.mock("./konvaTooltips", () => ({}));
-jest.mock("./notes", () => ({}));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("../../tooltips", () => ({}));
+await mock.module("./HanabiCardClick", () => ({ HanabiCardClick: mock() }));
+await mock.module("./HanabiCardClickSpeedrun", () => ({
+  mouseDownSpeedrun: mock(),
+  mouseUpSpeedrun: mock(),
+}));
+await mock.module("./HanabiCardTouchActions", () => ({
+  HanabiCardDblTap: mock(),
+  HanabiCardTap: mock(),
+}));
+await mock.module("./arrows", () => ({}));
+await mock.module("./cursor", () => ({}));
+await mock.module("./konvaTooltips", () => ({}));
+await mock.module("./notes", () => ({}));
+const { registerMouseHandlers, setEmpathyOnHand } =
+  await import("./HanabiCardMouse");
+const { globals } = await import("./UIGlobals");
 
 function makeCard(location: number, parent: unknown): HanabiCard {
   return {
@@ -22,7 +29,7 @@ function makeCard(location: number, parent: unknown): HanabiCard {
 
 describe("setEmpathyOnHand", () => {
   test("applies empathy when the card is in its hand layout", () => {
-    const setEmpathy = jest.fn();
+    const setEmpathy = mock();
     const hand = { children: [{}], setEmpathy };
     Object.assign(globals, { elements: { playerHands: [hand] } });
 
@@ -32,7 +39,7 @@ describe("setEmpathyOnHand", () => {
   });
 
   test("does not call empathy on another container during a card animation", () => {
-    const setEmpathy = jest.fn();
+    const setEmpathy = mock();
     const hand = { children: [{}], setEmpathy };
     const deck = { children: [{}] };
     Object.assign(globals, { elements: { playerHands: [hand] } });
@@ -45,8 +52,8 @@ describe("setEmpathyOnHand", () => {
   });
 
   test("does not apply empathy to the wrong player's hand", () => {
-    const setEmpathy0 = jest.fn();
-    const setEmpathy1 = jest.fn();
+    const setEmpathy0 = mock();
+    const setEmpathy1 = mock();
     const firstHand = { children: [{}], setEmpathy: setEmpathy0 };
     const secondHand = { children: [{}], setEmpathy: setEmpathy1 };
     Object.assign(globals, {
@@ -62,13 +69,13 @@ describe("setEmpathyOnHand", () => {
 
 describe("hypothetical empathy mouse handling", () => {
   test("recognizes the LayoutChild card despite a leading decoration", () => {
-    const setEmpathy = jest.fn();
+    const setEmpathy = mock();
     const handlers = new Map<string, () => void>();
     const card = {
       _id: 42,
       state: { location: 0 },
       layout: { parent: null as unknown, draggable: () => false },
-      on: jest.fn((event: string, handler: () => void) => {
+      on: mock((event: string, handler: () => void) => {
         handlers.set(event, handler);
       }),
     } as unknown as HanabiCard;

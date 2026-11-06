@@ -1,18 +1,21 @@
 import type { ServerCommandWelcomeData } from "@hanabi-live/data";
-import { afterEach, describe, expect, jest, test } from "@jest/globals";
-import { globals } from "../Globals";
-import * as history from "./history";
-import type { GameJSON } from "./hypoCompress";
-import { expand } from "./hypoCompress";
-import { parseAndGoto } from "./url";
+import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
-jest.mock("./history", () => ({
-  show: jest.fn(),
-  showFriends: jest.fn(),
-  showOtherScoresFromURL: jest.fn(),
+import type { GameJSON } from "./hypoCompress";
+
+await mock.module("./history", () => ({
+  show: mock(),
+  showFriends: mock(),
+  showOtherScoresFromURL: mock(),
 }));
-jest.mock("../Globals", () => ({ globals: { conn: { send: jest.fn() } } }));
-jest.mock("../utils", () => ({ setBrowserAddressBarPath: jest.fn() }));
+await mock.module("../Globals", () => ({
+  globals: { conn: { send: mock() } },
+}));
+await mock.module("../utils", () => ({ setBrowserAddressBarPath: mock() }));
+const { globals } = await import("../Globals");
+const history = await import("./history");
+const { expand } = await import("./hypoCompress");
+const { parseAndGoto } = await import("./url");
 
 describe("replay URL loading", () => {
   const payload = "215abcde,00ba,0";
@@ -36,7 +39,7 @@ describe("replay URL loading", () => {
     } else {
       Object.defineProperty(globalThis, "localStorage", storageDescriptor);
     }
-    jest.clearAllMocks();
+    mock.clearAllMocks();
   });
 
   test.each([
@@ -45,8 +48,8 @@ describe("replay URL loading", () => {
     ["shared-replay-json", "", "", "shared"],
     ["replay-json", ",", "", "solo"],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
-    const setItem = jest.fn();
-    const send = jest.spyOn(globals.conn!, "send");
+    const setItem = mock();
+    const send = spyOn(globals.conn!, "send");
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -78,8 +81,8 @@ describe("replay URL loading", () => {
     ["#history", false],
     ["#history-friends", true],
   ])("restores lobby history route %s", (hash, friends) => {
-    const show = jest.spyOn(history, "show");
-    const showFriends = jest.spyOn(history, "showFriends");
+    const show = spyOn(history, "show");
+    const showFriends = spyOn(history, "showFriends");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(`https://hanab.live/lobby${hash}`),
@@ -92,9 +95,9 @@ describe("replay URL loading", () => {
   });
 
   test("restores the other scores history route", () => {
-    const show = jest.spyOn(history, "show");
-    const showFriends = jest.spyOn(history, "showFriends");
-    const showOtherScores = jest.spyOn(history, "showOtherScoresFromURL");
+    const show = spyOn(history, "show");
+    const showFriends = spyOn(history, "showFriends");
+    const showOtherScores = spyOn(history, "showOtherScoresFromURL");
     const url = "https://hanab.live/lobby#history-other-scores-friends-p4v0s1";
     Object.defineProperty(globalThis, "location", {
       configurable: true,
@@ -113,7 +116,7 @@ describe("replay URL loading", () => {
     ["/game/123/shadow/0", 0],
     ["/game/123/shadow/2", 2],
   ])("route %s => seat %i", (pathname, shadowingPlayerIndex) => {
-    const send = jest.spyOn(globals.conn!, "send");
+    const send = spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(`https://hanab.live${pathname}`),

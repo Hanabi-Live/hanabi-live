@@ -1,5 +1,5 @@
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
-import { expect, test } from "@jest/globals";
+import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
 import {
@@ -148,7 +148,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             }),
           })
           .parse(await metrics.json());
-        expect(reports.database.maxConnections).toBe(10);
+        expect(reports.database.maxConnections).toBe(8);
         expect(reports.database.totalConnections).toBeLessThanOrEqual(10);
         expect(reports.recovery.database.maxConnections).toBe(2);
         expect(reports.recovery.database.totalConnections).toBeLessThanOrEqual(
@@ -512,7 +512,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(
           await client`SELECT id FROM games WHERE id = ${finished.databaseID}`,
         ).toHaveLength(1);
-        expect(await client`SELECT id FROM games`).toEqual([
+        expect(await client`SELECT id FROM games`).toEqual<unknown>([
           { id: checkpoint.game_id },
         ]);
         expect(await client`SELECT game_id FROM active_games`).toHaveLength(0);
@@ -709,7 +709,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         shadow.history.list.filter(
           (event) => event.type === "draw" && event.playerIndex === 0,
         ),
-      ).toEqual([
+      ).toEqual<unknown>([
         expect.objectContaining({ rank: -1, suitIndex: -1 }),
         expect.objectContaining({ rank: -1, suitIndex: -1 }),
       ]);
@@ -759,7 +759,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const imported = await bootstrap(owner, created.tableID);
         expect(imported.init.replay).toBe(true);
         expect(imported.init.playerNames).toHaveLength(6);
-        expect(imported.history.list).toEqual(
+        expect(imported.history.list).toEqual<unknown>(
           expect.arrayContaining([
             expect.objectContaining({ type: "gameOver" }),
           ]),

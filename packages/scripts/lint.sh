@@ -15,10 +15,10 @@ SECONDS=0
 cd "$DIR"
 
 # Ensure that the code passes the TypeScript compiler.
-bunx --no-install tsc --noEmit
+bunx --bun --no-install tsc --noEmit
 
 # Use ESLint to lint the TypeScript.
 # "--max-warnings 0" makes warnings fail in CI, since we set all ESLint errors to warnings.
-bunx --no-install eslint --max-warnings 0 .
+bunx --bun --no-install eslint --max-warnings 0 .
 
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."

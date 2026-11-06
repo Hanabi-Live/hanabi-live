@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { PaceRisk } from "../enums/PaceRisk";
 import { getDefaultVariant, getVariant } from "../gameData";
 import {

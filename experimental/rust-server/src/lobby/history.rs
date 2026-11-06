@@ -26,14 +26,25 @@ pub async fn history_ids(
     amount: i64,
     friends: bool,
 ) -> Result<Vec<i32>> {
-    // Filter participant IDs before sorting, rather than scanning the ordered archive for matches.
+    // OFFSET 0 keeps each archive lookup dependent on the participant set. Without this boundary,
+    // a generic plan can scan the entire games archive even for a user with no friends.
     Ok(if friends {
+        if !sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM user_friends WHERE user_id=$1) AS \"value!\"",
+            id
+        )
+        .fetch_one(pool)
+        .await?
+        {
+            return Ok(vec![]);
+        }
         sqlx::query_scalar!(
-            "SELECT g.id FROM games g JOIN
+            "SELECT g.id FROM
          (SELECT p.game_id FROM game_participants p JOIN user_friends f ON f.friend_id=p.user_id
           WHERE f.user_id=$1
           EXCEPT
-          SELECT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
+          SELECT game_id FROM game_participants WHERE user_id=$1) played
+         CROSS JOIN LATERAL (SELECT id,datetime_finished FROM games WHERE id=played.game_id OFFSET 0) g
          ORDER BY g.datetime_finished DESC, g.id DESC LIMIT $2 OFFSET $3",
             id,
             amount,
@@ -42,8 +53,9 @@ pub async fn history_ids(
         .fetch_all(pool)
         .await?
     } else {
-        sqlx::query_scalar!("SELECT g.id FROM games g JOIN
-         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played ON played.game_id=g.id
+        sqlx::query_scalar!("SELECT g.id FROM
+         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played
+         CROSS JOIN LATERAL (SELECT id,datetime_finished FROM games WHERE id=played.game_id OFFSET 0) g
          ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
          id, amount, if amount == 0 { 0 } else { offset })
          .fetch_all(pool).await?

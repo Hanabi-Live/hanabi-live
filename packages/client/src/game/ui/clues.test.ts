@@ -3,15 +3,14 @@ import {
   getDefaultMetadata,
   getDefaultVariant,
 } from "@hanabi-live/game";
-import { describe, expect, jest, test } from "@jest/globals";
-import type { HanabiCard } from "./HanabiCard";
-import { globals } from "./UIGlobals";
-import * as arrows from "./arrows";
-import { checkLegal } from "./clues";
+import { describe, expect, mock, test } from "bun:test";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("./arrows", () => ({ hideAll: jest.fn(), set: jest.fn() }));
-jest.mock("./turn", () => ({}));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("./arrows", () => ({ hideAll: mock(), set: mock() }));
+await mock.module("./turn", () => ({}));
+const { globals } = await import("./UIGlobals");
+const arrows = await import("./arrows");
+const { checkLegal } = await import("./clues");
 
 describe("hypothetical clue matching", () => {
   test("uses the layout card rather than its first Konva child", () => {
@@ -23,7 +22,7 @@ describe("hypothetical clue matching", () => {
       visibleRank: 1,
       visibleSuitIndex: 0,
     };
-    const setEnabled = jest.fn();
+    const setEnabled = mock();
     Object.assign(globals, {
       metadata,
       variant,
@@ -48,12 +47,6 @@ describe("hypothetical clue matching", () => {
     checkLegal();
 
     expect(setEnabled).toHaveBeenCalledWith(true);
-    expect(arrows.set).toHaveBeenCalledWith(
-      0,
-      card as unknown as HanabiCard,
-      null,
-      clue,
-      true,
-    );
+    expect(arrows.set).toHaveBeenCalledWith(0, card, null, clue, true);
   });
 });

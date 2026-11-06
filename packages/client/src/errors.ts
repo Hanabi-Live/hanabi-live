@@ -5,6 +5,9 @@ import { escapeHtml } from "./utils";
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
   globalThis.addEventListener("error", (errorEvent) => {
+    if (!(errorEvent instanceof ErrorEvent)) {
+      return;
+    }
     if (
       (errorEvent.lineno === 0
         && errorEvent.colno === 0

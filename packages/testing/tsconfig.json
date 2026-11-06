@@ -5,4 +5,5 @@
     "../../tsconfig.monorepo.json",
     "complete-tsconfig/tsconfig.node.json",
   ],
+  "compilerOptions": { "types": ["bun"] },
 }

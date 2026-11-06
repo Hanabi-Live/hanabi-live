@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { eRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { getDefaultVariant, getVariant } from "../gameData";

@@ -1,2 +1,2 @@
 # https://github.com/zirkelc/git-pull-run
-bunx --no-install git-pull-run --pattern "{bun.lock,package.json,bunfig.toml,packages/*/package.json,patches/**}" --once --command "bun install --frozen-lockfile"
+bunx --bun --no-install git-pull-run --pattern "{bun.lock,package.json,bunfig.toml,packages/*/package.json,patches/**}" --once --command "bun install --frozen-lockfile"

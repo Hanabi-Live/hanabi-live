@@ -63,7 +63,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         let _ = reply.send(handles);
                     }
                     HubCommand::Operations {
-                        command: Operation::Drained,
+                        command: Operation::Drained { .. },
                         reply,
                     } => {
                         seen.fetch_add(1, Ordering::Relaxed);

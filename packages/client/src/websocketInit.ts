@@ -1,6 +1,10 @@
 // Communication with the server is done through the WebSocket protocol. The client uses a slightly
 // modified version of the Golem WebSocket library.
 
+import {
+  SERVER_COMMAND_SCHEMAS,
+  tableID as tableIDSchema,
+} from "@hanabi-live/data";
 import { commands } from "./commands";
 import { Connection } from "./Connection";
 import { gameCommands } from "./game/ui/gameCommands";
@@ -186,11 +190,14 @@ function reconnectAfterTimeout(conn: Connection) {
 }
 
 function openConnection(isReconnect: boolean) {
-  const url = isReconnect ? `${websocketURL}?reconnect=1` : websocketURL;
-  const conn = new Connection(url, true, !isReconnect);
+  const url = `${websocketURL}?fastResume=1`;
+  const conn = new Connection(url, true);
+  conn.setReady(!isReconnect);
   clearConnectTimer();
   activeConnection = conn;
-  globals.conn = conn;
+  if (!isReconnect) {
+    globals.conn = conn;
+  }
 
   connectTimer = setTimeout(() => {
     if (conn.ws.readyState === WebSocket.CONNECTING) {
@@ -217,21 +224,96 @@ function openConnection(isReconnect: boolean) {
     clearConnectTimer();
     clearWelcomeTimer();
     console.log("WebSocket closed unexpectedly; attempting to reconnect.");
+    conn.setReady(false);
     recovering = true;
     scheduleReconnect();
   });
   conn.on("socketError", (error: unknown) => {
     console.error("WebSocket error:", error);
   });
+  conn.on("restart", () => {
+    if (activeConnection === conn) {
+      conn.setReady(false);
+      reconnectBackoff.reset();
+    }
+  });
 
   if (isReconnect) {
-    // Resume probes never apply snapshots to the old game UI.
-    conn.on("welcome", () => {
+    initCommands(conn);
+    conn.on("welcome", (welcomePayload) => {
       if (activeConnection !== conn || stopped) {
         return;
       }
-      stopRecovery();
-      globalThis.location.reload();
+      clearWelcomeTimer();
+      reconnectBackoff.reset();
+      recovering = false;
+      globals.conn = conn;
+      const data = SERVER_COMMAND_SCHEMAS.welcome.parse(welcomePayload);
+      globals.userMap.clear();
+      globals.tableMap.clear();
+      if (
+        globals.currentScreen === Screen.Game
+        && globals.ui !== null
+        && data.userID === globals.userID
+      ) {
+        globals.muted = data.muted;
+        globals.settings = data.settings;
+        globals.friends = data.friends;
+        const retained = tableIDSchema.parse(globals.tableID);
+        conn.on("tableStart", (payload) => {
+          const table = SERVER_COMMAND_SCHEMAS.tableStart.parse(payload);
+          if (!isCurrentConnection(conn)) {
+            return;
+          }
+          if (
+            table.tableID === retained
+            && !table.replay
+            && globals.ui !== null
+            && globals.ui.globals.store !== null
+            && !globals.ui.globals.state.finished
+          ) {
+            conn.send("getGameInfo2", { tableID: retained });
+          } else {
+            globals.ui?.destroy();
+            globals.ui = null;
+            lobbyCommands.get("tableStart")?.(payload);
+          }
+        });
+        conn.on("gameActionList", (payload) => {
+          if (!isCurrentConnection(conn) || globals.ui === null) {
+            return;
+          }
+          const rebuilding = globals.ui.globals.loading;
+          gameCommands.get("gameActionList")?.(payload);
+          conn.setReady(true);
+          if (!rebuilding) {
+            conn.send("loaded", { tableID: globals.tableID });
+          }
+          initCommands(conn);
+        });
+        conn.send(
+          data.playingAtTables.includes(retained)
+            ? "tableReattend"
+            : "tableSpectate",
+          {
+            tableID: retained,
+            ...(!data.playingAtTables.includes(retained) && {
+              shadowingPlayerIndex:
+                globals.ui.globals.store !== null
+                && globals.ui.globals.state.shadowing
+                  ? globals.ui.globals.metadata.ourPlayerIndex
+                  : -1,
+            }),
+          },
+        );
+      } else {
+        if (globals.ui !== null) {
+          globals.ui.destroy();
+          globals.ui = null;
+        }
+        conn.setReady(true);
+        lobbyCommands.get("welcome")?.(welcomePayload);
+      }
     });
     conn.on("error", (data: unknown) => {
       if (activeConnection !== conn || stopped) {

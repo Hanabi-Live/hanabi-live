@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { expectedSchemaVersion } from "./schemaVersion";
 
 describe("migration versions", () => {
@@ -10,11 +10,11 @@ describe("migration versions", () => {
   });
 
   test.each([
-    ["unversioned.sql"],
-    ["000_zero.sql"],
-    ["001_first.sql", "003_gap.sql"],
-    ["001_first.sql", "0001_duplicate.sql"],
-  ])("rejects an invalid migration set: %j", (...names) => {
+    [["unversioned.sql"]],
+    [["000_zero.sql"]],
+    [["001_first.sql", "003_gap.sql"]],
+    [["001_first.sql", "0001_duplicate.sql"]],
+  ])("rejects an invalid migration set: %j", (names: readonly string[]) => {
     expect(() => expectedSchemaVersion(names)).toThrow();
   });
 });

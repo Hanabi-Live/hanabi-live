@@ -16,10 +16,6 @@ fi
 
 # Install the JavaScript/TypeScript dependencies and build the client.
 cd "$REPO_ROOT"
-if ! command -v node > /dev/null; then
-  echo "Node.js 24 is required by the project tools. See docs/install.md." >&2
-  exit 1
-fi
 export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
 if ! command -v bun > /dev/null; then
   echo "Install Bun using docs/install.md before installing project dependencies." >&2

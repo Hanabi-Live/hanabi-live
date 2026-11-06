@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { START_CARD_RANK } from "../../constants";
 import { CardStatus } from "../../enums/CardStatus";
 import { StackDirection } from "../../enums/StackDirection";

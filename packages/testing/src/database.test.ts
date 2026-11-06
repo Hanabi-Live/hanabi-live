@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { setTimeout as delay } from "node:timers/promises";
 import type postgres from "postgres";
 import { evaluationDatabase } from "./database";
@@ -60,9 +60,9 @@ databaseDescribe("disposable database administration", () => {
   }, 15_000);
 
   test("application statements still time out and the connection remains usable", async () => {
-    await expect(client`SELECT pg_sleep(3)`).rejects.toMatchObject({
+    expect(client`SELECT pg_sleep(3)`).rejects.toMatchObject({
       code: "57014",
     });
-    expect(await client`SELECT 1 AS usable`).toEqual([{ usable: 1 }]);
+    expect(await client`SELECT 1 AS usable`).toEqual<unknown>([{ usable: 1 }]);
   });
 });

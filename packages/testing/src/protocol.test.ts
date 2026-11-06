@@ -2,7 +2,7 @@ import {
   CLIENT_COMMAND_SCHEMAS,
   SERVER_COMMAND_SCHEMAS,
 } from "@hanabi-live/data";
-import { expect, test } from "@jest/globals";
+import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { z } from "zod";

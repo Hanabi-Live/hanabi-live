@@ -6,7 +6,7 @@ import {
   getEfficiencyFromGameState,
   getFutureEfficiency,
 } from "@hanabi-live/game";
-import { beforeAll, describe, expect, test } from "@jest/globals";
+import { beforeAll, describe, expect, test } from "bun:test";
 import { assertDefined, eRange } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
@@ -27,7 +27,7 @@ describe("integration", () => {
     describe("at turn 5", () => {
       test("has the correct cards on each player's hands", () => {
         const turn5State = getGameStateAtTurn(testState, 4);
-        expect(turn5State.hands).toEqual([
+        expect(turn5State.hands).toEqual<unknown>([
           [0, 1, 2, 3],
           [4, 5, 6, 7],
           [8, 9, 11, 16],
@@ -82,7 +82,7 @@ describe("integration", () => {
     describe("final state", () => {
       test("has the correct cards on each player's hands", () => {
         const finalState = getFinalState(testState);
-        expect(finalState.hands).toEqual([
+        expect(finalState.hands).toEqual<unknown>([
           [27, 32, 35],
           [22, 30, 43],
           [31, 36, 41, 44],
@@ -143,7 +143,7 @@ describe("integration", () => {
     describe("final state", () => {
       test("has the correct cards on each player's hands", () => {
         const finalState = getFinalState(testState);
-        expect(finalState.hands).toEqual([
+        expect(finalState.hands).toEqual<unknown>([
           [34, 37, 39, 43],
           [38, 40, 44, 47],
           [28, 31, 33, 42],

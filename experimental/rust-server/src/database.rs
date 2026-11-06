@@ -11,7 +11,8 @@ pub(crate) async fn normal_game_counts(
 ) -> Result<BTreeMap<i32, i64>> {
     let rows = sqlx::query!(
         "SELECT p.user_id, count(*) AS \"count!\"
-         FROM game_participants p JOIN games g ON g.id=p.game_id
+         FROM game_participants p
+         CROSS JOIN LATERAL (SELECT end_condition,speedrun FROM games WHERE id=p.game_id OFFSET 0) g
          WHERE p.user_id=ANY($1) AND g.end_condition=1 AND ($2 OR NOT g.speedrun)
          GROUP BY p.user_id",
         ids,

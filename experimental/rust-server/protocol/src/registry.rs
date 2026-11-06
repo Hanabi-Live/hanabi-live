@@ -7,6 +7,7 @@ use std::{collections::BTreeMap, sync::LazyLock};
 macro_rules! client_contracts {
     ($apply:ident) => {
         $apply! {
+            "lobbyLoad" => Empty, Empty;
             "chat" => ChatRequest, ChatRequest;
             "chatPM" => ChatPmRequest, LegacyChatPmRequest;
             "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
@@ -36,6 +37,8 @@ macro_rules! client_contracts {
 macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
+            "restart" => Empty, Empty;
+            "lobbyStatus" => LobbyStatus, LobbyStatus;
             "chat" => Chat, Chat;
             "chatDelete" => ChatDelete, ChatDelete;
             "chatList" => ChatList, ChatList;

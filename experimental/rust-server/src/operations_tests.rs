@@ -18,6 +18,7 @@ use std::{
         Arc, Mutex,
         atomic::{AtomicU64, Ordering},
     },
+    time::Duration,
 };
 use tokio::sync::mpsc;
 use tower::ServiceExt;
@@ -350,13 +351,35 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     assert_eq!(status, StatusCode::OK, "{body}");
     let report: serde_json::Value = serde_json::from_str(&body)?;
     for (pool, max) in [
-        (&report["database"], 10),
+        (&report["database"], 8),
         (&report["recovery"]["database"], 2),
     ] {
         assert_eq!(pool["maxConnections"], max);
         assert!((1..=max).contains(&pool["totalConnections"].as_u64().unwrap()));
     }
     assert_eq!(report["recovery"]["authority"], "Redis AOF/WAITAOF");
+    assert_eq!(store.lobby_reads.options().get_max_connections(), 2);
+    let mut reader = store.lobby_reads.acquire().await?;
+    let read_only: String = sqlx::query_scalar("SHOW default_transaction_read_only").fetch_one(&mut *reader).await?;
+    assert_eq!(read_only, "on");
+    let reader_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()").fetch_one(&mut *reader).await?;
+    let slow_read = tokio::spawn(async move {
+        sqlx::query("SELECT pg_sleep(10)").execute(&mut *reader).await
+    });
+    tokio::time::timeout(Duration::from_secs(2), async {
+        loop {
+            let running: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND state='active' AND query='SELECT pg_sleep(10)')")
+                .bind(reader_pid).fetch_one(&store.primary).await?;
+            if running { return Ok::<_, sqlx::Error>(()); }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }).await??;
+    store.cancel_lobby_reads().await?;
+    let cancelled = tokio::time::timeout(Duration::from_millis(500), slow_read).await??
+        .expect_err("Background read survived maintenance cancellation");
+    assert_eq!(cancelled.as_database_error().and_then(|error| error.code()).as_deref(), Some("57014"));
+    let usable: i32 = sqlx::query_scalar("SELECT 1").fetch_one(&store.primary).await?;
+    assert_eq!(usable, 1, "Read cancellation interfered with the primary pool");
     h.close().await;
     app.shutdown.cancel();
     store.close().await?;

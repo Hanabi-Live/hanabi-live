@@ -18,10 +18,11 @@ do not put unrelated operational details in installation instructions.
 
 Use Bun for JavaScript dependency management; its version is pinned in the root
 `package.json`. Use `bun install --frozen-lockfile`, `bun run <script>`, and
-`bunx --no-install <tool>`. Commit `bun.lock`, not an npm lockfile. Node.js 24
-remains the runtime for the existing tools and tests: use `bun run test`, not
-Bun's separate `bun test` runner. Keep automatic `.env` loading disabled in
-`bunfig.toml`; applications and build scripts manage their own configuration.
+`bunx --bun --no-install <tool>`. Bun is also the JavaScript runtime. Commit
+`bun.lock`, not an npm lockfile. `bun run test` prepares native integration
+backends and runs the migrated suites with Bun's native test runner and per-file
+isolation. Keep automatic `.env` loading disabled in `bunfig.toml`; applications
+and build scripts manage their own configuration.
 
 Never add inline CSpell word lists, ignores, or disable directives to files. Add
 legitimate project vocabulary to the `words` list in `cspell.config.jsonc`
@@ -37,8 +38,8 @@ bash lint.sh
 This is the same entrypoint CI uses for TypeScript checks, Go vet, Rust
 formatting/Clippy, Prettier, spelling, ShellCheck, and repository consistency.
 CI runs complementary shards; run the no-argument command above before pushing.
-It requires Bun, the repository's JavaScript dependencies, Node.js, Go/Rust
-toolchains, and ShellCheck, but no running PostgreSQL or Redis services.
+It requires Bun, the repository's JavaScript dependencies, Go/Rust toolchains,
+and ShellCheck, but no running PostgreSQL or Redis services.
 
 Run it against the final changes, even if package-specific checks already
 passed. Fix any failures and rerun the full suite before pushing. If a required

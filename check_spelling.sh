@@ -16,9 +16,9 @@ cd "$DIR"
 
 # Spell check every file using CSpell.
 # "--no-progress" and "--no-summary" make it only output errors.
-bunx --no-install cspell --no-progress --no-summary .
+bunx --bun --no-install cspell --no-progress --no-summary .
 
 # Check for unused CSpell words.
-bunx --no-install cspell-check-unused-words
+bunx --bun --no-install cspell-check-unused-words
 
 echo "Successfully spell checked $REPO_NAME in $SECONDS seconds."

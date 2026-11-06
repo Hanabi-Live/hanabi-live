@@ -2,6 +2,7 @@
 
 import type {
   NewLobbyNavigation,
+  ServerCommandData,
   ServerCommandTableData,
   ServerCommandUserData,
   ServerCommandUserLeftData,
@@ -35,6 +36,27 @@ import * as usersDraw from "./usersDraw";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 export const lobbyCommands = new Map<string, CommandCallback>();
+
+lobbyCommands.set("lobbyStatus", (data: ServerCommandData["lobbyStatus"]) => {
+  const total = $("#nav-buttons-history-total-games");
+  total.off("click.lobbyRetry").removeAttr("title");
+  if (data.state === "ready") {
+    globals.totalGames = data.totalGames;
+    $("#nav-buttons-history-total-games").text(data.totalGames.toString());
+  } else {
+    $("#nav-buttons-history-total-games").text(
+      data.state === "error" ? "unavailable" : "loading...",
+    );
+    if (data.state === "error") {
+      total
+        .text("unavailable (click to retry)")
+        .attr("title", "Retry lobby history and statistics")
+        .on("click.lobbyRetry", () => {
+          globals.conn?.send("lobbyLoad", {});
+        });
+    }
+  }
+});
 
 interface FriendsData {
   friends: string[];
@@ -89,7 +111,7 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
   for (const data of dataArray) {
     globals.history.set(data.id, data);
 
-    if (data.incrementNumGames) {
+    if (data.incrementNumGames && globals.totalGames !== null) {
       globals.totalGames++;
     }
   }
@@ -102,7 +124,9 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
 
   const shownGames = globals.history.size;
   $("#nav-buttons-history-shown-games").html(shownGames.toString());
-  $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
+  $("#nav-buttons-history-total-games").text(
+    globals.totalGames?.toString() ?? "loading...",
+  );
   if (shownGames === globals.totalGames) {
     $("#lobby-history-show-more").hide();
   }
@@ -348,7 +372,9 @@ lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   globals.maintenanceMode = data.maintenanceMode;
 
   // Update various elements of the UI to reflect our settings.
-  $("#nav-buttons-history-total-games").html(globals.totalGames.toString());
+  $("#nav-buttons-history-total-games").text(
+    globals.totalGames?.toString() ?? "loading...",
+  );
   playerSettings.setPlayerSettings();
   let navigation: NewLobbyNavigation | undefined;
   if (

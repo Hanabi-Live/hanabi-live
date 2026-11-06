@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { getVariant } from "../../gameData";
 import type { Rank } from "../../types/Rank";
 import { sudokuWalkUpAll } from "./sudoku";

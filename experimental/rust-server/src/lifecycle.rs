@@ -425,7 +425,7 @@ pub async fn drain_game_runtime(app: &App, tables: &TaskTracker, restart: bool) 
         if app
             .hub
             .send(HubCommand::Operations {
-                command: Operation::Drained,
+                command: Operation::Drained { restart },
                 reply,
             })
             .await

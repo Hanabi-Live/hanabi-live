@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
-import { expect, test } from "@jest/globals";
+import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
 import {
@@ -166,9 +166,9 @@ databaseDescribe("temporary Go-to-Rust cutover", () => {
         await readFile(path.join(directory, ".go-to-rust-cutover"), "utf8"),
       ).toContain("Prepared");
       processState = startProcess(directory, port);
-      await expect(
-        bounded(processState.ready, "Go restart fence"),
-      ).rejects.toThrow("Go-to-Rust cutover");
+      expect(bounded(processState.ready, "Go restart fence")).rejects.toThrow(
+        "Go-to-Rust cutover",
+      );
       const [source] = await sql<
         Array<{ game_id: number }>
       >`SELECT game_id FROM active_games`;
@@ -256,7 +256,9 @@ databaseDescribe("temporary Go-to-Rust cutover", () => {
         .object({ notes: z.string().array().array() })
         .parse(await exported.json());
       expect(archive.notes.flat()).toContain("retained across cutover");
-      expect(await sql`SELECT id FROM games`).toEqual([{ id: source.game_id }]);
+      expect(await sql`SELECT id FROM games`).toEqual<unknown>([
+        { id: source.game_id },
+      ]);
       expect(
         await sql`SELECT id FROM chat_log WHERE message='Go cutover chat'`,
       ).toHaveLength(1);

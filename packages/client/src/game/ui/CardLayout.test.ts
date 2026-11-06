@@ -1,12 +1,13 @@
-import { describe, expect, jest, test } from "@jest/globals";
-import { CardLayout } from "./CardLayout";
+import { describe, expect, mock, test } from "bun:test";
+
 import type { LayoutChild } from "./LayoutChild";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+const { CardLayout } = await import("./CardLayout");
 
 describe("CardLayout.setEmpathy", () => {
   test("uses the stored card when the first Konva child is not a card", () => {
-    const setEmpathy = jest.fn();
+    const setEmpathy = mock();
     const layoutChild = {
       card: { setEmpathy },
       children: [{}],
@@ -18,7 +19,7 @@ describe("CardLayout.setEmpathy", () => {
           callback(layoutChild);
         },
       },
-    } as unknown as CardLayout;
+    } as unknown as InstanceType<typeof CardLayout>;
 
     expect(() => {
       CardLayout.prototype.setEmpathy.call(layout, true);

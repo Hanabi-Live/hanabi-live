@@ -1,6 +1,6 @@
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 
-import { describe, expect } from "@jest/globals";
+import { describe, expect } from "bun:test";
 import { assertDefined } from "complete-common";
 import type { ChildProcess } from "node:child_process";
 import { execFile, spawn } from "node:child_process";

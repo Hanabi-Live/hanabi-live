@@ -35,4 +35,4 @@ fi
 
 # Rebuild the critical CSS
 cd "$DIR"
-bunx --no-install grunt critical --url="$URL"
+bunx --bun --no-install grunt critical --url="$URL"

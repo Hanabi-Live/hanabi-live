@@ -44,6 +44,8 @@ fn expression(schema: &Value) -> Result<String> {
                 "additionalProperties",
                 "items",
                 "enum",
+                "const",
+                "oneOf",
                 "minimum",
                 "maximum",
                 "minLength",
@@ -58,7 +60,30 @@ fn expression(schema: &Value) -> Result<String> {
             "Unsupported schema keyword: {key}"
         );
     }
-    let mut result = if let Some(reference) = schema["$ref"].as_str() {
+    let mut result = if let Some(variants) = schema["oneOf"].as_array() {
+        let mut tags = std::collections::BTreeSet::new();
+        for variant in variants {
+            let tag = variant["properties"]["state"]["const"]
+                .as_str()
+                .context("Only state-tagged disjoint unions are supported")?;
+            ensure!(tags.insert(tag), "Duplicate union discriminator");
+            ensure!(
+                variant["required"]
+                    .as_array()
+                    .is_some_and(|required| required.iter().any(|name| name == "state")),
+                "Union discriminator must be required"
+            );
+        }
+        ensure!(variants.len() >= 2, "Union needs multiple variants");
+        let variants = variants
+            .iter()
+            .map(expression)
+            .collect::<Result<Vec<_>>>()?;
+        format!("z.discriminatedUnion(\"state\",[{}])", variants.join(","))
+    } else if let Some(value) = schema.get("const") {
+        ensure!(value.is_string(), "Only string constants are supported");
+        format!("z.literal({value})")
+    } else if let Some(reference) = schema["$ref"].as_str() {
         let name = reference
             .strip_prefix("#/$defs/")
             .context("Only local schema references are supported")?;
@@ -90,6 +115,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "z.number().int()".into()
             }
             "boolean" => "z.boolean()".into(),
+            "null" => "z.null()".into(),
             "array" => format!("z.array({})", expression(&schema["items"])?),
             "object" => {
                 ensure!(
@@ -98,10 +124,12 @@ fn expression(schema: &Value) -> Result<String> {
                 );
                 let required = schema["required"].as_array().cloned().unwrap_or_default();
                 let mut fields = Vec::new();
-                for (name, property) in schema["properties"]
-                    .as_object()
-                    .context("Missing properties")?
-                {
+                let empty = serde_json::Map::new();
+                let properties = match schema.get("properties") {
+                    Some(value) => value.as_object().context("Invalid object properties")?,
+                    None => &empty,
+                };
+                for (name, property) in properties {
                     let mut field = expression(property)?;
                     if let Some(default) = property.get("default") {
                         ensure!(

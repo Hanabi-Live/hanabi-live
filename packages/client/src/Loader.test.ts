@@ -1,12 +1,9 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  jest,
-  test,
-} from "@jest/globals";
+import type { InstalledClock } from "@sinonjs/fake-timers";
+import { install } from "@sinonjs/fake-timers";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { Loader } from "./Loader";
+
+let clock: InstalledClock;
 
 class FakeImage {
   readonly listeners = new Map<string, () => void>();
@@ -29,18 +26,26 @@ function getImage(loader: Loader, fileID: string): FakeImage {
 
 describe("image loader", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    clock = install({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    });
     globalThis.Image = FakeImage as unknown as typeof Image;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    clock.uninstall();
     globalThis.Image = originalImage;
   });
 
   test("finishes after all images load successfully", () => {
     const loader = new Loader();
-    const onFinished = jest.fn();
+    const onFinished = mock();
     loader.finishedCallback = () => {
       onFinished();
     };
@@ -58,7 +63,7 @@ describe("image loader", () => {
     const loader = new Loader();
     const fileID = "crown";
     const firstImage = getImage(loader, fileID);
-    const onFinished = jest.fn();
+    const onFinished = mock();
     loader.finishedCallback = () => {
       onFinished();
     };
@@ -67,7 +72,7 @@ describe("image loader", () => {
     expect(loader.numLoaded).toBe(0);
     expect(loader.finished).toBe(false);
 
-    jest.advanceTimersByTime(1000);
+    clock.tick(1000);
     const retriedImage = getImage(loader, fileID);
     expect(retriedImage).not.toBe(firstImage);
     retriedImage.emit("load");
@@ -86,8 +91,8 @@ describe("image loader", () => {
   test("reports a permanent error after bounded retries", () => {
     const loader = new Loader();
     const fileID = "crown";
-    const onFailed = jest.fn();
-    const onFinished = jest.fn();
+    const onFailed = mock();
+    const onFinished = mock();
     loader.failedCallback = (filePath) => {
       onFailed(filePath);
     };
@@ -96,9 +101,9 @@ describe("image loader", () => {
     };
 
     getImage(loader, fileID).emit("error");
-    jest.advanceTimersByTime(1000);
+    clock.tick(1000);
     getImage(loader, fileID).emit("error");
-    jest.advanceTimersByTime(2000);
+    clock.tick(2000);
     getImage(loader, fileID).emit("error");
 
     expect(loader.failed).toBe(true);
@@ -106,14 +111,14 @@ describe("image loader", () => {
     expect(loader.finished).toBe(false);
     expect(onFailed).toHaveBeenCalledWith("/public/img/crown.png");
     expect(onFinished).not.toHaveBeenCalled();
-    expect(jest.getTimerCount()).toBe(0);
+    expect(clock.countTimers()).toBe(0);
   });
 
   test("reports current progress when a callback is attached late", () => {
     const loader = new Loader();
     getImage(loader, "crown").emit("load");
 
-    const onProgress = jest.fn();
+    const onProgress = mock();
     loader.progressCallback = (numLoaded, size) => {
       onProgress(numLoaded, size);
     };

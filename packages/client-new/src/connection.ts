@@ -71,9 +71,7 @@ export class LobbyConnection {
       }
       if (this.store.getState().welcome) {
         console.warn("Session recovery check failed", error);
-        this.scheduleReconnect();
       } else {
-        this.store.dispatch(actions.connectionChanged("signed-out"));
         this.store.dispatch(
           actions.notify({
             text:
@@ -83,6 +81,7 @@ export class LobbyConnection {
           }),
         );
       }
+      this.scheduleReconnect();
     }
   }
 
@@ -301,7 +300,7 @@ export class LobbyConnection {
       ),
     );
     const socket = new WebSocket(
-      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws`,
+      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws?fastResume=1`,
     );
     this.socket = socket;
     this.timeout = setTimeout(() => {
@@ -364,6 +363,12 @@ export class LobbyConnection {
           this.destination = null;
         } else {
           switch (event.command) {
+            case "restart": {
+              this.attempts = 0;
+              this.store.dispatch(actions.connectionChanged("reconnecting"));
+              break;
+            }
+
             case "soundLobby": {
               const preferences = this.store.getState().welcome?.settings;
               if (
@@ -436,9 +441,11 @@ export class LobbyConnection {
     this.clearPreferenceRequests();
     clearTimeout(this.retry);
     this.store.dispatch(actions.connectionChanged("reconnecting"));
+    const ceiling = Math.min(20_000, 100 * 2 ** Math.min(this.attempts, 9));
     const delay =
-      Math.min(20_000, 500 * 2 ** Math.min(this.attempts, 6))
-      + Math.random() * 250;
+      this.attempts === 0
+        ? 0
+        : Math.floor(ceiling / 2 + (Math.random() * ceiling) / 2);
     this.attempts++;
     this.retry = setTimeout(() => {
       void this.checkSession();

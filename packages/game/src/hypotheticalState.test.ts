@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-null */
 
-import { describe, expect, jest, test } from "@jest/globals";
+import { describe, expect, spyOn, test } from "bun:test";
 import {
   hypotheticalStateReducer,
   initializeHypotheticalState,
@@ -139,8 +139,8 @@ describe("hypothetical state", () => {
     );
     expect(state.morphedIdentities[30]).toBeUndefined();
     expect(state.morphedIdentities).toHaveLength(31);
-    expect(state.ongoing).toBe(startingState);
-    expect(state.states).toBe(initial.states);
+    expect(state.ongoing).toBe<unknown>(startingState);
+    expect(state.states).toBe<unknown>(initial.states);
     expect(initial.morphedIdentities).toEqual([]);
   });
 
@@ -163,7 +163,7 @@ describe("hypothetical state", () => {
       metadata,
     );
 
-    expect(result).toBe(initial);
+    expect(result).toBe<unknown>(initial);
   });
 
   test.each([-1, metadata.options.numPlayers, 1.5])(
@@ -184,7 +184,7 @@ describe("hypothetical state", () => {
         metadata,
       );
 
-      expect(result).toBe(initial);
+      expect(result).toBe<unknown>(initial);
     },
   );
 
@@ -208,7 +208,7 @@ describe("hypothetical state", () => {
       metadata,
     );
 
-    expect(result).toBe(initial);
+    expect(result).toBe<unknown>(initial);
   });
 
   test("allows drawing the last remaining card", () => {
@@ -234,7 +234,7 @@ describe("hypothetical state", () => {
 
     expect(result.ongoing.cardsRemainingInTheDeck).toBe(0);
     expect(result.ongoing.deck).toHaveLength(nextOrder + 1);
-    expect(result.ongoing.hands[0]).toContain(nextOrder);
+    expect(result.ongoing.hands[0]).toContain<number>(nextOrder);
     expect(initial.ongoing.cardsRemainingInTheDeck).toBe(1);
   });
 
@@ -296,7 +296,7 @@ describe("hypothetical state", () => {
     expect(state.ongoing.cardsRemainingInTheDeck).toBe(
       startingState.cardsRemainingInTheDeck - 2,
     );
-    expect(state.states).toBe(initial.states);
+    expect(state.states).toBe<unknown>(initial.states);
     state = hypotheticalStateReducer(
       state,
       {
@@ -365,7 +365,7 @@ describe("hypothetical state", () => {
       );
       const action = rankClue(3, target === 0 ? 1 : 0, [], target);
       const state = hypotheticalStateReducer(initial, action, false, metadata);
-      expect(state.ongoing.clues.at(-1)?.negativeList).toEqual(
+      expect(state.ongoing.clues.at(-1)?.negativeList).toEqual<unknown>(
         ignoreNegative ? [] : startingState.hands[target],
       );
       expect(action.ignoreNegative).toBe(false);
@@ -411,7 +411,7 @@ describe("hypothetical state", () => {
       );
 
       // Applying this action would leave the same order in two collections.
-      expect(result).toBe(original);
+      expect(result).toBe<unknown>(original);
     },
   );
 
@@ -476,7 +476,7 @@ describe("hypothetical state", () => {
         finished,
         metadata,
       );
-      const reducer = jest.spyOn(gameReducerModule, "gameReducer");
+      const reducer = spyOn(gameReducerModule, "gameReducer");
       try {
         let state = hypotheticalStateReducer(
           initial,

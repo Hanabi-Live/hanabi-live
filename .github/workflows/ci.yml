@@ -172,14 +172,15 @@ jobs:
       - uses: ./.github/workflows/setup-rust
       - name: Start version-matched preinstalled browsers
         run: |
-          version=$(node -p 'require("@playwright/test/package.json").version')
+          version=$(bun -p 'require("@playwright/test/package.json").version')
           docker run --detach --rm --init --ipc=host --network=host \
             --name hanabi-playwright \
             --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" \
+            --volume "$(command -v bun):/usr/local/bin/bun:ro" \
             --workdir "$GITHUB_WORKSPACE" \
             "mcr.microsoft.com/playwright:v${version}-noble" \
-            node node_modules/playwright/cli.js run-server --host 127.0.0.1 --port 3000
-          node --input-type=module <<'JS'
+            bun node_modules/playwright/cli.js run-server --host 127.0.0.1 --port 3000
+          bun run - <<'JS'
           import { chromium } from "playwright";
           import { setTimeout } from "node:timers/promises";
           for (let attempt = 1; attempt <= 10; attempt++) {
@@ -197,10 +198,10 @@ jobs:
       - run: bash packages/client/build_client.sh
       - name: Test lobby state, transport and safe rendering
         if: matrix.suite == 'flows'
-        run: bunx --no-install vitest run
+        run: bunx --bun --no-install vitest run
         working-directory: packages/client-new
       - name: Test the new lobby against both native servers
-        run: bunx --no-install playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
+        run: bunx --bun --no-install playwright test ${{ matrix.suite == 'audits' && '--grep @audit' || '--grep-invert @audit' }}
         working-directory: packages/client-new
         env:
           PW_TEST_CONNECT_WS_ENDPOINT: ws://127.0.0.1:3000/

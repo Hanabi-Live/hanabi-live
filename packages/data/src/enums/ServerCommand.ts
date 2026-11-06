@@ -1,5 +1,7 @@
 /** A command sent from the server to the client. */
 export enum ServerCommand {
+  lobbyStatus = "lobbyStatus",
+  restart = "restart",
   tableStart = "tableStart",
   init = "init",
   gameAction = "gameAction",

@@ -24,8 +24,10 @@ mod cutover_tests;
 pub struct Store {
     pub primary: PgPool,
     pub archive: PgPool,
+    pub lobby_reads: PgPool,
     primary_name: String,
     archive_name: String,
+    lobby_name: String,
     state: Option<RedisState>,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
@@ -35,9 +37,11 @@ impl Store {
     pub(crate) fn fixture(primary: PgPool, state: RedisState) -> Self {
         Self {
             archive: primary.clone(),
+            lobby_reads: primary.clone(),
             primary,
             primary_name: String::new(),
             archive_name: String::new(),
+            lobby_name: String::new(),
             state: Some(state),
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(32)),
@@ -61,6 +65,7 @@ impl Store {
         let instance = rand::random::<u64>();
         let primary_name = format!("hanabi-rust-{instance:016x}-primary");
         let archive_name = format!("hanabi-rust-{instance:016x}-archive");
+        let lobby_name = format!("hanabi-rust-{instance:016x}-lobby");
         async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
             Ok(PgPoolOptions::new()
                 .max_connections(max)
@@ -79,8 +84,15 @@ impl Store {
                 .connect_with(options)
                 .await?)
         }
-        let primary = pool(options.clone().application_name(&primary_name), 10).await?;
-        let archive = pool(options.application_name(&archive_name), 2).await?;
+        let primary = pool(options.clone().application_name(&primary_name), 8).await?;
+        let archive = pool(options.clone().application_name(&archive_name), 2).await?;
+        let lobby_reads = PgPoolOptions::new()
+            .max_connections(2)
+            .acquire_timeout(Duration::from_secs(2))
+            .connect_lazy_with(options.application_name(&lobby_name).options([
+                ("statement_timeout", "2000"),
+                ("default_transaction_read_only", "on"),
+            ]));
         let version: i32 = sqlx::query_scalar!("SELECT version FROM schema_version")
             .fetch_one(&primary)
             .await?;
@@ -104,8 +116,10 @@ impl Store {
         Ok(Self {
             primary,
             archive,
+            lobby_reads,
             primary_name,
             archive_name,
+            lobby_name,
             state: Some(state),
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(32)),
@@ -143,6 +157,20 @@ impl Store {
     }
     pub fn state_health(&self) -> Result<()> {
         self.check_state()
+    }
+    pub async fn cancel_lobby_reads(&self) -> Result<()> {
+        if self.lobby_name.is_empty() {
+            return Ok(());
+        }
+        sqlx::query_scalar!(
+            "SELECT pg_cancel_backend(pid) AS \"cancelled!\" FROM pg_stat_activity
+             WHERE datname=current_database() AND application_name=$1
+             AND backend_type='client backend' AND state='active' AND pid<>pg_backend_pid()",
+            &self.lobby_name
+        )
+        .fetch_all(&self.primary)
+        .await?;
+        Ok(())
     }
     pub fn state_lost(&self) -> CancellationToken {
         self.state
@@ -209,6 +237,13 @@ impl Store {
         self.state()?.remove(StateId::Table(id), revision).await
     }
     pub async fn load(&self) -> Result<Vec<(TableSnapshot, i64)>> {
+        self.restore(true).await
+    }
+    pub async fn load_for_startup(&self) -> Result<Vec<(TableSnapshot, i64)>> {
+        // Pregame actors refresh cached totals without holding up live-game admission.
+        self.restore(false).await
+    }
+    async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
         let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
             .fetch_one(&self.primary)
             .await?;
@@ -301,7 +336,7 @@ impl Store {
             .flatten()
             .map(|player| player.id)
             .collect::<std::collections::BTreeSet<_>>();
-        if !users.is_empty() {
+        if refresh_stats && !users.is_empty() {
             let counts = self
                 .completed_game_counts(&users.into_iter().collect::<Vec<_>>())
                 .await?;
@@ -943,6 +978,7 @@ impl Store {
             Ok(())
         };
         self.archive.close().await;
+        self.lobby_reads.close().await;
         self.primary.close().await;
         result
     }
@@ -1215,6 +1251,13 @@ mod tests {
                 },
             };
             let replay_revision = store.save(&replay, 0).await?;
+            let mut blocked_archive = store.primary.begin().await?;
+            sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
+            let startup = tokio::time::timeout(Duration::from_secs(1), store.load_for_startup()).await??;
+            let cached = startup.iter().find(|(saved, _)| saved.id == table.id).context("Missing startup pregame")?;
+            ensure!(cached.1 == original_revision && cached.0.players()[0].stats["numGames"] == 727,
+                "Startup waited for optional statistics or changed its cached snapshot");
+            blocked_archive.rollback().await?;
             let restored = store.load().await?;
             let (actual, revision) = restored
                 .iter()

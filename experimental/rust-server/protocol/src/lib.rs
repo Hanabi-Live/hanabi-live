@@ -13,6 +13,30 @@ pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 pub const MAX_REQUEST_ID_BYTES: usize = 128;
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct Empty {}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum LobbyStatus {
+    Loading {
+        total_games: (),
+    },
+    Error {
+        total_games: (),
+    },
+    Ready {
+        #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+        total_games: i64,
+    },
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "TableID"))]
 pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
@@ -357,6 +381,8 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ChatHistory,
         ChatTyping,
         TableStarted,
+        Empty,
+        LobbyStatus,
     );
     schemas
 }

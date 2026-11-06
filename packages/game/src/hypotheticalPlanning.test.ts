@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { ClueType } from "./enums/ClueType";
 import { StackDirection } from "./enums/StackDirection";
 import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
@@ -175,7 +175,7 @@ describe("hypothetical planning", () => {
       { type: "play", order: 2 as CardOrder },
       context,
     );
-    expect(actions).toEqual([
+    expect(actions).toEqual<unknown>([
       { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
       { type: "play", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
       { type: "turn", num: 7, currentPlayerIndex: 1 },
@@ -183,7 +183,7 @@ describe("hypothetical planning", () => {
     const state = applyPlan(actions, context);
     expect(state.hands).toEqual(context.gameState.hands);
     expect(state.deck[2]?.location).toBe("playStack");
-    expect(state.playStacks[0]).toEqual([2]);
+    expect(state.playStacks[0]).toEqual<unknown>([2]);
     expect(state.cardsRemainingInTheDeck).toBe(0);
     expect(state.turn.turnNum).toBe(7);
     expect(state.turn.currentPlayerIndex).toBe(1);
@@ -202,7 +202,7 @@ describe("hypothetical planning", () => {
       { type: "play", order: 2 as CardOrder },
       context,
     );
-    expect(actions).toEqual([
+    expect(actions).toEqual<unknown>([
       { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 2 },
       {
         type: "discard",
@@ -221,8 +221,8 @@ describe("hypothetical planning", () => {
       location: "discard",
       isMisplayed: true,
     });
-    expect(state.discardStacks[0]).toEqual([2]);
-    expect(state.strikes.map(({ order }) => order)).toEqual([2]);
+    expect(state.discardStacks[0]).toEqual<unknown>([2]);
+    expect(state.strikes.map(({ order }) => order)).toEqual<unknown>([2]);
     expect(state.cardsRemainingInTheDeck).toBe(0);
   });
 
@@ -234,8 +234,8 @@ describe("hypothetical planning", () => {
     );
     expect(actions?.map(({ type }) => type)).toEqual(["play", "draw", "turn"]);
     const state = applyPlan(actions, context);
-    expect(state.hands[0]).toEqual([2]);
-    expect(state.playStacks[0]).toEqual([0]);
+    expect(state.hands[0]).toEqual<unknown>([2]);
+    expect(state.playStacks[0]).toEqual<unknown>([0]);
     expect(state.cardsRemainingInTheDeck).toBe(0);
   });
 
@@ -417,7 +417,7 @@ describe("hypothetical planning", () => {
         cardIdentities: [{ suitIndex: 0, rank: 2 }],
       }),
     );
-    expect(actions?.slice(0, 2)).toEqual([
+    expect(actions?.slice(0, 2)).toEqual<unknown>([
       {
         type: "discard",
         playerIndex: 0,
@@ -581,9 +581,9 @@ describe("hypothetical planning", () => {
         visibleRank: 1,
       }),
     );
-    expect(getHypotheticalTouchedCards([allTouched], clue, variant)).toEqual([
-      0,
-    ]);
+    expect(
+      getHypotheticalTouchedCards([allTouched], clue, variant),
+    ).toEqual<unknown>([0]);
 
     const noPossibilities = getHypotheticalCard(
       cardInput({
@@ -599,7 +599,7 @@ describe("hypothetical planning", () => {
     // The client used `every` for both visibility and clue matching, so an empty list is touched.
     expect(
       getHypotheticalTouchedCards([noPossibilities], clue, variant),
-    ).toEqual([0]);
+    ).toEqual<unknown>([0]);
   });
 
   test("does not touch a blank morph", () => {

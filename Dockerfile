@@ -1,16 +1,20 @@
 FROM golang:1.27-bookworm AS go
 FROM docker.io/oven/bun:1.4.4 AS bun
 
-FROM node:24-bookworm AS dependencies
+FROM bun AS dependencies
 COPY --from=go /usr/local/go /usr/local/go
-COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
-RUN ln -s /usr/local/bin/bun /usr/local/bin/bunx
 ENV PATH="/usr/local/go/bin:${PATH}"
-RUN apt-get update && apt-get install -y --no-install-recommends python3 && apt-get clean
+RUN apt-get update && apt-get install -y --no-install-recommends python3 git bzip2 && apt-get clean
 WORKDIR /root/hanabi-live
 COPY package.json bun.lock bunfig.toml tsconfig.json tsconfig.monorepo.json LICENSE ./
+COPY packages/client/package.json packages/client/package.json
+COPY packages/client-new/package.json packages/client-new/package.json
+COPY packages/data/package.json packages/data/package.json
+COPY packages/game/package.json packages/game/package.json
+COPY packages/scripts/package.json packages/scripts/package.json
+COPY packages/testing/package.json packages/testing/package.json
 COPY patches patches
-RUN test "$(bun --version)" = "$(node -p 'require("./package.json").packageManager.slice(4)')" \
+RUN test "$(bun --version)" = "$(bun -p 'require("./package.json").packageManager.slice(4)')" \
   && bun install --frozen-lockfile
 
 FROM dependencies AS build

@@ -8,6 +8,7 @@ import {
   tableJoinRequestSchema as clientCommandTableJoinData,
   tableLeaderRequestSchema as clientCommandTableSetLeaderData,
   tableVariantRequestSchema as clientCommandTableSetVariantData,
+  emptySchema,
 } from "./generated/protocol";
 // ----------------
 // Data definitions
@@ -86,6 +87,7 @@ const clientCommandSettingData = z
 // -----------
 
 export interface ClientCommandData extends GameClientCommandData {
+  [ClientCommand.lobbyLoad]: z.infer<typeof emptySchema>;
   [ClientCommand.chatRead]: z.infer<typeof clientCommandTableData>;
   [ClientCommand.chatTyping]: z.infer<typeof clientCommandTableData>;
   [ClientCommand.tagSearch]: z.infer<typeof clientCommandTagSearchData>;
@@ -125,6 +127,7 @@ export interface ClientCommandData extends GameClientCommandData {
 interfaceSatisfiesEnum<ClientCommandData, ClientCommand>();
 
 export const CLIENT_COMMAND_SCHEMAS = {
+  [ClientCommand.lobbyLoad]: emptySchema,
   [ClientCommand.chatRead]: clientCommandTableData,
   [ClientCommand.chatTyping]: clientCommandTableData,
   [ClientCommand.tagSearch]: clientCommandTagSearchData,

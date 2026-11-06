@@ -8,7 +8,7 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 REPO_ROOT="$DIR/../.."
 
-bunx --no-install esbuild "$REPO_ROOT/packages/client/src/standalone/pips-reference.ts" \
+bunx --bun --no-install esbuild "$REPO_ROOT/packages/client/src/standalone/pips-reference.ts" \
   --bundle \
   --outfile="$REPO_ROOT/public/js/bundles/pips-reference.min.js" \
   --minify \

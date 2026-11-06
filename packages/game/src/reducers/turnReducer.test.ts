@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { eRange } from "complete-common";
 import type { TurnState } from "../interfaces/TurnState";
 import { getDefaultMetadata } from "../metadata";

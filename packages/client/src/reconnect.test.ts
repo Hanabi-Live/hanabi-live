@@ -1,12 +1,17 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, spyOn, test } from "bun:test";
 import { ReconnectBackoff } from "./reconnect";
 
 describe("WebSocket reconnect backoff", () => {
-  test("starts fast, grows exponentially, and caps at thirty seconds", () => {
+  test("retries immediately, then adds bounded jitter with a thirty-second cap", () => {
     const policy = new ReconnectBackoff();
-    expect(Array.from({ length: 8 }, () => policy.nextDelay())).toEqual([
-      1000, 2000, 4000, 8000, 16_000, 30_000, 30_000, 30_000,
-    ]);
+    const random = spyOn(Math, "random").mockReturnValue(0.5);
+    try {
+      expect(Array.from({ length: 10 }, () => policy.nextDelay())).toEqual([
+        0, 150, 300, 600, 1200, 2400, 4800, 9600, 19_200, 22_500,
+      ]);
+    } finally {
+      random.mockRestore();
+    }
   });
 
   test("a fresh connection clears previous delays", () => {
@@ -14,6 +19,6 @@ describe("WebSocket reconnect backoff", () => {
     policy.nextDelay();
     policy.nextDelay();
     policy.reset();
-    expect(policy.nextDelay()).toBe(1000);
+    expect(policy.nextDelay()).toBe(0);
   });
 });

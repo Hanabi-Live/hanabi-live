@@ -308,6 +308,54 @@ async fn native_admission_waits_for_inflight_http_and_fences_lease_postgres() {
 }
 
 #[tokio::test]
+async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_explicit() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let user = fixture.db.user("FastResume").await;
+    let mut lock = fixture.db.pool.begin().await.unwrap();
+    sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
+        .execute(&mut *lock)
+        .await
+        .unwrap();
+    let prepared = tokio::time::timeout(
+        Duration::from_secs(1),
+        bootstrap(&fixture.app, user, "127.0.0.1", false),
+    )
+    .await
+    .expect("Archive reads blocked the welcome")
+    .unwrap();
+    assert_eq!(prepared.welcome["totalGames"], Value::Null);
+    assert_eq!(
+        prepared.initial,
+        vec![frame(
+            "lobbyStatus",
+            json!({"state":"loading","totalGames":null})
+        )]
+    );
+    let slots = fixture
+        .app
+        .lobby_slots
+        .clone()
+        .acquire_many_owned(64)
+        .await
+        .unwrap();
+    let (session, mut outgoing) = Session::new(user, "FastResume".into(), 1, false);
+    load_lobby(fixture.app.clone(), session, false);
+    let message = tokio::time::timeout(Duration::from_secs(1), outgoing.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        message.message.to_text().unwrap(),
+        frame("lobbyStatus", json!({"state":"error","totalGames":null}))
+    );
+    drop(slots);
+    lock.rollback().await.unwrap();
+    fixture.close().await;
+}
+
+#[tokio::test]
 async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
@@ -386,8 +434,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     );
     // Keep the normal bootstrap order while testing complete requested history
     // pages, without changing the initial ten-row history pagination policy.
-    let initial: Vec<_> = prepared
-        .initial
+    let initial: Vec<_> = lobby_initial(&fixture.app, alice, false)
+        .await
+        .unwrap()
+        .0
         .into_iter()
         .map(|message| {
             if message.starts_with("gameHistory ") {

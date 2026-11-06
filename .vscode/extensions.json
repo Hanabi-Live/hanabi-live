@@ -7,7 +7,7 @@
     "streetsidesoftware.code-spell-checker", // A spell-checker extension based on CSpell
 
     // @template-customization-start
-    "orta.vscode-jest", // The TypeScript tester
+    "oven.bun-vscode", // Bun runtime and test support
     "golang.go", // Golang language server
     "ms-python.python", // Python language server
     // @template-customization-end

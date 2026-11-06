@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, jest, test } from "@jest/globals";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 import { setBrowserAddressBarPath } from "./utils";
 
 describe("setBrowserAddressBarPath", () => {
@@ -25,8 +25,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("pushes a lobby-to-pregame transition", () => {
-    const pushState = jest.fn();
-    const replaceState = jest.fn();
+    const pushState = mock();
+    const replaceState = mock();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -45,8 +45,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("replaces an existing URL instead of duplicating a history entry", () => {
-    const pushState = jest.fn();
-    const replaceState = jest.fn();
+    const pushState = mock();
+    const replaceState = mock();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -65,8 +65,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("turn-number updates keep replacing the active entry", () => {
-    const pushState = jest.fn();
-    const replaceState = jest.fn();
+    const pushState = mock();
+    const replaceState = mock();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,

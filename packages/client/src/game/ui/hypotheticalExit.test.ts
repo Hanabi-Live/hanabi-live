@@ -1,22 +1,21 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { getDefaultMetadata } from "@hanabi-live/game";
-import { describe, expect, jest, test } from "@jest/globals";
+import type { Mock } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { createStore } from "redux";
-import { initialState } from "../reducers/initialStates/initialState";
-import { stateReducer } from "../reducers/stateReducer";
-import { ReplayActionType } from "../types/ReplayActionType";
-import type { HanabiCard } from "./HanabiCard";
-import * as mouse from "./HanabiCardMouse";
-import {
-  changeStartingHandVisibility,
-  endHypothetical,
-  finishHypothetical,
-} from "./hypothetical";
-import { globals } from "./UIGlobals";
 
-jest.mock("../reducers/uiReducer", () => ({ uiReducer: jest.fn() }));
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: jest.fn() }));
+import type { HanabiCard } from "./HanabiCard";
+
+await mock.module("../reducers/uiReducer", () => ({ uiReducer: mock() }));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("./HanabiCardMouse", () => ({ setEmpathyOnHand: mock() }));
+const { initialState } = await import("../reducers/initialStates/initialState");
+const { stateReducer } = await import("../reducers/stateReducer");
+const { ReplayActionType } = await import("../types/ReplayActionType");
+const mouse = await import("./HanabiCardMouse");
+const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
+  await import("./hypothetical");
+const { globals } = await import("./UIGlobals");
 
 function setup(shared: boolean) {
   const metadata = getDefaultMetadata(2);
@@ -40,7 +39,7 @@ function setup(shared: boolean) {
         : null,
     },
   });
-  const send = jest.fn();
+  const send = mock();
   Object.assign(globals, {
     store,
     lobby: { tableID: 42, conn: { send } },
@@ -112,8 +111,9 @@ describe("hypothetical hand empathy", () => {
 
     changeStartingHandVisibility();
 
-    const empathyCalls = (mouse.setEmpathyOnHand as unknown as jest.Mock).mock
-      .calls;
+    const empathyCalls = (
+      mouse.setEmpathyOnHand as unknown as Mock<typeof mouse.setEmpathyOnHand>
+    ).mock.calls;
     expect(empathyCalls).toHaveLength(1);
     expect(empathyCalls[0]).toEqual([card, true]);
   });

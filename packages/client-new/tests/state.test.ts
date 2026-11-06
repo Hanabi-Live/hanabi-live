@@ -6,6 +6,40 @@ import { actions, createLobbyStore } from "../src/store";
 import { welcome } from "./messages";
 
 describe("authoritative lobby state", () => {
+  it("keeps a usable connection when deferred statistics fail instead of inventing zero games", () => {
+    const store = createLobbyStore();
+    store.dispatch(
+      actions.received({
+        command: "welcome",
+        data: { ...welcome(), totalGames: null },
+      }),
+    );
+    store.dispatch(
+      actions.received({
+        command: "lobbyStatus",
+        data: { state: "loading", totalGames: null },
+      }),
+    );
+    expect(store.getState().historyLoading).toBe(true);
+    store.dispatch(
+      actions.received({
+        command: "lobbyStatus",
+        data: { state: "error", totalGames: null },
+      }),
+    );
+    expect(store.getState().connection).toBe("online");
+    expect(store.getState().welcome?.totalGames).toBeNull();
+    expect(store.getState().historyLoading).toBe(false);
+    store.dispatch(
+      actions.received({
+        command: "lobbyStatus",
+        data: { state: "ready", totalGames: 0 },
+      }),
+    );
+    expect(store.getState().welcome?.totalGames).toBe(0);
+    expect(store.getState().lobbyStatus).toBe("ready");
+  });
+
   it("replaces pregame history when returning without deleting private or other-room chat", () => {
     const store = createLobbyStore();
     const message = {

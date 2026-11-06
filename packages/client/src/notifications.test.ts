@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, jest, test } from "@jest/globals";
-import { send } from "./notifications";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 
-jest.mock("./modals", () => ({ showWarning: jest.fn() }));
+await mock.module("./modals", () => ({ showWarning: mock() }));
+const { send } = await import("./notifications");
 
 const originalNotification = Object.getOwnPropertyDescriptor(
   globalThis,
@@ -13,12 +13,13 @@ interface NotificationStub {
 }
 
 function installNotificationMock(permission: NotificationPermission) {
-  const mock = jest.fn<(...args: readonly unknown[]) => NotificationStub>();
+  const notification =
+    mock<(...args: readonly unknown[]) => NotificationStub>();
   Object.defineProperty(globalThis, "Notification", {
     configurable: true,
-    value: Object.assign(mock, { permission }),
+    value: Object.assign(notification, { permission }),
   });
-  return mock;
+  return notification;
 }
 
 afterEach(() => {
@@ -44,7 +45,7 @@ describe("desktop notifications", () => {
   });
 
   test("creates a notification and attaches a click handler on desktop", () => {
-    const listener = jest.fn<(event: string, callback: () => void) => void>();
+    const listener = mock<(event: string, callback: () => void) => void>();
     const notification = installNotificationMock("granted");
     notification.mockReturnValue({ addEventListener: listener });
 

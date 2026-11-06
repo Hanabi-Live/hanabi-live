@@ -7,7 +7,7 @@ set -euo pipefail # Exit on errors and undefined variables.
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 rm -rf "$DIR/dist"
-npx tsc
+bunx --bun --no-install tsc
 cp "$DIR/canvas2svg_node.js" "$DIR/dist/client/card-images/"
 cd "$DIR/dist/client/card-images/"
 npm i xmlserializer

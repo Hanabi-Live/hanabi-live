@@ -1,21 +1,23 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  jest,
-  test,
-} from "@jest/globals";
+import type { InstalledClock } from "@sinonjs/fake-timers";
+import { install } from "@sinonjs/fake-timers";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
-jest.mock("./Globals", () => ({
+let clock: InstalledClock;
+const originalFetch = globalThis.fetch;
+
+await mock.module("./Globals", () => ({
   globals: { conn: null, currentScreen: "Login", ui: null },
 }));
-jest.mock("./commands", () => ({ commands: new Map() }));
-jest.mock("./lobby/lobbyCommands", () => ({
-  lobbyCommands: new Map([["welcome", jest.fn()]]),
+await mock.module("./commands", () => ({ commands: new Map() }));
+await mock.module("./lobby/lobbyCommands", () => ({
+  lobbyCommands: new Map([["welcome", mock()]]),
 }));
-jest.mock("./game/ui/gameCommands", () => ({ gameCommands: new Map() }));
-jest.mock("./modals", () => ({ showError: jest.fn() }));
+await mock.module("./game/ui/gameCommands", () => ({
+  gameCommands: new Map(),
+}));
+await mock.module("./modals", () => ({ showError: mock() }));
+const { globals } = await import("./Globals");
+const { websocketInit } = await import("./websocketInit");
 
 interface FakeSocket {
   url: string;
@@ -79,14 +81,24 @@ beforeEach(() => {
       Object.getOwnPropertyDescriptor(globalThis, name),
     );
   }
-  jest.useFakeTimers();
-  jest.resetModules();
+  clock = install({
+    toFake: [
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+      "Date",
+    ],
+  });
   sockets.length = 0;
 
   globalThis.WebSocket = MockSocket as unknown as typeof WebSocket;
-  globalThis.fetch = jest
-    .fn<typeof fetch>()
-    .mockResolvedValue(new Response(null, { status: 200 }));
+  globalThis.fetch = Object.assign(
+    mock<
+      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
+    >().mockResolvedValue(new Response(null, { status: 200 })),
+    { preconnect: originalFetch.preconnect },
+  );
   Object.defineProperties(globalThis, {
     navigator: {
       configurable: true,
@@ -94,7 +106,7 @@ beforeEach(() => {
     },
     document: {
       configurable: true,
-      value: { visibilityState: "visible", addEventListener: jest.fn() },
+      value: { visibilityState: "visible", addEventListener: mock() },
     },
     location: {
       configurable: true,
@@ -102,12 +114,12 @@ beforeEach(() => {
         hostname: "localhost",
         protocol: "https:",
         port: "",
-        reload: jest.fn(),
+        reload: mock(),
       },
     },
     addEventListener: {
       configurable: true,
-      value: jest.fn(),
+      value: mock(),
     },
     $: {
       configurable: true,
@@ -117,8 +129,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.clearAllTimers();
-  jest.useRealTimers();
+  for (const socket of sockets) {
+    socket.readyState = MockSocket.CLOSED;
+  }
+  clock.uninstall();
   for (const [name, descriptor] of savedGlobalDescriptors) {
     if (descriptor === undefined) {
       Reflect.deleteProperty(globalThis, name);
@@ -131,26 +145,24 @@ afterEach(() => {
 
 describe("initial WebSocket handshake watchdog", () => {
   test("recovers a permanently CONNECTING socket without a close event", async () => {
-    const { websocketInit } = jest.requireActual<{
-      websocketInit: () => void;
-    }>("./websocketInit");
     websocketInit();
     expect(sockets).toHaveLength(1);
 
-    await jest.advanceTimersByTimeAsync(14_999);
+    await clock.tickAsync(14_999);
     expect(sockets).toHaveLength(1);
-    await jest.advanceTimersByTimeAsync(1001);
+    await clock.tickAsync(1001);
 
     expect(sockets[0]?.closed).toBe(true);
     expect(sockets).toHaveLength(2);
-    expect(sockets[1]?.url).toBe("wss://localhost/ws?reconnect=1");
+    expect(sockets[1]?.url).toBe("wss://localhost/ws?fastResume=1");
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
   test("a hanging reconnect cookie check times out and retries", async () => {
     let firstSignal: AbortSignal | null | undefined;
-    const request = jest
-      .fn<typeof fetch>()
+    const request = mock<
+      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
+    >()
       .mockImplementationOnce(
         async (_input, init) =>
           await new Promise<Response>((_resolve) => {
@@ -159,55 +171,43 @@ describe("initial WebSocket handshake watchdog", () => {
           }),
       )
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
-    globalThis.fetch = request;
+    globalThis.fetch = Object.assign(request, {
+      preconnect: originalFetch.preconnect,
+    });
 
-    const { websocketInit } = jest.requireActual<{
-      websocketInit: () => void;
-    }>("./websocketInit");
     websocketInit();
 
-    await jest.advanceTimersByTimeAsync(16_000);
+    await clock.tickAsync(15_001);
     expect(request).toHaveBeenCalledTimes(1);
     expect(firstSignal?.aborted).toBe(false);
 
-    await jest.advanceTimersByTimeAsync(10_000);
+    await clock.tickAsync(10_000);
     expect(firstSignal?.aborted).toBe(true);
     expect(request).toHaveBeenCalledTimes(1);
 
-    await jest.advanceTimersByTimeAsync(2000);
+    await clock.tickAsync(500);
     expect(request).toHaveBeenCalledTimes(2);
     expect(sockets).toHaveLength(2);
-    expect(sockets[1]?.url).toBe("wss://localhost/ws?reconnect=1");
+    expect(sockets[1]?.url).toBe("wss://localhost/ws?fastResume=1");
   });
 
   test("clears handshake timers after open and welcome", async () => {
-    const { websocketInit } = jest.requireActual<{
-      websocketInit: () => void;
-    }>("./websocketInit");
-    const { globals } = jest.requireMock<{
-      globals: {
-        conn: { callbacks: Record<string, (data: unknown) => void> } | null;
-      };
-    }>("./Globals");
     websocketInit();
 
     sockets[0]?.emit("open");
     globals.conn?.callbacks["welcome"]?.({});
 
-    await jest.advanceTimersByTimeAsync(30_000);
+    await clock.tickAsync(30_000);
     expect(sockets).toHaveLength(1);
     expect(sockets[0]?.closed).toBe(false);
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   test("recovers a socket opened without a welcome", async () => {
-    const { websocketInit } = jest.requireActual<{
-      websocketInit: () => void;
-    }>("./websocketInit");
     websocketInit();
     sockets[0]?.emit("open");
 
-    await jest.advanceTimersByTimeAsync(16_000);
+    await clock.tickAsync(16_000);
     expect(sockets[0]?.closed).toBe(true);
     expect(sockets).toHaveLength(2);
   });

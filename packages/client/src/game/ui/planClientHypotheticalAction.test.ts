@@ -14,16 +14,17 @@ import {
   getInitialCardState,
   planHypotheticalAction,
 } from "@hanabi-live/game";
-import { describe, expect, jest, test } from "@jest/globals";
-import { initialState } from "../reducers/initialStates/initialState";
-import { ActionType } from "../types/ActionType";
-import { globals } from "./UIGlobals";
-import { getCardOrStackBase } from "./getCardOrStackBase";
-import { sendHypotheticalAction } from "./hypothetical";
-import { planClientHypotheticalAction } from "./planClientHypotheticalAction";
+import { describe, expect, mock, test } from "bun:test";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("./HanabiCardMouse", () => ({}));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("./HanabiCardMouse", () => ({ setEmpathyOnHand: mock() }));
+const { initialState } = await import("../reducers/initialStates/initialState");
+const { ActionType } = await import("../types/ActionType");
+const { globals } = await import("./UIGlobals");
+const { getCardOrStackBase } = await import("./getCardOrStackBase");
+const { sendHypotheticalAction } = await import("./hypothetical");
+const { planClientHypotheticalAction } =
+  await import("./planClientHypotheticalAction");
 
 const bottomOrder = 2 as CardOrder;
 
@@ -97,7 +98,7 @@ describe("client hypothetical planning", () => {
     (rank) => {
       const context = makeContext(rank);
       const state = initialState(context.metadata);
-      const dispatch = jest.fn();
+      const dispatch = mock();
       Object.assign(globals, {
         metadata: context.metadata,
         variant: context.variant,
@@ -138,7 +139,7 @@ describe("client hypothetical planning", () => {
   test("reads the layout card for a hypothetical clue", () => {
     const context = makeContext();
     const state = initialState(context.metadata);
-    const dispatch = jest.fn();
+    const dispatch = mock();
     const handChild = {
       card: {
         state: context.gameState.deck[1],
@@ -153,7 +154,7 @@ describe("client hypothetical planning", () => {
       variant: context.variant,
       elements: {
         playerHands: [
-          { children: { each: jest.fn() } },
+          { children: { each: mock() } },
           {
             children: {
               each: (callback: (child: unknown) => void) => {
@@ -208,7 +209,7 @@ describe("client hypothetical planning", () => {
     expect(planHypotheticalAction(intent, context)).toBeNull();
 
     const actions = planClientHypotheticalAction(intent, context);
-    expect(actions).toEqual([
+    expect(actions).toEqual<unknown>([
       { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
       { type: "play", order: 2, playerIndex: 0, suitIndex: 0, rank: 1 },
       { type: "turn", num: 7, currentPlayerIndex: 1 },
@@ -228,7 +229,7 @@ describe("client hypothetical planning", () => {
       { type: "play", order: bottomOrder },
       context,
     );
-    expect(actions).toEqual([
+    expect(actions).toEqual<unknown>([
       { type: "draw", order: 2, playerIndex: 0, suitIndex: 0, rank: 2 },
       {
         type: "discard",

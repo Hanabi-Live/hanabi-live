@@ -289,7 +289,7 @@ impl Hub {
         words: Arc<Vec<String>>,
         tasks: TaskTracker,
     ) -> Result<mpsc::Sender<HubCommand>> {
-        let restored = store.load().await?;
+        let restored = store.load_for_startup().await?;
         let (sender, receiver) = mpsc::channel(512);
         let mut hub = Self {
             receiver,
@@ -573,13 +573,17 @@ impl Hub {
             let _ = reply.send(Err(error));
             return;
         }
-        if matches!(command, Operation::Drained) {
+        if let Operation::Drained { restart } = command {
             let messages = [
                 frame("soundLobby", json!({"file":"shutdown"})),
-                frame(
-                    "error",
-                    json!({"error":"The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts."}),
-                ),
+                if restart {
+                    frame("restart", json!({}))
+                } else {
+                    frame(
+                        "error",
+                        json!({"error":"The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts."}),
+                    )
+                },
             ];
             let total = self.sessions.len();
             let receipts = self
@@ -603,7 +607,7 @@ impl Hub {
         }
         let mut jobs = vec![];
         let result = match command {
-            Operation::Drained => unreachable!("handled before dispatch"),
+            Operation::Drained { .. } => unreachable!("handled before dispatch"),
             Operation::Inspect | Operation::LongTables => Ok(
                 json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
             ),
@@ -1962,6 +1966,22 @@ impl TableActor {
         mut receiver: mpsc::Receiver<TableCommand>,
         initial: Option<(Arc<Session>, Vec<String>, Reply)>,
     ) {
+        let mut pregame_refresh =
+            if initial.is_none() && matches!(self.table.phase, Phase::Pregame { .. }) {
+                let pool = self.store.lobby_reads.clone();
+                let users = self
+                    .table
+                    .players()
+                    .iter()
+                    .map(|player| player.id)
+                    .collect::<Vec<_>>();
+                Some(Box::pin(async move {
+                    let counts = crate::database::normal_game_counts(&pool, &users, false).await?;
+                    Ok::<_, anyhow::Error>((users, counts))
+                }))
+            } else {
+                None
+            };
         if let Some((session, warnings, reply)) = initial {
             let result = self.initialize(session, warnings).await;
             let _ = reply.send(result);
@@ -1975,6 +1995,31 @@ impl TableActor {
             }
             let discovering = discovery.is_some();
             tokio::select! {
+                result=async{pregame_refresh.as_mut().expect("enabled statistics refresh").await},if pregame_refresh.is_some()=>{
+                    pregame_refresh = None;
+                    let applied = async {
+                        let (users, counts) = result?;
+                        let mut next = self.candidate();
+                        let Phase::Pregame { players, .. } = &mut next.phase else { return Ok::<_, anyhow::Error>(()); };
+                        let mut changed = false;
+                        for player in players.iter_mut().filter(|player| users.contains(&player.id)) {
+                            let count = counts.get(&player.id).copied().unwrap_or(0);
+                            let stats = player.stats.as_object_mut().context("Invalid cached pregame statistics")?;
+                            if stats.get("numGames").and_then(Value::as_i64) != Some(count) {
+                                stats.insert("numGames".into(), json!(count));
+                                changed = true;
+                            }
+                        }
+                        if changed {
+                            self.persist(next).await?;
+                            let mut effects = self.effects();
+                            self.pregame_messages(&mut effects);
+                            self.publish(effects).await?;
+                        }
+                        Ok(())
+                    }.await;
+                    if let Err(error)=applied { eprintln!("Deferred pregame statistics failed for table {}: {error:#}", self.table.id); }
+                },
                 selected=async{discovery.as_mut().expect("enabled discovery").0.query.as_mut().await},if discovering=>{
                     let (query,reply)=discovery.take().expect("completed discovery");
                     let result=self.finish_discovery(query,selected).await;

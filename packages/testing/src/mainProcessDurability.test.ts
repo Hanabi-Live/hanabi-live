@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
-import { expect, test } from "@jest/globals";
+import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
 import {

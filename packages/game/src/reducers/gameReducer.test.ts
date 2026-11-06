@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { assertDefined, assertNotNull, eRange, iRange } from "complete-common";
 import { MAX_CLUE_NUM } from "../constants";
 import { CardStatus } from "../enums/CardStatus";
@@ -64,7 +64,9 @@ describe("gameReducer", () => {
     expect(updated.deck[0]?.numPositiveClues).toBe(1);
     expect(updated.deck[1]?.hasClueApplied).toBe(true);
     for (const [index, card] of updated.deck.entries()) {
-      expect(card.possibleCards).toEqual(state.deck[index]?.possibleCards);
+      expect(card.possibleCards).toEqual<unknown>(
+        state.deck[index]?.possibleCards,
+      );
       expect(card.positiveColorClues).toEqual([]);
       expect(card.positiveRankClues).toEqual([]);
     }
@@ -882,8 +884,8 @@ describe("gameReducer", () => {
       const clue = state.clues[0];
       assertDefined(clue, "Failed to get the clue.");
 
-      expect(clue.list).toEqual([0, 1, 2]);
-      expect(clue.negativeList).toEqual([3, 4]);
+      expect(clue.list).toEqual<unknown>([0, 1, 2]);
+      expect(clue.negativeList).toEqual<unknown>([3, 4]);
     });
 
     test("decrement clueTokens", () => {

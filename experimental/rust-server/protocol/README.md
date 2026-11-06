@@ -56,8 +56,8 @@ Unknown schema features fail generation rather than silently losing validation.
   parser.
 
 The fixtures were checked against both handwritten parsers before adoption and
-are now consumed by Rust and Jest. Real Go/Rust process and browser tests also
-exercise the generated client validators against actual server traffic.
+are now consumed by Rust and Bun tests. Real Go/Rust process and browser tests
+also exercise the generated client validators against actual server traffic.
 
 ## Incremental boundary
 

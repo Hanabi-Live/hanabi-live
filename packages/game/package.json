@@ -14,6 +14,13 @@
   "license": "GPL-3.0",
   "author": "Zamiell",
   "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -36,9 +43,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@jest/globals": "30.5.2",
-    "jsonc-parser": "3.3.1",
-    "ts-jest": "29.4.14",
+    "@types/bun": "1.4.4",
     "typedoc": "0.28.20"
   }
 }

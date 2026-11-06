@@ -11,7 +11,7 @@ import {
   initializeHypotheticalState,
   planHypotheticalAction,
 } from "@hanabi-live/game";
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { assertDefined, assertNotNull } from "complete-common";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
@@ -34,7 +34,7 @@ function expectConsistentCollections(state: GameState) {
 
   for (const [player, hand] of state.hands.entries()) {
     for (const order of hand) {
-      expect(state.deck[order]?.location).toBe(player);
+      expect(state.deck[order]?.location).toBe<unknown>(player);
     }
   }
   for (const stack of state.playStacks) {
@@ -48,7 +48,7 @@ function expectConsistentCollections(state: GameState) {
     }
   }
   for (const order of state.hole) {
-    expect(state.deck[order]?.location).toBe("hole");
+    expect(state.deck[order]?.location).toBe<unknown>("hole");
   }
 }
 
@@ -58,7 +58,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     assertDefined(gameState, "Missing replay segment 60.");
     expect(metadata.options.variantName).toBe("Sudoku (5 Suits)");
     expect(gameState.turn.currentPlayerIndex).toBe(0);
-    expect(gameState.hands[0]).toEqual([30, 38, 42, 44, 47]);
+    expect(gameState.hands[0]).toEqual<unknown>([30, 38, 42, 44, 47]);
   });
 
   test.each([59, 60, 61])(
@@ -184,8 +184,8 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     const after = hypothetical.ongoing;
     expect(after.cardsRemainingInTheDeck).toBe(0);
     expect(after.turn.currentPlayerIndex).toBe(1);
-    expect(after.hands[0]).toContain(49);
-    expect(after.hands[1]).not.toContain(49);
+    expect<readonly number[]>(after.hands[0]).toContain(49);
+    expect<readonly number[]>(after.hands[1]).not.toContain(49);
 
     // Replaying card 49 from another hand would duplicate it in the UI.
     const card = after.deck[49];

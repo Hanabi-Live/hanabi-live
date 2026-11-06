@@ -177,7 +177,7 @@ export function draw(friends: boolean): void {
   }
 
   // Do not show the "Show More History" if we have 10 or less games played.
-  if (globals.totalGames <= 10) {
+  if (globals.totalGames !== null && globals.totalGames <= 10) {
     $("#lobby-history-show-more").hide();
   } else {
     $("#lobby-history-show-more").show();

@@ -21,6 +21,7 @@ export interface LobbyState {
     | "reconnecting"
     | "stopped";
   welcome: Welcome | null;
+  lobbyStatus: "loading" | "ready" | "error";
   tables: Record<number, Table>;
   directoryReady: boolean;
   users: Record<number, User>;
@@ -48,6 +49,7 @@ function initialState(): LobbyState {
   return {
     connection: "checking",
     welcome: null,
+    lobbyStatus: "ready",
     tables: {},
     directoryReady: false,
     users: {},
@@ -140,6 +142,23 @@ const slice = createSlice({
     received(state, { payload }: PayloadAction<ServerEvent>) {
       const event = castDraft(payload);
       switch (event.command) {
+        case "lobbyStatus": {
+          state.lobbyStatus = event.data.state;
+          if (event.data.state === "loading") {
+            state.historyLoading = Object.keys(state.history).length === 0;
+            state.friendHistoryLoading =
+              Object.keys(state.friendHistory).length === 0;
+          }
+          if (state.welcome && event.data.state === "ready") {
+            state.welcome.totalGames = event.data.totalGames;
+          }
+          if (event.data.state === "error") {
+            state.historyLoading = false;
+            state.friendHistoryLoading = false;
+          }
+          break;
+        }
+
         case "welcome": {
           state.preferenceStatus = "saved";
           state.tableID = null;
@@ -375,6 +394,7 @@ const slice = createSlice({
           for (const game of event.data) {
             if (
               state.welcome
+              && state.welcome.totalGames !== null
               && game.incrementNumGames
               && !state.history[game.id]
             ) {

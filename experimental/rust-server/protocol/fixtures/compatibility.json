@@ -1,5 +1,47 @@
 [
   {
+    "name": "deferred lobby request is empty and strict",
+    "direction": "client",
+    "command": "lobbyLoad",
+    "input": {},
+    "valid": true
+  },
+  {
+    "name": "restart notification has no arbitrary fields",
+    "direction": "server",
+    "command": "restart",
+    "input": { "error": "not a fatal error" },
+    "valid": false
+  },
+  {
+    "name": "loading statistics are unknown, not zero",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": { "state": "loading", "totalGames": null },
+    "valid": true
+  },
+  {
+    "name": "failed lobby reads remain explicitly unavailable",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": { "state": "error", "totalGames": null },
+    "valid": true
+  },
+  {
+    "name": "ready statistics can accurately report zero games",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": { "state": "ready", "totalGames": 0 },
+    "valid": true
+  },
+  {
+    "name": "ready statistics cannot omit the real total",
+    "direction": "server",
+    "command": "lobbyStatus",
+    "input": { "state": "ready", "totalGames": null },
+    "valid": false
+  },
+  {
     "name": "chat preserves escaped text and empty request ID",
     "direction": "client",
     "command": "chat",

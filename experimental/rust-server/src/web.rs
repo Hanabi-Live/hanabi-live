@@ -66,11 +66,13 @@ pub struct App {
     pub connections: TaskTracker,
     pub background: TaskTracker,
     pub shutdown: CancellationToken,
+    pub read_shutdown: CancellationToken,
     pub lease_lost: CancellationToken,
     pub admission: Arc<tokio::sync::RwLock<()>>,
     generation: AtomicU64,
     sockets: Arc<Semaphore>,
     incoming_bytes: Arc<Semaphore>,
+    lobby_slots: Arc<Semaphore>,
     public: PublicConfig,
     started: Instant,
     came_online: DateTime<Utc>,
@@ -112,9 +114,11 @@ impl App {
             generation: AtomicU64::new(1),
             sockets: Arc::new(Semaphore::new(4096)),
             incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
+            lobby_slots: Arc::new(Semaphore::new(64)),
             connections: TaskTracker::new(),
             background: TaskTracker::new(),
             shutdown: CancellationToken::new(),
+            read_shutdown: CancellationToken::new(),
             lease_lost,
             admission: Arc::new(tokio::sync::RwLock::new(())),
             public,
@@ -184,7 +188,7 @@ pub fn router(app: Arc<App>) -> Router {
         .with_state(app.clone())
         .merge(accounts)
         .layer(middleware::from_fn_with_state(app.clone(), check_origin));
-    public_http::router(app.store.primary.clone(), app.public.clone()).merge(authenticated)
+    public_http::router(app.store.lobby_reads.clone(), app.public.clone()).merge(authenticated)
 }
 
 fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -> bool {
@@ -306,11 +310,10 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
     .context("The authenticated user no longer exists.")?;
     let name: String = row.username.clone();
     let normalized_name: String = row.normalized_username.clone();
-    let (settings, friends, muted, total) = tokio::try_join!(
+    let (settings, friends, muted) = tokio::try_join!(
         lobby::get_settings(pool, id),
         lobby::friends(pool, id),
-        accounts::is_muted(pool, ip),
-        crate::database::normal_game_count(pool, id, true)
+        accounts::is_muted(pool, ip)
     )?;
     let created: DateTime<Utc> = row.datetime_created;
     let runtime = app
@@ -319,7 +322,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         .unwrap_or_else(|e| e.into_inner())
         .clone();
     let mut welcome = json!({
-        "userID":id,"username":name,"totalGames":total,
+        "userID":id,"username":name,"totalGames":null,
         "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
         "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
         "playingAtTables":[],"randomTableName":"","shuttingDown":runtime.as_ref().is_some_and(|r|r.shutting_down()),
@@ -328,6 +331,27 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
     if let Some(started) = runtime.as_ref().and_then(|r| r.shutdown_started_at()) {
         welcome["datetimeShutdownInit"] = json!(started);
     }
+    sqlx::query!(
+        "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
+        id,
+        ip
+    )
+    .execute(pool)
+    .await?;
+    Ok(Bootstrap {
+        name,
+        normalized_name,
+        welcome,
+        initial: vec![frame(
+            "lobbyStatus",
+            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+        )],
+    })
+}
+
+async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<String>, i64)> {
+    let pool = &app.store.lobby_reads;
+    let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];
     if !reconnect {
         let (chat, own_ids, friend_ids) = tokio::try_join!(
@@ -367,23 +391,63 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
             Err(error) => return Err(error.into()),
         }
         initial.push(frame("gameHistory", json!(own)));
-        if !friends.is_empty() {
-            initial.push(frame("gameHistoryFriends", json!(friend_history)));
-        }
+        initial.push(frame("gameHistoryFriends", json!(friend_history)));
     }
-    sqlx::query!(
-        "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
-        id,
-        ip
-    )
-    .execute(pool)
-    .await?;
-    Ok(Bootstrap {
-        name,
-        normalized_name,
-        welcome,
-        initial,
-    })
+    Ok((initial, total))
+}
+
+fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
+    let Ok(session_slot) = session.lobby_load.clone().try_acquire_owned() else {
+        session.emit(&frame(
+            "lobbyStatus",
+            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+        ));
+        return;
+    };
+    let slot = app.lobby_slots.clone().try_acquire_owned();
+    let tracker = app.background.clone();
+    tracker.spawn(async move {
+        let _session_slot = session_slot;
+        let result = async {
+            let _slot = slot.context("Lobby read queue is full")?;
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                lobby_initial(&app, session.user, reconnect),
+            )
+            .await
+            .context("Lobby loading timed out")?
+        };
+        let result = tokio::select! {
+            _ = session.cancel.cancelled() => return,
+            _ = app.read_shutdown.cancelled() => return,
+            result = result => result,
+        };
+        let _admission = app.admission.read().await;
+        if !app.accepting.load(Ordering::Acquire) || !app.healthy() || !session.active() {
+            return;
+        }
+        match result {
+            Ok((messages, total)) => {
+                for message in messages {
+                    session.emit(&message);
+                }
+                session.emit(&frame(
+                    "lobbyStatus",
+                    hanabi_protocol::LobbyStatus::Ready { total_games: total },
+                ));
+            }
+            Err(error) => {
+                eprintln!(
+                    "Deferred lobby loading failed for user {}: {error:#}",
+                    session.user
+                );
+                session.emit(&frame(
+                    "lobbyStatus",
+                    hanabi_protocol::LobbyStatus::Error { total_games: () },
+                ));
+            }
+        }
+    });
 }
 
 async fn websocket(
@@ -432,6 +496,8 @@ async fn websocket(
     };
     let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "reconnect" && value == "1");
+    let fast_resume = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+        .any(|(key, value)| key == "fastResume" && value == "1");
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
         .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)
@@ -440,19 +506,19 @@ async fn websocket(
             tracker
                 .track_future(async move {
                     let _slot = slot;
-                    if connection(
+                    if let Err(error) = connection(
                         socket,
                         app.clone(),
                         id,
                         generation,
                         address.ip().to_string(),
                         reconnect,
+                        fast_resume,
                     )
                     .await
-                    .is_err()
                     {
                         app.telemetry("websocket");
-                        eprintln!("WebSocket session failed.");
+                        eprintln!("WebSocket session failed: {error:#}");
                     }
                 })
                 .await;
@@ -466,13 +532,25 @@ async fn connection(
     generation: u64,
     ip: String,
     reconnect: bool,
+    fast_resume: bool,
 ) -> Result<()> {
     let admission = app.admission.clone().read_owned().await;
     ensure!(
         app.accepting.load(Ordering::Acquire) && app.healthy(),
         "Server unavailable"
     );
-    let data = match bootstrap(&app, id, &ip, reconnect).await {
+    let data = match async {
+        let mut data = bootstrap(&app, id, &ip, reconnect).await?;
+        if !fast_resume {
+            // Older clients require a numeric total and the original bootstrap ordering.
+            let (initial, total) = lobby_initial(&app, id, reconnect).await?;
+            data.welcome["totalGames"] = json!(total);
+            data.initial = initial;
+        }
+        Ok::<_, anyhow::Error>(data)
+    }
+    .await
+    {
         Ok(data) => data,
         Err(error) => {
             let _ = tokio::time::timeout(
@@ -574,6 +652,9 @@ async fn connection(
             .await?;
         received.await??;
         drop(admission);
+        if fast_resume {
+            load_lobby(app.clone(), session.clone(), false);
+        }
         loop {
             let command = tokio::select! {
                 _=session.cancel.cancelled()=>break,
@@ -744,7 +825,7 @@ fn format_duration(seconds: u64) -> String {
     }
 }
 
-async fn dispatch(app: &App, session: Arc<Session>, input: &str) -> Result<()> {
+async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<()> {
     let _admission = app.admission.clone().read_owned().await;
     ensure!(
         app.accepting.load(Ordering::Acquire) && app.healthy() && session.active(),
@@ -761,6 +842,15 @@ async fn dispatch(app: &App, session: Arc<Session>, input: &str) -> Result<()> {
         }
     };
     let mut measurement = crate::metrics::COMMAND_METRICS.start(&command);
+    if command == "lobbyLoad" {
+        session.emit(&frame(
+            "lobbyStatus",
+            hanabi_protocol::LobbyStatus::Loading { total_games: () },
+        ));
+        load_lobby(app.clone(), session, false);
+        measurement.success();
+        return Ok(());
+    }
     let (reply, received) = oneshot::channel();
     app.hub
         .send(HubCommand::Directory {
@@ -801,15 +891,30 @@ async fn dispatch(app: &App, session: Arc<Session>, input: &str) -> Result<()> {
         )
         .await?
     } else if lobby::handles_command(&command) {
-        lobby::dispatch(
-            &app.store.primary,
+        let history = matches!(
+            command.as_str(),
+            "historyGet" | "historyFriendsGet" | "historyGetSeed" | "chatPlayerInfo"
+        );
+        let work = lobby::dispatch(
+            if history {
+                &app.store.lobby_reads
+            } else {
+                &app.store.primary
+            },
             &app.secret,
             &caller,
             &online,
             &command,
             std::mem::take(&mut data),
-        )
-        .await?
+        );
+        if history {
+            tokio::select! {
+                _ = app.read_shutdown.cancelled() => return Ok(()),
+                result = work => result?,
+            }
+        } else {
+            work.await?
+        }
     } else {
         None
     };

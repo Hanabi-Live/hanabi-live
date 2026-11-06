@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-null */
 
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import {
   PipState,
   getCardBorderPresentation,

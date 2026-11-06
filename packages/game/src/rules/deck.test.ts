@@ -1,6 +1,4 @@
-/* eslint-disable complete/prefer-readonly-parameter-types */
-
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { getDefaultVariant, getVariant } from "../gameData";
 import { getTotalCardsInDeck } from "./deck";
 
@@ -11,30 +9,27 @@ describe("getTotalCardsInDeck", () => {
     expect(getTotalCardsInDeck(DEFAULT_VARIANT)).toBe(50);
   });
 
-  test.each`
-    suits | cards
-    ${3}  | ${30}
-    ${4}  | ${40}
-    ${6}  | ${60}
-  `("returns $cards for $suits suits", ({ suits, cards }) => {
+  test.each([
+    [3, 30],
+    [4, 40],
+    [6, 60],
+  ])("counts cards for %i suits", (suits, cards) => {
     const variant = getVariant(`${suits} Suits`);
     expect(getTotalCardsInDeck(variant)).toBe(cards);
   });
 
-  test.each`
-    suits | cards
-    ${5}  | ${45}
-    ${6}  | ${55}
-  `("returns $cards for Black ($suits suits)", ({ suits, cards }) => {
+  test.each([
+    [5, 45],
+    [6, 55],
+  ])("counts cards for Black (%i suits)", (suits, cards) => {
     const blackVariant = getVariant(`Black (${suits} Suits)`);
     expect(getTotalCardsInDeck(blackVariant)).toBe(cards);
   });
 
-  test.each`
-    suits | cards
-    ${5}  | ${45}
-    ${6}  | ${54}
-  `("returns $cards for Up or Down ($suits suits)", ({ suits, cards }) => {
+  test.each([
+    [5, 45],
+    [6, 54],
+  ])("counts cards for Up or Down (%i suits)", (suits, cards) => {
     const upOrDownVariant = getVariant(`Up or Down (${suits} Suits)`);
     expect(getTotalCardsInDeck(upOrDownVariant)).toBe(cards);
   });

@@ -39,6 +39,11 @@ export class Connection {
   callbacks: WebSocketCallbacks = {};
   debug: boolean;
   private readonly allowApplicationCommands: boolean;
+  private ready = true;
+
+  setReady(ready: boolean): void {
+    this.ready = ready;
+  }
 
   constructor(addr: string, debug: boolean, allowApplicationCommands = true) {
     this.ws = new WebSocket(addr);
@@ -110,6 +115,14 @@ export class Connection {
     if (
       !this.allowApplicationCommands
       || this.ws.readyState !== WebSocket.OPEN
+      || (!this.ready
+        && ![
+          "getGameInfo1",
+          "getGameInfo2",
+          "loaded",
+          "tableReattend",
+          "tableSpectate",
+        ].includes(command))
     ) {
       return;
     }

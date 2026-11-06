@@ -1,15 +1,21 @@
-import { describe, expect, jest, test } from "@jest/globals";
-import {
+import { describe, expect, mock, test } from "bun:test";
+
+await mock.module("./chat", () => ({
+  SelfChatMessageType: {},
+  sendSelfPMFromServer: mock(),
+  sendChat: mock(),
+}));
+await mock.module("./Globals", () => ({ globals: {} }));
+await mock.module("./lobby/createGame", () => ({}));
+await mock.module("./modals", () => ({}));
+await mock.module("./lobby/createReplayJSON.ts", () => ({
+  createJSONFromReplay: mock(),
+}));
+const {
   getVariantFromArgs,
   getVariantNameFromPartial,
   parsePMHistoryCommandArgs,
-} from "./chatCommands";
-
-jest.mock("./chat", () => ({}));
-jest.mock("./Globals", () => ({}));
-jest.mock("./lobby/createGame", () => ({}));
-jest.mock("./modals", () => ({}));
-jest.mock("./lobby/createReplayJSON.ts", () => ({}));
+} = await import("./chatCommands");
 
 const brownFives = "Brown-Fives (6 Suits)";
 const brownFivesPrism6Suits = "Brown-Fives & Prism (6 Suits)";

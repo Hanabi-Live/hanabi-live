@@ -1,33 +1,33 @@
-import { describe, expect, jest, test } from "@jest/globals";
-import { LayoutChild } from "./LayoutChild";
-import { globals } from "./UIGlobals";
+import { describe, expect, mock, test } from "bun:test";
 
-jest.mock("./UIGlobals", () => ({ globals: {} }));
-jest.mock("../../modals", () => ({}));
-jest.mock("../../sounds", () => ({}));
-jest.mock("./checkMisplay", () => ({}));
-jest.mock("./cursor", () => ({}));
-jest.mock("./isOurTurn", () => ({}));
-jest.mock("./turn", () => ({}));
+await mock.module("./UIGlobals", () => ({ globals: {} }));
+await mock.module("../../modals", () => ({}));
+await mock.module("../../sounds", () => ({}));
+await mock.module("./checkMisplay", () => ({ checkMisplay: mock() }));
+await mock.module("./cursor", () => ({}));
+await mock.module("./isOurTurn", () => ({ isOurTurn: mock() }));
+await mock.module("./turn", () => ({}));
+const { LayoutChild } = await import("./LayoutChild");
+const { globals } = await import("./UIGlobals");
 
 describe("LayoutChild initialization without a pointer", () => {
   test.each([undefined, { x: 10, y: 20 }])(
     "updates drag state with pointer %p",
     (pointer) => {
       const shape = {};
-      const getIntersection = jest.fn(
+      const getIntersection = mock(
         (_pointer: Readonly<{ x: number; y: number }>) => shape,
       );
-      const setCursor = jest.fn();
-      const draggable = jest.fn();
+      const setCursor = mock();
+      const draggable = mock();
       const child = {
         shouldBeDraggable: () => true,
         draggable,
-        on: jest.fn(),
-        off: jest.fn(),
-        dragEnd: jest.fn(),
+        on: mock(),
+        off: mock(),
+        dragEnd: mock(),
         card: { isAncestorOf: () => true, setCursor },
-      } as unknown as LayoutChild;
+      } as unknown as InstanceType<typeof LayoutChild>;
       Object.assign(globals, {
         state: { visibleState: { turn: { currentPlayerIndex: 0 } } },
         stage: { getPointerPosition: () => pointer, getIntersection },

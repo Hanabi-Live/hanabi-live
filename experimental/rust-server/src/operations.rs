@@ -34,7 +34,9 @@ pub enum Operation {
         imminent: bool,
     },
     Inspect,
-    Drained,
+    Drained {
+        restart: bool,
+    },
     LongTables,
     ClearEmptyTables,
     ClearPregames,

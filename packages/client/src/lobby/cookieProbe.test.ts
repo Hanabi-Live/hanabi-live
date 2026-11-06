@@ -1,21 +1,26 @@
-import { afterEach, describe, expect, jest, test } from "@jest/globals";
+import type { InstalledClock } from "@sinonjs/fake-timers";
+import { install } from "@sinonjs/fake-timers";
+import { afterEach, describe, expect, mock, test } from "bun:test";
 import { checkCookieWithRetry } from "./cookieProbe";
 
 const originalFetch = globalThis.fetch;
+let clock: InstalledClock | undefined;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  jest.useRealTimers();
+  clock?.uninstall();
 });
 
 describe("cached login cookie check", () => {
   test.each([200, 204, 401, 403])(
     "handles HTTP %s without retrying",
     async (status) => {
-      const request = jest
-        .fn<() => Promise<Response>>()
-        .mockResolvedValue(new Response(null, { status }));
-      globalThis.fetch = request;
+      const request = mock<() => Promise<Response>>().mockResolvedValue(
+        new Response(null, { status }),
+      );
+      globalThis.fetch = Object.assign(request, {
+        preconnect: originalFetch.preconnect,
+      });
 
       const result = await checkCookieWithRetry();
 
@@ -25,43 +30,71 @@ describe("cached login cookie check", () => {
   );
 
   test("recovers from a rejected request after a backoff", async () => {
-    jest.useFakeTimers();
-    const request = jest
-      .fn<() => Promise<Response>>()
+    clock = install({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    });
+    const request = mock<() => Promise<Response>>()
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
-    globalThis.fetch = request;
+    globalThis.fetch = Object.assign(request, {
+      preconnect: originalFetch.preconnect,
+    });
 
     const pending = checkCookieWithRetry();
-    await jest.advanceTimersByTimeAsync(1000);
+    await clock.tickAsync(1000);
 
     const response = await pending;
     expect(response.status).toBe(200);
     expect(request).toHaveBeenCalledTimes(2);
-    expect(jest.getTimerCount()).toBe(0);
+    expect(clock.countTimers()).toBe(0);
   });
 
   test("retries transient HTTP errors but stops after three attempts", async () => {
-    jest.useFakeTimers();
-    const request = jest
-      .fn<() => Promise<Response>>()
-      .mockResolvedValue(new Response(null, { status: 503 }));
-    globalThis.fetch = request;
-
-    const pending = expect(checkCookieWithRetry()).rejects.toThrow(
-      "Cookie check failed with status 503.",
+    clock = install({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    });
+    const request = mock<() => Promise<Response>>().mockResolvedValue(
+      new Response(null, { status: 503 }),
     );
-    await jest.advanceTimersByTimeAsync(3000);
+    globalThis.fetch = Object.assign(request, {
+      preconnect: originalFetch.preconnect,
+    });
 
-    await pending;
+    const pending = checkCookieWithRetry().catch((error: unknown) => error);
+    await clock.tickAsync(3000);
+
+    expect(await pending).toEqual(
+      new Error("Cookie check failed with status 503."),
+    );
     expect(request).toHaveBeenCalledTimes(3);
-    expect(jest.getTimerCount()).toBe(0);
+    expect(clock.countTimers()).toBe(0);
   });
 
   test("aborts a stalled request and retries", async () => {
-    jest.useFakeTimers();
-    const request = jest
-      .fn<typeof fetch>()
+    clock = install({
+      toFake: [
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+        "Date",
+      ],
+    });
+    const request = mock<
+      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
+    >()
       .mockImplementationOnce(
         async (_input, init) =>
           await new Promise<Response>((_resolve, reject) => {
@@ -71,14 +104,16 @@ describe("cached login cookie check", () => {
           }),
       )
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    globalThis.fetch = request;
+    globalThis.fetch = Object.assign(request, {
+      preconnect: originalFetch.preconnect,
+    });
 
     const pending = checkCookieWithRetry();
-    await jest.advanceTimersByTimeAsync(11_000);
+    await clock.tickAsync(11_000);
 
     const response = await pending;
     expect(response.status).toBe(204);
     expect(request).toHaveBeenCalledTimes(2);
-    expect(jest.getTimerCount()).toBe(0);
+    expect(clock.countTimers()).toBe(0);
   });
 });

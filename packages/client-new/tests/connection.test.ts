@@ -48,6 +48,17 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("retries a transient first session check without discarding authentication", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, () => true);
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 503 }));
+    await connection.checkSession();
+    expect(store.getState().connection).toBe("reconnecting");
+    await vi.advanceTimersByTimeAsync(1);
+    expect(Socket.instances).toHaveLength(1);
+    connection.stop();
+  });
+
   it("confirms the latest preference write only after its ordered server barrier", async () => {
     const store = createLobbyStore();
     const navigate = vi.fn(() => true);

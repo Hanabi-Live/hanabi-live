@@ -31,20 +31,6 @@ source "$DIR/get_version.sh"
 # Prepare the "version.js" file.
 bash "$DIR/set_version.sh"
 
-# The legacy Go restart may run without the interactive shell's Node/Bun paths.
-if ! command -v node > /dev/null; then
-  # Assume that Node Version Manager (fnm) is being used on this system.
-  # https://github.com/schniz/fnm
-  HOME="${HOME:-/root}"
-  FNM_PATH="$HOME/.local/share/fnm/fnm"
-  if [[ ! -x "$FNM_PATH" ]]; then
-    echo "Failed to find the \"fnm\" binary (in the \"$FNM_PATH\" directory)."
-    exit 1
-  fi
-
-  eval "$("$FNM_PATH" env --shell bash)"
-fi
-
 if ! command -v bun > /dev/null; then
   export PATH="${BUN_INSTALL:-${HOME:-/root}/.bun}/bin:$PATH"
 fi
@@ -61,7 +47,7 @@ echo "Packing the TypeScript using esbuild..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
-bunx --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
+bunx --bun --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
 # Also produce the unversioned bundle name that the server serves in dev mode. (Normally it is
 # only created by the esbuild watch script, but the Docker image runs in dev mode.)
 cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
@@ -73,14 +59,14 @@ echo
 if [[ ${1-} == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
-  bunx --no-install grunt critical --url="http://localhost:$PORT"
+  bunx --bun --no-install grunt critical --url="http://localhost:$PORT"
   echo
   echo "Remember to commit the \"critical.min.css\" file if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  bunx --no-install grunt
+  bunx --bun --no-install grunt
   echo
 fi
 GRUNT_OUTPUT_DIR="$DIR/grunt_output"

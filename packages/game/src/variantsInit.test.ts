@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "bun:test";
 import { COLORS_MAP, SUITS_MAP } from "./gameData";
 import { createVariant } from "./variantsInit";
 
