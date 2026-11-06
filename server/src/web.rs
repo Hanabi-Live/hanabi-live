@@ -297,8 +297,6 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
         "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
         "playingAtTables":[],
-        // Deployed clients still require this field when reconnecting; names are no longer random.
-        "randomTableName":format!("{name}'s table"),
         // Required by already-open clients; neither retired mode can be enabled.
         "shuttingDown":false,
         "maintenanceMode":false,
