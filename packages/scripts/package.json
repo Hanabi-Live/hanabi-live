@@ -2,13 +2,14 @@
   "name": "@hanabi-live/scripts",
   "private": true,
   "dependencies": {
-    "@hanabi-live/game": "file:../game",
-    "complete-common": "2.32.0",
-    "complete-node": "18.1.2",
-    "lodash": "4.18.1",
-    "prettier": "3.9.10"
+    "@hanabi-live/game": "workspace:*",
+    "complete-common": "catalog:",
+    "complete-node": "catalog:",
+    "lodash": "catalog:",
+    "prettier": "catalog:"
   },
   "devDependencies": {
-    "@types/lodash": "4.17.26"
+    "@types/bun": "catalog:",
+    "@types/lodash": "catalog:"
   }
 }

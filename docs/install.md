@@ -50,8 +50,11 @@ bash lint.sh
 native Bun tests and per-file isolation. For a focused unit test, use
 `bun test --isolate --tsconfig-override tsconfig.monorepo.json PATH`. Use
 `bunx --bun --no-install` for installed tools so checks cannot silently download
-unlocked versions. For intentional dependency changes, run `bun install` and
-commit the updated manifest and lockfile. Dependency lifecycle scripts are
+unlocked versions. External versions are centralized in the root
+`workspaces.catalog`; manifests use `catalog:` for these dependencies and
+`workspace:*` for local packages. To change a version, edit its catalog entry,
+run `bun install`, and commit the manifest and lockfile. `bun run update` honors
+the existing version locks and update cooldown. Dependency lifecycle scripts are
 restricted to the explicit `trustedDependencies` list.
 
 `bunfig.toml` disables automatic `.env` loading and preserves the existing

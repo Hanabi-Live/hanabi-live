@@ -22,6 +22,13 @@ bun add @hanabi-live/game
 
 <br>
 
+## Publishing
+
+From this directory, use `bun pm pack` to inspect a release archive and
+`bun publish` to publish an intentionally versioned release. The `prepack`
+script builds the library first. Bun replaces `catalog:` dependencies with their
+pinned versions; do not publish the source manifest with another tool.
+
 ## Usage
 
 ### TypeScript

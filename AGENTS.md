@@ -24,6 +24,13 @@ backends and runs the migrated suites with Bun's native test runner and per-file
 isolation. Keep automatic `.env` loading disabled in `bunfig.toml`; applications
 and build scripts manage their own configuration.
 
+External dependency versions belong in the root `package.json`
+`workspaces.catalog`. Reference them with `catalog:` in package manifests; use
+`workspace:*` for local packages. `bun run update` updates the catalog while
+honoring `package-metadata.json` version locks. Use `bun pm pack` or
+`bun publish` for the game library so catalog references are replaced with
+normal versions in the published manifest.
+
 Never add inline CSpell word lists, ignores, or disable directives to files. Add
 legitimate project vocabulary to the `words` list in `cspell.config.jsonc`
 instead.

@@ -3,13 +3,13 @@
   "private": true,
   "exports": "./src/index.ts",
   "devDependencies": {
-    "@hanabi-live/data": "file:../data",
-    "@hanabi-live/game": "file:../game",
-    "@types/bun": "1.4.4",
-    "@types/ws": "8.18.2",
-    "complete-common": "2.32.0",
-    "postgres": "3.4.9",
-    "ws": "8.20.0",
-    "zod": "4.6.5"
+    "@hanabi-live/data": "workspace:*",
+    "@hanabi-live/game": "workspace:*",
+    "@types/bun": "catalog:",
+    "@types/ws": "catalog:",
+    "complete-common": "catalog:",
+    "postgres": "catalog:",
+    "ws": "catalog:",
+    "zod": "catalog:"
   }
 }

@@ -3,8 +3,8 @@
   "private": true,
   "exports": "./src/index.ts",
   "dependencies": {
-    "@hanabi-live/game": "file:../game",
-    "complete-common": "2.32.0",
-    "zod": "4.6.5"
+    "@hanabi-live/game": "workspace:*",
+    "complete-common": "catalog:",
+    "zod": "catalog:"
   }
 }
