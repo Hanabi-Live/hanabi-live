@@ -217,6 +217,8 @@ for (const route of ["lobby", "new"]) {
       const b = await guest.newPage();
       const c = await observer.newPage();
       const spectator = `testWatch${route}`;
+      const firstTable = `First table ${route}`;
+      const secondTable = `Second table ${route}`;
       await login(a, backend, `testOwner${route}`);
       await login(b, backend, `testGuest${route}`);
       await login(c, backend, spectator);
@@ -226,7 +228,7 @@ for (const route of ["lobby", "new"]) {
       await a
         .getByRole("dialog")
         .getByLabel("Table name", { exact: true })
-        .fill("First table");
+        .fill(firstTable);
       await a
         .getByRole("dialog")
         .getByRole("button", { name: "Create table", exact: true })
@@ -234,7 +236,7 @@ for (const route of ["lobby", "new"]) {
       await expect(a).toHaveURL(/\/new\/table\/\d+$/u);
       await c
         .locator(".table-card")
-        .filter({ hasText: "First table" })
+        .filter({ hasText: firstTable })
         .getByRole("button", { name: "Watch table", exact: true })
         .click();
       if (route === "lobby") {
@@ -245,7 +247,7 @@ for (const route of ["lobby", "new"]) {
         await b.goto(`${backend}/lobby`);
         await b
           .locator("#lobby-games-table tr")
-          .filter({ hasText: "First table" })
+          .filter({ hasText: firstTable })
           .click();
       } else {
         await b.goto(a.url());
@@ -261,11 +263,9 @@ for (const route of ["lobby", "new"]) {
       if (route === "lobby") {
         await b.locator("#nav-buttons-pregame-leave").click();
         await b.locator("#nav-buttons-lobby-create-game").click();
-        await b.locator("#createTableName").fill("Second table");
+        await b.locator("#createTableName").fill(secondTable);
         await b.locator("#create-game-submit").click();
-        await expect(b.locator("#lobby-pregame-name")).toHaveText(
-          "Second table",
-        );
+        await expect(b.locator("#lobby-pregame-name")).toHaveText(secondTable);
       } else {
         await b
           .getByRole("button", { name: "Leave table", exact: true })
@@ -276,13 +276,13 @@ for (const route of ["lobby", "new"]) {
         await b
           .getByRole("dialog")
           .getByLabel("Table name", { exact: true })
-          .fill("Second table");
+          .fill(secondTable);
         await b
           .getByRole("dialog")
           .getByRole("button", { name: "Create table", exact: true })
           .click();
         await expect(
-          b.getByRole("heading", { name: "Second table", exact: true }),
+          b.getByRole("heading", { name: secondTable, exact: true }),
         ).toBeVisible();
       }
       await expect(spectators).toBeEmpty();
@@ -291,7 +291,7 @@ for (const route of ["lobby", "new"]) {
         .click();
       await c
         .locator(".table-card")
-        .filter({ hasText: "Second table" })
+        .filter({ hasText: secondTable })
         .getByRole("button", { name: "Watch table", exact: true })
         .click();
       await expect(spectators).toContainText(spectator);
