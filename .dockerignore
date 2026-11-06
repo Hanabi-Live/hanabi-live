@@ -4,6 +4,7 @@ Dockerfile.postgres
 docker-compose.yml
 docker-compose-dev.yml
 **/node_modules
+**/.git
 **/.env
 **/*.log
 logs

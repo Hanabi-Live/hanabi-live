@@ -38,6 +38,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        HANABI_BUILD_REVISION: "${HANABI_BUILD_REVISION:?Set HANABI_BUILD_REVISION to the clean checkout SHA}"
     image: "hanab-live-server"
     depends_on:
       hanab-live-db:

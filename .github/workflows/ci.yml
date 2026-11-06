@@ -12,11 +12,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Verify the container source checkout
+        run: |
+          status=$(git status --porcelain --untracked-files=normal)
+          if [[ -n $status ]]; then
+            git status --short
+            echo "Container builds require a clean checkout." >&2
+            exit 1
+          fi
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build the production container
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
+          build-args: |
+            HANABI_BUILD_REVISION=${{ github.sha }}
           load: true
           tags: hanabi-live-ci
           cache-from: type=gha,scope=hanabi-container

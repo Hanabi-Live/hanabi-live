@@ -12,4 +12,15 @@ cd "$REPO_ROOT"
 
 # Embed the source revision so the server can reject clients from a different release.
 export VERSION
-VERSION=$(git rev-parse HEAD)
+if [[ -v HANABI_BUILD_REVISION ]]; then
+  VERSION="$HANABI_BUILD_REVISION"
+else
+  VERSION=$(git rev-parse HEAD)
+fi
+if [[ ! $VERSION =~ ^[a-f0-9]{40}$ ]]; then
+  echo "The build revision must be a full lowercase Git SHA." >&2
+  exit 1
+fi
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  printf '%s\n' "$VERSION"
+fi

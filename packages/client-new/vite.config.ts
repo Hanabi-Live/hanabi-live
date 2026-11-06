@@ -6,9 +6,11 @@ import type { ProxyOptions } from "vite";
 import { defineConfig } from "vite";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const version = execFileSync("git", ["rev-parse", "HEAD"], {
-  cwd: root,
-})
+const version = execFileSync(
+  "bash",
+  [`${root}/packages/client/get-version.sh`],
+  { cwd: root },
+)
   .toString()
   .trim();
 const versionModule = "\u{0}hanabi-client-version";

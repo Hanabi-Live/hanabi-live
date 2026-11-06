@@ -37,7 +37,23 @@ fn git(directory: &Path, arguments: &[&str]) -> Result<String> {
     Ok(String::from_utf8(output.stdout)?.trim().to_owned())
 }
 fn discover(root: &Path) -> Result<build_script::Version> {
-    build_script::discover(root).map_err(anyhow::Error::msg)
+    build_script::discover(root, None).map_err(anyhow::Error::msg)
+}
+
+#[test]
+fn supplied_revision_needs_no_git_metadata_and_cannot_silently_fall_back() -> Result<()> {
+    let fixture = Fixture::new()?;
+    // An unborn checkout would fail discovery if the supplied revision were ignored.
+    git(&fixture.0, &["init", "--quiet"])?;
+    let revision = "a".repeat(40);
+    let version =
+        build_script::discover(&fixture.0, Some(&revision)).map_err(anyhow::Error::msg)?;
+    assert_eq!(version.commit, revision);
+    assert!(version.watched.is_empty());
+    for invalid in ["", "abc", &"A".repeat(40), &"g".repeat(40), &"a".repeat(64)] {
+        assert!(build_script::discover(&fixture.0, Some(invalid)).is_err());
+    }
+    Ok(())
 }
 
 #[test]
@@ -190,12 +206,13 @@ fn copied_binary_reports_its_build_commit_without_git_or_configuration() -> Resu
     );
     let commit = String::from_utf8(output.stdout)?.trim().to_owned();
     assert_eq!(commit, hanabi_live::restart::version());
-    assert_eq!(
-        commit,
-        git(
+    let expected = match option_env!("HANABI_BUILD_REVISION") {
+        Some(revision) => revision.to_owned(),
+        None => git(
             Path::new(env!("CARGO_MANIFEST_DIR")),
-            &["rev-parse", "HEAD"]
-        )?
-    );
+            &["rev-parse", "HEAD"],
+        )?,
+    };
+    assert_eq!(commit, expected);
     Ok(())
 }
