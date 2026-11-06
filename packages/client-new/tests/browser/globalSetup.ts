@@ -16,7 +16,7 @@ export default async function globalSetup(): Promise<void> {
       "build",
       "--locked",
       "--config",
-      'profile.dev.package."*".opt-level=3',
+      "profile.dev.package.argon2.opt-level=3",
       "--config",
       "profile.dev.debug=0",
     ],

@@ -37,6 +37,7 @@ async function expectStoppedReplay(page: Page) {
 test("sign in, join, play, return, and recover the new lobby", async ({
   browser,
   backend,
+  server,
 }) => {
   const alice = await browser.newContext();
   const bob = await browser.newContext();
@@ -82,6 +83,18 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   await expect(a).toHaveURL(/\/game\/\d+(?:#\d+)?$/u);
   await expect(b).toHaveURL(/\/game\/\d+(?:#\d+)?$/u);
   await expect(a.locator("canvas").first()).toBeVisible();
+  const canvases = await Promise.all(
+    [a, b].map(
+      async (page) => await page.locator("canvas").first().elementHandle(),
+    ),
+  );
+  const restarted = [gameReady(a), gameReady(b)];
+  await server.restart();
+  await Promise.all(restarted);
+  for (const canvas of canvases) {
+    // eslint-disable-next-line no-await-in-loop
+    expect(await canvas.evaluate((element) => element.isConnected)).toBe(true);
+  }
   await a.keyboard.press("Alt+l");
   await expect(a).toHaveURL(/\/new$/u);
   await expect(a.locator("#lobby-games")).toBeVisible();

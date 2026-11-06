@@ -1,7 +1,7 @@
 import { evaluationDatabase, redisFixture } from "@hanabi-live/testing";
 import type { Page } from "@playwright/test";
 import { test as base, expect } from "@playwright/test";
-import { execFile, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { once } from "node:events";
 import {
   cp,
@@ -15,11 +15,8 @@ import {
 import { createServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
-// eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores execFile's ChildProcess return value.
-const run = promisify(execFile);
 
 async function port(): Promise<number> {
   const listener = createServer();
@@ -47,15 +44,12 @@ export const test = base.extend<
   {},
   {
     backend: string;
-    restartLoad: boolean;
     server: {
       url: string;
       restart: () => Promise<void>;
-      seedHistories: () => Promise<void>;
     };
   }
 >({
-  restartLoad: [false, { option: true, scope: "worker" }],
   backend: [
     async ({ server }, useBackend) => {
       await useBackend(server.url);
@@ -63,7 +57,7 @@ export const test = base.extend<
     { scope: "worker" },
   ],
   server: [
-    async ({ browserName: _browserName, restartLoad }, useBackend) => {
+    async ({ browserName: _browserName }, useBackend) => {
       const database = await evaluationDatabase();
       const sql = database.connect();
       await mkdir(path.join(ROOT, "dist"), { recursive: true });
@@ -81,33 +75,6 @@ export const test = base.extend<
         );
         await sql`CREATE TABLE schema_version(version integer NOT NULL PRIMARY KEY)`;
         await sql`INSERT INTO schema_version VALUES(5)`;
-        if (restartLoad) {
-          await sql.begin(async (archiveSQL) => {
-            await archiveSQL.unsafe("SET LOCAL statement_timeout = '120s'");
-            await archiveSQL`
-            INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
-                        VALUES(-1,'history','history','unused','127.0.0.1')
-          `;
-            await archiveSQL`
-            INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-                        speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
-                        all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-                        SELECT 'Archive fixture',2,0,false,0,0,false,false,false,false,false,false,false,false,
-                        'p2v0s'||n,25,60,1,NOW(),NOW() FROM generate_series(1,2000000) n
-          `;
-            await archiveSQL`
-            INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-                        SELECT id,-1,0,-1,0 FROM games
-          `;
-            await archiveSQL.unsafe(
-              "ANALYZE games; ANALYZE game_participants; ANALYZE user_friends",
-            );
-          });
-          await run("cargo", ["build", "--release", "--locked"], {
-            cwd: path.join(ROOT, "server"),
-            timeout: 300_000,
-          });
-        }
         await Promise.all(
           [
             "packages/game/src/json",
@@ -152,10 +119,7 @@ export const test = base.extend<
         );
         const executable = path.join(directory, "hanabi-live");
         await cp(
-          path.join(
-            ROOT,
-            `server/target/${restartLoad ? "release" : "debug"}/hanabi-live`,
-          ),
+          path.join(ROOT, "server/target/debug/hanabi-live"),
           executable,
         );
         let output = "";
@@ -187,31 +151,6 @@ export const test = base.extend<
         await start(executable, []);
         await useBackend({
           url,
-          seedHistories: async () => {
-            if (!restartLoad) {
-              throw new Error(
-                "History seeding is restricted to the restart fixture.",
-              );
-            }
-            await sql.begin(async (historySQL) => {
-              await historySQL.unsafe("SET LOCAL statement_timeout = '120s'");
-              await historySQL`INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
-                VALUES(-2,'frequent','frequent','unused','127.0.0.1')`;
-              await historySQL`INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-                SELECT id,-2,1,-1,0 FROM games WHERE id <= 40000`;
-              await historySQL`INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-                SELECT g.id,u.id,1,-1,0 FROM games g CROSS JOIN users u
-                WHERE g.id <= 3 AND u.username IN ('testRestartA','testRestartD','testRestartE')`;
-              await historySQL`INSERT INTO user_friends(user_id,friend_id)
-                SELECT id,-2 FROM users WHERE username='testRestartC'`;
-              await historySQL`INSERT INTO user_friends(user_id,friend_id)
-                SELECT a.id,b.id FROM users a CROSS JOIN users b
-                WHERE a.username='testRestartD' AND b.username='testRestartE'`;
-              await historySQL.unsafe(
-                "ANALYZE game_participants; ANALYZE user_friends",
-              );
-            });
-          },
           restart: async () => {
             const response = await fetch(
               `http://127.0.0.1:${controlPort}/gracefulRestart`,
@@ -231,7 +170,7 @@ export const test = base.extend<
         await rm(directory, { recursive: true, force: true });
       }
     },
-    { scope: "worker", timeout: 360_000 },
+    { scope: "worker", timeout: 30_000 },
   ],
 });
 
