@@ -10,7 +10,7 @@ mod upgrade_tests;
 
 pub use crypto::{
     HashFailure, HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash,
-    verify_legacy, verify_password,
+    verify_password,
 };
 pub use normalization::{
     escape_html, has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
@@ -178,33 +178,26 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             escape_html(&state.config.version)
         )));
     }
-    let existing =
-        sqlx::query!("SELECT id, password_hash AS \"password_hash?\", old_password_hash FROM users WHERE username=$1", username)
-            .fetch_optional(&state.pool)
-            .await?;
+    let existing = sqlx::query!(
+        "SELECT id, password_hash AS \"password_hash?\" FROM users WHERE username=$1",
+        username
+    )
+    .fetch_optional(&state.pool)
+    .await?;
     let id: i32;
     if let Some(user) = existing {
         id = user.id;
-        let legacy: Option<String> = user.old_password_hash.clone();
-        let original: Option<String> = user.password_hash.clone();
-        let correct = if let Some(ref legacy) = legacy {
-            verify_legacy(&input.password, legacy)
-        } else if let Some(ref original) = original {
-            verify_password(input.password.clone(), original.clone()).await?
-        } else {
-            return Err(crypto::HashFailure::StoredHash.into());
+        let Some(original) = user.password_hash else {
+            return Ok(unauthorized(
+                "This account requires a password reset. Please follow the <a href=\"/password-reset\">password reset instructions</a>.",
+            ));
         };
-        if !correct {
+        if !verify_password(input.password.clone(), original.clone()).await? {
             return Ok(unauthorized("That is not the correct password."));
         }
-        let automatic_upgrade = legacy.is_none()
-            && input.new_password.is_empty()
-            && original
-                .as_deref()
-                .map(crypto::password_needs_upgrade)
-                .transpose()?
-                .unwrap_or(false);
-        if legacy.is_some() || !input.new_password.is_empty() || automatic_upgrade {
+        let automatic_upgrade =
+            input.new_password.is_empty() && crypto::password_needs_upgrade(&original)?;
+        if !input.new_password.is_empty() || automatic_upgrade {
             let password = if input.new_password.is_empty() {
                 input.password
             } else {
@@ -212,14 +205,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             };
             let hash = hash_password(password).await?;
             // Do not let a concurrent login overwrite a newer password change.
-            let changed = update_password_if_unchanged(
-                &state.pool,
-                id,
-                &hash,
-                original.as_deref(),
-                legacy.as_deref(),
-            )
-            .await?;
+            let changed = update_password_if_unchanged(&state.pool, id, &hash, &original).await?;
             if !changed && !automatic_upgrade {
                 return Ok(unauthorized("That is not the correct password."));
             }
@@ -278,17 +264,13 @@ async fn update_password_if_unchanged(
     pool: &PgPool,
     id: i32,
     hash: &str,
-    original: Option<&str>,
-    legacy: Option<&str>,
+    original: &str,
 ) -> Result<bool> {
     Ok(sqlx::query!(
-        "UPDATE users SET password_hash=$2, old_password_hash=NULL WHERE id=$1
-         AND password_hash IS NOT DISTINCT FROM $3
-         AND old_password_hash IS NOT DISTINCT FROM $4",
+        "UPDATE users SET password_hash=$2 WHERE id=$1 AND password_hash=$3",
         id,
         hash,
-        original,
-        legacy
+        original
     )
     .execute(pool)
     .await?

@@ -11,7 +11,6 @@ use std::{
     sync::{Arc, LazyLock},
     time::Duration as WaitDuration,
 };
-use subtle::ConstantTimeEq;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 const HASH_WAIT: WaitDuration = WaitDuration::from_secs(10);
@@ -152,11 +151,6 @@ pub(super) fn password_needs_upgrade(hash: &str) -> Result<bool> {
         && params.m_cost() <= PASSWORD_MEMORY
         && salt_length <= PASSWORD_SALT_BYTES
         && key_length <= PASSWORD_KEY_BYTES)
-}
-
-pub fn verify_legacy(password: &str, expected: &str) -> bool {
-    let calculated = hex::encode(Sha256::digest(format!("Hanabi password {password}")));
-    calculated.as_bytes().ct_eq(expected.as_bytes()).into()
 }
 
 pub fn token_lookup_hash(secret: &str, token: &str) -> Result<String> {

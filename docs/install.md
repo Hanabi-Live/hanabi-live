@@ -135,9 +135,14 @@ login-shell environment. `./deploy-rust.sh --check` verifies the approved
 current-main release without deploying. `./deploy-rust.sh` publishes it and
 requests a graceful restart; reviewed pending migrations require
 `--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production safeguards.
-Run the wrapper from an up-to-date `main` checkout: it sends its matching
-deployment tools over SSH, so an older production checkout can accept the new
-release format without updating live files during `--check`.
+
+Schema version 6 retires SHA-256 password credentials. Affected accounts require
+a password reset, represented by a NULL password hash. For this upgrade,
+gracefully stop the old application before applying migration 006, then install
+and start the compatible release. Older login queries cannot run after the
+column is removed. Run the wrapper from an up-to-date `main` checkout: it sends
+its matching deployment tools over SSH, so an older production checkout can
+accept the new release format without updating live files during `--check`.
 
 Bash filenames use hyphens. When upgrading an existing installation, update
 external cron jobs and certificate-renewal hooks to the renamed scripts,

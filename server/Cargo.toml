@@ -39,7 +39,6 @@ tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
 unicode-normalization = "0.1"
-subtle = "2"
 tower-http = { version = "0.7", features = ["fs", "timeout"] }
 url = "2"
 

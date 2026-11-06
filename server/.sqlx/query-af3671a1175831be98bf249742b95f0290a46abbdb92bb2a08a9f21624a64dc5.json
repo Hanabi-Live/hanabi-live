@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, password_hash AS \"password_hash?\", old_password_hash FROM users WHERE username=$1",
+  "query": "SELECT id, password_hash AS \"password_hash?\" FROM users WHERE username=$1",
   "describe": {
     "columns": [
       {
@@ -24,17 +24,6 @@
             "name": "password_hash"
           }
         }
-      },
-      {
-        "ordinal": 2,
-        "name": "old_password_hash",
-        "type_info": "Text",
-        "origin": {
-          "Table": {
-            "table": "users",
-            "name": "old_password_hash"
-          }
-        }
       }
     ],
     "parameters": {
@@ -44,9 +33,8 @@
     },
     "nullable": [
       false,
-      false,
       true
     ]
   },
-  "hash": "798e32d57ea5fc216eea956cdae12a4bda5cd1fd771cc90ae6336964460c4277"
+  "hash": "af3671a1175831be98bf249742b95f0290a46abbdb92bb2a08a9f21624a64dc5"
 }

@@ -266,7 +266,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         return Ok(());
     };
     let result:anyhow::Result<()>=async{
-    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(5);")
+    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(6);")
         .execute(&db.pool).await?;
     let redis = crate::test_redis::RedisFixture::start(true).await?;
     let options = db.pool.connect_options();

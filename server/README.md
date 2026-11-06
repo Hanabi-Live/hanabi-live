@@ -82,8 +82,8 @@ The script creates a unique database, loads the canonical schema and migration
 version, prepares all Rust targets, and drops that database afterward. It
 refuses remote database hosts and does not read the application's `.env`. Commit
 the regenerated `.sqlx` files. CI runs the check-only command to reject missing
-or stale metadata. Keep nullable password hashes compatible with legacy
-accounts, and explicitly mark nullable outer-join columns.
+or stale metadata. A NULL password hash means the account requires a password
+reset. Explicitly mark nullable outer-join columns.
 
 ## Immutable releases
 

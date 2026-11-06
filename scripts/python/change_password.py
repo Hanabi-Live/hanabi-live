@@ -67,7 +67,7 @@ if len(password_hash) == 0:
 # Update the password hash
 cursor = conn.cursor()
 cursor.execute(
-    "UPDATE users SET (password_hash, old_password_hash) = (%s, NULL) WHERE username = %s",
+    "UPDATE users SET password_hash = %s WHERE username = %s",
     (password_hash, username),
 )
 cursor.close()

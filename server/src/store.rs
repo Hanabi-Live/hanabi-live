@@ -87,8 +87,8 @@ impl Store {
             .fetch_one(&primary)
             .await?;
         ensure!(
-            version == 5,
-            "Native server requires database schema version 5"
+            version == 6,
+            "Native server requires database schema version 6"
         );
         let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
             .fetch_one(&primary)

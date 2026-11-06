@@ -137,7 +137,7 @@ def exercise(archive, redis_url):
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                "DROP TABLE game_custom_decks, active_games",
+                "DROP TABLE game_custom_decks, active_games; ALTER TABLE users ADD COLUMN old_password_hash TEXT",
             ],
             env=pg_environment,
             check=True,

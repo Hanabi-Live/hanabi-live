@@ -119,6 +119,117 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
 }
 
 #[tokio::test]
+async fn accounts_without_password_hash_require_reset_before_login_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let id = db.user("ResetRequired").await;
+    sqlx::query("UPDATE users SET password_hash=NULL WHERE id=$1")
+        .bind(id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let app = router(db.pool.clone(), config());
+    for extra in ["", "&newPassword=unverified"] {
+        let (status, headers, body) = request(
+            &app,
+            "POST",
+            "/login",
+            &format!("username=ResetRequired&password=anything&version=42{extra}"),
+            None,
+            false,
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        assert!(!headers.contains_key(header::SET_COOKIE));
+        assert!(body.contains("requires a password reset"));
+        assert!(body.contains("href=\"/password-reset\""));
+    }
+    let stored: Option<String> = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
+        .bind(id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert!(stored.is_none());
+    let reset = hash_password("reset-password".into()).await.unwrap();
+    sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
+        .bind(id)
+        .bind(reset)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, headers, _) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=ResetRequired&password=reset-password&version=42",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(headers.contains_key(header::SET_COOKIE));
+    db.close().await;
+}
+
+#[tokio::test]
+async fn retiring_legacy_credentials_preserves_modern_accounts_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let legacy = db.user("LegacyOnly").await;
+    let mixed = db.user("MixedCredentials").await;
+    let modern = db.user("ModernOnly").await;
+    sqlx::query("ALTER TABLE users ADD COLUMN old_password_hash TEXT")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "UPDATE users SET old_password_hash='retired-credential',
+         password_hash=CASE WHEN id=$1 THEN NULL ELSE password_hash END WHERE id IN ($1,$2)",
+    )
+    .bind(legacy)
+    .bind(mixed)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let before: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
+        .bind(modern)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut transaction = db.pool.begin().await.unwrap();
+    sqlx::raw_sql(include_str!(
+        "../../../install/migrations/006_retire_legacy_passwords.sql"
+    ))
+    .execute(&mut *transaction)
+    .await
+    .unwrap();
+    transaction.commit().await.unwrap();
+    let reset_accounts: Vec<i32> =
+        sqlx::query_scalar("SELECT id FROM users WHERE password_hash IS NULL ORDER BY id")
+            .fetch_all(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(reset_accounts, vec![legacy, mixed]);
+    let after: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
+        .bind(modern)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(after, before);
+    let column_exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public'
+         AND table_name='users' AND column_name='old_password_hash')",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(!column_exists);
+    db.close().await;
+}
+
+#[tokio::test]
 async fn native_accounts_http_and_identity_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;
@@ -248,41 +359,6 @@ async fn native_accounts_http_and_identity_postgres() {
         .0,
         StatusCode::OK
     );
-    let legacy = hex::encode(sha2::Sha256::digest("Hanabi password legacy"));
-    sqlx::query("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL")
-        .execute(&db.pool)
-        .await
-        .unwrap();
-    sqlx::query("UPDATE users SET old_password_hash=$1,password_hash=NULL WHERE id=$2")
-        .bind(legacy)
-        .bind(id)
-        .execute(&db.pool)
-        .await
-        .unwrap();
-    assert_eq!(
-        request(
-            &app,
-            "POST",
-            "/login",
-            "username=Alice&password=legacy&version=42",
-            None,
-            false
-        )
-        .await
-        .0,
-        StatusCode::OK
-    );
-    let row = sqlx::query("SELECT old_password_hash,password_hash FROM users WHERE id=$1")
-        .bind(id)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    assert!(row.get::<Option<String>, _>("old_password_hash").is_none());
-    assert!(
-        verify_password("legacy".into(), row.get("password_hash"))
-            .await
-            .unwrap()
-    );
     assert_eq!(
         request(&app, "GET", "/api/v1/identity/token", "", None, false)
             .await
@@ -359,7 +435,7 @@ async fn native_accounts_http_and_identity_postgres() {
             &app,
             "POST",
             "/login",
-            "username=Alice&password=legacy&version=42",
+            "username=Alice&password=new&version=42",
             None,
             false
         )
@@ -486,6 +562,3 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
         String::from_utf8(to_bytes(response.into_body(), 1024).await.unwrap().to_vec()).unwrap();
     assert!(!body.contains("synthetic-sensitive"));
 }
-
-use sha2::Digest;
-use sqlx::Row;
