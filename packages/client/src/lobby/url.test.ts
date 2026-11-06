@@ -92,6 +92,10 @@ describe("replay URL loading", () => {
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(showFriends).toHaveBeenCalledTimes(friends ? 1 : 0);
+    if (friends) {
+      expect(show).toHaveBeenCalledWith(false);
+      expect(showFriends).toHaveBeenCalledWith();
+    }
   });
 
   test("restores the other scores history route", () => {
@@ -109,6 +113,8 @@ describe("replay URL loading", () => {
     expect(show).toHaveBeenCalledTimes(1);
     expect(showFriends).toHaveBeenCalledTimes(1);
     expect(showOtherScores).toHaveBeenCalledWith("p4v0s1", true);
+    expect(show).toHaveBeenCalledWith(false);
+    expect(showFriends).toHaveBeenCalledWith(false);
   });
 
   test.each([

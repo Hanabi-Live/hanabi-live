@@ -119,7 +119,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
   const state = useSelector(
     (value: LobbyState) => ({
       welcome: value.welcome,
-      lobbyStatus: value.lobbyStatus,
       connection: value.connection,
       pending: value.pending,
       history: value.history,
@@ -136,11 +135,14 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
   const [search, setSearch] = useState("");
   const [seed, setSeed] = useState<string | null>(null);
   useEffect(() => {
+    if (state.connection !== "online") {
+      return;
+    }
     connection.send(friends ? "historyFriendsGet" : "historyGet", {
       offset: 0,
       amount: 10,
     });
-  }, [friends, connection]);
+  }, [friends, connection, state.connection]);
   const allGames = Object.values(
     friends ? state.friendHistory : state.history,
   ).toSorted(
@@ -267,33 +269,16 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
         ) : (
           <div className="empty">
             <Play />
-            <h2>
-              {state.lobbyStatus === "error"
-                ? "History is unavailable."
-                : loading
-                  ? "Gathering your games..."
-                  : "No games found."}
-            </h2>
+            <h2>{loading ? "Gathering your games..." : "No games found."}</h2>
             <p>
-              {state.lobbyStatus === "error"
-                ? "Your game is still connected. Retry loading the lobby history."
-                : loading
-                  ? "Fetching history from the server."
-                  : "Finished games will appear here."}
+              {loading
+                ? "Fetching history from the server."
+                : "Finished games will appear here."}
             </p>
           </div>
         )}
       </div>
       <div className="classic-history-footer">
-        {state.lobbyStatus === "error" && (
-          <button
-            disabled={state.connection !== "online"}
-            onClick={() => connection.send("lobbyLoad", {})}
-            type="button"
-          >
-            Retry history
-          </button>
-        )}
         {hasMore && (
           <button
             className="load-more"

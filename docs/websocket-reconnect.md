@@ -15,6 +15,11 @@ original bootstrap ordering. The legacy `reconnect=1` welcome-only probe remains
 supported for old clients, but current clients request fresh user/table
 directories.
 
+Personal and friends' history pages are requested only when their respective
+history screens are opened (including direct history links), never during login,
+reconnect, or `lobbyLoad`. Account totals and lobby chat still load
+independently.
+
 History and statistics use a separate two-connection read-only pool, with a
 two-second statement/acquisition limit. The primary pool has eight connections
 and the archive pool two: the total connection budget has not increased.

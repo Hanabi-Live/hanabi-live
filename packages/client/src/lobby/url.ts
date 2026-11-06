@@ -199,9 +199,9 @@ function restoreLobbyHistoryView(): boolean {
     const friends = scoresMatch[1] !== undefined;
     const seed = scoresMatch[2];
     if (seed !== undefined) {
-      history.show();
+      history.show(false);
       if (friends) {
-        history.showFriends();
+        history.showFriends(false);
       }
       history.showOtherScoresFromURL(decodeURIComponent(seed), friends);
       return true;
@@ -215,7 +215,7 @@ function restoreLobbyHistoryView(): boolean {
     }
 
     case "#history-friends": {
-      history.show();
+      history.show(false);
       history.showFriends();
       return true;
     }

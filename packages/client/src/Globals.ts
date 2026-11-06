@@ -55,7 +55,6 @@ export class Globals {
 
   peopleTyping: string[] = [];
 
-  showMoreHistoryClicked = false;
   idleMinutes = 0;
 
   /**

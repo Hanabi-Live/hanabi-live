@@ -131,6 +131,12 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(welcome["username"], "Alicè");
     assert_eq!(welcome["connectionMode"], "initial");
     assert!(receive(&mut alice, "chatList").await["list"].is_array());
+    alice
+        .send(WireMessage::Text(
+            "historyGet {\"offset\":0,\"amount\":10}".into(),
+        ))
+        .await
+        .unwrap();
     let history = receive(&mut alice, "gameHistory").await;
     assert_eq!(history[0]["id"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
@@ -139,7 +145,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(history[0]["tags"], "authored");
     let mut bob = connect(&fixture, &bob_cookie, false).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
-    let _ = receive(&mut bob, "gameHistory").await;
+    let _ = receive(&mut bob, "user").await;
     alice
         .send(WireMessage::Text(
             "setting {\"name\":\"hyphenatedConventions\",\"setting\":\"true\"}".into(),
@@ -408,6 +414,27 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     let prepared = bootstrap(&fixture.app, alice, "127.0.0.1", false)
         .await
         .unwrap();
+    let mut history_lock = fixture.db.pool.begin().await.unwrap();
+    sqlx::query("LOCK TABLE user_friends, game_tags IN ACCESS EXCLUSIVE MODE")
+        .execute(&mut *history_lock)
+        .await
+        .unwrap();
+    for reconnect in [false, true] {
+        let (messages, total) = tokio::time::timeout(
+            Duration::from_secs(1),
+            lobby_initial(&fixture.app, alice, reconnect),
+        )
+        .await
+        .expect("Lobby initialization queried personal or friends history")
+        .unwrap();
+        assert_eq!(total, 100);
+        assert!(
+            messages
+                .iter()
+                .all(|message| !message.starts_with("gameHistory"))
+        );
+    }
+    history_lock.rollback().await.unwrap();
     let own_ids = lobby::history_ids(&fixture.db.pool, alice, 0, 100, false)
         .await
         .unwrap();
@@ -432,23 +459,14 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    // Keep the normal bootstrap order while testing complete requested history
-    // pages, without changing the initial ten-row history pagination policy.
-    let initial: Vec<_> = lobby_initial(&fixture.app, alice, false)
-        .await
-        .unwrap()
-        .0
-        .into_iter()
-        .map(|message| {
-            if message.starts_with("gameHistory ") {
-                own.clone()
-            } else if message.starts_with("gameHistoryFriends ") {
-                friends.clone()
-            } else {
-                message
-            }
-        })
-        .collect();
+    let mut initial = lobby_initial(&fixture.app, alice, false).await.unwrap().0;
+    assert!(
+        initial
+            .iter()
+            .all(|message| !message.starts_with("gameHistory"))
+    );
+    // Requested full history pages must still fit in the outbound queue.
+    initial.extend([own, friends]);
     let mut expected = vec![
         "welcome".to_owned(),
         "userList".to_owned(),

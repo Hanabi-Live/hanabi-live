@@ -193,7 +193,7 @@ export function ClassicHeader({
                           onClick={() => connection.send("lobbyLoad", {})}
                           type="button"
                         >
-                          Retry history
+                          Retry statistics
                         </button>
                       )}
                     </li>

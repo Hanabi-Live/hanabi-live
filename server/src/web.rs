@@ -354,15 +354,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
     let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];
     if !reconnect {
-        let (chat, own_ids, friend_ids) = tokio::try_join!(
-            lobby::lobby_history(pool, 50),
-            lobby::history_ids(pool, id, 0, 10, false),
-            lobby::history_ids(pool, id, 0, 10, true)
-        )?;
-        let (own, friend_history) = tokio::try_join!(
-            lobby::get_history(pool, &own_ids, false),
-            lobby::get_history(pool, &friend_ids, false)
-        )?;
+        let chat = lobby::lobby_history(pool, 50).await?;
         initial.push(frame("chatList", json!({"list":chat,"unread":0})));
         initial.push(frame("chat", hanabi_protocol::Chat {
             room: Some("lobby".into()),
@@ -390,8 +382,6 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
             Err(error) => return Err(error.into()),
         }
-        initial.push(frame("gameHistory", json!(own)));
-        initial.push(frame("gameHistoryFriends", json!(friend_history)));
     }
     Ok((initial, total))
 }
