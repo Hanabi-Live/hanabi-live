@@ -32,6 +32,12 @@ first if detached or on `main` in a linked worktree. Update an existing pull
 request for that branch rather than opening a duplicate. Include only changes
 for the task; do not commit unrelated work.
 
+Always rebase local commits onto upstream changes instead of creating merge
+commits. If a push is rejected because the remote branch advanced, fetch and
+rebase the commits not yet pushed, then rerun the required checks before
+pushing. Preserve unrelated working-tree changes. Do not force-push `main` or
+rewrite published history to apply this rule.
+
 Use Conventional Commits for commit messages:
 `type(optional-scope): description`, for example
 `fix(client): clear stale spectators` or `docs: update setup instructions`.
