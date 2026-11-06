@@ -24,11 +24,11 @@ export const wireHistory = gameHistory.unwrap().extend({
     ),
 });
 export type HistoryGame = z.infer<typeof wireHistory>;
-// Go reports the actual pregame roster size (including zero/one), not a started-game size.
+// Pregames report the actual roster size (including zero/one), not a started-game size.
 const lobbyOptions = options
   .unwrap()
   .extend({ numPlayers: z.number().int().min(0).max(6) });
-// Go and Rust use an empty name for a spectator without a shadow.
+// The server uses an empty name for a spectator without a shadow.
 const wireSpectator = spectator.unwrap().extend({
   shadowingPlayerUsername: z.preprocess(
     (value) => (value === "" ? undefined : value),

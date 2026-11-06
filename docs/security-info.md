@@ -103,6 +103,6 @@ countries most people are from. This kind of thing is pretty standard.
 The virtual server runs on the latest version of
 [Ubuntu Server](https://ubuntu.com/download/server). It is protected by a
 host-based firewall. I make a best-effort to keep the machine up-to-date in
-terms of operating system packages, Go versions, and NPM packages.
+terms of operating system packages, Rust dependencies, and JavaScript packages.
 
 <br />

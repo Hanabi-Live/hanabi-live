@@ -98,12 +98,12 @@ relevant tests and builds as well; passing lint does not replace those checks.
 
 The root lint entrypoint caches package lint scripts in Turborepo's local
 `.turbo/cache`; CI restores results from trusted `main` runs. Source changes
-invalidate dependent packages through transit tasks, including the game
-package's imported server compatibility fixtures. Keep shared lint configuration
-in `turbo.json` inputs. The generated client version stays outside the cache
-inputs: lint uses its tracked type declaration, not its changing runtime value.
-Rust and repository-wide checks still run normally. To bypass package caching,
-run `bunx --bun --no-install turbo run lint --force --cache=local:rw`.
+invalidate dependent packages through transit tasks. Keep shared lint
+configuration in `turbo.json` inputs. The generated client version stays outside
+the cache inputs: lint uses its tracked type declaration, not its changing
+runtime value. Rust and repository-wide checks still run normally. To bypass
+package caching, run
+`bunx --bun --no-install turbo run lint --force --cache=local:rw`.
 
 ## Server and wire contracts
 
@@ -113,10 +113,9 @@ replace them with generic errors. Never expose raw SQL, credentials, private
 payloads, or arbitrary exception strings through public errors or telemetry.
 
 The production server is Rust in `server/`; its binary is `hanabi-live`.
-`server/engine` owns native game rules. Historical Go-generated compatibility
-fixtures remain in `server/testdata`, but there is no Go application server. The
-Go toolchain is used only to build the pinned third-party Tern migration tool
-for source installations and release bundles.
+`server/engine` owns native game rules. The Go toolchain is used only to build
+the pinned third-party Tern migration tool for source installations and release
+bundles.
 
 Migrated public payloads are owned by `server/protocol`, without database,
 actor, or game-engine dependencies. Update the Rust DTOs and shared
@@ -197,10 +196,10 @@ production-sized data, including sparse histories, users without friends,
 HTTP/2, all supported host names, and simultaneous reconnects. Anonymous health
 requests alone are not sufficient.
 
-Legacy Go reused table IDs, so a `chat_log` room such as `table123` can contain
-unrelated historical messages. Capture diagnostic chat row IDs and delete only
-those exact IDs after verifying ownership. Never clean up chat by room or source
-alone.
+Historical table IDs were reused, so a `chat_log` room such as `table123` can
+contain unrelated historical messages. Capture diagnostic chat row IDs and
+delete only those exact IDs after verifying ownership. Never clean up chat by
+room or source alone.
 
 ## Database migrations
 

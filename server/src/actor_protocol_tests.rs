@@ -1513,7 +1513,7 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                 && private.iter().all(|v| v["msg"]
                     == "Successfully added a tag of \"alpha &lt;b&gt;\"."
                     && v["recipient"] == "Alice"),
-            "Live tag acknowledgements differ from Go"
+            "Unexpected live tag acknowledgements"
         );
         ensure!(
             chat_messages(&h.frames(1)?).is_empty(),

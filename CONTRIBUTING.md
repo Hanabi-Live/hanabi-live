@@ -15,10 +15,8 @@ With pull requests:
 ## Server Code
 
 The [native Rust server](server/README.md) runs in production. Preserve shared
-rules, client protocol behavior, and replay compatibility. Historical
-compatibility corpora live in `server/testdata`; process tests and disposable
-database/Redis fixtures live in `packages/testing`. See the
-[server comparison](docs/server-evaluation.md).
+rules, client protocol behavior, and replay compatibility. Process tests and
+disposable database/Redis fixtures live in `packages/testing`.
 
 Before submitting server changes, run:
 

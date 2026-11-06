@@ -2,7 +2,7 @@
 //! only `events_for_recipient` is safe to send to a player.
 //!
 //! `create_game` takes already ordered seats and an optional already ordered
-//! deck. `prepare_game_order` supports lobby deck/seat shuffling on Go's shared
+//! deck. `prepare_game_order` supports lobby deck/seat shuffling on a shared
 //! RNG stream; character assignment intentionally starts an independent stream.
 //! `apply_action` and `terminate_game` return owned immutable transitions.
 //! Persist the complete state, restore with `parse_engine_state`, and send only

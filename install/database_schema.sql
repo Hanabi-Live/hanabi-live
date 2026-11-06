@@ -39,7 +39,6 @@ CREATE TABLE users (
     datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
 );
 
-/* Any default settings must also be applied to the "userSettings.go" file. */
 DROP TABLE IF EXISTS user_settings CASCADE;
 CREATE TABLE user_settings (
     user_id                              INTEGER   NOT NULL,
@@ -174,7 +173,7 @@ CREATE TABLE games (
     score                   SMALLINT     NOT NULL,
     num_turns               SMALLINT     NOT NULL,
 
-    /* See the "EndCondition" values in "constants.go" / "EndCondition.ts". */
+    /* See the "EndCondition" values in "server/engine/src/types.rs" / "EndCondition.ts". */
     end_condition           SMALLINT     NOT NULL,
 
     datetime_started        TIMESTAMPTZ  NOT NULL,
@@ -258,7 +257,7 @@ CREATE TABLE game_actions (
      *   https://dev.mysql.com/doc/refman/8.0/en/data-size.html
      * - If a color clue, then 0 if red, 1 if yellow, etc.
      * - If a rank clue, then 1 if 1, 2 if 2, etc.
-     * - If a game over, then the value corresponds to the "endCondition" values in "constants.go".
+     * - If a game over, then the value corresponds to "EndCondition" in "server/engine/src/types.rs".
      */
     value    SMALLINT  NOT NULL,
 

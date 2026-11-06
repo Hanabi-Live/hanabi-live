@@ -288,7 +288,7 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
         target: order as i32,
         value: 0,
     });
-    // Stack direction/start changes precede Follower's forced failure in Go.
+    // Stack direction/start changes precede Follower's forced failure.
     let playable = try_play(state, order);
     if !playable || follower_misplays(state, player, &state.deck[order]) {
         state.deck[order].failed = true;

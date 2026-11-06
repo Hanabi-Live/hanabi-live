@@ -36,7 +36,7 @@ pub fn prepare_deck_and_players<T>(
     Ok(deck)
 }
 
-/// Apply Go's conditional, forward deck/seat shuffles with one per-game stream.
+/// Apply conditional, forward deck/seat shuffles with one per-game stream.
 /// A custom prepared deck should pass `shuffle_deck = false`.
 pub fn prepare_game_order<T>(
     deck: &mut [DeckCard],

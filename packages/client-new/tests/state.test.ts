@@ -90,7 +90,7 @@ describe("authoritative lobby state", () => {
     );
   });
 
-  it("accepts a one-player Go pregame without weakening started-game rules", () => {
+  it("accepts a one-player pregame without weakening started-game rules", () => {
     const gameOptions = options.parse({});
     const raw = {
       id: 1,

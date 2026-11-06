@@ -2,8 +2,7 @@
 
 This is the production Hanab Live server. It uses native Rust rules and
 actor-owned tables, PostgreSQL for historical data, and Redis for authoritative
-recoverable live state. The Go server and temporary cutover importer have been
-retired; compatibility corpora remain in `testdata/`.
+recoverable live state.
 
 ## Running
 
@@ -110,8 +109,8 @@ python3 install/release.py activate /absolute/deployment/root REVISION \
 ```
 
 Activation requires the service to be stopped and holds the shared lifecycle
-lock. Go releases can no longer be staged or activated. Installations with
-unresolved legacy checkpoints must complete recovery using a compatible
+lock. Only Rust releases can be verified, staged, or activated. Installations
+with unresolved legacy checkpoints must complete recovery using a compatible
 pre-promotion release first; startup continues to reject those records rather
 than discard them.
 
@@ -181,11 +180,10 @@ HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=di
 cargo test --locked --manifest-path engine/Cargo.toml
 ```
 
-Database tests require a disposable PostgreSQL connection URI. Rules are checked
-against Go-generated decks, characters, transitions, and recipient projections.
-Process checks exercise real client messages, recovery, clock allowances,
-session replacement, and storage failures. Rust's type system alone is not a
-proof of correct concurrency.
+Database tests require a disposable PostgreSQL connection URI. Process checks
+exercise real client messages, recovery, clock allowances, session replacement,
+and storage failures. Rust's type system alone is not a proof of correct
+concurrency.
 
-See [the comparison methodology](../docs/server-evaluation.md). The RNG port
-retains the existing [Go license](../packages/data/src/json/goRandom.LICENSE).
+The RNG port retains the existing
+[Go license](../packages/data/src/json/goRandom.LICENSE).

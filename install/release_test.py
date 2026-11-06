@@ -115,20 +115,21 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "checksums"):
             release.verify(self.artifact)
 
-    def test_go_bundles_cannot_be_staged_or_activated(self):
-        self.metadata["runtime"] = "go"
-        self.write_manifest()
-        self.pack()
-        with self.assertRaisesRegex(ValueError, "Only Rust releases"):
-            self.stage()
-        with self.assertRaisesRegex(ValueError, "Only Rust releases"):
-            release.activate(self.root, self.revision, "go")
-
-    def test_unknown_runtime_is_rejected(self):
-        self.metadata["runtime"] = "unknown"
-        self.write_manifest()
-        with self.assertRaisesRegex(ValueError, "Unsupported runtime"):
-            release.verify(self.artifact)
+    def test_unsupported_or_missing_runtime_cannot_be_verified_staged_or_activated(self):
+        for runtime in ("unknown", None):
+            with self.subTest(runtime=runtime):
+                if runtime is None:
+                    self.metadata.pop("runtime", None)
+                else:
+                    self.metadata["runtime"] = runtime
+                self.write_manifest()
+                self.pack()
+                with self.assertRaisesRegex(ValueError, "Only Rust releases"):
+                    release.verify(self.artifact)
+                with self.assertRaisesRegex(ValueError, "Only Rust releases"):
+                    self.stage()
+                with self.assertRaisesRegex(ValueError, "Only Rust releases"):
+                    release.activate(self.root, self.revision, runtime)
 
     def test_sha_manifest_rejects_mismatched_client_identity(self):
         release.verify(self.artifact)

@@ -75,7 +75,7 @@ if not is_ascii(new_username):
     print(
         'The username of "'
         + new_username
-        + '" contains non-ASCII characters. Transliteration to ASCII is required; see the Go source code for creating a new user.'
+        + '" contains non-ASCII characters. Transliteration to ASCII is required; see server/src/accounts/normalization.rs.'
     )
     sys.exit(1)
 

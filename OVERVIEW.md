@@ -17,8 +17,7 @@ clients.
   (users, games, history).
 - **Live State:** [Redis](https://redis.io/) with AOF persistence holds
   authoritative recoverable game state; it is not a disposable cache.
-- **Location:** `server/`. Historical compatibility fixtures are retained in
-  `server/testdata/`; there is no Go application server.
+- **Location:** `server/`.
 
 ### Frontend
 
@@ -40,9 +39,8 @@ and is served at `/new`. It hands off gameplay to the shared Konva game screen.
 
 - Core game rules and data structures are located in `packages/game/` and
   `packages/data/`. These are shared across the TypeScript client and the
-  Node.js packages. Rust's native game rules live in `server/engine`, checked
-  against shared variant and replay corpora. Native process tests and disposable
-  service fixtures live in `packages/testing/`.
+  Node.js packages. Rust's native game rules live in `server/engine`. Native
+  process tests and disposable service fixtures live in `packages/testing/`.
 
 ---
 

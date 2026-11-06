@@ -1,4 +1,4 @@
-//! PostgreSQL-backed Go-compatible login and identity routes.
+//! PostgreSQL-backed login and identity routes.
 mod crypto;
 mod normalization;
 #[cfg(test)]

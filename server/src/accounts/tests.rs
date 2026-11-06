@@ -58,24 +58,6 @@ pub(super) async fn request(
     (status, headers, body)
 }
 
-#[test]
-fn go_chat_fixtures() {
-    let rows: Vec<Value> =
-        serde_json::from_str(include_str!("../../testdata/chat_protocol.json")).unwrap();
-    for row in rows {
-        let result = normalize_chat(row["input"].as_str().unwrap());
-        assert_eq!(
-            result.is_ok(),
-            row["valid"].as_bool().unwrap(),
-            "{}",
-            row["name"]
-        );
-        if let Ok(value) = result {
-            assert_eq!(value, row["normalized"].as_str().unwrap());
-        }
-    }
-}
-
 #[tokio::test]
 async fn login_requires_matching_release_sha_or_bot_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
