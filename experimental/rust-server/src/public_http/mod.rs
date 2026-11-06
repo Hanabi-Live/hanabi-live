@@ -162,10 +162,13 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
             router = router.route(&path, get(pages::page));
         }
     }
-    router = router.route("/videos", get(pages::page)).route(
-        "/password-reset",
-        get(pages::page).post(pages::password_hash),
-    );
+    router = router
+        .route("/stats", get(pages::page))
+        .route("/videos", get(pages::page))
+        .route(
+            "/password-reset",
+            get(pages::page).post(pages::password_hash),
+        );
     let mut api = Router::new();
     for root in ["history", "history-full", "full-history"] {
         let mut path = format!("/api/v1/{root}");

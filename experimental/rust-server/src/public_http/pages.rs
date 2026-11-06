@@ -114,6 +114,11 @@ pub(super) async fn page(
         "export" => return Ok(Json(replay::export(&state, &params).await?).into_response()),
         "videos" => v["title"] = json!("Videos"),
         "password-reset" => v["title"] = json!("Password Reset"),
+        "stats" => {
+            v["title"] = json!("Stats");
+            v["namesTitle"] = json!("Global Statistics");
+            v["stats"] = aggregate(&state, None, None).await?;
+        }
         "scores" | "profile" | "history" | "tags" | "missing-scores" | "shared-missing-scores" => {
             let shared = mode == "shared-missing-scores";
             let n = params.get("numPlayers").and_then(|n| integer(n));

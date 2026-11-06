@@ -241,6 +241,7 @@ export function ClassicHeader({
                 </li>
                 <li className="hidden-xs">
                   <a
+                    aria-label="Stats"
                     className="button"
                     href="/stats"
                     rel="noreferrer"
