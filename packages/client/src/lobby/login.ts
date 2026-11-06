@@ -37,7 +37,9 @@ export function init(): void {
 
   $("#firefox-warning-button").on("click", () => {
     localStorage.setItem(FIREFOX_WARNING_COOKIE_NAME, "true");
-    show();
+    $("#firefox-warning").hide();
+    $("#loading").show();
+    automaticLogin();
   });
 
   $("#change-password-link").on("click", (event) => {

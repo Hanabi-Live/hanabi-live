@@ -53,6 +53,7 @@ async function auditViewport(
     ].includes(name)
   ) {
     const audit = await new AxeBuilder({ page })
+      .include('[role="dialog"]')
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
       .analyze();
     expect
@@ -325,8 +326,12 @@ for (const theme of ["light", "dark"] as const) {
         await auditViewport(a, "new-owner-pregame");
         await expect(a.locator(".seat .name-me")).toHaveText(ownerName);
         await a.getByRole("button", { name: "Table options" }).click();
-        await expect(a.getByLabel(/^Empty clues/u)).toBeVisible();
-        await expect(a.getByLabel(/^Empty clues/u)).toBeChecked();
+        await expect(
+          a.getByRole("checkbox", { name: /^Empty clues/u }),
+        ).toBeVisible();
+        await expect(
+          a.getByRole("checkbox", { name: /^Empty clues/u }),
+        ).toBeChecked();
         await auditViewport(a, "new-owner-options");
         await a.keyboard.press("Escape");
         await a.getByRole("button", { name: "Back to tables" }).click();

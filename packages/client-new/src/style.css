@@ -24,10 +24,6 @@
 .client-new-classic {
   color: #707070;
 }
-html:not([data-theme="dark"]) .client-new-classic {
-  --color-name-me: #9d6000;
-  --color-friend: #ac2f69;
-}
 .client-new-classic input,
 .client-new-classic textarea {
   color: #707070;
@@ -71,6 +67,21 @@ html:not([data-theme="dark"]) .client-new-classic {
 .client-new-classic .person-main {
   color: blue;
   text-decoration: underline;
+}
+.client-new-classic .person-status {
+  color: blue;
+  text-decoration: underline;
+}
+.client-new-classic .person-menu {
+  float: right;
+  opacity: 0;
+}
+.person:hover .person-menu,
+.person:focus-within .person-menu {
+  opacity: 1;
+}
+html[data-theme="dark"] .client-new-classic .person-status {
+  color: var(--dm-link);
 }
 .client-new-classic .person-main.name-me,
 .client-new-classic .name-me {
@@ -1009,6 +1020,84 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .client-new-classic .name-button:disabled {
   opacity: 1;
+}
+.client-new-classic .classic-row-name,
+.client-new-classic .classic-spectators {
+  cursor: inherit;
+}
+.classic-score-tooltip {
+  position: fixed;
+  z-index: 100004;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px #0005;
+  color: #707070;
+  padding: 10px;
+  font-size: 0.75em;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.classic-score-row {
+  display: flex;
+  gap: 1em;
+  justify-content: space-between;
+}
+.classic-score-trigger {
+  flex-shrink: 0;
+}
+html[data-theme="dark"] .classic-score-tooltip {
+  background: var(--dm-surface);
+  color: var(--dm-text);
+}
+.client-new-classic :is(input, select, textarea):focus-visible {
+  outline: none;
+}
+.classic-spectator-list {
+  list-style: none;
+  padding: 0;
+}
+.classic-option-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.client-new-classic #lobby-pregame-options {
+  font-size: 1em;
+}
+.client-new-classic.classic-password-dialog {
+  left: 5em;
+  right: 5em;
+  top: 15vh;
+  transform: none;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 30px 30px 0;
+  border: 0;
+  scrollbar-gutter: auto;
+}
+.classic-password-dialog .dialog-heading {
+  display: block;
+}
+.classic-password-dialog .dialog-heading h2 {
+  font-size: 1.75em;
+  margin-bottom: 1em;
+}
+.classic-password-dialog .dialog-heading p {
+  position: static;
+  width: auto;
+  height: auto;
+  clip-path: none;
+}
+.classic-password-dialog .dialog-heading > button {
+  display: none;
+}
+@media screen and (max-width: 510px) {
+  .client-new-classic.classic-password-dialog {
+    left: 0;
+    right: 0;
+  }
 }
 .chat-panel:has(.pm-controls) {
   display: flex;

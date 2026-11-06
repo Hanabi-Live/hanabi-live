@@ -1,26 +1,33 @@
-import { StatusText } from "@hanabi-live/data";
+import { Status, StatusText } from "@hanabi-live/data";
 import { ArrowUpRight, Eye, MessageCircle, Star } from "lucide-react";
 import { useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
+import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
 
 export function PeoplePanel({
   connection,
   message,
+  join,
 }: {
   connection: LobbyConnection;
   message: (name: string) => void;
+  join: (table: Table) => void;
 }) {
   const {
     users,
     welcome,
     connection: status,
+    tables,
+    pregame,
   } = useSelector(
     (state: LobbyState) => ({
       users: state.users,
       welcome: state.welcome,
       connection: state.connection,
+      tables: state.tables,
+      pregame: state.pregame,
     }),
     shallowEqual,
   );
@@ -94,17 +101,37 @@ export function PeoplePanel({
             {online.map((user) => (
               <tr className="person" key={user.userID}>
                 <td>
+                  {user.hyphenated ? (
+                    <i
+                      className="fas fa-heading fa-xs"
+                      title="This person is a self-identified member of the Hyphenated group."
+                    />
+                  ) : (
+                    <span className="lobby-hyphen-empty" />
+                  )}
+                  {"\u{A0} "}
+                  <a
+                    className={`person-main ${user.name === welcome.username ? "name-me" : welcome.friends.includes(user.name) ? "friend" : ""}`}
+                    href={`/scores/${encodeURIComponent(user.name)}`}
+                    rel="noreferrer"
+                    style={{
+                      opacity: user.inactive ? 0.3 : 1,
+                      fontWeight: user.name === welcome.username ? 700 : 300,
+                    }}
+                    target="_blank"
+                  >
+                    {user.name}
+                  </a>
+                  {user.inactive && <> {"\u{1F4A4}"}</>}
                   <button
                     aria-expanded={selected === user.name}
-                    className={`person-main ${user.name === welcome.username ? "name-me" : welcome.friends.includes(user.name) ? "friend" : ""}`}
+                    aria-label={`Actions for ${user.name}`}
+                    className="text-button person-menu"
                     onClick={() =>
                       setSelected(selected === user.name ? null : user.name)
                     }
                   >
-                    <span>
-                      {user.name}
-                      {user.hyphenated && <small> /h</small>}
-                    </span>
+                    <i aria-hidden="true" className="fas fa-ellipsis-v" />
                   </button>
                   {selected === user.name && (
                     <div className="person-actions">
@@ -158,7 +185,41 @@ export function PeoplePanel({
                     </div>
                   )}
                 </td>
-                <td>{user.inactive ? "Away" : StatusText[user.status]}</td>
+                <td>
+                  {pregame === null
+                  && user.tableID !== undefined
+                  && user.status !== Status.Lobby
+                  && user.status !== Status.Replay ? (
+                    <button
+                      className="text-button person-status"
+                      disabled={status !== "online"}
+                      onClick={() => {
+                        const table =
+                          user.tableID === undefined
+                            ? undefined
+                            : tables[user.tableID];
+                        if (table) {
+                          if (user.status === Status.PreGame) {
+                            join(table);
+                          } else {
+                            connection.send("tableSpectate", {
+                              tableID: table.id,
+                              shadowingPlayerIndex: -1,
+                            });
+                          }
+                        } else {
+                          connection.notice(
+                            "That table is no longer available.",
+                          );
+                        }
+                      }}
+                    >
+                      {StatusText[user.status]}
+                    </button>
+                  ) : (
+                    StatusText[user.status]
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

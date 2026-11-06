@@ -1,3 +1,4 @@
+import { timerFormatter } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import { optionFlags } from "./GameDialog";
 
@@ -8,7 +9,7 @@ const icons = [
   "plus-circle",
   "minus-circle",
   "layer-group",
-  "chess-knight",
+  "flushed",
 ] as const;
 
 export function GameOptionIcons({
@@ -33,24 +34,35 @@ export function GameOptionIcons({
   return (
     <>
       {options.timed && (
-        <i
-          aria-label="Timed"
-          className="fas fa-clock"
-          title={`Timed: ${options.timeBase / 60} minute${options.timeBase === 60 ? "" : "s"} + ${options.timePerTurn} second${options.timePerTurn === 1 ? "" : "s"} per turn`}
-        />
+        <li>
+          <i
+            aria-label="Timed"
+            className="fas fa-clock"
+            title={`Timed: ${options.timeBase / 60} minute${options.timeBase === 60 ? "" : "s"} + ${options.timePerTurn} second${options.timePerTurn === 1 ? "" : "s"} per turn`}
+          />
+          {"\u{A0}"} ({timerFormatter(options.timeBase)} +{" "}
+          {timerFormatter(options.timePerTurn)})
+        </li>
       )}
       {options.speedrun && (
-        <i aria-label="Speedrun" className="fas fa-running" title="Speedrun" />
+        <li>
+          <i
+            aria-label="Speedrun"
+            className="fas fa-running"
+            title="Speedrun"
+          />
+        </li>
       )}
       {optionFlags.map(
         ([key, title], index) =>
           options[key] && (
-            <i
-              aria-label={title}
-              className={`fas fa-${icons[index]}`}
-              key={key}
-              title={title}
-            />
+            <li key={key}>
+              <i
+                aria-label={title}
+                className={`fas fa-${icons[index]}`}
+                title={title}
+              />
+            </li>
           ),
       )}
     </>
