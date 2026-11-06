@@ -3577,8 +3577,23 @@ impl TableActor {
         if let Phase::Replay { replay, .. } = &mut next.phase {
             replay.leader = target.0;
         }
+        let message = server_chat(
+            self.table.id,
+            &format!(
+                "{} has passed table ownership to: {}",
+                crate::accounts::escape_html(&session.name),
+                crate::accounts::escape_html(&target.1)
+            ),
+        );
+        next.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: message.clone(),
+        });
+        next.remember(session.user, data["requestID"].as_str())?;
         self.persist(next).await?;
         let mut e = self.effects();
+        self.add_all(&mut e, "chat", message);
         self.add_all(
             &mut e,
             "replayLeader",
