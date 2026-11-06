@@ -18,7 +18,7 @@ runs:
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: node_modules
-        key: bun-runtime-modules-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ steps.bun.outputs.bun-version }}-${{ hashFiles('bun.lock', 'bunfig.toml', 'package.json', 'packages/*/package.json', '.npmrc', 'patches/**', '.github/workflows/setup/action.yml') }}
+        key: bun-runtime-modules-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.platform.outputs.image }}-${{ steps.bun.outputs.bun-version }}-${{ hashFiles('bun.lock', 'bunfig.toml', 'package.json', 'packages/*/package.json', '.npmrc', 'patches/**', '.github/workflows/setup-bun/action.yml') }}
 
     - name: Install dependencies
       if: steps.dependencies.outputs.cache-hit != 'true'
