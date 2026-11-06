@@ -23,18 +23,6 @@ jobs:
           cache-from: type=gha,scope=hanabi-container
           cache-to: type=gha,scope=hanabi-container,mode=max,ignore-error=true
 
-  container_discord:
-    name: Container Failure Notification
-    needs: [container_build]
-    if: failure() && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: failure
-          title: ""
-
   client_build:
     runs-on: ubuntu-latest
     steps:
@@ -355,6 +343,7 @@ jobs:
       [
         client_build,
         server_build,
+        container_build,
         lint,
         test,
         release_tests,
