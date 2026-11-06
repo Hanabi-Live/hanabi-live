@@ -21,6 +21,7 @@ use tokio_util::{sync::CancellationToken, task::TaskTracker};
 pub enum StopReason {
     Shutdown,
     Restart,
+    GracefulStop,
     LeaseLost,
     Failure(String),
 }
@@ -181,7 +182,7 @@ impl Control {
         self.notice("The server will shutdown in 30 minutes.")
             .await?;
         if self.active_games().await? == 0 {
-            self.request_stop(false).await?;
+            self.request_stop(StopReason::Shutdown).await?;
         }
         Ok(())
     }
@@ -208,7 +209,13 @@ impl Control {
         self.notice("Server shutdown has been canceled.").await?;
         Ok(())
     }
-    pub async fn request_stop(&self, restart: bool) -> Result<()> {
+    pub async fn graceful_stop(&self) -> Result<()> {
+        let _ordered = self.ordered.lock().await;
+        self.request_stop(StopReason::GracefulStop).await?;
+        *self.schedule.lock().unwrap_or_else(|e| e.into_inner()) = None;
+        Ok(())
+    }
+    pub async fn request_stop(&self, reason: StopReason) -> Result<()> {
         ensure!(
             self.accepting.load(Ordering::Acquire),
             "The server is not ready for lifecycle operations."
@@ -217,15 +224,13 @@ impl Control {
             !self.draining.swap(true, Ordering::AcqRel),
             "The server is already draining."
         );
-        if restart && let Err(error) = crate::restart::prepare(&self.root).await {
+        if matches!(reason, StopReason::Restart)
+            && let Err(error) = crate::restart::prepare(&self.root).await
+        {
             self.draining.store(false, Ordering::Release);
             return Err(error);
         }
-        if let Err(error) = self.stops.try_send(if restart {
-            StopReason::Restart
-        } else {
-            StopReason::Shutdown
-        }) {
+        if let Err(error) = self.stops.try_send(reason) {
             self.draining.store(false, Ordering::Release);
             return Err(error.into());
         }
@@ -318,7 +323,7 @@ impl Control {
             self.operation(Operation::TerminateGames).await?;
         }
         if stop {
-            self.request_stop(false).await?;
+            self.request_stop(StopReason::Shutdown).await?;
         }
         Ok(())
     }
@@ -378,7 +383,11 @@ pub fn duration(seconds: u64) -> String {
     }
 }
 
-pub async fn drain_game_runtime(app: &App, tables: &TaskTracker, restart: bool) -> Result<()> {
+pub async fn drain_game_runtime(
+    app: &App,
+    tables: &TaskTracker,
+    reason: &StopReason,
+) -> Result<()> {
     app.accepting.store(false, Ordering::Release);
     let mut failures = Vec::new();
     let (reply, received) = oneshot::channel();
@@ -418,14 +427,16 @@ pub async fn drain_game_runtime(app: &App, tables: &TaskTracker, restart: bool) 
         failures.push(format!("State ownership was lost during drain: {error:#}"));
     }
     if failures.is_empty() {
-        if restart {
+        if matches!(reason, StopReason::Restart) {
             app.announce_restart().await;
         }
         let (reply, closed) = oneshot::channel();
         if app
             .hub
             .send(HubCommand::Operations {
-                command: Operation::Drained { restart },
+                command: Operation::Drained {
+                    reconnect: matches!(reason, StopReason::Restart | StopReason::GracefulStop),
+                },
                 reply,
             })
             .await

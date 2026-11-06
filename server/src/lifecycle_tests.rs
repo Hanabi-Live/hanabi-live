@@ -94,7 +94,7 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
         );
         let result = tokio::time::timeout(
             Duration::from_secs(3),
-            drain_game_runtime(&app, &tasks, true),
+            drain_game_runtime(&app, &tasks, &StopReason::Restart),
         )
         .await?;
         assert_eq!(result.is_ok(), successful);
@@ -180,5 +180,34 @@ async fn orderly_drain_waits_for_admitted_operations() {
         .await
         .unwrap()
         .unwrap();
+    h.close().await;
+}
+
+#[tokio::test]
+async fn graceful_stop_cancels_scheduled_termination_without_waiting_for_games() {
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    let mut h = crate::operations_tests::Harness::new(pool);
+    h.control.schedule().await.unwrap();
+    h.control.graceful_stop().await.unwrap();
+    assert!(matches!(
+        h.stops.recv().await,
+        Some(StopReason::GracefulStop)
+    ));
+    assert!(h.control.schedule.lock().unwrap().is_none());
+    assert!(h.control.draining.load(Ordering::Acquire));
+    h.control.tick().await.unwrap();
+    assert!(
+        !h.operations
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|operation| matches!(
+                operation,
+                Operation::ClearPregames | Operation::TerminateGames
+            ))
+    );
+    assert!(h.control.graceful_stop().await.is_err());
     h.close().await;
 }

@@ -47,6 +47,8 @@ export const test = base.extend<
     server: {
       url: string;
       restart: () => Promise<void>;
+      stop: () => Promise<void>;
+      start: () => Promise<void>;
     };
   }
 >({
@@ -155,6 +157,32 @@ export const test = base.extend<
               `http://127.0.0.1:${controlPort}/gracefulRestart`,
             );
             expect(response.status, await response.text()).toBe(200);
+          },
+          stop: async () => {
+            if (!child || child.exitCode !== null) {
+              throw new Error(
+                "Cannot stop a browser fixture that is not running.",
+              );
+            }
+            const running = child;
+            const closed = once(running, "close", {
+              signal: AbortSignal.timeout(30_000),
+            });
+            const response = await fetch(
+              `http://127.0.0.1:${controlPort}/gracefulStop`,
+            );
+            expect(response.status, await response.text()).toBe(200);
+            await closed;
+            expect(running.exitCode, output).toBe(0);
+            expect(running.signalCode).toBeNull();
+          },
+          start: async () => {
+            if (child?.exitCode === null) {
+              throw new Error(
+                "Cannot start an already running browser fixture.",
+              );
+            }
+            await start(executable, []);
           },
         });
       } finally {

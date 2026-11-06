@@ -11,6 +11,7 @@ import {
   rm,
 } from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { z } from "zod";
 import { evaluationDatabase } from "./database";
@@ -45,6 +46,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
       "replaces the process through gracefulRestart without losing gameplay",
       "127.0.0.1",
       "HTTP",
+    ],
+    [
+      "stops through gracefulStop and resumes timed gameplay after maintenance",
+      "127.0.0.1",
+      "HTTP_STOP",
     ],
   ] as const)(
     "%s",
@@ -345,7 +351,22 @@ databaseDescribe("compiled application entry point (rust)", () => {
           } else {
             const crashed = processState.child;
             const crashedClosed = once(crashed, "close");
-            expect(crashed.kill(signal)).toBe(true);
+            if (signal === "HTTP_STOP") {
+              const response = await fetch(`${operationsAddress}/gracefulStop`);
+              expect(response.status).toBe(200);
+              await response.text();
+              await Promise.all(
+                [alice, bob].map(
+                  async (peer) =>
+                    await peer.receive(
+                      "restart",
+                      SERVER_COMMAND_SCHEMAS.restart,
+                    ),
+                ),
+              );
+            } else {
+              expect(crashed.kill(signal)).toBe(true);
+            }
             await bounded(crashedClosed, "child process shutdown", 5000);
             if (crash) {
               expect(crashed.signalCode).toBe("SIGKILL");
@@ -353,6 +374,12 @@ databaseDescribe("compiled application entry point (rust)", () => {
               expect(crashed.exitCode).toBe(0);
               expect(crashed.signalCode).toBeNull();
               expect(processState.output()).toContain("successfully shut down");
+            }
+            if (signal === "HTTP_STOP") {
+              expect(await client`SELECT id FROM games`).toHaveLength(0);
+              const stoppedCheckpoints = await checkpointProgress();
+              await delay(3000);
+              expect(await checkpointProgress()).toEqual(stoppedCheckpoints);
             }
             processState = startProcess(directory);
             address = await bounded(

@@ -107,6 +107,43 @@ async fn request(app: Router, path: &str, body: Option<&str>) -> (StatusCode, St
     )
 }
 #[tokio::test]
+async fn graceful_stop_is_loopback_only_and_rejects_repeated_requests() {
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    let mut h = Harness::new(pool);
+    let app = router(h.control.clone());
+    for (peer, browser) in [("192.0.2.1:1234", false), ("127.0.0.1:1234", true)] {
+        let mut builder = Request::builder().uri("/gracefulStop");
+        if browser {
+            builder = builder.header("Origin", "http://localhost");
+        }
+        let mut request = builder.body(Body::empty()).unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo(peer.parse::<SocketAddr>().unwrap()));
+        assert_eq!(
+            app.clone().oneshot(request).await.unwrap().status(),
+            StatusCode::FORBIDDEN
+        );
+    }
+    assert!(h.stops.try_recv().is_err());
+    assert_eq!(
+        request(app.clone(), "/gracefulStop", None).await.0,
+        StatusCode::OK
+    );
+    assert!(matches!(
+        h.stops.recv().await,
+        Some(StopReason::GracefulStop)
+    ));
+    assert!(h.operations.lock().unwrap().is_empty());
+    assert_eq!(
+        request(app, "/gracefulStop", None).await.0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    h.close().await;
+}
+#[tokio::test]
 async fn loopback_routes_admission_and_schedule() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")

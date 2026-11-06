@@ -566,10 +566,10 @@ impl Hub {
             let _ = reply.send(Err(error));
             return;
         }
-        if let Operation::Drained { restart } = command {
+        if let Operation::Drained { reconnect } = command {
             let messages = [
                 frame("soundLobby", json!({"file":"shutdown"})),
-                if restart {
+                if reconnect {
                     frame("restart", json!({}))
                 } else {
                     frame(

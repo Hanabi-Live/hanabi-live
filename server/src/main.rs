@@ -235,12 +235,12 @@ async fn run(config: Config, version: String) -> Result<bool> {
         }
     };
     let replace = matches!(reason, StopReason::Restart);
-    match reason {
+    match &reason {
         StopReason::LeaseLost => {
             failures.push("Redis state ownership or durability was lost".into());
             app.shutdown.cancel();
         }
-        StopReason::Failure(message) => failures.push(message),
+        StopReason::Failure(message) => failures.push(message.clone()),
         _ => {}
     }
     app.accepting.store(false, Ordering::Release);
@@ -256,7 +256,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     }
     match tokio::time::timeout(
         Duration::from_secs(120),
-        drain_game_runtime(&app, &tables, replace),
+        drain_game_runtime(&app, &tables, &reason),
     )
     .await
     {

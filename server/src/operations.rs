@@ -35,7 +35,7 @@ pub enum Operation {
     },
     Inspect,
     Drained {
-        restart: bool,
+        reconnect: bool,
     },
     LongTables,
     ClearEmptyTables,
@@ -86,6 +86,7 @@ pub fn router(control: Arc<Control>) -> Router {
         "/debugFunction",
         "/getLongTables",
         "/gracefulRestart",
+        "/gracefulStop",
         "/maintenance",
         "/memory",
         "/metrics",
@@ -120,6 +121,7 @@ fn mutating(path: &str) -> bool {
             | "/maintenance"
             | "/unmaintenance"
             | "/shutdown"
+            | "/gracefulStop"
             | "/terminate"
     )
 }
@@ -247,8 +249,9 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         "/gracefulRestart"=>{
             if !control.accepting.load(Ordering::Acquire){return Err(Error(StatusCode::SERVICE_UNAVAILABLE,"The server is not ready for lifecycle operations.\n".into()))}
             if control.draining.load(Ordering::Acquire){return Err(bad("The server is already draining."))}
-            control.request_stop(true).await?;
+            control.request_stop(crate::lifecycle::StopReason::Restart).await?;
         }
+        "/gracefulStop"=>control.graceful_stop().await?,
         "/maintenance"|"/unmaintenance"=>{
             let enabled=path=="/maintenance";
             if !control.set_maintenance(enabled).await? {

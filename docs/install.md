@@ -232,6 +232,26 @@ requests the Rust lifecycle endpoint without pulling source or rebuilding.
 for games to finish, but terminates remaining games after 30 minutes. Do not use
 it as an immediate, state-preserving migration handoff while games are active.
 
+For a short maintenance pause with active games, use
+`bash admin/gracefulStop.sh` (the loopback `/gracefulStop` endpoint). It
+immediately drains admitted work, saves active games and clocks durably, cancels
+any scheduled shutdown, tells clients to reconnect, and exits without replacing
+the process or terminating games. Existing restart clock grace still applies;
+time while the process is stopped is not charged to players.
+
+The HTTP response only acknowledges the request. Before maintaining PostgreSQL
+or copying state, verify the process exited successfully, the log reports
+`The server successfully shut down.`, and no supervisor restarts it. Use
+`autorestart=unexpected`, `exitcodes=0`, and `startsecs=0` (or systemd
+`Restart=on-failure`), not an always-restart policy. On a drain failure, stop
+the maintenance procedure and inspect recovery; do not assume progress was
+saved.
+
+After storage is ready, explicitly start the stopped application and verify
+recovery health and client reconnects. Keep pauses short: pregame seats have a
+60-second reconnect grace after startup. For a host migration, fence the old
+application before starting the new one; never run two writable copies.
+
 ### Opt-in CI releases (Linux amd64)
 
 Release construction runs in parallel with validation. `candidate-` artifacts

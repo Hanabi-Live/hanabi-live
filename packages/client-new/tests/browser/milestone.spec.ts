@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { setTimeout as delay } from "node:timers/promises";
 import { expect, gameReady, test } from "./fixture";
 
 type GameWindow = typeof globalThis & {
@@ -182,4 +183,87 @@ test("sign in, join, play, return, and recover the new lobby", async ({
   expect(errors).toEqual([]);
   await alice.close();
   await bob.close();
+});
+
+test("timed game tabs reconnect after a graceful stop and manual start", async ({
+  browser,
+  backend,
+  server,
+}) => {
+  const owner = await browser.newContext();
+  const guest = await browser.newContext();
+  try {
+    const a = await owner.newPage();
+    const b = await guest.newPage();
+    const errors: string[] = [];
+    for (const page of [a, b]) {
+      page.on("pageerror", (error) => {
+        errors.push(error.message);
+      });
+    }
+    await Promise.all(
+      ([a, b] as const).map(async (page, index) => {
+        const name = index === 0 ? "testStopOwner" : "testStopGuest";
+        await page.goto(`${backend}/new`);
+        await page.getByLabel("Username", { exact: true }).fill(name);
+        await page.getByLabel("Password", { exact: true }).fill(name);
+        await page
+          .getByRole("button", { name: "Sign In", exact: true })
+          .click();
+        await expect(page.locator("#lobby-games")).toBeVisible();
+      }),
+    );
+    await a
+      .getByRole("button", { name: "Create a table", exact: true })
+      .click();
+    await a
+      .getByLabel("Table name", { exact: true })
+      .fill("Graceful stop game");
+    await a.getByLabel("Timed game").check();
+    await a.getByLabel("Base time (minutes)").fill("5");
+    await a.getByLabel("Seconds per turn").fill("20");
+    await a
+      .getByRole("dialog")
+      .getByRole("button", { name: "Create table", exact: true })
+      .click();
+    await b
+      .locator(".table-card")
+      .filter({ hasText: "Graceful stop game" })
+      .getByRole("button", { name: "Join", exact: true })
+      .click();
+    await expect(a.locator(".seat:not(.empty-seat)")).toHaveCount(2);
+    const ready = [gameReady(a), gameReady(b)];
+    await a.getByRole("button", { name: "Start game", exact: true }).click();
+    await Promise.all(ready);
+    await expect(a.locator("canvas").first()).toBeVisible();
+    await expect(b.locator("canvas").first()).toBeVisible();
+    const urls = [a.url(), b.url()];
+    const canvases = await Promise.all(
+      [a, b].map(
+        async (page) => await page.locator("canvas").first().elementHandle(),
+      ),
+    );
+    await server.stop();
+    await delay(3000);
+    const recovered = [gameReady(a), gameReady(b)];
+    await server.start();
+    await Promise.all(recovered);
+    expect([a.url(), b.url()]).toEqual(urls);
+    for (const canvas of canvases) {
+      // eslint-disable-next-line no-await-in-loop
+      expect(await canvas.evaluate((element) => element.isConnected)).toBe(
+        true,
+      );
+    }
+    await expect(a.locator("#error-modal")).not.toBeVisible();
+    await expect(b.locator("#error-modal")).not.toBeVisible();
+    expect(errors).toEqual([]);
+    await a.keyboard.press("Alt+c");
+    await a.locator("#game-chat-input").fill("/terminate");
+    await a.locator("#game-chat-input").press("Enter");
+    await expect(a).toHaveURL(/\/shared-replay\/\d+(?:#\d+)?$/u);
+  } finally {
+    await owner.close();
+    await guest.close();
+  }
 });
