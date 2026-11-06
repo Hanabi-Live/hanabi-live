@@ -401,6 +401,64 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
 }
 
 #[tokio::test]
+async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice<&>", "Bob<&>", "Outsider"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.create(0, "Leader announcements", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        for phase in 0..3 {
+            if phase == 1 {
+                h.send(1, "tableStart", json!({"tableID":id})).await?;
+                for index in 0..2 {
+                    h.send(index, "loaded", json!({"tableID":id})).await?;
+                }
+            } else if phase == 2 {
+                h.send(0, "tableTerminate", json!({"tableID":id})).await?;
+            }
+            h.barrier(0).await?;
+            for index in 0..3 {
+                h.frames(index)?;
+            }
+            let before = h.snapshot(id).await?.0.chat.len();
+            let actor = if phase == 1 { 1 } else { 0 };
+            let target = 1 - actor;
+            let data = json!({"tableID":id,"name":h.users[target].name,"requestID":format!("leader-{phase}")});
+            h.send(actor, "tableSetLeader", data.clone()).await?;
+            let expected = format!(
+                "{} has passed table ownership to: {}",
+                crate::accounts::escape_html(&h.users[actor].name),
+                crate::accounts::escape_html(&h.users[target].name)
+            );
+            h.barrier(0).await?;
+            for index in 0..2 {
+                let messages = chat_messages(&h.frames(index)?);
+                ensure!(messages.len() == 1, "Expected one leader-change announcement");
+                ensure!(messages[0]["msg"] == expected && messages[0]["source"] == "server");
+                ensure!(messages[0].get("recipient").is_none());
+            }
+            ensure!(chat_messages(&h.frames(2)?).is_empty(), "Leader notice leaked outside the table");
+            let table = h.snapshot(id).await?.0;
+            ensure!(table.chat.len() == before + 1 && table.chat[before].message["msg"] == expected);
+            h.send(actor, "tableSetLeader", data).await?;
+            ensure!(h.snapshot(id).await?.0.chat.len() == before + 1, "Retried command duplicated its notice");
+            ensure!(h.send(2, "tableSetLeader", json!({"tableID":id,"name":h.users[actor].name})).await.is_err());
+            ensure!(h.send(actor, "tableSetLeader", json!({"tableID":id,"name":"Absent"})).await.is_err());
+            ensure!(h.send(actor, "tableSetLeader", json!({"tableID":id,"name":h.users[target].name})).await.is_err());
+            h.barrier(0).await?;
+            for index in 0..3 {
+                ensure!(chat_messages(&h.frames(index)?).is_empty(), "Rejected or duplicate transfer emitted chat");
+            }
+        }
+        Ok::<(), anyhow::Error>(())
+    }.await;
+    let cleanup = h.close().await;
+    result?;
+    cleanup
+}
+
+#[tokio::test]
 async fn shared_review_chat_refreshes_idle_but_server_notices_do_not() -> Result<()> {
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
