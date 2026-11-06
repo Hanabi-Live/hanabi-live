@@ -364,30 +364,30 @@ jobs:
           if-no-files-found: error
           overwrite: true
 
-  # Temporarily disabled while GitHub Pages deployments stall.
-  # deploy_docs_website:
-  #   if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-  #   needs: [lint]
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   steps:
-  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-  #     - uses: ./.github/workflows/setup
-  #
-  #     - name: Use TypeDoc to automatically generate documentation
-  #       run: bun run docs
-  #       working-directory: ./packages/game
-  #
-  #     - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
-  #       with:
-  #         name: github-pages-${{ github.run_attempt }}
-  #         path: ./packages/game/docs
-  #
-  #     - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
-  #       with:
-  #         artifact_name: github-pages-${{ github.run_attempt }}
+  deploy_docs_website:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [lint]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/workflows/setup
+
+      - name: Use TypeDoc to automatically generate documentation
+        run: bun run docs
+        working-directory: ./packages/game
+
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          name: github-pages-${{ github.run_attempt }}
+          path: ./packages/game/docs
+
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
 
   discord:
     name: Discord Failure Notification
@@ -402,6 +402,7 @@ jobs:
         client_new,
         native_release,
         publish_native_release,
+        deploy_docs_website,
       ]
     if: failure() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
