@@ -65,18 +65,27 @@ class GitHub:
 
 
 def approved_run(runs, revision):
-    for run in runs:
-        if (
-            run["head_sha"] == revision
-            and run["head_branch"] == "main"
-            and run["event"] == "push"
-            and run["status"] == "completed"
-            and run["conclusion"] == "success"
-            and run["path"] == ".github/workflows/ci.yml"
-            and run["head_repository"]["full_name"] == REPOSITORY
-        ):
+    matches = [
+        run for run in runs
+        if run["head_sha"] == revision
+        and run["head_branch"] == "main"
+        and run["event"] == "push"
+        and run["path"] == ".github/workflows/ci.yml"
+        and run["head_repository"]["full_name"] == REPOSITORY
+    ]
+    for run in matches:
+        if run["status"] == "completed" and run["conclusion"] == "success":
             return run
-    raise ValueError("Current main has no successful CI run. Wait for CI; no older release was selected.")
+    message = "Current main has no successful CI run. Wait for CI; no older release was selected."
+    if matches:
+        latest = max(matches, key=lambda run: run["id"])
+        status = latest["conclusion"] or latest["status"]
+        message += (f"\nCI for main {revision} ({status}): "
+                    f"https://github.com/{REPOSITORY}/actions/runs/{latest['id']}")
+    else:
+        message += (f"\nNo CI run found for main {revision}. Check "
+                    f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
+    raise ValueError(message)
 
 
 def download(github, run, revision, work):

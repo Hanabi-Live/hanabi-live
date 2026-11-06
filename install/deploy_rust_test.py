@@ -167,6 +167,32 @@ class DeployTest(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "no successful CI"):
                 deploy.approved_run([run], self.revision)
 
+    def test_unapproved_revision_links_latest_matching_ci_run(self):
+        older = {**self.run, "id": 122, "conclusion": "failure"}
+        unrelated = {**self.run, "id": 999, "head_sha": "c" * 40}
+        pull_request = {**self.run, "id": 1000, "event": "pull_request"}
+        for status, conclusion in (
+            ("queued", None), ("in_progress", None), ("completed", "failure"),
+        ):
+            latest = {**self.run, "status": status, "conclusion": conclusion}
+            with self.subTest(status=status), self.assertRaises(ValueError) as error:
+                deploy.approved_run([unrelated, older, latest, pull_request], self.revision)
+            message = str(error.exception)
+            self.assertIn(f"CI for main {self.revision} ({conclusion or status})", message)
+            self.assertIn(f"https://github.com/{deploy.REPOSITORY}/actions/runs/123", message)
+            self.assertNotIn("/runs/999", message)
+            self.assertNotIn("/runs/1000", message)
+            self.assertIn("no older release was selected", message)
+
+    def test_missing_ci_run_links_workflow_without_selecting_another_revision(self):
+        for runs in ([], [{**self.run, "head_sha": "c" * 40}]):
+            with self.subTest(runs=runs), self.assertRaises(ValueError) as error:
+                deploy.approved_run(runs, self.revision)
+            message = str(error.exception)
+            self.assertIn(f"No CI run found for main {self.revision}", message)
+            self.assertIn(f"https://github.com/{deploy.REPOSITORY}/actions/workflows/ci.yml", message)
+            self.assertNotIn("/actions/runs/", message)
+
     def test_artifact_redirect_does_not_forward_github_token(self):
         request = urllib.request.Request("https://api.github.com/example",
                                          headers={"Authorization": "Bearer synthetic"})
