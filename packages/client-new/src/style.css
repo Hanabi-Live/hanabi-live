@@ -705,6 +705,11 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   gap: 0.8em;
   margin: 1em 0;
 }
+
+.option-list .check:has(input:disabled) {
+  opacity: 0.3;
+  cursor: auto;
+}
 .dialog-actions {
   display: flex;
   justify-content: flex-end;

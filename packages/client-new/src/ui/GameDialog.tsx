@@ -60,7 +60,9 @@ export function GameDialog({
   const [maxPlayers, setMaxPlayers] = useState(
     game?.maxPlayers ?? preferences.createTableMaxPlayers,
   );
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(
+    () => localStorage.getItem("createTablePassword") ?? "",
+  );
   const [timed, setTimed] = useState(
     game?.options.timed ?? preferences.createTableTimed,
   );
@@ -161,6 +163,9 @@ export function GameDialog({
       !connection.send(game ? "tableUpdate" : "tableCreate", payload, setError)
     ) {
       return;
+    }
+    if (game === undefined) {
+      localStorage.setItem("createTablePassword", password);
     }
     const changed: Array<[keyof Settings, Settings[keyof Settings]]> = [
       ["createTableVariant", variant],
@@ -266,49 +271,51 @@ export function GameDialog({
             ))}
           </datalist>
         </label>
-        <div className="classic-timing-row">
-          <label className="check">
-            <i aria-hidden="true" className="fas fa-clock" /> Timed
-            <input
-              aria-label="Timed game"
-              checked={timed}
-              onChange={(event) => setTimed(event.target.checked)}
-              type="checkbox"
-            />
-          </label>
-          {timed && (
-            <>
-              <label>
-                Base Time
-                <br />
-                (in minutes)
-                <input
-                  aria-label="Base time (minutes)"
-                  disabled={!timed}
-                  min="0"
-                  onChange={(event) => setMinutes(event.target.value)}
-                  step="0.1"
-                  type="number"
-                  value={minutes}
-                />
-              </label>
-              <label>
-                Time per Turn
-                <br />
-                (in seconds)
-                <input
-                  aria-label="Seconds per turn"
-                  disabled={!timed}
-                  min="0"
-                  onChange={(event) => setSeconds(event.target.value)}
-                  step="1"
-                  type="number"
-                  value={seconds}
-                />
-              </label>
-            </>
-          )}
-        </div>
+        {!speedrun && (
+          <div className="classic-timing-row">
+            <label className="check">
+              <i aria-hidden="true" className="fas fa-clock" /> Timed
+              <input
+                aria-label="Timed game"
+                checked={timed}
+                onChange={(event) => setTimed(event.target.checked)}
+                type="checkbox"
+              />
+            </label>
+            {timed && (
+              <>
+                <label>
+                  Base Time
+                  <br />
+                  (in minutes)
+                  <input
+                    aria-label="Base time (minutes)"
+                    disabled={!timed}
+                    min="0"
+                    onChange={(event) => setMinutes(event.target.value)}
+                    step="0.1"
+                    type="number"
+                    value={minutes}
+                  />
+                </label>
+                <label>
+                  Time per Turn
+                  <br />
+                  (in seconds)
+                  <input
+                    aria-label="Seconds per turn"
+                    disabled={!timed}
+                    min="0"
+                    onChange={(event) => setSeconds(event.target.value)}
+                    step="1"
+                    type="number"
+                    value={seconds}
+                  />
+                </label>
+              </>
+            )}
+          </div>
+        )}
         <div className="form-columns classic-game-identity">
           <label>
             <span>
@@ -331,10 +338,10 @@ export function GameDialog({
               </span>
               <input
                 aria-label="Table password"
-                autoComplete="new-password"
+                autoComplete="off"
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Password (optional)"
-                type="password"
+                type="text"
                 value={password}
               />
             </label>
@@ -364,6 +371,14 @@ export function GameDialog({
               <label className="check" key={key}>
                 <input
                   checked={flags[key]}
+                  disabled={
+                    (key === "oneExtraCard"
+                      && flags.oneLessCard
+                      && !flags.oneExtraCard)
+                    || (key === "oneLessCard"
+                      && flags.oneExtraCard
+                      && !flags.oneLessCard)
+                  }
                   onChange={(event) =>
                     setFlags((current: Readonly<Record<Flag, boolean>>) => ({
                       ...current,
