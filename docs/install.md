@@ -220,6 +220,12 @@ server. An HTTP success response does not establish that restart completed:
 verify the running revision, client assets, restored tables, and logs.
 `/gracefulRestart` drains and replaces the prepared binary; it does not compile.
 
+`./restart_service_only.sh` delegates to `admin/gracefulRestart.sh`, which
+requests the Rust lifecycle endpoint without pulling source or rebuilding.
+`./stop.sh` delegates to `admin/shutdown.sh`. Shutdown is scheduled: it waits
+for games to finish, but terminates remaining games after 30 minutes. Do not use
+it as an immediate, state-preserving migration handoff while games are active.
+
 ### Opt-in CI releases (Linux amd64)
 
 Release construction runs in parallel with validation. `candidate-` artifacts
