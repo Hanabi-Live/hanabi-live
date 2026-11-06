@@ -100,8 +100,10 @@ source-layout installation at `root@hanab.live:/root/hanabi-live`.
 `./deploy_rust.sh --check` downloads and verifies the approved release for
 current `main` without deploying. `./deploy_rust.sh` publishes and gracefully
 restarts; reviewed pending migrations require `--apply-migrations`. Both wait up
-to five minutes for CI on the selected `main` revision and refuse deployment on
-CI failure or timeout. The laptop needs Bash and SSH. Production requires an
+to five minutes for `publish_native_release` on the selected `main` revision's
+latest CI run attempt and refuse deployment if publication fails or times out.
+Container builds and documentation deployment do not gate release publication or
+deployment. The laptop needs Bash and SSH. Production requires an
 artifact-readable `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC`, Python 3.12+,
 Git, and PostgreSQL client tools, not Node, Bun, Cargo, or the GitHub CLI. The
 wrapper forwards the first nonempty local `GH_TOKEN`,

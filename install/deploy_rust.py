@@ -76,21 +76,25 @@ def matching_runs(runs, revision):
     ]
 
 
-def approved_run(runs, revision):
-    matches = matching_runs(runs, revision)
-    for run in matches:
-        if run["status"] == "completed" and run["conclusion"] == "success":
-            return run
-    message = "Current main has no successful CI run. Wait for CI; no older release was selected."
-    if matches:
-        latest = max(matches, key=lambda run: run["id"])
-        status = latest["conclusion"] or latest["status"]
-        message += (f"\nCI for main {revision} ({status}): "
-                    f"https://github.com/{REPOSITORY}/actions/runs/{latest['id']}")
-    else:
-        message += (f"\nNo CI run found for main {revision}. Check "
-                    f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
-    raise ValueError(message)
+def publication_job(github, run):
+    matches = []
+    page = 1
+    while True:
+        response = github.json(
+            f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100&page={page}"
+        )
+        matches.extend(job for job in response["jobs"] if job["name"] == "publish_native_release")
+        if page * 100 >= response["total_count"]:
+            break
+        page += 1
+    require(len(matches) <= 1, "Ambiguous publish_native_release jobs; refusing deployment.")
+    if not matches:
+        return None
+    job = matches[0]
+    require(job["run_id"] == run["id"] and job["run_attempt"] == run["run_attempt"]
+            and job["head_sha"] == run["head_sha"],
+            "Publication job belongs to a different CI run, attempt, or revision.")
+    return job
 
 
 def await_approved_run(github, revision):
@@ -109,13 +113,23 @@ def await_approved_run(github, revision):
             runs = github.json(
                 f"/actions/workflows/ci.yml/runs?event=push&branch=main&head_sha={revision}&per_page=100"
             )["workflow_runs"]
-            try:
-                return approved_run(runs, revision)
-            except ValueError as error:
-                matches = matching_runs(runs, revision)
-                if matches and all(run["status"] == "completed" for run in matches):
-                    raise
-                detail = str(error)
+            matches = matching_runs(runs, revision)
+            if matches:
+                run = max(matches, key=lambda run: run["id"])
+                detail = (f"CI for main {revision}: https://github.com/{REPOSITORY}"
+                          f"/actions/runs/{run['id']}/attempts/{run['run_attempt']}")
+                job = publication_job(github, run)
+                if job is not None:
+                    detail += f"\npublish_native_release: {job['conclusion'] or job['status']}"
+                    if job["status"] == "completed":
+                        require(job["conclusion"] == "success",
+                                f"Release publication did not succeed; no deployment performed.\n{detail}")
+                        return run
+                require(run["status"] != "completed",
+                        f"CI finished without successful release publication; no deployment performed.\n{detail}")
+            else:
+                detail = (f"No CI run found for main {revision}; no older release was selected. Check "
+                          f"https://github.com/{REPOSITORY}/actions/workflows/ci.yml")
             if detail != last:
                 print(f"Waiting for CI (5-minute limit).\n{detail}", flush=True)
                 last = detail

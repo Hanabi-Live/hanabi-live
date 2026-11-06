@@ -132,10 +132,15 @@ class DeployTest(unittest.TestCase):
             directory.mkdir()
         self.revision = "b" * 40
         self.run = {
-            "id": 123, "head_sha": self.revision, "head_branch": "main", "event": "push",
+            "id": 123, "run_attempt": 2, "head_sha": self.revision, "head_branch": "main", "event": "push",
             "status": "completed", "conclusion": "success", "path": ".github/workflows/ci.yml",
             "head_repository": {"full_name": deploy.REPOSITORY},
         }
+        self.job = {
+            "name": "publish_native_release", "run_id": 123, "run_attempt": 2,
+            "head_sha": self.revision, "status": "completed", "conclusion": "success",
+        }
+        self.jobs = {"jobs": [self.job], "total_count": 1}
         self.files = {
             "hanabi-live": "new binary",
             "public/client-new/index.html": "new entrypoint",
@@ -155,76 +160,103 @@ class DeployTest(unittest.TestCase):
         (self.root / "public/client-new/assets/previous.js").write_text("previous client")
         self.metadata = {"files": release.files_in(self.staged)}
 
-    def test_only_successful_main_ci_is_eligible(self):
-        self.assertEqual(deploy.approved_run([self.run], self.revision), self.run)
+    def test_only_main_push_ci_for_selected_revision_is_eligible(self):
+        self.assertEqual(deploy.matching_runs([self.run], self.revision), [self.run])
         for field, value in (
             ("head_sha", "c" * 40), ("head_branch", "branch"), ("event", "pull_request"),
-            ("status", "in_progress"), ("conclusion", "failure"),
             ("path", ".github/workflows/other.yml"),
             ("head_repository", {"full_name": "other/repository"}),
         ):
             run = {**self.run, field: value}
-            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "no successful CI"):
-                deploy.approved_run([run], self.revision)
+            with self.subTest(field=field):
+                self.assertEqual(deploy.matching_runs([run], self.revision), [])
 
-    def test_unapproved_revision_links_latest_matching_ci_run(self):
-        older = {**self.run, "id": 122, "conclusion": "failure"}
-        unrelated = {**self.run, "id": 999, "head_sha": "c" * 40}
-        pull_request = {**self.run, "id": 1000, "event": "pull_request"}
+    def test_successful_publication_does_not_wait_for_unrelated_jobs(self):
         for status, conclusion in (
-            ("queued", None), ("in_progress", None), ("completed", "failure"),
+            ("in_progress", None), ("completed", "failure"), ("completed", "success"),
         ):
-            latest = {**self.run, "status": status, "conclusion": conclusion}
-            with self.subTest(status=status), self.assertRaises(ValueError) as error:
-                deploy.approved_run([unrelated, older, latest, pull_request], self.revision)
-            message = str(error.exception)
-            self.assertIn(f"CI for main {self.revision} ({conclusion or status})", message)
-            self.assertIn(f"https://github.com/{deploy.REPOSITORY}/actions/runs/123", message)
-            self.assertNotIn("/runs/999", message)
-            self.assertNotIn("/runs/1000", message)
-            self.assertIn("no older release was selected", message)
-
-    def test_missing_ci_run_links_workflow_without_selecting_another_revision(self):
-        for runs in ([], [{**self.run, "head_sha": "c" * 40}]):
-            with self.subTest(runs=runs), self.assertRaises(ValueError) as error:
-                deploy.approved_run(runs, self.revision)
-            message = str(error.exception)
-            self.assertIn(f"No CI run found for main {self.revision}", message)
-            self.assertIn(f"https://github.com/{deploy.REPOSITORY}/actions/workflows/ci.yml", message)
-            self.assertNotIn("/actions/runs/", message)
+            run = {**self.run, "status": status, "conclusion": conclusion}
+            github = Mock()
+            github.json.side_effect = [{"workflow_runs": [run]}, self.jobs]
+            with self.subTest(status=status, conclusion=conclusion), \
+                 patch.object(deploy.time, "sleep") as sleep:
+                self.assertEqual(deploy.await_approved_run(github, self.revision), run)
+            sleep.assert_not_called()
 
     def test_ci_waits_for_matching_revision_then_returns_approved_run(self):
         github = Mock()
+        running = {**self.run, "status": "in_progress", "conclusion": None}
         github.json.side_effect = [
             {"workflow_runs": [{**self.run, "head_sha": "c" * 40}]},
-            {"workflow_runs": [{**self.run, "status": "queued", "conclusion": None}]},
-            {"workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}]},
-            {"workflow_runs": [self.run]},
+            {"workflow_runs": [{**running, "status": "queued"}]},
+            {"jobs": [], "total_count": 0},
+            {"workflow_runs": [running]},
+            {"jobs": [{**self.job, "status": "in_progress", "conclusion": None}], "total_count": 1},
+            {"workflow_runs": [running]}, self.jobs,
         ]
         previous_handler = deploy.signal.getsignal(deploy.signal.SIGALRM)
         with patch.object(deploy.time, "sleep") as sleep, \
              patch.object(deploy.signal, "setitimer") as timer, \
              patch("builtins.print") as output:
-            self.assertEqual(deploy.await_approved_run(github, self.revision), self.run)
+            self.assertEqual(deploy.await_approved_run(github, self.revision), running)
         self.assertEqual(sleep.call_count, 3)
         for call in github.json.call_args_list:
-            self.assertIn(f"head_sha={self.revision}", call.args[0])
+            if "/workflows/" in call.args[0]:
+                self.assertIn(f"head_sha={self.revision}", call.args[0])
+            else:
+                self.assertIn("/runs/123/attempts/2/jobs", call.args[0])
         self.assertTrue(any("/actions/runs/123" in call.args[0] for call in output.call_args_list))
         self.assertEqual(timer.call_args_list[0].args, (deploy.signal.ITIMER_REAL, 300))
         self.assertEqual(timer.call_args_list[-1].args, (deploy.signal.ITIMER_REAL, 0))
         self.assertEqual(deploy.signal.getsignal(deploy.signal.SIGALRM), previous_handler)
 
-    def test_ci_completed_failure_stops_without_waiting(self):
+    def test_publication_failure_stops_even_while_other_jobs_are_running(self):
         for conclusion in ("failure", "cancelled", "timed_out", "skipped"):
             github = Mock()
-            github.json.return_value = {
-                "workflow_runs": [{**self.run, "conclusion": conclusion}],
-            }
+            github.json.side_effect = [
+                {"workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}]},
+                {"jobs": [{**self.job, "conclusion": conclusion}], "total_count": 1},
+            ]
             with self.subTest(conclusion=conclusion), \
                  patch.object(deploy.time, "sleep") as sleep, \
-                 self.assertRaisesRegex(ValueError, "no successful CI"):
+                 self.assertRaisesRegex(ValueError, "Release publication did not succeed"):
                 deploy.await_approved_run(github, self.revision)
             sleep.assert_not_called()
+
+    def test_finished_ci_without_publication_cannot_approve_deployment(self):
+        github = Mock()
+        github.json.side_effect = [
+            {"workflow_runs": [self.run]}, {"jobs": [], "total_count": 0},
+        ]
+        with self.assertRaisesRegex(ValueError, "without successful release publication"):
+            deploy.await_approved_run(github, self.revision)
+
+    def test_publication_uses_latest_matching_run_and_current_attempt(self):
+        github = Mock()
+        github.json.side_effect = [
+            {"workflow_runs": [
+                {**self.run, "id": 122},
+                {**self.run, "id": 999, "event": "pull_request"},
+                self.run,
+            ]},
+            {"jobs": [{**self.job, "run_attempt": 1}], "total_count": 1},
+        ]
+        with self.assertRaisesRegex(ValueError, "different CI run, attempt, or revision"):
+            deploy.await_approved_run(github, self.revision)
+        self.assertIn("/runs/123/attempts/2/jobs", github.json.call_args.args[0])
+
+    def test_publication_job_paginates_and_rejects_ambiguous_results(self):
+        github = Mock()
+        github.json.side_effect = [
+            {"jobs": [{"name": "other"}] * 100, "total_count": 101},
+            {"jobs": [self.job], "total_count": 101},
+        ]
+        self.assertEqual(deploy.publication_job(github, self.run), self.job)
+        self.assertIn("page=2", github.json.call_args.args[0])
+        github.json.side_effect = None
+        github.json.return_value = {"jobs": [self.job, self.job], "total_count": 2}
+        with self.assertRaisesRegex(ValueError, "Ambiguous"):
+            deploy.publication_job(github, self.run)
 
     def test_ci_deadline_interrupts_polling_and_stalled_requests(self):
         def expire(*args):
@@ -232,9 +264,10 @@ class DeployTest(unittest.TestCase):
 
         for stalled_request in (False, True):
             github = Mock()
-            github.json.return_value = {
-                "workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}],
-            }
+            github.json.side_effect = [
+                {"workflow_runs": [{**self.run, "status": "in_progress", "conclusion": None}]},
+                {"jobs": [{**self.job, "status": "queued", "conclusion": None}], "total_count": 1},
+            ]
             if stalled_request:
                 github.json.side_effect = expire
             previous_handler = deploy.signal.getsignal(deploy.signal.SIGALRM)
@@ -349,7 +382,7 @@ class DeployTest(unittest.TestCase):
              patch.object(deploy, "prepare", return_value=False), \
              patch.object(deploy, "publish", side_effect=OSError("publication failed")):
             github.return_value.json.side_effect = [
-                {"sha": self.revision}, {"workflow_runs": [self.run]},
+                {"sha": self.revision}, {"workflow_runs": [self.run]}, self.jobs,
             ]
             with self.assertRaisesRegex(OSError, "publication failed"):
                 deploy.deploy(self.root, False, False)
@@ -380,7 +413,7 @@ class DeployTest(unittest.TestCase):
                  patch.object(deploy, "publish") as publish, \
                  patch.object(deploy, "backup") as backup:
                 github.return_value.json.side_effect = [
-                    {"sha": self.revision}, {"workflow_runs": [self.run]},
+                    {"sha": self.revision}, {"workflow_runs": [self.run]}, self.jobs,
                 ]
                 if check:
                     deploy.deploy(self.root, True, False)
