@@ -179,6 +179,8 @@ export function suitsInit(
       noClueRanks,
       prism,
       inverted,
+      singularity: suitJSON.singularity ?? false,
+      absorbsUnmatchedClues: suitJSON.absorbsUnmatchedClues ?? false,
 
       reversed: false,
     };

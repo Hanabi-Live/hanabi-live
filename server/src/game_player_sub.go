@@ -38,8 +38,9 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 	g := p.Game
 
 	list := make([]int, 0)
+	absorbed := p.IsClueAbsorbed(clue)
 	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Variant, clue, c) {
+		if variantIsCardTouched(g.Variant, clue, c) && (!absorbed || p.CardAbsorbsClue(c, clue)) {
 			list = append(list, c.Order)
 		}
 	}
@@ -47,16 +48,28 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 	return list
 }
 
+func (p *GamePlayer) CardAbsorbsClue(card *Card, clue Clue) bool {
+	suit := p.Game.Variant.Suits[card.SuitIndex]
+	return suit.Singularity && (suit.AbsorbsUnmatchedClues || variantIsCardTouched(p.Game.Variant, clue, card))
+}
+
+func (p *GamePlayer) IsClueAbsorbed(clue Clue) bool {
+	for _, card := range p.Hand {
+		if p.CardAbsorbsClue(card, clue) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue) bool {
-	g := p.Game
 	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Variant, clue, card)
+	return intInSlice(card.Order, p.FindCardsTouchedByClue(clue))
 }
 
 func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue) bool {
-	g := p.Game
 	card := p.Hand[0]
-	return variantIsCardTouched(g.Variant, clue, card)
+	return intInSlice(card.Order, p.FindCardsTouchedByClue(clue))
 }
 
 func (p *GamePlayer) InHand(order int) bool {

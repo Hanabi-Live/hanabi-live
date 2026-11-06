@@ -58,11 +58,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 
 	// Apply the positive and negative clues to the cards in the hand
 	p2 := g.Players[d.Target] // The target of the clue
-	cardsTouched := make([]int, 0)
+	cardsTouched := p2.FindCardsTouchedByClue(clue)
 	for _, c := range p2.Hand {
-		if variantIsCardTouched(variant, clue, c) {
+		if intInSlice(c.Order, cardsTouched) {
 			c.Touched = true
-			cardsTouched = append(cardsTouched, c.Order)
 		}
 	}
 

@@ -3,7 +3,9 @@ import {
   ClueType,
   getAdjustedClueTokens,
   getCharacterNameForPlayer,
+  getClueTouchedIndices,
   isCardTouchedByClue,
+  isClueAbsorbedByHand,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
@@ -95,6 +97,13 @@ function showClueMatch(target: number, clue: Clue): boolean {
   }
 
   const hand = cardLayout.children;
+  const possibilities = Array.from(
+    { length: hand.length },
+    (_, i) =>
+      (hand[i] as LayoutChild | undefined)?.card.getMorphedPossibilities()
+      ?? [],
+  );
+  const touched = getClueTouchedIndices(globals.variant, clue, possibilities);
   let touchedAtLeastOneCard = false;
   for (const i of eRange(hand.length)) {
     const child = hand[i];
@@ -103,13 +112,16 @@ function showClueMatch(target: number, clue: Clue): boolean {
     }
 
     const { card } = child as unknown as LayoutChild;
-    if (isTouched(card, clue)) {
+    if (touched.includes(i) && isTouched(card, clue)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue, true);
     }
   }
 
-  return touchedAtLeastOneCard;
+  return (
+    touchedAtLeastOneCard
+    || isClueAbsorbedByHand(globals.variant, clue, possibilities)
+  );
 }
 
 function isTouched(card: HanabiCard, clue: Clue): boolean {

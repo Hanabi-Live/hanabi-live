@@ -20,6 +20,7 @@ import {
   isCardNeededForMaxScore,
 } from "../rules/card";
 import { isCardClued } from "../rules/cardState";
+import { msgClueToClue } from "../rules/clues";
 import {
   getAdjustedClueTokens,
   getNewClueTokensAfterAction,
@@ -27,6 +28,7 @@ import {
 import { isInitialDealFinished } from "../rules/deck";
 import { getChopIndex } from "../rules/hand";
 import { getStackDirection, getStackStartRank } from "../rules/playStacks";
+import { getClueModes } from "../rules/singularity";
 import {
   getClueText,
   getDiscardText,
@@ -93,9 +95,20 @@ function gameReducerFunction(
         `Failed to find the hand at index: ${action.target}`,
       );
 
-      const negativeList = action.ignoreNegative
-        ? []
-        : targetHand.filter((i) => !action.list.includes(i));
+      const absorptionPossible =
+        variant.suits.some((suit) => suit.singularity)
+        && getClueModes(
+          variant,
+          msgClueToClue(action.clue, variant),
+          targetHand,
+          gameState.deck,
+          action.list,
+          action.ignoreNegative,
+        ).absorbed;
+      const negativeList =
+        action.ignoreNegative || absorptionPossible
+          ? []
+          : targetHand.filter((i) => !action.list.includes(i));
 
       // Even though the objects for each clue type are the exact same, a switch statement is needed
       // to satisfy the TypeScript compiler.

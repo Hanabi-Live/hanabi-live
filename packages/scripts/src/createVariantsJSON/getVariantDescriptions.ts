@@ -119,9 +119,47 @@ export function getVariantDescriptions(
     ...getSudokuVariants(suitsToCreateVariantsFor, basicVariantSuits),
   ];
 
-  return variantDescriptions.filter((variantDescription) =>
-    isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
+  const singularityVariants = getSingularityVariants(basicVariantSuits);
+  return [...variantDescriptions, ...singularityVariants].filter(
+    (variantDescription) =>
+      isVariantAllowed(COLORS_MAP, SUITS_MAP, variantDescription),
   );
+}
+
+/** Keep the experimental catalog small: basic sizes and individual five-suit variants. */
+function getSingularityVariants(
+  basicSuits: BasicVariantSuits,
+): readonly VariantDescription[] {
+  const variants: VariantDescription[] = STANDARD_VARIANT_SUIT_AMOUNTS.map(
+    (numSuits) => {
+      const suits = basicSuits[numSuits];
+      return {
+        name: `Singularity (${numSuits} Suits)`,
+        suits: [...suits.slice(0, -1), `${suits[numSuits - 1]} Singularity`],
+      };
+    },
+  );
+  const specialSuits = [
+    "Black",
+    "Pink",
+    "Light Pink",
+    "Dark Pink",
+    "Gray Pink",
+    "Rainbow",
+    "Dark Rainbow",
+    "Muddy Rainbow",
+    "Cocoa Rainbow",
+    "Omni",
+    "Null",
+    "Orange",
+  ];
+  for (const suit of specialSuits) {
+    variants.push({
+      name: `${suit} Singularity (5 Suits)`,
+      suits: [...basicSuits[4], `${suit} Singularity`],
+    });
+  }
+  return variants;
 }
 
 /**

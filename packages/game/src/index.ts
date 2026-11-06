@@ -50,6 +50,7 @@ export * from "./rules/clueTokens";
 export * from "./rules/deck";
 export * from "./rules/hand";
 export * from "./rules/playStacks";
+export * from "./rules/singularity";
 export * from "./rules/stats";
 export * from "./rules/text";
 export * from "./rules/turn";

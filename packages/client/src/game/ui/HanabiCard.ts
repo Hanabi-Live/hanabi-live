@@ -1309,6 +1309,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       lines.push("Not touched by any number clue.");
     }
 
+    if (suit.singularity) {
+      lines.push(
+        suit.absorbsUnmatchedClues
+          ? "Absorbs every clue, even when it does not match this card."
+          : "Matching clues touch only matching Singularity cards in this hand.",
+      );
+    }
+
     if (variant.specialRankDeceptive && !suit.noClueRanks) {
       const deceptiveRank = variant.clueRanks[index % variant.clueRanks.length];
       lines.push(
