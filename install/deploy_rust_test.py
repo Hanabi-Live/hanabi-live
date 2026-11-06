@@ -59,11 +59,42 @@ class DeployWrapperTest(unittest.TestCase):
                 self.assertEqual(shlex.split(arguments[2]), ["bash", "-l", "-s", "--", *flags])
                 remote = self.input.read_text()
                 self.assertIn("cd /root/hanabi-live", remote)
-                self.assertIn('exec "$python" install/deploy_rust.py "$@"', remote)
+                self.assertIn('"$python" -B "$tools/deploy_rust.py" "$@"', remote)
                 self.assertNotIn("./deploy-rust.sh", remote)
                 self.assertIn("root@hanab.live:/root/hanabi-live", result.stdout)
                 self.assertIn("remote output", result.stdout)
                 self.assertIn("remote error", result.stderr)
+
+    def test_matching_tools_are_uploaded_and_removed_even_on_failure(self):
+        python = self.workspace / "python3"
+        python.write_text(
+            '#!/bin/bash\n'
+            'printf "%s\\n" "$@" > "$SSH_TEST_ARGS"\n'
+            'cp "$2" "$SSH_TEST_INPUT.deploy.py"\n'
+            'cp "${2%/*}/release.py" "$SSH_TEST_INPUT.release.py"\n'
+            'exit "$TOOL_TEST_STATUS"\n'
+        )
+        python.chmod(0o755)
+        for status in (0, 42):
+            with self.subTest(status=status):
+                self.assertEqual(self.run_wrapper("--check").returncode, 0)
+                remote = self.input.read_text().replace(
+                    "cd /root/hanabi-live", f"cd {shlex.quote(str(self.workspace))}"
+                ).replace("/opt/hanabi-python/bin/python3", str(python), 2)
+                result = subprocess.run(
+                    ["bash", "-s", "--", "--check"], input=remote, text=True, capture_output=True,
+                    env={**self.environment, "TOOL_TEST_STATUS": str(status)},
+                )
+                self.assertEqual(result.returncode, status, result.stderr)
+                arguments = self.arguments.read_text().splitlines()
+                self.assertEqual(arguments[0], "-B")
+                self.assertEqual(arguments[2:], ["--check"])
+                self.assertFalse(Path(arguments[1]).parent.exists())
+                for name, suffix in (("deploy_rust", "deploy"), ("release", "release")):
+                    self.assertEqual(
+                        Path(f"{self.input}.{suffix}.py").read_text(),
+                        (self.script.parent / "install" / f"{name}.py").read_text() + "\n",
+                    )
 
     def test_help_and_invalid_arguments_never_connect(self):
         for flag in ("-h", "--help", "--unknown", "--check; exit 0", ""):
@@ -147,7 +178,7 @@ class DeployTest(unittest.TestCase):
             "public/client-new/index.html": "new entrypoint",
             "public/client-new/assets/current.js": "new asset",
             "public/js/bundles/git_revision.txt": self.revision,
-            "public/js/bundles/version.txt": "2",
+            "public/js/bundles/version.txt": self.revision,
             "packages/data/src/json/chatReplyCommands.json": "[]",
         }
         for name, text in self.files.items():
@@ -160,6 +191,13 @@ class DeployTest(unittest.TestCase):
         (self.root / ".env").write_text("retained configuration")
         (self.root / "public/client-new/assets/previous.js").write_text("previous client")
         self.metadata = {"files": release.files_in(self.staged)}
+
+    def test_uploaded_tool_uses_installation_working_directory(self):
+        with patch.object(deploy.sys, "argv", ["/tmp/tools/deploy_rust.py", "--check"]), \
+             patch.object(deploy.Path, "cwd", return_value=self.root), \
+             patch.object(deploy, "deploy") as run:
+            deploy.main()
+        run.assert_called_once_with(self.root, True, False)
 
     def test_only_main_push_ci_for_selected_revision_is_eligible(self):
         self.assertEqual(deploy.matching_runs([self.run], self.revision), [self.run])
@@ -308,7 +346,7 @@ class DeployTest(unittest.TestCase):
     def test_artifact_redirect_does_not_forward_github_token(self):
         request = urllib.request.Request("https://api.github.com/example",
                                          headers={"Authorization": "Bearer synthetic"})
-        handler = deploy.SafeRedirect()
+        handler = release.SafeRedirect()
         other = handler.redirect_request(request, None, 302, "Found", {},
                                          "https://artifacts.example/file")
         self.assertFalse(other.has_header("Authorization"))
@@ -371,7 +409,7 @@ class DeployTest(unittest.TestCase):
 
     def test_failed_publication_never_requests_restart(self):
         (self.root / "public/js/bundles/version.txt").write_text("1")
-        metadata = {**self.metadata, "commitCount": 2}
+        (self.root / "public/js/bundles/git_revision.txt").write_text("a" * 40)
         metrics = {
             "draining": False,
             "recovery": {"storageInitialized": True, "stateHealthy": True,
@@ -392,7 +430,7 @@ class DeployTest(unittest.TestCase):
              patch.object(deploy, "control", side_effect=control), \
              patch.object(deploy, "GitHub") as github, \
              patch.object(deploy.subprocess, "run"), \
-             patch.object(deploy, "download", return_value=(self.staged, metadata)), \
+             patch.object(deploy, "download", return_value=(self.staged, self.metadata)), \
              patch.object(deploy, "prepare", return_value=False), \
              patch.object(deploy, "publish", side_effect=OSError("publication failed")):
             github.return_value.json.side_effect = [
@@ -405,7 +443,7 @@ class DeployTest(unittest.TestCase):
         self.assertTrue((journal.parent / "previous/hanabi-live").exists())
 
     def test_check_mode_and_unapproved_migrations_do_not_change_live_files(self):
-        (self.root / "public/js/bundles/version.txt").write_text("1")
+        (self.root / "public/js/bundles/git_revision.txt").write_text("a" * 40)
         metrics = {
             "draining": False,
             "recovery": {"storageInitialized": True, "stateHealthy": True,
@@ -416,13 +454,14 @@ class DeployTest(unittest.TestCase):
                 return ""
             return "8081" if args[0] == "bash" else "a" * 40
 
-        for check in (True, False):
-            with self.subTest(check=check), \
+        for check, version in ((True, "1"), (True, "a" * 40), (False, "a" * 40)):
+            (self.root / "public/js/bundles/version.txt").write_text(version)
+            with self.subTest(check=check, version=version), \
                  patch.object(deploy, "command", side_effect=command), \
                  patch.object(deploy, "control", side_effect=["a" * 40, metrics]), \
                  patch.object(deploy, "GitHub") as github, \
                  patch.object(deploy.subprocess, "run") as run, \
-                 patch.object(deploy, "download", return_value=(self.staged, {"commitCount": 2})), \
+                 patch.object(deploy, "download", return_value=(self.staged, self.metadata)), \
                  patch.object(deploy, "prepare", return_value=True), \
                  patch.object(deploy, "publish") as publish, \
                  patch.object(deploy, "backup") as backup:
@@ -437,6 +476,35 @@ class DeployTest(unittest.TestCase):
                 publish.assert_not_called()
                 backup.assert_not_called()
                 self.assertTrue(all(call.args[0][:2] == ["git", "merge-base"] for call in run.call_args_list))
+
+    def test_non_forward_deployment_is_rejected_before_download(self):
+        running = "a" * 40
+        (self.root / "public/js/bundles/git_revision.txt").write_text(running)
+        (self.root / "public/js/bundles/version.txt").write_text(running)
+        metrics = {
+            "draining": False,
+            "recovery": {"storageInitialized": True, "stateHealthy": True,
+                         "frozenTables": 0, "pendingTransactions": 0},
+        }
+
+        def command(root, *args):
+            if args[:3] == ("git", "status", "--porcelain"):
+                return ""
+            return "8081" if args[0] == "bash" else running
+
+        with patch.object(deploy, "command", side_effect=command), \
+             patch.object(deploy, "control", side_effect=[running, metrics]), \
+             patch.object(deploy, "GitHub") as github, \
+             patch.object(deploy.subprocess, "run") as ancestry, \
+             patch.object(deploy, "download") as download:
+            github.return_value.json.side_effect = [
+                {"sha": self.revision}, {"workflow_runs": [self.run]}, self.jobs,
+            ]
+            ancestry.side_effect = subprocess.CalledProcessError(1, ["git", "merge-base"])
+            with self.assertRaises(subprocess.CalledProcessError):
+                deploy.deploy(self.root, False, False)
+            download.assert_not_called()
+        self.assertFalse((self.root / "backups").exists())
 
 
 if __name__ == "__main__":

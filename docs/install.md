@@ -135,6 +135,9 @@ login-shell environment. `./deploy-rust.sh --check` verifies the approved
 current-main release without deploying. `./deploy-rust.sh` publishes it and
 requests a graceful restart; reviewed pending migrations require
 `--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production safeguards.
+Run the wrapper from an up-to-date `main` checkout: it sends its matching
+deployment tools over SSH, so an older production checkout can accept the new
+release format without updating live files during `--check`.
 
 Bash filenames use hyphens. When upgrading an existing installation, update
 external cron jobs and certificate-renewal hooks to the renamed scripts,
@@ -260,6 +263,11 @@ publishes `hanabi-live-rust-<revision>-linux-amd64` after all required checks
 succeed. Retained artifact names and `<revision>-rust` installation directories
 keep existing deployment tooling compatible.
 
+Release format 2 uses the full Git SHA as the client/server identity; shallow
+checkouts are sufficient to build it. Use the updated `install/release.py` to
+install these bundles. It also verifies existing format-1 releases with numeric
+client versions.
+
 Verify the repository, successful main-branch CI run, revision, and checksum.
 The archive contains the static Rust executable, paired clients, schema,
 migrations, and Tern. The host needs Python 3.12+, Bash, PostgreSQL, and Redis,
@@ -286,7 +294,11 @@ may advance the schema even when the pointer is unchanged. Exit status 2
 indicates that a rename succeeded but directory durability could not be
 confirmed. Inspect the recorded state and repair storage; never automatically
 roll back or restart an older binary. Existing Rust releases remain verifiable,
-but Go releases can no longer be staged or activated.
+but Go releases can no longer be staged or activated. Upgrades require GitHub
+API access and `GH_TOKEN` or `GITHUB_TOKEN_PERSONAL_CLASSIC` to verify that the
+target revision descends from the current revision. An unavailable ancestry
+check refuses activation before migrations; hashes are never compared
+numerically or lexicographically.
 
 The Go-to-Rust importer is retired. Unresolved old checkpoints require recovery
 with a compatible pre-promotion release, not deletion or a new empty Redis

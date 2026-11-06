@@ -13,10 +13,6 @@ if [[ $runtime != rust ]]; then
   echo "Only Rust server releases are supported." >&2
   exit 1
 fi
-if [[ $(git rev-parse --is-shallow-repository) != false ]]; then
-  echo "A full Git history is required for the client version." >&2
-  exit 1
-fi
 if [[ ${GITHUB_ACTIONS:-false} == true ]]; then
   git diff --exit-code HEAD
   if [[ -n $(git ls-files --others --exclude-standard) ]]; then

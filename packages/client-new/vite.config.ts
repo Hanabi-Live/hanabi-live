@@ -6,7 +6,7 @@ import type { ProxyOptions } from "vite";
 import { defineConfig } from "vite";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const version = execFileSync("git", ["rev-list", "--count", "HEAD"], {
+const version = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: root,
 })
   .toString()

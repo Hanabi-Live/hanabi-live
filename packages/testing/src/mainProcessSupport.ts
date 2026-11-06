@@ -1,4 +1,4 @@
-import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
 
 import { describe, expect } from "bun:test";
 import { assertDefined } from "complete-common";
@@ -130,7 +130,10 @@ export async function prepareRoot(
       path.join(ROOT, "public/img/favicon.ico"),
       path.join(directory, "public/img/favicon.ico"),
     ),
-    writeFile(path.join(directory, "public/js/bundles/version.txt"), "1\n"),
+    writeFile(
+      path.join(directory, "public/js/bundles/version.txt"),
+      `${VERSION}\n`,
+    ),
   ]);
   const { connection } = database;
   const environment = {
@@ -275,7 +278,7 @@ export async function login(
     body: new URLSearchParams({
       username,
       password: "synthetic-smoke-password",
-      version: "1",
+      version: VERSION,
     }),
     signal: AbortSignal.timeout(10_000),
   });

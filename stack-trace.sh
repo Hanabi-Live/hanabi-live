@@ -10,7 +10,7 @@ cd "$DIR"
 
 REPO_ROOT="$DIR"
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
-VERSION=$(git rev-list --count HEAD)
+VERSION=$(cat "$JS_BUNDLES_DIR/version.txt")
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
 JS_BUNDLE_MAP_PATH="$JS_BUNDLE_PATH.map"
 

@@ -18,6 +18,8 @@ for argument in "$@"; do
   esac
 done
 
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
 echo "Deployment target: root@hanab.live:/root/hanabi-live"
 # Send credentials on encrypted stdin, never in SSH command-line arguments.
 if {
@@ -32,7 +34,17 @@ python=python3
 if [[ -x /opt/hanabi-python/bin/python3 ]]; then
   python=/opt/hanabi-python/bin/python3
 fi
-exec "$python" install/deploy_rust.py "$@"
+tools=$(mktemp -d)
+trap 'rm -f "$tools/deploy_rust.py" "$tools/release.py"; rmdir "$tools"' EXIT
+REMOTE
+  # Use matching local tooling even when production still runs an older release format.
+  for name in deploy_rust release; do
+    printf '%s\n' "cat > \"\$tools/$name.py\" << 'HANABI_DEPLOY_TOOL'"
+    cat "$DIR/install/$name.py"
+    printf '\nHANABI_DEPLOY_TOOL\n'
+  done
+  cat << 'REMOTE'
+"$python" -B "$tools/deploy_rust.py" "$@"
 REMOTE
 } | ssh -T root@hanab.live "bash -l -s -- $*"; then
   exit 0

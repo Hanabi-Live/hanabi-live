@@ -28,8 +28,6 @@ struct Manifest {
     revision: String,
     #[serde(rename = "clientVersion")]
     client_version: String,
-    #[serde(rename = "commitCount")]
-    commit_count: u64,
     files: BTreeMap<String, String>,
 }
 
@@ -103,7 +101,7 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     let manifest: Manifest = serde_json::from_slice(&std::fs::read(path)?)?;
     ensure!(
-        manifest.format == 1 && manifest.platform == "linux-amd64" && manifest.runtime == "rust",
+        manifest.format == 2 && manifest.platform == "linux-amd64" && manifest.runtime == "rust",
         "Unsupported native release"
     );
     ensure!(
@@ -111,7 +109,7 @@ pub fn verify(root: &Path) -> Result<()> {
         "Release does not match the compiled Rust revision"
     );
     ensure!(
-        manifest.client_version == manifest.commit_count.to_string(),
+        manifest.client_version == manifest.revision,
         "Invalid client version"
     );
     ensure!(
@@ -242,4 +240,66 @@ pub async fn check_migration_target() -> Result<()> {
     }
     connection.close().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn verify_requires_paired_sha_assets() {
+        let root = std::env::temp_dir().join(format!(
+            "hanabi-sha-release-{:032x}",
+            rand::random::<u128>()
+        ));
+        let revision = crate::restart::version();
+        for (name, value) in [
+            ("hanabi-live".into(), "binary"),
+            ("install/tern".into(), "migration tool"),
+            ("install/migrate.sh".into(), "migration runner"),
+            ("install/migration-files.sh".into(), "migration helper"),
+            ("public/js/bundles/version.txt".into(), revision),
+            ("public/js/bundles/git_revision.txt".into(), revision),
+            (format!("public/js/bundles/main.{revision}.min.js"), "js"),
+            (format!("public/css/main.{revision}.min.css"), "css"),
+        ] {
+            let path = root.join(name);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, value).unwrap();
+        }
+        let mut files = BTreeMap::new();
+        inventory(&root, &root, &mut files).unwrap();
+        let mut manifest = json!({
+            "format": 2,
+            "runtime": "rust",
+            "platform": "linux-amd64",
+            "revision": revision,
+            "clientVersion": revision,
+            "files": files,
+        });
+        let write_manifest = |manifest: &serde_json::Value| {
+            std::fs::write(root.join("release.json"), manifest.to_string()).unwrap();
+        };
+        write_manifest(&manifest);
+        assert!(verify(&root).is_ok());
+        for version in ["42", &revision[..12], &"a".repeat(40)] {
+            manifest["clientVersion"] = json!(version);
+            write_manifest(&manifest);
+            assert_eq!(
+                verify(&root).unwrap_err().to_string(),
+                "Invalid client version"
+            );
+        }
+        manifest["clientVersion"] = json!(revision);
+        std::fs::write(root.join("public/js/bundles/version.txt"), "42").unwrap();
+        manifest["files"]["public/js/bundles/version.txt"] =
+            json!(hash_file(&root.join("public/js/bundles/version.txt")).unwrap());
+        write_manifest(&manifest);
+        assert_eq!(
+            verify(&root).unwrap_err().to_string(),
+            "Client/server version mismatch"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

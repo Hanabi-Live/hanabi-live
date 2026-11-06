@@ -13,6 +13,9 @@ import re
 import shutil
 import subprocess
 import tarfile
+import urllib.error
+import urllib.parse
+import urllib.request
 
 
 RUNTIME_LINKS = {
@@ -22,6 +25,8 @@ RUNTIME_LINKS = {
     "letsencrypt": "letsencrypt",
     ".lifecycle.lock": ".lifecycle.lock",
 }
+REPOSITORY = "Hanabi-Live/hanabi-live"
+API = f"https://api.github.com/repos/{REPOSITORY}"
 
 
 class ReleaseStateUncertainError(RuntimeError):
@@ -31,6 +36,52 @@ class ReleaseStateUncertainError(RuntimeError):
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+class SafeRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, new_url):
+        require(urllib.parse.urlsplit(new_url).scheme == "https", "Insecure artifact redirect")
+        redirected = super().redirect_request(request, fp, code, message, headers, new_url)
+        if urllib.parse.urlsplit(new_url).netloc != urllib.parse.urlsplit(request.full_url).netloc:
+            redirected.remove_header("Authorization")
+        return redirected
+
+
+class GitHub:
+    def __init__(self):
+        token = next((os.environ[key] for key in (
+            "GH_TOKEN", "GITHUB_TOKEN_PERSONAL_CLASSIC", "GITHUB_TOKEN"
+        ) if os.environ.get(key)), None)
+        require(token, "Set GH_TOKEN or GITHUB_TOKEN_PERSONAL_CLASSIC to access approved releases.")
+        self.headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        self.opener = urllib.request.build_opener(SafeRedirect())
+
+    def open(self, path):
+        request = urllib.request.Request(API + path, headers=self.headers)
+        return self.opener.open(request, timeout=120)
+
+    def json(self, path):
+        with self.open(path) as response:
+            return json.load(response)
+
+
+def require_forward_revision(previous, revision):
+    message = (
+        "Rollback/re-activation refused: recovery and schema compatibility require "
+        "a separate reviewed procedure"
+    )
+    require(previous != revision, message)
+    # Release stores have no Git checkout. Ask GitHub for ancestry, not an ordering of hashes.
+    comparison = GitHub().json(f"/compare/{previous}...{revision}")
+    require(
+        comparison["status"] == "ahead"
+        and comparison["merge_base_commit"]["sha"] == previous,
+        message,
+    )
 
 
 def digest(filename):
@@ -77,12 +128,11 @@ def manifest(directory, runtime="rust"):
     require(runtime == "rust", "Only Rust releases are supported")
     revision = git("rev-parse", "HEAD")
     metadata = {
-        "format": 1,
+        "format": 2,
         "runtime": runtime,
         "platform": "linux-amd64",
         "revision": revision,
         "clientVersion": (directory / "public/js/bundles/version.txt").read_text().strip(),
-        "commitCount": int(git("rev-list", "--count", "HEAD")),
         "dirty": bool(git("status", "--porcelain", "--untracked-files=normal")),
         "workflowRun": (
             f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
@@ -113,16 +163,20 @@ def verify(directory):
     metadata = json.loads(metadata_path.read_text())
     require(isinstance(metadata, dict), "Invalid release metadata")
     revision = metadata.get("revision", "")
-    require(metadata.get("format") == 1, "Unsupported release format")
+    require(metadata.get("format") in (1, 2), "Unsupported release format")
     require(metadata.get("platform") == "linux-amd64", "Unsupported platform")
     runtime = metadata.get("runtime", "go")
     require(runtime in ("go", "rust"), "Unsupported runtime")
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
-    require(
-        isinstance(metadata.get("commitCount"), int)
-        and str(metadata["commitCount"]) == metadata.get("clientVersion"),
-        "Invalid client cache version",
-    )
+    if metadata["format"] == 1:
+        # Keep already-published releases verifiable during the tooling transition.
+        require(
+            isinstance(metadata.get("commitCount"), int)
+            and str(metadata["commitCount"]) == metadata.get("clientVersion"),
+            "Invalid client cache version",
+        )
+    else:
+        require(metadata.get("clientVersion") == revision, "Invalid client cache version")
     expected = metadata["files"]
     require(
         isinstance(expected, dict)
@@ -296,10 +350,7 @@ def activate(root, revision, runtime="rust"):
             old = verify(previous)
             require(old.get("runtime") == "rust",
                     "Legacy Go releases require migration with a pre-promotion release")
-            require(
-                metadata["commitCount"] > old["commitCount"],
-                "Rollback/re-activation refused: recovery and schema compatibility require a separate reviewed procedure",
-            )
+            require_forward_revision(old["revision"], revision)
         pending = root / ".current-next"
         require(not pending.exists() and not pending.is_symlink(), "Pending activation already exists")
         # Migration failure may leave forward-only schema changes, but never changes
