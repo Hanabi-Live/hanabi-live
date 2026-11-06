@@ -22,7 +22,7 @@ class ReleaseTest(unittest.TestCase):
         self.root = self.workspace / "deployment"
         release.init_root(str(self.root))
         (self.root / "shared/.env").write_text("DB_NAME=release_test\n")
-        (self.root / "shared/ongoing_tables/retained.json").write_text("authoritative")
+        (self.root / "shared/logs/retained.log").write_text("retained log")
         self.revision = "a" * 40
         self.release_name = self.revision + "-rust"
         self.artifact = self.workspace / "artifact"
@@ -72,8 +72,8 @@ class ReleaseTest(unittest.TestCase):
         release.activate(self.root, self.revision)
         self.assertEqual((self.root / "current").resolve().name, self.release_name)
         self.assertEqual(
-            (self.root / "current/ongoing_tables/retained.json").read_text(),
-            "authoritative",
+            (self.root / "current/logs/retained.log").read_text(),
+            "retained log",
         )
         with self.assertRaisesRegex(ValueError, "Rollback/re-activation refused"):
             release.activate(self.root, self.revision)
@@ -144,7 +144,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn("Activation durability is uncertain", error_output.getvalue())
         self.assertNotIn("operation refused", error_output.getvalue())
         self.assertEqual((self.root / "current").resolve().name, self.release_name)
-        self.assertEqual((self.root / "shared/ongoing_tables/retained.json").read_text(), "authoritative")
+        self.assertEqual((self.root / "shared/logs/retained.log").read_text(), "retained log")
 
     def test_legacy_chat_layout_retains_checksum_validation(self):
         current = self.artifact / "packages/data/src/json/chatReplyCommands.json"
@@ -251,7 +251,7 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "links and special"):
             self.stage()
 
-    def test_failed_migration_retains_old_pointer_and_checkpoints(self):
+    def test_failed_migration_retains_old_pointer_and_shared_files(self):
         self.stage()
         old = self.root / "releases" / ("b" * 40)
         shutil.copytree(self.artifact, old)
@@ -275,7 +275,7 @@ class ReleaseTest(unittest.TestCase):
                 release.activate(self.root, self.revision)
             self.assertTrue(any(call.args[0][0] == "bash" for call in calls.call_args_list))
         self.assertEqual((self.root / "current").resolve(), old)
-        self.assertEqual((self.root / "shared/ongoing_tables/retained.json").read_text(), "authoritative")
+        self.assertEqual((self.root / "shared/logs/retained.log").read_text(), "retained log")
 
     def test_running_release_blocks_activation_before_migration(self):
         self.stage()

@@ -117,9 +117,8 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
     }
   }
 
-  // The server sent us more games because we clicked on the "Show More History" button.
-  if (globals.showMoreHistoryClicked) {
-    globals.showMoreHistoryClicked = false;
+  // Only redraw the screen that requested this page; late responses must not switch views.
+  if (globals.currentScreen === Screen.History) {
     history.draw(false);
   }
 
@@ -128,7 +127,10 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
   $("#nav-buttons-history-total-games").text(
     globals.totalGames?.toString() ?? "loading...",
   );
-  if (shownGames === globals.totalGames) {
+  if (
+    globals.currentScreen === Screen.History
+    && shownGames === globals.totalGames
+  ) {
     $("#lobby-history-show-more").hide();
   }
 });
@@ -139,9 +141,7 @@ lobbyCommands.set("gameHistoryFriends", (dataArray: readonly GameHistory[]) => {
     globals.historyFriends.set(data.id, data);
   }
 
-  // The server sent us more games because we clicked on the "Show More History" button.
-  if (globals.showMoreHistoryClicked) {
-    globals.showMoreHistoryClicked = false;
+  if (globals.currentScreen === Screen.HistoryFriends) {
     history.draw(true);
   }
 });

@@ -20,7 +20,8 @@ describe("authoritative lobby state", () => {
         data: { state: "loading", totalGames: null },
       }),
     );
-    expect(store.getState().historyLoading).toBe(true);
+    expect(store.getState().historyLoading).toBe(false);
+    expect(store.getState().friendHistoryLoading).toBe(false);
     store.dispatch(
       actions.received({
         command: "lobbyStatus",

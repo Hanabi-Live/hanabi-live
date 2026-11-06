@@ -19,7 +19,6 @@ import * as usersDraw from "./usersDraw";
 
 export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
-    globals.showMoreHistoryClicked = true;
     let command: string;
     let offset: number;
     if (globals.currentScreen === Screen.History) {
@@ -38,7 +37,7 @@ export function init(): void {
   });
 }
 
-export function show(): void {
+export function show(requestHistory = true): void {
   globals.currentScreen = Screen.History;
   if (
     globalThis.location.pathname === "/lobby"
@@ -68,6 +67,19 @@ export function show(): void {
 
   // Draw the history table.
   draw(false);
+  if (requestHistory) {
+    request(false);
+  }
+}
+
+function request(friends: boolean) {
+  globals.conn!.send(friends ? "historyFriendsGet" : "historyGet", {
+    offset: 0,
+    amount: 10,
+  });
+  if ((friends ? globals.historyFriends : globals.history).size === 0) {
+    $("#lobby-history-no").text("Loading history...");
+  }
 }
 
 export function hide(): void {
@@ -211,7 +223,7 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
   return button;
 }
 
-export function showFriends(): void {
+export function showFriends(requestHistory = true): void {
   globals.currentScreen = Screen.HistoryFriends;
   if (globalThis.location.hash === "#history") {
     setBrowserAddressBarPath("/lobby", "#history-friends");
@@ -220,6 +232,9 @@ export function showFriends(): void {
   $("#lobby-history-table-players").html("Players");
   $("#lobby-history-show-all").hide();
   draw(true);
+  if (requestHistory) {
+    request(true);
+  }
 }
 
 export function hideFriends(): void {
@@ -229,6 +244,7 @@ export function hideFriends(): void {
   $("#lobby-history-table-players").html("Other Players");
   $("#lobby-history-show-all").show();
   draw(false);
+  request(false);
 }
 
 export function showOtherScoresFromURL(seed: string, friends: boolean): void {

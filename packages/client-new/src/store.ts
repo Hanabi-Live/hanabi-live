@@ -144,17 +144,8 @@ const slice = createSlice({
       switch (event.command) {
         case "lobbyStatus": {
           state.lobbyStatus = event.data.state;
-          if (event.data.state === "loading") {
-            state.historyLoading = Object.keys(state.history).length === 0;
-            state.friendHistoryLoading =
-              Object.keys(state.friendHistory).length === 0;
-          }
           if (state.welcome && event.data.state === "ready") {
             state.welcome.totalGames = event.data.totalGames;
-          }
-          if (event.data.state === "error") {
-            state.historyLoading = false;
-            state.friendHistoryLoading = false;
           }
           break;
         }

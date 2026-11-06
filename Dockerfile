@@ -39,6 +39,6 @@ FROM alpine
 RUN apk add --no-cache ca-certificates bash
 WORKDIR /root/hanabi-live
 COPY --from=build /root/artifact/release ./
-RUN mkdir logs ongoing_tables
+RUN mkdir logs
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["/root/hanabi-live/hanabi-live"]

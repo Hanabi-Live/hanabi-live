@@ -3564,6 +3564,13 @@ impl TableActor {
         );
         let mut next = self.candidate();
         next.owner = target.0;
+        if let Phase::Pregame { players, .. } = &mut next.phase {
+            let seat = players
+                .iter()
+                .position(|player| player.id == target.0)
+                .context("New leader is missing from pregame players")?;
+            players.swap(0, seat);
+        }
         if let Phase::Replay { replay, .. } = &mut next.phase {
             replay.leader = target.0;
         }
