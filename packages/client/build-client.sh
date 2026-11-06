@@ -73,10 +73,8 @@ GRUNT_OUTPUT_DIR="$DIR/grunt_output"
 CSS_DIR="$REPO_ROOT/public/css"
 cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
 
-# In addition to the numerical version (e.g. the number of commits), it is also handy to have the
-# exact git commit hash for the current build and the time that it was created.
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
-git rev-parse HEAD > "$JS_BUNDLES_DIR/git_revision.txt"
+echo "$VERSION" > "$JS_BUNDLES_DIR/git_revision.txt"
 date > "$JS_BUNDLES_DIR/date_compiled.txt"
 
 # Clean up the output directories.

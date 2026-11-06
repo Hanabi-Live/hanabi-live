@@ -43,7 +43,7 @@ COPY scripts scripts
 COPY public public
 COPY server server
 COPY install install
-# Full history is needed only in the build stage for the client cache version.
+# Git metadata identifies the paired client/server release; a shallow checkout is sufficient.
 COPY .git .git
 RUN bash install/build-release.sh /root/artifact
 

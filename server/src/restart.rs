@@ -7,18 +7,18 @@ use std::{
 
 pub fn validate_assets(config: &Config) -> Result<String> {
     tls::validate_static_roots(config)?;
-    let version = std::fs::read_to_string(config.root.join("public/js/bundles/version.txt"))
+    let client_version = std::fs::read_to_string(config.root.join("public/js/bundles/version.txt"))
         .context("Missing paired client version file")?;
-    let version = version.trim();
+    let client_version = client_version.trim();
     ensure!(
-        !version.is_empty()
-            && version.bytes().all(|c| c.is_ascii_digit())
-            && version
-                .parse::<u64>()
-                .is_ok_and(|v| v <= 9_007_199_254_740_991),
+        client_version.len() == 40 && client_version.bytes().all(|c| c.is_ascii_hexdigit()),
         "Invalid paired client version"
     );
-    Ok(version.to_owned())
+    ensure!(
+        client_version == version(),
+        "Client assets do not match the compiled server revision"
+    );
+    Ok(client_version.to_owned())
 }
 
 pub async fn prepare(root: &Path) -> Result<()> {
@@ -88,13 +88,23 @@ mod tests {
             .collect(),
         )?;
         assert!(validate_assets(&config).is_err());
-        std::fs::write(root.join("public/js/bundles/version.txt"), "123\n")?;
-        assert_eq!(validate_assets(&config)?, "123");
         std::fs::write(
             root.join("public/js/bundles/version.txt"),
-            "9007199254740992",
+            format!("{}\n", version()),
         )?;
-        assert!(validate_assets(&config).is_err());
+        assert_eq!(validate_assets(&config)?, version());
+        for invalid in ["123", &version()[..12], &"g".repeat(40)] {
+            std::fs::write(root.join("public/js/bundles/version.txt"), invalid)?;
+            assert_eq!(
+                validate_assets(&config).unwrap_err().to_string(),
+                "Invalid paired client version"
+            );
+        }
+        std::fs::write(root.join("public/js/bundles/version.txt"), "a".repeat(40))?;
+        assert_eq!(
+            validate_assets(&config).unwrap_err().to_string(),
+            "Client assets do not match the compiled server revision"
+        );
         std::fs::remove_dir_all(root)?;
         Ok(())
     }

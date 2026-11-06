@@ -171,17 +171,12 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         Ok(username) => username,
         Err(message) => return Ok(unauthorized(message)),
     };
-    if input.version != "bot" {
-        let Ok(version) = input.version.parse::<i64>() else {
-            return Ok(unauthorized("The submitted version must be an integer."));
-        };
-        if Some(version) != state.config.version.parse::<i64>().ok() {
-            return Ok(unauthorized(format!(
-                "You are running an outdated version of the client code.<br />(You are on <strong>v{}</strong> and the latest is <strong>v{}</strong>.)<br />Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version.<br />(Note that a hard-refresh is different from a normal refresh.)<br />On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
-                escape_html(&input.version),
-                escape_html(&state.config.version)
-            )));
-        }
+    if input.version != "bot" && input.version != state.config.version {
+        return Ok(unauthorized(format!(
+            "You are running an outdated version of the client code.<br />(You are on <strong>v{}</strong> and the latest is <strong>v{}</strong>.)<br />Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version.<br />(Note that a hard-refresh is different from a normal refresh.)<br />On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
+            escape_html(&input.version),
+            escape_html(&state.config.version)
+        )));
     }
     let existing =
         sqlx::query!("SELECT id, password_hash AS \"password_hash?\", old_password_hash FROM users WHERE username=$1", username)

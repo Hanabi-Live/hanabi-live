@@ -77,6 +77,48 @@ fn go_chat_fixtures() {
 }
 
 #[tokio::test]
+async fn login_requires_matching_release_sha_or_bot_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let version = "a".repeat(40);
+    let app = router(
+        db.pool.clone(),
+        AccountConfig {
+            version: version.clone(),
+            ..config()
+        },
+    );
+    for submitted in [&version, "bot"] {
+        let (status, _, _) = request(
+            &app,
+            "POST",
+            "/login",
+            &format!("username=Alice&password=test&version={submitted}"),
+            None,
+            false,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    for submitted in ["b".repeat(40), "42".into(), version[..12].into()] {
+        let (status, _, body) = request(
+            &app,
+            "POST",
+            "/login",
+            &format!("username=Alice&password=test&version={submitted}"),
+            None,
+            false,
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        assert!(body.contains("outdated version"));
+        assert!(body.contains(&version));
+    }
+    db.close().await;
+}
+
+#[tokio::test]
 async fn native_accounts_http_and_identity_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;

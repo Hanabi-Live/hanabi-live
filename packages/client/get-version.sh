@@ -10,8 +10,6 @@ REPO_ROOT="$DIR/../.."
 
 cd "$REPO_ROOT"
 
-# Set the version number in the "version.json" file (which is equal to the number of commits in the
-# git repository). This is "baked" into the JavaScript bundle and self-reported when connecting to
-# the server so that the server can deny clients on old versions of the code.
+# Embed the source revision so the server can reject clients from a different release.
 export VERSION
-VERSION=$(git rev-list --count HEAD)
+VERSION=$(git rev-parse HEAD)

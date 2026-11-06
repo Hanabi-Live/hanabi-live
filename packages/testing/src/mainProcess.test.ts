@@ -1,4 +1,4 @@
-import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
+import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -509,7 +509,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             body: new URLSearchParams({
               username: "SmokeAlice",
               password: "synthetic-smoke-password",
-              version: "1",
+              version: VERSION,
             }),
           });
           expect(denied.status).toBe(401);

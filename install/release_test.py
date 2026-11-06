@@ -33,10 +33,10 @@ class ReleaseTest(unittest.TestCase):
             "install/migrate.sh": "#!/bin/sh\nexit 0\n",
             "install/migration-files.sh": "# migration helper\n",
             "packages/data/src/json/chatReplyCommands.json": "[]\n",
-            "public/js/bundles/version.txt": "10\n",
+            "public/js/bundles/version.txt": self.revision + "\n",
             "public/js/bundles/git_revision.txt": self.revision + "\n",
-            "public/js/bundles/main.10.min.js": "client",
-            "public/css/main.10.min.css": "css",
+            f"public/js/bundles/main.{self.revision}.min.js": "client",
+            f"public/css/main.{self.revision}.min.css": "css",
         }
         for name, value in contents.items():
             path = self.artifact / name
@@ -44,12 +44,11 @@ class ReleaseTest(unittest.TestCase):
             path.write_text(value)
         (self.artifact / "hanabi-live").chmod(0o755)
         self.metadata = {
-            "format": 1,
+            "format": 2,
             "runtime": "rust",
             "platform": "linux-amd64",
             "revision": self.revision,
-            "clientVersion": "10",
-            "commitCount": 10,
+            "clientVersion": self.revision,
             "files": release.files_in(self.artifact),
         }
         self.write_manifest()
@@ -65,6 +64,26 @@ class ReleaseTest(unittest.TestCase):
 
     def stage(self):
         release.stage(self.root, self.archive, release.digest(self.archive))
+
+    def set_identity(self, revision, version, format_version=2):
+        previous = self.metadata["clientVersion"]
+        (self.artifact / "hanabi-live").write_text(f"#!/bin/sh\necho {revision}\n")
+        (self.artifact / "public/js/bundles/git_revision.txt").write_text(revision + "\n")
+        (self.artifact / "public/js/bundles/version.txt").write_text(version + "\n")
+        for directory, extension in (("public/js/bundles", "js"), ("public/css", "css")):
+            (self.artifact / directory / f"main.{previous}.min.{extension}").rename(
+                self.artifact / directory / f"main.{version}.min.{extension}"
+            )
+        self.metadata.update(
+            revision=revision, clientVersion=version, format=format_version,
+            files=release.files_in(self.artifact),
+        )
+        if format_version == 1:
+            self.metadata["commitCount"] = int(version)
+        else:
+            self.metadata.pop("commitCount", None)
+        self.write_manifest()
+        self.pack()
 
     def test_stage_and_activate_preserve_shared_state(self):
         self.stage()
@@ -110,6 +129,57 @@ class ReleaseTest(unittest.TestCase):
         self.write_manifest()
         with self.assertRaisesRegex(ValueError, "Unsupported runtime"):
             release.verify(self.artifact)
+
+    def test_sha_manifest_rejects_mismatched_client_identity(self):
+        release.verify(self.artifact)
+        for version in ("10", "b" * 40, self.revision[:12]):
+            with self.subTest(version=version):
+                self.metadata["clientVersion"] = version
+                self.write_manifest()
+                with self.assertRaisesRegex(ValueError, "Invalid client cache version"):
+                    release.verify(self.artifact)
+
+    def test_legacy_manifest_can_upgrade_to_sha_release(self):
+        previous = "b" * 40
+        self.set_identity(previous, "10", 1)
+        self.stage()
+        release.activate(self.root, previous)
+        self.set_identity(self.revision, self.revision)
+        self.stage()
+        with patch.object(release, "GitHub") as github:
+            github.return_value.json.return_value = {
+                "status": "ahead", "merge_base_commit": {"sha": previous},
+            }
+            release.activate(self.root, self.revision)
+            github.return_value.json.assert_called_once_with(f"/compare/{previous}...{self.revision}")
+        self.assertEqual((self.root / "current").resolve().name, self.release_name)
+
+    def test_shallow_checkout_produces_full_sha_version(self):
+        source = self.workspace / "source"
+        subprocess.run(["git", "init", "--quiet", str(source)], check=True)
+        script = source / "packages/client/get-version.sh"
+        script.parent.mkdir(parents=True)
+        shutil.copyfile("packages/client/get-version.sh", script)
+        subprocess.run(["git", "add", "."], cwd=source, check=True)
+        for message in ("first", "second"):
+            subprocess.run(
+                ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                 "commit", "--no-gpg-sign", "--quiet", "--allow-empty", "-m", message],
+                cwd=source, check=True,
+            )
+        expected = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
+        shallow = self.workspace / "shallow"
+        subprocess.run(["git", "clone", "--quiet", "--depth=1", source.as_uri(), str(shallow)], check=True)
+        self.assertEqual(
+            subprocess.check_output(["git", "rev-parse", "--is-shallow-repository"],
+                                    cwd=shallow, text=True).strip(),
+            "true",
+        )
+        version = subprocess.check_output(
+            ["bash", "-c", 'source packages/client/get-version.sh; printf "%s" "$VERSION"'],
+            cwd=shallow, text=True,
+        )
+        self.assertEqual(version, expected)
 
     def test_staged_rename_sync_failure_reports_changed_state(self):
         original_sync = release.sync_directory
@@ -174,26 +244,31 @@ class ReleaseTest(unittest.TestCase):
         self.stage()
         release.activate(self.root, self.revision)
         older_revision = "b" * 40
-        (self.artifact / "hanabi-live").write_text(f"#!/bin/sh\necho {older_revision}\n")
-        (self.artifact / "public/js/bundles/git_revision.txt").write_text(older_revision + "\n")
-        (self.artifact / "public/js/bundles/version.txt").write_text("9\n")
-        for before, after in (
-            ("public/js/bundles/main.10.min.js", "public/js/bundles/main.9.min.js"),
-            ("public/css/main.10.min.css", "public/css/main.9.min.css"),
-        ):
-            (self.artifact / before).rename(self.artifact / after)
-        self.metadata.update(
-            revision=older_revision,
-            commitCount=9,
-            clientVersion="9",
-            files=release.files_in(self.artifact),
-        )
-        self.write_manifest()
-        self.pack()
+        self.set_identity(older_revision, older_revision)
         self.stage()
-        with patch.object(release.subprocess, "run", wraps=subprocess.run) as calls:
-            with self.assertRaisesRegex(ValueError, "Rollback/re-activation refused"):
-                release.activate(self.root, older_revision)
+        for status, base in (("behind", older_revision), ("diverged", "c" * 40),
+                             ("ahead", "c" * 40)):
+            with self.subTest(status=status), patch.object(release, "GitHub") as github, \
+                 patch.object(release.subprocess, "run", wraps=subprocess.run) as calls:
+                github.return_value.json.return_value = {
+                    "status": status, "merge_base_commit": {"sha": base},
+                }
+                with self.assertRaisesRegex(ValueError, "Rollback/re-activation refused"):
+                    release.activate(self.root, older_revision)
+                self.assertFalse(any(call.args[0][0] == "bash" for call in calls.call_args_list))
+        self.assertEqual((self.root / "current").resolve().name, self.release_name)
+
+    def test_ancestry_lookup_failure_leaves_current_unchanged(self):
+        self.stage()
+        release.activate(self.root, self.revision)
+        revision = "b" * 40
+        self.set_identity(revision, revision)
+        self.stage()
+        with patch.object(release, "GitHub") as github, \
+             patch.object(release.subprocess, "run", wraps=subprocess.run) as calls:
+            github.return_value.json.side_effect = OSError("GitHub unavailable")
+            with self.assertRaisesRegex(OSError, "GitHub unavailable"):
+                release.activate(self.root, revision)
             self.assertFalse(any(call.args[0][0] == "bash" for call in calls.call_args_list))
         self.assertEqual((self.root / "current").resolve().name, self.release_name)
 
@@ -260,7 +335,7 @@ class ReleaseTest(unittest.TestCase):
         self.stage()
         old = self.root / "releases" / ("b" * 40)
         shutil.copytree(self.artifact, old)
-        metadata = dict(self.metadata, revision="b" * 40, commitCount=9, clientVersion="9")
+        metadata = dict(self.metadata, revision="b" * 40, clientVersion="b" * 40)
         # Verification of the independent old fixture is irrelevant to migration failure.
         (self.root / "current").symlink_to(old.relative_to(self.root))
         original_verify = release.verify
@@ -275,7 +350,12 @@ class ReleaseTest(unittest.TestCase):
             release, "verify", side_effect=lambda path: metadata if path == old else original_verify(path)
         ), patch.object(
             release.subprocess, "run", side_effect=fail_migration
-        ) as calls:
+        ) as calls, patch.object(
+            release, "GitHub"
+        ) as github:
+            github.return_value.json.return_value = {
+                "status": "ahead", "merge_base_commit": {"sha": metadata["revision"]},
+            }
             with self.assertRaises(subprocess.CalledProcessError):
                 release.activate(self.root, self.revision)
             self.assertTrue(any(call.args[0][0] == "bash" for call in calls.call_args_list))

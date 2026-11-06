@@ -13,15 +13,13 @@ import sys
 import tempfile
 import time
 import urllib.error
-import urllib.parse
 import urllib.request
 import zipfile
 
 import release
+from release import GitHub, REPOSITORY
 
 
-REPOSITORY = "Hanabi-Live/hanabi-live"
-API = f"https://api.github.com/repos/{REPOSITORY}"
 RESERVE_BYTES = 256 * 1024 * 1024
 
 
@@ -32,37 +30,6 @@ def require(condition, message):
 
 def command(root, *arguments):
     return subprocess.check_output(arguments, cwd=root, text=True).strip()
-
-
-class SafeRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, request, fp, code, message, headers, new_url):
-        require(urllib.parse.urlsplit(new_url).scheme == "https", "Insecure artifact redirect")
-        redirected = super().redirect_request(request, fp, code, message, headers, new_url)
-        if urllib.parse.urlsplit(new_url).netloc != urllib.parse.urlsplit(request.full_url).netloc:
-            redirected.remove_header("Authorization")
-        return redirected
-
-
-class GitHub:
-    def __init__(self):
-        token = next((os.environ[key] for key in (
-            "GH_TOKEN", "GITHUB_TOKEN_PERSONAL_CLASSIC", "GITHUB_TOKEN"
-        ) if os.environ.get(key)), None)
-        require(token, "Set GH_TOKEN or GITHUB_TOKEN_PERSONAL_CLASSIC to download CI artifacts.")
-        self.headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-        }
-        self.opener = urllib.request.build_opener(SafeRedirect())
-
-    def open(self, path):
-        request = urllib.request.Request(API + path, headers=self.headers)
-        return self.opener.open(request, timeout=120)
-
-    def json(self, path):
-        with self.open(path) as response:
-            return json.load(response)
 
 
 def matching_runs(runs, revision):
@@ -318,6 +285,11 @@ def deploy(root, check, apply_migrations):
     require(re.fullmatch(r"[a-f0-9]{40}", running), "Running server did not identify a Rust revision.")
     require(command(root, str(root / "hanabi-live"), "--version") == running,
             "Installed and running binaries differ. Investigate the unfinished deployment first.")
+    require((root / "public/js/bundles/git_revision.txt").read_text().strip() == running,
+            "Installed client and running server revisions differ. Investigate the unfinished deployment first.")
+    installed_version = (root / "public/js/bundles/version.txt").read_text().strip()
+    require(installed_version == running or re.fullmatch(r"[0-9]+", installed_version),
+            "Installed client version does not match the running revision or legacy version format.")
     require(healthy(control(port, "/metrics")), "Recovery is unhealthy, frozen, or draining; refusing deployment.")
     github = GitHub()
     revision = github.json("/commits/main")["sha"]
@@ -346,8 +318,6 @@ def deploy(root, check, apply_migrations):
 
         try:
             staged, metadata = download(github, run, revision, work)
-            require(metadata["commitCount"] > int((root / "public/js/bundles/version.txt").read_text()),
-                    "Client version would not advance; refusing rollback or mismatched installation.")
             pending = prepare(root, staged)
             if check:
                 print(f"Preflight passed; pending migrations: {pending}. No deployment or restart performed.")
@@ -390,7 +360,7 @@ def main():
     parser.add_argument("--apply-migrations", action="store_true", help="Approve pending forward migrations")
     args = parser.parse_args()
     os.umask(0o077)
-    deploy(Path(__file__).resolve().parent.parent, args.check, args.apply_migrations)
+    deploy(Path.cwd().resolve(), args.check, args.apply_migrations)
 
 
 if __name__ == "__main__":
