@@ -21,6 +21,7 @@ export const commands = new Map<string, CommandCallback>();
 
 commands.set("warning", (data: ServerCommandWarningData) => {
   console.warn(data.warning);
+  globals.ui?.cancelPendingRestart();
   modals.closeModals(true);
   setTimeout(() => {
     modals.showWarning(data.warning);

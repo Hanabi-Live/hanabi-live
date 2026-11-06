@@ -59,6 +59,7 @@ import { getCardOrStackBase } from "./getCardOrStackBase";
 import * as hypothetical from "./hypothetical";
 import { initKonvaTooltips } from "./konvaTooltips";
 import * as replay from "./replay";
+import * as restart from "./restart";
 import * as stats from "./stats";
 import * as timer from "./timer";
 import { toggleZen } from "./zen";
@@ -90,6 +91,8 @@ let spectatorsLabelValues: Values;
 const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 
 export function drawUI(): void {
+  globals.elements.restartWaitingOnServerAnimation?.stop();
+
   // Constants
   winW = globals.stage.width();
   winH = globals.stage.height();
@@ -561,10 +564,7 @@ function drawBottomLeftButtons() {
   globals.layers.UI.add(restartButton as unknown as Konva.Group);
   restartButton.on("click tap", () => {
     if (globals.options.speedrun) {
-      globals.lobby.conn!.send("tableRestart", {
-        tableID: globals.lobby.tableID,
-        hidePregame: true,
-      });
+      restart.request(true);
     } else {
       globals.elements.restartArea?.visible(true);
       globals.layers.UI2.batchDraw();
@@ -2126,6 +2126,18 @@ function drawClueAreaWaitingForServer() {
     listening: false,
   });
 
+  globals.layers.UI.add(waitingOnServer);
+  globals.elements.waitingOnServer = waitingOnServer;
+  globals.elements.waitingOnServerAnimation = createWaitingOnServerAnimation(
+    waitingOnServer,
+    globals.layers.UI,
+  );
+}
+
+function createWaitingOnServerAnimation(
+  waitingOnServer: Konva.Group,
+  layer: Konva.Layer,
+): Konva.Animation {
   const blueCircle = new Konva.Circle({
     x: waitingOnServer.width() / 2,
     y: waitingOnServer.height() / 2,
@@ -2147,7 +2159,7 @@ function drawClueAreaWaitingForServer() {
   waitingOnServer.add(redCircle);
 
   const period = SECOND_IN_MILLISECONDS;
-  const animation = new Konva.Animation((frame: Konva.Animation["frame"]) => {
+  return new Konva.Animation((frame: Konva.Animation["frame"]) => {
     const scale = (frame.time % period) / period;
     blueCircle.scale({ x: scale, y: scale });
     blueCircle.opacity(1 - scale);
@@ -2155,12 +2167,7 @@ function drawClueAreaWaitingForServer() {
     const redScale = ((frame.time + period / 2) % period) / period;
     redCircle.scale({ x: redScale, y: redScale });
     redCircle.opacity(1 - redScale);
-  }, globals.layers.UI);
-
-  globals.layers.UI.add(waitingOnServer);
-
-  globals.elements.waitingOnServer = waitingOnServer;
-  globals.elements.waitingOnServerAnimation = animation;
+  }, layer);
 }
 
 function drawCurrentPlayerArea() {
@@ -2504,6 +2511,10 @@ function drawRestartArea() {
   });
   globals.elements.restartArea.add(restartRect);
 
+  const restartContents = new Konva.Group();
+  globals.elements.restartContents = restartContents;
+  globals.elements.restartArea.add(restartContents);
+
   const restartTitle = new Konva.Text({
     y: 0.1 * winH,
     width: restartAreaValues.w * winW,
@@ -2521,7 +2532,7 @@ function drawRestartArea() {
     shadowOpacity: 0.9,
     listening: false,
   });
-  globals.elements.restartArea.add(restartTitle);
+  restartContents.add(restartTitle);
 
   const buttonW = restartAreaValues.w * 0.35;
   const buttonH = 0.25;
@@ -2535,12 +2546,9 @@ function drawRestartArea() {
     text: "Restart game",
   });
   restartGameButton.on("click tap", () => {
-    globals.lobby.conn!.send("tableRestart", {
-      tableID: globals.lobby.tableID,
-      hidePregame: true,
-    });
+    restart.request(true);
   });
-  globals.elements.restartArea.add(restartGameButton as unknown as Konva.Group);
+  restartContents.add(restartGameButton as unknown as Konva.Group);
 
   const restartTableButton = new Button({
     x: (2 * spacing + buttonW) * winW,
@@ -2550,14 +2558,9 @@ function drawRestartArea() {
     text: "Remake table",
   });
   restartTableButton.on("click tap", () => {
-    globals.lobby.conn!.send("tableRestart", {
-      tableID: globals.lobby.tableID,
-      hidePregame: false,
-    });
+    restart.request(false);
   });
-  globals.elements.restartArea.add(
-    restartTableButton as unknown as Konva.Group,
-  );
+  restartContents.add(restartTableButton as unknown as Konva.Group);
 
   const restartCancelButton = new Button({
     x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,
@@ -2570,9 +2573,19 @@ function drawRestartArea() {
     globals.elements.restartArea?.visible(false);
     globals.layers.UI2.batchDraw();
   });
-  globals.elements.restartArea.add(
-    restartCancelButton as unknown as Konva.Group,
-  );
+  restartContents.add(restartCancelButton as unknown as Konva.Group);
+
+  const waitingOnServer = new Konva.Group({
+    width: restartAreaValues.w * winW,
+    height: restartAreaValues.h * winH,
+    listening: false,
+    visible: false,
+  });
+  globals.elements.restartArea.add(waitingOnServer);
+  globals.elements.restartWaitingOnServer = waitingOnServer;
+  globals.elements.restartWaitingOnServerAnimation =
+    createWaitingOnServerAnimation(waitingOnServer, globals.layers.UI2);
+  restart.setPending(globals.restartPending);
 }
 
 function drawExtraAnimations() {

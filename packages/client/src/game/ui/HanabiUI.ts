@@ -10,6 +10,7 @@ import { drawUI } from "./drawUI";
 import * as keyboard from "./keyboard";
 import * as cardsView from "./reactive/views/cardsView";
 import * as cluesView from "./reactive/views/cluesView";
+import * as restart from "./restart";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
 import * as timer from "./timer";
 import type { UIGlobals } from "./UIGlobals";
@@ -129,6 +130,13 @@ export class HanabiUI {
     cursor.set("default");
   }
 
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  cancelPendingRestart(): void {
+    if (globals.restartPending) {
+      restart.setPending(false);
+    }
+  }
+
   destroy(): void {
     window.removeEventListener("resize", this.resizeHandler);
     document.removeEventListener("theme_change", this.themeChangeHandler);
@@ -138,6 +146,7 @@ export class HanabiUI {
     }
     keyboard.destroy();
     timer.stop();
+    globals.elements.restartWaitingOnServerAnimation?.stop();
     globals.stage.destroy();
   }
 

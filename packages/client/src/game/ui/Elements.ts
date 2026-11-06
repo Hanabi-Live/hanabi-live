@@ -135,6 +135,9 @@ export class Elements {
   // The restart screen
   restartArea: Konva.Group | null = null;
   restartText: Konva.Text | null = null;
+  restartContents: Konva.Group | null = null;
+  restartWaitingOnServer: Konva.Group | null = null;
+  restartWaitingOnServerAnimation: Konva.Animation | null = null;
 
   // Other screens
   fullActionLog: FullActionLog | null = null;

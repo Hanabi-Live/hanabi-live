@@ -95,6 +95,8 @@ export class UIGlobals {
   /** Used to prevent accidental double clicks. */
   UIClickTime = 0;
 
+  restartPending = false;
+
   globalEmpathyEnabled = false;
 
   isResizing = false;
@@ -162,6 +164,7 @@ export class UIGlobals {
     this.lastTimerUpdateTimeMS = 0;
     this.animateFast = true;
     this.UIClickTime = 0;
+    this.restartPending = false;
     this.globalEmpathyEnabled = false;
     this.isResizing = false;
 
