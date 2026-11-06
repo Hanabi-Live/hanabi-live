@@ -617,10 +617,14 @@ impl Bridge {
 
     async fn announce(&self, message: &str) -> Result<()> {
         self.app()?;
-        self.publish_effects(lobby::server_chat(&self.pool, message).await?)
-            .await?;
-        self.send_to(&self.config.development, message, true)
-            .await?;
+        let effects = lobby::server_chat(&self.pool, message).await?;
+        // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
+        let (lobby, development) = tokio::join!(
+            self.publish_effects(effects),
+            self.send_to(&self.config.development, message, true),
+        );
+        lobby.context("Sending lifecycle announcement to the lobby channel")?;
+        development.context("Sending lifecycle announcement to the development channel")?;
         Ok(())
     }
 

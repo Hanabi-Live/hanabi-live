@@ -73,7 +73,7 @@ impl Integrations {
     pub async fn announce_restart(&self, uptime: Duration) {
         if let Some(bridge) = &self.discord {
             // An optional notification must not prevent a safely checkpointed restart.
-            match tokio::time::timeout(Duration::from_millis(250), bridge.announce_restart(uptime))
+            match tokio::time::timeout(Duration::from_secs(5), bridge.announce_restart(uptime))
                 .await
             {
                 Ok(Ok(())) => {}
@@ -81,7 +81,7 @@ impl Integrations {
                     bridge.degrade();
                     let error = match result {
                         Err(_) => crate::errors::Fault::new("discord_announcement_timeout",
-                            "Discord restart announcement exceeded 250 milliseconds; continuing the drained restart.",
+                            "Discord restart announcement exceeded five seconds; continuing the drained restart.",
                             axum::http::StatusCode::GATEWAY_TIMEOUT).into(),
                         Ok(Err(error)) => error,
                         Ok(Ok(())) => unreachable!(),

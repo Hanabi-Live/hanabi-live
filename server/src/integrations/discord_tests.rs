@@ -19,6 +19,9 @@ use tokio_util::sync::CancellationToken;
 struct MockTransport {
     requests: Mutex<Vec<(Method, String, Option<Value>)>>,
     next: AtomicU64,
+    restart_delay: Duration,
+    restart_barrier: Option<Arc<tokio::sync::Barrier>>,
+    failed_restart_channel: Option<&'static str>,
 }
 
 impl Transport for MockTransport {
@@ -29,10 +32,27 @@ impl Transport for MockTransport {
         body: Option<Value>,
     ) -> BoxFuture<'_, Result<Value>> {
         Box::pin(async move {
+            let restart = method == Method::POST
+                && body
+                    .as_ref()
+                    .and_then(|body| body["content"].as_str())
+                    .is_some_and(|text| text.starts_with("The server went down for a restart at:"));
             self.requests
                 .lock()
                 .await
                 .push((method.clone(), path.clone(), body));
+            if restart {
+                if let Some(barrier) = &self.restart_barrier {
+                    barrier.wait().await;
+                }
+                tokio::time::sleep(self.restart_delay).await;
+                anyhow::ensure!(
+                    !self
+                        .failed_restart_channel
+                        .is_some_and(|channel| path == format!("/channels/{channel}/messages")),
+                    "Synthetic channel delivery failure"
+                );
+            }
             Ok(if path == "/users/@me" {
                 json!({"id":"999999999999999999"})
             } else if path.ends_with("/roles") {
@@ -60,6 +80,96 @@ impl Transport for MockTransport {
             cancel.cancelled().await;
             Ok(())
         })
+    }
+}
+
+#[tokio::test]
+async fn restart_announcements_reach_both_channels_despite_network_latency_postgres() {
+    let Some(fixture) = Fixture::start().await else {
+        return;
+    };
+    let mock = Arc::new(MockTransport {
+        restart_delay: Duration::from_millis(350),
+        restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
+        ..MockTransport::default()
+    });
+    let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
+        .await
+        .unwrap();
+    bridge.event(json!({"t":"READY"})).await.unwrap();
+    let integrations = super::Integrations {
+        discord: Some(bridge.clone()),
+        discord_failed: false,
+        telemetry: super::telemetry::Telemetry::start(
+            "",
+            true,
+            "test".into(),
+            &fixture.app.background,
+            fixture.app.shutdown.clone(),
+        )
+        .unwrap(),
+    };
+    tokio::time::timeout(
+        Duration::from_secs(2),
+        integrations.announce_restart(Duration::from_secs(4680)),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        mock.next.load(Ordering::Relaxed),
+        4,
+        "Both notices must finish delivery to both channels"
+    );
+    assert_eq!(bridge.status(), "ready");
+    let requests = mock.requests.lock().await;
+    let messages = |channel: &str| {
+        requests
+            .iter()
+            .filter_map(|(method, path, body)| {
+                if *method == Method::POST && path == &format!("/channels/{channel}/messages") {
+                    body.as_ref().and_then(|body| body["content"].as_str())
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        messages("555555555555555555"),
+        messages("666666666666666666")
+    );
+    drop(requests);
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
+    for channel in ["555555555555555555", "666666666666666666"] {
+        let Some(fixture) = Fixture::start().await else {
+            return;
+        };
+        let mock = Arc::new(MockTransport {
+            failed_restart_channel: Some(channel),
+            restart_barrier: Some(Arc::new(tokio::sync::Barrier::new(2))),
+            ..MockTransport::default()
+        });
+        let bridge = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
+            .await
+            .unwrap();
+        bridge.event(json!({"t":"READY"})).await.unwrap();
+        let result = tokio::time::timeout(
+            Duration::from_secs(2),
+            bridge.announce_restart(Duration::from_secs(4680)),
+        )
+        .await
+        .unwrap();
+        assert!(result.is_err());
+        assert_eq!(
+            mock.next.load(Ordering::Relaxed),
+            3,
+            "The other channel must still finish delivery"
+        );
+        fixture.close().await;
     }
 }
 
