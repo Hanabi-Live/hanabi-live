@@ -73,6 +73,107 @@ async function login(page: Page, backend: string, name: string) {
 }
 
 for (const route of ["lobby", "new"]) {
+  test(`${route} keeps spectators scoped to the current pregame table`, async ({
+    browser,
+    backend,
+  }) => {
+    const owner = await browser.newContext();
+    const guest = await browser.newContext();
+    const observer = await browser.newContext();
+    try {
+      const a = await owner.newPage();
+      const b = await guest.newPage();
+      const c = await observer.newPage();
+      const spectator = `testWatch${route}`;
+      await login(a, backend, `testOwner${route}`);
+      await login(b, backend, `testGuest${route}`);
+      await login(c, backend, spectator);
+      await a
+        .getByRole("button", { name: "Create a table", exact: true })
+        .click();
+      await a
+        .getByRole("dialog")
+        .getByLabel("Table name", { exact: true })
+        .fill("First table");
+      await a
+        .getByRole("dialog")
+        .getByRole("button", { name: "Create table", exact: true })
+        .click();
+      await expect(a).toHaveURL(/\/new\/table\/\d+$/u);
+      await c
+        .locator(".table-card")
+        .filter({ hasText: "First table" })
+        .getByRole("button", { name: "Watch table", exact: true })
+        .click();
+      if (route === "lobby") {
+        const introduction = b.locator("#tutorial-no");
+        await b.addLocatorHandler(introduction, async () => {
+          await introduction.click();
+        });
+        await b.goto(`${backend}/lobby`);
+        await b
+          .locator("#lobby-games-table tr")
+          .filter({ hasText: "First table" })
+          .click();
+      } else {
+        await b.goto(a.url());
+      }
+      const spectators =
+        route === "lobby"
+          ? b.locator("#lobby-pregame-spectators")
+          : b
+              .locator(".classic-room-info h4")
+              .filter({ hasText: "Spectators:" })
+              .locator("span");
+      await expect(spectators).toContainText(spectator);
+      if (route === "lobby") {
+        await b.locator("#nav-buttons-pregame-leave").click();
+        await b.locator("#nav-buttons-lobby-create-game").click();
+        await b.locator("#createTableName").fill("Second table");
+        await b.locator("#create-game-submit").click();
+        await expect(b.locator("#lobby-pregame-name")).toHaveText(
+          "Second table",
+        );
+      } else {
+        await b
+          .getByRole("button", { name: "Leave table", exact: true })
+          .click();
+        await b
+          .getByRole("button", { name: "Create a table", exact: true })
+          .click();
+        await b
+          .getByRole("dialog")
+          .getByLabel("Table name", { exact: true })
+          .fill("Second table");
+        await b
+          .getByRole("dialog")
+          .getByRole("button", { name: "Create table", exact: true })
+          .click();
+        await expect(
+          b.getByRole("heading", { name: "Second table", exact: true }),
+        ).toBeVisible();
+      }
+      await expect(spectators).toBeEmpty();
+      await c
+        .getByRole("button", { name: "Stop watching", exact: true })
+        .click();
+      await c
+        .locator(".table-card")
+        .filter({ hasText: "Second table" })
+        .getByRole("button", { name: "Watch table", exact: true })
+        .click();
+      await expect(spectators).toContainText(spectator);
+      await c
+        .getByRole("button", { name: "Stop watching", exact: true })
+        .click();
+      await expect(spectators).toBeEmpty();
+    } finally {
+      await owner.close();
+      await guest.close();
+      await observer.close();
+    }
+  });
+
   test(`${route} creates a table named after its owner without random names`, async ({
     page,
     backend,

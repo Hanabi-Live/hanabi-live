@@ -91,6 +91,7 @@ lobbyCommands.set("friends", (data: FriendsData) => {
 lobbyCommands.set("game", (data: Game) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
+  globals.tableID = data.tableID;
   pregame.draw();
   if (previousPlayers?.length !== data.players.length) {
     // Disable the start game button for a short time after the player count changes.
@@ -155,6 +156,7 @@ lobbyCommands.set("joined", (data: JoinedData) => {
 
   // We joined a new game, so transition between screens.
   pregame.show();
+  pregame.drawSpectators(data.tableID);
 });
 
 lobbyCommands.set("left", (data: { tableID: number }) => {
@@ -193,6 +195,11 @@ lobbyCommands.set("table", (data: ServerCommandTableData) => {
   globals.tableMap.set(data.id, data);
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
+  } else if (
+    globals.currentScreen === Screen.PreGame
+    && globals.tableID === data.id
+  ) {
+    pregame.drawSpectators(data.id);
   }
 });
 
@@ -270,8 +277,12 @@ interface SpectatorsData {
   spectators: Spectator[];
 }
 lobbyCommands.set("pregameSpectators", (data: SpectatorsData) => {
-  globals.tableID = data.tableID;
-  pregame.drawSpectators(globals.tableID);
+  if (
+    globals.currentScreen === Screen.PreGame
+    && globals.tableID === data.tableID
+  ) {
+    pregame.drawSpectators(data.tableID);
+  }
 });
 
 // Received by the client when a user connects or has a new status.

@@ -507,12 +507,12 @@ function isSpectator() {
 }
 
 export function drawSpectators(tableID: number): void {
+  const list = $("#lobby-pregame-spectators");
+  list.empty();
   if (globals.game === null) {
     return;
   }
 
-  const list = $("#lobby-pregame-spectators");
-  list.empty();
   const table = globals.tableMap.get(tableID);
   if (table === undefined) {
     return;

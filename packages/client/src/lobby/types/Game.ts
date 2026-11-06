@@ -1,6 +1,7 @@
 import type { NumPlayers, Options } from "@hanabi-live/game";
 
 export interface Game {
+  tableID: number;
   name: string;
   owner: number;
   players: Player[];
