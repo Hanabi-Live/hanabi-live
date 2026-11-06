@@ -73,10 +73,7 @@ fn inventory(root: &Path, directory: &Path, files: &mut BTreeMap<String, String>
             .to_str()
             .context("Invalid release filename")?
             .to_owned();
-        if RUNTIME_FILES.contains(&relative.as_str())
-            || relative == "release.json"
-            || relative == ".go-to-rust-cutover"
-        {
+        if RUNTIME_FILES.contains(&relative.as_str()) || relative == "release.json" {
             continue;
         }
         ensure!(

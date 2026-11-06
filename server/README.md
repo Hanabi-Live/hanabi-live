@@ -110,8 +110,7 @@ Activation requires the service to be stopped and holds the shared lifecycle
 lock. Go releases can no longer be staged or activated. Installations with
 unresolved legacy checkpoints must complete recovery using a compatible
 pre-promotion release first; startup continues to reject those records rather
-than discard them. Previously installed Rust releases and their retained legacy
-marker files remain verifiable.
+than discard them.
 
 ## Storage and ownership
 

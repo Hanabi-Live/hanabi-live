@@ -22,7 +22,6 @@ RUNTIME_LINKS = {
     "letsencrypt": "letsencrypt",
     ".lifecycle.lock": ".lifecycle.lock",
 }
-LEGACY_RUNTIME_FILES = {".go-to-rust-cutover"}
 
 
 class ReleaseStateUncertainError(RuntimeError):
@@ -65,7 +64,7 @@ def files_in(directory):
     result = {}
     for path in sorted(directory.rglob("*")):
         name = path.relative_to(directory).as_posix()
-        if name in RUNTIME_LINKS or name in LEGACY_RUNTIME_FILES or name == "release.json":
+        if name in RUNTIME_LINKS or name == "release.json":
             continue
         require(not sensitive_path(name), f"Runtime/private file in immutable assets: {name}")
         require(not path.is_symlink(), f"Symlink in immutable assets: {name}")
@@ -231,7 +230,6 @@ def stage(root, archive, checksum):
                     require(member.isfile() or member.isdir(), "Archive links and special files are forbidden")
                     require(
                         name.split("/")[0] not in RUNTIME_LINKS
-                        and name.split("/")[0] not in LEGACY_RUNTIME_FILES
                         and not sensitive_path(name),
                         "Runtime state and Git data are forbidden in releases",
                     )

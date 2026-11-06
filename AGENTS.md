@@ -127,11 +127,7 @@ backups in `backups/deploy-rust-*`.
 After an SSH disconnect, the deployment outcome is unknown; do not automatically
 retry. Never automatically roll back an interrupted deployment. Inspect its
 recorded phase and recovery state first. File backups do not replace coordinated
-PostgreSQL and Redis backups. Retain `.go-to-rust-cutover` on existing
-installations as a historical compatibility artifact. Current restart scripts do
-not check it; it is not an active Rust restart safeguard. Release verification
-tolerates it in older installations. The importer is retired, not a way to roll
-back.
+PostgreSQL and Redis backups. The importer is retired, not a way to roll back.
 
 Production runs `~/hanabi-live/hanabi-live`. Use a successful CI release with
 its paired client assets, verify it with `/opt/hanabi-python/bin/python3` and

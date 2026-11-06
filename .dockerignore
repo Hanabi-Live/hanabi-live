@@ -11,5 +11,4 @@ backups
 letsencrypt
 dist
 server/**/target
-.go-to-rust-cutover
 hanabi-live

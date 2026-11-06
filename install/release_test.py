@@ -92,14 +92,6 @@ class ReleaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Only Rust releases"):
             release.activate(self.root, self.revision, "go")
 
-    def test_existing_rust_release_marker_remains_verifiable(self):
-        self.stage()
-        installed = self.root / "releases" / self.release_name
-        (installed / ".go-to-rust-cutover").symlink_to("../../shared/.go-to-rust-cutover")
-        release.verify(installed)
-        release.activate(self.root, self.revision)
-        self.assertEqual((self.root / "current").resolve(), installed)
-
     def test_unknown_runtime_is_rejected(self):
         self.metadata["runtime"] = "unknown"
         self.write_manifest()

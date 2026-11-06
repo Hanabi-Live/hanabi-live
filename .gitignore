@@ -28,7 +28,6 @@ motd.txt*
 /server/__pycache__
 /maintenance/__pycache__
 hanabi-live.next
-/.go-to-rust-cutover
 /backups
 /letsencrypt
 /logs
