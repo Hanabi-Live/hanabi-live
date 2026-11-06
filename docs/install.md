@@ -143,6 +143,65 @@ graceful restart. Never rebuild assets in place while they are being served.
 Build and verify both clients in staging, preserve old versioned assets for open
 tabs, and publish paired assets and binaries atomically.
 
+### Dedicated production Redis
+
+The templates in [`install/redis/`](../install/redis/) reproduce the dedicated
+production Redis configuration: Unix-socket access only, durable AOF writes, no
+eviction, and a 768 MiB memory limit. Allow additional RAM for Redis overhead
+and background persistence. Install Redis **7.2 or newer** and its CLI first;
+older distribution packages may not support the required `WAITAOF` command.
+
+For a **fresh host**, run these commands as root from the repository root,
+before starting the application:
+
+```sh
+/usr/bin/redis-server --version
+useradd --system --user-group --home-dir /var/lib/hanabi-redis \
+  --no-create-home --shell /usr/sbin/nologin hanabi-redis
+install -d -o root -g hanabi-redis -m 750 /etc/hanabi-redis
+install -o root -g hanabi-redis -m 640 install/redis/redis.conf /etc/hanabi-redis/redis.conf
+install -o root -g root -m 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
+systemctl daemon-reload
+systemctl enable --now hanabi-redis
+```
+
+The unit assumes `/usr/bin/redis-server`. If Redis is installed elsewhere,
+change `ExecStart` in the installed unit before enabling it. Existing production
+uses `/opt/hanabi-redis/7.2.17/bin/redis-server`; do not replace that binary or
+its service configuration as part of routine application deployment.
+
+Systemd creates `/run/hanabi-redis` and `/var/lib/hanabi-redis`, owned by
+`hanabi-redis` with mode `0700`. The socket is also mode `0700`; this matches
+the existing root-run application. A non-root application needs explicitly
+reviewed socket-directory and socket permissions; do not make Redis publicly
+accessible.
+
+Set this in the application's `.env`:
+
+```text
+REDIS_URL=redis+unix:///run/hanabi-redis/redis.sock
+```
+
+Verify readiness and durability before starting the application:
+
+```sh
+systemctl status --no-pager hanabi-redis
+redis-cli -s /run/hanabi-redis/redis.sock PING
+redis-cli -s /run/hanabi-redis/redis.sock CONFIG GET appendonly appendfsync maxmemory-policy
+redis-cli -s /run/hanabi-redis/redis.sock WAITAOF 1 0 5000
+```
+
+Expect `PONG`, `appendonly=yes`, `appendfsync=always`,
+`maxmemory-policy=noeviction`, and a `WAITAOF` result of `[1, 0]`. Inspect
+failures with `journalctl -u hanabi-redis --no-pager`.
+
+These are not upgrade or recovery commands. On existing installations, preserve
+the entire `/var/lib/hanabi-redis` directory, socket path, and database
+identity; never initialize an empty replacement to bypass recovery failures.
+Coordinate Redis maintenance with a graceful application stop and consistent
+PostgreSQL and Redis backups. Do not restart Redis underneath a running game
+server.
+
 ### Service management
 
 `./install/install_supervisor.sh` installs the source-layout service; inspect
