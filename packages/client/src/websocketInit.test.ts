@@ -1,3 +1,4 @@
+import { VERSION } from "@hanabi-live/data";
 import type { InstalledClock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
@@ -8,7 +9,9 @@ const originalFetch = globalThis.fetch;
 await mock.module("./Globals", () => ({
   globals: { conn: null, currentScreen: "Login", ui: null },
 }));
-await mock.module("./commands", () => ({ commands: new Map() }));
+await mock.module("./commands", () => ({
+  commands: new Map([["error", mock()]]),
+}));
 await mock.module("./lobby/lobbyCommands", () => ({
   lobbyCommands: new Map([["welcome", mock()]]),
 }));
@@ -17,6 +20,7 @@ await mock.module("./game/ui/gameCommands", () => ({
 }));
 await mock.module("./modals", () => ({ showError: mock() }));
 const { globals } = await import("./Globals");
+const { commands } = await import("./commands");
 const { websocketInit } = await import("./websocketInit");
 
 interface FakeSocket {
@@ -147,6 +151,9 @@ describe("initial WebSocket handshake watchdog", () => {
   test("recovers a permanently CONNECTING socket without a close event", async () => {
     websocketInit();
     expect(sockets).toHaveLength(1);
+    expect(sockets[0]?.url).toBe(
+      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+    );
 
     await clock.tickAsync(14_999);
     expect(sockets).toHaveLength(1);
@@ -154,7 +161,9 @@ describe("initial WebSocket handshake watchdog", () => {
 
     expect(sockets[0]?.closed).toBe(true);
     expect(sockets).toHaveLength(2);
-    expect(sockets[1]?.url).toBe("wss://localhost/ws?fastResume=1");
+    expect(sockets[1]?.url).toBe(
+      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+    );
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -188,7 +197,9 @@ describe("initial WebSocket handshake watchdog", () => {
     await clock.tickAsync(500);
     expect(request).toHaveBeenCalledTimes(2);
     expect(sockets).toHaveLength(2);
-    expect(sockets[1]?.url).toBe("wss://localhost/ws?fastResume=1");
+    expect(sockets[1]?.url).toBe(
+      `wss://localhost/ws?fastResume=1&version=${encodeURIComponent(VERSION)}`,
+    );
   });
 
   test("clears handshake timers after open and welcome", async () => {
@@ -200,6 +211,19 @@ describe("initial WebSocket handshake watchdog", () => {
     await clock.tickAsync(30_000);
     expect(sockets).toHaveLength(1);
     expect(sockets[0]?.closed).toBe(false);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  test("shows version rejection without retrying the connection", async () => {
+    websocketInit();
+    sockets[0]?.emit("open");
+    const error = { error: "Outdated client. Please hard-refresh." };
+    globals.conn?.callbacks["error"]?.(error);
+    sockets[0]?.emit("close");
+
+    await clock.tickAsync(30_000);
+    expect(commands.get("error")).toHaveBeenCalledWith(error);
+    expect(sockets).toHaveLength(1);
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 

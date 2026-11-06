@@ -302,10 +302,13 @@ export async function login(
 }
 
 export function socketClient(address: string, cookie: string): SocketClient {
-  const socket = new WebSocket(`${address.replace("http:", "ws:")}/ws`, {
-    headers: { Cookie: cookie },
-    handshakeTimeout: 5000,
-  });
+  const socket = new WebSocket(
+    `${address.replace("http:", "ws:")}/ws?version=${encodeURIComponent(VERSION)}`,
+    {
+      headers: { Cookie: cookie },
+      handshakeTimeout: 5000,
+    },
+  );
   const messages: string[] = [];
   let changed = Promise.withResolvers<undefined>();
   let failure: Error | undefined;

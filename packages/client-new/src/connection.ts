@@ -298,7 +298,7 @@ export class LobbyConnection {
       ),
     );
     const socket = new WebSocket(
-      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws?fastResume=1`,
+      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws?fastResume=1&version=${encodeURIComponent(CLIENT_VERSION)}`,
     );
     let welcomed = false;
     this.socket = socket;

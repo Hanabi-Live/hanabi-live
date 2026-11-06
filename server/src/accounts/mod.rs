@@ -121,6 +121,21 @@ fn unauthorized(message: impl Into<String>) -> Response {
     (StatusCode::UNAUTHORIZED, format!("{}\n", message.into())).into_response()
 }
 
+pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
+    if !version.is_empty() && (version == "bot" || version == current) {
+        return Ok(());
+    }
+    Err(format!(
+        "You are running an outdated version of the client code.<br />(You are on <strong>v{}</strong> and the latest is <strong>v{}</strong>.)<br />Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version.<br />(Note that a hard-refresh is different from a normal refresh.)<br />On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
+        escape_html(if version.is_empty() {
+            "unknown"
+        } else {
+            version
+        }),
+        escape_html(current)
+    ))
+}
+
 #[cfg(test)]
 fn failure_diagnostic(error: &anyhow::Error) -> String {
     crate::errors::Report::from_error("Account operation", error, Some(30)).description
@@ -171,12 +186,8 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         Ok(username) => username,
         Err(message) => return Ok(unauthorized(message)),
     };
-    if input.version != "bot" && input.version != state.config.version {
-        return Ok(unauthorized(format!(
-            "You are running an outdated version of the client code.<br />(You are on <strong>v{}</strong> and the latest is <strong>v{}</strong>.)<br />Please perform a <a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">hard-refresh</a> to get the latest version.<br />(Note that a hard-refresh is different from a normal refresh.)<br />On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
-            escape_html(&input.version),
-            escape_html(&state.config.version)
-        )));
+    if let Err(message) = validate_client_version(&input.version, &state.config.version) {
+        return Ok(unauthorized(message));
     }
     let existing = sqlx::query!(
         "SELECT id, password_hash AS \"password_hash?\" FROM users WHERE username=$1",

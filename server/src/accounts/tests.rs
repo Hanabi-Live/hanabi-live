@@ -100,6 +100,19 @@ async fn login_requires_matching_release_sha_or_bot_postgres() {
     db.close().await;
 }
 
+#[test]
+fn client_version_validation_rejects_missing_versions_and_escapes_html() {
+    let error = validate_client_version("", "42").unwrap_err();
+    assert!(error.contains("hard-refresh"));
+    assert!(error.contains("unknown"));
+    assert!(validate_client_version("", "").is_err());
+    let error = validate_client_version("<old>", "<current>").unwrap_err();
+    assert!(error.contains("&lt;old&gt;"));
+    assert!(error.contains("&lt;current&gt;"));
+    assert!(!error.contains("<old>"));
+    assert!(!error.contains("<current>"));
+}
+
 #[tokio::test]
 async fn accounts_without_password_hash_require_reset_before_login_postgres() {
     let Some(db) = test_support::TestDb::create().await else {

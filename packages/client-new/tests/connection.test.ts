@@ -34,8 +34,10 @@ class Socket extends EventTarget {
   static instances: Socket[] = [];
   readyState = 1;
   sent: string[] = [];
-  constructor() {
+  readonly url: string;
+  constructor(url: string) {
     super();
+    this.url = url;
     Socket.instances.push(this);
   }
 
@@ -74,6 +76,29 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("sends the client version on initial connection and reconnect, then stops on rejection", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, () => true);
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    expect(socket?.url).toBe(
+      `ws://localhost/ws?fastResume=1&version=${encodeURIComponent(CLIENT_VERSION)}`,
+    );
+    socket?.receive("welcome", welcome());
+    socket?.close();
+    await vi.advanceTimersByTimeAsync(1000);
+    const reconnected = Socket.instances[1];
+    expect(reconnected?.url).toBe(socket?.url);
+    reconnected?.receive("error", {
+      error: "Outdated client. Please hard-refresh.",
+    });
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(store.getState().notice?.text).toContain("hard-refresh");
+    expect(store.getState().connection).toBe("stopped");
+    expect(Socket.instances).toHaveLength(2);
+    connection.stop();
+  });
+
   it("reports the invalid request field to both the form and global notice", async () => {
     const store = createLobbyStore();
     const connection = new LobbyConnection(

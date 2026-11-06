@@ -491,25 +491,49 @@ async fn websocket(
         .any(|(key, value)| key == "reconnect" && value == "1");
     let fast_resume = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "fastResume" && value == "1");
+    let version = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+        .find_map(|(key, value)| (key == "version").then(|| value.into_owned()))
+        .unwrap_or_default();
+    let version_check = accounts::validate_client_version(&version, &app.version);
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
         .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)
-        .on_upgrade(move |socket| async move {
+        .on_upgrade(move |mut socket| async move {
             let tracker = app.connections.clone();
             tracker
                 .track_future(async move {
                     let _slot = slot;
-                    if let Err(error) = connection(
-                        socket,
-                        app.clone(),
-                        id,
-                        generation,
-                        address.ip().to_string(),
-                        reconnect,
-                        fast_resume,
-                    )
-                    .await
-                    {
+                    let result = match version_check {
+                        Ok(()) => {
+                            connection(
+                                socket,
+                                app.clone(),
+                                id,
+                                generation,
+                                address.ip().to_string(),
+                                reconnect,
+                                fast_resume,
+                            )
+                            .await
+                        }
+                        Err(message) => {
+                            // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
+                            tokio::time::timeout(Duration::from_secs(5), async {
+                                socket
+                                    .send(Message::Text(
+                                        frame("error", json!({"error":message})).into(),
+                                    ))
+                                    .await?;
+                                socket.close().await
+                            })
+                            .await
+                            .context("Timed out reporting an incompatible client version")
+                            .and_then(|result| {
+                                result.context("Reporting an incompatible client version")
+                            })
+                        }
+                    };
+                    if let Err(error) = result {
                         let report = crate::errors::Report::from_error(
                             "WebSocket session",
                             &error,
