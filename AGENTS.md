@@ -22,6 +22,15 @@ Keep installation instructions limited to the steps and configuration needed to
 install and run the server. When a command changes, update that command rather
 than adding paragraphs explaining the implementation behind it.
 
+## When to add tests
+
+Do not add tests for scripts or operational tooling, including installation,
+deployment, migrations, backups, build helpers, and lint/cache utilities,
+regardless of language. Use existing linters and direct checks instead.
+
+Add application tests only for meaningful behavior changes or bug fixes. Keep
+them focused and avoid redundant coverage.
+
 ## Browser testing
 
 Chromium is the only supported browser and browser-test target. Do not add tests

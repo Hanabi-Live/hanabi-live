@@ -39,17 +39,6 @@ jobs:
       - uses: ./.github/workflows/setup-bun
       - run: bash ./packages/client/build-client.sh
 
-  release-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Test release installation and deployment guards
-        run: python3 -m unittest discover -s install -p '*_test.py'
-
   lint:
     runs-on: ubuntu-latest
     strategy:
@@ -69,12 +58,9 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/cspell
-          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py', '.github/workflows/cspell-unused-words.yml') }}-${{ github.sha }}
+          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-${{ github.sha }}
           restore-keys: |
-            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py', '.github/workflows/cspell-unused-words.yml') }}-
-      - name: Test spelling cache invalidation
-        if: matrix.shard == 2 && steps.cspell-cache.outputs.cache-matched-key == ''
-        run: python3 -m unittest discover -s scripts -p 'cspell_cache_test.py'
+            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-
       - name: Restore successful package lint results
         id: lint-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -84,9 +70,6 @@ jobs:
           restore-keys: |
             lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
             lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-
-      - name: Test Turbo and formatting cache invalidation
-        if: matrix.shard == 1
-        run: bunx --bun --no-install turbo run "//#test-lint-caches" --cache=local:rw
       - name: Restore formatting file cache
         if: matrix.shard == 1
         id: prettier-cache
@@ -313,9 +296,7 @@ jobs:
             ${{ steps.platform.outputs.bin }}/cargo-sqlx
           key: ${{ steps.sqlx.outputs.cache-primary-key }}
       - name: Check SQLx metadata against a disposable schema
-        run: |
-          python3 -m unittest discover -s . -p sqlx_schema_test.py
-          python3 sqlx_schema.py
+        run: python3 sqlx_schema.py
       - name: Test Rust rules, actors, and Redis/PostgreSQL durability
         run: |
           cargo test --locked --manifest-path protocol/Cargo.toml
@@ -325,20 +306,6 @@ jobs:
   native-release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    env:
-      HANABI_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -347,7 +314,6 @@ jobs:
       - uses: ./.github/workflows/setup-go
         with:
           cache-key: migration-tool
-      - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Prepare static Rust release toolchain
         run: |
@@ -357,10 +323,6 @@ jobs:
           rustup target add x86_64-unknown-linux-musl
       - name: Build and verify immutable native release
         run: bash install/build-release.sh dist/native
-      - name: Test release installation guards
-        run: python3 -m unittest discover -s install -p 'release_test.py'
-      - name: Exercise local release lifecycle
-        run: python3 install/release_smoke.py dist/native/*.tar.gz
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: candidate-hanabi-live-rust-${{ github.sha }}-linux-amd64
@@ -381,16 +343,7 @@ jobs:
       group: native-release-publication
       cancel-in-progress: false
     timeout-minutes: 5
-    needs:
-      [
-        client-build,
-        server-build,
-        lint,
-        test,
-        release-tests,
-        client-new,
-        native-release,
-      ]
+    needs: [client-build, server-build, lint, test, client-new, native-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -473,7 +426,6 @@ jobs:
         container-build,
         lint,
         test,
-        release-tests,
         client-new,
         native-release,
         publish-native-release,

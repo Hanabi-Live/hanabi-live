@@ -132,30 +132,6 @@
       ],
       "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
       "outputs": []
-    },
-    "//#test-lint-caches": {
-      "inputs": [
-        ".prettierignore",
-        "bun.lock",
-        "check-prettier.sh",
-        "misc/*/tsconfig*.json",
-        "package.json",
-        "packages/*/package.json",
-        "packages/*/tsconfig*.json",
-        "prettier.config.mjs",
-        "public/js/bundles/.gitignore",
-        "scripts/*.py",
-        "turbo.json"
-      ],
-      "env": [
-        "CI",
-        "ImageOS",
-        "ImageVersion",
-        "NODE_ENV",
-        "RUNNER_ARCH",
-        "RUNNER_OS"
-      ],
-      "outputs": []
     }
   }
 }
