@@ -27,8 +27,6 @@ pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
             "create_table_one_less_card",
             "BOOLEAN NOT NULL DEFAULT FALSE",
         ),
-        ("user_stats", "average_score", "FLOAT NOT NULL DEFAULT 0"),
-        ("variant_stats", "average_score", "FLOAT NOT NULL DEFAULT 0"),
     ] {
         #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(sqlx::AssertSqlSafe(format!(

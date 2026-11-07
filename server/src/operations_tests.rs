@@ -280,7 +280,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     };
     let result:anyhow::Result<()>=async{
     #[allow(clippy::disallowed_methods)]
-    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(8);")
+    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(9);")
         .execute(&db.pool).await?;
     let redis = crate::test_redis::RedisFixture::start(true).await?;
     let options = db.pool.connect_options();

@@ -94,8 +94,6 @@ CREATE TABLE user_stats (
     best_score5_mod  SMALLINT  NOT NULL  DEFAULT 0,
     best_score6      SMALLINT  NOT NULL  DEFAULT 0,
     best_score6_mod  SMALLINT  NOT NULL  DEFAULT 0,
-    average_score    FLOAT     NOT NULL  DEFAULT 0,
-    num_strikeouts   INTEGER   NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, variant_id)
 );
@@ -336,9 +334,7 @@ CREATE TABLE variant_stats (
     best_score4     SMALLINT  NOT NULL  DEFAULT 0,
     best_score5     SMALLINT  NOT NULL  DEFAULT 0,
     best_score6     SMALLINT  NOT NULL  DEFAULT 0,
-    num_max_scores  INTEGER   NOT NULL  DEFAULT 0,
-    average_score   FLOAT     NOT NULL  DEFAULT 0,
-    num_strikeouts  INTEGER   NOT NULL  DEFAULT 0
+    num_max_scores  INTEGER   NOT NULL  DEFAULT 0
 );
 
 DROP TABLE IF EXISTS chat_log CASCADE;

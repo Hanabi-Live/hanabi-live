@@ -87,8 +87,8 @@ impl Store {
             .fetch_one(&primary)
             .await?;
         ensure!(
-            version == 8,
-            "Native server requires database schema version 8"
+            version == 9,
+            "Native server requires database schema version 9"
         );
         let namespace = serde_json::to_string(&(
             &config.database_host,
