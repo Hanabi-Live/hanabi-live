@@ -34,6 +34,8 @@ export interface LobbyState {
   history: Record<number, HistoryGame>;
   otherScores: HistoryGame[];
   notice: { text: string; fatal: boolean } | null;
+  /** An administrator's explanation of a graceful restart or stop, kept across the reconnect. */
+  downtime: string | null;
   pending: string | null;
   preferenceStatus: "saved" | "saving" | "failed";
   typing: Record<string, string[]>;
@@ -58,6 +60,7 @@ function initialState(): LobbyState {
     history: {},
     otherScores: [],
     notice: null,
+    downtime: null,
     pending: null,
     preferenceStatus: "saved",
     typing: {},
@@ -85,6 +88,9 @@ const slice = createSlice({
     },
     dismissNotice(state) {
       state.notice = null;
+    },
+    dismissDowntime(state) {
+      state.downtime = null;
     },
     requestSent(state, action: PayloadAction<string>) {
       if (
@@ -373,6 +379,13 @@ const slice = createSlice({
 
         case "gameHistoryOtherScores": {
           state.otherScores = event.data.games;
+          break;
+        }
+
+        case "restart": {
+          if (event.data.message !== undefined) {
+            state.downtime = event.data.message;
+          }
           break;
         }
 

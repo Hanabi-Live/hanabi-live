@@ -46,6 +46,13 @@
     "valid": false
   },
   {
+    "name": "restart notification can explain the downtime",
+    "direction": "server",
+    "command": "restart",
+    "input": { "message": "Upgrading the database." },
+    "valid": true
+  },
+  {
     "name": "loading statistics are unknown, not zero",
     "direction": "server",
     "command": "lobbyStatus",

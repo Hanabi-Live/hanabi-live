@@ -116,6 +116,9 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
   }),
 ]);
+export const restartSchema = z.strictObject({
+  message: z.string().min(1).optional(),
+});
 export const tableCommandSchema = z.strictObject({
   requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
@@ -206,7 +209,7 @@ export const SERVER_WIRE_SCHEMAS = {
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
-  restart: emptySchema,
+  restart: restartSchema,
   synced: emptySchema,
   tableGone: tableRequestSchema,
   tableStart: tableStartedSchema,

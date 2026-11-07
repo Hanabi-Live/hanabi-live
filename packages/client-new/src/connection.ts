@@ -305,6 +305,10 @@ export class LobbyConnection {
     this.store.dispatch(actions.dismissNotice());
   }
 
+  dismissDowntime(): void {
+    this.store.dispatch(actions.dismissDowntime());
+  }
+
   async logout(): Promise<void> {
     this.stop();
     try {

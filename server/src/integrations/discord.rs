@@ -542,11 +542,8 @@ impl Bridge {
             return Ok(());
         }
         let message: String = row.message.clone();
-        let persisted = if source == "user" {
-            decode_html(&message)
-        } else {
-            message.clone()
-        };
+        // Lobby chat is stored as HTML; Discord shows the decoded text.
+        let persisted = decode_html(&message);
         let raw = supplied.unwrap_or(&persisted);
         if supplied.is_some() {
             let rendered = if source == "user" {
@@ -620,31 +617,34 @@ impl Bridge {
         self.app()?;
         let effects = lobby::server_chat(&self.pool, message).await?;
         // Poll both deliveries to completion; a slow or failed channel must not cancel the other.
+        let plain = decode_html(message);
         let (lobby, development) = tokio::join!(
             self.publish_effects(effects),
-            self.send_to(&self.config.development, message, true),
+            self.send_to(&self.config.development, &plain, true),
         );
         lobby.context("Sending lifecycle announcement to the lobby channel")?;
         development.context("Sending lifecycle announcement to the development channel")?;
         Ok(())
     }
 
-    pub async fn announce_restart(&self, uptime: Duration) -> Result<()> {
+    pub async fn announce_restart(&self, uptime: Duration, message: Option<&str>) -> Result<()> {
         self.announce(&format!(
-            "{RESTART_PREFIX} {} ({}) - Uptime: {}",
+            "{RESTART_PREFIX} {} ({}) - Uptime: {}{}",
             Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
             crate::restart::version(),
             crate::lifecycle::duration(uptime.as_secs()),
+            downtime_reason(message),
         ))
         .await
     }
 
-    pub async fn announce_stop(&self, uptime: Duration) -> Result<()> {
+    pub async fn announce_stop(&self, uptime: Duration, message: Option<&str>) -> Result<()> {
         self.announce(&format!(
-            "{STOP_PREFIX} {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.",
+            "{STOP_PREFIX} {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.{}",
             Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
             crate::restart::version(),
             crate::lifecycle::duration(uptime.as_secs()),
+            downtime_reason(message),
         ))
         .await
     }
@@ -995,6 +995,13 @@ fn spoilers(text: &str) -> String {
     }
     result.push_str(&text[offset..]);
     result
+}
+
+/// Announcements are stored as lobby chat HTML, so the administrator's text is escaped.
+fn downtime_reason(message: Option<&str>) -> String {
+    message.map_or_else(String::new, |message| {
+        format!(" Reason: {}", crate::accounts::escape_html(message))
+    })
 }
 
 #[cfg(test)]

@@ -124,13 +124,25 @@ async fn graceful_stop_is_loopback_only_and_rejects_repeated_requests() {
         );
     }
     assert!(h.stops.try_recv().is_err());
+    let long = format!("/gracefulStop?message={}", "a".repeat(501));
     assert_eq!(
-        request(app.clone(), "/gracefulStop", None).await.0,
+        request(app.clone(), &long, None).await.0,
+        StatusCode::BAD_REQUEST
+    );
+    assert!(h.stops.try_recv().is_err());
+    assert_eq!(
+        request(
+            app.clone(),
+            "/gracefulStop?message=+Upgrading+the+database.+",
+            None
+        )
+        .await
+        .0,
         StatusCode::OK
     );
     assert!(matches!(
         h.stops.recv().await,
-        Some(StopReason::GracefulStop)
+        Some(StopReason::GracefulStop(Some(message))) if message == "Upgrading the database."
     ));
     assert!(h.operations.lock().unwrap().is_empty());
     assert_eq!(

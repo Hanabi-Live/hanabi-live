@@ -67,21 +67,26 @@ impl Integrations {
         }
     }
 
-    pub async fn announce_restart(&self, uptime: Duration) {
-        self.announce_shutdown(uptime, false).await;
+    pub async fn announce_restart(&self, uptime: Duration, message: Option<&str>) {
+        self.announce_shutdown(uptime, false, message).await;
     }
 
-    pub async fn announce_stop(&self, uptime: Duration) {
-        self.announce_shutdown(uptime, true).await;
+    pub async fn announce_stop(&self, uptime: Duration, message: Option<&str>) {
+        self.announce_shutdown(uptime, true, message).await;
     }
 
-    async fn announce_shutdown(&self, uptime: Duration, graceful_stop: bool) {
+    async fn announce_shutdown(
+        &self,
+        uptime: Duration,
+        graceful_stop: bool,
+        message: Option<&str>,
+    ) {
         if let Some(bridge) = &self.discord {
             let announcement = async {
                 if graceful_stop {
-                    bridge.announce_stop(uptime).await
+                    bridge.announce_stop(uptime, message).await
                 } else {
-                    bridge.announce_restart(uptime).await
+                    bridge.announce_restart(uptime, message).await
                 }
             };
             // An optional notification must not prevent a safely checkpointed stop.

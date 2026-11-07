@@ -559,11 +559,14 @@ impl Hub {
             let _ = reply.send(Err(error));
             return;
         }
-        if let Operation::Drained { reconnect } = command {
+        if let Operation::Drained { reconnect, message } = command {
             let messages = [
                 frame("soundLobby", json!({"file":"shutdown"})),
                 if reconnect {
-                    frame("restart", json!({}))
+                    frame(
+                        "restart",
+                        message.map_or_else(|| json!({}), |message| json!({"message":message})),
+                    )
                 } else {
                     frame(
                         "error",

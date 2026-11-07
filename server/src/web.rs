@@ -79,15 +79,19 @@ impl App {
             .unwrap_or_else(|| json!({"discord":"disabled"}))
     }
 
-    pub async fn announce_restart(&self) {
+    pub async fn announce_restart(&self, message: Option<&str>) {
         if let Some(integrations) = self.integrations.get() {
-            integrations.announce_restart(self.started.elapsed()).await;
+            integrations
+                .announce_restart(self.started.elapsed(), message)
+                .await;
         }
     }
 
-    pub async fn announce_stop(&self) {
+    pub async fn announce_stop(&self, message: Option<&str>) {
         if let Some(integrations) = self.integrations.get() {
-            integrations.announce_stop(self.started.elapsed()).await;
+            integrations
+                .announce_stop(self.started.elapsed(), message)
+                .await;
         }
     }
 

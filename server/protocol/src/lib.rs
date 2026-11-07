@@ -16,6 +16,16 @@ pub const MAX_REQUEST_ID_BYTES: usize = 128;
 #[serde(deny_unknown_fields)]
 pub struct Empty {}
 
+/// Sent before a graceful restart or stop closes the connection.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Restart {
+    /// HTML explaining the downtime, present only when an administrator gave a reason.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub message: Option<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(
     tag = "state",
@@ -385,6 +395,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ChatTyping,
         TableStarted,
         Empty,
+        Restart,
         LobbyStatus,
     );
     schemas
