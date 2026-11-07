@@ -210,7 +210,7 @@ impl Transport for NativeTransport {
                     ensure!((1000..=120000).contains(&interval), "Invalid heartbeat");
                     let identify = if session.is_empty() {
                         json!({"op":2,"d":{"token":self.token,"intents":1|512|4096|32768,
-                            "properties":{"os":"linux","browser":"hanab-live-rust","device":"hanab-live-rust"}}})
+                            "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})
                     } else {
                         json!({"op":6,"d":{"token":self.token,"session_id":session,"seq":sequence}})
                     };
