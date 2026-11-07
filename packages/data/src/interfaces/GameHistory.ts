@@ -2,6 +2,11 @@ import { EndCondition, options } from "@hanabi-live/game";
 import { z } from "zod";
 import { gameID } from "../types/GameID";
 
+// JSON carries dates as strings, so keep them as strings but reject ones that cannot be parsed.
+const dateString = z
+  .string()
+  .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date");
+
 export const gameHistory = z
   .object({
     id: gameID,
@@ -10,8 +15,8 @@ export const gameHistory = z
     score: z.number().int(),
     numTurns: z.number().int(),
     endCondition: z.enum(EndCondition),
-    datetimeStarted: z.date(),
-    datetimeFinished: z.date(),
+    datetimeStarted: dateString,
+    datetimeFinished: dateString,
     numGamesOnThisSeed: z.number().int(),
     playerNames: z.string().array().readonly(),
     incrementNumGames: z.boolean(),

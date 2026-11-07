@@ -3,44 +3,19 @@ import {
   SERVER_COMMAND_SCHEMAS,
   ServerCommand,
   gameHistory,
-  spectator,
   unpackWSMessage,
 } from "@hanabi-live/data";
 import { options } from "@hanabi-live/game";
 import { z } from "zod";
 
-export const wireHistory = gameHistory.unwrap().extend({
-  datetimeStarted: z
-    .string()
-    .refine(
-      (value) => Number.isFinite(Date.parse(value)),
-      "Invalid history date",
-    ),
-  datetimeFinished: z
-    .string()
-    .refine(
-      (value) => Number.isFinite(Date.parse(value)),
-      "Invalid history date",
-    ),
-});
+export const wireHistory = gameHistory.unwrap();
 export type HistoryGame = z.infer<typeof wireHistory>;
 // Pregames report the actual roster size (including zero/one), not a started-game size.
 const lobbyOptions = options
   .unwrap()
   .extend({ numPlayers: z.number().int().min(0).max(6) });
-// The server uses an empty name for a spectator without a shadow.
-const wireSpectator = spectator.unwrap().extend({
-  shadowingPlayerUsername: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.string().min(1).optional(),
-  ),
-});
 const tableSchema = SERVER_COMMAND_SCHEMAS.table.unwrap().extend({
   options: lobbyOptions,
-  spectators: wireSpectator.array().readonly(),
-});
-const spectatorsSchema = SERVER_COMMAND_SCHEMAS.spectators.extend({
-  spectators: wireSpectator.array(),
 });
 const pregameSchema = SERVER_COMMAND_SCHEMAS.game.extend({
   options: lobbyOptions,
@@ -105,7 +80,7 @@ export function decodeEvent(text: string): ServerEvent | undefined {
   if (command === "pregameSpectators" || command === "spectators") {
     return {
       command: ServerCommand.spectators,
-      data: spectatorsSchema.parse(data),
+      data: SERVER_COMMAND_SCHEMAS.spectators.parse(data),
     };
   }
   if (!isServerCommand(command)) {

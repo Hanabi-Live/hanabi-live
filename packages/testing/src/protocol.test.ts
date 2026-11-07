@@ -1,6 +1,7 @@
 import {
   CLIENT_COMMAND_SCHEMAS,
   SERVER_COMMAND_SCHEMAS,
+  SERVER_WIRE_SCHEMAS,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
@@ -67,4 +68,58 @@ test("hidden clue frames require both identity fields to be concealed", () => {
       action: { ...action, clue: { type: -1, value: 3 } },
     }).success,
   ).toBe(false);
+});
+
+// Server messages whose client schema is still written by hand instead of generated from the Rust
+// types in server/protocol. Remove a message from this list when it moves to a generated schema.
+const HAND_WRITTEN_SERVER_MESSAGES = [
+  "boot",
+  "cardIdentities",
+  "clock",
+  "connected",
+  "error",
+  "finishOngoingGame",
+  "friends",
+  "game",
+  "gameAction",
+  "gameActionList",
+  "gameHistory",
+  "gameHistoryOtherScores",
+  "hypoAction",
+  "hypoBack",
+  "hypoEnd",
+  "hypoShowDrawnCards",
+  "hypoStart",
+  "hypothetical",
+  "init",
+  "note",
+  "noteList",
+  "noteListPlayer",
+  "pause",
+  "replayEfficiencyMod",
+  "replayIndicator",
+  "replayLeader",
+  "replaySegment",
+  "replaySound",
+  "soundLobby",
+  "spectators",
+  "suggestion",
+  "table",
+  "tableList",
+  "user",
+  "userInactive",
+  "userLeft",
+  "userList",
+  "voteChange",
+  "warning",
+  "welcome",
+] as const;
+
+test("only the listed server messages use hand-written schemas", () => {
+  const generated: Readonly<Record<string, unknown>> = SERVER_WIRE_SCHEMAS;
+  const handWritten = Object.entries(SERVER_COMMAND_SCHEMAS)
+    .filter(([command, schema]) => generated[command] !== schema)
+    .map(([command]) => command)
+    .toSorted();
+  expect(handWritten).toEqual([...HAND_WRITTEN_SERVER_MESSAGES]);
 });
