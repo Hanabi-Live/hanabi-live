@@ -260,14 +260,6 @@ pub enum TableCommand {
         reply: Reply,
     },
     Drain(oneshot::Sender<Result<()>>),
-    Operation {
-        operation: TableOperation,
-        reply: oneshot::Sender<Result<Value>>,
-    },
-}
-pub enum TableOperation {
-    Terminate,
-    Kick(i32),
 }
 pub struct Hub {
     receiver: mpsc::Receiver<HubCommand>,
@@ -605,13 +597,12 @@ impl Hub {
             });
             return;
         }
-        let mut jobs = vec![];
         let result = match command {
             Operation::Drained { .. } => unreachable!("handled before dispatch"),
-            Operation::Inspect | Operation::LongTables => Ok(
+            Operation::Inspect => Ok(
                 json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
             ),
-            Operation::Kick { user_id } | Operation::Mute { user_id } => {
+            Operation::Mute { user_id } => {
                 self.disconnect(&[user_id]);
                 Ok(json!({}))
             }
@@ -630,58 +621,8 @@ impl Hub {
                 self.disconnect(&users);
                 Ok(json!({}))
             }
-            Operation::Unmute { user_id } | Operation::Unban { user_id } => {
-                if let Some(p) = self.sessions.get(&user_id) {
-                    p.session.emit(&frame(
-                        "warning",
-                        json!({"warning":"Your moderation settings have changed."}),
-                    ));
-                }
-                Ok(json!({}))
-            }
-            Operation::Terminate { identifier } => {
-                let entry = self.tables.iter().find(|(id, e)| {
-                    id.to_string() == identifier
-                        || e.view.data["name"].as_str() == Some(identifier.as_str())
-                });
-                if let Some((_, entry)) = entry {
-                    jobs.push((entry.handle.clone(), TableOperation::Terminate));
-                    Ok(json!({"found":true}))
-                } else {
-                    Ok(json!({"found":false,"terminated":false}))
-                }
-            }
         };
-        if jobs.is_empty() {
-            let _ = reply.send(result);
-            return;
-        }
-        self.tasks.spawn(async move {
-            let outcome = async {
-                let mut results = vec![];
-                for (handle, operation) in jobs {
-                    let (sent, received) = oneshot::channel();
-                    handle
-                        .sender
-                        .try_send(TableCommand::Operation {
-                            operation,
-                            reply: sent,
-                        })
-                        .map_err(|_| anyhow::anyhow!("Table operation queue unavailable"))?;
-                    results.push(received);
-                }
-                let mut values = vec![];
-                for received in results {
-                    values.push(received.await??);
-                }
-                let mut response = result?;
-                response["results"] = json!(values);
-                response["terminated"] = json!(values.iter().any(|v| v["terminated"] == true));
-                Ok(response)
-            }
-            .await;
-            let _ = reply.send(outcome);
-        });
+        let _ = reply.send(result);
     }
     async fn run(mut self) {
         while let Some(command) = self.receiver.recv().await {
@@ -1724,7 +1665,7 @@ impl TableActor {
                 .filter(|(id, _)| replay || self.table.players().iter().all(|p| p.id != **id))
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
-            inspection: json!({"id":self.table.id,"name":self.table.name,"created":self.table.created,"running":running,"replay":replay,"frozen":self.frozen}),
+            inspection: json!({"running":running,"replay":replay,"frozen":self.frozen}),
             data: json!({"id":self.table.id,"joined":false,"maxPlayers":self.table.max_players,"name":self.table.name,"numPlayers":self.table.players().len(),"options":self.table.options,"ownerID":self.table.owner,"passwordProtected":self.table.password_hash.is_some(),"players":self.table.players().iter().map(|p|&p.name).collect::<Vec<_>>(),"progress":progress,"running":running,"sharedReplay":replay&&self.table.visible,"spectators":spectators,"timeBase":self.table.options.time_base,"timePerTurn":self.table.options.time_per_turn,"timed":self.table.options.timed,"variant":self.table.options.variant_name}),
         }
     }
@@ -2084,7 +2025,6 @@ impl TableActor {
                             let result=if !session.active()||self.store.check_state().is_err(){Err(anyhow::anyhow!("Stale session or unavailable authority"))}else{self.command(session,command).await};
                             let _=reply.send(result);
                         },
-                        TableCommand::Operation{operation,reply}=>{let result=self.operation(operation).await;let _=reply.send(result);},
                     }
                 },
                 _=self.cleanup.notified()=>{if let Err(e)=self.cleanup(Instant::now()).await{eprintln!("Table cleanup: {e}");}},
@@ -2107,9 +2047,6 @@ impl TableActor {
                     });
                 }
                 TableCommand::Client { reply, .. } => {
-                    let _ = reply.send(Err(anyhow::anyhow!("Table closed")));
-                }
-                TableCommand::Operation { reply, .. } => {
                     let _ = reply.send(Err(anyhow::anyhow!("Table closed")));
                 }
             }
@@ -2464,7 +2401,6 @@ impl TableActor {
                 let r = hanabi_protocol::decode::<hanabi_protocol::ReplayActionRequest>(&data)?;
                 self.replay_action(session, r).await
             }
-            "tableAbandon" => self.leave(session, true).await,
             _ => bail!("Unsupported table command: {name}"),
         }
     }
@@ -4519,38 +4455,5 @@ impl TableActor {
         self.hub.send(HubCommand::Retire(self.table.id)).await?;
         self.retired = true;
         Ok(())
-    }
-    async fn operation(&mut self, operation: TableOperation) -> Result<Value> {
-        self.store.check_state()?;
-        ensure!(!self.frozen, "Table frozen until recovery");
-        match operation {
-            TableOperation::Terminate => {
-                if !matches!(self.table.phase, Phase::Live { .. }) {
-                    return Ok(json!({"terminated":false}));
-                }
-                let mut next = self.candidate();
-                let s = next.game_mut().expect("game");
-                let from = s.game.events.len();
-                s.game.terminate(
-                    s.game.active_player_index,
-                    EndCondition::TerminatedByPlayer,
-                    -1,
-                    None,
-                    Some(CompletionTiming {
-                        player_times: s.clocks.clone(),
-                        duration: s.duration,
-                    }),
-                )?;
-                self.persist(next).await?;
-                self.transitions(from).await?;
-                Ok(json!({"terminated":true}))
-            }
-            TableOperation::Kick(user) => {
-                if let Some(a) = self.attendees.remove(&user) {
-                    a.session.cancel.cancel();
-                }
-                Ok(json!({}))
-            }
-        }
     }
 }

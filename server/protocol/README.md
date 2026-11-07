@@ -47,9 +47,6 @@ Unknown schema features fail generation rather than silently losing validation.
 - Timestamp strings keep their existing representation; generated schemas do not
   parse or reformat them. Readonly Zod objects/arrays retain their existing
   behavior.
-- Classic private messages may include a string `room` in the native
-  compatibility DTO. Delivery remains recipient-only; the canonical TypeScript
-  request still rejects that extra field.
 - Rust retains its rejection of floating-point JSON tokens for integer fields.
   JavaScript cannot distinguish `1` from `1.0` after JSON parsing. Fixtures
   record that pre-existing difference rather than silently changing either

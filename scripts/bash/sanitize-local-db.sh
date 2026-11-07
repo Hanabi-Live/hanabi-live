@@ -40,7 +40,6 @@ UPDATE users SET last_ip='0.0.0.0';
 DELETE FROM user_settings;
 DELETE FROM user_stats;
 DELETE FROM user_friends;
-DELETE FROM user_reverse_friends;
 DELETE FROM game_participant_notes;
 DELETE FROM game_tags;
 DELETE FROM variant_stats;

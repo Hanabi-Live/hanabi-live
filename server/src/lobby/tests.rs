@@ -102,17 +102,6 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let data = json!({"name":"bób","room":"lobby"});
     let result = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
-    assert_eq!(
-        sqlx::query_scalar!(
-            "SELECT COUNT(*) AS \"v!\" FROM user_reverse_friends WHERE user_id=$1 AND friend_id=$2",
-            b,
-            a
-        )
-        .fetch_one(&db.pool)
-        .await
-        .unwrap(),
-        1
-    );
     let repeated = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert!(
         self_data(&repeated, "warning")["warning"]
@@ -122,28 +111,6 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     );
     let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
     assert!(friends(&db.pool, a).await.unwrap().is_empty());
-    assert_eq!(
-        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM user_reverse_friends")
-            .fetch_one(&db.pool)
-            .await
-            .unwrap(),
-        0
-    );
-    #[allow(clippy::disallowed_methods)]
-    // Force the reverse write to fail; the forward write must roll back.
-    sqlx::query(
-        "ALTER TABLE user_reverse_friends ADD CONSTRAINT test_reject CHECK (friend_id < 0)",
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    assert!(change_friend(&db.pool, a, b, true).await.is_err());
-    assert!(friend_ids(&db.pool, a).await.unwrap().is_empty());
-    #[allow(clippy::disallowed_methods)]
-    sqlx::query("ALTER TABLE user_reverse_friends DROP CONSTRAINT test_reject")
-        .execute(&db.pool)
-        .await
-        .unwrap();
     let (one, two) = tokio::join!(
         change_friend(&db.pool, a, b, true),
         change_friend(&db.pool, a, b, true)
@@ -243,7 +210,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         &who,
         &online,
         "chatPM",
-        json!({"msg":" <secret> ","recipient":"bób","room":"table999"}),
+        json!({"msg":" <secret> ","recipient":"bób"}),
     )
     .await;
     let message = self_data(&effects, "chat");

@@ -2,30 +2,17 @@ use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub enum Operation {
-    Kick {
-        user_id: i32,
-    },
     Ban {
         user_id: i32,
         ip: String,
     },
-    Unban {
-        user_id: i32,
-    },
     Mute {
-        user_id: i32,
-    },
-    Unmute {
         user_id: i32,
     },
     Inspect,
     Drained {
         reconnect: bool,
         message: Option<String>,
-    },
-    LongTables,
-    Terminate {
-        identifier: String,
     },
 }
 
@@ -54,24 +41,17 @@ pub fn router(control: Arc<Control>) -> Router {
     for path in ["/ban", "/mute"] {
         router = router.route(path, post(handle));
     }
-    for path in [
-        "/getLongTables",
-        "/gracefulRestart",
-        "/gracefulStop",
-        "/metrics",
-        "/version",
-    ] {
+    for path in ["/gracefulRestart", "/gracefulStop", "/metrics", "/version"] {
         router = router.route(path, get(handle));
     }
     router
-        .route("/terminate", get(handle).post(handle))
         .layer(middleware::from_fn_with_state(control.clone(), guard))
         .layer(middleware::from_fn(crate::errors::http_context))
         .with_state(control)
 }
 
 fn mutating(path: &str) -> bool {
-    matches!(path, "/ban" | "/mute" | "/gracefulStop" | "/terminate")
+    matches!(path, "/ban" | "/mute" | "/gracefulStop")
 }
 async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next) -> Response {
     let peer = request.extensions().get::<ConnectInfo<SocketAddr>>();
@@ -185,47 +165,6 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
     let body = parameters(&body);
     match path.as_str() {
         "/ban" | "/mute" => return user_action(&control, &path, &body).await,
-        "/terminate" => {
-            let id = body
-                .get("tableID")
-                .filter(|v| !v.is_empty())
-                .or_else(|| query.get("tableID").filter(|v| !v.is_empty()))
-                .ok_or_else(|| bad("Error: You must specify a table name or a table ID."))?;
-            let result = control
-                .operation(Operation::Terminate {
-                    identifier: id.clone(),
-                })
-                .await?;
-            if result["found"] == false {
-                return Ok(format!("Table \"{id}\" does not exist.\n").into_response());
-            }
-            if result["terminated"] != true {
-                return Err(bad("That table is not an ongoing game."));
-            }
-        }
-        "/getLongTables" => {
-            let value = control.operation(Operation::LongTables).await?;
-            let tables = value["tables"]
-                .as_array()
-                .context("Hub table inspection is unavailable")?;
-            let mut lines = vec!["Long tables:".to_owned()];
-            for table in tables {
-                let created = table["created"]
-                    .as_str()
-                    .context("Table creation date is missing")?;
-                let date =
-                    chrono::DateTime::parse_from_rfc3339(created).map_err(anyhow::Error::from)?;
-                if chrono::Utc::now().signed_duration_since(date).num_minutes() >= 150 {
-                    lines.push(format!(
-                        "{}) Table ID: {}, Name: {}",
-                        lines.len(),
-                        table["id"],
-                        table["name"].as_str().context("Table name is missing")?
-                    ));
-                }
-            }
-            return Ok(format!("{}\n", lines.join("\n")).into_response());
-        }
         "/gracefulRestart" => {
             if !control.accepting.load(Ordering::Acquire) {
                 return Err(Error(

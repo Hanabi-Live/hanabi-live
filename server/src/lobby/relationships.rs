@@ -45,17 +45,9 @@ pub async fn change_friend(pool: &PgPool, id: i32, target: i32, add: bool) -> Re
         )
         .execute(&mut *tx)
         .await?;
-        sqlx::query!("INSERT INTO user_reverse_friends(user_id,friend_id) VALUES($2,$1) ON CONFLICT DO NOTHING", id, target).execute(&mut *tx).await?;
     } else {
         sqlx::query!(
             "DELETE FROM user_friends WHERE user_id=$1 AND friend_id=$2",
-            id,
-            target
-        )
-        .execute(&mut *tx)
-        .await?;
-        sqlx::query!(
-            "DELETE FROM user_reverse_friends WHERE user_id=$2 AND friend_id=$1",
             id,
             target
         )

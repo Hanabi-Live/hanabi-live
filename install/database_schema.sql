@@ -107,15 +107,6 @@ CREATE TABLE user_friends (
     PRIMARY KEY (user_id, friend_id)
 );
 
-DROP TABLE IF EXISTS user_reverse_friends CASCADE;
-CREATE TABLE user_reverse_friends (
-    user_id    INTEGER  NOT NULL,
-    friend_id  INTEGER  NOT NULL,
-    FOREIGN KEY (user_id)   REFERENCES users (id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, friend_id)
-);
-
 DROP TABLE IF EXISTS user_linkages;
 CREATE TABLE user_linkages (
     user_id    INTEGER  NOT NULL,
@@ -423,17 +414,3 @@ CREATE TABLE muted_ips (
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX muted_ips_index_ip ON muted_ips (ip);
-
-/** TODO: Delete this table once the server is rewritten in TypeScript. */
-DROP TABLE IF EXISTS metadata CASCADE;
-CREATE TABLE metadata (
-    id     SERIAL  PRIMARY KEY,
-    name   TEXT    NOT NULL  UNIQUE,
-    value  TEXT    NOT NULL
-);
-
-/**
- * We want at least one entry in the metadata table so that the "TestDatabase()" function works
- * correctly.
- */
-INSERT INTO metadata (name, value) VALUES ('test_key', 'test_value');
