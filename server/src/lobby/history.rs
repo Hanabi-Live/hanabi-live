@@ -20,14 +20,18 @@ static VARIANTS: LazyLock<HashMap<i64, String>> = LazyLock::new(|| {
 });
 
 pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Result<Vec<i32>> {
-    // OFFSET 0 keeps each archive lookup dependent on the participant set. Without this boundary,
-    // a generic plan can scan the entire games archive even for a user with no games.
-    Ok(sqlx::query_scalar!("SELECT g.id FROM
-         (SELECT DISTINCT game_id FROM game_participants WHERE user_id=$1) played
-         CROSS JOIN LATERAL (SELECT id,datetime_finished FROM games WHERE id=played.game_id OFFSET 0) g
-         ORDER BY g.datetime_finished DESC, g.id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
-         id, amount, if amount == 0 { 0 } else { offset })
-         .fetch_all(pool).await?)
+    // A player is in one game at a time, so their game IDs follow the order their games finished.
+    // Paging by ID reads only the requested entries from the (user_id, game_id) index, instead of
+    // loading every game the player has finished to sort them by finish time.
+    Ok(sqlx::query_scalar!(
+        "SELECT game_id FROM game_participants WHERE user_id=$1
+         ORDER BY game_id DESC LIMIT NULLIF($2::bigint,0) OFFSET $3",
+        id,
+        amount,
+        if amount == 0 { 0 } else { offset }
+    )
+    .fetch_all(pool)
+    .await?)
 }
 
 pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result<Vec<Value>> {
