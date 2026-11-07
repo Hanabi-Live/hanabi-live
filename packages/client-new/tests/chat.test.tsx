@@ -200,7 +200,11 @@ it("shows the server notice label in red and bolds player names like the classic
     );
   });
   const log = within(screen.getByRole("log", { name: "lobby messages" }));
-  expect(log.getByText("[Server Notice]").className).toBe("red");
+  const label = log.getByText("[Server Notice]");
+  expect(label.className).toBe("red");
+  expect(label.parentElement?.textContent).toBe(
+    "[Server Notice] See the roadmap.",
+  );
   expect(log.getByText(/See the roadmap\./u)).toBeDefined();
   expect(log.getByText("Bob").tagName).toBe("STRONG");
 });
