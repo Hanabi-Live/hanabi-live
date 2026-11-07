@@ -246,17 +246,17 @@ pub fn is_card_touched(
         if variant.color_clues_touch_nothing {
             return false;
         }
-        if suit.all_clue_colors {
-            return true;
-        }
-        if suit.no_clue_colors {
-            return false;
-        }
         if variant.synesthesia
             && !suit.no_clue_ranks
             && (rank - 1) % variant.clue_colors.len() as i32 == value
         {
             return true;
+        }
+        if suit.all_clue_colors {
+            return true;
+        }
+        if suit.no_clue_colors {
+            return false;
         }
         if variant.special_rank == Some(rank) {
             if variant.special_rank_all_clue_colors {

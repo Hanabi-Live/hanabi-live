@@ -707,3 +707,17 @@ fn sudoku_started_stack_cannot_count_available_ranks_before_its_start() {
     }
     assert_eq!(calculate_max_score(&state), 22);
 }
+
+#[test]
+fn synesthesia_touches_white_but_not_null_by_rank() {
+    for (suit, touched) in [("White", true), ("Null", false)] {
+        let variant = get_variant(&format!("Synesthesia & {suit} (5 Suits)")).unwrap();
+        let green = variant
+            .clue_colors
+            .iter()
+            .position(|c| c == "Green")
+            .unwrap() as i32;
+        assert_eq!(is_card_touched(variant, 0, green, 4, 3), touched);
+        assert!(!is_card_touched(variant, 0, green, 4, 2));
+    }
+}

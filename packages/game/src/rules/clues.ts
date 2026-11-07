@@ -124,21 +124,22 @@ export function isCardTouchedByClueColor(
     return false;
   }
 
+  if (variant.synesthesia && !cardSuit.noClueRanks) {
+    // A card matches if it would match a prism card, in addition to normal color matches. This
+    // applies even to suits that color clues do not touch, such as White.
+    const prismColorIndex = (cardRank - 1) % variant.clueColors.length;
+    const color = variant.clueColors[prismColorIndex];
+    if (color !== undefined && clueColor.name === color.name) {
+      return true;
+    }
+  }
+
   if (cardSuit.allClueColors) {
     return true;
   }
 
   if (cardSuit.noClueColors) {
     return false;
-  }
-
-  if (variant.synesthesia && !cardSuit.noClueRanks) {
-    // A card matches if it would match a prism card, in addition to normal color matches.
-    const prismColorIndex = (cardRank - 1) % variant.clueColors.length;
-    const color = variant.clueColors[prismColorIndex];
-    if (color !== undefined && clueColor.name === color.name) {
-      return true;
-    }
   }
 
   if (cardRank === variant.specialRank) {
