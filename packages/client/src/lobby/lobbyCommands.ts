@@ -229,27 +229,6 @@ lobbyCommands.set(
   },
 );
 
-interface TableProgressData {
-  tableID: number;
-  progress: number;
-}
-lobbyCommands.set("tableProgress", (data: TableProgressData) => {
-  const table = globals.tableMap.get(data.tableID);
-  if (table === undefined) {
-    return;
-  }
-
-  const newTable = {
-    ...table,
-    progress: data.progress,
-  };
-  globals.tableMap.set(data.tableID, newTable);
-
-  if (globals.currentScreen === Screen.Lobby) {
-    $(`#status-${data.tableID}`).html(data.progress.toString());
-  }
-});
-
 interface TableStartData {
   tableID: number;
   replay: boolean;
