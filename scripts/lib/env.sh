@@ -1,7 +1,9 @@
 # Source this file to load the repository's ".env" file. It sets "REPO_ROOT" and applies the
 # server's database defaults (see ".env.example").
 
-REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." &> /dev/null && pwd)
+# This file is sourced, so it must not overwrite the caller's "DIR".
+LIB_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+REPO_ROOT=$(cd -- "$LIB_DIR/../.." &> /dev/null && pwd)
 
 ENV_PATH="$REPO_ROOT/.env"
 if [[ ! -f $ENV_PATH ]]; then
