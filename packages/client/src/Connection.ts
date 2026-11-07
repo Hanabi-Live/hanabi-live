@@ -1,4 +1,9 @@
-import { packWSMessageOnClient, unpackWSMessage } from "@hanabi-live/data";
+import type { ServerCommand } from "@hanabi-live/data";
+import {
+  packWSMessageOnClient,
+  SERVER_COMMAND_SCHEMAS,
+  unpackWSMessage,
+} from "@hanabi-live/data";
 
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
@@ -7,6 +12,10 @@ type WebSocketCallbacks = WebSocketCallbackCommands & {
   close?: (event: Event) => void;
   socketError?: (event: Event) => void;
 };
+
+const serverSchemas: Readonly<
+  Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
+> = SERVER_COMMAND_SCHEMAS;
 
 /**
  * Manages a WebSocket connection to the server.
@@ -20,6 +29,8 @@ export class Connection {
   ws: WebSocket;
   callbacks: WebSocketCallbacks = {};
   debug: boolean;
+  /** Called instead of the command's callback when a message does not match its schema. */
+  invalidMessage?: (command: string, error: Error) => void;
   private readonly allowApplicationCommands: boolean;
   private ready = true;
 
@@ -74,12 +85,29 @@ export class Connection {
       return;
     }
 
-    if (this.debug) {
-      console.log(`%cReceived ${command}:`, "color: blue;");
-      console.log(data);
+    // Handlers receive the validated payload, with the schema's defaults applied, rather than
+    // whatever the server sent.
+    const schema = serverSchemas[command];
+    const result = schema?.safeParse(data);
+    if (result?.success !== true) {
+      const error = new TypeError(
+        result === undefined
+          ? `The server sent "${command}", which has no schema.`
+          : `The server sent an invalid "${command}" message: ${result.error.message}`,
+      );
+      console.error(error.message);
+      this.invalidMessage?.(command, error);
+      return;
     }
 
-    callback(data);
+    if (this.debug) {
+      console.log(`%cReceived ${command}:`, "color: blue;");
+      console.log(result.data);
+    }
+
+    // Read-only schemas freeze what they parse, but the classic client updates some payloads (such
+    // as the welcome settings) in place, so it gets its own copy.
+    callback(structuredClone(result.data));
   }
 
   onError(event: Event): void {
