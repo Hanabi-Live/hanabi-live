@@ -1,3 +1,4 @@
+use crate::transport::Outgoing;
 use crate::{
     accounts::{escape_html, normalize_chat},
     lobby::{self, Effect},
@@ -574,13 +575,13 @@ impl Bridge {
         if link_copy(&self.pool, chat_id, &id).await? {
             web::publish_external(
                 self.app()?.as_ref(),
-                vec![Effect::Broadcast {
-                    command: "chatDelete".into(),
-                    data: json!(hanabi_protocol::ChatDelete {
+                vec![Effect::Broadcast(Outgoing::new(
+                    hanabi_protocol::server::CHAT_DELETE,
+                    hanabi_protocol::ChatDelete {
                         chat_id: i64::from(chat_id),
-                        room: hanabi_protocol::LobbyRoom::Lobby
-                    }),
-                }],
+                        room: hanabi_protocol::LobbyRoom::Lobby,
+                    },
+                ))],
             )
             .await?;
         }
@@ -605,7 +606,7 @@ impl Bridge {
                         }
                     }
                 }
-                Effect::Broadcast { .. } => public.push(effect),
+                Effect::Broadcast(_) => public.push(effect),
                 _ => {}
             }
         }
@@ -726,19 +727,19 @@ impl Bridge {
                     self.subscribe(author, &name, subscription == "/subscribe")
                         .await?;
                 } else {
-                    self.publish_effects(vec![Effect::Broadcast {
-                        command: "chat".into(),
-                        data: json!(hanabi_protocol::Chat {
+                    self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+                        hanabi_protocol::server::CHAT,
+                        hanabi_protocol::Chat {
                             chat_id: Some(i64::from(chat_id)),
                             who: Some(name.clone()),
                             room: Some("lobby".into()),
                             ..hanabi_protocol::Chat::new(
                                 rendered,
                                 hanabi_protocol::ChatSource::Discord,
-                                time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true)
+                                time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
                             )
-                        }),
-                    }])
+                        },
+                    ))])
                     .await?;
                     if class == lobby::Classification::Public {
                         self.publish_effects(lobby::external_command(&self.pool, &text).await?)
@@ -757,13 +758,13 @@ impl Bridge {
                 };
                 for id in ids {
                     if let Some(chat_id) = delete_message(&self.pool, id).await? {
-                        self.publish_effects(vec![Effect::Broadcast {
-                            command: "chatDelete".into(),
-                            data: json!(hanabi_protocol::ChatDelete {
+                        self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+                            hanabi_protocol::server::CHAT_DELETE,
+                            hanabi_protocol::ChatDelete {
                                 chat_id: i64::from(chat_id),
-                                room: hanabi_protocol::LobbyRoom::Lobby
-                            }),
-                        }])
+                                room: hanabi_protocol::LobbyRoom::Lobby,
+                            },
+                        ))])
                         .await?;
                     }
                 }
@@ -817,19 +818,19 @@ impl Bridge {
         let notice = format!("@{name} {action} the @Ping Crew.");
         let rendered = self.render(&notice).await;
         if let Some((id, time)) = insert_message(&self.pool, "", &rendered, None).await? {
-            self.publish_effects(vec![Effect::Broadcast {
-                command: "chat".into(),
-                data: json!(hanabi_protocol::Chat {
+            self.publish_effects(vec![Effect::Broadcast(Outgoing::new(
+                hanabi_protocol::server::CHAT,
+                hanabi_protocol::Chat {
                     chat_id: Some(i64::from(id)),
                     who: Some(String::new()),
                     room: Some("lobby".into()),
                     ..hanabi_protocol::Chat::new(
                         rendered,
                         hanabi_protocol::ChatSource::Discord,
-                        time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true)
+                        time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
                     )
-                }),
-            }])
+                },
+            ))])
             .await?;
         }
         self.send(&format!("`@{name}` {action} the `@Ping Crew`."), false)

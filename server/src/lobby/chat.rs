@@ -1,5 +1,6 @@
 use super::{Caller, Effect, OnlineUser, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
+use crate::transport::Outgoing;
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SecondsFormat, Utc};
 use hanabi_protocol::{Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource};
@@ -278,22 +279,18 @@ pub async fn private_message(
     )
     .fetch_one(pool)
     .await?;
-    let data = json!(Chat {
+    let data = Chat {
         who: Some(caller.name.clone()),
         recipient: Some(target.name.clone()),
         pm_id: Some(i64::from(row.id)),
         ..Chat::new(message, ChatSource::User, datetime(row.datetime_sent))
-    });
+    };
     Ok(vec![
-        Effect::ToSelf {
-            command: "chat".into(),
-            data: data.clone(),
-        },
+        Effect::ToSelf(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
         Effect::ToUser {
             id: target.id,
             generation: target.generation,
-            command: "chat".into(),
-            data,
+            message: Outgoing::new(hanabi_protocol::server::CHAT, data),
         },
     ])
 }
@@ -360,15 +357,15 @@ pub async fn private_history(
             datetime: datetime(row.datetime_sent),
         });
     }
-    let response = json!(ChatHistory {
+    let response = ChatHistory {
         list,
         has_more: more,
         room: data.room.clone().filter(|room| !room.is_empty()),
-    });
-    Ok(vec![Effect::ToSelf {
-        command: "chatPMHistory".into(),
-        data: response,
-    }])
+    };
+    Ok(vec![Effect::ToSelf(Outgoing::new(
+        hanabi_protocol::server::CHAT_PM_HISTORY,
+        response,
+    ))])
 }
 
 /// Returns None for table chat and table/replay-owned commands. Never persists
@@ -493,19 +490,19 @@ pub async fn lobby_chat(
         .fetch_one(&mut *tx)
         .await?;
         let chat_id: i32 = row.id;
-        effects.push(Effect::Broadcast {
-            command: "chat".into(),
-            data: json!(Chat {
+        effects.push(Effect::Broadcast(Outgoing::new(
+            hanabi_protocol::server::CHAT,
+            Chat {
                 who: Some(who.into()),
                 room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(
                     content,
                     serde_json::from_value(json!(source))?,
-                    datetime(row.datetime_sent)
+                    datetime(row.datetime_sent),
                 )
-            }),
-        });
+            },
+        )));
         effects.push(Effect::DiscordMirror {
             chat_id,
             server: source == "server",
@@ -587,15 +584,15 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
     .await?;
     let chat_id: i32 = row.id;
     Ok(vec![
-        Effect::Broadcast {
-            command: "chat".into(),
-            data: json!(Chat {
+        Effect::Broadcast(Outgoing::new(
+            hanabi_protocol::server::CHAT,
+            Chat {
                 who: Some("Hanab Live".into()),
                 room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
                 ..Chat::new(message, ChatSource::Server, datetime(row.datetime_sent))
-            }),
-        },
+            },
+        )),
         Effect::DiscordMirror {
             chat_id,
             server: true,

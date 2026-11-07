@@ -16,8 +16,9 @@ pub use relationships::{change_friend, friend_ids, friends};
 pub use settings::{get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
+use crate::transport::Outgoing;
 use anyhow::{Result, ensure};
-use serde_json::{Value, json};
+use serde_json::Value;
 use sqlx::PgPool;
 
 #[derive(Clone, Debug)]
@@ -39,20 +40,13 @@ pub struct OnlineUser {
 
 #[derive(Clone, Debug)]
 pub enum Effect {
-    ToSelf {
-        command: String,
-        data: Value,
-    },
+    ToSelf(Outgoing),
     ToUser {
         id: i32,
         generation: u64,
-        command: String,
-        data: Value,
+        message: Outgoing,
     },
-    Broadcast {
-        command: String,
-        data: Value,
-    },
+    Broadcast(Outgoing),
     Hyphenated(bool),
     Inactive(bool),
     RelationshipChanged {
@@ -75,28 +69,28 @@ pub enum Effect {
 }
 
 fn warning(message: &str) -> Effect {
-    Effect::ToSelf {
-        command: "warning".into(),
-        data: json!(hanabi_protocol::Warning {
+    Effect::ToSelf(Outgoing::new(
+        hanabi_protocol::server::WARNING,
+        hanabi_protocol::Warning {
             warning: message.into(),
-        }),
-    }
+        },
+    ))
 }
 
 pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
-    Effect::ToSelf {
-        command: "chat".into(),
-        data: json!(hanabi_protocol::Chat {
+    Effect::ToSelf(Outgoing::new(
+        hanabi_protocol::server::CHAT,
+        hanabi_protocol::Chat {
             who: Some("Hanab Live".into()),
             room: Some(room.into()),
             recipient: Some(recipient.into()),
             ..hanabi_protocol::Chat::new(
                 message,
                 hanabi_protocol::ChatSource::Server,
-                chat::datetime(chrono::Utc::now())
+                chat::datetime(chrono::Utc::now()),
             )
-        }),
-    }
+        },
+    ))
 }
 
 const COMMANDS: &[&str] = &[
@@ -164,13 +158,13 @@ pub async fn dispatch(
                 hanabi_protocol::decode::<hanabi_protocol::InactiveRequest>(&data)?.inactive;
             vec![
                 Effect::Inactive(inactive),
-                Effect::Broadcast {
-                    command: "userInactive".into(),
-                    data: serde_json::to_value(hanabi_protocol::UserInactive {
+                Effect::Broadcast(Outgoing::new(
+                    hanabi_protocol::server::USER_INACTIVE,
+                    hanabi_protocol::UserInactive {
                         user_id: hanabi_protocol::UserId(caller.id),
                         inactive,
-                    })?,
-                },
+                    },
+                )),
             ]
         }
         "chat" => {
@@ -207,12 +201,10 @@ pub async fn dispatch(
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
             let ids = history_ids(pool, caller.id, offset, amount).await?;
-            vec![Effect::ToSelf {
-                command: "gameHistory".into(),
-                data: json!(hanabi_protocol::GameHistoryList(
-                    get_history(pool, &ids, false).await?
-                )),
-            }]
+            vec![Effect::ToSelf(Outgoing::new(
+                hanabi_protocol::server::GAME_HISTORY,
+                hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),
+            ))]
         }
         "historyGetSeed" => {
             let request = hanabi_protocol::decode::<hanabi_protocol::HistorySeedRequest>(&data)?;
@@ -236,14 +228,14 @@ pub async fn dispatch(
             let variant_name = games
                 .first()
                 .map_or_else(|| "n/a".into(), |game| game.options.variant_name.clone());
-            vec![Effect::ToSelf {
-                command: "gameHistoryOtherScores".into(),
-                data: json!(hanabi_protocol::GameHistoryOtherScores {
+            vec![Effect::ToSelf(Outgoing::new(
+                hanabi_protocol::server::GAME_HISTORY_OTHER_SCORES,
+                hanabi_protocol::GameHistoryOtherScores {
                     games,
                     variant_name,
                     seed: seed.into(),
-                }),
-            }]
+                },
+            ))]
         }
         "tagSearch" => {
             let request = hanabi_protocol::decode::<hanabi_protocol::TagSearchRequest>(&data)?;

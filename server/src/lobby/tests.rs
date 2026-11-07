@@ -1,5 +1,6 @@
 use super::*;
 use crate::accounts::{normalize_username, test_support::TestDb};
+use serde_json::json;
 
 fn caller(id: i32, name: &str) -> Caller {
     Caller {
@@ -15,10 +16,7 @@ fn self_data(effects: &[Effect], command: &str) -> Value {
     effects
         .iter()
         .find_map(|effect| match effect {
-            Effect::ToSelf {
-                command: actual,
-                data,
-            } if actual == command => Some(data.clone()),
+            Effect::ToSelf(message) if message.command() == command => Some(message.data().clone()),
             _ => None,
         })
         .unwrap_or_else(|| panic!("Missing {command} in {effects:?}"))
@@ -363,9 +361,9 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     )
     .await;
     assert!(
-        result
-            .iter()
-            .any(|e| matches!(e,Effect::Broadcast {data,..} if data["msg"]=="&lt;plain&gt;"))
+        result.iter().any(
+            |e| matches!(e,Effect::Broadcast(message) if message.data()["msg"]=="&lt;plain&gt;")
+        )
     );
     let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&db.pool)

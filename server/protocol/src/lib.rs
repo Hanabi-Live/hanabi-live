@@ -1,11 +1,12 @@
 //! Public wire contracts only: no database, actor, engine, or transport dependencies.
 
-use schemars::JsonSchema;
+pub use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod registry;
 pub use registry::{
-    client_contracts, decode, decode_client, decode_server, server_contracts, validate,
+    ServerMessage, client_contracts, decode, decode_client, decode_server, server,
+    server_contracts, validate,
 };
 
 pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;

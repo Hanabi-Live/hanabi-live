@@ -1,4 +1,5 @@
 use super::*;
+use crate::transport::test_frame;
 use axum::http::HeaderValue;
 use tokio_tungstenite::{
     connect_async,
@@ -460,8 +461,14 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
             effects: vec![Effect::ToUser {
                 id: bob_welcome["userID"].as_i64().unwrap() as i32,
                 generation: 2,
-                command: "chat".into(),
-                data: json!({"msg":"must not reroute to replacement"}),
+                message: crate::transport::Outgoing::new(
+                    hanabi_protocol::server::CHAT,
+                    hanabi_protocol::Chat::new(
+                        "must not reroute to replacement",
+                        hanabi_protocol::ChatSource::User,
+                        String::from("2026-11-07T00:00:00Z"),
+                    ),
+                ),
             }],
             reply,
         })
@@ -584,7 +591,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     assert_eq!(prepared.welcome.total_games, None);
     assert_eq!(
         prepared.initial,
-        vec![frame(
+        vec![test_frame(
             "lobbyStatus",
             json!({"state":"loading","totalGames":null})
         )]
@@ -696,7 +703,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .unwrap();
     assert_eq!(own_ids.len(), 100);
     assert_eq!(next_ids.len(), 100);
-    let own = frame(
+    let own = test_frame(
         "gameHistory",
         json!(
             lobby::get_history(&fixture.db.pool, &own_ids, false)
@@ -704,7 +711,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    let next = frame(
+    let next = test_frame(
         "gameHistory",
         json!(
             lobby::get_history(&fixture.db.pool, &next_ids, false)

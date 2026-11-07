@@ -5,7 +5,7 @@ use crate::{
     operations::Operation,
     server_info::ServerInfo,
     store::Store,
-    transport::{Session, frame},
+    transport::{Outgoing, Session, frame, stored_frame},
 };
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
@@ -677,16 +677,15 @@ impl Hub {
         }
         for effect in effects {
             match effect {
-                Effect::Broadcast { command, data } => self.broadcast(&frame(&command, data)),
-                Effect::ToSelf { command, data } => {
+                Effect::Broadcast(message) => self.broadcast(&message.frame()),
+                Effect::ToSelf(message) => {
                     let s = session.context("External effects must be public")?;
-                    s.emit(&frame(&command, data));
+                    s.emit(&message.frame());
                 }
                 Effect::ToUser {
                     id,
                     generation,
-                    command,
-                    data,
+                    message,
                 } => {
                     ensure!(session.is_some(), "External private effect rejected");
                     if let Some(p) = self
@@ -694,21 +693,21 @@ impl Hub {
                         .get(&id)
                         .filter(|p| p.session.generation == generation && p.session.active())
                     {
-                        p.session.emit(&frame(&command, data));
+                        p.session.emit(&message.frame());
                     }
                 }
                 Effect::Hyphenated(value) => {
                     let s = session.context("Missing session")?;
                     s.set_hyphenated(value);
                     if let Some(p) = self.sessions.get(&s.user) {
-                        self.broadcast(&frame("user", Self::user(p)));
+                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
                     }
                 }
                 Effect::Inactive(value) => {
                     let s = session.context("Missing session")?;
                     s.set_inactive(value);
                     if let Some(p) = self.sessions.get(&s.user) {
-                        self.broadcast(&frame("user", Self::user(p)));
+                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
                     }
                 }
                 Effect::RelationshipChanged { .. } => {
@@ -724,7 +723,7 @@ impl Hub {
             if let Some(p) = self.sessions.remove(user) {
                 p.session.cancel.cancel();
                 self.broadcast(&frame(
-                    "userLeft",
+                    hanabi_protocol::server::USER_LEFT,
                     UserLeft {
                         user_id: UserId(*user),
                     },
@@ -743,19 +742,19 @@ impl Hub {
         if let Operation::Drained { reconnect, message } = command {
             let messages = [
                 frame(
-                    "soundLobby",
+                    hanabi_protocol::server::SOUND_LOBBY,
                     SoundLobby {
                         file: "shutdown".into(),
                     },
                 ),
                 if reconnect {
                     frame(
-                        "restart",
-                        message.map_or_else(|| json!({}), |message| json!({"message":message})),
+                        hanabi_protocol::server::RESTART,
+                        hanabi_protocol::Restart { message },
                     )
                 } else {
                     frame(
-                        "error",
+                        hanabi_protocol::server::ERROR,
                         ErrorNotice {
                             error: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
                         },
@@ -865,14 +864,14 @@ impl Hub {
                     );
                     let reconnect =
                         welcome.connection_mode == hanabi_protocol::ConnectionMode::Reconnect;
-                    session.emit(&frame("welcome", welcome));
+                    session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
                     if !reconnect {
                         session.emit(&frame(
-                            "userList",
+                            hanabi_protocol::server::USER_LIST,
                             UserList(self.sessions.values().map(Self::user).collect()),
                         ));
                         session.emit(&frame(
-                            "tableList",
+                            hanabi_protocol::server::TABLE_LIST,
                             hanabi_protocol::TableList(
                                 self.tables
                                     .values()
@@ -886,7 +885,7 @@ impl Hub {
                         session.emit(&message);
                     }
                     if let Some(p) = self.sessions.get(&session.user) {
-                        self.broadcast(&frame("user", Self::user(p)));
+                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
                     }
                     let _ = reply.send(Ok(()));
                 }
@@ -899,7 +898,7 @@ impl Hub {
                     {
                         self.sessions.remove(&s.user);
                         self.broadcast(&frame(
-                            "userLeft",
+                            hanabi_protocol::server::USER_LEFT,
                             UserLeft {
                                 user_id: UserId(s.user),
                             },
@@ -1164,7 +1163,10 @@ impl Hub {
                 } => self.route(session, table, command, reply),
                 HubCommand::Sync { session, reply } => {
                     let result = if self.current(&session) && !self.closing {
-                        session.emit(&frame("synced", json!({})));
+                        session.emit(&frame(
+                            hanabi_protocol::server::SYNCED,
+                            hanabi_protocol::Empty {},
+                        ));
                         Ok(())
                     } else {
                         Err(anyhow::anyhow!("Session unavailable"))
@@ -1184,10 +1186,10 @@ impl Hub {
                     entry.published = true;
                     if hidden {
                         self.broadcast(&frame(
-                            "tableGone",
-                            json!(TableRequest {
-                                table_id: TableId(effects.table)
-                            }),
+                            hanabi_protocol::server::TABLE_GONE,
+                            TableRequest {
+                                table_id: TableId(effects.table),
+                            },
                         ));
                     }
                     for (session, status, table) in effects.statuses {
@@ -1197,7 +1199,10 @@ impl Hub {
                                 p.table = table;
                             }
                             if let Some(p) = self.sessions.get(&session.user) {
-                                self.broadcast(&frame("user", Self::user(p)));
+                                self.broadcast(&frame(
+                                    hanabi_protocol::server::USER,
+                                    Self::user(p),
+                                ));
                             }
                         }
                     }
@@ -1210,7 +1215,7 @@ impl Hub {
                         let [other, joined] = [false, true].map(|joined| {
                             let mut data = entry.view.data.clone();
                             data.joined = joined;
-                            frame("table", data)
+                            frame(hanabi_protocol::server::TABLE, data)
                         });
                         for p in self.sessions.values() {
                             p.session
@@ -1230,10 +1235,10 @@ impl Hub {
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
                         self.broadcast(&frame(
-                            "tableGone",
-                            json!(TableRequest {
-                                table_id: TableId(id)
-                            }),
+                            hanabi_protocol::server::TABLE_GONE,
+                            TableRequest {
+                                table_id: TableId(id),
+                            },
                         ));
                     }
                 }
@@ -1917,7 +1922,7 @@ impl TableActor {
     fn spectator_messages(&self, e: &mut Effects) {
         self.add_all(
             e,
-            "spectators",
+            hanabi_protocol::server::SPECTATORS,
             hanabi_protocol::Spectators {
                 table_id: TableId(self.table.id),
                 spectators: self.spectators(),
@@ -1956,15 +1961,34 @@ impl TableActor {
     fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())
     }
-    fn add_all(&self, e: &mut Effects, command: &str, data: impl Serialize) {
-        let message = frame(command, data);
+    fn add_all<T: Serialize>(
+        &self,
+        e: &mut Effects,
+        message: hanabi_protocol::ServerMessage<T>,
+        data: T,
+    ) {
+        let message = frame(message, data);
         for a in self.audience() {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
+    fn add_outgoing(&self, e: &mut Effects, message: &Outgoing) {
+        let message = message.frame();
+        for a in self.audience() {
+            e.messages.push((a.session.clone(), message.clone()));
+        }
+    }
+    /// Sends table chat, which the checkpoint stores as JSON, to everyone at the table.
+    fn add_chat(&self, e: &mut Effects, chat: &Value) -> Result<()> {
+        let message = stored_frame(hanabi_protocol::server::CHAT, chat)?;
+        for a in self.audience() {
+            e.messages.push((a.session.clone(), message.clone()));
+        }
+        Ok(())
+    }
     fn typing_messages(&self, e: &mut Effects, author: i32, name: &str, typing: bool) {
         let message = frame(
-            "chatTyping",
+            hanabi_protocol::server::CHAT_TYPING,
             ChatTyping {
                 table_id: TableId(self.table.id),
                 name: name.into(),
@@ -2020,21 +2044,25 @@ impl TableActor {
                 password_protected: self.table.password_hash.is_some(),
                 max_players: small(self.table.max_players),
             };
-            e.messages.push((a.session.clone(), frame("game", pregame)));
+            e.messages.push((
+                a.session.clone(),
+                frame(hanabi_protocol::server::GAME, pregame),
+            ));
         }
     }
-    fn chat_history(&self, e: &mut Effects, session: &Arc<Session>) {
+    fn chat_history(&self, e: &mut Effects, session: &Arc<Session>) -> Result<()> {
         let read = self.chat_read.get(&session.user).copied().unwrap_or(0);
         e.messages.push((
             session.clone(),
-            frame(
-                "chatList",
-                json!({
+            stored_frame(
+                hanabi_protocol::server::CHAT_LIST,
+                &json!({
                     "list":self.table.chat.iter().map(|chat| &chat.message).collect::<Vec<_>>(),
                     "unread":self.table.chat.len().saturating_sub(read)
                 }),
-            ),
+            )?,
         ));
+        Ok(())
     }
     fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
@@ -2189,13 +2217,13 @@ impl TableActor {
             e.messages.push((
                 s.clone(),
                 frame(
-                    "joined",
-                    json!(TableRequest {
-                        table_id: TableId(self.table.id)
-                    }),
+                    hanabi_protocol::server::JOINED,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
                 ),
             ));
-            self.chat_history(&mut e, &s);
+            self.chat_history(&mut e, &s)?;
         } else {
             e.statuses.push((
                 s.clone(),
@@ -2205,17 +2233,19 @@ impl TableActor {
             e.messages.push((
                 s.clone(),
                 frame(
-                    "tableStart",
-                    json!(TableStarted {
+                    hanabi_protocol::server::TABLE_START,
+                    TableStarted {
                         table_id: TableId(self.table.id),
-                        replay: true
-                    }),
+                        replay: true,
+                    },
                 ),
             ));
         }
         for warning in warnings {
-            e.messages
-                .push((s.clone(), frame("warning", Warning { warning })));
+            e.messages.push((
+                s.clone(),
+                frame(hanabi_protocol::server::WARNING, Warning { warning }),
+            ));
         }
         self.publish(e).await
     }
@@ -2418,7 +2448,7 @@ impl TableActor {
         });
         self.persist(next).await?;
         let mut effects = self.effects();
-        self.add_all(&mut effects, "chat", message);
+        self.add_chat(&mut effects, &message)?;
         if let Some(variant) = selected
             && matches!(self.table.phase, Phase::Pregame { .. })
             && self.table.players().len() == query.participants.len()
@@ -2439,9 +2469,10 @@ impl TableActor {
                 &options_suggestion(&options, &self.table.name, self.table.max_players)?,
             );
             proposal["recipient"] = json!(owner.session.name);
-            effects
-                .messages
-                .push((owner.session.clone(), frame("chat", proposal)));
+            effects.messages.push((
+                owner.session.clone(),
+                stored_frame(hanabi_protocol::server::CHAT, &proposal)?,
+            ));
         }
         self.publish(effects).await
     }
@@ -2484,7 +2515,7 @@ impl TableActor {
             for (id, name) in expired {
                 self.typing_messages(&mut e, id, &name, false);
             }
-            self.add_all(&mut e, "connected", self.connected());
+            self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             self.spectator_messages(&mut e);
             self.publish(e).await?;
         }
@@ -2534,7 +2565,7 @@ impl TableActor {
         self.pregame_messages(&mut effects);
         self.spectator_messages(&mut effects);
         for message in notices {
-            self.add_all(&mut effects, "chat", message);
+            self.add_chat(&mut effects, &message)?;
         }
         self.publish(effects).await
     }
@@ -2666,9 +2697,9 @@ impl TableActor {
                     a.loaded = true;
                 }
                 let mut e = self.effects();
-                self.add_all(&mut e, "connected", self.connected());
+                self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
                 if matches!(self.table.phase, Phase::Live { .. }) {
-                    self.add_all(&mut e, "clock", self.clock());
+                    self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
                 }
                 self.publish(e).await
             }
@@ -2919,15 +2950,17 @@ impl TableActor {
             });
             self.persist(next).await?;
             let mut e = self.effects();
-            self.add_all(&mut e, "chat", message);
+            self.add_chat(&mut e, &message)?;
             if let Some(owner) = self.attendees.get(&self.table.owner) {
                 let mut suggestion = server_chat(
                     self.table.id,
                     &options_suggestion(&options, &name, max_players)?,
                 );
                 suggestion["recipient"] = json!(owner.session.name);
-                e.messages
-                    .push((owner.session.clone(), frame("chat", suggestion)));
+                e.messages.push((
+                    owner.session.clone(),
+                    stored_frame(hanabi_protocol::server::CHAT, &suggestion)?,
+                ));
             }
             return self.publish(e).await;
         }
@@ -2990,7 +3023,7 @@ impl TableActor {
                 e.messages.push((
                     a.session,
                     frame(
-                        "boot",
+                        hanabi_protocol::server::BOOT,
                         TableRequest {
                             table_id: TableId(self.table.id),
                         },
@@ -2999,7 +3032,7 @@ impl TableActor {
             }
         }
         self.pregame_messages(&mut e);
-        self.add_all(&mut e, "chat", message);
+        self.add_chat(&mut e, &message)?;
         self.publish(e).await
     }
     async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
@@ -3051,8 +3084,10 @@ impl TableActor {
         let mut e = self.effects();
         if let Some(message) = message {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
-                e.messages
-                    .push((attendee.session.clone(), frame("chat", message.clone())));
+                e.messages.push((
+                    attendee.session.clone(),
+                    stored_frame(hanabi_protocol::server::CHAT, &message)?,
+                ));
             }
         }
         self.publish(e).await
@@ -3131,22 +3166,22 @@ impl TableActor {
             e.messages.push((
                 session.clone(),
                 frame(
-                    "joined",
-                    json!(TableRequest {
-                        table_id: TableId(self.table.id)
-                    }),
+                    hanabi_protocol::server::JOINED,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
                 ),
             ));
-            self.chat_history(&mut e, &session);
+            self.chat_history(&mut e, &session)?;
         } else {
             e.messages.push((
                 session,
                 frame(
-                    "tableStart",
-                    json!(TableStarted {
+                    hanabi_protocol::server::TABLE_START,
+                    TableStarted {
                         table_id: TableId(self.table.id),
-                        replay
-                    }),
+                        replay,
+                    },
                 ),
             ));
         }
@@ -3180,17 +3215,17 @@ impl TableActor {
         e.messages.push((
             session,
             frame(
-                "left",
-                json!(TableRequest {
-                    table_id: TableId(self.table.id)
-                }),
+                hanabi_protocol::server::LEFT,
+                TableRequest {
+                    table_id: TableId(self.table.id),
+                },
             ),
         ));
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
         }
         for message in notices {
-            self.add_all(&mut e, "chat", message);
+            self.add_chat(&mut e, &message)?;
         }
         self.spectator_messages(&mut e);
         self.publish(e).await?;
@@ -3356,11 +3391,11 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    "tableStart",
-                    json!(TableStarted {
+                    hanabi_protocol::server::TABLE_START,
+                    TableStarted {
                         table_id: TableId(self.table.id),
-                        replay
-                    }),
+                        replay,
+                    },
                 ),
             ));
         }
@@ -3431,12 +3466,15 @@ impl TableActor {
             )? {
                 e.messages.push((
                     a.session.clone(),
-                    frame("gameAction", game_action(self.table.id, &event)),
+                    frame(
+                        hanabi_protocol::server::GAME_ACTION,
+                        game_action(self.table.id, &event),
+                    ),
                 ));
             }
         }
         if replay {
-            self.add_all(&mut e, "connected", self.connected());
+            self.add_all(&mut e, hanabi_protocol::server::CONNECTED, self.connected());
             self.spectator_messages(&mut e);
             let count = if s.game_id > 0 {
                 self.store.seed_count(&s.seed).await?
@@ -3453,7 +3491,7 @@ impl TableActor {
                     e.messages.push((
                         a.session.clone(),
                         frame(
-                            "gameHistory",
+                            hanabi_protocol::server::GAME_HISTORY,
                             hanabi_protocol::GameHistoryList(vec![s.history(count, true)]),
                         ),
                     ));
@@ -3461,7 +3499,7 @@ impl TableActor {
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        "finishOngoingGame",
+                        hanabi_protocol::server::FINISH_ONGOING_GAME,
                         hanabi_protocol::FinishOngoingGame {
                             table_id: TableId(self.table.id),
                             database_id: i64::from(s.game_id),
@@ -3471,12 +3509,15 @@ impl TableActor {
                 ));
                 e.messages.push((
                     a.session.clone(),
-                    frame("cardIdentities", self.card_identities(s)),
+                    frame(
+                        hanabi_protocol::server::CARD_IDENTITIES,
+                        self.card_identities(s),
+                    ),
                 ));
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        "noteList",
+                        hanabi_protocol::server::NOTE_LIST,
                         hanabi_protocol::NoteList {
                             table_id: TableId(self.table.id),
                             notes: self.observer_notes(a),
@@ -3484,13 +3525,13 @@ impl TableActor {
                     ),
                 ));
             }
-            self.add_all(&mut e, "clock", self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
         } else {
-            self.add_all(&mut e, "clock", self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
             if s.game.paused {
                 self.add_all(
                     &mut e,
-                    "pause",
+                    hanabi_protocol::server::PAUSE,
                     hanabi_protocol::Pause {
                         table_id: TableId(self.table.id),
                         active: true,
@@ -3560,7 +3601,7 @@ impl TableActor {
             e.messages.push((
                 session,
                 frame(
-                    "voteChange",
+                    hanabi_protocol::server::VOTE_CHANGE,
                     hanabi_protocol::VoteChange {
                         vote: self.table.game().expect("game").votes[seat],
                     },
@@ -3609,14 +3650,14 @@ impl TableActor {
         if setting == "pause" || setting == "unpause" {
             self.add_all(
                 &mut e,
-                "pause",
+                hanabi_protocol::server::PAUSE,
                 hanabi_protocol::Pause {
                     table_id: TableId(self.table.id),
                     active: s.game.paused,
                     player_index: i64::from(s.pause_player_index),
                 },
             );
-            self.add_all(&mut e, "clock", self.clock());
+            self.add_all(&mut e, hanabi_protocol::server::CLOCK, self.clock());
         }
         self.publish(e).await
     }
@@ -3667,7 +3708,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    "note",
+                    hanabi_protocol::server::NOTE,
                     hanabi_protocol::Note {
                         table_id: TableId(self.table.id),
                         order: i64::try_from(order)?,
@@ -3840,9 +3881,12 @@ impl TableActor {
         self.persist(next).await?;
         let mut e = self.effects();
         if replay {
-            self.add_all(&mut e, "chat", message);
+            self.add_chat(&mut e, &message)?;
         } else {
-            e.messages.push((session, frame("chat", message)));
+            e.messages.push((
+                session,
+                stored_frame(hanabi_protocol::server::CHAT, &message)?,
+            ));
         }
         self.publish(e).await
     }
@@ -3901,10 +3945,10 @@ impl TableActor {
         });
         self.persist(next).await?;
         let mut e = self.effects();
-        self.add_all(&mut e, "chat", message);
+        self.add_chat(&mut e, &message)?;
         self.add_all(
             &mut e,
-            "replayLeader",
+            hanabi_protocol::server::REPLAY_LEADER,
             hanabi_protocol::ReplayLeader {
                 table_id: TableId(self.table.id),
                 name: target.1.clone(),
@@ -3931,7 +3975,7 @@ impl TableActor {
         e.messages.push((
             leader.session.clone(),
             frame(
-                "suggestion",
+                hanabi_protocol::server::SUGGESTION,
                 hanabi_protocol::Suggestion {
                     table_id: TableId(self.table.id),
                     user_name: session.name.clone(),
@@ -3955,51 +3999,51 @@ impl TableActor {
             bail!("Not a replay");
         };
         let kind = r.kind;
-        let (command, payload) = match kind {
+        let message = match kind {
             0 => {
                 replay.segment = r.segment;
-                (
-                    "replaySegment",
-                    json!(hanabi_protocol::ReplaySegment {
+                Outgoing::new(
+                    hanabi_protocol::server::REPLAY_SEGMENT,
+                    hanabi_protocol::ReplaySegment {
                         table_id: TableId(self.table.id),
                         segment: i64::from(r.segment),
-                    }),
+                    },
                 )
             }
-            1 => (
-                "replayIndicator",
-                json!(hanabi_protocol::ReplayIndicator {
+            1 => Outgoing::new(
+                hanabi_protocol::server::REPLAY_INDICATOR,
+                hanabi_protocol::ReplayIndicator {
                     table_id: TableId(self.table.id),
                     order: r.order,
-                }),
+                },
             ),
-            2 => (
-                "replaySound",
-                json!(hanabi_protocol::ReplaySound {
+            2 => Outgoing::new(
+                hanabi_protocol::server::REPLAY_SOUND,
+                hanabi_protocol::ReplaySound {
                     table_id: TableId(self.table.id),
                     sound: r.sound.clone(),
-                }),
+                },
             ),
             3 => {
                 ensure!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
-                (
-                    "hypoStart",
-                    json!(TableRequest {
-                        table_id: TableId(self.table.id)
-                    }),
+                Outgoing::new(
+                    hanabi_protocol::server::HYPO_START,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
                 )
             }
             4 => {
                 ensure!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
-                (
-                    "hypoEnd",
-                    json!(TableRequest {
-                        table_id: TableId(self.table.id)
-                    }),
+                Outgoing::new(
+                    hanabi_protocol::server::HYPO_END,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
                 )
             }
             5 => {
@@ -4019,7 +4063,10 @@ impl TableActor {
                     "Too many hypothetical actions"
                 );
                 replay.hypothetical_actions.push(raw.into());
-                ("hypoAction", json!(hanabi_protocol::HypoAction(raw.into())))
+                Outgoing::new(
+                    hanabi_protocol::server::HYPO_ACTION,
+                    hanabi_protocol::HypoAction(raw.into()),
+                )
             }
             6 => {
                 replay.hypothetical_actions.pop();
@@ -4028,31 +4075,31 @@ impl TableActor {
                 }) {
                     replay.hypothetical_actions.pop();
                 }
-                (
-                    "hypoBack",
-                    json!(TableRequest {
-                        table_id: TableId(self.table.id)
-                    }),
+                Outgoing::new(
+                    hanabi_protocol::server::HYPO_BACK,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
                 )
             }
             7 => {
                 replay.show_drawn_cards = !replay.show_drawn_cards;
-                (
-                    "hypoShowDrawnCards",
-                    json!(hanabi_protocol::HypoShowDrawnCards {
+                Outgoing::new(
+                    hanabi_protocol::server::HYPO_SHOW_DRAWN_CARDS,
+                    hanabi_protocol::HypoShowDrawnCards {
                         table_id: TableId(self.table.id),
                         show_drawn_cards: replay.show_drawn_cards,
-                    }),
+                    },
                 )
             }
             8 => {
                 replay.efficiency_modifier = r.value;
-                (
-                    "replayEfficiencyMod",
-                    json!(hanabi_protocol::ReplayEfficiencyMod {
+                Outgoing::new(
+                    hanabi_protocol::server::REPLAY_EFFICIENCY_MOD,
+                    hanabi_protocol::ReplayEfficiencyMod {
                         table_id: TableId(self.table.id),
                         r#mod: replay.efficiency_modifier,
-                    }),
+                    },
                 )
             }
             _ => bail!("Invalid replay action"),
@@ -4065,7 +4112,7 @@ impl TableActor {
             self.persist(next).await?;
         }
         let mut e = self.effects();
-        self.add_all(&mut e, command, payload);
+        self.add_outgoing(&mut e, &message);
         self.publish(e).await
     }
     async fn chat_presence(&mut self, session: Arc<Session>, typing: bool) -> Result<()> {
@@ -4093,7 +4140,10 @@ impl TableActor {
                     let mut e = self.effects();
                     let mut message = server_chat(self.table.id, &response);
                     message["recipient"] = json!(session.name);
-                    e.messages.push((session, frame("chat", message)));
+                    e.messages.push((
+                        session,
+                        stored_frame(hanabi_protocol::server::CHAT, &message)?,
+                    ));
                     return self.publish(e).await;
                 }
                 crate::lobby::GeneralResponse::Public(response) => vec![response],
@@ -4122,7 +4172,7 @@ impl TableActor {
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
-                self.add_all(&mut e, "chat", message);
+                self.add_chat(&mut e, &message)?;
             }
             return self.publish(e).await;
         }
@@ -4147,7 +4197,7 @@ impl TableActor {
             .get_mut(&session.user)
             .is_some_and(|a| a.typing_until.take().is_some());
         let mut e = self.effects();
-        self.add_all(&mut e, "chat", message);
+        self.add_chat(&mut e, &message)?;
         if typing {
             self.typing_messages(&mut e, session.user, &session.name, false);
         }
@@ -4203,7 +4253,7 @@ impl TableActor {
             });
             self.persist(next).await?;
             let mut e = self.effects();
-            self.add_all(&mut e, "chat", message);
+            self.add_chat(&mut e, &message)?;
             return self.publish(e).await;
         }
         if command == "tags" || command == "taglist" {
@@ -4248,7 +4298,7 @@ impl TableActor {
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
-                self.add_all(&mut e, "chat", message);
+                self.add_chat(&mut e, &message)?;
             }
             return self.publish(e).await;
         }
@@ -4346,7 +4396,10 @@ impl TableActor {
                             },
                         );
                         message["recipient"] = json!(a.session.name);
-                        e.messages.push((a.session.clone(), frame("chat", message)));
+                        e.messages.push((
+                            a.session.clone(),
+                            stored_frame(hanabi_protocol::server::CHAT, &message)?,
+                        ));
                     }
                 }
                 return self.publish(e).await;
@@ -4371,12 +4424,19 @@ impl TableActor {
             && let Some(a) = self.attendees.remove(&user)
         {
             e.statuses.push((a.session.clone(), 0, None));
-            e.messages
-                .push((a.session, frame("left", json!({"tableID":self.table.id}))));
+            e.messages.push((
+                a.session,
+                frame(
+                    hanabi_protocol::server::LEFT,
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
+                ),
+            ));
         }
         self.pregame_messages(&mut e);
-        self.add_all(&mut e, "chat", authored);
-        self.add_all(&mut e, "chat", notice);
+        self.add_chat(&mut e, &authored)?;
+        self.add_chat(&mut e, &notice)?;
         self.publish(e).await
     }
     async fn allocation(&self) -> Result<Allocation> {
@@ -4443,7 +4503,7 @@ impl TableActor {
             effects.messages.push((
                 session.clone(),
                 frame(
-                    "boot",
+                    hanabi_protocol::server::BOOT,
                     TableRequest {
                         table_id: TableId(self.table.id),
                     },
@@ -4732,7 +4792,8 @@ impl TableActor {
                 pause_player_index: s.pause_player_index.into(),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
             };
-            e.messages.push((session.clone(), frame("init", init)));
+            e.messages
+                .push((session.clone(), frame(hanabi_protocol::server::INIT, init)));
         } else {
             let recipient = if replay {
                 Recipient::Spectator {
@@ -4750,19 +4811,25 @@ impl TableActor {
             let list = hanabi_engine::events_for_recipient(&s.game.0, recipient, None)?;
             e.messages.push((
                 session.clone(),
-                frame("gameActionList", game_action_list(self.table.id, &list)),
+                frame(
+                    hanabi_protocol::server::GAME_ACTION_LIST,
+                    game_action_list(self.table.id, &list),
+                ),
             ));
             if replay {
                 e.messages.push((
                     session.clone(),
-                    frame("cardIdentities", self.card_identities(s)),
+                    frame(
+                        hanabi_protocol::server::CARD_IDENTITIES,
+                        self.card_identities(s),
+                    ),
                 ));
             }
             if replay || a.spectator {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        "noteList",
+                        hanabi_protocol::server::NOTE_LIST,
                         hanabi_protocol::NoteList {
                             table_id: TableId(self.table.id),
                             notes: self.observer_notes(a),
@@ -4773,7 +4840,7 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        "noteListPlayer",
+                        hanabi_protocol::server::NOTE_LIST_PLAYER,
                         hanabi_protocol::NoteListPlayer {
                             table_id: TableId(self.table.id),
                             notes: s.notes[seat].clone(),
@@ -4783,24 +4850,28 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        "voteChange",
+                        hanabi_protocol::server::VOTE_CHANGE,
                         hanabi_protocol::VoteChange {
                             vote: s.votes[seat],
                         },
                     ),
                 ));
             }
-            e.messages
-                .push((session.clone(), frame("connected", self.connected())));
+            e.messages.push((
+                session.clone(),
+                frame(hanabi_protocol::server::CONNECTED, self.connected()),
+            ));
             if !replay {
-                e.messages
-                    .push((session.clone(), frame("clock", self.clock())));
+                e.messages.push((
+                    session.clone(),
+                    frame(hanabi_protocol::server::CLOCK, self.clock()),
+                ));
             }
-            self.chat_history(&mut e, &session);
+            self.chat_history(&mut e, &session)?;
             e.messages.push((
                 session.clone(),
                 frame(
-                    "spectators",
+                    hanabi_protocol::server::SPECTATORS,
                     hanabi_protocol::Spectators {
                         table_id: TableId(self.table.id),
                         spectators: self.spectators(),
@@ -4814,7 +4885,7 @@ impl TableActor {
                 e.messages.push((
                     session.clone(),
                     frame(
-                        "chatTyping",
+                        hanabi_protocol::server::CHAT_TYPING,
                         ChatTyping {
                             table_id: TableId(self.table.id),
                             name: a.session.name.clone(),
@@ -4829,7 +4900,7 @@ impl TableActor {
                 e.messages.push((
                     session,
                     frame(
-                        "hypothetical",
+                        hanabi_protocol::server::HYPOTHETICAL,
                         hanabi_protocol::Hypothetical {
                             show_drawn_cards: replay.show_drawn_cards,
                             actions: replay.hypothetical_actions.clone(),
@@ -4932,7 +5003,7 @@ impl TableActor {
             e.messages.push((
                 a.session.clone(),
                 frame(
-                    "boot",
+                    hanabi_protocol::server::BOOT,
                     TableRequest {
                         table_id: TableId(self.table.id),
                     },
