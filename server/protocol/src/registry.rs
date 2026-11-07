@@ -10,7 +10,7 @@ macro_rules! client_contracts {
             "lobbyLoad" => Empty, Empty;
             "sync" => Empty, Empty;
             "chat" => ChatRequest, ChatRequest;
-            "chatPM" => ChatPmRequest, LegacyChatPmRequest;
+            "chatPM" => ChatPmRequest, ChatPmRequest;
             "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
             "chatFriend" => ChatUserRequest, ChatUserRequest;
             "chatUnfriend" => ChatUserRequest, ChatUserRequest;

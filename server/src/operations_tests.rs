@@ -42,12 +42,9 @@ impl Harness {
             while let Some(command) = commands.recv().await {
                 if let HubCommand::Operations { command, reply } = command {
                     let result = match &command {
-                        Operation::Inspect | Operation::LongTables => {
+                        Operation::Inspect => {
                             json!({"activeGames":count.load(Ordering::Acquire),"users":[],"tables":[
                             {"id":7,"name":"Old table","created":"2020-01-01T00:00:00Z","running":true,"replay":false,"frozen":false}]})
-                        }
-                        Operation::Terminate { identifier } => {
-                            json!({"found":identifier=="7","terminated":identifier=="7"})
                         }
                         _ => json!({}),
                     };
@@ -158,13 +155,14 @@ async fn loopback_routes_admission() {
         .unwrap();
     let h = Harness::new(pool);
     let app = router(h.control.clone());
-    for (path, text) in [
-        ("/version", "test-commit"),
-        ("/getLongTables", "Table ID: 7"),
-    ] {
-        let (status, body) = request(app.clone(), path, None).await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert!(body.contains(text), "{body}");
+    let (status, body) = request(app.clone(), "/version", None).await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert!(body.contains("test-commit"), "{body}");
+    for removed in ["/getLongTables", "/terminate?tableID=7"] {
+        assert_eq!(
+            request(app.clone(), removed, None).await.0,
+            StatusCode::NOT_FOUND
+        );
     }
     let mut browser = Request::builder()
         .uri("/gracefulStop")
@@ -188,20 +186,6 @@ async fn loopback_routes_admission() {
     assert_eq!(
         app.clone().oneshot(remote).await.unwrap().status(),
         StatusCode::FORBIDDEN
-    );
-    assert_eq!(
-        request(app.clone(), "/terminate?tableID=7", None).await.0,
-        StatusCode::OK
-    );
-    assert!(
-        request(app.clone(), "/terminate", Some("tableID=unknown"))
-            .await
-            .1
-            .contains("does not exist")
-    );
-    assert_eq!(
-        request(app.clone(), "/terminate", None).await.0,
-        StatusCode::BAD_REQUEST
     );
     h.control.begin_drain().await;
     assert_eq!(
@@ -280,7 +264,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     };
     let result:anyhow::Result<()>=async{
     #[allow(clippy::disallowed_methods)]
-    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(9);")
+    sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(10);")
         .execute(&db.pool).await?;
     let redis = crate::test_redis::RedisFixture::start(true).await?;
     let options = db.pool.connect_options();

@@ -181,7 +181,7 @@ pub async fn dispatch(
         }
 
         "chatPM" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::LegacyChatPmRequest>(&data)?;
+            let request = hanabi_protocol::decode::<hanabi_protocol::ChatPmRequest>(&data)?;
             chat::private_message(pool, caller, online, &request.msg, &request.recipient).await?
         }
         "chatPMHistoryGet" => {

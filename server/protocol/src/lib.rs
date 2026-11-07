@@ -72,19 +72,6 @@ pub struct ChatPmRequest {
     pub recipient: String,
 }
 
-/// Classic clients attach their current room. It never determines the recipient.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct LegacyChatPmRequest {
-    #[schemars(length(min = 1))]
-    pub msg: String,
-    #[schemars(length(min = 1))]
-    pub recipient: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub room: Option<String>,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
@@ -432,7 +419,6 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     register!(
         ChatRequest,
         ChatPmRequest,
-        LegacyChatPmRequest,
         ChatHistoryRequest,
         ChatUserRequest,
         ChatLinkedRequest,

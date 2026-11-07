@@ -130,18 +130,10 @@
     "valid": true
   },
   {
-    "name": "classic private message room is native-only metadata",
+    "name": "private messages reject a room",
     "direction": "client",
     "command": "chatPM",
     "input": { "msg": "hello", "recipient": "Alice", "room": "table12" },
-    "valid": false,
-    "nativeValid": true
-  },
-  {
-    "name": "classic room cannot be null",
-    "direction": "client",
-    "command": "chatPM",
-    "input": { "msg": "hello", "recipient": "Alice", "room": null },
     "valid": false
   },
   {

@@ -383,25 +383,21 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
             break;
         }
     }
-    for room in [None, Some("lobby"), Some("table999")] {
-        let mut data = json!({"msg":"private <content>","recipient":"Bob"});
-        if let Some(room) = room {
-            data["room"] = json!(room);
-        }
-        alice
-            .send(WireMessage::Text(format!("chatPM {data}").into()))
-            .await
-            .unwrap();
-        let pm = receive(&mut bob, "chat").await;
-        assert_eq!(pm["who"], "Alicè");
-        assert_eq!(pm["recipient"], "Bob");
-        assert_eq!(pm["msg"], "private &lt;content&gt;");
-        assert!(pm["pmID"].as_i64().unwrap() > 0);
-        assert!(pm.get("chatID").is_none());
-        assert!(pm.get("room").is_none());
-        let echo = receive(&mut alice, "chat").await;
-        assert_eq!(echo, pm);
-    }
+    alice
+        .send(WireMessage::Text(
+            r#"chatPM {"msg":"private <content>","recipient":"Bob"}"#.into(),
+        ))
+        .await
+        .unwrap();
+    let pm = receive(&mut bob, "chat").await;
+    assert_eq!(pm["who"], "Alicè");
+    assert_eq!(pm["recipient"], "Bob");
+    assert_eq!(pm["msg"], "private &lt;content&gt;");
+    assert!(pm["pmID"].as_i64().unwrap() > 0);
+    assert!(pm.get("chatID").is_none());
+    assert!(pm.get("room").is_none());
+    let echo = receive(&mut alice, "chat").await;
+    assert_eq!(echo, pm);
     alice
         .send(WireMessage::Text(
             "chat {\"msg\":\"/token\",\"room\":\"lobby\"}".into(),

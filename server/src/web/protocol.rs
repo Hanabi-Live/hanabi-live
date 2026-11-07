@@ -311,18 +311,11 @@ mod tests {
         }
     }
     #[test]
-    fn private_messages_accept_classic_room_metadata_but_reject_invalid_fields() {
-        for room in [None, Some("lobby"), Some("table123")] {
-            let mut data = json!({"msg":"hello","recipient":"Alice"});
-            if let Some(room) = room {
-                data["room"] = json!(room);
-            }
-            assert!(parse(&format!("chatPM {data}")).is_ok());
-        }
+    fn private_messages_take_only_a_message_and_recipient() {
+        assert!(parse(r#"chatPM {"msg":"hello","recipient":"Alice"}"#).is_ok());
         for data in [
-            json!({"msg":"hello","recipient":"Alice","room":123}),
-            json!({"msg":"hello","recipient":"Alice","room":null}),
-            json!({"msg":"hello","recipient":"Alice","room":"lobby","admin":true}),
+            json!({"msg":"hello","recipient":"Alice","room":"lobby"}),
+            json!({"msg":"hello","recipient":"Alice","admin":true}),
         ] {
             assert!(parse(&format!("chatPM {data}")).is_err());
         }
