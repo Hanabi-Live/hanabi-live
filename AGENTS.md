@@ -136,8 +136,7 @@ generation drift. Keep legacy compatibility differences explicit.
 
 You can SSH to the production server with `ssh root@hanab.live`. The server runs
 as the `hanabi` user from `/home/hanabi/hanabi-live`, using the `hanabi-live`
-systemd service. Read its log with `journalctl --unit=hanabi-live`. (You can use
-`./get-log.sh` to download it.)
+systemd service. Read its log with `journalctl --unit=hanabi-live`.
 
 To deploy a new copy of the client code or the server code to production, run
 `./deploy.sh` from your laptop, which uses SSH to connect and run the necessary
