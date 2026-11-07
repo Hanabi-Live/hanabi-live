@@ -4,6 +4,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 /// TypeScript enums that wire integers may name with `x-enum`, and the modules that export them.
 const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[
+    ("EndCondition", "@hanabi-live/game"),
     ("SoundMove", "../enums/SoundMove"),
     ("Status", "../enums/Status"),
 ];
@@ -86,6 +87,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "x-readonly",
                 "x-undefined-default",
                 "x-enum",
+                "x-date",
             ]
             .contains(&key.as_str()),
             "Unsupported schema keyword: {key}"
@@ -224,6 +226,10 @@ fn expression(schema: &Value) -> Result<String> {
             other => bail!("Unsupported schema format: {other}"),
         }
     }
+    if schema.get("x-date").is_some() {
+        ensure!(schema["type"] == "string", "Only strings can hold dates");
+        result.push_str(".refine((value) => Number.isFinite(Date.parse(value)), \"Invalid date\")");
+    }
     if let Some(brand) = schema.get("x-brand") {
         result.push_str(&format!(".brand<{brand}>()"));
     }
@@ -350,7 +356,13 @@ fn main() -> Result<()> {
         .values()
         .chain(server.values())
         .copied()
-        .chain(["TableId", "ChatHistoryMessage", "Settings", "Spectator"])
+        .chain([
+            "TableId",
+            "ChatHistoryMessage",
+            "Settings",
+            "Spectator",
+            "GameHistory",
+        ])
         .collect();
     let mut definitions = BTreeMap::new();
     for (name, schema) in hanabi_protocol::schemas() {

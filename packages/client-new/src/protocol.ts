@@ -1,24 +1,15 @@
-import type { ServerCommandData } from "@hanabi-live/data";
+import type { ServerCommand, ServerCommandData } from "@hanabi-live/data";
 import {
   SERVER_COMMAND_SCHEMAS,
-  ServerCommand,
   gameHistory,
   unpackWSMessage,
 } from "@hanabi-live/data";
-import { options } from "@hanabi-live/game";
-import { z } from "zod";
+import type { z } from "zod";
 
 export const wireHistory = gameHistory.unwrap();
 export type HistoryGame = z.infer<typeof wireHistory>;
-// Pregames report the actual roster size (including zero/one), not a started-game size.
-const lobbyOptions = options
-  .unwrap()
-  .extend({ numPlayers: z.number().int().min(0).max(6) });
 const tableSchema = SERVER_COMMAND_SCHEMAS.table.unwrap();
-const pregameSchema = SERVER_COMMAND_SCHEMAS.game.extend({
-  options: lobbyOptions,
-});
-export type Pregame = z.infer<typeof pregameSchema>;
+export type Pregame = ServerCommandData[ServerCommand.game];
 export type Welcome = ServerCommandData[ServerCommand.welcome];
 export type Table = z.infer<typeof tableSchema>;
 export type User = ServerCommandData[ServerCommand.user];
@@ -42,11 +33,10 @@ export type ServerEvent = {
   [K in keyof WirePayloads]: { command: `${K}`; data: WirePayloads[K] };
 }[keyof WirePayloads];
 
-const otherScores = z.object({
-  games: wireHistory.array(),
-  variantName: z.string(),
-  seed: z.string(),
-});
+// The store keeps history games mutable.
+const otherScores = SERVER_COMMAND_SCHEMAS.gameHistoryOtherScores
+  .unwrap()
+  .extend({ games: wireHistory.array() });
 
 function isServerCommand(command: string): command is ServerCommand {
   return Object.hasOwn(SERVER_COMMAND_SCHEMAS, command);
@@ -64,21 +54,11 @@ export function decodeEvent(text: string): ServerEvent | undefined {
   if (command === "tableList") {
     return { command, data: tableSchema.array().parse(data) };
   }
-  if (command === "game") {
-    return { command, data: pregameSchema.parse(data) };
-  }
   if (command === "gameHistory") {
     return { command, data: wireHistory.array().parse(data) };
   }
   if (command === "gameHistoryOtherScores") {
     return { command, data: otherScores.parse(data) };
-  }
-  // Spectators use the lobby's wire spectator schema rather than the shared one.
-  if (command === "spectators") {
-    return {
-      command: ServerCommand.spectators,
-      data: SERVER_COMMAND_SCHEMAS.spectators.parse(data),
-    };
   }
   if (!isServerCommand(command)) {
     console.warn("Unknown server command", command);

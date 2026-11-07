@@ -1,4 +1,5 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
+import { EndCondition } from "@hanabi-live/game";
 import { z } from "zod";
 import { SoundMove } from "../enums/SoundMove";
 import { Status } from "../enums/Status";
@@ -107,6 +108,66 @@ export const errorNoticeSchema = z
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
+const gameIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"GameID">();
+const gameOptionsSchema = z
+  .strictObject({
+    allOrNothing: z.boolean().default(false),
+    cardCycle: z.boolean().default(false),
+    deckPlays: z.boolean().default(false),
+    detrimentalCharacters: z.boolean().default(false),
+    emptyClues: z.boolean().default(false),
+    maxPlayers: z.literal([2, 3, 4, 5, 6]).optional(),
+    numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
+    oneExtraCard: z.boolean().default(false),
+    oneLessCard: z.boolean().default(false),
+    speedrun: z.boolean().default(false),
+    startingPlayer: z.literal([0, 1, 2, 3, 4, 5]).default(0),
+    tableName: z.string().min(1).optional(),
+    timeBase: z.number().default(0),
+    timePerTurn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991)
+      .default(0),
+    timed: z.boolean().default(false),
+    variantID: z.number().int().min(0).max(4_294_967_295).optional(),
+    variantName: z.string().min(1).default("No Variant"),
+  })
+  .readonly();
+export const gameHistorySchema = z
+  .strictObject({
+    datetimeFinished: z
+      .string()
+      .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
+    datetimeStarted: z
+      .string()
+      .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
+    endCondition: z.enum(EndCondition),
+    id: gameIdSchema,
+    incrementNumGames: z.boolean(),
+    numGamesOnThisSeed: z.number().int().min(0).max(2_147_483_647),
+    numTurns: z.number().int().min(0).max(2_147_483_647),
+    options: gameOptionsSchema,
+    playerNames: z.array(z.string()).readonly(),
+    score: z.number().int().min(0).max(2_147_483_647),
+    seed: z.string(),
+    tags: z.string(),
+  })
+  .readonly();
+export const gameHistoryListSchema = z.array(gameHistorySchema).readonly();
+export const gameHistoryOtherScoresSchema = z
+  .strictObject({
+    games: z.array(gameHistorySchema).readonly(),
+    seed: z.string().min(1),
+    variantName: z.string().min(1),
+  })
+  .readonly();
 export const historyRequestSchema = z.strictObject({
   amount: z
     .number()
@@ -142,6 +203,46 @@ export const noteRequestSchema = z.strictObject({
 });
 export const pauseRequestSchema = z.strictObject({
   setting: z.string(),
+  tableID: tableIdSchema,
+});
+const pregameBestScoreSchema = z.strictObject({
+  allOrNothing: z.boolean(),
+  deckPlays: z.boolean(),
+  emptyClues: z.boolean(),
+  modifier: z.number().int().min(0).max(2_147_483_647),
+  numPlayers: z.number().int().min(2).max(6),
+  oneExtraCard: z.boolean(),
+  oneLessCard: z.boolean(),
+  score: z.number().int().min(0).max(2_147_483_647),
+});
+const pregameVariantStatsSchema = z.strictObject({
+  bestScores: z.array(pregameBestScoreSchema),
+  numGames: z.number().int().min(0).max(9_007_199_254_740_991),
+});
+const pregameStatsSchema = z.strictObject({
+  numGames: z.number().int().min(0).max(9_007_199_254_740_991),
+  variant: pregameVariantStatsSchema,
+});
+const pregamePlayerSchema = z.strictObject({
+  index: z.number().int().min(0).max(5),
+  name: z.string(),
+  present: z.boolean(),
+  stats: pregameStatsSchema,
+  you: z.boolean(),
+});
+const userIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"UserID">();
+export const pregameSchema = z.strictObject({
+  maxPlayers: z.number().int().min(2).max(6),
+  name: z.string(),
+  options: gameOptionsSchema,
+  owner: userIdSchema,
+  passwordProtected: z.boolean(),
+  players: z.array(pregamePlayerSchema),
   tableID: tableIdSchema,
 });
 export const replayActionRequestSchema = z.strictObject({
@@ -231,38 +332,6 @@ export const spectatorsSchema = z
     tableID: tableIdSchema,
   })
   .readonly();
-const gameOptionsSchema = z
-  .strictObject({
-    allOrNothing: z.boolean().default(false),
-    cardCycle: z.boolean().default(false),
-    deckPlays: z.boolean().default(false),
-    detrimentalCharacters: z.boolean().default(false),
-    emptyClues: z.boolean().default(false),
-    maxPlayers: z.literal([2, 3, 4, 5, 6]).optional(),
-    numPlayers: z.literal([2, 3, 4, 5, 6]).default(2),
-    oneExtraCard: z.boolean().default(false),
-    oneLessCard: z.boolean().default(false),
-    speedrun: z.boolean().default(false),
-    startingPlayer: z.literal([0, 1, 2, 3, 4, 5]).default(0),
-    tableName: z.string().min(1).optional(),
-    timeBase: z.number().default(0),
-    timePerTurn: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991)
-      .default(0),
-    timed: z.boolean().default(false),
-    variantID: z.number().int().min(0).max(4_294_967_295).optional(),
-    variantName: z.string().min(1).default("No Variant"),
-  })
-  .readonly();
-const userIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(2_147_483_647)
-  .brand<"UserID">();
 export const tableSchema = z
   .strictObject({
     id: tableIdSchema,
@@ -525,6 +594,9 @@ export const SERVER_WIRE_SCHEMAS = {
   chatTyping: chatTypingSchema,
   error: errorNoticeSchema,
   friends: friendsSchema,
+  game: pregameSchema,
+  gameHistory: gameHistoryListSchema,
+  gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,

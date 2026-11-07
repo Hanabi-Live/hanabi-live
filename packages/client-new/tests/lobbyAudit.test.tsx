@@ -58,7 +58,7 @@ it("preserves an open editor's draft and update target when its table disappears
       maxPlayers: 2,
       passwordProtected: false,
       players: [],
-      options: { ...options.parse({}), numPlayers: 0 },
+      options: options.parse({}),
     })}`,
   );
   if (event?.command !== "game") {
@@ -273,7 +273,6 @@ it("uses saved timer preferences when editing an untimed table rather than its u
       players: [],
       options: {
         ...options.parse({}),
-        numPlayers: 0,
         timed: false,
         timeBase: 999_999,
         timePerTurn: 0,
@@ -328,7 +327,7 @@ it("waits for updated table options before reopening the editor by button or key
       maxPlayers: 4,
       passwordProtected: false,
       players: [],
-      options: { ...options.parse({}), numPlayers: 0 },
+      options: options.parse({}),
     })}`,
   );
   if (event?.command !== "game") {

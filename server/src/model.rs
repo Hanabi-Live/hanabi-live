@@ -3,7 +3,7 @@ use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
@@ -432,15 +432,59 @@ impl Snapshot {
         );
         Ok(())
     }
-    pub fn history(&self, count: i64, increment: bool) -> Value {
+    pub fn history(&self, count: i64, increment: bool) -> hanabi_protocol::GameHistory {
         let mut names = self
             .players
             .iter()
             .map(|p| p.name.clone())
             .collect::<Vec<_>>();
         names.sort_by_key(|s| s.to_lowercase());
-        json!({"id":self.game_id,"options":self.game.options,"seed":self.seed,"score":self.game.score,"numTurns":self.game.turn,
-        "endCondition":self.game.end_condition,"datetimeStarted":self.started,"datetimeFinished":self.finished,
-        "numGamesOnThisSeed":count,"playerNames":names,"incrementNumGames":increment,"tags":self.tags.iter().map(|t|t.tag.as_str()).collect::<Vec<_>>().join(", ")})
+        let time = |time: DateTime<Utc>| time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true);
+        hanabi_protocol::GameHistory {
+            id: hanabi_protocol::GameId(self.game_id),
+            options: wire_options(&self.game.options),
+            seed: self.seed.clone(),
+            score: self.game.score,
+            num_turns: self.game.turn,
+            end_condition: u8::try_from(i32::from(self.game.end_condition)).unwrap_or(0),
+            datetime_started: time(self.started),
+            datetime_finished: time(self.finished.unwrap_or(self.started)),
+            num_games_on_this_seed: count,
+            player_names: names,
+            increment_num_games: increment,
+            tags: self
+                .tags
+                .iter()
+                .map(|t| t.tag.as_str())
+                .collect::<Vec<_>>()
+                .join(", "),
+        }
+    }
+}
+
+/// Table sizes and seats are validated to be at most six, so they fit in a byte.
+pub(crate) fn small(value: usize) -> u8 {
+    u8::try_from(value).unwrap_or(u8::MAX)
+}
+
+pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
+    hanabi_protocol::GameOptions {
+        num_players: small(options.num_players),
+        starting_player: small(options.starting_player),
+        variant_name: options.variant_name.clone(),
+        variant_id: options.variant_id,
+        timed: options.timed,
+        time_base: options.time_base,
+        time_per_turn: options.time_per_turn,
+        speedrun: options.speedrun,
+        card_cycle: options.card_cycle,
+        deck_plays: options.deck_plays,
+        empty_clues: options.empty_clues,
+        one_extra_card: options.one_extra_card,
+        one_less_card: options.one_less_card,
+        all_or_nothing: options.all_or_nothing,
+        detrimental_characters: options.detrimental_characters,
+        table_name: options.table_name.clone(),
+        max_players: options.max_players.map(small),
     }
 }
