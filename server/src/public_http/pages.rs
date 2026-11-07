@@ -330,10 +330,10 @@ async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>)
     count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
     count(*) FILTER(WHERE speedrun) AS \"speed!\",
         COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
-          CASE WHEN $1::integer IS NULL THEN (SELECT count(*) FROM game_participants WHERE game_id=g.id) ELSE 1 END)
+          CASE WHEN $1::integer IS NULL THEN num_players ELSE 1 END)
           FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
         COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
-          CASE WHEN $1::integer IS NULL THEN (SELECT count(*) FROM game_participants WHERE game_id=g.id) ELSE 1 END)
+          CASE WHEN $1::integer IS NULL THEN num_players ELSE 1 END)
           FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
         FROM games g WHERE ($1::integer IS NULL OR EXISTS(SELECT 1 FROM game_participants WHERE game_id=g.id AND user_id=$1))
         AND ($2::bigint IS NULL OR variant_id::bigint=$2)", user, variant).fetch_one(&state.pool).await?;
