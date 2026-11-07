@@ -241,12 +241,18 @@ def prune(backups):
         for work in backups.glob("deploy-*"):
             journal = work / "deployment.json"
             try:
-                if json.loads(journal.read_text()).get("phase") in ("verified", "checked"):
-                    finished.append((journal.stat().st_mtime, work))
+                phase = json.loads(journal.read_text()).get("phase")
+                if phase in ("verified", "checked"):
+                    finished.append((journal.stat().st_mtime, work, phase))
             except (OSError, ValueError):
                 continue
-        for index, (_, work) in enumerate(sorted(finished, reverse=True)):
-            kept = {"deployment.json"} if index >= KEEP_DEPLOYMENTS else {"deployment.json", "previous"}
+        # Checks replace no files, so only deployments count toward the rollback limit.
+        rollbacks = 0
+        for _, work, phase in sorted(finished, reverse=True):
+            kept = {"deployment.json"}
+            if phase == "verified" and rollbacks < KEEP_DEPLOYMENTS:
+                kept.add("previous")
+                rollbacks += 1
             for path in work.iterdir():
                 if path.name in kept:
                     continue
