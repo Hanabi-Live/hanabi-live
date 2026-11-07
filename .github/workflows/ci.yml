@@ -151,7 +151,7 @@ jobs:
           path: .turbo/cache
           key: ${{ steps.test-cache.outputs.cache-primary-key }}
 
-  client-new:
+  browser:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -345,7 +345,7 @@ jobs:
       group: native-release-publication
       cancel-in-progress: false
     timeout-minutes: 5
-    needs: [client-build, server-build, lint, test, client-new, native-release]
+    needs: [client-build, server-build, lint, test, browser, native-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -428,7 +428,7 @@ jobs:
         container-build,
         lint,
         test,
-        client-new,
+        browser,
         native-release,
         publish-native-release,
         deploy-docs-website,
