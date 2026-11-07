@@ -89,17 +89,6 @@ pub struct PendingTag {
     pub operation: String,
     pub tag: String,
 }
-/// State saved before this flag replaced it holds a copy of the game, or null, instead of a
-/// boolean. Remove once no saved state contains that copy.
-fn hypothetical_active<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<bool, D::Error> {
-    Ok(match Value::deserialize(deserializer)? {
-        Value::Bool(active) => active,
-        Value::Null => false,
-        _ => true,
-    })
-}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayState {
@@ -107,7 +96,6 @@ pub struct ReplayState {
     pub segment: i32,
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
-    #[serde(deserialize_with = "hypothetical_active")]
     pub hypothetical: bool,
     pub hypothetical_actions: Vec<String>,
     pub show_drawn_cards: bool,

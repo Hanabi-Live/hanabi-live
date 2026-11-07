@@ -398,26 +398,6 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     Ok(())
 }
 
-#[test]
-fn state_saved_with_a_hypothetical_game_copy_still_loads() -> Result<()> {
-    let table = review(1, EndCondition::TerminatedByPlayer)?;
-    let game = serde_json::to_value(&table.game().context("game")?.game.0)?;
-    for (saved, active) in [(game, true), (Value::Null, false)] {
-        let mut value = serde_json::to_value(&table)?;
-        value["phase"]["replay"]["hypothetical"] = saved;
-        let loaded = TableSnapshot::decode(&value.to_string())?;
-        let Phase::Replay { replay, .. } = &loaded.phase else {
-            bail!("Not a replay");
-        };
-        ensure!(replay.hypothetical == active, "Wrong hypothetical flag");
-        ensure!(
-            serde_json::to_value(&loaded)?["phase"]["replay"]["hypothetical"] == json!(active),
-            "The flag is not saved as a boolean"
-        );
-    }
-    Ok(())
-}
-
 pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> {
     let mut imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
     imported.game.terminate(0, condition, -1, None, None)?;
