@@ -45,7 +45,6 @@
     "yarn.lock": true,
     // @template-customization-start
     "**/*.min.js*": true,
-    "**/card-images/": true,
     "**/packages/game/docs/**/*.html": true,
     // @template-customization-end
   },

@@ -33,6 +33,10 @@ const config = {
         "grunt-criticalcss", // Loaded by "Gruntfile.js".
       ],
     },
+    "packages/game": {
+      // Required by the compiled library because of "importHelpers".
+      ignoreDependencies: ["tslib"],
+    },
     "packages/scripts": {
       // Run from the root "package.json" scripts.
       entry: [
@@ -55,6 +59,7 @@ const config = {
   ignoreDependencies: [
     "complete-cli", // Used in "check-templates.sh".
     "complete-lint", // This is a linting meta-package.
+    "eslint", // Provided by "complete-lint".
     "eslint-config-complete", // Provided by "complete-lint".
     "prettier-plugin-organize-imports", // Provided by "complete-lint".
     "prettier-plugin-packagejson", // Provided by "complete-lint".

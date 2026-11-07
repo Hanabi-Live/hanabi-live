@@ -78,9 +78,9 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/prettier
-          key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'misc/*/tsconfig*.json', 'check-prettier.sh') }}-${{ github.sha }}
+          key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'check-prettier.sh') }}-${{ github.sha }}
           restore-keys: |
-            prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'misc/*/tsconfig*.json', 'check-prettier.sh') }}-
+            prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'check-prettier.sh') }}-
       - name: Run the lint shard
         run: bash lint.sh --shard=${{ matrix.shard }}/2
       - name: Cache successful formatting results
