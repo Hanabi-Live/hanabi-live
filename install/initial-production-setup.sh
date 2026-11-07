@@ -4,7 +4,7 @@ set -o errexit -o nounset -o pipefail
 
 DOMAIN="hanab.live"
 APP_USER="hanabi"
-APP="/home/$APP_USER/hanabi-live"
+APP_DIR="/home/$APP_USER/hanabi-live"
 DB_NAME="hanabi"
 DB_USER="hanabiuser"
 
@@ -15,15 +15,15 @@ function main {
     echo "Error: This script must be run as root." >&2
     exit 1
   fi
-  if [[ "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)" != "$APP" ]]; then
-    echo "Error: The repository must be cloned to: $APP" >&2
+  if [[ "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)" != "$APP_DIR" ]]; then
+    echo "Error: The repository must be cloned to: $APP_DIR" >&2
     exit 1
   fi
-  if [[ -e "$APP/.env" ]]; then
-    echo "Error: This server is already set up: $APP/.env exists" >&2
+  if [[ -e "$APP_DIR/.env" ]]; then
+    echo "Error: This server is already set up: $APP_DIR/.env exists" >&2
     exit 1
   fi
-  cd "$APP"
+  cd "$APP_DIR"
 
   # Install dependencies.
   apt update
@@ -112,11 +112,11 @@ EOF
   curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/metrics
 
   # Renew certificates automatically, restarting gracefully as the app user.
-  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP/admin/gracefulRestart.sh"
+  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP_DIR/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP_DIR/admin/gracefulRestart.sh"
   systemctl enable --now certbot.timer
 
   # Back up PostgreSQL daily as the app user.
-  echo "0 3 * * * $APP_USER $APP/database-backup.sh" > /etc/cron.d/hanabi-live
+  echo "0 3 * * * $APP_USER $APP_DIR/database-backup.sh" > /etc/cron.d/hanabi-live
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
   sudo --user "$APP_USER" ./database-backup.sh
