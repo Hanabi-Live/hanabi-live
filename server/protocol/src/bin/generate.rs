@@ -350,7 +350,7 @@ fn main() -> Result<()> {
         .values()
         .chain(server.values())
         .copied()
-        .chain(["TableId", "ChatHistoryMessage", "Settings"])
+        .chain(["TableId", "ChatHistoryMessage", "Settings", "Spectator"])
         .collect();
     let mut definitions = BTreeMap::new();
     for (name, schema) in hanabi_protocol::schemas() {

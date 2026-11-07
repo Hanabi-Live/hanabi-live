@@ -120,14 +120,13 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
                 >
                   {person.name}
                 </span>
-                {person.shadowingPlayerIndex !== undefined
-                  && person.shadowingPlayerIndex !== -1 && (
-                    <>
-                      {" "}
-                      ({"\u{1F575}\u{FE0F}"}{" "}
-                      <em>{person.shadowingPlayerUsername}</em>)
-                    </>
-                  )}
+                {person.shadowingPlayerIndex !== -1 && (
+                  <>
+                    {" "}
+                    ({"\u{1F575}\u{FE0F}"}{" "}
+                    <em>{person.shadowingPlayerUsername}</em>)
+                  </>
+                )}
               </li>
             ))}
           </ul>

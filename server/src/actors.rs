@@ -128,7 +128,7 @@ pub struct TableView {
     players: Vec<i32>,
     replay: bool,
     visible: bool,
-    data: Value,
+    data: hanabi_protocol::Table,
     inspection: Value,
     reconnects: BTreeMap<i32, Option<i32>>,
 }
@@ -249,6 +249,28 @@ pub enum TableCommand {
         reply: Reply,
     },
     Drain(oneshot::Sender<Result<()>>),
+}
+#[cfg(test)]
+pub(crate) fn test_table() -> hanabi_protocol::Table {
+    hanabi_protocol::Table {
+        id: TableId(1),
+        joined: false,
+        max_players: 5,
+        name: "test".into(),
+        num_players: 1,
+        options: hanabi_protocol::GameOptions::default(),
+        owner_id: UserId(1),
+        password_protected: false,
+        players: vec!["test".into()],
+        progress: 0,
+        running: false,
+        shared_replay: false,
+        spectators: vec![],
+        time_base: 0.0,
+        time_per_turn: 0,
+        timed: false,
+        variant: "No Variant".into(),
+    }
 }
 #[cfg(test)]
 pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
@@ -372,9 +394,9 @@ impl Hub {
             }
         }
     }
-    fn table_for(v: &TableView, user: i32) -> Value {
+    fn table_for(v: &TableView, user: i32) -> hanabi_protocol::Table {
         let mut data = v.data.clone();
-        data["joined"] = json!(v.players.contains(&user));
+        data.joined = v.players.contains(&user);
         data
     }
     fn playing_elsewhere(&self, user: i32, except: Option<u64>) -> bool {
@@ -723,12 +745,12 @@ impl Hub {
                         ));
                         session.emit(&frame(
                             "tableList",
-                            json!(
+                            hanabi_protocol::TableList(
                                 self.tables
                                     .values()
                                     .filter(|e| e.view.visible)
                                     .map(|e| Self::table_for(&e.view, session.user))
-                                    .collect::<Vec<_>>()
+                                    .collect(),
                             ),
                         ));
                     }
@@ -1059,7 +1081,7 @@ impl Hub {
                         // its players and once for everyone else rather than once per user.
                         let [other, joined] = [false, true].map(|joined| {
                             let mut data = entry.view.data.clone();
-                            data["joined"] = json!(joined);
+                            data.joined = joined;
                             frame("table", data)
                         });
                         for p in self.sessions.values() {
@@ -1100,6 +1122,33 @@ impl Hub {
                 }
             }
         }
+    }
+}
+
+/// Table sizes and seats are validated to be at most six, so they fit in a byte.
+fn small(value: usize) -> u8 {
+    u8::try_from(value).unwrap_or(u8::MAX)
+}
+
+fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
+    hanabi_protocol::GameOptions {
+        num_players: small(options.num_players),
+        starting_player: small(options.starting_player),
+        variant_name: options.variant_name.clone(),
+        variant_id: options.variant_id,
+        timed: options.timed,
+        time_base: options.time_base,
+        time_per_turn: options.time_per_turn,
+        speedrun: options.speedrun,
+        card_cycle: options.card_cycle,
+        deck_plays: options.deck_plays,
+        empty_clues: options.empty_clues,
+        one_extra_card: options.one_extra_card,
+        one_less_card: options.one_less_card,
+        all_or_nothing: options.all_or_nothing,
+        detrimental_characters: options.detrimental_characters,
+        table_name: options.table_name.clone(),
+        max_players: options.max_players.map(small),
     }
 }
 
@@ -1721,17 +1770,57 @@ impl TableActor {
                 .map(|(id, shadow)| (*id, *shadow))
                 .collect(),
             inspection: json!({"running":running,"replay":replay,"frozen":self.frozen}),
-            data: json!({"id":self.table.id,"joined":false,"maxPlayers":self.table.max_players,"name":self.table.name,"numPlayers":self.table.players().len(),"options":self.table.options,"ownerID":self.table.owner,"passwordProtected":self.table.password_hash.is_some(),"players":self.table.players().iter().map(|p|&p.name).collect::<Vec<_>>(),"progress":progress,"running":running,"sharedReplay":replay&&self.table.visible,"spectators":spectators,"timeBase":self.table.options.time_base,"timePerTurn":self.table.options.time_per_turn,"timed":self.table.options.timed,"variant":self.table.options.variant_name}),
+            data: hanabi_protocol::Table {
+                id: TableId(self.table.id),
+                joined: false,
+                max_players: small(self.table.max_players),
+                name: self.table.name.clone(),
+                num_players: small(self.table.players().len()),
+                options: wire_options(&self.table.options),
+                owner_id: UserId(self.table.owner),
+                password_protected: self.table.password_hash.is_some(),
+                players: self
+                    .table
+                    .players()
+                    .iter()
+                    .map(|p| p.name.clone())
+                    .collect(),
+                progress: u8::try_from(progress.clamp(0, 100)).unwrap_or(0),
+                running,
+                shared_replay: replay && self.table.visible,
+                spectators,
+                time_base: self.table.options.time_base,
+                time_per_turn: self.table.options.time_per_turn,
+                timed: self.table.options.timed,
+                variant: self.table.options.variant_name.clone(),
+            },
         }
     }
-    fn spectators(&self) -> Vec<Value> {
-        self.attendees.values().filter(|a|a.spectator&&a.session.active()).map(|a|json!({"name":a.session.name,"shadowingPlayerIndex":a.shadow.map(|v|v as i32).unwrap_or(-1),"shadowingPlayerUsername":a.shadow.and_then(|i|self.table.players().get(i)).map(|p|p.name.as_str()).unwrap_or("")})).collect()
+    fn spectators(&self) -> Vec<hanabi_protocol::Spectator> {
+        self.attendees
+            .values()
+            .filter(|a| a.spectator && a.session.active())
+            .map(|a| hanabi_protocol::Spectator {
+                name: a.session.name.clone(),
+                shadowing_player_index: a
+                    .shadow
+                    .and_then(|seat| i8::try_from(seat).ok())
+                    .unwrap_or(-1),
+                shadowing_player_username: a
+                    .shadow
+                    .and_then(|seat| self.table.players().get(seat))
+                    .map(|p| p.name.clone()),
+            })
+            .collect()
     }
     fn spectator_messages(&self, e: &mut Effects) {
         self.add_all(
             e,
             "spectators",
-            json!({"tableID":self.table.id,"spectators":self.spectators()}),
+            hanabi_protocol::Spectators {
+                table_id: TableId(self.table.id),
+                spectators: self.spectators(),
+            },
         );
     }
     fn effects(&self) -> Effects {
@@ -1766,7 +1855,7 @@ impl TableActor {
     fn audience(&self) -> impl Iterator<Item = &Attendance> {
         self.attendees.values().filter(|a| a.session.active())
     }
-    fn add_all(&self, e: &mut Effects, command: &str, data: Value) {
+    fn add_all(&self, e: &mut Effects, command: &str, data: impl Serialize) {
         let message = frame(command, data);
         for a in self.audience() {
             e.messages.push((a.session.clone(), message.clone()));
@@ -4379,7 +4468,10 @@ impl TableActor {
                 session.clone(),
                 frame(
                     "spectators",
-                    json!({"tableID":self.table.id,"spectators":self.spectators()}),
+                    hanabi_protocol::Spectators {
+                        table_id: TableId(self.table.id),
+                        spectators: self.spectators(),
+                    },
                 ),
             ));
             for a in self

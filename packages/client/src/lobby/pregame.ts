@@ -492,10 +492,7 @@ export function drawSpectators(tableID: number): void {
   for (const spectator of table.spectators) {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
-    if (
-      spectator.shadowingPlayerIndex !== undefined
-      && spectator.shadowingPlayerIndex !== -1
-    ) {
+    if (spectator.shadowingPlayerIndex !== -1) {
       if (spectator.name === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")

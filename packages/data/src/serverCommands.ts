@@ -23,7 +23,6 @@ import { ServerCommand } from "./enums/ServerCommand";
 import type { GameServerCommandData } from "./gameCommands";
 import { GAME_SERVER_COMMAND_SCHEMAS } from "./gameCommands";
 import { gameHistory } from "./interfaces/GameHistory";
-import { spectator } from "./interfaces/Spectator";
 import { tableID } from "./types/TableID";
 import { userID } from "./types/UserID";
 
@@ -93,11 +92,6 @@ const serverCommandGameData = z.strictObject({
   maxPlayers: z.number().int(),
 });
 
-const serverCommandSpectatorsData = z.strictObject({
-  tableID,
-  spectators: spectator.array(),
-});
-
 export const serverCommandGameHistoryData = gameHistory.array().readonly();
 
 const serverCommandGameHistoryOtherScoresData = z
@@ -113,42 +107,8 @@ interface ServerCommandGameHistoryData extends z.infer<
   typeof serverCommandGameHistoryData
 > {}
 
-const serverCommandTableData = z
-  .object({
-    id: tableID,
-    joined: z.boolean(),
-    maxPlayers: z.number().int(),
-    name: z.string().min(1),
-    numPlayers: z.number().int(),
-    options,
-    ownerID: userID,
-    passwordProtected: z.boolean(),
-    players: z.string().min(1).array(),
-    progress: z.number().int(),
-    running: z.boolean(),
-    sharedReplay: z.boolean(),
-    spectators: spectator.array().readonly(),
-    timeBase: z.number(),
-    timePerTurn: z.number().int(),
-    timed: z.boolean(),
-    variant: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandTableData extends z.infer<
-  typeof serverCommandTableData
-> {}
-
-const serverCommandTableListData = serverCommandTableData.array().readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ServerCommandTableListData extends z.infer<
-  typeof serverCommandTableListData
-> {}
-
 export type ServerCommandWelcomeData = ServerWireData["welcome"];
+export type ServerCommandTableData = ServerWireData["table"];
 
 // -----------
 // Collections
@@ -174,7 +134,7 @@ export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.game]: z.infer<typeof serverCommandGameData>;
   [ServerCommand.joined]: z.infer<typeof serverCommandTableIDData>;
   [ServerCommand.left]: z.infer<typeof serverCommandTableIDData>;
-  [ServerCommand.spectators]: z.infer<typeof serverCommandSpectatorsData>;
+  [ServerCommand.spectators]: ServerWireData["spectators"];
   [ServerCommand.tableGone]: z.infer<typeof serverCommandTableIDData>;
   [ServerCommand.gameHistory]: ServerCommandGameHistoryData;
   [ServerCommand.gameHistoryOtherScores]: z.infer<
@@ -182,7 +142,7 @@ export interface ServerCommandData extends GameServerCommandData {
   >;
   [ServerCommand.synced]: z.infer<typeof emptySchema>;
   [ServerCommand.table]: ServerCommandTableData;
-  [ServerCommand.tableList]: ServerCommandTableListData;
+  [ServerCommand.tableList]: ServerWireData["tableList"];
   [ServerCommand.user]: ServerCommandUserData;
   [ServerCommand.userInactive]: ServerWireData["userInactive"];
   [ServerCommand.userLeft]: ServerCommandUserLeftData;
@@ -208,14 +168,14 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.game]: serverCommandGameData,
   [ServerCommand.joined]: serverCommandTableIDData,
   [ServerCommand.left]: serverCommandTableIDData,
-  [ServerCommand.spectators]: serverCommandSpectatorsData,
+  [ServerCommand.spectators]: SERVER_WIRE_SCHEMAS.spectators,
   [ServerCommand.tableGone]: serverCommandTableIDData,
   [ServerCommand.gameHistory]: serverCommandGameHistoryData,
   [ServerCommand.gameHistoryOtherScores]:
     serverCommandGameHistoryOtherScoresData,
   [ServerCommand.synced]: emptySchema,
-  [ServerCommand.table]: serverCommandTableData,
-  [ServerCommand.tableList]: serverCommandTableListData,
+  [ServerCommand.table]: SERVER_WIRE_SCHEMAS.table,
+  [ServerCommand.tableList]: SERVER_WIRE_SCHEMAS.tableList,
   [ServerCommand.user]: SERVER_WIRE_SCHEMAS.user,
   [ServerCommand.userInactive]: SERVER_WIRE_SCHEMAS.userInactive,
   [ServerCommand.userLeft]: SERVER_WIRE_SCHEMAS.userLeft,

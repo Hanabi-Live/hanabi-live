@@ -47,7 +47,7 @@ pub enum LobbyStatus {
     },
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "TableID"))]
 pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
@@ -599,7 +599,7 @@ pub struct TableStarted {
     pub replay: bool,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "UserID"))]
 pub struct UserId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
@@ -798,6 +798,128 @@ pub struct Welcome {
     pub discon_shadowing_seat: Option<i8>,
 }
 
+/// A table's game options. Missing fields take the same defaults as the client's options.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct GameOptions {
+    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    pub num_players: u8,
+    #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
+    pub starting_player: u8,
+    #[schemars(length(min = 1))]
+    pub variant_name: String,
+    #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32", range(min = 0, max = 4_294_967_295_u32))]
+    pub variant_id: Option<u32>,
+    pub timed: bool,
+    pub time_base: f64,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_per_turn: i64,
+    pub speedrun: bool,
+    pub card_cycle: bool,
+    pub deck_plays: bool,
+    pub empty_clues: bool,
+    pub one_extra_card: bool,
+    pub one_less_card: bool,
+    pub all_or_nothing: bool,
+    pub detrimental_characters: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub table_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u8", range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    pub max_players: Option<u8>,
+}
+
+impl Default for GameOptions {
+    fn default() -> Self {
+        Self {
+            num_players: 2,
+            starting_player: 0,
+            variant_name: "No Variant".into(),
+            variant_id: None,
+            timed: false,
+            time_base: 0.0,
+            time_per_turn: 0,
+            speedrun: false,
+            card_cycle: false,
+            deck_plays: false,
+            empty_clues: false,
+            one_extra_card: false,
+            one_less_card: false,
+            all_or_nothing: false,
+            detrimental_characters: false,
+            table_name: None,
+            max_players: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Spectator {
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// The seat being shadowed, or -1 for none.
+    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))]
+    pub shadowing_player_index: i8,
+    /// Present only while shadowing a seat.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub shadowing_player_username: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Spectators {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub spectators: Vec<Spectator>,
+}
+
+/// A table in the lobby's table list.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Table {
+    pub id: TableId,
+    /// Whether the recipient is one of the players.
+    pub joined: bool,
+    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    pub max_players: u8,
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// The current number of players, which can be below the minimum during a pregame.
+    #[schemars(range(min = 0, max = 6))]
+    pub num_players: u8,
+    pub options: GameOptions,
+    #[serde(rename = "ownerID")]
+    pub owner_id: UserId,
+    pub password_protected: bool,
+    pub players: Vec<String>,
+    /// The percentage of the maximum score reached, or of a replay watched.
+    #[schemars(range(min = 0, max = 100))]
+    pub progress: u8,
+    pub running: bool,
+    pub shared_replay: bool,
+    #[schemars(extend("x-readonly" = true))]
+    pub spectators: Vec<Spectator>,
+    pub time_base: f64,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_per_turn: i64,
+    pub timed: bool,
+    #[schemars(length(min = 1))]
+    pub variant: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-readonly" = true))]
+pub struct TableList(pub Vec<Table>);
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -858,6 +980,11 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         Settings,
         ConnectionMode,
         Welcome,
+        GameOptions,
+        Spectator,
+        Spectators,
+        Table,
+        TableList,
     );
     schemas
 }

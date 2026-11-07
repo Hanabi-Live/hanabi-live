@@ -14,9 +14,7 @@ export type HistoryGame = z.infer<typeof wireHistory>;
 const lobbyOptions = options
   .unwrap()
   .extend({ numPlayers: z.number().int().min(0).max(6) });
-const tableSchema = SERVER_COMMAND_SCHEMAS.table.unwrap().extend({
-  options: lobbyOptions,
-});
+const tableSchema = SERVER_COMMAND_SCHEMAS.table.unwrap();
 const pregameSchema = SERVER_COMMAND_SCHEMAS.game.extend({
   options: lobbyOptions,
 });
