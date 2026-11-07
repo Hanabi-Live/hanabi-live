@@ -932,7 +932,29 @@
       "visibility": "solo",
       "databaseID": 1,
       "password": "",
-      "shadowingPlayerIndex": -1
+      "shadowingPlayerIndex": -1,
+      "joinExisting": false
+    },
+    "valid": true
+  },
+  {
+    "name": "shared replay links can join an existing replay of the game",
+    "direction": "client",
+    "command": "replayCreate",
+    "input": {
+      "source": "id",
+      "visibility": "shared",
+      "databaseID": 1,
+      "shadowingPlayerIndex": -1,
+      "joinExisting": true
+    },
+    "normalized": {
+      "source": "id",
+      "visibility": "shared",
+      "databaseID": 1,
+      "password": "",
+      "shadowingPlayerIndex": -1,
+      "joinExisting": true
     },
     "valid": true
   },

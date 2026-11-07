@@ -624,6 +624,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     let view = TableView {
         players: vec![1],
         replay: false,
+        replay_game: None,
         visible: false,
         data: crate::actors::test_table(),
         inspection: json!({}),

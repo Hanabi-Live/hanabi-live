@@ -255,6 +255,8 @@ impl Drop for Allocation {
 pub struct TableView {
     players: Vec<i32>,
     replay: bool,
+    /// The database game shown by a replay.
+    replay_game: Option<i32>,
     visible: bool,
     data: hanabi_protocol::Table,
     inspection: Value,
@@ -597,6 +599,21 @@ impl Hub {
         } else {
             let _ = reply.send(Err(anyhow::anyhow!("Unknown table")));
         }
+    }
+    /// A shared replay of the same database game that a link to it should join.
+    fn existing_replay(&self, r: &hanabi_protocol::ReplayCreateRequest) -> Option<u64> {
+        if !r.join_existing
+            || r.visibility != hanabi_protocol::ReplayVisibility::Shared
+            || r.source != hanabi_protocol::ReplaySource::Id
+        {
+            return None;
+        }
+        let game = r.database_id?;
+        self.tables
+            .iter()
+            .filter(|(_, e)| e.view.replay && e.view.visible && e.view.replay_game == Some(game))
+            .map(|(id, _)| *id)
+            .min()
     }
     fn create(&self, s: Arc<Session>, creation: Creation, reply: Reply) {
         if self.closing || !self.current(&s) {
@@ -987,6 +1004,20 @@ impl Hub {
                 } => {
                     if command == "tableCreate" || command == "replayCreate" {
                         match Creation::decode(&command, &data) {
+                            Ok(Creation::Replay(r)) if let Some(id) = self.existing_replay(&r) => {
+                                self.route(
+                                    session,
+                                    id,
+                                    Command::Wire {
+                                        name: "tableSpectate".into(),
+                                        data: json!({
+                                            "tableID": id,
+                                            "shadowingPlayerIndex": r.shadowing_player_index,
+                                        }),
+                                    },
+                                    reply,
+                                );
+                            }
                             Ok(creation) => self.create(session, creation, reply),
                             Err(error) => {
                                 let _ = reply.send(Err(error));
@@ -1867,6 +1898,10 @@ impl TableActor {
         TableView {
             players: self.table.players().iter().map(|p| p.id).collect(),
             replay,
+            replay_game: match &self.table.phase {
+                Phase::Replay { snapshot, .. } if snapshot.game_id > 0 => Some(snapshot.game_id),
+                _ => None,
+            },
             visible: self.table.visible,
             reconnects: self
                 .table

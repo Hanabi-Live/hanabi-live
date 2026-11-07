@@ -389,6 +389,10 @@ pub struct ReplayCreateRequest {
     #[serde(default = "negative_one")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shadowing_player_index: i64,
+    /// For a shared replay of a database game, spectate an existing shared replay of that game
+    /// instead of creating another one, if there is one.
+    #[serde(default)]
+    pub join_existing: bool,
 }
 
 /// Every player's remaining time, in milliseconds.

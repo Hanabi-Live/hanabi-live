@@ -132,6 +132,8 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
           source: "id",
           visibility,
           shadowingPlayerIndex: -1,
+          // A link to a shared replay should join the one that people are already watching.
+          joinExisting: true,
         });
         return;
       }

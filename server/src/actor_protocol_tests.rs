@@ -793,6 +793,99 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
 }
 
 #[tokio::test]
+async fn shared_replay_spectators_return_to_the_same_replay_after_a_restart() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.replay(0).await?;
+        for index in [1, 2] {
+            h.send(index, "tableSpectate", json!({"tableID":id}))
+                .await?;
+        }
+        h.restart().await?;
+        for index in 0..3 {
+            let welcome = h.receive(index, "welcome").await?;
+            ensure!(
+                welcome["disconSpectatingTable"] == json!(id),
+                "A spectator was not sent back to the restored replay: {welcome}"
+            );
+            // The client spectates the table it was told about.
+            h.send(index, "tableSpectate", json!({"tableID":id}))
+                .await?;
+            ensure!(
+                h.receive(index, "tableStart").await?["tableID"] == json!(id),
+                "A spectator did not rejoin the restored replay"
+            );
+        }
+        let replays = h
+            .store
+            .load()
+            .await?
+            .into_iter()
+            .filter(|(table, _)| matches!(table.phase, Phase::Replay { .. }))
+            .count();
+        ensure!(
+            replays == 1,
+            "The restart duplicated the replay ({replays} replays)"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
+             VALUES('Linked game',2,0,false,120,20,false,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
+             RETURNING id")
+        .fetch_one(&h.store.primary)
+        .await?;
+        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+             VALUES($1,1,0,0,0),($1,2,1,0,0)", game)
+        .execute(&h.store.primary)
+        .await?;
+        // The game was terminated on its first turn.
+        sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) VALUES($1,0,4,0,4)", game)
+            .execute(&h.store.primary)
+            .await?;
+        let request = |visibility: &str, join_existing: bool| {
+            json!({"source":"id","databaseID":game,"visibility":visibility,"joinExisting":join_existing})
+        };
+        let open = async |h: &mut Harness, index: usize, request: Value| -> Result<Value> {
+            h.send(index, "replayCreate", request).await?;
+            Ok(h.receive(index, "tableStart").await?["tableID"].clone())
+        };
+
+        let shared = open(&mut h, 0, request("shared", true)).await?;
+        ensure!(
+            open(&mut h, 1, request("shared", true)).await? == shared,
+            "A link did not join the existing shared replay"
+        );
+        ensure!(
+            open(&mut h, 2, request("shared", false)).await? != shared,
+            "Creating a shared replay from the lobby joined an existing one"
+        );
+        ensure!(
+            open(&mut h, 2, request("solo", true)).await? != shared,
+            "A solo replay joined a shared one"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
         return Ok(());

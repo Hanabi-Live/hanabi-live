@@ -580,6 +580,7 @@ const replayVisibilitySchema = z.enum(["solo", "shared"]);
 export const replayCreateRequestSchema = z.strictObject({
   databaseID: z.number().int().min(1).max(2_147_483_647).optional(),
   gameJSON: z.unknown().optional(),
+  joinExisting: z.boolean().default(false),
   password: z.string().default(""),
   shadowingPlayerIndex: z
     .number()
