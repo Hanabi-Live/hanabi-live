@@ -128,23 +128,39 @@ if [[ -z ${GDRIVE_PATH-} ]]; then
   exit 1
 fi
 
-# Check for free space; if we have less than a gig left, then start deleting old files until we have
-# at least a gig of storage left.
-function delete_file_if_near_full_gdrive {
-  AMOUNT_FULL=$($GDRIVE_PATH about --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | grep Free)
-  echo "GDrive amount full: $AMOUNT_FULL"
-  if echo "$AMOUNT_FULL" | grep --quiet GB; then
+# Delete the oldest backups until the new one fits, plus a 100 MiB margin. Deleted sizes are added up
+# from the listing because Drive may report the new free space late, which could delete extra files.
+function make_room_on_gdrive {
+  local free needed listing id size
+  needed=$(($(stat -c %s "$BACKUPS_DIR/$FILENAME") + 104857600))
+  free=$($GDRIVE_PATH about --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | awk '$1 == "Free:" { print $2 }')
+  if [[ ! $free =~ ^[0-9]+$ ]]; then
+    echo "Failed to read the free space on Google Drive." >&2
+    return 1
+  fi
+  echo "Google Drive has $free bytes free and needs $needed bytes."
+  if ((free >= needed)); then
     return
   fi
 
   # We need to filter out directories, so we make sure to include the file extension.
   # https://developers.google.com/drive/api/guides/search-shareddrives
-  OLDEST_FILE_ID=$($GDRIVE_PATH list --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO_NAME' and name contains '.sql.gz'" | head -n 1 | cut -f 1 -d " ")
-  $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$OLDEST_FILE_ID"
-  echo "Google Drive account has under 1 gig of free space left; deleted the oldest backup: $OLDEST_FILE_ID"
-  delete_file_if_near_full_gdrive
+  listing=$($GDRIVE_PATH list --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO_NAME' and name contains '.sql.gz'")
+  while read -r id _ _ size _; do
+    if [[ ! $size =~ ^[0-9]+$ ]]; then
+      continue
+    fi
+    $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$id"
+    free=$((free + size))
+    echo "Deleted the oldest backup from Google Drive: $id"
+    if ((free >= needed)); then
+      return
+    fi
+  done <<< "$listing"
+  echo "Deleting every old backup would not free enough space on Google Drive." >&2
+  return 1
 }
-delete_file_if_near_full_gdrive
+make_room_on_gdrive
 
 # Upload the file to Google Drive.
 $GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"
