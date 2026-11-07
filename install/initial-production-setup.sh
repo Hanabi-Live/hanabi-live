@@ -75,7 +75,13 @@ function main {
 
   # Create the database and generate its password.
   local db_password session_secret
-  systemctl enable --now postgresql
+  # Use about a quarter of the server's 4 GB of memory for PostgreSQL's cache, instead of the 128 MB
+  # default. This only takes effect when PostgreSQL restarts.
+  for dir in /etc/postgresql/*/main/conf.d; do
+    echo "shared_buffers = 1GB" > "$dir/hanabi.conf"
+  done
+  systemctl enable postgresql
+  systemctl restart postgresql
   db_password=$(openssl rand -hex 32)
   sudo --user postgres psql --set ON_ERROR_STOP=1 << SQL
 CREATE USER $DB_USER PASSWORD '$db_password';
