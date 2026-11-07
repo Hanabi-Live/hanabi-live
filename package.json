@@ -71,7 +71,6 @@
       "stacktracify": "2.0.0",
       "tailwindcss": "4.3.4",
       "tooltipster": "4.2.8",
-      "ts-prune-2": "0.10.7",
       "tslib": "2.8.1",
       "turbo": "2.11.10",
       "typedoc": "0.28.20",
@@ -85,6 +84,7 @@
   "scripts": {
     "build-client": "bash packages/client/build-client.sh",
     "build-pips-reference": "bash scripts/bash/build-pips-reference.sh",
+    "check-knip": "bunx --bun --no-install knip",
     "check-shellcheck": "bash check-shellcheck.sh",
     "check-templates": "bash check-templates.sh",
     "check-variant-files": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
@@ -109,7 +109,6 @@
     "husky": "catalog:",
     "prettier-plugin-sh": "catalog:",
     "stacktracify": "catalog:",
-    "ts-prune-2": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
