@@ -189,14 +189,6 @@ const slice = createSlice({
           break;
         }
 
-        case "tableProgress": {
-          const table = state.tables[event.data.tableID];
-          if (table) {
-            table.progress = event.data.progress;
-          }
-          break;
-        }
-
         case "boot":
         case "tableGone": {
           const tableID =

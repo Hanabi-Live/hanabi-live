@@ -58,7 +58,6 @@ type WirePayloads = Omit<
   table: Table;
   tableList: Table[];
   game: Pregame;
-  tableProgress: { tableID: number; progress: number };
   gameHistory: HistoryGame[];
   gameHistoryOtherScores: {
     games: HistoryGame[];
@@ -109,17 +108,6 @@ export function decodeEvent(text: string): ServerEvent | undefined {
     };
   }
   if (!isServerCommand(command)) {
-    if (command === "tableProgress") {
-      return {
-        command,
-        data: z
-          .object({
-            tableID: z.number().int().positive(),
-            progress: z.number().int(),
-          })
-          .parse(data),
-      };
-    }
     console.warn("Unknown server command", command);
     return undefined;
   }
