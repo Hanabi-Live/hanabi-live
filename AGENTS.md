@@ -128,9 +128,9 @@ bundles.
 
 Migrated public payloads are owned by `server/protocol`, without database,
 actor, or game-engine dependencies. Update the Rust DTOs and shared
-compatibility fixtures, then run `bash scripts/bash/generate-protocol.sh`.
-Commit the generated TypeScript file; do not edit it by hand. `bash lint.sh`
-checks for generation drift. Keep legacy compatibility differences explicit.
+compatibility fixtures, then run `bash scripts/dev/generate-protocol.sh`. Commit
+the generated TypeScript file; do not edit it by hand. `bash lint.sh` checks for
+generation drift. Keep legacy compatibility differences explicit.
 
 ## Production server
 

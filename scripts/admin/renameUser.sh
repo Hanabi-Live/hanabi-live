@@ -12,8 +12,8 @@ USERNAME=$1
 NEW_USERNAME=$2
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-# shellcheck source=../scripts/lib/database.sh
-source "$DIR/../scripts/lib/database.sh"
+# shellcheck source=../lib/database.sh
+source "$DIR/../lib/database.sh"
 
 if [[ -z $NEW_USERNAME ]]; then
   echo "You cannot enter a blank username."

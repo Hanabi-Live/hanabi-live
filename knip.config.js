@@ -60,13 +60,13 @@ const config = {
   ],
 
   ignoreDependencies: [
-    "complete-cli", // Used in "check-templates.sh".
+    "complete-cli", // Used in "scripts/lint/check-templates.sh".
     "complete-lint", // This is a linting meta-package.
     "eslint", // Provided by "complete-lint".
     "eslint-config-complete", // Provided by "complete-lint".
     "prettier-plugin-organize-imports", // Provided by "complete-lint".
     "prettier-plugin-packagejson", // Provided by "complete-lint".
-    "stacktracify", // Used in "stack-trace.sh".
+    "stacktracify", // Used in "scripts/dev/stack-trace.sh".
   ],
 };
 

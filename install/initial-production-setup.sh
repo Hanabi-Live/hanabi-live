@@ -143,10 +143,10 @@ EOF
   systemctl enable --now certbot.timer
 
   # Delete chat older than one year and back up PostgreSQL daily, as the app user.
-  echo "0 3 * * * $APP_USER $APP_DIR/database-backup.sh" > /etc/cron.d/hanabi-live
+  echo "0 3 * * * $APP_USER $APP_DIR/scripts/admin/database-backup.sh" > /etc/cron.d/hanabi-live
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
-  sudo --user "$APP_USER" ./database-backup.sh
+  sudo --user "$APP_USER" ./scripts/admin/database-backup.sh
 
   echo "The server is set up. Also keep coordinated PostgreSQL and Redis backups off this server."
 }

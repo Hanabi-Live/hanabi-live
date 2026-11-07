@@ -5,10 +5,10 @@ set -o errexit -o nounset -o pipefail
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 
-cd "$DIR"
+cd "$REPO_ROOT"
 
-REPO_ROOT="$DIR"
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 VERSION=$(cat "$JS_BUNDLES_DIR/version.txt")
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"

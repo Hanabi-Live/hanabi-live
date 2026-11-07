@@ -3,11 +3,12 @@
 set -o errexit -o nounset -o pipefail
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-cd "$DIR"
+REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
+cd "$REPO_ROOT"
 status=0
 
 echo "Checking generated wire contracts."
-bash scripts/bash/generate-protocol.sh --check || status=1
+bash scripts/dev/generate-protocol.sh --check || status=1
 
 cd server
 echo "Checking Rust formatting and static analysis."

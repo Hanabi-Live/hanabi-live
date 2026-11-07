@@ -16,7 +16,7 @@ output=packages/data/src/generated/protocol.ts
   | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
 if [[ ${1:-} == --check ]]; then
   if ! diff -u "$output" "$temporary"; then
-    echo "Wire contracts are stale. Run bash scripts/bash/generate-protocol.sh." >&2
+    echo "Wire contracts are stale. Run bash scripts/dev/generate-protocol.sh." >&2
     exit 1
   fi
 else

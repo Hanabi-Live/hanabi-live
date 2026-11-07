@@ -1,4 +1,4 @@
-// Generated from server/protocol. Run bash scripts/bash/generate-protocol.sh.
+// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
 
 export const tableIdSchema = z

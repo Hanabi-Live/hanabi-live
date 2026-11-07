@@ -12,8 +12,8 @@ fi
 USERNAME=$1
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-# shellcheck source=../scripts/lib/database.sh
-source "$DIR/../scripts/lib/database.sh"
+# shellcheck source=../lib/database.sh
+source "$DIR/../lib/database.sh"
 
 exists=$(sql --set=username="$USERNAME" <<< "SELECT EXISTS (SELECT 1 FROM users WHERE username = :'username');")
 if [[ $exists != "t" ]]; then
