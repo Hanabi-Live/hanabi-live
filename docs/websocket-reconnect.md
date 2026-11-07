@@ -3,8 +3,10 @@
 ## Fast recovery
 
 Current clients connect using `/ws?version=<client-version>` both initially and
-after a disconnect. Both cases require the same session cookie, account, IP, and
-client-version checks.
+after a disconnect. Both cases require the same session cookie, account, and IP
+checks. Supplied client versions are validated, including explicit empty values.
+Older authenticated clients that omit `version` remain supported so their open
+tabs can reconnect across the rollout. Login version validation is unchanged.
 
 Authentication and table membership precede optional lobby reads. `welcome`
 contains `totalGames: null` while statistics are unknown. The Rust-owned
@@ -27,9 +29,9 @@ failures remain visible rather than appearing as empty successful results.
 Optional reads are canceled when maintenance begins, without canceling admitted
 gameplay persistence.
 
-Discord initializes after the game listeners are ready. Its optional restart
-announcement has a 250 ms budget; a slow integration is logged rather than
-holding game recovery behind external HTTP requests.
+Discord initializes after the game listeners are ready. Its optional lifecycle
+announcements have a five-second budget; a slow integration is logged rather
+than holding game recovery behind external HTTP requests.
 
 ## Planned restarts
 

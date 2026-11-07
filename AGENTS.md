@@ -131,8 +131,8 @@ is at `~/hanabi-live`. The server log is at
 it.)
 
 To deploy a new copy of the client code or the server code to production, run
-`./deploy-rust.sh` from your laptop, which uses SSH to connect and run the
-necessary commands. If needed, you can inspect that file for more information.
+`./deploy.sh` from your laptop, which uses SSH to connect and run the necessary
+commands. If needed, you can inspect that file for more information.
 
 (A new client version requires a graceful restart even if only TypeScript
 changed.)

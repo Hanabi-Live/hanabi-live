@@ -1,5 +1,11 @@
 # Hanab Live Installation
 
+## For Development
+
+TODO
+
+## For Production
+
 ## Prerequisites
 
 Use Linux for production. Development also supports macOS; on Windows, use WSL2
@@ -125,13 +131,13 @@ Prefer approved, immutable Rust releases. PostgreSQL and Redis must be backed up
 together with cross-store consistency. Preserve the Redis namespace, configured
 database identity, cookies' `SESSION_SECRET`, and live-state data.
 
-Run `./deploy-rust.sh` from your laptop to deploy the existing source-layout
+Run `./deploy.sh` from your laptop to deploy the existing source-layout
 installation over SSH to `root@hanab.live:/root/hanabi-live`. Deployment
 credentials and dependencies stay on production; export the GitHub token in its
-login-shell environment. `./deploy-rust.sh --check` verifies the approved
-current-main release without deploying. `./deploy-rust.sh` publishes it and
-requests a graceful restart; reviewed pending migrations require
-`--apply-migrations`. See [AGENTS.md](../AGENTS.md) for production safeguards.
+login-shell environment. `./deploy.sh --check` verifies the approved
+current-main release without deploying. `./deploy.sh` publishes it and requests
+a graceful restart; reviewed pending migrations require `--apply-migrations`.
+See [AGENTS.md](../AGENTS.md) for production safeguards.
 
 Schema version 6 retires SHA-256 password credentials. Affected accounts require
 a password reset, represented by a NULL password hash. For this upgrade,
