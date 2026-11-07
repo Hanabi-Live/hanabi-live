@@ -196,6 +196,12 @@ async fn stats_database_failure_is_not_an_empty_success() {
 }
 
 #[test]
+fn profile_titles_use_possessive_names() {
+    assert_eq!(pages::possessive("Alice"), "Alice's");
+    assert_eq!(pages::possessive("James"), "James'");
+}
+
+#[test]
 fn formatted_templates_preserve_conditional_links_and_selected_options() {
     let templates = pages::templates();
     let buttons = templates

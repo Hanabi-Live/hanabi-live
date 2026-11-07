@@ -8,6 +8,7 @@ pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
     env.add_filter("bitand", |a: i64, b: i64| a & b);
     env.add_filter("urlencode", |s: String| encoded(&s));
+    env.add_filter("possessive", |s: String| possessive(&s));
     env.add_filter("history_date", |s: String| {
         chrono::DateTime::parse_from_rfc3339(&s)
             .map(|date| {
@@ -302,6 +303,14 @@ fn duration(seconds: i64) -> String {
         format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
     }
 }
+pub(super) fn possessive(name: &str) -> String {
+    if name.ends_with(['s', 'S']) {
+        format!("{name}'")
+    } else {
+        format!("{name}'s")
+    }
+}
+
 fn names_title(names: &[String]) -> String {
     if names.len() == 1 {
         return names[0].clone();
@@ -576,7 +585,7 @@ async fn missing(
     }
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
     let mut v = json!({"title":"Missing Scores","name":users[0].1,
-        "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{}'s Profile",users[0].1)},
+        "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared,"requestedNumPlayers":num_players.unwrap_or(0),
         "players":players,"rows":rows,"advancedFiltersActive":!excluded_players.is_empty()||!excluded_variants.is_empty()||bounds.iter().any(Option::is_some),
         "excludeVariants":first(q,"excludeVariants").unwrap_or(""),

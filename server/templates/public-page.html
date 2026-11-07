@@ -29,9 +29,9 @@
       <div class="col-12">
         <section class="box">
           <h2 class="align-center">
-            {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name }}'s
-            Profile{% elif page == "videos" %}List of Videos{% else %}{{ title
-            }}{% endif %}
+            {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name|possessive
+            }} Profile{% elif page == "videos" %}List of Videos{% else %}{{
+            title }}{% endif %}
           </h2>
           {% include "profile-buttons.html" %} {% if page == "videos" %}
           <h3>Introduction</h3>
