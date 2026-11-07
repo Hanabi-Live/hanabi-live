@@ -1186,6 +1186,53 @@ pub struct Pregame {
     pub max_players: u8,
 }
 
+/// One author's notes on every card.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlayerNotes {
+    pub name: String,
+    pub notes: Vec<String>,
+    pub is_spectator: bool,
+}
+
+/// One author's note on a single card.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CardNote {
+    pub name: String,
+    pub text: String,
+    pub is_spectator: bool,
+}
+
+/// Everyone's notes that the recipient may see, sent to spectators and replay viewers.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NoteList {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub notes: Vec<PlayerNotes>,
+}
+
+/// A player's own notes, by card order.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NoteListPlayer {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub notes: Vec<String>,
+}
+
+/// The notes on one card after someone changes theirs, sent to spectators.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Note {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub order: i64,
+    pub notes: Vec<CardNote>,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -1276,6 +1323,11 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         PregameStats,
         PregamePlayer,
         Pregame,
+        PlayerNotes,
+        CardNote,
+        NoteList,
+        NoteListPlayer,
+        Note,
     );
     schemas
 }

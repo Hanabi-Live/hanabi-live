@@ -3355,7 +3355,10 @@ impl TableActor {
                     a.session.clone(),
                     frame(
                         "noteList",
-                        json!({"tableID":self.table.id,"notes":self.observer_notes(a)}),
+                        hanabi_protocol::NoteList {
+                            table_id: TableId(self.table.id),
+                            notes: self.observer_notes(a),
+                        },
                     ),
                 ));
             }
@@ -3530,18 +3533,30 @@ impl TableActor {
         self.persist(next).await?;
         let mut e = self.effects();
         for a in self.audience().filter(|a| a.spectator) {
-            let notes=self.observer_notes(a).into_iter().map(|n|json!({"name":n["name"],"text":n["notes"][order],"isSpectator":n["isSpectator"]})).collect::<Vec<_>>();
+            let notes = self
+                .observer_notes(a)
+                .into_iter()
+                .map(|n| hanabi_protocol::CardNote {
+                    text: n.notes.get(order).cloned().unwrap_or_default(),
+                    name: n.name,
+                    is_spectator: n.is_spectator,
+                })
+                .collect();
             e.messages.push((
                 a.session.clone(),
                 frame(
                     "note",
-                    json!({"tableID":self.table.id,"order":order,"notes":notes}),
+                    hanabi_protocol::Note {
+                        table_id: TableId(self.table.id),
+                        order: i64::try_from(order)?,
+                        notes,
+                    },
                 ),
             ));
         }
         self.publish(e).await
     }
-    fn observer_notes(&self, a: &Attendance) -> Vec<Value> {
+    fn observer_notes(&self, a: &Attendance) -> Vec<hanabi_protocol::PlayerNotes> {
         let Some(s) = self.table.game() else {
             return vec![];
         };
@@ -3550,12 +3565,20 @@ impl TableActor {
             if a.shadow.is_none_or(|shadow| shadow == i)
                 || matches!(self.table.phase, Phase::Replay { .. })
             {
-                notes.push(json!({"name":p.name,"notes":s.notes[i],"isSpectator":false}));
+                notes.push(hanabi_protocol::PlayerNotes {
+                    name: p.name.clone(),
+                    notes: s.notes[i].clone(),
+                    is_spectator: false,
+                });
             }
         }
         for (id, n) in &s.spectator_notes {
             if *id == a.session.user || a.shadow.is_none() {
-                notes.push(json!({"name":n.name,"notes":n.notes,"isSpectator":true}));
+                notes.push(hanabi_protocol::PlayerNotes {
+                    name: n.name.clone(),
+                    notes: n.notes.clone(),
+                    is_spectator: true,
+                });
             }
         }
         for spectator in self
@@ -3563,7 +3586,11 @@ impl TableActor {
             .filter(|p| p.spectator && !s.spectator_notes.contains_key(&p.session.user))
         {
             if a.shadow.is_none() || spectator.session.user == a.session.user {
-                notes.push(json!({"name":spectator.session.name,"notes":vec!["";s.game.deck.len()+s.game.stacks.len()],"isSpectator":true}));
+                notes.push(hanabi_protocol::PlayerNotes {
+                    name: spectator.session.name.clone(),
+                    notes: vec![String::new(); s.game.deck.len() + s.game.stacks.len()],
+                    is_spectator: true,
+                });
             }
         }
         notes
@@ -4571,7 +4598,10 @@ impl TableActor {
                     session.clone(),
                     frame(
                         "noteList",
-                        json!({"tableID":self.table.id,"notes":self.observer_notes(a)}),
+                        hanabi_protocol::NoteList {
+                            table_id: TableId(self.table.id),
+                            notes: self.observer_notes(a),
+                        },
                     ),
                 ));
             } else if let Some(seat) = seat {
@@ -4579,7 +4609,10 @@ impl TableActor {
                     session.clone(),
                     frame(
                         "noteListPlayer",
-                        json!({"tableID":self.table.id,"notes":s.notes[seat]}),
+                        hanabi_protocol::NoteListPlayer {
+                            table_id: TableId(self.table.id),
+                            notes: s.notes[seat].clone(),
+                        },
                     ),
                 ));
                 e.messages.push((

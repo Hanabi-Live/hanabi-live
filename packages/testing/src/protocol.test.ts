@@ -76,9 +76,6 @@ const HAND_WRITTEN_SERVER_MESSAGES = [
   "gameAction",
   "gameActionList",
   "init",
-  "note",
-  "noteList",
-  "noteListPlayer",
 ] as const;
 
 test("only the listed server messages use hand-written schemas", () => {
