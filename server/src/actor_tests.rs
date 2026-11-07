@@ -656,7 +656,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         players: vec![1],
         replay: false,
         visible: false,
-        data: json!({}),
+        data: crate::actors::test_table(),
         inspection: json!({}),
         reconnects: BTreeMap::new(),
     };

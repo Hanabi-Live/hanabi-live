@@ -118,28 +118,27 @@ describe("authoritative lobby state", () => {
       maxPlayers: 5,
       name: "One player",
       numPlayers: 1,
-      options: { ...gameOptions, numPlayers: 1 },
+      options: gameOptions,
       ownerID: 1,
       passwordProtected: false,
       players: ["Alice"],
       progress: 0,
       running: false,
       sharedReplay: false,
-      spectators: [
-        { name: "Bob", shadowingPlayerIndex: -1, shadowingPlayerUsername: "" },
-      ],
+      spectators: [{ name: "Bob", shadowingPlayerIndex: -1 }],
       timeBase: 0,
       timePerTurn: 0,
       timed: false,
       variant: "No Variant",
     };
     expect(decodeEvent(`table ${JSON.stringify(raw)}`)?.command).toBe("table");
-    expect(options.safeParse(raw.options).success).toBe(false);
-    expect(() =>
-      decodeEvent(
-        `table ${JSON.stringify({ ...raw, options: { ...gameOptions, numPlayers: 7 } })}`,
-      ),
-    ).toThrow();
+    for (const numPlayers of [1, 7]) {
+      expect(() =>
+        decodeEvent(
+          `table ${JSON.stringify({ ...raw, options: { ...gameOptions, numPlayers } })}`,
+        ),
+      ).toThrow();
+    }
   });
 
   it("keeps deleted messages out of delayed history and deduplicates private messages", () => {

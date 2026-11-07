@@ -99,10 +99,7 @@ const HAND_WRITTEN_SERVER_MESSAGES = [
   "replayLeader",
   "replaySegment",
   "replaySound",
-  "spectators",
   "suggestion",
-  "table",
-  "tableList",
   "voteChange",
 ] as const;
 

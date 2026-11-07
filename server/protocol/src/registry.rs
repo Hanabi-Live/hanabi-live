@@ -78,6 +78,9 @@ macro_rules! server_contracts {
             "warning" => Warning, Warning;
             "soundLobby" => SoundLobby, SoundLobby;
             "welcome" => Welcome, Welcome;
+            "spectators" => Spectators, Spectators;
+            "table" => Table, Table;
+            "tableList" => TableList, TableList;
         }
     };
 }

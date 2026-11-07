@@ -972,5 +972,171 @@
     "command": "inactive",
     "input": { "inactive": "yes" },
     "valid": false
+  },
+  {
+    "name": "tables report a pregame roster below the minimum",
+    "direction": "server",
+    "command": "table",
+    "input": {
+      "id": 3,
+      "joined": true,
+      "maxPlayers": 5,
+      "name": "Alice's game",
+      "numPlayers": 1,
+      "options": {
+        "numPlayers": 2,
+        "startingPlayer": 0,
+        "variantName": "No Variant",
+        "timed": false,
+        "timeBase": 0.0,
+        "timePerTurn": 0,
+        "speedrun": false,
+        "cardCycle": false,
+        "deckPlays": false,
+        "emptyClues": false,
+        "oneExtraCard": false,
+        "oneLessCard": false,
+        "allOrNothing": false,
+        "detrimentalCharacters": false
+      },
+      "ownerID": 7,
+      "passwordProtected": false,
+      "players": ["Alice"],
+      "progress": 0,
+      "running": false,
+      "sharedReplay": false,
+      "spectators": [
+        {
+          "name": "Carol",
+          "shadowingPlayerIndex": 1,
+          "shadowingPlayerUsername": "Bob"
+        }
+      ],
+      "timeBase": 0.0,
+      "timePerTurn": 0,
+      "timed": false,
+      "variant": "No Variant"
+    },
+    "valid": true
+  },
+  {
+    "name": "tables reject progress above one hundred",
+    "direction": "server",
+    "command": "table",
+    "input": {
+      "id": 3,
+      "joined": true,
+      "maxPlayers": 5,
+      "name": "Alice's game",
+      "numPlayers": 1,
+      "options": {
+        "numPlayers": 2,
+        "startingPlayer": 0,
+        "variantName": "No Variant",
+        "timed": false,
+        "timeBase": 0.0,
+        "timePerTurn": 0,
+        "speedrun": false,
+        "cardCycle": false,
+        "deckPlays": false,
+        "emptyClues": false,
+        "oneExtraCard": false,
+        "oneLessCard": false,
+        "allOrNothing": false,
+        "detrimentalCharacters": false
+      },
+      "ownerID": 7,
+      "passwordProtected": false,
+      "players": ["Alice"],
+      "progress": 101,
+      "running": false,
+      "sharedReplay": false,
+      "spectators": [
+        {
+          "name": "Carol",
+          "shadowingPlayerIndex": 1,
+          "shadowingPlayerUsername": "Bob"
+        }
+      ],
+      "timeBase": 0.0,
+      "timePerTurn": 0,
+      "timed": false,
+      "variant": "No Variant"
+    },
+    "valid": false
+  },
+  {
+    "name": "table list is an array of tables",
+    "direction": "server",
+    "command": "tableList",
+    "input": [
+      {
+        "id": 3,
+        "joined": true,
+        "maxPlayers": 5,
+        "name": "Alice's game",
+        "numPlayers": 1,
+        "options": {
+          "numPlayers": 2,
+          "startingPlayer": 0,
+          "variantName": "No Variant",
+          "timed": false,
+          "timeBase": 0.0,
+          "timePerTurn": 0,
+          "speedrun": false,
+          "cardCycle": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false
+        },
+        "ownerID": 7,
+        "passwordProtected": false,
+        "players": ["Alice"],
+        "progress": 0,
+        "running": false,
+        "sharedReplay": false,
+        "spectators": [
+          {
+            "name": "Carol",
+            "shadowingPlayerIndex": 1,
+            "shadowingPlayerUsername": "Bob"
+          }
+        ],
+        "timeBase": 0.0,
+        "timePerTurn": 0,
+        "timed": false,
+        "variant": "No Variant"
+      }
+    ],
+    "valid": true
+  },
+  {
+    "name": "spectators without a shadow omit the shadowed name",
+    "direction": "server",
+    "command": "spectators",
+    "input": {
+      "tableID": 3,
+      "spectators": [{ "name": "Carol", "shadowingPlayerIndex": -1 }]
+    },
+    "valid": true
+  },
+  {
+    "name": "spectators reject an empty shadowed name",
+    "direction": "server",
+    "command": "spectators",
+    "input": {
+      "tableID": 3,
+      "spectators": [
+        {
+          "name": "Carol",
+          "shadowingPlayerIndex": -1,
+          "shadowingPlayerUsername": ""
+        }
+      ]
+    },
+    "valid": false
   }
 ]
