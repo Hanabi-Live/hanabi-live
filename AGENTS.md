@@ -161,11 +161,13 @@ Use `./install/migrate.sh status` to inspect migration state and
 use the Tern tool to handle migrations. The runner reuses existing `.env`
 database settings. Migrations never run automatically during server startup.
 
-Applied migrations are immutable: do not edit or delete them. Keep new files
-numbered consecutively from `001_name.sql`, use forward migrations without a
-down-migration section, and update `install/database_schema.sql` in the same
-change. Fresh installations record the schema version already represented by
-that complete schema.
+The supported migration baseline is recorded in
+`install/migrations/baseline.txt`. Do not edit applied SQL; retire it only with
+an explicit baseline change. Keep new files numbered consecutively after the
+baseline, use forward migrations without a down-migration section, and update
+`install/database_schema.sql` in the same change. Fresh installations record the
+current schema version. Older databases must reach the baseline using an earlier
+release before upgrading.
 
 Migrations normally run in transactions. Operations such as concurrent index
 creation require `---- tern: disable-tx ----` and safe recovery after partial

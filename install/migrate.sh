@@ -19,10 +19,7 @@ case "${1:-status}" in
 esac
 
 version="$(get_migration_version "$DIR/migrations")"
-if ((version == 0)); then
-  echo "No tracked migrations."
-  exit 0
-fi
+baseline="$(get_migration_baseline "$DIR/migrations")"
 
 # shellcheck source=/dev/null
 source "$DIR/../.env"
@@ -49,5 +46,17 @@ elif [[ ! -f "$DIR/../server/Cargo.toml" ]]; then
   exit 1
 fi
 
-exec "${runner[@]}" "$command" \
-  --config="" --migrations "$DIR/migrations" --version-table public.schema_version
+if ! current="$(psql -XAt --set=ON_ERROR_STOP=1 --command='SELECT version FROM public.schema_version')"; then
+  echo "Cannot read the database schema version. Initialize a fresh database with install-database-schema.sh or upgrade an older database with an earlier release." >&2
+  exit 1
+fi
+if [[ ! $current =~ ^(0|[1-9][0-9]{0,8})$ ]] || ((current < baseline || current > version)); then
+  echo "Database schema must be between baseline $baseline and target $version; refusing an unsupported upgrade or downgrade." >&2
+  exit 1
+fi
+
+prepared="$(mktemp -d)"
+trap 'rm -f -- "$prepared"/*.sql; rmdir -- "$prepared"' EXIT
+prepare_tern_migrations "$DIR/migrations" "$prepared"
+"${runner[@]}" "$command" \
+  --config="" --migrations "$prepared" --version-table public.schema_version

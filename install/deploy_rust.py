@@ -251,7 +251,7 @@ def prepare(root, staged):
         (shared / "letsencrypt").symlink_to(root / "letsencrypt", target_is_directory=True)
     subprocess.run([str(staged / "hanabi-live"), "--check-startup"], cwd=staged, check=True)
     subprocess.run(["bash", str(staged / "install/migrate.sh"), "status"], check=True)
-    target = max(int(path.name.split("_")[0]) for path in (staged / "install/migrations").glob("*.sql"))
+    target = release.migration_version(staged)
     current = schema_version(root)
     require(current <= target, "Database is newer than this release; refusing a schema downgrade.")
     return current != target

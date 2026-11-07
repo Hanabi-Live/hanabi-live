@@ -168,63 +168,6 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
 }
 
 #[tokio::test]
-async fn retiring_legacy_credentials_preserves_modern_accounts_postgres() {
-    let Some(db) = test_support::TestDb::create().await else {
-        return;
-    };
-    let legacy = db.user("LegacyOnly").await;
-    let mixed = db.user("MixedCredentials").await;
-    let modern = db.user("ModernOnly").await;
-    sqlx::query("ALTER TABLE users ADD COLUMN old_password_hash TEXT")
-        .execute(&db.pool)
-        .await
-        .unwrap();
-    sqlx::query(
-        "UPDATE users SET old_password_hash='retired-credential',
-         password_hash=CASE WHEN id=$1 THEN NULL ELSE password_hash END WHERE id IN ($1,$2)",
-    )
-    .bind(legacy)
-    .bind(mixed)
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    let before: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
-        .bind(modern)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    let mut transaction = db.pool.begin().await.unwrap();
-    sqlx::raw_sql(include_str!(
-        "../../../install/migrations/006_retire_legacy_passwords.sql"
-    ))
-    .execute(&mut *transaction)
-    .await
-    .unwrap();
-    transaction.commit().await.unwrap();
-    let reset_accounts: Vec<i32> =
-        sqlx::query_scalar("SELECT id FROM users WHERE password_hash IS NULL ORDER BY id")
-            .fetch_all(&db.pool)
-            .await
-            .unwrap();
-    assert_eq!(reset_accounts, vec![legacy, mixed]);
-    let after: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
-        .bind(modern)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-    assert_eq!(after, before);
-    let column_exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public'
-         AND table_name='users' AND column_name='old_password_hash')",
-    )
-    .fetch_one(&db.pool)
-    .await
-    .unwrap();
-    assert!(!column_exists);
-    db.close().await;
-}
-
-#[tokio::test]
 async fn native_accounts_http_and_identity_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
         return;

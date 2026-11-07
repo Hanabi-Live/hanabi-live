@@ -29,6 +29,13 @@ REPOSITORY = "Hanabi-Live/hanabi-live"
 API = f"https://api.github.com/repos/{REPOSITORY}"
 
 
+def migration_version(root):
+    return int(subprocess.check_output(
+        ["bash", str(root / "install/migration-files.sh"), str(root / "install/migrations")],
+        text=True,
+    ).strip())
+
+
 class ReleaseStateUncertainError(RuntimeError):
     """A rename succeeded, but its directory durability could not be confirmed."""
 

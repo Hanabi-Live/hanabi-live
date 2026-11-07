@@ -126,6 +126,8 @@ Create a dedicated database owned by the application user. Run
 `./install/install-database-schema.sh` **only for a new, empty database**; it
 installs the full schema and records its migration version. Existing databases
 must use `./install/migrate.sh status` and `./install/migrate.sh apply`.
+Databases older than schema version 6 must first upgrade to version 6 using an
+earlier release.
 
 Redis is authoritative live-game storage, not a disposable cache. For local
 development, `REDIS_URL` defaults to `redis://127.0.0.1:6379`; run Redis with:
@@ -203,13 +205,9 @@ current-main release without deploying. `./deploy.sh` publishes it and requests
 a graceful restart; reviewed pending migrations require `--apply-migrations`.
 See [AGENTS.md](../AGENTS.md) for production safeguards.
 
-Schema version 6 retires SHA-256 password credentials. Affected accounts require
-a password reset, represented by a NULL password hash. For this upgrade,
-gracefully stop the old application before applying migration 006, then install
-and start the compatible release. Older login queries cannot run after the
-column is removed. Run the wrapper from an up-to-date `main` checkout: it sends
-its matching deployment tools over SSH, so an older production checkout can
-accept the new release format without updating live files during `--check`.
+Run the wrapper from an up-to-date `main` checkout: it sends its matching
+deployment tools over SSH, so an older production checkout can accept the new
+release format without updating live files during `--check`.
 
 Bash filenames use hyphens. When upgrading an existing installation, update
 external cron jobs and certificate-renewal hooks to the renamed scripts,
@@ -372,8 +370,7 @@ the current revision. An unavailable ancestry check refuses activation before
 migrations; hashes are never compared numerically or lexicographically.
 
 Unresolved old checkpoints require recovery with a compatible pre-promotion
-release, not deletion or a new empty Redis namespace. Applied migrations and
-persisted Rust formats are unchanged by this source-layout cleanup.
+release, not deletion or a new empty Redis namespace.
 
 To build a local bundle on Linux amd64, install `musl-tools`, add Rust target
 `x86_64-unknown-linux-musl`, and run:

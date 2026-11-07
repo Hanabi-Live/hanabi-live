@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use sqlx::{
@@ -197,22 +197,15 @@ pub async fn check_migration_target() -> Result<()> {
         .parent()
         .context("Missing executable directory")?
         .into();
-    let mut target = 0;
-    for entry in std::fs::read_dir(root.join("install/migrations"))? {
-        let name = entry?
-            .file_name()
-            .into_string()
-            .map_err(|_| anyhow::anyhow!("Invalid migration path"))?;
-        if name.ends_with(".sql") {
-            let number: i32 = name
-                .split_once('_')
-                .context("Invalid migration filename")?
-                .0
-                .parse()?;
-            ensure!(number > 0, "Invalid migration number");
-            target = target.max(number);
-        }
-    }
+    let output = std::process::Command::new("bash")
+        .arg(root.join("install/migration-files.sh"))
+        .arg(root.join("install/migrations"))
+        .output()?;
+    ensure!(output.status.success(), "Invalid release migration files");
+    let target: i32 = std::str::from_utf8(&output.stdout)?.trim().parse()?;
+    let baseline: i32 = std::fs::read_to_string(root.join("install/migrations/baseline.txt"))?
+        .trim()
+        .parse()?;
     let field =
         |name| std::env::var(name).with_context(|| format!("Migration runner must supply {name}"));
     let options = PgConnectOptions::new()
@@ -234,8 +227,12 @@ pub async fn check_migration_target() -> Result<()> {
                 .fetch_one(&mut connection)
                 .await?;
         ensure!(
-            row.count == 1 && row.version >= 0 && row.version <= target,
-            "Refusing schema downgrade or invalid schema version"
+            row.count == 1 && row.version >= baseline && row.version <= target,
+            "Database schema is outside the supported migration range"
+        );
+    } else {
+        bail!(
+            "Missing schema version; initialize a fresh database or upgrade with an earlier release"
         );
     }
     connection.close().await?;
