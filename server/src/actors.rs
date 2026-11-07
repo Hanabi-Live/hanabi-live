@@ -684,7 +684,7 @@ impl Hub {
                         continue;
                     }
                     if let Some(old) = self.sessions.remove(&session.user) {
-                        old.session.cancel.cancel();
+                        old.session.supersede();
                     }
                     for entry in self.tables.values() {
                         entry.handle.cleanup.notify_one();
@@ -3950,7 +3950,7 @@ impl TableActor {
         {
             e.statuses.push((a.session.clone(), 0, None));
             e.messages
-                .push((a.session, frame("boot", json!({"TableID":self.table.id}))));
+                .push((a.session, frame("left", json!({"tableID":self.table.id}))));
         }
         self.pregame_messages(&mut e);
         self.add_all(&mut e, "chat", authored);

@@ -15,6 +15,15 @@ import type { LobbyStore } from "./store";
 import { actions } from "./store";
 
 const commandName = z.enum(ClientCommand);
+const unconfirmedRequest =
+  "The request may have succeeded. Check the table after reconnecting before trying again.";
+
+interface Confirmation {
+  command: string;
+  complete: () => void;
+  fail: (message: string) => void;
+  warning?: string;
+}
 
 export class LobbyConnection {
   private socket: WebSocket | undefined;
@@ -27,7 +36,9 @@ export class LobbyConnection {
   private destination: number | null = null;
   private handoffTableID: number | null = null;
   private preferenceVersion = 0;
-  private readonly syncVersions: number[] = [];
+  private readonly syncBarriers: Array<number | Confirmation> = [];
+  private confirmation: Confirmation | undefined;
+  private confirmationTimeout: ReturnType<typeof setTimeout> | undefined;
   private preferenceFailed = false;
   private preferenceTimeout: ReturnType<typeof setTimeout> | undefined;
   private navigationAfterPreferences: NewLobbyNavigation | undefined;
@@ -128,6 +139,7 @@ export class LobbyConnection {
     command: string,
     data: object,
     onError?: (message: string) => void,
+    onComplete?: () => void,
   ): boolean {
     const fail = (message: string): false => {
       this.notice(message);
@@ -140,6 +152,11 @@ export class LobbyConnection {
     ) {
       return fail(
         "You are offline. Wait for reconnection, then try again. Nothing was sent.",
+      );
+    }
+    if (onComplete !== undefined && this.confirmation !== undefined) {
+      return fail(
+        "Wait for the current request to be confirmed. Nothing else was sent.",
       );
     }
     const name = commandName.safeParse(command);
@@ -188,7 +205,7 @@ export class LobbyConnection {
       return fail(errorDetails(error, `Sending ${command}`));
     }
     if (command === "sync") {
-      this.syncVersions.push(this.preferenceVersion);
+      this.syncBarriers.push(this.preferenceVersion);
     }
     this.store.dispatch(actions.requestSent(command));
     if (command === "tableUnattend" || command === "tableLeave") {
@@ -199,7 +216,52 @@ export class LobbyConnection {
     if (command === "tableUnattend") {
       this.store.dispatch(actions.tableUnattended());
     }
+    if (onComplete !== undefined) {
+      this.confirmation = {
+        command,
+        complete: onComplete,
+        fail: (message) => {
+          fail(message);
+        },
+      };
+      this.syncBarriers.push(this.confirmation);
+      try {
+        // Confirm ordered mutations, not unrelated table broadcasts.
+        this.socket.send(packWSMessageOnClient("sync", {}));
+      } catch (error) {
+        this.finishConfirmation(
+          `${errorDetails(error, `Confirming ${command}`)} ${unconfirmedRequest}`,
+        );
+        this.socket.close();
+        return false;
+      }
+      this.confirmationTimeout = setTimeout(() => {
+        this.finishConfirmation(
+          `The server did not confirm the request in time. ${unconfirmedRequest}`,
+        );
+        this.socket?.close();
+      }, 10_000);
+    }
     return true;
+  }
+
+  private finishConfirmation(error?: string): void {
+    const { confirmation } = this;
+    if (confirmation === undefined) {
+      return;
+    }
+    this.confirmation = undefined;
+    clearTimeout(this.confirmationTimeout);
+    this.store.dispatch(actions.requestFinished(confirmation.command));
+    if (error === undefined) {
+      confirmation.complete();
+    } else {
+      const { notice } = this.store.getState();
+      confirmation.fail(error);
+      if (notice?.fatal === true) {
+        this.store.dispatch(actions.notify(notice));
+      }
+    }
   }
 
   setting(name: keyof Settings, value: Settings[keyof Settings]): boolean {
@@ -321,16 +383,18 @@ export class LobbyConnection {
           this.destination = null;
         }
         this.store.dispatch(actions.received(event));
-        if (
-          event.command === "warning"
-          && this.store.getState().preferenceStatus === "saving"
-        ) {
-          this.preferenceFailed = true;
-        }
-        if (event.command === "synced") {
-          const version = this.syncVersions.shift();
+        if (event.command === "warning") {
+          const barrier = this.syncBarriers[0];
+          if (typeof barrier === "number") {
+            this.preferenceFailed = true;
+          } else if (barrier !== undefined) {
+            barrier.warning = event.data.warning;
+          }
+        } else if (event.command === "synced") {
+          const barrier = this.syncBarriers.shift();
           if (
-            version === this.preferenceVersion
+            typeof barrier === "number"
+            && barrier === this.preferenceVersion
             && this.store.getState().preferenceStatus === "saving"
           ) {
             clearTimeout(this.preferenceTimeout);
@@ -344,80 +408,108 @@ export class LobbyConnection {
             if (target !== undefined && !this.preferenceFailed) {
               this.navigateToGame(target);
             }
+          } else if (barrier !== undefined && barrier === this.confirmation) {
+            this.finishConfirmation(
+              barrier.warning === undefined
+                ? undefined
+                : `${barrier.warning} Check the table before trying again.`,
+            );
           }
         }
-        if (event.command === "welcome") {
-          welcomed = true;
-          clearTimeout(this.timeout);
-          this.attempts = 0;
-          if (this.destination !== null) {
-            this.send("tableReattend", { tableID: this.destination });
+        switch (event.command) {
+          case "welcome": {
+            welcomed = true;
+            clearTimeout(this.timeout);
+            this.attempts = 0;
+            if (this.destination !== null) {
+              this.send("tableReattend", { tableID: this.destination });
+            }
+
+            break;
           }
-        } else if (event.command === "joined" || event.command === "game") {
-          this.destination = event.data.tableID;
-        } else if (
-          event.command === "left"
-          || (event.command === "tableGone"
-            && event.data.tableID === this.destination)
-        ) {
-          this.destination = null;
-        } else {
-          switch (event.command) {
-            case "restart": {
-              this.attempts = 0;
-              this.store.dispatch(actions.connectionChanged("reconnecting"));
-              break;
+
+          case "joined":
+          case "game": {
+            this.destination = event.data.tableID;
+
+            break;
+          }
+
+          case "left":
+          case "boot":
+          case "tableGone": {
+            const tableID =
+              event.command === "boot"
+                ? event.data.TableID
+                : event.data.tableID;
+            if (this.destination === tableID) {
+              this.destination = null;
             }
-
-            case "soundLobby": {
-              const preferences = this.store.getState().welcome?.settings;
-              if (
-                preferences
-                && preferences.volume > 0
-                && /^[\w-]+$/iu.test(event.data.file)
-              ) {
-                const audio = new Audio(
-                  `/public/sounds/${event.data.file}.mp3`,
-                );
-                audio.volume = preferences.volume / 100;
-                void audio.play().catch((error: unknown) => {
-                  console.info("Browser did not allow lobby sound", error);
-                });
-              }
-
-              break;
-            }
-
-            case "tableStart": {
-              this.handoffTableID = event.data.tableID;
-              this.send("getGameInfo1", { tableID: event.data.tableID });
-              break;
-            }
-
-            case "init": {
-              if (this.handoffTableID !== event.data.tableID) {
-                break;
-              }
+            if (this.handoffTableID === tableID) {
               this.handoffTableID = null;
-              this.navigateToGame({
-                kind: "table",
-                tableID: event.data.tableID,
-                shadowingPlayerIndex: event.data.shadowing
-                  ? event.data.ourPlayerIndex
-                  : -1,
-              });
-
-              break;
+            }
+            if (
+              this.navigationAfterPreferences?.kind === "table"
+              && this.navigationAfterPreferences.tableID === tableID
+            ) {
+              this.navigationAfterPreferences = undefined;
             }
 
-            case "error": {
-              this.stop();
-              this.store.dispatch(actions.connectionChanged("stopped"));
-
-              break;
-            }
-            // No default
+            break;
           }
+
+          case "restart": {
+            this.attempts = 0;
+            this.store.dispatch(actions.connectionChanged("reconnecting"));
+            break;
+          }
+
+          case "soundLobby": {
+            const preferences = this.store.getState().welcome?.settings;
+            if (
+              preferences
+              && preferences.volume > 0
+              && /^[\w-]+$/iu.test(event.data.file)
+            ) {
+              const audio = new Audio(`/public/sounds/${event.data.file}.mp3`);
+              audio.volume = preferences.volume / 100;
+              void audio.play().catch((error: unknown) => {
+                console.info("Browser did not allow lobby sound", error);
+              });
+            }
+
+            break;
+          }
+
+          case "tableStart": {
+            this.handoffTableID = event.data.tableID;
+            this.send("getGameInfo1", { tableID: event.data.tableID });
+            break;
+          }
+
+          case "init": {
+            if (this.handoffTableID !== event.data.tableID) {
+              break;
+            }
+            this.handoffTableID = null;
+            this.navigateToGame({
+              kind: "table",
+              tableID: event.data.tableID,
+              shadowingPlayerIndex: event.data.shadowing
+                ? event.data.ourPlayerIndex
+                : -1,
+            });
+
+            break;
+          }
+
+          case "error": {
+            this.stop();
+            this.store.dispatch(actions.connectionChanged("stopped"));
+
+            break;
+          }
+          // No default
         }
       } catch (error) {
         console.error(
@@ -486,14 +578,20 @@ export class LobbyConnection {
   }
 
   private clearPreferenceRequests(): void {
+    const { notice } = this.store.getState();
+    this.finishConfirmation(
+      `The connection closed before the request was confirmed. ${unconfirmedRequest}${notice?.fatal === true ? ` ${notice.text}` : ""}`,
+    );
     clearTimeout(this.preferenceTimeout);
-    this.syncVersions.length = 0;
+    this.syncBarriers.length = 0;
     this.navigationAfterPreferences = undefined;
     if (this.store.getState().preferenceStatus === "saving") {
       this.store.dispatch(actions.preferenceStatusChanged("failed"));
-      this.notice(
-        "The connection closed before preferences were confirmed. Check them after reconnecting.",
-      );
+      if (notice?.fatal !== true) {
+        this.notice(
+          "The connection closed before preferences were confirmed. Check them after reconnecting.",
+        );
+      }
     }
   }
 }

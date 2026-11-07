@@ -97,6 +97,37 @@ capture itself is not counted as verification.
   accept new-client screenshots as their own reference. Both captures and
   comparison metrics are attached to test results.
 
+## State-transition follow-up
+
+| Scenario                                                     | Verified outcome                                                                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table fills or disappears during password entry              | Production rejected the stale join, displayed the reason, and kept the user in the lobby.                                                                   |
+| Ownership transfer and removal                               | Transfer remained authoritative. Pregame removal now returns both clients to the lobby; an open editor retains its draft and cannot become a creation form. |
+| Delayed, rejected, or disconnected creation                  | The form waits for ordered confirmation. Rejection preserves editable input; lost confirmation reports an uncertain outcome without replaying the mutation. |
+| Double-click, Enter, Escape, Back, and Forward while pending | One mutation is sent; controls remain disabled and the draft survives in-app navigation. Escape does not pretend to cancel an already-sent request.         |
+| Competing tabs and preference saves                          | Both classic-to-new and new-to-new replacement stop the old connection. The active tab can create/edit a table and save preferences that survive reload.    |
+| Other-table exits and late game initialization               | Exit handling is scoped to the affected table and cancels that table's pending game handoff.                                                                |
+
+Red baselines reproduced stale removal screens, editors changing into creation
+forms, premature submission closure, duplicate/unconfirmed requests, and tabs
+repeatedly taking the session from one another. The follow-up verified 55
+Chromium cases (48 retained and seven new), 51 component/transport cases, and 43
+native actor, transport, and WebSocket cases. Settings pixel comparisons and the
+retained keyboard/accessibility checks still pass. The expensive full-dialog
+screenshot matrix was removed upstream; its earlier results are historical
+evidence, not ongoing CI coverage.
+
+Keeping the new form open until confirmation intentionally differs from
+classic's optimistic closure: it prevents lost drafts and false success. Wire
+warnings remain conservatively treated as failures to confirm the pending
+operation; unknown outcomes are not automatically retried.
+
+The production observations used unused shared test accounts on revision
+`9301bfcc6`. Created pregames were removed, the changed creation preference was
+restored, and 13 verified diagnostic chat rows were deleted by exact ID. No
+accounts were created or deleted; no passwords, production services, or
+completed-game records were changed.
+
 ## Coverage limits
 
 - Chromium is the only supported browser and the sole target of this audit and
@@ -105,10 +136,11 @@ capture itself is not counted as verification.
   They are deliberately matched rather than silently replaced with darker
   colors. Accessibility assertions for modal screens target the active dialog;
   they do not certify the underlying classic-colored lobby as WCAG-conformant.
-- Verification uses disposable local Rust/PostgreSQL/Redis fixtures. No
-  production deployment or new production-data audit is implied. OS cursor
-  rendering, every possible account/history combination, and exact pixels across
-  all platforms remain outside the verified assertions above.
+- Controlled timing, disconnects, and competing-tab checks use disposable local
+  Rust/PostgreSQL/Redis fixtures. The fixes have not been deployed to
+  production. OS cursor rendering, every possible account/history combination,
+  and exact pixels across all platforms remain outside the verified assertions
+  above.
 
 ## Completion
 

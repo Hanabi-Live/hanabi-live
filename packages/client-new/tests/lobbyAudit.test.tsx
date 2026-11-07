@@ -49,6 +49,112 @@ it("keeps the exact table-send error in the open form", () => {
   expect(close).not.toHaveBeenCalled();
 });
 
+it("preserves an open editor's draft and update target when its table disappears", () => {
+  const event = decodeEvent(
+    `game ${JSON.stringify({
+      tableID: 7,
+      name: "Original table",
+      owner: 1,
+      maxPlayers: 2,
+      passwordProtected: false,
+      players: [],
+      options: { ...options.parse({}), numPlayers: 0 },
+    })}`,
+  );
+  if (event?.command !== "game") {
+    throw new Error("Missing pregame event");
+  }
+  const connection = new LobbyConnection(createLobbyStore(), vi.fn());
+  const send = vi.spyOn(connection, "send").mockReturnValue(true);
+  const close = vi.fn();
+  const user = welcome();
+  const view = render(
+    <MemoryRouter>
+      <GameDialog
+        close={close}
+        connection={connection}
+        game={event.data}
+        welcome={user}
+      />
+    </MemoryRouter>,
+  );
+  fireEvent.change(screen.getByLabelText("Table name"), {
+    target: { value: "Retained draft" },
+  });
+  view.rerender(
+    <MemoryRouter>
+      <GameDialog close={close} connection={connection} welcome={user} />
+    </MemoryRouter>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Update table" }));
+  expect(screen.getByLabelText("Table name").getAttribute("value")).toBe(
+    "Retained draft",
+  );
+  expect(screen.getByRole("alert").textContent).toContain(
+    "no longer available",
+  );
+  expect(send).not.toHaveBeenCalled();
+  expect(close).not.toHaveBeenCalled();
+});
+
+it("keeps a submitted draft until confirmation and preserves it after rejection", () => {
+  const connection = new LobbyConnection(createLobbyStore(), vi.fn());
+  let reject: ((message: string) => void) | undefined;
+  let accept: (() => void) | undefined;
+  const send = vi
+    .spyOn(connection, "send")
+    .mockImplementation((_command, _data, onError, onComplete) => {
+      reject = onError;
+      accept = onComplete;
+      return true;
+    });
+  const close = vi.fn();
+  render(
+    <MemoryRouter>
+      <GameDialog close={close} connection={connection} welcome={welcome()} />
+    </MemoryRouter>,
+  );
+  fireEvent.change(screen.getByLabelText("Table name"), {
+    target: { value: "Retained submission" },
+  });
+  fireEvent.change(screen.getByLabelText("Variant"), {
+    target: { value: "custom" },
+  });
+  fireEvent.change(screen.getByLabelText("Variant"), {
+    target: { value: "Black (5 Suits)" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Create table" }));
+  expect(close).not.toHaveBeenCalled();
+  expect(
+    screen.getByRole("button", { name: "Create table" }).closest("fieldset")
+      ?.disabled,
+  ).toBe(true);
+  const dice = screen.getByRole("button", { name: "Choose a random variant" });
+  const random = vi.spyOn(Math, "random").mockReturnValue(0);
+  try {
+    fireEvent.click(dice);
+    expect(screen.getByLabelText("Variant").getAttribute("value")).toBe(
+      "Black (5 Suits)",
+    );
+  } finally {
+    random.mockRestore();
+  }
+  expect(dice.getAttribute("aria-disabled")).toBe("true");
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(close).not.toHaveBeenCalled();
+  act(() => reject?.("The server rejected these options."));
+  expect(screen.getByRole("alert").textContent).toContain(
+    "rejected these options",
+  );
+  expect(screen.getByLabelText("Table name").getAttribute("value")).toBe(
+    "Retained submission",
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Create table" }));
+  act(() => accept?.());
+  expect(send).toHaveBeenCalledTimes(2);
+  expect(close).toHaveBeenCalledOnce();
+});
+
 it("keeps the current user and friends first without moving away users out of alphabetical order", () => {
   const store = createLobbyStore();
   store.dispatch(
@@ -211,6 +317,7 @@ it("uses saved timer preferences when editing an untimed table rather than its u
     "tableUpdate",
     expect.objectContaining({ tableID: 7 }),
     expect.any(Function),
+    expect.any(Function),
   );
   expect(setting).not.toHaveBeenCalledWith(
     "createTableTimeBaseMinutes",
@@ -237,10 +344,14 @@ it("waits for updated table options before reopening the editor by button or key
   }
   store.dispatch(actions.received(event));
   const connection = new LobbyConnection(store, vi.fn());
-  vi.spyOn(connection, "send").mockImplementation((command) => {
-    store.dispatch(actions.requestSent(command));
-    return true;
-  });
+  let confirmed: (() => void) | undefined;
+  vi.spyOn(connection, "send").mockImplementation(
+    (command, _data, _onError, onComplete) => {
+      store.dispatch(actions.requestSent(command));
+      confirmed = onComplete;
+      return true;
+    },
+  );
   vi.spyOn(connection, "setting").mockReturnValue(true);
   render(
     <Provider store={store}>
@@ -258,7 +369,10 @@ it("waits for updated table options before reopening the editor by button or key
   expect(edit.hasAttribute("disabled")).toBe(true);
   fireEvent.click(edit);
   fireEvent.keyDown(document.body, { code: "KeyC", altKey: true });
-  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Update table" }).closest("fieldset")
+      ?.disabled,
+  ).toBe(true);
   act(() => {
     store.dispatch(
       actions.received({
@@ -266,7 +380,9 @@ it("waits for updated table options before reopening the editor by button or key
         data: { ...event.data, maxPlayers: 2 },
       }),
     );
+    confirmed?.();
   });
+  expect(screen.queryByRole("dialog")).toBeNull();
   expect(edit.hasAttribute("disabled")).toBe(false);
   fireEvent.keyDown(document.body, { code: "KeyC", altKey: true });
   expect(screen.getByLabelText("Maximum players").getAttribute("value")).toBe(
