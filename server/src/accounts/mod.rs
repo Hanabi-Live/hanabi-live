@@ -13,6 +13,7 @@ pub use crypto::{
     HashFailure, HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash,
     verify_password,
 };
+pub use rate_limit::TooMuchPasswordWork;
 pub use normalization::{
     escape_html, has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
     normalize_username, truncate_to_max_bytes, validate_username,
@@ -164,6 +165,12 @@ fn account_failure(operation: &'static str, error: anyhow::Error, json_response:
     let report =
         crate::errors::Report::from_error(format!("Account {operation}"), &error, Some(30));
     let mut response = report.response(json_response);
+    if let Some(TooMuchPasswordWork(wait)) = error.downcast_ref() {
+        response.headers_mut().insert(
+            header::RETRY_AFTER,
+            axum::http::HeaderValue::from(wait.as_secs().max(1)),
+        );
+    }
     if error.downcast_ref::<HashOverload>().is_some() {
         response.headers_mut().insert(
             header::RETRY_AFTER,
@@ -229,7 +236,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
                 "This account requires a password reset. Please follow the <a href=\"/password-reset\">password reset instructions</a>.",
             ));
         };
-        if !verify_password(input.password.clone(), original.clone()).await? {
+        if !verify_password(ip, input.password.clone(), original.clone()).await? {
             attempt.keep();
             eprintln!("Failed login for account {id} from {ip}.");
             return Ok(unauthorized("That is not the correct password."));
@@ -242,7 +249,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             } else {
                 input.new_password
             };
-            let hash = hash_password(password).await?;
+            let hash = hash_password(ip, password).await?;
             // Do not let a concurrent login overwrite a newer password change.
             let changed = update_password_if_unchanged(&state.pool, id, &hash, &original).await?;
             if !changed && !automatic_upgrade {
@@ -276,7 +283,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
                 escape_html(&similar)
             )));
         }
-        let hash = hash_password(input.password).await?;
+        let hash = hash_password(ip, input.password).await?;
         // Creating an account costs as much as a guess, so it counts against the address.
         attempt.keep();
         id = sqlx::query_scalar!(
@@ -386,8 +393,8 @@ async fn identity_token(
                 "You must be logged in.",
             ));
         };
-        let result = regenerate_token(&state.pool, &state.config.secret, id).await?;
-        let ip = address.ip();
+        let ip = address.ip().to_string();
+        let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
         eprintln!("Issued identity token for account {id} from {ip}.");
         Ok(Json(json!({
             "username":username, "token":result.token,
@@ -427,8 +434,8 @@ async fn identity(
         .await?;
         if let Some(row) = row {
             let expiry: DateTime<Utc> = row.expires_at;
-            if expiry > Utc::now() && verify_password(token, row.token_hash.clone()).await? {
-                let ip = address.ip();
+            let ip = address.ip().to_string();
+            if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
                 eprintln!("Verified identity token from {ip}.");
                 return Ok(Json(json!({"username":row.username.clone()})).into_response());
             }

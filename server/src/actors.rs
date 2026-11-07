@@ -1573,7 +1573,7 @@ async fn prepare_table(
             None
         } else {
             ensure!(password.len() <= 1024, "Password too long");
-            Some(crate::accounts::hash_password(password).await?)
+            Some(crate::accounts::hash_password(&session.ip, password).await?)
         };
         ensure!(session.active(), "Creator disconnected during preparation");
         let table = TableSnapshot {
@@ -2660,7 +2660,7 @@ impl TableActor {
         if let Some(hash) = &self.table.password_hash {
             let hash = hash.clone();
             let password = data["password"].as_str().unwrap_or("").to_owned();
-            let valid = crate::accounts::verify_password(password, hash).await?;
+            let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
             if !valid {
                 eprintln!(
                     "Incorrect password for table {} by account {} from {}.",

@@ -563,18 +563,15 @@ async fn missing(
     render(state, "missing-scores.html", v)
 }
 
-pub(super) async fn password_hash(Form(form): Form<HashMap<String, String>>) -> Result<Response> {
+pub(super) async fn password_hash(
+    ConnectInfo(address): ConnectInfo<SocketAddr>,
+    Form(form): Form<HashMap<String, String>>,
+) -> Result<Response> {
     let password = form
         .get("password")
         .filter(|s| !s.is_empty())
         .ok_or_else(|| Error::bad("Error: You must specify a username."))?
         .clone();
-    let hash = tokio::task::spawn_blocking(move || {
-        Argon2::default()
-            .hash_password(password.as_bytes())
-            .map(|h| h.to_string())
-            .map_err(|e| anyhow::anyhow!("Password hash failed: {e}"))
-    })
-    .await??;
+    let hash = crate::accounts::hash_password(&address.ip().to_string(), password).await?;
     Ok(hash.into_response())
 }

@@ -31,8 +31,8 @@ function main {
 
   # Allow only SSH, HTTP, and HTTPS through the firewall.
   ufw allow OpenSSH
-  ufw allow 80/tcp
-  ufw allow 443/tcp
+  ufw allow 80/tcp  # HTTP
+  ufw allow 443/tcp # HTTPS
   ufw --force enable
 
   # Create the service accounts.

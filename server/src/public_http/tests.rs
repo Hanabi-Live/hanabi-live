@@ -599,6 +599,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .method("POST")
         .uri("/password-reset")
         .header("Content-Type", "application/x-www-form-urlencoded")
+        .extension(ConnectInfo("127.0.0.1:9999".parse::<SocketAddr>().unwrap()))
         .body(Body::from("password=secret"))
         .unwrap();
     let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;

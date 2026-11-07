@@ -7,8 +7,9 @@
 use std::{
     collections::{HashMap, VecDeque},
     hash::Hash,
+    fmt,
     net::{IpAddr, Ipv6Addr},
-    sync::{Mutex, PoisonError},
+    sync::{LazyLock, Mutex, PoisonError},
     time::{Duration, Instant},
 };
 
@@ -18,6 +19,38 @@ const IP_WINDOW: Duration = Duration::from_secs(15 * 60);
 const ACCOUNT_LIMIT: usize = 100;
 const ACCOUNT_WINDOW: Duration = Duration::from_secs(60 * 60);
 const MAX_TRACKED_KEYS: usize = 10_000;
+/// Every password check or hash costs the same, whether or not it succeeds, so all of them share
+/// one budget per address. A visit needs one or two.
+const WORK_LIMIT: usize = 30;
+const WORK_WINDOW: Duration = Duration::from_secs(5 * 60);
+static WORK: LazyLock<Mutex<Counter<IpAddr>>> =
+    LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
+
+#[derive(Debug)]
+pub struct TooMuchPasswordWork(pub Duration);
+
+impl fmt::Display for TooMuchPasswordWork {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let minutes = self.0.as_secs().div_ceil(60).max(1);
+        write!(
+            formatter,
+            "Too many password checks came from your network. Please try again in {minutes} minute{}.",
+            if minutes == 1 { "" } else { "s" }
+        )
+    }
+}
+impl std::error::Error for TooMuchPasswordWork {}
+
+/// Charges one password check or hash to the client's address before any of the work happens.
+pub(super) fn charge_password_work(ip: &str) -> Result<(), TooMuchPasswordWork> {
+    let Some(ip) = ip_key(ip) else {
+        return Ok(());
+    };
+    WORK.lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .charge(ip, Instant::now())
+        .map_err(TooMuchPasswordWork)
+}
 
 struct Counter<K> {
     limit: usize,
@@ -254,6 +287,17 @@ mod tests {
         assert!(blocked > Duration::ZERO && blocked <= IP_WINDOW);
         assert!(limits.begin("203.0.113.10").is_ok());
         assert!(limits.begin("127.0.0.1").is_ok());
+    }
+
+    #[test]
+    fn password_work_is_limited_per_address() {
+        for _ in 0..WORK_LIMIT {
+            charge_password_work("198.51.100.7").unwrap();
+        }
+        let TooMuchPasswordWork(wait) = charge_password_work("198.51.100.7").unwrap_err();
+        assert!(wait > Duration::ZERO && wait <= WORK_WINDOW);
+        assert!(charge_password_work("198.51.100.8").is_ok());
+        assert!(charge_password_work("127.0.0.1").is_ok());
     }
 
     #[test]

@@ -109,7 +109,8 @@ impl HashAdmission {
     }
 }
 
-pub async fn hash_password(password: String) -> Result<String> {
+pub async fn hash_password(ip: &str, password: String) -> Result<String> {
+    super::rate_limit::charge_password_work(ip)?;
     let permit = HASH_ADMISSION.acquire(HASH_WAIT).await?;
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
@@ -128,7 +129,8 @@ pub async fn hash_password(password: String) -> Result<String> {
     .await?
 }
 
-pub async fn verify_password(password: String, hash: String) -> Result<bool> {
+pub async fn verify_password(ip: &str, password: String, hash: String) -> Result<bool> {
+    super::rate_limit::charge_password_work(ip)?;
     let permit = HASH_ADMISSION.acquire(HASH_WAIT).await?;
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
@@ -165,12 +167,17 @@ pub struct IdentityToken {
     pub expires_at: DateTime<Utc>,
 }
 
-pub async fn regenerate_token(pool: &PgPool, secret: &str, id: i32) -> Result<IdentityToken> {
+pub async fn regenerate_token(
+    pool: &PgPool,
+    secret: &str,
+    id: i32,
+    ip: &str,
+) -> Result<IdentityToken> {
     let mut bytes = [0; 96];
     rand::rngs::SysRng.try_fill_bytes(&mut bytes)?;
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
-    let hash = hash_password(token.clone()).await?;
+    let hash = hash_password(ip, token.clone()).await?;
     let expires_at = Utc::now() + Duration::hours(24);
     sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)

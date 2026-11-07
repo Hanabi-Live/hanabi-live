@@ -45,7 +45,7 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
         (65536, 3, 4)
     );
     assert!(
-        verify_password(PASSWORD.into(), upgraded.clone())
+        verify_password("127.0.0.1", PASSWORD.into(), upgraded.clone())
             .await
             .unwrap()
     );
@@ -92,7 +92,7 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let next = hash_password("new-password".into()).await.unwrap();
+    let next = hash_password("127.0.0.1", "new-password".into()).await.unwrap();
     let upgrade = hash_password(PASSWORD.into()).await.unwrap();
     assert!(
         update_password_if_unchanged(&db.pool, id, &next, OLD_HASH)
@@ -111,7 +111,7 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
         .unwrap();
     assert_eq!(stored, next);
     assert!(
-        verify_password("new-password".into(), stored)
+        verify_password("127.0.0.1", "new-password".into(), stored)
             .await
             .unwrap()
     );

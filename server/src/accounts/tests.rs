@@ -201,7 +201,7 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         .await
         .unwrap();
     assert!(stored.is_none());
-    let reset = hash_password("reset-password".into()).await.unwrap();
+    let reset = hash_password("127.0.0.1", "reset-password".into()).await.unwrap();
     sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
         .bind(id)
         .bind(reset)

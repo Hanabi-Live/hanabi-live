@@ -162,6 +162,12 @@ impl Report {
                 description,
                 StatusCode::BAD_GATEWAY,
             )
+        } else if let Some(limited) = error.downcast_ref::<crate::accounts::TooMuchPasswordWork>() {
+            (
+                "password_rate_limited",
+                limited.to_string(),
+                StatusCode::TOO_MANY_REQUESTS,
+            )
         } else if let Some(overload) = error.downcast_ref::<crate::accounts::HashOverload>() {
             (
                 "password_processing_busy",

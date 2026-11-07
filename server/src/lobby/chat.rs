@@ -400,7 +400,7 @@ pub async fn lobby_chat(
         let response = if args.iter().any(|arg| !arg.is_empty()) {
             "The format of the /token command is: /token".into()
         } else {
-            let token = regenerate_token(pool, secret, caller.id).await?;
+            let token = regenerate_token(pool, secret, caller.id, &caller.ip).await?;
             format!(
                 "Identity token (valid until {} UTC): <code>{}</code>",
                 token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
