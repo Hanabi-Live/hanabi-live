@@ -4,9 +4,10 @@
 
 - Install [Bun](https://bun.sh/), [Rust](https://rustup.rs/), and either
   [Podman](https://podman.io/docs/installation) (with Podman Compose) or
-  [Docker](https://www.docker.com/get-started/). PostgreSQL and Redis run in
-  containers. (On Windows, use
+  [Docker](https://www.docker.com/get-started/). (On Windows, use
   [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux).)
+- You do not need to install PostgreSQL or Redis: `bun run dev` runs them in
+  containers.
 - Clone the repository and install the dependencies:
 
 ```sh

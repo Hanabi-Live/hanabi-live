@@ -50,8 +50,7 @@ and is served at `/new`. It hands off gameplay to the shared Konva game screen.
 
 - Rust (pinned in `rust-toolchain.toml`); Go only for building Tern
 - Bun (for the frontend and build tools)
-- PostgreSQL
-- Redis
+- Podman or Docker (`bun run dev` runs PostgreSQL and Redis in containers)
 
 ### Running the Development Server
 
