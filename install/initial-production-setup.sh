@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+set -o errexit -o nounset -o pipefail
+
+DOMAIN="hanab.live"
+APP="/home/hanabi/hanabi-live"
+DOWNLOAD="/root/hanabi-download"
+
+# Everything is in a function because "git checkout" can replace this file while it is running.
+function main {
+  # Refuse to overwrite an existing installation or its secrets.
+  if [[ $EUID -ne 0 ]]; then
+    echo "Error: This script must be run as root." >&2
+    exit 1
+  fi
+  if [[ "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)" != "$APP" ]]; then
+    echo "Error: The repository must be cloned to: $APP" >&2
+    exit 1
+  fi
+  if [[ -e "$APP/.env" ]]; then
+    echo "Error: This server is already set up: $APP/.env exists" >&2
+    exit 1
+  fi
+  cd "$APP"
+
+  # Install dependencies.
+  apt update
+  apt install --yes certbot cron curl git openssl postgresql python3 redis-server sudo
+
+  # Create the service accounts.
+  useradd --system --user-group --no-create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi
+  useradd --system --user-group --no-create-home --home-dir /var/lib/hanabi-redis --shell /usr/sbin/nologin hanabi-redis
+  usermod --append --groups hanabi-redis hanabi
+
+  # Install the systemd service for the server.
+  install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
+
+  # Download the latest release.
+  local sha256 archive rev
+  mkdir --parents "$DOWNLOAD"
+  curl --silent --fail --show-error --location --output "$DOWNLOAD/SHA256SUMS" https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
+  read -r sha256 archive < "$DOWNLOAD/SHA256SUMS"
+  rev=${archive#hanabi-live-rust-}
+  rev=${rev%-linux-amd64.tar.gz}
+  [[ "$rev" =~ ^[a-f0-9]{40}$ && "$sha256" =~ ^[a-f0-9]{64}$ && "$archive" == "hanabi-live-rust-$rev-linux-amd64.tar.gz" ]] || {
+    echo "Error: Invalid GitHub release checksum file." >&2
+    exit 1
+  }
+  curl --silent --fail --show-error --location --output "$DOWNLOAD/$archive" "https://github.com/Hanabi-Live/hanabi-live/releases/download/server-$rev/$archive"
+  git checkout "$rev"
+  python3 install/release.py init /root/hanabi-release
+  python3 install/release.py stage /root/hanabi-release "$DOWNLOAD/$archive" "$sha256"
+  cp --archive /root/hanabi-release/releases/"$rev"-rust/{hanabi-live,public,packages} .
+
+  # Create the database and generate its password.
+  local db_password session_secret
+  systemctl enable --now postgresql
+  db_password=$(openssl rand -hex 32)
+  sudo --user postgres psql --set ON_ERROR_STOP=1 << SQL
+CREATE USER hanabiuser PASSWORD '$db_password';
+CREATE DATABASE hanabi OWNER hanabiuser;
+SQL
+
+  # Configure the server.
+  session_secret=$(openssl rand -hex 64)
+  install --mode 600 /dev/null .env
+  cat > .env << EOF
+DOMAIN="$DOMAIN"
+SESSION_SECRET="$session_secret"
+DB_NAME="hanabi"
+DB_USER="hanabiuser"
+DB_PASSWORD="$db_password"
+TLS_CERT_FILE="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+TLS_KEY_FILE="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+REDIS_URL="redis+unix:///run/hanabi-redis/redis.sock"
+EOF
+
+  # Configure durable, local-only Redis storage (instead of Ubuntu's default Redis service).
+  systemctl disable --now redis-server
+  install --directory --mode 755 /etc/hanabi-redis
+  install --mode 640 --group hanabi-redis install/redis/redis.conf /etc/hanabi-redis/redis.conf
+  install --mode 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
+
+  # Prevent Redis background saves from failing under memory pressure.
+  echo 'vm.overcommit_memory = 1' > /etc/sysctl.d/90-hanabi-redis.conf
+  sysctl --quiet --system
+
+  systemctl daemon-reload
+  systemctl enable --now hanabi-redis
+
+  # Obtain the certificate and grant the service access to its private key.
+  certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN"
+  chmod 0755 /etc/letsencrypt/{live,archive}
+  chgrp hanabi "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+  chmod 0640 "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+
+  # Initialize the database and start the server as hanabi.
+  mkdir --parents logs letsencrypt
+  chown --recursive hanabi:hanabi /home/hanabi
+  sudo --user hanabi ./install/install-database-schema.sh
+  sudo --user hanabi ./hanabi-live --check-startup
+  systemctl enable --now hanabi-live
+  curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/metrics
+
+  # Renew certificates automatically, restarting gracefully as hanabi.
+  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP/letsencrypt" --deploy-hook "sudo --user hanabi $APP/admin/gracefulRestart.sh"
+  systemctl enable --now certbot.timer
+
+  # Back up PostgreSQL daily as hanabi.
+  echo "0 3 * * * hanabi $APP/database-backup.sh" > /etc/cron.d/hanabi-live
+  chmod 644 /etc/cron.d/hanabi-live
+  systemctl enable --now cron
+  sudo --user hanabi ./database-backup.sh
+
+  echo "The server is set up. Also keep coordinated PostgreSQL and Redis backups off this server."
+}
+
+main "$@"
