@@ -1,6 +1,6 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, gameReady, test } from "./fixture";
+import { expect, gameReady, setClassicCheckbox, test } from "./fixture";
 
 test.use({ actionTimeout: 10_000 });
 
@@ -327,7 +327,7 @@ for (const theme of ["light", "dark"] as const) {
         await expect(a.locator(".seat .name-me")).toHaveText(ownerName);
         await a.getByRole("button", { name: "Table options" }).click();
         await expect(
-          a.getByRole("checkbox", { name: /^Empty clues/u }),
+          a.getByRole("dialog").getByText("Empty Clues", { exact: true }),
         ).toBeVisible();
         await expect(
           a.getByRole("checkbox", { name: /^Empty clues/u }),
@@ -349,7 +349,7 @@ for (const theme of ["light", "dark"] as const) {
         await a.keyboard.press("Escape");
         await a.getByRole("link", { name: "Replays", exact: true }).click();
         await auditViewport(a, "new-replay-id");
-        await a.getByRole("radio", { name: "JSON Data" }).check();
+        await a.locator('label[for="replay-source-json"]').click();
         await a
           .getByLabel("Replay JSON", { exact: true })
           .fill('{"players":["Alice","Bob"]}');
@@ -357,11 +357,17 @@ for (const theme of ["light", "dark"] as const) {
         await a.keyboard.press("Escape");
         await a.getByRole("button", { name: "Create a table" }).click();
         await a.getByLabel("Table name", { exact: true }).fill("Audit game");
-        await a.getByText("Hide Extra Options", { exact: true }).click();
+        await a.getByRole("checkbox", { name: /^Empty clues/u }).press("Space");
+        await a.keyboard.press("Escape");
+        await a.getByRole("button", { name: "Create a table" }).click();
+        await a.getByLabel("Table name", { exact: true }).fill("Audit game");
         await auditViewport(a, "new-create-basic");
-        await a.getByLabel("Timed game", { exact: true }).check();
+        await setClassicCheckbox(a.getByLabel("Timed game", { exact: true }));
         await auditViewport(a, "new-create-timed");
-        await a.getByLabel("Timed game", { exact: true }).uncheck();
+        await setClassicCheckbox(
+          a.getByLabel("Timed game", { exact: true }),
+          false,
+        );
         await a.getByText("Show Extra Options", { exact: true }).click();
         await auditViewport(a, "new-create-extra");
         await a.getByLabel("Variant", { exact: true }).selectOption("custom");

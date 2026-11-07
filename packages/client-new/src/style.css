@@ -24,13 +24,16 @@
 .client-new-classic {
   color: #707070;
 }
-.client-new-classic input,
-.client-new-classic textarea {
+.client-new-classic:not(.dialog-content) input,
+.client-new-classic:not(.dialog-content) textarea {
   color: #707070;
 }
 .client-new-classic button {
-  font: inherit;
   cursor: pointer;
+}
+.client-new-classic:not(.dialog-content) button,
+.client-new-classic.dialog-content button:not(.button) {
+  font: inherit;
 }
 .client-new-classic button:disabled {
   opacity: 0.5;
@@ -91,7 +94,7 @@ html[data-theme="dark"] .client-new-classic .person-status {
 .client-new-classic .friend {
   color: var(--color-friend);
 }
-.client-new-classic :focus-visible {
+.client-new-classic:not(.dialog-content) :focus-visible {
   outline: 2px solid #308943;
   outline-offset: 3px;
 }
@@ -472,32 +475,61 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   inset: 0;
   background: rgba(0, 24, 5, 0.7);
   z-index: 100001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .dialog-content {
-  position: fixed;
+  outline: none;
+  position: absolute;
   top: 3.5em;
-  left: 50%;
-  transform: translateX(-50%);
   background: white;
   border: 2px solid #308943;
   border-radius: 5px;
   padding: 20px 30px;
   min-width: 40vw;
   max-width: 80vw;
-  width: max-content;
+  width: auto;
   max-height: calc(100vh - 4em);
   overflow-y: auto;
   scrollbar-gutter: stable;
   z-index: 100002;
 }
 .dialog-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5em;
+  display: contents;
+}
+.classic-dialog-form {
+  margin: 0;
+}
+.sound-preview-error {
+  clear: both;
+}
+.classic-dialog-form .create-game-icon .fa-rainbow,
+.classic-dialog-form .create-game-icon .fa-clock {
+  position: relative;
+  top: 1px;
+}
+#create-game-modal .create-game-icon .fa-key,
+#create-game-modal .create-game-icon .fa-users {
+  position: relative;
+  left: 1px;
+}
+.classic-dialog-form .create-game-icon .fa-blind {
+  position: relative;
+  left: 0.2em;
+}
+.classic-dialog-form .create-game-icon .fa-expand {
+  position: relative;
+  top: 1px;
+}
+.classic-dialog-form .option-disabled {
+  opacity: 0.3;
+}
+.classic-dialog-form .option-disabled label {
+  cursor: auto;
 }
 .dialog-heading h2 {
-  margin: 0 0 1em;
+  margin: 0 0 0.5em;
 }
 .dialog-heading p {
   position: absolute;
@@ -572,7 +604,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   padding: 0 1em;
   width: 100%;
 }
-.client-new-classic input[type="checkbox"],
+.client-new-classic input[type="checkbox"]:not(.classic-checkbox),
 .client-new-classic .replay-form input[type="radio"] {
   z-index: 0;
   appearance: none;
@@ -589,12 +621,13 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   accent-color: #308943;
   flex-shrink: 0;
 }
-.client-new-classic input[type="checkbox"]:checked,
+.client-new-classic input[type="checkbox"]:not(.classic-checkbox):checked,
 .client-new-classic .replay-form input[type="radio"]:checked {
   background: #666;
   border-color: #666;
 }
-.client-new-classic input[type="checkbox"]:checked::after,
+.client-new-classic
+  input[type="checkbox"]:not(.classic-checkbox):checked::after,
 .client-new-classic .replay-form input[type="radio"]:checked::after {
   content: "\f00c";
   font: 900 1em "Font Awesome 5 Free";
@@ -1055,7 +1088,8 @@ html[data-theme="dark"] .classic-score-tooltip {
   background: var(--dm-surface);
   color: var(--dm-text);
 }
-.client-new-classic :is(input, select, textarea):focus-visible {
+.client-new-classic:not(.dialog-content)
+  :is(input, select, textarea):focus-visible {
   outline: none;
 }
 .classic-spectator-list {
@@ -1174,12 +1208,6 @@ html[data-theme="dark"] .classic-score-tooltip {
   margin: 0;
   color: inherit;
   letter-spacing: 0;
-}
-.dialog-content,
-.dialog-content input,
-.dialog-content select,
-.dialog-content textarea {
-  color: #646464;
 }
 .classic-room-info h4 > span {
   display: block;
@@ -1336,9 +1364,12 @@ html[data-theme="dark"] .seat {
   }
   .dialog-content {
     min-width: 0;
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
-    padding: 20px;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: auto;
+    max-width: unset;
+    padding: 20px 30px;
     top: 3.5em;
   }
   .form-grid,

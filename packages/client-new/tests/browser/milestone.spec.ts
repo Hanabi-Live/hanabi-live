@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { setTimeout as delay } from "node:timers/promises";
-import { expect, gameReady, test } from "./fixture";
+import { expect, gameReady, setClassicCheckbox, test } from "./fixture";
 
 type GameWindow = typeof globalThis & {
   globals: {
@@ -219,7 +219,7 @@ test("timed game tabs reconnect after a graceful stop and manual start", async (
     await a
       .getByLabel("Table name", { exact: true })
       .fill("Graceful stop game");
-    await a.getByLabel("Timed game").check();
+    await setClassicCheckbox(a.getByLabel("Timed game"));
     await a.getByLabel("Base time (minutes)").fill("5");
     await a.getByLabel("Seconds per turn").fill("20");
     await a

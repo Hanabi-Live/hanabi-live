@@ -1,8 +1,9 @@
 import { errorDetails } from "@hanabi-live/data";
 import { isArray } from "complete-common";
 import type { SubmitEvent } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { LobbyConnection } from "../connection";
+import { DialogField } from "./DialogField";
 
 export function ReplayPanel({
   connection,
@@ -11,14 +12,30 @@ export function ReplayPanel({
   connection: LobbyConnection;
   disabled: boolean;
 }) {
-  const [source, setSource] = useState("id");
-  const [id, setID] = useState("");
-  const [json, setJSON] = useState("");
-  const [visibility, setVisibility] = useState("solo");
+  const [source, setSource] = useState(() =>
+    localStorage.getItem("watchReplaySource") === "json" ? "json" : "id",
+  );
+  const [id, setID] = useState(
+    () => localStorage.getItem("watchReplayID") ?? "",
+  );
+  const [json, setJSON] = useState(
+    () => localStorage.getItem("watchReplayJSON") ?? "",
+  );
+  const [visibility, setVisibility] = useState(() =>
+    localStorage.getItem("watchReplayVisibility") === "shared"
+      ? "shared"
+      : "solo",
+  );
   const [error, setError] = useState("");
+  const idInput = useRef<HTMLInputElement>(null);
+  const jsonInput = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    (source === "id" ? idInput.current : jsonInput.current)?.select();
+  }, [source]);
   function submit(event: SubmitEvent) {
     event.preventDefault();
     setError("");
+    localStorage.setItem("watchReplaySource", source);
     if (source === "id") {
       const match =
         /^(?:https?:\/\/[^#/?]+\/(?:shared-)?replay\/)?(\d+)(?:\/\d+)?\/?(?:[#?].*)?$/u.exec(
@@ -29,6 +46,8 @@ export function ReplayPanel({
         setError("Enter a positive game ID or a replay link.");
         return;
       }
+      localStorage.setItem("watchReplayID", String(databaseID));
+      localStorage.setItem("watchReplayVisibility", visibility);
       connection.send("replayCreate", {
         source,
         databaseID,
@@ -51,6 +70,8 @@ export function ReplayPanel({
         setError("Replay JSON must be an object.");
         return;
       }
+      localStorage.setItem("watchReplayJSON", json);
+      localStorage.setItem("watchReplayVisibility", visibility);
       connection.send("replayCreate", {
         source,
         gameJSON,
@@ -60,132 +81,108 @@ export function ReplayPanel({
     }
   }
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">A SECOND LOOK</span>
-          <h1>Replay the possibilities.</h1>
-          <p>Study a game on your own, or bring everyone along.</p>
+    <form className="classic-dialog-form" onSubmit={submit}>
+      <div aria-label="Source" className="row" role="radiogroup">
+        <div className="col-3 input-text">
+          <div className="create-game-icon">
+            <i aria-hidden="true" className="fas fa-database" />
+          </div>{" "}
+          Source
+        </div>
+        {(
+          [
+            ["id", "Database ID"],
+            ["json", "JSON Data"],
+          ] as const
+        ).map(([value, label]) => (
+          <div className="col-4" key={value}>
+            <input
+              aria-label={label}
+              checked={source === value}
+              id={`replay-source-${value}`}
+              name="replay-source"
+              onChange={() => setSource(value)}
+              type="radio"
+            />
+            <label className="replay-radio" htmlFor={`replay-source-${value}`}>
+              <span className="replay-radio-label">{label}</span>
+            </label>
+          </div>
+        ))}
+      </div>
+      {source === "id" ? (
+        <DialogField icon="fingerprint" label="ID" width={8}>
+          <input
+            aria-label="Game ID or replay link"
+            id="replay-id"
+            onChange={(event) => setID(event.target.value)}
+            ref={idInput}
+            type="text"
+            value={id}
+          />
+        </DialogField>
+      ) : (
+        <DialogField icon="table" label="JSON" width={8}>
+          <textarea
+            aria-label="Replay JSON"
+            id="replay-json"
+            maxLength={3_000_000}
+            onChange={(event) => setJSON(event.target.value)}
+            ref={jsonInput}
+            rows={3}
+            value={json}
+          />
+        </DialogField>
+      )}
+      {error && (
+        <div className="row">
+          <div className="col-3" />
+          <div className="col-8" id="replay-error-row-text" role="alert">
+            {error}
+          </div>
+        </div>
+      )}
+      <div aria-label="Visibility" className="row" role="radiogroup">
+        <div className="col-3 input-text">
+          <div className="create-game-icon">
+            <i aria-hidden="true" className="fas fa-users" />
+          </div>{" "}
+          Visibility
+        </div>
+        {(["solo", "shared"] as const).map((value) => (
+          <div className="col-4" key={value}>
+            <input
+              aria-label={value === "solo" ? "Solo" : "Shared"}
+              checked={visibility === value}
+              id={`replay-visibility-${value}`}
+              name="replay-visibility"
+              onChange={() => setVisibility(value)}
+              type="radio"
+            />
+            <label
+              className="replay-radio"
+              htmlFor={`replay-visibility-${value}`}
+            >
+              <span className="replay-radio-label">
+                {value === "solo" ? "Solo" : "Shared"}
+              </span>
+            </label>
+          </div>
+        ))}
+      </div>
+      <div className="row">
+        <div className="col-12">
+          <button
+            aria-label="Open replay"
+            className="button fit"
+            disabled={disabled}
+            type="submit"
+          >
+            <i aria-hidden="true" className="fas fa-eye" />
+            {"\u{A0}"} Watch
+          </button>
         </div>
       </div>
-      <form className="panel form-grid replay-form" onSubmit={submit}>
-        <div className="replay-choice-row">
-          <span id="replay-source-label">
-            <i aria-hidden="true" className="fas fa-database" /> Source
-          </span>
-          <div aria-labelledby="replay-source-label" role="radiogroup">
-            <label>
-              <input
-                checked={source === "id"}
-                name="replay-source"
-                onChange={() => setSource("id")}
-                type="radio"
-              />
-              Database ID
-            </label>
-            <label>
-              <input
-                checked={source === "json"}
-                name="replay-source"
-                onChange={() => setSource("json")}
-                type="radio"
-              />
-              JSON Data
-            </label>
-          </div>
-        </div>
-        {source === "id" ? (
-          <label>
-            <span>
-              <i aria-hidden="true" className="fas fa-fingerprint" /> ID
-            </span>
-            <input
-              aria-label="Game ID or replay link"
-              onChange={(event) => setID(event.target.value)}
-              placeholder="For example, 2055474"
-              required
-              type="text"
-              value={id}
-            />
-          </label>
-        ) : (
-          <>
-            <label>
-              Choose a replay file
-              <input
-                accept=".json, application/json"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) {
-                    return;
-                  }
-                  if (file.size > 3_000_000) {
-                    setError("Choose a replay smaller than 3 MB.");
-                    return;
-                  }
-                  void file
-                    .text()
-                    .then((text) => {
-                      setJSON(text);
-                      setError("");
-                    })
-                    .catch((error_: unknown) =>
-                      setError(errorDetails(error_, "Reading replay file")),
-                    );
-                }}
-                type="file"
-              />
-            </label>
-            <label>
-              <span>
-                <i aria-hidden="true" className="fas fa-th" /> JSON
-              </span>
-              <textarea
-                aria-label="Replay JSON"
-                maxLength={3_000_000}
-                onChange={(event) => setJSON(event.target.value)}
-                placeholder='{"players": ["Alice", "Bob"], "seed": "..."}'
-                required
-                rows={3}
-                value={json}
-              />
-            </label>
-          </>
-        )}
-        <div className="replay-choice-row">
-          <span id="replay-visibility-label">
-            <i aria-hidden="true" className="fas fa-users" /> Visibility
-          </span>
-          <div aria-labelledby="replay-visibility-label" role="radiogroup">
-            <label>
-              <input
-                checked={visibility === "solo"}
-                name="replay-visibility"
-                onChange={() => setVisibility("solo")}
-                type="radio"
-              />
-              Solo
-            </label>
-            <label>
-              <input
-                checked={visibility === "shared"}
-                name="replay-visibility"
-                onChange={() => setVisibility("shared")}
-                type="radio"
-              />
-              Shared
-            </label>
-          </div>
-        </div>
-        {error && (
-          <p className="field-error" role="alert">
-            {error}
-          </p>
-        )}
-        <button aria-label="Open replay" className="button" disabled={disabled}>
-          <i aria-hidden="true" className="fas fa-eye" /> Watch
-        </button>
-      </form>
-    </section>
+    </form>
   );
 }

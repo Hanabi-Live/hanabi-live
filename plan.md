@@ -33,19 +33,20 @@ Statuses describe assertions, not screenshots captured or controls visited. Keep
 production interactions confined to shared test accounts and owned tables. Use
 disposable local fixtures for destructive and repeatable scenarios.
 
-| Area                | Required observations                                                                                                     | Status                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Table list          | Spectator-cell upper/middle/lower hit regions and cursors; join/watch/resume; control-click copying                       | Verified by `interactionParity`, `features`, and `milestone` browser tests                                |
-| Identity styling    | Self/friend computed colors compared directly with classic in both themes; direct online profile links                    | Verified by `interactionParity`                                                                           |
-| Password flow       | Classic title/input visibility/focus/cancellation; protected joins and invalid-password handling                          | Verified by `interactionParity` and `features`                                                            |
-| Pregame             | Password/rule icons, visible timers, names, current spectators, role controls, option changes                             | Verified by `interactionParity`, `features`, and `screenAudit`                                            |
-| Shadowing           | Name-click selection/clear indicator; score tooltip; selected player's actual viewpoint after shuffled seating            | Verified against both clients by `interactionParity`; deterministic remapping covered by connection tests |
-| Public destinations | Profile links from both clients, contained score table at 1440/390 pixels, simplified Stats links                         | Verified by `interactionParity` and `features`; external Help content not re-audited                      |
-| Chat/social         | Table/private messages, reply routing, friendship changes, drafts, safe rich text, settings persistence                   | Verified by component tests and `features`                                                                |
-| Dialogs             | Create/options, settings, replay, resources, keyboard/modal navigation, active-dialog accessibility                       | Verified by `screenAudit` and `features`; not a pixel-by-pixel comparison of every dialog                 |
-| History             | On-demand loading, empty/populated views, replay navigation; friends-history entry absent in both clients on current main | Verified by `historyOnDemand`, `screenAudit`, and `features`                                              |
-| Responsive layout   | Desktop/mobile layout, light/dark panels, profile overflow, pregame/chat controls                                         | Verified by `classicAppearance`, `interactionParity`, `screenAudit`, and `features`                       |
-| Lifecycle           | Start, finish, replay, leave/return, reconnect, authoritative shadow handoff, canceled handoff                            | Verified by `milestone`, `duckPrivacy`, `screenAudit`, `interactionParity`, and connection tests          |
+| Area                | Required observations                                                                                                     | Status                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Table list          | Spectator-cell upper/middle/lower hit regions and cursors; join/watch/resume; control-click copying                       | Verified by `interactionParity`, `features`, and `milestone` browser tests                                  |
+| Identity styling    | Self/friend computed colors compared directly with classic in both themes; direct online profile links                    | Verified by `interactionParity`                                                                             |
+| Password flow       | Classic title/input visibility/focus/cancellation; protected joins and invalid-password handling                          | Verified by `interactionParity` and `features`                                                              |
+| Pregame             | Password/rule icons, visible timers, names, current spectators, role controls, option changes                             | Verified by `interactionParity`, `features`, and `screenAudit`                                              |
+| Shadowing           | Name-click selection/clear indicator; score tooltip; selected player's actual viewpoint after shuffled seating            | Verified against both clients by `interactionParity`; deterministic remapping covered by connection tests   |
+| Public destinations | Profile links from both clients, contained score table at 1440/390 pixels, simplified Stats links                         | Verified by `interactionParity` and `features`; external Help content not re-audited                        |
+| Chat/social         | Table/private messages, reply routing, friendship changes, drafts, safe rich text, settings persistence                   | Verified by component tests and `features`                                                                  |
+| Dialogs             | Create/options, Settings, Replay, Resources; normal, scrolled, hover and focus rendering; keyboard and saved preferences  | Verified by `dialogVisualParity`, `settingsParity`, `dialogKeyboard`, and existing flow/accessibility tests |
+| Volume              | Actual sound decoding/playback at 0%, 50%, 100%; pointer and keyboard changes; persistence; visible playback failures     | Verified by `settingsParity` on desktop and mobile                                                          |
+| History             | On-demand loading, empty/populated views, replay navigation; friends-history entry absent in both clients on current main | Verified by `historyOnDemand`, `screenAudit`, and `features`                                                |
+| Responsive layout   | Desktop/mobile layout, light/dark panels, profile overflow, pregame/chat controls                                         | Verified by `classicAppearance`, `interactionParity`, `screenAudit`, and `features`                         |
+| Lifecycle           | Start, finish, replay, leave/return, reconnect, authoritative shadow handoff, canceled handoff                            | Verified by `milestone`, `duckPrivacy`, `screenAudit`, `interactionParity`, and connection tests            |
 
 ## Confirmed defects and changes
 
@@ -73,6 +74,28 @@ option rendering, password prompt, shadow feedback, actual shuffled viewpoint,
 profile containment, direct profile navigation, and control-click behavior.
 Matched row/pregame screenshots accompany the browser assertions. Screenshot
 capture itself is not counted as verification.
+
+## Dialog and audio comparisons
+
+- Settings was using a nonexistent `us.mp3` asset. It now plays `turn-us.mp3` at
+  the currently selected volume, and playback failures appear inside Settings.
+- Dialogs reuse classic layout rules and native control styling. Removed
+  replacement-only controls, restored help links and text, and matched the
+  custom-variant/basic-selector transition.
+- Creation preferences now survive cancellation as in classic. Replay source,
+  content, and visibility persist; initial focus, Tab traversal, Enter, Escape,
+  and return focus have explicit browser assertions.
+- Shared-reference defects were also reproduced and fixed: mobile timer fields
+  clipped their values, light modal text and Settings labels narrowly missed
+  contrast requirements, and classic saved the wrong preference for One Extra
+  Card.
+- Visual tests render both implementations in the same Chromium session using
+  matching data, at 1440 and 390 pixels, in light and dark themes. They compare
+  pixel-aligned captures, dimensions, icon geometry/colors, and link
+  destinations. The image check permits less than 0.1% differing pixels above a
+  16-channel-value tolerance for rendering noise; it does not mask controls or
+  accept new-client screenshots as their own reference. Both captures and
+  comparison metrics are attached to test results.
 
 ## Coverage limits
 

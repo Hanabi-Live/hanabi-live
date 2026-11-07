@@ -78,45 +78,48 @@ const resources = [
     "https://www.givewell.org/charities/top-charities",
   ],
 ] as const;
-const additionalResources = [
-  [
-    "Learn the rules",
-    "Everything you need for your first good game.",
-    "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/rules.md",
-  ],
-  [
-    "Beginner's guide",
-    "Build confidence, one clue at a time.",
-    "https://hanabi.github.io/beginner",
-  ],
-  [
-    "Variant reference",
-    "A different puzzle for every kind of team.",
-    "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/variants.md",
-  ],
-  [
-    "Card and pip reference",
-    "Learn how the different suits look and behave.",
-    "/public/standalone/pips-reference.html",
-  ],
-  [
-    "Characters",
-    "Meet your next interesting restriction.",
-    "https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/characters.md",
-  ],
-] as const;
-
 function resourceLinks(
   items: ReadonlyArray<readonly [string, string, string]>,
 ) {
   return (
-    <ul className="resource-grid">
+    <ul>
       {items.map(([title, description, href]) => (
         <li key={title}>
           <a href={href} rel="noreferrer" target="_blank">
             {title}
           </a>
-          <span className="resource-description">{description}</span>
+          <br />
+          {title === "Make the World a Better Place" ? (
+            <>
+              Hanab Live is hosted free of charge and does not have any
+              advertisements.
+              <br />
+              If you enjoy the website and want to help out, consider donating a{" "}
+              <a href="https://www.givingwhatwecan.org/">
+                portion of your income
+              </a>{" "}
+              to the
+              <br />
+              top-rated charities in the world. (
+              <a
+                href="https://en.wikipedia.org/wiki/GiveWell"
+                rel="noreferrer"
+                target="_blank"
+              >
+                GiveWell
+              </a>{" "}
+              is widely regarded as a pretty good organization
+              <br />
+              for assessing which charities are good.)
+            </>
+          ) : (
+            description.split("\n").map((line, index) => (
+              <span key={line}>
+                {index > 0 && <br />}
+                {line}
+              </span>
+            ))
+          )}
         </li>
       ))}
     </ul>
@@ -787,7 +790,9 @@ export function App({ connection }: { connection: LobbyConnection }) {
                           void navigate("/");
                         }}
                         description="Open an existing game or import a replay."
-                        title="Watch a Replay"
+                        id="replay-modal"
+                        initialFocus='[aria-label="Game ID or replay link"], [aria-label="Replay JSON"]'
+                        title="Watch a Specific Replay"
                       >
                         <ReplayPanel
                           connection={connection}
@@ -838,13 +843,10 @@ export function App({ connection }: { connection: LobbyConnection }) {
                           void navigate("/");
                         }}
                         description="Rules, references, and community links."
+                        id="resources-modal"
                         title="Resources"
                       >
                         {resourceLinks(resources)}
-                        <details>
-                          <summary>Additional references</summary>
-                          {resourceLinks(additionalResources)}
-                        </details>
                       </Modal>
                     }
                     path="resources"
@@ -966,6 +968,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
             className="classic-password-dialog"
             close={() => setPasswordTable(null)}
             description="Enter the password for this game:"
+            initialFocus="input"
             title="Enter Password"
           >
             <form

@@ -64,6 +64,7 @@ export function SettingsPanel({
     (state: LobbyState) => state.preferenceStatus,
   );
   const [volume, setVolume] = useState(welcome?.settings.volume ?? 50);
+  const [previewError, setPreviewError] = useState("");
   useEffect(() => {
     setVolume(welcome?.settings.volume ?? 50);
   }, [welcome?.settings.volume]);
@@ -79,48 +80,66 @@ export function SettingsPanel({
   function toggle([key, title, label]: (typeof toggles)[number]) {
     return (
       <p key={key}>
-        <label className="check">
-          <input
-            aria-label={title}
-            checked={settings[key]}
-            disabled={!online}
-            onChange={(event) => {
-              const { checked } = event.target;
-              if (key === "desktopNotification" && checked) {
-                if (!("Notification" in globalThis)) {
-                  connection.notice(
-                    "This browser does not support desktop notifications.",
-                  );
-                  return;
-                }
-                void Notification.requestPermission()
-                  .then((permission) => {
-                    if (permission === "granted") {
-                      connection.setting(key, true);
-                    } else {
-                      connection.notice(
-                        "Notifications were not enabled. You can change browser permissions and try again.",
-                      );
-                    }
-                  })
-                  .catch((error: unknown) =>
-                    connection.notice(
-                      errorDetails(error, "Requesting notification permission"),
-                    ),
-                  );
-              } else {
-                connection.setting(key, checked);
+        <input
+          aria-label={title}
+          checked={settings[key]}
+          className="classic-checkbox"
+          disabled={!online}
+          id={key}
+          onChange={(event) => {
+            const { checked } = event.target;
+            if (key === "desktopNotification" && checked) {
+              if (!("Notification" in globalThis)) {
+                connection.notice(
+                  "This browser does not support desktop notifications.",
+                );
+                return;
               }
-            }}
-            type="checkbox"
-          />
-          <span>{label}</span>
+              void Notification.requestPermission()
+                .then((permission) => {
+                  if (permission === "granted") {
+                    connection.setting(key, true);
+                  } else {
+                    connection.notice(
+                      "Notifications were not enabled. You can change browser permissions and try again.",
+                    );
+                  }
+                })
+                .catch((error: unknown) =>
+                  connection.notice(
+                    errorDetails(error, "Requesting notification permission"),
+                  ),
+                );
+            } else {
+              connection.setting(key, checked);
+            }
+          }}
+          type="checkbox"
+        />
+        <label htmlFor={key}>
+          <span className="label-text">
+            {key === "hyphenatedConventions" ? (
+              <>
+                Enable{" "}
+                <a
+                  href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md#h-group-conventions"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  H-Group
+                </a>{" "}
+                features
+              </>
+            ) : (
+              label
+            )}
+          </span>
         </label>
       </p>
     );
   }
   return (
-    <section className="classic-settings">
+    <>
       <p
         aria-label="Preference saving status"
         className={
@@ -192,42 +211,59 @@ export function SettingsPanel({
         </div>
         <div>
           <h5>Volume</h5>
-          <div className="classic-volume">
-            <input
-              aria-label="Volume"
-              disabled={!online}
-              max={100}
-              min={0}
-              onBlur={(event) => saveVolume(Number(event.currentTarget.value))}
-              onChange={(event) => setVolume(Number(event.target.value))}
-              onKeyUp={(event) => saveVolume(Number(event.currentTarget.value))}
-              onPointerUp={(event) =>
-                saveVolume(Number(event.currentTarget.value))
-              }
-              step={5}
-              type="range"
-              value={volume}
-            />
-            <span>{volume}%</span>
-            <button
-              onClick={() => {
-                const audio = new Audio("/public/sounds/us.mp3");
-                audio.volume = settings.volume / 100;
-                void audio
-                  .play()
-                  .catch((error: unknown) =>
-                    connection.notice(
-                      errorDetails(error, "Playing the test sound"),
-                    ),
-                  );
-              }}
-              type="button"
-            >
-              Test
-            </button>
-          </div>
+          <ul className="horizontal" id="settings-volume">
+            <li>
+              <input
+                aria-label="Volume"
+                disabled={!online}
+                id="settings-volume-slider"
+                max={100}
+                min={0}
+                onBlur={(event) =>
+                  saveVolume(Number(event.currentTarget.value))
+                }
+                onChange={(event) => setVolume(Number(event.target.value))}
+                onKeyUp={(event) =>
+                  saveVolume(Number(event.currentTarget.value))
+                }
+                onPointerUp={(event) =>
+                  saveVolume(Number(event.currentTarget.value))
+                }
+                step={5}
+                type="range"
+                value={volume}
+              />
+            </li>
+            <li id="settings-volume-slider-value">{volume}%</li>
+            <li>
+              <button
+                className="button alt small"
+                id="settings-volume-test"
+                onClick={() => {
+                  setPreviewError("");
+                  const audio = new Audio("/public/sounds/turn-us.mp3");
+                  audio.volume = volume / 100;
+                  void audio
+                    .play()
+                    .catch((error: unknown) =>
+                      setPreviewError(
+                        errorDetails(error, "Playing the test sound"),
+                      ),
+                    );
+                }}
+                type="button"
+              >
+                Test
+              </button>
+            </li>
+          </ul>
+          {previewError !== "" && (
+            <p className="field-error sound-preview-error" role="alert">
+              {previewError}
+            </p>
+          )}
         </div>
       </div>
-    </section>
+    </>
   );
 }
