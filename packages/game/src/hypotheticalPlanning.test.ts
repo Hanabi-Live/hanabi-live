@@ -38,6 +38,7 @@ const emptyNote: CardNote = {
   needsFix: false,
   questionMark: false,
   exclamationMark: false,
+  spook: false,
   chopMoved: false,
   finessed: false,
   discardPermission: false,

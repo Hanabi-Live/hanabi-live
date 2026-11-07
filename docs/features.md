@@ -460,6 +460,7 @@ additional UI elements are enabled:
   information written on it. This will draw a special image on the card.
 - A note of "!" can be written to indicate that the card have certain
   information written on it. This will draw a special image on the card.
+- A note of "spook" can be written to draw a ghost on the card.
 - A note of "blank" or "unknown" can be written on a card to make it look like
   the deck back.
 - A note of "unclued" or "x" can be written to manually remove the border that
