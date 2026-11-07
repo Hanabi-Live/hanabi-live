@@ -46,7 +46,7 @@ function report_failure {
   printf 'header = "Authorization: Bot %s"\n' "$DISCORD_TOKEN" \
     | curl --silent --show-error --fail --output /dev/null --max-time 15 --config - \
       --header "Content-Type: application/json" \
-      --data "{\"content\":\"The database backup failed with exit code $status. Check the logs with: journalctl -t database-backup.sh\"}" \
+      --data "{\"content\":\"The database backup failed with exit code $status. Check the logs with: \`journalctl -t database-backup.sh\`\"}" \
       "https://discord.com/api/v10/channels/$DISCORD_CHANNEL_WEBSITE_DEVELOPMENT/messages" \
     || echo "Failed to report the backup failure to Discord." >&2
 }
