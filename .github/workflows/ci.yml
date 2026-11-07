@@ -425,26 +425,44 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: read
+      deployments: write
       pages: write
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Check documentation inputs against the last deployment
+        id: docs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/typedoc_deployment.py prepare
       - uses: ./.github/workflows/setup-bun
+        if: steps.docs.outputs.changed == 'true'
 
       - name: Use TypeDoc to automatically generate documentation
+        if: steps.docs.outputs.changed == 'true'
         run: bun run docs
         working-directory: ./packages/game
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: steps.docs.outputs.changed == 'true'
         with:
           name: github-pages-${{ github.run_attempt }}
           path: ./packages/game/docs
 
       - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        id: pages
+        if: steps.docs.outputs.changed == 'true'
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
+      - name: Record documentation publication outcome
+        if: always() && steps.docs.outputs.deployment_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOYMENT_ID: ${{ steps.docs.outputs.deployment_id }}
+          DEPLOYMENT_STATE: ${{ steps.pages.outcome == 'success' && 'success' || 'failure' }}
+        run: python3 scripts/typedoc_deployment.py record "$DEPLOYMENT_ID" "$DEPLOYMENT_STATE"
 
   discord:
     name: Discord Failure Notification
