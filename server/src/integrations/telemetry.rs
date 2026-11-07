@@ -82,7 +82,7 @@ impl Telemetry {
                     .header(
                         "X-Sentry-Auth",
                         format!(
-                            "Sentry sentry_version=7,sentry_key={key},sentry_client=hanabi-rust/1"
+                            "Sentry sentry_version=7,sentry_key={key},sentry_client=hanabi-live/1"
                         ),
                     )
                     .json(&event(&release, &diagnostic))
