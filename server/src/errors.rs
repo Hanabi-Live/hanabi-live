@@ -243,6 +243,10 @@ impl Report {
     }
 
     pub fn log(&self) {
+        // Refusals are logged where the limit is checked, because they are not failures.
+        if self.code == "password_rate_limited" {
+            return;
+        }
         eprintln!(
             "Server failure: {}",
             json!({

@@ -49,7 +49,13 @@ pub(super) fn charge_password_work(ip: &str) -> Result<(), TooMuchPasswordWork> 
     WORK.lock()
         .unwrap_or_else(PoisonError::into_inner)
         .charge(ip, Instant::now())
-        .map_err(TooMuchPasswordWork)
+        .map_err(|wait| {
+            eprintln!(
+                "Refused a password check from {ip} for {} more seconds.",
+                wait.as_secs()
+            );
+            TooMuchPasswordWork(wait)
+        })
 }
 
 struct Counter<K> {
