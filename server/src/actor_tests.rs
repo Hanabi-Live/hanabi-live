@@ -6,6 +6,23 @@ use crate::{
 use sqlx::postgres::PgPoolOptions;
 
 #[test]
+fn request_receipts_drop_the_oldest_when_full() -> Result<()> {
+    let mut table = pregame(1);
+    for index in 0..1100 {
+        table.remember(1, Some(&format!("request-{index}")))?;
+    }
+    ensure!(
+        table.receipts.len() == 1024,
+        "The receipt ledger grew past its limit"
+    );
+    ensure!(
+        !table.duplicate(1, Some("request-0")) && table.duplicate(1, Some("request-1099")),
+        "The ledger did not keep the most recent receipts"
+    );
+    table.validate()
+}
+
+#[test]
 fn table_names_allow_owner_defaults_but_reject_markup() {
     for name in ["Alice's table", "Ren\u{e9}'s table", "Rene\u{301}'s table"] {
         assert!(validate_table_name(name).is_ok(), "{name}");
