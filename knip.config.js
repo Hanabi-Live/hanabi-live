@@ -49,6 +49,8 @@ const config = {
     "packages/testing": {
       // Run from the root "package.json" test script.
       entry: ["src/mainProcessSetup.ts"],
+      // Bun reports "ws" as a built-in module, so Knip cannot see that it is used.
+      ignoreDependencies: ["@types/ws", "ws"],
     },
   },
 
@@ -64,7 +66,6 @@ const config = {
     "prettier-plugin-organize-imports", // Provided by "complete-lint".
     "prettier-plugin-packagejson", // Provided by "complete-lint".
     "stacktracify", // Used in "stack-trace.sh".
-    "ts-prune-2", // Used in "packages/client/lint.sh".
   ],
 };
 
