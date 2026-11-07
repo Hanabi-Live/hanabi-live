@@ -82,9 +82,14 @@ function main {
   # Create the database and generate its password.
   local db_password session_secret
   # Use a quarter of memory for PostgreSQL's cache, instead of the 128 MB default. This only takes
-  # effect when PostgreSQL restarts.
+  # effect when PostgreSQL restarts. The disk is an SSD, where random reads cost little more than
+  # sequential ones, so let the planner prefer indexes. Log queries that wait over a second on a lock.
   for dir in /etc/postgresql/*/main/conf.d; do
-    echo "shared_buffers = $((memory_kb / 4))kB" > "$dir/hanabi.conf"
+    printf '%s\n' \
+      "shared_buffers = $((memory_kb / 4))kB" \
+      "random_page_cost = 1.1" \
+      "log_lock_waits = on" \
+      > "$dir/hanabi.conf"
   done
   systemctl enable postgresql
   systemctl restart postgresql
