@@ -3,10 +3,8 @@
 ## Fast recovery
 
 Current clients connect using `/ws?version=<client-version>` both initially and
-after a disconnect. Both cases require the same session cookie, account, and IP
-checks. Supplied client versions are validated, including explicit empty values.
-Older authenticated clients that omit `version` remain supported so their open
-tabs can reconnect across the rollout. Login version validation is unchanged.
+after a disconnect. Both cases require the same session cookie, account, IP, and
+client-version checks.
 
 Authentication and table membership precede optional lobby reads. `welcome`
 contains `totalGames: null` while statistics are unknown. The Rust-owned

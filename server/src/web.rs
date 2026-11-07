@@ -496,11 +496,9 @@ async fn websocket(
     let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "reconnect" && value == "1");
     let version = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
-        .find_map(|(key, value)| (key == "version").then(|| value.into_owned()));
-    // Older authenticated clients omit this parameter when reconnecting after a deployment.
-    let version_check = version.as_deref().map_or(Ok(()), |version| {
-        accounts::validate_client_version(version, &app.version)
-    });
+        .find_map(|(key, value)| (key == "version").then(|| value.into_owned()))
+        .unwrap_or_default();
+    let version_check = accounts::validate_client_version(&version, &app.version);
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)
         .max_frame_size(crate::transport::MAX_MESSAGE_BYTES)

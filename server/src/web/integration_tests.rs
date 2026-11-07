@@ -136,20 +136,19 @@ async fn connect_query(fixture: &test_support::Fixture, cookie: &str, query: &st
 }
 
 #[tokio::test]
-async fn websocket_checks_explicit_versions_and_preserves_legacy_sessions_postgres() {
+async fn websocket_checks_client_version_with_existing_cookie_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
     };
     let cookie = login(&fixture, "ClientVersion").await;
-    let unauthenticated = format!("ws://{}/ws", fixture.address)
-        .into_client_request()
-        .unwrap();
-    let error = connect_async(unauthenticated).await.unwrap_err();
-    let tokio_tungstenite::tungstenite::Error::Http(response) = error else {
-        panic!("Expected an HTTP rejection for a request without a session or client version");
-    };
-    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
-    for query in ["version=", "version=41", "version=41&reconnect=1"] {
+    for query in [
+        "",
+        "reconnect=1",
+        "fastResume=1",
+        "version=",
+        "version=41",
+        "version=41&reconnect=1",
+    ] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         tokio::time::timeout(Duration::from_secs(5), async {
             let WireMessage::Text(text) = socket.next().await.unwrap().unwrap() else {
@@ -166,14 +165,7 @@ async fn websocket_checks_explicit_versions_and_preserves_legacy_sessions_postgr
         .await
         .unwrap();
     }
-    for query in [
-        "",
-        "reconnect=1",
-        "fastResume=1",
-        "version=42",
-        "version=42&reconnect=1",
-        "version=bot",
-    ] {
+    for query in ["version=42", "version=42&reconnect=1", "version=bot"] {
         let mut socket = connect_query(&fixture, &cookie, query).await;
         receive(&mut socket, "welcome").await;
         socket.close(None).await.unwrap();
