@@ -177,6 +177,11 @@ baseline, use forward migrations without a down-migration section, and update
 current schema version. Older databases must reach the baseline using an earlier
 release before upgrading.
 
+Once a migration has been applied to production and verified working, retire it:
+delete its file, raise `install/migrations/baseline.txt` to its number, and
+remove code and tests that only support the older schema. The schema version
+stays the same.
+
 Migrations normally run in transactions. Operations such as concurrent index
 creation require `---- tern: disable-tx ----` and safe recovery after partial
 failure.
