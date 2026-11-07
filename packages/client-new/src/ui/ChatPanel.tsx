@@ -257,12 +257,15 @@ export function ChatPanel({
             <span className="message-content">
               {message.source === "server"
                 && message.msg.startsWith(SERVER_NOTICE) && (
-                  <span className="red">{SERVER_NOTICE}</span>
+                  <>
+                    <span className="red">{SERVER_NOTICE}</span>{" "}
+                  </>
                 )}
               <RichText
                 html={
                   message.source === "server"
-                    ? message.msg.replace(SERVER_NOTICE, "")
+                  && message.msg.startsWith(SERVER_NOTICE)
+                    ? message.msg.slice(SERVER_NOTICE.length).trimStart()
                     : message.msg
                 }
                 {...(message.source === "server" ? { onOptions } : {})}
