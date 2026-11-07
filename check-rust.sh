@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -o errexit -o nounset -o pipefail
+
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+cd "$DIR"
+status=0
+
+echo "Checking generated wire contracts."
+bash scripts/bash/generate-protocol.sh --check || status=1
+
+cd server
+echo "Checking Rust formatting and static analysis."
+cargo fmt --all --check || status=1
+cargo clippy --locked --all-targets -- -D warnings || status=1
+cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings || status=1
+cargo clippy --locked --manifest-path protocol/Cargo.toml --all-targets -- -D warnings || status=1
+
+exit "$status"

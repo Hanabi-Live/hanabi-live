@@ -92,6 +92,24 @@
       ],
       "outputs": []
     },
+    "//#lint-rust": {
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "env": [
+        "CARGO_BUILD_TARGET",
+        "CARGO_ENCODED_RUSTFLAGS",
+        "CI",
+        "HANABI_BUILD_REVISION",
+        "ImageOS",
+        "ImageVersion",
+        "RUNNER_ARCH",
+        "RUNNER_OS",
+        "RUSTFLAGS",
+        "RUSTUP_TOOLCHAIN",
+        "SQLX_OFFLINE"
+      ],
+      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "outputs": []
+    },
     "//#test": {
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
       "env": [

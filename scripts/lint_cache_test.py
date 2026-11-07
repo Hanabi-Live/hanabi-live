@@ -46,7 +46,14 @@ class LintCacheTests(unittest.TestCase):
         manifest_path = self.root / "package.json"
         manifest = json.loads(manifest_path.read_text())
         manifest["scripts"]["test"] = "bash packages/testing/test.sh"
+        manifest["scripts"]["lint-rust"] = "bash check-rust.sh"
         manifest_path.write_text(json.dumps(manifest))
+        self.write(
+            "check-rust.sh",
+            "mkdir -p .turbo\n"
+            "echo ran >> .turbo/native-executions\n"
+            "test ! -f server/fail.txt\n",
+        )
         self.write(
             "packages/testing/test.sh",
             "mkdir -p .turbo\n"
@@ -358,6 +365,52 @@ class LintCacheTests(unittest.TestCase):
             self.assertNotEqual(self.turbo(task=task, check=False).returncode, 0)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
         (self.root / "packages/client-new/fail.txt").unlink()
+        self.turbo(task=task)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+
+    def test_native_lint_inputs_and_environment_invalidate_results(self):
+        task = "//#lint-rust"
+        for name in (
+            "server/src/main.rs",
+            "server/engine/src/lib.rs",
+            "server/protocol/src/lib.rs",
+            "server/templates/layout.html",
+            "server/.sqlx/query.json",
+            "server/Cargo.lock",
+            "packages/game/src/json/suits.json",
+            "packages/data/src/json/goRandom.json",
+            "packages/data/src/generated/protocol.ts",
+            "install/database_schema.sql",
+            "scripts/bash/generate-protocol.sh",
+            "prettier.config.mjs",
+            "rust-toolchain.toml",
+            ".cargo/config.toml",
+        ):
+            with self.subTest(name=name):
+                self.assert_invalidates(name, "changed\n", {"//"}, task)
+        for name in ("RUSTFLAGS", "RUSTUP_TOOLCHAIN", "SQLX_OFFLINE", "ImageVersion"):
+            with self.subTest(environment=name):
+                environment = dict(os.environ)
+                environment.pop(name, None)
+                self.assertNotEqual(
+                    self.hashes(task, environment),
+                    self.hashes(task, {**environment, name: "changed"}),
+                )
+
+    def test_native_lint_reuses_only_successes_and_ignores_build_outputs(self):
+        task = "//#lint-rust"
+        executions = self.root / ".turbo/native-executions"
+        self.turbo(task=task)
+        self.write("docs/install.md", "Documentation-only change.\n")
+        self.write("server/target/debug/hanabi-live", "generated\n")
+        self.write("packages/data/src/version.js", "generated\n")
+        self.turbo(task=task)
+        self.assertEqual(executions.read_text(), "ran\n")
+        self.write("server/fail.txt", "fail\n")
+        for _ in range(2):
+            self.assertNotEqual(self.turbo(task=task, check=False).returncode, 0)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+        (self.root / "server/fail.txt").unlink()
         self.turbo(task=task)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 

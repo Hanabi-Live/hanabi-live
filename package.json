@@ -90,6 +90,7 @@
     "create-variants-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/createVariantsJSONScript.ts",
     "lint": "bash ./lint.sh",
     "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.mts",
+    "lint-rust": "bash check-rust.sh",
     "prepare": "husky",
     "test": "bun packages/testing/src/mainProcessSetup.ts && bun test --parallel=4 --isolate --tsconfig-override tsconfig.monorepo.json packages/client/src packages/game/src packages/scripts/src packages/testing/src",
     "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
