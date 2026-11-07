@@ -111,7 +111,7 @@ jobs:
 
   client-new:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ matrix.suite == 'audits' && 10 || 5 }}
+    timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
