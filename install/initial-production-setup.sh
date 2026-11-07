@@ -30,6 +30,11 @@ function main {
   apt update
   apt install --yes certbot cron curl git openssl postgresql python3 redis-server sudo ufw
 
+  # After upgrades, list services that need restarting instead of restarting them, because restarting
+  # Redis stops the game server. Reboot during a quiet time to apply library updates.
+  mkdir --parents /etc/needrestart/conf.d
+  echo "\$nrconf{restart} = 'l';" > /etc/needrestart/conf.d/hanabi.conf
+
   # Allow only SSH, HTTP, and HTTPS through the firewall.
   ufw allow OpenSSH
   ufw allow 80/tcp  # HTTP
