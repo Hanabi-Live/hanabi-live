@@ -1047,7 +1047,16 @@ export function App({ connection }: { connection: LobbyConnection }) {
           </Modal>
         )}
         {state.notice?.fatal === true ? (
-          <ErrorModal connection={connection} text={state.notice.text} />
+          <ErrorModal
+            connection={connection}
+            // A reconnect after a deploy fails with an outdated-client error; keep the reason
+            // visible.
+            text={
+              state.downtime === null
+                ? state.notice.text
+                : `${state.downtime}<br /><br />${state.notice.text}`
+            }
+          />
         ) : (
           state.downtime !== null && (
             <WarningModal

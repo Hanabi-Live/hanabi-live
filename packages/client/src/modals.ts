@@ -13,6 +13,8 @@ import { getHTMLElement, getHTMLInputElement } from "./utils";
 type DragAreaType = "playArea" | "discardArea" | null;
 
 let allowCloseModal = true;
+/** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
+let downtimeMessage: string | null = null;
 let currentModal: HTMLElement | null = null;
 let morphDragArea: DragAreaType = null;
 
@@ -272,6 +274,12 @@ export function showWarning(msg: string): void {
   showModal("#warning-modal", true, undefined, ready);
 }
 
+/** The reason stays visible if a reconnect error (such as an outdated client) replaces it. */
+export function showDowntime(msg: string): void {
+  showWarning(msg);
+  downtimeMessage = msg;
+}
+
 export function showError(msg: string): void {
   // Do nothing if we are already showing the error modal.
   if (globals.errorOccurred) {
@@ -284,7 +292,8 @@ export function showError(msg: string): void {
 
   // Error messages include the formatted stack trace from "errors.ts".
   // eslint-disable-next-line unicorn/no-unsafe-dom-html
-  errorModalDescription.innerHTML = msg;
+  errorModalDescription.innerHTML =
+    downtimeMessage === null ? msg : `${downtimeMessage}<br /><br />${msg}`;
   showModal("#error-modal", false);
 }
 
@@ -366,6 +375,7 @@ export function closeModals(fast = false): void {
   }
 
   pageCover.classList.remove("show");
+  downtimeMessage = null;
   if (currentModal !== null) {
     currentModal.classList.add("hidden");
     currentModal.remove();

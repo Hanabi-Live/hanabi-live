@@ -244,7 +244,7 @@ function openConnection(isReconnect: boolean) {
       // An administrator's reason for the downtime stays open through the reconnect.
       const { message } = SERVER_COMMAND_SCHEMAS.restart.parse(payload);
       if (message !== undefined) {
-        modals.showWarning(message);
+        modals.showDowntime(message);
       }
     }
   });

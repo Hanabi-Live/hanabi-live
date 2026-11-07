@@ -381,3 +381,41 @@ it("waits for updated table options before reopening the editor by button or key
     "2",
   );
 });
+
+it("keeps the downtime reason visible when the reconnect requires a refresh", () => {
+  const store = createLobbyStore();
+  store.dispatch(actions.received({ command: "welcome", data: welcome() }));
+  store.dispatch(
+    actions.received({
+      command: "restart",
+      data: { message: "Reason: Upgrading the database." },
+    }),
+  );
+  const connection = new LobbyConnection(store, vi.fn());
+  render(
+    <Provider store={store}>
+      <MemoryRouter>
+        <App connection={connection} />
+      </MemoryRouter>
+    </Provider>,
+  );
+  expect(screen.getByRole("dialog").textContent).toContain(
+    "Reason: Upgrading the database.",
+  );
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "error",
+        data: {
+          error: "You are running an outdated version of the client code.",
+        },
+      }),
+    );
+  });
+  const dialog = screen.getByRole("dialog");
+  expect(dialog.textContent).toContain("Reason: Upgrading the database.");
+  expect(dialog.textContent).toContain(
+    "You are running an outdated version of the client code.",
+  );
+  expect(screen.getByRole("button", { name: "Reload" })).toBeDefined();
+});
