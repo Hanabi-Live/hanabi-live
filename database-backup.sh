@@ -21,20 +21,8 @@ REPO_NAME="$(basename "$DIR")"
 BACKUPS_DIR="$DIR/backups"
 FILENAME=$REPO_NAME-$(date +%s).sql.gz # "date +%s" returns the epoch timestamp.
 
-# Import the database information.
-ENV_PATH="$DIR/.env"
-if [[ ! -f $ENV_PATH ]]; then
-  echo "Failed to find the \".env\" file at: $ENV_PATH"
-  exit 1
-fi
-# shellcheck source=/dev/null
-source "$ENV_PATH"
-if [[ -z ${DB_HOST-} ]]; then
-  DB_HOST=localhost
-fi
-if [[ -z ${DB_PORT-} ]]; then
-  DB_PORT=5432
-fi
+# shellcheck source=scripts/lib/env.sh
+source "$DIR/scripts/lib/env.sh"
 
 # Failures only reach syslog otherwise, where nobody will see them.
 function report_failure {

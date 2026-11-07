@@ -9,24 +9,8 @@ source "$DIR/migration-files.sh"
 migration_version="$(get_migration_version "$DIR/migrations")"
 
 # Import the database information.
-# shellcheck source=/dev/null
-source "$DIR/../.env"
-
-if [[ -z ${DB_HOST-} ]]; then
-  DB_HOST="localhost"
-fi
-if [[ -z ${DB_PORT-} ]]; then
-  DB_PORT="5432"
-fi
-if [[ -z ${DB_USER-} ]]; then
-  DB_USER="hanabiuser"
-fi
-if [[ -z ${DB_PASSWORD-} ]]; then
-  DB_PASSWORD="1234567890"
-fi
-if [[ -z ${DB_NAME-} ]]; then
-  DB_NAME="hanabi"
-fi
+# shellcheck source=../scripts/lib/env.sh
+source "$DIR/../scripts/lib/env.sh"
 
 PGPASSWORD="$DB_PASSWORD" psql \
   --quiet \
