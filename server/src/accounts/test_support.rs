@@ -12,21 +12,6 @@ pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
         ("games", "all_or_nothing", "BOOLEAN NOT NULL DEFAULT FALSE"),
         ("games", "one_extra_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
         ("games", "one_less_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
-        (
-            "user_settings",
-            "create_table_all_or_nothing",
-            "BOOLEAN NOT NULL DEFAULT FALSE",
-        ),
-        (
-            "user_settings",
-            "create_table_one_extra_card",
-            "BOOLEAN NOT NULL DEFAULT FALSE",
-        ),
-        (
-            "user_settings",
-            "create_table_one_less_card",
-            "BOOLEAN NOT NULL DEFAULT FALSE",
-        ),
     ] {
         #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
