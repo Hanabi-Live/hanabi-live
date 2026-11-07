@@ -42,6 +42,11 @@ Choose an account that is not already in use. Do not change these accounts'
 passwords or delete them during cleanup. Keep test interactions confined to test
 accounts and their own tables.
 
+Launch Chromium with `--mute-audio` (in Playwright,
+`launchOptions: { args: ["--mute-audio"] }`) so that game sounds do not play on
+the host machine. Only leave audio on when the purpose of the test is to
+troubleshoot or debug sound.
+
 ## Delivering changes
 
 After making changes, complete the required checks, commit, and push
