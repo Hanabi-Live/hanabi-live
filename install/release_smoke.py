@@ -129,7 +129,6 @@ def exercise(archive, redis_url):
             env=pg_environment,
             check=True,
         )
-        # Reconstruct schema version 6, the supported upgrade baseline.
         subprocess.run(
             [
                 "psql",
@@ -137,10 +136,8 @@ def exercise(archive, redis_url):
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                "CREATE TABLE active_games (game_id integer PRIMARY KEY, "
-                "revision bigint NOT NULL CHECK (revision > 0), checkpoint text NOT NULL); "
                 "CREATE TABLE schema_version (version integer PRIMARY KEY); "
-                "INSERT INTO schema_version VALUES (6)",
+                f"INSERT INTO schema_version VALUES ({release.migration_version(Path.cwd())})",
             ],
             env=pg_environment,
             check=True,

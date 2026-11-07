@@ -10,7 +10,7 @@ import uuid
 
 
 class MigrationFilesTest(unittest.TestCase):
-    def check_files(self, files, baseline="6\n"):
+    def check_files(self, files, baseline="7\n"):
         with tempfile.TemporaryDirectory(prefix="hanabi-migration-files-") as directory:
             if baseline is not None:
                 (Path(directory) / "baseline.txt").write_text(baseline)
@@ -24,13 +24,13 @@ class MigrationFilesTest(unittest.TestCase):
 
     def test_consecutive_versions(self):
         for files, version in [
-            ([], 6),
-            (["008_second.sql", "007_first.sql"], 8),
+            ([], 7),
+            (["009_second.sql", "008_first.sql"], 9),
             (["unversioned.sql"], None),
             (["000_zero.sql"], None),
-            (["006_retired.sql"], None),
-            (["007_first.sql", "009_gap.sql"], None),
-            (["007_first.sql", "0007_duplicate.sql"], None),
+            (["007_retired.sql"], None),
+            (["008_first.sql", "010_gap.sql"], None),
+            (["008_first.sql", "0008_duplicate.sql"], None),
         ]:
             with self.subTest(files=files):
                 result = self.check_files(dict.fromkeys(files, "SELECT 1;\n"))
@@ -42,7 +42,7 @@ class MigrationFilesTest(unittest.TestCase):
 
     def test_down_migrations_are_rejected(self):
         result = self.check_files({
-            "007_probe.sql": "SELECT 1;\n---- create above / drop below ----\nSELECT 2;\n",
+            "008_probe.sql": "SELECT 1;\n---- create above / drop below ----\nSELECT 2;\n",
         })
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Down migrations", result.stderr)
@@ -53,7 +53,7 @@ class MigrationFilesTest(unittest.TestCase):
                 self.assertNotEqual(self.check_files({}, baseline).returncode, 0)
 
     @unittest.skipUnless(os.environ.get("HANABI_TEST_DATABASE_URL"), "Requires disposable PostgreSQL")
-    def test_pruned_history_upgrades_without_resetting_versions_or_discarding_checkpoints(self):
+    def test_pruned_history_supports_baseline_and_future_migrations(self):
         dsn = os.environ["HANABI_TEST_DATABASE_URL"]
         parsed = urlsplit(dsn)
         self.assertIn(parsed.scheme, ("postgres", "postgresql"))
@@ -114,45 +114,36 @@ class MigrationFilesTest(unittest.TestCase):
             env=environment, capture_output=True, text=True, timeout=10,
         )
         self.assertNotEqual(guard.returncode, 0)
-        self.assertIn("Upgrade to schema baseline 6 with an earlier release first", guard.stderr)
+        self.assertIn("Upgrade to schema baseline 7 with an earlier release first", guard.stderr)
         run("apply", False)
         sql("CREATE TABLE schema_version(version integer PRIMARY KEY); "
-            "INSERT INTO schema_version VALUES(6); "
-            "CREATE TABLE active_games(game_id integer PRIMARY KEY, "
-            "revision bigint NOT NULL CHECK(revision > 0), checkpoint text NOT NULL); "
-            "INSERT INTO active_games VALUES(1, 1, 'pending checkpoint')")
+            "INSERT INTO schema_version VALUES(7)")
         run("status", True)
-        run("apply", False)
-        self.assertEqual(sql("SELECT version FROM schema_version"), "6")
-        self.assertEqual(sql("SELECT checkpoint FROM active_games"), "pending checkpoint")
-        sql("DELETE FROM active_games WHERE game_id=1")
         run("apply", True)
         run("apply", True)
         self.assertEqual(sql("SELECT version FROM schema_version"), "7")
-        self.assertEqual(sql("SELECT to_regclass('public.active_games') IS NULL"), "t")
-        for version in (5, 8):
+        for version in (6, 8):
             sql(f"UPDATE schema_version SET version={version}")
             for command in ("status", "apply"):
                 self.assertIn("refusing", run(command, False).stderr)
             self.assertEqual(sql("SELECT version FROM schema_version"), str(version))
-        sql("TRUNCATE schema_version; INSERT INTO schema_version VALUES(6),(7)")
+        sql("TRUNCATE schema_version; INSERT INTO schema_version VALUES(7),(8)")
         run("apply", False)
         sql("TRUNCATE schema_version")
         run("apply", False)
-        sql("INSERT INTO schema_version VALUES(6)")
-        (install / "migrations/007_retire_active_games.sql").unlink()
+        sql("INSERT INTO schema_version VALUES(7)")
+        migration = install / "migrations/008_probe.sql"
+        migration.write_text("CREATE TABLE migration_probe(id integer PRIMARY KEY);\n")
         run("status", True)
         run("apply", True)
-        self.assertEqual(sql("SELECT version FROM schema_version"), "6")
-        sql("DROP TABLE schema_version")
-        shutil.copyfile(
-            source / "migrations/007_retire_active_games.sql",
-            install / "migrations/007_retire_active_games.sql",
-        )
+        run("apply", True)
+        self.assertEqual(sql("SELECT version FROM schema_version"), "8")
+        self.assertEqual(sql("SELECT to_regclass('public.migration_probe') IS NOT NULL"), "t")
+        sql("DROP TABLE schema_version, migration_probe")
+        migration.unlink()
         subprocess.run(
             ["bash", str(install / "install-database-schema.sh")],
             check=True, capture_output=True, text=True, timeout=10,
         )
         self.assertEqual(sql("SELECT version FROM schema_version"), "7")
-        self.assertEqual(sql("SELECT to_regclass('public.active_games') IS NULL"), "t")
         run("apply", True)

@@ -377,8 +377,8 @@ class ReleaseTest(unittest.TestCase):
             shutil.copyfile(Path("install") / name, self.artifact / "install" / name)
         migrations = self.artifact / "install/migrations"
         migrations.mkdir()
-        (migrations / "baseline.txt").write_text("6\n")
-        (migrations / "007_test.sql").write_text("SELECT 1;\n")
+        (migrations / "baseline.txt").write_text("7\n")
+        (migrations / "008_test.sql").write_text("SELECT 1;\n")
         fake_bin = self.workspace / "bin"
         fake_bin.mkdir()
         marker = self.workspace / "compiled"

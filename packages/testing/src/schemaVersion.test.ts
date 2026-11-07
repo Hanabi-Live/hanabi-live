@@ -3,22 +3,22 @@ import { expectedSchemaVersion } from "./schemaVersion";
 
 describe("migration versions", () => {
   test("accepts an empty baseline and orders migrations numerically", () => {
-    expect(expectedSchemaVersion(["baseline.txt"])).toBe(6);
+    expect(expectedSchemaVersion(["baseline.txt"])).toBe(7);
     expect(
       expectedSchemaVersion([
-        "008_second.sql",
+        "009_second.sql",
         "baseline.txt",
-        "007_first.sql",
+        "008_first.sql",
       ]),
-    ).toBe(8);
+    ).toBe(9);
   });
 
   test.each([
     [["unversioned.sql"]],
     [["000_zero.sql"]],
-    [["006_retired.sql"]],
-    [["007_first.sql", "009_gap.sql"]],
-    [["007_first.sql", "0007_duplicate.sql"]],
+    [["007_retired.sql"]],
+    [["008_first.sql", "010_gap.sql"]],
+    [["008_first.sql", "0008_duplicate.sql"]],
   ])("rejects an invalid migration set: %j", (names: readonly string[]) => {
     expect(() => expectedSchemaVersion(names)).toThrow();
   });

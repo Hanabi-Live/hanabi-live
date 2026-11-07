@@ -126,7 +126,7 @@ Create a dedicated database owned by the application user. Run
 `./install/install-database-schema.sh` **only for a new, empty database**; it
 installs the full schema and records its migration version. Existing databases
 must use `./install/migrate.sh status` and `./install/migrate.sh apply`.
-Databases older than schema version 6 must first upgrade to version 6 using an
+Databases older than schema version 7 must first upgrade to version 7 using an
 earlier release.
 
 Redis is authoritative live-game storage, not a disposable cache. For local

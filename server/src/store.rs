@@ -1153,53 +1153,6 @@ mod tests {
         Ok(())
     }
     #[tokio::test]
-    async fn retiring_active_games_requires_recovery_before_dropping_the_table() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
-            return Ok(());
-        };
-        let result = async {
-            sqlx::raw_sql(
-                "CREATE TABLE active_games (
-                    game_id integer PRIMARY KEY,
-                    revision bigint NOT NULL CHECK (revision > 0),
-                    checkpoint text NOT NULL
-                )",
-            )
-            .execute(&pool)
-            .await?;
-            sqlx::query("INSERT INTO active_games VALUES (1, 1, 'pending checkpoint')")
-                .execute(&pool)
-                .await?;
-            let migration = include_str!("../../install/migrations/007_retire_active_games.sql");
-            let error = sqlx::raw_sql(migration).execute(&pool).await.unwrap_err();
-            ensure!(
-                error.as_database_error().is_some_and(|error| error
-                    .message()
-                    .contains("Recover legacy active_games checkpoints")),
-                "Migration failed for an unexpected reason"
-            );
-            let checkpoint: String =
-                sqlx::query_scalar("SELECT checkpoint FROM active_games WHERE game_id = 1")
-                    .fetch_one(&pool)
-                    .await?;
-            ensure!(checkpoint == "pending checkpoint");
-            sqlx::query("DELETE FROM active_games WHERE game_id = 1")
-                .execute(&pool)
-                .await?;
-            sqlx::raw_sql(migration).execute(&pool).await?;
-            let removed: bool =
-                sqlx::query_scalar("SELECT to_regclass('public.active_games') IS NULL")
-                    .fetch_one(&pool)
-                    .await?;
-            ensure!(removed, "Migration did not remove the empty table");
-            Ok::<(), anyhow::Error>(())
-        }
-        .await;
-        pool.close().await;
-        cleanup(admin, name).await?;
-        result
-    }
-    #[tokio::test]
     async fn recovery_refreshes_only_pregame_totals_and_persists_them_once() -> Result<()> {
         let Some((admin, pool, name)) = database().await? else {
             return Ok(());
