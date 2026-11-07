@@ -578,5 +578,265 @@
     "command": "tableSetLeader",
     "input": { "tableID": 7, "name": "Bob" },
     "valid": true
+  },
+  {
+    "name": "user presence includes the table for an active status",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 2,
+      "tableID": 3,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": true
+  },
+  {
+    "name": "user presence omits the table in the lobby",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 0,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": true
+  },
+  {
+    "name": "user presence rejects an unknown status",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 6,
+      "tableID": 3,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": false
+  },
+  {
+    "name": "user list is an array of presences",
+    "direction": "server",
+    "command": "userList",
+    "input": [
+      {
+        "userID": 7,
+        "name": "Alice",
+        "status": 2,
+        "tableID": 3,
+        "hyphenated": false,
+        "inactive": false
+      }
+    ],
+    "valid": true
+  },
+  {
+    "name": "user departure names only the user",
+    "direction": "server",
+    "command": "userLeft",
+    "input": { "userID": 7 },
+    "valid": true
+  },
+  {
+    "name": "user inactivity carries the new state",
+    "direction": "server",
+    "command": "userInactive",
+    "input": { "userID": 7, "inactive": true },
+    "valid": true
+  },
+  {
+    "name": "friends list may be empty",
+    "direction": "server",
+    "command": "friends",
+    "input": { "friends": [] },
+    "valid": true
+  },
+  {
+    "name": "error notices need text",
+    "direction": "server",
+    "command": "error",
+    "input": { "error": "" },
+    "valid": false
+  },
+  {
+    "name": "warning notices may contain HTML",
+    "direction": "server",
+    "command": "warning",
+    "input": { "warning": "Cannot process <code>chat</code>" },
+    "valid": true
+  },
+  {
+    "name": "lobby sounds name a file",
+    "direction": "server",
+    "command": "soundLobby",
+    "input": { "file": "shutdown" },
+    "valid": true
+  },
+  {
+    "name": "welcome fills unchanged settings with the same defaults",
+    "direction": "server",
+    "command": "welcome",
+    "input": {
+      "userID": 7,
+      "username": "Alice",
+      "totalGames": null,
+      "muted": false,
+      "firstTimeUser": false,
+      "connectionMode": "initial",
+      "friends": [],
+      "playingAtTables": [3],
+      "settings": { "volume": 70 }
+    },
+    "valid": true,
+    "normalized": {
+      "userID": 7,
+      "username": "Alice",
+      "totalGames": null,
+      "muted": false,
+      "firstTimeUser": false,
+      "connectionMode": "initial",
+      "friends": [],
+      "playingAtTables": [3],
+      "settings": {
+        "desktopNotification": false,
+        "soundMove": 0,
+        "soundTimer": true,
+        "keldonMode": false,
+        "colorblindMode": false,
+        "realLifeMode": false,
+        "reverseHands": false,
+        "styleNumbers": false,
+        "showTimerInUntimed": false,
+        "volume": 70,
+        "speedrunPreplay": false,
+        "speedrunMode": false,
+        "hyphenatedConventions": false,
+        "createTableVariant": "No Variant",
+        "createTableTimed": false,
+        "createTableTimeBaseMinutes": 2.0,
+        "createTableTimePerTurnSeconds": 20,
+        "createTableSpeedrun": false,
+        "createTableCardCycle": false,
+        "createTableDeckPlays": false,
+        "createTableEmptyClues": false,
+        "createTableOneExtraCard": false,
+        "createTableOneLessCard": false,
+        "createTableAllOrNothing": false,
+        "createTableDetrimentalCharacters": false,
+        "createTableMaxPlayers": 5
+      }
+    }
+  },
+  {
+    "name": "welcome reports a disconnected spectator's seat",
+    "direction": "server",
+    "command": "welcome",
+    "input": {
+      "userID": 7,
+      "username": "Alice",
+      "totalGames": null,
+      "muted": false,
+      "firstTimeUser": false,
+      "connectionMode": "initial",
+      "friends": [],
+      "playingAtTables": [3],
+      "settings": {
+        "desktopNotification": false,
+        "soundMove": 0,
+        "soundTimer": true,
+        "keldonMode": false,
+        "colorblindMode": false,
+        "realLifeMode": false,
+        "reverseHands": false,
+        "styleNumbers": false,
+        "showTimerInUntimed": false,
+        "volume": 50,
+        "speedrunPreplay": false,
+        "speedrunMode": false,
+        "hyphenatedConventions": false,
+        "createTableVariant": "No Variant",
+        "createTableTimed": false,
+        "createTableTimeBaseMinutes": 2.0,
+        "createTableTimePerTurnSeconds": 20,
+        "createTableSpeedrun": false,
+        "createTableCardCycle": false,
+        "createTableDeckPlays": false,
+        "createTableEmptyClues": false,
+        "createTableOneExtraCard": false,
+        "createTableOneLessCard": false,
+        "createTableAllOrNothing": false,
+        "createTableDetrimentalCharacters": false,
+        "createTableMaxPlayers": 5
+      },
+      "disconSpectatingTable": 3,
+      "disconShadowingSeat": -1
+    },
+    "valid": true
+  },
+  {
+    "name": "welcome requires the total, even when it is not loaded",
+    "direction": "server",
+    "command": "welcome",
+    "input": {
+      "userID": 7,
+      "username": "Alice",
+      "muted": false,
+      "firstTimeUser": false,
+      "connectionMode": "initial",
+      "friends": [],
+      "playingAtTables": [3],
+      "settings": {
+        "desktopNotification": false,
+        "soundMove": 0,
+        "soundTimer": true,
+        "keldonMode": false,
+        "colorblindMode": false,
+        "realLifeMode": false,
+        "reverseHands": false,
+        "styleNumbers": false,
+        "showTimerInUntimed": false,
+        "volume": 50,
+        "speedrunPreplay": false,
+        "speedrunMode": false,
+        "hyphenatedConventions": false,
+        "createTableVariant": "No Variant",
+        "createTableTimed": false,
+        "createTableTimeBaseMinutes": 2.0,
+        "createTableTimePerTurnSeconds": 20,
+        "createTableSpeedrun": false,
+        "createTableCardCycle": false,
+        "createTableDeckPlays": false,
+        "createTableEmptyClues": false,
+        "createTableOneExtraCard": false,
+        "createTableOneLessCard": false,
+        "createTableAllOrNothing": false,
+        "createTableDetrimentalCharacters": false,
+        "createTableMaxPlayers": 5
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "welcome settings reject an unsupported player count",
+    "direction": "server",
+    "command": "welcome",
+    "input": {
+      "userID": 7,
+      "username": "Alice",
+      "totalGames": null,
+      "muted": false,
+      "firstTimeUser": false,
+      "connectionMode": "initial",
+      "friends": [],
+      "playingAtTables": [3],
+      "settings": { "createTableMaxPlayers": 7 }
+    },
+    "valid": false
   }
 ]

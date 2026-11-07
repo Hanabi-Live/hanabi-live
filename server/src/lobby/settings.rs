@@ -1,75 +1,10 @@
 use anyhow::{Result, bail, ensure};
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::PgPool;
 
 /// A user's preferences, using the client-facing names. The database stores only the values a
-/// user changed; everything else comes from `Default`. Unknown stored names are ignored, so a
-/// setting can be removed without a migration.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
-pub struct Settings {
-    pub desktop_notification: bool,
-    /// See the client's `SoundMove` enum.
-    pub sound_move: i16,
-    pub sound_timer: bool,
-    pub keldon_mode: bool,
-    pub colorblind_mode: bool,
-    pub real_life_mode: bool,
-    pub reverse_hands: bool,
-    pub style_numbers: bool,
-    pub show_timer_in_untimed: bool,
-    pub speedrun_preplay: bool,
-    pub speedrun_mode: bool,
-    pub hyphenated_conventions: bool,
-    pub volume: i16,
-    pub create_table_variant: String,
-    pub create_table_timed: bool,
-    pub create_table_time_base_minutes: f64,
-    pub create_table_time_per_turn_seconds: i32,
-    pub create_table_speedrun: bool,
-    pub create_table_card_cycle: bool,
-    pub create_table_deck_plays: bool,
-    pub create_table_empty_clues: bool,
-    pub create_table_one_extra_card: bool,
-    pub create_table_one_less_card: bool,
-    pub create_table_all_or_nothing: bool,
-    pub create_table_detrimental_characters: bool,
-    pub create_table_max_players: i16,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            desktop_notification: false,
-            sound_move: 0,
-            sound_timer: true,
-            keldon_mode: false,
-            colorblind_mode: false,
-            real_life_mode: false,
-            reverse_hands: false,
-            style_numbers: false,
-            show_timer_in_untimed: false,
-            speedrun_preplay: false,
-            speedrun_mode: false,
-            hyphenated_conventions: false,
-            volume: 50,
-            create_table_variant: "No Variant".into(),
-            create_table_timed: false,
-            create_table_time_base_minutes: 2.0,
-            create_table_time_per_turn_seconds: 20,
-            create_table_speedrun: false,
-            create_table_card_cycle: false,
-            create_table_deck_plays: false,
-            create_table_empty_clues: false,
-            create_table_one_extra_card: false,
-            create_table_one_less_card: false,
-            create_table_all_or_nothing: false,
-            create_table_detrimental_characters: false,
-            create_table_max_players: 5,
-        }
-    }
-}
+/// user changed; everything else comes from `Default`.
+pub use hanabi_protocol::Settings;
 
 /// Every setting with its default value, keyed by its client-facing name.
 pub(super) fn defaults() -> serde_json::Map<String, Value> {
@@ -79,13 +14,28 @@ pub(super) fn defaults() -> serde_json::Map<String, Value> {
     }
 }
 
-pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Value> {
+pub async fn get_settings(pool: &PgPool, id: i32) -> Result<Settings> {
     let stored = sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
         .fetch_optional(pool)
         .await?
         .unwrap_or_else(|| Value::Object(serde_json::Map::new()));
-    let settings: Settings = serde_json::from_value(stored)?;
-    Ok(serde_json::to_value(settings)?)
+    Ok(from_stored(stored))
+}
+
+/// Keeps only the stored values that pass the wire contract. Unknown names (from a removed setting)
+/// and values that are no longer valid (such as an empty variant name) fall back to their defaults
+/// instead of reaching clients that would reject them.
+fn from_stored(stored: Value) -> Settings {
+    let Value::Object(stored) = stored else {
+        return Settings::default();
+    };
+    let valid = stored
+        .into_iter()
+        .filter(|(name, value)| {
+            hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: value })).is_ok()
+        })
+        .collect();
+    serde_json::from_value(Value::Object(valid)).unwrap_or_default()
 }
 
 pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Result<()> {
@@ -158,10 +108,10 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
         Value::String(_) => Value::String(value.to_owned()),
         _ => unreachable!("settings are booleans, numbers, or strings"),
     };
-    // The field's own type enforces the remaining limits, such as small integer ranges.
+    // The wire contract enforces the remaining limits, such as the allowed player counts.
     ensure!(
-        serde_json::from_value::<Settings>(serde_json::json!({ name: parsed })).is_ok(),
-        "The setting of \"{name}\" is too large."
+        hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: parsed })).is_ok(),
+        "The setting of \"{name}\" is not an allowed value."
     );
     Ok(parsed)
 }

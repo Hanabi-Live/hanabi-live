@@ -1,5 +1,7 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
+import { SoundMove } from "../enums/SoundMove";
+import { Status } from "../enums/Status";
 
 export const tableIdSchema = z
   .number()
@@ -99,6 +101,12 @@ export const chatUserRequestSchema = z
   .readonly()
   .default({ name: "", room: "" });
 export const emptySchema = z.strictObject({});
+export const errorNoticeSchema = z
+  .strictObject({ error: z.string().min(1) })
+  .readonly();
+export const friendsSchema = z
+  .strictObject({ friends: z.array(z.string()).readonly() })
+  .readonly();
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
   z.strictObject({
@@ -137,6 +145,44 @@ export const replayActionRequestSchema = z.strictObject({
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
 });
+export const settingsSchema = z
+  .strictObject({
+    colorblindMode: z.boolean().default(false),
+    createTableAllOrNothing: z.boolean().default(false),
+    createTableCardCycle: z.boolean().default(false),
+    createTableDeckPlays: z.boolean().default(false),
+    createTableDetrimentalCharacters: z.boolean().default(false),
+    createTableEmptyClues: z.boolean().default(false),
+    createTableMaxPlayers: z.literal([2, 3, 4, 5, 6]).default(5),
+    createTableOneExtraCard: z.boolean().default(false),
+    createTableOneLessCard: z.boolean().default(false),
+    createTableSpeedrun: z.boolean().default(false),
+    createTableTimeBaseMinutes: z.number().min(0).max(86_400).default(2),
+    createTableTimePerTurnSeconds: z
+      .number()
+      .int()
+      .min(0)
+      .max(604_800)
+      .default(20),
+    createTableTimed: z.boolean().default(false),
+    createTableVariant: z.string().min(1).default("No Variant"),
+    desktopNotification: z.boolean().default(false),
+    hyphenatedConventions: z.boolean().default(false),
+    keldonMode: z.boolean().default(false),
+    realLifeMode: z.boolean().default(false),
+    reverseHands: z.boolean().default(false),
+    showTimerInUntimed: z.boolean().default(false),
+    soundMove: z.enum(SoundMove).default(z.enum(SoundMove).parse(0)),
+    soundTimer: z.boolean().default(true),
+    speedrunMode: z.boolean().default(false),
+    speedrunPreplay: z.boolean().default(false),
+    styleNumbers: z.boolean().default(false),
+    volume: z.number().int().min(0).max(100).default(50),
+  })
+  .readonly();
+export const soundLobbySchema = z
+  .strictObject({ file: z.string().min(1) })
+  .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableJoinRequestSchema = z.strictObject({
   password: z.string().default(""),
@@ -194,6 +240,48 @@ export const tagsDeleteAllRequestSchema = z.strictObject({
   room: z.string().default(""),
   tableID: tableIdSchema,
 });
+const userIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"UserID">();
+export const userSchema = z
+  .strictObject({
+    hyphenated: z.boolean(),
+    inactive: z.boolean(),
+    name: z.string().min(1),
+    status: z.enum(Status),
+    tableID: tableIdSchema.optional(),
+    userID: userIdSchema,
+  })
+  .readonly();
+export const userInactiveSchema = z
+  .strictObject({ inactive: z.boolean(), userID: userIdSchema })
+  .readonly();
+export const userLeftSchema = z
+  .strictObject({ userID: userIdSchema })
+  .readonly();
+export const userListSchema = z.array(userSchema).readonly();
+export const warningSchema = z
+  .strictObject({ warning: z.string().min(1) })
+  .readonly();
+const connectionModeSchema = z.enum(["initial", "reconnect"]);
+export const welcomeSchema = z
+  .strictObject({
+    connectionMode: connectionModeSchema,
+    disconShadowingSeat: z.number().int().min(-1).max(5).optional(),
+    disconSpectatingTable: tableIdSchema.optional(),
+    firstTimeUser: z.boolean(),
+    friends: z.array(z.string()).readonly(),
+    muted: z.boolean(),
+    playingAtTables: z.array(tableIdSchema).readonly(),
+    settings: settingsSchema,
+    totalGames: z.number().int().min(0).max(9_007_199_254_740_991).nullable(),
+    userID: userIdSchema,
+    username: z.string().min(1),
+  })
+  .readonly();
 export const CLIENT_WIRE_SCHEMAS = {
   action: actionRequestSchema,
   chat: chatRequestSchema,
@@ -237,13 +325,22 @@ export const SERVER_WIRE_SCHEMAS = {
   chatList: chatListSchema,
   chatPMHistory: chatHistorySchema,
   chatTyping: chatTypingSchema,
+  error: errorNoticeSchema,
+  friends: friendsSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
   restart: restartSchema,
+  soundLobby: soundLobbySchema,
   synced: emptySchema,
   tableGone: tableRequestSchema,
   tableStart: tableStartedSchema,
+  user: userSchema,
+  userInactive: userInactiveSchema,
+  userLeft: userLeftSchema,
+  userList: userListSchema,
+  warning: warningSchema,
+  welcome: welcomeSchema,
 } as const;
 export type ClientWireData = {
   [Command in keyof typeof CLIENT_WIRE_SCHEMAS]: z.infer<

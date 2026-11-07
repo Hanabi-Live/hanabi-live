@@ -1,7 +1,6 @@
 use super::{Caller, Effect, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use anyhow::Result;
-use serde_json::json;
 use sqlx::PgPool;
 
 pub async fn friends(pool: &PgPool, id: i32) -> Result<Vec<String>> {
@@ -195,7 +194,9 @@ pub async fn relationship(
         });
         effects.push(Effect::ToSelf {
             command: "friends".into(),
-            data: json!({"friends":friends(pool, caller.id).await?}),
+            data: serde_json::to_value(hanabi_protocol::Friends {
+                friends: friends(pool, caller.id).await?,
+            })?,
         });
     }
     Ok(effects)

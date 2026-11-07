@@ -77,9 +77,7 @@ const HAND_WRITTEN_SERVER_MESSAGES = [
   "cardIdentities",
   "clock",
   "connected",
-  "error",
   "finishOngoingGame",
-  "friends",
   "game",
   "gameAction",
   "gameActionList",
@@ -101,18 +99,11 @@ const HAND_WRITTEN_SERVER_MESSAGES = [
   "replayLeader",
   "replaySegment",
   "replaySound",
-  "soundLobby",
   "spectators",
   "suggestion",
   "table",
   "tableList",
-  "user",
-  "userInactive",
-  "userLeft",
-  "userList",
   "voteChange",
-  "warning",
-  "welcome",
 ] as const;
 
 test("only the listed server messages use hand-written schemas", () => {

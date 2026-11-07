@@ -87,7 +87,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Register {
                 session,
-                welcome: json!({}),
+                welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
             })

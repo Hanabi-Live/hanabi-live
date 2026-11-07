@@ -294,7 +294,7 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
 struct Bootstrap {
     name: String,
     normalized_name: String,
-    welcome: Value,
+    welcome: hanabi_protocol::Welcome,
     initial: Vec<String>,
 }
 
@@ -319,15 +319,23 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         accounts::is_muted(pool, ip)
     )?;
     let created: DateTime<Utc> = row.datetime_created;
-    let welcome = json!({
-        "userID":id,"username":name,"totalGames":null,
-        "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
-        "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
-        "playingAtTables":[],
-        // Required by already-open clients; neither retired mode can be enabled.
-        "shuttingDown":false,
-        "maintenanceMode":false,
-    });
+    let welcome = hanabi_protocol::Welcome {
+        user_id: hanabi_protocol::UserId(id),
+        username: name.clone(),
+        total_games: None,
+        muted,
+        first_time_user: (Utc::now() - created).num_milliseconds() < 10000,
+        settings,
+        connection_mode: if reconnect {
+            hanabi_protocol::ConnectionMode::Reconnect
+        } else {
+            hanabi_protocol::ConnectionMode::Initial
+        },
+        friends,
+        playing_at_tables: vec![],
+        discon_spectating_table: None,
+        discon_shadowing_seat: None,
+    };
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
         id,
@@ -553,7 +561,11 @@ async fn websocket(
                             tokio::time::timeout(Duration::from_secs(5), async {
                                 socket
                                     .send(Message::Text(
-                                        frame("error", json!({"error":message})).into(),
+                                        frame(
+                                            "error",
+                                            hanabi_protocol::ErrorNotice { error: message },
+                                        )
+                                        .into(),
                                     ))
                                     .await?;
                                 socket.close().await
@@ -598,7 +610,13 @@ async fn connection(
             let _ = tokio::time::timeout(
                 Duration::from_secs(5),
                 socket.send(Message::Text(
-                    frame("error", json!({"error":"Account initialization failed."})).into(),
+                    frame(
+                        "error",
+                        hanabi_protocol::ErrorNotice {
+                            error: "Account initialization failed.".into(),
+                        },
+                    )
+                    .into(),
                 )),
             )
             .await;
@@ -614,9 +632,7 @@ async fn connection(
             normalized_name: data.normalized_name,
             ip,
             generation,
-            hyphenated: data.welcome["settings"]["hyphenatedConventions"]
-                .as_bool()
-                .unwrap_or(false),
+            hyphenated: data.welcome.settings.hyphenated_conventions,
         },
         app.lease_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),
@@ -662,7 +678,12 @@ async fn connection(
                 StatusCode::CONFLICT,
             );
             report.log();
-            let message = frame("error", json!({"error":report.text()}));
+            let message = frame(
+                "error",
+                hanabi_protocol::ErrorNotice {
+                    error: report.text(),
+                },
+            );
             let _ = tokio::time::timeout(
                 Duration::from_secs(1),
                 sink.send(Message::Text(message.into())),
@@ -756,7 +777,7 @@ async fn connection(
                 } else {
                     accounts::escape_html(&error.to_string())
                 };
-                session.emit(&frame("warning", json!({"warning":warning})));
+                session.emit(&frame("warning", hanabi_protocol::Warning { warning }));
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -867,7 +888,9 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             let command = protocol::command_name(input).unwrap_or("unrecognized command");
             session.emit(&frame(
                 "warning",
-                json!({"warning":accounts::escape_html(&format!("Cannot process {command}: {detail}"))}),
+                hanabi_protocol::Warning {
+                    warning: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
+                },
             ));
             return Ok(());
         }

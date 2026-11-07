@@ -2,6 +2,12 @@ use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+/// TypeScript enums that wire integers may name with `x-enum`, and the modules that export them.
+const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[
+    ("SoundMove", "../enums/SoundMove"),
+    ("Status", "../enums/Status"),
+];
+
 fn literal(value: &Value) -> String {
     let Some(number) = value.as_i64() else {
         return value.to_string();
@@ -29,6 +35,18 @@ fn literal(value: &Value) -> String {
 // future annotation needs a new translation rather than silently dropping a rule.
 fn expression(schema: &Value) -> Result<String> {
     let object = schema.as_object().context("Expected a schema object")?;
+    // An Option without skip_serializing_if serializes None as null: {"type": [T, "null"]}.
+    if let Some(types) = object.get("type").and_then(Value::as_array) {
+        let mut types = types.iter().filter_map(Value::as_str).collect::<Vec<_>>();
+        ensure!(
+            types.len() == 2 && types.contains(&"null"),
+            "Only nullable single types are supported"
+        );
+        types.retain(|value| *value != "null");
+        let mut inner = schema.clone();
+        inner["type"] = Value::from(types[0]);
+        return Ok(format!("{}.nullable()", expression(&inner)?));
+    }
     for key in object.keys() {
         ensure!(
             [
@@ -55,6 +73,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "x-brand",
                 "x-readonly",
                 "x-undefined-default",
+                "x-enum",
             ]
             .contains(&key.as_str()),
             "Unsupported schema keyword: {key}"
@@ -88,6 +107,20 @@ fn expression(schema: &Value) -> Result<String> {
             .strip_prefix("#/$defs/")
             .context("Only local schema references are supported")?;
         variable(name)
+    } else if let Some(name) = schema.get("x-enum") {
+        let name = name.as_str().context("Invalid TypeScript enum name")?;
+        ensure!(
+            TYPESCRIPT_ENUMS.iter().any(|(known, _)| *known == name),
+            "Unknown TypeScript enum: {name}"
+        );
+        // The server validates the listed values; the client validates against its enum.
+        ensure!(
+            schema["enum"]
+                .as_array()
+                .is_some_and(|values| !values.is_empty() && values.iter().all(Value::is_i64)),
+            "TypeScript enums need the integer values listed for the server"
+        );
+        format!("z.enum({name})")
     } else if let Some(values) = schema["enum"].as_array() {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
@@ -117,6 +150,13 @@ fn expression(schema: &Value) -> Result<String> {
                 );
                 "z.number().int()".into()
             }
+            "number" => {
+                ensure!(
+                    schema["format"] == "double",
+                    "Wire numbers must be finite doubles"
+                );
+                "z.number()".into()
+            }
             "boolean" => "z.boolean()".into(),
             "null" => "z.null()".into(),
             "array" => format!("z.array({})", expression(&schema["items"])?),
@@ -139,7 +179,8 @@ fn expression(schema: &Value) -> Result<String> {
                             !required.iter().any(|value| value == name),
                             "Required fields cannot acquire client-only defaults"
                         );
-                        field.push_str(&format!(".default({default})"));
+                        field
+                            .push_str(&format!(".default({})", default_literal(property, default)));
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
@@ -166,7 +207,8 @@ fn expression(schema: &Value) -> Result<String> {
     }
     if let Some(format) = schema["format"].as_str() {
         match format {
-            "int32" | "int64" | "uint8" | "uint32" | "uint64" => {}
+            "int8" | "int16" | "int32" | "int64" | "uint8" | "uint16" | "uint32" | "uint64"
+            | "double" => {}
             other => bail!("Unsupported schema format: {other}"),
         }
     }
@@ -180,6 +222,19 @@ fn expression(schema: &Value) -> Result<String> {
         result.push_str(&format!(".default({default})"));
     }
     Ok(result)
+}
+
+/// Writes a field's default as TypeScript: whole floats without a zero fraction, and values of a
+/// named enum checked against that enum, which also gives them its type.
+fn default_literal(property: &Value, default: &Value) -> String {
+    let value = match default.as_f64() {
+        Some(number) if default.is_f64() && number % 1.0 == 0.0 => format!("{number:.0}"),
+        _ => default.to_string(),
+    };
+    match property.get("x-enum").and_then(Value::as_str) {
+        Some(name) => format!("z.enum({name}).parse({value})"),
+        None => value,
+    }
 }
 
 fn variable(name: &str) -> String {
@@ -252,17 +307,38 @@ fn emit(
     Ok(())
 }
 
+fn enums(schema: &Value, output: &mut BTreeSet<String>) {
+    match schema {
+        Value::Object(object) => {
+            if let Some(name) = object.get("x-enum").and_then(Value::as_str) {
+                output.insert(name.into());
+            }
+            object.values().for_each(|value| enums(value, output));
+        }
+        Value::Array(values) => values.iter().for_each(|value| enums(value, output)),
+        _ => {}
+    }
+}
+
 fn main() -> Result<()> {
-    println!(
-        "// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.\nimport {{ z }} from \"zod\";\n"
-    );
+    println!("// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.");
+    let mut used = BTreeSet::new();
+    for schema in hanabi_protocol::schemas().values() {
+        enums(schema, &mut used);
+    }
+    for (name, module) in TYPESCRIPT_ENUMS {
+        if used.contains(*name) {
+            println!("import {{ {name} }} from \"{module}\";");
+        }
+    }
+    println!("import {{ z }} from \"zod\";\n");
     let client = hanabi_protocol::client_contracts();
     let server = hanabi_protocol::server_contracts();
     let exported: BTreeSet<_> = client
         .values()
         .chain(server.values())
         .copied()
-        .chain(["TableId", "ChatHistoryMessage"])
+        .chain(["TableId", "ChatHistoryMessage", "Settings"])
         .collect();
     let mut definitions = BTreeMap::new();
     for (name, schema) in hanabi_protocol::schemas() {
@@ -330,5 +406,44 @@ mod tests {
                 .unwrap(),
             "z.literal([0,1,2,3])"
         );
+    }
+
+    #[test]
+    fn nullable_and_floating_point_values() {
+        assert_eq!(
+            expression(
+                &json!({"type":["integer","null"],"format":"int64","minimum":0,"maximum":10})
+            )
+            .unwrap(),
+            "z.number().int().min(0).max(10).nullable()"
+        );
+        assert_eq!(
+            expression(&json!({"type":"number","format":"double","minimum":0})).unwrap(),
+            "z.number().min(0)"
+        );
+        assert!(expression(&json!({"type":["integer","string"]})).is_err());
+    }
+
+    #[test]
+    fn defaults_are_written_as_typescript() {
+        assert_eq!(default_literal(&json!({"type":"number"}), &json!(2.0)), "2");
+        assert_eq!(
+            default_literal(&json!({"type":"number"}), &json!(2.5)),
+            "2.5"
+        );
+        assert_eq!(
+            default_literal(&json!({"x-enum":"SoundMove"}), &json!(0)),
+            "z.enum(SoundMove).parse(0)"
+        );
+    }
+
+    #[test]
+    fn named_enums_use_the_typescript_enum() {
+        assert_eq!(
+            expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).unwrap(),
+            "z.enum(Status)"
+        );
+        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
+        assert!(expression(&json!({"type":"integer","x-enum":"Status"})).is_err());
     }
 }
