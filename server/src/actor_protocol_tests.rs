@@ -744,6 +744,55 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
 }
 
 #[tokio::test]
+async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
+    let Some(h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.store.allocate_table().await?;
+        let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        let revision = h.store.save(&table, 0).await?;
+        let (hub, _notifications) = mpsc::channel(32);
+        let capacity = Arc::new(Semaphore::new(1));
+        let mut actor = TableActor::new(
+            table,
+            revision,
+            h.store.clone(),
+            hub,
+            capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
+        );
+        actor.initialize(h.users[0].clone(), vec![]).await?;
+        let action = json!({"type":"turn","num":1,"currentPlayerIndex":1}).to_string();
+        for request in [
+            json!({"tableID":id,"type":3}),
+            json!({"tableID":id,"type":5,"actionJSON":action}),
+            json!({"tableID":id,"type":6}),
+        ] {
+            let mut next = actor.candidate();
+            next.game_mut().unwrap().idle_remaining = 1000;
+            actor.persist(next).await?;
+            actor.anchor = Instant::now() - Duration::from_millis(900);
+            actor
+                .replay_action(h.users[0].clone(), serde_json::from_value(request)?)
+                .await?;
+            let (saved, _) = h.snapshot(id).await?;
+            ensure!(
+                saved.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+                "A hypothetical action did not renew the shared review"
+            );
+            actor.anchor -= Duration::from_secs(2);
+            actor.tick().await?;
+            ensure!(!actor.retired, "An active hypothetical was closed");
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
         return Ok(());
