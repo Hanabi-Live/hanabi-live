@@ -773,6 +773,7 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 #dice {
+  display: inline;
   color: green;
   position: relative;
   left: 0.2em;
@@ -849,6 +850,16 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 #settings-modal h5 {
   font-weight: normal;
   font-size: 1.2em;
+}
+
+/* The nearest gray to the legacy text color that meets normal-text contrast on white. */
+html:not([data-theme="dark"]) .modal,
+html:not([data-theme="dark"]) #settings-modal input[type="checkbox"] + label {
+  color: #767676;
+}
+
+html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
+  color: #707070;
 }
 
 #settings-modal p {
@@ -963,6 +974,20 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 }
 
 @media screen and (max-width: 510px) {
+  #create-game-timed-label {
+    width: 75%;
+    min-height: 3em;
+  }
+
+  #create-game-timed-container {
+    width: 25%;
+  }
+
+  #create-game-timed-row > .col-2 {
+    width: 50%;
+    margin-bottom: 0.5em;
+  }
+
   .modal,
   .modal-message {
     left: 0;

@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop -- Pointer positions, viewport sizes, and game transitions must be exercised sequentially. */
 import type { Locator, Page } from "@playwright/test";
-import { expect, test } from "./fixture";
+import { expect, setClassicCheckbox, test } from "./fixture";
 
 test.use({ actionTimeout: 10_000 });
 
@@ -75,11 +75,13 @@ for (const theme of ["light", "dark"] as const) {
           .getByLabel("Table name", { exact: true })
           .fill(`Parity ${theme}`);
         await a.getByLabel("Table password", { exact: true }).fill("parity");
-        await a.getByLabel("Timed game", { exact: true }).check();
+        await setClassicCheckbox(a.getByLabel("Timed game", { exact: true }));
         await a.getByLabel("Base time (minutes)").fill("2");
         await a.getByLabel("Seconds per turn").fill("20");
         await a.getByText("Show Extra Options", { exact: true }).click();
-        await a.getByRole("checkbox", { name: /^Characters/u }).check();
+        await setClassicCheckbox(
+          a.getByRole("checkbox", { name: /^Characters/u }),
+        );
         await a
           .getByRole("button", { name: "Create table", exact: true })
           .click();

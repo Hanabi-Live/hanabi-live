@@ -127,7 +127,7 @@ export function init(): void {
     }
 
     // Remember the new setting.
-    getCheckbox("createTableOneLessCard");
+    getCheckbox("createTableOneExtraCard");
   });
 
   $("#createTableOneLessCard").on("change", () => {

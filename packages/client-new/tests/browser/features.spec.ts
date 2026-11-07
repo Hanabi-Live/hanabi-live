@@ -1,6 +1,6 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, gameReady, test } from "./fixture";
+import { expect, gameReady, setClassicCheckbox, test } from "./fixture";
 
 test("design prototypes remain interactive without opening a live session", async ({
   page,
@@ -98,7 +98,7 @@ for (const [minutes, seconds, minuteLabel, secondLabel] of [
       const dialog = a.getByRole("dialog");
       const name = `Timed table ${minutes}`;
       await dialog.getByLabel("Table name", { exact: true }).fill(name);
-      await dialog.getByLabel("Timed game").check();
+      await setClassicCheckbox(dialog.getByLabel("Timed game"));
       await dialog.getByLabel("Base time (minutes)").fill(String(minutes));
       await dialog.getByLabel("Seconds per turn").fill(String(seconds));
       await dialog
@@ -446,7 +446,7 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await login(b, backend, "testUIGuest");
   await login(c, backend, "testUIObserver");
   await a.getByRole("link", { name: "Settings", exact: true }).first().click();
-  await a.getByLabel("Colorblind-friendly cards").check();
+  await setClassicCheckbox(a.getByLabel("Colorblind-friendly cards"));
   const volume = a.getByRole("slider");
   await volume.focus();
   await volume.press("Home");
@@ -473,11 +473,11 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await dialog.getByLabel("Variant", { exact: true }).selectOption("6 Suits");
   await dialog.getByLabel("Maximum players").fill("3");
   await dialog.getByLabel(/^Table password/u).fill("cards");
-  await dialog.getByLabel("Timed game").check();
+  await setClassicCheckbox(dialog.getByLabel("Timed game"));
   await dialog.getByLabel("Base time (minutes)").fill("3");
   await dialog.getByLabel("Seconds per turn").fill("15");
   await dialog.getByText("Show Extra Options", { exact: true }).click();
-  await dialog.getByLabel(/^Empty clues/u).check();
+  await setClassicCheckbox(dialog.getByLabel(/^Empty clues/u));
   await dialog
     .getByRole("button", { name: "Create table", exact: true })
     .click();
@@ -517,14 +517,20 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(b.locator(".classic-room-info")).toContainText("6 Suits");
   await expect(b.locator(".classic-room-info")).toContainText("2 / 4");
   await a.getByRole("button", { name: "Table options", exact: true }).click();
-  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await setClassicCheckbox(
+    a.getByRole("dialog").getByLabel("Timed game"),
+    false,
+  );
   await a.getByRole("dialog").getByLabel("Maximum players").fill("2");
   await a.getByRole("button", { name: "Update table" }).click();
   await a.getByRole("button", { name: "Table options", exact: true }).click();
-  await a.getByRole("dialog").getByLabel("Timed game").check();
+  await setClassicCheckbox(a.getByRole("dialog").getByLabel("Timed game"));
   await expect(a.getByLabel("Base time (minutes)")).toHaveValue("3");
   await expect(a.getByLabel("Seconds per turn")).toHaveValue("15");
-  await a.getByRole("dialog").getByLabel("Timed game").uncheck();
+  await setClassicCheckbox(
+    a.getByRole("dialog").getByLabel("Timed game"),
+    false,
+  );
   await a.getByRole("button", { name: "Update table" }).click();
   await expect(a.getByRole("alert")).toHaveCount(0);
   await c
@@ -538,7 +544,7 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await c.getByRole("button", { name: "Stop watching", exact: true }).click();
   await b.getByRole("button", { name: "Suggest options" }).click();
   await expect(
-    b.getByRole("checkbox", { name: /^Empty clues/u }),
+    b.getByRole("dialog").getByText("Empty Clues", { exact: true }),
   ).toBeVisible();
   await expect(
     b.getByRole("checkbox", { name: /^Empty clues/u }),
@@ -688,7 +694,7 @@ test("JSON replay import enters the existing replay and returns to the new UI", 
   const page = await context.newPage();
   await login(page, backend, "testUIReplay");
   await page.getByRole("link", { name: "Replays", exact: true }).click();
-  await page.getByRole("radio", { name: "JSON Data" }).check();
+  await page.locator('label[for="replay-source-json"]').click();
   await page
     .getByLabel("Replay JSON", { exact: true })
     .fill(JSON.stringify({ players: ["Alice", "Bob"], seed: "p2v0s1" }));

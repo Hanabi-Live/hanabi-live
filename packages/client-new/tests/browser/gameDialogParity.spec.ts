@@ -33,10 +33,7 @@ for (const client of ["classic", "new"] as const) {
         client === "classic"
           ? page.locator("#createTableSpeedrun")
           : page.getByRole("checkbox", { name: "Speedrun", exact: true });
-      const timed =
-        client === "classic"
-          ? page.locator("#create-game-timed-row")
-          : page.getByLabel("Timed game", { exact: true });
+      const timed = page.locator("#create-game-timed-row");
       const extra =
         client === "classic"
           ? page.locator("#createTableOneExtraCard")

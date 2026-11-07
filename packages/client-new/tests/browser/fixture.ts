@@ -1,5 +1,5 @@
 import { evaluationDatabase, redisFixture } from "@hanabi-live/testing";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { test as base, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -202,6 +202,40 @@ export const test = base.extend<
 });
 
 export { expect } from "@playwright/test";
+
+export async function setClassicCheckbox(
+  control: Locator,
+  checked = true,
+): Promise<void> {
+  await expect(control).toBeEnabled();
+  if ((await control.isChecked()) !== checked) {
+    const point = await control.evaluate((input: HTMLInputElement) => {
+      const label = input.labels?.[0];
+      if (!label || label.getClientRects().length === 0) {
+        throw new Error("Missing rendered checkbox label.");
+      }
+      label.scrollIntoView({ block: "center", behavior: "instant" });
+      const bounds = label.getBoundingClientRect();
+      const style = getComputedStyle(label, "::before");
+      /* eslint-disable unicorn/prefer-number-coercion -- Computed CSS lengths include px units. */
+      const width = Number.parseFloat(style.width);
+      const height = Number.parseFloat(style.height);
+      const left = Number.parseFloat(style.left);
+      const top = Number.parseFloat(style.top);
+      /* eslint-enable unicorn/prefer-number-coercion */
+      if (
+        ![width, height, left, top].every(Number.isFinite)
+        || width <= 0
+        || height <= 0
+      ) {
+        throw new Error("Missing checkbox hit area.");
+      }
+      return { x: bounds.x + left + width / 2, y: bounds.y + top + height / 2 };
+    });
+    await control.page().mouse.click(point.x, point.y);
+  }
+  await expect(control).toBeChecked({ checked });
+}
 
 export async function gameReady(page: Page): Promise<void> {
   const socket = await page.waitForEvent("websocket");
