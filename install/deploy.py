@@ -21,8 +21,7 @@ from release import GitHub, REPOSITORY
 
 
 RESERVE_BYTES = 256 * 1024 * 1024
-# Replaced files from recent deployments are kept for manual rollback.
-KEEP_DEPLOYMENTS = 5
+KEEP_DEPLOYMENTS = 5  # Replaced files from recent deployments are kept for manual rollback.
 
 
 def require(condition, message):
