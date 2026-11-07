@@ -140,9 +140,8 @@ EOF
   certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP_DIR/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP_DIR/admin/gracefulRestart.sh"
   systemctl enable --now certbot.timer
 
-  # Daily as the app user, delete chat older than one year and then back up PostgreSQL. The backup
-  # runs even if the pruning fails.
-  echo "0 3 * * * $APP_USER $APP_DIR/database-prune-chat.sh; $APP_DIR/database-backup.sh" > /etc/cron.d/hanabi-live
+  # Delete chat older than one year and back up PostgreSQL daily, as the app user.
+  echo "0 3 * * * $APP_USER $APP_DIR/database-backup.sh" > /etc/cron.d/hanabi-live
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
   sudo --user "$APP_USER" ./database-backup.sh
