@@ -130,7 +130,7 @@
 
       // The reason for ending the game, corresponding to the "endCondition" value in
       // "EndCondition.ts":
-      // https://github.com/Hanabi-Live/hanabi-live/blob/main/packages/client/src/game/types/EndCondition.ts
+      // https://github.com/Hanabi-Live/hanabi-live/blob/main/packages/game/src/enums/EndCondition.ts
       // (e.g. 3 corresponds to someone running out of time in a timed game, 4 corresponds to a
       // player manually terminating the game, etc.)
       "value": 3

@@ -14,7 +14,7 @@ import type { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
 
 export class Globals {
-  /** The WebSocket connection (set in "websocket.ts"). */
+  /** The WebSocket connection (set in "websocketInit.ts"). */
   conn: Connection | null = null;
 
   // ----------------------------------------
