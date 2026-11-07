@@ -80,7 +80,7 @@ class LintCacheTests(unittest.TestCase):
                 f"{task}.sh",
                 "mkdir -p .turbo\n"
                 f"echo ran >> .turbo/{task}-executions\n"
-                "test ! -f fail.txt\n",
+                "test ! -f packages/scripts/src/fail.txt\n",
             )
         manifest_path.write_text(json.dumps(manifest))
         subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
@@ -154,6 +154,10 @@ class LintCacheTests(unittest.TestCase):
             "package.json",
             "bun.lock",
             "packages/client/package.json",
+            "packages/game/tsconfig.npm.json",
+            "misc/server-old/tsconfig.json",
+            ".prettierignore",
+            "public/js/bundles/.gitignore",
             "tsconfig.monorepo.json",
         ):
             with self.subTest(name=name):
@@ -177,7 +181,7 @@ class LintCacheTests(unittest.TestCase):
             '        Path(".turbo").mkdir(exist_ok=True)\n'
             '        with Path(".turbo/regression-executions").open("a") as output:\n'
             '            output.write("ran\\n")\n'
-            '        self.assertFalse(Path("scripts/fail.txt").exists())\n',
+            '        self.assertFalse(Path("scripts/fail.py").exists())\n',
         )
         self.write(
             "scripts/prettier_cache_test.py",
@@ -190,11 +194,11 @@ class LintCacheTests(unittest.TestCase):
         self.turbo(task=task)
         self.turbo(task=task)
         self.assertEqual(executions.read_text(), "ran\n")
-        self.write("scripts/fail.txt", "fail\n")
+        self.write("scripts/fail.py", "fail\n")
         for _ in range(2):
             self.assertNotEqual(self.turbo(task=task, check=False).returncode, 0)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
-        (self.root / "scripts/fail.txt").unlink()
+        (self.root / "scripts/fail.py").unlink()
         self.turbo(task=task)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 
@@ -252,13 +256,13 @@ class LintCacheTests(unittest.TestCase):
                 self.turbo(task=f"//#{task}")
                 self.turbo(task=f"//#{task}")
                 self.assertEqual(executions.read_text(), "ran\n")
-                self.write("fail.txt", "fail\n")
+                self.write("packages/scripts/src/fail.txt", "fail\n")
                 for _ in range(2):
                     self.assertNotEqual(
                         self.turbo(task=f"//#{task}", check=False).returncode, 0,
                     )
                 self.assertEqual(executions.read_text(), "ran\nran\nran\n")
-                (self.root / "fail.txt").unlink()
+                (self.root / "packages/scripts/src/fail.txt").unlink()
                 self.turbo(task=f"//#{task}")
                 self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 
@@ -287,6 +291,36 @@ class LintCacheTests(unittest.TestCase):
                 self.assertNotEqual(
                     before, self.hashes(f"//#{task}", {**os.environ, "ImageVersion": "changed"}),
                 )
+
+    def test_narrow_checks_ignore_unrelated_application_changes(self):
+        for task in ("check-variant-files", "lint-package-json", "test-lint-caches"):
+            for name in (
+                "server/src/main.rs",
+                "packages/client/src/index.ts",
+                "packages/client-new/src/index.ts",
+                "public/css/main.css",
+                "docs/install.md",
+                "cspell.config.jsonc",
+            ):
+                with self.subTest(task=task, name=name):
+                    source = self.root / name
+                    content = source.read_text() if source.exists() else ""
+                    self.assert_invalidates(name, content + "\n", set(), f"//#{task}")
+
+    def test_narrow_checks_keep_workspace_dependencies(self):
+        for task, name in (
+            ("check-variant-files", "packages/scripts/src/createVariantsJSON/newID.ts"),
+            ("check-variant-files", "packages/game/src/json/variants.json"),
+            ("check-variant-files", "packages/game/src/index.ts"),
+            ("check-variant-files", "misc/variants.txt"),
+            ("lint-package-json", "packages/scripts/src/lintPackageJSON.mts"),
+            ("lint-package-json", "packages/client-new/package.json"),
+            ("lint-package-json", "packages/new-package/package.json"),
+        ):
+            with self.subTest(task=task, name=name):
+                source = self.root / name
+                content = source.read_text() if source.exists() else '{"name":"new-package"}'
+                self.assert_invalidates(name, content + "\n", {"//"}, f"//#{task}")
 
     def test_suite_inputs_include_native_and_shared_dependencies(self):
         for name in (
