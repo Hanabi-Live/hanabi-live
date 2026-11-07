@@ -1,6 +1,6 @@
-FROM golang:1.27-bookworm AS go
+FROM docker.io/library/golang:1.27-bookworm AS go
 FROM docker.io/oven/bun:1.4.4 AS bun
-FROM rust:1.99.1-bookworm AS rust
+FROM docker.io/library/rust:1.99.1-bookworm AS rust
 
 FROM bun AS dependencies
 COPY --from=go /usr/local/go /usr/local/go
@@ -46,7 +46,7 @@ COPY server server
 COPY install install
 RUN HANABI_BUILD_REVISION="$HANABI_BUILD_REVISION" bash install/build-release.sh /root/artifact
 
-FROM alpine
+FROM docker.io/library/alpine
 RUN apk add --no-cache ca-certificates bash
 WORKDIR /root/hanabi-live
 COPY --from=build /root/artifact/release ./
