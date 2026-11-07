@@ -1,5 +1,16 @@
 use super::*;
 
+/// An archived game that cannot be exported. Its code and game ID reach the server log and the
+/// error alerts, so the game and the failed check can be found later.
+fn export_failure(code: &'static str, problem: &str, id: i64) -> Error {
+    crate::errors::Fault::new(
+        code,
+        format!("{problem}: {id}"),
+        StatusCode::INTERNAL_SERVER_ERROR,
+    )
+    .into()
+}
+
 pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value> {
     let raw = params
         .get("databaseID")
@@ -23,26 +34,48 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
             .enumerate()
             .all(|(i, p)| i16::try_from(i).ok() == Some(p.seat))
     {
-        return Err(anyhow::anyhow!("Inconsistent historical participant seats").into());
+        return Err(export_failure(
+            "archive_inconsistent_players",
+            "The archived game's players do not match its seats",
+            id,
+        ));
     }
     let variant_id = i64::from(row.variant_id);
-    let variant = catalog::variant(variant_id)
-        .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
+    let variant = catalog::variant(variant_id).ok_or_else(|| {
+        export_failure(
+            "archive_unknown_variant",
+            "The archived game's variant is not in the catalog",
+            id,
+        )
+    })?;
     let custom = archive.deck;
     let seed: String = row.seed.clone();
     let deck = if let Some(bytes) = &custom {
-        let cards = crate::game::decode_deck(bytes)?;
+        let invalid = || {
+            export_failure(
+                "archive_invalid_deck",
+                "The archived game's custom deck is invalid",
+                id,
+            )
+        };
+        let cards = crate::game::decode_deck(bytes).map_err(|_| invalid())?;
         if cards.len() > (state.config.deck_size)(variant_id as i32)? {
-            return Err(anyhow::anyhow!("Malformed custom deck length").into());
+            return Err(invalid());
         }
         let suits = variant["suits"].as_array().expect("catalog suits").len();
         if cards.iter().any(|card| card.suit_index >= suits) {
-            return Err(anyhow::anyhow!("Malformed custom deck card").into());
+            return Err(invalid());
         }
         json!(cards)
     } else {
         // Never substitute a standard deck or claim a custom replay was seeded.
-        (state.config.seeded_deck)(variant_id as i32, &seed)?
+        (state.config.seeded_deck)(variant_id as i32, &seed).map_err(|_| {
+            export_failure(
+                "archive_invalid_seed",
+                "The archived game's seed cannot produce a deck",
+                id,
+            )
+        })?
     };
     let deck_len = deck
         .as_array()
@@ -106,12 +139,17 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     if row.detrimental_characters {
         let mut characters = Vec::new();
         for p in &players {
-            let id = i64::from(p.character_assignment);
-            let name = if id == -1 {
+            let character = i64::from(p.character_assignment);
+            let name = if character == -1 {
                 ""
             } else {
-                catalog::character(id)
-                    .ok_or_else(|| anyhow::anyhow!("Unknown historical character"))?
+                catalog::character(character).ok_or_else(|| {
+                    export_failure(
+                        "archive_unknown_character",
+                        "The archived game's character is not in the catalog",
+                        id,
+                    )
+                })?
             };
             characters.push(json!({"name":name,"metadata":i32::from(p.character_metadata) - 1}));
         }
