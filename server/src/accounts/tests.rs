@@ -201,7 +201,9 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         .await
         .unwrap();
     assert!(stored.is_none());
-    let reset = hash_password("127.0.0.1", "reset-password".into()).await.unwrap();
+    let reset = hash_password("127.0.0.1", "reset-password".into())
+        .await
+        .unwrap();
     sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
         .bind(id)
         .bind(reset)
@@ -525,6 +527,16 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
         7
     );
     db.close().await;
+}
+
+#[tokio::test]
+async fn too_much_password_work_is_rate_limited() {
+    let error = TooMuchPasswordWork(std::time::Duration::from_secs(90));
+    let response = account_failure("login", error.into(), false);
+    assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+    assert_eq!(response.headers()[header::RETRY_AFTER], "90");
+    let body = to_bytes(response.into_body(), 1024).await.unwrap();
+    assert!(String::from_utf8_lossy(&body).contains("try again in 2 minutes"));
 }
 
 #[tokio::test]

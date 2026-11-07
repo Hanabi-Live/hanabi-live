@@ -13,11 +13,11 @@ pub use crypto::{
     HashFailure, HashOverload, IdentityToken, hash_password, regenerate_token, token_lookup_hash,
     verify_password,
 };
-pub use rate_limit::TooMuchPasswordWork;
 pub use normalization::{
     escape_html, has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
     normalize_username, truncate_to_max_bytes, validate_username,
 };
+pub use rate_limit::TooMuchPasswordWork;
 
 use crate::cookie;
 use anyhow::Result;

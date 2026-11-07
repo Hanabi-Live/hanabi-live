@@ -1,5 +1,4 @@
 use super::*;
-use argon2::{Argon2, PasswordHasher};
 use axum::{
     Form,
     response::{Html, Redirect},

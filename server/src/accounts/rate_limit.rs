@@ -6,8 +6,8 @@
 
 use std::{
     collections::{HashMap, VecDeque},
-    hash::Hash,
     fmt,
+    hash::Hash,
     net::{IpAddr, Ipv6Addr},
     sync::{LazyLock, Mutex, PoisonError},
     time::{Duration, Instant},

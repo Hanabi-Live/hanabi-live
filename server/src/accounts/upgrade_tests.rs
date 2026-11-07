@@ -92,8 +92,10 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let next = hash_password("127.0.0.1", "new-password".into()).await.unwrap();
-    let upgrade = hash_password(PASSWORD.into()).await.unwrap();
+    let next = hash_password("127.0.0.1", "new-password".into())
+        .await
+        .unwrap();
+    let upgrade = hash_password("127.0.0.1", PASSWORD.into()).await.unwrap();
     assert!(
         update_password_if_unchanged(&db.pool, id, &next, OLD_HASH)
             .await
