@@ -6,14 +6,13 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt, future::BoxFuture};
-use regex::Regex;
 use reqwest::Method;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
-        Arc, LazyLock, Weak,
+        Arc, Weak,
         atomic::{AtomicBool, AtomicU8, Ordering},
     },
     time::Duration,
@@ -472,11 +471,9 @@ impl Bridge {
     }
 
     async fn render_inner(&self, text: &str) -> String {
-        static MENTION: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r"<(@!?|@&|#)([0-9]{17,19})>").unwrap());
         let mut result = String::new();
         let mut offset = 0;
-        for capture in MENTION.captures_iter(text) {
+        for capture in regex!(r"<(@!?|@&|#)([0-9]{17,19})>").captures_iter(text) {
             let matched = capture.get(0).unwrap();
             result.push_str(&escape_html(&text[offset..matched.start()]));
             let id = &capture[2];
@@ -929,9 +926,7 @@ pub async fn link_copy(pool: &PgPool, chat_id: i32, id: &str) -> Result<bool> {
 }
 
 fn decode_html(text: &str) -> String {
-    static ENTITIES: LazyLock<Regex> =
-        LazyLock::new(|| Regex::new(r"&(?:amp|apos|gt|lt|quot|#34|#39);").unwrap());
-    ENTITIES
+    regex!(r"&(?:amp|apos|gt|lt|quot|#34|#39);")
         .replace_all(text, |captures: &regex::Captures| match &captures[0] {
             "&amp;" => "&",
             "&lt;" => "<",

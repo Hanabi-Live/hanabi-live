@@ -348,23 +348,58 @@ async fn compute_aggregate(
     sqlx::query_scalar!("SELECT set_config('statement_timeout','20000',true)")
         .fetch_one(&mut *transaction)
         .await?;
-    let row = sqlx::query!(    "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
-    count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
-    count(*) FILTER(WHERE speedrun) AS \"speed!\",
-        COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
-          CASE WHEN $1::integer IS NULL THEN num_players ELSE 1 END)
-          FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
-        COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) *
-          CASE WHEN $1::integer IS NULL THEN num_players ELSE 1 END)
-          FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
-        FROM games g WHERE ($1::integer IS NULL OR EXISTS(SELECT 1 FROM game_participants WHERE game_id=g.id AND user_id=$1))
-        AND ($2::bigint IS NULL OR variant_id::bigint=$2)", user, variant).fetch_one(&mut *transaction).await?;
+    // A player's totals start from their own games. A shared `$1 IS NULL OR EXISTS(...)` query
+    // gets a generic plan that scans every game even for one player. Site-wide time counts
+    // every player's time, so it is multiplied by the number of players.
+    let (normal, other, speed, played, speed_played) = if let Some(user) = user {
+        let row = sqlx::query!(
+            "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=1) AS \"normal!\",
+            count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>1) AS \"other!\",
+            count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
+            COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+              FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
+            COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+              FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
+            FROM game_participants p JOIN games g ON g.id=p.game_id
+            WHERE p.user_id=$1 AND ($2::bigint IS NULL OR g.variant_id::bigint=$2)",
+            user,
+            variant
+        )
+        .fetch_one(&mut *transaction)
+        .await?;
+        (
+            row.normal,
+            row.other,
+            row.speed,
+            row.duration,
+            row.speed_duration,
+        )
+    } else {
+        let row = sqlx::query!(
+            "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
+            count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
+            count(*) FILTER(WHERE speedrun) AS \"speed!\",
+            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+              FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
+            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+              FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
+            FROM games WHERE $1::bigint IS NULL OR variant_id::bigint=$1",
+            variant
+        )
+        .fetch_one(&mut *transaction)
+        .await?;
+        (
+            row.normal,
+            row.other,
+            row.speed,
+            row.duration,
+            row.speed_duration,
+        )
+    };
     transaction.commit().await?;
-    let normal: i64 = row.normal;
-    let other: i64 = row.other;
     let mut stats = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
-        "numGamesSpeedrun":row.speed,"timePlayed":duration(row.duration),
-        "timePlayedSpeedrun":duration(row.speed_duration)});
+        "numGamesSpeedrun":speed,"timePlayed":duration(played),
+        "timePlayedSpeedrun":duration(speed_played)});
     if let Some(user) = user {
         use chrono::Datelike;
         let date: chrono::DateTime<chrono::Utc> =

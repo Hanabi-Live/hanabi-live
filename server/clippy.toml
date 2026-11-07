@@ -9,4 +9,11 @@ disallowed-methods = [
   { path = "sqlx::query_scalar_with", reason = "use sqlx::query_scalar! so the SQL is checked at compile time" },
   { path = "sqlx::raw_sql", reason = "use the sqlx query macros so the SQL is checked at compile time" },
   { path = "sqlx::QueryBuilder::new", reason = "use the sqlx query macros so the SQL is checked at compile time" },
+  # Compiling a regex is expensive. `regex!` (src/lib.rs) compiles each pattern once.
+  { path = "regex::Regex::new", reason = "use regex! so the pattern is compiled once" },
+  { path = "regex::RegexBuilder::new", reason = "use regex! so the pattern is compiled once" },
+  { path = "regex::RegexSet::new", reason = "use regex! so the pattern is compiled once" },
+  { path = "regex::bytes::Regex::new", reason = "use regex! so the pattern is compiled once" },
+  { path = "regex::bytes::RegexBuilder::new", reason = "use regex! so the pattern is compiled once" },
+  { path = "regex::bytes::RegexSet::new", reason = "use regex! so the pattern is compiled once" },
 ]

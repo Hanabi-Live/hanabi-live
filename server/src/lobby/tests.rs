@@ -525,8 +525,20 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         json!({"name":"Carol"}),
     )
     .await;
-    assert_eq!(blocked_seeds(&db.pool, &[a]).await.unwrap(), vec!["p2v0s1"]);
-    assert_eq!(blocked_seeds(&db.pool, &[c]).await.unwrap(), vec!["p2v0s2"]);
+    assert_eq!(
+        blocked_seeds(&db.pool, &[a], "p2v0s").await.unwrap(),
+        vec!["p2v0s1"]
+    );
+    assert_eq!(
+        blocked_seeds(&db.pool, &[c], "p2v0s").await.unwrap(),
+        vec!["p2v0s2"]
+    );
+    assert!(
+        blocked_seeds(&db.pool, &[a], "p3v0s")
+            .await
+            .unwrap()
+            .is_empty()
+    );
     assert!(
         self_data(
             &run(&db.pool, &who, &[], "chatLinked", json!({})).await,

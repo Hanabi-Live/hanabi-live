@@ -1,3 +1,14 @@
+/// Returns a regex compiled once, on first use. Compiling a `Regex` is expensive, so
+/// `clippy.toml` disallows calling `Regex::new` anywhere else.
+macro_rules! regex {
+    ($pattern:expr) => {{
+        #[allow(clippy::disallowed_methods)]
+        static REGEX: std::sync::LazyLock<regex::Regex> =
+            std::sync::LazyLock::new(|| regex::Regex::new($pattern).expect("valid regex"));
+        &*REGEX
+    }};
+}
+
 pub mod accounts;
 pub mod actors;
 mod archive;

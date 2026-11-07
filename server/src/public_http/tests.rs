@@ -47,9 +47,8 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
-    let divisions =
-        regex::Regex::new(r"(?s)<!--.*?-->|<script\b[^>]*>.*?</script\s*>|</?div\b[^>]*>").unwrap();
-    let identifiers = regex::Regex::new(r#"\sid\s*=\s*"([^"]*)""#).unwrap();
+    let divisions = regex!(r"(?s)<!--.*?-->|<script\b[^>]*>.*?</script\s*>|</?div\b[^>]*>");
+    let identifiers = regex!(r#"\sid\s*=\s*"([^"]*)""#);
     for development in [false, true] {
         let mut config = config();
         config.is_dev = development;
@@ -206,7 +205,7 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
             json!({"name":"Alice","title":"Tagged Games"}),
         ))
         .unwrap();
-    let anchors = regex::Regex::new(r"(?s)<a\b([^>]*)>(.*?)</a>").unwrap();
+    let anchors = regex!(r"(?s)<a\b([^>]*)>(.*?)</a>");
     let tagged = anchors
         .captures_iter(&buttons)
         .find(|link| link[2].trim() == "Tagged Games")
@@ -227,7 +226,7 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
             "requestedNumPlayers":3,"players":[],"rows":[]
         })))
         .unwrap();
-    let options = regex::Regex::new(r"(?s)<option\b([^>]*)>.*?</option>").unwrap();
+    let options = regex!(r"(?s)<option\b([^>]*)>.*?</option>");
     let selected = options
         .captures_iter(&missing)
         .filter(|option| option[1].contains("selected"))
@@ -308,10 +307,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let app = router(db.pool.clone(), config());
     let (status, body) = request(app.clone(), "/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    let stats = regex::Regex::new(
-        r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#,
-    )
-    .unwrap();
+    let stats =
+        regex!(r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#);
     let normalize = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let stats_values = |html: &str| {
         stats
@@ -542,6 +539,19 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         assert!(body.contains("id=\"main\""), "{path}");
     }
+    // A player's time counts each game once rather than once per player.
+    let (_, body) = request(app.clone(), "/scores/Alice").await;
+    let values = stats_values(&body);
+    assert_eq!(
+        values[1..5],
+        [
+            "2 (1 normally finished)",
+            "2 hours and 0 minutes",
+            "1",
+            "1 hour and 0 minutes",
+        ],
+        "{values:?}"
+    );
     let (status, body) = request(
         app.clone(),
         "/scores/%3Cscript%3Ealert%281%29%3C%2Fscript%3E",
