@@ -39,11 +39,19 @@ podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 
 ## For Production
 
-To set up the production server for hanab.live, run the following as root on a
-fresh Ubuntu 26.04 server with ports 80 and 443 open and DNS pointing to it:
+To set up the production server for hanab.live:
+
+```sh
+# Set up an SSH key. (This part is important, since the setup script disables password authentication.)
+ssh-copy-id root@hanab.live
+ssh root@hanab.live
+```
+
+Then, once on the server:
 
 ```sh
 apt update
+apt upgrade --yes
 apt install --yes git
 mkdir -p /home/hanabi
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
