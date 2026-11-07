@@ -2,7 +2,9 @@
 
 import { assertDefined } from "complete-common";
 import { possibleCardsFromNoteAndClues } from "./cardPresentation";
+import { START_CARD_RANK } from "./constants";
 import { ClueType } from "./enums/ClueType";
+import { StackDirection } from "./enums/StackDirection";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
@@ -10,12 +12,17 @@ import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
 import type { Variant } from "./interfaces/Variant";
 import { isCardTouchedByClue, msgClueToClue } from "./rules/clues";
-import { getNextPlayableRanks } from "./rules/playStacks";
+import { getTotalCardsInDeck } from "./rules/deck";
+import {
+  getNextPlayableRanks,
+  getNextPlayableRanksAfter,
+} from "./rules/playStacks";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { GameAction } from "./types/gameActions";
 import type { MsgClue } from "./types/MsgClue";
 import type { PlayerIndex } from "./types/PlayerIndex";
+import type { Rank } from "./types/Rank";
 import type { RankClueNumber } from "./types/RankClueNumber";
 import type { SuitIndex } from "./types/SuitIndex";
 import type { SuitRankTuple } from "./types/SuitRankTuple";
@@ -172,6 +179,40 @@ export interface PlanHypotheticalActionContext {
 }
 
 /** Returns the game actions for a hypothetical intent, or null when it cannot be planned. */
+/**
+ * In a hypothetical, a stack base can be morphed into a card of its suit to pretend that the stack
+ * has already been played up to that card. This lasts until a card is played on the stack. In "Up
+ * or Down" variants, a stack whose direction is still undecided can only have the start card on it,
+ * so other ranks are ambiguous and are ignored.
+ *
+ * @returns The morphed rank, or undefined if the stack base is not morphed in this way.
+ */
+function getMorphedStackBaseRank(
+  suitIndex: SuitIndex,
+  playStack: readonly CardOrder[],
+  playStackDirection: StackDirection,
+  context: PlanHypotheticalActionContext,
+): Rank | undefined {
+  if (playStack.length > 0) {
+    return undefined;
+  }
+
+  // Stack bases use the card orders after the final card in the deck.
+  const stackBaseOrder = (getTotalCardsInDeck(context.variant)
+    + suitIndex) as CardOrder;
+  const morphedIdentity = context.morphedIdentities[stackBaseOrder];
+  if (
+    morphedIdentity?.suitIndex !== suitIndex
+    || morphedIdentity.rank === null
+    || (playStackDirection === StackDirection.Undecided
+      && morphedIdentity.rank !== START_CARD_RANK)
+  ) {
+    return undefined;
+  }
+
+  return morphedIdentity.rank;
+}
+
 export function planHypotheticalAction(
   intent: HypotheticalActionIntent,
   context: PlanHypotheticalActionContext,
@@ -241,14 +282,29 @@ export function planHypotheticalAction(
         playStackDirection,
         "Expected a play stack direction for the card suit.",
       );
-      const nextRanks = getNextPlayableRanks(
+      const morphedTopRank = getMorphedStackBaseRank(
         suitIndex,
         playStack,
         playStackDirection,
-        gameState.playStackStarts,
-        variant,
-        gameState.deck,
+        context,
       );
+      const nextRanks =
+        morphedTopRank === undefined
+          ? getNextPlayableRanks(
+              suitIndex,
+              playStack,
+              playStackDirection,
+              gameState.playStackStarts,
+              variant,
+              gameState.deck,
+            )
+          : getNextPlayableRanksAfter(
+              suitIndex,
+              morphedTopRank,
+              playStackDirection,
+              gameState.playStackStarts,
+              variant,
+            );
       if (!nextRanks.includes(rank)) {
         actionType = "discard";
         failed = true;
