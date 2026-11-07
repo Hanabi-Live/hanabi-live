@@ -2,7 +2,71 @@
 
 ## For Development
 
-TODO
+We recommend running the server, PostgreSQL, and Redis in containers with
+[Podman](https://podman.io/). This keeps the build tools and databases off your
+host; you only need Git, Podman, and a Compose provider such as
+[podman-compose](https://github.com/containers/podman-compose).
+
+Install Podman using its
+[installation instructions](https://podman.io/docs/installation) and install
+your Compose provider. On macOS, initialize and start the Podman virtual machine
+with `podman machine init` and `podman machine start`. On Windows, follow these
+instructions inside WSL2. Run the commands below as your normal user, without
+`sudo`.
+
+Clone the repository and create your local configuration:
+
+```sh
+git clone https://github.com/Hanabi-Live/hanabi-live.git
+cd hanabi-live
+cp .env.example .env
+```
+
+In `.env`, set `SESSION_SECRET` to a random 128-character alphanumeric string
+(for example, generate one with `openssl rand -hex 64`). Keep
+`DOMAIN="localhost"`; the development Compose file configures the database,
+Redis, and server ports for you. Do not commit `.env`.
+
+Build and start the development stack from a clean checkout:
+
+```sh
+git status --short
+export HANABI_BUILD_REVISION="$(git rev-parse HEAD)"
+podman compose -f docker-compose-dev.yml up --build -d
+podman compose -f docker-compose-dev.yml logs -f hanab-live-server
+```
+
+If `git status --short` lists changes, commit your development changes before
+building. If Podman asks which registry to use for the base images, select
+`docker.io`. The first build can take a while and needs several GB of RAM and
+disk space. Make sure host ports 1212 and 5432 are available.
+
+Once the server is ready, open <http://localhost:1212/lobby> for the classic
+client or <http://localhost:1212/new> for the new client. Press Ctrl+C to stop
+following logs; the containers keep running.
+
+The database schema is installed automatically on the first start. PostgreSQL
+and Redis data persist in named volumes. Do not run the source-installation
+schema script against this database or use `down --volumes` to update it.
+
+Before stopping or rebuilding, save active games and shut down the server:
+
+```sh
+podman compose -f docker-compose-dev.yml exec hanab-live-server \
+  wget -qO- http://127.0.0.1:8081/gracefulStop
+podman compose -f docker-compose-dev.yml ps -a
+```
+
+Wait until `hanab-live-server` has exited successfully before running
+`podman compose -f docker-compose-dev.yml down`. This removes the containers,
+but retains their data volumes.
+
+To try code changes, commit them, shut down the stack as above, and repeat the
+build/start commands, including the revision export. Source files are copied
+into the image, so there is no automatic reload. For client watchers and running
+tools directly on your host, follow the source-installation sections below
+instead. Existing databases need explicit
+[migrations](#local-configuration-and-storage) when the schema changes.
 
 ## For Production
 
