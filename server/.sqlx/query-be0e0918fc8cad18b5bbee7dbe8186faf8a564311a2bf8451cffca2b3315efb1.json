@@ -1,0 +1,74 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT best_score2,best_score3,best_score4,best_score5,best_score6\n                     FROM user_stats WHERE user_id=1 AND variant_id=0",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "best_score2",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score2"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "best_score3",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score3"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "best_score4",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score4"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "best_score5",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score5"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "best_score6",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "best_score6"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "be0e0918fc8cad18b5bbee7dbe8186faf8a564311a2bf8451cffca2b3315efb1"
+}

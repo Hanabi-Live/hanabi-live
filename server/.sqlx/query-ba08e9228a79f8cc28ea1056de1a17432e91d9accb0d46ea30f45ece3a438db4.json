@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO banned_ips(ip) VALUES('127.0.0.1')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "ba08e9228a79f8cc28ea1056de1a17432e91d9accb0d46ea30f45ece3a438db4"
+}

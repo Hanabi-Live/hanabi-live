@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pg_sleep(10)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "pg_sleep",
+        "type_info": "Void",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a7163847d6fb2b39fe3e1765292622898a5bdd90ecab1e29c6818dc6d838b2d3"
+}

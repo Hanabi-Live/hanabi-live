@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(1,0,4,0,4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "9bd33e02cb04e478591408d0f726bd7d0aa603be50b9b832cc7a68df977d4c0e"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT message FROM chat_log WHERE discord_message_id='111111111111111113'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "message",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "chat_log",
+            "name": "message"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "93834af0541aa6337acdeb5e844fa585d16eceeaaed98d39ba8aaa2dc6ac84c8"
+}

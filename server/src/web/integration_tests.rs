@@ -230,7 +230,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
     receive(&mut alice, "synced").await;
     bob.send(WireMessage::Text("sync {}".into())).await.unwrap();
     receive(&mut bob, "synced").await;
-    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chat_log")
+    let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&fixture.db.pool)
         .await
         .unwrap();
@@ -270,7 +270,7 @@ async fn uptime_replies_only_to_requester_in_lobby_and_table_postgres() {
         .unwrap();
     }
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
             .fetch_one(&fixture.db.pool)
             .await
             .unwrap(),
@@ -329,28 +329,25 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     // Intentionally use Unicode to verify the username survives login, storage, and WebSocket messages.
     let alice_cookie = login(&fixture, "Alicè").await;
     let bob_cookie = login(&fixture, "Bob").await;
-    let alice_id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username='Alicè'")
+    let alice_id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username='Alicè'")
         .fetch_one(&fixture.db.pool)
         .await
         .unwrap();
-    let historical:i32=sqlx::query_scalar(
-        "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+    let historical:i32=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
          speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
          all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         VALUES('Authored history',3,1,true,180,30,false,true,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id"
-    ).fetch_one(&fixture.db.pool).await.unwrap();
-    let participant:i32=sqlx::query_scalar(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         VALUES($1,$2,0,0,0) RETURNING id"
-    ).bind(historical).bind(alice_id).fetch_one(&fixture.db.pool).await.unwrap();
-    sqlx::query("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')")
-        .bind(participant).execute(&fixture.db.pool).await.unwrap();
-    sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,'authored')")
-        .bind(historical)
-        .bind(alice_id)
-        .execute(&fixture.db.pool)
-        .await
-        .unwrap();
+         VALUES('Authored history',3,1,true,180,30,false,true,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
+    let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+         VALUES($1,$2,0,0,0) RETURNING id", historical, alice_id).fetch_one(&fixture.db.pool).await.unwrap();
+    sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')", participant).execute(&fixture.db.pool).await.unwrap();
+    sqlx::query!(
+        "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,'authored')",
+        historical,
+        alice_id
+    )
+    .execute(&fixture.db.pool)
+    .await
+    .unwrap();
     let mut alice = connect(&fixture, &alice_cookie, false).await;
     let welcome = receive(&mut alice, "welcome").await;
     assert_eq!(welcome["username"], "Alicè");
@@ -415,7 +412,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(token["recipient"], "Alicè");
     assert!(token["msg"].as_str().unwrap().contains("<code>"));
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log WHERE source='user'")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='user'")
             .fetch_one(&fixture.db.pool)
             .await
             .unwrap(),
@@ -548,6 +545,7 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     };
     let cookie = login(&fixture, "DeferredLobby").await;
     let mut lock = fixture.db.pool.begin().await.unwrap();
+    #[allow(clippy::disallowed_methods)]
     sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *lock)
         .await
@@ -574,6 +572,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     };
     let user = fixture.db.user("FastResume").await;
     let mut lock = fixture.db.pool.begin().await.unwrap();
+    #[allow(clippy::disallowed_methods)]
     sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *lock)
         .await
@@ -637,36 +636,32 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     for index in 0..5 {
         shared.push(fixture.db.user(&format!("Historian{index:05}")).await);
     }
-    let games:Vec<i32>=sqlx::query_scalar(
-        "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+    let games:Vec<i32>=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
          speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
          all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
          SELECT 'Historical game '||n,6,1,true,180,30,false,true,false,true,false,false,false,true,
-         'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id"
-    ).fetch_all(&fixture.db.pool).await.unwrap();
+         'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id").fetch_all(&fixture.db.pool).await.unwrap();
     let mut players = vec![alice];
     players.extend(&shared);
-    sqlx::query(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
              SELECT game_id,user_id,(position-1)::smallint,-1,0 FROM unnest($1::int[]) games(game_id)
-             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)"
-    ).bind(&games).bind(players).execute(&fixture.db.pool).await.unwrap();
-    sqlx::query(
+             CROSS JOIN unnest($2::int[]) WITH ORDINALITY players(user_id,position)", &games, &players).execute(&fixture.db.pool).await.unwrap();
+    sqlx::query!(
         "INSERT INTO game_tags(game_id,user_id,tag)
          SELECT game_id,$2,lpad(n::text,3,'0')||repeat('t',97)
          FROM unnest($1::int[]) games(game_id) CROSS JOIN generate_series(1,8) n",
+        &games,
+        alice
     )
-    .bind(&games)
-    .bind(alice)
     .execute(&fixture.db.pool)
     .await
     .unwrap();
-    sqlx::query(
+    sqlx::query!(
         "INSERT INTO chat_log(user_id,source,message,room)
          SELECT $1,'user',$2,'lobby' FROM generate_series(1,50)",
+        alice,
+        accounts::escape_html(&"\"".repeat(300))
     )
-    .bind(alice)
-    .bind(accounts::escape_html(&"\"".repeat(300)))
     .execute(&fixture.db.pool)
     .await
     .unwrap();
@@ -675,6 +670,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .await
         .unwrap();
     let mut history_lock = fixture.db.pool.begin().await.unwrap();
+    #[allow(clippy::disallowed_methods)]
     sqlx::query("LOCK TABLE game_tags IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *history_lock)
         .await

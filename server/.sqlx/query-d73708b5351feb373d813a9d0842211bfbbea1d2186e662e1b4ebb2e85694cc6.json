@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_settings SET create_table_time_base_minutes=$1 WHERE user_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d73708b5351feb373d813a9d0842211bfbbea1d2186e662e1b4ebb2e85694cc6"
+}

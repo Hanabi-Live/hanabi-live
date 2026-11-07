@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)\n                 SELECT n,'Player'||n,'player'||n,'test','127.0.0.1' FROM generate_series(4,6) n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "22bca102e85d0d1dd20bdbdfb1a403e7ece6e72b0967dddf271852e51242b97e"
+}

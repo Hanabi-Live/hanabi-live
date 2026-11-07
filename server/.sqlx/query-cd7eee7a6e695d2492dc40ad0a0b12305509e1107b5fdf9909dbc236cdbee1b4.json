@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cd7eee7a6e695d2492dc40ad0a0b12305509e1107b5fdf9909dbc236cdbee1b4"
+}

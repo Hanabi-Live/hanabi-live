@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "75c736c59c75484d51917e3e4d3322b1b5257502e88e6e1328f8223124023518"
+}

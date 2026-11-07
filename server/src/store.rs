@@ -872,7 +872,7 @@ impl Store {
     pub(crate) async fn refresh(&self, s: &Snapshot) -> Result<()> {
         let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
         let v = variant.id as i16;
-        let n = s.players.len();
+        let players = i32::try_from(s.players.len())?;
         let mut tx = self.archive.begin().await?;
         sqlx::query!("SELECT pg_advisory_xact_lock(17483,$1)", i32::from(v))
             .execute(&mut *tx)
@@ -897,29 +897,47 @@ impl Store {
             )
             .execute(&mut *tx)
             .await?;
-            let q = format!(
-                "UPDATE user_stats SET best_score{n}=GREATEST(best_score{n},$3),best_score{n}_mod=CASE WHEN $3>best_score{n} OR ($3=best_score{n} AND $4<best_score{n}_mod) THEN $4 ELSE best_score{n}_mod END,num_games=s.n,average_score=s.avg,num_strikeouts=s.strikes FROM (SELECT count(*)::integer n,COALESCE(avg(g.score) FILTER(WHERE g.score<>0),0)::float8 avg,(count(*) FILTER(WHERE g.score=0))::integer strikes FROM games g JOIN game_participants p ON p.game_id=g.id WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s WHERE user_id=$1 AND variant_id=$2"
-            );
-            // Only a numeric player count is interpolated; stored values remain bound.
-            sqlx::query(sqlx::AssertSqlSafe(q))
-                .bind(p.id)
-                .bind(v)
-                .bind(s.game.score as i16)
-                .bind(modifier)
-                .execute(&mut *tx)
-                .await?;
-        }
-        let q = format!(
-            "UPDATE variant_stats SET best_score{n}=CASE WHEN $4::smallint=0 THEN GREATEST(best_score{n},$2) ELSE best_score{n} END,num_games=s.n,num_max_scores=s.maximum,average_score=s.avg,num_strikeouts=s.strikes FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum,COALESCE(avg(score) FILTER(WHERE score<>0),0)::float8 avg,(count(*) FILTER(WHERE score=0))::integer strikes FROM games WHERE variant_id=$1 AND NOT speedrun) s WHERE variant_id=$1"
-        );
-        // Only a numeric player count is interpolated, as in the user query.
-        sqlx::query(sqlx::AssertSqlSafe(q))
-            .bind(v)
-            .bind(s.game.score as i16)
-            .bind(variant.max_score as i16)
-            .bind(modifier)
+            sqlx::query!(
+                "UPDATE user_stats SET best_score2=CASE WHEN $5=2 THEN GREATEST(best_score2,$3) ELSE best_score2 END,best_score2_mod=CASE WHEN $5=2 AND ($3>best_score2 OR ($3=best_score2 AND $4<best_score2_mod)) THEN $4 ELSE best_score2_mod END,
+                 best_score3=CASE WHEN $5=3 THEN GREATEST(best_score3,$3) ELSE best_score3 END,best_score3_mod=CASE WHEN $5=3 AND ($3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $4 ELSE best_score3_mod END,
+                 best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND ($3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,
+                 best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND ($3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,
+                 best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND ($3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END,
+                 num_games=s.n,average_score=s.avg,num_strikeouts=s.strikes
+                 FROM (SELECT count(*)::integer n,COALESCE(avg(g.score) FILTER(WHERE g.score<>0),0)::float8 avg,
+                 (count(*) FILTER(WHERE g.score=0))::integer strikes FROM games g
+                 JOIN game_participants p ON p.game_id=g.id
+                 WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s
+                 WHERE user_id=$1 AND variant_id=$2",
+                p.id,
+                v,
+                s.game.score as i16,
+                modifier,
+                players,
+            )
             .execute(&mut *tx)
             .await?;
+        }
+        sqlx::query!(
+            "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4=0 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
+             best_score3=CASE WHEN $5=3 AND $4=0 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
+             best_score4=CASE WHEN $5=4 AND $4=0 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
+             best_score5=CASE WHEN $5=5 AND $4=0 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
+             best_score6=CASE WHEN $5=6 AND $4=0 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
+             num_games=s.n,num_max_scores=s.maximum,average_score=s.avg,num_strikeouts=s.strikes
+             FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum,
+             COALESCE(avg(score) FILTER(WHERE score<>0),0)::float8 avg,
+             (count(*) FILTER(WHERE score=0))::integer strikes
+             FROM games WHERE variant_id=$1 AND NOT speedrun) s
+             WHERE variant_id=$1",
+            v,
+            s.game.score as i16,
+            variant.max_score as i16,
+            i32::from(modifier),
+            players,
+        )
+        .execute(&mut *tx)
+        .await?;
         tx.commit().await?;
         Ok(())
     }
@@ -1130,6 +1148,7 @@ mod tests {
             .connect_with(options.clone())
             .await?;
         let name = format!("ts_slice_{:032x}", rand::random::<u128>());
+        #[allow(clippy::disallowed_methods)]
         sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {name}")))
             .execute(&admin)
             .await?;
@@ -1137,13 +1156,15 @@ mod tests {
             .max_connections(6)
             .connect_with(options.database(&name))
             .await?;
+        #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
             .execute(&pool)
             .await?;
-        sqlx::query("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&pool).await?;
+        sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&pool).await?;
         Ok(Some((admin, pool, name)))
     }
     async fn cleanup(admin: PgPool, name: String) -> Result<()> {
+        #[allow(clippy::disallowed_methods)]
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "DROP DATABASE {name} WITH (FORCE)"
         )))
@@ -1161,20 +1182,16 @@ mod tests {
         let state = RedisState::connect(&redis.url, "pregame-count-recovery").await?;
         let store = Store::fixture(pool, state.clone());
         let result = async {
-            sqlx::query(
-                "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+            sqlx::query!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
                  speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
                  all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
                  SELECT 'Recovery stats',2,0,false,120,20,false,false,false,false,false,false,
                  false,false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
-                 FROM generate_series(1,2) n",
-            )
+                 FROM generate_series(1,2) n")
             .execute(&store.primary)
             .await?;
-            sqlx::query(
-                "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-                 SELECT id,1,0,0,0 FROM games",
-            )
+            sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+                 SELECT id,1,0,0,0 FROM games")
             .execute(&store.primary)
             .await?;
             let mut table = pregame(store.allocate_table().await?);
@@ -1206,6 +1223,7 @@ mod tests {
             };
             let replay_revision = store.save(&replay, 0).await?;
             let mut blocked_archive = store.primary.begin().await?;
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
             let startup = tokio::time::timeout(Duration::from_secs(1), store.load_for_startup()).await??;
             let cached = startup.iter().find(|(saved, _)| saved.id == table.id).context("Missing startup pregame")?;
@@ -1259,6 +1277,79 @@ mod tests {
         result
     }
     #[tokio::test]
+    async fn derived_stats_update_only_the_columns_for_each_player_count() -> Result<()> {
+        let Some((admin, pool, name)) = database().await? else {
+            return Ok(());
+        };
+        let redis = RedisFixture::start(true).await?;
+        let state = RedisState::connect(&redis.url, "derived-stats").await?;
+        let store = Store::fixture(pool, state);
+        let result = async {
+            sqlx::query!(
+                "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+                 SELECT n,'Player'||n,'player'||n,'test','127.0.0.1' FROM generate_series(4,6) n"
+            )
+            .execute(&store.primary)
+            .await?;
+            let mut table = pregame(store.allocate_table().await?);
+            terminal(&mut table)?;
+            let template = table.game().unwrap().clone();
+            let mut expected = [0_i16; 5];
+            for count in 2..=6_usize {
+                let mut snapshot = template.clone();
+                snapshot.players = (1..=count as i32)
+                    .map(|id| Player {
+                        id,
+                        name: format!("Player{id}"),
+                        stats: zero_stats(),
+                    })
+                    .collect();
+                snapshot.game.score = count as i32 + 10;
+                expected[count - 2] = count as i16 + 10;
+                store.refresh(&snapshot).await?;
+                let user = sqlx::query!(
+                    "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
+                     FROM user_stats WHERE user_id=1 AND variant_id=0"
+                )
+                .fetch_one(&store.primary)
+                .await?;
+                let variant = sqlx::query!(
+                    "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
+                     FROM variant_stats WHERE variant_id=0"
+                )
+                .fetch_one(&store.primary)
+                .await?;
+                let users = [
+                    user.best_score2,
+                    user.best_score3,
+                    user.best_score4,
+                    user.best_score5,
+                    user.best_score6,
+                ];
+                let variants = [
+                    variant.best_score2,
+                    variant.best_score3,
+                    variant.best_score4,
+                    variant.best_score5,
+                    variant.best_score6,
+                ];
+                ensure!(
+                    users == expected,
+                    "User stats after {count} players: {users:?}"
+                );
+                ensure!(
+                    variants == expected,
+                    "Variant stats after {count} players: {variants:?}"
+                );
+            }
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        cleanup(admin, name).await?;
+        result
+    }
+    #[tokio::test]
     async fn redis_is_sole_authority_and_terminal_archive_is_atomic_and_retryable() -> Result<()> {
         let Some((admin, pool, name)) = database().await? else {
             return Ok(());
@@ -1298,6 +1389,7 @@ mod tests {
                 store.complete(&changed, revision).await.is_err(),
                 "Completion accepted statistics that differ from the durable checkpoint"
             );
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("ALTER TABLE game_actions ADD CONSTRAINT reject_native_test CHECK(type<0)")
                 .execute(&store.primary)
                 .await?;
@@ -1308,7 +1400,7 @@ mod tests {
                     .is_err(),
                 "Broken archive committed"
             );
-            let games: i64 = sqlx::query_scalar("SELECT count(*) FROM games")
+            let games: i64 = sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM games")
                 .fetch_one(&store.primary)
                 .await?;
             ensure!(games == 0, "Partial PG transaction escaped");
@@ -1322,6 +1414,7 @@ mod tests {
                     == revision,
                 "Terminal Redis state lost"
             );
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("ALTER TABLE game_actions DROP CONSTRAINT reject_native_test")
                 .execute(&store.primary)
                 .await?;
@@ -1336,13 +1429,11 @@ mod tests {
                 "Recovered completion inherited an expired live-game idle budget");
             store.stats.close();
             store.stats.wait().await;
-            let games: Option<i32> = sqlx::query_scalar(
-                "SELECT num_games FROM user_stats WHERE user_id=1 AND variant_id=0",
-            )
+            let games: Option<i32> = sqlx::query_scalar!("SELECT num_games FROM user_stats WHERE user_id=1 AND variant_id=0")
             .fetch_optional(&store.primary)
             .await?;
             ensure!(games == Some(1), "Recovered completion did not refresh statistics");
-            let actions: i64 = sqlx::query_scalar("SELECT count(*) FROM game_actions")
+            let actions: i64 = sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM game_actions")
                 .fetch_one(&store.primary)
                 .await?;
             ensure!(actions == 1, "Idempotent archive duplicated actions");
@@ -1354,13 +1445,15 @@ mod tests {
             let mut pending=recovered[0].0.clone();
             pending.pending_tag=Some(PendingTag{game_id:1,user_id:1,operation:"tag".into(),tag:"recovered-tag".into()});
             store.save(&pending,recovered[0].1).await?;
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("ALTER TABLE game_tags ADD CONSTRAINT reject_native_tag CHECK(tag <> 'recovered-tag')").execute(&store.primary).await?;
             ensure!(store.load().await.is_err(),"Rejected replay tag was not surfaced");
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("ALTER TABLE game_tags DROP CONSTRAINT reject_native_tag").execute(&store.primary).await?;
             let recovered=store.load().await?;
             ensure!(recovered[0].0.pending_tag.is_none()&&recovered[0].0.game().unwrap().tags.iter().any(|t|t.tag=="recovered-tag"),"Replay tag intent was not recovered");
             store.load().await?;
-            let tags:i64=sqlx::query_scalar("SELECT count(*) FROM game_tags WHERE tag='recovered-tag'").fetch_one(&store.primary).await?;
+            let tags:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM game_tags WHERE tag='recovered-tag'").fetch_one(&store.primary).await?;
             ensure!(tags==1,"Recovered tag was duplicated");
             let latest = recovered[0].1;
             store.remove(id, latest).await?;
@@ -1467,14 +1560,16 @@ mod tests {
             ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
             ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123456Z","Timestamp was not canonicalized before durability");
             store.save(&table,0).await?;
+            #[allow(clippy::disallowed_methods)]
             sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;
             ensure!(store.archive_chat(&table.chat).await.is_err(),"Partial archive failure was not surfaced");
-            let rows:i64=sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE id=ANY($1)").bind(&ids).fetch_one(&store.primary).await?;
+            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
             ensure!(rows==0,"Failed chat batch escaped rollback");
+            #[allow(clippy::disallowed_methods)]
             sqlx::query("ALTER TABLE chat_log DROP CONSTRAINT reject_reserved_chat").execute(&store.primary).await?;
             let (left,right)=tokio::join!(store.archive_chat(&table.chat),store.archive_chat(&table.chat));
             left?;right?;
-            let rows:i64=sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE id=ANY($1)").bind(&ids).fetch_one(&store.primary).await?;
+            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
             ensure!(rows==3,"Concurrent retries duplicated or conflated legitimate chat");
             let mut conflicting=table.chat[0].clone();conflicting.message["msg"]=json!("conflicting payload");
             ensure!(store.archive_chat(&[conflicting]).await.is_err(),"Conflicting content reused a durable chat identity");
@@ -1506,11 +1601,10 @@ mod tests {
         let revision = store.save(&table, 0).await?;
         store.complete(table.game().unwrap(), revision).await?;
         let mut blocker = store.primary.begin().await?;
-        sqlx::query("SELECT id FROM games WHERE id=1 FOR UPDATE")
-            .execute(&mut *blocker)
+        sqlx::query!("SELECT id FROM games WHERE id=1 FOR UPDATE")
+            .fetch_one(&mut *blocker)
             .await?;
-        sqlx::query("SELECT pg_advisory_xact_lock(17484,$1)")
-            .bind(chat_id)
+        sqlx::query!("SELECT pg_advisory_xact_lock(17484,$1)", chat_id)
             .execute(&mut *blocker)
             .await?;
         let old = store.clone();
@@ -1528,7 +1622,7 @@ mod tests {
         let old_chat = tokio::spawn(async move { old.archive_chat(&entries).await });
         tokio::time::timeout(Duration::from_secs(3),async{
             loop{
-                let waiting:i64=sqlx::query_scalar("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'").fetch_one(&store.primary).await?;
+                let waiting:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'").fetch_one(&store.primary).await?;
                 if waiting>=2{return Ok::<(),anyhow::Error>(());}
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
@@ -1536,7 +1630,7 @@ mod tests {
         state.close().await?;
         let replacement = RedisState::connect(&redis.url, "native-postgres-fence").await?;
         let current = Store::fixture(store.primary.clone(), replacement);
-        sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'new-owner')")
+        sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'new-owner')")
             .execute(&mut *blocker)
             .await?;
         blocker.commit().await?;
@@ -1549,7 +1643,7 @@ mod tests {
             "Expired owner archived after acquiring the serialization lock"
         );
         let tags: Vec<String> =
-            sqlx::query_scalar("SELECT tag FROM game_tags WHERE game_id=1 ORDER BY tag")
+            sqlx::query_scalar!("SELECT tag FROM game_tags WHERE game_id=1 ORDER BY tag")
                 .fetch_all(&current.primary)
                 .await?;
         ensure!(
@@ -1562,10 +1656,12 @@ mod tests {
         );
         one?;
         two?;
-        let rows: i64 = sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE id=$1")
-            .bind(chat_id)
-            .fetch_one(&current.primary)
-            .await?;
+        let rows: i64 = sqlx::query_scalar!(
+            "SELECT count(*) AS \"v!\" FROM chat_log WHERE id=$1",
+            chat_id
+        )
+        .fetch_one(&current.primary)
+        .await?;
         ensure!(rows == 1, "Replacement did not archive exactly once");
         current.remove(id, revision).await?;
         current.close().await?;
@@ -1615,7 +1711,7 @@ mod tests {
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
             send(&hub,users[0].clone(),"chat",json!({"tableID":id,"room":format!("table{id}"),"msg":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
-            let rows:i64=sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'").bind(format!("table{id}")).fetch_one(&store.primary).await?;
+            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'", format!("table{id}")).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
             let restored=store.load().await?;
             ensure!(restored[0].0.chat_archived==restored[0].0.chat.len(),"Chat archival cursor not durable");

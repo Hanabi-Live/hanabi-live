@@ -97,6 +97,10 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
     Ok(s)
 }
 
+// Optional filters and sort orders are assembled per request so PostgreSQL can plan each
+// combination against the large games table; a static `$n IS NULL OR ...` query would
+// share one generic plan. Values are always bound, and tests cover each filter and order.
+#[allow(clippy::disallowed_methods)]
 fn selected(s: Selection) -> QueryBuilder<Postgres> {
     let mut qb = QueryBuilder::new("WITH selected AS (SELECT ");
     qb.push(GAME_COLUMNS).push(" FROM games g WHERE TRUE");

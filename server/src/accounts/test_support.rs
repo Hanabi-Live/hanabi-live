@@ -30,6 +30,7 @@ pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
         ("user_stats", "average_score", "FLOAT NOT NULL DEFAULT 0"),
         ("variant_stats", "average_score", "FLOAT NOT NULL DEFAULT 0"),
     ] {
+        #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
             "ALTER TABLE {table} RENAME COLUMN {column} TO legacy_column;
              ALTER TABLE {table} ADD COLUMN {column} {definition};
@@ -66,6 +67,7 @@ impl TestDb {
             std::process::id(),
             DATABASE_ID.fetch_add(1, Ordering::Relaxed)
         );
+        #[allow(clippy::disallowed_methods)]
         admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "CREATE DATABASE {name}"
@@ -77,6 +79,7 @@ impl TestDb {
             .connect_with(options.database(&name))
             .await
             .unwrap();
+        #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
             .execute(&pool)
             .await
@@ -85,12 +88,12 @@ impl TestDb {
     }
 
     pub async fn user(&self, name: &str) -> i32 {
-        sqlx::query_scalar(
+        sqlx::query_scalar!(
             "INSERT INTO users(username,normalized_username,password_hash,last_ip)
              VALUES($1,$2,'test-password-hash','127.0.0.1') RETURNING id",
+            name,
+            super::normalize_username(name)
         )
-        .bind(name)
-        .bind(super::normalize_username(name))
         .fetch_one(&self.pool)
         .await
         .unwrap()
@@ -98,6 +101,7 @@ impl TestDb {
 
     pub async fn close(mut self) {
         self.pool.close().await;
+        #[allow(clippy::disallowed_methods)]
         self.admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "DROP DATABASE {} WITH (FORCE)",
@@ -121,7 +125,7 @@ async fn cleanup_handles_late_backend_disconnect_without_touching_other_database
     db.close().await;
     assert!(backend.execute("SELECT 1").await.is_err());
     assert_eq!(
-        sqlx::query_scalar::<_, i32>("SELECT 1")
+        sqlx::query_scalar!("SELECT 1 AS \"v!\"")
             .fetch_one(&other.pool)
             .await
             .unwrap(),

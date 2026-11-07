@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "4ace222e1ced99276f565870f46ff01226d4a50c5b6e6277e0e225e0e1ad94eb"
+}

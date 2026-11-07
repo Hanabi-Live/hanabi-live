@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participant_notes(game_participant_id,card_order,note)\n             SELECT id,0,'before-note' FROM game_participants WHERE game_id=1 AND seat=0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "95b7c7260d9d27f87a9a1cfbd12d97b54f2cbcdbf0a0723e4b160d3d74e6d3ea"
+}

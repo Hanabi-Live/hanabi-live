@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_settings SET create_table_speedrun=$1 WHERE user_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a7eda7aba7b0115935afc9f97e1a8e9fea0768621abe4a13cf23a8e67b8727ac"
+}

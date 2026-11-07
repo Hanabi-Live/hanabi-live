@@ -1,6 +1,5 @@
 use super::*;
 use crate::accounts::{normalize_username, test_support::TestDb};
-use sqlx::Row;
 
 fn caller(id: i32, name: &str) -> Caller {
     Caller {
@@ -32,7 +31,7 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
     };
     let user = db.user("Alice").await;
     let who = caller(user, "Alice");
-    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chat_log")
+    let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&db.pool)
         .await
         .unwrap();
@@ -55,16 +54,16 @@ async fn uptime_is_private_before_history_or_discord_publication_postgres() {
             .is_empty()
     );
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
             .fetch_one(&db.pool)
             .await
             .unwrap(),
         before
     );
-    sqlx::query(
+    sqlx::query!(
         "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/UpTiMe','lobby')",
+        user
     )
-    .bind(user)
     .execute(&db.pool)
     .await
     .unwrap();
@@ -104,11 +103,11 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let result = run(&db.pool, &who, &[], "chatFriend", data.clone()).await;
     assert_eq!(self_data(&result, "friends"), json!({"friends":["Bob"]}));
     assert_eq!(
-        sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*) FROM user_reverse_friends WHERE user_id=$1 AND friend_id=$2"
+        sqlx::query_scalar!(
+            "SELECT COUNT(*) AS \"v!\" FROM user_reverse_friends WHERE user_id=$1 AND friend_id=$2",
+            b,
+            a
         )
-        .bind(b)
-        .bind(a)
         .fetch_one(&db.pool)
         .await
         .unwrap(),
@@ -124,12 +123,13 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
     assert!(friends(&db.pool, a).await.unwrap().is_empty());
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM user_reverse_friends")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM user_reverse_friends")
             .fetch_one(&db.pool)
             .await
             .unwrap(),
         0
     );
+    #[allow(clippy::disallowed_methods)]
     // Force the reverse write to fail; the forward write must roll back.
     sqlx::query(
         "ALTER TABLE user_reverse_friends ADD CONSTRAINT test_reject CHECK (friend_id < 0)",
@@ -139,6 +139,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     .unwrap();
     assert!(change_friend(&db.pool, a, b, true).await.is_err());
     assert!(friend_ids(&db.pool, a).await.unwrap().is_empty());
+    #[allow(clippy::disallowed_methods)]
     sqlx::query("ALTER TABLE user_reverse_friends DROP CONSTRAINT test_reject")
         .execute(&db.pool)
         .await
@@ -193,11 +194,13 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     one.unwrap();
     two.unwrap();
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM user_settings WHERE user_id=$1")
-            .bind(b)
-            .fetch_one(&db.pool)
-            .await
-            .unwrap(),
+        sqlx::query_scalar!(
+            "SELECT COUNT(*) AS \"v!\" FROM user_settings WHERE user_id=$1",
+            b
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap(),
         1
     );
     let result = run(
@@ -258,21 +261,20 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .iter()
             .any(|e| matches!(e,Effect::ToUser {id,generation:29,..} if *id==b))
     );
-    let stored = sqlx::query("SELECT id,datetime_sent FROM chat_log_pm")
+    let stored = sqlx::query!("SELECT id,datetime_sent FROM chat_log_pm")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    assert_eq!(message["pmID"], stored.get::<i32, _>("id"));
-    assert_eq!(
-        message["datetime"],
-        chat::datetime(stored.get("datetime_sent"))
-    );
-    sqlx::query("INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,'not Alice')")
-        .bind(b)
-        .bind(c)
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    assert_eq!(message["pmID"], stored.id);
+    assert_eq!(message["datetime"], chat::datetime(stored.datetime_sent));
+    sqlx::query!(
+        "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,'not Alice')",
+        b,
+        c
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let result = run(
         &db.pool,
         &who,
@@ -370,7 +372,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         .is_none()
     );
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log WHERE source='user'")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='user'")
             .fetch_one(&db.pool)
             .await
             .unwrap(),
@@ -404,11 +406,11 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .iter()
             .any(|e| matches!(e,Effect::Broadcast {data,..} if data["msg"]=="&lt;plain&gt;"))
     );
-    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM chat_log")
+    let before: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO muted_ips(ip) VALUES('127.0.0.1')")
+    sqlx::query!("INSERT INTO muted_ips(ip) VALUES('127.0.0.1')")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -441,13 +443,13 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             .contains("muted")
     );
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM chat_log")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log")
             .fetch_one(&db.pool)
             .await
             .unwrap(),
         before
     );
-    sqlx::query("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/token legacy-secret','lobby'),($1,'user','/unknown secret','lobby')").bind(a).execute(&db.pool).await.unwrap();
+    sqlx::query!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/token legacy-secret','lobby'),($1,'user','/unknown secret','lobby')", a).execute(&db.pool).await.unwrap();
     let history = lobby_history(&db.pool, 100).await.unwrap();
     assert!(
         !history
@@ -458,17 +460,13 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
 }
 
 async fn game(db: &TestDb, user: i32, seed: &str, score: i16) -> i32 {
-    let id = sqlx::query_scalar(
-        "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+    let id = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
          VALUES('test',2,0,false,120,20,false,false,false,false,false,false,false,false,$1,$2,30,1,NOW(),NOW())
-         RETURNING id",
-    ).bind(seed).bind(score).fetch_one(&db.pool).await.unwrap();
-    sqlx::query(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         VALUES($1,$2,0,0,0)",
-    ).bind(id).bind(user).execute(&db.pool).await.unwrap();
+         RETURNING id", seed, score).fetch_one(&db.pool).await.unwrap();
+    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+         VALUES($1,$2,0,0,0)", id, user).execute(&db.pool).await.unwrap();
     id
 }
 
@@ -483,14 +481,15 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
     let own = game(&db, a, "p2v0s1", 20).await;
     let other = game(&db, b, "p2v0s2", 20).await;
     let shared = game(&db, a, "p2v0s4", 20).await;
-    sqlx::query("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,1,0,0)")
-        .bind(shared).bind(b).execute(&db.pool).await.unwrap();
+    sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,1,0,0)", shared, b).execute(&db.pool).await.unwrap();
     change_friend(&db.pool, a, b, true).await.unwrap();
-    sqlx::query("UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)")
-        .bind(vec![own, other, shared])
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE games SET datetime_finished='2026-11-04T00:00:00Z' WHERE id=ANY($1)",
+        &[own, other, shared][..]
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     assert_eq!(
         history_ids(&db.pool, a, 0, 10).await.unwrap(),
         vec![shared, own]
@@ -560,13 +559,15 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
     let history = self_data(&result, "gameHistoryOtherScores");
     assert_eq!(history["games"][0]["id"], gb);
     assert_eq!(history["games"][1]["id"], ga);
-    sqlx::query("INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)")
-        .bind(ga)
-        .bind(a)
-        .bind("x'; delete from users; --")
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
+        ga,
+        a,
+        "x'; delete from users; --"
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let result = run(
         &db.pool,
         &who,
@@ -582,7 +583,7 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             .ends_with(&ga.to_string())
     );
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM users")
             .fetch_one(&db.pool)
             .await
             .unwrap(),
@@ -598,5 +599,40 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
             .unwrap()
             .contains("do not have")
     );
+    db.close().await;
+}
+
+#[tokio::test]
+async fn every_setting_round_trips_through_its_column_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let id = db.user("Alice").await;
+    let defaults = get_settings(&db.pool, id).await.unwrap();
+    let names: Vec<_> = defaults.as_object().unwrap().keys().cloned().collect();
+    let mut expected: Vec<_> = settings::FIELDS
+        .iter()
+        .map(|(name, _)| (*name).to_owned())
+        .collect();
+    expected.sort();
+    assert_eq!(names, expected, "Stored settings and setting names differ");
+    for (name, kind) in settings::FIELDS {
+        let (value, stored) = match kind {
+            settings::Kind::Bool => {
+                let flipped = !defaults[name].as_bool().unwrap();
+                (flipped.to_string(), json!(flipped))
+            }
+            settings::Kind::SmallInt | settings::Kind::Int => ("7".into(), json!(7)),
+            settings::Kind::Float => ("7.5".into(), json!(7.5)),
+            settings::Kind::Text => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
+        };
+        assert_ne!(defaults[name], stored, "{name} must change");
+        set_setting(&db.pool, id, name, &value).await.unwrap();
+        assert_eq!(
+            get_settings(&db.pool, id).await.unwrap()[name],
+            stored,
+            "{name}"
+        );
+    }
     db.close().await;
 }

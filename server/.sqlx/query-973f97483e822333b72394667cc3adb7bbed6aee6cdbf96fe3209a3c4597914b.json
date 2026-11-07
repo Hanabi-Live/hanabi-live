@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_settings SET create_table_all_or_nothing=$1 WHERE user_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "973f97483e822333b72394667cc3adb7bbed6aee6cdbf96fe3209a3c4597914b"
+}

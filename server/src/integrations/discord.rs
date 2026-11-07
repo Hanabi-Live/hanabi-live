@@ -10,8 +10,6 @@ use regex::Regex;
 use reqwest::Method;
 use serde_json::{Value, json};
 use sqlx::PgPool;
-#[cfg(test)]
-use sqlx::Row;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -1043,17 +1041,18 @@ mod tests {
         );
         assert_ne!(one.unwrap().is_some(), two.unwrap().is_some());
         let author = db.user("Alice").await;
-        let chat:i32=sqlx::query_scalar("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','message','lobby') RETURNING id")
-            .bind(author).fetch_one(&db.pool).await.unwrap();
+        let chat:i32=sqlx::query_scalar!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','message','lobby') RETURNING id", author).fetch_one(&db.pool).await.unwrap();
         assert!(link_copy(&db.pool, chat, id).await.unwrap());
-        let row = sqlx::query("SELECT user_id,message,deleted_at FROM chat_log WHERE id=$1")
-            .bind(chat)
-            .fetch_one(&db.pool)
-            .await
-            .unwrap();
-        assert_eq!(row.get::<i32, _>("user_id"), author);
-        assert_eq!(row.get::<String, _>("message"), "");
-        assert!(row.get::<Option<DateTime<Utc>>, _>("deleted_at").is_some());
+        let row = sqlx::query!(
+            "SELECT user_id,message,deleted_at FROM chat_log WHERE id=$1",
+            chat
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        assert_eq!(row.user_id, author);
+        assert_eq!(row.message, "");
+        assert!(row.deleted_at.is_some());
         db.close().await;
     }
 }

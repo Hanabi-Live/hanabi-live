@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,'authored')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a8d004f02e83294dab0e5afa2582c76a64bbbce18d8cdb385825141a92d45c49"
+}

@@ -71,9 +71,10 @@ pub(crate) struct VariantStats {
     pub num_strikeouts: i32,
 }
 
+/// Serializes to the client-facing setting names.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct UserSettings {
-    pub user_id: i32,
     pub desktop_notification: bool,
     pub sound_move: i16,
     pub sound_timer: bool,
@@ -100,4 +101,38 @@ pub(crate) struct UserSettings {
     pub create_table_all_or_nothing: bool,
     pub create_table_detrimental_characters: bool,
     pub create_table_max_players: i16,
+}
+
+/// The column defaults from `install/database_schema.sql`, for users who never changed a setting.
+impl Default for UserSettings {
+    fn default() -> Self {
+        Self {
+            desktop_notification: false,
+            sound_move: 0,
+            sound_timer: true,
+            keldon_mode: false,
+            colorblind_mode: false,
+            real_life_mode: false,
+            reverse_hands: false,
+            style_numbers: false,
+            show_timer_in_untimed: false,
+            speedrun_preplay: false,
+            speedrun_mode: false,
+            hyphenated_conventions: false,
+            volume: 50,
+            create_table_variant: "No Variant".into(),
+            create_table_timed: false,
+            create_table_time_base_minutes: 2.0,
+            create_table_time_per_turn_seconds: 20,
+            create_table_speedrun: false,
+            create_table_card_cycle: false,
+            create_table_deck_plays: false,
+            create_table_empty_clues: false,
+            create_table_one_extra_card: false,
+            create_table_one_less_card: false,
+            create_table_all_or_nothing: false,
+            create_table_detrimental_characters: false,
+            create_table_max_players: 5,
+        }
+    }
 }

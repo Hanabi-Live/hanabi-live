@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE game_tags SET tag='after-tag'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "26c37e52c488e770e24a59aa9a80c23e2e81fd31a976175722c5a56babc83d9f"
+}

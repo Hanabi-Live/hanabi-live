@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_settings SET create_table_one_extra_card=$1 WHERE user_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4e569ce618b53d95e83d121beea00eeb249fd4f09d8a8f7802b8643dcae7f1dd"
+}

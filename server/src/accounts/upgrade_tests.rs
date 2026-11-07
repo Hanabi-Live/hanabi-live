@@ -11,12 +11,14 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
         return;
     };
     let id = db.user("Upgrade").await;
-    sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
-        .bind(id)
-        .bind(OLD_HASH)
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE users SET password_hash=$2 WHERE id=$1",
+        id,
+        OLD_HASH
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let app = router(db.pool.clone(), tests::config());
     let login = |password: &str| format!("username=Upgrade&password={password}&version=42");
     assert_eq!(
@@ -26,9 +28,11 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
         StatusCode::UNAUTHORIZED
     );
     let stored = || {
-        sqlx::query_scalar::<_, String>("SELECT password_hash FROM users WHERE id=$1")
-            .bind(id)
-            .fetch_one(&db.pool)
+        sqlx::query_scalar!(
+            "SELECT password_hash AS \"password_hash!\" FROM users WHERE id=$1",
+            id
+        )
+        .fetch_one(&db.pool)
     };
     assert_eq!(stored().await.unwrap(), OLD_HASH);
     assert_eq!(
@@ -64,12 +68,14 @@ async fn successful_old_argon_login_upgrades_once_and_preserves_stronger_hashes_
     .hash_password_with_salt(PASSWORD.as_bytes(), b"synthetic-salt12")
     .unwrap()
     .to_string();
-    sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
-        .bind(id)
-        .bind(&stronger)
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE users SET password_hash=$2 WHERE id=$1",
+        id,
+        &stronger
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     assert_eq!(
         tests::request(&app, "POST", "/login", &login(PASSWORD), None, false)
             .await
@@ -86,12 +92,14 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
         return;
     };
     let id = db.user("Upgrade").await;
-    sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
-        .bind(id)
-        .bind(OLD_HASH)
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE users SET password_hash=$2 WHERE id=$1",
+        id,
+        OLD_HASH
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let next = hash_password("127.0.0.1", "new-password".into())
         .await
         .unwrap();
@@ -106,11 +114,13 @@ async fn password_upgrade_cas_does_not_overwrite_new_credentials_postgres() {
             .await
             .unwrap()
     );
-    let stored: String = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
-        .bind(id)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
+    let stored: String = sqlx::query_scalar!(
+        "SELECT password_hash AS \"password_hash!\" FROM users WHERE id=$1",
+        id
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
     assert_eq!(stored, next);
     assert!(
         verify_password("127.0.0.1", "new-password".into(), stored)

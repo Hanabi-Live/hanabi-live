@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO muted_ips(ip) VALUES('127.0.0.1')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d9736143879e2830a1237d2808231f0afce84d9444c3a01f0eb9167b9b0bd24c"
+}

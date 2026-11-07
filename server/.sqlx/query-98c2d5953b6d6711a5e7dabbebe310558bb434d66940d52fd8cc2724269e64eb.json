@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "98c2d5953b6d6711a5e7dabbebe310558bb434d66940d52fd8cc2724269e64eb"
+}

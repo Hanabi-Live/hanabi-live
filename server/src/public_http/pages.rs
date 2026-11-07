@@ -356,8 +356,8 @@ async fn compute_aggregate(
 ) -> Result<Value> {
     let mut transaction = state.pool.begin().await?;
     // This scan can legitimately take longer than the pool's usual 2 second limit.
-    sqlx::query("SET LOCAL statement_timeout = 20000")
-        .execute(&mut *transaction)
+    sqlx::query_scalar!("SELECT set_config('statement_timeout','20000',true)")
+        .fetch_one(&mut *transaction)
         .await?;
     let row = sqlx::query!(    "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
     count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
