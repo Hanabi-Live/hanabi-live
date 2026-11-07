@@ -38,18 +38,35 @@ fi
 
 # Failures only reach syslog otherwise, where nobody will see them.
 function report_failure {
-  local status=$1
+  local status=$1 reason=${FAILURE:-"The cause is unknown."}
   if [[ -z ${DISCORD_TOKEN-} || -z ${DISCORD_CHANNEL_WEBSITE_DEVELOPMENT-} ]]; then
+    echo "Discord is not configured, so this failure was not reported." >&2
     return
   fi
+  # Shorten, then escape the reason for JSON.
+  reason=${reason:0:300}
+  reason=${reason//\\/\\\\}
+  reason=${reason//\"/\\\"}
+  reason=${reason//[$'\t\n\r']/ }
   # Send the token on stdin so that it does not appear in the process list.
   printf 'header = "Authorization: Bot %s"\n' "$DISCORD_TOKEN" \
     | curl --silent --show-error --fail --output /dev/null --max-time 15 --config - \
       --header "Content-Type: application/json" \
-      --data "{\"content\":\"The database backup failed with exit code $status. Check the logs with: \`journalctl -t database-backup.sh\`\"}" \
+      --data "{\"content\":\"The database backup failed with exit code $status: $reason\\nCheck the logs with: \`journalctl -t database-backup.sh\`\"}" \
       "https://discord.com/api/v10/channels/$DISCORD_CHANNEL_WEBSITE_DEVELOPMENT/messages" \
     || echo "Failed to report the backup failure to Discord." >&2
 }
+
+# Expected failures explain themselves. Others are named by the ERR trap, which records commands as
+# written, without expanding variables, so no secrets reach the alert.
+FAILURE=""
+function fail {
+  FAILURE=$1
+  echo "$1" >&2
+  exit 1
+}
+set -o errtrace
+trap 'FAILURE=${FAILURE:-"Line $LINENO failed: $BASH_COMMAND"}' ERR
 
 PARTIAL_PATH=""
 function on_exit {
@@ -62,27 +79,25 @@ function on_exit {
   fi
 }
 trap on_exit EXIT
+trap 'FAILURE="The backup was interrupted."; exit 130' INT
+trap 'FAILURE="The backup was terminated."; exit 143' TERM
 
 mkdir -p "$BACKUPS_DIR"
 MAX_BACKUP_KB=""
 if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
   exec 9> "$BACKUPS_DIR/.backup.lock"
   if ! flock -n 9; then
-    echo "Another database backup is already running." >&2
-    exit 1
+    fail "Another database backup is already running."
   fi
   AVAILABLE_KB=$(df -Pk "$BACKUPS_DIR" | awk 'NR == 2 { print $4 }')
   # Leave at least 1 GiB for PostgreSQL and application writes.
   MAX_BACKUP_KB=$((AVAILABLE_KB - 1048576))
   if ((MAX_BACKUP_KB <= 0)); then
-    echo "Not enough disk space for a backup while preserving 1 GiB of free space." >&2
-    exit 1
+    fail "Not enough disk space for a backup while preserving 1 GiB of free space."
   fi
 fi
 
 PARTIAL_PATH=$(mktemp "$BACKUPS_DIR/.$FILENAME.XXXXXX.partial")
-trap 'exit 130' INT
-trap 'exit 143' TERM
 
 function compress_dump {
   if [[ -n $MAX_BACKUP_KB ]]; then
@@ -96,8 +111,7 @@ function compress_dump {
 echo "Streaming a compressed database backup..."
 if ! PGPASSWORD="$DB_PASSWORD" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" \
   | compress_dump > "$PARTIAL_PATH"; then
-  echo "Database backup failed; removing the incomplete compressed file." >&2
-  exit 1
+  fail "pg_dump or compression failed; the incomplete file was removed."
 fi
 gzip -t "$PARTIAL_PATH"
 mv -- "$PARTIAL_PATH" "$BACKUPS_DIR/$FILENAME"
@@ -117,18 +131,12 @@ function delete_old_local_backups {
 }
 delete_old_local_backups
 
-# Detect to see if we have Google Drive backups configured (see "install.md").
-if [[ -z ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME-} ]]; then
-  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME\" is not set in the \".env\" file."
-  exit 0
-fi
-if [[ -z ${GOOGLE_DRIVE_PARENT_DIRECTORY_ID-} ]]; then
-  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY_ID\" is not set in the \".env\" file."
-  exit 0
+# Only a few backups are kept locally, so a backup that is not uploaded is a failure.
+if [[ -z ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME-} || -z ${GOOGLE_DRIVE_PARENT_DIRECTORY_ID-} ]]; then
+  fail "Google Drive is not configured: set GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME and GOOGLE_DRIVE_PARENT_DIRECTORY_ID in .env."
 fi
 if ! command -v gdrive > /dev/null; then
-  echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
-  exit 1
+  fail "The gdrive program is not on the PATH, so the backup was not uploaded."
 fi
 
 # Delete the oldest backups until the new one fits, plus a 100 MiB margin. Deleted sizes are added up
@@ -138,8 +146,7 @@ function make_room_on_gdrive {
   needed=$(($(stat -c %s "$BACKUPS_DIR/$FILENAME") + 104857600))
   free=$(gdrive about --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | awk '$1 == "Free:" { print $2 }')
   if [[ ! $free =~ ^[0-9]+$ ]]; then
-    echo "Failed to read the free space on Google Drive." >&2
-    return 1
+    fail "Failed to read the free space on Google Drive."
   fi
   echo "Google Drive has $free bytes free and needs $needed bytes."
   if ((free >= needed)); then
@@ -160,8 +167,7 @@ function make_room_on_gdrive {
       return
     fi
   done <<< "$listing"
-  echo "Deleting every old backup would not free enough space on Google Drive." >&2
-  return 1
+  fail "Deleting every old backup would not free enough space on Google Drive."
 }
 make_room_on_gdrive
 
