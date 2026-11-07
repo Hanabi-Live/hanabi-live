@@ -92,6 +92,7 @@
         "@sinonjs/fake-timers": "catalog:",
         "@types/bun": "catalog:",
         "@types/jquery": "catalog:",
+        "@types/jsdom": "catalog:",
         "@types/linkifyjs": "catalog:",
         "@types/lodash": "catalog:",
         "@types/sinonjs__fake-timers": "catalog:",
@@ -101,6 +102,7 @@
         "grunt-contrib-concat": "catalog:",
         "grunt-contrib-cssmin": "catalog:",
         "grunt-criticalcss": "catalog:",
+        "jsdom": "catalog:",
       },
     },
     "packages/client-new": {
@@ -205,6 +207,7 @@
     "@testing-library/user-event": "14.6.8",
     "@types/bun": "1.4.4",
     "@types/jquery": "4.0.1",
+    "@types/jsdom": "30.0.0",
     "@types/linkifyjs": "2.1.7",
     "@types/lodash": "4.17.26",
     "@types/react": "19.3.0",
@@ -850,6 +853,8 @@
 
     "@types/jquery": ["@types/jquery@4.0.1", "", {}, "sha512-9a59A/tycXgYuPABcp6/3spSShn0NT2UOM4EfHvMumjYi4lJWTsK5SZWjhx3yRm9IHGCeWXdV2YfNsrWrft/CA=="],
 
+    "@types/jsdom": ["@types/jsdom@30.0.0", "", { "dependencies": { "@types/node": "*", "@types/tough-cookie": "*", "parse5": "^8.0.0", "undici-types": "^8.9.0" } }, "sha512-uAHGxujGE0cDaKGdK28zgDotFtNA7MKq5DXl8LrfdxdCI8VHcg15oJz+amHTChPNI5JpgEPQWc2xFdrw3em/nQ=="],
+
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
 
     "@types/linkifyjs": ["@types/linkifyjs@2.1.7", "", { "dependencies": { "@types/react": "*" } }, "sha512-+SIYXs1lajyD7t/2+V9GLfdFlc/6Nr2tr65kjA2F5oOzBlPH+NiPqySJDHzREoGcL91Au9Qef8M5JdZiRXsaJw=="],
@@ -867,6 +872,8 @@
     "@types/sinonjs__fake-timers": ["@types/sinonjs__fake-timers@15.0.1", "", {}, "sha512-Ko2tjWJq8oozHzHV+reuvS5KYIRAokHnGbDwGh/J64LntgpbuylF74ipEL24HCyRjf9FOlBiBHWBR1RlVKsI1w=="],
 
     "@types/tooltipster": ["@types/tooltipster@0.0.35", "", { "dependencies": { "@types/jquery": "*" } }, "sha512-vYbL732eEigtw16rBHvOBUGUY5gk0ZGcE5Y08PAcHi/Pg4eZrIvRQ3FNP03Z/apobm97ByaXuTp3PV4TAsqRgQ=="],
+
+    "@types/tough-cookie": ["@types/tough-cookie@4.0.5", "", {}, "sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA=="],
 
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
 

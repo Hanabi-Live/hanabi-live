@@ -24,6 +24,7 @@
     "@sinonjs/fake-timers": "catalog:",
     "@types/bun": "catalog:",
     "@types/jquery": "catalog:",
+    "@types/jsdom": "catalog:",
     "@types/linkifyjs": "catalog:",
     "@types/lodash": "catalog:",
     "@types/sinonjs__fake-timers": "catalog:",
@@ -32,6 +33,7 @@
     "grunt": "catalog:",
     "grunt-contrib-concat": "catalog:",
     "grunt-contrib-cssmin": "catalog:",
-    "grunt-criticalcss": "catalog:"
+    "grunt-criticalcss": "catalog:",
+    "jsdom": "catalog:"
   }
 }

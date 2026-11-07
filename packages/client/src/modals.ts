@@ -255,6 +255,11 @@ function morphInGameCancelButton(card: HanabiCard | null) {
 }
 
 export function showWarning(msg: string): void {
+  // An error stops the connection and can only be left by reloading, so a later (or delayed)
+  // warning must not replace it.
+  if (globals.errorOccurred) {
+    return;
+  }
   allowCloseModal = true;
 
   // Warning messages include intentional markup from the server and client.
