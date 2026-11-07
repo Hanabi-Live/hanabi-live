@@ -9,9 +9,7 @@ use futures_util::{SinkExt, StreamExt, future::BoxFuture};
 use regex::Regex;
 use reqwest::Method;
 use serde_json::{Value, json};
-use sqlx::PgPool;
-#[cfg(test)]
-use sqlx::Row;
+use sqlx::{PgPool, Row};
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -22,6 +20,9 @@ use std::{
 };
 use tokio::sync::{Mutex, Semaphore, mpsc};
 use tokio_util::sync::CancellationToken;
+
+const RESTART_PREFIX: &str = "The server went down for a restart at:";
+const STOP_PREFIX: &str = "The server is stopping gracefully at:";
 
 #[derive(Clone)]
 pub struct Configuration {
@@ -630,7 +631,7 @@ impl Bridge {
 
     pub async fn announce_restart(&self, uptime: Duration) -> Result<()> {
         self.announce(&format!(
-            "The server went down for a restart at: {} ({}) - Uptime: {}",
+            "{RESTART_PREFIX} {} ({}) - Uptime: {}",
             Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
             crate::restart::version(),
             crate::lifecycle::duration(uptime.as_secs()),
@@ -640,7 +641,7 @@ impl Bridge {
 
     pub async fn announce_stop(&self, uptime: Duration) -> Result<()> {
         self.announce(&format!(
-            "The server is stopping gracefully at: {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.",
+            "{STOP_PREFIX} {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.",
             Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
             crate::restart::version(),
             crate::lifecycle::duration(uptime.as_secs()),
@@ -656,11 +657,19 @@ impl Bridge {
             Some("READY" | "RESUMED") => {
                 self.status.store(2, Ordering::Release);
                 if !self.announced.swap(true, Ordering::AcqRel) {
-                    let message = format!(
+                    let now = Utc::now();
+                    let mut message = format!(
                         "The server has successfully started at: {} ({})",
-                        Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
+                        now.format("%a %b %d %H:%M:%S UTC %Y"),
                         crate::restart::version(),
                     );
+                    if let Some(down) = last_shutdown(&self.pool).await? {
+                        let seconds = (now - down).num_seconds().max(0).unsigned_abs();
+                        message.push_str(&format!(
+                            " - Downtime: {}",
+                            crate::lifecycle::duration(seconds)
+                        ));
+                    }
                     self.announce(&message).await?;
                 }
             }
@@ -824,6 +833,21 @@ impl Bridge {
             .await?;
         Ok(())
     }
+}
+
+/// When the most recent server announcement is a graceful shutdown, returns when it was sent.
+async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
+    let row = sqlx::query(
+        "SELECT message,datetime_sent FROM chat_log WHERE room='lobby' AND source='server'
+         ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_optional(pool)
+    .await?;
+    Ok(row.and_then(|row| {
+        let message: String = row.get("message");
+        (message.starts_with(RESTART_PREFIX) || message.starts_with(STOP_PREFIX))
+            .then(|| row.get("datetime_sent"))
+    }))
 }
 
 pub async fn insert_message(
