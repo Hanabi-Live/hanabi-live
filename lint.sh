@@ -72,16 +72,11 @@ done
 
 # Keep native compiler checks out of the parallel JavaScript batch to limit peak memory in CI.
 if [[ $shard != 1 ]]; then
-  echo "Checking generated wire contracts."
-  bash "$DIR/scripts/bash/generate-protocol.sh" --check || status=1
-
-  cd "$DIR/server"
-  echo "Checking Rust formatting and static analysis."
-  cargo fmt --all --check || status=1
-  cargo clippy --locked --all-targets -- -D warnings || status=1
-  cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings || status=1
-  cargo clippy --locked --manifest-path protocol/Cargo.toml --all-targets -- -D warnings || status=1
-  cd "$DIR"
+  if [[ ${CI:-} == true ]]; then
+    bunx --bun --no-install turbo run "//#lint-rust" --cache=local:rw || status=1
+  else
+    bash "$DIR/check-rust.sh" || status=1
+  fi
 fi
 
 if ((status != 0)); then
