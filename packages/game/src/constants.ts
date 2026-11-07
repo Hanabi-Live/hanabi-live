@@ -27,7 +27,11 @@ export const VALID_PLAYER_INDEXES = [0, 1, 2, 3, 4, 5] as const;
 export const MAX_SUITS_IN_A_VARIANT = 6;
 export const VALID_SUIT_INDEXES = [0, 1, 2, 3, 4, 5] as const;
 
-/** A variant can never have more colors than suits, so we repurpose the existing array. */
+/**
+ * A variant can never have more colors than suits, so we repurpose the existing array.
+ *
+ * @alias
+ */
 export const VALID_CLUE_COLOR_INDEXES = VALID_SUIT_INDEXES;
 
 const MAX_CARDS_IN_A_SUIT = 10;

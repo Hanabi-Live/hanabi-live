@@ -40,7 +40,6 @@
     // CSS files might have strange paths.
     "hanabi.css",
     // Third-party assets.
-    "/misc/card-images/src/lib/canvas2svg_node.js",
     "/public/css/lib/alpha.css",
     // Emoji names are often two words without a space.
     "emojis.json",
@@ -361,7 +360,6 @@
     "wscat",
     "wscript",
     "xact",
-    "xmlserializer",
     "zamiel",
     "zamiell",
     "αlice",

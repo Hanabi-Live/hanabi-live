@@ -3,11 +3,10 @@ import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
 import { describe, expect } from "bun:test";
 import { assertDefined } from "complete-common";
 import type { ChildProcess } from "node:child_process";
-import { execFile, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { cp, mkdir, symlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 
 import { WebSocket } from "ws";
 import { z } from "zod";
@@ -20,9 +19,6 @@ export const databaseDescribe =
   process.env["HANABI_TEST_DATABASE_URL"] === undefined
     ? describe.skip
     : describe;
-
-// eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
-export const run = promisify(execFile);
 
 export const wireHistorySchema = SERVER_COMMAND_SCHEMAS.gameHistory
   .unwrap()
