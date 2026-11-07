@@ -78,6 +78,9 @@ macro_rules! server_contracts {
             "note" => Note, Note;
             "noteList" => NoteList, NoteList;
             "noteListPlayer" => NoteListPlayer, NoteListPlayer;
+            "gameAction" => GameAction, GameAction;
+            "gameActionList" => GameActionList, GameActionList;
+            "init" => Init, Init;
             "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
             "boot" => TableRequest, TableRequest;
             "synced" => Empty, Empty;

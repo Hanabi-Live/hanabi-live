@@ -133,6 +133,217 @@ export const finishOngoingGameSchema = z.strictObject({
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
+const receivedClueSchema = z.union([
+  z.strictObject({
+    type: z.literal([0, 1]),
+    value: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+  }),
+  z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
+]);
+const safeIntegerSchema = z
+  .number()
+  .int()
+  .min(-9_007_199_254_740_991)
+  .max(9_007_199_254_740_991);
+const gameEventSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("draw"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("play"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("cardIdentity"),
+  }),
+  z.strictObject({
+    failed: z.boolean(),
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("discard"),
+  }),
+  z.strictObject({
+    clue: receivedClueSchema,
+    giver: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    list: z.array(safeIntegerSchema).readonly(),
+    target: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("clue"),
+  }),
+  z.strictObject({
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("strike"),
+  }),
+  z.strictObject({
+    clues: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    maxScore: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    score: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("status"),
+  }),
+  z.strictObject({
+    currentPlayerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("turn"),
+  }),
+  z.strictObject({
+    endCondition: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("gameOver"),
+    votes: z.array(safeIntegerSchema).readonly().nullable(),
+  }),
+  z.strictObject({
+    duration: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerTimes: z.array(safeIntegerSchema).readonly(),
+    type: z.literal("playerTimes"),
+  }),
+]);
+export const gameActionSchema = z.strictObject({
+  action: gameEventSchema,
+  tableID: tableIdSchema,
+});
+export const gameActionListSchema = z.strictObject({
+  list: z.array(gameEventSchema),
+  tableID: tableIdSchema,
+});
 const gameIdSchema = z
   .number()
   .int()
@@ -218,6 +429,49 @@ export const hypotheticalSchema = z.strictObject({
   showDrawnCards: z.boolean(),
 });
 export const inactiveRequestSchema = z.strictObject({ inactive: z.boolean() });
+export const initSchema = z.strictObject({
+  characterAssignments: z.array(safeIntegerSchema),
+  characterMetadata: z.array(safeIntegerSchema),
+  databaseID: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  datetimeFinished: z.string(),
+  datetimeStarted: z.string(),
+  hasCustomSeed: z.boolean(),
+  options: gameOptionsSchema,
+  ourPlayerIndex: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  pausePlayerIndex: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  pauseQueued: z.boolean(),
+  paused: z.boolean(),
+  playerNames: z.array(z.string()),
+  replay: z.boolean(),
+  seed: z.string(),
+  shadowing: z.boolean(),
+  sharedReplay: z.boolean(),
+  sharedReplayEffMod: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  sharedReplayLeader: z.string(),
+  sharedReplaySegment: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  spectating: z.boolean(),
+  tableID: tableIdSchema,
+});
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
   z.strictObject({
@@ -696,6 +950,8 @@ export const SERVER_WIRE_SCHEMAS = {
   finishOngoingGame: finishOngoingGameSchema,
   friends: friendsSchema,
   game: pregameSchema,
+  gameAction: gameActionSchema,
+  gameActionList: gameActionListSchema,
   gameHistory: gameHistoryListSchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
   hypoAction: hypoActionSchema,
@@ -704,6 +960,7 @@ export const SERVER_WIRE_SCHEMAS = {
   hypoShowDrawnCards: hypoShowDrawnCardsSchema,
   hypoStart: tableRequestSchema,
   hypothetical: hypotheticalSchema,
+  init: initSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,

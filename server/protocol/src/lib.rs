@@ -1233,6 +1233,189 @@ pub struct Note {
     pub notes: Vec<CardNote>,
 }
 
+/// An integer that JavaScript represents exactly.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))] pub i64);
+
+/// A clue as its recipient sees it. A clue the recipient may not see hides both its type and value.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(untagged, deny_unknown_fields)]
+pub enum ReceivedClue {
+    Visible {
+        /// 0 for a color clue, 1 for a rank clue.
+        #[serde(rename = "type")]
+        #[schemars(range(min = 0, max = 1), extend("enum" = [0, 1]))]
+        clue_type: i32,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        value: i32,
+    },
+    Hidden {
+        #[serde(rename = "type")]
+        #[schemars(extend("const" = -1))]
+        clue_type: i32,
+        #[schemars(extend("const" = -1))]
+        value: i32,
+    },
+}
+
+/// One game event as a particular recipient sees it. Unknown card identities are -1.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum GameEvent {
+    Draw {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    Play {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    CardIdentity {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    Discard {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+        failed: bool,
+    },
+    Clue {
+        clue: ReceivedClue,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        giver: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        target: i64,
+        /// The orders of the cards the clue touched.
+        #[schemars(extend("x-readonly" = true))]
+        list: Vec<SafeInteger>,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        turn: i64,
+    },
+    Strike {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        num: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        turn: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+    },
+    Status {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        clues: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        score: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        max_score: i64,
+    },
+    Turn {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        num: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        current_player_index: i64,
+    },
+    GameOver {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        end_condition: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        /// The players who voted to end the game, or null.
+        #[schemars(
+            required,
+            extend("type" = ["array", "null"], "x-readonly" = true)
+        )]
+        votes: Option<Vec<SafeInteger>>,
+    },
+    PlayerTimes {
+        #[schemars(extend("x-readonly" = true))]
+        player_times: Vec<SafeInteger>,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        duration: i64,
+    },
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GameAction {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub action: GameEvent,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GameActionList {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub list: Vec<GameEvent>,
+}
+
+/// Everything a client needs to draw a game, before its events arrive.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Init {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub player_names: Vec<String>,
+    /// The seat the recipient views the game from.
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub our_player_index: i64,
+    pub spectating: bool,
+    pub shadowing: bool,
+    pub replay: bool,
+    /// The game's database ID in a replay, or -1.
+    #[serde(rename = "databaseID")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub database_id: i64,
+    pub has_custom_seed: bool,
+    pub seed: String,
+    pub datetime_started: String,
+    pub datetime_finished: String,
+    pub options: GameOptions,
+    /// Each player's character ID, when detrimental characters are on.
+    pub character_assignments: Vec<SafeInteger>,
+    pub character_metadata: Vec<SafeInteger>,
+    pub shared_replay: bool,
+    pub shared_replay_leader: String,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub shared_replay_segment: i64,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub shared_replay_eff_mod: i64,
+    pub paused: bool,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub pause_player_index: i64,
+    pub pause_queued: bool,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -1328,6 +1511,12 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         NoteList,
         NoteListPlayer,
         Note,
+        ReceivedClue,
+        GameEvent,
+        GameAction,
+        GameActionList,
+        Init,
+        SafeInteger,
     );
     schemas
 }

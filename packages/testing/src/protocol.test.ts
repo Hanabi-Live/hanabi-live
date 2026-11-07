@@ -70,19 +70,10 @@ test("hidden clue frames require both identity fields to be concealed", () => {
   ).toBe(false);
 });
 
-// Server messages whose client schema is still written by hand instead of generated from the Rust
-// types in server/protocol. Remove a message from this list when it moves to a generated schema.
-const HAND_WRITTEN_SERVER_MESSAGES = [
-  "gameAction",
-  "gameActionList",
-  "init",
-] as const;
-
-test("only the listed server messages use hand-written schemas", () => {
+test("every server message uses a schema generated from server/protocol", () => {
   const generated: Readonly<Record<string, unknown>> = SERVER_WIRE_SCHEMAS;
   const handWritten = Object.entries(SERVER_COMMAND_SCHEMAS)
     .filter(([command, schema]) => generated[command] !== schema)
-    .map(([command]) => command)
-    .toSorted();
-  expect(handWritten).toEqual([...HAND_WRITTEN_SERVER_MESSAGES]);
+    .map(([command]) => command);
+  expect(handWritten).toEqual([]);
 });
