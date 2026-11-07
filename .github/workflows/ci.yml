@@ -26,7 +26,6 @@ jobs:
           context: .
           build-args: |
             HANABI_BUILD_REVISION=${{ github.sha }}
-          load: true
           tags: hanabi-live-ci
           cache-from: type=gha,scope=hanabi-container
           cache-to: type=gha,scope=hanabi-container,mode=max,ignore-error=true
