@@ -89,15 +89,6 @@ joining the table.)
 
 <br />
 
-## Google Analytics
-
-The website reports anonymous usage data to
-[Google Analytics](https://marketingplatform.google.com/about/analytics/). This
-allows me to easily see what the peak hours of the website are and what
-countries most people are from. This kind of thing is pretty standard.
-
-<br />
-
 ## Server
 
 The virtual server runs on the latest version of

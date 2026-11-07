@@ -23,9 +23,6 @@ impl Integrations {
             &app.background,
             app.shutdown.clone(),
         )?;
-        if values.get("GA_TRACKING_ID").is_some_and(|s| !s.is_empty()) {
-            eprintln!("GA_TRACKING_ID targets retired Universal Analytics and is not used.");
-        }
         let discord = match discord::Configuration::read(values) {
             Ok(Some(config)) => match discord::Bridge::start(app.clone(), config, None).await {
                 Ok(bridge) => Some(bridge),
