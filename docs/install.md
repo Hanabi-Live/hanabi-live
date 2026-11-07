@@ -48,7 +48,8 @@ set -o errexit -o nounset -o pipefail
 DOMAIN="hanab.live"
 
 # Install dependencies.
-apt update && apt install --yes certbot cron curl git openssl postgresql python3 redis-server
+apt update
+apt install --yes certbot cron curl git openssl postgresql python3 redis-server
 
 # Create the service account.
 useradd --system --user-group --create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi
@@ -60,21 +61,17 @@ cd /home/hanabi/hanabi-live
 # Install the systemd service for the server.
 install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
 
-# Download the latest approved release without logging in to GitHub.
+# Download the latest release.
 mkdir --parents /root/hanabi-download
-curl --fail --location --output /root/hanabi-download/SHA256SUMS \
-  https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
+curl --silent --fail --show-error --location --output /root/hanabi-download/SHA256SUMS https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
 read -r SHA256 ARCHIVE < /root/hanabi-download/SHA256SUMS
 REV=${ARCHIVE#hanabi-live-rust-}
 REV=${REV%-linux-amd64.tar.gz}
-[[ "$REV" =~ ^[a-f0-9]{40}$ && "$SHA256" =~ ^[a-f0-9]{64}$ &&
-  "$ARCHIVE" == "hanabi-live-rust-$REV-linux-amd64.tar.gz" ]] \
-  || {
-    echo "Invalid release checksum file." >&2
-    exit 1
-  }
-curl --fail --location --output "/root/hanabi-download/$ARCHIVE" \
-  "https://github.com/Hanabi-Live/hanabi-live/releases/download/server-$REV/$ARCHIVE"
+[[ "$REV" =~ ^[a-f0-9]{40}$ && "$SHA256" =~ ^[a-f0-9]{64}$ && "$ARCHIVE" == "hanabi-live-rust-$REV-linux-amd64.tar.gz" ]] || {
+  echo "Error: Invalid GitHub release checksum file." >&2
+  exit 1
+}
+curl --silent --fail --show-error --location --output "/root/hanabi-download/$ARCHIVE" "https://github.com/Hanabi-Live/hanabi-live/releases/download/server-$REV/$ARCHIVE"
 git checkout "$REV"
 python3 install/release.py init /root/hanabi-release
 python3 install/release.py stage /root/hanabi-release "/root/hanabi-download/$ARCHIVE" "$SHA256"
