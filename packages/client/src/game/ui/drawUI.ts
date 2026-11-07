@@ -387,11 +387,8 @@ function drawPlayStacks() {
   }
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
-  // of the rest of the stacks).
-  if (
-    globals.variant.throwItInAHole
-    && (globals.state.playing || globals.state.shadowing)
-  ) {
+  // of the rest of the stacks). Spectators need it too, since hypotheticals use the hole.
+  if (globals.variant.throwItInAHole) {
     const playStackX =
       playStackValues.x + playStackValues.w / 2 - cardWidth / 2;
     const playStack = new PlayStack({
