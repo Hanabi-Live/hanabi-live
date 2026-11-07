@@ -21,8 +21,8 @@ REPO_NAME="$(basename "$DIR")"
 BACKUPS_DIR="$DIR/backups"
 FILENAME=$REPO_NAME-$(date +%s).sql.gz # "date +%s" returns the epoch timestamp.
 
-# shellcheck source=scripts/lib/env.sh
-source "$DIR/scripts/lib/env.sh"
+# shellcheck source=scripts/lib/database.sh
+source "$DIR/scripts/lib/database.sh"
 
 # Failures only reach syslog otherwise, where nobody will see them.
 function report_failure {
@@ -84,11 +84,6 @@ if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
     fail "Not enough disk space for a backup while preserving 1 GiB of free space."
   fi
 fi
-
-function sql {
-  PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" \
-    --no-psqlrc --quiet --tuples-only --no-align --set=ON_ERROR_STOP=1 "$@"
-}
 
 # Delete chat older than one year in small batches, so that no single transaction holds many row
 # locks or much WAL.
