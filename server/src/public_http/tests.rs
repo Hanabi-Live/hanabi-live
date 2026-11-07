@@ -418,6 +418,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/variants/0?col%5B0%5D=0", 2, Some(1)),
         ("/api/v1/variants/0?fcol%5B0%5D=2", 1, Some(2)),
         ("/api/v1/variants/0?fcol%5B1%5D=2", 2, Some(1)),
+        // Values outside a column's type match nothing instead of failing in PostgreSQL.
+        ("/api/v1/history/Alice?fcol%5B2%5D=70000", 0, None),
+        ("/api/v1/history/Alice?fcol%5B0%5D=99999999999", 0, None),
     ] {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
@@ -428,6 +431,13 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     for (path, ids) in [
         ("/api/v1/history-full/Alice?start=2", vec![3, 2]),
         ("/api/v1/history-full/Alice?end=1", vec![1]),
+        (
+            "/api/v1/history-full/Alice?start=-99999999999",
+            vec![3, 2, 1],
+        ),
+        ("/api/v1/history-full/Alice?start=99999999999", vec![]),
+        ("/api/v1/history-full/Alice?end=99999999999", vec![3, 2, 1]),
+        ("/api/v1/history-full/Alice?end=-99999999999", vec![]),
     ] {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
