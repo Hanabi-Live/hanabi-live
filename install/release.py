@@ -272,7 +272,7 @@ def init_root(value):
     for name in ("logs", "letsencrypt"):
         (root / "shared" / name).mkdir(mode=0o750)
     (root / "shared/.lifecycle.lock").touch(mode=0o600)
-    print(f"Initialized {root}; provision shared/.env and retained runtime state while the OLD service is stopped.")
+    print(f"Initialized {root}.")
 
 
 def stage(root, archive, checksum):
