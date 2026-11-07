@@ -246,6 +246,7 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             store.clone(),
             hub,
             capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         actor.anchor = Instant::now() - Duration::from_millis(900);
         let (viewer, _frames) = Session::new(if shared { 3 } else { 1 }, "Viewer".into(), 1, false);
@@ -293,6 +294,7 @@ async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
     );
     actor.anchor = Instant::now() - Duration::from_secs(2);
     actor.tick().await?;
@@ -332,6 +334,7 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
             store.clone(),
             hub,
             capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         actor.persist(actor.candidate()).await?;
         let idle_ended = condition == EndCondition::IdleTimeout;
@@ -382,6 +385,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
     );
     actor.anchor = Instant::now() - Duration::from_millis(900);
     let (viewer, _frames) = Session::new(3, "Viewer".into(), 1, false);
@@ -450,6 +454,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
             store.clone(),
             hub,
             capacity.clone().try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         let (owner, _owner_frames) = Session::new(1, "Alice".into(), 1, false);
         let (observer, _observer_frames) = Session::new(2, "Observer".into(), 1, false);
@@ -515,6 +520,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
     );
     let now = Instant::now();
     actor.cleanup(now).await?;
@@ -563,6 +569,7 @@ async fn abandoned_pregame_cleanup_does_not_override_frozen_or_newer_state() -> 
         store.clone(),
         hub,
         capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
     );
     let now = Instant::now();
     actor.cleanup(now).await?;
@@ -663,6 +670,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         tasks: TaskTracker::new(),
         capacity: Arc::new(Semaphore::new(1)),
         playing_claims: Arc::new(Mutex::new(HashSet::new())),
+        info: crate::server_info::test_info(),
     };
     hub.sessions.insert(
         1,

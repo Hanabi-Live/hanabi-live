@@ -7,6 +7,7 @@ use hanabi_live::{
     operations,
     public_http::PublicConfig,
     release, restart,
+    server_info::ServerInfo,
     store::Store,
     tls,
     web::{App, router},
@@ -110,7 +111,8 @@ async fn run(config: Config, version: String) -> Result<bool> {
     };
     let store = Store::connect(&config).await?;
     let tables = TaskTracker::new();
-    let hub = match Hub::start(store.clone(), tables.clone()).await {
+    let info = Arc::new(ServerInfo::new(config.use_tls(), &config.domain));
+    let hub = match Hub::start(store.clone(), tables.clone(), info.clone()).await {
         Ok(hub) => hub,
         Err(error) => {
             if let Err(close) = store.close().await {
@@ -134,6 +136,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             deck_size: game::deck_size,
         },
         lease_lost.clone(),
+        info,
     );
     let (stops, mut stop_requests) = mpsc::channel(1);
     let control = Control::new(

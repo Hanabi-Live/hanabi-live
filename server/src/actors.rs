@@ -3,6 +3,7 @@ use crate::{
     lobby::{Effect, OnlineUser},
     model::{Phase, *},
     operations::Operation,
+    server_info::ServerInfo,
     store::Store,
     transport::{Session, frame},
 };
@@ -271,9 +272,14 @@ pub struct Hub {
     tasks: TaskTracker,
     capacity: Arc<Semaphore>,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
+    info: Arc<ServerInfo>,
 }
 impl Hub {
-    pub async fn start(store: Store, tasks: TaskTracker) -> Result<mpsc::Sender<HubCommand>> {
+    pub async fn start(
+        store: Store,
+        tasks: TaskTracker,
+        info: Arc<ServerInfo>,
+    ) -> Result<mpsc::Sender<HubCommand>> {
         let restored = store.load_for_startup().await?;
         let (sender, receiver) = mpsc::channel(512);
         let mut hub = Self {
@@ -286,6 +292,7 @@ impl Hub {
             tasks: tasks.clone(),
             capacity: Arc::new(Semaphore::new(256)),
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
+            info,
         };
         for (table, revision) in restored {
             let permit = hub
@@ -293,7 +300,14 @@ impl Hub {
                 .clone()
                 .try_acquire_owned()
                 .context("Recovery table capacity exhausted")?;
-            let actor = TableActor::new(table, revision, hub.store.clone(), sender.clone(), permit);
+            let actor = TableActor::new(
+                table,
+                revision,
+                hub.store.clone(),
+                sender.clone(),
+                permit,
+                hub.info.clone(),
+            );
             let id = actor.table.id;
             let view = actor.view();
             let handle = hub.spawn(actor, None);
@@ -916,6 +930,7 @@ impl Hub {
                         self.store.clone(),
                         self.sender.clone(),
                         allocation.into_permit(),
+                        self.info.clone(),
                     );
                     let id = actor.table.id;
                     let view = actor.view();
@@ -953,6 +968,7 @@ impl Hub {
                         self.store.clone(),
                         self.sender.clone(),
                         allocation.into_permit(),
+                        self.info.clone(),
                     );
                     actor.chat_read = chat_read;
                     let id = actor.table.id;
@@ -1612,6 +1628,7 @@ struct TableActor {
     anchor: Instant,
     _permit: OwnedSemaphorePermit,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
+    info: Arc<ServerInfo>,
 }
 impl TableActor {
     fn new(
@@ -1620,6 +1637,7 @@ impl TableActor {
         store: Store,
         hub: mpsc::Sender<HubCommand>,
         permit: OwnedSemaphorePermit,
+        info: Arc<ServerInfo>,
     ) -> Self {
         Self {
             table,
@@ -1636,6 +1654,7 @@ impl TableActor {
             anchor: Instant::now(),
             _permit: permit,
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
+            info,
         }
     }
     fn view(&self) -> TableView {
@@ -2380,7 +2399,10 @@ impl TableActor {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TagsDeleteAllRequest>(&data)?;
                 self.tag(session, "", &r.room, &name).await
             }
-            "chat" => self.chat(session, &data).await,
+            "chat" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
+                self.chat(session, &r.msg).await
+            }
             "chatRead" | "chatTyping" => self.chat_presence(session, name == "chatTyping").await,
             "tableSetLeader" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableLeaderRequest>(&data)?;
@@ -3653,11 +3675,9 @@ impl TableActor {
         }
         Ok(())
     }
-    async fn chat(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn chat(&mut self, session: Arc<Session>, msg: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
-        let text =
-            crate::accounts::normalize_chat(data["msg"].as_str().context("Missing chat message")?)
-                .map_err(anyhow::Error::msg)?;
+        let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
         if let Some(response) = crate::lobby::general_response(&text) {
             let responses = match response {
                 crate::lobby::GeneralResponse::Private(response) => {
@@ -3668,16 +3688,9 @@ impl TableActor {
                     return self.publish(e).await;
                 }
                 crate::lobby::GeneralResponse::Public(response) => vec![response],
-                crate::lobby::GeneralResponse::Runtime { .. } => data["runtimeResponses"]
-                    .as_array()
-                    .context("Missing trusted runtime chat response")?
-                    .iter()
-                    .map(|v| {
-                        v.as_str()
-                            .map(str::to_owned)
-                            .context("Invalid runtime response")
-                    })
-                    .collect::<Result<Vec<_>>>()?,
+                crate::lobby::GeneralResponse::Runtime { command, args } => {
+                    self.info.runtime_response(&command, &args)?
+                }
             };
             let mut messages = vec![authored_chat(self.table.id, &session.name, &text)];
             messages.extend(
@@ -3709,9 +3722,7 @@ impl TableActor {
             crate::lobby::classify_chat(&text),
             crate::lobby::Classification::Public | crate::lobby::Classification::Private
         ) {
-            return self
-                .chat_command(session, &text, data["publicBaseURL"].as_str().unwrap_or(""))
-                .await;
+            return self.chat_command(session, &text).await;
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
@@ -3733,12 +3744,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn chat_command(
-        &mut self,
-        session: Arc<Session>,
-        text: &str,
-        base_url: &str,
-    ) -> Result<()> {
+    async fn chat_command(&mut self, session: Arc<Session>, text: &str) -> Result<()> {
         let mut words = text[1..].split_whitespace();
         let command = words.next().unwrap_or("").to_ascii_lowercase();
         let args = words.collect::<Vec<_>>();
@@ -3770,7 +3776,7 @@ impl TableActor {
             );
             let message = format!(
                 "{}/shared-missing-scores/{}/{}",
-                base_url.trim_end_matches('/'),
+                self.info.public_url(""),
                 participants.len(),
                 participants
                     .iter()

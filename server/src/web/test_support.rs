@@ -28,7 +28,13 @@ impl Fixture {
             .unwrap();
         let store = Store::fixture(db.pool.clone(), state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(store.clone(), tasks.clone()).await.unwrap();
+        let hub = Hub::start(
+            store.clone(),
+            tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await
+        .unwrap();
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let config = PublicConfig {
@@ -41,7 +47,13 @@ impl Fixture {
             seeded_deck: crate::game::seeded_deck,
             deck_size: crate::game::deck_size,
         };
-        let app = App::new(store.clone(), hub, config, store.state_lost());
+        let app = App::new(
+            store.clone(),
+            hub,
+            config,
+            store.state_lost(),
+            crate::server_info::test_info(),
+        );
         let server_stop = CancellationToken::new();
         let stop = server_stop.clone();
         let server_app = app.clone();

@@ -39,7 +39,7 @@ use std::{
         atomic::{AtomicBool, AtomicU64, Ordering},
     },
     task::Poll,
-    time::{Duration, Instant},
+    time::Duration,
 };
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
@@ -61,8 +61,7 @@ pub struct App {
     incoming_bytes: Arc<Semaphore>,
     lobby_slots: Arc<Semaphore>,
     public: PublicConfig,
-    started: Instant,
-    came_online: DateTime<Utc>,
+    pub info: Arc<crate::server_info::ServerInfo>,
     integrations: OnceLock<Arc<Integrations>>,
     integration_started: AtomicBool,
 }
@@ -82,7 +81,7 @@ impl App {
     pub async fn announce_restart(&self, message: Option<&str>) {
         if let Some(integrations) = self.integrations.get() {
             integrations
-                .announce_restart(self.started.elapsed(), message)
+                .announce_restart(self.info.uptime(), message)
                 .await;
         }
     }
@@ -90,7 +89,7 @@ impl App {
     pub async fn announce_stop(&self, message: Option<&str>) {
         if let Some(integrations) = self.integrations.get() {
             integrations
-                .announce_stop(self.started.elapsed(), message)
+                .announce_stop(self.info.uptime(), message)
                 .await;
         }
     }
@@ -100,6 +99,7 @@ impl App {
         hub: mpsc::Sender<HubCommand>,
         public: PublicConfig,
         lease_lost: CancellationToken,
+        info: Arc<crate::server_info::ServerInfo>,
     ) -> Arc<Self> {
         Arc::new(Self {
             store,
@@ -118,8 +118,7 @@ impl App {
             lease_lost,
             admission: Arc::new(tokio::sync::RwLock::new(())),
             public,
-            started: Instant::now(),
-            came_online: Utc::now(),
+            info,
             integrations: OnceLock::new(),
             integration_started: AtomicBool::new(false),
         })
@@ -155,11 +154,7 @@ impl App {
     }
 
     pub fn public_url(&self, path: &str) -> String {
-        format!(
-            "{}://{}{path}",
-            if self.public.use_tls { "https" } else { "http" },
-            self.public.domain
-        )
+        self.info.public_url(path)
     }
 }
 
@@ -797,7 +792,7 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Resu
                 args,
                 room,
             } => {
-                for message in runtime_response(app, &command, &args)? {
+                for message in app.info.runtime_response(&command, &args)? {
                     if command == "uptime" {
                         ordinary.push(lobby::notice(&session.name, &message, &room));
                         continue;
@@ -832,74 +827,6 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Resu
         }
     }
     Ok(())
-}
-
-pub fn runtime_response(app: &App, command: &str, args: &[String]) -> Result<Vec<String>> {
-    Ok(match command {
-        "uptime" => vec![
-            format!(
-                "The server came online at: {}",
-                app.came_online.format("%a %b %d %H:%M:%S UTC %Y")
-            ),
-            format!(
-                "Uptime: {}",
-                format_duration(app.started.elapsed().as_secs())
-            ),
-        ],
-        "replay" => {
-            if args.is_empty() {
-                vec!["The format of the /replay command is: /replay [game ID] [turn number]".into()]
-            } else {
-                let mut numbers = vec![];
-                for argument in args.iter().take(2) {
-                    match argument.parse::<i64>() {
-                        Ok(number) => numbers.push(number),
-                        Err(_) => {
-                            return Ok(vec![if argument.parse::<f64>().is_ok() {
-                                "The /replay command only accepts integers.".into()
-                            } else {
-                                format!("\"{}\" is not a number.", accounts::escape_html(argument))
-                            }]);
-                        }
-                    }
-                }
-                vec![app.public_url(&format!(
-                        "/replay/{}{}",
-                        numbers[0],
-                        numbers
-                            .get(1)
-                            .map(|turn| format!("#{turn}"))
-                            .unwrap_or_default()
-                    ))]
-            }
-        }
-        _ => anyhow::bail!("Invalid runtime chat command"),
-    })
-}
-
-fn format_duration(seconds: u64) -> String {
-    let unit =
-        |value: u64, name: &str| format!("{value} {name}{}", if value == 1 { "" } else { "s" });
-    if seconds < 60 {
-        return unit(seconds, "second");
-    }
-    if seconds < 3600 {
-        return unit((seconds + 30) / 60, "minute");
-    }
-    let total_hours = seconds / 3600;
-    let minutes = seconds / 60 - total_hours * 60;
-    let days = (total_hours - 1) / 24;
-    let hours = total_hours - days * 24;
-    if days > 0 {
-        format!(
-            "{}, {}, and {}",
-            unit(days, "day"),
-            unit(hours, "hour"),
-            unit(minutes, "minute")
-        )
-    } else {
-        format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
-    }
 }
 
 fn history_command(command: &str) -> bool {
@@ -1031,17 +958,6 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         publish(app, session, effects).await?;
         measurement.success();
         return Ok(());
-    }
-    if command == "chat" {
-        data["publicBaseURL"] = json!(app.public_url(""));
-    }
-    if command == "chat"
-        && let Some(message) = data["msg"].as_str()
-        && let Ok(message) = accounts::normalize_chat(message)
-        && let Some(lobby::GeneralResponse::Runtime { command, args }) =
-            lobby::general_response(&message)
-    {
-        data["runtimeResponses"] = json!(runtime_response(app, &command, &args)?);
     }
     let (reply, received) = oneshot::channel();
     let request = if command == "sync" {
