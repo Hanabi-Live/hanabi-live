@@ -1,7 +1,7 @@
 use crate::game::{Action, AssignedCharacter, Card, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
-use hanabi_engine::{EndCondition, EngineState};
+use hanabi_engine::EndCondition;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashSet};
@@ -89,13 +89,26 @@ pub struct PendingTag {
     pub operation: String,
     pub tag: String,
 }
+/// State saved before this flag replaced it holds a copy of the game, or null, instead of a
+/// boolean. Remove once no saved state contains that copy.
+fn hypothetical_active<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> std::result::Result<bool, D::Error> {
+    Ok(match Value::deserialize(deserializer)? {
+        Value::Bool(active) => active,
+        Value::Null => false,
+        _ => true,
+    })
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayState {
     pub leader: i32,
     pub segment: i32,
     pub efficiency_modifier: i32,
-    pub hypothetical: Option<Box<EngineState>>,
+    /// Whether the leader is exploring a hypothetical.
+    #[serde(deserialize_with = "hypothetical_active")]
+    pub hypothetical: bool,
     pub hypothetical_actions: Vec<String>,
     pub show_drawn_cards: bool,
 }
@@ -178,12 +191,6 @@ impl TableSnapshot {
         if let Some(game) = value.pointer("/phase/snapshot/game") {
             hanabi_engine::parse_engine_state(game.clone())?;
         }
-        if let Some(game) = value
-            .pointer("/phase/replay/hypothetical")
-            .filter(|v| !v.is_null())
-        {
-            hanabi_engine::parse_engine_state(game.clone())?;
-        }
         let table: Self = serde_json::from_value(value)?;
         table.validate()?;
         ensure!(
@@ -232,7 +239,7 @@ impl TableSnapshot {
                 leader: self.owner,
                 segment,
                 efficiency_modifier: 0,
-                hypothetical: None,
+                hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
             },
@@ -337,9 +344,6 @@ impl TableSnapshot {
                         .all(|raw| serde_json::from_str::<Value>(raw).is_ok()),
                 "Invalid replay controls"
             );
-            if let Some(state) = &replay.hypothetical {
-                hanabi_engine::validate_engine_state(state)?;
-            }
         }
         if let Some(spawn) = &self.pending_spawn {
             ensure!(

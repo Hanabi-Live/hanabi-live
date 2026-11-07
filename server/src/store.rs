@@ -1190,7 +1190,7 @@ mod tests {
                     leader: 1,
                     segment: 0,
                     efficiency_modifier: 0,
-                    hypothetical: None,
+                    hypothetical: false,
                     hypothetical_actions: vec![],
                     show_drawn_cards: false,
                 },
@@ -1798,7 +1798,7 @@ mod tests {
                 anyhow::bail!("Not a replay");
             };
             ensure!(
-                replay.hypothetical.is_some() && replay.hypothetical_actions == vec![raw],
+                replay.hypothetical && replay.hypothetical_actions == vec![raw],
                 "Hypothetical was not recovered exactly"
             );
             send(
