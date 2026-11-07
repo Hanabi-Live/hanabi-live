@@ -97,12 +97,34 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
     Ok(s)
 }
 
+/// Pushes `AND g.<column> <op> <value>`, binding the column's own type: a cast column, such as
+/// `g.id::bigint`, cannot use its index. A value outside the column's range matches every row or
+/// none, so it is decided here instead of being sent to PostgreSQL, which would reject it.
+fn push_compare(qb: &mut QueryBuilder<Postgres>, column: &str, op: &str, value: i64) {
+    let in_range = if column == "id" {
+        i32::try_from(value).map(|value| {
+            qb.push(" AND g.").push(column).push(op).push_bind(value);
+        })
+    } else {
+        i16::try_from(value).map(|value| {
+            qb.push(" AND g.").push(column).push(op).push_bind(value);
+        })
+    }
+    .is_ok();
+    let matches_all = (op == ">=" && value < 0) || (op == "<=" && value > 0);
+    if !in_range && !matches_all {
+        qb.push(" AND FALSE");
+    }
+}
+
 // Optional filters and sort orders are assembled per request so PostgreSQL can plan each
 // combination against the large games table; a static `$n IS NULL OR ...` query would
 // share one generic plan. Values are always bound, and tests cover each filter and order.
+// "selected" is not materialized, so that counting and paging plan separately: a materialized
+// result would copy every matching game before the page could use an index.
 #[allow(clippy::disallowed_methods)]
 fn selected(s: Selection) -> QueryBuilder<Postgres> {
-    let mut qb = QueryBuilder::new("WITH selected AS (SELECT ");
+    let mut qb = QueryBuilder::new("WITH selected AS NOT MATERIALIZED (SELECT ");
     qb.push(GAME_COLUMNS).push(" FROM games g WHERE TRUE");
     for id in s.users {
         qb.push(
@@ -115,13 +137,13 @@ fn selected(s: Selection) -> QueryBuilder<Postgres> {
         qb.push(" AND g.seed=").push_bind(seed);
     }
     if let Some(id) = s.variant {
-        qb.push(" AND g.variant_id::bigint=").push_bind(id);
+        push_compare(&mut qb, "variant_id", "=", id);
     }
     if let Some(id) = s.start {
-        qb.push(" AND g.id::bigint>=").push_bind(id);
+        push_compare(&mut qb, "id", ">=", id);
     }
     if let Some(id) = s.end {
-        qb.push(" AND g.id::bigint<=").push_bind(id);
+        push_compare(&mut qb, "id", "<=", id);
     }
     if let Some(tag) = s.tag {
         qb.push(" AND EXISTS(SELECT 1 FROM game_tags gt WHERE gt.game_id=g.id AND gt.tag=")
@@ -187,10 +209,7 @@ pub(super) async fn list(
                     display[index as usize]
                 ))
             })?;
-            qb.push(" AND g.")
-                .push(fields[index as usize])
-                .push("::bigint=")
-                .push_bind(value);
+            push_compare(&mut qb, fields[index as usize], "=", value);
         }
     }
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)
