@@ -784,7 +784,9 @@ export function App({ connection }: { connection: LobbyConnection }) {
                   )}
                   {state.notice && !state.notice.fatal && (
                     <div className="notice global-notice" role="alert">
-                      <RichText html={state.notice.text} />
+                      <div className="notice-text">
+                        <RichText html={state.notice.text} />
+                      </div>
                       <button
                         aria-label="Dismiss notice"
                         className="icon-button"
