@@ -15,7 +15,7 @@ class PrettierCacheTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         for pattern in (
-            "check-formatting.sh",
+            "check-prettier.sh",
             ".gitignore",
             ".prettierignore",
             "prettier.config.mjs",
@@ -36,7 +36,7 @@ class PrettierCacheTests(unittest.TestCase):
 
     def check(self, success=True):
         result = subprocess.run(
-            ["bash", "check-formatting.sh"],
+            ["bash", "check-prettier.sh"],
             cwd=self.root,
             capture_output=True,
             text=True,
