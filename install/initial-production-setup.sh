@@ -89,7 +89,7 @@ EOF
   systemctl enable --now hanabi-redis
 
   # Obtain the certificate and grant the service access to its private key.
-  certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN"
+  certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN" --domain "www.$DOMAIN" --domain hanabi.live --domain www.hanabi.live
   chmod 0755 /etc/letsencrypt/{live,archive}
   chgrp hanabi "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
   chmod 0640 "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
