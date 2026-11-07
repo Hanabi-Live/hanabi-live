@@ -280,6 +280,8 @@ impl Report {
             "x-error-id",
             HeaderValue::from_str(&self.diagnostic_id).expect("Hexadecimal diagnostic ID"),
         );
+        // The web router posts server errors to the error alerts from here.
+        response.extensions_mut().insert(self.clone());
         response
     }
 }
@@ -309,6 +311,24 @@ mod tests {
         assert!(!report.text().contains("synthetic-secret"));
         assert!(!report.text().contains("SELECT"));
         assert!(report.text().contains(&report.diagnostic_id));
+    }
+
+    #[test]
+    fn error_responses_carry_their_report_for_alerts() {
+        let report = Report::from_error(
+            "GET /api/v1/variants/{id}",
+            &sqlx::Error::PoolTimedOut.into(),
+            Some(2),
+        );
+        let response = report.response(true);
+        assert!(response.status().is_server_error());
+        let attached = response
+            .extensions()
+            .get::<Report>()
+            .expect("attached report");
+        assert_eq!(attached.code, "database_pool_timeout");
+        assert_eq!(attached.operation, "GET /api/v1/variants/{id}");
+        assert_eq!(attached.diagnostic_id, report.diagnostic_id);
     }
 
     #[test]
