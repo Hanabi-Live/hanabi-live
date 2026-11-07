@@ -179,31 +179,17 @@ jobs:
       - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
-      - name: Start version-matched preinstalled browsers
-        run: |
-          version=$(bun -p 'require("@playwright/test/package.json").version')
-          docker run --detach --rm --init --ipc=host --network=host \
-            --name hanabi-playwright \
-            --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" \
-            --volume "$(command -v bun):/usr/local/bin/bun:ro" \
-            --workdir "$GITHUB_WORKSPACE" \
-            "mcr.microsoft.com/playwright:v${version}-noble" \
-            bun node_modules/playwright/cli.js run-server --host 127.0.0.1 --port 3000
-          bun run - <<'JS'
-          import { chromium } from "playwright";
-          import { setTimeout } from "node:timers/promises";
-          for (let attempt = 1; attempt <= 10; attempt++) {
-            try {
-              const browser = await chromium.connect("ws://127.0.0.1:3000/", { timeout: 3000 });
-              await browser.close();
-              break;
-            } catch (error) {
-              console.error(`Browser readiness attempt ${attempt}:`, error);
-              if (attempt === 10) throw error;
-              await setTimeout(1000);
-            }
-          }
-          JS
+      - name: Find the Playwright version
+        id: playwright
+        run: echo "version=$(bun -p 'require("@playwright/test/package.json").version')" >> "$GITHUB_OUTPUT"
+      # The runner image already provides Chromium's system libraries.
+      - name: Cache Chromium
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        run: bunx --bun --no-install playwright install --only-shell chromium
       - run: bash packages/client/build-client.sh
       - name: Restore successful Vitest results
         if: matrix.suite == 'flows'
@@ -233,15 +219,6 @@ jobs:
           esac
           bunx --bun --no-install playwright test "${selectors[@]}"
         working-directory: packages/client-new
-        env:
-          PW_TEST_CONNECT_WS_ENDPOINT: ws://127.0.0.1:3000/
-      - name: Stop browser container
-        if: always()
-        run: |
-          if docker container inspect hanabi-playwright > /dev/null 2>&1; then
-            docker logs hanabi-playwright
-            docker stop hanabi-playwright
-          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
