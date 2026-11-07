@@ -1822,6 +1822,16 @@ impl TableActor {
         }
         next
     }
+    /// Keeps a change that is not worth a durable write, such as an idle-timer reset, in memory.
+    /// The next checkpoint saves it, including the one written when the server drains; a crash
+    /// before then only loses this change.
+    fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> Result<()> {
+        self.store.check_state()?;
+        ensure!(!self.frozen, "Table is frozen until recovery");
+        self.table = next;
+        self.anchor = Instant::now();
+        Ok(())
+    }
     async fn persist(&mut self, mut next: TableSnapshot) -> Result<()> {
         self.store.check_state()?;
         ensure!(!self.frozen, "Table is frozen until recovery");
@@ -2376,15 +2386,22 @@ impl TableActor {
             "loaded" => {
                 ensure!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
+                let mut starts_clock = false;
                 if let Phase::Live { snapshot: s } = &mut next.phase
                     && s.game.end_condition == EndCondition::InProgress
                     && s.players[s.game.active_player_index].id == session.user
                 {
+                    starts_clock = !s.timer_started || !s.game.started_timer;
                     s.timer_started = true;
                     s.game.started_timer = true;
                 }
                 next.remember(session.user, request)?;
-                self.persist(next).await?;
+                // Loading usually changes nothing durable; only starting the clock needs saving.
+                if starts_clock {
+                    self.persist(next).await?;
+                } else {
+                    self.apply_without_checkpoint(next)?;
+                }
                 if let Some(a) = self.attendees.get_mut(&session.user) {
                     a.loaded = true;
                 }
@@ -3665,7 +3682,12 @@ impl TableActor {
         };
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
         next.remember(session.user, data["requestID"].as_str())?;
-        self.persist(next).await?;
+        // Arrows and sounds only reset the idle timer, so they skip the durable write.
+        if matches!(kind, 1 | 2) {
+            self.apply_without_checkpoint(next)?;
+        } else {
+            self.persist(next).await?;
+        }
         let mut e = self.effects();
         self.add_all(&mut e, command, payload);
         self.publish(e).await
