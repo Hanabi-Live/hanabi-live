@@ -2020,3 +2020,44 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
     h.close().await?;
     outcome
 }
+
+#[tokio::test]
+async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let result = async {
+        let id = h.replay(0).await?;
+        let (_, revision) = h.snapshot(id).await?;
+        h.send(0, "loaded", json!({"tableID":id})).await?;
+        for (kind, extra) in [(1, json!({"order":0})), (2, json!({"sound":"turn"}))] {
+            let mut data = json!({"tableID":id,"type":kind});
+            data.as_object_mut()
+                .context("object")?
+                .extend(extra.as_object().context("object")?.clone());
+            h.send(0, "replayAction", data).await?;
+        }
+        ensure!(
+            h.snapshot(id).await?.1 == revision,
+            "Loading or an arrow or sound wrote a checkpoint"
+        );
+        // A segment change is still saved.
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        h.send(
+            0,
+            "replayAction",
+            json!({"tableID":id,"type":0,"segment":1}),
+        )
+        .await?;
+        let (table, saved) = h.snapshot(id).await?;
+        ensure!(saved > revision, "A segment change was not saved");
+        let Phase::Replay { replay, .. } = &table.phase else {
+            bail!("Not a replay");
+        };
+        ensure!(replay.segment == 1, "The saved segment is stale");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    result
+}
