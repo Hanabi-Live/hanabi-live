@@ -42,6 +42,9 @@ Choose an account that is not already in use. Do not change these accounts'
 passwords or delete them during cleanup. Keep test interactions confined to test
 accounts and their own tables.
 
+When driving a browser outside the Playwright suite, mute its audio (for
+Chromium, `--mute-audio`) unless you are debugging sound.
+
 ## Delivering changes
 
 After making changes, complete the required checks, commit, and push
