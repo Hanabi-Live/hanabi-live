@@ -39,11 +39,14 @@ podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 
 ## For Production
 
-On a fresh Ubuntu 26.04 server, run as root. Point your domain at the server,
-allow incoming TCP ports 80 and 443, and replace `example.com` below.
+On a fresh Ubuntu 26.04 server, use root for setup; the application and backups
+run as `hanabi`. Point your domain at the server, allow incoming TCP ports 80
+and 443, and replace `example.com` below.
 
 - Install dependencies:
-  - `apt update && apt install --yes git gh python3 redis-server postgresql certbot supervisor cron curl openssl nano`
+  - `apt update && apt install --yes git gh python3 redis-server postgresql certbot cron curl openssl nano`
+- Create the service account:
+  - `useradd --system --user-group --create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi`
 - Create a new database, and set up a database user:
   - `sudo --user postgres psql`
   - `CREATE USER hanabiuser;`
@@ -55,8 +58,8 @@ allow incoming TCP ports 80 and 443, and replace `example.com` below.
   `candidate-` artifacts.
 
 ```sh
-git clone https://github.com/Hanabi-Live/hanabi-live.git /root/hanabi-live
-cd /root/hanabi-live
+git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
+cd /home/hanabi/hanabi-live
 gh auth login
 gh run download RUN_ID --name hanabi-live-rust-REV-linux-amd64 --dir /root/hanabi-download
 git checkout REV
@@ -78,33 +81,40 @@ cp --archive /root/hanabi-release/releases/REV-rust/{hanabi-live,public,packages
   - `systemctl restart redis-server`
 - Obtain the certificate before starting the server:
   - `certbot certonly --standalone --domain example.com`
+- Let `hanabi` read the private key; Certbot preserves these permissions on
+  renewal:
+  - `chmod 0755 /etc/letsencrypt/{live,archive}`
+  - `chgrp hanabi /etc/letsencrypt/live/example.com/privkey.pem`
+  - `chmod 0640 /etc/letsencrypt/live/example.com/privkey.pem`
 - Initialize the database and start the server:
 
 ```sh
-./install/install-database-schema.sh
 mkdir --parents logs letsencrypt
-./hanabi-live --check-startup
-cp install/supervisor/hanabi-live.conf /etc/supervisor/conf.d/hanabi-live.conf
-systemctl enable --now supervisor
-supervisorctl reread
-supervisorctl update
+chown --recursive hanabi:hanabi /home/hanabi/hanabi-live
+sudo --user hanabi ./install/install-database-schema.sh
+sudo --user hanabi ./hanabi-live --check-startup
+install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
+systemctl daemon-reload
+systemctl enable --now hanabi-live
 ```
+
+The service grants only the capability needed to bind ports 80/443.
 
 - Configure certificate renewal without stopping games:
 
 ```sh
 certbot reconfigure --cert-name example.com --webroot \
-  --webroot-path /root/hanabi-live/letsencrypt \
-  --deploy-hook /root/hanabi-live/admin/gracefulRestart.sh
+  --webroot-path /home/hanabi/hanabi-live/letsencrypt \
+  --deploy-hook 'sudo --user hanabi /home/hanabi/hanabi-live/admin/gracefulRestart.sh'
 systemctl enable --now certbot.timer
 ```
 
 - Set up daily PostgreSQL backups:
-  - `./database-backup.sh`
-  - `crontab -e`, then add:
+  - `sudo --user hanabi ./database-backup.sh`
+  - `sudo --user hanabi crontab -e`, then add:
 
 ```text
-0 3 * * * /root/hanabi-live/database-backup.sh
+0 3 * * * /home/hanabi/hanabi-live/database-backup.sh
 ```
 
 The script saves PostgreSQL backups in `backups/`; also arrange coordinated,
