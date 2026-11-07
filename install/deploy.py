@@ -21,6 +21,8 @@ from release import GitHub, REPOSITORY
 
 
 RESERVE_BYTES = 256 * 1024 * 1024
+# Replaced files from recent deployments are kept for manual rollback.
+KEEP_DEPLOYMENTS = 5
 
 
 def require(condition, message):
@@ -230,6 +232,33 @@ def publish(root, staged, metadata):
             temporary.unlink(missing_ok=True)
 
 
+def prune(backups):
+    """Keep records of finished deployments, but only recent replaced files and no downloads.
+
+    Failed deployments are evidence, so they are left as they are.
+    """
+    try:
+        finished = []
+        for work in backups.glob("deploy-*"):
+            journal = work / "deployment.json"
+            try:
+                if json.loads(journal.read_text()).get("phase") in ("verified", "checked"):
+                    finished.append((journal.stat().st_mtime, work))
+            except (OSError, ValueError):
+                continue
+        for index, (_, work) in enumerate(sorted(finished, reverse=True)):
+            kept = {"deployment.json"} if index >= KEEP_DEPLOYMENTS else {"deployment.json", "previous"}
+            for path in work.iterdir():
+                if path.name in kept:
+                    continue
+                if path.is_dir() and not path.is_symlink():
+                    shutil.rmtree(path)
+                else:
+                    path.unlink()
+    except OSError as error:
+        print(f"Warning: could not remove old deployment files: {error}", file=sys.stderr)
+
+
 def schema_version(root):
     value = command(root, "bash", "-c", """
 set -o errexit -o nounset -o pipefail
@@ -323,6 +352,7 @@ def deploy(root, check, apply_migrations):
             if check:
                 print(f"Preflight passed; pending migrations: {pending}. No deployment or restart performed.")
                 phase("checked")
+                prune(backups)
                 return
             require(not pending or apply_migrations,
                     "Pending migrations require review and --apply-migrations. No live files were changed.")
@@ -348,6 +378,7 @@ def deploy(root, check, apply_migrations):
             phase("verified")
             print(f"Deployed {revision}; running revision, paired files, and recovery health verified.")
             print("Verify authenticated browser reconnects and review fresh server logs.")
+            prune(backups)
         except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile):
             print(f"Deployment stopped in phase {record['phase']}. Preserve {work}; "
                   "no automatic rollback, forced restart, or state deletion was attempted.", file=sys.stderr)
