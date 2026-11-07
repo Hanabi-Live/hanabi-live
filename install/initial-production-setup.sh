@@ -4,7 +4,6 @@ set -o errexit -o nounset -o pipefail
 
 DOMAIN="hanab.live"
 APP="/home/hanabi/hanabi-live"
-DOWNLOAD="/root/hanabi-download"
 
 # Everything is in a function because "git checkout" can replace this file while it is running.
 function main {
@@ -37,7 +36,8 @@ function main {
 
   # Download the latest release.
   local sha256 archive rev
-  mkdir --parents "$DOWNLOAD"
+  DOWNLOAD=$(mktemp --directory)
+  trap 'rm --recursive --force -- "$DOWNLOAD"' EXIT
   curl --silent --fail --show-error --location --output "$DOWNLOAD/SHA256SUMS" https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
   read -r sha256 archive < "$DOWNLOAD/SHA256SUMS"
   rev=${archive#hanabi-live-rust-}
