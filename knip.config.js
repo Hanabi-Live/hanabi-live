@@ -42,6 +42,7 @@ const config = {
       entry: [
         "src/createVariantsJSON/checkVariantFiles.ts",
         "src/createVariantsJSON/createVariantsJSONScript.ts",
+        "src/dev.mts",
         "src/lintPackageJSON.mts",
         "src/update.mts",
       ],

@@ -1,9 +1,0 @@
-FROM docker.io/library/postgres:12
-
-COPY install/database_schema.sql /docker-entrypoint-initdb.d/001_schema.sql
-COPY install/docker-schema-version.sh /docker-entrypoint-initdb.d/002-schema-version.sh
-COPY install/migration-files.sh install/schema_version.sql /docker-entrypoint-initdb.d/helpers/
-COPY install/migrations /docker-entrypoint-initdb.d/helpers/migrations
-
-ENV POSTGRES_USER hanabiuser
-ENV POSTGRES_DB hanabi
