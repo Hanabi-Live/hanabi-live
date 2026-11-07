@@ -66,7 +66,6 @@ const config = {
     "eslint-config-complete", // Provided by "complete-lint".
     "prettier-plugin-organize-imports", // Provided by "complete-lint".
     "prettier-plugin-packagejson", // Provided by "complete-lint".
-    "stacktracify", // Used in "scripts/dev/stack-trace.sh".
   ],
 };
 
