@@ -34,7 +34,7 @@ tools=$(mktemp -d)
 chmod 755 "$tools"
 trap 'rm -f "$tools/deploy.py" "$tools/release.py"; rmdir "$tools"' EXIT
 REMOTE
-  # Use matching local tooling even when production still runs an older release format.
+  # Run this checkout's deployment tools, which may be newer than the production checkout.
   for name in deploy release; do
     printf '%s\n' "cat > \"\$tools/$name.py\" << 'HANABI_DEPLOY_TOOL'"
     cat "$DIR/install/$name.py"

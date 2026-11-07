@@ -174,18 +174,10 @@ def verify(directory):
     metadata = json.loads(metadata_path.read_text())
     require(isinstance(metadata, dict), "Invalid release metadata")
     revision = metadata.get("revision", "")
-    require(metadata.get("format") in (1, 2), "Unsupported release format")
+    require(metadata.get("format") == 2, "Unsupported release format")
     require(metadata.get("platform") == "linux-amd64", "Unsupported platform")
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
-    if metadata["format"] == 1:
-        # Keep already-published releases verifiable during the tooling transition.
-        require(
-            isinstance(metadata.get("commitCount"), int)
-            and str(metadata["commitCount"]) == metadata.get("clientVersion"),
-            "Invalid client cache version",
-        )
-    else:
-        require(metadata.get("clientVersion") == revision, "Invalid client cache version")
+    require(metadata.get("clientVersion") == revision, "Invalid client cache version")
     expected = metadata["files"]
     require(
         isinstance(expected, dict)
