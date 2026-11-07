@@ -625,6 +625,21 @@ async fn connection(
             }
         }
         writer_session.cancel.cancel();
+        if writer_session.was_superseded() {
+            let report = crate::errors::Report::known(
+                "Keeping the live connection",
+                "session_replaced",
+                "This account connected in another browser tab or window. Reconnect here only if you want to move the connection back.",
+                StatusCode::CONFLICT,
+            );
+            report.log();
+            let message = frame("error", json!({"error":report.text()}));
+            let _ = tokio::time::timeout(
+                Duration::from_secs(1),
+                sink.send(Message::Text(message.into())),
+            )
+            .await;
+        }
         let _ = tokio::time::timeout(Duration::from_secs(1), sink.send(Message::Close(None))).await;
     });
     let (incoming, mut commands) = mpsc::channel::<Inbound>(64);

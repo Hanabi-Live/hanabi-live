@@ -131,6 +131,11 @@ const slice = createSlice({
       state.pregame = null;
       state.typing = {};
     },
+    requestFinished(state, { payload }: PayloadAction<string>) {
+      if (state.pending === payload) {
+        state.pending = null;
+      }
+    },
     signedOut: () => ({ ...initialState(), connection: "signed-out" as const }),
     received(state, { payload }: PayloadAction<ServerEvent>) {
       const event = castDraft(payload);
@@ -198,17 +203,31 @@ const slice = createSlice({
           break;
         }
 
+        case "boot":
         case "tableGone": {
-          delete state.tables[event.data.tableID];
+          const tableID =
+            event.command === "boot" ? event.data.TableID : event.data.tableID;
+          const table = state.tables[tableID];
+          if (event.command === "tableGone") {
+            delete state.tables[tableID];
+          } else if (table) {
+            table.joined = false;
+          }
           if (state.welcome) {
             state.welcome.playingAtTables =
-              state.welcome.playingAtTables.filter(
-                (id) => id !== event.data.tableID,
-              );
+              state.welcome.playingAtTables.filter((id) => id !== tableID);
           }
-          if (state.tableID === event.data.tableID) {
+          if (state.tableID === tableID) {
             state.pregame = null;
             state.tableID = null;
+            state.pending = null;
+            state.typing = {};
+            if (event.command === "boot") {
+              state.notice = {
+                text: "The server returned you to the lobby.",
+                fatal: false,
+              };
+            }
           }
           break;
         }
@@ -269,8 +288,12 @@ const slice = createSlice({
         }
 
         case "left": {
-          state.pregame = null;
-          state.tableID = null;
+          if (state.tableID === event.data.tableID) {
+            state.pregame = null;
+            state.tableID = null;
+            state.pending = null;
+            state.typing = {};
+          }
           break;
         }
 

@@ -85,6 +85,7 @@ pub struct Session {
     hyphenated: AtomicBool,
     inactive: AtomicBool,
     closing: AtomicBool,
+    superseded: AtomicBool,
     outbound: mpsc::Sender<Outbound>,
     bytes: Arc<Semaphore>,
 }
@@ -137,6 +138,7 @@ impl Session {
                 hyphenated: AtomicBool::new(metadata.hyphenated),
                 inactive: AtomicBool::new(false),
                 closing: AtomicBool::new(false),
+                superseded: AtomicBool::new(false),
                 cancel: CancellationToken::new(),
                 lease_lost,
                 lobby_load: Arc::new(Semaphore::new(1)),
@@ -154,6 +156,15 @@ impl Session {
             return false;
         }
         true
+    }
+
+    pub fn supersede(&self) {
+        self.superseded.store(true, Ordering::Release);
+        self.cancel.cancel();
+    }
+
+    pub fn was_superseded(&self) -> bool {
+        self.superseded.load(Ordering::Acquire)
     }
 
     pub fn hyphenated(&self) -> bool {

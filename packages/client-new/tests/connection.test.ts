@@ -76,6 +76,126 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("confirms submissions in wire order without attributing their rejection to later preferences", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, vi.fn());
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    connection.setting("volume", 25);
+    const failed = vi.fn<(message: string) => void>();
+    const accepted = vi.fn<() => void>();
+    expect(connection.send("tableJoin", { tableID: 7 }, failed, accepted)).toBe(
+      true,
+    );
+    connection.setting("volume", 30);
+    socket.receive("synced", {});
+    socket.receive("warning", { warning: "This table is full." });
+    socket.receive("synced", {});
+    expect(failed).toHaveBeenCalledWith(
+      expect.stringContaining("This table is full."),
+    );
+    expect(accepted).not.toHaveBeenCalled();
+    socket.receive("synced", {});
+    expect(store.getState().preferenceStatus).toBe("saved");
+    expect(connection.send("tableJoin", { tableID: 7 }, failed, accepted)).toBe(
+      true,
+    );
+    socket.receive("joined", { tableID: 7 });
+    expect(accepted).not.toHaveBeenCalled();
+    socket.receive("synced", {});
+    expect(accepted).toHaveBeenCalledOnce();
+    connection.stop();
+  });
+
+  it("does not duplicate or claim success for an unconfirmed submission", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, vi.fn());
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", welcome());
+    const failed = vi.fn<(message: string) => void>();
+    const accepted = vi.fn<() => void>();
+    expect(connection.send("tableJoin", { tableID: 7 }, failed, accepted)).toBe(
+      true,
+    );
+    expect(
+      connection.send(
+        "tableJoin",
+        { tableID: 7 },
+        vi.fn<(message: string) => void>(),
+        accepted,
+      ),
+    ).toBe(false);
+    await vi.advanceTimersByTimeAsync(11_000);
+    expect(failed).toHaveBeenCalledWith(
+      expect.stringContaining("may have succeeded"),
+    );
+    expect(failed).toHaveBeenCalledOnce();
+    expect(accepted).not.toHaveBeenCalled();
+    expect(
+      Socket.instances
+        .flatMap((instance) => instance.sent)
+        .filter((frame) => frame.startsWith("tableJoin ")),
+    ).toHaveLength(1);
+    connection.stop();
+  });
+
+  it("forgets a removed table without leaving another table or reattending the removed one", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, vi.fn());
+    await connection.checkSession();
+    const socket = Socket.instances[0];
+    if (!socket) {
+      throw new Error("Missing socket");
+    }
+    socket.receive("welcome", { ...welcome(), playingAtTables: [7, 9] });
+    socket.receive("joined", { tableID: 7 });
+    socket.receive("left", { tableID: 9 });
+    expect(store.getState().tableID).toBe(7);
+    socket.receive("boot", { TableID: 9 });
+    expect(store.getState().tableID).toBe(7);
+    expect(store.getState().welcome?.playingAtTables).toEqual([7]);
+    socket.receive("boot", { TableID: 7 });
+    expect(store.getState().tableID).toBeNull();
+    expect(store.getState().welcome?.playingAtTables).toEqual([]);
+    socket.close();
+    await vi.advanceTimersByTimeAsync(1000);
+    const reconnected = Socket.instances[1];
+    reconnected?.receive("welcome", welcome());
+    expect(reconnected?.sent).not.toContain('tableReattend {"tableID":7}');
+    connection.stop();
+  });
+
+  it.each(["boot", "left", "tableGone"] as const)(
+    "cancels authoritative game handoff when %s revokes its table",
+    async (command) => {
+      const store = createLobbyStore();
+      const navigate = vi.fn(() => true);
+      const connection = new LobbyConnection(store, navigate);
+      await connection.checkSession();
+      const socket = Socket.instances[0];
+      if (!socket) {
+        throw new Error("Missing socket");
+      }
+      socket.receive("welcome", welcome());
+      socket.receive("tableStart", { tableID: 7, replay: false });
+      socket.receive(
+        command,
+        command === "boot" ? { TableID: 7 } : { tableID: 7 },
+      );
+      socket.receive("init", gameInit(7, true, 0));
+      expect(navigate).not.toHaveBeenCalled();
+      connection.stop();
+    },
+  );
+
   it("sends the client version on initial connection and reconnect, then stops on rejection", async () => {
     const store = createLobbyStore();
     const connection = new LobbyConnection(store, () => true);
