@@ -1,0 +1,27 @@
+name: Post main pushes to Discord
+
+# The repository webhook to the #website-development channel does not send pushes, because it cannot
+# be limited to one branch. Forward pushes to main in the same GitHub format instead.
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Forward the push event to the Discord webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_WEBSITE_DEVELOPMENT }}
+          EVENT: ${{ toJSON(github.event) }}
+        run: |
+          if [[ -z "$WEBHOOK_URL" ]]; then
+            echo "Set DISCORD_WEBHOOK_WEBSITE_DEVELOPMENT to the channel's GitHub-format webhook URL (ending in /github)." >&2
+            exit 1
+          fi
+          printf '%s' "$EVENT" | curl --silent --show-error --fail --max-time 15 \
+            --header "Content-Type: application/json" --header "X-GitHub-Event: push" \
+            --data-binary @- "$WEBHOOK_URL"
