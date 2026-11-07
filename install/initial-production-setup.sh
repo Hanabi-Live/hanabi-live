@@ -35,6 +35,12 @@ function main {
   ufw allow 443/tcp # HTTPS
   ufw --force enable
 
+  # Allow only key-based SSH logins. SSH uses the first value it reads, and this file comes before
+  # cloud-init's, which may allow passwords.
+  echo 'PasswordAuthentication no' > /etc/ssh/sshd_config.d/10-hanabi-no-passwords.conf
+  sshd -t
+  systemctl reload ssh
+
   # Create the service accounts.
   useradd --system --user-group --no-create-home --home-dir "/home/$APP_USER" --shell /usr/sbin/nologin "$APP_USER"
   useradd --system --user-group --no-create-home --home-dir /var/lib/hanabi-redis --shell /usr/sbin/nologin hanabi-redis
