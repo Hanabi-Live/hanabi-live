@@ -126,15 +126,7 @@ if [[ -z ${GOOGLE_DRIVE_PARENT_DIRECTORY_ID-} ]]; then
   echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY_ID\" is not set in the \".env\" file."
   exit 0
 fi
-if command -v "gdrive" > /dev/null; then
-  GDRIVE_PATH="gdrive"
-else
-  GDRIVE_ROOT_PATH="/root/go/bin/gdrive"
-  if [[ -f $GDRIVE_ROOT_PATH ]]; then
-    GDRIVE_PATH=$GDRIVE_ROOT_PATH
-  fi
-fi
-if [[ -z ${GDRIVE_PATH-} ]]; then
+if ! command -v gdrive > /dev/null; then
   echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
   exit 1
 fi
@@ -144,7 +136,7 @@ fi
 function make_room_on_gdrive {
   local free needed listing id size
   needed=$(($(stat -c %s "$BACKUPS_DIR/$FILENAME") + 104857600))
-  free=$($GDRIVE_PATH about --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | awk '$1 == "Free:" { print $2 }')
+  free=$(gdrive about --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" | awk '$1 == "Free:" { print $2 }')
   if [[ ! $free =~ ^[0-9]+$ ]]; then
     echo "Failed to read the free space on Google Drive." >&2
     return 1
@@ -156,12 +148,12 @@ function make_room_on_gdrive {
 
   # We need to filter out directories, so we make sure to include the file extension.
   # https://developers.google.com/drive/api/guides/search-shareddrives
-  listing=$($GDRIVE_PATH list --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO_NAME' and name contains '.sql.gz'")
+  listing=$(gdrive list --bytes --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --no-header --max 9999 --order "createdTime" --query "trashed = false and 'me' in owners and name contains '$REPO_NAME' and name contains '.sql.gz'")
   while read -r id _ _ size _; do
     if [[ ! $size =~ ^[0-9]+$ ]]; then
       continue
     fi
-    $GDRIVE_PATH delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$id"
+    gdrive delete --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" "$id"
     free=$((free + size))
     echo "Deleted the oldest backup from Google Drive: $id"
     if ((free >= needed)); then
@@ -174,4 +166,4 @@ function make_room_on_gdrive {
 make_room_on_gdrive
 
 # Upload the file to Google Drive.
-$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"
+gdrive upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY_ID"
