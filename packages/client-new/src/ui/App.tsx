@@ -19,7 +19,7 @@ import { ChatPanel } from "./ChatPanel";
 import { ClassicHeader } from "./ClassicHeader";
 import { ErrorModal } from "./ErrorModal";
 import { GameDialog } from "./GameDialog";
-import { HistoryPanel } from "./HistoryPanel";
+import { HistoryPanel, OtherScoresPanel } from "./HistoryPanel";
 import { Modal } from "./Modal";
 import { PeoplePanel } from "./PeoplePanel";
 import { PregamePanel } from "./PregamePanel";
@@ -237,6 +237,8 @@ export function App({ connection }: { connection: LobbyConnection }) {
         event.preventDefault();
         if (state.tableID !== null && pathname.startsWith("/table/")) {
           connection.send("tableUnattend", { tableID: state.tableID });
+        } else if (pathname.startsWith("/history/")) {
+          void navigate("/history");
         } else {
           void navigate("/");
         }
@@ -453,7 +455,10 @@ export function App({ connection }: { connection: LobbyConnection }) {
       "/settings": "Settings",
       "/resources": "Learn & connect",
     };
-    document.title = `${titles[pathname] ?? "Your table"} | Hanab Live`;
+    const title = pathname.startsWith("/history/")
+      ? "Other Scores"
+      : (titles[pathname] ?? "Your table");
+    document.title = `${title} | Hanab Live`;
   }, [pathname]);
 
   useEffect(() => {
@@ -729,7 +734,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
         join={join}
       />
       <div
-        className={`container max app-shell panel-${mobilePanel} ${pregameOpen ? "in-pregame" : ""} ${pathname === "/history" ? "classic-full-page" : ""}`}
+        className={`container max app-shell panel-${mobilePanel} ${pregameOpen ? "in-pregame" : ""} ${pathname.startsWith("/history") ? "classic-full-page" : ""}`}
         id="lobby"
       >
         <a className="skip-link" href="#main-content">
@@ -807,6 +812,10 @@ export function App({ connection }: { connection: LobbyConnection }) {
                   <Route
                     element={<HistoryPanel connection={connection} />}
                     path="history"
+                  />
+                  <Route
+                    element={<OtherScoresPanel connection={connection} />}
+                    path="history/other-scores/:seed"
                   />
                   <Route
                     element={
@@ -906,7 +915,8 @@ export function App({ connection }: { connection: LobbyConnection }) {
               key={state.welcome.userID}
               onOptions={acceptOptions}
               visible={
-                pathname !== "/history" && (wide || mobilePanel === "chat")
+                !pathname.startsWith("/history")
+                && (wide || mobilePanel === "chat")
               }
             />
           </div>

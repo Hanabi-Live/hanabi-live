@@ -1,5 +1,5 @@
 import { shallowEqual, useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useMatch } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
@@ -39,6 +39,7 @@ export function ClassicHeader({
   );
   const { pathname }: { pathname: string } = useLocation();
   const game = pathname.startsWith("/table/") ? pregame : null;
+  const otherScoresSeed = useMatch("/history/other-scores/:seed")?.params.seed;
   const player = game?.players.some((person) => person.you) ?? false;
   const owner = game?.owner === welcome?.userID;
   return (
@@ -185,6 +186,34 @@ export function ClassicHeader({
                       <span className="hidden-md"> Game</span>
                     </span>
                   </button>
+                </li>{" "}
+              </>
+            ) : typeof otherScoresSeed === "string" ? (
+              <>
+                <li>
+                  <a
+                    className="button"
+                    href={`/seed/${encodeURIComponent(otherScoresSeed)}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <i
+                      aria-hidden="true"
+                      className="fas fa-search-plus nav-icon"
+                    />{" "}
+                    View seed data
+                  </a>
+                </li>{" "}
+                <li>
+                  <Link
+                    aria-label="Return to History"
+                    className="button"
+                    to="/history"
+                  >
+                    <i aria-hidden="true" className="fas fa-history nav-icon" />{" "}
+                    <span className="nav-hotkey-indicator">R</span>eturn to
+                    History
+                  </Link>
                 </li>{" "}
               </>
             ) : pathname === "/history" ? (

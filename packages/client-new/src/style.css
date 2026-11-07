@@ -735,6 +735,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   min-height: 0;
 }
 .classic-history-footer {
+  align-items: center;
   display: flex;
   gap: 2em;
   justify-content: center;

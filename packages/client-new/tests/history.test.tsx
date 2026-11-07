@@ -8,12 +8,13 @@ import {
   within,
 } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, expect, it, vi } from "vitest";
 import { LobbyConnection } from "../src/connection";
 import { wireHistory } from "../src/protocol";
 import { actions, createLobbyStore } from "../src/store";
-import { HistoryPanel } from "../src/ui/HistoryPanel";
+import { ClassicHeader } from "../src/ui/ClassicHeader";
+import { HistoryPanel, OtherScoresPanel } from "../src/ui/HistoryPanel";
 import { welcome } from "./messages";
 
 afterEach(() => {
@@ -47,14 +48,46 @@ function history() {
   const send = vi.spyOn(connection, "send").mockReturnValue(true);
   render(
     <Provider store={store}>
-      <MemoryRouter>
-        <HistoryPanel connection={connection} />
+      <MemoryRouter initialEntries={["/history"]}>
+        <ClassicHeader
+          connection={connection}
+          create={vi.fn()}
+          edit={vi.fn()}
+          join={vi.fn()}
+        />
+        <Routes>
+          <Route
+            element={<HistoryPanel connection={connection} />}
+            path="history"
+          />
+          <Route
+            element={<OtherScoresPanel connection={connection} />}
+            path="history/other-scores/:seed"
+          />
+        </Routes>
       </MemoryRouter>
     </Provider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Compare seed" }));
   return send;
 }
+
+it("shows other scores as a page with seed and navigation buttons", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json([game(20)]));
+  vi.stubGlobal("fetch", fetcher);
+  history();
+  expect(await screen.findByText("#20")).toBeDefined();
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(
+    screen.queryByRole("columnheader", { name: "Other Scores" }),
+  ).toBeNull();
+  expect(screen.getByRole("columnheader", { name: "Seed" })).toBeDefined();
+  expect(
+    screen.getByRole("link", { name: "View seed data" }).getAttribute("href"),
+  ).toBe("/seed/p2v0s1");
+  fireEvent.click(screen.getByRole("link", { name: "Return to History" }));
+  expect(await screen.findByText("#1")).toBeDefined();
+});
 
 it("pages large seed histories over HTTP without requesting an oversized WebSocket response", async () => {
   const fetcher = vi
@@ -65,22 +98,22 @@ it("pages large seed histories over HTTP without requesting an oversized WebSock
     .mockResolvedValueOnce(Response.json([game(30)]));
   vi.stubGlobal("fetch", fetcher);
   const send = history();
-  const dialog = within(screen.getByRole("dialog"));
-  expect(await dialog.findByText("#20")).toBeDefined();
+  const page = within(document.body);
+  expect(await page.findByText("#20")).toBeDefined();
   expect(send).not.toHaveBeenCalledWith("historyGetSeed", expect.anything());
   expect(fetcher).toHaveBeenLastCalledWith(
     "/api/v1/seed-full/p2v0s1?size=10&page=0",
     expect.anything(),
   );
-  fireEvent.click(dialog.getByRole("button", { name: "Next page" }));
-  expect(await dialog.findByText("#30")).toBeDefined();
-  expect(dialog.queryByText("#20")).toBeNull();
+  fireEvent.click(page.getByRole("button", { name: "Next page" }));
+  expect(await page.findByText("#30")).toBeDefined();
+  expect(page.queryByText("#20")).toBeNull();
   expect(fetcher).toHaveBeenLastCalledWith(
     "/api/v1/seed-full/p2v0s1?size=10&page=1",
     expect.anything(),
   );
   expect(
-    dialog.getByRole("button", { name: "Next page" }).hasAttribute("disabled"),
+    page.getByRole("button", { name: "Next page" }).hasAttribute("disabled"),
   ).toBe(true);
 });
 
@@ -92,12 +125,12 @@ it("reports comparison failures and retries rather than showing an empty success
     .mockResolvedValueOnce(Response.json([game(20)]));
   vi.stubGlobal("fetch", fetcher);
   history();
-  const dialog = within(screen.getByRole("dialog"));
-  const alert = await dialog.findByRole("alert");
+  const page = within(document.body);
+  const alert = await page.findByRole("alert");
   expect(alert.textContent).toContain("Loading seed history failed (HTTP 503)");
   expect(alert.textContent).toContain("Unavailable");
   expect(log).toHaveBeenCalled();
-  fireEvent.click(dialog.getByRole("button", { name: "Retry comparison" }));
-  expect(await dialog.findByText("#20")).toBeDefined();
-  expect(dialog.queryByRole("alert")).toBeNull();
+  fireEvent.click(page.getByRole("button", { name: "Retry comparison" }));
+  expect(await page.findByText("#20")).toBeDefined();
+  expect(page.queryByRole("alert")).toBeNull();
 });

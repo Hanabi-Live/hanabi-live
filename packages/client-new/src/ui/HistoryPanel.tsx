@@ -1,15 +1,14 @@
 import { errorDetails, httpError } from "@hanabi-live/data";
 import { getVariant } from "@hanabi-live/game";
 import { Play } from "lucide-react";
-import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
 import type { HistoryGame } from "../protocol";
 import { wireHistory } from "../protocol";
 import type { LobbyState } from "../store";
 import { GameOptionIcons, hasOptions } from "./GameOptionIcons";
-import { Modal } from "./Modal";
 
 function finished(date: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -19,18 +18,78 @@ function finished(date: string): string {
   }).format(new Date(date));
 }
 
-function SeedComparison({
-  seed,
-  renderRows,
+function seedSuffix(seed: string): string {
+  return /p\dv\d+s(\d+)/u.exec(seed)?.[1] ?? "Unknown";
+}
+
+function emphasize(value: string, ours: boolean) {
+  return ours ? <strong>{value}</strong> : value;
+}
+
+function ReplayButtons({
+  connection,
+  disabled,
+  game,
 }: {
-  seed: string;
-  renderRows: (games: readonly HistoryGame[]) => ReactNode;
+  connection: LobbyConnection;
+  disabled: boolean;
+  game: HistoryGame;
 }) {
+  function replay(visibility: "solo" | "shared") {
+    connection.send("replayCreate", {
+      source: "id",
+      databaseID: game.id,
+      visibility,
+    });
+  }
+  return (
+    <>
+      <td>
+        <button
+          className="button fit margin0"
+          disabled={disabled}
+          onClick={() => replay("solo")}
+        >
+          <i aria-hidden="true" className="fas fa-eye lobby-button-icon" />
+          <span className="sr-only">Replay</span>
+        </button>
+      </td>
+      <td>
+        <button
+          aria-label={`Start shared replay ${game.id}`}
+          className="button fit margin0"
+          disabled={disabled}
+          onClick={() => replay("shared")}
+        >
+          <i aria-hidden="true" className="fas fa-users lobby-button-icon" />
+        </button>
+      </td>
+    </>
+  );
+}
+
+export function OtherScoresPanel({
+  connection,
+}: {
+  connection: LobbyConnection;
+}) {
+  const { seed = "" } = useParams();
+  const state = useSelector(
+    (value: LobbyState) => ({
+      username: value.welcome?.username,
+      connection: value.connection,
+      pending: value.pending,
+    }),
+    shallowEqual,
+  );
   const [page, setPage] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [games, setGames] = useState<HistoryGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  useEffect(() => {
+    setPage(0);
+  }, [seed]);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -69,45 +128,89 @@ function SeedComparison({
     void load();
     return () => controller.abort();
   }, [seed, page, attempt]);
+  const disabled = state.connection !== "online" || state.pending !== null;
   return (
-    <>
-      {loading ? (
-        <p role="status">Loading other scores...</p>
-      ) : error ? (
-        <div role="alert">
-          <p>{error}</p>
-          <button onClick={() => setAttempt((value) => value + 1)}>
-            Retry comparison
+    <section className="classic-history">
+      <div className="classic-history-scroll">
+        {loading ? (
+          <p role="status">Loading other scores...</p>
+        ) : error ? (
+          <div role="alert">
+            <p>{error}</p>
+            <button onClick={() => setAttempt((value) => value + 1)}>
+              Retry comparison
+            </button>
+          </div>
+        ) : games.length === 0 ? (
+          <p>No more games for this seed.</p>
+        ) : (
+          <table className="alt history-table">
+            <thead>
+              <tr>
+                <th>Game ID</th>
+                <th>Score</th>
+                <th>Options</th>
+                <th>Players</th>
+                <th>Date Played</th>
+                <th>Seed</th>
+                <th>Watch Replay</th>
+                <th>Share Replay</th>
+              </tr>
+            </thead>
+            <tbody>
+              {games.map((game) => {
+                const ours =
+                  state.username !== undefined
+                  && game.playerNames.includes(state.username);
+                return (
+                  <tr className="history-card" key={game.id}>
+                    <td>{emphasize(`#${game.id}`, ours)}</td>
+                    <td>
+                      {emphasize(
+                        `${game.score}/${getVariant(game.options.variantName).maxScore}`,
+                        ours,
+                      )}
+                    </td>
+                    <td className="lobby-games-table-options">
+                      {hasOptions(game.options) ? (
+                        <GameOptionIcons options={game.options} />
+                      ) : (
+                        "[none]"
+                      )}
+                    </td>
+                    <td>{emphasize(game.playerNames.join(", "), ours)}</td>
+                    <td>{emphasize(finished(game.datetimeFinished), ours)}</td>
+                    <td>{emphasize(seedSuffix(game.seed), ours)}</td>
+                    <ReplayButtons
+                      connection={connection}
+                      disabled={disabled}
+                      game={game}
+                    />
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+        <div className="classic-history-footer">
+          <button
+            className="button"
+            disabled={loading || page === 0}
+            onClick={() => setPage((value) => value - 1)}
+          >
+            Previous page
+          </button>
+          <span>Page {page + 1}</span>
+          <button
+            className="button"
+            disabled={loading || error !== "" || games.length < 10}
+            onClick={() => setPage((value) => value + 1)}
+          >
+            Next page
           </button>
         </div>
-      ) : games.length === 0 ? (
-        <p>No more games for this seed.</p>
-      ) : (
-        <div className="classic-history-scroll">{renderRows(games)}</div>
-      )}
-      <div className="actions">
-        <button
-          disabled={loading || page === 0}
-          onClick={() => setPage((value) => value - 1)}
-        >
-          Previous page
-        </button>
-        <span>Page {page + 1}</span>
-        <button
-          disabled={loading || error !== "" || games.length < 10}
-          onClick={() => setPage((value) => value + 1)}
-        >
-          Next page
-        </button>
-        <a
-          href={`/seed/${encodeURIComponent(seed)}`}
-          rel="noreferrer"
-          target="_blank"
-        >
-          View seed data
-        </a>
       </div>
-    </>
+    </section>
   );
 }
 
@@ -123,7 +226,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
     }),
     shallowEqual,
   );
-  const [seed, setSeed] = useState<string | null>(null);
+  const navigate = useNavigate();
   useEffect(() => {
     if (state.connection !== "online") {
       return;
@@ -140,15 +243,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
   );
   const loading = state.historyLoading;
   const hasMore = state.historyHasMore;
-  function replay(game: HistoryGame, visibility: "solo" | "shared") {
-    connection.send("replayCreate", {
-      source: "id",
-      databaseID: game.id,
-      visibility,
-    });
-  }
-
-  function rows(list: readonly HistoryGame[], comparison = false) {
+  function rows(list: readonly HistoryGame[]) {
     return (
       <table className="alt history-table">
         <thead>
@@ -158,7 +253,7 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
             <th>Score</th>
             <th>Variant</th>
             <th>Options</th>
-            <th>{comparison ? "Players" : "Other Players"}</th>
+            <th>Other Players</th>
             <th>Date Played</th>
             <th>Watch Replay</th>
             <th>Share Replay</th>
@@ -183,42 +278,17 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
               </td>
               <td>
                 {game.playerNames
-                  .filter(
-                    (name) => comparison || name !== state.welcome?.username,
-                  )
+                  .filter((name) => name !== state.welcome?.username)
                   .join(", ")}
               </td>
               <td>{finished(game.datetimeFinished)}</td>
-              <td>
-                <button
-                  className="button fit margin0"
-                  disabled={
-                    state.connection !== "online" || state.pending !== null
-                  }
-                  onClick={() => replay(game, "solo")}
-                >
-                  <i
-                    aria-hidden="true"
-                    className="fas fa-eye lobby-button-icon"
-                  />
-                  <span className="sr-only">Replay</span>
-                </button>
-              </td>
-              <td>
-                <button
-                  aria-label={`Start shared replay ${game.id}`}
-                  className="button fit margin0"
-                  disabled={
-                    state.connection !== "online" || state.pending !== null
-                  }
-                  onClick={() => replay(game, "shared")}
-                >
-                  <i
-                    aria-hidden="true"
-                    className="fas fa-users lobby-button-icon"
-                  />
-                </button>
-              </td>
+              <ReplayButtons
+                connection={connection}
+                disabled={
+                  state.connection !== "online" || state.pending !== null
+                }
+                game={game}
+              />
               <td>
                 <button
                   aria-label="Compare seed"
@@ -228,7 +298,9 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                     || game.numGamesOnThisSeed <= 1
                   }
                   onClick={() => {
-                    setSeed(game.seed);
+                    void navigate(
+                      `/history/other-scores/${encodeURIComponent(game.seed)}`,
+                    );
                   }}
                 >
                   <i
@@ -289,19 +361,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
           </a>
         </div>
       </div>
-      {seed !== null && (
-        <Modal
-          close={() => setSeed(null)}
-          description={seed}
-          title="Other Scores"
-        >
-          <SeedComparison
-            key={seed}
-            renderRows={(comparisonGames) => rows(comparisonGames, true)}
-            seed={seed}
-          />
-        </Modal>
-      )}
     </section>
   );
 }
