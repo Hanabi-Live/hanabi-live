@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# This script sets up the production server on a fresh Ubuntu 26 system.
+
 set -o errexit -o nounset -o pipefail
 
 DOMAIN="hanab.live"
