@@ -19,15 +19,15 @@ runs:
       run: |
         directory="$RUNNER_TEMP/hanabi-redis"
         mkdir -p "$directory"
-        container=$(docker create redis:7.2.17-bookworm@sha256:5b816bb37d9707a70f10ef5002ecf8ee431750d397010fc4314c93dca887962f)
+        container=$(docker create redis:8.0.5-bookworm@sha256:0c1fd4ba160ccc49565ceda980791adfaaee3254ca5db70ec656cb62c25d14a4)
         trap 'docker rm "$container" > /dev/null' EXIT
         docker cp "$container:/usr/local/bin/redis-server" "$directory/redis-server"
         docker cp "$container:/usr/local/bin/redis-cli" "$directory/redis-cli"
     - name: Verify Redis and expose its binaries
       shell: bash
       run: |
-        "$RUNNER_TEMP/hanabi-redis/redis-server" --version | grep -F 'v=7.2.17 '
-        "$RUNNER_TEMP/hanabi-redis/redis-cli" --version | grep -Fx 'redis-cli 7.2.17'
+        "$RUNNER_TEMP/hanabi-redis/redis-server" --version | grep -F 'v=8.0.5 '
+        "$RUNNER_TEMP/hanabi-redis/redis-cli" --version | grep -Fx 'redis-cli 8.0.5'
         echo "$RUNNER_TEMP/hanabi-redis" >> "$GITHUB_PATH"
     - name: Cache verified Redis binaries
       if: steps.redis.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
