@@ -27,6 +27,23 @@ const CLUE_STARVED_METADATA = getDefaultMetadata(
 const SUDOKU_METADATA = getDefaultMetadata(NUM_PLAYERS, "Sudoku (5 Suits)");
 
 describe("gameReducer", () => {
+  test("rejects a draw that skips a card order", () => {
+    const state = getInitialGameStateTest(DEFAULT_METADATA);
+    expect(() =>
+      gameReducer(
+        state,
+        draw(0, 1, 0, 1),
+        true,
+        false,
+        false,
+        false,
+        DEFAULT_METADATA,
+      ),
+    ).toThrow(
+      "Received a draw for card order 1, but the next card order in the deck is 0.",
+    );
+  });
+
   test("hidden Duck clues retain public markings and logs without identity deductions", () => {
     const metadata = getDefaultMetadata(2, "Duck (5 Suits)");
     let state = getInitialGameStateTest(metadata);

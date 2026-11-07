@@ -284,6 +284,13 @@ function gameReducerFunction(
      * ```
      */
     case "draw": {
+      // A skipped or repeated card order would leave a hole in the deck that breaks later rules.
+      if (action.order !== gameState.deck.length) {
+        throw new Error(
+          `Received a draw for card order ${action.order}, but the next card order in the deck is ${gameState.deck.length}.`,
+        );
+      }
+
       gameState.cardsRemainingInTheDeck--;
       const hand = gameState.hands[action.playerIndex];
       if (hand !== undefined) {
