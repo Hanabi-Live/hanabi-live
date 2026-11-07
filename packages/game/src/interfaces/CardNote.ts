@@ -8,6 +8,7 @@ export interface CardNote {
   readonly needsFix: boolean;
   readonly questionMark: boolean;
   readonly exclamationMark: boolean;
+  readonly spook: boolean;
   readonly chopMoved: boolean;
   readonly finessed: boolean;
   readonly discardPermission: boolean;

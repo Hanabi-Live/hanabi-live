@@ -474,6 +474,17 @@ export function exclamationMark(): Konva.Image {
   });
 }
 
+export function ghost(): Konva.Image {
+  return new Konva.Image({
+    x: 0.1 * CARD_W,
+    y: 0.2 * CARD_H,
+    width: 0.8 * CARD_W,
+    height: 0.8 * CARD_W,
+    image: globals.imageLoader!.get("ghost"),
+    visible: false,
+  });
+}
+
 export function trashcan(): Konva.Image {
   return new Konva.Image({
     x: 0.15 * CARD_W,

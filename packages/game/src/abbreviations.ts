@@ -5,6 +5,7 @@ import type { Variant } from "./interfaces/Variant";
 export const KNOWN_TRASH_NOTES = ["kt", "trash", "stale", "bad"] as const;
 export const QUESTION_MARK_NOTES = ["?"] as const;
 export const EXCLAMATION_MARK_NOTES = ["!"] as const;
+export const SPOOK_NOTES = ["spook"] as const;
 
 export const CHOP_MOVED_NOTES = [
   "cm",
@@ -53,6 +54,7 @@ export const ALL_RESERVED_NOTES = new ReadonlySet<string>([
   ...KNOWN_TRASH_NOTES,
   ...QUESTION_MARK_NOTES,
   ...EXCLAMATION_MARK_NOTES,
+  ...SPOOK_NOTES,
   ...CHOP_MOVED_NOTES,
   ...FINESSED_NOTES,
   ...DISCARD_PERMISSION_NOTES,

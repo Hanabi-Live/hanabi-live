@@ -33,6 +33,15 @@ describe("parseNote", () => {
     },
   );
 
+  test.each([
+    ["spook", true],
+    ["[Spook]", true],
+    ["boo [spook]", true],
+    ["spooky", false],
+  ])("parses the spook keyword in %j", (text, expected) => {
+    expect(parseNote(VARIANT, text).spook).toBe(expected);
+  });
+
   test("handles a long unterminated bracket sequence", () => {
     const text = "[".repeat(100_000);
     expect(parseNote(VARIANT, text).chopMoved).toBe(false);

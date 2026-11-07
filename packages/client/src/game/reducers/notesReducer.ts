@@ -14,6 +14,7 @@ import {
   KNOWN_TRASH_NOTES,
   NEEDS_FIX_NOTES,
   QUESTION_MARK_NOTES,
+  SPOOK_NOTES,
   UNCLUED_NOTES,
   getVariant,
 } from "@hanabi-live/game";
@@ -199,6 +200,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     EXCLAMATION_MARK_NOTES,
     keywords,
   );
+  const spook = checkNoteKeywordsForMatch(SPOOK_NOTES, keywords);
   const blank = checkNoteKeywordsForMatch(BLANK_NOTES, keywords);
   const unclued = checkNoteKeywordsForMatch(UNCLUED_NOTES, keywords);
   const clued = checkNoteKeywordsForMatch(CLUED_NOTES, keywords);
@@ -212,6 +214,7 @@ export function parseNote(variant: Variant, text: string): CardNote {
     needsFix,
     questionMark,
     exclamationMark,
+    spook,
     blank,
     unclued,
     clued,
