@@ -250,6 +250,26 @@ fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -
             || configured.port_or_known_default() == origin.port_or_known_default())
 }
 
+fn log_rejection(request: &Request, reason: &str) {
+    let ip = request
+        .extensions()
+        .get::<ConnectInfo<SocketAddr>>()
+        .map_or("an unknown address".to_owned(), |ConnectInfo(address)| {
+            address.ip().to_string()
+        });
+    // Clients control the origin, so it is escaped and shortened.
+    let origin: String = request
+        .headers()
+        .get(header::ORIGIN)
+        .map_or("no origin".to_owned(), |origin| {
+            format!("{origin:?}").chars().take(100).collect()
+        });
+    eprintln!(
+        "Rejected {} from {ip} with {origin} because of {reason}.",
+        request.uri().path()
+    );
+}
+
 async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next) -> Response {
     if !origin_allowed(
         request.headers(),
@@ -257,10 +277,12 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
         &app.public.domain,
         app.public.use_tls,
     ) {
+        log_rejection(&request, "an invalid origin");
         return (StatusCode::FORBIDDEN, "Invalid request origin.\n").into_response();
     }
     let _admission = app.admission.clone().read_owned().await;
     if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
+        log_rejection(&request, "the server draining");
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             "The server is draining for maintenance.\n",
@@ -431,12 +453,15 @@ async fn websocket(
             else { "The server is not accepting connections while it starts or drains for maintenance." },
             StatusCode::SERVICE_UNAVAILABLE).response(false);
     }
+    let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.secret) else {
+        eprintln!("Rejected websocket from {ip} without a valid session.");
         return (StatusCode::UNAUTHORIZED, "A valid session is required.\n").into_response();
     };
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
         Ok(true) => {
+            eprintln!("Rejected websocket for account {id} from banned {ip}.");
             return (
                 StatusCode::UNAUTHORIZED,
                 "Your IP address has been banned.\n",
@@ -461,6 +486,7 @@ async fn websocket(
     {
         Ok(true) => {}
         Ok(false) => {
+            eprintln!("Rejected websocket for deleted account {id} from {ip}.");
             return (
                 StatusCode::UNAUTHORIZED,
                 "The account for this session no longer exists. Please sign in again.",
@@ -520,6 +546,10 @@ async fn websocket(
                             .await
                         }
                         Err(message) => {
+                            eprintln!(
+                                "Rejected websocket for account {id} from {ip} with version {:?}.",
+                                version.chars().take(100).collect::<String>()
+                            );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
                             tokio::time::timeout(Duration::from_secs(5), async {
                                 socket
