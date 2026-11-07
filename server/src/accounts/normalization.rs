@@ -1,4 +1,3 @@
-use regex::Regex;
 use serde::Deserialize;
 use std::{collections::HashMap, sync::LazyLock};
 use unicode_normalization::UnicodeNormalization;
@@ -18,11 +17,6 @@ static IDENTITY: LazyLock<IdentityData> = LazyLock::new(|| {
     ))
     .expect("checked-in Go identity data")
 });
-static EMOJI: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(&IDENTITY.username_emoji_pattern).expect("Go emoji pattern"));
-static MARK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\p{Mn}$").unwrap());
-static CHAT: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").unwrap());
 
 pub fn normalize_string(input: &str) -> String {
     let mut result = String::new();
@@ -45,7 +39,7 @@ pub fn normalize_username(input: &str) -> String {
 }
 
 pub fn has_username_emoji(input: &str) -> bool {
-    EMOJI.is_match(input)
+    regex!(&IDENTITY.username_emoji_pattern).is_match(input)
 }
 
 pub fn max_consecutive_marks(input: &str) -> usize {
@@ -53,7 +47,7 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     let mut maximum = 0;
     for ch in input.nfd() {
         let mut bytes = [0; 4];
-        count = if MARK.is_match(ch.encode_utf8(&mut bytes)) {
+        count = if regex!(r"^\p{Mn}$").is_match(ch.encode_utf8(&mut bytes)) {
             count + 1
         } else {
             0
@@ -73,7 +67,7 @@ pub fn truncate_to_max_bytes(input: &str, max: usize) -> &str {
 
 /// Removes characters that chat messages and notes do not allow.
 pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
-    CHAT.replace_all(input, "")
+    regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").replace_all(input, "")
 }
 
 pub fn normalize_chat(input: &str) -> Result<String, &'static str> {

@@ -844,7 +844,7 @@ impl Store {
             return Ok(prefix + suffix);
         }
         let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
-        let seeds = crate::lobby::blocked_seeds(&self.primary, &ids).await?;
+        let seeds = crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?;
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
         for next in 1_u64.. {
             let seed = format!("{prefix}{next}");

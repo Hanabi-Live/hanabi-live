@@ -1,0 +1,51 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",\n            count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",\n            count(*) FILTER(WHERE speedrun) AS \"speed!\",\n            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)\n              FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",\n            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)\n              FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"\n            FROM games WHERE $1::bigint IS NULL OR variant_id::bigint=$1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "normal!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "other!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "speed!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "duration!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "speed_duration!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "0e90fdd911857d7244e50700992f039b47e866d330a0449457917486e9b8551b"
+}

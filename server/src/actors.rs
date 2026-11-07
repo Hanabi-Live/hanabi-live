@@ -14,7 +14,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
-    sync::{Arc, LazyLock, Mutex},
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
@@ -1083,11 +1083,20 @@ impl Hub {
                         && let Some(entry) = self.tables.get(&effects.table)
                         && entry.view.visible
                     {
+                        // The hub handles one message at a time, so serialize the table once for
+                        // its players and once for everyone else rather than once per user.
+                        let [other, joined] = [false, true].map(|joined| {
+                            let mut data = entry.view.data.clone();
+                            data["joined"] = json!(joined);
+                            frame("table", data)
+                        });
                         for p in self.sessions.values() {
-                            p.session.emit(&frame(
-                                "table",
-                                Self::table_for(&entry.view, p.session.user),
-                            ));
+                            p.session
+                                .emit(if entry.view.players.contains(&p.session.user) {
+                                    &joined
+                                } else {
+                                    &other
+                                });
                         }
                     }
                     for (session, message) in effects.messages {
@@ -1210,23 +1219,14 @@ fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
     });
     Some(message)
 }
-// These patterns are compiled once rather than on every command that uses them.
-static DECIMAL_MINUTES: LazyLock<regex::Regex> = LazyLock::new(|| {
-    regex::Regex::new(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$").unwrap()
-});
-static HEX_MINUTES: LazyLock<regex::Regex> = LazyLock::new(|| {
-    regex::Regex::new(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").unwrap()
-});
-static TABLE_NAME_COUNT: LazyLock<regex::Regex> =
-    LazyLock::new(|| regex::Regex::new(r"^(.*) \(#(\d+)\)$").unwrap());
 
 fn parse_start_minutes(argument: &str) -> Option<f64> {
     let value = format!("0{argument}");
-    if DECIMAL_MINUTES.is_match(&value) {
+    if regex!(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$").is_match(&value) {
         let value = value.replace('_', "").parse::<f64>().ok()?;
         return value.is_finite().then_some(value);
     }
-    if !HEX_MINUTES.is_match(&value) {
+    if !regex!(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").is_match(&value) {
         return None;
     }
     let cleaned = value.replace('_', "").to_ascii_lowercase();
@@ -4248,11 +4248,12 @@ impl TableActor {
                 )
             }
         } else {
-            let (base, count) = if let Some(m) = TABLE_NAME_COUNT.captures(&self.table.name) {
-                (m[1].to_owned(), m[2].parse::<u64>()? + 1)
-            } else {
-                (self.table.name.clone(), 2)
-            };
+            let (base, count) =
+                if let Some(m) = regex!(r"^(.*) \(#(\d+)\)$").captures(&self.table.name) {
+                    (m[1].to_owned(), m[2].parse::<u64>()? + 1)
+                } else {
+                    (self.table.name.clone(), 2)
+                };
             let suffix = format!(" (#{count})");
             format!(
                 "{}{suffix}",

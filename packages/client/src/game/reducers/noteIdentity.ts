@@ -79,6 +79,18 @@ function parseRank(rankText: string): Rank | null {
   }
 }
 
+const identityPatterns = new Map<string, RegExp>();
+
+/** Variant identity patterns are large, so compile each one once. */
+function identityPattern(pattern: string): RegExp {
+  let regExp = identityPatterns.get(pattern);
+  if (regExp === undefined) {
+    regExp = new RegExp(pattern);
+    identityPatterns.set(pattern, regExp);
+  }
+  return regExp;
+}
+
 /**
  * Parse a string into a `CardIdentity`.
  *
@@ -103,7 +115,7 @@ export function parseIdentity(
     return "original";
   }
 
-  const identityMatch = new RegExp(
+  const identityMatch = identityPattern(
     variant.identityNotePattern.toLowerCase(),
   ).exec(keyword.toLowerCase());
 
@@ -122,7 +134,9 @@ export function parseIdentity(
 }
 
 function parseIdentities(variant: Variant, keyword: string): CardIdentities {
-  const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
+  const identityMatch = identityPattern(variant.identityNotePattern).exec(
+    keyword,
+  );
   let suitIndex: SuitIndex | null = null;
   let rank: Rank | null = null;
   if (identityMatch !== null) {
