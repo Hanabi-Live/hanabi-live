@@ -84,7 +84,7 @@
   "scripts": {
     "build-client": "bash packages/client/build-client.sh",
     "build-pips-reference": "bash scripts/bash/build-pips-reference.sh",
-    "check-knip": "bunx --bun --no-install knip",
+    "check-knip": "bunx --bun --no-install knip --treat-config-hints-as-errors",
     "check-shellcheck": "bash check-shellcheck.sh",
     "check-templates": "bash check-templates.sh",
     "check-variant-files": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
