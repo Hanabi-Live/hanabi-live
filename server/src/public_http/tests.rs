@@ -748,14 +748,15 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         .unwrap();
         let (status, body) = request(app.clone(), "/export/3").await;
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+        // The failed check and the game are named, so the failure can be traced later.
+        assert!(body.contains("custom deck is invalid: 3"), "{body}");
     }
     sqlx::query!("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
         .execute(&db.pool)
         .await
         .unwrap();
-    assert_eq!(
-        request(app, "/export/1").await.0,
-        StatusCode::INTERNAL_SERVER_ERROR
-    );
+    let (status, body) = request(app, "/export/1").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
+    assert!(body.contains("players do not match its seats: 1"), "{body}");
     db.close().await;
 }
