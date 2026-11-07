@@ -4,28 +4,17 @@
 
 - Install [Bun](https://bun.sh/), [Rust](https://rustup.rs/), and either
   [Podman](https://podman.io/docs/installation) (with Podman Compose) or
-  [Docker](https://www.docker.com/get-started/). (On Windows, use
-  [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux).)
-- You do not need to install PostgreSQL or Redis: `bun run dev` runs them in
-  containers.
-- Clone the repository and install the dependencies:
-
-```sh
-bun install --frozen-lockfile
-```
-
-- Start everything:
-
-```sh
-bun run dev
-```
-
-- Then, in a browser, surf to: http://localhost:1212/
+  [Docker](https://www.docker.com/get-started/).
+  - If you are on Windows, we recommend that you use
+    [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux).
+- Clone the repository.
+- Install the dependencies:
+  - `bun ci`
+- Start the Hanab server, PostgreSQL, and Redis:
+  - `bun run dev`
+- In a browser, surf to: http://localhost:1212/
 - To stop the containers (their data is kept):
-
-```sh
-bun run dev down
-```
+  - `bun run dev down`
 
 ## For Production
 
