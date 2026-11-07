@@ -55,9 +55,9 @@ function main {
   trap 'rm --recursive --force -- "$DOWNLOAD"' EXIT
   curl --silent --fail --show-error --location --output "$DOWNLOAD/SHA256SUMS" https://github.com/Hanabi-Live/hanabi-live/releases/latest/download/SHA256SUMS
   read -r sha256 archive < "$DOWNLOAD/SHA256SUMS"
-  rev=${archive#hanabi-live-rust-}
+  rev=${archive#hanabi-live-}
   rev=${rev%-linux-amd64.tar.gz}
-  [[ "$rev" =~ ^[a-f0-9]{40}$ && "$sha256" =~ ^[a-f0-9]{64}$ && "$archive" == "hanabi-live-rust-$rev-linux-amd64.tar.gz" ]] || {
+  [[ "$rev" =~ ^[a-f0-9]{40}$ && "$sha256" =~ ^[a-f0-9]{64}$ && "$archive" == "hanabi-live-$rev-linux-amd64.tar.gz" ]] || {
     echo "Error: Invalid GitHub release checksum file." >&2
     exit 1
   }

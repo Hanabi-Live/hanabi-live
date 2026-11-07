@@ -57,7 +57,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOBIN="$release/install" \
   go install -trimpath "github.com/jackc/tern/v2@$TERN_VERSION"
 python3 install/release.py manifest "$release" --runtime "$runtime"
 python3 install/release.py verify "$release"
-archive="hanabi-live-rust-$revision-linux-amd64.tar.gz"
+archive="hanabi-live-$revision-linux-amd64.tar.gz"
 tar -czf "$output/$archive" -C "$release" .
 (
   cd "$output"

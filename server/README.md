@@ -86,11 +86,11 @@ reset. Explicitly mark nullable outer-join columns.
 
 ## Immutable releases
 
-CI publishes `hanabi-live-rust-<revision>-linux-amd64`. It contains the
-statically linked Rust binary named `hanabi-live`, paired client assets, the
-word list, schema/migrations, and the bundled migration tool. No Go, Node,
-Cargo, or compiler is needed on the deployment host; installation uses Python,
-Bash, PostgreSQL, and Redis.
+CI publishes `hanabi-live-<revision>-linux-amd64`. It contains the statically
+linked Rust binary named `hanabi-live`, paired client assets, the word list,
+schema/migrations, and the bundled migration tool. No Go, Node, Cargo, or
+compiler is needed on the deployment host; installation uses Python, Bash,
+PostgreSQL, and Redis.
 
 To build locally on Linux amd64, install `musl-tools`, add Rust's
 `x86_64-unknown-linux-musl` target, and run:
@@ -99,9 +99,8 @@ To build locally on Linux amd64, install `musl-tools`, add Rust's
 bash install/build-release.sh dist/rust-release
 ```
 
-Use the checksum-verified release installer. Existing artifact names and the
-`<revision>-rust` installation layout are retained for deployment compatibility.
-Activate with:
+Use the checksum-verified release installer. The `<revision>-rust` installation
+layout is retained for deployment compatibility. Activate with:
 
 ```sh
 python3 install/release.py activate /absolute/deployment/root REVISION \

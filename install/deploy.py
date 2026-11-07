@@ -108,7 +108,7 @@ def await_approved_run(github, revision):
 
 
 def download(github, run, revision, work):
-    name = f"hanabi-live-rust-{revision}-linux-amd64"
+    name = f"hanabi-live-{revision}-linux-amd64"
     artifacts = github.json(f"/actions/runs/{run['id']}/artifacts?per_page=100")
     matches = [item for item in artifacts["artifacts"] if item["name"] == name and not item["expired"]]
     require(len(matches) == 1, "The approved Rust release artifact is missing or ambiguous.")

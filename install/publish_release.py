@@ -23,7 +23,7 @@ def optional_release(github, path):
 
 def publish(directory, revision, run_url):
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid release revision.")
-    archive = directory / f"hanabi-live-rust-{revision}-linux-amd64.tar.gz"
+    archive = directory / f"hanabi-live-{revision}-linux-amd64.tar.gz"
     checksum = archive.with_name(archive.name + ".sha256").read_text()
     require(checksum.split() == [digest(archive), archive.name], "Release checksum mismatch.")
     sums = directory / "SHA256SUMS"
