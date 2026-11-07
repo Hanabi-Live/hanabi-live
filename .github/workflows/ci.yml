@@ -77,12 +77,9 @@ jobs:
           key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
             lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
-      - name: Test Turbo cache invalidation
+      - name: Test Turbo and formatting cache invalidation
         if: matrix.shard == 1
-        run: python3 -m unittest discover -s scripts -p 'lint_cache_test.py'
-      - name: Test formatting cache invalidation
-        if: matrix.shard == 1
-        run: python3 -m unittest discover -s scripts -p 'prettier_cache_test.py'
+        run: bunx --bun --no-install turbo run "//#test-lint-caches" --cache=local:rw
       - name: Restore formatting file cache
         if: matrix.shard == 1
         id: prettier-cache

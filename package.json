@@ -93,6 +93,7 @@
     "lint-rust": "bash check-rust.sh",
     "prepare": "husky",
     "test": "bun packages/testing/src/mainProcessSetup.ts && bun test --parallel=4 --isolate --tsconfig-override tsconfig.monorepo.json packages/client/src packages/game/src packages/scripts/src packages/testing/src",
+    "test-lint-caches": "python3 -m unittest discover -s scripts -p lint_cache_test.py && python3 -m unittest discover -s scripts -p prettier_cache_test.py",
     "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
   },
   "dependencies": {

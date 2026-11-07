@@ -143,6 +143,61 @@ class LintCacheTests(unittest.TestCase):
                     consumers,
                 )
 
+    def test_cache_regression_suite_inputs_invalidate_results(self):
+        task = "//#test-lint-caches"
+        for name in (
+            "scripts/lint_cache_test.py",
+            "scripts/prettier_cache_test.py",
+            "check-prettier.sh",
+            "prettier.config.mjs",
+            "turbo.json",
+            "package.json",
+            "bun.lock",
+            "packages/client/package.json",
+            "tsconfig.monorepo.json",
+        ):
+            with self.subTest(name=name):
+                source = self.root / name
+                content = source.read_text() if source.exists() else ""
+                self.assert_invalidates(name, content + "\n", {"//"}, task)
+        self.assert_invalidates("docs/install.md", "Documentation.\n", set(), task)
+        self.assertNotEqual(
+            self.hashes(task),
+            self.hashes(task, {**os.environ, "ImageVersion": "changed"}),
+        )
+
+    def test_cache_regression_suite_reuses_only_successes(self):
+        task = "//#test-lint-caches"
+        self.write(
+            "scripts/lint_cache_test.py",
+            'from pathlib import Path\n'
+            'import unittest\n'
+            'class Fixture(unittest.TestCase):\n'
+            '    def test_result(self):\n'
+            '        Path(".turbo").mkdir(exist_ok=True)\n'
+            '        with Path(".turbo/regression-executions").open("a") as output:\n'
+            '            output.write("ran\\n")\n'
+            '        self.assertFalse(Path("scripts/fail.txt").exists())\n',
+        )
+        self.write(
+            "scripts/prettier_cache_test.py",
+            "import unittest\n"
+            "class Fixture(unittest.TestCase):\n"
+            "    def test_result(self):\n"
+            "        pass\n",
+        )
+        executions = self.root / ".turbo/regression-executions"
+        self.turbo(task=task)
+        self.turbo(task=task)
+        self.assertEqual(executions.read_text(), "ran\n")
+        self.write("scripts/fail.txt", "fail\n")
+        for _ in range(2):
+            self.assertNotEqual(self.turbo(task=task, check=False).returncode, 0)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+        (self.root / "scripts/fail.txt").unlink()
+        self.turbo(task=task)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+
     def test_shared_inputs_and_ignored_runtime_version(self):
         for name in (
             "eslint.config.mjs",
