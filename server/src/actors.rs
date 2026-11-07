@@ -245,14 +245,13 @@ pub enum HubCommand {
     Stop(oneshot::Sender<()>),
 }
 pub enum Command {
-    Join(Player),
-    Start(Option<String>),
-    Loaded(Option<String>),
-    Action(Action, Option<String>),
-    Info(u8),
-    Reattend,
-    Unattend,
+    /// A client command, already validated against its wire contract.
     Wire { name: String, data: Value },
+    /// Restores a reconnecting user's attendance and view.
+    Reattend {
+        spectate: bool,
+        shadow: Option<usize>,
+    },
 }
 pub enum TableCommand {
     Client {
@@ -373,8 +372,7 @@ impl Hub {
             let _ = reply.send(Err(anyhow::anyhow!("Stale session or draining server")));
             return;
         }
-        let joining = matches!(&command, Command::Join(_))
-            || matches!(&command,Command::Wire{name,..} if name=="tableJoin");
+        let joining = matches!(&command, Command::Wire { name, .. } if name == "tableJoin");
         if joining && !s.name.starts_with("Bot-") && self.playing_elsewhere(s.user, Some(id)) {
             let _ = reply.send(Err(anyhow::anyhow!(
                 "You cannot join more than one table at a time. Terminate your other game before joining a new one."
@@ -1030,7 +1028,14 @@ impl Hub {
                     for (session, spectator, shadow) in attendees {
                         if self.current(&session) {
                             let (reply, _) = oneshot::channel();
-                            let _=handle.sender.try_send(TableCommand::Client{session,command:Command::Wire{name:if spectator{"tableSpectate".into()}else{"tableReattend".into()},data:json!({"shadowingPlayerIndex":shadow.map(|s|s as i32).unwrap_or(-1)})},reply});
+                            let _ = handle.sender.try_send(TableCommand::Client {
+                                session,
+                                command: Command::Reattend {
+                                    spectate: spectator,
+                                    shadow,
+                                },
+                                reply,
+                            });
                         }
                     }
                 }
@@ -2337,29 +2342,27 @@ impl TableActor {
             }
         }
         let (name, data) = match command {
-            Command::Join(player) => {
-                ensure!(player.id == session.user, "Player mismatch");
-                ("tableJoin".into(), json!({}))
-            }
-            Command::Start(id) => ("tableStart".into(), json!({"requestID":id})),
-            Command::Loaded(id) => ("loaded".into(), json!({"requestID":id})),
-            Command::Action(a, id) => (
-                "action".into(),
-                json!({"type":a.kind,"target":a.target,"value":a.value,"requestID":id}),
-            ),
-            Command::Info(p) => (format!("getGameInfo{p}"), json!({})),
-            Command::Reattend => ("tableReattend".into(), json!({})),
-            Command::Unattend => ("tableUnattend".into(), json!({})),
             Command::Wire { name, data } => (name, data),
+            Command::Reattend { spectate, shadow } => {
+                return self
+                    .reattend(session, spectate, Some(shadow.map_or(-1, |s| s as i64)))
+                    .await;
+            }
         };
         let request = data["requestID"].as_str();
         if self.table.duplicate(session.user, request) {
             return Ok(());
         }
         match name.as_str() {
-            "tableJoin" => self.join(session, &data).await,
-            "tableReattend" | "tableSpectate" => {
-                self.reattend(session, &data, name == "tableSpectate").await
+            "tableJoin" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableJoinRequest>(&data)?;
+                self.join(session, r.password).await
+            }
+            "tableReattend" => self.reattend(session, false, None).await,
+            "tableSpectate" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableSpectateRequest>(&data)?;
+                self.reattend(session, true, Some(r.shadowing_player_index))
+                    .await
             }
             "tableUnattend" | "tableLeave" => self.leave(session, name == "tableLeave").await,
             "getGameInfo1" | "getGameInfo2" => {
@@ -2367,16 +2370,15 @@ impl TableActor {
                     .await
             }
             "tableStart" => {
-                if data["intendedVariant"]
-                    .as_str()
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableStartRequest>(&data)?;
+                let players = self.table.players();
+                // A start based on a stale view of the table does nothing.
+                if r.intended_variant
+                    .as_deref()
                     .is_some_and(|v| !v.is_empty() && v != self.table.options.variant_name)
-                    || data["intendedPlayers"].as_array().is_some_and(|names| {
-                        names.len() != self.table.players().len()
-                            || self
-                                .table
-                                .players()
-                                .iter()
-                                .any(|p| !names.iter().any(|n| n.as_str() == Some(p.name.as_str())))
+                    || r.intended_players.as_ref().is_some_and(|names| {
+                        names.len() != players.len()
+                            || players.iter().any(|p| !names.contains(&p.name))
                     })
                 {
                     return Ok(());
@@ -2412,7 +2414,15 @@ impl TableActor {
                 }
                 self.publish(e).await
             }
-            "action" => self.action(session, &data).await,
+            "action" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::ActionRequest>(&data)?;
+                let action = Action {
+                    kind: r.kind,
+                    target: r.target,
+                    value: r.value,
+                };
+                self.action(session, action, request).await
+            }
             "tableTerminate" if matches!(self.table.phase, Phase::Pregame { .. }) => {
                 ensure!(
                     self.attending(&session) && session.user == self.table.owner,
@@ -2424,18 +2434,43 @@ impl TableActor {
                 self.terminate(session, request, name == "tableVoteForTermination")
                     .await
             }
-            "pause" => self.pause(session, &data).await,
-            "note" => self.note(session, &data).await,
-            "tag" | "tagDelete" | "tagsDeleteAll" => self.tag(session, &data, &name).await,
+            "pause" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::PauseRequest>(&data)?;
+                self.pause(session, &r.setting, request).await
+            }
+            "note" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::NoteRequest>(&data)?;
+                self.note(session, r.order, &r.note, request).await
+            }
+            "tag" | "tagDelete" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TagRequest>(&data)?;
+                self.tag(session, &r.msg, &r.room, &name, request).await
+            }
+            "tagsDeleteAll" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TagsDeleteAllRequest>(&data)?;
+                self.tag(session, "", &r.room, &name, request).await
+            }
             "chat" => self.chat(session, &data).await,
             "chatRead" | "chatTyping" => self.chat_presence(session, name == "chatTyping").await,
-            "tableSetLeader" => self.leader(session, &data).await,
-            "tableSuggest" => self.suggest(session, &data).await,
+            "tableSetLeader" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableLeaderRequest>(&data)?;
+                self.leader(session, &r.name, request).await
+            }
+            "tableSuggest" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableSuggestRequest>(&data)?;
+                self.suggest(session, r.segment).await
+            }
             "tableUpdate" | "tableSetVariant" => {
                 self.update(session, &data, name == "tableSetVariant").await
             }
-            "tableRestart" => self.restart(session, &data).await,
-            "replayAction" => self.replay_action(session, &data).await,
+            "tableRestart" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableRestartRequest>(&data)?;
+                self.restart(session, r.hide_pregame).await
+            }
+            "replayAction" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::ReplayActionRequest>(&data)?;
+                self.replay_action(session, r, request).await
+            }
             "tableAbandon" => self.leave(session, true).await,
             _ => bail!("Unsupported table command: {name}"),
         }
@@ -2693,7 +2728,7 @@ impl TableActor {
         self.add_all(&mut e, "chat", message);
         self.publish(e).await
     }
-    async fn join(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
         let Phase::Pregame {
             players, kicked, ..
         } = &self.table.phase
@@ -2710,7 +2745,6 @@ impl TableActor {
         );
         if let Some(hash) = &self.table.password_hash {
             let hash = hash.clone();
-            let password = data["password"].as_str().unwrap_or("").to_owned();
             let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
             if !valid {
                 eprintln!(
@@ -2738,7 +2772,6 @@ impl TableActor {
                 crate::accounts::escape_html(&session.name)
             ),
         );
-        next.remember(session.user, data["requestID"].as_str())?;
         self.persist(next).await?;
         self.initialize(session.clone(), vec![]).await?;
         let mut e = self.effects();
@@ -2753,8 +2786,8 @@ impl TableActor {
     async fn reattend(
         &mut self,
         session: Arc<Session>,
-        data: &Value,
         spectating: bool,
+        requested_shadow: Option<i64>,
     ) -> Result<()> {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = self
@@ -2771,8 +2804,7 @@ impl TableActor {
             "Players cannot spectate their own ongoing game"
         );
         let shadow = if spectating {
-            data["shadowingPlayerIndex"]
-                .as_i64()
+            requested_shadow
                 .and_then(|v| usize::try_from(v).ok())
                 .filter(|v| *v < self.table.players().len())
         } else if replay {
@@ -3072,15 +3104,15 @@ impl TableActor {
         );
         Ok(snapshot)
     }
-    async fn action(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn action(
+        &mut self,
+        session: Arc<Session>,
+        a: Action,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;
-        let a = Action {
-            kind: u8::try_from(data["type"].as_i64().context("Invalid action")?)?,
-            target: i32::try_from(data["target"].as_i64().context("Invalid action target")?)?,
-            value: i32::try_from(data["value"].as_i64().unwrap_or(0))?,
-        };
         hanabi_engine::validate_action(&old.game.0, seat, &hanabi_engine::PlayerAction::from(&a))?;
         let from = old.game.events.len();
         let mut next = self.candidate();
@@ -3103,7 +3135,7 @@ impl TableActor {
             s.pause_player_index = active as i32;
             s.game.paused = true;
         }
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         self.persist(next).await?;
         self.transitions(from).await
     }
@@ -3264,12 +3296,16 @@ impl TableActor {
         }
         Ok(())
     }
-    async fn pause(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn pause(
+        &mut self,
+        session: Arc<Session>,
+        mut setting: &str,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
         ensure!(old.game.options.timed, "This is not a timed game");
-        let mut setting = data["setting"].as_str().context("Invalid pause setting")?;
         if setting == "pause-queue" && seat == old.game.active_player_index {
             setting = "pause";
         }
@@ -3295,7 +3331,7 @@ impl TableActor {
                 }
             }
         }
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         self.persist(next).await?;
         let s = self.table.game().expect("game");
         let mut e = self.effects();
@@ -3305,14 +3341,17 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn note(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn note(
+        &mut self,
+        session: Arc<Session>,
+        order: u64,
+        note: &str,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         self.live()?;
-        let order = data["order"].as_u64().context("Invalid note order")? as usize;
-        let text = crate::accounts::truncate_to_max_bytes(
-            data["note"].as_str().context("Invalid note")?,
-            300,
-        );
+        let order = usize::try_from(order)?;
+        let text = crate::accounts::truncate_to_max_bytes(note, 300);
         let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
             .to_owned();
@@ -3340,7 +3379,7 @@ impl TableActor {
                 })
                 .notes[order] = text;
         }
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         for a in self.audience().filter(|a| a.spectator) {
@@ -3382,9 +3421,15 @@ impl TableActor {
         }
         notes
     }
-    async fn tag(&mut self, session: Arc<Session>, data: &Value, operation: &str) -> Result<()> {
+    async fn tag(
+        &mut self,
+        session: Arc<Session>,
+        raw: &str,
+        room: &str,
+        operation: &str,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
-        let raw = data["msg"].as_str().unwrap_or("");
         ensure!(
             raw.len() <= 100,
             "Tags cannot be longer than 100 characters."
@@ -3494,10 +3539,10 @@ impl TableActor {
                 message: message.clone(),
             });
         } else {
-            message["room"] = json!(data["room"].as_str().unwrap_or(""));
+            message["room"] = json!(room);
             message["recipient"] = json!(session.name);
         }
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         if replay {
@@ -3507,9 +3552,13 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn leader(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn leader(
+        &mut self,
+        session: Arc<Session>,
+        name: &str,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
-        let name = data["name"].as_str().context("Missing leader name")?;
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .find(|a| {
@@ -3561,7 +3610,7 @@ impl TableActor {
             user: 0,
             message: message.clone(),
         });
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         self.add_all(&mut e, "chat", message);
@@ -3575,7 +3624,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn suggest(&self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn suggest(&self, session: Arc<Session>, segment: i64) -> Result<()> {
         ensure!(
             self.attending(&session)
                 && matches!(self.table.phase, Phase::Replay { .. })
@@ -3592,12 +3641,17 @@ impl TableActor {
             leader.session.clone(),
             frame(
                 "suggestion",
-                json!({"tableID":self.table.id,"userName":session.name,"segment":data["segment"]}),
+                json!({"tableID":self.table.id,"userName":session.name,"segment":segment}),
             ),
         ));
         self.publish(e).await
     }
-    async fn replay_action(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn replay_action(
+        &mut self,
+        session: Arc<Session>,
+        r: hanabi_protocol::ReplayActionRequest,
+        request: Option<&str>,
+    ) -> Result<()> {
         ensure!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
             "You must lead this shared replay"
@@ -3606,24 +3660,22 @@ impl TableActor {
         let Phase::Replay { snapshot, replay } = &mut next.phase else {
             bail!("Not a replay");
         };
-        let kind = data["type"].as_i64().context("Invalid replay action")?;
+        let kind = r.kind;
         let (command, payload) = match kind {
             0 => {
-                let segment = i32::try_from(data["segment"].as_i64().context("Invalid segment")?)?;
-                ensure!(segment >= 0, "Invalid segment");
-                replay.segment = segment;
+                replay.segment = r.segment;
                 (
                     "replaySegment",
-                    json!({"tableID":self.table.id,"segment":segment}),
+                    json!({"tableID":self.table.id,"segment":r.segment}),
                 )
             }
             1 => (
                 "replayIndicator",
-                json!({"tableID":self.table.id,"order":data["order"]}),
+                json!({"tableID":self.table.id,"order":r.order}),
             ),
             2 => (
                 "replaySound",
-                json!({"tableID":self.table.id,"sound":data["sound"]}),
+                json!({"tableID":self.table.id,"sound":r.sound}),
             ),
             3 => {
                 ensure!(replay.hypothetical.is_none(), "Already hypothetical");
@@ -3638,7 +3690,9 @@ impl TableActor {
                 ("hypoEnd", json!({"TableID":self.table.id}))
             }
             5 => {
-                let raw = data["actionJSON"].as_str().context("Invalid action JSON")?;
+                let raw = r.action_json.as_str();
+                // Clients measure this limit in UTF-16 code units.
+                ensure!(raw.encode_utf16().count() <= 65_536, "Invalid actionJSON");
                 let _: Value = serde_json::from_str(raw)?;
                 ensure!(
                     replay.hypothetical_actions.len() < 4096
@@ -3671,8 +3725,7 @@ impl TableActor {
                 )
             }
             8 => {
-                replay.efficiency_modifier =
-                    i32::try_from(data["value"].as_i64().context("Invalid efficiency")?)?;
+                replay.efficiency_modifier = r.value;
                 (
                     "replayEfficiencyMod",
                     json!({"tableID":self.table.id,"mod":replay.efficiency_modifier}),
@@ -3681,7 +3734,7 @@ impl TableActor {
             _ => bail!("Invalid replay action"),
         };
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
-        next.remember(session.user, data["requestID"].as_str())?;
+        next.remember(session.user, request)?;
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         if matches!(kind, 1 | 2) {
             self.apply_without_checkpoint(next)?;
@@ -3897,7 +3950,7 @@ impl TableActor {
         if command == "suggest" {
             ensure!(args.len() == 1, "Expected /suggest [turn]");
             return self
-                .suggest(session, &json!({"segment":args[0].parse::<i32>()?}))
+                .suggest(session, i64::from(args[0].parse::<i32>()?))
                 .await;
         }
         if ["split", "splitauto", "sa"].contains(&command.as_str()) {
@@ -4204,7 +4257,7 @@ impl TableActor {
         self.transfer(source, destination, allocation, moving, retire)
             .await
     }
-    async fn restart(&mut self, session: Arc<Session>, data: &Value) -> Result<()> {
+    async fn restart(&mut self, session: Arc<Session>, hide: bool) -> Result<()> {
         ensure!(
             self.attending(&session)
                 && session.user == self.table.owner
@@ -4217,7 +4270,6 @@ impl TableActor {
             !self.table.name.starts_with("!replay"),
             "Cannot restart !replay games"
         );
-        let hide = data["hidePregame"].as_bool().unwrap_or(false);
         let mut players = self
             .table
             .players()

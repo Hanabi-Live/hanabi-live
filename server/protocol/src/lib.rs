@@ -152,6 +152,9 @@ pub struct TableJoinRequest {
 pub struct TableLeaderRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
     #[serde(default)]
     pub name: String,
 }
@@ -237,6 +240,110 @@ pub struct TableSpectateRequest {
     #[serde(default = "negative_one")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shadowing_player_index: i64,
+}
+
+/// A turn in an ongoing game.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ActionRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    /// 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
+    #[serde(rename = "type")]
+    #[schemars(extend("enum" = [0, 1, 2, 3]))]
+    pub kind: u8,
+    /// The card order for a play or discard; the player index for a clue.
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub target: i32,
+    /// The clue's color index or rank.
+    #[serde(default)]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub value: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PauseRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    /// "pause", "unpause", or "pause-queue".
+    pub setting: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct NoteRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub order: u64,
+    pub note: String,
+}
+
+/// Adds or removes one tag on the table's game.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TagRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    pub msg: String,
+    #[serde(default)]
+    pub room: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TagsDeleteAllRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    #[serde(default)]
+    pub room: String,
+}
+
+/// A shared-replay leader's action. Which fields matter depends on `type`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayActionRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "RequestId")]
+    pub request_id: Option<RequestId>,
+    /// 0 segment, 1 arrow, 2 sound, 3 start hypothetical, 4 end hypothetical,
+    /// 5 hypothetical action, 6 hypothetical back, 7 toggle drawn cards, 8 efficiency modifier.
+    #[serde(rename = "type")]
+    #[schemars(range(min = 0, max = 8))]
+    pub kind: u8,
+    #[serde(default)]
+    #[schemars(range(min = 0, max = i32::MAX))]
+    pub segment: i32,
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub order: i64,
+    #[serde(default)]
+    pub sound: String,
+    #[serde(default)]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub value: i32,
+    /// A client game action, as JSON text, for a hypothetical action.
+    #[serde(default, rename = "actionJSON")]
+    #[schemars(length(max = 65_536))]
+    pub action_json: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -387,6 +494,12 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         TableRestartRequest,
         TableSuggestRequest,
         TableSpectateRequest,
+        ActionRequest,
+        PauseRequest,
+        NoteRequest,
+        TagRequest,
+        TagsDeleteAllRequest,
+        ReplayActionRequest,
         Chat,
         ChatDelete,
         ChatList,

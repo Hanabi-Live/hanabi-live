@@ -1,13 +1,8 @@
 import { options } from "@hanabi-live/game";
 import { z } from "zod";
-import {
-  CLIENT_WIRE_SCHEMAS,
-  SERVER_WIRE_SCHEMAS,
-  tableCommandSchema,
-} from "./generated/protocol";
+import { CLIENT_WIRE_SCHEMAS, SERVER_WIRE_SCHEMAS } from "./generated/protocol";
 import { tableID } from "./types/TableID";
 
-const tableRequest = tableCommandSchema;
 export const GAME_CLIENT_COMMAND_SCHEMAS = {
   replayCreate: z.strictObject({
     source: z.enum(["id", "json"]),
@@ -20,33 +15,19 @@ export const GAME_CLIENT_COMMAND_SCHEMAS = {
   tableRestart: CLIENT_WIRE_SCHEMAS.tableRestart,
   tableSuggest: CLIENT_WIRE_SCHEMAS.tableSuggest,
   tableStart: CLIENT_WIRE_SCHEMAS.tableStart,
-  getGameInfo1: tableRequest,
-  getGameInfo2: tableRequest,
-  loaded: tableRequest,
-  tableVoteForTermination: tableRequest,
-  action: tableRequest.extend({
-    type: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
-    target: z.number().int(),
-    value: z.number().int().default(0),
-  }),
-  pause: tableRequest.extend({ setting: z.string() }),
-  note: tableRequest.extend({ order: z.number().int(), note: z.string() }),
-  tag: tableRequest.extend({ msg: z.string(), room: z.string().default("") }),
-  tagDelete: tableRequest.extend({
-    msg: z.string(),
-    room: z.string().default(""),
-  }),
-  tagsDeleteAll: tableRequest.extend({ room: z.string().default("") }),
+  getGameInfo1: CLIENT_WIRE_SCHEMAS.getGameInfo1,
+  getGameInfo2: CLIENT_WIRE_SCHEMAS.getGameInfo2,
+  loaded: CLIENT_WIRE_SCHEMAS.loaded,
+  tableVoteForTermination: CLIENT_WIRE_SCHEMAS.tableVoteForTermination,
+  action: CLIENT_WIRE_SCHEMAS.action,
+  pause: CLIENT_WIRE_SCHEMAS.pause,
+  note: CLIENT_WIRE_SCHEMAS.note,
+  tag: CLIENT_WIRE_SCHEMAS.tag,
+  tagDelete: CLIENT_WIRE_SCHEMAS.tagDelete,
+  tagsDeleteAll: CLIENT_WIRE_SCHEMAS.tagsDeleteAll,
   tableUnattend: CLIENT_WIRE_SCHEMAS.tableUnattend,
   tableSpectate: CLIENT_WIRE_SCHEMAS.tableSpectate,
-  replayAction: tableRequest.extend({
-    type: z.number().int(),
-    segment: z.number().int().default(0),
-    order: z.number().int().default(0),
-    sound: z.string().default(""),
-    value: z.number().int().default(0),
-    actionJSON: z.string().max(65_536).default(""),
-  }),
+  replayAction: CLIENT_WIRE_SCHEMAS.replayAction,
 } as const;
 
 export type GameClientCommandData = {

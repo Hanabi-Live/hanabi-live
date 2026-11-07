@@ -620,7 +620,7 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
         actor
             .cleanup(Instant::now() - Duration::from_secs(61))
             .await?;
-        actor.reattend(h.users[1].clone(), &json!({}), true).await?;
+        actor.reattend(h.users[1].clone(), true, None).await?;
         actor.tick().await?;
         ensure!(!actor.retired, "Rejoining a review immediately closed it");
         ensure!(actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS);
@@ -799,9 +799,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
         for user in &h.users[..3] {
             actor.initialize(user.clone(), vec![]).await?;
         }
-        actor
-            .reattend(h.users[3].clone(), &json!({"shadowingPlayerIndex":1}), true)
-            .await?;
+        actor.reattend(h.users[3].clone(), true, Some(1)).await?;
         while notifications.try_recv().is_ok() {}
         h.users[0].cancel.cancel();
         let now = Instant::now();

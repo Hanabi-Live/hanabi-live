@@ -490,5 +490,107 @@
     "command": "tableGone",
     "input": { "tableID": 1, "name": "old" },
     "valid": false
+  },
+  {
+    "name": "actions default the clue value",
+    "direction": "client",
+    "command": "action",
+    "input": { "tableID": 7, "type": 0, "target": 3 },
+    "normalized": { "tableID": 7, "type": 0, "target": 3, "value": 0 },
+    "valid": true
+  },
+  {
+    "name": "actions keep their request receipt",
+    "direction": "client",
+    "command": "action",
+    "input": {
+      "tableID": 7,
+      "type": 2,
+      "target": 1,
+      "value": 4,
+      "requestID": "r-1"
+    },
+    "valid": true
+  },
+  {
+    "name": "actions reject unknown action types",
+    "direction": "client",
+    "command": "action",
+    "input": { "tableID": 7, "type": 4, "target": 0 },
+    "valid": false
+  },
+  {
+    "name": "actions reject extra fields",
+    "direction": "client",
+    "command": "action",
+    "input": { "tableID": 7, "type": 0, "target": 0, "card": 1 },
+    "valid": false
+  },
+  {
+    "name": "notes reject negative card orders at the boundary",
+    "direction": "client",
+    "command": "note",
+    "input": { "tableID": 7, "order": -1, "note": "5" },
+    "valid": false
+  },
+  {
+    "name": "pause requires a setting",
+    "direction": "client",
+    "command": "pause",
+    "input": { "tableID": 7 },
+    "valid": false
+  },
+  {
+    "name": "tags default the room",
+    "direction": "client",
+    "command": "tag",
+    "input": { "tableID": 7, "msg": "bdr" },
+    "normalized": { "tableID": 7, "msg": "bdr", "room": "" },
+    "valid": true
+  },
+  {
+    "name": "deleting all tags needs no message",
+    "direction": "client",
+    "command": "tagsDeleteAll",
+    "input": { "tableID": 7 },
+    "normalized": { "tableID": 7, "room": "" },
+    "valid": true
+  },
+  {
+    "name": "replay arrows default every unused field",
+    "direction": "client",
+    "command": "replayAction",
+    "input": { "tableID": 7, "type": 1, "order": -1 },
+    "normalized": {
+      "tableID": 7,
+      "type": 1,
+      "order": -1,
+      "segment": 0,
+      "sound": "",
+      "value": 0,
+      "actionJSON": ""
+    },
+    "valid": true
+  },
+  {
+    "name": "replay actions reject unknown types",
+    "direction": "client",
+    "command": "replayAction",
+    "input": { "tableID": 7, "type": 9 },
+    "valid": false
+  },
+  {
+    "name": "loading a game is a receipt-only table command",
+    "direction": "client",
+    "command": "loaded",
+    "input": { "tableID": 7, "requestID": "r-2" },
+    "valid": true
+  },
+  {
+    "name": "leader changes keep their request receipt",
+    "direction": "client",
+    "command": "tableSetLeader",
+    "input": { "tableID": 7, "name": "Bob", "requestID": "r-3" },
+    "valid": true
   }
 ]
