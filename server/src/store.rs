@@ -53,9 +53,9 @@ impl Store {
             .database(&config.database)
             .ssl_mode(PgSslMode::Disable);
         let instance = rand::random::<u64>();
-        let primary_name = format!("hanabi-rust-{instance:016x}-primary");
-        let archive_name = format!("hanabi-rust-{instance:016x}-archive");
-        let lobby_name = format!("hanabi-rust-{instance:016x}-lobby");
+        let primary_name = format!("hanabi-live-{instance:016x}-primary");
+        let archive_name = format!("hanabi-live-{instance:016x}-archive");
+        let lobby_name = format!("hanabi-live-{instance:016x}-lobby");
         async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
             Ok(PgPoolOptions::new()
                 .max_connections(max)
@@ -244,7 +244,7 @@ impl Store {
                 match existing {
                     Some(ref record) if record.revision > 0 => {
                         ensure!(
-                            serde_json::from_str::<Value>(&record.payload)?
+                            serde_json::to_value(TableSnapshot::decode(&record.payload)?)?
                                 == serde_json::to_value(&destination)?,
                             "Conflicting table transfer destination"
                         );
@@ -1108,6 +1108,20 @@ mod tests {
         let mut invalid = serde_json::to_value(&table)?;
         invalid["phase"]["snapshot"]["spectator_notes"] = json!({"not-a-user":owner});
         ensure!(TableSnapshot::decode(&invalid.to_string()).is_err());
+        Ok(())
+    }
+    #[test]
+    fn state_saved_under_the_previous_format_name_loads_under_the_current_one() -> Result<()> {
+        let mut table = pregame(1);
+        terminal(&mut table)?;
+        let current = serde_json::to_string(&table)?;
+        let previous = current.replace(
+            &format!("\"format\":\"{FORMAT}\""),
+            "\"format\":\"hanabi-live-native-rust-2\"",
+        );
+        ensure!(previous.matches("hanabi-live-native-rust-2").count() == 2);
+        let decoded = TableSnapshot::decode(&previous)?;
+        ensure!(serde_json::to_string(&decoded)? == current);
         Ok(())
     }
     async fn database() -> Result<Option<(PgPool, PgPool, String)>> {
