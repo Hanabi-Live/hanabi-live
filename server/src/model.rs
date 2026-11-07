@@ -7,20 +7,6 @@ use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
-/// The name of `FORMAT` before it was renamed. Remove once no saved state uses it.
-const PREVIOUS_FORMAT: &str = "hanabi-live-native-rust-2";
-
-/// Reads a saved format, so that state saved before the rename is saved again under `FORMAT`.
-fn current_format<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<String, D::Error> {
-    let format = String::deserialize(deserializer)?;
-    Ok(if format == PREVIOUS_FORMAT {
-        FORMAT.into()
-    } else {
-        format
-    })
-}
 pub const IDLE_TIMEOUT_MS: i64 = 1_800_000;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -52,7 +38,6 @@ pub struct ExtraOptions {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Snapshot {
-    #[serde(deserialize_with = "current_format")]
     pub format: String,
     pub table_id: u64,
     pub game_id: i32,
@@ -140,7 +125,6 @@ pub enum Phase {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TableSnapshot {
-    #[serde(deserialize_with = "current_format")]
     pub format: String,
     pub id: u64,
     pub name: String,

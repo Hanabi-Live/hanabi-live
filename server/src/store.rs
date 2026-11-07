@@ -1110,20 +1110,6 @@ mod tests {
         ensure!(TableSnapshot::decode(&invalid.to_string()).is_err());
         Ok(())
     }
-    #[test]
-    fn state_saved_under_the_previous_format_name_loads_under_the_current_one() -> Result<()> {
-        let mut table = pregame(1);
-        terminal(&mut table)?;
-        let current = serde_json::to_string(&table)?;
-        let previous = current.replace(
-            &format!("\"format\":\"{FORMAT}\""),
-            "\"format\":\"hanabi-live-native-rust-2\"",
-        );
-        ensure!(previous.matches("hanabi-live-native-rust-2").count() == 2);
-        let decoded = TableSnapshot::decode(&previous)?;
-        ensure!(serde_json::to_string(&decoded)? == current);
-        Ok(())
-    }
     async fn database() -> Result<Option<(PgPool, PgPool, String)>> {
         let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
             eprintln!("PostgreSQL integration requires HANABI_TEST_DATABASE_URL");
