@@ -75,6 +75,9 @@ macro_rules! server_contracts {
             "hypoBack" => TableRequest, TableRequest;
             "hypoAction" => HypoAction, HypoAction;
             "hypoShowDrawnCards" => HypoShowDrawnCards, HypoShowDrawnCards;
+            "note" => Note, Note;
+            "noteList" => NoteList, NoteList;
+            "noteListPlayer" => NoteListPlayer, NoteListPlayer;
             "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
             "boot" => TableRequest, TableRequest;
             "synced" => Empty, Empty;

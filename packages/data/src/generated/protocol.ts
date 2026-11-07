@@ -230,6 +230,29 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
   }),
 ]);
+const cardNoteSchema = z.strictObject({
+  isSpectator: z.boolean(),
+  name: z.string(),
+  text: z.string(),
+});
+export const noteSchema = z.strictObject({
+  notes: z.array(cardNoteSchema),
+  order: z.number().int().min(0).max(9_007_199_254_740_991),
+  tableID: tableIdSchema,
+});
+const playerNotesSchema = z.strictObject({
+  isSpectator: z.boolean(),
+  name: z.string(),
+  notes: z.array(z.string()),
+});
+export const noteListSchema = z.strictObject({
+  notes: z.array(playerNotesSchema),
+  tableID: tableIdSchema,
+});
+export const noteListPlayerSchema = z.strictObject({
+  notes: z.array(z.string()),
+  tableID: tableIdSchema,
+});
 export const noteRequestSchema = z.strictObject({
   note: z.string(),
   order: z.number().int().min(0).max(9_007_199_254_740_991),
@@ -684,6 +707,9 @@ export const SERVER_WIRE_SCHEMAS = {
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
+  note: noteSchema,
+  noteList: noteListSchema,
+  noteListPlayer: noteListPlayerSchema,
   pause: pauseSchema,
   replayEfficiencyMod: replayEfficiencyModSchema,
   replayIndicator: replayIndicatorSchema,

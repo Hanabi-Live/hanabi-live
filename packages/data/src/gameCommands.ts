@@ -89,16 +89,6 @@ const event = z.discriminatedUnion("type", [
     duration: integer,
   }),
 ]);
-const note = z.strictObject({
-  name: z.string(),
-  notes: z.string().array(),
-  isSpectator: z.boolean(),
-});
-const cardNote = z.strictObject({
-  name: z.string(),
-  text: z.string(),
-  isSpectator: z.boolean(),
-});
 export const GAME_SERVER_COMMAND_SCHEMAS = {
   tableStart: SERVER_WIRE_SCHEMAS.tableStart,
   init: z.strictObject({
@@ -129,13 +119,9 @@ export const GAME_SERVER_COMMAND_SCHEMAS = {
   connected: SERVER_WIRE_SCHEMAS.connected,
   clock: SERVER_WIRE_SCHEMAS.clock,
   pause: SERVER_WIRE_SCHEMAS.pause,
-  noteListPlayer: z.strictObject({ tableID, notes: z.string().array() }),
-  noteList: z.strictObject({ tableID, notes: note.array() }),
-  note: z.strictObject({
-    tableID,
-    order: integer,
-    notes: cardNote.array(),
-  }),
+  noteListPlayer: SERVER_WIRE_SCHEMAS.noteListPlayer,
+  noteList: SERVER_WIRE_SCHEMAS.noteList,
+  note: SERVER_WIRE_SCHEMAS.note,
   voteChange: SERVER_WIRE_SCHEMAS.voteChange,
   cardIdentities: SERVER_WIRE_SCHEMAS.cardIdentities,
   finishOngoingGame: SERVER_WIRE_SCHEMAS.finishOngoingGame,

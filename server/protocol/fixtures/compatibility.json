@@ -1386,5 +1386,43 @@
     "command": "pause",
     "input": { "tableID": 7, "active": true },
     "valid": false
+  },
+  {
+    "name": "note lists separate player and spectator notes",
+    "direction": "server",
+    "command": "noteList",
+    "input": {
+      "tableID": 3,
+      "notes": [
+        { "name": "Alice", "notes": ["", "5"], "isSpectator": false },
+        { "name": "Carol", "notes": ["", ""], "isSpectator": true }
+      ]
+    },
+    "valid": true
+  },
+  {
+    "name": "a player's note list holds one note per card",
+    "direction": "server",
+    "command": "noteListPlayer",
+    "input": { "tableID": 3, "notes": ["", "chop"] },
+    "valid": true
+  },
+  {
+    "name": "single notes carry each author's text",
+    "direction": "server",
+    "command": "note",
+    "input": {
+      "tableID": 3,
+      "order": 1,
+      "notes": [{ "name": "Alice", "text": "5", "isSpectator": false }]
+    },
+    "valid": true
+  },
+  {
+    "name": "single notes reject a negative card order",
+    "direction": "server",
+    "command": "note",
+    "input": { "tableID": 3, "order": -1, "notes": [] },
+    "valid": false
   }
 ]
