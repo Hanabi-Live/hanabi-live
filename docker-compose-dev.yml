@@ -1,7 +1,7 @@
 version: "3"
 services:
   hanab-live-redis:
-    image: redis:8-alpine
+    image: docker.io/library/redis:8-alpine
     command:
       [
         "redis-server",
