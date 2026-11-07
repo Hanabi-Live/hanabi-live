@@ -7,10 +7,9 @@ set -o errexit -o nounset -o pipefail
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 REMOTE="root@hanab.live"
-REMOTE_LOG_PATH="/root/hanabi-live/logs/hanabi-live.log"
 LOCAL_LOG_PATH="$DIR/logs/hanabi-live.log"
 
 # Download the server log.
 mkdir -p "$(dirname "$LOCAL_LOG_PATH")"
-scp "$REMOTE:$REMOTE_LOG_PATH" "$LOCAL_LOG_PATH"
+ssh "$REMOTE" 'if systemctl cat hanabi-live &> /dev/null; then journalctl --unit=hanabi-live --no-pager --output=cat; else cat /root/hanabi-live/logs/hanabi-live.log; fi' > "$LOCAL_LOG_PATH"
 echo "Downloaded the server log to: $LOCAL_LOG_PATH"

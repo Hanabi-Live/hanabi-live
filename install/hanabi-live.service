@@ -1,6 +1,6 @@
 [Unit]
 Description=Hanab Live
-After=network.target postgresql.service redis-server.service
+After=network.target postgresql.service redis-server.service hanabi-redis.service
 
 [Service]
 User=hanabi

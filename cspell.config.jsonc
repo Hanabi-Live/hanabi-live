@@ -179,6 +179,7 @@
     "istyping",
     "ITIMER",
     "jackc",
+    "journalctl",
     "jscoverage",
     "jsonschema",
     "jspm",
