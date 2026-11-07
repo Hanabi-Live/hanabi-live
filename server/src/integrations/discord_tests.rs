@@ -274,6 +274,28 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         "All lifecycle notices must also remain in lobby history"
     );
     assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
+    sqlx::query(
+        "UPDATE chat_log SET datetime_sent=NOW()-INTERVAL '150 seconds'
+         WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')",
+    )
+    .execute(&fixture.db.pool)
+    .await
+    .unwrap();
+    let replacement = Bridge::start(fixture.app.clone(), configuration(), Some(mock.clone()))
+        .await
+        .unwrap();
+    replacement.event(json!({"t":"READY"})).await.unwrap();
+    let started: String = sqlx::query_scalar(
+        "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&fixture.db.pool)
+    .await
+    .unwrap();
+    assert!(started.starts_with("The server has successfully started at: "));
+    assert!(started.ends_with(&format!(
+        "({}) - Downtime: 3 minutes",
+        crate::restart::version()
+    )));
     fixture.close().await;
 }
 
