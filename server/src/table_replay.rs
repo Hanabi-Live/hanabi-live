@@ -296,9 +296,7 @@ mod tests {
         let variant = hanabi_engine::get_variant("No Variant").unwrap();
         let seeded = hanabi_engine::create_shuffled_deck(variant, seed).unwrap();
         let mut other = seeded.clone();
-        let different = (1..other.len())
-            .find(|&i| other[i] != other[0])
-            .unwrap();
+        let different = (1..other.len()).find(|&i| other[i] != other[0]).unwrap();
         other.swap(0, different);
         let input = |seed: &str, deck: Option<&[Card]>| {
             let mut input = json!({"players":["Alice","Bob"],"seed":seed});
