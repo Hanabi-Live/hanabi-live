@@ -2410,16 +2410,57 @@ impl TableActor {
         }
         self.publish(effects).await
     }
-    fn connected(&self) -> Value {
+    fn connected(&self) -> hanabi_protocol::Connected {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
-        json!({"tableID":self.table.id,"list":self.table.players().iter().map(|p|replay || self.attendees.get(&p.id).is_some_and(|a|a.loaded&&!a.spectator&&a.session.active())).collect::<Vec<_>>()})
+        hanabi_protocol::Connected {
+            table_id: TableId(self.table.id),
+            list: self
+                .table
+                .players()
+                .iter()
+                .map(|p| {
+                    replay
+                        || self
+                            .attendees
+                            .get(&p.id)
+                            .is_some_and(|a| a.loaded && !a.spectator && a.session.active())
+                })
+                .collect(),
+        }
     }
-    fn clock(&self) -> Value {
+    fn card_identities(&self, s: &Snapshot) -> hanabi_protocol::CardIdentities {
+        hanabi_protocol::CardIdentities {
+            table_id: TableId(self.table.id),
+            card_identities: s
+                .game
+                .identities()
+                .iter()
+                .map(|card| hanabi_protocol::CardIdentity {
+                    suit_index: card.suit_index as i64,
+                    rank: i64::from(card.rank),
+                })
+                .collect(),
+        }
+    }
+    fn clock(&self) -> hanabi_protocol::Clock {
         let next = self.candidate();
         let s = next.game().expect("game clock");
         let live = matches!(next.phase, Phase::Live { .. })
             && s.game.end_condition == EndCondition::InProgress;
-        json!({"tableID":self.table.id,"times":s.clocks,"activePlayerIndex":if live{s.game.active_player_index as i32}else{-1},"timeTaken":if !live || s.game.paused{0}else{s.turn_elapsed}})
+        hanabi_protocol::Clock {
+            table_id: TableId(self.table.id),
+            times: s.clocks.clone(),
+            active_player_index: if live {
+                s.game.active_player_index as i64
+            } else {
+                -1
+            },
+            time_taken: if !live || s.game.paused {
+                0
+            } else {
+                s.turn_elapsed
+            },
+        }
     }
     async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
         ensure!(!self.frozen, "Table is frozen until recovery");
@@ -2818,8 +2859,15 @@ impl TableActor {
         for p in removed {
             if let Some(a) = self.attendees.remove(&p.id) {
                 e.statuses.push((a.session.clone(), 0, None));
-                e.messages
-                    .push((a.session, frame("boot", json!({"TableID":self.table.id}))));
+                e.messages.push((
+                    a.session,
+                    frame(
+                        "boot",
+                        TableRequest {
+                            table_id: TableId(self.table.id),
+                        },
+                    ),
+                ));
             }
         }
         self.pregame_messages(&mut e);
@@ -3288,13 +3336,20 @@ impl TableActor {
                         ),
                     ));
                 }
-                e.messages.push((a.session.clone(),frame("finishOngoingGame",json!({"tableID":self.table.id,"databaseID":s.game_id,"sharedReplayLeader":self.leader_name()}))));
                 e.messages.push((
                     a.session.clone(),
                     frame(
-                        "cardIdentities",
-                        json!({"tableID":self.table.id,"cardIdentities":s.game.identities()}),
+                        "finishOngoingGame",
+                        hanabi_protocol::FinishOngoingGame {
+                            table_id: TableId(self.table.id),
+                            database_id: i64::from(s.game_id),
+                            shared_replay_leader: self.leader_name(),
+                        },
                     ),
+                ));
+                e.messages.push((
+                    a.session.clone(),
+                    frame("cardIdentities", self.card_identities(s)),
                 ));
                 e.messages.push((
                     a.session.clone(),
@@ -3308,7 +3363,15 @@ impl TableActor {
         } else {
             self.add_all(&mut e, "clock", self.clock());
             if s.game.paused {
-                self.add_all(&mut e,"pause",json!({"tableID":self.table.id,"active":true,"playerIndex":s.pause_player_index}));
+                self.add_all(
+                    &mut e,
+                    "pause",
+                    hanabi_protocol::Pause {
+                        table_id: TableId(self.table.id),
+                        active: true,
+                        player_index: i64::from(s.pause_player_index),
+                    },
+                );
             }
         }
         self.publish(e).await
@@ -3373,7 +3436,9 @@ impl TableActor {
                 session,
                 frame(
                     "voteChange",
-                    json!({"vote":self.table.game().expect("game").votes[seat]}),
+                    hanabi_protocol::VoteChange {
+                        vote: self.table.game().expect("game").votes[seat],
+                    },
                 ),
             ));
         }
@@ -3417,7 +3482,15 @@ impl TableActor {
         let s = self.table.game().expect("game");
         let mut e = self.effects();
         if setting == "pause" || setting == "unpause" {
-            self.add_all(&mut e,"pause",json!({"tableID":self.table.id,"active":s.game.paused,"playerIndex":s.pause_player_index}));
+            self.add_all(
+                &mut e,
+                "pause",
+                hanabi_protocol::Pause {
+                    table_id: TableId(self.table.id),
+                    active: s.game.paused,
+                    player_index: i64::from(s.pause_player_index),
+                },
+            );
             self.add_all(&mut e, "clock", self.clock());
         }
         self.publish(e).await
@@ -3683,7 +3756,10 @@ impl TableActor {
         self.add_all(
             &mut e,
             "replayLeader",
-            json!({"tableID":self.table.id,"name":target.1}),
+            hanabi_protocol::ReplayLeader {
+                table_id: TableId(self.table.id),
+                name: target.1.clone(),
+            },
         );
         if matches!(self.table.phase, Phase::Pregame { .. }) {
             self.pregame_messages(&mut e);
@@ -3707,7 +3783,11 @@ impl TableActor {
             leader.session.clone(),
             frame(
                 "suggestion",
-                json!({"tableID":self.table.id,"userName":session.name,"segment":segment}),
+                hanabi_protocol::Suggestion {
+                    table_id: TableId(self.table.id),
+                    user_name: session.name.clone(),
+                    segment,
+                },
             ),
         ));
         self.publish(e).await
@@ -3731,28 +3811,47 @@ impl TableActor {
                 replay.segment = r.segment;
                 (
                     "replaySegment",
-                    json!({"tableID":self.table.id,"segment":r.segment}),
+                    json!(hanabi_protocol::ReplaySegment {
+                        table_id: TableId(self.table.id),
+                        segment: i64::from(r.segment),
+                    }),
                 )
             }
             1 => (
                 "replayIndicator",
-                json!({"tableID":self.table.id,"order":r.order}),
+                json!(hanabi_protocol::ReplayIndicator {
+                    table_id: TableId(self.table.id),
+                    order: r.order,
+                }),
             ),
             2 => (
                 "replaySound",
-                json!({"tableID":self.table.id,"sound":r.sound}),
+                json!(hanabi_protocol::ReplaySound {
+                    table_id: TableId(self.table.id),
+                    sound: r.sound.clone(),
+                }),
             ),
             3 => {
                 ensure!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
-                ("hypoStart", json!({"TableID":self.table.id}))
+                (
+                    "hypoStart",
+                    json!(TableRequest {
+                        table_id: TableId(self.table.id)
+                    }),
+                )
             }
             4 => {
                 ensure!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
-                ("hypoEnd", json!({"TableID":self.table.id}))
+                (
+                    "hypoEnd",
+                    json!(TableRequest {
+                        table_id: TableId(self.table.id)
+                    }),
+                )
             }
             5 => {
                 let raw = r.action_json.as_str();
@@ -3771,7 +3870,7 @@ impl TableActor {
                     "Too many hypothetical actions"
                 );
                 replay.hypothetical_actions.push(raw.into());
-                ("hypoAction", json!(raw))
+                ("hypoAction", json!(hanabi_protocol::HypoAction(raw.into())))
             }
             6 => {
                 replay.hypothetical_actions.pop();
@@ -3780,20 +3879,31 @@ impl TableActor {
                 }) {
                     replay.hypothetical_actions.pop();
                 }
-                ("hypoBack", json!({"TableID":self.table.id}))
+                (
+                    "hypoBack",
+                    json!(TableRequest {
+                        table_id: TableId(self.table.id)
+                    }),
+                )
             }
             7 => {
                 replay.show_drawn_cards = !replay.show_drawn_cards;
                 (
                     "hypoShowDrawnCards",
-                    json!({"tableID":self.table.id,"showDrawnCards":replay.show_drawn_cards}),
+                    json!(hanabi_protocol::HypoShowDrawnCards {
+                        table_id: TableId(self.table.id),
+                        show_drawn_cards: replay.show_drawn_cards,
+                    }),
                 )
             }
             8 => {
                 replay.efficiency_modifier = r.value;
                 (
                     "replayEfficiencyMod",
-                    json!({"tableID":self.table.id,"mod":replay.efficiency_modifier}),
+                    json!(hanabi_protocol::ReplayEfficiencyMod {
+                        table_id: TableId(self.table.id),
+                        r#mod: replay.efficiency_modifier,
+                    }),
                 )
             }
             _ => bail!("Invalid replay action"),
@@ -4183,7 +4293,12 @@ impl TableActor {
             self.attendees.remove(&session.user);
             effects.messages.push((
                 session.clone(),
-                frame("boot", json!({"TableID":self.table.id})),
+                frame(
+                    "boot",
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
+                ),
             ));
             effects.statuses.push((session.clone(), 0, None));
         }
@@ -4448,10 +4563,7 @@ impl TableActor {
             if replay {
                 e.messages.push((
                     session.clone(),
-                    frame(
-                        "cardIdentities",
-                        json!({"tableID":self.table.id,"cardIdentities":s.game.identities()}),
-                    ),
+                    frame("cardIdentities", self.card_identities(s)),
                 ));
             }
             if replay || a.spectator {
@@ -4472,7 +4584,12 @@ impl TableActor {
                 ));
                 e.messages.push((
                     session.clone(),
-                    frame("voteChange", json!({"vote":s.votes[seat]})),
+                    frame(
+                        "voteChange",
+                        hanabi_protocol::VoteChange {
+                            vote: s.votes[seat],
+                        },
+                    ),
                 ));
             }
             e.messages
@@ -4511,7 +4628,16 @@ impl TableActor {
             if let Phase::Replay { replay, .. } = &self.table.phase
                 && replay.hypothetical
             {
-                e.messages.push((session,frame("hypothetical",json!({"showDrawnCards":replay.show_drawn_cards,"actions":replay.hypothetical_actions}))));
+                e.messages.push((
+                    session,
+                    frame(
+                        "hypothetical",
+                        hanabi_protocol::Hypothetical {
+                            show_drawn_cards: replay.show_drawn_cards,
+                            actions: replay.hypothetical_actions.clone(),
+                        },
+                    ),
+                ));
             }
         }
         self.publish(e).await
@@ -4607,7 +4733,12 @@ impl TableActor {
             e.statuses.push((a.session.clone(), 0, None));
             e.messages.push((
                 a.session.clone(),
-                frame("boot", json!({"TableID":self.table.id})),
+                frame(
+                    "boot",
+                    TableRequest {
+                        table_id: TableId(self.table.id),
+                    },
+                ),
             ));
         }
         self.publish(e).await?;

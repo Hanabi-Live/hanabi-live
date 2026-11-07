@@ -58,6 +58,25 @@ macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
             "restart" => Restart, Restart;
+            "clock" => Clock, Clock;
+            "connected" => Connected, Connected;
+            "pause" => Pause, Pause;
+            "voteChange" => VoteChange, VoteChange;
+            "cardIdentities" => CardIdentities, CardIdentities;
+            "finishOngoingGame" => FinishOngoingGame, FinishOngoingGame;
+            "replaySegment" => ReplaySegment, ReplaySegment;
+            "replayIndicator" => ReplayIndicator, ReplayIndicator;
+            "replaySound" => ReplaySound, ReplaySound;
+            "replayLeader" => ReplayLeader, ReplayLeader;
+            "suggestion" => Suggestion, Suggestion;
+            "hypothetical" => Hypothetical, Hypothetical;
+            "hypoStart" => TableRequest, TableRequest;
+            "hypoEnd" => TableRequest, TableRequest;
+            "hypoBack" => TableRequest, TableRequest;
+            "hypoAction" => HypoAction, HypoAction;
+            "hypoShowDrawnCards" => HypoShowDrawnCards, HypoShowDrawnCards;
+            "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
+            "boot" => TableRequest, TableRequest;
             "synced" => Empty, Empty;
             "lobbyStatus" => LobbyStatus, LobbyStatus;
             "chat" => Chat, Chat;

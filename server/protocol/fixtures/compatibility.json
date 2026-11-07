@@ -1346,5 +1346,45 @@
       "maxPlayers": 5
     },
     "valid": true
+  },
+  {
+    "name": "boot names its table like every other frame",
+    "direction": "server",
+    "command": "boot",
+    "input": { "tableID": 7 },
+    "valid": true
+  },
+  {
+    "name": "boot no longer uses the capitalized TableID",
+    "direction": "server",
+    "command": "boot",
+    "input": { "TableID": 7 },
+    "valid": false
+  },
+  {
+    "name": "hypothetical actions are client JSON text",
+    "direction": "server",
+    "command": "hypoAction",
+    "input": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}",
+    "valid": true
+  },
+  {
+    "name": "clocks report no active player as -1",
+    "direction": "server",
+    "command": "clock",
+    "input": {
+      "tableID": 7,
+      "times": [120000, -500],
+      "activePlayerIndex": -1,
+      "timeTaken": 0
+    },
+    "valid": true
+  },
+  {
+    "name": "pauses identify the seat that paused",
+    "direction": "server",
+    "command": "pause",
+    "input": { "tableID": 7, "active": true },
+    "valid": false
   }
 ]

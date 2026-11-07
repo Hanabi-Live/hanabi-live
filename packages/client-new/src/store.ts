@@ -191,8 +191,7 @@ const slice = createSlice({
 
         case "boot":
         case "tableGone": {
-          const tableID =
-            event.command === "boot" ? event.data.TableID : event.data.tableID;
+          const { tableID } = event.data;
           const table = state.tables[tableID];
           if (event.command === "tableGone") {
             delete state.tables[tableID];
