@@ -84,6 +84,8 @@
   "scripts": {
     "build-client": "bash packages/client/build-client.sh",
     "build-pips-reference": "bash scripts/bash/build-pips-reference.sh",
+    "check-shellcheck": "bash check-shellcheck.sh",
+    "check-templates": "bash check-templates.sh",
     "check-variant-files": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
     "create-variants-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/createVariantsJSONScript.ts",
     "lint": "bash ./lint.sh",

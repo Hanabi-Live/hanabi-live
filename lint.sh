@@ -31,6 +31,14 @@ cd "$DIR"
 
 bash "$DIR/packages/client/set-version.sh"
 
+run_repository_check() {
+  if [[ ${CI:-} == true ]]; then
+    bunx --bun --no-install turbo run "//#$1" --cache=local:rw
+  else
+    bun run "$1"
+  fi
+}
+
 # Run each linting task as a background job so that we can use parallel processing to get everything
 # done fast.
 process_ids=()
@@ -52,10 +60,10 @@ esac
 run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
 run_parallel 1 bash "$DIR/check-prettier.sh"
 run_parallel 2 bash "$DIR/check-spelling.sh"
-run_parallel 1 bash "$DIR/check-shellcheck.sh"
-run_parallel 1 bash "$DIR/check-templates.sh"
-run_parallel 2 bun run check-variant-files
-run_parallel 1 bun run lint-package-json
+run_parallel 1 run_repository_check check-shellcheck
+run_parallel 1 run_repository_check check-templates
+run_parallel 2 run_repository_check check-variant-files
+run_parallel 1 run_repository_check lint-package-json
 
 status=0
 for pid in "${process_ids[@]}"; do

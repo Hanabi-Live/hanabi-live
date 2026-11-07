@@ -63,6 +63,19 @@ class LintCacheTests(unittest.TestCase):
             "echo ran >> .turbo/test-executions\n"
             "test ! -f fail.txt\n",
         )
+        manifest_path = self.root / "package.json"
+        manifest = json.loads(manifest_path.read_text())
+        for task in (
+            "check-shellcheck", "check-templates", "check-variant-files", "lint-package-json",
+        ):
+            manifest["scripts"][task] = f"bash {task}.sh"
+            self.write(
+                f"{task}.sh",
+                "mkdir -p .turbo\n"
+                f"echo ran >> .turbo/{task}-executions\n"
+                "test ! -f fail.txt\n",
+            )
+        manifest_path.write_text(json.dumps(manifest))
         subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
 
@@ -94,10 +107,11 @@ class LintCacheTests(unittest.TestCase):
 
     def hashes(self, task="lint", env=None):
         report = json.loads(self.turbo("--dry=json", task=task, env=env).stdout)
+        task_name = task.rsplit("#", 1)[-1]
         return {
-            task["package"].removeprefix("@hanabi-live/"): task["hash"]
-            for task in report["tasks"]
-            if task["task"] in ("lint", "test")
+            entry["package"].removeprefix("@hanabi-live/"): entry["hash"]
+            for entry in report["tasks"]
+            if entry["task"] == task_name
         }
 
     def assert_invalidates(self, name, content, expected, task="lint"):
@@ -166,6 +180,51 @@ class LintCacheTests(unittest.TestCase):
             (self.root / "packages/client/.turbo/executions").read_text(),
             "ran\nran\nran\n",
         )
+
+    def test_repository_checks_reuse_only_successes(self):
+        for task in (
+            "check-shellcheck", "check-templates", "check-variant-files", "lint-package-json",
+        ):
+            with self.subTest(task=task):
+                executions = self.root / f".turbo/{task}-executions"
+                self.turbo(task=f"//#{task}")
+                self.turbo(task=f"//#{task}")
+                self.assertEqual(executions.read_text(), "ran\n")
+                self.write("fail.txt", "fail\n")
+                for _ in range(2):
+                    self.assertNotEqual(
+                        self.turbo(task=f"//#{task}", check=False).returncode, 0,
+                    )
+                self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+                (self.root / "fail.txt").unlink()
+                self.turbo(task=f"//#{task}")
+                self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+
+    def test_repository_checks_hash_sources_and_shellcheck_discovery(self):
+        for task, name in (
+            ("check-templates", ".github/workflows/ci.yml"),
+            ("check-templates", "README.md"),
+            ("check-variant-files", "misc/variants.txt"),
+            ("check-variant-files", "packages/game/src/json/suits.json"),
+            ("lint-package-json", "packages/scripts/src/dependencyCatalog.ts"),
+            ("check-shellcheck", "server/target/generated.sh"),
+            ("check-shellcheck", ".shellcheckrc"),
+        ):
+            with self.subTest(task=task, name=name):
+                self.assert_invalidates(name, "changed\n", {"//"}, f"//#{task}")
+        for name in (
+            "docs/install.md", "node_modules/ignored.sh", ".husky/ignored.sh", "dist/ignored.sh",
+        ):
+            with self.subTest(ignored=name):
+                self.assert_invalidates(name, "ignored\n", set(), "//#check-shellcheck")
+        for task in (
+            "check-shellcheck", "check-templates", "check-variant-files", "lint-package-json",
+        ):
+            with self.subTest(environment=task):
+                before = self.hashes(f"//#{task}")
+                self.assertNotEqual(
+                    before, self.hashes(f"//#{task}", {**os.environ, "ImageVersion": "changed"}),
+                )
 
     def test_suite_inputs_include_native_and_shared_dependencies(self):
         for name in (
