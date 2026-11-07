@@ -8,7 +8,6 @@ import type {
   ServerCommandUserLeftData,
   ServerCommandUserListData,
   ServerCommandWelcomeData,
-  Spectator,
   UserID,
 } from "@hanabi-live/data";
 import {
@@ -241,19 +240,6 @@ lobbyCommands.set("tableStart", (data: TableStartData) => {
     pregame.hide(false);
   }
   gameMain.show();
-});
-
-interface SpectatorsData {
-  tableID: number;
-  spectators: Spectator[];
-}
-lobbyCommands.set("pregameSpectators", (data: SpectatorsData) => {
-  if (
-    globals.currentScreen === Screen.PreGame
-    && globals.tableID === data.tableID
-  ) {
-    pregame.drawSpectators(data.tableID);
-  }
 });
 
 // Received by the client when a user connects or has a new status.

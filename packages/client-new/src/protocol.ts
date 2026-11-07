@@ -100,8 +100,8 @@ export function decodeEvent(text: string): ServerEvent | undefined {
   if (command === "gameHistoryOtherScores") {
     return { command, data: otherScores.parse(data) };
   }
-  // These legacy messages are not part of the shared lobby schema.
-  if (command === "pregameSpectators" || command === "spectators") {
+  // Spectators use the lobby's wire spectator schema rather than the shared one.
+  if (command === "spectators") {
     return {
       command: ServerCommand.spectators,
       data: spectatorsSchema.parse(data),
