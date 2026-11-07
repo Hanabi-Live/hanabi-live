@@ -57,6 +57,18 @@ jobs:
       - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-rust
         if: matrix.shard == 2
+      - name: Restore spelling file cache
+        if: matrix.shard == 2
+        id: cspell-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cspell
+          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py') }}-${{ github.sha }}
+          restore-keys: |
+            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py') }}-
+      - name: Test spelling cache invalidation
+        if: matrix.shard == 2 && steps.cspell-cache.outputs.cache-matched-key == ''
+        run: python3 -m unittest discover -s scripts -p 'cspell_cache_test.py'
       - name: Restore successful package lint results
         id: lint-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -76,6 +88,12 @@ jobs:
         with:
           path: .turbo/cache
           key: ${{ steps.lint-cache.outputs.cache-primary-key }}
+      - name: Cache successful spelling results
+        if: matrix.shard == 2 && steps.cspell-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cspell
+          key: ${{ steps.cspell-cache.outputs.cache-primary-key }}
 
   test:
     runs-on: ubuntu-latest
