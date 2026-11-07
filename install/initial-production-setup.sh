@@ -3,7 +3,8 @@
 set -o errexit -o nounset -o pipefail
 
 DOMAIN="hanab.live"
-APP="/home/hanabi/hanabi-live"
+APP_USER="hanabi"
+APP="/home/$APP_USER/hanabi-live"
 
 # Everything is in a function because "git checkout" can replace this file while it is running.
 function main {
@@ -33,9 +34,9 @@ function main {
   ufw --force enable
 
   # Create the service accounts.
-  useradd --system --user-group --no-create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi
+  useradd --system --user-group --no-create-home --home-dir "/home/$APP_USER" --shell /usr/sbin/nologin "$APP_USER"
   useradd --system --user-group --no-create-home --home-dir /var/lib/hanabi-redis --shell /usr/sbin/nologin hanabi-redis
-  usermod --append --groups hanabi-redis hanabi
+  usermod --append --groups hanabi-redis "$APP_USER"
 
   # Install the systemd service for the server.
   install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
@@ -97,26 +98,26 @@ EOF
   # Obtain the certificate and grant the service access to its private key.
   certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN" --domain "www.$DOMAIN" --domain hanabi.live --domain www.hanabi.live
   chmod 0755 /etc/letsencrypt/{live,archive}
-  chgrp hanabi "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+  chgrp "$APP_USER" "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
   chmod 0640 "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
 
-  # Initialize the database and start the server as hanabi.
+  # Initialize the database and start the server as the app user.
   mkdir --parents logs letsencrypt
-  chown --recursive hanabi:hanabi /home/hanabi
-  sudo --user hanabi ./install/install-database-schema.sh
-  sudo --user hanabi ./hanabi-live --check-startup
+  chown --recursive "$APP_USER:$APP_USER" "/home/$APP_USER"
+  sudo --user "$APP_USER" ./install/install-database-schema.sh
+  sudo --user "$APP_USER" ./hanabi-live --check-startup
   systemctl enable --now hanabi-live
   curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/metrics
 
-  # Renew certificates automatically, restarting gracefully as hanabi.
-  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP/letsencrypt" --deploy-hook "sudo --user hanabi $APP/admin/gracefulRestart.sh"
+  # Renew certificates automatically, restarting gracefully as the app user.
+  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP/admin/gracefulRestart.sh"
   systemctl enable --now certbot.timer
 
-  # Back up PostgreSQL daily as hanabi.
-  echo "0 3 * * * hanabi $APP/database-backup.sh" > /etc/cron.d/hanabi-live
+  # Back up PostgreSQL daily as the app user.
+  echo "0 3 * * * $APP_USER $APP/database-backup.sh" > /etc/cron.d/hanabi-live
   chmod 644 /etc/cron.d/hanabi-live
   systemctl enable --now cron
-  sudo --user hanabi ./database-backup.sh
+  sudo --user "$APP_USER" ./database-backup.sh
 
   echo "The server is set up. Also keep coordinated PostgreSQL and Redis backups off this server."
 }
