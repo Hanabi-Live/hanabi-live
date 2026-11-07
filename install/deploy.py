@@ -1,4 +1,4 @@
-"""Deploy approved Rust CI bundles to an already-running source-layout installation."""
+"""Deploy approved CI bundles to an already-running source-layout installation."""
 
 import argparse
 import fcntl
@@ -305,9 +305,9 @@ def deploy(root, check, apply_migrations):
     subprocess.run(["git", "merge-base", "--is-ancestor", running, revision], cwd=root, check=True)
     backups = root / "backups"
     backups.mkdir(exist_ok=True)
-    with (backups / ".deploy-rust.lock").open("a") as lock:
+    with (backups / ".deploy.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        work = Path(tempfile.mkdtemp(prefix="deploy-rust-", dir=backups))
+        work = Path(tempfile.mkdtemp(prefix="deploy-", dir=backups))
         print(f"Deployment records and file backups: {work}", flush=True)
         journal = work / "deployment.json"
         record = {"previous": running, "revision": revision, "run": run["id"], "phase": "staging"}
@@ -368,4 +368,4 @@ if __name__ == "__main__":
     try:
         main()
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, zipfile.BadZipFile) as error:
-        sys.exit(f"Rust deployment refused: {error}")
+        sys.exit(f"Deployment refused: {error}")

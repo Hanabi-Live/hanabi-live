@@ -32,17 +32,17 @@ set -o errexit -o nounset -o pipefail
 cd /home/hanabi/hanabi-live
 tools=$(mktemp -d)
 chmod 755 "$tools"
-trap 'rm -f "$tools/deploy_rust.py" "$tools/release.py"; rmdir "$tools"' EXIT
+trap 'rm -f "$tools/deploy.py" "$tools/release.py"; rmdir "$tools"' EXIT
 REMOTE
   # Use matching local tooling even when production still runs an older release format.
-  for name in deploy_rust release; do
+  for name in deploy release; do
     printf '%s\n' "cat > \"\$tools/$name.py\" << 'HANABI_DEPLOY_TOOL'"
     cat "$DIR/install/$name.py"
     printf '\nHANABI_DEPLOY_TOOL\n'
   done
   cat << 'REMOTE'
 # Deploy as the account that owns the installation, so it can read what is published.
-sudo --user=hanabi --preserve-env=GH_TOKEN python3 -B "$tools/deploy_rust.py" "$@"
+sudo --user=hanabi --preserve-env=GH_TOKEN python3 -B "$tools/deploy.py" "$@"
 REMOTE
 } | ssh -T root@hanab.live "bash -l -s -- $*"; then
   exit 0
@@ -50,7 +50,7 @@ else
   status=$?
   if [[ $status == 255 ]]; then
     echo "SSH failed; deployment outcome is unknown. Do not retry or roll back automatically." >&2
-    echo "Inspect /home/hanabi/hanabi-live/backups/deploy-rust-*/deployment.json and server health on production first." >&2
+    echo "Inspect /home/hanabi/hanabi-live/backups/deploy-*/deployment.json and server health on production first." >&2
   fi
   exit "$status"
 fi
