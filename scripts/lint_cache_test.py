@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -24,6 +25,7 @@ class LintCacheTests(unittest.TestCase):
             "tsconfig*.json",
             "patches/*",
             "packages/*/package.json",
+            "public/js/bundles/.gitignore",
         ):
             for source in ROOT.glob(pattern):
                 target = self.root / source.relative_to(ROOT)
@@ -41,6 +43,16 @@ class LintCacheTests(unittest.TestCase):
                 "echo ran >> .turbo/executions\n"
                 "test ! -f fail.txt\n",
             )
+        manifest_path = self.root / "package.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["scripts"]["test"] = "bash packages/testing/test.sh"
+        manifest_path.write_text(json.dumps(manifest))
+        self.write(
+            "packages/testing/test.sh",
+            "mkdir -p .turbo\n"
+            "echo ran >> .turbo/test-executions\n"
+            "test ! -f packages/testing/fail.txt\n",
+        )
         subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
 
@@ -49,13 +61,13 @@ class LintCacheTests(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content)
 
-    def turbo(self, *arguments, check=True):
+    def turbo(self, *arguments, check=True, task="lint", env=None):
         result = subprocess.run(
             [
                 "bun",
                 str(ROOT / "node_modules/turbo/bin/turbo"),
                 "run",
-                "lint",
+                task,
                 "--cache=local:rw",
                 "--continue=always",
                 f"--cwd={self.root}",
@@ -64,23 +76,24 @@ class LintCacheTests(unittest.TestCase):
             cwd=self.root,
             capture_output=True,
             text=True,
+            env=env,
         )
         if check:
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return result
 
-    def hashes(self):
-        report = json.loads(self.turbo("--dry=json").stdout)
+    def hashes(self, task="lint", env=None):
+        report = json.loads(self.turbo("--dry=json", task=task, env=env).stdout)
         return {
             task["package"].removeprefix("@hanabi-live/"): task["hash"]
             for task in report["tasks"]
-            if task["task"] == "lint"
+            if task["task"] in ("lint", "test")
         }
 
-    def assert_invalidates(self, name, content, expected):
-        before = self.hashes()
+    def assert_invalidates(self, name, content, expected, task="lint"):
+        before = self.hashes(task)
         self.write(name, content)
-        after = self.hashes()
+        after = self.hashes(task)
         self.assertEqual(
             {package for package in before if before[package] != after[package]},
             expected,
@@ -143,6 +156,78 @@ class LintCacheTests(unittest.TestCase):
             (self.root / "packages/client/.turbo/executions").read_text(),
             "ran\nran\nran\n",
         )
+
+    def test_suite_inputs_include_native_and_shared_dependencies(self):
+        for name in (
+            "packages/client/src/index.ts",
+            "packages/data/src/index.ts",
+            "packages/game/src/index.ts",
+            "packages/scripts/src/index.ts",
+            "packages/testing/src/mainProcessSetup.ts",
+            "packages/client/set-version.sh",
+            "server/src/main.rs",
+            "server/engine/src/lib.rs",
+            "server/protocol/fixtures/compatibility.json",
+            "server/build.rs",
+            "server/Cargo.lock",
+            "server/.sqlx/query.json",
+            "install/database_schema.sql",
+            "install/migrations/baseline.txt",
+            "install/migrations/007_change.sql",
+            "public/img/favicon.ico",
+            ".cargo/config.toml",
+            "rust-toolchain.toml",
+            ".github/workflows/ci.yml",
+            ".github/workflows/setup-redis/action.yml",
+            ".github/workflows/setup-rust/action.yml",
+            "scripts/bash/generate-protocol.sh",
+            "tsconfig.monorepo.json",
+            "bunfig.toml",
+            "patches/konva@3.4.1.patch",
+        ):
+            with self.subTest(name=name):
+                source = self.root / name
+                content = source.read_text() if source.exists() else ""
+                self.assert_invalidates(name, content + "\n", {"//"}, "//#test")
+        for name in (
+            "docs/install.md",
+            "README.md",
+            "packages/data/src/version.js",
+            "server/target/release/hanabi-live",
+            "node_modules/example/index.js",
+            "public/js/bundles/version.txt",
+        ):
+            with self.subTest(name=name):
+                self.assert_invalidates(name, "generated\n", set(), "//#test")
+
+    def test_suite_environment_invalidates_results(self):
+        environment = dict(os.environ)
+        environment.pop("HANABI_TEST_DATABASE_URL", None)
+        before = self.hashes("//#test", environment)
+        for name, value in (
+            ("HANABI_TEST_DATABASE_URL", "postgres://postgres@127.0.0.1/postgres"),
+            ("HANABI_BUILD_REVISION", "a" * 40),
+            ("RUSTFLAGS", "-C opt-level=1"),
+            ("RUSTUP_TOOLCHAIN", "stable"),
+            ("ImageVersion", "different-image"),
+        ):
+            with self.subTest(name=name):
+                after = self.hashes("//#test", {**environment, name: value})
+                self.assertNotEqual(before, after)
+
+    def test_suite_successes_are_reused_but_failures_are_not(self):
+        executions = self.root / ".turbo/test-executions"
+        self.turbo(task="//#test")
+        self.write("docs/install.md", "Documentation-only change.\n")
+        self.turbo(task="//#test")
+        self.assertEqual(executions.read_text(), "ran\n")
+        self.write("packages/testing/fail.txt", "fail\n")
+        for _ in range(2):
+            self.assertNotEqual(self.turbo(task="//#test", check=False).returncode, 0)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+        (self.root / "packages/testing/fail.txt").unlink()
+        self.turbo(task="//#test")
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 
 
 if __name__ == "__main__":

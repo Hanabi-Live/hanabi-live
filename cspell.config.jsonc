@@ -269,6 +269,7 @@
     "rpcinterface",
     "rsplit",
     "rustc",
+    "RUSTFLAGS",
     "rustls",
     "rustup",
     "sadd",

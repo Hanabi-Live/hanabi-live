@@ -65,7 +65,7 @@ jobs:
           key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
             lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
-      - name: Test package lint cache invalidation
+      - name: Test Turbo cache invalidation
         if: matrix.shard == 1
         run: python3 -m unittest discover -s scripts -p 'lint_cache_test.py'
       - name: Run the lint shard
@@ -106,8 +106,24 @@ jobs:
 
       - uses: ./.github/workflows/setup-rust
 
+      - name: Restore successful JavaScript test results
+        id: test-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
+          restore-keys: |
+            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+
       - name: Test the TypeScript code
-        run: bun run test
+        run: bunx --bun --no-install turbo run "//#test" --cache=local:rw
+
+      - name: Cache successful JavaScript test results
+        if: steps.test-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: ${{ steps.test-cache.outputs.cache-primary-key }}
 
   client-new:
     runs-on: ubuntu-latest
