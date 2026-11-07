@@ -35,6 +35,14 @@ macro_rules! client_contracts {
             "getGameInfo1" => TableCommand, TableCommand;
             "getGameInfo2" => TableCommand, TableCommand;
             "loaded" => TableCommand, TableCommand;
+            "setting" => SettingRequest, SettingRequest;
+            "inactive" => InactiveRequest, InactiveRequest;
+            "historyGet" => HistoryRequest, HistoryRequest;
+            "historyGetSeed" => HistorySeedRequest, HistorySeedRequest;
+            "tagSearch" => TagSearchRequest, TagSearchRequest;
+            "tableCreate" => TableCreateRequest, TableCreateRequest;
+            "tableUpdate" => TableUpdateRequest, TableUpdateRequest;
+            "replayCreate" => ReplayCreateRequest, ReplayCreateRequest;
             "action" => ActionRequest, ActionRequest;
             "pause" => PauseRequest, PauseRequest;
             "note" => NoteRequest, NoteRequest;

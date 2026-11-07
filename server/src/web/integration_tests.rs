@@ -20,7 +20,7 @@ async fn websocket_errors_explain_invalid_fields_and_database_failures_postgres(
     for (request, expected) in [
         (
             "historyGet {\"offset\":\"bad\",\"amount\":10}",
-            "Invalid offset: expected a safe integer",
+            "Invalid HistoryRequest payload at /offset",
         ),
         (
             "historyGet {\"offset\":0,\"amount\":10}",

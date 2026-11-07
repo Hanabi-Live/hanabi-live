@@ -99,12 +99,6 @@ pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
     }
 }
 
-fn text<'a>(data: &'a Value, key: &str) -> Result<&'a str> {
-    data[key]
-        .as_str()
-        .ok_or_else(|| anyhow::anyhow!("Missing or invalid {key}"))
-}
-
 const COMMANDS: &[&str] = &[
     "setting",
     "inactive",
@@ -153,8 +147,8 @@ pub async fn dispatch(
     ensure!(caller.id > 0, "Invalid caller");
     let effects = match command {
         "setting" => {
-            let name = text(&data, "name")?;
-            let value = text(&data, "setting")?;
+            let request = hanabi_protocol::decode::<hanabi_protocol::SettingRequest>(&data)?;
+            let (name, value) = (request.name.as_str(), request.setting.as_str());
             if let Err(error) = settings::validate_setting(name, value) {
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
@@ -166,9 +160,8 @@ pub async fn dispatch(
             }
         }
         "inactive" => {
-            let inactive = data["inactive"]
-                .as_bool()
-                .ok_or_else(|| anyhow::anyhow!("Invalid inactive"))?;
+            let inactive =
+                hanabi_protocol::decode::<hanabi_protocol::InactiveRequest>(&data)?.inactive;
             vec![
                 Effect::Inactive(inactive),
                 Effect::Broadcast {
@@ -195,22 +188,18 @@ pub async fn dispatch(
         }
         "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatLinked"
         | "chatPlayerInfo" => {
-            relationships::relationship(
-                pool,
-                caller,
-                command,
-                data["name"].as_str().unwrap_or(""),
-                data["room"].as_str().unwrap_or(""),
-            )
-            .await?
+            let (name, room) = if command == "chatLinked" {
+                let request = hanabi_protocol::decode::<hanabi_protocol::ChatLinkedRequest>(&data)?;
+                (String::new(), request.room)
+            } else {
+                let request = hanabi_protocol::decode::<hanabi_protocol::ChatUserRequest>(&data)?;
+                (request.name, request.room)
+            };
+            relationships::relationship(pool, caller, command, &name, &room).await?
         }
         "historyGet" => {
-            let offset = data["offset"]
-                .as_i64()
-                .ok_or_else(|| anyhow::anyhow!("Invalid offset"))?;
-            let amount = data["amount"]
-                .as_i64()
-                .ok_or_else(|| anyhow::anyhow!("Invalid amount"))?;
+            let hanabi_protocol::HistoryRequest { offset, amount } =
+                hanabi_protocol::decode(&data)?;
             if offset < 0 {
                 return Ok(Some(vec![warning("That is not a valid start value.")]));
             }
@@ -224,7 +213,8 @@ pub async fn dispatch(
             }]
         }
         "historyGetSeed" => {
-            let seed = text(&data, "seed")?;
+            let request = hanabi_protocol::decode::<hanabi_protocol::HistorySeedRequest>(&data)?;
+            let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")
             } else if !seed.bytes().all(|b| (32..=126).contains(&b)) {
@@ -253,7 +243,8 @@ pub async fn dispatch(
             }]
         }
         "tagSearch" => {
-            let raw = text(&data, "msg")?;
+            let request = hanabi_protocol::decode::<hanabi_protocol::TagSearchRequest>(&data)?;
+            let raw = request.msg.as_str();
             if raw.len() > 100 {
                 return Ok(Some(vec![warning(
                     "Tags cannot be longer than 100 characters.",
@@ -282,7 +273,7 @@ pub async fn dispatch(
             vec![notice(
                 &caller.name,
                 &format!("Games matching \"{}\": {list}", escape_html(&tag)),
-                data["room"].as_str().unwrap_or(""),
+                &request.room,
             )]
         }
         _ => unreachable!(),

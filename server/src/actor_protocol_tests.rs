@@ -1341,6 +1341,20 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
     cleanup
 }
 
+/// Browsers send whole numbers such as `0.0` as `0`, as `JSON.stringify` does.
+fn browser_json(value: Value) -> Value {
+    match value {
+        Value::Number(n) if n.as_f64().is_some_and(|f| f == f.round()) && !n.is_i64() => {
+            json!(n.as_f64().unwrap() as i64)
+        }
+        Value::Array(items) => Value::Array(items.into_iter().map(browser_json).collect()),
+        Value::Object(map) => {
+            Value::Object(map.into_iter().map(|(k, v)| (k, browser_json(v))).collect())
+        }
+        other => other,
+    }
+}
+
 fn suggestion(value: &Value) -> Result<Value> {
     let text = value["msg"].as_str().context("Missing suggestion")?;
     let encoded = text
@@ -1531,7 +1545,7 @@ async fn findvariant_delivers_owner_button_and_guards_the_start_action() -> Resu
         ensure!(proposal["recipient"]=="Alice","Proposal was not private");
         ensure!(!bob.iter().any(|v|v["msg"].as_str().is_some_and(|s|s.contains("new-options"))),"Non-owner received proposal");
         ensure!(bob.iter().any(|v|v["msg"]=="Here is a random variant that everyone needs the 2-player max score in: Rainbow (5 Suits)"),"Wrong team discovery result");
-        let options=suggestion(proposal)?;
+        let options=browser_json(suggestion(proposal)?);
         ensure!(options["variantName"]=="Rainbow (5 Suits)"&&options["tableName"]=="Team discovery"&&options["maxPlayers"]==5&&options["deckPlays"]==true&&options["oneExtraCard"]==true,"Proposal lost table settings");
         let (table,_)=h.snapshot(id).await?;
         ensure!(table.chat.iter().all(|c|!c.message["msg"].as_str().unwrap_or("").contains("new-options")),"Private proposal entered public history");

@@ -1,184 +1,11 @@
-use anyhow::{Result, bail, ensure};
-use serde_json::{Map, Value, json};
+use anyhow::{Result, ensure};
+use serde_json::Value;
 
-pub const COMMANDS: &[&str] = &[
-    "action",
-    "chat",
-    "chatFriend",
-    "chatLink",
-    "chatLinked",
-    "chatPlayerInfo",
-    "chatPM",
-    "chatPMHistoryGet",
-    "chatRead",
-    "chatTyping",
-    "chatUnfriend",
-    "chatUnlink",
-    "getGameInfo1",
-    "getGameInfo2",
-    "sync",
-    "historyGet",
-    "historyGetSeed",
-    "inactive",
-    "loaded",
-    "lobbyLoad",
-    "note",
-    "pause",
-    "replayAction",
-    "replayCreate",
-    "setting",
-    "tableCreate",
-    "tableJoin",
-    "tableLeave",
-    "tableReattend",
-    "tableRestart",
-    "tableSetLeader",
-    "tableSetVariant",
-    "tableSpectate",
-    "tableStart",
-    "tableSuggest",
-    "tableTerminate",
-    "tableUnattend",
-    "tableUpdate",
-    "tableVoteForTermination",
-    "tag",
-    "tagDelete",
-    "tagsDeleteAll",
-    "tagSearch",
-];
-
-#[derive(Clone, Copy)]
-enum Kind {
-    String,
-    Integer,
-    Boolean,
-    Any,
-}
-struct Fields<'a> {
-    data: &'a mut Map<String, Value>,
-    allowed: Vec<&'static str>,
-}
-impl Fields<'_> {
-    fn field(
-        &mut self,
-        name: &'static str,
-        kind: Kind,
-        default: Option<Value>,
-        optional: bool,
-    ) -> Result<()> {
-        self.allowed.push(name);
-        if !self.data.contains_key(name) {
-            if let Some(value) = default {
-                self.data.insert(name.into(), value);
-            } else {
-                ensure!(optional, "Missing {name}");
-                return Ok(());
-            }
-        }
-        let value = &self.data[name];
-        let valid = match kind {
-            Kind::String => value.is_string(),
-            Kind::Boolean => value.is_boolean(),
-            Kind::Integer => value
-                .as_i64()
-                .is_some_and(|n| n.unsigned_abs() <= 9_007_199_254_740_991),
-            Kind::Any => true,
-        };
-        let expected = match kind {
-            Kind::String => "a string",
-            Kind::Boolean => "a boolean",
-            Kind::Integer => "a safe integer",
-            Kind::Any => "a value",
-        };
-        ensure!(valid, "Invalid {name}: expected {expected}");
-        Ok(())
-    }
-    fn string(&mut self, name: &'static str, default: Option<&str>) -> Result<()> {
-        self.field(name, Kind::String, default.map(|v| json!(v)), false)
-    }
-    fn integer(&mut self, name: &'static str, default: Option<i64>) -> Result<()> {
-        self.field(name, Kind::Integer, default.map(|v| json!(v)), false)
-    }
-    fn boolean(&mut self, name: &'static str, default: Option<bool>) -> Result<()> {
-        self.field(name, Kind::Boolean, default.map(|v| json!(v)), false)
-    }
-    fn table(&mut self) -> Result<()> {
-        self.integer("tableID", None)?;
-        ensure!(
-            self.data["tableID"].as_i64().is_some_and(|id| id >= 0),
-            "Invalid tableID"
-        );
-        Ok(())
-    }
-    fn finish(&self) -> Result<()> {
-        if let Some(key) = self
-            .data
-            .keys()
-            .find(|key| !self.allowed.contains(&key.as_str()))
-        {
-            let field: String = key.chars().take(80).collect();
-            anyhow::bail!("Unexpected command field: {field}");
-        }
-        Ok(())
-    }
-}
-
-fn table_options(value: &mut Value) -> Result<()> {
-    let data = value
-        .as_object_mut()
-        .ok_or_else(|| anyhow::anyhow!("Invalid options"))?;
-    let mut fields = Fields {
-        data,
-        allowed: vec![],
-    };
-    fields.integer("numPlayers", Some(2))?;
-    ensure!(
-        fields.data["numPlayers"]
-            .as_i64()
-            .is_some_and(|n| (2..=6).contains(&n)),
-        "Invalid numPlayers"
-    );
-    fields.integer("startingPlayer", Some(0))?;
-    fields.string("variantName", Some("No Variant"))?;
-    fields.field("variantID", Kind::Integer, None, true)?;
-    ensure!(
-        fields
-            .data
-            .get("variantID")
-            .is_none_or(|v| v.as_i64().is_some_and(|n| n >= 0)),
-        "Invalid variantID"
-    );
-    fields.integer("timeBase", Some(0))?;
-    fields.integer("timePerTurn", Some(0))?;
-    for name in [
-        "timed",
-        "speedrun",
-        "cardCycle",
-        "deckPlays",
-        "emptyClues",
-        "oneExtraCard",
-        "oneLessCard",
-        "allOrNothing",
-        "detrimentalCharacters",
-    ] {
-        fields.boolean(name, Some(false))?;
-    }
-    fields.field("tableName", Kind::String, None, true)?;
-    fields.field("maxPlayers", Kind::Integer, None, true)?;
-    if let Some(max) = fields.data.get("maxPlayers") {
-        ensure!(
-            max.as_i64().is_some_and(|n| (2..=6).contains(&n)),
-            "Invalid maxPlayers"
-        );
-    }
-    fields.finish()
-}
-
+/// The client command an input names, for error messages about inputs that failed to parse.
 pub fn command_name(input: &str) -> Option<&'static str> {
     let name = input.split_once(' ').map_or(input, |(name, _)| name);
-    COMMANDS
-        .iter()
-        .copied()
+    hanabi_protocol::client_contracts()
+        .into_keys()
         .find(|candidate| *candidate == name)
 }
 
@@ -188,79 +15,16 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
         "Oversized command"
     );
     let (name, body) = input.split_once(' ').unwrap_or((input, "{}"));
-    ensure!(COMMANDS.contains(&name), "Unknown client command");
-    let mut data: Value = serde_json::from_str(body)?;
-    if let Some(parsed) = hanabi_protocol::decode_client(name, &data)? {
-        return Ok((name.into(), parsed));
-    }
-    let map = data
-        .as_object_mut()
-        .ok_or_else(|| anyhow::anyhow!("Command arguments must be a JSON object"))?;
-    let mut fields = Fields {
-        data: map,
-        allowed: vec![],
-    };
-    match name {
-        "sync" | "lobbyLoad" => {}
-        "setting" => {
-            fields.string("name", None)?;
-            fields.string("setting", None)?;
-        }
-        "inactive" => fields.boolean("inactive", None)?,
-        "historyGet" => {
-            fields.integer("offset", Some(0))?;
-            fields.integer("amount", Some(0))?;
-        }
-        "historyGetSeed" => {
-            fields.string("seed", None)?;
-        }
-        "tagSearch" => {
-            fields.string("msg", Some(""))?;
-            fields.string("room", Some(""))?;
-        }
-        "tableCreate" | "tableUpdate" => {
-            if name == "tableUpdate" {
-                fields.table()?;
-            }
-            fields.string("name", Some(""))?;
-            fields.string("password", Some(""))?;
-            fields.integer("maxPlayers", Some(5))?;
-            fields.boolean("hidePregame", Some(false))?;
-            fields.field("gameJSON", Kind::Any, None, true)?;
-            fields.field("options", Kind::Any, Some(json!({})), false)?;
-            table_options(fields.data.get_mut("options").unwrap())?;
-        }
-        "replayCreate" => {
-            fields.string("source", None)?;
-            fields.string("visibility", None)?;
-            ensure!(
-                matches!(fields.data["source"].as_str(), Some("id" | "json")),
-                "Invalid replay source"
-            );
-            ensure!(
-                matches!(fields.data["visibility"].as_str(), Some("solo" | "shared")),
-                "Invalid replay visibility"
-            );
-            fields.field("databaseID", Kind::Integer, None, true)?;
-            ensure!(
-                fields.data.get("databaseID").is_none_or(|v| v
-                    .as_i64()
-                    .is_some_and(|n| (1..=i64::from(i32::MAX)).contains(&n))),
-                "Invalid databaseID"
-            );
-            fields.field("gameJSON", Kind::Any, None, true)?;
-            fields.string("password", Some(""))?;
-            fields.integer("shadowingPlayerIndex", Some(-1))?;
-        }
-        _ => bail!("Unknown client command"),
-    }
-    fields.finish()?;
-    Ok((name.into(), data))
+    let data: Value = serde_json::from_str(body)?;
+    let parsed = hanabi_protocol::decode_client(name, &data)?
+        .ok_or_else(|| anyhow::anyhow!("Unknown client command"))?;
+    Ok((name.into(), parsed))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     #[test]
     fn shared_client_compatibility_fixtures() {
         let cases: Vec<Value> =
@@ -288,9 +52,8 @@ mod tests {
     }
     #[test]
     fn every_registered_command_has_a_parser() {
-        assert_eq!(COMMANDS.len(), 43);
-        for command in COMMANDS {
-            let value = match *command {
+        for command in hanabi_protocol::client_contracts().into_keys() {
+            let value = match command {
                 "setting" => json!({"name":"volume","setting":"50"}),
                 "inactive" => json!({"inactive":true}),
                 "historyGetSeed" => json!({"seed":"p2v0s1"}),

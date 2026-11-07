@@ -1,5 +1,5 @@
 use crate::{
-    game::{Action, Card, Game, Options},
+    game::{Action, Game, Options},
     lobby::{Effect, OnlineUser},
     model::{Phase, *},
     operations::Operation,
@@ -161,21 +161,6 @@ pub enum HubCommand {
         reply: Reply,
     },
     Logout(Arc<Session>),
-    Create {
-        session: Arc<Session>,
-        player: Player,
-        name: String,
-        deck: Option<Vec<Card>>,
-        reply: Reply,
-    },
-    CreateConfigured {
-        session: Arc<Session>,
-        player: Player,
-        name: String,
-        options: Options,
-        extra: Box<ExtraOptions>,
-        reply: Reply,
-    },
     Allocate(oneshot::Sender<Result<Allocation>>),
     Replay {
         session: Arc<Session>,
@@ -463,7 +448,7 @@ impl Hub {
             let _ = reply.send(Err(anyhow::anyhow!("Unknown table")));
         }
     }
-    fn create(&self, s: Arc<Session>, command: String, data: Value, reply: Reply) {
+    fn create(&self, s: Arc<Session>, creation: Creation, reply: Reply) {
         if self.closing || !self.current(&s) {
             let message = if self.closing {
                 "The server is shutting down."
@@ -473,7 +458,7 @@ impl Hub {
             let _ = reply.send(Err(anyhow::anyhow!(message)));
             return;
         }
-        let playing = command == "tableCreate" && !s.name.starts_with("Bot-");
+        let playing = matches!(creation, Creation::Table(_)) && !s.name.starts_with("Bot-");
         if playing && self.playing_elsewhere(s.user, None) {
             let _ = reply.send(Err(anyhow::anyhow!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
             return;
@@ -500,7 +485,7 @@ impl Hub {
         let hub = self.sender.clone();
         let tasks = self.tasks.clone();
         self.tasks.spawn(async move {
-            let prepared = prepare_table(&store, &s, &command, data).await;
+            let prepared = prepare_table(&store, &s, creation).await;
             match prepared {
                 Ok((table, revision, warnings)) => {
                     let id = table.id;
@@ -852,7 +837,12 @@ impl Hub {
                     reply,
                 } => {
                     if command == "tableCreate" || command == "replayCreate" {
-                        self.create(session, command, data, reply);
+                        match Creation::decode(&command, &data) {
+                            Ok(creation) => self.create(session, creation, reply),
+                            Err(error) => {
+                                let _ = reply.send(Err(error));
+                            }
+                        }
                     } else {
                         let table = data["tableID"].as_u64().or_else(|| {
                             data["room"]
@@ -875,29 +865,6 @@ impl Hub {
                         }
                     }
                 }
-                HubCommand::Create {
-                    session,
-                    player: _,
-                    name,
-                    deck,
-                    reply,
-                } => {
-                    let data = json!({"name":name,"options":Options::default(),"maxPlayers":5,"gameJSON":deck.map(|deck|json!({"players":["Alice","Bob"],"deck":deck}))});
-                    self.create(session, "tableCreate".into(), data, reply);
-                }
-                HubCommand::CreateConfigured {
-                    session,
-                    player: _,
-                    name,
-                    options,
-                    extra,
-                    reply,
-                } => self.create(
-                    session,
-                    "tableCreate".into(),
-                    json!({"name":name,"options":options,"extra":extra}),
-                    reply,
-                ),
                 HubCommand::Allocate(reply) => {
                     let permit = self.capacity.clone().try_acquire_owned();
                     let store = self.store.clone();
@@ -1442,50 +1409,79 @@ fn replay_table(
         pending_tag: None,
     }
 }
+/// Converts wire options to the engine's, which use the same field names.
+fn engine_options(options: &hanabi_protocol::TableOptions) -> Result<Options> {
+    Ok(serde_json::from_value(serde_json::to_value(options)?)?)
+}
+
+/// A pregame change to a table: only its variant, or every option.
+enum TableChange {
+    Variant(String),
+    Options(Box<hanabi_protocol::TableUpdateRequest>),
+}
+
+/// A request to create a table or a replay, decoded from its wire contract.
+enum Creation {
+    Table(hanabi_protocol::TableCreateRequest),
+    Replay(hanabi_protocol::ReplayCreateRequest),
+}
+impl Creation {
+    fn decode(command: &str, data: &Value) -> Result<Self> {
+        Ok(if command == "replayCreate" {
+            Self::Replay(hanabi_protocol::decode(data)?)
+        } else {
+            Self::Table(hanabi_protocol::decode(data)?)
+        })
+    }
+}
+
 async fn prepare_table(
     store: &Store,
     session: &Session,
-    command: &str,
-    data: Value,
+    creation: Creation,
 ) -> Result<(TableSnapshot, i64, Vec<String>)> {
     store.check_state()?;
     ensure!(session.active(), "Stale session");
     let id = store.allocate_table().await?;
     let result = async {
-        if command == "replayCreate" {
-            ensure!(
-                data["password"].as_str().unwrap_or("").is_empty(),
-                "You cannot create a replay with a password."
-            );
-            let mut warnings = vec![];
-            let mut custom_seed = None;
-            let snapshot = if data["source"] == "json" {
-                let imported = replay_helpers::parse(&data["gameJSON"])?;
-                warnings = imported.warnings.clone();
-                custom_seed = Some(imported.extra.custom_seed.clone());
-                replay_helpers::snapshot(imported, id, session.user)
-            } else {
-                store
-                    .historical(
-                        i32::try_from(data["databaseID"].as_i64().context("Missing databaseID")?)?,
-                        id,
-                        session.user,
-                    )
-                    .await?
-            };
-            let mut table = replay_table(
-                snapshot,
-                data["visibility"] == "shared",
-                session.user,
-                &session.name,
-            );
-            if let Some(seed) = custom_seed {
-                table.extra.custom_seed = seed;
+        let r = match creation {
+            Creation::Table(r) => r,
+            Creation::Replay(r) => {
+                ensure!(
+                    r.password.is_empty(),
+                    "You cannot create a replay with a password."
+                );
+                let mut warnings = vec![];
+                let mut custom_seed = None;
+                let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
+                    let imported =
+                        replay_helpers::parse(r.game_json.as_ref().unwrap_or(&Value::Null))?;
+                    warnings = imported.warnings.clone();
+                    custom_seed = Some(imported.extra.custom_seed.clone());
+                    replay_helpers::snapshot(imported, id, session.user)
+                } else {
+                    store
+                        .historical(
+                            r.database_id.context("Missing databaseID")?,
+                            id,
+                            session.user,
+                        )
+                        .await?
+                };
+                let mut table = replay_table(
+                    snapshot,
+                    r.visibility == hanabi_protocol::ReplayVisibility::Shared,
+                    session.user,
+                    &session.name,
+                );
+                if let Some(seed) = custom_seed {
+                    table.extra.custom_seed = seed;
+                }
+                let revision = store.save(&table, 0).await?;
+                return Ok((table, revision, warnings));
             }
-            let revision = store.save(&table, 0).await?;
-            return Ok((table, revision, warnings));
-        }
-        let mut name = data["name"].as_str().unwrap_or("").trim().to_owned();
+        };
+        let mut name = r.name.trim().to_owned();
         while name.len() > 45 {
             name.pop();
         }
@@ -1493,8 +1489,7 @@ async fn prepare_table(
             name = format!("{}'s table", session.name);
         }
         validate_table_name(&name)?;
-        let mut options: Options =
-            serde_json::from_value(data.get("options").cloned().unwrap_or(json!({})))?;
+        let mut options = engine_options(&r.options)?;
         options.starting_player = 0;
         if options.speedrun || !options.timed {
             options.timed = false;
@@ -1512,11 +1507,10 @@ async fn prepare_table(
                     && (1..=86400).contains(&options.time_per_turn)),
             "Invalid timed options"
         );
-        let mut extra: ExtraOptions =
-            serde_json::from_value(data.get("extra").cloned().unwrap_or(json!({})))?;
+        let mut extra = ExtraOptions::default();
         if name.starts_with('!') {
             ensure!(
-                data.get("gameJSON").is_none_or(Value::is_null),
+                r.game_json.is_none(),
                 "Special prefixes cannot be combined with JSON"
             );
             let parts = name.split_whitespace().collect::<Vec<_>>();
@@ -1591,7 +1585,7 @@ async fn prepare_table(
             } else {
                 bail!("Unknown special game prefix");
             }
-        } else if let Some(input) = data.get("gameJSON").filter(|v| !v.is_null()) {
+        } else if let Some(input) = &r.game_json {
             let imported = replay_helpers::parse(input)?;
             options = imported.game.options.clone();
             extra = imported.extra;
@@ -1601,13 +1595,12 @@ async fn prepare_table(
         let player = store
             .player_for_variant(session.user, session.name.clone(), variant.id)
             .await?;
-        let max_players = data["maxPlayers"]
-            .as_u64()
-            .map(|n| n as usize)
+        let max_players = usize::try_from(r.max_players)
+            .ok()
             .filter(|n| (2..=6).contains(n))
             .unwrap_or(5)
             .max(extra.custom_num_players.unwrap_or(2));
-        let password = data["password"].as_str().unwrap_or("").to_owned();
+        let password = r.password;
         let password_hash = if password.is_empty() {
             None
         } else {
@@ -1620,7 +1613,7 @@ async fn prepare_table(
             id,
             name,
             owner: session.user,
-            visible: !data["hidePregame"].as_bool().unwrap_or(false),
+            visible: !r.hide_pregame,
             options,
             max_players,
             password_hash,
@@ -2455,8 +2448,15 @@ impl TableActor {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableSuggestRequest>(&data)?;
                 self.suggest(session, r.segment).await
             }
-            "tableUpdate" | "tableSetVariant" => {
-                self.update(session, &data, name == "tableSetVariant").await
+            "tableSetVariant" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableVariantRequest>(&data)?;
+                self.update(session, TableChange::Variant(r.options.variant_name))
+                    .await
+            }
+            "tableUpdate" => {
+                let r = hanabi_protocol::decode::<hanabi_protocol::TableUpdateRequest>(&data)?;
+                self.update(session, TableChange::Options(Box::new(r)))
+                    .await
             }
             "tableRestart" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableRestartRequest>(&data)?;
@@ -2469,12 +2469,12 @@ impl TableActor {
             _ => bail!("Unsupported table command: {name}"),
         }
     }
-    async fn update(
-        &mut self,
-        session: Arc<Session>,
-        data: &Value,
-        variant_only: bool,
-    ) -> Result<()> {
+    async fn update(&mut self, session: Arc<Session>, change: TableChange) -> Result<()> {
+        let (variant, request) = match change {
+            TableChange::Variant(name) => (Some(name), None),
+            TableChange::Options(request) => (None, Some(*request)),
+        };
+        let variant_only = variant.is_some();
         ensure!(self.attending(&session), "You must attend this table");
         self.seat(&session)?;
         ensure!(
@@ -2488,13 +2488,10 @@ impl TableActor {
         let mut options = if variant_only {
             self.table.options.clone()
         } else {
-            serde_json::from_value(data.get("options").cloned().unwrap_or(json!({})))?
+            engine_options(&request.as_ref().context("Missing options")?.options)?
         };
-        if variant_only {
-            options.variant_name = data["options"]["variantName"]
-                .as_str()
-                .context("Missing variant")?
-                .into();
+        if let Some(variant) = &variant {
+            options.variant_name.clone_from(variant);
         }
         options.starting_player = 0;
         if options.speedrun || !options.timed {
@@ -2516,9 +2513,12 @@ impl TableActor {
         let mut name = if variant_only {
             self.table.name.clone()
         } else {
-            crate::accounts::truncate_to_max_bytes(data["name"].as_str().unwrap_or(""), 45)
-                .trim()
-                .to_owned()
+            crate::accounts::truncate_to_max_bytes(
+                request.as_ref().map_or("", |r| r.name.as_str()),
+                45,
+            )
+            .trim()
+            .to_owned()
         };
         if name.is_empty() {
             name = self.table.name.clone();
@@ -2527,9 +2527,9 @@ impl TableActor {
         let mut max_players = if variant_only {
             self.table.max_players
         } else {
-            data["maxPlayers"]
-                .as_u64()
-                .map(|n| n as usize)
+            request
+                .as_ref()
+                .and_then(|r| usize::try_from(r.max_players).ok())
                 .filter(|n| (2..=6).contains(n))
                 .unwrap_or(5)
         };
@@ -2541,7 +2541,7 @@ impl TableActor {
         if !variant_only && session.user == self.table.owner {
             if name.starts_with('!') {
                 ensure!(
-                    data.get("gameJSON").is_none_or(Value::is_null),
+                    request.as_ref().is_none_or(|r| r.game_json.is_none()),
                     "Special prefixes cannot be combined with JSON"
                 );
                 let parts = name.split_whitespace().collect::<Vec<_>>();
@@ -2619,7 +2619,7 @@ impl TableActor {
                     }
                     _ => bail!("Unknown special game prefix"),
                 }
-            } else if let Some(input) = data.get("gameJSON").filter(|v| !v.is_null()) {
+            } else if let Some(input) = request.as_ref().and_then(|r| r.game_json.as_ref()) {
                 let imported = replay_helpers::parse(input)?;
                 options = imported.game.options.clone();
                 extra = imported.extra;
@@ -2664,7 +2664,7 @@ impl TableActor {
         next.max_players = max_players;
         next.extra = extra;
         if !variant_only {
-            next.visible = !data["hidePregame"].as_bool().unwrap_or(false);
+            next.visible = !request.as_ref().is_some_and(|r| r.hide_pregame);
         }
         let Phase::Pregame {
             players,

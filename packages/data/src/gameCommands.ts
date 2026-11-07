@@ -4,14 +4,7 @@ import { CLIENT_WIRE_SCHEMAS, SERVER_WIRE_SCHEMAS } from "./generated/protocol";
 import { tableID } from "./types/TableID";
 
 export const GAME_CLIENT_COMMAND_SCHEMAS = {
-  replayCreate: z.strictObject({
-    source: z.enum(["id", "json"]),
-    databaseID: z.int().min(1).max(2_147_483_647).optional(),
-    gameJSON: z.unknown().optional(),
-    visibility: z.enum(["solo", "shared"]),
-    password: z.string().default(""),
-    shadowingPlayerIndex: z.int().default(-1),
-  }),
+  replayCreate: CLIENT_WIRE_SCHEMAS.replayCreate,
   tableRestart: CLIENT_WIRE_SCHEMAS.tableRestart,
   tableSuggest: CLIENT_WIRE_SCHEMAS.tableSuggest,
   tableStart: CLIENT_WIRE_SCHEMAS.tableStart,

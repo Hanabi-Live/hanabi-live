@@ -1,4 +1,5 @@
 import {
+  CLIENT_WIRE_SCHEMAS,
   chatRequestSchema as clientCommandChatData,
   chatLinkedRequestSchema as clientCommandChatLinkedData,
   chatPmRequestSchema as clientCommandChatPMData,
@@ -14,37 +15,15 @@ import {
 // Data definitions
 // ----------------
 
-import { options } from "@hanabi-live/game";
 import { interfaceSatisfiesEnum } from "complete-common";
-import { z } from "zod";
+import type { z } from "zod";
 import { ClientCommand } from "./enums/ClientCommand";
 import type { GameClientCommandData } from "./gameCommands";
 import { GAME_CLIENT_COMMAND_SCHEMAS } from "./gameCommands";
-import { tableID } from "./types/TableID";
 
-const tableOptions = options.unwrap().extend({
-  variantName: z.string().default("No Variant"),
-  startingPlayer: z.number().int().default(0),
-  timeBase: z.number().int().default(0),
-});
-const tableCreationFields = {
-  name: z.string().default(""),
-  options: tableOptions.prefault({}),
-  password: z.string().default(""),
-  maxPlayers: z.number().int().default(5),
-  hidePregame: z.boolean().default(false),
-  gameJSON: z.unknown().optional(),
-};
-const clientCommandTableCreateData = z.strictObject(tableCreationFields);
-const clientCommandTableUpdateData = z.strictObject({
-  ...tableCreationFields,
-  tableID,
-});
-
-const clientCommandTagSearchData = z.strictObject({
-  msg: z.string().default(""),
-  room: z.string().default(""),
-});
+const clientCommandTableCreateData = CLIENT_WIRE_SCHEMAS.tableCreate;
+const clientCommandTableUpdateData = CLIENT_WIRE_SCHEMAS.tableUpdate;
+const clientCommandTagSearchData = CLIENT_WIRE_SCHEMAS.tagSearch;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ClientCommandChatData extends z.infer<
@@ -61,23 +40,10 @@ export interface ClientCommandChatPMHistoryGetData extends z.infer<
   typeof clientCommandChatPMHistoryGetData
 > {}
 
-const clientCommandHistoryData = z
-  .strictObject({
-    offset: z.number().int().default(0),
-    amount: z.number().int().default(0),
-  })
-  .readonly();
-const clientCommandHistoryGetSeedData = z
-  .strictObject({
-    seed: z.string(),
-  })
-  .readonly();
-const clientCommandInactiveData = z
-  .strictObject({ inactive: z.boolean() })
-  .readonly();
-const clientCommandSettingData = z
-  .strictObject({ name: z.string(), setting: z.string() })
-  .readonly();
+const clientCommandHistoryData = CLIENT_WIRE_SCHEMAS.historyGet;
+const clientCommandHistoryGetSeedData = CLIENT_WIRE_SCHEMAS.historyGetSeed;
+const clientCommandInactiveData = CLIENT_WIRE_SCHEMAS.inactive;
+const clientCommandSettingData = CLIENT_WIRE_SCHEMAS.setting;
 
 // -----------
 // Collections

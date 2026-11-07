@@ -34,6 +34,18 @@ fn literal(value: &Value) -> String {
 // Only emit the JSON Schema subset actually used by our DTOs. Fail closed when a
 // future annotation needs a new translation rather than silently dropping a rule.
 fn expression(schema: &Value) -> Result<String> {
+    // Any JSON value, such as an imported game that the server validates itself. A documented
+    // field's schema carries only its description.
+    if *schema == Value::Bool(true)
+        || schema.as_object().is_some_and(|object| {
+            !object.is_empty()
+                && object
+                    .keys()
+                    .all(|key| matches!(key.as_str(), "description" | "title"))
+        })
+    {
+        return Ok("z.unknown()".into());
+    }
     let object = schema.as_object().context("Expected a schema object")?;
     // An Option without skip_serializing_if serializes None as null: {"type": [T, "null"]}.
     if let Some(types) = object.get("type").and_then(Value::as_array) {
@@ -397,6 +409,15 @@ mod tests {
         assert!(expression(&json!({"type":"string","pattern":"^safe$"})).is_err());
         assert!(expression(&json!({"type":"integer","format":"int64"})).is_err());
         assert!(expression(&json!({"type":"string","format":"new-format"})).is_err());
+    }
+
+    #[test]
+    fn any_value_schemas_become_unknown() {
+        assert_eq!(expression(&json!(true)).unwrap(), "z.unknown()");
+        assert_eq!(
+            expression(&json!({"description":"Any game"})).unwrap(),
+            "z.unknown()"
+        );
     }
 
     #[test]
