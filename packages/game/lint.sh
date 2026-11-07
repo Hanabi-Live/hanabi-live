@@ -21,8 +21,4 @@ bunx --bun --no-install tsc --noEmit
 # "--max-warnings 0" makes warnings fail in CI, since we set all ESLint errors to warnings.
 bunx --bun --no-install eslint --max-warnings 0 .
 
-# Check for unused exports.
-# "--error" makes it return an error code of 1 if unused exports are found.
-bunx --bun --no-install ts-prune --error --ignore "index.ts|.d.ts"
-
 echo "Successfully linted package \"$PACKAGE_NAME\" in $SECONDS seconds."

@@ -60,6 +60,7 @@ esac
 run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
 run_parallel 1 bash "$DIR/check-prettier.sh"
 run_parallel 2 bash "$DIR/check-spelling.sh"
+run_parallel 1 run_repository_check check-knip
 run_parallel 1 run_repository_check check-shellcheck
 run_parallel 1 run_repository_check check-templates
 run_parallel 2 run_repository_check check-variant-files
