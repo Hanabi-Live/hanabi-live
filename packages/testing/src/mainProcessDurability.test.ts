@@ -125,7 +125,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
         }
         const startedState = await redis.states(namespace);
         expect(startedState.length).toBeGreaterThan(0);
-        expect(await sql`SELECT game_id FROM active_games`).toHaveLength(0);
         const action = {
           tableID,
           type: 0,

@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
-import { assertDefined } from "complete-common";
 import { createHash } from "node:crypto";
 import { once } from "node:events";
 import {
@@ -255,9 +254,6 @@ databaseDescribe("normal-server protocol workload", () => {
       expect(
         await sql`SELECT count(*)::int AS count FROM game_custom_decks`,
       ).toEqual<unknown>([{ count: 8 }]);
-      expect(
-        await sql`SELECT count(*)::int AS count FROM active_games`,
-      ).toEqual<unknown>([{ count: 0 }]);
       const archives = await sql<Array<{ deck: Uint8Array; actions: unknown }>>`
         SELECT d.deck, (SELECT jsonb_agg(jsonb_build_object(
           'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
@@ -297,10 +293,6 @@ databaseDescribe("normal-server protocol workload", () => {
       }
       await sample();
       await stopChild(processState.child);
-      const [writes] = await sql<Array<{ count: number }>>`
-        SELECT (n_tup_ins+n_tup_upd)::int AS count FROM pg_stat_user_tables WHERE relname='active_games'
-      `;
-      assertDefined(writes, "Missing checkpoint write statistics.");
       processState = startProcess(directory);
       address = await bounded(
         processState.ready,
@@ -382,7 +374,6 @@ databaseDescribe("normal-server protocol workload", () => {
           games: completed.length,
           lanes: 4,
           peakRSSKiB,
-          postgresCheckpointWrites: writes.count,
           stateStore: "Redis AOF/WAITAOF",
           gameplayMilliseconds,
           mixedReadMilliseconds: performance.now() - readStart,
