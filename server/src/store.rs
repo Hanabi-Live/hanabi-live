@@ -796,8 +796,8 @@ impl Store {
         let row = sqlx::query_as!(
             crate::database::UserStats,
             "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
-             best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod,
-             average_score,num_strikeouts FROM user_stats WHERE user_id=$1 AND variant_id=$2",
+             best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
+             FROM user_stats WHERE user_id=$1 AND variant_id=$2",
             id,
             variant as i16
         )
@@ -807,8 +807,6 @@ impl Store {
         stats["numGames"] = json!(count);
         if let Some(row) = row {
             stats["variant"]["numGames"] = json!(row.num_games);
-            stats["variant"]["averageScore"] = json!(row.average_score);
-            stats["variant"]["numStrikeouts"] = json!(row.num_strikeouts);
             for (index, score) in [
                 row.best_score2,
                 row.best_score3,
@@ -903,9 +901,8 @@ impl Store {
                  best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND ($3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,
                  best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND ($3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,
                  best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND ($3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END,
-                 num_games=s.n,average_score=s.avg,num_strikeouts=s.strikes
-                 FROM (SELECT count(*)::integer n,COALESCE(avg(g.score) FILTER(WHERE g.score<>0),0)::float8 avg,
-                 (count(*) FILTER(WHERE g.score=0))::integer strikes FROM games g
+                 num_games=s.n
+                 FROM (SELECT count(*)::integer n FROM games g
                  JOIN game_participants p ON p.game_id=g.id
                  WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s
                  WHERE user_id=$1 AND variant_id=$2",
@@ -924,10 +921,8 @@ impl Store {
              best_score4=CASE WHEN $5=4 AND $4=0 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
              best_score5=CASE WHEN $5=5 AND $4=0 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
              best_score6=CASE WHEN $5=6 AND $4=0 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
-             num_games=s.n,num_max_scores=s.maximum,average_score=s.avg,num_strikeouts=s.strikes
-             FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum,
-             COALESCE(avg(score) FILTER(WHERE score<>0),0)::float8 avg,
-             (count(*) FILTER(WHERE score=0))::integer strikes
+             num_games=s.n,num_max_scores=s.maximum
+             FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum
              FROM games WHERE variant_id=$1 AND NOT speedrun) s
              WHERE variant_id=$1",
             v,
@@ -956,7 +951,7 @@ impl Store {
     }
 }
 pub fn zero_stats() -> Value {
-    json!({"numGames":0,"variant":{"numGames":0,"averageScore":0,"numStrikeouts":0,"bestScores":(2..=6).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
+    json!({"numGames":0,"variant":{"numGames":0,"bestScores":(2..=6).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
 }
 pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
     let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
@@ -1115,23 +1110,6 @@ mod tests {
         ensure!(TableSnapshot::decode(&invalid.to_string()).is_err());
         Ok(())
     }
-    #[test]
-    fn checkpoint_statistics_round_trip_without_false_completion_mismatches() -> Result<()> {
-        let mut table = pregame(1);
-        terminal(&mut table)?;
-        for denominator in 2..100 {
-            table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
-                json!(25.0 / f64::from(denominator));
-            let encoded = serde_json::to_string(&table)?;
-            let restored = TableSnapshot::decode(&encoded)?;
-            ensure!(
-                serde_json::to_value(table.game())? == serde_json::to_value(restored.game())?,
-                "Checkpoint changed fractional statistics for denominator {denominator}"
-            );
-        }
-        Ok(())
-    }
-
     async fn database() -> Result<Option<(PgPool, PgPool, String)>> {
         let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
             eprintln!("PostgreSQL integration requires HANABI_TEST_DATABASE_URL");
@@ -1199,7 +1177,6 @@ mod tests {
                 unreachable!();
             };
             players[0].stats["numGames"] = json!(727);
-            players[0].stats["variant"]["averageScore"] = json!(25.0 / 27.0);
             players.push(Player {
                 id: 2,
                 name: "Bob".into(),
@@ -1373,8 +1350,7 @@ mod tests {
             );
             terminal(&mut table)?;
             table.game_mut().unwrap().idle_remaining = 0;
-            table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =
-                json!(25.0 / 27.0);
+            table.game_mut().unwrap().players[0].stats["variant"]["numGames"] = json!(3);
             table.game_mut().unwrap().spectator_notes.insert(
                 3,
                 crate::model::NoteOwner {
@@ -1384,7 +1360,7 @@ mod tests {
             );
             let revision = store.save(&table, 2).await?;
             let mut changed = table.game().unwrap().clone();
-            changed.players[0].stats["variant"]["averageScore"] = json!(1.0);
+            changed.players[0].stats["variant"]["numGames"] = json!(4);
             ensure!(
                 store.complete(&changed, revision).await.is_err(),
                 "Completion accepted statistics that differ from the durable checkpoint"

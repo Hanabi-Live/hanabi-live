@@ -52,8 +52,6 @@ pub(crate) struct UserStats {
     pub best_score5_mod: i16,
     pub best_score6: i16,
     pub best_score6_mod: i16,
-    pub average_score: f64,
-    pub num_strikeouts: i32,
 }
 
 #[derive(Serialize)]
@@ -66,8 +64,6 @@ pub(crate) struct VariantStats {
     pub best_score5: i16,
     pub best_score6: i16,
     pub num_max_scores: i32,
-    pub average_score: f64,
-    pub num_strikeouts: i32,
 }
 
 /// Serializes to the client-facing setting names.

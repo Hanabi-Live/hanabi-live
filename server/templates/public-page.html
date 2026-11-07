@@ -178,15 +178,6 @@
                 stats.numMaxScores }} / {{ stats.numGamesTotal }} &nbsp;({{
                 stats.maxScoreRate }}%)
               </li>
-              <li>
-                <span class="stat-description">Total strikeouts:</span> {{
-                stats.numStrikeouts }} / {{ stats.numGamesTotal }} &nbsp;({{
-                stats.strikeoutRate }}%)
-              </li>
-              <li>
-                <span class="stat-description">Average score:</span> {{
-                stats.averageScore }}
-              </li>
               {% endif %}
             </ul>
             {% if page == "variant" %}
@@ -239,8 +230,6 @@
                     {{ players }}-Player Best Score
                   </th>
                   {% endfor %}
-                  <th class="center sorter-average-score">Average Score</th>
-                  <th class="center">Strikeout Rate</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,11 +258,6 @@
                     }}{% endif %}
                   </td>
                   {% endfor %}
-                  <td class="center">{{ row.averageScore }}</td>
-                  <td class="center">
-                    {{ row.strikeoutRate }}{% if row.strikeoutRate != "-" %}%{%
-                    endif %}
-                  </td>
                 </tr>
                 {% endif %}{% endfor %}
               </tbody>

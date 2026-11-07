@@ -72,8 +72,6 @@ const serverCommandFriendsData = z
 
 const pregameVariantStats = z.strictObject({
   numGames: z.number().int(),
-  averageScore: z.number(),
-  numStrikeouts: z.number().int(),
   bestScores: z
     .strictObject({
       numPlayers: z.number().int(),

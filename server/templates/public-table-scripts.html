@@ -78,12 +78,6 @@
       },
     });
     $.tablesorter.addParser({
-      id: "average-score",
-      is: () => false,
-      type: "numeric",
-      format: (value) => parseFloat(value) || 0,
-    });
-    $.tablesorter.addParser({
       id: "date-and-time",
       is: () => false,
       type: "numeric",

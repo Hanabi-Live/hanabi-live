@@ -176,26 +176,7 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
                 </div>
                 <div>
                   <span>...of this variant:</span>
-                  <span>
-                    {person.stats.variant.numGames
-                      - person.stats.variant.numStrikeouts}
-                  </span>
-                </div>
-                <div>
-                  <span>Average score:</span>
-                  <span>
-                    {person.stats.variant.averageScore === 0
-                      ? "-"
-                      : Math.round(person.stats.variant.averageScore * 10) / 10}
-                  </span>
-                </div>
-                <div>
-                  <span>Strikeout rate:</span>
-                  <span>
-                    {person.stats.variant.numGames === 0
-                      ? "-"
-                      : `${Math.round((person.stats.variant.numStrikeouts / person.stats.variant.numGames) * 1000) / 10}%`}
-                  </span>
+                  <span>{person.stats.variant.numGames}</span>
                 </div>
                 {game.players.length > 1 && (
                   <div>

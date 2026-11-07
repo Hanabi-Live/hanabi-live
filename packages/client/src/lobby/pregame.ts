@@ -369,20 +369,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
   const p = $("<p>").addClass("margin0 padding0p5").append(strong);
   div.append(p);
 
-  // Calculate some stats
   const variantStats = player.stats.variant;
-  // Round it to 1 decimal place.
-  const averageScore = Math.round(variantStats.averageScore * 10) / 10;
-  const averageScoreString = averageScore === 0 ? "-" : averageScore.toString();
-  let strikeoutRateString: string;
-  if (variantStats.numGames > 0) {
-    let strikeoutRate =
-      (variantStats.numStrikeouts / variantStats.numGames) * 100;
-    strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
-    strikeoutRateString = `${strikeoutRate}%`;
-  } else {
-    strikeoutRateString = "-";
-  }
 
   let html = `
     <div class="row">
@@ -398,23 +385,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
         ...of this variant:
       </div>
       <div class="col-2 align-right padding0">
-        ${variantStats.numGames - variantStats.numStrikeouts}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-10">
-        Average score:
-      </div>
-      <div class="col-2 align-right padding0">
-        ${averageScoreString}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-10">
-        Strikeout rate:
-      </div>
-      <div class="col-2 align-right padding0">
-        ${strikeoutRateString}
+        ${variantStats.numGames}
       </div>
     </div>
   `;

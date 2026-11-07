@@ -26,8 +26,6 @@ interface Stats {
 interface VariantStats {
   numGames: number;
   bestScores: BestScore[];
-  averageScore: number;
-  numStrikeouts: number;
 }
 
 interface BestScore {

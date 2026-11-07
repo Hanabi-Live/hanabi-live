@@ -222,7 +222,7 @@ pub(super) async fn page(
             let row = sqlx::query_as!(
                 crate::database::VariantStats,
                 "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,
-                 num_max_scores,average_score,num_strikeouts FROM variant_stats WHERE variant_id::bigint=$1",
+                 num_max_scores FROM variant_stats WHERE variant_id::bigint=$1",
                 id
             )
             .fetch_optional(&state.pool)
@@ -232,10 +232,7 @@ pub(super) async fn page(
             let row = row.unwrap_or(json!({}));
             let games = number(&row, "num_games");
             stats["numMaxScores"] = json!(number(&row, "num_max_scores"));
-            stats["numStrikeouts"] = json!(number(&row, "num_strikeouts"));
             stats["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
-            stats["strikeoutRate"] = json!(percentage(number(&row, "num_strikeouts"), games));
-            stats["averageScore"] = json!(average(&row));
             stats["bestScores"] = json!(
                 (2..=6)
                     .map(|p| number(&row, &format!("best_score{p}")))
@@ -277,14 +274,6 @@ fn percentage(n: i64, total: i64) -> String {
         }
     );
     s.strip_suffix(".0").unwrap_or(&s).to_owned()
-}
-fn average(row: &Value) -> String {
-    let v = row["average_score"].as_f64().unwrap_or(0.0);
-    if v == 0.0 {
-        "-".into()
-    } else {
-        format!("{v:.1}")
-    }
 }
 fn duration(seconds: i64) -> String {
     fn unit(n: i64, label: &str) -> String {
@@ -403,8 +392,8 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
     let rows = sqlx::query_as!(
         crate::database::UserStats,
         "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
-         best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod,
-         average_score,num_strikeouts FROM user_stats WHERE user_id=$1",
+         best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
+         FROM user_stats WHERE user_id=$1",
         id
     )
     .fetch_all(&state.pool)
@@ -432,9 +421,10 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
             best.push(json!({"score":score,"modifier":number(&row,&format!("best_score{p}_mod"))}));
         }
         let games = number(&row, "num_games");
-        rows.push(json!({"id":variant["id"],"name":variant["name"],"maxScore":max,"numGames":games,
-            "bestScores":best,"averageScore":average(&row),
-            "strikeoutRate":if games == 0 { "-".into() } else { percentage(number(&row,"num_strikeouts"),games) }}));
+        rows.push(
+            json!({"id":variant["id"],"name":variant["name"],"maxScore":max,"numGames":games,
+            "bestScores":best}),
+        );
     }
     let total: i64 = totals.iter().sum();
     Ok(
