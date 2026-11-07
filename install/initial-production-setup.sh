@@ -63,9 +63,9 @@ function main {
   }
   curl --silent --fail --show-error --location --output "$DOWNLOAD/$archive" "https://github.com/Hanabi-Live/hanabi-live/releases/download/server-$rev/$archive"
   git checkout "$rev"
-  python3 install/release.py init /root/hanabi-release
-  python3 install/release.py stage /root/hanabi-release "$DOWNLOAD/$archive" "$sha256"
-  cp --archive /root/hanabi-release/releases/"$rev"-rust/{hanabi-live,public,packages} .
+  python3 install/release.py init "$DOWNLOAD/release"
+  python3 install/release.py stage "$DOWNLOAD/release" "$DOWNLOAD/$archive" "$sha256"
+  cp --archive "$DOWNLOAD/release/releases/$rev-rust/"{hanabi-live,public,packages} .
 
   # Create the database and generate its password.
   local db_password session_secret
