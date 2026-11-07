@@ -45,6 +45,7 @@ fresh Ubuntu 26.04 server with ports 80 and 443 open and DNS pointing to it:
 ```sh
 apt update
 apt install --yes git
+mkdir -p /home/hanabi
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
 /home/hanabi/hanabi-live/install/initial-production-setup.sh
 ```
