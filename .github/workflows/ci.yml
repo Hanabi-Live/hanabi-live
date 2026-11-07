@@ -63,9 +63,9 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/cspell
-          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py') }}-${{ github.sha }}
+          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py', '.github/workflows/cspell-unused-words.yml') }}-${{ github.sha }}
           restore-keys: |
-            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py') }}-
+            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', 'scripts/cspell_cache_test.py', '.github/workflows/cspell-unused-words.yml') }}-
       - name: Test spelling cache invalidation
         if: matrix.shard == 2 && steps.cspell-cache.outputs.cache-matched-key == ''
         run: python3 -m unittest discover -s scripts -p 'cspell_cache_test.py'

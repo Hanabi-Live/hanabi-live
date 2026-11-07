@@ -1,0 +1,58 @@
+name: Remove unused CSpell words
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cspell-unused-words
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: ./.github/workflows/setup-bun
+      - name: Remove unused words
+        id: cleanup
+        run: |
+          bunx --bun --no-install cspell-check-unused-words --fix
+          if git diff --quiet -- cspell.config.jsonc; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Require a token that triggers CI for cleanup commits
+        if: steps.cleanup.outputs.changed == 'true'
+        env:
+          PUSH_TOKEN: ${{ secrets.CSPELL_PUSH_TOKEN }}
+        run: |
+          if [[ -z "$PUSH_TOKEN" ]]; then
+            echo "Set CSPELL_PUSH_TOKEN to a repository token with contents-write access. The default token cannot trigger the CI run required for deployment." >&2
+            exit 1
+          fi
+      - uses: ./.github/workflows/setup-rust
+        if: steps.cleanup.outputs.changed == 'true'
+      - name: Validate the cleaned configuration
+        if: steps.cleanup.outputs.changed == 'true'
+        run: bash lint.sh
+      - name: Commit and push the cleaned configuration
+        id: commit
+        if: steps.cleanup.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CSPELL_PUSH_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- cspell.config.jsonc
+          git commit -m "chore: remove unused words from the CSpell configuration file"
+          gh auth setup-git
+          # A newer main may use removed words. Reject stale pushes; its queued run will recompute.
+          git push origin HEAD:main
