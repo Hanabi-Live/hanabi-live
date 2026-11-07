@@ -234,6 +234,102 @@ impl Harness {
     }
 }
 #[tokio::test]
+async fn player_shadow_is_cleared_when_a_spectator_joins() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Observer"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Joining after shadowing", json!({})).await?;
+        for index in [1, 2] {
+            h.send(
+                index,
+                "tableSpectate",
+                json!({"tableID":id,"shadowingPlayerIndex":0}),
+            )
+            .await?;
+        }
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        let (table, _) = h.snapshot(id).await?;
+        for (index, player_id, spectator) in [(1, 2, false), (2, 1, true)] {
+            let seat = table
+                .players()
+                .iter()
+                .position(|p| p.id == player_id)
+                .unwrap();
+            h.send(index, "getGameInfo1", json!({"tableID":id})).await?;
+            let init = h.receive(index, "init").await?;
+            ensure!(
+                init["ourPlayerIndex"] == json!(seat)
+                    && init["spectating"] == spectator
+                    && init["shadowing"] == spectator,
+                "Joining changed the player or spectator viewpoint: {init}"
+            );
+        }
+        ensure!(
+            table.shadows.get(&2).copied().flatten().is_none(),
+            "Joining retained a durable shadow selection"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Recovered player viewpoint", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        h.stop_hub().await?;
+        let (mut table, revision) = h.snapshot(id).await?;
+        let alice = table.players().iter().position(|p| p.id == 1).unwrap();
+        let bob = table.players().iter().position(|p| p.id == 2).unwrap();
+        table.shadows.insert(2, Some(alice as i32));
+        h.store.save(&table, revision).await?;
+        h.tasks = TaskTracker::new();
+        h.hub = Hub::start(h.store.clone(), h.tasks.clone()).await?;
+        for index in 0..h.users.len() {
+            h.replace(index).await?;
+        }
+        for restarted in [false, true] {
+            if restarted {
+                h.restart().await?;
+            }
+            h.send(1, "tableReattend", json!({"tableID":id})).await?;
+            h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+            let init = h.receive(1, "init").await?;
+            ensure!(
+                init["ourPlayerIndex"] == json!(bob)
+                    && init["spectating"] == false
+                    && init["shadowing"] == false,
+                "A recovered player kept another player's viewpoint: {init}"
+            );
+            ensure!(
+                h.snapshot(id)
+                    .await?
+                    .0
+                    .shadows
+                    .get(&2)
+                    .copied()
+                    .flatten()
+                    .is_none(),
+                "Reconnect did not clear the durable shadow selection"
+            );
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_completed_replays()
 -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Observer", "Shadow"]).await? else {

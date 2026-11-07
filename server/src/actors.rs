@@ -2673,6 +2673,7 @@ impl TableActor {
         if let Phase::Pregame { players, .. } = &mut next.phase {
             players.push(player);
         }
+        next.shadows.remove(&session.user);
         let message = membership_notice(
             &mut next,
             &format!(
@@ -2717,13 +2718,15 @@ impl TableActor {
                 .as_i64()
                 .and_then(|v| usize::try_from(v).ok())
                 .filter(|v| *v < self.table.players().len())
-        } else {
+        } else if replay {
             self.table
                 .shadows
                 .get(&session.user)
                 .copied()
                 .flatten()
                 .and_then(|v| usize::try_from(v).ok())
+        } else {
+            None
         };
         let mut next = self.candidate();
         next.shadows.insert(session.user, shadow.map(|v| v as i32));
