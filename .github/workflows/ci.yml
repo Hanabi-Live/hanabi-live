@@ -84,6 +84,7 @@ jobs:
           key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
             lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-
       - name: Test Turbo and formatting cache invalidation
         if: matrix.shard == 1
         run: bunx --bun --no-install turbo run "//#test-lint-caches" --cache=local:rw
@@ -154,6 +155,7 @@ jobs:
           key: test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
             test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+            test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Test the TypeScript code
         run: bunx --bun --no-install turbo run "//#test" --cache=local:rw
@@ -228,6 +230,7 @@ jobs:
           key: vitest-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
             vitest-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+            vitest-turbo-v1-${{ runner.os }}-${{ runner.arch }}-
       - name: Test lobby state, transport and safe rendering
         if: matrix.suite == 'flows'
         run: bunx --bun --no-install turbo run "@hanabi-live/client-new#test" --cache=local:rw
