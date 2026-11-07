@@ -5,6 +5,8 @@ set -o errexit -o nounset -o pipefail
 DOMAIN="hanab.live"
 APP_USER="hanabi"
 APP="/home/$APP_USER/hanabi-live"
+DB_NAME="hanabi"
+DB_USER="hanabiuser"
 
 # Everything is in a function because "git checkout" can replace this file while it is running.
 function main {
@@ -64,8 +66,8 @@ function main {
   systemctl enable --now postgresql
   db_password=$(openssl rand -hex 32)
   sudo --user postgres psql --set ON_ERROR_STOP=1 << SQL
-CREATE USER hanabiuser PASSWORD '$db_password';
-CREATE DATABASE hanabi OWNER hanabiuser;
+CREATE USER $DB_USER PASSWORD '$db_password';
+CREATE DATABASE $DB_NAME OWNER $DB_USER;
 SQL
 
   # Configure the server.
@@ -74,8 +76,8 @@ SQL
   cat > .env << EOF
 DOMAIN="$DOMAIN"
 SESSION_SECRET="$session_secret"
-DB_NAME="hanabi"
-DB_USER="hanabiuser"
+DB_NAME="$DB_NAME"
+DB_USER="$DB_USER"
 DB_PASSWORD="$db_password"
 TLS_CERT_FILE="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
 TLS_KEY_FILE="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
