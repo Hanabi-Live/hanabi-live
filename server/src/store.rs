@@ -1158,9 +1158,13 @@ mod tests {
             return Ok(());
         };
         let result = async {
-            sqlx::raw_sql(include_str!(
-                "../../install/migrations/004_active_games.sql"
-            ))
+            sqlx::raw_sql(
+                "CREATE TABLE active_games (
+                    game_id integer PRIMARY KEY,
+                    revision bigint NOT NULL CHECK (revision > 0),
+                    checkpoint text NOT NULL
+                )",
+            )
             .execute(&pool)
             .await?;
             sqlx::query("INSERT INTO active_games VALUES (1, 1, 'pending checkpoint')")

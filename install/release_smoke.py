@@ -129,7 +129,7 @@ def exercise(archive, redis_url):
             env=pg_environment,
             check=True,
         )
-        # Exercise all tracked forward migrations against the pre-recovery schema.
+        # Reconstruct schema version 6, the supported upgrade baseline.
         subprocess.run(
             [
                 "psql",
@@ -137,7 +137,10 @@ def exercise(archive, redis_url):
                 "-v",
                 "ON_ERROR_STOP=1",
                 "-c",
-                "DROP TABLE game_custom_decks; ALTER TABLE users ADD COLUMN old_password_hash TEXT",
+                "CREATE TABLE active_games (game_id integer PRIMARY KEY, "
+                "revision bigint NOT NULL CHECK (revision > 0), checkpoint text NOT NULL); "
+                "CREATE TABLE schema_version (version integer PRIMARY KEY); "
+                "INSERT INTO schema_version VALUES (6)",
             ],
             env=pg_environment,
             check=True,
@@ -174,7 +177,7 @@ def exercise(archive, redis_url):
             ["psql", "-XAt", "-c", "SELECT version FROM schema_version"], env=pg_environment, text=True
         ).strip()
         assert version == "999"
-        target = len(list((installed / "install/migrations").glob("*.sql")))
+        target = release.migration_version(installed)
         subprocess.run(
             ["psql", "-Xq", "-v", "ON_ERROR_STOP=1", "-c", f"UPDATE schema_version SET version = {target}"],
             env=pg_environment,

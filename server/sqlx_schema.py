@@ -59,8 +59,10 @@ def main():
         ["createdb", "--maintenance-db", admin, name], env=env, check=True
     )
     try:
-        migrations = sorted((ROOT / "install/migrations").glob("[0-9]*_*.sql"))
-        version = max(int(path.name.split("_", 1)[0]) for path in migrations)
+        version = int(subprocess.check_output(
+            ["bash", str(ROOT / "install/migration-files.sh"), str(ROOT / "install/migrations")],
+            text=True,
+        ).strip())
         subprocess.run(
             [
                 "psql", "--no-psqlrc", "--quiet", "--dbname", database,
