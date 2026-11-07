@@ -1370,7 +1370,7 @@ fn replay_table(
                 leader: owner,
                 segment: 0,
                 efficiency_modifier: 0,
-                hypothetical: None,
+                hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
             },
@@ -3571,14 +3571,14 @@ impl TableActor {
                 json!({"tableID":self.table.id,"sound":r.sound}),
             ),
             3 => {
-                ensure!(replay.hypothetical.is_none(), "Already hypothetical");
-                replay.hypothetical = Some(Box::new(snapshot.game.0.clone()));
+                ensure!(!replay.hypothetical, "Already hypothetical");
+                replay.hypothetical = true;
                 replay.show_drawn_cards = false;
                 ("hypoStart", json!({"TableID":self.table.id}))
             }
             4 => {
-                ensure!(replay.hypothetical.is_some(), "Not hypothetical");
-                replay.hypothetical = None;
+                ensure!(replay.hypothetical, "Not hypothetical");
+                replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
                 ("hypoEnd", json!({"TableID":self.table.id}))
             }
@@ -4350,7 +4350,7 @@ impl TableActor {
                 ));
             }
             if let Phase::Replay { replay, .. } = &self.table.phase
-                && replay.hypothetical.is_some()
+                && replay.hypothetical
             {
                 e.messages.push((session,frame("hypothetical",json!({"showDrawnCards":replay.show_drawn_cards,"actions":replay.hypothetical_actions}))));
             }
