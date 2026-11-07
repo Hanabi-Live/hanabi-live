@@ -139,7 +139,7 @@ EOF
   curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/metrics
 
   # Renew certificates automatically, restarting gracefully as the app user.
-  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP_DIR/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP_DIR/admin/gracefulRestart.sh"
+  certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP_DIR/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP_DIR/scripts/localhost/gracefulRestart.sh"
   systemctl enable --now certbot.timer
 
   # Delete chat older than one year and back up PostgreSQL daily, as the app user.
