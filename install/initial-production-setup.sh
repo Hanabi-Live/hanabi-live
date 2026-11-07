@@ -91,7 +91,7 @@ REDIS_URL="redis+unix:///run/hanabi-redis/redis.sock"
 EOF
 
   # Configure durable, local-only Redis storage (instead of Ubuntu's default Redis service).
-  systemctl disable --now redis-server
+  systemctl mask --now redis-server
   install --directory --mode 755 /etc/hanabi-redis
   install --mode 640 --group hanabi-redis install/redis/redis.conf /etc/hanabi-redis/redis.conf
   install --mode 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
