@@ -36,7 +36,11 @@ CREATE TABLE users (
 
     last_ip              TEXT         NOT NULL,
     datetime_created     TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
-    datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
+    datetime_last_login  TIMESTAMPTZ  NOT NULL  DEFAULT NOW(),
+
+    /* Games that ended normally, kept by the "count_normal_games_of_participant" triggers. */
+    num_normal_games           INTEGER  NOT NULL  DEFAULT 0,
+    num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0
 );
 
 DROP TABLE IF EXISTS user_settings CASCADE;
@@ -211,6 +215,52 @@ CREATE TRIGGER delete_game_upon_participant_deletion
 AFTER DELETE ON game_participants
 FOR EACH ROW
 EXECUTE PROCEDURE delete_game_of_deleted_participant();
+
+DROP FUNCTION IF EXISTS count_normal_game_of_participant;
+CREATE FUNCTION count_normal_game_of_participant() RETURNS TRIGGER AS $_$
+DECLARE
+    participant game_participants;
+    change INTEGER;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        participant := NEW;
+        change := 1;
+    ELSE
+        participant := OLD;
+        change := -1;
+    END IF;
+    /* A deleted game is no longer visible here, so "uncount_normal_game" counts it out instead. */
+    UPDATE users SET
+        num_normal_games = num_normal_games + CASE WHEN games.speedrun THEN 0 ELSE change END,
+        num_normal_speedrun_games = num_normal_speedrun_games + CASE WHEN games.speedrun THEN change ELSE 0 END
+    FROM games
+    WHERE users.id = participant.user_id AND games.id = participant.game_id AND games.end_condition = 1;
+    RETURN NULL;
+END $_$ LANGUAGE 'plpgsql';
+
+/* This name sorts before "delete_game_upon_participant_deletion", so it runs while the game exists. */
+CREATE TRIGGER count_normal_games_of_participant
+AFTER INSERT OR DELETE ON game_participants
+FOR EACH ROW
+EXECUTE PROCEDURE count_normal_game_of_participant();
+
+DROP FUNCTION IF EXISTS uncount_normal_game;
+CREATE FUNCTION uncount_normal_game() RETURNS TRIGGER AS $_$
+BEGIN
+    IF OLD.end_condition = 1 THEN
+        UPDATE users SET
+            num_normal_games = num_normal_games - CASE WHEN OLD.speedrun THEN 0 ELSE 1 END,
+            num_normal_speedrun_games = num_normal_speedrun_games - CASE WHEN OLD.speedrun THEN 1 ELSE 0 END
+        FROM game_participants
+        WHERE game_participants.game_id = OLD.id AND users.id = game_participants.user_id;
+    END IF;
+    RETURN OLD;
+END $_$ LANGUAGE 'plpgsql';
+
+CREATE TRIGGER uncount_normal_game_upon_deletion
+BEFORE DELETE ON games
+FOR EACH ROW
+EXECUTE PROCEDURE uncount_normal_game();
 
 DROP TABLE IF EXISTS game_participant_notes CASCADE;
 CREATE TABLE game_participant_notes (

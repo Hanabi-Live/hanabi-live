@@ -10,11 +10,10 @@ pub(crate) async fn normal_game_counts(
     include_speedruns: bool,
 ) -> Result<BTreeMap<i32, i64>> {
     let rows = sqlx::query!(
-        "SELECT p.user_id, count(*) AS \"count!\"
-         FROM game_participants p
-         CROSS JOIN LATERAL (SELECT end_condition,speedrun FROM games WHERE id=p.game_id OFFSET 0) g
-         WHERE p.user_id=ANY($1) AND g.end_condition=1 AND ($2 OR NOT g.speedrun)
-         GROUP BY p.user_id",
+        "SELECT id AS user_id,
+         (num_normal_games + CASE WHEN $2 THEN num_normal_speedrun_games ELSE 0 END)::bigint
+         AS \"count!\"
+         FROM users WHERE id=ANY($1)",
         ids,
         include_speedruns,
     )
@@ -134,5 +133,93 @@ impl Default for UserSettings {
             create_table_detrimental_characters: false,
             create_table_max_players: 5,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normal_game_counts;
+    use crate::accounts::test_support::TestDb;
+
+    async fn game(db: &TestDb, end_condition: i16, speedrun: bool, players: &[i32]) -> i32 {
+        let id = sqlx::query_scalar!(
+            "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
+             card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,
+             datetime_finished)
+             VALUES('Counts',$1,0,false,0,0,$2,false,false,false,false,false,false,false,
+             'counts-'||gen_random_uuid(),0,1,$3,NOW(),NOW()) RETURNING id",
+            players.len() as i16,
+            speedrun,
+            end_condition,
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        for (seat, player) in players.iter().enumerate() {
+            sqlx::query!(
+                "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,
+                 character_metadata) VALUES($1,$2,$3,0,0)",
+                id,
+                player,
+                seat as i16,
+            )
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        }
+        id
+    }
+
+    async fn stored_counts_match_a_recount(db: &TestDb) -> bool {
+        sqlx::query_scalar!(
+            "SELECT NOT EXISTS(SELECT 1 FROM users u LEFT JOIN (
+               SELECT p.user_id, count(*) FILTER (WHERE NOT g.speedrun) AS normal,
+                      count(*) FILTER (WHERE g.speedrun) AS speedrun
+               FROM game_participants p JOIN games g ON g.id = p.game_id
+               WHERE g.end_condition = 1 GROUP BY p.user_id) c ON c.user_id = u.id
+             WHERE u.num_normal_games <> COALESCE(c.normal, 0)
+                OR u.num_normal_speedrun_games <> COALESCE(c.speedrun, 0)) AS \"value!\""
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+    }
+
+    #[tokio::test]
+    async fn normal_game_counts_follow_saved_and_deleted_games_postgres() {
+        let Some(db) = TestDb::create().await else {
+            return;
+        };
+        let (alice, bob, carol) = (
+            db.user("Alice").await,
+            db.user("Bob").await,
+            db.user("Carol").await,
+        );
+        let shared = game(&db, 1, false, &[alice, bob]).await;
+        game(&db, 1, true, &[alice]).await;
+        game(&db, 4, false, &[alice]).await;
+        game(&db, 1, false, &[bob, carol]).await;
+        assert!(stored_counts_match_a_recount(&db).await);
+        let ids = [alice, bob, carol];
+        let normal = normal_game_counts(&db.pool, &ids, false).await.unwrap();
+        let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
+        assert_eq!((normal[&alice], normal[&bob], normal[&carol]), (1, 2, 1));
+        assert_eq!((all[&alice], all[&bob], all[&carol]), (2, 2, 1));
+
+        sqlx::query!("DELETE FROM games WHERE id=$1", shared)
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        assert!(stored_counts_match_a_recount(&db).await);
+        // Deleting a player also deletes their games, which other players lose too.
+        sqlx::query!("DELETE FROM users WHERE id=$1", carol)
+            .execute(&db.pool)
+            .await
+            .unwrap();
+        assert!(stored_counts_match_a_recount(&db).await);
+        let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
+        assert_eq!((all[&alice], all[&bob], all.get(&carol)), (1, 0, None));
+        db.close().await;
     }
 }
