@@ -134,9 +134,9 @@ def download(github, run, revision, work):
     store = work / "staging"
     release.init_root(str(store))
     release.stage(store, archive, checksum[0])
-    staged = store / "releases" / f"{revision}-rust"
+    staged = store / "releases" / revision
     metadata = release.verify(staged)
-    require(metadata.get("runtime") == "rust" and metadata["revision"] == revision
+    require(metadata["revision"] == revision
             and metadata.get("dirty") is False, "Release identity or clean-build provenance differs.")
     require(re.fullmatch(
         re.escape(f"https://github.com/{REPOSITORY}/actions/runs/{run['id']}/attempts/") + r"[1-9][0-9]*",

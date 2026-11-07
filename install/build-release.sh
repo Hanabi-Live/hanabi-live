@@ -4,13 +4,8 @@ set -o errexit -o nounset -o pipefail
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 cd "$DIR/.."
-if (($# < 1 || $# > 2)) || [[ -e "$1" ]]; then
-  echo "Usage: $0 NEW_OUTPUT_DIRECTORY [rust]" >&2
-  exit 1
-fi
-runtime=${2:-rust}
-if [[ $runtime != rust ]]; then
-  echo "Only Rust server releases are supported." >&2
+if (($# != 1)) || [[ -e "$1" ]]; then
+  echo "Usage: $0 NEW_OUTPUT_DIRECTORY" >&2
   exit 1
 fi
 if [[ ${GITHUB_ACTIONS:-false} == true ]]; then
@@ -55,7 +50,7 @@ fi
 source install/migration-files.sh
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOBIN="$release/install" \
   go install -trimpath "github.com/jackc/tern/v2@$TERN_VERSION"
-python3 install/release.py manifest "$release" --runtime "$runtime"
+python3 install/release.py manifest "$release"
 python3 install/release.py verify "$release"
 archive="hanabi-live-$revision-linux-amd64.tar.gz"
 tar -czf "$output/$archive" -C "$release" .

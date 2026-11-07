@@ -77,7 +77,7 @@ function main {
   git checkout "$rev"
   python3 install/release.py init "$DOWNLOAD/release"
   python3 install/release.py stage "$DOWNLOAD/release" "$DOWNLOAD/$archive" "$sha256"
-  cp --archive "$DOWNLOAD/release/releases/$rev-rust/"{hanabi-live,public,packages} .
+  cp --archive "$DOWNLOAD/release/releases/$rev/"{hanabi-live,public,packages} .
 
   # Create the database and generate its password.
   local db_password session_secret

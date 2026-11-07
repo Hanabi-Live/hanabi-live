@@ -24,7 +24,6 @@ pub enum Mode {
 struct Manifest {
     format: u32,
     platform: String,
-    runtime: String,
     revision: String,
     #[serde(rename = "clientVersion")]
     client_version: String,
@@ -101,7 +100,7 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     let manifest: Manifest = serde_json::from_slice(&std::fs::read(path)?)?;
     ensure!(
-        manifest.format == 2 && manifest.platform == "linux-amd64" && manifest.runtime == "rust",
+        manifest.format == 2 && manifest.platform == "linux-amd64",
         "Unsupported native release"
     );
     ensure!(
@@ -269,7 +268,6 @@ mod tests {
         inventory(&root, &root, &mut files).unwrap();
         let mut manifest = json!({
             "format": 2,
-            "runtime": "rust",
             "platform": "linux-amd64",
             "revision": revision,
             "clientVersion": revision,

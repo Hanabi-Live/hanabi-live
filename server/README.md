@@ -96,11 +96,10 @@ To build locally on Linux amd64, install `musl-tools`, add Rust's
 `x86_64-unknown-linux-musl` target, and run:
 
 ```sh
-bash install/build-release.sh dist/rust-release
+bash install/build-release.sh dist/release
 ```
 
-Use the checksum-verified release installer. The `<revision>-rust` installation
-layout is retained for deployment compatibility. Activate with:
+Use the checksum-verified release installer. Activate with:
 
 ```sh
 python3 install/release.py activate /absolute/deployment/root REVISION \

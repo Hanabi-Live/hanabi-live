@@ -131,8 +131,7 @@ def files_in(directory):
     return result
 
 
-def manifest(directory, runtime="rust"):
-    require(runtime == "rust", "Only Rust releases are supported")
+def manifest(directory):
     revision = os.environ.get("HANABI_BUILD_REVISION")
     if revision is None:
         revision = git("rev-parse", "HEAD")
@@ -143,7 +142,6 @@ def manifest(directory, runtime="rust"):
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid build revision")
     metadata = {
         "format": 2,
-        "runtime": runtime,
         "platform": "linux-amd64",
         "revision": revision,
         "clientVersion": (directory / "public/js/bundles/version.txt").read_text().strip(),
@@ -157,12 +155,11 @@ def manifest(directory, runtime="rust"):
         "goVersion": subprocess.check_output(["go", "version"], text=True).strip(),
         "bunVersion": subprocess.check_output(["bun", "--version"], text=True).strip(),
         "files": files_in(directory),
-    }
-    if runtime == "rust":
-        metadata["rustTarget"] = "x86_64-unknown-linux-musl"
-        metadata["rustVersion"] = subprocess.check_output(
+        "rustTarget": "x86_64-unknown-linux-musl",
+        "rustVersion": subprocess.check_output(
             ["rustc", "--version"], cwd="server", text=True
-        ).strip()
+        ).strip(),
+    }
     require(
         os.environ.get("GITHUB_ACTIONS") != "true" or metadata["dirty"] is False,
         "CI releases require a verified clean source checkout",
@@ -179,7 +176,6 @@ def verify(directory):
     revision = metadata.get("revision", "")
     require(metadata.get("format") in (1, 2), "Unsupported release format")
     require(metadata.get("platform") == "linux-amd64", "Unsupported platform")
-    require(metadata.get("runtime") == "rust", "Only Rust releases are supported")
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
     if metadata["format"] == 1:
         # Keep already-published releases verifiable during the tooling transition.
@@ -307,9 +303,7 @@ def stage(root, archive, checksum):
                     seen.add(name)
                 stream.extractall(staging, members=members, filter="data")
             metadata = verify(staging)
-            require(metadata.get("runtime") == "rust", "Only Rust releases can be staged")
-            release_name = metadata["revision"] + "-rust"
-            destination = root / "releases" / release_name
+            destination = root / "releases" / metadata["revision"]
             require(not destination.exists(), "This revision is already installed")
             for name, target in RUNTIME_LINKS.items():
                 (staging / name).symlink_to(Path("../../shared") / target)
@@ -340,14 +334,11 @@ def stage(root, archive, checksum):
                 shutil.rmtree(staging)
 
 
-def activate(root, revision, runtime="rust"):
+def activate(root, revision):
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
-    require(runtime == "rust", "Only Rust releases can be activated")
     with locked(root):
-        release_name = revision + "-rust"
-        release = root / "releases" / release_name
-        metadata = verify(release)
-        require(metadata.get("runtime") == runtime, "Release runtime mismatch")
+        release = root / "releases" / revision
+        verify(release)
         for name, target in RUNTIME_LINKS.items():
             require(
                 (release / name).is_symlink()
@@ -367,9 +358,8 @@ def activate(root, revision, runtime="rust"):
         # Migration failure may leave forward-only schema changes, but never changes
         # current or checkpoints. Do not automatically start an older binary afterward.
         subprocess.run(["bash", str(release / "install/migrate.sh"), "apply"], check=True)
-        if runtime == "rust":
-            subprocess.run([str(release / "hanabi-live"), "--check-startup"], check=True)
-        pending.symlink_to(Path("releases") / release_name)
+        subprocess.run([str(release / "hanabi-live"), "--check-startup"], check=True)
+        pending.symlink_to(Path("releases") / revision)
         os.replace(pending, current)
         try:
             sync_directory(root)
@@ -386,10 +376,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     for command in ("manifest", "verify"):
-        child = commands.add_parser(command)
-        child.add_argument("directory", type=Path)
-        if command == "manifest":
-            child.add_argument("--runtime", choices=("rust",), default="rust")
+        commands.add_parser(command).add_argument("directory", type=Path)
     commands.add_parser("init").add_argument("root")
     stage_parser = commands.add_parser("stage")
     stage_parser.add_argument("root")
@@ -398,12 +385,11 @@ def main():
     activation = commands.add_parser("activate")
     activation.add_argument("root")
     activation.add_argument("revision")
-    activation.add_argument("--runtime", choices=("rust",), default="rust")
     activation.add_argument("--apply-migrations", action="store_true", required=True)
     args = parser.parse_args()
     try:
         if args.command == "manifest":
-            manifest(args.directory.resolve(), args.runtime)
+            manifest(args.directory.resolve())
         elif args.command == "verify":
             verify(args.directory.absolute())
         elif args.command == "init":
@@ -411,7 +397,7 @@ def main():
         elif args.command == "stage":
             stage(deployment_root(args.root), args.archive, args.sha256)
         else:
-            activate(deployment_root(args.root), args.revision, args.runtime)
+            activate(deployment_root(args.root), args.revision)
     except ReleaseStateUncertainError as error:
         parser.exit(2, f"Release state changed; durability unconfirmed: {error}\n")
     except (OSError, ValueError, KeyError, subprocess.SubprocessError, tarfile.TarError) as error:
