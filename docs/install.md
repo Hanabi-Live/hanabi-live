@@ -151,7 +151,8 @@ cookie domain. It does not expose the separate localhost control listener.
 Build both clients and the server:
 
 ```sh
-./install/install-dependencies.sh
+bun install --frozen-lockfile
+bun run build-client
 ./run.sh
 ```
 
