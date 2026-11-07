@@ -568,10 +568,13 @@ test("creation options, protected joins, invitations, friends, private chat and 
   await expect(
     b.getByText("Saved before joining.", { exact: true }),
   ).toHaveCount(1);
-  await host.getByRole("button", { name: "Actions for testUIHost" }).click();
-  await host.getByRole("button", { name: "Add friend" }).click();
-  await expect(host.getByRole("button", { name: "Unfriend" })).toBeVisible();
-  await host.getByRole("button", { name: "Message", exact: true }).click();
+  await b
+    .getByLabel("Chat message", { exact: true })
+    .fill("/friend testUIHost");
+  await b.getByLabel("Chat message", { exact: true }).press("Enter");
+  await expect(host.locator(".person-main.friend")).toBeVisible();
+  await b.getByRole("button", { name: /^Messages/u }).click();
+  await b.getByLabel("Message recipient").fill("testUIHost");
   await b
     .getByLabel("Chat message", { exact: true })
     .fill("Private draft, not for the lobby.");

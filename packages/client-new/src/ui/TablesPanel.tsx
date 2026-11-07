@@ -1,5 +1,4 @@
 import { errorDetails } from "@hanabi-live/data";
-import { useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
@@ -8,11 +7,9 @@ import { GameOptionIcons } from "./GameOptionIcons";
 
 export function TablesPanel({
   connection,
-  create,
   join,
 }: {
   connection: LobbyConnection;
-  create: () => void;
   join: (table: Table) => void;
 }) {
   const { tables, welcome, online, pending } = useSelector(
@@ -24,9 +21,6 @@ export function TablesPanel({
     }),
     shallowEqual,
   );
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [players, setPlayers] = useState("any");
   if (!welcome) {
     return null;
   }
@@ -52,49 +46,9 @@ export function TablesPanel({
           : 1;
     return kind + (tableHasFriends(table) ? 0 : 4);
   }
-  const visible = all
-    .filter((table) => {
-      if (
-        !`${table.name} ${table.variant} ${table.players.join(" ")}`
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      ) {
-        return false;
-      }
-      if (
-        players !== "any"
-        && table.maxPlayers !== Number(players)
-        && table.numPlayers !== Number(players)
-      ) {
-        return false;
-      }
-      switch (filter) {
-        case "open": {
-          return (
-            !table.running
-            && !table.sharedReplay
-            && table.numPlayers < table.maxPlayers
-          );
-        }
-
-        case "playing": {
-          return table.running && !table.sharedReplay;
-        }
-
-        case "replays": {
-          return table.sharedReplay;
-        }
-
-        case "friends": {
-          return tableHasFriends(table);
-        }
-
-        default: {
-          return true;
-        }
-      }
-    })
-    .toSorted((a, b) => priority(a) - priority(b) || a.id - b.id);
+  const visible = all.toSorted(
+    (a, b) => priority(a) - priority(b) || a.id - b.id,
+  );
   function activate(table: Table, copy = false) {
     if (!online || pending !== null) {
       return;
@@ -138,56 +92,6 @@ export function TablesPanel({
   return (
     <section aria-label="Available tables" className="classic-games-view">
       <h3 className="lobby-title">List of games</h3>
-      <details className="classic-filters">
-        <summary aria-label="Filter games" title="Filter games">
-          <i aria-hidden="true" className="fas fa-filter" />
-        </summary>
-        <div className="table-toolbar">
-          <label>
-            Search
-            <input
-              aria-label="Find a game"
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Tables, players, or variants"
-              type="search"
-              value={search}
-            />
-          </label>
-          <label>
-            Players
-            <select
-              onChange={(event) => setPlayers(event.target.value)}
-              value={players}
-            >
-              <option value="any">Any size</option>
-              {[2, 3, 4, 5, 6].map((value) => (
-                <option key={value} value={value}>
-                  {value} players
-                </option>
-              ))}
-            </select>
-          </label>
-          <div aria-label="Table filters" className="filter-tabs table-filters">
-            {(
-              [
-                ["all", "All tables"],
-                ["open", "Open seats"],
-                ["playing", "In progress"],
-                ["replays", "Replays"],
-                ["friends", "With friends"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                aria-pressed={filter === value}
-                key={value}
-                onClick={() => setFilter(value)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </details>
       <div className="lobby-table-container">
         <table className="alt" id="lobby-games-table">
           <thead>
@@ -373,23 +277,6 @@ export function TablesPanel({
             })}
           </tbody>
         </table>
-        {visible.length === 0 && (
-          <div className="empty">
-            <h3>No matching games.</h3>
-            <button
-              onClick={() => {
-                setSearch("");
-                setFilter("all");
-                setPlayers("any");
-              }}
-            >
-              Clear filters
-            </button>
-            <button disabled={!online} onClick={create}>
-              New Game
-            </button>
-          </div>
-        )}
       </div>
     </section>
   );

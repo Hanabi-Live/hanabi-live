@@ -222,12 +222,6 @@ const slice = createSlice({
             state.tableID = null;
             state.pending = null;
             state.typing = {};
-            if (event.command === "boot") {
-              state.notice = {
-                text: "The server returned you to the lobby.",
-                fatal: false,
-              };
-            }
           }
           break;
         }

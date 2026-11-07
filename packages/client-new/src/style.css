@@ -75,14 +75,6 @@
   color: blue;
   text-decoration: underline;
 }
-.client-new-classic .person-menu {
-  float: right;
-  opacity: 0;
-}
-.person:hover .person-menu,
-.person:focus-within .person-menu {
-  opacity: 1;
-}
 html[data-theme="dark"] .client-new-classic .person-status {
   color: var(--dm-link);
 }
@@ -143,6 +135,7 @@ html[data-theme="dark"] .client-new-classic .person-status {
   margin-left: 0.25em;
 }
 #main-content {
+  position: relative;
   height: 100%;
   min-height: 0;
 }
@@ -165,39 +158,6 @@ html[data-theme="dark"] .client-new-classic .person-status {
   flex: 1;
   min-height: 0;
   height: auto;
-}
-.classic-filters {
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 2;
-}
-.classic-filters > summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 0 0.2em;
-  color: #777;
-}
-.classic-filters > summary::-webkit-details-marker {
-  display: none;
-}
-.classic-filters[open] {
-  width: min(500px, 100%);
-  background: #fff;
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  padding: 1em;
-  box-shadow: 0 5px 15px #0002;
-}
-.classic-filters[open] > summary {
-  float: right;
-}
-.table-toolbar {
-  display: grid;
-  gap: 0.7em;
-}
-.table-toolbar label {
-  margin: 0;
 }
 .filter-tabs {
   display: flex;
@@ -237,38 +197,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .people-panel {
   position: relative;
-}
-.people-filters {
-  top: 1.5em;
-  right: 1.5em;
-}
-.people-panel .filter-tabs {
-  margin-bottom: 0.75em;
-}
-.person-actions {
-  display: flex;
-  gap: 0.5em;
-  flex-wrap: wrap;
-  padding-top: 0.5em;
-  font-size: 0.8em;
-}
-.person-actions a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-}
-.offline-person {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1em;
-  padding: 0.5em;
-}
-.offline-person small {
-  margin-left: 0.5em;
-}
-.offline-person .avatar {
-  display: none;
 }
 .chat-panel {
   display: block;
@@ -346,6 +274,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   padding: 0.6em 3em 0.6em 1em;
   line-height: 1.8em;
   overflow-y: auto;
+  scrollbar-width: none;
 }
 .composer-actions {
   position: absolute;
@@ -363,7 +292,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   color: #777;
   border: 0;
   background: none;
-  font-size: 1em;
+  font-size: 13.3333px;
 }
 .client-new-classic .focusable-send:focus {
   position: absolute;
@@ -412,39 +341,13 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .chat-panel {
   position: relative;
 }
-.emoji-picker {
-  position: absolute;
-  z-index: 30;
-  bottom: 5em;
-  right: 1.5em;
-  background: white;
-  padding: 1em;
-  border: 1px solid #999;
-  border-radius: 5px;
-  width: min(350px, calc(100% - 3em));
-  box-shadow: 0 5px 20px #0003;
-}
-.emoji-picker > div:first-child {
+.client-new-classic #emoji-picker .emoji-choice {
   display: flex;
-  gap: 0.5em;
-}
-.emoji-picker .filter-tabs {
-  margin: 0.5em 0;
-}
-.emoji-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  max-height: 220px;
-  overflow-y: auto;
-}
-.client-new-classic .emoji-grid button {
-  padding: 0.3em;
-  background: transparent;
+  height: auto;
+  padding: 0;
+  background: none;
   color: inherit;
-}
-.emoji-grid img {
-  max-width: 30px;
-  max-height: 30px;
+  line-height: normal;
 }
 .mobile-tabs {
   display: none;
@@ -456,6 +359,14 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   color: var(--login-alert-text);
   border-radius: 5px;
   margin-bottom: 0.7em;
+}
+/* Notices float over the panel so that showing one never moves the layout. */
+.lobby-notices {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
 }
 .global-notice,
 .connection-status {
@@ -896,6 +807,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   flex-direction: column;
 }
 .classic-history-scroll {
+  flex: 1;
   overflow: auto;
   min-height: 0;
 }
@@ -903,7 +815,13 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   display: flex;
   gap: 2em;
   justify-content: center;
-  padding-top: 1em;
+}
+/* The classic client's history buttons keep the browser's default button font. */
+.client-new-classic .history-table button.button,
+.client-new-classic .classic-history-footer .button {
+  font-family: Arial;
+  font-size: 13.3333px;
+  line-height: 3em;
 }
 .history-table .history-card {
   display: table-row;
@@ -1180,15 +1098,9 @@ html[data-theme="dark"] .classic-score-tooltip {
 .classic-room-info > .classic-invite:focus-visible {
   opacity: 1;
 }
-.classic-filters,
 .chat-header .filter-tabs {
   opacity: 0;
 }
-.classic-filters[open],
-.classic-filters:focus-within,
-.classic-games-view:hover .classic-filters,
-.classic-history:hover .classic-filters,
-.people-panel:hover .classic-filters,
 .chat-panel:hover .chat-header .filter-tabs,
 .chat-header .filter-tabs:focus-within,
 .chat-header .filter-tabs:has(.unread-badge),
@@ -1239,8 +1151,6 @@ html[data-theme="dark"] .classic-score-tooltip {
 .classic-full-page #lobby-separator {
   display: none;
 }
-html[data-theme="dark"] .client-new-classic .classic-filters[open],
-html[data-theme="dark"] .client-new-classic .emoji-picker,
 html[data-theme="dark"] .dialog-content {
   background: var(--dm-surface);
   border-color: var(--dm-border);
@@ -1320,7 +1230,6 @@ html[data-theme="dark"] .seat {
   }
 }
 @media (max-height: 530px), (max-width: 620px) {
-  .classic-filters,
   .chat-header .filter-tabs,
   .client-new-classic .classic-room-info > .classic-invite {
     opacity: 1;

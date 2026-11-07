@@ -75,7 +75,10 @@ export function ClassicHeader({
                     }
                   >
                     <i aria-hidden="true" className="fas fa-play nav-icon" />
-                    <span className="hidden-xs">Start Game</span>
+                    <span className="hidden-xs">
+                      <span className="nav-hotkey-indicator">S</span>tart
+                      <span className="hidden-md"> Game</span>
+                    </span>
                   </button>
                 </li>
                 {!player && (
@@ -100,7 +103,10 @@ export function ClassicHeader({
                         aria-hidden="true"
                         className="fas fa-sign-in-alt nav-icon"
                       />
-                      <span className="hidden-xs">Join Game</span>
+                      <span className="hidden-xs">
+                        <span className="nav-hotkey-indicator">J</span>oin
+                        <span className="hidden-md"> Game</span>
+                      </span>
                     </button>
                   </li>
                 )}
@@ -121,7 +127,10 @@ export function ClassicHeader({
                       }}
                     >
                       <i aria-hidden="true" className="fas fa-ghost nav-icon" />
-                      <span className="hidden-xs">Spectate Game</span>
+                      <span className="hidden-xs">
+                        S<span className="nav-hotkey-indicator">p</span>ectate
+                        <span className="hidden-md"> Game</span>
+                      </span>
                     </button>
                   </li>
                 )}
@@ -133,7 +142,10 @@ export function ClassicHeader({
                     onClick={edit}
                   >
                     <i aria-hidden="true" className="fas fa-rainbow nav-icon" />
-                    <span className="hidden-md">Change Options</span>
+                    <span className="hidden-md">
+                      <span className="nav-hotkey-indicator">C</span>hange
+                      Options
+                    </span>
                   </button>
                 </li>
                 <li>
@@ -148,7 +160,10 @@ export function ClassicHeader({
                     }
                   >
                     <i aria-hidden="true" className="fas fa-pause nav-icon" />
-                    <span className="hidden-md">Return to Lobby</span>
+                    <span className="hidden-md">
+                      <span className="nav-hotkey-indicator">R</span>eturn to
+                      Lobby
+                    </span>
                   </button>
                 </li>
                 <li>
@@ -163,7 +178,10 @@ export function ClassicHeader({
                     }
                   >
                     <i aria-hidden="true" className="fas fa-times nav-icon" />
-                    <span className="hidden-xs">Leave Game</span>
+                    <span className="hidden-xs">
+                      <span className="nav-hotkey-indicator">L</span>eave
+                      <span className="hidden-md"> Game</span>
+                    </span>
                   </button>
                 </li>
               </>
@@ -185,7 +203,8 @@ export function ClassicHeader({
                 <li>
                   <Link aria-label="Return to Lobby" className="button" to="/">
                     <i aria-hidden="true" className="fas fa-home nav-icon" />
-                    Return to Lobby
+                    <span className="nav-hotkey-indicator">R</span>eturn to
+                    Lobby
                   </Link>
                 </li>
               </>
@@ -200,21 +219,23 @@ export function ClassicHeader({
                   >
                     <i aria-hidden="true" className="fas fa-plus nav-icon" />
                     <span className="hidden-xs">
-                      New<span className="hidden-xl"> Game</span>
+                      <span className="nav-hotkey-indicator">N</span>ew
+                      <span className="hidden-xl"> Game</span>
                     </span>
                   </button>
                 </li>
                 <li className="hidden-xs">
                   <Link className="button" to="/history">
                     <i aria-hidden="true" className="fas fa-history nav-icon" />
-                    History
+                    <span className="nav-hotkey-indicator">H</span>istory
                   </Link>
                 </li>
                 <li>
                   <Link aria-label="Replays" className="button" to="/replays">
                     <i aria-hidden="true" className="fas fa-eye nav-icon" />
                     <span className="hidden-xs">
-                      <span className="hidden-xl">Watch </span>Replay
+                      <span className="hidden-xl">Watch </span>Repl
+                      <span className="nav-hotkey-indicator">a</span>y
                     </span>
                   </Link>
                 </li>
@@ -271,7 +292,9 @@ export function ClassicHeader({
                       aria-hidden="true"
                       className="fas fa-sign-out-alt nav-icon"
                     />
-                    <span className="hidden-md">Sign Out</span>
+                    <span className="hidden-md">
+                      Sign <span className="nav-hotkey-indicator">O</span>ut
+                    </span>
                   </button>
                 </li>
               </>

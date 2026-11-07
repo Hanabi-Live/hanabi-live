@@ -1,6 +1,6 @@
 import { errorDetails, httpError } from "@hanabi-live/data";
 import { getVariant } from "@hanabi-live/game";
-import { Play, Search } from "lucide-react";
+import { Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -123,7 +123,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
     }),
     shallowEqual,
   );
-  const [search, setSearch] = useState("");
   const [seed, setSeed] = useState<string | null>(null);
   useEffect(() => {
     if (state.connection !== "online") {
@@ -134,15 +133,10 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
       amount: 10,
     });
   }, [connection, state.connection]);
-  const allGames = Object.values(state.history).toSorted(
+  const games = Object.values(state.history).toSorted(
     (a, b) =>
       Date.parse(b.datetimeFinished) - Date.parse(a.datetimeFinished)
       || b.id - a.id,
-  );
-  const games = allGames.filter((game) =>
-    `${game.id} ${game.options.variantName} ${game.playerNames.join(" ")} ${game.tags}`
-      .toLowerCase()
-      .includes(search.toLowerCase()),
   );
   const loading = state.historyLoading;
   const hasMore = state.historyHasMore;
@@ -199,7 +193,10 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                   }
                   onClick={() => replay(game, "solo")}
                 >
-                  <i aria-hidden="true" className="fas fa-eye" />
+                  <i
+                    aria-hidden="true"
+                    className="fas fa-eye lobby-button-icon"
+                  />
                   <span className="sr-only">Replay</span>
                 </button>
               </td>
@@ -212,7 +209,10 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                   }
                   onClick={() => replay(game, "shared")}
                 >
-                  <i aria-hidden="true" className="fas fa-users" />
+                  <i
+                    aria-hidden="true"
+                    className="fas fa-users lobby-button-icon"
+                  />
                 </button>
               </td>
               <td>
@@ -224,7 +224,11 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                     setSeed(game.seed);
                   }}
                 >
-                  <i aria-hidden="true" className="fas fa-chart-bar" />{" "}
+                  <i
+                    aria-hidden="true"
+                    className="fas fa-chart-bar lobby-button-icon"
+                  />
+                  {"\u{A0} "}
                   {Math.max(0, game.numGamesOnThisSeed - 1)}
                 </button>
               </td>
@@ -236,21 +240,6 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
   }
   return (
     <section className="classic-history">
-      <details className="classic-filters">
-        <summary aria-label="Search history">
-          <Search size={14} />
-        </summary>
-        <label className="search-label">
-          <Search size={16} />
-          <input
-            aria-label="Search loaded history"
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search loaded games, players, and tags..."
-            type="search"
-            value={search}
-          />
-        </label>
-      </details>
       <div className="classic-history-scroll">
         {games.length > 0 ? (
           rows(games)
@@ -265,30 +254,33 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
             </p>
           </div>
         )}
-      </div>
-      <div className="classic-history-footer">
-        {hasMore && (
-          <button
-            className="load-more"
-            disabled={loading || state.connection !== "online"}
-            onClick={() =>
-              connection.send("historyGet", {
-                offset: allGames.length,
-                amount: 10,
-              })
-            }
+        <div className="classic-history-footer">
+          {hasMore && (
+            <button
+              className="button load-more"
+              disabled={loading || state.connection !== "online"}
+              onClick={() =>
+                connection.send("historyGet", {
+                  offset: games.length,
+                  amount: 10,
+                })
+              }
+            >
+              <i aria-hidden="true" className="fas fa-chevron-circle-down" />
+              {"\u{A0} "}
+              {loading ? "Loading..." : "Show More History"}
+            </button>
+          )}
+          <a
+            className="button"
+            href={`/history/${encodeURIComponent(state.welcome?.username ?? "")}`}
+            rel="noreferrer"
+            target="_blank"
           >
-            {loading ? "Loading..." : "Show More History"}
-          </button>
-        )}
-        <a
-          className="button"
-          href={`/history/${encodeURIComponent(state.welcome?.username ?? "")}`}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <i aria-hidden="true" className="fas fa-history" /> All History
-        </a>
+            <i aria-hidden="true" className="fas fa-history" />
+            {"\u{A0} "}All History
+          </a>
+        </div>
       </div>
       {seed !== null && (
         <Modal

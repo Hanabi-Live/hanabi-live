@@ -45,6 +45,18 @@ function lobby(onRender: () => void) {
     store,
     vi.fn(() => true),
   );
+  store.dispatch(
+    actions.received({
+      command: "chat",
+      data: SERVER_COMMAND_SCHEMAS.chat.parse({
+        who: "Bob",
+        room: "lobby",
+        source: "user",
+        msg: "Hello.",
+        datetime: "2026-01-01T00:00:00Z",
+      }),
+    }),
+  );
   const send = vi.spyOn(connection, "send").mockReturnValue(true);
   render(
     <Provider store={store}>
@@ -55,7 +67,6 @@ function lobby(onRender: () => void) {
       </MemoryRouter>
     </Provider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: /Bob/u }));
   return { send, store };
 }
 
@@ -68,7 +79,7 @@ it("selects the private recipient and channel in the same commit, including reop
     }
   });
   observing = true;
-  fireEvent.click(screen.getByRole("button", { name: "Message" }));
+  fireEvent.click(screen.getByRole("button", { name: "Bob" }));
   observing = false;
   expect(channels.length).toBeGreaterThan(0);
   expect(channels.every((channel) => channel === "private messages")).toBe(
@@ -81,7 +92,7 @@ it("selects the private recipient and channel in the same commit, including reop
   expect(
     screen.getByLabelText("Chat message").getAttribute("placeholder"),
   ).toBe("Chat");
-  fireEvent.click(screen.getByRole("button", { name: "Message" }));
+  fireEvent.click(screen.getByRole("button", { name: "Bob" }));
   expect(screen.getByRole("log").getAttribute("aria-label")).toBe(
     "private messages",
   );
@@ -91,7 +102,7 @@ it("selects the private recipient and channel in the same commit, including reop
 it("keeps recipient edits focused and isolates private drafts from public chat and other recipients", async () => {
   const { send } = lobby(vi.fn());
   const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: "Message" }));
+  await user.click(screen.getByRole("button", { name: "Bob" }));
   await user.type(screen.getByLabelText("Chat message"), "For Bob only");
   await user.click(screen.getByRole("button", { name: "Lobby" }));
   expect(screen.queryByDisplayValue("For Bob only")).toBeNull();
@@ -112,7 +123,7 @@ it("keeps recipient edits focused and isolates private drafts from public chat a
   });
   await user.click(screen.getByRole("button", { name: "Lobby" }));
   expect(screen.getByDisplayValue("Hello lobby")).toBeDefined();
-  await user.click(screen.getByRole("button", { name: "Message" }));
+  await user.click(screen.getByRole("button", { name: "Bob" }));
   expect(screen.getByDisplayValue("For Bob only")).toBeDefined();
 });
 
@@ -197,6 +208,27 @@ it("does not treat a server notice as a previous private correspondent", () => {
       "There is no previous private message to reply to, or the reply is empty.",
     ),
   ).toBeDefined();
+});
+
+it("shows the server notice label in red and bolds player names like the classic client", () => {
+  const { store } = lobby(vi.fn());
+  act(() => {
+    store.dispatch(
+      actions.received({
+        command: "chat",
+        data: SERVER_COMMAND_SCHEMAS.chat.parse({
+          who: "__server",
+          source: "server",
+          msg: "[Server Notice] See the roadmap.",
+          datetime: "2026-01-01T00:00:00Z",
+        }),
+      }),
+    );
+  });
+  const log = within(screen.getByRole("log", { name: "lobby messages" }));
+  expect(log.getByText("[Server Notice]").className).toBe("red");
+  expect(log.getByText(/See the roadmap\./u)).toBeDefined();
+  expect(log.getByText("Bob").tagName).toBe("STRONG");
 });
 
 it("renders system messages without exposing an internal sender as a player", () => {

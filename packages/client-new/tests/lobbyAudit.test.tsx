@@ -180,7 +180,7 @@ it("keeps the current user and friends first without moving away users out of al
   const connection = new LobbyConnection(store, vi.fn());
   const view = render(
     <Provider store={store}>
-      <PeoplePanel connection={connection} join={vi.fn()} message={vi.fn()} />
+      <PeoplePanel connection={connection} join={vi.fn()} />
     </Provider>,
   );
   expect(
@@ -242,7 +242,7 @@ it("preserves classic table grouping and oldest-first ordering within each group
   const connection = new LobbyConnection(store, vi.fn());
   const view = render(
     <Provider store={store}>
-      <TablesPanel connection={connection} create={vi.fn()} join={vi.fn()} />
+      <TablesPanel connection={connection} join={vi.fn()} />
     </Provider>,
   );
   expect(
@@ -258,14 +258,6 @@ it("preserves classic table grouping and oldest-first ordering within each group
     "Running newer",
     "Review",
   ]);
-  fireEvent.click(
-    screen.getByRole("button", { name: "With friends", hidden: true }),
-  );
-  expect(
-    [...view.container.querySelectorAll(".classic-row-name")].map((element) =>
-      element.textContent.trim(),
-    ),
-  ).toEqual(["Friend"]);
 });
 
 it("uses saved timer preferences when editing an untimed table rather than its unlimited runtime clock", () => {

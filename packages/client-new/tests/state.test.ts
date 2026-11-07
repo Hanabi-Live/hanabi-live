@@ -6,6 +6,26 @@ import { actions, createLobbyStore } from "../src/store";
 import { welcome } from "./messages";
 
 describe("authoritative lobby state", () => {
+  it("returns to the lobby without a notice when the server boots you from a table", () => {
+    const store = createLobbyStore();
+    store.dispatch(actions.received({ command: "welcome", data: welcome() }));
+    store.dispatch(
+      actions.received({
+        command: "joined",
+        data: { tableID: tableID.parse(7) },
+      }),
+    );
+    expect(store.getState().tableID).toBe(7);
+    store.dispatch(
+      actions.received({
+        command: "boot",
+        data: { TableID: tableID.parse(7) },
+      }),
+    );
+    expect(store.getState().tableID).toBeNull();
+    expect(store.getState().notice).toBeNull();
+  });
+
   it("keeps a usable connection when deferred statistics fail instead of inventing zero games", () => {
     const store = createLobbyStore();
     store.dispatch(

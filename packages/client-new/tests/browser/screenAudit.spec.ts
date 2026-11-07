@@ -396,11 +396,6 @@ for (const theme of ["light", "dark"] as const) {
           a.locator(".history-card").getByLabel("Empty clues"),
         ).toBeVisible();
         await expect(a.locator(".history-card")).toContainText("0/25");
-        await a.locator(".classic-history").hover();
-        await expect(a.locator(".classic-history .classic-filters")).toHaveCSS(
-          "opacity",
-          "1",
-        );
         await auditViewport(a, "new-history");
         await a
           .getByRole("button", { name: "Compare seed", exact: true })

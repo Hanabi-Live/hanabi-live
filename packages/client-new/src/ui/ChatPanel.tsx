@@ -1,5 +1,5 @@
 import { CHAT_EMOJIS as emojis } from "@hanabi-live/data";
-import { ArrowDown, Send, X } from "lucide-react";
+import { ArrowDown, Send } from "lucide-react";
 import type { KeyboardEvent, SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -7,7 +7,10 @@ import { sendChat } from "../chatCommands";
 import type { LobbyConnection } from "../connection";
 import type { LobbyState } from "../store";
 import { emoteImages } from "../symbols";
+import { Modal } from "./Modal";
 import { RichText } from "./RichText";
+
+const SERVER_NOTICE = "[Server Notice]";
 
 export type ChatChannel = "lobby" | "table" | "private";
 
@@ -50,8 +53,6 @@ export function ChatPanel({
   );
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [emojiOpen, setEmojiOpen] = useState(false);
-  const [emojiSearch, setEmojiSearch] = useState("");
-  const [showEmotes, setShowEmotes] = useState(false);
   const [unread, setUnread] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -358,14 +359,22 @@ export function ChatPanel({
                     }
                   }}
                 >
-                  {message.who}
+                  <strong>{message.who}</strong>
                 </button>
                 {message.recipient ? ` to ${message.recipient}] ` : "> "}
               </>
             )}
             <span className="message-content">
+              {message.source === "server"
+                && message.msg.startsWith(SERVER_NOTICE) && (
+                  <span className="red">{SERVER_NOTICE}</span>
+                )}
               <RichText
-                html={message.msg}
+                html={
+                  message.source === "server"
+                    ? message.msg.replace(SERVER_NOTICE, "")
+                    : message.msg
+                }
                 {...(message.source === "server" ? { onOptions } : {})}
               />
             </span>
@@ -428,7 +437,11 @@ export function ChatPanel({
               channel === "table" ? "Choose pre-game emoji" : "Choose emoji"
             }
             className="icon-button emoji-button"
-            onClick={() => setEmojiOpen(!emojiOpen)}
+            onClick={() => {
+              // The picker returns focus here when it closes.
+              inputRef.current?.focus();
+              setEmojiOpen(true);
+            }}
             type="button"
           >
             <i aria-hidden="true" className="fas fa-smile" />
@@ -446,82 +459,49 @@ export function ChatPanel({
         </div>
       </form>
       {emojiOpen && (
-        <div className="emoji-picker">
-          <div>
-            <input
-              aria-label="Find emoji"
-              onChange={(event) => setEmojiSearch(event.target.value)}
-              placeholder="Find an emoji..."
-              value={emojiSearch}
-            />
-            <button
-              aria-label="Close emoji picker"
-              className="icon-button"
-              onClick={() => setEmojiOpen(false)}
-            >
-              <X size={15} />
-            </button>
+        <Modal
+          close={() => setEmojiOpen(false)}
+          description="Choose an emote or emoji to add to your message."
+          title="Select Emote / Emoji"
+        >
+          <div id="emoji-picker">
+            {[...emoteImages].map(([name, image]) => (
+              <button
+                aria-label={name}
+                className="emoji-choice"
+                key={name}
+                onClick={() => {
+                  setText((current) => `${current}${name} `);
+                  setEmojiOpen(false);
+                }}
+                title={name}
+                type="button"
+              >
+                <img
+                  alt={name}
+                  className="chat-emote"
+                  loading="lazy"
+                  src={image}
+                />
+              </button>
+            ))}
+            {Object.entries(emojis).map(([name, emoji]) => (
+              <button
+                aria-label={name}
+                className="emoji-choice emoji-item"
+                key={name}
+                onClick={() => {
+                  setText((current) => `${current}${emoji}`);
+                  setEmojiOpen(false);
+                }}
+                title={`:${name}:`}
+                type="button"
+              >
+                {emoji}
+              </button>
+            ))}
           </div>
-          <div className="filter-tabs">
-            <button
-              aria-pressed={!showEmotes}
-              onClick={() => setShowEmotes(false)}
-            >
-              Emoji
-            </button>
-            <button
-              aria-pressed={showEmotes}
-              onClick={() => setShowEmotes(true)}
-            >
-              Emotes
-            </button>
-          </div>
-          <div className="emoji-grid">
-            {showEmotes
-              ? [...emoteImages]
-                  .filter(([name]) =>
-                    name.toLowerCase().includes(emojiSearch.toLowerCase()),
-                  )
-                  .slice(0, 100)
-                  .map(([name, image]) => (
-                    <button
-                      aria-label={name}
-                      key={name}
-                      onClick={() => {
-                        setText(
-                          (current) =>
-                            `${current}${current.endsWith(" ") || current === "" ? "" : " "}${name} `,
-                        );
-                        inputRef.current?.focus();
-                      }}
-                      title={name}
-                    >
-                      <img
-                        alt={name}
-                        className="chat-emote"
-                        loading="lazy"
-                        src={image}
-                      />
-                    </button>
-                  ))
-              : Object.entries(emojis)
-                  .filter(([name]) => name.includes(emojiSearch.toLowerCase()))
-                  .slice(0, 100)
-                  .map(([name, emoji]) => (
-                    <button
-                      aria-label={name}
-                      key={name}
-                      onClick={() => {
-                        setText((current) => `${current}${emoji}`);
-                        inputRef.current?.focus();
-                      }}
-                      title={name}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-          </div>
-        </div>
+        </Modal>
       )}
     </section>
   );

@@ -277,6 +277,21 @@ export function App({ connection }: { connection: LobbyConnection }) {
             break;
           }
 
+          case "KeyP": {
+            if (
+              table
+              && table.players.some((player) => player.you)
+              && table.players.length >= 2
+            ) {
+              connection.send("tableLeave", { tableID: table.tableID });
+              connection.send("tableSpectate", {
+                tableID: table.tableID,
+                shadowingPlayerIndex: -1,
+              });
+            }
+            break;
+          }
+
           case "KeyL": {
             if (table) {
               connection.send(
@@ -710,68 +725,62 @@ export function App({ connection }: { connection: LobbyConnection }) {
               id={pregameOpen ? "lobby-pregame" : "lobby-games"}
             >
               <main id="main-content">
-                <div
-                  className={online ? "sr-only" : "notice connection-status"}
-                >
-                  <span aria-label="Connection status" role="status">
-                    {online
-                      ? "Connected"
-                      : state.connection === "stopped"
-                        ? "Disconnected"
-                        : "Reconnecting..."}
-                  </span>
-                  {!online && (
-                    <button
-                      className="text-button"
-                      onClick={() => connection.retryNow()}
-                    >
-                      Retry
-                    </button>
-                  )}
-                </div>
-                {state.lobbyError && (
-                  <div className="notice" role="alert">
-                    {state.lobbyError}
-                    <button
-                      onClick={() => connection.send("lobbyLoad", {})}
-                      type="button"
-                    >
-                      Retry statistics
-                    </button>
-                  </div>
-                )}
-                {state.notice && (
-                  <div className="notice global-notice" role="alert">
-                    <RichText html={state.notice.text} />
-                    <button
-                      aria-label="Dismiss notice"
-                      className="icon-button"
-                      onClick={() => connection.dismiss()}
-                    >
-                      <X size={16} />
-                    </button>
-                    {state.notice.fatal && (
-                      <button onClick={() => connection.retryNow()}>
-                        Reconnect
+                <div className="lobby-notices">
+                  <div
+                    className={online ? "sr-only" : "notice connection-status"}
+                  >
+                    <span aria-label="Connection status" role="status">
+                      {online
+                        ? "Connected"
+                        : state.connection === "stopped"
+                          ? "Disconnected"
+                          : "Reconnecting..."}
+                    </span>
+                    {!online && (
+                      <button
+                        className="text-button"
+                        onClick={() => connection.retryNow()}
+                      >
+                        Retry
                       </button>
                     )}
                   </div>
-                )}
+                  {state.lobbyError && (
+                    <div className="notice" role="alert">
+                      {state.lobbyError}
+                      <button
+                        onClick={() => connection.send("lobbyLoad", {})}
+                        type="button"
+                      >
+                        Retry statistics
+                      </button>
+                    </div>
+                  )}
+                  {state.notice && (
+                    <div className="notice global-notice" role="alert">
+                      <RichText html={state.notice.text} />
+                      <button
+                        aria-label="Dismiss notice"
+                        className="icon-button"
+                        onClick={() => connection.dismiss()}
+                      >
+                        <X size={16} />
+                      </button>
+                      {state.notice.fatal && (
+                        <button onClick={() => connection.retryNow()}>
+                          Reconnect
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {["/replays", "/resources", "/settings"].includes(pathname) && (
-                  <TablesPanel
-                    connection={connection}
-                    create={() => setDialog("create")}
-                    join={join}
-                  />
+                  <TablesPanel connection={connection} join={join} />
                 )}
                 <Routes>
                   <Route
                     element={
-                      <TablesPanel
-                        connection={connection}
-                        create={() => setDialog("create")}
-                        join={join}
-                      />
+                      <TablesPanel connection={connection} join={join} />
                     }
                     index
                   />
@@ -907,11 +916,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
             className="col-4 lobby-users-box-container"
             id="lobby-online-users"
           >
-            <PeoplePanel
-              connection={connection}
-              join={join}
-              message={message}
-            />
+            <PeoplePanel connection={connection} join={join} />
           </div>
         </div>
         <nav aria-label="Mobile panels" className="mobile-tabs">
