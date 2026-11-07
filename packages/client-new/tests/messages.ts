@@ -10,8 +10,7 @@ export function welcome(userID = 1): Welcome {
     firstTimeUser: false,
     settings: defaultSettings,
     friends: [],
+    connectionMode: "initial",
     playingAtTables: [],
-    shuttingDown: false,
-    maintenanceMode: false,
   });
 }

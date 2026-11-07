@@ -716,7 +716,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Register {
             session: new.clone(),
-            welcome: json!({}),
+            welcome: crate::actors::test_welcome(),
             initial: vec![],
             reply,
         })

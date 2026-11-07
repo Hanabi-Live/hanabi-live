@@ -104,7 +104,6 @@ const HAND_WRITTEN_SERVER_MESSAGES = [
   "table",
   "tableList",
   "voteChange",
-  "welcome",
 ] as const;
 
 test("only the listed server messages use hand-written schemas", () => {

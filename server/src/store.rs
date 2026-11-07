@@ -1659,7 +1659,7 @@ mod tests {
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
-                welcome: json!({}),
+                welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
             })
@@ -1724,7 +1724,7 @@ mod tests {
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
-                welcome: json!({}),
+                welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
             })
@@ -1868,7 +1868,7 @@ mod tests {
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
-                welcome: json!({}),
+                welcome: crate::actors::test_welcome(),
                 initial: vec![],
                 reply,
             })

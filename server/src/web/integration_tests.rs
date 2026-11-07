@@ -581,7 +581,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     .await
     .expect("Archive reads blocked the welcome")
     .unwrap();
-    assert_eq!(prepared.welcome["totalGames"], Value::Null);
+    assert_eq!(prepared.welcome.total_games, None);
     assert_eq!(
         prepared.initial,
         vec![frame(
