@@ -103,34 +103,19 @@ gzip -t "$PARTIAL_PATH"
 mv -- "$PARTIAL_PATH" "$BACKUPS_DIR/$FILENAME"
 echo "Completed database backup: $FILENAME"
 
-# Delete old backups if the hard drive is getting full (but skip this if we are on Windows).
-function delete_file_if_near_full_local {
-  local amount_full oldest_file file
-  while true; do
-    amount_full=$(df -Pk "$BACKUPS_DIR" | awk 'NR == 2 { sub(/%$/, "", $5); print $5 }')
-    echo "Local hard drive amount full: $amount_full"
-    if ((amount_full <= 75)); then
-      return
-    fi
-    oldest_file=""
-    for file in "$BACKUPS_DIR/$REPO_NAME-"*.sql.gz; do
-      if [[ -f $file && $file != "$BACKUPS_DIR/$FILENAME" ]]; then
-        if [[ -z $oldest_file || $file -ot $oldest_file ]]; then
-          oldest_file=$file
-        fi
-      fi
-    done
-    if [[ -z $oldest_file ]]; then
-      echo "No older backups remain to prune; keeping the newest completed backup." >&2
-      return
-    fi
-    rm -- "$oldest_file"
-    echo "Hard drive over 75% full; deleted the oldest backup: $oldest_file"
+KEEP_LOCAL_BACKUPS=2 # Every backup is also uploaded to Google Drive.
+
+# Delete all but the newest local backups. The names contain fixed-width epoch timestamps, so the
+# glob lists them from oldest to newest. Incomplete backups are hidden and do not match.
+function delete_old_local_backups {
+  local backups=("$BACKUPS_DIR/$REPO_NAME-"*.sql.gz)
+  local index
+  for ((index = 0; index < ${#backups[@]} - KEEP_LOCAL_BACKUPS; index++)); do
+    rm -- "${backups[index]}"
+    echo "Deleted an old local backup: ${backups[index]}"
   done
 }
-if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
-  delete_file_if_near_full_local
-fi
+delete_old_local_backups
 
 # Detect to see if we have Google Drive backups configured (see "install.md").
 if [[ -z ${GOOGLE_DRIVE_SERVICE_ACCOUNT_FILENAME-} ]]; then
