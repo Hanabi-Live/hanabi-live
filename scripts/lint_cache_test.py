@@ -202,6 +202,25 @@ class LintCacheTests(unittest.TestCase):
         self.turbo(task=task)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 
+    def test_existing_cache_survives_unrelated_task_configuration_changes(self):
+        self.turbo()
+        configuration = json.loads((self.root / "turbo.json").read_text())
+        configuration["tasks"]["//#test"]["env"].append("FORCE_COLOR")
+        self.write("turbo.json", json.dumps(configuration))
+        self.turbo()
+        for package in self.packages:
+            self.assertEqual(
+                (self.root / f"packages/{package}/.turbo/executions").read_text(),
+                "ran\n",
+            )
+        self.write("packages/game/src/index.ts", "export const changed = true;\n")
+        self.turbo()
+        for package in self.packages:
+            self.assertEqual(
+                (self.root / f"packages/{package}/.turbo/executions").read_text(),
+                "ran\nran\n",
+            )
+
     def test_shared_inputs_and_ignored_runtime_version(self):
         for name in (
             "eslint.config.mjs",
