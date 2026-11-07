@@ -35,6 +35,10 @@ function main {
   mkdir --parents /etc/needrestart/conf.d
   echo "\$nrconf{restart} = 'l';" > /etc/needrestart/conf.d/hanabi.conf
 
+  # Size PostgreSQL's cache and Redis's limit from the server's memory, in KiB.
+  local memory_kb
+  memory_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
+
   # Allow only SSH, HTTP, and HTTPS through the firewall.
   ufw allow OpenSSH
   ufw allow 80/tcp  # HTTP
@@ -75,10 +79,10 @@ function main {
 
   # Create the database and generate its password.
   local db_password session_secret
-  # Use about a quarter of the server's 4 GB of memory for PostgreSQL's cache, instead of the 128 MB
-  # default. This only takes effect when PostgreSQL restarts.
+  # Use a quarter of memory for PostgreSQL's cache, instead of the 128 MB default. This only takes
+  # effect when PostgreSQL restarts.
   for dir in /etc/postgresql/*/main/conf.d; do
-    echo "shared_buffers = 1GB" > "$dir/hanabi.conf"
+    echo "shared_buffers = $((memory_kb / 4))kB" > "$dir/hanabi.conf"
   done
   systemctl enable postgresql
   systemctl restart postgresql
@@ -106,6 +110,9 @@ EOF
   systemctl mask --now redis-server
   install --directory --mode 755 /etc/hanabi-redis
   install --mode 640 --group hanabi-redis install/redis/redis.conf /etc/hanabi-redis/redis.conf
+  # Let Redis use a fifth of memory.
+  sed --in-place "s/^maxmemory .*/maxmemory $((memory_kb / 5))kb/" /etc/hanabi-redis/redis.conf
+  grep --quiet "^maxmemory $((memory_kb / 5))kb$" /etc/hanabi-redis/redis.conf
   install --mode 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
 
   # Prevent Redis background saves from failing under memory pressure.
