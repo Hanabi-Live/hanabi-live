@@ -234,7 +234,8 @@ def publish(root, staged, metadata):
 def prune(backups):
     """Keep records of finished deployments, but only recent replaced files and no downloads.
 
-    Failed deployments are evidence, so they are left as they are.
+    Deployments that failed after changing production are evidence, so they are left as they are.
+    One that stopped while staging changed nothing, so only its record is kept.
     """
     try:
         finished = []
@@ -242,7 +243,7 @@ def prune(backups):
             journal = work / "deployment.json"
             try:
                 phase = json.loads(journal.read_text()).get("phase")
-                if phase in ("verified", "checked"):
+                if phase in ("verified", "checked", "staging"):
                     finished.append((journal.stat().st_mtime, work, phase))
             except (OSError, ValueError):
                 continue
@@ -345,10 +346,16 @@ def deploy(root, check, apply_migrations):
         journal = work / "deployment.json"
         record = {"previous": running, "revision": revision, "run": run["id"], "phase": "staging"}
 
+        def save():
+            journal.write_text(json.dumps(record, indent=2) + "\n")
+
         def phase(value):
             record["phase"] = value
-            journal.write_text(json.dumps(record, indent=2) + "\n")
+            save()
             print(value, flush=True)
+
+        # Record the deployment before downloading, so that pruning can find a failed download.
+        save()
 
         try:
             staged, metadata = download(github, run, revision, work)
