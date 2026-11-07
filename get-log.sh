@@ -11,5 +11,5 @@ LOCAL_LOG_PATH="$DIR/logs/hanabi-live.log"
 
 # Download the server log.
 mkdir -p "$(dirname "$LOCAL_LOG_PATH")"
-ssh "$REMOTE" 'if systemctl cat hanabi-live &> /dev/null; then journalctl --unit=hanabi-live --no-pager --output=cat; else cat /root/hanabi-live/logs/hanabi-live.log; fi' > "$LOCAL_LOG_PATH"
+ssh "$REMOTE" 'journalctl --unit=hanabi-live --no-pager --output=cat' > "$LOCAL_LOG_PATH"
 echo "Downloaded the server log to: $LOCAL_LOG_PATH"

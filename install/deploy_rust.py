@@ -355,7 +355,7 @@ def deploy(root, check, apply_migrations):
 
 
 def main():
-    require(sys.version_info >= (3, 12), "Python 3.12+ is required; install /opt/hanabi-python/bin/python3.")
+    require(sys.version_info >= (3, 12), "Python 3.12+ is required.")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Download and verify without publication or restart")
     parser.add_argument("--apply-migrations", action="store_true", help="Approve pending forward migrations")

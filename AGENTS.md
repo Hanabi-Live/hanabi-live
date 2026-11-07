@@ -134,10 +134,10 @@ checks for generation drift. Keep legacy compatibility differences explicit.
 
 ## Production server
 
-You can SSH to the production server with `ssh root@hanab.live`. The repository
-is at `~/hanabi-live`. The server log is at
-`~/hanabi-live/logs/hanabi-live.log`. (You can use `./get-log.sh` to download
-it.)
+You can SSH to the production server with `ssh root@hanab.live`. The server runs
+as the `hanabi` user from `/home/hanabi/hanabi-live`, using the `hanabi-live`
+systemd service. Read its log with `journalctl --unit=hanabi-live`. (You can use
+`./get-log.sh` to download it.)
 
 To deploy a new copy of the client code or the server code to production, run
 `./deploy.sh` from your laptop, which uses SSH to connect and run the necessary
@@ -154,14 +154,13 @@ requires Redis state and cross-store consistency. Keep the Redis endpoint,
 database identity, and namespace stable. A binary rollback cannot convert live
 state to another format.
 
-**Never use `supervisorctl restart` or `supervisorctl stop` on a running game
-server.** Use `/gracefulRestart` to restart, `/gracefulStop` to stop immediately
-while preserving active games for recovery. Verify a successful process exit
-before maintaining storage; a successful HTTP response only acknowledges the
-request. `supervisorctl start` is only appropriate when the server is already
-stopped. An HTTP success response does not prove a graceful restart has
-finished: verify the new PID, running revision, restored tables, client assets,
-and logs.
+**Never use `systemctl restart` or `systemctl stop` on a running game server.**
+Use `/gracefulRestart` to restart, `/gracefulStop` to stop immediately while
+preserving active games for recovery. Verify a successful process exit before
+maintaining storage; a successful HTTP response only acknowledges the request.
+`systemctl start` is only appropriate when the server is already stopped. An
+HTTP success response does not prove a graceful restart has finished: verify the
+new PID, running revision, restored tables, client assets, and logs.
 
 ## Database migrations
 

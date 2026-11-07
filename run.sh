@@ -7,7 +7,6 @@ set -o errexit -o nounset -o pipefail
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Ensure that the "logs" directory exists.
-# (If it does not exist, Supervisor will fail to start the service.)
 mkdir -p "$DIR/logs"
 
 bash "$DIR/server/build-server.sh"
