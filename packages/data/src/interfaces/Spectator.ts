@@ -5,7 +5,11 @@ export const spectator = z
   .object({
     name: z.string().min(1),
     shadowingPlayerIndex: playerIndex.or(z.literal(-1)).optional(),
-    shadowingPlayerUsername: z.string().min(1).optional(),
+    // The server sends an empty name for a spectator who is not shadowing anyone.
+    shadowingPlayerUsername: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(1).optional(),
+    ),
   })
   .strict()
   .readonly();

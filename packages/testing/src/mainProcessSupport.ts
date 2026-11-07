@@ -12,6 +12,7 @@ import { WebSocket } from "ws";
 import { z } from "zod";
 import { decodeSessionCookie } from "./cookie";
 import type { evaluationDatabase } from "./database";
+import { serverFrameViolation } from "./serverFrames";
 
 export const ROOT = path.resolve(__dirname, "../../..");
 
@@ -315,7 +316,13 @@ export function socketClient(address: string, cookie: string): SocketClient {
   }
   socket.on("message", (raw) => {
     if (Buffer.isBuffer(raw)) {
-      messages.push(raw.toString());
+      const message = raw.toString();
+      const violation = serverFrameViolation(message);
+      if (violation === undefined) {
+        messages.push(message);
+      } else {
+        failure ??= new Error(violation);
+      }
     } else {
       failure = new Error("Expected a text WebSocket frame.");
     }

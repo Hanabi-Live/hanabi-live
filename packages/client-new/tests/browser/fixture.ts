@@ -1,5 +1,9 @@
-import { evaluationDatabase, redisFixture } from "@hanabi-live/testing";
-import type { Locator, Page } from "@playwright/test";
+import {
+  evaluationDatabase,
+  redisFixture,
+  serverFrameViolation,
+} from "@hanabi-live/testing";
+import type { BrowserContext, Locator, Page } from "@playwright/test";
 import { test as base, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -39,9 +43,44 @@ async function port(): Promise<number> {
   return address.port;
 }
 
+// Every frame the server sends during a test must match the schema the clients parse it with.
+const violations: string[] = [];
+const watched = new WeakSet<BrowserContext | Page>();
+
+function watchPage(page: Page) {
+  if (watched.has(page)) {
+    return;
+  }
+  watched.add(page);
+  page.on("websocket", (socket) => {
+    // Development pages also open Vite's hot-reload socket.
+    if (new URL(socket.url()).pathname !== "/ws") {
+      return;
+    }
+    socket.on("framereceived", ({ payload }) => {
+      if (typeof payload === "string") {
+        const violation = serverFrameViolation(payload);
+        if (violation !== undefined) {
+          violations.push(violation);
+        }
+      }
+    });
+  });
+}
+
+function watchContext(context: BrowserContext) {
+  if (watched.has(context)) {
+    return;
+  }
+  watched.add(context);
+  context.on("page", watchPage);
+  for (const page of context.pages()) {
+    watchPage(page);
+  }
+}
+
 export const test = base.extend<
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Playwright has no additional per-test fixtures.
-  {},
+  { serverFrames: undefined },
   {
     backend: string;
     server: {
@@ -52,6 +91,37 @@ export const test = base.extend<
     };
   }
 >({
+  browser: [
+    async ({ browser }, useBrowser) => {
+      const newContext = browser.newContext.bind(browser);
+      const newPage = browser.newPage.bind(browser);
+      browser.newContext = async (options) => {
+        const context = await newContext(options);
+        watchContext(context);
+        return context;
+      };
+      browser.newPage = async (options) => {
+        const page = await newPage(options);
+        watchContext(page.context());
+        watchPage(page);
+        return page;
+      };
+      await useBrowser(browser);
+    },
+    { scope: "worker" },
+  ],
+  context: async ({ context }, provideContext) => {
+    watchContext(context);
+    await provideContext(context);
+  },
+  serverFrames: [
+    async ({ browserName: _browserName }, useServerFrames) => {
+      violations.length = 0;
+      await useServerFrames(undefined);
+      expect(violations, "Invalid server frames").toEqual([]);
+    },
+    { auto: true },
+  ],
   backend: [
     async ({ server }, useBackend) => {
       await useBackend(server.url);
