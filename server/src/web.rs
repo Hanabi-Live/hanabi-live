@@ -148,7 +148,7 @@ impl App {
             && self.store.check_state().is_ok()
     }
 
-    pub fn telemetry(&self, report: &crate::errors::Report) {
+    pub fn alert(&self, report: &crate::errors::Report) {
         if let Some(integrations) = self.integrations.get() {
             integrations.report(report);
         }
@@ -577,7 +577,7 @@ async fn websocket(
                             Some(30),
                         );
                         report.log();
-                        app.telemetry(&report);
+                        app.alert(&report);
                     }
                 })
                 .await;
@@ -756,7 +756,7 @@ async fn connection(
                         Some(if history_command(name) { 2 } else { 30 }),
                     );
                     report.log();
-                    app.telemetry(&report);
+                    app.alert(&report);
                     accounts::escape_html(&report.text())
                 } else {
                     accounts::escape_html(&error.to_string())

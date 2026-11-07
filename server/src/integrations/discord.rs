@@ -381,7 +381,7 @@ impl Bridge {
                     let report =
                         crate::errors::Report::from_error("Processing Discord event", &error, None);
                     report.log();
-                    app.telemetry(&report);
+                    app.alert(&report);
                 }
             }
             inbound.status.store(4, Ordering::Release);
@@ -524,6 +524,12 @@ impl Bridge {
             .as_str()
             .context("Discord message identity missing")?
             .into())
+    }
+
+    /// Posts a server error alert to the development channel, without mentions.
+    pub async fn alert(&self, text: &str) -> Result<()> {
+        self.send_to(&self.config.development, text, false).await?;
+        Ok(())
     }
 
     pub async fn mirror(&self, chat_id: i32, supplied: Option<&str>) -> Result<()> {

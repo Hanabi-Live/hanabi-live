@@ -103,14 +103,13 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
     let integrations = super::Integrations {
         discord: Some(bridge.clone()),
         discord_failed: false,
-        telemetry: super::telemetry::Telemetry::start(
-            "",
+        alerts: super::alerts::Alerts::start(
+            None,
             true,
             "test".into(),
             &fixture.app.background,
             fixture.app.shutdown.clone(),
-        )
-        .unwrap(),
+        ),
     };
     tokio::time::timeout(Duration::from_secs(2), async {
         integrations
