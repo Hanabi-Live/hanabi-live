@@ -107,6 +107,22 @@ export const errorNoticeSchema = z
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
+export const historyRequestSchema = z.strictObject({
+  amount: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  offset: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+});
+export const historySeedRequestSchema = z.strictObject({ seed: z.string() });
+export const inactiveRequestSchema = z.strictObject({ inactive: z.boolean() });
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
   z.strictObject({
@@ -142,8 +158,27 @@ export const replayActionRequestSchema = z.strictObject({
   type: z.number().int().min(0).max(8),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
+const replaySourceSchema = z.enum(["id", "json"]);
+const replayVisibilitySchema = z.enum(["solo", "shared"]);
+export const replayCreateRequestSchema = z.strictObject({
+  databaseID: z.number().int().min(1).max(2_147_483_647).optional(),
+  gameJSON: z.unknown().optional(),
+  password: z.string().default(""),
+  shadowingPlayerIndex: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(-1),
+  source: replaySourceSchema,
+  visibility: replayVisibilitySchema,
+});
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
+});
+export const settingRequestSchema = z.strictObject({
+  name: z.string(),
+  setting: z.string(),
 });
 export const settingsSchema = z
   .strictObject({
@@ -184,6 +219,63 @@ export const soundLobbySchema = z
   .strictObject({ file: z.string().min(1) })
   .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
+const tableOptionsSchema = z.strictObject({
+  allOrNothing: z.boolean().default(false),
+  cardCycle: z.boolean().default(false),
+  deckPlays: z.boolean().default(false),
+  detrimentalCharacters: z.boolean().default(false),
+  emptyClues: z.boolean().default(false),
+  maxPlayers: z.number().int().min(2).max(6).optional(),
+  numPlayers: z.number().int().min(2).max(6).default(2),
+  oneExtraCard: z.boolean().default(false),
+  oneLessCard: z.boolean().default(false),
+  speedrun: z.boolean().default(false),
+  startingPlayer: z.number().int().min(0).max(9_007_199_254_740_991).default(0),
+  tableName: z.string().optional(),
+  timeBase: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  timePerTurn: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  timed: z.boolean().default(false),
+  variantID: z.number().int().min(0).max(4_294_967_295).optional(),
+  variantName: z.string().default("No Variant"),
+});
+export const tableCreateRequestSchema = z.strictObject({
+  gameJSON: z.unknown().optional(),
+  hidePregame: z.boolean().default(false),
+  maxPlayers: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(5),
+  name: z.string().default(""),
+  options: tableOptionsSchema.default({
+    allOrNothing: false,
+    cardCycle: false,
+    deckPlays: false,
+    detrimentalCharacters: false,
+    emptyClues: false,
+    numPlayers: 2,
+    oneExtraCard: false,
+    oneLessCard: false,
+    speedrun: false,
+    startingPlayer: 0,
+    timeBase: 0,
+    timePerTurn: 0,
+    timed: false,
+    variantName: "No Variant",
+  }),
+  password: z.string().default(""),
+});
 export const tableJoinRequestSchema = z.strictObject({
   password: z.string().default(""),
   tableID: tableIdSchema,
@@ -224,6 +316,35 @@ export const tableSuggestRequestSchema = z.strictObject({
     .default(0),
   tableID: tableIdSchema,
 });
+export const tableUpdateRequestSchema = z.strictObject({
+  gameJSON: z.unknown().optional(),
+  hidePregame: z.boolean().default(false),
+  maxPlayers: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(5),
+  name: z.string().default(""),
+  options: tableOptionsSchema.default({
+    allOrNothing: false,
+    cardCycle: false,
+    deckPlays: false,
+    detrimentalCharacters: false,
+    emptyClues: false,
+    numPlayers: 2,
+    oneExtraCard: false,
+    oneLessCard: false,
+    speedrun: false,
+    startingPlayer: 0,
+    timeBase: 0,
+    timePerTurn: 0,
+    timed: false,
+    variantName: "No Variant",
+  }),
+  password: z.string().default(""),
+  tableID: tableIdSchema,
+});
 const variantChoiceSchema = z.strictObject({
   variantName: z.string().default(""),
 });
@@ -235,6 +356,10 @@ export const tagRequestSchema = z.strictObject({
   msg: z.string(),
   room: z.string().default(""),
   tableID: tableIdSchema,
+});
+export const tagSearchRequestSchema = z.strictObject({
+  msg: z.string().default(""),
+  room: z.string().default(""),
 });
 export const tagsDeleteAllRequestSchema = z.strictObject({
   room: z.string().default(""),
@@ -297,12 +422,18 @@ export const CLIENT_WIRE_SCHEMAS = {
   chatUnlink: chatUserRequestSchema,
   getGameInfo1: tableCommandSchema,
   getGameInfo2: tableCommandSchema,
+  historyGet: historyRequestSchema,
+  historyGetSeed: historySeedRequestSchema,
+  inactive: inactiveRequestSchema,
   loaded: tableCommandSchema,
   lobbyLoad: emptySchema,
   note: noteRequestSchema,
   pause: pauseRequestSchema,
   replayAction: replayActionRequestSchema,
+  replayCreate: replayCreateRequestSchema,
+  setting: settingRequestSchema,
   sync: emptySchema,
+  tableCreate: tableCreateRequestSchema,
   tableJoin: tableJoinRequestSchema,
   tableLeave: tableRequestSchema,
   tableReattend: tableRequestSchema,
@@ -314,9 +445,11 @@ export const CLIENT_WIRE_SCHEMAS = {
   tableSuggest: tableSuggestRequestSchema,
   tableTerminate: tableCommandSchema,
   tableUnattend: tableCommandSchema,
+  tableUpdate: tableUpdateRequestSchema,
   tableVoteForTermination: tableCommandSchema,
   tag: tagRequestSchema,
   tagDelete: tagRequestSchema,
+  tagSearch: tagSearchRequestSchema,
   tagsDeleteAll: tagsDeleteAllRequestSchema,
 } as const;
 export const SERVER_WIRE_SCHEMAS = {

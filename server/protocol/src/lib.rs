@@ -200,6 +200,196 @@ pub struct TableSpectateRequest {
     pub shadowing_player_index: i64,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SettingRequest {
+    pub name: String,
+    /// The value as text; the server parses it according to the setting.
+    pub setting: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InactiveRequest {
+    pub inactive: bool,
+}
+
+/// A page of the player's own game history. Negative values get a friendly warning.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HistoryRequest {
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub offset: i64,
+    /// 0 requests every game.
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub amount: i64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HistorySeedRequest {
+    pub seed: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TagSearchRequest {
+    #[serde(default)]
+    pub msg: String,
+    #[serde(default)]
+    pub room: String,
+}
+
+fn two() -> u8 {
+    2
+}
+
+fn no_variant() -> String {
+    "No Variant".into()
+}
+
+fn five() -> i64 {
+    5
+}
+
+/// Game options for a new or updated table. Unset values take their defaults.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableOptions {
+    #[serde(default = "two")]
+    #[schemars(range(min = 2, max = 6))]
+    pub num_players: u8,
+    /// Only games from before April 2020 used another starting seat.
+    #[serde(default)]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub starting_player: i64,
+    #[serde(default = "no_variant")]
+    pub variant_name: String,
+    #[serde(default, rename = "variantID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
+    pub variant_id: Option<u32>,
+    #[serde(default)]
+    pub timed: bool,
+    /// Minutes.
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_base: i64,
+    /// Seconds.
+    #[serde(default)]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_per_turn: i64,
+    #[serde(default)]
+    pub speedrun: bool,
+    #[serde(default)]
+    pub card_cycle: bool,
+    #[serde(default)]
+    pub deck_plays: bool,
+    #[serde(default)]
+    pub empty_clues: bool,
+    #[serde(default)]
+    pub one_extra_card: bool,
+    #[serde(default)]
+    pub one_less_card: bool,
+    #[serde(default)]
+    pub all_or_nothing: bool,
+    #[serde(default)]
+    pub detrimental_characters: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub table_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u8", range(min = 2, max = 6))]
+    pub max_players: Option<u8>,
+}
+
+impl Default for TableOptions {
+    fn default() -> Self {
+        serde_json::from_value(serde_json::json!({})).expect("every option has a default")
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableCreateRequest {
+    /// Blank uses the owner's name.
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub options: TableOptions,
+    #[serde(default)]
+    pub password: String,
+    #[serde(default = "five")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub max_players: i64,
+    #[serde(default)]
+    pub hide_pregame: bool,
+    /// A game to play from a custom deck, in the replay import format.
+    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "serde_json::Value")]
+    pub game_json: Option<serde_json::Value>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TableUpdateRequest {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub options: TableOptions,
+    #[serde(default)]
+    pub password: String,
+    #[serde(default = "five")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub max_players: i64,
+    #[serde(default)]
+    pub hide_pregame: bool,
+    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "serde_json::Value")]
+    pub game_json: Option<serde_json::Value>,
+}
+
+/// `id` replays a finished game from the database; `json` imports a game in the replay format.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum ReplaySource {
+    Id,
+    Json,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum ReplayVisibility {
+    Solo,
+    Shared,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayCreateRequest {
+    pub source: ReplaySource,
+    pub visibility: ReplayVisibility,
+    #[serde(
+        default,
+        rename = "databaseID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "i32", range(min = 1, max = i32::MAX))]
+    pub database_id: Option<i32>,
+    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "serde_json::Value")]
+    pub game_json: Option<serde_json::Value>,
+    /// Replays cannot have a password; anything else is rejected.
+    #[serde(default)]
+    pub password: String,
+    #[serde(default = "negative_one")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub shadowing_player_index: i64,
+}
+
 /// A turn in an ongoing game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -631,6 +821,15 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         TableRestartRequest,
         TableSuggestRequest,
         TableSpectateRequest,
+        SettingRequest,
+        InactiveRequest,
+        HistoryRequest,
+        HistorySeedRequest,
+        TagSearchRequest,
+        TableOptions,
+        TableCreateRequest,
+        TableUpdateRequest,
+        ReplayCreateRequest,
         ActionRequest,
         PauseRequest,
         NoteRequest,
