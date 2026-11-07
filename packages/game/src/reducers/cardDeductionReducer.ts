@@ -1,8 +1,4 @@
-import {
-  arrayCopyTwoDimensional,
-  assertDefined,
-  tupleKeys,
-} from "complete-common";
+import { arrayCopyTwoDimensional, tupleKeys } from "complete-common";
 import { getVariant } from "../gameData";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
@@ -420,135 +416,85 @@ function deckPossibilitiesDifferent(
   return false;
 }
 
-function filterCardPossibilities(
+export function filterCardPossibilities(
   cardPossibilities: readonly SuitRankTuple[],
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
   cardCountMap: readonly number[][],
 ): readonly SuitRankTuple[] {
-  /**
-   * Tracks what possibilities have yet to be validated for a specific card from a specific
-   * perspective. When a specific possibility/identity for that card is validated in the
-   * `possibilityValid` function (by finding a working combination of card identities), it will
-   * check if it is possible to swap the identity for our specific card and still have a working
-   * combination. If so, then the new identity for our specific card is also valid and does not need
-   * to be validated again (so it is removed from the array).
-   */
-  const possibilitiesToValidate = [...cardPossibilities];
-
-  return cardPossibilities.filter((possibility) => {
-    // If the possibility is not in the list that still needs validation then it must mean the
-    // possibility is already validated and we can exit early.
-    if (!hasPossibility(possibilitiesToValidate, possibility)) {
-      return true;
-    }
-    return possibilityValid(
-      possibility,
-      deckPossibilities,
-      0,
-      cardCountMap,
-      possibilitiesToValidate,
-    );
-  });
-}
-
-function hasPossibility(
-  possibilitiesToValidate: readonly SuitRankTuple[],
-  [suitIndex, rank]: SuitRankTuple,
-): boolean {
-  return possibilitiesToValidate.some(
-    ([suitIndexCandidate, rankCandidate]) =>
-      suitIndexCandidate === suitIndex && rankCandidate === rank,
+  return cardPossibilities.filter((possibility) =>
+    possibilityValid(possibility, deckPossibilities, cardCountMap),
   );
 }
 
-/** Mutates the `countCountMap` and `possibilitiesToValidate` in-place. */
+/**
+ * Checks whether our card can have the given identity while every card in `deckPossibilities` has
+ * one of its own possibilities, without using more copies of an identity than exist.
+ *
+ * This is a bipartite matching between cards and card copies, so it is solved with augmenting paths
+ * in polynomial time. (Backtracking over every combination is exponential when there is no valid
+ * combination, which froze games with many unknown clued cards, such as Throw It in a Hole.)
+ */
 function possibilityValid(
-  [suitIndex, rank]: readonly [SuitIndex, Rank],
+  [suitIndex, rank]: SuitRankTuple,
   deckPossibilities: ReadonlyArray<readonly SuitRankTuple[]>,
-  index: number,
   cardCountMap: readonly number[][],
-  // eslint-disable-next-line complete/prefer-readonly-parameter-types
-  possibilitiesToValidate: SuitRankTuple[],
 ): boolean {
-  if (deckPossibilities.length === index) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (cardCountMap[suitIndex]![rank]! > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-      cardCountMap[suitIndex]![rank]!--;
+  const remaining = new Map<number, number>();
+  function capacity(key: number, s: SuitIndex, r: Rank): number {
+    return remaining.get(key) ?? cardCountMap[s]?.[r] ?? 0;
+  }
 
-      updatePossibilitiesToValidate(cardCountMap, possibilitiesToValidate);
+  const ownKey = identityKey(suitIndex, rank);
+  const ownCapacity = capacity(ownKey, suitIndex, rank);
+  if (ownCapacity <= 0) {
+    return false;
+  }
+  remaining.set(ownKey, ownCapacity - 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-      cardCountMap[suitIndex]![rank]!++;
+  /** The deck cards currently assigned to each identity. */
+  const assigned = new Map<number, number[]>();
 
-      return true;
+  // eslint-disable-next-line complete/prefer-readonly-parameter-types
+  function assign(card: number, visited: Set<number>): boolean {
+    const possibilities = deckPossibilities[card] ?? [];
+    for (const [s, r] of possibilities) {
+      const key = identityKey(s, r);
+      if (visited.has(key)) {
+        continue;
+      }
+      visited.add(key);
+
+      const cards = assigned.get(key) ?? [];
+      if (cards.length < capacity(key, s, r)) {
+        cards.push(card);
+        assigned.set(key, cards);
+        return true;
+      }
+
+      // Every copy is taken, so try to move one of the cards using it to another identity.
+      for (const [index, other] of cards.entries()) {
+        if (assign(other, visited)) {
+          cards[index] = card;
+          return true;
+        }
+      }
     }
 
     return false;
   }
 
-  // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit.
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-  cardCountMap[suitIndex]![rank]!--;
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  if (cardCountMap[suitIndex]![rank]! >= 0) {
-    const suitRankTuples = deckPossibilities[index];
-    assertDefined(
-      suitRankTuples,
-      `Failed to find the the deck possibility at index: ${index}`,
-    );
-
-    for (const i of suitRankTuples.keys()) {
-      const possibilityIndex = (i + index) % suitRankTuples.length;
-      const possibility = suitRankTuples[possibilityIndex];
-      if (possibility === undefined) {
-        continue;
-      }
-
-      if (
-        possibilityValid(
-          possibility,
-          deckPossibilities,
-          index + 1,
-          cardCountMap,
-          possibilitiesToValidate,
-        )
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-        cardCountMap[suitIndex]![rank]!++;
-        return true;
-      }
+  for (const card of deckPossibilities.keys()) {
+    if (!assign(card, new Set())) {
+      return false;
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-param-reassign
-  cardCountMap[suitIndex]![rank]!++;
-
-  return false;
+  return true;
 }
 
-/** Mutates the `possibilitiesToValidate` in-place. */
-function updatePossibilitiesToValidate(
-  cardCountMap: readonly number[][],
-  // eslint-disable-next-line complete/prefer-readonly-parameter-types
-  possibilitiesToValidate: SuitRankTuple[],
-) {
-  let j = 0;
-
-  for (const suitRankTuple of possibilitiesToValidate) {
-    const [suitIndex, rank] = suitRankTuple;
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (cardCountMap[suitIndex]![rank]! <= 0) {
-      // eslint-disable-next-line no-param-reassign
-      possibilitiesToValidate[j] = [suitIndex, rank];
-      j++;
-    }
-  }
-
-  // eslint-disable-next-line no-param-reassign
-  possibilitiesToValidate.length = j;
+function identityKey(suitIndex: SuitIndex, rank: Rank): number {
+  // Ranks are at most 7 (the "START" rank).
+  return suitIndex * 8 + rank;
 }
 
 /** @returns A two-dimensional array which is indexed by suit index, then rank. */
