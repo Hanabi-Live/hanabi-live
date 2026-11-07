@@ -69,6 +69,7 @@ macro_rules! server_contracts {
             "error" => ErrorNotice, ErrorNotice;
             "warning" => Warning, Warning;
             "soundLobby" => SoundLobby, SoundLobby;
+            "welcome" => Welcome, Welcome;
         }
     };
 }

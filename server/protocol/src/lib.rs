@@ -492,6 +492,122 @@ pub struct SoundLobby {
     pub file: String,
 }
 
+/// A user's preferences. Missing fields take their default, so stored settings only need the values
+/// a user changed.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Settings {
+    pub desktop_notification: bool,
+    /// The `SoundMove` enum: all moves, only your own, or none.
+    #[schemars(range(min = 0, max = 2), extend("enum" = [0, 1, 2], "x-enum" = "SoundMove"))]
+    pub sound_move: u8,
+    pub sound_timer: bool,
+    pub keldon_mode: bool,
+    pub colorblind_mode: bool,
+    pub real_life_mode: bool,
+    pub reverse_hands: bool,
+    pub style_numbers: bool,
+    pub show_timer_in_untimed: bool,
+    #[schemars(range(min = 0, max = 100))]
+    pub volume: u8,
+    pub speedrun_preplay: bool,
+    pub speedrun_mode: bool,
+    pub hyphenated_conventions: bool,
+    #[schemars(length(min = 1))]
+    pub create_table_variant: String,
+    pub create_table_timed: bool,
+    #[schemars(range(min = 0, max = 86_400))]
+    pub create_table_time_base_minutes: f64,
+    #[schemars(range(min = 0, max = 604_800))]
+    pub create_table_time_per_turn_seconds: i32,
+    pub create_table_speedrun: bool,
+    pub create_table_card_cycle: bool,
+    pub create_table_deck_plays: bool,
+    pub create_table_empty_clues: bool,
+    pub create_table_one_extra_card: bool,
+    pub create_table_one_less_card: bool,
+    pub create_table_all_or_nothing: bool,
+    pub create_table_detrimental_characters: bool,
+    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    pub create_table_max_players: u8,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            desktop_notification: false,
+            sound_move: 0,
+            sound_timer: true,
+            keldon_mode: false,
+            colorblind_mode: false,
+            real_life_mode: false,
+            reverse_hands: false,
+            style_numbers: false,
+            show_timer_in_untimed: false,
+            volume: 50,
+            speedrun_preplay: false,
+            speedrun_mode: false,
+            hyphenated_conventions: false,
+            create_table_variant: "No Variant".into(),
+            create_table_timed: false,
+            create_table_time_base_minutes: 2.0,
+            create_table_time_per_turn_seconds: 20,
+            create_table_speedrun: false,
+            create_table_card_cycle: false,
+            create_table_deck_plays: false,
+            create_table_empty_clues: false,
+            create_table_one_extra_card: false,
+            create_table_one_less_card: false,
+            create_table_all_or_nothing: false,
+            create_table_detrimental_characters: false,
+            create_table_max_players: 5,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum ConnectionMode {
+    Initial,
+    Reconnect,
+}
+
+/// The first message after connecting.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Welcome {
+    #[serde(rename = "userID")]
+    pub user_id: UserId,
+    #[schemars(length(min = 1))]
+    pub username: String,
+    /// Always null here; `lobbyStatus` reports the total once statistics load.
+    #[schemars(
+        required,
+        range(min = 0, max = MAX_SAFE_INTEGER),
+        extend("type" = ["integer", "null"])
+    )]
+    pub total_games: Option<i64>,
+    pub muted: bool,
+    pub first_time_user: bool,
+    pub settings: Settings,
+    pub connection_mode: ConnectionMode,
+    #[schemars(extend("x-readonly" = true))]
+    pub friends: Vec<String>,
+    /// Ongoing games the user is a player in.
+    #[schemars(extend("x-readonly" = true))]
+    pub playing_at_tables: Vec<TableId>,
+    /// A table the user was spectating when they disconnected.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub discon_spectating_table: Option<TableId>,
+    /// The seat the user was shadowing at that table, or -1 for none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i8", range(min = -1, max = 5))]
+    pub discon_shadowing_seat: Option<i8>,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -540,6 +656,9 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ErrorNotice,
         Warning,
         SoundLobby,
+        Settings,
+        ConnectionMode,
+        Welcome,
     );
     schemas
 }

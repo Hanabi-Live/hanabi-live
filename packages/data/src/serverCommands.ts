@@ -23,7 +23,6 @@ import { ServerCommand } from "./enums/ServerCommand";
 import type { GameServerCommandData } from "./gameCommands";
 import { GAME_SERVER_COMMAND_SCHEMAS } from "./gameCommands";
 import { gameHistory } from "./interfaces/GameHistory";
-import { settings } from "./interfaces/Settings";
 import { spectator } from "./interfaces/Spectator";
 import { tableID } from "./types/TableID";
 import { userID } from "./types/UserID";
@@ -149,32 +148,7 @@ interface ServerCommandTableListData extends z.infer<
   typeof serverCommandTableListData
 > {}
 
-const serverCommandWelcomeData = z
-  .object({
-    userID,
-    username: z.string().min(1),
-    totalGames: z.number().int().nullable(),
-    muted: z.boolean(),
-    firstTimeUser: z.boolean(),
-    settings,
-    connectionMode: z.enum(["initial", "reconnect"]).optional(),
-    friends: z.string().min(1).array().readonly(),
-
-    playingAtTables: tableID.array().readonly(),
-    disconSpectatingTable: tableID.optional(),
-    disconShadowingSeat: z.number().int().optional(),
-
-    // Older open clients require these fields; the retired modes are always disabled.
-    shuttingDown: z.literal(false),
-    maintenanceMode: z.literal(false),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandWelcomeData extends z.infer<
-  typeof serverCommandWelcomeData
-> {}
+export type ServerCommandWelcomeData = ServerWireData["welcome"];
 
 // -----------
 // Collections
@@ -247,5 +221,5 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.userLeft]: SERVER_WIRE_SCHEMAS.userLeft,
   [ServerCommand.userList]: SERVER_WIRE_SCHEMAS.userList,
   [ServerCommand.warning]: SERVER_WIRE_SCHEMAS.warning,
-  [ServerCommand.welcome]: serverCommandWelcomeData,
+  [ServerCommand.welcome]: SERVER_WIRE_SCHEMAS.welcome,
 } as const satisfies Record<ServerCommand, unknown>;

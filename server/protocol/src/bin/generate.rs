@@ -3,7 +3,10 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// TypeScript enums that wire integers may name with `x-enum`, and the modules that export them.
-const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[("Status", "../enums/Status")];
+const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[
+    ("SoundMove", "../enums/SoundMove"),
+    ("Status", "../enums/Status"),
+];
 
 fn literal(value: &Value) -> String {
     let Some(number) = value.as_i64() else {
@@ -32,6 +35,18 @@ fn literal(value: &Value) -> String {
 // future annotation needs a new translation rather than silently dropping a rule.
 fn expression(schema: &Value) -> Result<String> {
     let object = schema.as_object().context("Expected a schema object")?;
+    // An Option without skip_serializing_if serializes None as null: {"type": [T, "null"]}.
+    if let Some(types) = object.get("type").and_then(Value::as_array) {
+        let mut types = types.iter().filter_map(Value::as_str).collect::<Vec<_>>();
+        ensure!(
+            types.len() == 2 && types.contains(&"null"),
+            "Only nullable single types are supported"
+        );
+        types.retain(|value| *value != "null");
+        let mut inner = schema.clone();
+        inner["type"] = Value::from(types[0]);
+        return Ok(format!("{}.nullable()", expression(&inner)?));
+    }
     for key in object.keys() {
         ensure!(
             [
@@ -135,6 +150,13 @@ fn expression(schema: &Value) -> Result<String> {
                 );
                 "z.number().int()".into()
             }
+            "number" => {
+                ensure!(
+                    schema["format"] == "double",
+                    "Wire numbers must be finite doubles"
+                );
+                "z.number()".into()
+            }
             "boolean" => "z.boolean()".into(),
             "null" => "z.null()".into(),
             "array" => format!("z.array({})", expression(&schema["items"])?),
@@ -157,7 +179,8 @@ fn expression(schema: &Value) -> Result<String> {
                             !required.iter().any(|value| value == name),
                             "Required fields cannot acquire client-only defaults"
                         );
-                        field.push_str(&format!(".default({default})"));
+                        field
+                            .push_str(&format!(".default({})", default_literal(property, default)));
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
@@ -184,7 +207,8 @@ fn expression(schema: &Value) -> Result<String> {
     }
     if let Some(format) = schema["format"].as_str() {
         match format {
-            "int32" | "int64" | "uint8" | "uint32" | "uint64" => {}
+            "int8" | "int16" | "int32" | "int64" | "uint8" | "uint16" | "uint32" | "uint64"
+            | "double" => {}
             other => bail!("Unsupported schema format: {other}"),
         }
     }
@@ -198,6 +222,19 @@ fn expression(schema: &Value) -> Result<String> {
         result.push_str(&format!(".default({default})"));
     }
     Ok(result)
+}
+
+/// Writes a field's default as TypeScript: whole floats without a zero fraction, and values of a
+/// named enum checked against that enum, which also gives them its type.
+fn default_literal(property: &Value, default: &Value) -> String {
+    let value = match default.as_f64() {
+        Some(number) if default.is_f64() && number % 1.0 == 0.0 => format!("{number:.0}"),
+        _ => default.to_string(),
+    };
+    match property.get("x-enum").and_then(Value::as_str) {
+        Some(name) => format!("z.enum({name}).parse({value})"),
+        None => value,
+    }
 }
 
 fn variable(name: &str) -> String {
@@ -301,7 +338,7 @@ fn main() -> Result<()> {
         .values()
         .chain(server.values())
         .copied()
-        .chain(["TableId", "ChatHistoryMessage"])
+        .chain(["TableId", "ChatHistoryMessage", "Settings"])
         .collect();
     let mut definitions = BTreeMap::new();
     for (name, schema) in hanabi_protocol::schemas() {
@@ -368,6 +405,35 @@ mod tests {
             expression(&json!({"type":"integer","format":"uint8","minimum":0,"maximum":255,"enum":[0,1,2,3]}))
                 .unwrap(),
             "z.literal([0,1,2,3])"
+        );
+    }
+
+    #[test]
+    fn nullable_and_floating_point_values() {
+        assert_eq!(
+            expression(
+                &json!({"type":["integer","null"],"format":"int64","minimum":0,"maximum":10})
+            )
+            .unwrap(),
+            "z.number().int().min(0).max(10).nullable()"
+        );
+        assert_eq!(
+            expression(&json!({"type":"number","format":"double","minimum":0})).unwrap(),
+            "z.number().min(0)"
+        );
+        assert!(expression(&json!({"type":["integer","string"]})).is_err());
+    }
+
+    #[test]
+    fn defaults_are_written_as_typescript() {
+        assert_eq!(default_literal(&json!({"type":"number"}), &json!(2.0)), "2");
+        assert_eq!(
+            default_literal(&json!({"type":"number"}), &json!(2.5)),
+            "2.5"
+        );
+        assert_eq!(
+            default_literal(&json!({"x-enum":"SoundMove"}), &json!(0)),
+            "z.enum(SoundMove).parse(0)"
         );
     }
 

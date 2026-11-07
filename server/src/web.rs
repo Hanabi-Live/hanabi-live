@@ -299,7 +299,7 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
 struct Bootstrap {
     name: String,
     normalized_name: String,
-    welcome: Value,
+    welcome: hanabi_protocol::Welcome,
     initial: Vec<String>,
 }
 
@@ -324,15 +324,23 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         accounts::is_muted(pool, ip)
     )?;
     let created: DateTime<Utc> = row.datetime_created;
-    let welcome = json!({
-        "userID":id,"username":name,"totalGames":null,
-        "muted":muted,"firstTimeUser":(Utc::now()-created).num_milliseconds()<10000,
-        "settings":settings,"friends":friends,"connectionMode":if reconnect {"reconnect"} else {"initial"},
-        "playingAtTables":[],
-        // Required by already-open clients; neither retired mode can be enabled.
-        "shuttingDown":false,
-        "maintenanceMode":false,
-    });
+    let welcome = hanabi_protocol::Welcome {
+        user_id: hanabi_protocol::UserId(id),
+        username: name.clone(),
+        total_games: None,
+        muted,
+        first_time_user: (Utc::now() - created).num_milliseconds() < 10000,
+        settings,
+        connection_mode: if reconnect {
+            hanabi_protocol::ConnectionMode::Reconnect
+        } else {
+            hanabi_protocol::ConnectionMode::Initial
+        },
+        friends,
+        playing_at_tables: vec![],
+        discon_spectating_table: None,
+        discon_shadowing_seat: None,
+    };
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
         id,
@@ -629,9 +637,7 @@ async fn connection(
             normalized_name: data.normalized_name,
             ip,
             generation,
-            hyphenated: data.welcome["settings"]["hyphenatedConventions"]
-                .as_bool()
-                .unwrap_or(false),
+            hyphenated: data.welcome.settings.hyphenated_conventions,
         },
         app.lease_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),

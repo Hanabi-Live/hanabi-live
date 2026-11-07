@@ -155,7 +155,7 @@ pub struct Effects {
 pub enum HubCommand {
     Register {
         session: Arc<Session>,
-        welcome: Value,
+        welcome: hanabi_protocol::Welcome,
         initial: Vec<String>,
         reply: Reply,
     },
@@ -263,6 +263,22 @@ pub enum TableCommand {
         reply: Reply,
     },
     Drain(oneshot::Sender<Result<()>>),
+}
+#[cfg(test)]
+pub(crate) fn test_welcome() -> hanabi_protocol::Welcome {
+    hanabi_protocol::Welcome {
+        user_id: UserId(1),
+        username: "test".into(),
+        total_games: None,
+        muted: false,
+        first_time_user: false,
+        settings: hanabi_protocol::Settings::default(),
+        connection_mode: hanabi_protocol::ConnectionMode::Initial,
+        friends: vec![],
+        playing_at_tables: vec![],
+        discon_spectating_table: None,
+        discon_shadowing_seat: None,
+    }
 }
 pub struct Hub {
     receiver: mpsc::Receiver<HubCommand>,
@@ -671,23 +687,24 @@ impl Hub {
                     for entry in self.tables.values() {
                         entry.handle.cleanup.notify_one();
                     }
-                    welcome["playingAtTables"] = json!(
-                        self.tables
-                            .iter()
-                            .filter(
-                                |(_, e)| !e.view.replay && e.view.players.contains(&session.user)
-                            )
-                            .map(|(id, _)| id)
-                            .collect::<Vec<_>>()
-                    );
+                    welcome.playing_at_tables = self
+                        .tables
+                        .iter()
+                        .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
+                        .map(|(id, _)| TableId(*id))
+                        .collect();
                     if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
                         e.view
                             .reconnects
                             .get(&session.user)
                             .map(|shadow| (*id, *shadow))
                     }) {
-                        welcome["disconSpectatingTable"] = json!(id);
-                        welcome["disconShadowingSeat"] = json!(shadow.unwrap_or(-1));
+                        welcome.discon_spectating_table = Some(TableId(id));
+                        welcome.discon_shadowing_seat = Some(
+                            shadow
+                                .and_then(|seat| i8::try_from(seat).ok())
+                                .unwrap_or(-1),
+                        );
                     }
                     self.sessions.insert(
                         session.user,
@@ -697,7 +714,8 @@ impl Hub {
                             table: None,
                         },
                     );
-                    let reconnect = welcome["connectionMode"] == "reconnect";
+                    let reconnect =
+                        welcome.connection_mode == hanabi_protocol::ConnectionMode::Reconnect;
                     session.emit(&frame("welcome", welcome));
                     if !reconnect {
                         session.emit(&frame(

@@ -126,7 +126,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     .await;
     assert!(matches!(result.as_slice(), [Effect::Hyphenated(true)]));
     assert_eq!(
-        get_settings(&db.pool, a).await.unwrap()["hyphenatedConventions"],
+        serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["hyphenatedConventions"],
         true
     );
     assert!(set_setting(&db.pool, a, "volume", "101").await.is_err());
@@ -151,7 +151,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
         .await
         .unwrap();
     assert_eq!(
-        get_settings(&db.pool, a).await.unwrap()["createTableVariant"],
+        serde_json::to_value(get_settings(&db.pool, a).await.unwrap()).unwrap()["createTableVariant"],
         literal
     );
     let (one, two) = tokio::join!(
@@ -161,7 +161,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     one.unwrap();
     two.unwrap();
     // Concurrent changes to different settings are both kept.
-    let settings = get_settings(&db.pool, b).await.unwrap();
+    let settings = serde_json::to_value(get_settings(&db.pool, b).await.unwrap()).unwrap();
     assert_eq!(settings["soundTimer"], false);
     assert_eq!(settings["volume"], 25);
     let result = run(
@@ -581,7 +581,7 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
         return;
     };
     let id = db.user("Alice").await;
-    let defaults = get_settings(&db.pool, id).await.unwrap();
+    let defaults = serde_json::to_value(get_settings(&db.pool, id).await.unwrap()).unwrap();
     assert_eq!(defaults, json!(settings::defaults()));
     let stored = || async {
         sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
@@ -594,13 +594,13 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
         let (value, expected) = match &default {
             serde_json::Value::Bool(flag) => ((!flag).to_string(), json!(!flag)),
             serde_json::Value::Number(number) if number.is_f64() => ("7.5".into(), json!(7.5)),
-            serde_json::Value::Number(_) => ("7".into(), json!(7)),
+            serde_json::Value::Number(_) => ("2".into(), json!(2)),
             _ => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
         };
         assert_ne!(default, expected, "{name} must change");
         set_setting(&db.pool, id, &name, &value).await.unwrap();
         assert_eq!(
-            get_settings(&db.pool, id).await.unwrap()[&name],
+            serde_json::to_value(get_settings(&db.pool, id).await.unwrap()).unwrap()[&name],
             expected,
             "{name}"
         );
@@ -609,6 +609,40 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
     // Choosing the default again removes the stored value.
     set_setting(&db.pool, id, "volume", "50").await.unwrap();
     assert!(stored().await.get("volume").is_none());
-    assert_eq!(get_settings(&db.pool, id).await.unwrap()["volume"], 50);
+    assert_eq!(
+        serde_json::to_value(get_settings(&db.pool, id).await.unwrap()).unwrap()["volume"],
+        50
+    );
+    db.close().await;
+}
+
+#[tokio::test]
+async fn settings_outside_the_wire_contract_are_not_sent_or_saved_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let id = db.user("Alice").await;
+    sqlx::query!(
+        "UPDATE users SET settings=$2 WHERE id=$1",
+        id,
+        json!({"createTableVariant":"","createTableMaxPlayers":7,"volume":70,"removedSetting":true})
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let settings = get_settings(&db.pool, id).await.unwrap();
+    assert_eq!(settings.create_table_variant, "No Variant");
+    assert_eq!(settings.create_table_max_players, 5);
+    assert_eq!(settings.volume, 70);
+    for (name, value) in [
+        ("createTableMaxPlayers", "7"),
+        ("soundMove", "3"),
+        ("createTableVariant", ""),
+    ] {
+        assert!(
+            set_setting(&db.pool, id, name, value).await.is_err(),
+            "{name}={value} was accepted"
+        );
+    }
     db.close().await;
 }
