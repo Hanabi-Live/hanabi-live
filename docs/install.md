@@ -39,15 +39,13 @@ podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 
 ## For Production
 
+To set up the production server for hanab.live:
+
 ```sh
 set -o errexit -o nounset -o pipefail
 
-# Run as root on a fresh Ubuntu 26.04 amd64 server with ports 80 and 443 open.
-read -r -p "Domain name (DNS must point to this server): " DOMAIN
-[[ "$DOMAIN" =~ ^[a-zA-Z0-9.-]+$ ]] || {
-  echo "Invalid domain name." >&2
-  exit 1
-}
+# Local variables
+DOMAIN="hanab.live"
 
 # Install dependencies.
 apt update && apt install --yes certbot cron curl git openssl postgresql python3 redis-server
@@ -110,6 +108,10 @@ appendfsync always
 maxmemory-policy noeviction
 REDIS
 systemctl restart redis-server
+
+# Prevent Redis background saves from failing under memory pressure.
+echo 'vm.overcommit_memory = 1' > /etc/sysctl.d/90-hanabi-redis.conf
+sysctl --quiet --system
 
 # Obtain the certificate and grant the service access to its private key.
 certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN"
