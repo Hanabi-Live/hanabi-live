@@ -45,8 +45,6 @@
     "yarn.lock": true,
     // @template-customization-start
     "**/*.min.js*": true,
-    "**/misc/keldon/": true,
-    "**/server-old/": true,
     "**/card-images/": true,
     "**/packages/game/docs/**/*.html": true,
     // @template-customization-end
