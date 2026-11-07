@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { describe, expect, test } from "bun:test";
+import { START_CARD_RANK } from "./constants";
 import { ClueType } from "./enums/ClueType";
 import { StackDirection } from "./enums/StackDirection";
 import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
@@ -15,6 +16,7 @@ import {
   getHypotheticalTouchedCards,
   planHypotheticalAction,
 } from "./hypotheticalPlanning";
+import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
 import type { GameState } from "./interfaces/GameState";
@@ -23,6 +25,7 @@ import { getDefaultMetadata } from "./metadata";
 import { gameReducer } from "./reducers/gameReducer";
 import { getInitialCardState } from "./reducers/initialStates/initialCardState";
 import { getInitialGameStateTest } from "./reducers/initialStates/initialGameStateTest";
+import { getTotalCardsInDeck } from "./rules/deck";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { PlayerIndex } from "./types/PlayerIndex";
@@ -705,5 +708,76 @@ describe("hypothetical planning", () => {
         },
       ),
     ).toBeNull();
+  });
+});
+
+/** Plans a play of a red 4 from player 0's hand, optionally morphing the red stack base first. */
+function playRedFour(
+  stackBaseMorph: CardIdentity | undefined,
+  testVariant: Variant = variant,
+) {
+  const base =
+    testVariant === variant
+      ? makeContext()
+      : makeBottomDeckContext(testVariant);
+  const morphedIdentities: Array<CardIdentity | undefined> = [];
+  if (stackBaseMorph !== undefined) {
+    morphedIdentities[getTotalCardsInDeck(testVariant)] = stackBaseMorph;
+  }
+  const redFour = { suitIndex: 0 as SuitIndex, rank: 4 as const };
+  return planHypotheticalAction(
+    { type: "play", order: 0 as CardOrder },
+    {
+      ...base,
+      cardIdentities: [redFour, ...base.cardIdentities.slice(1)],
+      cardViews: [
+        view(base.gameState.deck[0]!, 0, 4),
+        ...base.cardViews.slice(1),
+      ],
+      morphedIdentities,
+    },
+  );
+}
+
+function isStrike(actions: readonly GameAction[] | null) {
+  return actions?.some((action) => action.type === "strike") === true;
+}
+
+describe("hypothetical plays on a morphed stack base", () => {
+  test("plays the next rank after the morphed card", () => {
+    const actions = playRedFour({ suitIndex: 0 as SuitIndex, rank: 3 });
+    expect(actions?.[0]).toMatchObject({
+      type: "play",
+      order: 0,
+      suitIndex: 0,
+      rank: 4,
+    });
+    expect(isStrike(actions)).toBe(false);
+  });
+
+  test("is a misplay without the morph", () => {
+    expect(isStrike(playRedFour(undefined))).toBe(true);
+  });
+
+  test("ignores a stack base morphed into a card of another suit", () => {
+    expect(isStrike(playRedFour({ suitIndex: 1 as SuitIndex, rank: 3 }))).toBe(
+      true,
+    );
+  });
+
+  test("treats a start card morph on an undecided stack like the played start card", () => {
+    const upOrDown = VARIANT_NAMES.map(getVariant).find(
+      (candidate) => candidate.upOrDown,
+    );
+    expect(upOrDown).toBeDefined();
+    expect(isStrike(playRedFour(undefined, upOrDown))).toBe(true);
+    expect(
+      isStrike(
+        playRedFour(
+          { suitIndex: 0 as SuitIndex, rank: START_CARD_RANK },
+          upOrDown,
+        ),
+      ),
+    ).toBe(false);
   });
 });

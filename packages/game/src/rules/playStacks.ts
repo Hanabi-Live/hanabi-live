@@ -21,8 +21,26 @@ export function getNextPlayableRanks(
   variant: Variant,
   deck: readonly CardState[],
 ): readonly number[] {
-  const currentlyPlayedRank = getLastPlayedRank(playStack, deck);
+  return getNextPlayableRanksAfter(
+    suitIndex,
+    getLastPlayedRank(playStack, deck),
+    playStackDirection,
+    playStackStarts,
+    variant,
+  );
+}
 
+/**
+ * Like `getNextPlayableRanks`, but takes the rank of the card on top of the play stack (or null if
+ * no card has been played on it) instead of reading it from the deck.
+ */
+export function getNextPlayableRanksAfter(
+  suitIndex: SuitIndex,
+  currentlyPlayedRank: Rank | null,
+  playStackDirection: StackDirection,
+  playStackStarts: GameState["playStackStarts"],
+  variant: Variant,
+): readonly number[] {
   switch (playStackDirection) {
     case StackDirection.Undecided: {
       return currentlyPlayedRank === START_CARD_RANK
