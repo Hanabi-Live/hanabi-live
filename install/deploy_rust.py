@@ -232,7 +232,7 @@ def publish(root, staged, metadata):
 
 def schema_version(root):
     value = command(root, "bash", "-c", """
-set -euo pipefail
+set -o errexit -o nounset -o pipefail
 source .env
 export PGPASSWORD="$DB_PASSWORD"
 psql -X --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" \

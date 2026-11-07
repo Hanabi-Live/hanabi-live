@@ -3,7 +3,7 @@
 # Requirements:
 # bun add --global wscat
 
-set -euo pipefail # Exit on errors and undefined variables.
+set -o errexit -o nounset -o pipefail
 
 # Configuration
 HANABI_USERNAME="test"

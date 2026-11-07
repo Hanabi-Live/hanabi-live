@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -o errexit -o nounset -o pipefail
 umask 077
 
 # Redirect all output to syslog (but skip this if we are on Windows).

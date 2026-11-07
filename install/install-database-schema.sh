@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail # Exit on errors and undefined variables.
+set -o errexit -o nounset -o pipefail
 
 # From: https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)

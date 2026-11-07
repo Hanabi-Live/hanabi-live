@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail # Exit on errors and undefined variables.
+set -o errexit -o nounset -o pipefail
 
 if [[ $# -ne 1 ]]; then
   echo "usage: $(basename "$0") [filename]"

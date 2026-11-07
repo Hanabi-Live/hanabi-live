@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -o errexit -o nounset -o pipefail
 
 for argument in "$@"; do
   case "$argument" in
@@ -28,7 +28,7 @@ if {
     printf 'export GH_TOKEN=%q\n' "$token"
   fi
   cat << 'REMOTE'
-set -euo pipefail
+set -o errexit -o nounset -o pipefail
 cd /root/hanabi-live
 python=python3
 if [[ -x /opt/hanabi-python/bin/python3 ]]; then

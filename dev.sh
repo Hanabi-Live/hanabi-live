@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail # Exit on errors and undefined variables.
+set -o errexit -o nounset -o pipefail
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 cd "$DIR"

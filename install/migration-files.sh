@@ -77,6 +77,6 @@ prepare_tern_migrations() {
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
-  set -euo pipefail
+  set -o errexit -o nounset -o pipefail
   get_migration_version "$1"
 fi

@@ -39,10 +39,6 @@ podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 
 ## For Production
 
-On a fresh Ubuntu 26.04 server, use root for setup; the application and backups
-run as `hanabi`. Point your domain at the server, allow incoming TCP ports 80
-and 443, and replace `example.com` below.
-
 - Install dependencies:
   - `apt update && apt install --yes certbot cron curl gh git nano openssl postgresql python3 redis-server`
 - Create the service account:

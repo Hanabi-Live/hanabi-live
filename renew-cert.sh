@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail # Exit on errors and undefined variables.
+set -o errexit -o nounset -o pipefail
 
 # Redirect all output to syslog (but skip this if we are on Windows).
 # Otherwise, cron output is silently discarded (no MTA is installed).

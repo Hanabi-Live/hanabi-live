@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-set -euo pipefail # Exit on errors and undefined variables.
-set -x            # Enable debugging
+set -o errexit -o nounset -o pipefail
+set -x # Enable debugging
 
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
