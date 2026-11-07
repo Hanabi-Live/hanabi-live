@@ -640,7 +640,7 @@ impl Bridge {
 
     pub async fn announce_stop(&self, uptime: Duration, message: Option<&str>) -> Result<()> {
         self.announce(&format!(
-            "{STOP_PREFIX} {} ({}) - Uptime: {}. Active game progress has been saved; the server will remain stopped until explicitly started.{}",
+            "{STOP_PREFIX} {} ({}) - Uptime: {}{}",
             Utc::now().format("%a %b %d %H:%M:%S UTC %Y"),
             crate::restart::version(),
             crate::lifecycle::duration(uptime.as_secs()),

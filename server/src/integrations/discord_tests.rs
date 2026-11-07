@@ -259,13 +259,14 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
             crate::restart::version()
         )));
         assert!(messages[2].starts_with("The server is stopping gracefully at: "));
-        assert!(messages[2].contains(&format!(
-            "({}) - Uptime: 1 hour and 18 minutes.",
-            crate::restart::version()
-        )));
-        assert!(messages[2].ends_with(
-            "Active game progress has been saved; the server will remain stopped until explicitly started. Reason: Upgrading <the> database & 'more'"
-        ), "{channel}: {}", messages[2]);
+        assert!(
+            messages[2].ends_with(&format!(
+                "({}) - Uptime: 1 hour and 18 minutes Reason: Upgrading <the> database & 'more'",
+                crate::restart::version()
+            )),
+            "{channel}: {}",
+            messages[2]
+        );
     }
     drop(requests);
     let messages: Vec<String> =
