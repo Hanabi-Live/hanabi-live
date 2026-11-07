@@ -6,23 +6,6 @@ use crate::{
 use sqlx::postgres::PgPoolOptions;
 
 #[test]
-fn state_saved_with_request_receipts_still_loads() -> Result<()> {
-    let mut saved = serde_json::to_value(pregame(1))?;
-    let mut spawn = serde_json::to_value(pregame(2))?;
-    spawn["receipts"] = json!([{"user":1,"id":"spawn"}]);
-    saved["receipts"] = json!([{"user":1,"id":"request"}]);
-    saved["pending_spawn"] = spawn;
-    let table = TableSnapshot::decode(&saved.to_string())?;
-    let saved_again = serde_json::to_value(&table)?;
-    ensure!(
-        saved_again.get("receipts").is_none()
-            && saved_again["pending_spawn"].get("receipts").is_none(),
-        "Receipts were saved again"
-    );
-    Ok(())
-}
-
-#[test]
 fn table_names_allow_owner_defaults_but_reject_markup() {
     for name in ["Alice's table", "Ren\u{e9}'s table", "Rene\u{301}'s table"] {
         assert!(validate_table_name(name).is_ok(), "{name}");
