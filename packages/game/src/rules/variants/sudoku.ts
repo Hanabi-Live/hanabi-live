@@ -200,7 +200,7 @@ function evaluateAssignment(
     const value = maxPartialScoresForThisSuit[assignedStackStart - 1];
     assertDefined(
       value,
-      `Failed to retrieve the max score for starting suit ${assignedSuit} at rank ${assignedStackStart}.`,
+      `Failed to retrieve the max score for starting suit ${assignedSuit} at rank: ${assignedStackStart}`,
     );
     assignmentValue += value;
     assignment[assignedLocalSuitIndex] = value;

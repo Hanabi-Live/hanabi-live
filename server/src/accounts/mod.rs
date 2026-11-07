@@ -238,7 +238,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         };
         if !verify_password(ip, input.password.clone(), original.clone()).await? {
             attempt.keep();
-            eprintln!("Failed login for account {id} from {ip}.");
+            eprintln!("Failed login for account {id} from IP: {ip}");
             return Ok(unauthorized("That is not the correct password."));
         }
         let automatic_upgrade =
@@ -297,7 +297,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         .fetch_one(&state.pool)
         .await?;
     }
-    eprintln!("Successful login for account {id} from {ip}.");
+    eprintln!("Successful login for account {id} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok((
         [(
@@ -395,7 +395,7 @@ async fn identity_token(
         };
         let ip = address.ip().to_string();
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
-        eprintln!("Issued identity token for account {id} from {ip}.");
+        eprintln!("Issued identity token for account {id} from IP: {ip}");
         Ok(Json(json!({
             "username":username, "token":result.token,
             "expires_at":result.expires_at.format("%a, %d %b %Y %H:%M:%S GMT").to_string()
@@ -436,7 +436,7 @@ async fn identity(
             let expiry: DateTime<Utc> = row.expires_at;
             let ip = address.ip().to_string();
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
-                eprintln!("Verified identity token from {ip}.");
+                eprintln!("Verified identity token from IP: {ip}");
                 return Ok(Json(json!({"username":row.username.clone()})).into_response());
             }
         }

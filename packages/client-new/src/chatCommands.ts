@@ -92,7 +92,7 @@ export function sendChat(
     return sent;
   }
   if (command === "version") {
-    connection.notice(`Client version ${CLIENT_VERSION}.`);
+    connection.notice(`Client version: ${CLIENT_VERSION}`);
     return true;
   }
   if (command === "tagsearch") {

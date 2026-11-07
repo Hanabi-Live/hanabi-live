@@ -40,7 +40,7 @@ describe("gameReducer", () => {
         DEFAULT_METADATA,
       ),
     ).toThrow(
-      "Received a draw for card order 1, but the next card order in the deck is 0.",
+      "Received a draw for card order 1, but the next card order in the deck is: 0",
     );
   });
 

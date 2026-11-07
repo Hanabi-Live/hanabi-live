@@ -129,7 +129,10 @@ impl Report {
             } else if let Some(status) = http.status() {
                 (
                     "upstream_http_error",
-                    format!("The external service returned HTTP {}.", status.as_u16()),
+                    format!(
+                        "The external service returned HTTP status: {}",
+                        status.as_u16()
+                    ),
                     StatusCode::BAD_GATEWAY,
                 )
             } else {
@@ -181,7 +184,7 @@ impl Report {
             (
                 "password_processing_failed",
                 format!(
-                    "Password verification or storage failed: {}.",
+                    "Password verification or storage failed: {}",
                     failure.diagnostic()
                 ),
                 StatusCode::INTERNAL_SERVER_ERROR,

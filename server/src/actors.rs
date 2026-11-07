@@ -2699,7 +2699,7 @@ impl TableActor {
             let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
             if !valid {
                 eprintln!(
-                    "Incorrect password for table {} by account {} from {}.",
+                    "Incorrect password for table {} by account {} from IP: {}",
                     self.table.id, session.user, session.ip
                 );
                 bail!("Incorrect table password");
