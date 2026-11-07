@@ -1,5 +1,6 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
+import { Status } from "../enums/Status";
 
 export const tableIdSchema = z
   .number()
@@ -99,6 +100,12 @@ export const chatUserRequestSchema = z
   .readonly()
   .default({ name: "", room: "" });
 export const emptySchema = z.strictObject({});
+export const errorNoticeSchema = z
+  .strictObject({ error: z.string().min(1) })
+  .readonly();
+export const friendsSchema = z
+  .strictObject({ friends: z.array(z.string()).readonly() })
+  .readonly();
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
   z.strictObject({
@@ -137,6 +144,9 @@ export const replayActionRequestSchema = z.strictObject({
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
 });
+export const soundLobbySchema = z
+  .strictObject({ file: z.string().min(1) })
+  .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableJoinRequestSchema = z.strictObject({
   password: z.string().default(""),
@@ -194,6 +204,32 @@ export const tagsDeleteAllRequestSchema = z.strictObject({
   room: z.string().default(""),
   tableID: tableIdSchema,
 });
+const userIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"UserID">();
+export const userSchema = z
+  .strictObject({
+    hyphenated: z.boolean(),
+    inactive: z.boolean(),
+    name: z.string().min(1),
+    status: z.enum(Status),
+    tableID: tableIdSchema.optional(),
+    userID: userIdSchema,
+  })
+  .readonly();
+export const userInactiveSchema = z
+  .strictObject({ inactive: z.boolean(), userID: userIdSchema })
+  .readonly();
+export const userLeftSchema = z
+  .strictObject({ userID: userIdSchema })
+  .readonly();
+export const userListSchema = z.array(userSchema).readonly();
+export const warningSchema = z
+  .strictObject({ warning: z.string().min(1) })
+  .readonly();
 export const CLIENT_WIRE_SCHEMAS = {
   action: actionRequestSchema,
   chat: chatRequestSchema,
@@ -237,13 +273,21 @@ export const SERVER_WIRE_SCHEMAS = {
   chatList: chatListSchema,
   chatPMHistory: chatHistorySchema,
   chatTyping: chatTypingSchema,
+  error: errorNoticeSchema,
+  friends: friendsSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
   restart: restartSchema,
+  soundLobby: soundLobbySchema,
   synced: emptySchema,
   tableGone: tableRequestSchema,
   tableStart: tableStartedSchema,
+  user: userSchema,
+  userInactive: userInactiveSchema,
+  userLeft: userLeftSchema,
+  userList: userListSchema,
+  warning: warningSchema,
 } as const;
 export type ClientWireData = {
   [Command in keyof typeof CLIENT_WIRE_SCHEMAS]: z.infer<

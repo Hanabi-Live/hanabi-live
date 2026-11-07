@@ -9,7 +9,10 @@ use crate::{
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
-use hanabi_protocol::{Chat, ChatSource, ChatTyping, TableId, TableRequest, TableStarted};
+use hanabi_protocol::{
+    Chat, ChatSource, ChatTyping, ErrorNotice, SoundLobby, TableId, TableRequest, TableStarted,
+    User, UserId, UserLeft, UserList, Warning,
+};
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
@@ -331,14 +334,19 @@ impl Hub {
                 .get(&s.user)
                 .is_some_and(|p| p.session.generation == s.generation)
     }
-    fn user(p: &Presence) -> Value {
-        let mut v = json!({"userID":p.session.user,"name":p.session.name,"status":p.status,"hyphenated":p.session.hyphenated(),"inactive":p.session.inactive()});
-        if p.status == 4 {
-            v["tableID"] = json!(0);
-        } else if let Some(id) = p.table {
-            v["tableID"] = json!(id);
+    fn user(p: &Presence) -> User {
+        User {
+            user_id: UserId(p.session.user),
+            name: p.session.name.clone(),
+            status: p.status,
+            table_id: if p.status == 4 {
+                Some(TableId(0))
+            } else {
+                p.table.map(TableId)
+            },
+            hyphenated: p.session.hyphenated(),
+            inactive: p.session.inactive(),
         }
-        v
     }
     fn broadcast(&self, message: &str) {
         if self.store.check_state().is_ok() {
@@ -550,7 +558,12 @@ impl Hub {
         for user in users {
             if let Some(p) = self.sessions.remove(user) {
                 p.session.cancel.cancel();
-                self.broadcast(&frame("userLeft", json!({"userID":user})));
+                self.broadcast(&frame(
+                    "userLeft",
+                    UserLeft {
+                        user_id: UserId(*user),
+                    },
+                ));
             }
         }
         for e in self.tables.values() {
@@ -564,7 +577,12 @@ impl Hub {
         }
         if let Operation::Drained { reconnect, message } = command {
             let messages = [
-                frame("soundLobby", json!({"file":"shutdown"})),
+                frame(
+                    "soundLobby",
+                    SoundLobby {
+                        file: "shutdown".into(),
+                    },
+                ),
                 if reconnect {
                     frame(
                         "restart",
@@ -573,7 +591,9 @@ impl Hub {
                 } else {
                     frame(
                         "error",
-                        json!({"error":"The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts."}),
+                        ErrorNotice {
+                            error: "The server is going down for maintenance. Your accepted game progress has been saved.<br />Please reconnect after the server restarts.".into(),
+                        },
                     )
                 },
             ];
@@ -682,7 +702,7 @@ impl Hub {
                     if !reconnect {
                         session.emit(&frame(
                             "userList",
-                            json!(self.sessions.values().map(Self::user).collect::<Vec<_>>()),
+                            UserList(self.sessions.values().map(Self::user).collect()),
                         ));
                         session.emit(&frame(
                             "tableList",
@@ -711,7 +731,12 @@ impl Hub {
                         .is_some_and(|p| p.session.generation == s.generation)
                     {
                         self.sessions.remove(&s.user);
-                        self.broadcast(&frame("userLeft", json!({"userID":s.user})));
+                        self.broadcast(&frame(
+                            "userLeft",
+                            UserLeft {
+                                user_id: UserId(s.user),
+                            },
+                        ));
                     }
                     for e in self.tables.values() {
                         e.handle.cleanup.notify_one();
@@ -1928,7 +1953,7 @@ impl TableActor {
         }
         for warning in warnings {
             e.messages
-                .push((s.clone(), frame("warning", json!({"warning":warning}))));
+                .push((s.clone(), frame("warning", Warning { warning })));
         }
         self.publish(e).await
     }

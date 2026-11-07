@@ -409,6 +409,89 @@ pub struct TableStarted {
     pub replay: bool,
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-brand" = "UserID"))]
+pub struct UserId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
+
+/// A user's presence in the lobby's user list.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct User {
+    #[serde(rename = "userID")]
+    pub user_id: UserId,
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// The `Status` enum: lobby, pregame, playing, spectating, replay, or shared replay.
+    #[schemars(
+        range(min = 0, max = 5),
+        extend("enum" = [0, 1, 2, 3, 4, 5], "x-enum" = "Status")
+    )]
+    pub status: u8,
+    #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "TableId")]
+    pub table_id: Option<TableId>,
+    pub hyphenated: bool,
+    pub inactive: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-readonly" = true))]
+pub struct UserList(pub Vec<User>);
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct UserLeft {
+    #[serde(rename = "userID")]
+    pub user_id: UserId,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct UserInactive {
+    #[serde(rename = "userID")]
+    pub user_id: UserId,
+    pub inactive: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Friends {
+    #[schemars(extend("x-readonly" = true))]
+    pub friends: Vec<String>,
+}
+
+/// A problem the client shows in a modal. The text may contain HTML.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct ErrorNotice {
+    #[schemars(length(min = 1))]
+    pub error: String,
+}
+
+/// A recoverable problem the client shows in a modal. The text may contain HTML.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct Warning {
+    #[schemars(length(min = 1))]
+    pub warning: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct SoundLobby {
+    #[schemars(length(min = 1))]
+    pub file: String,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -448,6 +531,15 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         Empty,
         Restart,
         LobbyStatus,
+        UserId,
+        User,
+        UserList,
+        UserLeft,
+        UserInactive,
+        Friends,
+        ErrorNotice,
+        Warning,
+        SoundLobby,
     );
     schemas
 }

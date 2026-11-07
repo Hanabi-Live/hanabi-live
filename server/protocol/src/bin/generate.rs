@@ -2,6 +2,9 @@ use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
+/// TypeScript enums that wire integers may name with `x-enum`, and the modules that export them.
+const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[("Status", "../enums/Status")];
+
 fn literal(value: &Value) -> String {
     let Some(number) = value.as_i64() else {
         return value.to_string();
@@ -55,6 +58,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "x-brand",
                 "x-readonly",
                 "x-undefined-default",
+                "x-enum",
             ]
             .contains(&key.as_str()),
             "Unsupported schema keyword: {key}"
@@ -88,6 +92,20 @@ fn expression(schema: &Value) -> Result<String> {
             .strip_prefix("#/$defs/")
             .context("Only local schema references are supported")?;
         variable(name)
+    } else if let Some(name) = schema.get("x-enum") {
+        let name = name.as_str().context("Invalid TypeScript enum name")?;
+        ensure!(
+            TYPESCRIPT_ENUMS.iter().any(|(known, _)| *known == name),
+            "Unknown TypeScript enum: {name}"
+        );
+        // The server validates the listed values; the client validates against its enum.
+        ensure!(
+            schema["enum"]
+                .as_array()
+                .is_some_and(|values| !values.is_empty() && values.iter().all(Value::is_i64)),
+            "TypeScript enums need the integer values listed for the server"
+        );
+        format!("z.enum({name})")
     } else if let Some(values) = schema["enum"].as_array() {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
@@ -252,10 +270,31 @@ fn emit(
     Ok(())
 }
 
+fn enums(schema: &Value, output: &mut BTreeSet<String>) {
+    match schema {
+        Value::Object(object) => {
+            if let Some(name) = object.get("x-enum").and_then(Value::as_str) {
+                output.insert(name.into());
+            }
+            object.values().for_each(|value| enums(value, output));
+        }
+        Value::Array(values) => values.iter().for_each(|value| enums(value, output)),
+        _ => {}
+    }
+}
+
 fn main() -> Result<()> {
-    println!(
-        "// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.\nimport {{ z }} from \"zod\";\n"
-    );
+    println!("// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.");
+    let mut used = BTreeSet::new();
+    for schema in hanabi_protocol::schemas().values() {
+        enums(schema, &mut used);
+    }
+    for (name, module) in TYPESCRIPT_ENUMS {
+        if used.contains(*name) {
+            println!("import {{ {name} }} from \"{module}\";");
+        }
+    }
+    println!("import {{ z }} from \"zod\";\n");
     let client = hanabi_protocol::client_contracts();
     let server = hanabi_protocol::server_contracts();
     let exported: BTreeSet<_> = client
@@ -330,5 +369,15 @@ mod tests {
                 .unwrap(),
             "z.literal([0,1,2,3])"
         );
+    }
+
+    #[test]
+    fn named_enums_use_the_typescript_enum() {
+        assert_eq!(
+            expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).unwrap(),
+            "z.enum(Status)"
+        );
+        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
+        assert!(expression(&json!({"type":"integer","x-enum":"Status"})).is_err());
     }
 }

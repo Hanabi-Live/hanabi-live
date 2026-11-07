@@ -1,8 +1,12 @@
-import type { chatHistoryMessageSchema as serverCommandChatPMHistoryMessageData } from "./generated/protocol";
+import type {
+  chatHistoryMessageSchema as serverCommandChatPMHistoryMessageData,
+  ServerWireData,
+} from "./generated/protocol";
 import {
   emptySchema,
   lobbyStatusSchema as lobbyStatus,
   restartSchema,
+  SERVER_WIRE_SCHEMAS,
   chatSchema as serverCommandChatData,
   chatDeleteSchema as serverCommandChatDeleteData,
   chatListSchema as serverCommandChatListData,
@@ -16,7 +20,6 @@ import { options } from "@hanabi-live/game";
 import { interfaceSatisfiesEnum } from "complete-common";
 import { z } from "zod";
 import { ServerCommand } from "./enums/ServerCommand";
-import { Status } from "./enums/Status";
 import type { GameServerCommandData } from "./gameCommands";
 import { GAME_SERVER_COMMAND_SCHEMAS } from "./gameCommands";
 import { gameHistory } from "./interfaces/GameHistory";
@@ -53,22 +56,6 @@ export interface ServerCommandChatPMHistoryMessageData extends z.infer<
 export interface ServerCommandChatPMHistoryData extends z.infer<
   typeof serverCommandChatPMHistoryData
 > {}
-
-const serverCommandErrorData = z
-  .object({
-    error: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandErrorData extends z.infer<
-  typeof serverCommandErrorData
-> {}
-
-const serverCommandFriendsData = z
-  .strictObject({ friends: z.string().array().readonly() })
-  .readonly();
 
 const pregameVariantStats = z.strictObject({
   numGames: z.number().int(),
@@ -121,9 +108,6 @@ const serverCommandGameHistoryOtherScoresData = z
     seed: z.string().min(1),
   })
   .readonly();
-const serverCommandUserInactiveData = z
-  .strictObject({ userID, inactive: z.boolean() })
-  .readonly();
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ServerCommandGameHistoryData extends z.infer<
@@ -165,54 +149,6 @@ interface ServerCommandTableListData extends z.infer<
   typeof serverCommandTableListData
 > {}
 
-const serverCommandUserData = z
-  .object({
-    userID,
-    name: z.string().min(1),
-    status: z.enum(Status),
-    tableID: tableID.optional(),
-    hyphenated: z.boolean(),
-    inactive: z.boolean(),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserData extends z.infer<
-  typeof serverCommandUserData
-> {}
-
-const serverCommandUserLeftData = z
-  .object({
-    userID,
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserLeftData extends z.infer<
-  typeof serverCommandUserLeftData
-> {}
-
-const serverCommandUserListData = serverCommandUserData.array().readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandUserListData extends z.infer<
-  typeof serverCommandUserListData
-> {}
-
-const serverCommandWarningData = z
-  .object({
-    warning: z.string().min(1),
-  })
-  .strict()
-  .readonly();
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ServerCommandWarningData extends z.infer<
-  typeof serverCommandWarningData
-> {}
-
 const serverCommandWelcomeData = z
   .object({
     userID,
@@ -244,24 +180,23 @@ export interface ServerCommandWelcomeData extends z.infer<
 // Collections
 // -----------
 
-const serverCommandSoundLobbyData = z
-  .object({
-    file: z.string().min(1),
-  })
-  .strict()
-  .readonly();
+export type ServerCommandErrorData = ServerWireData["error"];
+export type ServerCommandUserData = ServerWireData["user"];
+export type ServerCommandUserLeftData = ServerWireData["userLeft"];
+export type ServerCommandUserListData = ServerWireData["userList"];
+export type ServerCommandWarningData = ServerWireData["warning"];
 
 export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.restart]: z.infer<typeof restartSchema>;
   [ServerCommand.lobbyStatus]: z.infer<typeof lobbyStatus>;
   [ServerCommand.chatTyping]: z.infer<typeof serverCommandChatTypingData>;
-  [ServerCommand.soundLobby]: z.infer<typeof serverCommandSoundLobbyData>;
+  [ServerCommand.soundLobby]: ServerWireData["soundLobby"];
   [ServerCommand.chat]: ServerCommandChatData;
   [ServerCommand.chatDelete]: ServerCommandChatDeleteData;
   [ServerCommand.chatList]: ServerCommandChatListData;
   [ServerCommand.chatPMHistory]: ServerCommandChatPMHistoryData;
   [ServerCommand.error]: ServerCommandErrorData;
-  [ServerCommand.friends]: z.infer<typeof serverCommandFriendsData>;
+  [ServerCommand.friends]: ServerWireData["friends"];
   [ServerCommand.game]: z.infer<typeof serverCommandGameData>;
   [ServerCommand.joined]: z.infer<typeof serverCommandTableIDData>;
   [ServerCommand.left]: z.infer<typeof serverCommandTableIDData>;
@@ -275,7 +210,7 @@ export interface ServerCommandData extends GameServerCommandData {
   [ServerCommand.table]: ServerCommandTableData;
   [ServerCommand.tableList]: ServerCommandTableListData;
   [ServerCommand.user]: ServerCommandUserData;
-  [ServerCommand.userInactive]: z.infer<typeof serverCommandUserInactiveData>;
+  [ServerCommand.userInactive]: ServerWireData["userInactive"];
   [ServerCommand.userLeft]: ServerCommandUserLeftData;
   [ServerCommand.userList]: ServerCommandUserListData;
   [ServerCommand.warning]: ServerCommandWarningData;
@@ -289,13 +224,13 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.lobbyStatus]: lobbyStatus,
   [ServerCommand.chatTyping]: serverCommandChatTypingData,
   ...GAME_SERVER_COMMAND_SCHEMAS,
-  [ServerCommand.soundLobby]: serverCommandSoundLobbyData,
+  [ServerCommand.soundLobby]: SERVER_WIRE_SCHEMAS.soundLobby,
   [ServerCommand.chat]: serverCommandChatData,
   [ServerCommand.chatDelete]: serverCommandChatDeleteData,
   [ServerCommand.chatList]: serverCommandChatListData,
   [ServerCommand.chatPMHistory]: serverCommandChatPMHistoryData,
-  [ServerCommand.error]: serverCommandErrorData,
-  [ServerCommand.friends]: serverCommandFriendsData,
+  [ServerCommand.error]: SERVER_WIRE_SCHEMAS.error,
+  [ServerCommand.friends]: SERVER_WIRE_SCHEMAS.friends,
   [ServerCommand.game]: serverCommandGameData,
   [ServerCommand.joined]: serverCommandTableIDData,
   [ServerCommand.left]: serverCommandTableIDData,
@@ -307,10 +242,10 @@ export const SERVER_COMMAND_SCHEMAS = {
   [ServerCommand.synced]: emptySchema,
   [ServerCommand.table]: serverCommandTableData,
   [ServerCommand.tableList]: serverCommandTableListData,
-  [ServerCommand.user]: serverCommandUserData,
-  [ServerCommand.userInactive]: serverCommandUserInactiveData,
-  [ServerCommand.userLeft]: serverCommandUserLeftData,
-  [ServerCommand.userList]: serverCommandUserListData,
-  [ServerCommand.warning]: serverCommandWarningData,
+  [ServerCommand.user]: SERVER_WIRE_SCHEMAS.user,
+  [ServerCommand.userInactive]: SERVER_WIRE_SCHEMAS.userInactive,
+  [ServerCommand.userLeft]: SERVER_WIRE_SCHEMAS.userLeft,
+  [ServerCommand.userList]: SERVER_WIRE_SCHEMAS.userList,
+  [ServerCommand.warning]: SERVER_WIRE_SCHEMAS.warning,
   [ServerCommand.welcome]: serverCommandWelcomeData,
 } as const satisfies Record<ServerCommand, unknown>;

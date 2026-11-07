@@ -61,6 +61,14 @@ macro_rules! server_contracts {
             "left" => TableRequest, TableRequest;
             "tableGone" => TableRequest, TableRequest;
             "tableStart" => TableStarted, TableStarted;
+            "user" => User, User;
+            "userList" => UserList, UserList;
+            "userLeft" => UserLeft, UserLeft;
+            "userInactive" => UserInactive, UserInactive;
+            "friends" => Friends, Friends;
+            "error" => ErrorNotice, ErrorNotice;
+            "warning" => Warning, Warning;
+            "soundLobby" => SoundLobby, SoundLobby;
         }
     };
 }

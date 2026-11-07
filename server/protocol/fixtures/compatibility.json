@@ -578,5 +578,104 @@
     "command": "tableSetLeader",
     "input": { "tableID": 7, "name": "Bob" },
     "valid": true
+  },
+  {
+    "name": "user presence includes the table for an active status",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 2,
+      "tableID": 3,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": true
+  },
+  {
+    "name": "user presence omits the table in the lobby",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 0,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": true
+  },
+  {
+    "name": "user presence rejects an unknown status",
+    "direction": "server",
+    "command": "user",
+    "input": {
+      "userID": 7,
+      "name": "Alice",
+      "status": 6,
+      "tableID": 3,
+      "hyphenated": false,
+      "inactive": false
+    },
+    "valid": false
+  },
+  {
+    "name": "user list is an array of presences",
+    "direction": "server",
+    "command": "userList",
+    "input": [
+      {
+        "userID": 7,
+        "name": "Alice",
+        "status": 2,
+        "tableID": 3,
+        "hyphenated": false,
+        "inactive": false
+      }
+    ],
+    "valid": true
+  },
+  {
+    "name": "user departure names only the user",
+    "direction": "server",
+    "command": "userLeft",
+    "input": { "userID": 7 },
+    "valid": true
+  },
+  {
+    "name": "user inactivity carries the new state",
+    "direction": "server",
+    "command": "userInactive",
+    "input": { "userID": 7, "inactive": true },
+    "valid": true
+  },
+  {
+    "name": "friends list may be empty",
+    "direction": "server",
+    "command": "friends",
+    "input": { "friends": [] },
+    "valid": true
+  },
+  {
+    "name": "error notices need text",
+    "direction": "server",
+    "command": "error",
+    "input": { "error": "" },
+    "valid": false
+  },
+  {
+    "name": "warning notices may contain HTML",
+    "direction": "server",
+    "command": "warning",
+    "input": { "warning": "Cannot process <code>chat</code>" },
+    "valid": true
+  },
+  {
+    "name": "lobby sounds name a file",
+    "direction": "server",
+    "command": "soundLobby",
+    "input": { "file": "shutdown" },
+    "valid": true
   }
 ]

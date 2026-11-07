@@ -77,7 +77,9 @@ pub enum Effect {
 fn warning(message: &str) -> Effect {
     Effect::ToSelf {
         command: "warning".into(),
-        data: json!({"warning":message}),
+        data: json!(hanabi_protocol::Warning {
+            warning: message.into(),
+        }),
     }
 }
 
@@ -171,7 +173,10 @@ pub async fn dispatch(
                 Effect::Inactive(inactive),
                 Effect::Broadcast {
                     command: "userInactive".into(),
-                    data: json!({"userID":caller.id,"inactive":inactive}),
+                    data: serde_json::to_value(hanabi_protocol::UserInactive {
+                        user_id: hanabi_protocol::UserId(caller.id),
+                        inactive,
+                    })?,
                 },
             ]
         }

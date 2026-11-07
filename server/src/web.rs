@@ -558,7 +558,11 @@ async fn websocket(
                             tokio::time::timeout(Duration::from_secs(5), async {
                                 socket
                                     .send(Message::Text(
-                                        frame("error", json!({"error":message})).into(),
+                                        frame(
+                                            "error",
+                                            hanabi_protocol::ErrorNotice { error: message },
+                                        )
+                                        .into(),
                                     ))
                                     .await?;
                                 socket.close().await
@@ -603,7 +607,13 @@ async fn connection(
             let _ = tokio::time::timeout(
                 Duration::from_secs(5),
                 socket.send(Message::Text(
-                    frame("error", json!({"error":"Account initialization failed."})).into(),
+                    frame(
+                        "error",
+                        hanabi_protocol::ErrorNotice {
+                            error: "Account initialization failed.".into(),
+                        },
+                    )
+                    .into(),
                 )),
             )
             .await;
@@ -667,7 +677,12 @@ async fn connection(
                 StatusCode::CONFLICT,
             );
             report.log();
-            let message = frame("error", json!({"error":report.text()}));
+            let message = frame(
+                "error",
+                hanabi_protocol::ErrorNotice {
+                    error: report.text(),
+                },
+            );
             let _ = tokio::time::timeout(
                 Duration::from_secs(1),
                 sink.send(Message::Text(message.into())),
@@ -761,7 +776,7 @@ async fn connection(
                 } else {
                     accounts::escape_html(&error.to_string())
                 };
-                session.emit(&frame("warning", json!({"warning":warning})));
+                session.emit(&frame("warning", hanabi_protocol::Warning { warning }));
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -940,7 +955,9 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             let command = protocol::command_name(input).unwrap_or("unrecognized command");
             session.emit(&frame(
                 "warning",
-                json!({"warning":accounts::escape_html(&format!("Cannot process {command}: {detail}"))}),
+                hanabi_protocol::Warning {
+                    warning: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
+                },
             ));
             return Ok(());
         }
