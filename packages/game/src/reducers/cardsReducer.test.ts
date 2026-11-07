@@ -535,6 +535,69 @@ describe("cardsReducer", () => {
       expect(isPossibleViaEmpathy(deck[0]!, 0, 5)).toBe(true);
     });
 
+    describe.each([0, 1] as const)(
+      "a replayed Throw It in a Hole card of player %i",
+      (player) => {
+        test.each([
+          ["play", false],
+          ["misplay", false],
+          ["play", true],
+          ["misplay", true],
+        ] as const)(
+          "stays hidden from that player after a %s (clued as a 5: %p)",
+          (type, clued) => {
+            function hand(orders: readonly number[]) {
+              return getGameStateWithHands(
+                GAME_STATE,
+                player === 0 ? [orders, []] : [[], orders],
+              );
+            }
+            let deck: readonly CardState[] = [];
+            deck = cardsReducer(
+              deck,
+              draw(player, 0, 0, 5),
+              THROW_IT_IN_A_HOLE_GAME_STATE,
+              THROW_IT_IN_A_HOLE_METADATA,
+            );
+            if (clued) {
+              deck = cardsReducer(
+                deck,
+                rankClue(5, player === 0 ? 1 : 0, [0], player),
+                hand([0]),
+                THROW_IT_IN_A_HOLE_METADATA,
+              );
+            }
+            deck = cardsReducer(
+              deck,
+              draw(player, 1, 0, 1),
+              hand([0]),
+              THROW_IT_IN_A_HOLE_METADATA,
+            );
+
+            // Replays know the identity of the red 5 that goes into the hole.
+            deck = cardsReducer(
+              deck,
+              type === "play"
+                ? play(player, 0, 0, 5)
+                : discard(player, 0, 0, 5, true),
+              hand([0, 1]),
+              THROW_IT_IN_A_HOLE_METADATA,
+            );
+            deck = cardsReducer(
+              deck,
+              draw(player, 2, 1, 1),
+              hand([1]),
+              THROW_IT_IN_A_HOLE_METADATA,
+            );
+
+            // The player never saw it, so their other card could still be a red 5 to them.
+            expect(deck[0]!.revealedToPlayer[player]).toBe(false);
+            expect(isPossibleViaEmpathy(deck[1]!, 0, 5)).toBe(true);
+          },
+        );
+      },
+    );
+
     test("only eliminates possibility on card inferred with it", () => {
       let deck: readonly CardState[] = [
         FIRST_CARD,

@@ -178,8 +178,11 @@ export function cardsReducer(
         }
       }
 
+      // Cards that go into the hole stay hidden from the players, even when a replay knows them.
+      const goesIntoHole =
+        variant.throwItInAHole && (action.type === "play" || action.failed);
       const revealedToPlayer =
-        action.suitIndex !== -1 && action.rank !== -1
+        action.suitIndex !== -1 && action.rank !== -1 && !goesIntoHole
           ? newArray(MAX_PLAYERS, true)
           : card.revealedToPlayer;
 

@@ -232,8 +232,24 @@ function getCardPossibilitiesForPlayer(
     return [[card.suitIndex, card.rank]];
   }
 
-  if (playerIndex === ourPlayerIndex || revealedToThisPlayer) {
-    // This is revealed to the player or we are the requested player => just use our best knowledge.
+  if (revealedToThisPlayer) {
+    return card.possibleCards;
+  }
+
+  // A card that left this player's own hand without being revealed to them (e.g. into the hole) was
+  // seen by everyone else. Their last empathy for it is exactly what they knew. (Replays know the
+  // true identity, so "possibleCards" would leak it to the player we are viewing as.)
+  if (
+    typeof card.location !== "number"
+    && card.revealedToPlayer.every(
+      (revealed, index) => revealed || index === playerIndex,
+    )
+  ) {
+    return card.possibleCardsForEmpathy;
+  }
+
+  if (playerIndex === ourPlayerIndex) {
+    // We are the requested player => just use our best knowledge.
     return card.possibleCards;
   }
 
