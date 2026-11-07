@@ -179,10 +179,24 @@ jobs:
           }
           JS
       - run: bash packages/client/build-client.sh
+      - name: Restore successful Vitest results
+        if: matrix.suite == 'flows'
+        id: vitest-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: vitest-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
+          restore-keys: |
+            vitest-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
       - name: Test lobby state, transport and safe rendering
         if: matrix.suite == 'flows'
-        run: bunx --bun --no-install vitest run
-        working-directory: packages/client-new
+        run: bunx --bun --no-install turbo run "@hanabi-live/client-new#test" --cache=local:rw
+      - name: Cache successful Vitest results
+        if: matrix.suite == 'flows' && steps.vitest-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: ${{ steps.vitest-cache.outputs.cache-primary-key }}
       - name: Test both clients against Rust
         run: |
           case "${{ matrix.suite }}" in

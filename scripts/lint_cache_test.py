@@ -53,6 +53,16 @@ class LintCacheTests(unittest.TestCase):
             "echo ran >> .turbo/test-executions\n"
             "test ! -f packages/testing/fail.txt\n",
         )
+        manifest_path = self.root / "packages/client-new/package.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["scripts"]["test"] = "bash test.sh"
+        manifest_path.write_text(json.dumps(manifest))
+        self.write(
+            "packages/client-new/test.sh",
+            "mkdir -p .turbo\n"
+            "echo ran >> .turbo/test-executions\n"
+            "test ! -f fail.txt\n",
+        )
         subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True)
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
 
@@ -227,6 +237,69 @@ class LintCacheTests(unittest.TestCase):
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
         (self.root / "packages/testing/fail.txt").unlink()
         self.turbo(task="//#test")
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+
+    def test_vitest_inputs_include_workspace_and_runtime_dependencies(self):
+        task = "@hanabi-live/client-new#test"
+        for name in (
+            "packages/client-new/src/index.ts",
+            "packages/client-new/tests/connection.test.ts",
+            "packages/client-new/vite.config.ts",
+            "packages/client-new/vitest.config.ts",
+            "packages/client-new/tsconfig.json",
+            "packages/data/src/index.ts",
+            "packages/game/src/index.ts",
+            "packages/testing/src/index.ts",
+            "packages/client/get-version.sh",
+            "package.json",
+            "tsconfig.monorepo.json",
+            "bunfig.toml",
+            ".github/workflows/ci.yml",
+            ".github/workflows/setup-bun/action.yml",
+        ):
+            with self.subTest(name=name):
+                source = self.root / name
+                content = source.read_text() if source.exists() else ""
+                self.assert_invalidates(name, content + "\n", {"client-new"}, task)
+        for name in (
+            "docs/install.md",
+            "server/src/main.rs",
+            "packages/client/src/index.ts",
+            "packages/data/src/version.js",
+            "public/client-new/index.html",
+        ):
+            with self.subTest(name=name):
+                self.assert_invalidates(name, "unrelated\n", set(), task)
+
+    def test_vitest_environment_invalidates_results(self):
+        task = "@hanabi-live/client-new#test"
+        environment = dict(os.environ)
+        for name in ("HANABI_BUILD_REVISION", "NODE_ENV", "ImageVersion", "TZ"):
+            environment.pop(name, None)
+        before = self.hashes(task, environment)
+        for name, value in (
+            ("HANABI_BUILD_REVISION", "a" * 40),
+            ("NODE_ENV", "production"),
+            ("ImageVersion", "different-image"),
+            ("TZ", "UTC"),
+        ):
+            with self.subTest(name=name):
+                after = self.hashes(task, {**environment, name: value})
+                self.assertNotEqual(before, after)
+
+    def test_vitest_successes_are_reused_but_failures_are_not(self):
+        task = "@hanabi-live/client-new#test"
+        executions = self.root / "packages/client-new/.turbo/test-executions"
+        self.turbo(task=task)
+        self.write("docs/install.md", "Documentation-only change.\n")
+        self.turbo(task=task)
+        self.assertEqual(executions.read_text(), "ran\n")
+        self.write("packages/client-new/fail.txt", "fail\n")
+        for _ in range(2):
+            self.assertNotEqual(self.turbo(task=task, check=False).returncode, 0)
+        self.assertEqual(executions.read_text(), "ran\nran\nran\n")
+        (self.root / "packages/client-new/fail.txt").unlink()
+        self.turbo(task=task)
         self.assertEqual(executions.read_text(), "ran\nran\nran\n")
 
 
