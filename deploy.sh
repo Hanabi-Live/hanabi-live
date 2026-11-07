@@ -2,6 +2,10 @@
 
 set -o errexit -o nounset -o pipefail
 
+# Get the directory of this script:
+# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
 for argument in "$@"; do
   case "$argument" in
     --check | --apply-migrations) ;;
@@ -17,8 +21,6 @@ for argument in "$@"; do
       ;;
   esac
 done
-
-DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 echo "Deployment target: root@hanab.live:/home/hanabi/hanabi-live"
 # Send credentials on encrypted stdin, never in SSH command-line arguments.
