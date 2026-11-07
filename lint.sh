@@ -50,7 +50,7 @@ case "$shard" in
   *) ;;
 esac
 run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
-run_parallel 1 bunx --bun --no-install prettier --log-level=warn --check .
+run_parallel 1 bash "$DIR/check-formatting.sh"
 run_parallel 2 bash "$DIR/check-spelling.sh"
 run_parallel 1 bash "$DIR/check-shellcheck.sh"
 run_parallel 1 bash "$DIR/check-templates.sh"
