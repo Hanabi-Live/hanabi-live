@@ -9,23 +9,6 @@ use std::collections::{BTreeMap, HashSet};
 pub const FORMAT: &str = "hanabi-live-1";
 pub const IDLE_TIMEOUT_MS: i64 = 1_800_000;
 
-/// State saved before request receipts were removed still lists them. Drop them on read so those
-/// tables load; remove once no saved state contains `receipts`.
-fn remove_request_receipts(table: &mut Value) {
-    if let Some(table) = table.as_object_mut() {
-        table.remove("receipts");
-        if let Some(game) = table
-            .get_mut("phase")
-            .and_then(|phase| phase.get_mut("snapshot"))
-            .and_then(Value::as_object_mut)
-        {
-            game.remove("receipts");
-        }
-        if let Some(spawn) = table.get_mut("pending_spawn") {
-            remove_request_receipts(spawn);
-        }
-    }
-}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Player {
@@ -166,8 +149,7 @@ pub struct TableChat {
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(payload.len() <= 4 * 1024 * 1024, "Oversized checkpoint");
-        let mut value: Value = serde_json::from_str(payload)?;
-        remove_request_receipts(&mut value);
+        let value: Value = serde_json::from_str(payload)?;
         ensure!(
             value["chat"].as_array().is_some_and(|v| v.len() <= 4096),
             "Missing or oversized checkpoint chat"
