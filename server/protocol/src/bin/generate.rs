@@ -166,10 +166,6 @@ fn expression(schema: &Value) -> Result<String> {
     }
     if let Some(format) = schema["format"].as_str() {
         match format {
-            "utf8-request-id" => result.push_str(&format!(
-                ".refine((value) => new TextEncoder().encode(value).length <= {0}, \"Request IDs cannot exceed {0} UTF-8 bytes.\")",
-                hanabi_protocol::MAX_REQUEST_ID_BYTES,
-            )),
             "int32" | "int64" | "uint8" | "uint32" | "uint64" => {}
             other => bail!("Unsupported schema format: {other}"),
         }

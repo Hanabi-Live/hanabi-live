@@ -513,8 +513,8 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             let before = h.snapshot(id).await?.0.chat.len();
             let actor = if phase == 1 { 1 } else { 0 };
             let target = 1 - actor;
-            let data = json!({"tableID":id,"name":h.users[target].name,"requestID":format!("leader-{phase}")});
-            h.send(actor, "tableSetLeader", data.clone()).await?;
+            let data = json!({"tableID":id,"name":h.users[target].name});
+            h.send(actor, "tableSetLeader", data).await?;
             let expected = format!(
                 "{} has passed table ownership to: {}",
                 crate::accounts::escape_html(&h.users[actor].name),
@@ -523,25 +523,59 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
             h.barrier(0).await?;
             for index in 0..2 {
                 let messages = chat_messages(&h.frames(index)?);
-                ensure!(messages.len() == 1, "Expected one leader-change announcement");
+                ensure!(
+                    messages.len() == 1,
+                    "Expected one leader-change announcement"
+                );
                 ensure!(messages[0]["msg"] == expected && messages[0]["source"] == "server");
                 ensure!(messages[0].get("recipient").is_none());
             }
-            ensure!(chat_messages(&h.frames(2)?).is_empty(), "Leader notice leaked outside the table");
+            ensure!(
+                chat_messages(&h.frames(2)?).is_empty(),
+                "Leader notice leaked outside the table"
+            );
             let table = h.snapshot(id).await?.0;
-            ensure!(table.chat.len() == before + 1 && table.chat[before].message["msg"] == expected);
-            h.send(actor, "tableSetLeader", data).await?;
-            ensure!(h.snapshot(id).await?.0.chat.len() == before + 1, "Retried command duplicated its notice");
-            ensure!(h.send(2, "tableSetLeader", json!({"tableID":id,"name":h.users[actor].name})).await.is_err());
-            ensure!(h.send(actor, "tableSetLeader", json!({"tableID":id,"name":"Absent"})).await.is_err());
-            ensure!(h.send(actor, "tableSetLeader", json!({"tableID":id,"name":h.users[target].name})).await.is_err());
+            ensure!(
+                table.chat.len() == before + 1 && table.chat[before].message["msg"] == expected
+            );
+            ensure!(
+                h.send(
+                    2,
+                    "tableSetLeader",
+                    json!({"tableID":id,"name":h.users[actor].name})
+                )
+                .await
+                .is_err()
+            );
+            ensure!(
+                h.send(
+                    actor,
+                    "tableSetLeader",
+                    json!({"tableID":id,"name":"Absent"})
+                )
+                .await
+                .is_err()
+            );
+            ensure!(
+                h.send(
+                    actor,
+                    "tableSetLeader",
+                    json!({"tableID":id,"name":h.users[target].name})
+                )
+                .await
+                .is_err()
+            );
             h.barrier(0).await?;
             for index in 0..3 {
-                ensure!(chat_messages(&h.frames(index)?).is_empty(), "Rejected or duplicate transfer emitted chat");
+                ensure!(
+                    chat_messages(&h.frames(index)?).is_empty(),
+                    "Rejected or duplicate transfer emitted chat"
+                );
             }
         }
         Ok::<(), anyhow::Error>(())
-    }.await;
+    }
+    .await;
     let cleanup = h.close().await;
     result?;
     cleanup
@@ -846,7 +880,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             published_owner,
             "Remaining clients did not receive the updated pregame"
         );
-        actor.start(h.users[1].clone(), None).await?;
+        actor.start(h.users[1].clone()).await?;
         for user in &h.users {
             user.cancel.cancel();
         }

@@ -10,8 +10,6 @@ pub use registry::{
 
 pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 
-pub const MAX_REQUEST_ID_BYTES: usize = 128;
-
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Empty {}
@@ -55,12 +53,6 @@ pub enum LobbyStatus {
 pub struct TableId(#[schemars(range(min = 0, max = MAX_SAFE_INTEGER))] pub u64);
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct RequestId(
-    #[schemars(length(max = MAX_REQUEST_ID_BYTES), extend("format" = "utf8-request-id"))] pub String,
-);
-
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct ChatRequest {
@@ -68,9 +60,6 @@ pub struct ChatRequest {
     pub msg: String,
     #[schemars(length(min = 1))]
     pub room: String,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -152,9 +141,6 @@ pub struct TableJoinRequest {
 pub struct TableLeaderRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default)]
     pub name: String,
 }
@@ -179,9 +165,6 @@ pub struct TableVariantRequest {
 pub struct TableCommand {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -189,9 +172,6 @@ pub struct TableCommand {
 pub struct TableStartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub intended_variant: Option<String>,
@@ -205,9 +185,6 @@ pub struct TableStartRequest {
 pub struct TableRestartRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default)]
     pub hide_pregame: bool,
 }
@@ -217,9 +194,6 @@ pub struct TableRestartRequest {
 pub struct TableSuggestRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default)]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub segment: i64,
@@ -234,9 +208,6 @@ fn negative_one() -> i64 {
 pub struct TableSpectateRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default = "negative_one")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shadowing_player_index: i64,
@@ -248,9 +219,6 @@ pub struct TableSpectateRequest {
 pub struct ActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     /// 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
     #[serde(rename = "type")]
     #[schemars(extend("enum" = [0, 1, 2, 3]))]
@@ -269,9 +237,6 @@ pub struct ActionRequest {
 pub struct PauseRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     /// "pause", "unpause", or "pause-queue".
     pub setting: String,
 }
@@ -281,9 +246,6 @@ pub struct PauseRequest {
 pub struct NoteRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub order: u64,
     pub note: String,
@@ -295,9 +257,6 @@ pub struct NoteRequest {
 pub struct TagRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     pub msg: String,
     #[serde(default)]
     pub room: String,
@@ -308,9 +267,6 @@ pub struct TagRequest {
 pub struct TagsDeleteAllRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     #[serde(default)]
     pub room: String,
 }
@@ -321,9 +277,6 @@ pub struct TagsDeleteAllRequest {
 pub struct ReplayActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default, rename = "requestID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "RequestId")]
-    pub request_id: Option<RequestId>,
     /// 0 segment, 1 arrow, 2 sound, 3 start hypothetical, 4 end hypothetical,
     /// 5 hypothetical action, 6 hypothetical back, 7 toggle drawn cards, 8 efficiency modifier.
     #[serde(rename = "type")]
@@ -484,7 +437,6 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ChatUserRequest,
         ChatLinkedRequest,
         TableId,
-        RequestId,
         TableRequest,
         TableJoinRequest,
         TableLeaderRequest,
@@ -547,16 +499,7 @@ mod tests {
     }
 
     #[test]
-    fn optional_values_are_omitted_not_null_and_request_ids_are_byte_bounded() {
-        for (count, valid) in [(64, true), (65, false)] {
-            assert_eq!(
-                decode::<ChatRequest>(&json!({
-                    "msg": "private text", "room": "lobby", "requestID": "\u{e9}".repeat(count)
-                }))
-                .is_ok(),
-                valid
-            );
-        }
+    fn optional_values_are_omitted_not_null() {
         let error = decode::<ChatRequest>(&json!({
             "msg": "private text", "room": null
         }))

@@ -426,10 +426,9 @@ describe("connection ownership and recovery", () => {
       connection.send("chat", {
         msg: "Hello",
         room: "lobby",
-        requestID: "original",
       }),
     ).toBe(true);
-    expect(first.sent[0]).toContain('"requestID":"original"');
+    expect(first.sent[0]).toContain('"msg":"Hello"');
     first.close();
     expect(connection.send("chat", { msg: "Offline", room: "lobby" })).toBe(
       false,

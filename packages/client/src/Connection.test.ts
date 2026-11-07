@@ -51,26 +51,17 @@ describe("WebSocket resume safety", () => {
       initial.send("chat", { room: "lobby", msg: "allowed" });
       expect(sockets[1]?.sent).toHaveLength(1);
       initial.send("action", { tableID: 123, type: 0, target: 1 });
-      initial.send("action", { tableID: 123, type: 0, target: 1 });
-      const first = sockets[1]?.sent[1];
-      const second = sockets[1]?.sent[2];
-      expect(first).toMatch(/"requestID":"[\d\-a-f]+"/u);
-      expect(second).not.toBe(first);
-      const retry = { tableID: 123, requestID: "original-request" };
-      initial.send("pause", retry);
-      initial.send("pause", retry);
-      expect(sockets[1]?.sent[3]).toBe(sockets[1]?.sent[4]);
-      expect(sockets[1]?.sent[3]).toContain("original-request");
-      initial.send("tagDelete", { tableID: 123, msg: "private tag" });
-      expect(sockets[1]?.sent[5]).toMatch(/"requestID":"[\da-f]{32}"/u);
+      expect(sockets[1]?.sent[1]).toBe(
+        'action {"tableID":123,"type":0,"target":1}',
+      );
       initial.setReady(false);
       initial.send("action", { tableID: 123, type: 0, target: 1 });
-      expect(sockets[1]?.sent).toHaveLength(6);
+      expect(sockets[1]?.sent).toHaveLength(2);
       initial.send("getGameInfo2", { tableID: 123 });
-      expect(sockets[1]?.sent).toHaveLength(7);
+      expect(sockets[1]?.sent).toHaveLength(3);
       initial.setReady(true);
       initial.send("action", { tableID: 123, type: 0, target: 1 });
-      expect(sockets[1]?.sent).toHaveLength(8);
+      expect(sockets[1]?.sent).toHaveLength(4);
     } finally {
       globalThis.WebSocket = originalWebSocket;
       if (originalRandomUUID === undefined) {

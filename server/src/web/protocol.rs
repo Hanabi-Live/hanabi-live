@@ -338,16 +338,10 @@ mod tests {
             "sync []",
             "unknown {}",
             "historyFriendsGet {\"offset\":0,\"amount\":10}",
+            "loaded {\"tableID\":1,\"requestID\":\"r\"}",
         ] {
             assert!(parse(input).is_err(), "{input}");
         }
-        assert!(
-            parse(&format!(
-                "loaded {{\"tableID\":1,\"requestID\":\"{}\"}}",
-                "é".repeat(65)
-            ))
-            .is_err()
-        );
         let (_, create) = parse("tableCreate {}").unwrap();
         assert_eq!(create["options"]["numPlayers"], 2);
         assert_eq!(create["options"]["variantName"], "No Variant");

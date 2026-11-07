@@ -6,9 +6,9 @@ remains `command JSON`; authorization, normalization, HTML escaping, and
 business rules remain in the server.
 
 The pilot covers chat and private history, relationship requests, table
-join/leave/leadership/variant selection, start/restart/spectating, table receipt
-commands, and chat/table lifecycle notifications. Existing public TypeScript
-interfaces remain available through `@hanabi-live/data`.
+join/leave/leadership/variant selection, start/restart/spectating, gameplay
+table commands, and chat/table lifecycle notifications. Existing public
+TypeScript interfaces remain available through `@hanabi-live/data`.
 
 ## Changing a contract
 
@@ -42,8 +42,8 @@ Unknown schema features fail generation rather than silently losing validation.
   `null`; explicit null is rejected unless the contract explicitly permits it.
 - Missing fields with defaults are normalized identically. Empty strings are not
   automatically replaced, trimmed, or escaped.
-- Integer bounds remain JavaScript-safe. Request IDs remain limited to 128 UTF-8
-  bytes, not merely 128 characters. Table IDs retain their TypeScript brand.
+- Integer bounds remain JavaScript-safe. Table IDs retain their TypeScript
+  brand.
 - Timestamp strings keep their existing representation; generated schemas do not
   parse or reformat them. Readonly Zod objects/arrays retain their existing
   behavior.

@@ -226,7 +226,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
             msg: "/startin 0.001",
           });
         } else if (!automatic) {
-          alice.send("tableStart", { tableID, requestID: "start-once" });
+          alice.send("tableStart", { tableID });
         }
         await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
@@ -266,7 +266,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           tableID,
           type: 0,
           target: card.order,
-          requestID: "play-once",
         });
         await active.receive("gameAction", SERVER_COMMAND_SCHEMAS.gameAction);
         active.send("getGameInfo2", { tableID });
@@ -411,23 +410,19 @@ databaseDescribe("compiled application entry point (rust)", () => {
           tableID,
           order: 0,
           note: "retained note",
-          requestID: "note-once",
         });
         replacement.send("tag", {
           tableID,
           msg: "compiled smoke",
           room: `table${tableID}`,
-          requestID: "tag-once",
         });
         replacement.send("chat", {
           room: `table${tableID}`,
           msg: "retained authored chat",
-          requestID: "chat-once",
         });
         if (signal === undefined && domain === "localhost") {
           replacement.send("tableVoteForTermination", {
             tableID,
-            requestID: "alice-vote",
           });
           await replacement.receive(
             "voteChange",
@@ -436,12 +431,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
           );
           bob.send("tableVoteForTermination", {
             tableID,
-            requestID: "bob-vote",
           });
         } else {
           replacement.send("tableTerminate", {
             tableID,
-            requestID: "finish-once",
           });
         }
         const finished = await replacement.receive(

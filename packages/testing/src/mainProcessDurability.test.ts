@@ -87,7 +87,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
         );
         bob.send("tableJoin", { tableID });
         await bob.receive("joined", SERVER_COMMAND_SCHEMAS.joined);
-        alice.send("tableStart", { tableID, requestID: "start" });
+        alice.send("tableStart", { tableID });
         await alice.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         await bob.receive("tableStart", SERVER_COMMAND_SCHEMAS.tableStart);
         async function bootstrap(peer: ReturnType<typeof socketClient>) {
@@ -129,7 +129,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
           tableID,
           type: 0,
           target: card.order,
-          requestID: "accepted-once",
         };
         let replacement: Awaited<ReturnType<typeof connect>> | undefined;
         try {
@@ -189,7 +188,9 @@ databaseDescribe("Rust actor durability and ownership", () => {
           SERVER_COMMAND_SCHEMAS.tableStart,
         );
         await bootstrap(replacement);
+        // Resending the applied move is rejected: it is no longer this player's turn.
         replacement.send("action", action);
+        await replacement.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         replacement.send("getGameInfo2", { tableID });
         const onceOnly = await replacement.receive(
           "gameActionList",
@@ -218,7 +219,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
             tableID,
             type: 0,
             target: nextCard.order,
-            requestID: "not-committed",
           });
           await bounded(stopped, "Rust fail-closed Redis shutdown", 15_000);
           expect(state.child.exitCode).not.toBe(0);
@@ -260,6 +260,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           ),
         ).toBe(true);
         returning.send("action", action);
+        await returning.receive("warning", SERVER_COMMAND_SCHEMAS.warning);
         returning.send("getGameInfo2", { tableID });
         const duplicate = await returning.receive(
           "gameActionList",
