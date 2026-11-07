@@ -278,11 +278,58 @@ impl Session {
     }
 }
 
-pub fn frame(command: &str, data: impl Serialize) -> String {
+/// Encodes a registered server message. Only registered messages with their payload type can be
+/// sent, so every frame matches a schema the clients validate.
+pub fn frame<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> String {
+    raw_frame(message.name(), data)
+}
+
+fn raw_frame(command: &str, data: impl Serialize) -> String {
     let mut buffer = command.as_bytes().to_vec();
     buffer.push(b' ');
     serde_json::to_writer(&mut buffer, &data).expect("JSON-serializable protocol payload");
     String::from_utf8(buffer).expect("JSON protocol frames are UTF-8")
+}
+
+/// Encodes JSON stored before payloads were typed, such as chat saved in a table checkpoint. It is
+/// checked against the message's schema first, so it cannot reach clients in another shape.
+pub fn stored_frame<T: hanabi_protocol::JsonSchema>(
+    message: hanabi_protocol::ServerMessage<T>,
+    data: &serde_json::Value,
+) -> anyhow::Result<String> {
+    hanabi_protocol::validate::<T>(data)?;
+    Ok(raw_frame(message.name(), data))
+}
+
+/// A registered server message waiting to be sent, such as a lobby command's reply.
+#[derive(Clone, Debug)]
+pub struct Outgoing {
+    command: &'static str,
+    data: serde_json::Value,
+}
+
+impl Outgoing {
+    pub fn new<T: Serialize>(message: hanabi_protocol::ServerMessage<T>, data: T) -> Self {
+        Self {
+            command: message.name(),
+            data: serde_json::to_value(data).expect("JSON-serializable protocol payload"),
+        }
+    }
+    pub fn command(&self) -> &'static str {
+        self.command
+    }
+    pub fn data(&self) -> &serde_json::Value {
+        &self.data
+    }
+    pub fn frame(&self) -> String {
+        raw_frame(self.command, &self.data)
+    }
+}
+
+/// Encodes an arbitrary frame, for tests that build expected or invalid messages.
+#[cfg(test)]
+pub fn test_frame(command: &str, data: impl Serialize) -> String {
+    raw_frame(command, data)
 }
 
 #[cfg(test)]
@@ -480,15 +527,15 @@ mod tests {
             })
             .collect();
         let messages = [
-            frame(
+            test_frame(
                 "gameActionList",
                 serde_json::json!({"tableID":42,"list":[]}),
             ),
-            frame(
+            test_frame(
                 "noteList",
                 serde_json::json!({"tableID":42,"notes":all_notes}),
             ),
-            frame(
+            test_frame(
                 "noteListPlayer",
                 serde_json::json!({"tableID":42,"notes":notes}),
             ),

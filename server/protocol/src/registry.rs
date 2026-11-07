@@ -2,7 +2,7 @@ use crate::*;
 use anyhow::{Context, Result, bail};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{collections::BTreeMap, sync::LazyLock};
+use std::{collections::BTreeMap, marker::PhantomData, sync::LazyLock};
 
 macro_rules! client_contracts {
     ($apply:ident) => {
@@ -57,58 +57,58 @@ macro_rules! client_contracts {
 macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
-            "restart" => Restart, Restart;
-            "clock" => Clock, Clock;
-            "connected" => Connected, Connected;
-            "pause" => Pause, Pause;
-            "voteChange" => VoteChange, VoteChange;
-            "cardIdentities" => CardIdentities, CardIdentities;
-            "finishOngoingGame" => FinishOngoingGame, FinishOngoingGame;
-            "replaySegment" => ReplaySegment, ReplaySegment;
-            "replayIndicator" => ReplayIndicator, ReplayIndicator;
-            "replaySound" => ReplaySound, ReplaySound;
-            "replayLeader" => ReplayLeader, ReplayLeader;
-            "suggestion" => Suggestion, Suggestion;
-            "hypothetical" => Hypothetical, Hypothetical;
-            "hypoStart" => TableRequest, TableRequest;
-            "hypoEnd" => TableRequest, TableRequest;
-            "hypoBack" => TableRequest, TableRequest;
-            "hypoAction" => HypoAction, HypoAction;
-            "hypoShowDrawnCards" => HypoShowDrawnCards, HypoShowDrawnCards;
-            "note" => Note, Note;
-            "noteList" => NoteList, NoteList;
-            "noteListPlayer" => NoteListPlayer, NoteListPlayer;
-            "gameAction" => GameAction, GameAction;
-            "gameActionList" => GameActionList, GameActionList;
-            "init" => Init, Init;
-            "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
-            "boot" => TableRequest, TableRequest;
-            "synced" => Empty, Empty;
-            "lobbyStatus" => LobbyStatus, LobbyStatus;
-            "chat" => Chat, Chat;
-            "chatDelete" => ChatDelete, ChatDelete;
-            "chatList" => ChatList, ChatList;
-            "chatPMHistory" => ChatHistory, ChatHistory;
-            "chatTyping" => ChatTyping, ChatTyping;
-            "joined" => TableRequest, TableRequest;
-            "left" => TableRequest, TableRequest;
-            "tableGone" => TableRequest, TableRequest;
-            "tableStart" => TableStarted, TableStarted;
-            "user" => User, User;
-            "userList" => UserList, UserList;
-            "userLeft" => UserLeft, UserLeft;
-            "userInactive" => UserInactive, UserInactive;
-            "friends" => Friends, Friends;
-            "error" => ErrorNotice, ErrorNotice;
-            "warning" => Warning, Warning;
-            "soundLobby" => SoundLobby, SoundLobby;
-            "welcome" => Welcome, Welcome;
-            "spectators" => Spectators, Spectators;
-            "table" => Table, Table;
-            "tableList" => TableList, TableList;
-            "game" => Pregame, Pregame;
-            "gameHistory" => GameHistoryList, GameHistoryList;
-            "gameHistoryOtherScores" => GameHistoryOtherScores, GameHistoryOtherScores;
+            RESTART "restart" => Restart, Restart;
+            CLOCK "clock" => Clock, Clock;
+            CONNECTED "connected" => Connected, Connected;
+            PAUSE "pause" => Pause, Pause;
+            VOTE_CHANGE "voteChange" => VoteChange, VoteChange;
+            CARD_IDENTITIES "cardIdentities" => CardIdentities, CardIdentities;
+            FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame, FinishOngoingGame;
+            REPLAY_SEGMENT "replaySegment" => ReplaySegment, ReplaySegment;
+            REPLAY_INDICATOR "replayIndicator" => ReplayIndicator, ReplayIndicator;
+            REPLAY_SOUND "replaySound" => ReplaySound, ReplaySound;
+            REPLAY_LEADER "replayLeader" => ReplayLeader, ReplayLeader;
+            SUGGESTION "suggestion" => Suggestion, Suggestion;
+            HYPOTHETICAL "hypothetical" => Hypothetical, Hypothetical;
+            HYPO_START "hypoStart" => TableRequest, TableRequest;
+            HYPO_END "hypoEnd" => TableRequest, TableRequest;
+            HYPO_BACK "hypoBack" => TableRequest, TableRequest;
+            HYPO_ACTION "hypoAction" => HypoAction, HypoAction;
+            HYPO_SHOW_DRAWN_CARDS "hypoShowDrawnCards" => HypoShowDrawnCards, HypoShowDrawnCards;
+            NOTE "note" => Note, Note;
+            NOTE_LIST "noteList" => NoteList, NoteList;
+            NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer, NoteListPlayer;
+            GAME_ACTION "gameAction" => GameAction, GameAction;
+            GAME_ACTION_LIST "gameActionList" => GameActionList, GameActionList;
+            INIT "init" => Init, Init;
+            REPLAY_EFFICIENCY_MOD "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
+            BOOT "boot" => TableRequest, TableRequest;
+            SYNCED "synced" => Empty, Empty;
+            LOBBY_STATUS "lobbyStatus" => LobbyStatus, LobbyStatus;
+            CHAT "chat" => Chat, Chat;
+            CHAT_DELETE "chatDelete" => ChatDelete, ChatDelete;
+            CHAT_LIST "chatList" => ChatList, ChatList;
+            CHAT_PM_HISTORY "chatPMHistory" => ChatHistory, ChatHistory;
+            CHAT_TYPING "chatTyping" => ChatTyping, ChatTyping;
+            JOINED "joined" => TableRequest, TableRequest;
+            LEFT "left" => TableRequest, TableRequest;
+            TABLE_GONE "tableGone" => TableRequest, TableRequest;
+            TABLE_START "tableStart" => TableStarted, TableStarted;
+            USER "user" => User, User;
+            USER_LIST "userList" => UserList, UserList;
+            USER_LEFT "userLeft" => UserLeft, UserLeft;
+            USER_INACTIVE "userInactive" => UserInactive, UserInactive;
+            FRIENDS "friends" => Friends, Friends;
+            ERROR "error" => ErrorNotice, ErrorNotice;
+            WARNING "warning" => Warning, Warning;
+            SOUND_LOBBY "soundLobby" => SoundLobby, SoundLobby;
+            WELCOME "welcome" => Welcome, Welcome;
+            SPECTATORS "spectators" => Spectators, Spectators;
+            TABLE "table" => Table, Table;
+            TABLE_LIST "tableList" => TableList, TableList;
+            GAME "game" => Pregame, Pregame;
+            GAME_HISTORY "gameHistory" => GameHistoryList, GameHistoryList;
+            GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores, GameHistoryOtherScores;
         }
     };
 }
@@ -158,7 +158,7 @@ pub fn decode_client(name: &str, value: &Value) -> Result<Option<Value>> {
 
 pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
     macro_rules! dispatch {
-        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
             match name {
                 $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
                 _ => Ok(None),
@@ -179,9 +179,48 @@ pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
 
 pub fn server_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
-        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
             BTreeMap::from([$(( $command, stringify!($canonical) )),+])
         };
     }
     server_contracts!(names)
+}
+
+/// A registered server message: its name, tied to the payload type the clients validate.
+pub struct ServerMessage<T> {
+    name: &'static str,
+    payload: PhantomData<fn(T)>,
+}
+
+impl<T> ServerMessage<T> {
+    const fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            payload: PhantomData,
+        }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+impl<T> Clone for ServerMessage<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T> Copy for ServerMessage<T> {}
+
+macro_rules! server_messages {
+    ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
+        $(pub const $name: ServerMessage<$native> = ServerMessage::new($command);)+
+    };
+}
+
+/// Every message the server can send. Building a frame requires one of these and its payload type.
+pub mod server {
+    use super::{ServerMessage, *};
+    server_contracts!(server_messages);
 }

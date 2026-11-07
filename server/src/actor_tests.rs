@@ -1,4 +1,5 @@
 use super::*;
+use crate::transport::test_frame;
 use crate::{
     state::{RedisState, StateId},
     test_redis::RedisFixture,
@@ -54,7 +55,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         ),
     ] {
         let list = hanabi_engine::events_for_recipient(&game.0, recipient, None)?;
-        let encoded = frame("gameActionList", crate::actors::game_action_list(42, &list));
+        let encoded = test_frame("gameActionList", crate::actors::game_action_list(42, &list));
         let (command, body) = encoded
             .split_once(' ')
             .context("Missing protocol separator")?;
@@ -62,7 +63,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let body: Value = serde_json::from_str(body)?;
         assert_eq!(body, json!({"tableID":42,"list":list}));
         for (event, expected) in list.iter().zip(body["list"].as_array().unwrap()) {
-            let encoded = frame("gameAction", crate::actors::game_action(42, event));
+            let encoded = test_frame("gameAction", crate::actors::game_action(42, event));
             let (command, body) = encoded
                 .split_once(' ')
                 .context("Missing action separator")?;

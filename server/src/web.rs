@@ -366,7 +366,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         normalized_name,
         welcome,
         initial: vec![frame(
-            "lobbyStatus",
+            hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
         )],
     })
@@ -378,8 +378,11 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
     let mut initial = vec![];
     if !reconnect {
         let chat = lobby::lobby_history(pool, 50).await?;
-        initial.push(frame("chatList", json!({"list":chat,"unread":0})));
-        initial.push(frame("chat", hanabi_protocol::Chat {
+        initial.push(crate::transport::stored_frame(
+            hanabi_protocol::server::CHAT_LIST,
+            &json!({"list":chat,"unread":0}),
+        )?);
+        initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
             room: Some("lobby".into()),
             ..hanabi_protocol::Chat::new(
                 "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
@@ -390,7 +393,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
         let motd = app.public.root.join("motd.txt");
         match tokio::fs::read_to_string(motd).await {
             Ok(text) if !text.trim().is_empty() => initial.push(frame(
-                "chat",
+                hanabi_protocol::server::CHAT,
                 hanabi_protocol::Chat {
                     who: Some(String::new()),
                     room: Some("lobby".into()),
@@ -412,7 +415,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
 fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
     let Ok(session_slot) = session.lobby_load.clone().try_acquire_owned() else {
         session.emit(&frame(
-            "lobbyStatus",
+            hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
         ));
         return;
@@ -449,7 +452,7 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                     session.emit(&message);
                 }
                 session.emit(&frame(
-                    "lobbyStatus",
+                    hanabi_protocol::server::LOBBY_STATUS,
                     hanabi_protocol::LobbyStatus::Ready { total_games: total },
                 ));
             }
@@ -457,7 +460,7 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 let report = crate::errors::Report::from_error("Loading lobby statistics", &error, Some(2));
                 report.log();
                 session.emit(&frame(
-                    "lobbyStatus",
+                    hanabi_protocol::server::LOBBY_STATUS,
                     hanabi_protocol::LobbyStatus::Error { total_games: (), message: Some(report.text()) },
                 ));
             }
@@ -580,7 +583,7 @@ async fn websocket(
                                 socket
                                     .send(Message::Text(
                                         frame(
-                                            "error",
+                                            hanabi_protocol::server::ERROR,
                                             hanabi_protocol::ErrorNotice { error: message },
                                         )
                                         .into(),
@@ -629,7 +632,7 @@ async fn connection(
                 Duration::from_secs(5),
                 socket.send(Message::Text(
                     frame(
-                        "error",
+                        hanabi_protocol::server::ERROR,
                         hanabi_protocol::ErrorNotice {
                             error: "Account initialization failed.".into(),
                         },
@@ -697,7 +700,7 @@ async fn connection(
             );
             report.log();
             let message = frame(
-                "error",
+                hanabi_protocol::server::ERROR,
                 hanabi_protocol::ErrorNotice {
                     error: report.text(),
                 },
@@ -795,7 +798,10 @@ async fn connection(
                 } else {
                     accounts::escape_html(&error.to_string())
                 };
-                session.emit(&frame("warning", hanabi_protocol::Warning { warning }));
+                session.emit(&frame(
+                    hanabi_protocol::server::WARNING,
+                    hanabi_protocol::Warning { warning },
+                ));
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -905,7 +911,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             };
             let command = protocol::command_name(input).unwrap_or("unrecognized command");
             session.emit(&frame(
-                "warning",
+                hanabi_protocol::server::WARNING,
                 hanabi_protocol::Warning {
                     warning: accounts::escape_html(&format!("Cannot process {command}: {detail}")),
                 },
@@ -916,7 +922,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
     let mut measurement = crate::metrics::COMMAND_METRICS.start(&command);
     if command == "lobbyLoad" {
         session.emit(&frame(
-            "lobbyStatus",
+            hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
         ));
         load_lobby(app.clone(), session, false);

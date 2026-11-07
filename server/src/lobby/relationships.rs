@@ -1,5 +1,6 @@
 use super::{Caller, Effect, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
+use crate::transport::Outgoing;
 use anyhow::Result;
 use sqlx::PgPool;
 
@@ -192,12 +193,12 @@ pub async fn relationship(
             target_id: target,
             added: add,
         });
-        effects.push(Effect::ToSelf {
-            command: "friends".into(),
-            data: serde_json::to_value(hanabi_protocol::Friends {
+        effects.push(Effect::ToSelf(Outgoing::new(
+            hanabi_protocol::server::FRIENDS,
+            hanabi_protocol::Friends {
                 friends: friends(pool, caller.id).await?,
-            })?,
-        });
+            },
+        )));
     }
     Ok(effects)
 }
