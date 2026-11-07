@@ -126,6 +126,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Directory {
                 session: self.users[index].clone(),
+                users: true,
                 reply,
             })
             .await?;
@@ -1957,6 +1958,63 @@ async fn paused_clock_survives_deadline_then_unpaused_disconnected_player_times_
             "Timeout did not reach the atomic PostgreSQL archive"
         );
         Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
+    let Some(h) = Harness::new(&[]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let mut outgoing = vec![];
+        let mut sessions = vec![];
+        for (user, name, ip) in [
+            (1, "Alice", "192.0.2.1"),
+            (2, "AliceAlt", "192.0.2.1"),
+            (3, "Bob", "192.0.2.2"),
+        ] {
+            let (session, receiver) = Session::with_health(
+                crate::transport::SessionMetadata {
+                    user,
+                    name: name.into(),
+                    normalized_name: crate::accounts::normalize_username(name),
+                    ip: ip.into(),
+                    generation: 1,
+                    hyphenated: false,
+                },
+                tokio_util::sync::CancellationToken::new(),
+                Arc::new(|| true),
+            );
+            h.register(session.clone()).await?;
+            sessions.push(session);
+            outgoing.push(receiver);
+        }
+        let (reply, received) = oneshot::channel();
+        h.hub
+            .send(HubCommand::Operations {
+                command: Operation::Ban {
+                    user_id: 1,
+                    ip: "192.0.2.1".into(),
+                },
+                reply,
+            })
+            .await?;
+        received.await??;
+        // Commands are no longer checked against the ban list, so other accounts on the
+        // banned address must be disconnected too.
+        ensure!(
+            sessions[0].cancel.is_cancelled() && sessions[1].cancel.is_cancelled(),
+            "A session from the banned IP stayed connected"
+        );
+        ensure!(
+            !sessions[2].cancel.is_cancelled(),
+            "A session from another IP was disconnected"
+        );
+        Ok(())
     }
     .await;
     h.close().await?;

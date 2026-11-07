@@ -15,7 +15,7 @@ pub use crypto::{
 };
 pub use normalization::{
     escape_html, has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
-    normalize_username, truncate_to_max_bytes, validate_username,
+    normalize_username, remove_disallowed_characters, truncate_to_max_bytes, validate_username,
 };
 pub use rate_limit::TooMuchPasswordWork;
 

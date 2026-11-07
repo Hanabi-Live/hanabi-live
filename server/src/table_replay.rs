@@ -62,7 +62,10 @@ pub fn parse(input: &Value) -> Result<Imported> {
         .map(serde_json::from_value)
         .collect::<std::result::Result<_, _>>()?;
     if players.is_empty() {
-        let pattern = regex::Regex::new(r"^(?:legacy-\d+-)?p([2-6])v\d+s[-0-9A-Za-z]+$")?;
+        static SEED: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+            regex::Regex::new(r"^(?:legacy-\d+-)?p([2-6])v\d+s[-0-9A-Za-z]+$").unwrap()
+        });
+        let pattern = &*SEED;
         let count: usize = pattern
             .captures(seed)
             .context("Provide players when the seed has no player count")?[1]

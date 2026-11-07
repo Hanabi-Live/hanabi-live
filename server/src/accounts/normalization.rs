@@ -71,9 +71,14 @@ pub fn truncate_to_max_bytes(input: &str, max: usize) -> &str {
     &input[..end]
 }
 
+/// Removes characters that chat messages and notes do not allow.
+pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
+    CHAT.replace_all(input, "")
+}
+
 pub fn normalize_chat(input: &str) -> Result<String, &'static str> {
     let truncated = truncate_to_max_bytes(input, 300);
-    let cleaned = CHAT.replace_all(truncated, "");
+    let cleaned = remove_disallowed_characters(truncated);
     let message = cleaned.trim();
     if message.is_empty() {
         return Err("Chat messages cannot be blank.");

@@ -15,7 +15,7 @@ pub use history::{blocked_seeds, get_history, history_ids};
 pub use relationships::{change_friend, friend_ids, friends};
 pub use settings::{get_settings, set_setting};
 
-use crate::accounts::{escape_html, is_banned, normalize_string};
+use crate::accounts::{escape_html, normalize_string};
 use anyhow::{Result, ensure};
 use serde_json::{Value, json};
 use sqlx::PgPool;
@@ -134,9 +134,6 @@ pub async fn dispatch_chat(
     room: &str,
     rendered: Option<&str>,
 ) -> Result<Option<Vec<Effect>>> {
-    if is_banned(pool, &caller.ip).await? {
-        return Ok(Some(vec![warning("Your IP address has been banned.")]));
-    }
     chat::lobby_chat(pool, secret, caller, message, room, rendered).await
 }
 
@@ -152,9 +149,6 @@ pub async fn dispatch(
         return Ok(None);
     }
     ensure!(caller.id > 0, "Invalid caller");
-    if is_banned(pool, &caller.ip).await? {
-        return Ok(Some(vec![warning("Your IP address has been banned.")]));
-    }
     let effects = match command {
         "setting" => {
             let name = text(&data, "name")?;
