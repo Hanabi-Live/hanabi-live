@@ -36,6 +36,33 @@ if [[ -z ${DB_PORT-} ]]; then
   DB_PORT=5432
 fi
 
+# Failures only reach syslog otherwise, where nobody will see them.
+function report_failure {
+  local status=$1
+  if [[ -z ${DISCORD_TOKEN-} || -z ${DISCORD_CHANNEL_WEBSITE_DEVELOPMENT-} ]]; then
+    return
+  fi
+  # Send the token on stdin so that it does not appear in the process list.
+  printf 'header = "Authorization: Bot %s"\n' "$DISCORD_TOKEN" \
+    | curl --silent --show-error --fail --output /dev/null --max-time 15 --config - \
+      --header "Content-Type: application/json" \
+      --data "{\"content\":\"The database backup failed with exit code $status. Check the logs with: journalctl -t database-backup.sh\"}" \
+      "https://discord.com/api/v10/channels/$DISCORD_CHANNEL_WEBSITE_DEVELOPMENT/messages" \
+    || echo "Failed to report the backup failure to Discord." >&2
+}
+
+PARTIAL_PATH=""
+function on_exit {
+  local status=$?
+  if [[ -n $PARTIAL_PATH ]]; then
+    rm -f -- "$PARTIAL_PATH"
+  fi
+  if ((status != 0)); then
+    report_failure "$status"
+  fi
+}
+trap on_exit EXIT
+
 mkdir -p "$BACKUPS_DIR"
 MAX_BACKUP_KB=""
 if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
@@ -54,7 +81,6 @@ if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
 fi
 
 PARTIAL_PATH=$(mktemp "$BACKUPS_DIR/.$FILENAME.XXXXXX.partial")
-trap 'rm -f -- "$PARTIAL_PATH"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
