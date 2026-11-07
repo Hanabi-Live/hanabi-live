@@ -595,7 +595,7 @@ impl Bridge {
             match effect {
                 Effect::DiscordMirror { chat_id, .. } => mirrors.push(chat_id),
                 Effect::RuntimeChat { command, args, .. } => {
-                    for response in web::runtime_response(&app, &command, &args)? {
+                    for response in app.info.runtime_response(&command, &args)? {
                         for item in lobby::server_chat(&self.pool, &response).await? {
                             if let Effect::DiscordMirror { chat_id, .. } = item {
                                 mirrors.push(chat_id);

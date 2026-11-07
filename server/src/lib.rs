@@ -29,6 +29,7 @@ pub mod public_http;
 pub mod random;
 pub mod release;
 pub mod restart;
+pub mod server_info;
 pub mod state;
 pub mod store;
 #[cfg(test)]

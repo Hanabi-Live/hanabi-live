@@ -57,7 +57,12 @@ impl Harness {
         let state = RedisState::connect(&redis.url, "actor-protocol").await?;
         let store = Store::fixture(pool, state.clone());
         let tasks = TaskTracker::new();
-        let hub = Hub::start(store.clone(), tasks.clone()).await?;
+        let hub = Hub::start(
+            store.clone(),
+            tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         let mut h = Self {
             admin,
             database,
@@ -211,7 +216,12 @@ impl Harness {
     async fn restart(&mut self) -> Result<()> {
         self.stop_hub().await?;
         self.tasks = TaskTracker::new();
-        self.hub = Hub::start(self.store.clone(), self.tasks.clone()).await?;
+        self.hub = Hub::start(
+            self.store.clone(),
+            self.tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         for index in 0..self.users.len() {
             let old = &self.users[index];
             let (session, outgoing) =
@@ -296,7 +306,12 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
         table.shadows.insert(2, Some(alice as i32));
         h.store.save(&table, revision).await?;
         h.tasks = TaskTracker::new();
-        h.hub = Hub::start(h.store.clone(), h.tasks.clone()).await?;
+        h.hub = Hub::start(
+            h.store.clone(),
+            h.tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         for index in 0..h.users.len() {
             h.replace(index).await?;
         }
@@ -599,6 +614,7 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
                 h.store.clone(),
                 hub,
                 capacity.try_acquire_owned()?,
+                crate::server_info::test_info(),
             );
             if !recovered {
                 actor.initialize(h.users[0].clone(), vec![]).await?;
@@ -650,6 +666,7 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         actor
             .cleanup(Instant::now() - Duration::from_secs(61))
@@ -691,6 +708,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         actor.initialize(h.users[0].clone(), vec![]).await?;
         for text in ["We are still discussing this game.", "/random 1"] {
@@ -698,7 +716,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
             next.game_mut().unwrap().idle_remaining = 1000;
             actor.persist(next).await?;
             actor.anchor = Instant::now() - Duration::from_millis(900);
-            actor.chat(h.users[0].clone(), &json!({"msg":text})).await?;
+            actor.chat(h.users[0].clone(), text).await?;
             let (saved, _) = h.snapshot(id).await?;
             ensure!(
                 saved.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
@@ -829,6 +847,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
             h.store.clone(),
             hub,
             capacity.try_acquire_owned()?,
+            crate::server_info::test_info(),
         );
         for user in &h.users[..3] {
             actor.initialize(user.clone(), vec![]).await?;
@@ -2092,4 +2111,37 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
     .await;
     h.close().await?;
     result
+}
+
+#[tokio::test]
+async fn table_chat_commands_link_to_the_server_url() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Chat commands", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let room = format!("table{id}");
+        for (command, expected) in [
+            ("/replay 5 3", "http://localhost/replay/5#3"),
+            ("/missing", "http://localhost/shared-missing-scores/2/"),
+        ] {
+            h.barrier(0).await?;
+            h.frames(0)?;
+            h.send(0, "chat", json!({"msg":command,"room":room}))
+                .await?;
+            h.barrier(0).await?;
+            let messages = chat_messages(&h.frames(0)?);
+            ensure!(
+                messages
+                    .iter()
+                    .any(|m| m["msg"].as_str().is_some_and(|msg| msg.contains(expected))),
+                "{command} did not reply with {expected}: {messages:?}"
+            );
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
 }

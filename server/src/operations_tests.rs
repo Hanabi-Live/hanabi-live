@@ -315,6 +315,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
             deck_size: crate::game::deck_size,
         },
         store.state_lost(),
+crate::server_info::test_info(),
     );
     h.control.attach_application(Arc::downgrade(&app));
     let (status, body) = request(router(h.control.clone()), "/metrics", None).await;

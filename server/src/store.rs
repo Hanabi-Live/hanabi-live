@@ -1651,7 +1651,12 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-auto-chat-retire").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(store.clone(), tasks.clone()).await?;
+        let hub = Hub::start(
+            store.clone(),
+            tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
@@ -1671,7 +1676,7 @@ mod tests {
         let result=async{
             send(&hub,users[0].clone(),"tableCreate",json!({"name":"auto parity","options":{}})).await?;
             let id=store.load().await?[0].0.id;
-            send(&hub,users[0].clone(),"chat",json!({"tableID":id,"room":format!("table{id}"),"msg":"/s2"})).await?;
+            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"msg":"/s2"})).await?;
             tokio::time::timeout(Duration::from_secs(3),async{
                 while let Some(frame)=outgoing[0].recv().await{
                     if frame.message.to_text()?.contains("as soon as 2 players have joined"){return Ok::<(),anyhow::Error>(());}
@@ -1682,7 +1687,7 @@ mod tests {
                 loop{if store.load().await?.iter().any(|(t,_)|t.id==id&&matches!(t.phase,Phase::Live{..})){return Ok::<(),anyhow::Error>(());}tokio::time::sleep(Duration::from_millis(20)).await;}
             }).await??;
             send(&hub,users[2].clone(),"tableSpectate",json!({"tableID":id,"shadowingPlayerIndex":0})).await?;
-            send(&hub,users[0].clone(),"chat",json!({"tableID":id,"room":format!("table{id}"),"msg":"retained authored chat"})).await?;
+            send(&hub,users[0].clone(),"chat",json!({"room":format!("table{id}"),"msg":"retained authored chat"})).await?;
             send(&hub,users[0].clone(),"tableTerminate",json!({"tableID":id})).await?;
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'", format!("table{id}")).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
@@ -1716,7 +1721,12 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-split-replay").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(store.clone(), tasks.clone()).await?;
+        let hub = Hub::start(
+            store.clone(),
+            tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
@@ -1749,7 +1759,7 @@ mod tests {
                 &hub,
                 users[0].clone(),
                 "chat",
-                json!({"tableID":id,"room":format!("table{id}"),"msg":"/split Bob"}),
+                json!({"room":format!("table{id}"),"msg":"/split Bob"}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1860,7 +1870,12 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-actors-integration").await?;
         let store = Store::fixture(pool, state);
         let tasks = TaskTracker::new();
-        let hub = Hub::start(store.clone(), tasks.clone()).await?;
+        let hub = Hub::start(
+            store.clone(),
+            tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
         let mut users = vec![];
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
