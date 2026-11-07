@@ -14,7 +14,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
-    sync::{Arc, Mutex},
+    sync::{Arc, LazyLock, Mutex},
     time::{Duration, Instant},
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, Semaphore, mpsc, oneshot};
@@ -185,8 +185,10 @@ pub enum HubCommand {
         data: Value,
         reply: Reply,
     },
+    /// Fails for a stale session. The online users are listed only when `users` is set.
     Directory {
         session: Arc<Session>,
+        users: bool,
         reply: oneshot::Sender<Result<Vec<OnlineUser>>>,
     },
     LobbyEffects {
@@ -554,6 +556,17 @@ impl Hub {
         }
         Ok(())
     }
+    fn disconnect(&mut self, users: &[i32]) {
+        for user in users {
+            if let Some(p) = self.sessions.remove(user) {
+                p.session.cancel.cancel();
+                self.broadcast(&frame("userLeft", json!({"userID":user})));
+            }
+        }
+        for e in self.tables.values() {
+            e.handle.cleanup.notify_one();
+        }
+    }
     fn operations(&mut self, command: Operation, reply: oneshot::Sender<Result<Value>>) {
         if let Err(error) = self.store.check_state() {
             let _ = reply.send(Err(error));
@@ -600,16 +613,23 @@ impl Hub {
             Operation::Inspect | Operation::LongTables => Ok(
                 json!({"users":self.sessions.values().map(Self::user).collect::<Vec<_>>(),"tables":self.tables.values().map(|e|e.view.inspection.clone()).collect::<Vec<_>>(),"activeGames":self.tables.values().filter(|e|e.view.inspection["running"]==true&&e.view.inspection["replay"]==false&&e.view.inspection["frozen"]==false).count()}),
             ),
-            Operation::Kick { user_id }
-            | Operation::Ban { user_id }
-            | Operation::Mute { user_id } => {
-                if let Some(p) = self.sessions.remove(&user_id) {
-                    p.session.cancel.cancel();
-                    self.broadcast(&frame("userLeft", json!({"userID":user_id})));
+            Operation::Kick { user_id } | Operation::Mute { user_id } => {
+                self.disconnect(&[user_id]);
+                Ok(json!({}))
+            }
+            Operation::Ban { user_id, ip } => {
+                // Bans apply to an IP address, which is checked when connecting rather than on
+                // every command, so also disconnect other accounts using that address.
+                let mut users = vec![user_id];
+                if !ip.is_empty() {
+                    users.extend(
+                        self.sessions
+                            .iter()
+                            .filter(|(id, p)| **id != user_id && p.session.ip == ip)
+                            .map(|(id, _)| *id),
+                    );
                 }
-                for e in self.tables.values() {
-                    e.handle.cleanup.notify_one();
-                }
+                self.disconnect(&users);
                 Ok(json!({}))
             }
             Operation::Unmute { user_id } | Operation::Unban { user_id } => {
@@ -758,8 +778,16 @@ impl Hub {
                         e.handle.cleanup.notify_one();
                     }
                 }
-                HubCommand::Directory { session, reply } => {
-                    let result = if self.current(&session) {
+                HubCommand::Directory {
+                    session,
+                    users,
+                    reply,
+                } => {
+                    let result = if !self.current(&session) {
+                        Err(anyhow::anyhow!("Stale session"))
+                    } else if !users {
+                        Ok(Vec::new())
+                    } else {
                         Ok(self
                             .sessions
                             .values()
@@ -771,8 +799,6 @@ impl Hub {
                                 generation: p.session.generation,
                             })
                             .collect())
-                    } else {
-                        Err(anyhow::anyhow!("Stale session"))
                     };
                     let _ = reply.send(result);
                 }
@@ -1184,17 +1210,23 @@ fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
     });
     Some(message)
 }
+// These patterns are compiled once rather than on every command that uses them.
+static DECIMAL_MINUTES: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$").unwrap()
+});
+static HEX_MINUTES: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").unwrap()
+});
+static TABLE_NAME_COUNT: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r"^(.*) \(#(\d+)\)$").unwrap());
+
 fn parse_start_minutes(argument: &str) -> Option<f64> {
     let value = format!("0{argument}");
-    let decimal =
-        regex::Regex::new(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$")
-            .ok()?;
-    if decimal.is_match(&value) {
+    if DECIMAL_MINUTES.is_match(&value) {
         let value = value.replace('_', "").parse::<f64>().ok()?;
         return value.is_finite().then_some(value);
     }
-    let hex=regex::Regex::new(r"(?i)^0x_?(?:[0-9a-f](?:_?[0-9a-f])*(?:\.(?:[0-9a-f](?:_?[0-9a-f])*)?)?|\.[0-9a-f](?:_?[0-9a-f])*)p[+-]?\d(?:_?\d)*$").ok()?;
-    if !hex.is_match(&value) {
+    if !HEX_MINUTES.is_match(&value) {
         return None;
     }
     let cleaned = value.replace('_', "").to_ascii_lowercase();
@@ -3262,8 +3294,7 @@ impl TableActor {
             data["note"].as_str().context("Invalid note")?,
             300,
         );
-        let text = regex::Regex::new(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]")?
-            .replace_all(text, "")
+        let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
             .to_owned();
         ensure!(
@@ -4217,8 +4248,7 @@ impl TableActor {
                 )
             }
         } else {
-            let pattern = regex::Regex::new(r"^(.*) \(#(\d+)\)$")?;
-            let (base, count) = if let Some(m) = pattern.captures(&self.table.name) {
+            let (base, count) = if let Some(m) = TABLE_NAME_COUNT.captures(&self.table.name) {
                 (m[1].to_owned(), m[2].parse::<u64>()? + 1)
             } else {
                 (self.table.name.clone(), 2)

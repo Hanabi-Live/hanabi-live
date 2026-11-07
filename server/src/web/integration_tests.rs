@@ -491,6 +491,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .hub
         .send(HubCommand::Directory {
             session: crate::transport::Session::new(999, "stale".into(), 999, false).0,
+            users: true,
             reply,
         })
         .await

@@ -955,14 +955,22 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         measurement.success();
         return Ok(());
     }
-    let (reply, received) = oneshot::channel();
-    app.hub
-        .send(HubCommand::Directory {
-            session: session.clone(),
-            reply,
-        })
-        .await?;
-    let online = received.await??;
+    // Lobby commands write to the database before the hub publishes their effects, so confirm
+    // that this session is still current first. The hub checks game commands itself when it
+    // routes them. Only private messages need the list of online users.
+    let online = if command == "chat" || lobby::handles_command(&command) {
+        let (reply, received) = oneshot::channel();
+        app.hub
+            .send(HubCommand::Directory {
+                session: session.clone(),
+                users: command == "chatPM",
+                reply,
+            })
+            .await?;
+        received.await??
+    } else {
+        Vec::new()
+    };
     let caller = Caller {
         id: session.user,
         name: session.name.clone(),
@@ -1024,10 +1032,6 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         measurement.success();
         return Ok(());
     }
-    ensure!(
-        !accounts::is_banned(&app.store.primary, &session.ip).await?,
-        "Your IP address has been banned."
-    );
     if command == "chat" {
         data["publicBaseURL"] = json!(app.public_url(""));
     }

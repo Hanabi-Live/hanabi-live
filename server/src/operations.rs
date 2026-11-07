@@ -7,6 +7,7 @@ pub enum Operation {
     },
     Ban {
         user_id: i32,
+        ip: String,
     },
     Unban {
         user_id: i32,
@@ -297,7 +298,10 @@ async fn user_action(
     }
     control
         .operation(if path == "/ban" {
-            Operation::Ban { user_id: id }
+            Operation::Ban {
+                user_id: id,
+                ip: ip.clone(),
+            }
         } else {
             Operation::Mute { user_id: id }
         })
