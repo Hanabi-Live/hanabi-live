@@ -77,6 +77,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "enum",
                 "const",
                 "oneOf",
+                "anyOf",
                 "minimum",
                 "maximum",
                 "minLength",
@@ -94,27 +95,51 @@ fn expression(schema: &Value) -> Result<String> {
         );
     }
     let mut result = if let Some(variants) = schema["oneOf"].as_array() {
+        ensure!(variants.len() >= 2, "Union needs multiple variants");
+        // Serde's internally tagged enums give every variant the same required string tag.
+        let discriminator = variants[0]["properties"]
+            .as_object()
+            .into_iter()
+            .flatten()
+            .find(|(name, _)| {
+                variants.iter().all(|variant| {
+                    variant["properties"][name.as_str()]["const"].is_string()
+                        && variant["required"]
+                            .as_array()
+                            .is_some_and(|required| required.iter().any(|value| value == *name))
+                })
+            })
+            .map(|(name, _)| name.clone())
+            .context("Only tagged disjoint unions are supported")?;
         let mut tags = std::collections::BTreeSet::new();
         for variant in variants {
-            let tag = variant["properties"]["state"]["const"]
-                .as_str()
-                .context("Only state-tagged disjoint unions are supported")?;
-            ensure!(tags.insert(tag), "Duplicate union discriminator");
             ensure!(
-                variant["required"]
-                    .as_array()
-                    .is_some_and(|required| required.iter().any(|name| name == "state")),
-                "Union discriminator must be required"
+                tags.insert(variant["properties"][&discriminator]["const"].to_string()),
+                "Duplicate union discriminator"
             );
         }
+        let variants = variants
+            .iter()
+            .map(expression)
+            .collect::<Result<Vec<_>>>()?;
+        format!(
+            "z.discriminatedUnion({},[{}])",
+            serde_json::to_string(&discriminator)?,
+            variants.join(",")
+        )
+    } else if let Some(variants) = schema["anyOf"].as_array() {
+        // Serde's untagged enums: the first variant that validates wins, as in Rust.
         ensure!(variants.len() >= 2, "Union needs multiple variants");
         let variants = variants
             .iter()
             .map(expression)
             .collect::<Result<Vec<_>>>()?;
-        format!("z.discriminatedUnion(\"state\",[{}])", variants.join(","))
+        format!("z.union([{}])", variants.join(","))
     } else if let Some(value) = schema.get("const") {
-        ensure!(value.is_string(), "Only string constants are supported");
+        ensure!(
+            value.is_string() || value.is_i64(),
+            "Only string and integer constants are supported"
+        );
         format!("z.literal({value})")
     } else if let Some(reference) = schema["$ref"].as_str() {
         let name = reference
@@ -455,6 +480,23 @@ mod tests {
             "z.number().min(0)"
         );
         assert!(expression(&json!({"type":["integer","string"]})).is_err());
+    }
+
+    #[test]
+    fn unions_use_their_tag_or_try_each_variant() {
+        let variant = |tag: &str| {
+            json!({"type":"object","additionalProperties":false,"required":["type"],
+                "properties":{"type":{"type":"string","const":tag}}})
+        };
+        assert_eq!(
+            expression(&json!({"oneOf":[variant("draw"),variant("play")]})).unwrap(),
+            "z.discriminatedUnion(\"type\",[z.strictObject({\"type\": z.literal(\"draw\")}),z.strictObject({\"type\": z.literal(\"play\")})])"
+        );
+        assert!(expression(&json!({"oneOf":[variant("draw"),variant("draw")]})).is_err());
+        assert_eq!(
+            expression(&json!({"anyOf":[{"type":"boolean"},{"const":-1}]})).unwrap(),
+            "z.union([z.boolean(),z.literal(-1)])"
+        );
     }
 
     #[test]

@@ -37,18 +37,146 @@ type Reply = oneshot::Sender<Result<()>>;
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 
-#[derive(Serialize)]
-struct GameActionMessage<'a> {
-    #[serde(rename = "tableID")]
-    table_id: u64,
-    action: &'a hanabi_engine::EngineEvent,
+use hanabi_protocol::SafeInteger;
+
+fn int(value: usize) -> i64 {
+    i64::try_from(value).unwrap_or(i64::MAX)
 }
 
-#[derive(Serialize)]
-struct GameActionListMessage<'a> {
-    #[serde(rename = "tableID")]
-    table_id: u64,
-    list: &'a [hanabi_engine::EngineEvent],
+/// The wire form of an engine event, which serializes identically.
+fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent {
+    use hanabi_engine::EngineEvent as E;
+    use hanabi_protocol::GameEvent as G;
+    match event {
+        E::Draw {
+            player_index,
+            order,
+            suit_index,
+            rank,
+        } => G::Draw {
+            player_index: int(*player_index),
+            order: int(*order),
+            suit_index: (*suit_index).into(),
+            rank: (*rank).into(),
+        },
+        E::Play {
+            player_index,
+            order,
+            suit_index,
+            rank,
+        } => G::Play {
+            player_index: int(*player_index),
+            order: int(*order),
+            suit_index: (*suit_index).into(),
+            rank: (*rank).into(),
+        },
+        E::CardIdentity {
+            player_index,
+            order,
+            suit_index,
+            rank,
+        } => G::CardIdentity {
+            player_index: int(*player_index),
+            order: int(*order),
+            suit_index: (*suit_index).into(),
+            rank: (*rank).into(),
+        },
+        E::Discard {
+            player_index,
+            order,
+            suit_index,
+            rank,
+            failed,
+        } => G::Discard {
+            player_index: int(*player_index),
+            order: int(*order),
+            suit_index: (*suit_index).into(),
+            rank: (*rank).into(),
+            failed: *failed,
+        },
+        E::Clue {
+            clue,
+            giver,
+            target,
+            list,
+            turn,
+        } => G::Clue {
+            clue: if clue.clue_type < 0 {
+                hanabi_protocol::ReceivedClue::Hidden {
+                    clue_type: clue.clue_type,
+                    value: clue.value,
+                }
+            } else {
+                hanabi_protocol::ReceivedClue::Visible {
+                    clue_type: clue.clue_type,
+                    value: clue.value,
+                }
+            },
+            giver: int(*giver),
+            target: int(*target),
+            list: list.iter().map(|&order| SafeInteger(int(order))).collect(),
+            turn: (*turn).into(),
+        },
+        E::Strike { num, turn, order } => G::Strike {
+            num: (*num).into(),
+            turn: (*turn).into(),
+            order: int(*order),
+        },
+        E::Status {
+            clues,
+            score,
+            max_score,
+        } => G::Status {
+            clues: (*clues).into(),
+            score: (*score).into(),
+            max_score: (*max_score).into(),
+        },
+        E::Turn {
+            num,
+            current_player_index,
+        } => G::Turn {
+            num: (*num).into(),
+            current_player_index: (*current_player_index).into(),
+        },
+        E::GameOver {
+            end_condition,
+            player_index,
+            votes,
+        } => G::GameOver {
+            end_condition: i32::from(*end_condition).into(),
+            player_index: (*player_index).into(),
+            votes: votes
+                .as_ref()
+                .map(|votes| votes.iter().map(|&vote| SafeInteger(int(vote))).collect()),
+        },
+        E::PlayerTimes {
+            player_times,
+            duration,
+        } => G::PlayerTimes {
+            player_times: player_times.iter().copied().map(SafeInteger).collect(),
+            duration: *duration,
+        },
+    }
+}
+
+pub(crate) fn game_action(
+    table: u64,
+    event: &hanabi_engine::EngineEvent,
+) -> hanabi_protocol::GameAction {
+    hanabi_protocol::GameAction {
+        table_id: TableId(table),
+        action: wire_event(event),
+    }
+}
+
+pub(crate) fn game_action_list(
+    table: u64,
+    list: &[hanabi_engine::EngineEvent],
+) -> hanabi_protocol::GameActionList {
+    hanabi_protocol::GameActionList {
+        table_id: TableId(table),
+        list: list.iter().map(wire_event).collect(),
+    }
 }
 
 pub struct Allocation {
@@ -3303,13 +3431,7 @@ impl TableActor {
             )? {
                 e.messages.push((
                     a.session.clone(),
-                    frame(
-                        "gameAction",
-                        GameActionMessage {
-                            table_id: self.table.id,
-                            action: &event,
-                        },
-                    ),
+                    frame("gameAction", game_action(self.table.id, &event)),
                 ));
             }
         }
@@ -4561,7 +4683,56 @@ impl TableActor {
             } else {
                 (s.game.turn, 0)
             };
-            e.messages.push((session.clone(),frame("init",json!({"tableID":self.table.id,"playerNames":s.players.iter().map(|p|p.name.clone()).collect::<Vec<_>>(),"ourPlayerIndex":a.shadow.or(display_seat).unwrap_or(0),"spectating":a.spectator&&!replay,"shadowing":a.shadow.is_some()&&!replay,"replay":replay,"databaseID":if replay{s.game_id}else{-1},"hasCustomSeed":self.table.extra.custom_seed.is_some(),"seed":s.seed,"datetimeStarted":s.started,"datetimeFinished":s.finished.map(|d|d.to_rfc3339()).unwrap_or_else(||"0001-01-01T00:00:00Z".into()),"options":s.game.options,"characterAssignments":if s.game.options.detrimental_characters{s.game.players.iter().map(|p|hanabi_engine::characters().iter().find(|c|c.name==p.character).map_or(-1,|c|c.id as i32)).collect::<Vec<_>>()}else{vec![]},"characterMetadata":if s.game.options.detrimental_characters{s.game.players.iter().map(|p|p.character_metadata).collect::<Vec<_>>()}else{vec![]},"sharedReplay":replay&&self.table.visible,"sharedReplayLeader":self.leader_name(),"sharedReplaySegment":segment,"sharedReplayEffMod":efficiency,"paused":s.game.paused,"pausePlayerIndex":s.pause_player_index,"pauseQueued":seat.is_some_and(|i|s.queued_pauses[i])}))));
+            let init = hanabi_protocol::Init {
+                table_id: TableId(self.table.id),
+                player_names: s.players.iter().map(|p| p.name.clone()).collect(),
+                our_player_index: int(a.shadow.or(display_seat).unwrap_or(0)),
+                spectating: a.spectator && !replay,
+                shadowing: a.shadow.is_some() && !replay,
+                replay,
+                database_id: if replay { s.game_id.into() } else { -1 },
+                has_custom_seed: self.table.extra.custom_seed.is_some(),
+                seed: s.seed.clone(),
+                datetime_started: s
+                    .started
+                    .to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                datetime_finished: s
+                    .finished
+                    .map(|d| d.to_rfc3339())
+                    .unwrap_or_else(|| "0001-01-01T00:00:00Z".into()),
+                options: wire_options(&s.game.options),
+                character_assignments: if s.game.options.detrimental_characters {
+                    s.game
+                        .players
+                        .iter()
+                        .map(|p| {
+                            hanabi_engine::characters()
+                                .iter()
+                                .find(|c| c.name == p.character)
+                                .map_or(SafeInteger(-1), |c| SafeInteger(c.id.into()))
+                        })
+                        .collect()
+                } else {
+                    vec![]
+                },
+                character_metadata: if s.game.options.detrimental_characters {
+                    s.game
+                        .players
+                        .iter()
+                        .map(|p| SafeInteger(p.character_metadata.into()))
+                        .collect()
+                } else {
+                    vec![]
+                },
+                shared_replay: replay && self.table.visible,
+                shared_replay_leader: self.leader_name(),
+                shared_replay_segment: segment.into(),
+                shared_replay_eff_mod: efficiency.into(),
+                paused: s.game.paused,
+                pause_player_index: s.pause_player_index.into(),
+                pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),
+            };
+            e.messages.push((session.clone(), frame("init", init)));
         } else {
             let recipient = if replay {
                 Recipient::Spectator {
@@ -4579,13 +4750,7 @@ impl TableActor {
             let list = hanabi_engine::events_for_recipient(&s.game.0, recipient, None)?;
             e.messages.push((
                 session.clone(),
-                frame(
-                    "gameActionList",
-                    GameActionListMessage {
-                        table_id: self.table.id,
-                        list: &list,
-                    },
-                ),
+                frame("gameActionList", game_action_list(self.table.id, &list)),
             ));
             if replay {
                 e.messages.push((

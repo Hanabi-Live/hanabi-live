@@ -1424,5 +1424,134 @@
     "command": "note",
     "input": { "tableID": 3, "order": -1, "notes": [] },
     "valid": false
+  },
+  {
+    "name": "visible clues carry their type and value",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": { "type": 1, "value": 5 },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "hidden clues conceal both their type and value",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": { "type": -1, "value": -1 },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "hidden clues cannot reveal their value",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": { "type": -1, "value": 5 },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "game over events allow no votes",
+    "direction": "server",
+    "command": "gameActionList",
+    "input": {
+      "tableID": 3,
+      "list": [
+        {
+          "type": "draw",
+          "playerIndex": 0,
+          "order": 0,
+          "suitIndex": -1,
+          "rank": -1
+        },
+        {
+          "type": "gameOver",
+          "endCondition": 1,
+          "playerIndex": 0,
+          "votes": null
+        }
+      ]
+    },
+    "valid": true
+  },
+  {
+    "name": "game over events require the votes field",
+    "direction": "server",
+    "command": "gameActionList",
+    "input": {
+      "tableID": 3,
+      "list": [{ "type": "gameOver", "endCondition": 1, "playerIndex": 0 }]
+    },
+    "valid": false
+  },
+  {
+    "name": "init describes a live game before its events",
+    "direction": "server",
+    "command": "init",
+    "input": {
+      "tableID": 3,
+      "playerNames": ["Alice", "Bob"],
+      "ourPlayerIndex": 0,
+      "spectating": false,
+      "shadowing": false,
+      "replay": false,
+      "databaseID": -1,
+      "hasCustomSeed": false,
+      "seed": "p2v0s1",
+      "datetimeStarted": "2023-12-29T18:00:00Z",
+      "datetimeFinished": "0001-01-01T00:00:00Z",
+      "options": {
+        "numPlayers": 2,
+        "startingPlayer": 0,
+        "variantName": "No Variant",
+        "timed": false,
+        "timeBase": 0.0,
+        "timePerTurn": 0,
+        "speedrun": false,
+        "cardCycle": false,
+        "deckPlays": false,
+        "emptyClues": false,
+        "oneExtraCard": false,
+        "oneLessCard": false,
+        "allOrNothing": false,
+        "detrimentalCharacters": false
+      },
+      "characterAssignments": [],
+      "characterMetadata": [],
+      "sharedReplay": false,
+      "sharedReplayLeader": "",
+      "sharedReplaySegment": 0,
+      "sharedReplayEffMod": 0,
+      "paused": false,
+      "pausePlayerIndex": -1,
+      "pauseQueued": false
+    },
+    "valid": true
   }
 ]
