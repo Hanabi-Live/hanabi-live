@@ -39,9 +39,6 @@
     "*.min.css",
     // CSS files might have strange paths.
     "hanabi.css",
-    // Archived files where spelling errors will not be fixed.
-    "/misc/keldon/**",
-    "/misc/server-old/src/views/index.ejs",
     // Third-party assets.
     "/misc/card-images/src/lib/canvas2svg_node.js",
     "/public/css/lib/alpha.css",
@@ -163,7 +160,6 @@
     "hostaddr",
     "hset",
     "hstrlen",
-    "IFNULL",
     "inkscape",
     "interactjs",
     "interp",
@@ -319,7 +315,6 @@
     "tagsdeleteall",
     "tagsearch",
     "tccm",
-    "themself",
     "timestamptz",
     "tmpl",
     "tocm",
