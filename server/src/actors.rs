@@ -1125,33 +1125,6 @@ impl Hub {
     }
 }
 
-/// Table sizes and seats are validated to be at most six, so they fit in a byte.
-fn small(value: usize) -> u8 {
-    u8::try_from(value).unwrap_or(u8::MAX)
-}
-
-fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
-    hanabi_protocol::GameOptions {
-        num_players: small(options.num_players),
-        starting_player: small(options.starting_player),
-        variant_name: options.variant_name.clone(),
-        variant_id: options.variant_id,
-        timed: options.timed,
-        time_base: options.time_base,
-        time_per_turn: options.time_per_turn,
-        speedrun: options.speedrun,
-        card_cycle: options.card_cycle,
-        deck_plays: options.deck_plays,
-        empty_clues: options.empty_clues,
-        one_extra_card: options.one_extra_card,
-        one_less_card: options.one_less_card,
-        all_or_nothing: options.all_or_nothing,
-        detrimental_characters: options.detrimental_characters,
-        table_name: options.table_name.clone(),
-        max_players: options.max_players.map(small),
-    }
-}
-
 fn validate_table_name(name: &str) -> Result<()> {
     ensure!(
         name.chars().all(|c| c.is_alphanumeric()
@@ -1875,9 +1848,51 @@ impl TableActor {
         }
     }
     fn pregame_messages(&self, e: &mut Effects) {
+        // Statistics are stored in the checkpoint as JSON; a malformed value shows as no games
+        // rather than withholding the pregame.
+        let stats = self
+            .table
+            .players()
+            .iter()
+            .map(|p| {
+                serde_json::from_value::<hanabi_protocol::PregameStats>(p.stats.clone())
+                    .unwrap_or_else(|error| {
+                        eprintln!(
+                            "Invalid pregame statistics at table {}: {error}",
+                            self.table.id
+                        );
+                        hanabi_protocol::PregameStats::default()
+                    })
+            })
+            .collect::<Vec<_>>();
         for a in self.audience() {
-            e.messages.push((a.session.clone(),frame("game",json!({"tableID":self.table.id,"name":self.table.name,"owner":self.table.owner,
-        "players":self.table.players().iter().enumerate().map(|(i,p)|json!({"index":i,"name":p.name,"you":p.id==a.session.user,"present":self.attendees.get(&p.id).is_some_and(|a|a.session.active()&&!a.spectator),"stats":p.stats})).collect::<Vec<_>>(),"options":self.table.options,"passwordProtected":self.table.password_hash.is_some(),"maxPlayers":self.table.max_players}))));
+            let players = self
+                .table
+                .players()
+                .iter()
+                .zip(&stats)
+                .enumerate()
+                .map(|(index, (p, stats))| hanabi_protocol::PregamePlayer {
+                    index: small(index),
+                    name: p.name.clone(),
+                    you: p.id == a.session.user,
+                    present: self
+                        .attendees
+                        .get(&p.id)
+                        .is_some_and(|a| a.session.active() && !a.spectator),
+                    stats: stats.clone(),
+                })
+                .collect();
+            let pregame = hanabi_protocol::Pregame {
+                table_id: TableId(self.table.id),
+                name: self.table.name.clone(),
+                owner: UserId(self.table.owner),
+                players,
+                options: wire_options(&self.table.options),
+                password_protected: self.table.password_hash.is_some(),
+                max_players: small(self.table.max_players),
+            };
+            e.messages.push((a.session.clone(), frame("game", pregame)));
         }
     }
     fn chat_history(&self, e: &mut Effects, session: &Arc<Session>) {
@@ -3267,7 +3282,10 @@ impl TableActor {
                 if s.players.iter().any(|p| p.id == a.session.user) {
                     e.messages.push((
                         a.session.clone(),
-                        frame("gameHistory", json!([s.history(count, true)])),
+                        frame(
+                            "gameHistory",
+                            hanabi_protocol::GameHistoryList(vec![s.history(count, true)]),
+                        ),
                     ));
                 }
                 e.messages.push((a.session.clone(),frame("finishOngoingGame",json!({"tableID":self.table.id,"databaseID":s.game_id,"sharedReplayLeader":self.leader_name()}))));

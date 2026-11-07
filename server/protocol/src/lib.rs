@@ -920,6 +920,123 @@ pub struct Table {
 #[schemars(extend("x-readonly" = true))]
 pub struct TableList(pub Vec<Table>);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-brand" = "GameID"))]
+pub struct GameId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
+
+/// A completed game in a player's history.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct GameHistory {
+    pub id: GameId,
+    pub options: GameOptions,
+    pub seed: String,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub score: i32,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub num_turns: i32,
+    /// The `EndCondition` enum.
+    #[schemars(
+        range(min = 0, max = 10),
+        extend("enum" = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "x-enum" = "EndCondition")
+    )]
+    pub end_condition: u8,
+    #[schemars(extend("x-date" = true))]
+    pub datetime_started: String,
+    #[schemars(extend("x-date" = true))]
+    pub datetime_finished: String,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub num_games_on_this_seed: i64,
+    #[schemars(extend("x-readonly" = true))]
+    pub player_names: Vec<String>,
+    /// Whether this game should be added to the recipient's total.
+    pub increment_num_games: bool,
+    /// The game's tags, separated by commas.
+    pub tags: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-readonly" = true))]
+pub struct GameHistoryList(pub Vec<GameHistory>);
+
+/// The other games played on a seed.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[schemars(extend("x-readonly" = true))]
+pub struct GameHistoryOtherScores {
+    #[schemars(extend("x-readonly" = true))]
+    pub games: Vec<GameHistory>,
+    #[schemars(length(min = 1))]
+    pub variant_name: String,
+    #[schemars(length(min = 1))]
+    pub seed: String,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PregameBestScore {
+    #[schemars(range(min = 2, max = 6))]
+    pub num_players: u8,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub score: i32,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub modifier: i32,
+    pub deck_plays: bool,
+    pub empty_clues: bool,
+    pub one_extra_card: bool,
+    pub one_less_card: bool,
+    pub all_or_nothing: bool,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PregameVariantStats {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub num_games: i64,
+    /// The best score for each player count.
+    pub best_scores: Vec<PregameBestScore>,
+}
+
+/// A pregame player's statistics: all of their games, and their games on the table's variant.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PregameStats {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub num_games: i64,
+    pub variant: PregameVariantStats,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PregamePlayer {
+    #[schemars(range(min = 0, max = 5))]
+    pub index: u8,
+    pub name: String,
+    /// Whether this player is the recipient.
+    pub you: bool,
+    /// Whether this player is connected and at the table.
+    pub present: bool,
+    pub stats: PregameStats,
+}
+
+/// A pregame's state, sent to the people at the table.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Pregame {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub name: String,
+    pub owner: UserId,
+    pub players: Vec<PregamePlayer>,
+    pub options: GameOptions,
+    pub password_protected: bool,
+    #[schemars(range(min = 2, max = 6))]
+    pub max_players: u8,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -985,6 +1102,15 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         Spectators,
         Table,
         TableList,
+        GameId,
+        GameHistory,
+        GameHistoryList,
+        GameHistoryOtherScores,
+        PregameBestScore,
+        PregameVariantStats,
+        PregameStats,
+        PregamePlayer,
+        Pregame,
     );
     schemas
 }

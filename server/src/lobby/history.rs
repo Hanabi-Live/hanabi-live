@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{collections::HashMap, sync::LazyLock};
@@ -34,7 +34,11 @@ pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Re
     .await?)
 }
 
-pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result<Vec<Value>> {
+pub async fn get_history(
+    pool: &PgPool,
+    ids: &[i32],
+    seed_order: bool,
+) -> Result<Vec<hanabi_protocol::GameHistory>> {
     macro_rules! rows {
         ($order:literal) => {
             sqlx::query_scalar!(
@@ -81,13 +85,16 @@ pub async fn get_history(pool: &PgPool, ids: &[i32], seed_order: bool) -> Result
                     .unwrap_or("Unknown")
             ),
         );
-        result.push(json!({
-            "id":row["id"], "options":options, "seed":row["seed"], "score":row["score"],
-            "numTurns":row["num_turns"], "endCondition":row["end_condition"],
-            "datetimeStarted":row["datetime_started"], "datetimeFinished":row["datetime_finished"],
-            "numGamesOnThisSeed":row["numGamesOnThisSeed"], "playerNames":row["playerNames"],
-            "tags":row["tags"], "incrementNumGames":false
-        }));
+        result.push(
+            serde_json::from_value(json!({
+                "id":row["id"], "options":options, "seed":row["seed"], "score":row["score"],
+                "numTurns":row["num_turns"], "endCondition":row["end_condition"],
+                "datetimeStarted":row["datetime_started"], "datetimeFinished":row["datetime_finished"],
+                "numGamesOnThisSeed":row["numGamesOnThisSeed"], "playerNames":row["playerNames"],
+                "tags":row["tags"], "incrementNumGames":false
+            }))
+            .context("Invalid stored game history")?,
+        );
     }
     Ok(result)
 }

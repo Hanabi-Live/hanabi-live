@@ -81,6 +81,9 @@ macro_rules! server_contracts {
             "spectators" => Spectators, Spectators;
             "table" => Table, Table;
             "tableList" => TableList, TableList;
+            "game" => Pregame, Pregame;
+            "gameHistory" => GameHistoryList, GameHistoryList;
+            "gameHistoryOtherScores" => GameHistoryOtherScores, GameHistoryOtherScores;
         }
     };
 }

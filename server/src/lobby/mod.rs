@@ -209,7 +209,9 @@ pub async fn dispatch(
             let ids = history_ids(pool, caller.id, offset, amount).await?;
             vec![Effect::ToSelf {
                 command: "gameHistory".into(),
-                data: json!(get_history(pool, &ids, false).await?),
+                data: json!(hanabi_protocol::GameHistoryList(
+                    get_history(pool, &ids, false).await?
+                )),
             }]
         }
         "historyGetSeed" => {
@@ -231,14 +233,15 @@ pub async fn dispatch(
                 .fetch_all(pool)
                 .await?;
             let games = get_history(pool, &ids, true).await?;
-            let variant = games
+            let variant_name = games
                 .first()
-                .map(|game| game["options"]["variantName"].clone())
-                .unwrap_or(json!("n/a"));
+                .map_or_else(|| "n/a".into(), |game| game.options.variant_name.clone());
             vec![Effect::ToSelf {
                 command: "gameHistoryOtherScores".into(),
-                data: json!({
-                    "games":games, "variantName":variant, "seed":seed
+                data: json!(hanabi_protocol::GameHistoryOtherScores {
+                    games,
+                    variant_name,
+                    seed: seed.into(),
                 }),
             }]
         }

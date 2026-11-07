@@ -1138,5 +1138,213 @@
       ]
     },
     "valid": false
+  },
+  {
+    "name": "history accepts dates with an offset",
+    "direction": "server",
+    "command": "gameHistory",
+    "input": [
+      {
+        "id": 12,
+        "options": {
+          "numPlayers": 2,
+          "startingPlayer": 0,
+          "variantName": "No Variant",
+          "timed": false,
+          "timeBase": 0.0,
+          "timePerTurn": 0,
+          "speedrun": false,
+          "cardCycle": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false
+        },
+        "seed": "p2v0s1",
+        "score": 25,
+        "numTurns": 40,
+        "endCondition": 1,
+        "datetimeStarted": "2023-12-29T18:00:00Z",
+        "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
+        "numGamesOnThisSeed": 3,
+        "playerNames": ["Alice", "Bob"],
+        "incrementNumGames": false,
+        "tags": ""
+      }
+    ],
+    "valid": true
+  },
+  {
+    "name": "history rejects a date that cannot be parsed",
+    "direction": "server",
+    "command": "gameHistory",
+    "input": [
+      {
+        "id": 12,
+        "options": {
+          "numPlayers": 2,
+          "startingPlayer": 0,
+          "variantName": "No Variant",
+          "timed": false,
+          "timeBase": 0.0,
+          "timePerTurn": 0,
+          "speedrun": false,
+          "cardCycle": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false
+        },
+        "seed": "p2v0s1",
+        "score": 25,
+        "numTurns": 40,
+        "endCondition": 1,
+        "datetimeStarted": "yesterday",
+        "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
+        "numGamesOnThisSeed": 3,
+        "playerNames": ["Alice", "Bob"],
+        "incrementNumGames": false,
+        "tags": ""
+      }
+    ],
+    "nativeValid": true,
+    "valid": false
+  },
+  {
+    "name": "history rejects an unknown end condition",
+    "direction": "server",
+    "command": "gameHistory",
+    "input": [
+      {
+        "id": 12,
+        "options": {
+          "numPlayers": 2,
+          "startingPlayer": 0,
+          "variantName": "No Variant",
+          "timed": false,
+          "timeBase": 0.0,
+          "timePerTurn": 0,
+          "speedrun": false,
+          "cardCycle": false,
+          "deckPlays": false,
+          "emptyClues": false,
+          "oneExtraCard": false,
+          "oneLessCard": false,
+          "allOrNothing": false,
+          "detrimentalCharacters": false
+        },
+        "seed": "p2v0s1",
+        "score": 25,
+        "numTurns": 40,
+        "endCondition": 11,
+        "datetimeStarted": "2023-12-29T18:00:00Z",
+        "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
+        "numGamesOnThisSeed": 3,
+        "playerNames": ["Alice", "Bob"],
+        "incrementNumGames": false,
+        "tags": ""
+      }
+    ],
+    "valid": false
+  },
+  {
+    "name": "other scores name the variant and seed",
+    "direction": "server",
+    "command": "gameHistoryOtherScores",
+    "input": {
+      "games": [
+        {
+          "id": 12,
+          "options": {
+            "numPlayers": 2,
+            "startingPlayer": 0,
+            "variantName": "No Variant",
+            "timed": false,
+            "timeBase": 0.0,
+            "timePerTurn": 0,
+            "speedrun": false,
+            "cardCycle": false,
+            "deckPlays": false,
+            "emptyClues": false,
+            "oneExtraCard": false,
+            "oneLessCard": false,
+            "allOrNothing": false,
+            "detrimentalCharacters": false
+          },
+          "seed": "p2v0s1",
+          "score": 25,
+          "numTurns": 40,
+          "endCondition": 1,
+          "datetimeStarted": "2023-12-29T18:00:00Z",
+          "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
+          "numGamesOnThisSeed": 3,
+          "playerNames": ["Alice", "Bob"],
+          "incrementNumGames": false,
+          "tags": ""
+        }
+      ],
+      "variantName": "No Variant",
+      "seed": "p2v0s1"
+    },
+    "valid": true
+  },
+  {
+    "name": "pregames include each player's statistics",
+    "direction": "server",
+    "command": "game",
+    "input": {
+      "tableID": 3,
+      "name": "Alice's game",
+      "owner": 7,
+      "players": [
+        {
+          "index": 0,
+          "name": "Alice",
+          "you": true,
+          "present": true,
+          "stats": {
+            "numGames": 4,
+            "variant": {
+              "numGames": 1,
+              "bestScores": [
+                {
+                  "numPlayers": 2,
+                  "score": 0,
+                  "modifier": 0,
+                  "deckPlays": false,
+                  "emptyClues": false,
+                  "oneExtraCard": false,
+                  "oneLessCard": false,
+                  "allOrNothing": false
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "options": {
+        "numPlayers": 2,
+        "startingPlayer": 0,
+        "variantName": "No Variant",
+        "timed": false,
+        "timeBase": 0.0,
+        "timePerTurn": 0,
+        "speedrun": false,
+        "cardCycle": false,
+        "deckPlays": false,
+        "emptyClues": false,
+        "oneExtraCard": false,
+        "oneLessCard": false,
+        "allOrNothing": false,
+        "detrimentalCharacters": false
+      },
+      "passwordProtected": false,
+      "maxPlayers": 5
+    },
+    "valid": true
   }
 ]
