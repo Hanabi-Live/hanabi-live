@@ -1,0 +1,12 @@
+# Queries must be checked against the schema at compile time with the sqlx macros
+# (`query!`, `query_as!`, `query_scalar!`). Dynamic SQL needs an explicit, justified allow.
+disallowed-methods = [
+  { path = "sqlx::query", reason = "use sqlx::query! so the SQL is checked at compile time" },
+  { path = "sqlx::query_as", reason = "use sqlx::query_as! so the SQL is checked at compile time" },
+  { path = "sqlx::query_scalar", reason = "use sqlx::query_scalar! so the SQL is checked at compile time" },
+  { path = "sqlx::query_with", reason = "use sqlx::query! so the SQL is checked at compile time" },
+  { path = "sqlx::query_as_with", reason = "use sqlx::query_as! so the SQL is checked at compile time" },
+  { path = "sqlx::query_scalar_with", reason = "use sqlx::query_scalar! so the SQL is checked at compile time" },
+  { path = "sqlx::raw_sql", reason = "use the sqlx query macros so the SQL is checked at compile time" },
+  { path = "sqlx::QueryBuilder::new", reason = "use the sqlx query macros so the SQL is checked at compile time" },
+]

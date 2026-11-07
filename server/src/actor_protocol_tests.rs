@@ -38,6 +38,7 @@ impl Harness {
             .connect_with(options.clone())
             .await?;
         let database = format!("ts_slice_{:032x}", rand::random::<u128>());
+        #[allow(clippy::disallowed_methods)]
         sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {database}")))
             .execute(&admin)
             .await?;
@@ -45,12 +46,12 @@ impl Harness {
             .max_connections(8)
             .connect_with(options.database(&database))
             .await?;
+        #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
             .execute(&pool)
             .await?;
         for (index, name) in names.iter().enumerate() {
-            sqlx::query("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')")
-                .bind(index as i32+1).bind(name).bind(crate::accounts::normalize_username(name)).execute(&pool).await?;
+            sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", index as i32+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
         }
         let redis = RedisFixture::start(true).await?;
         let state = RedisState::connect(&redis.url, "actor-protocol").await?;
@@ -184,7 +185,7 @@ impl Harness {
     async fn wait_locks(&self, count: i64) -> Result<()> {
         tokio::time::timeout(Duration::from_secs(3),async{
             loop{
-                let waiting:i64=sqlx::query_scalar("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%user_stats%'").fetch_one(&self.store.primary).await?;
+                let waiting:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%user_stats%'").fetch_one(&self.store.primary).await?;
                 if waiting>=count{return Ok::<(),anyhow::Error>(());}
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
@@ -223,6 +224,7 @@ impl Harness {
     async fn close(self) -> Result<()> {
         self.stop_hub().await?;
         self.store.close().await?;
+        #[allow(clippy::disallowed_methods)]
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "DROP DATABASE {} WITH (FORCE)",
             self.database
@@ -876,7 +878,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             h.send(index, "loaded", json!({"tableID":id})).await?;
         }
         let mut lock = h.store.primary.begin().await?;
-        sqlx::query("SELECT pg_advisory_xact_lock(17483,0)")
+        sqlx::query!("SELECT pg_advisory_xact_lock(17483,0)")
             .execute(&mut *lock)
             .await?;
         let score = loop {
@@ -1071,10 +1073,12 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
         );
         let snapshot = h.snapshot(id).await?.0;
         ensure!(snapshot.chat.len() == 6 && snapshot.chat_archived == 6);
-        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM chat_log WHERE room=$1")
-            .bind(&room)
-            .fetch_one(&h.store.primary)
-            .await?;
+        let count: i64 = sqlx::query_scalar!(
+            "SELECT count(*) AS \"v!\" FROM chat_log WHERE room=$1",
+            &room
+        )
+        .fetch_one(&h.store.primary)
+        .await?;
         ensure!(count == 6, "Pregame messages were not archived");
         h.restart().await?;
         h.send(0, "tableReattend", json!({"tableID":id})).await?;
@@ -1306,8 +1310,7 @@ async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<(
         .iter()
         .filter(|v| Some(v.name.as_str()) != except)
         .collect::<Vec<_>>();
-    sqlx::query("INSERT INTO user_stats(user_id,variant_id,best_score2) SELECT $1,v.id,v.score FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2")
-        .bind(user).bind(variants.iter().map(|v|v.id as i16).collect::<Vec<_>>()).bind(variants.iter().map(|v|v.max_score as i16).collect::<Vec<_>>()).execute(&h.store.primary).await?;
+    sqlx::query!("INSERT INTO user_stats(user_id,variant_id,best_score2) SELECT $1,v.id,v.score FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2", user, &variants.iter().map(|v|v.id as i16).collect::<Vec<_>>(), &variants.iter().map(|v|v.max_score as i16).collect::<Vec<_>>()).execute(&h.store.primary).await?;
     Ok(())
 }
 
@@ -1317,8 +1320,7 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
         return Ok(());
     };
     let outcome = async {
-        let games: Vec<i32> = sqlx::query_scalar(
-            "INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
+        let games: Vec<i32> = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
              all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
              SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,120,20,
@@ -1326,15 +1328,11 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
              'stats-'||n,CASE WHEN n IN (1,8) THEN 25 ELSE 0 END,30,
              CASE n WHEN 3 THEN 2 WHEN 4 THEN 3 WHEN 5 THEN 4 WHEN 6 THEN 6
                     WHEN 7 THEN 10 WHEN 9 THEN 5 ELSE 1 END,NOW(),NOW()
-             FROM generate_series(1,9) n ORDER BY n RETURNING id",
-        )
+             FROM generate_series(1,9) n ORDER BY n RETURNING id")
         .fetch_all(&h.store.primary)
         .await?;
-        sqlx::query(
-            "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-             SELECT id,1,0,0,0 FROM unnest($1::integer[]) games(id)",
-        )
-        .bind(games)
+        sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
+             SELECT id,1,0,0,0 FROM unnest($1::integer[]) games(id)", &games)
         .execute(&h.store.primary)
         .await?;
         let id = h.create(0, "Count parity", json!({})).await?;
@@ -1510,6 +1508,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         h.send(1,"tableJoin",json!({"tableID":id})).await?;h.barrier(0).await?;
         for index in 0..3{h.frames(index)?;}
         let mut lock=h.store.primary.begin().await?;
+        #[allow(clippy::disallowed_methods)]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE").execute(&mut *lock).await?;
         let finding=h.begin(1,"chat",json!({"room":format!("table{id}"),"msg":"/fv"})).await?;
         h.wait_locks(1).await?;
@@ -1543,6 +1542,7 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         h.frames(0)?;
         h.frames(1)?;
         let mut lock = h.store.primary.begin().await?;
+        #[allow(clippy::disallowed_methods)]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE")
             .execute(&mut *lock)
             .await?;
@@ -1630,10 +1630,10 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
         h.frames(0)?;
         h.frames(1)?;
         let game_id = h.snapshot(id).await?.0.game().unwrap().game_id;
-        sqlx::query(
+        sqlx::query!(
             "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,2,'zeta'),($1,2,'alpha <b>')",
+            game_id
         )
-        .bind(game_id)
         .execute(&h.store.primary)
         .await?;
         for alias in ["/tags", "/taglist"] {
@@ -1691,8 +1691,8 @@ async fn tags_use_authoritative_sorted_frames_and_private_live_acknowledgements(
                 == vec!["There are not yet any tags for this game."],
             "Empty tag list differs"
         );
-        let leaked: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM chat_log WHERE message LIKE 'Successfully%tag%'",
+        let leaked: i64 = sqlx::query_scalar!(
+            "SELECT count(*) AS \"v!\" FROM chat_log WHERE message LIKE 'Successfully%tag%'"
         )
         .fetch_one(&h.store.primary)
         .await?;
@@ -1921,10 +1921,12 @@ async fn paused_clock_survives_deadline_then_unpaused_disconnected_player_times_
             matches!(paused.phase, Phase::Live { .. }) && paused.game().unwrap().game.paused,
             "Paused game expired at its original deadline"
         );
-        let archived: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM games WHERE id=$1)")
-            .bind(game_id)
-            .fetch_one(&h.store.primary)
-            .await?;
+        let archived: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM games WHERE id=$1) AS \"v!\"",
+            game_id
+        )
+        .fetch_one(&h.store.primary)
+        .await?;
         ensure!(!archived, "Paused game was prematurely archived");
         h.send(actor, "pause", json!({"tableID":id,"setting":"unpause"}))
             .await?;
@@ -1946,10 +1948,10 @@ async fn paused_clock_survives_deadline_then_unpaused_disconnected_player_times_
                 && game.clocks[active] == 0,
             "Timeout was not durably finalized"
         );
-        let condition: i16 = sqlx::query_scalar("SELECT end_condition FROM games WHERE id=$1")
-            .bind(game_id)
-            .fetch_one(&h.store.primary)
-            .await?;
+        let condition: i16 =
+            sqlx::query_scalar!("SELECT end_condition FROM games WHERE id=$1", game_id)
+                .fetch_one(&h.store.primary)
+                .await?;
         ensure!(
             condition == EndCondition::Timeout as i16,
             "Timeout did not reach the atomic PostgreSQL archive"

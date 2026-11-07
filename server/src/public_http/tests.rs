@@ -268,6 +268,7 @@ impl Database {
         let options = PgConnectOptions::from_str(&uri).unwrap();
         let mut admin = PgConnection::connect_with(&options).await.unwrap();
         let name = format!("ts_slice_rust_public_{:016x}", rand::random::<u64>());
+        #[allow(clippy::disallowed_methods)]
         admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "CREATE DATABASE {name}"
@@ -279,6 +280,7 @@ impl Database {
             .connect_with(options.database(&name))
             .await
             .unwrap();
+        #[allow(clippy::disallowed_methods)]
         sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
             .execute(&pool)
             .await
@@ -287,6 +289,7 @@ impl Database {
     }
     async fn close(mut self) {
         self.pool.close().await;
+        #[allow(clippy::disallowed_methods)]
         self.admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "DROP DATABASE {} WITH (FORCE)",
@@ -320,6 +323,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         stats_values(&body),
         ["0 (0 normally finished)", "-", "0", "-"]
     );
+    #[allow(clippy::disallowed_methods)]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES
         (1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),
@@ -346,7 +350,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     crate::accounts::test_support::legacy_column_order(&db.pool)
         .await
         .unwrap();
-    sqlx::query("UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3")
+    sqlx::query!("UPDATE games SET datetime_started='2026-01-01T00:00:00.12345Z' WHERE id=3")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -391,6 +395,47 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let value: Value = serde_json::from_str(&body).unwrap();
         assert_eq!(value["total_rows"], total, "{path}");
         assert_eq!(value["rows"].as_array().unwrap().len(), len, "{path}");
+    }
+    // Each sort column, direction, and filter assembles different SQL; exercise every one.
+    for (path, total, first) in [
+        ("/api/v1/history/Alice?col%5B0%5D=0", 3, Some(1)),
+        ("/api/v1/history/Alice?col%5B0%5D=1", 3, Some(3)),
+        ("/api/v1/history/Alice?col%5B1%5D=0", 3, Some(3)),
+        ("/api/v1/history/Alice?col%5B1%5D=1", 3, Some(3)),
+        ("/api/v1/history/Alice?col%5B2%5D=0", 3, Some(3)),
+        ("/api/v1/history/Alice?col%5B2%5D=1", 3, Some(1)),
+        ("/api/v1/history/Alice?fcol%5B0%5D=2", 1, Some(2)),
+        ("/api/v1/history/Alice?fcol%5B1%5D=2", 3, Some(3)),
+        ("/api/v1/history/Alice?fcol%5B1%5D=3", 0, None),
+        ("/api/v1/history/Alice?fcol%5B2%5D=15", 1, Some(2)),
+        ("/api/v1/history/Alice?fcol%5B3%5D=0", 2, Some(2)),
+        ("/api/v1/seed/same?col%5B2%5D=0", 2, Some(2)),
+        ("/api/v1/seed/same?fcol%5B0%5D=1", 1, Some(1)),
+        ("/api/v1/seed/same?fcol%5B1%5D=3", 2, Some(1)),
+        ("/api/v1/variants/0?col%5B0%5D=0", 2, Some(1)),
+        ("/api/v1/variants/0?fcol%5B0%5D=2", 1, Some(2)),
+        ("/api/v1/variants/0?fcol%5B1%5D=2", 2, Some(1)),
+    ] {
+        let (status, body) = request(app.clone(), path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {body}");
+        let value: Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(value["total_rows"], total, "{path}");
+        assert_eq!(value["rows"][0]["id"].as_i64(), first, "{path}");
+    }
+    for (path, ids) in [
+        ("/api/v1/history-full/Alice?start=2", vec![3, 2]),
+        ("/api/v1/history-full/Alice?end=1", vec![1]),
+    ] {
+        let (status, body) = request(app.clone(), path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {body}");
+        let value: Value = serde_json::from_str(&body).unwrap();
+        let actual: Vec<_> = value
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|game| game["id"].as_i64().unwrap())
+            .collect();
+        assert_eq!(actual, ids, "{path}");
     }
     let (status, body) = request(app.clone(), "/api/v1/history/Alice?col%5B2%5D=0&size=1").await;
     assert_eq!(status, StatusCode::OK, "{body}");
@@ -560,7 +605,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(actual.as_u16(), status, "{path}: {body}");
         assert!(body.contains(text), "{path}: {body}");
     }
-    sqlx::query("INSERT INTO banned_ips(ip) VALUES('127.0.0.5')")
+    sqlx::query!("INSERT INTO banned_ips(ip) VALUES('127.0.0.5')")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -608,6 +653,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     argon2::Argon2::default()
         .verify_password(b"secret", &argon2::PasswordHash::new(&body).unwrap())
         .unwrap();
+    #[allow(clippy::disallowed_methods)]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
         SELECT id,'Player'||id,'player'||id,'test','127.0.0.1' FROM generate_series(4,8) id;
@@ -646,16 +692,20 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let mut deck = hanabi_engine::create_deck(variant);
     deck.truncate(11);
     assert!(deck.iter().any(|card| card.rank == 7));
-    sqlx::query("UPDATE games SET variant_id=$1 WHERE id=3")
-        .bind(variant.id as i16)
-        .execute(&db.pool)
-        .await
-        .unwrap();
-    sqlx::query("UPDATE game_custom_decks SET deck=$1 WHERE game_id=3")
-        .bind(crate::game::encode_deck(&deck).unwrap())
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE games SET variant_id=$1 WHERE id=3",
+        variant.id as i16
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query!(
+        "UPDATE game_custom_decks SET deck=$1 WHERE game_id=3",
+        crate::game::encode_deck(&deck).unwrap()
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let (status, body) = request(app.clone(), "/export/3").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert_eq!(
@@ -663,15 +713,17 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         json!(deck)
     );
     for encoded in ["813f", "8106"] {
-        sqlx::query("UPDATE game_custom_decks SET deck=decode($1,'hex') WHERE game_id=3")
-            .bind(encoded)
-            .execute(&db.pool)
-            .await
-            .unwrap();
+        sqlx::query!(
+            "UPDATE game_custom_decks SET deck=decode($1,'hex') WHERE game_id=3",
+            encoded
+        )
+        .execute(&db.pool)
+        .await
+        .unwrap();
         let (status, body) = request(app.clone(), "/export/3").await;
         assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
     }
-    sqlx::query("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
+    sqlx::query!("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
         .execute(&db.pool)
         .await
         .unwrap();

@@ -210,12 +210,13 @@ async fn moderation_uses_canonical_accounts_and_persists_ip_actions() {
         request(app.clone(), "/ban", Some("username=ALICE")).await.1,
         "success\n"
     );
-    let banned: bool =
-        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM banned_ips WHERE user_id=$1)")
-            .bind(user)
-            .fetch_one(&db.pool)
-            .await
-            .unwrap();
+    let banned: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM banned_ips WHERE user_id=$1) AS \"v!\"",
+        user
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
     assert!(banned);
     assert!(
         request(app.clone(), "/ban", Some("username=Alice"))
@@ -266,6 +267,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         return Ok(());
     };
     let result:anyhow::Result<()>=async{
+    #[allow(clippy::disallowed_methods)]
     sqlx::raw_sql("CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES(7);")
         .execute(&db.pool).await?;
     let redis = crate::test_redis::RedisFixture::start(true).await?;
@@ -332,16 +334,16 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     assert_eq!(report["recovery"]["authority"], "Redis AOF/WAITAOF");
     assert_eq!(store.lobby_reads.options().get_max_connections(), 2);
     let mut reader = store.lobby_reads.acquire().await?;
+    #[allow(clippy::disallowed_methods)]
     let read_only: String = sqlx::query_scalar("SHOW default_transaction_read_only").fetch_one(&mut *reader).await?;
     assert_eq!(read_only, "on");
-    let reader_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()").fetch_one(&mut *reader).await?;
+    let reader_pid: i32 = sqlx::query_scalar!("SELECT pg_backend_pid() AS \"v!\"").fetch_one(&mut *reader).await?;
     let slow_read = tokio::spawn(async move {
-        sqlx::query("SELECT pg_sleep(10)").execute(&mut *reader).await
+        sqlx::query!("SELECT pg_sleep(10)").execute(&mut *reader).await
     });
     tokio::time::timeout(Duration::from_secs(2), async {
         loop {
-            let running: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND state='active' AND query='SELECT pg_sleep(10)')")
-                .bind(reader_pid).fetch_one(&store.primary).await?;
+            let running: bool = sqlx::query_scalar!("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND state='active' AND query='SELECT pg_sleep(10)') AS \"v!\"", reader_pid).fetch_one(&store.primary).await?;
             if running { return Ok::<_, sqlx::Error>(()); }
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
@@ -350,7 +352,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     let cancelled = tokio::time::timeout(Duration::from_millis(500), slow_read).await??
         .expect_err("Background read survived maintenance cancellation");
     assert_eq!(cancelled.as_database_error().and_then(|error| error.code()).as_deref(), Some("57014"));
-    let usable: i32 = sqlx::query_scalar("SELECT 1").fetch_one(&store.primary).await?;
+    let usable: i32 = sqlx::query_scalar!("SELECT 1 AS \"v!\"").fetch_one(&store.primary).await?;
     assert_eq!(usable, 1, "Read cancellation interfered with the primary pool");
     h.close().await;
     app.shutdown.cancel();

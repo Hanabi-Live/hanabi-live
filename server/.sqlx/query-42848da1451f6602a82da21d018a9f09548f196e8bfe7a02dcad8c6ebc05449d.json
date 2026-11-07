@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_identity_tokens SET expires_at=NOW() WHERE user_id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "42848da1451f6602a82da21d018a9f09548f196e8bfe7a02dcad8c6ebc05449d"
+}

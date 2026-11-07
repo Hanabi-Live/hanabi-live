@@ -174,8 +174,7 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         return;
     };
     let id = db.user("ResetRequired").await;
-    sqlx::query("UPDATE users SET password_hash=NULL WHERE id=$1")
-        .bind(id)
+    sqlx::query!("UPDATE users SET password_hash=NULL WHERE id=$1", id)
         .execute(&db.pool)
         .await
         .unwrap();
@@ -195,18 +194,16 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         assert!(body.contains("requires a password reset"));
         assert!(body.contains("href=\"/password-reset\""));
     }
-    let stored: Option<String> = sqlx::query_scalar("SELECT password_hash FROM users WHERE id=$1")
-        .bind(id)
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
+    let stored: Option<String> =
+        sqlx::query_scalar!("SELECT password_hash FROM users WHERE id=$1", id)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
     assert!(stored.is_none());
     let reset = hash_password("127.0.0.1", "reset-password".into())
         .await
         .unwrap();
-    sqlx::query("UPDATE users SET password_hash=$2 WHERE id=$1")
-        .bind(id)
-        .bind(reset)
+    sqlx::query!("UPDATE users SET password_hash=$2 WHERE id=$1", id, reset)
         .execute(&db.pool)
         .await
         .unwrap();
@@ -276,7 +273,7 @@ async fn native_accounts_http_and_identity_postgres() {
             .0,
         StatusCode::OK
     );
-    let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username='Alice'")
+    let id: i32 = sqlx::query_scalar!("SELECT id FROM users WHERE username='Alice'")
         .fetch_one(&db.pool)
         .await
         .unwrap();
@@ -397,11 +394,13 @@ async fn native_accounts_http_and_identity_postgres() {
             .0,
         StatusCode::NOT_FOUND
     );
-    sqlx::query("UPDATE user_identity_tokens SET expires_at=NOW() WHERE user_id=$1")
-        .bind(id)
-        .execute(&db.pool)
-        .await
-        .unwrap();
+    sqlx::query!(
+        "UPDATE user_identity_tokens SET expires_at=NOW() WHERE user_id=$1",
+        id
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     assert_eq!(
         request(
             &app,
@@ -421,7 +420,7 @@ async fn native_accounts_http_and_identity_postgres() {
             .0,
         StatusCode::BAD_REQUEST
     );
-    sqlx::query("INSERT INTO banned_ips(ip) VALUES('127.0.0.1')")
+    sqlx::query!("INSERT INTO banned_ips(ip) VALUES('127.0.0.1')")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -520,7 +519,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
         assert_eq!(ids.len(), 7);
     }
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users")
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM users")
             .fetch_one(&db.pool)
             .await
             .unwrap(),

@@ -328,10 +328,12 @@ mod tests {
             return;
         };
         let mut connection = db.pool.acquire().await.unwrap();
+        #[allow(clippy::disallowed_methods)]
         sqlx::query("SET statement_timeout = 2000")
             .execute(&mut *connection)
             .await
             .unwrap();
+        #[allow(clippy::disallowed_methods)]
         let error = sqlx::query("SELECT pg_sleep(3)")
             .execute(&mut *connection)
             .await
@@ -340,6 +342,7 @@ mod tests {
         assert_eq!(report.code, "database_query_timeout");
         assert_eq!(report.status, StatusCode::GATEWAY_TIMEOUT);
         assert!(report.text().contains("timed out after 2 seconds"));
+        #[allow(clippy::disallowed_methods)]
         let error = sqlx::query("SELECT 'synthetic-password-token'::integer")
             .execute(&mut *connection)
             .await
@@ -347,6 +350,7 @@ mod tests {
         let report = Report::from_error("Loading data", &error.into(), Some(2));
         assert!(report.text().contains("SQLSTATE 22P02"));
         assert!(!report.text().contains("synthetic-password-token"));
+        #[allow(clippy::disallowed_methods)]
         let error = sqlx::query("SELECT pg_cancel_backend(pg_backend_pid())")
             .execute(&mut *connection)
             .await

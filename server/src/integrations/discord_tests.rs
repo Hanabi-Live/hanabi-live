@@ -264,7 +264,7 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
     }
     drop(requests);
     let messages: Vec<String> =
-        sqlx::query_scalar("SELECT message FROM chat_log WHERE source='server' ORDER BY id")
+        sqlx::query_scalar!("SELECT message FROM chat_log WHERE source='server' ORDER BY id")
             .fetch_all(&fixture.db.pool)
             .await
             .unwrap();
@@ -274,9 +274,9 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         "All lifecycle notices must also remain in lobby history"
     );
     assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
-    sqlx::query(
+    sqlx::query!(
         "UPDATE chat_log SET datetime_sent=NOW()-INTERVAL '150 seconds'
-         WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')",
+         WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')"
     )
     .execute(&fixture.db.pool)
     .await
@@ -285,8 +285,8 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         .await
         .unwrap();
     replacement.event(json!({"t":"READY"})).await.unwrap();
-    let started: String = sqlx::query_scalar(
-        "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1",
+    let started: String = sqlx::query_scalar!(
+        "SELECT message FROM chat_log WHERE source='server' ORDER BY id DESC LIMIT 1"
     )
     .fetch_one(&fixture.db.pool)
     .await
@@ -328,9 +328,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         bridge.event(event(id, text)).await.unwrap();
     }
     assert_eq!(
-        sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*) FROM chat_log WHERE source='discord' AND discord_message_id IS NOT NULL"
-        )
+        sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE source='discord' AND discord_message_id IS NOT NULL")
         .fetch_one(&fixture.db.pool)
         .await
         .unwrap(),
@@ -343,8 +341,8 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         ))
         .await
         .unwrap();
-    let stored: String = sqlx::query_scalar(
-        "SELECT message FROM chat_log WHERE discord_message_id='111111111111111113'",
+    let stored: String = sqlx::query_scalar!(
+        "SELECT message FROM chat_log WHERE discord_message_id='111111111111111113'"
     )
     .fetch_one(&fixture.db.pool)
     .await
@@ -366,8 +364,8 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
         .await
         .unwrap();
     assert_eq!(
-        sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*) FROM chat_log WHERE discord_message_id='111111111111111113'"
+        sqlx::query_scalar!(
+            "SELECT COUNT(*) AS \"v!\" FROM chat_log WHERE discord_message_id='111111111111111113'"
         )
         .fetch_one(&fixture.db.pool)
         .await
@@ -376,8 +374,7 @@ async fn discord_mock_transport_public_privacy_rendering_and_status_postgres() {
     );
     let alice = fixture.db.user("Alice").await;
     let raw = "public <text>";
-    let id:i32=sqlx::query_scalar("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user',$2,'lobby') RETURNING id")
-        .bind(alice).bind(escape_html(raw)).fetch_one(&fixture.db.pool).await.unwrap();
+    let id:i32=sqlx::query_scalar!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user',$2,'lobby') RETURNING id", alice, escape_html(raw)).fetch_one(&fixture.db.pool).await.unwrap();
     assert!(bridge.mirror(id, Some("private secret")).await.is_err());
     bridge.mirror(id, Some(raw)).await.unwrap();
     let requests = mock.requests.lock().await;

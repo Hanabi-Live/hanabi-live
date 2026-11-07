@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT variant_id,CASE $2::smallint WHEN 2 THEN best_score2 WHEN 3 THEN best_score3\n                   WHEN 4 THEN best_score4 WHEN 5 THEN best_score5 ELSE best_score6 END AS \"score!\"\n                   FROM user_stats WHERE user_id=ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "variant_id",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "user_stats",
+            "name": "variant_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "score!",
+        "type_info": "Int2",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "e5aea7dffd682eda76edfc076b698c8a16cc3949d2ad214ad8ada805e076fbc2"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,$1,'before-tag')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9eac8ef187b5338345bd1e1706db9068d73589ba856ad182b9b8e7c73227f587"
+}

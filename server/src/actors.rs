@@ -2090,16 +2090,13 @@ impl TableActor {
         let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
         let store = self.store.clone();
         let query = Box::pin(async move {
-            // Only the validated numeric player count is interpolated; user IDs remain bound.
-            #[derive(sqlx::FromRow)]
-            struct VariantScore {
-                variant_id: i16,
-                score: i16,
-            }
-            let rows = sqlx::query_as::<_, VariantScore>(sqlx::AssertSqlSafe(format!(
-                "SELECT variant_id,best_score{count} AS score FROM user_stats WHERE user_id=ANY($1)"
-            )))
-            .bind(ids)
+            let rows = sqlx::query!(
+                r#"SELECT variant_id,CASE $2::smallint WHEN 2 THEN best_score2 WHEN 3 THEN best_score3
+                   WHEN 4 THEN best_score4 WHEN 5 THEN best_score5 ELSE best_score6 END AS "score!"
+                   FROM user_stats WHERE user_id=ANY($1)"#,
+                &ids,
+                i16::try_from(count)?,
+            )
             .fetch_all(&store.primary)
             .await?;
             let mut completed = HashSet::new();

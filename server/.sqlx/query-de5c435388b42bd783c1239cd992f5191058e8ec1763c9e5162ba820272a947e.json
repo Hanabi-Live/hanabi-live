@@ -1,21 +1,10 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id,desktop_notification,sound_move,sound_timer,keldon_mode,colorblind_mode,\n         real_life_mode,reverse_hands,style_numbers,show_timer_in_untimed,speedrun_preplay,speedrun_mode,\n         hyphenated_conventions,volume,create_table_variant,create_table_timed,create_table_time_base_minutes,\n         create_table_time_per_turn_seconds,create_table_speedrun,create_table_card_cycle,create_table_deck_plays,\n         create_table_empty_clues,create_table_one_extra_card,create_table_one_less_card,create_table_all_or_nothing,\n         create_table_detrimental_characters,create_table_max_players FROM user_settings WHERE user_id=$1 LIMIT 1",
+  "query": "SELECT desktop_notification,sound_move,sound_timer,keldon_mode,colorblind_mode,\n         real_life_mode,reverse_hands,style_numbers,show_timer_in_untimed,speedrun_preplay,speedrun_mode,\n         hyphenated_conventions,volume,create_table_variant,create_table_timed,create_table_time_base_minutes,\n         create_table_time_per_turn_seconds,create_table_speedrun,create_table_card_cycle,create_table_deck_plays,\n         create_table_empty_clues,create_table_one_extra_card,create_table_one_less_card,create_table_all_or_nothing,\n         create_table_detrimental_characters,create_table_max_players FROM user_settings WHERE user_id=$1 LIMIT 1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "user_id",
-        "type_info": "Int4",
-        "origin": {
-          "Table": {
-            "table": "user_settings",
-            "name": "user_id"
-          }
-        }
-      },
-      {
-        "ordinal": 1,
         "name": "desktop_notification",
         "type_info": "Bool",
         "origin": {
@@ -26,7 +15,7 @@
         }
       },
       {
-        "ordinal": 2,
+        "ordinal": 1,
         "name": "sound_move",
         "type_info": "Int2",
         "origin": {
@@ -37,7 +26,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 2,
         "name": "sound_timer",
         "type_info": "Bool",
         "origin": {
@@ -48,7 +37,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "keldon_mode",
         "type_info": "Bool",
         "origin": {
@@ -59,7 +48,7 @@
         }
       },
       {
-        "ordinal": 5,
+        "ordinal": 4,
         "name": "colorblind_mode",
         "type_info": "Bool",
         "origin": {
@@ -70,7 +59,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "real_life_mode",
         "type_info": "Bool",
         "origin": {
@@ -81,7 +70,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "reverse_hands",
         "type_info": "Bool",
         "origin": {
@@ -92,7 +81,7 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 7,
         "name": "style_numbers",
         "type_info": "Bool",
         "origin": {
@@ -103,7 +92,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 8,
         "name": "show_timer_in_untimed",
         "type_info": "Bool",
         "origin": {
@@ -114,7 +103,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "speedrun_preplay",
         "type_info": "Bool",
         "origin": {
@@ -125,7 +114,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "speedrun_mode",
         "type_info": "Bool",
         "origin": {
@@ -136,7 +125,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "hyphenated_conventions",
         "type_info": "Bool",
         "origin": {
@@ -147,7 +136,7 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 12,
         "name": "volume",
         "type_info": "Int2",
         "origin": {
@@ -158,7 +147,7 @@
         }
       },
       {
-        "ordinal": 14,
+        "ordinal": 13,
         "name": "create_table_variant",
         "type_info": "Text",
         "origin": {
@@ -169,7 +158,7 @@
         }
       },
       {
-        "ordinal": 15,
+        "ordinal": 14,
         "name": "create_table_timed",
         "type_info": "Bool",
         "origin": {
@@ -180,7 +169,7 @@
         }
       },
       {
-        "ordinal": 16,
+        "ordinal": 15,
         "name": "create_table_time_base_minutes",
         "type_info": "Float8",
         "origin": {
@@ -191,7 +180,7 @@
         }
       },
       {
-        "ordinal": 17,
+        "ordinal": 16,
         "name": "create_table_time_per_turn_seconds",
         "type_info": "Int4",
         "origin": {
@@ -202,7 +191,7 @@
         }
       },
       {
-        "ordinal": 18,
+        "ordinal": 17,
         "name": "create_table_speedrun",
         "type_info": "Bool",
         "origin": {
@@ -213,7 +202,7 @@
         }
       },
       {
-        "ordinal": 19,
+        "ordinal": 18,
         "name": "create_table_card_cycle",
         "type_info": "Bool",
         "origin": {
@@ -224,7 +213,7 @@
         }
       },
       {
-        "ordinal": 20,
+        "ordinal": 19,
         "name": "create_table_deck_plays",
         "type_info": "Bool",
         "origin": {
@@ -235,7 +224,7 @@
         }
       },
       {
-        "ordinal": 21,
+        "ordinal": 20,
         "name": "create_table_empty_clues",
         "type_info": "Bool",
         "origin": {
@@ -246,7 +235,7 @@
         }
       },
       {
-        "ordinal": 22,
+        "ordinal": 21,
         "name": "create_table_one_extra_card",
         "type_info": "Bool",
         "origin": {
@@ -257,7 +246,7 @@
         }
       },
       {
-        "ordinal": 23,
+        "ordinal": 22,
         "name": "create_table_one_less_card",
         "type_info": "Bool",
         "origin": {
@@ -268,7 +257,7 @@
         }
       },
       {
-        "ordinal": 24,
+        "ordinal": 23,
         "name": "create_table_all_or_nothing",
         "type_info": "Bool",
         "origin": {
@@ -279,7 +268,7 @@
         }
       },
       {
-        "ordinal": 25,
+        "ordinal": 24,
         "name": "create_table_detrimental_characters",
         "type_info": "Bool",
         "origin": {
@@ -290,7 +279,7 @@
         }
       },
       {
-        "ordinal": 26,
+        "ordinal": 25,
         "name": "create_table_max_players",
         "type_info": "Int2",
         "origin": {
@@ -332,9 +321,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "e158272f75cc150da4b2fa86c22f93bb77685e74fc28499cf3620b66501c44ed"
+  "hash": "de5c435388b42bd783c1239cd992f5191058e8ec1763c9e5162ba820272a947e"
 }
