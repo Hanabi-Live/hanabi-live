@@ -38,6 +38,7 @@ struct PublicState {
     pool: PgPool,
     config: PublicConfig,
     templates: Arc<minijinja::Environment<'static>>,
+    site_totals: Arc<tokio::sync::Mutex<pages::SiteTotals>>,
 }
 
 #[derive(Debug)]
@@ -55,7 +56,8 @@ impl<E: Into<anyhow::Error>> From<E> for Error {
         let report = crate::errors::Report::from_error(
             crate::errors::http_operation("Loading public data"),
             &error.into(),
-            Some(30),
+            // Public pages use the lobby read pool, whose statements are limited to 2 seconds.
+            Some(2),
         );
         Self(report.status, report.text(), Some(Box::new(report)))
     }
@@ -116,6 +118,7 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
         pool,
         config: config.clone(),
         templates: Arc::new(pages::templates()),
+        site_totals: Arc::default(),
     };
     let mut router = Router::new();
     router = router

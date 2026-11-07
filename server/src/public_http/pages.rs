@@ -325,7 +325,41 @@ fn names_title(names: &[String]) -> String {
     )
 }
 
+pub(super) type SiteTotals = HashMap<Option<i64>, (std::time::Instant, Value)>;
+
+// Site-wide totals scan the whole games table on a pool with only two connections, so compute
+// them at most once per period and make concurrent visitors share the result.
+const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
+    std::time::Duration::ZERO
+} else {
+    std::time::Duration::from_secs(300)
+};
+
 async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>) -> Result<Value> {
+    if user.is_some() {
+        return compute_aggregate(state, user, variant).await;
+    }
+    let mut totals = state.site_totals.lock().await;
+    if let Some((computed, stats)) = totals.get(&variant)
+        && computed.elapsed() < SITE_TOTALS_LIFETIME
+    {
+        return Ok(stats.clone());
+    }
+    let stats = compute_aggregate(state, None, variant).await?;
+    totals.insert(variant, (std::time::Instant::now(), stats.clone()));
+    Ok(stats)
+}
+
+async fn compute_aggregate(
+    state: &PublicState,
+    user: Option<i32>,
+    variant: Option<i64>,
+) -> Result<Value> {
+    let mut transaction = state.pool.begin().await?;
+    // This scan can legitimately take longer than the pool's usual 2 second limit.
+    sqlx::query("SET LOCAL statement_timeout = 20000")
+        .execute(&mut *transaction)
+        .await?;
     let row = sqlx::query!(    "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
     count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
     count(*) FILTER(WHERE speedrun) AS \"speed!\",
@@ -336,7 +370,8 @@ async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>)
           CASE WHEN $1::integer IS NULL THEN num_players ELSE 1 END)
           FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
         FROM games g WHERE ($1::integer IS NULL OR EXISTS(SELECT 1 FROM game_participants WHERE game_id=g.id AND user_id=$1))
-        AND ($2::bigint IS NULL OR variant_id::bigint=$2)", user, variant).fetch_one(&state.pool).await?;
+        AND ($2::bigint IS NULL OR variant_id::bigint=$2)", user, variant).fetch_one(&mut *transaction).await?;
+    transaction.commit().await?;
     let normal: i64 = row.normal;
     let other: i64 = row.other;
     let mut stats = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
