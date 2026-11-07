@@ -8,4 +8,4 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd "$DIR"
 
-bunx --bun --no-install complete-cli check --ignore "action.yml,ci.yml,build.ts,eslint.config.mjs,LICENSE,lint.ts,tsconfig.json"
+bunx --bun --no-install complete-cli check --ignore "action.yml,ci.yml,build.ts,eslint.config.mjs,knip.config.js,LICENSE,lint.ts,tsconfig.json"
