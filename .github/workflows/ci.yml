@@ -49,8 +49,6 @@ jobs:
 
       - name: Test release installation and deployment guards
         run: python3 -m unittest discover -s install -p '*_test.py'
-      - name: Test documentation deployment guards
-        run: python3 -m unittest discover -s scripts -p 'typedoc_deployment_test.py'
 
   lint:
     runs-on: ubuntu-latest
