@@ -1,6 +1,26 @@
 // Generated from server/protocol. Run bash scripts/bash/generate-protocol.sh.
 import { z } from "zod";
 
+const requestIdSchema = z
+  .string()
+  .max(128)
+  .refine(
+    (value) => new TextEncoder().encode(value).length <= 128,
+    "Request IDs cannot exceed 128 UTF-8 bytes.",
+  );
+export const tableIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(9_007_199_254_740_991)
+  .brand<"TableID">();
+export const actionRequestSchema = z.strictObject({
+  requestID: requestIdSchema.optional(),
+  tableID: tableIdSchema,
+  target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  type: z.literal([0, 1, 2, 3]),
+  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
+});
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
 export const chatSchema = z
   .strictObject({
@@ -72,13 +92,6 @@ export const chatListSchema = z
 export const chatPmRequestSchema = z
   .strictObject({ msg: z.string().min(1), recipient: z.string().min(1) })
   .readonly();
-const requestIdSchema = z
-  .string()
-  .max(128)
-  .refine(
-    (value) => new TextEncoder().encode(value).length <= 128,
-    "Request IDs cannot exceed 128 UTF-8 bytes.",
-  );
 export const chatRequestSchema = z
   .strictObject({
     msg: z.string().min(1),
@@ -86,12 +99,6 @@ export const chatRequestSchema = z
     room: z.string().min(1),
   })
   .readonly();
-export const tableIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(9_007_199_254_740_991)
-  .brand<"TableID">();
 export const chatTypingSchema = z
   .strictObject({
     name: z.string(),
@@ -116,6 +123,32 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
   }),
 ]);
+export const noteRequestSchema = z.strictObject({
+  note: z.string(),
+  order: z.number().int().min(0).max(9_007_199_254_740_991),
+  requestID: requestIdSchema.optional(),
+  tableID: tableIdSchema,
+});
+export const pauseRequestSchema = z.strictObject({
+  requestID: requestIdSchema.optional(),
+  setting: z.string(),
+  tableID: tableIdSchema,
+});
+export const replayActionRequestSchema = z.strictObject({
+  actionJSON: z.string().max(65_536).default(""),
+  order: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .default(0),
+  requestID: requestIdSchema.optional(),
+  segment: z.number().int().min(0).max(2_147_483_647).default(0),
+  sound: z.string().default(""),
+  tableID: tableIdSchema,
+  type: z.number().int().min(0).max(8),
+  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
+});
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
 });
@@ -129,6 +162,7 @@ export const tableJoinRequestSchema = z.strictObject({
 });
 export const tableLeaderRequestSchema = z.strictObject({
   name: z.string().default(""),
+  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
 });
 export const tableRequestSchema = z.strictObject({ tableID: tableIdSchema });
@@ -174,7 +208,19 @@ export const tableVariantRequestSchema = z.strictObject({
   options: variantChoiceSchema.default({ variantName: "" }),
   tableID: tableIdSchema,
 });
+export const tagRequestSchema = z.strictObject({
+  msg: z.string(),
+  requestID: requestIdSchema.optional(),
+  room: z.string().default(""),
+  tableID: tableIdSchema,
+});
+export const tagsDeleteAllRequestSchema = z.strictObject({
+  requestID: requestIdSchema.optional(),
+  room: z.string().default(""),
+  tableID: tableIdSchema,
+});
 export const CLIENT_WIRE_SCHEMAS = {
+  action: actionRequestSchema,
   chat: chatRequestSchema,
   chatFriend: chatUserRequestSchema,
   chatLink: chatUserRequestSchema,
@@ -186,7 +232,13 @@ export const CLIENT_WIRE_SCHEMAS = {
   chatTyping: tableRequestSchema,
   chatUnfriend: chatUserRequestSchema,
   chatUnlink: chatUserRequestSchema,
+  getGameInfo1: tableCommandSchema,
+  getGameInfo2: tableCommandSchema,
+  loaded: tableCommandSchema,
   lobbyLoad: emptySchema,
+  note: noteRequestSchema,
+  pause: pauseRequestSchema,
+  replayAction: replayActionRequestSchema,
   sync: emptySchema,
   tableJoin: tableJoinRequestSchema,
   tableLeave: tableRequestSchema,
@@ -199,6 +251,10 @@ export const CLIENT_WIRE_SCHEMAS = {
   tableSuggest: tableSuggestRequestSchema,
   tableTerminate: tableCommandSchema,
   tableUnattend: tableCommandSchema,
+  tableVoteForTermination: tableCommandSchema,
+  tag: tagRequestSchema,
+  tagDelete: tagRequestSchema,
+  tagsDeleteAll: tagsDeleteAllRequestSchema,
 } as const;
 export const SERVER_WIRE_SCHEMAS = {
   chat: chatSchema,

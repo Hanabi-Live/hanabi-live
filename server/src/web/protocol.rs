@@ -110,13 +110,6 @@ impl Fields<'_> {
         );
         Ok(())
     }
-    fn request(&mut self) -> Result<()> {
-        self.field("requestID", Kind::String, None, true)?;
-        if let Some(value) = self.data.get("requestID") {
-            hanabi_protocol::validate::<hanabi_protocol::RequestId>(value)?;
-        }
-        Ok(())
-    }
     fn finish(&self) -> Result<()> {
         if let Some(key) = self
             .data
@@ -259,53 +252,7 @@ pub fn parse(input: &str) -> Result<(String, Value)> {
             fields.string("password", Some(""))?;
             fields.integer("shadowingPlayerIndex", Some(-1))?;
         }
-        _ => {
-            fields.table()?;
-            fields.request()?;
-            match name {
-                "action" => {
-                    fields.integer("type", None)?;
-                    fields.integer("target", None)?;
-                    fields.integer("value", Some(0))?;
-                    ensure!(
-                        fields.data["type"]
-                            .as_i64()
-                            .is_some_and(|n| (0..=3).contains(&n)),
-                        "Invalid action type"
-                    );
-                }
-                "pause" => fields.string("setting", None)?,
-                "note" => {
-                    fields.integer("order", None)?;
-                    fields.string("note", None)?;
-                }
-                "tag" | "tagDelete" => {
-                    fields.string("msg", None)?;
-                    fields.string("room", Some(""))?;
-                }
-                "tagsDeleteAll" => fields.string("room", Some(""))?,
-                "replayAction" => {
-                    fields.integer("type", None)?;
-                    for name in ["segment", "order", "value"] {
-                        fields.integer(name, Some(0))?;
-                    }
-                    for name in ["sound", "actionJSON"] {
-                        fields.string(name, Some(""))?;
-                    }
-                    ensure!(
-                        fields.data["actionJSON"]
-                            .as_str()
-                            .unwrap()
-                            .encode_utf16()
-                            .count()
-                            <= 65536,
-                        "Invalid actionJSON"
-                    );
-                }
-                "getGameInfo1" | "getGameInfo2" | "loaded" | "tableVoteForTermination" => {}
-                _ => bail!("Unknown client command"),
-            }
-        }
+        _ => bail!("Unknown client command"),
     }
     fields.finish()?;
     Ok((name.into(), data))

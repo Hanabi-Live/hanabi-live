@@ -31,6 +31,17 @@ macro_rules! client_contracts {
             "tableSpectate" => TableSpectateRequest, TableSpectateRequest;
             "tableUnattend" => TableCommand, TableCommand;
             "tableTerminate" => TableCommand, TableCommand;
+            "tableVoteForTermination" => TableCommand, TableCommand;
+            "getGameInfo1" => TableCommand, TableCommand;
+            "getGameInfo2" => TableCommand, TableCommand;
+            "loaded" => TableCommand, TableCommand;
+            "action" => ActionRequest, ActionRequest;
+            "pause" => PauseRequest, PauseRequest;
+            "note" => NoteRequest, NoteRequest;
+            "tag" => TagRequest, TagRequest;
+            "tagDelete" => TagRequest, TagRequest;
+            "tagsDeleteAll" => TagsDeleteAllRequest, TagsDeleteAllRequest;
+            "replayAction" => ReplayActionRequest, ReplayActionRequest;
         }
     };
 }

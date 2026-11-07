@@ -267,7 +267,7 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         );
         actor.anchor = Instant::now() - Duration::from_millis(900);
         let (viewer, _frames) = Session::new(if shared { 3 } else { 1 }, "Viewer".into(), 1, false);
-        actor.reattend(viewer, &json!({}), shared).await?;
+        actor.reattend(viewer, shared, None).await?;
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(
@@ -403,7 +403,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     );
     actor.anchor = Instant::now() - Duration::from_millis(900);
     let (viewer, _frames) = Session::new(3, "Viewer".into(), 1, false);
-    actor.reattend(viewer, &json!({}), true).await?;
+    actor.reattend(viewer, true, None).await?;
     ensure!(
         actor.table.game().unwrap().idle_remaining <= 1000,
         "A spectator kept an idle live game alive"
@@ -521,7 +521,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
         "Recovery immediately deleted an old pregame"
     );
     let (owner, _frames) = Session::new(1, "Alice".into(), 2, false);
-    actor.reattend(owner.clone(), &json!({}), false).await?;
+    actor.reattend(owner.clone(), false, None).await?;
     owner.set_inactive(true);
     let later = now + PREGAME_RECONNECT_GRACE;
     actor.cleanup(later).await?;
@@ -687,7 +687,10 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Route {
             session: old.clone(),
             table: 42,
-            command: Command::Info(1),
+            command: Command::Wire {
+                name: "getGameInfo1".into(),
+                data: json!({"tableID":42}),
+            },
             reply,
         })
         .await?;

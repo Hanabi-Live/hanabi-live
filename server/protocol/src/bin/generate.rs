@@ -92,6 +92,9 @@ fn expression(schema: &Value) -> Result<String> {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
             format!("z.literal({})", values[0])
+        } else if values.iter().all(|value| value.is_i64()) {
+            // The listed integers already bound the value, so no range is appended below.
+            format!("z.literal({})", serde_json::to_string(values)?)
         } else {
             ensure!(
                 values.iter().all(Value::is_string),
@@ -147,6 +150,7 @@ fn expression(schema: &Value) -> Result<String> {
             other => bail!("Unsupported schema type: {other}"),
         }
     };
+    let enumerated = schema.get("enum").is_some();
     for (keyword, method) in [
         ("minimum", "min"),
         ("maximum", "max"),
@@ -154,7 +158,9 @@ fn expression(schema: &Value) -> Result<String> {
         ("maxLength", "max"),
         ("maxItems", "max"),
     ] {
-        if let Some(value) = schema.get(keyword) {
+        if let Some(value) = schema.get(keyword)
+            && !enumerated
+        {
             result.push_str(&format!(".{method}({})", literal(value)));
         }
     }
@@ -164,7 +170,7 @@ fn expression(schema: &Value) -> Result<String> {
                 ".refine((value) => new TextEncoder().encode(value).length <= {0}, \"Request IDs cannot exceed {0} UTF-8 bytes.\")",
                 hanabi_protocol::MAX_REQUEST_ID_BYTES,
             )),
-            "int64" | "uint64" => {}
+            "int32" | "int64" | "uint8" | "uint32" | "uint64" => {}
             other => bail!("Unsupported schema format: {other}"),
         }
     }
@@ -319,5 +325,14 @@ mod tests {
         assert!(expression(&json!({"type":"string","pattern":"^safe$"})).is_err());
         assert!(expression(&json!({"type":"integer","format":"int64"})).is_err());
         assert!(expression(&json!({"type":"string","format":"new-format"})).is_err());
+    }
+
+    #[test]
+    fn integer_enums_become_literal_unions_without_redundant_bounds() {
+        assert_eq!(
+            expression(&json!({"type":"integer","format":"uint8","minimum":0,"maximum":255,"enum":[0,1,2,3]}))
+                .unwrap(),
+            "z.literal([0,1,2,3])"
+        );
     }
 }
