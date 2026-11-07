@@ -55,21 +55,16 @@ and is served at `/new`. It hands off gameplay to the shared Konva game screen.
 
 ### Running the Development Server
 
-Follow the [installation instructions](docs/install.md) and
-[server runbook](server/README.md). To run Rust and the classic-client watcher:
+Follow the [installation instructions](docs/install.md). To run the services,
+the server, and both clients:
 
 ```bash
-./dev.sh
+bun run dev
 ```
 
-This script performs two main actions:
-
-1. **Starts the Rust Server:** Executes `./run.sh`, which builds the native
-   binary and starts the server.
-2. **Starts Frontend Watch:** Executes `./packages/client/esbuild-dev.sh`, which
-   watches the TypeScript files in `packages/client/src/` and automatically
-   rebuilds the bundle in `public/js/bundles/main.min.js` whenever a change is
-   detected.
+This starts PostgreSQL and Redis in containers, then builds and starts the
+server, rebuilding and restarting it whenever its Rust sources change. It also
+watches both clients and rebuilds their bundles whenever a change is detected.
 
 The server will be available at `http://localhost:1212` (or the port specified
 in your `.env` file).

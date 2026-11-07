@@ -88,6 +88,7 @@
     "check-templates": "bash scripts/lint/check-templates.sh",
     "check-variant-files": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/checkVariantFiles.ts",
     "create-variants-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/createVariantsJSON/createVariantsJSONScript.ts",
+    "dev": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/dev.mts",
     "lint": "bash ./lint.sh",
     "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.mts",
     "lint-rust": "bash scripts/lint/check-rust.sh",

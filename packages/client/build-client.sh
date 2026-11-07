@@ -43,8 +43,7 @@ echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
 bunx --bun --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
-# Also produce the unversioned bundle name that the server serves in dev mode. (Normally it is
-# only created by the esbuild watch script, but the Docker image runs in dev mode.)
+# Also produce the unversioned bundle name that the server serves in dev mode.
 cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
 bash "$REPO_ROOT/scripts/dev/build-pips-reference.sh"
 echo
