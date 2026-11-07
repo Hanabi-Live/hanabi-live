@@ -357,53 +357,61 @@ async fn compute_aggregate(
     sqlx::query_scalar!("SELECT set_config('statement_timeout','20000',true)")
         .fetch_one(&mut *transaction)
         .await?;
-    // A player's totals start from their own games. A shared `$1 IS NULL OR EXISTS(...)` query
-    // gets a generic plan that scans every game even for one player. Site-wide time counts
-    // every player's time, so it is multiplied by the number of players.
-    let (normal, other, speed, played, speed_played) = if let Some(user) = user {
-        let row = sqlx::query!(
-            "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=1) AS \"normal!\",
-            count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>1) AS \"other!\",
-            count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
-            COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-              FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
-            COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
-              FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
-            FROM game_participants p JOIN games g ON g.id=p.game_id
-            WHERE p.user_id=$1 AND ($2::bigint IS NULL OR g.variant_id::bigint=$2)",
-            user,
-            variant
-        )
-        .fetch_one(&mut *transaction)
-        .await?;
-        (
-            row.normal,
-            row.other,
-            row.speed,
-            row.duration,
-            row.speed_duration,
-        )
-    } else {
-        let row = sqlx::query!(
-            "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
-            count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
-            count(*) FILTER(WHERE speedrun) AS \"speed!\",
-            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-              FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
-            COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
-              FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
-            FROM games WHERE $1::bigint IS NULL OR variant_id::bigint=$1",
-            variant
-        )
-        .fetch_one(&mut *transaction)
-        .await?;
-        (
-            row.normal,
-            row.other,
-            row.speed,
-            row.duration,
-            row.speed_duration,
-        )
+    // Each case has its own query: a shared `$1 IS NULL OR ...` query gets a generic plan that
+    // cannot use an index. The variant is compared as the column's own SMALLINT, because a cast
+    // column cannot use its index either. A player's totals start from their own games.
+    // Site-wide time counts every player's time, so it is multiplied by the number of players.
+    macro_rules! game_totals {
+        ($filter:literal $(, $argument:expr)*) => {{
+            let row = sqlx::query!(
+                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
+                count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
+                count(*) FILTER(WHERE speedrun) AS \"speed!\",
+                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+                  FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
+                COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
+                  FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
+                FROM games" + $filter $(, $argument)*
+            )
+            .fetch_one(&mut *transaction)
+            .await?;
+            (row.normal, row.other, row.speed, row.duration, row.speed_duration)
+        }};
+    }
+    let (normal, other, speed, played, speed_played) = match (user, variant) {
+        (Some(user), None) => {
+            let row = sqlx::query!(
+                "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=1) AS \"normal!\",
+                count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>1) AS \"other!\",
+                count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
+                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+                  FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
+                COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
+                  FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
+                FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$1",
+                user
+            )
+            .fetch_one(&mut *transaction)
+            .await?;
+            (
+                row.normal,
+                row.other,
+                row.speed,
+                row.duration,
+                row.speed_duration,
+            )
+        }
+        (None, Some(variant)) => {
+            let variant = i16::try_from(variant)
+                .map_err(|_| anyhow::anyhow!("Variant ID {variant} is outside the stored range"))?;
+            game_totals!(" WHERE variant_id=$1", variant)
+        }
+        (None, None) => game_totals!(""),
+        (Some(_), Some(_)) => {
+            return Err(
+                anyhow::anyhow!("Per-player statistics are not filtered by variant").into(),
+            );
+        }
     };
     transaction.commit().await?;
     let mut stats = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
