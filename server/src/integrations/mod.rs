@@ -1,8 +1,8 @@
 //! Optional integrations are injected, bounded and disabled without configuration.
+pub mod alerts;
 pub mod discord;
 #[cfg(test)]
 mod discord_tests;
-pub mod telemetry;
 
 use crate::web::App;
 use anyhow::Result;
@@ -11,18 +11,11 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
     discord_failed: bool,
-    telemetry: Arc<telemetry::Telemetry>,
+    alerts: Arc<alerts::Alerts>,
 }
 
 impl Integrations {
     pub async fn start(app: Arc<App>, values: &HashMap<String, String>) -> Result<Arc<Self>> {
-        let telemetry = telemetry::Telemetry::start(
-            values.get("SENTRY_DSN").map(String::as_str).unwrap_or(""),
-            app.is_development(),
-            app.version.clone(),
-            &app.background,
-            app.shutdown.clone(),
-        )?;
         let discord = match discord::Configuration::read(values) {
             Ok(Some(config)) => match discord::Bridge::start(app.clone(), config, None).await {
                 Ok(bridge) => Some(bridge),
@@ -41,15 +34,22 @@ impl Integrations {
             && values
                 .iter()
                 .any(|(key, value)| key.starts_with("DISCORD_") && !value.trim().is_empty());
+        let alerts = alerts::Alerts::start(
+            discord.clone(),
+            app.is_development(),
+            app.version.clone(),
+            &app.background,
+            app.shutdown.clone(),
+        );
         Ok(Arc::new(Self {
             discord,
             discord_failed,
-            telemetry,
+            alerts,
         }))
     }
 
     pub fn report(&self, report: &crate::errors::Report) {
-        self.telemetry.report(report);
+        self.alerts.report(report);
     }
 
     pub fn status(&self) -> serde_json::Value {
@@ -63,7 +63,7 @@ impl Integrations {
             bridge.degrade();
             let report = crate::errors::Report::from_error("Sending Discord message", &error, None);
             report.log();
-            self.telemetry.report(&report);
+            self.alerts.report(&report);
         }
     }
 
@@ -111,7 +111,7 @@ impl Integrations {
                         None,
                     );
                     report.log();
-                    self.telemetry.report(&report);
+                    self.alerts.report(&report);
                 }
             }
         }
