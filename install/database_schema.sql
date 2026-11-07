@@ -140,7 +140,6 @@ CREATE TABLE games (
     datetime_finished       TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX games_index_num_players ON games (num_players);
-CREATE INDEX games_index_variant_id  ON games (variant_id);
 CREATE INDEX games_index_seed        ON games (seed);
 CREATE INDEX games_index_variant_id_score_id ON games (variant_id, score DESC, id DESC);
 
