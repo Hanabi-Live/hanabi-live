@@ -44,7 +44,7 @@ run as `hanabi`. Point your domain at the server, allow incoming TCP ports 80
 and 443, and replace `example.com` below.
 
 - Install dependencies:
-  - `apt update && apt install --yes git gh python3 redis-server postgresql certbot cron curl openssl nano`
+  - `apt update && apt install --yes certbot cron curl gh git nano openssl postgresql python3 redis-server`
 - Create the service account:
   - `useradd --system --user-group --create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi`
 - Create a new database, and set up a database user:
@@ -53,19 +53,23 @@ and 443, and replace `example.com` below.
   - `\password hanabiuser`
   - `CREATE DATABASE hanabi OWNER hanabiuser;`
   - `\q`
-- Install an approved `main` CI release. Replace `RUN_ID`, `REV`, and `SHA256`
-  with its run ID, full commit SHA, and published archive checksum. Do not use
-  `candidate-` artifacts.
+- Install the latest successful `main` release:
 
 ```sh
+set -o errexit -o nounset -o pipefail
 git clone https://github.com/Hanabi-Live/hanabi-live.git /home/hanabi/hanabi-live
 cd /home/hanabi/hanabi-live
+install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
 gh auth login
-gh run download RUN_ID --name hanabi-live-rust-REV-linux-amd64 --dir /root/hanabi-download
-git checkout REV
+RUN_ID=$(gh run list --workflow ci.yml --branch main --event push --status success \
+  --limit 1 --json databaseId --jq '.[0].databaseId // error("No successful main release found")')
+REV=$(gh run view "$RUN_ID" --json headSha --jq '.headSha')
+gh run download "$RUN_ID" --name "hanabi-live-rust-$REV-linux-amd64" --dir /root/hanabi-download
+SHA256=$(awk '{print $1}' "/root/hanabi-download/hanabi-live-rust-$REV-linux-amd64.tar.gz.sha256")
+git checkout "$REV"
 python3 install/release.py init /root/hanabi-release
-python3 install/release.py stage /root/hanabi-release /root/hanabi-download/hanabi-live-rust-REV-linux-amd64.tar.gz SHA256
-cp --archive /root/hanabi-release/releases/REV-rust/{hanabi-live,public,packages} .
+python3 install/release.py stage /root/hanabi-release "/root/hanabi-download/hanabi-live-rust-$REV-linux-amd64.tar.gz" "$SHA256"
+cp --archive /root/hanabi-release/releases/"$REV"-rust/{hanabi-live,public,packages} .
 ```
 
 - Configure the server:
@@ -93,7 +97,6 @@ mkdir --parents logs letsencrypt
 chown --recursive hanabi:hanabi /home/hanabi/hanabi-live
 sudo --user hanabi ./install/install-database-schema.sh
 sudo --user hanabi ./hanabi-live --check-startup
-install --mode 644 install/hanabi-live.service /etc/systemd/system/hanabi-live.service
 systemctl daemon-reload
 systemctl enable --now hanabi-live
 ```
