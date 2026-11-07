@@ -185,10 +185,10 @@ describe("connection ownership and recovery", () => {
     socket.receive("joined", { tableID: 7 });
     socket.receive("left", { tableID: 9 });
     expect(store.getState().tableID).toBe(7);
-    socket.receive("boot", { TableID: 9 });
+    socket.receive("boot", { tableID: 9 });
     expect(store.getState().tableID).toBe(7);
     expect(store.getState().welcome?.playingAtTables).toEqual([7]);
-    socket.receive("boot", { TableID: 7 });
+    socket.receive("boot", { tableID: 7 });
     expect(store.getState().tableID).toBeNull();
     expect(store.getState().welcome?.playingAtTables).toEqual([]);
     socket.close();
@@ -212,10 +212,7 @@ describe("connection ownership and recovery", () => {
       }
       socket.receive("welcome", welcome());
       socket.receive("tableStart", { tableID: 7, replay: false });
-      socket.receive(
-        command,
-        command === "boot" ? { TableID: 7 } : { tableID: 7 },
-      );
+      socket.receive(command, { tableID: 7 });
       socket.receive("init", gameInit(7, true, 0));
       expect(navigate).not.toHaveBeenCalled();
       connection.stop();

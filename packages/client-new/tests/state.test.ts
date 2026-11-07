@@ -19,7 +19,7 @@ describe("authoritative lobby state", () => {
     store.dispatch(
       actions.received({
         command: "boot",
-        data: { TableID: tableID.parse(7) },
+        data: { tableID: tableID.parse(7) },
       }),
     );
     expect(store.getState().tableID).toBeNull();

@@ -73,31 +73,12 @@ test("hidden clue frames require both identity fields to be concealed", () => {
 // Server messages whose client schema is still written by hand instead of generated from the Rust
 // types in server/protocol. Remove a message from this list when it moves to a generated schema.
 const HAND_WRITTEN_SERVER_MESSAGES = [
-  "boot",
-  "cardIdentities",
-  "clock",
-  "connected",
-  "finishOngoingGame",
   "gameAction",
   "gameActionList",
-  "hypoAction",
-  "hypoBack",
-  "hypoEnd",
-  "hypoShowDrawnCards",
-  "hypoStart",
-  "hypothetical",
   "init",
   "note",
   "noteList",
   "noteListPlayer",
-  "pause",
-  "replayEfficiencyMod",
-  "replayIndicator",
-  "replayLeader",
-  "replaySegment",
-  "replaySound",
-  "suggestion",
-  "voteChange",
 ] as const;
 
 test("only the listed server messages use hand-written schemas", () => {

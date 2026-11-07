@@ -99,7 +99,6 @@ const cardNote = z.strictObject({
   text: z.string(),
   isSpectator: z.boolean(),
 });
-const identity = z.strictObject({ suitIndex: integer, rank: integer });
 export const GAME_SERVER_COMMAND_SCHEMAS = {
   tableStart: SERVER_WIRE_SCHEMAS.tableStart,
   init: z.strictObject({
@@ -127,14 +126,9 @@ export const GAME_SERVER_COMMAND_SCHEMAS = {
   }),
   gameAction: z.strictObject({ tableID, action: event }),
   gameActionList: z.strictObject({ tableID, list: event.array() }),
-  connected: z.strictObject({ tableID, list: z.boolean().array() }),
-  clock: z.strictObject({
-    tableID,
-    times: integer.array(),
-    activePlayerIndex: integer,
-    timeTaken: integer,
-  }),
-  pause: z.strictObject({ tableID, active: z.boolean(), playerIndex: integer }),
+  connected: SERVER_WIRE_SCHEMAS.connected,
+  clock: SERVER_WIRE_SCHEMAS.clock,
+  pause: SERVER_WIRE_SCHEMAS.pause,
   noteListPlayer: z.strictObject({ tableID, notes: z.string().array() }),
   noteList: z.strictObject({ tableID, notes: note.array() }),
   note: z.strictObject({
@@ -142,33 +136,22 @@ export const GAME_SERVER_COMMAND_SCHEMAS = {
     order: integer,
     notes: cardNote.array(),
   }),
-  voteChange: z.strictObject({ vote: z.boolean() }),
-  cardIdentities: z.strictObject({ tableID, cardIdentities: identity.array() }),
-  finishOngoingGame: z.strictObject({
-    tableID,
-    databaseID: integer,
-    sharedReplayLeader: z.string(),
-  }),
-  replaySegment: z.strictObject({ tableID, segment: integer }),
-  replayIndicator: z.strictObject({ tableID, order: integer }),
-  replaySound: z.strictObject({ tableID, sound: z.string() }),
-  replayLeader: z.strictObject({ tableID, name: z.string() }),
-  suggestion: z.strictObject({
-    tableID,
-    userName: z.string(),
-    segment: integer,
-  }),
-  hypothetical: z.strictObject({
-    showDrawnCards: z.boolean(),
-    actions: z.string().array(),
-  }),
-  hypoStart: z.strictObject({ TableID: tableID }),
-  hypoEnd: z.strictObject({ TableID: tableID }),
-  hypoBack: z.strictObject({ TableID: tableID }),
-  hypoAction: z.string(),
-  hypoShowDrawnCards: z.strictObject({ tableID, showDrawnCards: z.boolean() }),
-  replayEfficiencyMod: z.strictObject({ tableID, mod: integer }),
-  boot: z.strictObject({ TableID: tableID }),
+  voteChange: SERVER_WIRE_SCHEMAS.voteChange,
+  cardIdentities: SERVER_WIRE_SCHEMAS.cardIdentities,
+  finishOngoingGame: SERVER_WIRE_SCHEMAS.finishOngoingGame,
+  replaySegment: SERVER_WIRE_SCHEMAS.replaySegment,
+  replayIndicator: SERVER_WIRE_SCHEMAS.replayIndicator,
+  replaySound: SERVER_WIRE_SCHEMAS.replaySound,
+  replayLeader: SERVER_WIRE_SCHEMAS.replayLeader,
+  suggestion: SERVER_WIRE_SCHEMAS.suggestion,
+  hypothetical: SERVER_WIRE_SCHEMAS.hypothetical,
+  hypoStart: SERVER_WIRE_SCHEMAS.hypoStart,
+  hypoEnd: SERVER_WIRE_SCHEMAS.hypoEnd,
+  hypoBack: SERVER_WIRE_SCHEMAS.hypoBack,
+  hypoAction: SERVER_WIRE_SCHEMAS.hypoAction,
+  hypoShowDrawnCards: SERVER_WIRE_SCHEMAS.hypoShowDrawnCards,
+  replayEfficiencyMod: SERVER_WIRE_SCHEMAS.replayEfficiencyMod,
+  boot: SERVER_WIRE_SCHEMAS.boot,
 } as const;
 
 export type GameServerCommandData = {

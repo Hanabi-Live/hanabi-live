@@ -16,6 +16,14 @@ export const actionRequestSchema = z.strictObject({
   type: z.literal([0, 1, 2, 3]),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
+const cardIdentitySchema = z.strictObject({
+  rank: z.number().int().min(-1).max(9_007_199_254_740_991),
+  suitIndex: z.number().int().min(-1).max(9_007_199_254_740_991),
+});
+export const cardIdentitiesSchema = z.strictObject({
+  cardIdentities: z.array(cardIdentitySchema),
+  tableID: tableIdSchema,
+});
 const chatSourceSchema = z.enum(["user", "server", "discord"]);
 export const chatSchema = z
   .strictObject({
@@ -101,10 +109,27 @@ export const chatUserRequestSchema = z
   .strictObject({ name: z.string().default(""), room: z.string().default("") })
   .readonly()
   .default({ name: "", room: "" });
+export const clockSchema = z.strictObject({
+  activePlayerIndex: z.number().int().min(-1).max(5),
+  tableID: tableIdSchema,
+  timeTaken: z.number().int().min(0).max(9_007_199_254_740_991),
+  times: z.array(
+    z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
+  ),
+});
+export const connectedSchema = z.strictObject({
+  list: z.array(z.boolean()),
+  tableID: tableIdSchema,
+});
 export const emptySchema = z.strictObject({});
 export const errorNoticeSchema = z
   .strictObject({ error: z.string().min(1) })
   .readonly();
+export const finishOngoingGameSchema = z.strictObject({
+  databaseID: z.number().int().min(0).max(9_007_199_254_740_991),
+  sharedReplayLeader: z.string(),
+  tableID: tableIdSchema,
+});
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
@@ -183,6 +208,15 @@ export const historyRequestSchema = z.strictObject({
     .default(0),
 });
 export const historySeedRequestSchema = z.strictObject({ seed: z.string() });
+export const hypoActionSchema = z.string();
+export const hypoShowDrawnCardsSchema = z.strictObject({
+  showDrawnCards: z.boolean(),
+  tableID: tableIdSchema,
+});
+export const hypotheticalSchema = z.strictObject({
+  actions: z.array(z.string()),
+  showDrawnCards: z.boolean(),
+});
 export const inactiveRequestSchema = z.strictObject({ inactive: z.boolean() });
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
   z.strictObject({ state: z.literal("loading"), totalGames: z.null() }),
@@ -199,6 +233,11 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
 export const noteRequestSchema = z.strictObject({
   note: z.string(),
   order: z.number().int().min(0).max(9_007_199_254_740_991),
+  tableID: tableIdSchema,
+});
+export const pauseSchema = z.strictObject({
+  active: z.boolean(),
+  playerIndex: z.number().int().min(-1).max(5),
   tableID: tableIdSchema,
 });
 export const pauseRequestSchema = z.strictObject({
@@ -274,6 +313,30 @@ export const replayCreateRequestSchema = z.strictObject({
   source: replaySourceSchema,
   visibility: replayVisibilitySchema,
 });
+export const replayEfficiencyModSchema = z.strictObject({
+  mod: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  tableID: tableIdSchema,
+});
+export const replayIndicatorSchema = z.strictObject({
+  order: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  tableID: tableIdSchema,
+});
+export const replayLeaderSchema = z.strictObject({
+  name: z.string(),
+  tableID: tableIdSchema,
+});
+export const replaySegmentSchema = z.strictObject({
+  segment: z.number().int().min(0).max(9_007_199_254_740_991),
+  tableID: tableIdSchema,
+});
+export const replaySoundSchema = z.strictObject({
+  sound: z.string(),
+  tableID: tableIdSchema,
+});
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
 });
@@ -332,6 +395,15 @@ export const spectatorsSchema = z
     tableID: tableIdSchema,
   })
   .readonly();
+export const suggestionSchema = z.strictObject({
+  segment: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991),
+  tableID: tableIdSchema,
+  userName: z.string(),
+});
 export const tableSchema = z
   .strictObject({
     id: tableIdSchema,
@@ -522,6 +594,7 @@ export const userLeftSchema = z
   .strictObject({ userID: userIdSchema })
   .readonly();
 export const userListSchema = z.array(userSchema).readonly();
+export const voteChangeSchema = z.strictObject({ vote: z.boolean() });
 export const warningSchema = z
   .strictObject({ warning: z.string().min(1) })
   .readonly();
@@ -587,22 +660,40 @@ export const CLIENT_WIRE_SCHEMAS = {
   tagsDeleteAll: tagsDeleteAllRequestSchema,
 } as const;
 export const SERVER_WIRE_SCHEMAS = {
+  boot: tableRequestSchema,
+  cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,
   chatDelete: chatDeleteSchema,
   chatList: chatListSchema,
   chatPMHistory: chatHistorySchema,
   chatTyping: chatTypingSchema,
+  clock: clockSchema,
+  connected: connectedSchema,
   error: errorNoticeSchema,
+  finishOngoingGame: finishOngoingGameSchema,
   friends: friendsSchema,
   game: pregameSchema,
   gameHistory: gameHistoryListSchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
+  hypoAction: hypoActionSchema,
+  hypoBack: tableRequestSchema,
+  hypoEnd: tableRequestSchema,
+  hypoShowDrawnCards: hypoShowDrawnCardsSchema,
+  hypoStart: tableRequestSchema,
+  hypothetical: hypotheticalSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,
   lobbyStatus: lobbyStatusSchema,
+  pause: pauseSchema,
+  replayEfficiencyMod: replayEfficiencyModSchema,
+  replayIndicator: replayIndicatorSchema,
+  replayLeader: replayLeaderSchema,
+  replaySegment: replaySegmentSchema,
+  replaySound: replaySoundSchema,
   restart: restartSchema,
   soundLobby: soundLobbySchema,
   spectators: spectatorsSchema,
+  suggestion: suggestionSchema,
   synced: emptySchema,
   table: tableSchema,
   tableGone: tableRequestSchema,
@@ -612,6 +703,7 @@ export const SERVER_WIRE_SCHEMAS = {
   userInactive: userInactiveSchema,
   userLeft: userLeftSchema,
   userList: userListSchema,
+  voteChange: voteChangeSchema,
   warning: warningSchema,
   welcome: welcomeSchema,
 } as const;

@@ -390,6 +390,155 @@ pub struct ReplayCreateRequest {
     pub shadowing_player_index: i64,
 }
 
+/// Every player's remaining time, in milliseconds.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Clock {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(inner(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER)))]
+    pub times: Vec<i64>,
+    /// -1 when the game has no active player.
+    #[schemars(range(min = -1, max = 5))]
+    pub active_player_index: i64,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub time_taken: i64,
+}
+
+/// Whether each player has loaded the game, in seat order.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Connected {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub list: Vec<bool>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Pause {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub active: bool,
+    /// The seat that paused, or -1.
+    #[schemars(range(min = -1, max = 5))]
+    pub player_index: i64,
+}
+
+/// The recipient's own vote to end the game.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct VoteChange {
+    pub vote: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CardIdentity {
+    #[schemars(range(min = -1, max = MAX_SAFE_INTEGER))]
+    pub suit_index: i64,
+    #[schemars(range(min = -1, max = MAX_SAFE_INTEGER))]
+    pub rank: i64,
+}
+
+/// Every card's identity, by card order, once a game ends.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CardIdentities {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub card_identities: Vec<CardIdentity>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FinishOngoingGame {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    /// 0 when the game was not saved.
+    #[serde(rename = "databaseID")]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub database_id: i64,
+    pub shared_replay_leader: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplaySegment {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub segment: i64,
+}
+
+/// The card the leader points at; negative values clear the arrow.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayIndicator {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub order: i64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplaySound {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub sound: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayLeader {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub name: String,
+}
+
+/// A spectator suggesting a turn to the shared replay's leader.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Suggestion {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub user_name: String,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub segment: i64,
+}
+
+/// The active hypothetical, sent to someone joining a shared replay.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Hypothetical {
+    pub show_drawn_cards: bool,
+    /// Client game actions, as JSON text, in order.
+    pub actions: Vec<String>,
+}
+
+/// One client game action in a hypothetical, as JSON text.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct HypoAction(pub String);
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HypoShowDrawnCards {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    pub show_drawn_cards: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayEfficiencyMod {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub r#mod: i32,
+}
+
 /// A turn in an ongoing game.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1069,6 +1218,22 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         TableCreateRequest,
         TableUpdateRequest,
         ReplayCreateRequest,
+        Clock,
+        Connected,
+        Pause,
+        VoteChange,
+        CardIdentity,
+        CardIdentities,
+        FinishOngoingGame,
+        ReplaySegment,
+        ReplayIndicator,
+        ReplaySound,
+        ReplayLeader,
+        Suggestion,
+        Hypothetical,
+        HypoAction,
+        HypoShowDrawnCards,
+        ReplayEfficiencyMod,
         ActionRequest,
         PauseRequest,
         NoteRequest,

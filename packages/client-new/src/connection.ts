@@ -425,10 +425,7 @@ export class LobbyConnection {
           case "left":
           case "boot":
           case "tableGone": {
-            const tableID =
-              event.command === "boot"
-                ? event.data.TableID
-                : event.data.tableID;
+            const { tableID } = event.data;
             if (this.destination === tableID) {
               this.destination = null;
             }
