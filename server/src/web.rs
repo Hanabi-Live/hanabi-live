@@ -174,7 +174,25 @@ pub fn router(app: Arc<App>) -> Router {
         .with_state(app.clone())
         .merge(accounts)
         .layer(middleware::from_fn_with_state(app.clone(), check_origin));
-    public_http::router(app.store.lobby_reads.clone(), app.public.clone()).merge(authenticated)
+    public_http::router(app.store.lobby_reads.clone(), app.public.clone())
+        .merge(authenticated)
+        .layer(middleware::from_fn_with_state(app, alert_server_errors))
+}
+
+/// Posts HTTP server errors to the error alerts. Error responses carry their report (see
+/// `Report::response`), so only failures the server reported are posted.
+async fn alert_server_errors(
+    State(app): State<Arc<App>>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let response = next.run(request).await;
+    if response.status().is_server_error()
+        && let Some(report) = response.extensions().get::<crate::errors::Report>()
+    {
+        app.alert(report);
+    }
+    response
 }
 
 fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -> bool {
