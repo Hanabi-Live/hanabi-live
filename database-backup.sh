@@ -97,6 +97,51 @@ if uname -a | grep -v MINGW64 > /dev/null 2>&1; then
   fi
 fi
 
+function sql {
+  PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" \
+    --no-psqlrc --quiet --tuples-only --no-align --set=ON_ERROR_STOP=1 "$@"
+}
+
+# Delete chat older than one year in small batches, so that no single transaction holds many row
+# locks or much WAL.
+function delete_old_chat {
+  local cutoff deleted total=0 batches=0
+  # Fix the cutoff once so that every batch uses the same boundary.
+  cutoff=$(sql --command="SELECT NOW() - INTERVAL '1 year'")
+  echo "Deleting chat messages sent before: $cutoff"
+  while true; do
+    deleted=$(
+      sql --set=cutoff="$cutoff" << 'SQL'
+WITH deleted AS (
+  DELETE FROM chat_log
+  WHERE id IN (
+    SELECT id FROM chat_log
+    WHERE datetime_sent < :'cutoff'
+    ORDER BY datetime_sent, id
+    LIMIT 10000
+  )
+  RETURNING 1
+)
+SELECT COUNT(*) FROM deleted;
+SQL
+    )
+    if ((deleted == 0)); then
+      break
+    fi
+    total=$((total + deleted))
+    batches=$((batches + 1))
+    if ((batches % 100 == 0)); then
+      echo "Deleted $total chat messages so far; vacuuming."
+      sql --command="VACUUM chat_log"
+    fi
+  done
+  if ((total > 0)); then
+    sql --command="VACUUM (ANALYZE) chat_log"
+  fi
+  echo "Deleted $total chat messages older than one year."
+}
+delete_old_chat
+
 PARTIAL_PATH=$(mktemp "$BACKUPS_DIR/.$FILENAME.XXXXXX.partial")
 
 function compress_dump {
