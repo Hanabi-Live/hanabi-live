@@ -1,5 +1,7 @@
 name: CI
 
+# The expanded syntax limits push runs to main; `on: [push, pull_request]`
+# would run CI twice for commits on branches with open pull requests.
 on:
   push:
     branches: [main]
