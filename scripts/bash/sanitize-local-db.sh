@@ -6,27 +6,8 @@ set -o errexit -o nounset -o pipefail
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
-# Import the database information.
-# shellcheck source=/dev/null
-source "$DIR/../../.env"
-if [[ -z ${DB_HOST-} ]]; then
-  DB_HOST=localhost
-fi
-if [[ -z ${DB_PORT-} ]]; then
-  DB_PORT=5432
-fi
-if [[ -z ${DB_USER-} ]]; then
-  echo "Error: You must specify the database username in the \".env\" file."
-  exit 1
-fi
-if [[ -z ${DB_PASSWORD-} ]]; then
-  echo "Error: You must specify the database password in the \".env\" file."
-  exit 1
-fi
-if [[ -z ${DB_NAME-} ]]; then
-  echo "Error: You must specify the database name in the \".env\" file."
-  exit 1
-fi
+# shellcheck source=../lib/env.sh
+source "$DIR/../lib/env.sh"
 
 # Tables not deleted:
 # - users

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import sys
 
-import dotenv
 import psycopg2
+
+from database import connect
 
 
 def parse_args():
@@ -19,18 +19,6 @@ def parse_args():
         parser.error("replay_id must be a positive integer")
 
     return args
-
-
-def connect_to_database():
-    dotenv.load_dotenv(dotenv.find_dotenv())
-
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST") or "localhost",
-        port=os.getenv("DB_PORT") or "5432",
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME"),
-    )
 
 
 def get_chat_history(conn, replay_id):
@@ -67,7 +55,7 @@ def main():
     args = parse_args()
 
     try:
-        with connect_to_database() as conn:
+        with connect() as conn:
             chat_history = get_chat_history(conn, args.replay_id)
     except psycopg2.Error as error:
         print(f"Failed to retrieve chat history: {error}", file=sys.stderr)

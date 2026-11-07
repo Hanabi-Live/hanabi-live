@@ -7,13 +7,8 @@ set -o errexit -o nounset -o pipefail
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Import the domain and port
-ENV_PATH="$DIR/../../.env"
-if [[ ! -f $ENV_PATH ]]; then
-  echo "Failed to find the \".env\" file at: $ENV_PATH"
-  exit 1
-fi
-# shellcheck source=/dev/null
-source "$ENV_PATH"
+# shellcheck source=../../scripts/lib/env.sh
+source "$DIR/../../scripts/lib/env.sh"
 if [[ -z ${DOMAIN-} ]]; then
   DOMAIN="localhost"
 fi
