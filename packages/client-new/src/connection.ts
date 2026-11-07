@@ -2,7 +2,6 @@ import type { NewLobbyNavigation, Settings } from "@hanabi-live/data";
 import {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
-  createClientRequestID,
   errorDetails,
   httpError,
   packWSMessageOnClient,
@@ -181,19 +180,7 @@ export class LobbyConnection {
       // A solo replay is retired when its last viewer disconnects. Create it after handoff.
       return this.navigateToGame({ kind: "replay", request: parsed.data });
     }
-    const durable = [
-      "chat",
-      "tableStart",
-      "tableTerminate",
-      "tableVoteForTermination",
-      "tag",
-      "tagDelete",
-    ].includes(command);
-    const payload =
-      durable && !("requestID" in data)
-        ? { ...data, requestID: createClientRequestID() }
-        : data;
-    const frame = packWSMessageOnClient(command, payload);
+    const frame = packWSMessageOnClient(command, data);
     if (new TextEncoder().encode(frame).length > 4 * 1024 * 1024) {
       return fail(
         `Cannot send ${command}: the request exceeds the 4 MB server limit.`,

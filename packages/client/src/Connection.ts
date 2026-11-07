@@ -1,21 +1,4 @@
-import {
-  createClientRequestID,
-  packWSMessageOnClient,
-  unpackWSMessage,
-} from "@hanabi-live/data";
-
-const durableCommands = new Set([
-  "action",
-  "chat",
-  "loaded",
-  "note",
-  "pause",
-  "tableStart",
-  "tableTerminate",
-  "tableVoteForTermination",
-  "tag",
-  "tagDelete",
-]);
+import { packWSMessageOnClient, unpackWSMessage } from "@hanabi-live/data";
 
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
@@ -126,23 +109,11 @@ export class Connection {
       return;
     }
 
-    // A supplied ID belongs to the original request and must survive a retry. Reconnection still
-    // bootstraps authoritative state; it never replays commands.
-    let payload = data;
-    if (
-      durableCommands.has(command)
-      && typeof data === "object"
-      && data !== null
-      && !("requestID" in data)
-    ) {
-      const requestID = createClientRequestID();
-      payload = { ...data, requestID };
-    }
-    const msg = packWSMessageOnClient(command, payload);
+    const msg = packWSMessageOnClient(command, data);
     this.ws.send(msg);
 
     console.log(`%cSent ${command}:`, "color: green;");
-    console.log(payload);
+    console.log(data);
   }
 
   close(): void {

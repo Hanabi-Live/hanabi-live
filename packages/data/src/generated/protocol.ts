@@ -1,13 +1,6 @@
 // Generated from server/protocol. Run bash scripts/bash/generate-protocol.sh.
 import { z } from "zod";
 
-const requestIdSchema = z
-  .string()
-  .max(128)
-  .refine(
-    (value) => new TextEncoder().encode(value).length <= 128,
-    "Request IDs cannot exceed 128 UTF-8 bytes.",
-  );
 export const tableIdSchema = z
   .number()
   .int()
@@ -15,7 +8,6 @@ export const tableIdSchema = z
   .max(9_007_199_254_740_991)
   .brand<"TableID">();
 export const actionRequestSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   type: z.literal([0, 1, 2, 3]),
@@ -93,11 +85,7 @@ export const chatPmRequestSchema = z
   .strictObject({ msg: z.string().min(1), recipient: z.string().min(1) })
   .readonly();
 export const chatRequestSchema = z
-  .strictObject({
-    msg: z.string().min(1),
-    requestID: requestIdSchema.optional(),
-    room: z.string().min(1),
-  })
+  .strictObject({ msg: z.string().min(1), room: z.string().min(1) })
   .readonly();
 export const chatTypingSchema = z
   .strictObject({
@@ -126,11 +114,9 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
 export const noteRequestSchema = z.strictObject({
   note: z.string(),
   order: z.number().int().min(0).max(9_007_199_254_740_991),
-  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
 });
 export const pauseRequestSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
   setting: z.string(),
   tableID: tableIdSchema,
 });
@@ -142,7 +128,6 @@ export const replayActionRequestSchema = z.strictObject({
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991)
     .default(0),
-  requestID: requestIdSchema.optional(),
   segment: z.number().int().min(0).max(2_147_483_647).default(0),
   sound: z.string().default(""),
   tableID: tableIdSchema,
@@ -152,27 +137,21 @@ export const replayActionRequestSchema = z.strictObject({
 export const restartSchema = z.strictObject({
   message: z.string().min(1).optional(),
 });
-export const tableCommandSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
-  tableID: tableIdSchema,
-});
+export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableJoinRequestSchema = z.strictObject({
   password: z.string().default(""),
   tableID: tableIdSchema,
 });
 export const tableLeaderRequestSchema = z.strictObject({
   name: z.string().default(""),
-  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
 });
 export const tableRequestSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableRestartRequestSchema = z.strictObject({
   hidePregame: z.boolean().default(false),
-  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
 });
 export const tableSpectateRequestSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
   shadowingPlayerIndex: z
     .number()
     .int()
@@ -184,7 +163,6 @@ export const tableSpectateRequestSchema = z.strictObject({
 export const tableStartRequestSchema = z.strictObject({
   intendedPlayers: z.array(z.string()).max(6).optional(),
   intendedVariant: z.string().optional(),
-  requestID: requestIdSchema.optional(),
   tableID: tableIdSchema,
 });
 export const tableStartedSchema = z.strictObject({
@@ -192,7 +170,6 @@ export const tableStartedSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableSuggestRequestSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
   segment: z
     .number()
     .int()
@@ -210,12 +187,10 @@ export const tableVariantRequestSchema = z.strictObject({
 });
 export const tagRequestSchema = z.strictObject({
   msg: z.string(),
-  requestID: requestIdSchema.optional(),
   room: z.string().default(""),
   tableID: tableIdSchema,
 });
 export const tagsDeleteAllRequestSchema = z.strictObject({
-  requestID: requestIdSchema.optional(),
   room: z.string().default(""),
   tableID: tableIdSchema,
 });

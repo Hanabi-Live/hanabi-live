@@ -181,7 +181,6 @@ databaseDescribe("normal-server protocol workload", () => {
                 tableID,
                 type: 0,
                 target: order,
-                requestID: `play-${turn}`,
               });
               await peer.receive(
                 "gameAction",

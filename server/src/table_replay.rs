@@ -255,7 +255,6 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
         duration: 0,
         turn_elapsed: 0,
         timer_started: false,
-        receipts: vec![],
         idle_remaining: IDLE_TIMEOUT_MS,
         pause_player_index: -1,
         queued_pauses: vec![false; n],

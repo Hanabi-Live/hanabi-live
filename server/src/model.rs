@@ -8,18 +8,30 @@ use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
 pub const IDLE_TIMEOUT_MS: i64 = 1_800_000;
+
+/// State saved before request receipts were removed still lists them. Drop them on read so those
+/// tables load; remove once no saved state contains `receipts`.
+fn remove_request_receipts(table: &mut Value) {
+    if let Some(table) = table.as_object_mut() {
+        table.remove("receipts");
+        if let Some(game) = table
+            .get_mut("phase")
+            .and_then(|phase| phase.get_mut("snapshot"))
+            .and_then(Value::as_object_mut)
+        {
+            game.remove("receipts");
+        }
+        if let Some(spawn) = table.get_mut("pending_spawn") {
+            remove_request_receipts(spawn);
+        }
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Player {
     pub id: i32,
     pub name: String,
     pub stats: Value,
-}
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Receipt {
-    pub user: i32,
-    pub id: String,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -53,7 +65,6 @@ pub struct Snapshot {
     pub duration: i64,
     pub turn_elapsed: i64,
     pub timer_started: bool,
-    pub receipts: Vec<Receipt>,
     pub idle_remaining: i64,
     pub pause_player_index: i32,
     pub queued_pauses: Vec<bool>,
@@ -139,7 +150,6 @@ pub struct TableSnapshot {
     pub chat: Vec<TableChat>,
     #[serde(default)]
     pub chat_archived: usize,
-    pub receipts: Vec<Receipt>,
     pub shadows: BTreeMap<i32, Option<i32>>,
     pub pending_spawn: Option<Box<TableSnapshot>>,
     pub retire_after_spawn: bool,
@@ -156,15 +166,12 @@ pub struct TableChat {
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(payload.len() <= 4 * 1024 * 1024, "Oversized checkpoint");
-        let value: Value = serde_json::from_str(payload)?;
-        for field in ["chat", "receipts"] {
-            ensure!(
-                value[field]
-                    .as_array()
-                    .is_some_and(|v| v.len() <= if field == "chat" { 4096 } else { 1024 }),
-                "Missing or oversized checkpoint {field}"
-            );
-        }
+        let mut value: Value = serde_json::from_str(payload)?;
+        remove_request_receipts(&mut value);
+        ensure!(
+            value["chat"].as_array().is_some_and(|v| v.len() <= 4096),
+            "Missing or oversized checkpoint chat"
+        );
         let options = value["options"]
             .as_object()
             .ok_or_else(|| anyhow::anyhow!("Missing checkpoint options"))?;
@@ -250,24 +257,6 @@ impl TableSnapshot {
         };
         Ok(())
     }
-    pub fn duplicate(&self, user: i32, id: Option<&str>) -> bool {
-        id.is_some_and(|id| self.receipts.iter().any(|r| r.user == user && r.id == id))
-    }
-    pub fn remember(&mut self, user: i32, id: Option<&str>) -> Result<()> {
-        if let Some(id) = id.filter(|s| !s.is_empty()) {
-            ensure!(id.len() <= 128, "Invalid request ID");
-            // Receipts only catch a request retried after a reconnect, so a long game drops the
-            // oldest instead of refusing every later command.
-            if self.receipts.len() >= 1024 {
-                self.receipts.remove(0);
-            }
-            self.receipts.push(Receipt {
-                user,
-                id: id.into(),
-            });
-        }
-        Ok(())
-    }
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == FORMAT && self.id > 0 && self.id <= 9_007_199_254_740_991,
@@ -310,10 +299,7 @@ impl TableSnapshot {
                 == self.players().len(),
             "Duplicate players"
         );
-        ensure!(
-            self.chat.len() <= 4096 && self.receipts.len() <= 1024,
-            "Oversized table history"
-        );
+        ensure!(self.chat.len() <= 4096, "Oversized table history");
         ensure!(
             self.chat_archived <= self.chat.len(),
             "Invalid archived chat cursor"
@@ -328,21 +314,6 @@ impl TableSnapshot {
                 && ids.iter().all(|id| *id > 0),
             "Invalid or duplicate chat identity"
         );
-        ensure!(
-            self.receipts
-                .iter()
-                .map(|r| (r.user, &r.id))
-                .collect::<HashSet<_>>()
-                .len()
-                == self.receipts.len(),
-            "Duplicate receipts"
-        );
-        for receipt in &self.receipts {
-            ensure!(
-                receipt.user > 0 && !receipt.id.is_empty() && receipt.id.len() <= 128,
-                "Invalid receipt"
-            );
-        }
         match &self.phase {
             Phase::Pregame {
                 players,

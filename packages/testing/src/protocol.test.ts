@@ -41,24 +41,6 @@ test.each(cases)("$direction: $name", (entry) => {
   }
 });
 
-test("request IDs remain UTF-8 bounded, not character-count bounded", () => {
-  const schema = CLIENT_COMMAND_SCHEMAS.chat;
-  expect(
-    schema.safeParse({
-      msg: "x",
-      room: "lobby",
-      requestID: "\u{E9}".repeat(64),
-    }).success,
-  ).toBe(true);
-  expect(
-    schema.safeParse({
-      msg: "x",
-      room: "lobby",
-      requestID: "\u{E9}".repeat(65),
-    }).success,
-  ).toBe(false);
-});
-
 test("legacy absent relationship payloads retain their defaults", () => {
   expect(CLIENT_COMMAND_SCHEMAS.chatFriend.parse(undefined)).toEqual({
     name: "",

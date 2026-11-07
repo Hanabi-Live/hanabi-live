@@ -70,9 +70,6 @@ static VALIDATORS: LazyLock<BTreeMap<String, jsonschema::Validator>> = LazyLock:
         .into_iter()
         .map(|(name, schema)| {
             let validator = jsonschema::options()
-                .with_format("utf8-request-id", |value: &str| {
-                    value.len() <= MAX_REQUEST_ID_BYTES
-                })
                 .should_validate_formats(true)
                 .build(&schema)
                 .expect("Wire DTO schemas must be valid");

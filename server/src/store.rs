@@ -615,7 +615,6 @@ impl Store {
             duration: 0,
             turn_elapsed: 0,
             timer_started: false,
-            receipts: vec![],
             idle_remaining: IDLE_TIMEOUT_MS,
             pause_player_index: -1,
             queued_pauses: vec![false; n],
@@ -1016,7 +1015,6 @@ mod tests {
             },
             chat: vec![],
             chat_archived: 0,
-            receipts: vec![],
             shadows: BTreeMap::new(),
             pending_spawn: None,
             retire_after_spawn: false,
@@ -1071,7 +1069,6 @@ mod tests {
                 duration: 123,
                 turn_elapsed: 0,
                 timer_started: true,
-                receipts: vec![],
                 idle_remaining: IDLE_TIMEOUT_MS,
                 pause_player_index: -1,
                 queued_pauses: vec![false, false],
@@ -1884,12 +1881,11 @@ mod tests {
             send(&hub,users[0].clone(),"tableCreate",json!({"name":"!seed native","maxPlayers":6,"options":{"variantName":"Clue Starved (6 Suits)","timed":true,"timeBase":120,"timePerTurn":20,"oneExtraCard":true,"detrimentalCharacters":true}})).await?;
             let id=store.load().await?[0].0.id;
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
-            send(&hub,users[0].clone(),"tableStart",json!({"tableID":id,"requestID":"start"})).await?;
+            send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
             let active=s.game.active_player_index;let actor=s.players[active].id as usize-1;
             send(&hub,users[actor].clone(),"loaded",json!({"tableID":id})).await?;
-            send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause","requestID":"pause"})).await?;
-            send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause","requestID":"pause"})).await?;
+            send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;
             send(&hub,users[actor].clone(),"tag",json!({"tableID":id,"msg":"native-live"})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.game.paused&&s.notes[active][0]=="private"&&s.tags.len()==1,"Runtime mutations not durable");

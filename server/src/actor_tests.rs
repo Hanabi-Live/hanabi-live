@@ -6,20 +6,20 @@ use crate::{
 use sqlx::postgres::PgPoolOptions;
 
 #[test]
-fn request_receipts_drop_the_oldest_when_full() -> Result<()> {
-    let mut table = pregame(1);
-    for index in 0..1100 {
-        table.remember(1, Some(&format!("request-{index}")))?;
-    }
+fn state_saved_with_request_receipts_still_loads() -> Result<()> {
+    let mut saved = serde_json::to_value(pregame(1))?;
+    let mut spawn = serde_json::to_value(pregame(2))?;
+    spawn["receipts"] = json!([{"user":1,"id":"spawn"}]);
+    saved["receipts"] = json!([{"user":1,"id":"request"}]);
+    saved["pending_spawn"] = spawn;
+    let table = TableSnapshot::decode(&saved.to_string())?;
+    let saved_again = serde_json::to_value(&table)?;
     ensure!(
-        table.receipts.len() == 1024,
-        "The receipt ledger grew past its limit"
+        saved_again.get("receipts").is_none()
+            && saved_again["pending_spawn"].get("receipts").is_none(),
+        "Receipts were saved again"
     );
-    ensure!(
-        !table.duplicate(1, Some("request-0")) && table.duplicate(1, Some("request-1099")),
-        "The ledger did not keep the most recent receipts"
-    );
-    table.validate()
+    Ok(())
 }
 
 #[test]
@@ -226,7 +226,6 @@ pub(super) fn pregame(id: u64) -> TableSnapshot {
         },
         chat: vec![],
         chat_archived: 0,
-        receipts: vec![],
         shadows: BTreeMap::new(),
         pending_spawn: None,
         retire_after_spawn: false,

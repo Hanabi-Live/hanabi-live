@@ -81,10 +81,10 @@
     "valid": false
   },
   {
-    "name": "chat preserves escaped text and empty request ID",
+    "name": "chat preserves escaped text",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "&lt;hello&gt;", "room": "lobby", "requestID": "" },
+    "input": { "msg": "&lt;hello&gt;", "room": "lobby" },
     "valid": true
   },
   {
@@ -95,10 +95,10 @@
     "valid": true
   },
   {
-    "name": "chat rejects explicit null request ID",
+    "name": "chat rejects request IDs, which clients no longer send",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "hello", "room": "lobby", "requestID": null },
+    "input": { "msg": "hello", "room": "lobby", "requestID": "r" },
     "valid": false
   },
   {
@@ -339,10 +339,10 @@
     "normalized": { "tableID": 1, "segment": 0 }
   },
   {
-    "name": "terminate retains optional receipt ID",
+    "name": "terminate takes only the table ID",
     "direction": "client",
     "command": "tableTerminate",
-    "input": { "tableID": 1, "requestID": "receipt" },
+    "input": { "tableID": 1 },
     "valid": true
   },
   {
@@ -500,16 +500,10 @@
     "valid": true
   },
   {
-    "name": "actions keep their request receipt",
+    "name": "clue actions carry their value",
     "direction": "client",
     "command": "action",
-    "input": {
-      "tableID": 7,
-      "type": 2,
-      "target": 1,
-      "value": 4,
-      "requestID": "r-1"
-    },
+    "input": { "tableID": 7, "type": 2, "target": 1, "value": 4 },
     "valid": true
   },
   {
@@ -580,17 +574,17 @@
     "valid": false
   },
   {
-    "name": "loading a game is a receipt-only table command",
+    "name": "table commands reject request IDs",
     "direction": "client",
     "command": "loaded",
     "input": { "tableID": 7, "requestID": "r-2" },
-    "valid": true
+    "valid": false
   },
   {
-    "name": "leader changes keep their request receipt",
+    "name": "leader changes name the new leader",
     "direction": "client",
     "command": "tableSetLeader",
-    "input": { "tableID": 7, "name": "Bob", "requestID": "r-3" },
+    "input": { "tableID": 7, "name": "Bob" },
     "valid": true
   }
 ]

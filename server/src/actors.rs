@@ -1436,7 +1436,6 @@ fn replay_table(
         },
         chat: vec![],
         chat_archived: 0,
-        receipts: vec![],
         shadows: BTreeMap::new(),
         pending_spawn: None,
         retire_after_spawn: false,
@@ -1635,7 +1634,6 @@ async fn prepare_table(
             },
             chat: vec![],
             chat_archived: 0,
-            receipts: vec![],
             shadows: BTreeMap::new(),
             pending_spawn: None,
             retire_after_spawn: false,
@@ -2349,10 +2347,6 @@ impl TableActor {
                     .await;
             }
         };
-        let request = data["requestID"].as_str();
-        if self.table.duplicate(session.user, request) {
-            return Ok(());
-        }
         match name.as_str() {
             "tableJoin" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableJoinRequest>(&data)?;
@@ -2383,7 +2377,7 @@ impl TableActor {
                 {
                     return Ok(());
                 }
-                self.start(session, request).await
+                self.start(session).await
             }
             "loaded" => {
                 ensure!(self.attending(&session), "Reattend before loading");
@@ -2397,7 +2391,6 @@ impl TableActor {
                     s.timer_started = true;
                     s.game.started_timer = true;
                 }
-                next.remember(session.user, request)?;
                 // Loading usually changes nothing durable; only starting the clock needs saving.
                 if starts_clock {
                     self.persist(next).await?;
@@ -2421,7 +2414,7 @@ impl TableActor {
                     target: r.target,
                     value: r.value,
                 };
-                self.action(session, action, request).await
+                self.action(session, action).await
             }
             "tableTerminate" if matches!(self.table.phase, Phase::Pregame { .. }) => {
                 ensure!(
@@ -2431,30 +2424,30 @@ impl TableActor {
                 self.retire().await
             }
             "tableTerminate" | "tableVoteForTermination" => {
-                self.terminate(session, request, name == "tableVoteForTermination")
+                self.terminate(session, name == "tableVoteForTermination")
                     .await
             }
             "pause" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::PauseRequest>(&data)?;
-                self.pause(session, &r.setting, request).await
+                self.pause(session, &r.setting).await
             }
             "note" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::NoteRequest>(&data)?;
-                self.note(session, r.order, &r.note, request).await
+                self.note(session, r.order, &r.note).await
             }
             "tag" | "tagDelete" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TagRequest>(&data)?;
-                self.tag(session, &r.msg, &r.room, &name, request).await
+                self.tag(session, &r.msg, &r.room, &name).await
             }
             "tagsDeleteAll" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TagsDeleteAllRequest>(&data)?;
-                self.tag(session, "", &r.room, &name, request).await
+                self.tag(session, "", &r.room, &name).await
             }
             "chat" => self.chat(session, &data).await,
             "chatRead" | "chatTyping" => self.chat_presence(session, name == "chatTyping").await,
             "tableSetLeader" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableLeaderRequest>(&data)?;
-                self.leader(session, &r.name, request).await
+                self.leader(session, &r.name).await
             }
             "tableSuggest" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::TableSuggestRequest>(&data)?;
@@ -2469,7 +2462,7 @@ impl TableActor {
             }
             "replayAction" => {
                 let r = hanabi_protocol::decode::<hanabi_protocol::ReplayActionRequest>(&data)?;
-                self.replay_action(session, r, request).await
+                self.replay_action(session, r).await
             }
             "tableAbandon" => self.leave(session, true).await,
             _ => bail!("Unsupported table command: {name}"),
@@ -2925,7 +2918,7 @@ impl TableActor {
         }
         Ok(())
     }
-    async fn start(&mut self, session: Arc<Session>, request: Option<&str>) -> Result<()> {
+    async fn start(&mut self, session: Arc<Session>) -> Result<()> {
         ensure!(
             self.attending(&session) && session.user == self.table.owner,
             "Only the attended owner can start"
@@ -3047,7 +3040,6 @@ impl TableActor {
             duration: 0,
             turn_elapsed: 0,
             timer_started: false,
-            receipts: vec![],
             idle_remaining: IDLE_TIMEOUT_MS,
             pause_player_index: -1,
             queued_pauses: vec![false; n],
@@ -3062,7 +3054,6 @@ impl TableActor {
         next.phase = Phase::Live {
             snapshot: Box::new(snapshot),
         };
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         for a in self.attendees.values_mut() {
             a.loaded = false;
@@ -3104,12 +3095,7 @@ impl TableActor {
         );
         Ok(snapshot)
     }
-    async fn action(
-        &mut self,
-        session: Arc<Session>,
-        a: Action,
-        request: Option<&str>,
-    ) -> Result<()> {
+    async fn action(&mut self, session: Arc<Session>, a: Action) -> Result<()> {
         ensure!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;
@@ -3135,7 +3121,6 @@ impl TableActor {
             s.pause_player_index = active as i32;
             s.game.paused = true;
         }
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         self.transitions(from).await
     }
@@ -3233,12 +3218,7 @@ impl TableActor {
             })
             .unwrap_or_default()
     }
-    async fn terminate(
-        &mut self,
-        session: Arc<Session>,
-        request: Option<&str>,
-        vote: bool,
-    ) -> Result<()> {
+    async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> Result<()> {
         ensure!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
         let from = self.live()?.game.events.len();
@@ -3278,7 +3258,6 @@ impl TableActor {
                 }),
             )?;
         }
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         if vote {
@@ -3296,12 +3275,7 @@ impl TableActor {
         }
         Ok(())
     }
-    async fn pause(
-        &mut self,
-        session: Arc<Session>,
-        mut setting: &str,
-        request: Option<&str>,
-    ) -> Result<()> {
+    async fn pause(&mut self, session: Arc<Session>, mut setting: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
@@ -3331,7 +3305,6 @@ impl TableActor {
                 }
             }
         }
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         let s = self.table.game().expect("game");
         let mut e = self.effects();
@@ -3341,13 +3314,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn note(
-        &mut self,
-        session: Arc<Session>,
-        order: u64,
-        note: &str,
-        request: Option<&str>,
-    ) -> Result<()> {
+    async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         self.live()?;
         let order = usize::try_from(order)?;
@@ -3379,7 +3346,6 @@ impl TableActor {
                 })
                 .notes[order] = text;
         }
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         for a in self.audience().filter(|a| a.spectator) {
@@ -3427,7 +3393,6 @@ impl TableActor {
         raw: &str,
         room: &str,
         operation: &str,
-        request: Option<&str>,
     ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         ensure!(
@@ -3542,7 +3507,6 @@ impl TableActor {
             message["room"] = json!(room);
             message["recipient"] = json!(session.name);
         }
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         if replay {
@@ -3552,12 +3516,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn leader(
-        &mut self,
-        session: Arc<Session>,
-        name: &str,
-        request: Option<&str>,
-    ) -> Result<()> {
+    async fn leader(&mut self, session: Arc<Session>, name: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
@@ -3610,7 +3569,6 @@ impl TableActor {
             user: 0,
             message: message.clone(),
         });
-        next.remember(session.user, request)?;
         self.persist(next).await?;
         let mut e = self.effects();
         self.add_all(&mut e, "chat", message);
@@ -3650,7 +3608,6 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         r: hanabi_protocol::ReplayActionRequest,
-        request: Option<&str>,
     ) -> Result<()> {
         ensure!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
@@ -3734,7 +3691,6 @@ impl TableActor {
             _ => bail!("Invalid replay action"),
         };
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
-        next.remember(session.user, request)?;
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         if matches!(kind, 1 | 2) {
             self.apply_without_checkpoint(next)?;
@@ -3805,7 +3761,6 @@ impl TableActor {
                     message: message.clone(),
                 });
             }
-            next.remember(session.user, data["requestID"].as_str())?;
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
@@ -3830,7 +3785,6 @@ impl TableActor {
             user: session.user,
             message: message.clone(),
         });
-        next.remember(session.user, data["requestID"].as_str())?;
         self.persist(next).await?;
         let typing = self
             .attendees
@@ -4247,7 +4201,6 @@ impl TableActor {
         };
         destination.chat.clear();
         destination.chat_archived = 0;
-        destination.receipts.clear();
         destination.shadows.clear();
         let moving = self
             .audience()
@@ -4340,7 +4293,6 @@ impl TableActor {
             set_seed_suffix: destination.name.strip_prefix("!seed ").unwrap_or("").into(),
             ..ExtraOptions::default()
         };
-        destination.receipts.clear();
         destination.shadows.clear();
         destination.phase = Phase::Pregame {
             automatic_start: hide.then_some(players.len()),
@@ -4504,7 +4456,7 @@ impl TableActor {
                     .filter(|a| a.session.active())
             {
                 let owner = owner.session.clone();
-                return self.start(owner, None).await;
+                return self.start(owner).await;
             }
             return Ok(());
         }
