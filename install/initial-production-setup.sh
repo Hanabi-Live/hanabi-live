@@ -3,6 +3,7 @@
 set -o errexit -o nounset -o pipefail
 
 DOMAIN="hanab.live"
+ALT_DOMAIN="hanabi.live"
 APP_USER="hanabi"
 APP_DIR="/home/$APP_USER/hanabi-live"
 DB_NAME="hanabi"
@@ -104,7 +105,7 @@ EOF
   systemctl enable --now hanabi-redis
 
   # Obtain the certificate and grant the service access to its private key.
-  certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN" --domain "www.$DOMAIN" --domain hanabi.live --domain www.hanabi.live
+  certbot certonly --standalone --cert-name "$DOMAIN" --domain "$DOMAIN" --domain "www.$DOMAIN" --domain "$ALT_DOMAIN" --domain "www.$ALT_DOMAIN"
   chmod 0755 /etc/letsencrypt/{live,archive}
   chgrp "$APP_USER" "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
   chmod 0640 "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
