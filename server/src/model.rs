@@ -255,10 +255,12 @@ impl TableSnapshot {
     }
     pub fn remember(&mut self, user: i32, id: Option<&str>) -> Result<()> {
         if let Some(id) = id.filter(|s| !s.is_empty()) {
-            ensure!(
-                id.len() <= 128 && self.receipts.len() < 1024,
-                "Invalid or exhausted request ledger"
-            );
+            ensure!(id.len() <= 128, "Invalid request ID");
+            // Receipts only catch a request retried after a reconnect, so a long game drops the
+            // oldest instead of refusing every later command.
+            if self.receipts.len() >= 1024 {
+                self.receipts.remove(0);
+            }
             self.receipts.push(Receipt {
                 user,
                 id: id.into(),
