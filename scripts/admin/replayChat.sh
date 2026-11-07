@@ -11,8 +11,8 @@ fi
 ROOM="table$1"
 
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-# shellcheck source=../scripts/lib/database.sh
-source "$DIR/../scripts/lib/database.sh"
+# shellcheck source=../lib/database.sh
+source "$DIR/../lib/database.sh"
 
 sql --set=room="$ROOM" << 'SQL'
 SELECT

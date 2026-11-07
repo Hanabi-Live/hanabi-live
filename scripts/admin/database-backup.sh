@@ -12,7 +12,7 @@ fi
 # Get the directory of this script:
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-REPO_ROOT=$(cd -- "$DIR/.." &> /dev/null && pwd)
+REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 
 # Get the name of the repository:
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
@@ -22,7 +22,7 @@ REPO_NAME="$(basename "$REPO_ROOT")"
 BACKUPS_DIR="$REPO_ROOT/backups"
 FILENAME=$REPO_NAME-$(date +%s).sql.gz # "date +%s" returns the epoch timestamp.
 
-# shellcheck source=../scripts/lib/database.sh
+# shellcheck source=../lib/database.sh
 source "$REPO_ROOT/scripts/lib/database.sh"
 
 # Failures only reach syslog otherwise, where nobody will see them.
