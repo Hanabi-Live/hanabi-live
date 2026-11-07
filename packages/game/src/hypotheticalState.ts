@@ -155,12 +155,13 @@ function hypotheticalStateReducerFunction(
     return;
   }
 
-  // Validate persisted replay actions, which bypass the local action planner.
+  // Validate persisted replay actions, which bypass the local action planner. A card outside the
+  // acting player's hand would end up in two collections, or does not exist yet.
   if (action.type === "play" || action.type === "discard") {
-    for (const [playerIndex, hand] of state.ongoing.hands.entries()) {
-      if (playerIndex !== action.playerIndex && hand.includes(action.order)) {
-        return;
-      }
+    if (
+      state.ongoing.hands[action.playerIndex]?.includes(action.order) !== true
+    ) {
+      return;
     }
   } else if (action.type === "draw") {
     // Store every draw to be able to show/hide the cards in the future.

@@ -372,9 +372,32 @@ describe("hypothetical state", () => {
     },
   );
 
-  test.each(["play", "discard"] as const)(
-    "rejects a received %s targeting another player's hand",
-    (type) => {
+  describe.each(["play", "discard"] as const)("a received %s", (type) => {
+    function cardAction(order: number) {
+      return type === "play"
+        ? ({
+            type: "play",
+            playerIndex: 0,
+            order: order as CardOrder,
+            suitIndex: 0,
+            rank: 1,
+          } as const)
+        : ({
+            type: "discard",
+            playerIndex: 0,
+            order: order as CardOrder,
+            suitIndex: 0,
+            rank: 1,
+            failed: false,
+          } as const);
+    }
+
+    // Persisted shared replay actions bypass the local action planner. Applying any of these would
+    // leave the same order in two collections or reference a card that has not been drawn.
+    test.each([
+      ["in another player's hand", 5],
+      ["that has not been drawn", 20],
+    ])("is ignored for a card %s", (_description, order) => {
       const original = initializeHypotheticalState(
         startingState,
         false,
@@ -382,38 +405,36 @@ describe("hypothetical state", () => {
         false,
         metadata,
       );
-      // Persisted shared replay actions bypass the local action planner.
-      const action =
-        type === "play"
-          ? ({
-              type: "play",
-              playerIndex: 0,
-              order: 5 as CardOrder,
-              suitIndex: 0,
-              rank: 1,
-            } as const)
-          : ({
-              type: "discard",
-              playerIndex: 0,
-              order: 5 as CardOrder,
-              suitIndex: 0,
-              rank: 1,
-              failed: false,
-            } as const);
-      expect(startingState.hands[1]).toContain(action.order);
-      expect(startingState.hands[0]).not.toContain(action.order);
+      expect(original.ongoing.hands[0]).not.toContain(order);
 
       const result = hypotheticalStateReducer(
         original,
-        action,
+        cardAction(order),
         false,
         metadata,
       );
-
-      // Applying this action would leave the same order in two collections.
       expect(result).toBe<unknown>(original);
-    },
-  );
+    });
+
+    test("is ignored for a card that already left the hand", () => {
+      const original = initializeHypotheticalState(
+        startingState,
+        false,
+        [cardAction(0)],
+        false,
+        metadata,
+      );
+      expect(original.ongoing.hands[0]).not.toContain(0);
+
+      const result = hypotheticalStateReducer(
+        original,
+        cardAction(0),
+        false,
+        metadata,
+      );
+      expect(result).toBe<unknown>(original);
+    });
+  });
 
   test("preserves an explicit ignoreNegative on other clues", () => {
     const initial = initializeHypotheticalState(
