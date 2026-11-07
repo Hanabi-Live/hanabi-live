@@ -290,6 +290,7 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
         .fetch_one(&state.pool)
         .await?;
     }
+    eprintln!("Successful login for account {id} from {ip}.");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok((
         [(
@@ -386,6 +387,8 @@ async fn identity_token(
             ));
         };
         let result = regenerate_token(&state.pool, &state.config.secret, id).await?;
+        let ip = address.ip();
+        eprintln!("Issued identity token for account {id} from {ip}.");
         Ok(Json(json!({
             "username":username, "token":result.token,
             "expires_at":result.expires_at.format("%a, %d %b %Y %H:%M:%S GMT").to_string()
@@ -425,6 +428,8 @@ async fn identity(
         if let Some(row) = row {
             let expiry: DateTime<Utc> = row.expires_at;
             if expiry > Utc::now() && verify_password(token, row.token_hash.clone()).await? {
+                let ip = address.ip();
+                eprintln!("Verified identity token from {ip}.");
                 return Ok(Json(json!({"username":row.username.clone()})).into_response());
             }
         }

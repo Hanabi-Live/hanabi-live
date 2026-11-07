@@ -2661,7 +2661,13 @@ impl TableActor {
             let hash = hash.clone();
             let password = data["password"].as_str().unwrap_or("").to_owned();
             let valid = crate::accounts::verify_password(password, hash).await?;
-            ensure!(valid, "Incorrect table password");
+            if !valid {
+                eprintln!(
+                    "Incorrect password for table {} by account {} from {}.",
+                    self.table.id, session.user, session.ip
+                );
+                bail!("Incorrect table password");
+            }
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         let player = self
