@@ -9,7 +9,9 @@ use futures_util::{SinkExt, StreamExt, future::BoxFuture};
 use regex::Regex;
 use reqwest::Method;
 use serde_json::{Value, json};
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
+#[cfg(test)]
+use sqlx::Row;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -837,17 +839,17 @@ impl Bridge {
 
 /// When the most recent server announcement is a graceful shutdown, returns when it was sent.
 async fn last_shutdown(pool: &PgPool) -> Result<Option<DateTime<Utc>>> {
-    let row = sqlx::query(
+    let row = sqlx::query!(
         "SELECT message,datetime_sent FROM chat_log WHERE room='lobby' AND source='server'
-         ORDER BY id DESC LIMIT 1",
+         ORDER BY id DESC LIMIT 1"
     )
     .fetch_optional(pool)
     .await?;
-    Ok(row.and_then(|row| {
-        let message: String = row.get("message");
-        (message.starts_with(RESTART_PREFIX) || message.starts_with(STOP_PREFIX))
-            .then(|| row.get("datetime_sent"))
-    }))
+    Ok(row
+        .filter(|row| {
+            row.message.starts_with(RESTART_PREFIX) || row.message.starts_with(STOP_PREFIX)
+        })
+        .map(|row| row.datetime_sent))
 }
 
 pub async fn insert_message(
