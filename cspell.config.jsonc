@@ -148,6 +148,7 @@
     "GOCACHE",
     "GOMODCACHE",
     "gopath",
+    "gpgsign",
     "Gurev",
     "hanab",
     "hanabi",

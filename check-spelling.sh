@@ -16,9 +16,13 @@ cd "$DIR"
 
 # Spell check every file using CSpell.
 # "--no-progress" and "--no-summary" make it only output errors.
-bunx --bun --no-install cspell --no-progress --no-summary .
+cache_key=$(sha256sum bun.lock package.json bunfig.toml | sha256sum | cut -d " " -f 1)
+bunx --bun --no-install cspell --no-progress --no-summary \
+  --cache --cache-strategy content --cache-location ".cache/cspell/$cache_key" .
 
-# Check for unused CSpell words.
-bunx --bun --no-install cspell-check-unused-words
+# CI removes unused words in a separate maintenance workflow.
+if [[ ${CI:-} != true ]]; then
+  bunx --bun --no-install cspell-check-unused-words
+fi
 
 echo "Successfully spell checked $REPO_NAME in $SECONDS seconds."
