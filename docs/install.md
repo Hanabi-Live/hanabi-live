@@ -32,8 +32,8 @@ Build and start the development stack from a clean checkout:
 ```sh
 git status --short
 export HANABI_BUILD_REVISION="$(git rev-parse HEAD)"
-podman compose -f docker-compose-dev.yml up --build -d
-podman compose -f docker-compose-dev.yml logs -f hanab-live-server
+podman compose --file docker-compose-dev.yml up --build --detach
+podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 ```
 
 If `git status --short` lists changes, commit your development changes before
@@ -52,14 +52,14 @@ schema script against this database or use `down --volumes` to update it.
 Before stopping or rebuilding, save active games and shut down the server:
 
 ```sh
-podman compose -f docker-compose-dev.yml exec hanab-live-server \
-  wget -qO- http://127.0.0.1:8081/gracefulStop
-podman compose -f docker-compose-dev.yml ps -a
+podman compose --file docker-compose-dev.yml exec hanab-live-server \
+  wget --quiet --output-document=- http://127.0.0.1:8081/gracefulStop
+podman ps --all --filter label=com.docker.compose.service=hanab-live-server
 ```
 
 Wait until `hanab-live-server` has exited successfully before running
-`podman compose -f docker-compose-dev.yml down`. This removes the containers,
-but retains their data volumes.
+`podman compose --file docker-compose-dev.yml down`. This removes the
+containers, but retains their data volumes.
 
 To try code changes, commit them, shut down the stack as above, and repeat the
 build/start commands, including the revision export. Source files are copied
@@ -240,9 +240,11 @@ before starting the application:
 /usr/bin/redis-server --version
 useradd --system --user-group --home-dir /var/lib/hanabi-redis \
   --no-create-home --shell /usr/sbin/nologin hanabi-redis
-install -d -o root -g hanabi-redis -m 750 /etc/hanabi-redis
-install -o root -g hanabi-redis -m 640 install/redis/redis.conf /etc/hanabi-redis/redis.conf
-install -o root -g root -m 644 install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
+install --directory --owner root --group hanabi-redis --mode 750 /etc/hanabi-redis
+install --owner root --group hanabi-redis --mode 640 \
+  install/redis/redis.conf /etc/hanabi-redis/redis.conf
+install --owner root --group root --mode 644 \
+  install/redis/hanabi-redis.service /etc/systemd/system/hanabi-redis.service
 systemctl daemon-reload
 systemctl enable --now hanabi-redis
 ```
@@ -275,7 +277,7 @@ redis-cli -s /run/hanabi-redis/redis.sock WAITAOF 1 0 5000
 
 Expect `PONG`, `appendonly=yes`, `appendfsync=always`,
 `maxmemory-policy=noeviction`, and a `WAITAOF` result of `[1, 0]`. Inspect
-failures with `journalctl -u hanabi-redis --no-pager`.
+failures with `journalctl --unit hanabi-redis --no-pager`.
 
 These are not upgrade or recovery commands. On existing installations, preserve
 the entire `/var/lib/hanabi-redis` directory, socket path, and database
@@ -398,7 +400,7 @@ checkout cleanliness on the host first:
 
 ```sh
 status=$(git status --porcelain --untracked-files=normal) \
-  && test -z "$status" \
+  && test "$status" = "" \
   && docker build --build-arg HANABI_BUILD_REVISION="$(git rev-parse HEAD)" .
 ```
 
