@@ -4,6 +4,7 @@
 import {
   SERVER_COMMAND_SCHEMAS,
   VERSION,
+  errorDetails,
   httpError,
   tableID as tableIDSchema,
 } from "@hanabi-live/data";
@@ -15,6 +16,7 @@ import { lobbyCommands } from "./lobby/lobbyCommands";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { ReconnectBackoff } from "./reconnect";
+import { escapeHtml } from "./utils";
 
 const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15_000;
@@ -237,6 +239,16 @@ function openConnection(isReconnect: boolean) {
   conn.on("socketError", (error: unknown) => {
     console.error("WebSocket error:", error);
   });
+  conn.invalidMessage = (command, error) => {
+    if (activeConnection !== conn || stopped) {
+      return;
+    }
+    modals.showError(
+      escapeHtml(
+        errorDetails(error, `Processing the server's "${command}" message`),
+      ),
+    );
+  };
   conn.on("restart", (payload) => {
     if (activeConnection === conn) {
       conn.setReady(false);
