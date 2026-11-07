@@ -1,5 +1,6 @@
 import { timerFormatter } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
+import { Fragment } from "react";
 import { optionFlags } from "./GameDialog";
 
 const icons = [
@@ -12,23 +13,25 @@ const icons = [
   "flushed",
 ] as const;
 
-export function GameOptionIcons({
-  options,
-}: {
-  options: Pick<
-    Options,
-    | (typeof optionFlags)[number][0]
-    | "timed"
-    | "speedrun"
-    | "timeBase"
-    | "timePerTurn"
-  >;
-}) {
-  if (
-    !options.timed
-    && !options.speedrun
-    && optionFlags.every(([key]) => !options[key])
-  ) {
+type IconOptions = Pick<
+  Options,
+  | (typeof optionFlags)[number][0]
+  | "timed"
+  | "speedrun"
+  | "timeBase"
+  | "timePerTurn"
+>;
+
+export function hasOptions(options: IconOptions): boolean {
+  return (
+    options.timed
+    || options.speedrun
+    || optionFlags.some(([key]) => options[key])
+  );
+}
+
+export function GameOptionIcons({ options }: { options: IconOptions }) {
+  if (!hasOptions(options)) {
     return null;
   }
   return (
@@ -43,7 +46,7 @@ export function GameOptionIcons({
           {"\u{A0}"} ({timerFormatter(options.timeBase)} +{" "}
           {timerFormatter(options.timePerTurn)})
         </li>
-      )}
+      )}{" "}
       {options.speedrun && (
         <li>
           <i
@@ -52,17 +55,19 @@ export function GameOptionIcons({
             title="Speedrun"
           />
         </li>
-      )}
+      )}{" "}
       {optionFlags.map(
         ([key, title], index) =>
           options[key] && (
-            <li key={key}>
-              <i
-                aria-label={title}
-                className={`fas fa-${icons[index]}`}
-                title={title}
-              />
-            </li>
+            <Fragment key={key}>
+              <li>
+                <i
+                  aria-label={title}
+                  className={`fas fa-${icons[index]}`}
+                  title={title}
+                />
+              </li>{" "}
+            </Fragment>
           ),
       )}
     </>

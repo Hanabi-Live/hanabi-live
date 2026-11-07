@@ -8,7 +8,7 @@ import type { LobbyConnection } from "../connection";
 import type { HistoryGame } from "../protocol";
 import { wireHistory } from "../protocol";
 import type { LobbyState } from "../store";
-import { GameOptionIcons } from "./GameOptionIcons";
+import { GameOptionIcons, hasOptions } from "./GameOptionIcons";
 import { Modal } from "./Modal";
 
 function finished(date: string): string {
@@ -175,7 +175,11 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
               </td>
               <td>{game.options.variantName}</td>
               <td className="lobby-games-table-options">
-                <GameOptionIcons options={game.options} />
+                {hasOptions(game.options) ? (
+                  <GameOptionIcons options={game.options} />
+                ) : (
+                  "[none]"
+                )}
               </td>
               <td>
                 {game.playerNames
@@ -219,7 +223,10 @@ export function HistoryPanel({ connection }: { connection: LobbyConnection }) {
                 <button
                   aria-label="Compare seed"
                   className="button fit margin0"
-                  disabled={state.connection !== "online"}
+                  disabled={
+                    state.connection !== "online"
+                    || game.numGamesOnThisSeed <= 1
+                  }
                   onClick={() => {
                     setSeed(game.seed);
                   }}

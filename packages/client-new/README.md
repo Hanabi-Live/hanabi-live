@@ -12,7 +12,7 @@ stylesheets from `public/css`. It does not load the classic JavaScript or
 jQuery. Tailwind utilities remain available without a second CSS reset. Light
 mode is the default; the appearance selector shares the classic client's
 `darkMode` preference, including following the system theme. Lobby and pregame
-chat have separate panes, and private-message drafts remain isolated.
+chat have separate panes.
 
 The existing game/replay screen remains in use. A validated, single-use
 session-storage request transfers navigation to it, then the new lobby closes

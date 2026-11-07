@@ -1,6 +1,4 @@
-import { errorDetails } from "@hanabi-live/data";
 import { getVariant } from "@hanabi-live/game";
-import { Copy, Crown } from "lucide-react";
 import { shallowEqual, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import type { LobbyConnection } from "../connection";
@@ -44,30 +42,38 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
     );
   }
   const online = status === "online";
-  const owner = game.owner === welcome.userID;
   const player = game.players.some((person) => person.you);
   const table = tables[game.tableID];
   const { maxScore } = getVariant(game.options.variantName);
   return (
     <section className="room-panel classic-room-layout">
-      <div className="classic-room-info">
-        <div className="classic-room-field">
+      <div className="classic-room-info" id="lobby-pregame-left">
+        <h4 className="padding0p5">
           <strong>
-            <i aria-hidden="true" className="fas fa-signature" /> Name:
+            <i aria-hidden="true" className="fas fa-signature" />
+            {"\u{A0} "}
+            Name:
           </strong>
-          <h2 className="classic-room-name">{game.name}</h2>
-        </div>
-        <h4>
-          <strong>
-            <i aria-hidden="true" className="fas fa-rainbow" /> Variant:
-          </strong>
-          <span>{game.options.variantName}</span>
+          <br />
+          <span id="lobby-pregame-name">{game.name}</span>
         </h4>
-        <h4>
+        <h4 className="padding0p5">
           <strong>
-            <i aria-hidden="true" className="fas fa-users" /> Players:
+            <i aria-hidden="true" className="fas fa-rainbow" />
+            {"\u{A0} "}
+            Variant:
           </strong>
-          <span>
+          <br />
+          <span id="lobby-pregame-variant">{game.options.variantName}</span>
+        </h4>
+        <h4 className="padding0p5">
+          <strong>
+            <i aria-hidden="true" className="fas fa-users" />
+            {"\u{A0} "}
+            Players:
+          </strong>
+          <br />
+          <span id="lobby-pregame-seats">
             {game.players.length} / {game.maxPlayers}
           </span>
         </h4>
@@ -75,10 +81,9 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
           || game.options.speedrun
           || game.passwordProtected
           || optionFlags.some(([key]) => game.options[key])) && (
-          <>
-            <h4>
-              <strong>Options:</strong>
-            </h4>
+          <h4 className="padding0p5">
+            <span id="lobby-pregame-options-title">Options:</span>
+            <br />
             <ul id="lobby-pregame-options">
               {game.passwordProtected && (
                 <li>
@@ -91,57 +96,42 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
               )}
               <GameOptionIcons options={game.options} />
             </ul>
-          </>
+          </h4>
         )}
-        <h4>
+        <h4 className="padding0p5">
           <strong>
-            <i aria-hidden="true" className="fas fa-glasses" /> Spectators:
+            <i aria-hidden="true" className="fas fa-glasses" />
+            {"\u{A0} "}
+            Spectators:
           </strong>
+          <br />
+          <ul className="classic-spectator-list" id="lobby-pregame-spectators">
+            {table?.spectators.map((person) => (
+              <li key={person.name}>
+                &bull;{" "}
+                <span
+                  className={
+                    person.name === welcome.username
+                      ? "name-me"
+                      : welcome.friends.includes(person.name)
+                        ? "friend"
+                        : ""
+                  }
+                >
+                  {person.name}
+                </span>
+                {person.shadowingPlayerIndex !== undefined
+                  && person.shadowingPlayerIndex !== -1 && (
+                    <>
+                      {" "}
+                      ({"\u{1F575}\u{FE0F}"}{" "}
+                      <em>{person.shadowingPlayerUsername}</em>)
+                    </>
+                  )}
+              </li>
+            ))}
+          </ul>
         </h4>
-        <ul className="classic-spectator-list" id="lobby-pregame-spectators">
-          {table?.spectators.map((person) => (
-            <li key={person.name}>
-              &bull;{" "}
-              <span
-                className={
-                  person.name === welcome.username
-                    ? "name-me"
-                    : welcome.friends.includes(person.name)
-                      ? "friend"
-                      : ""
-                }
-              >
-                {person.name}
-              </span>
-              {person.shadowingPlayerIndex !== undefined
-                && person.shadowingPlayerIndex !== -1 && (
-                  <>
-                    {" "}
-                    ({"\u{1F575}\u{FE0F}"}{" "}
-                    <em>{person.shadowingPlayerUsername}</em>)
-                  </>
-                )}
-            </li>
-          ))}
-        </ul>
-        <button
-          aria-label="Invite a friend"
-          className="classic-invite"
-          onClick={() => {
-            void navigator.clipboard
-              .writeText(
-                `${globalThis.location.origin}/new/table/${game.tableID}`,
-              )
-              .then(() => connection.notice("Table invitation copied."))
-              .catch((error: unknown) =>
-                connection.notice(
-                  `${errorDetails(error, "Copying the invitation")} Copy this page's address instead.`,
-                ),
-              );
-          }}
-        >
-          <Copy size={15} />
-        </button>
       </div>
       <div className="seat-grid lobby-pregame-players">
         {game.players.map((person) => {
@@ -259,35 +249,6 @@ export function PregamePanel({ connection }: { connection: LobbyConnection }) {
                 <p className="lobby-pregame-player-away">
                   <strong>AWAY</strong>
                 </p>
-              )}
-              {owner && !person.you && (
-                <details className="seat-actions">
-                  <summary aria-label={`Actions for ${person.name}`}>
-                    <i aria-hidden="true" className="fas fa-ellipsis-v" />
-                  </summary>
-                  <button
-                    className="text-button"
-                    onClick={() =>
-                      connection.send("tableSetLeader", {
-                        tableID: game.tableID,
-                        name: person.name,
-                      })
-                    }
-                  >
-                    <Crown size={13} /> Make host
-                  </button>
-                  <button
-                    className="text-button"
-                    onClick={() =>
-                      connection.send("chat", {
-                        room: `table${game.tableID}`,
-                        msg: `/kick ${person.name}`,
-                      })
-                    }
-                  >
-                    Remove
-                  </button>
-                </details>
               )}
             </article>
           );

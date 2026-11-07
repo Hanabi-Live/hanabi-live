@@ -8,7 +8,6 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { Profiler } from "react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
@@ -70,61 +69,36 @@ function lobby(onRender: () => void) {
   return { send, store };
 }
 
-it("selects the private recipient and channel in the same commit, including reopening the same person", () => {
-  const channels: Array<string | null> = [];
-  let observing = false;
-  lobby(() => {
-    if (observing) {
-      channels.push(screen.getByRole("log").getAttribute("aria-label"));
+it("shows private messages inline in the classic format", () => {
+  const { store } = lobby(vi.fn());
+  act(() => {
+    for (const [who, recipient, msg] of [
+      ["Bob", "Alice", "Incoming."],
+      ["Alice", "Carol", "Outgoing."],
+    ] as const) {
+      store.dispatch(
+        actions.received({
+          command: "chat",
+          data: SERVER_COMMAND_SCHEMAS.chat.parse({
+            who,
+            recipient,
+            source: "user",
+            msg,
+            datetime: "2026-01-01T00:00:00Z",
+          }),
+        }),
+      );
     }
   });
-  observing = true;
-  fireEvent.click(screen.getByRole("button", { name: "Bob" }));
-  observing = false;
-  expect(channels.length).toBeGreaterThan(0);
-  expect(channels.every((channel) => channel === "private messages")).toBe(
-    true,
-  );
-  fireEvent.change(screen.getByLabelText("Chat message"), {
-    target: { value: "Private draft" },
-  });
-  fireEvent.click(screen.getByRole("button", { name: "Lobby" }));
-  expect(
-    screen.getByLabelText("Chat message").getAttribute("placeholder"),
-  ).toBe("Chat");
-  fireEvent.click(screen.getByRole("button", { name: "Bob" }));
-  expect(screen.getByRole("log").getAttribute("aria-label")).toBe(
-    "private messages",
-  );
-  expect(screen.getByDisplayValue("Private draft")).toBeDefined();
-});
-
-it("keeps recipient edits focused and isolates private drafts from public chat and other recipients", async () => {
-  const { send } = lobby(vi.fn());
-  const user = userEvent.setup();
-  await user.click(screen.getByRole("button", { name: "Bob" }));
-  await user.type(screen.getByLabelText("Chat message"), "For Bob only");
-  await user.click(screen.getByRole("button", { name: "Lobby" }));
-  expect(screen.queryByDisplayValue("For Bob only")).toBeNull();
-  await user.type(screen.getByLabelText("Chat message"), "Hello lobby");
-  await user.click(screen.getByRole("button", { name: /^Messages/u }));
-  expect(screen.getByDisplayValue("For Bob only")).toBeDefined();
-  const recipient = screen.getByLabelText("Message recipient");
-  await user.clear(recipient);
-  await user.type(recipient, "Carol");
-  expect(document.activeElement).toBe(recipient);
-  expect(screen.getByDisplayValue("Carol")).toBeDefined();
-  expect(screen.queryByDisplayValue("For Bob only")).toBeNull();
-  await user.type(screen.getByLabelText("Chat message"), "For Carol only");
-  await user.click(screen.getByRole("button", { name: "Send message" }));
-  expect(send).toHaveBeenLastCalledWith("chatPM", {
-    recipient: "Carol",
-    msg: "For Carol only",
-  });
-  await user.click(screen.getByRole("button", { name: "Lobby" }));
-  expect(screen.getByDisplayValue("Hello lobby")).toBeDefined();
-  await user.click(screen.getByRole("button", { name: "Bob" }));
-  expect(screen.getByDisplayValue("For Bob only")).toBeDefined();
+  const log = within(screen.getByRole("log", { name: "lobby messages" }));
+  const labels = log
+    .getAllByText(/^\[PM /u)
+    .map((element) => [element.className, element.textContent]);
+  expect(labels).toEqual([
+    ["red", "[PM from Bob]"],
+    ["red", "[PM to Carol]"],
+  ]);
+  expect(log.getByText("Incoming.")).toBeDefined();
 });
 
 it("replies to the latest incoming user PM, ignoring notices, public messages and sent PMs", () => {

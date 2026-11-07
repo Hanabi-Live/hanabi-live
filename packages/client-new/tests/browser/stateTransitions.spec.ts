@@ -60,11 +60,9 @@ for (const client of ["classic", "new"] as const) {
             .getByLabel("Table name", { exact: true })
             .fill("Retained draft");
         }
-        await a
-          .locator("#lobby-pregame")
-          .getByLabel(`Actions for ${name}`)
-          .click();
-        await a.getByRole("button", { name: "Remove", exact: true }).click();
+        const hostChat = a.getByLabel("Pre-game chat message", { exact: true });
+        await hostChat.fill(`/kick ${name}`);
+        await hostChat.press("Enter");
         await expect(b.locator("#lobby-games")).toBeVisible();
         if (client === "new") {
           await expect(b.getByLabel("Table name", { exact: true })).toHaveValue(

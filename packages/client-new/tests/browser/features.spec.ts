@@ -262,7 +262,6 @@ for (const route of ["lobby", "new"]) {
         );
         await b.locator("#createTableName").fill(secondTable);
         await b.locator("#create-game-submit").click();
-        await expect(b.locator("#lobby-pregame-name")).toHaveText(secondTable);
       } else {
         await b
           .getByRole("button", { name: "Leave table", exact: true })
@@ -278,10 +277,8 @@ for (const route of ["lobby", "new"]) {
           .getByRole("dialog")
           .getByRole("button", { name: "Create table", exact: true })
           .click();
-        await expect(
-          b.getByRole("heading", { name: secondTable, exact: true }),
-        ).toBeVisible();
       }
+      await expect(b.locator("#lobby-pregame-name")).toHaveText(secondTable);
       await expect(spectators).toBeEmpty();
       await c
         .getByRole("button", { name: "Stop watching", exact: true })
@@ -336,17 +333,12 @@ for (const route of ["lobby", "new"]) {
       await dialog
         .getByRole("button", { name: "Create table", exact: true })
         .click();
-      await expect(
-        page.getByRole("heading", { name: expectedName, exact: true }),
-      ).toBeVisible();
     } else {
       await page.locator("#nav-buttons-lobby-create-game").click();
       await expect(page.locator("#createTableName")).toHaveValue(expectedName);
       await page.locator("#create-game-submit").click();
-      await expect(page.locator("#lobby-pregame-name")).toHaveText(
-        expectedName,
-      );
     }
+    await expect(page.locator("#lobby-pregame-name")).toHaveText(expectedName);
     expect(commands).not.toContain("getName");
   });
 
@@ -482,7 +474,7 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .getByRole("button", { name: "Create table", exact: true })
     .click();
   await expect(
-    a.getByRole("heading", { name: "Private garden", exact: true }),
+    a.locator("#lobby-pregame-name", { hasText: "Private garden" }),
   ).toBeVisible();
   await a
     .getByLabel("Pre-game chat message", { exact: true })
@@ -573,29 +565,13 @@ test("creation options, protected joins, invitations, friends, private chat and 
     .fill("/friend testUIHost");
   await b.getByLabel("Chat message", { exact: true }).press("Enter");
   await expect(host.locator(".person-main.friend")).toBeVisible();
-  await b.getByRole("button", { name: /^Messages/u }).click();
-  await b.getByLabel("Message recipient").fill("testUIHost");
   await b
     .getByLabel("Chat message", { exact: true })
-    .fill("Private draft, not for the lobby.");
-  await b.getByRole("button", { name: "Lobby", exact: true }).click();
-  await expect(b.getByLabel("Chat message", { exact: true })).toHaveValue("");
-  await b.getByRole("button", { name: /^Messages/u }).click();
-  await expect(b.getByLabel("Chat message", { exact: true })).toHaveValue(
-    "Private draft, not for the lobby.",
-  );
-  await b
-    .getByLabel("Chat message", { exact: true })
-    .fill("Only the host should see this.");
+    .fill("/pm testUIHost Only the host should see this.");
   await b.getByLabel("Chat message", { exact: true }).press("Enter");
-  await expect(a.getByRole("button", { name: /^Messages/u })).toContainText(
-    "1",
-  );
-  await a.getByRole("button", { name: /^Messages/u }).click();
   await expect(
-    a.getByText("Only the host should see this.", { exact: true }),
+    a.getByText("Only the host should see this.", { exact: true }).first(),
   ).toBeVisible();
-  await c.getByRole("button", { name: /^Messages/u }).click();
   await expect(
     c.getByText("Only the host should see this.", { exact: true }),
   ).toHaveCount(0);

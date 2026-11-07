@@ -37,8 +37,6 @@ export interface LobbyState {
   pending: string | null;
   preferenceStatus: "saved" | "saving" | "failed";
   typing: Record<string, string[]>;
-  pmHasMore: boolean;
-  unreadPMs: Record<string, number>;
   historyLoading: boolean;
   historyHasMore: boolean;
 }
@@ -63,8 +61,6 @@ function initialState(): LobbyState {
     pending: null,
     preferenceStatus: "saved",
     typing: {},
-    pmHasMore: false,
-    unreadPMs: {},
     historyLoading: false,
     historyHasMore: true,
   };
@@ -89,13 +85,6 @@ const slice = createSlice({
     },
     dismissNotice(state) {
       state.notice = null;
-    },
-    privateMessagesRead(state, action: PayloadAction<string>) {
-      if (action.payload === "") {
-        state.unreadPMs = {};
-      } else {
-        delete state.unreadPMs[action.payload.toLowerCase()];
-      }
     },
     requestSent(state, action: PayloadAction<string>) {
       if (
@@ -167,7 +156,6 @@ const slice = createSlice({
           state.deletedChatIDs = [];
           state.history = {};
           state.otherScores = [];
-          state.unreadPMs = {};
           state.typing = {};
           state.pending = null;
           break;
@@ -312,14 +300,6 @@ const slice = createSlice({
               ))
           ) {
             state.chat.push(event.data);
-            if (
-              event.data.recipient
-              && event.data.who
-              && event.data.who !== state.welcome?.username
-            ) {
-              const name = event.data.who.toLowerCase();
-              state.unreadPMs[name] = (state.unreadPMs[name] ?? 0) + 1;
-            }
           }
           state.chat = state.chat.slice(-500);
           break;
@@ -358,7 +338,6 @@ const slice = createSlice({
         }
 
         case "chatPMHistory": {
-          state.pmHasMore = event.data.hasMore;
           for (const message of event.data.list) {
             if (state.chat.every((old) => old.pmID !== message.pmID)) {
               state.chat.push({

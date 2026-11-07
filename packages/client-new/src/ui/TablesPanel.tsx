@@ -152,11 +152,13 @@ export function TablesPanel({
                       }}
                     >
                       {table.passwordProtected && !table.running && (
-                        <i
-                          aria-label="Password protected"
-                          className="fas fa-key"
-                        />
-                      )}{" "}
+                        <>
+                          <i
+                            aria-label="Password protected"
+                            className="fas fa-key"
+                          />{" "}
+                        </>
+                      )}
                       {table.name}
                     </button>
                   </td>

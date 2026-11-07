@@ -15,7 +15,6 @@ import { z } from "zod";
 import type { LobbyConnection } from "../connection";
 import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
-import type { ChatChannel } from "./ChatPanel";
 import { ChatPanel } from "./ChatPanel";
 import { ClassicHeader } from "./ClassicHeader";
 import { GameDialog } from "./GameDialog";
@@ -159,7 +158,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
       roomNavigation: value.roomNavigation,
       directoryReady: value.directoryReady,
       pending: value.pending,
-      unreadPMs: value.unreadPMs,
     }),
     shallowEqual,
   );
@@ -172,8 +170,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
-  const [recipient, setRecipient] = useState("");
-  const [channel, setChannel] = useState<ChatChannel>("lobby");
   const [mobilePanel, setMobilePanel] = useState<
     "main" | "people" | "chat" | "game-chat"
   >("main");
@@ -212,8 +208,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
     setDialog(null);
     setPasswordTable(null);
     setTablePassword("");
-    setRecipient("");
-    setChannel("lobby");
   }, [state.welcome?.userID]);
 
   useEffect(() => {
@@ -421,6 +415,34 @@ export function App({ connection }: { connection: LobbyConnection }) {
     }
   }, [online, state.tableID, state.tables, pathname, connection]);
 
+  const resumedPregame = useRef(false);
+  useEffect(() => {
+    if (!online || !state.directoryReady || resumedPregame.current) {
+      return;
+    }
+    // Leaving a running game also opens this page, so only pre-games are resumed.
+    resumedPregame.current = true;
+    const tableID = state.welcome?.playingAtTables[0];
+    const table = tableID === undefined ? undefined : state.tables[tableID];
+    if (
+      table
+      && !table.running
+      && !table.sharedReplay
+      && pathname === "/"
+      && state.tableID === null
+    ) {
+      connection.attend(table.id);
+    }
+  }, [
+    online,
+    state.directoryReady,
+    state.welcome,
+    state.tables,
+    state.tableID,
+    pathname,
+    connection,
+  ]);
+
   useEffect(() => {
     setMobilePanel("main");
     const titles: Record<string, string> = {
@@ -481,12 +503,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
     } else {
       connection.send("tableJoin", { tableID: table.id });
     }
-  }
-
-  function message(name: string) {
-    setRecipient(name);
-    setChannel("private");
-    setMobilePanel("chat");
   }
 
   function acceptOptions(raw: string) {
@@ -885,13 +901,10 @@ export function App({ connection }: { connection: LobbyConnection }) {
             id="lobby-chat-container"
           >
             <ChatPanel
-              channel={channel === "private" ? "private" : "lobby"}
+              channel="lobby"
               connection={connection}
               key={state.welcome.userID}
-              onChannel={setChannel}
               onOptions={acceptOptions}
-              onRecipient={message}
-              recipient={recipient}
               visible={
                 pathname !== "/history" && (wide || mobilePanel === "chat")
               }
@@ -905,10 +918,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
             <ChatPanel
               channel="table"
               connection={connection}
-              onChannel={setChannel}
               onOptions={acceptOptions}
-              onRecipient={message}
-              recipient={recipient}
               visible={pregameOpen && (wide || mobilePanel === "game-chat")}
             />
           </div>
@@ -919,45 +929,44 @@ export function App({ connection }: { connection: LobbyConnection }) {
             <PeoplePanel connection={connection} join={join} />
           </div>
         </div>
-        <nav aria-label="Mobile panels" className="mobile-tabs">
-          <button
-            aria-pressed={mobilePanel === "main"}
-            onClick={() => setMobilePanel("main")}
-          >
-            Tables
-          </button>
-          <button
-            aria-pressed={mobilePanel === "people"}
-            onClick={() => setMobilePanel("people")}
-          >
-            Who's Online
-          </button>
-          <button
-            aria-pressed={mobilePanel === "chat"}
-            onClick={() => setMobilePanel("chat")}
-          >
-            Chat{" "}
-            {Object.values(state.unreadPMs).reduce(
-              (sum, count) => sum + count,
-              0,
-            ) > 0 && (
-              <span className="unread-badge">
-                {Object.values(state.unreadPMs).reduce(
-                  (sum, count) => sum + count,
-                  0,
+        <div id="lobby-small-screen-buttons">
+          <nav aria-label="Mobile panels" id="nav-bottom">
+            <ul>
+              <li>
+                <button
+                  aria-pressed={mobilePanel === "main"}
+                  className={`button small ${mobilePanel === "main" ? "toggle-active" : ""}`}
+                  onClick={() => setMobilePanel("main")}
+                >
+                  Tables
+                </button>{" "}
+                <button
+                  aria-pressed={mobilePanel === "people"}
+                  className={`button small ${mobilePanel === "people" ? "toggle-active" : ""}`}
+                  onClick={() => setMobilePanel("people")}
+                >
+                  Who's Online
+                </button>{" "}
+                <button
+                  aria-pressed={mobilePanel === "chat"}
+                  className={`button small ${mobilePanel === "chat" ? "toggle-active" : ""}`}
+                  onClick={() => setMobilePanel("chat")}
+                >
+                  Chat
+                </button>
+                {pregameOpen && (
+                  <button
+                    aria-pressed={mobilePanel === "game-chat"}
+                    className={`button small ${mobilePanel === "game-chat" ? "toggle-active" : ""}`}
+                    onClick={() => setMobilePanel("game-chat")}
+                  >
+                    Pre-game Chat
+                  </button>
                 )}
-              </span>
-            )}
-          </button>
-          {pregameOpen && (
-            <button
-              aria-pressed={mobilePanel === "game-chat"}
-              onClick={() => setMobilePanel("game-chat")}
-            >
-              Game Chat
-            </button>
-          )}
-        </nav>
+              </li>
+            </ul>
+          </nav>
+        </div>
         {dialog && (
           <GameDialog
             connection={connection}

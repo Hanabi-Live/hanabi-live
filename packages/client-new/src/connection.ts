@@ -305,10 +305,6 @@ export class LobbyConnection {
     this.store.dispatch(actions.dismissNotice());
   }
 
-  markPrivateRead(name: string): void {
-    this.store.dispatch(actions.privateMessagesRead(name));
-  }
-
   async logout(): Promise<void> {
     this.stop();
     try {

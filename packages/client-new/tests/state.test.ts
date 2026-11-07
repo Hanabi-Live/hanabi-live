@@ -183,9 +183,6 @@ describe("authoritative lobby state", () => {
       }),
     );
     expect(store.getState().chat).toHaveLength(2);
-    expect(store.getState().unreadPMs.bob).toBe(1);
-    store.dispatch(actions.privateMessagesRead("Bob"));
-    expect(store.getState().unreadPMs).toEqual({});
     store.dispatch(actions.received({ command: "welcome", data: welcome(2) }));
     expect(store.getState().chat).toEqual([]);
     expect(store.getState().history).toEqual({});

@@ -1,5 +1,5 @@
 import { CHAT_EMOJIS as emojis } from "@hanabi-live/data";
-import { ArrowDown, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import type { KeyboardEvent, SubmitEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { shallowEqual, useSelector } from "react-redux";
@@ -12,22 +12,21 @@ import { RichText } from "./RichText";
 
 const SERVER_NOTICE = "[Server Notice]";
 
-export type ChatChannel = "lobby" | "table" | "private";
+function timestamp(datetime: string): string {
+  const date = new Date(datetime);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
 
 export function ChatPanel({
   channel,
   connection,
-  onChannel: setChannel,
-  recipient,
-  onRecipient,
   onOptions,
   visible,
 }: {
-  channel: ChatChannel;
+  channel: "lobby" | "table";
   connection: LobbyConnection;
-  onChannel: (channel: ChatChannel) => void;
-  recipient: string;
-  onRecipient: (name: string) => void;
   onOptions: (json: string) => void;
   visible: boolean;
 }) {
@@ -37,8 +36,7 @@ export function ChatPanel({
     tableID,
     connection: status,
     typing,
-    pmHasMore,
-    unreadPMs,
+    users,
   } = useSelector(
     (state: LobbyState) => ({
       chat: state.chat,
@@ -46,42 +44,30 @@ export function ChatPanel({
       tableID: state.tableID,
       connection: state.connection,
       typing: state.typing,
-      pmHasMore: state.pmHasMore,
-      unreadPMs: state.unreadPMs,
+      users: state.users,
     }),
     shallowEqual,
   );
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [emojiOpen, setEmojiOpen] = useState(false);
-  const [unread, setUnread] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const recipientRef = useRef<HTMLInputElement>(null);
   const stuckToBottom = useRef(true);
   const lastTyped = useRef(0);
   const sent = useRef<Record<string, string[]>>({});
   const historyIndex = useRef(-1);
   useEffect(() => {
     if (
-      (channel === "table" || (channel === "lobby" && tableID === null))
+      (channel === "table" || tableID === null)
       && visible
       && document.activeElement === document.body
     ) {
       inputRef.current?.focus();
     }
   }, [channel, tableID, visible, welcome?.userID]);
-  useEffect(() => {
-    if (
-      channel === "private"
-      && document.activeElement !== recipientRef.current
-    ) {
-      inputRef.current?.focus();
-    }
-  }, [channel, recipient]);
   const room =
     channel === "table" && tableID !== null ? `table${tableID}` : "lobby";
-  const draftKey =
-    channel === "private" ? `private:${recipient.toLowerCase()}` : room;
+  const draftKey = room;
   const text = drafts[draftKey] ?? "";
   function setText(value: string | ((current: string) => string)) {
     setDrafts((current: Readonly<Record<string, string>>) => ({
@@ -91,25 +77,15 @@ export function ChatPanel({
     }));
   }
   const messages = chat.filter((message) => {
-    const privateMessage = Boolean(message.recipient);
-    if (channel === "private") {
-      return (
-        privateMessage
-        && (!recipient
-          || message.who?.toLowerCase() === recipient.toLowerCase()
-          || message.recipient?.toLowerCase() === recipient.toLowerCase())
-      );
-    }
-    if (privateMessage) {
-      return false;
+    // Private messages have no room, so they appear in whichever chat is in use.
+    if (message.recipient && !message.room) {
+      return tableID === null ? channel === "lobby" : channel === "table";
     }
     return (message.room === "" ? "lobby" : (message.room ?? "lobby")) === room;
   });
   useEffect(() => {
     if (stuckToBottom.current) {
       messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight });
-    } else {
-      setUnread(true);
     }
     if (
       channel === "table"
@@ -123,19 +99,9 @@ export function ChatPanel({
   }, [chat, channel, tableID, status, connection, visible]);
   useEffect(() => {
     stuckToBottom.current = true;
-    setUnread(false);
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight });
     historyIndex.current = -1;
   }, [draftKey]);
-  useEffect(() => {
-    if (
-      channel === "private"
-      && visible
-      && document.visibilityState === "visible"
-    ) {
-      connection.markPrivateRead(recipient);
-    }
-  }, [channel, visible, recipient, chat, connection]);
   if (!welcome) {
     return null;
   }
@@ -157,17 +123,14 @@ export function ChatPanel({
         && message.who !== undefined,
     );
     const replyTo = lastPM?.who;
-    const delivered =
-      channel === "private"
-      && !/^\/(?:pm|pmhistory|r|w|whisper)(?:\s|$)/u.test(text)
-        ? recipient.trim()
-          ? connection.send("chatPM", {
-              recipient: recipient.trim(),
-              msg: text,
-            })
-          : (connection.notice("Choose a recipient for your private message."),
-            false)
-        : sendChat(connection, text, room, welcome, tableID, replyTo);
+    const delivered = sendChat(
+      connection,
+      text,
+      room,
+      welcome,
+      tableID,
+      replyTo,
+    );
     if (delivered) {
       sent.current[draftKey] = [
         ...(sent.current[draftKey] ?? []).slice(-49),
@@ -219,9 +182,6 @@ export function ChatPanel({
     }
   }
   const names = typing[room] ?? [];
-  const privateIDs = messages.flatMap((message) =>
-    message.pmID ? [message.pmID] : [],
-  );
   return (
     <section
       aria-label={channel === "table" ? "Pre-game Chat" : "Chat"}
@@ -230,77 +190,19 @@ export function ChatPanel({
     >
       <header className="chat-header">
         <h3 className="lobby-title">
-          {channel === "table"
-            ? "Pre-game Chat"
-            : channel === "private"
-              ? "Private Messages"
-              : "Lobby Chat"}
-        </h3>
-        {channel !== "table" && (
-          <div className="filter-tabs">
-            {channel === "private" && (
-              <button onClick={() => setChannel("lobby")}>Lobby</button>
-            )}
-            <button
-              aria-pressed={channel === "private"}
-              onClick={() => setChannel("private")}
-            >
-              Messages{" "}
-              {Object.values(unreadPMs).reduce((sum, count) => sum + count, 0)
-                > 0 && (
-                <span className="unread-badge">
-                  {Object.values(unreadPMs).reduce(
-                    (sum, count) => sum + count,
-                    0,
-                  )}
-                </span>
-              )}
-            </button>
-          </div>
-        )}
-      </header>
-      {channel === "private" && (
-        <div className="pm-controls">
-          <label>
-            To
-            <input
-              aria-label="Message recipient"
-              onChange={(event) => onRecipient(event.target.value)}
-              placeholder="Username"
-              ref={recipientRef}
-              type="text"
-              value={recipient}
-            />
-          </label>
-          <button
-            onClick={() =>
-              connection.send("chatPMHistoryGet", {
-                amount: 20,
-                ...(recipient && { username: recipient }),
-                room: "lobby",
-              })
-            }
-          >
-            History
-          </button>
-          {pmHasMore && (
-            <button
-              onClick={() =>
-                connection.send("chatPMHistoryGet", {
-                  amount: 20,
-                  ...(recipient && { username: recipient }),
-                  ...(privateIDs.length > 0 && {
-                    beforeID: Math.min(...privateIDs),
-                  }),
-                  room: "lobby",
-                })
-              }
-            >
-              Older
-            </button>
+          {channel === "table" ? (
+            "Pre-game Chat"
+          ) : (
+            <>
+              Lobby Chat
+              <span className="only-on-narrow-screen">
+                {" "}
+                ({Object.keys(users).length} online)
+              </span>
+            </>
           )}
-        </div>
-      )}
+        </h3>
+      </header>
       <div
         aria-label={`${channel} messages`}
         aria-live="polite"
@@ -311,22 +213,14 @@ export function ChatPanel({
             stuckToBottom.current =
               box.scrollHeight - box.scrollTop - box.clientHeight < 60;
           }
-          if (stuckToBottom.current) {
-            setUnread(false);
-          }
         }}
         ref={messagesRef}
         role="log"
         tabIndex={0}
       >
-        {messages.length === 0 && channel === "private" && (
-          <p className="chat-empty">
-            Private messages are only visible to you and the recipient.
-          </p>
-        )}
         {messages.map((message, index) => (
           <article
-            className={`chat-message ${message.recipient ? "private-message" : ""}`}
+            className="chat-message"
             key={
               message.chatID
                 ? `chat-${message.chatID}`
@@ -336,33 +230,29 @@ export function ChatPanel({
             }
           >
             <time dateTime={message.datetime}>
-              [
-              {new Date(message.datetime).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}
-              ]
-            </time>{" "}
-            {message.who && message.source !== "server" && (
+              [{timestamp(message.datetime)}]
+            </time>
+            {"\u{A0} "}
+            {message.recipient ? (
               <>
-                {message.recipient ? "[PM " : "<"}
-                <button
-                  className="name-button"
-                  onClick={() => {
-                    if (message.who) {
-                      onRecipient(
-                        message.who === welcome.username
-                          ? (message.recipient ?? "")
-                          : message.who,
-                      );
-                    }
-                  }}
-                >
-                  <strong>{message.who}</strong>
-                </button>
-                {message.recipient ? ` to ${message.recipient}] ` : "> "}
+                <span className="red">
+                  [PM {message.recipient === welcome.username ? "from" : "to"}{" "}
+                  <strong>
+                    {message.recipient === welcome.username
+                      ? message.who
+                      : message.recipient}
+                  </strong>
+                  ]
+                </span>
+                {"\u{A0} "}
               </>
+            ) : (
+              message.who
+              && message.source !== "server" && (
+                <>
+                  &lt;<strong>{message.who}</strong>&gt;{"\u{A0} "}
+                </>
+              )
             )}
             <span className="message-content">
               {message.source === "server"
@@ -381,20 +271,6 @@ export function ChatPanel({
           </article>
         ))}
       </div>
-      {unread && (
-        <button
-          className="new-messages"
-          onClick={() => {
-            stuckToBottom.current = true;
-            setUnread(false);
-            messagesRef.current?.scrollTo({
-              top: messagesRef.current.scrollHeight,
-            });
-          }}
-        >
-          New messages <ArrowDown size={14} />
-        </button>
-      )}
       <div aria-live="polite" className="typing">
         {names.length > 0
           ? `${names.join(", ")} ${names.length === 1 ? "is" : "are"} typing...`
@@ -420,11 +296,7 @@ export function ChatPanel({
           }}
           onKeyDown={keyDown}
           placeholder={
-            welcome.muted
-              ? "Chat is muted for this account."
-              : channel === "private"
-                ? "Private message"
-                : "Chat"
+            welcome.muted ? "Chat is muted for this account." : "Chat"
           }
           ref={inputRef}
           rows={1}

@@ -28,7 +28,7 @@ async function auditViewport(
       await page
         .getByRole("navigation", { name: "Mobile panels" })
         .getByRole("button", {
-          name: chat === "table" ? "Game Chat" : "Chat",
+          name: chat === "table" ? "Pre-game Chat" : "Chat",
           exact: true,
         })
         .click();
@@ -198,8 +198,10 @@ for (const theme of ["light", "dark"] as const) {
         const oldGuest = b;
         b = await guest.newPage();
         await b.goto(`${backend}/new`);
-        await expect(b.locator("#lobby-games")).toBeVisible();
+        await expect(b.locator("#lobby-pregame")).toBeVisible();
         await oldGuest.close();
+        await b.getByRole("button", { name: "Back to tables" }).click();
+        await expect(b.locator("#lobby-games")).toBeVisible();
         await auditViewport(b, "new-populated-lobby");
         await b
           .locator(".table-card")
@@ -234,11 +236,10 @@ for (const theme of ["light", "dark"] as const) {
           "Private audit message",
         );
         await auditViewport(a, "old-private-chat", "table");
-        await b.getByRole("button", { name: /^Messages/u }).click();
         await expect(
-          b.getByRole("log", { name: "private messages" }),
+          b.getByRole("log", { name: "table messages" }),
         ).toContainText("Private audit message");
-        await auditViewport(b, "new-private-chat", "lobby");
+        await auditViewport(b, "new-private-chat", "table");
         await b.setViewportSize({ width: 390, height: 360 });
         expect(
           await b
@@ -276,14 +277,8 @@ for (const theme of ["light", "dark"] as const) {
         const oldOwner = a;
         a = await owner.newPage();
         await a.goto(`${backend}/new`);
-        await expect(a.locator("#lobby-games")).toBeVisible();
-        await oldOwner.close();
-        await a
-          .locator(".table-card")
-          .filter({ hasText: "Audit game" })
-          .getByRole("button", { name: /Join|Resume/u })
-          .click();
         await expect(a.locator("#lobby-pregame")).toBeVisible();
+        await oldOwner.close();
         if (
           (await a
             .getByRole("button", { name: "Join game", exact: true })
@@ -314,11 +309,11 @@ for (const theme of ["light", "dark"] as const) {
               `No active owner UI: ${await a.locator("#header").innerText()} / ${await b.locator("#header").innerText()} / ${await c.locator("#header").innerText()}`,
             );
           }
-          const ownerCard = leader
-            .locator(".seat")
-            .filter({ hasText: ownerName });
-          await ownerCard.getByLabel(`Actions for ${ownerName}`).click();
-          await ownerCard.getByRole("button", { name: "Make host" }).click();
+          const leaderChat = leader.getByLabel("Pre-game chat message", {
+            exact: true,
+          });
+          await leaderChat.fill(`/setleader ${ownerName}`);
+          await leaderChat.press("Enter");
           await expect(
             a.getByRole("button", { name: "Table options" }),
           ).toBeVisible();
@@ -397,32 +392,19 @@ for (const theme of ["light", "dark"] as const) {
         ).toBeVisible();
         await expect(a.locator(".history-card")).toContainText("0/25");
         await auditViewport(a, "new-history");
-        await a
-          .getByRole("button", { name: "Compare seed", exact: true })
-          .click();
-        await expect(
-          a.getByRole("dialog", { name: "Other Scores" }),
-        ).toBeVisible();
-        await expect(a.getByRole("dialog")).toContainText(ownerName);
-        await auditViewport(a, "new-other-scores");
-        const seed = await a.locator(".dialog-heading p").innerText();
-        await a.keyboard.press("Escape");
-        await expect.soft(a).toHaveURL(/\/new\/history$/u);
+        // Like the classic client, there is nothing to compare when no other games use the seed.
+        // (Other tests on this worker's server can share the seed.)
+        const compareSeed = a.getByRole("button", {
+          name: "Compare seed",
+          exact: true,
+        });
+        const otherScores = await compareSeed.innerText();
+        expect(await compareSeed.isDisabled()).toBe(otherScores.trim() === "0");
         await a.goto(`${backend}/lobby`);
         await expect(a.locator("#nav-buttons-lobby-history")).toBeVisible();
         await a.locator("#nav-buttons-lobby-history").click();
         await expect(a.locator("#lobby-history-table-tbody tr")).toHaveCount(1);
         await auditViewport(a, "old-history");
-        await a.goto(
-          `${backend}/lobby#history-other-scores-${encodeURIComponent(seed)}`,
-        );
-        await expect(a.locator("#lobby-history-other-scores")).toBeVisible();
-        await expect(
-          a
-            .locator("#lobby-history-other-scores-table-tbody tr")
-            .filter({ hasText: ownerName }),
-        ).toHaveCount(1);
-        await auditViewport(a, "old-other-scores");
         await a.goto(`${backend}/new/table/999999`);
         await expect(
           a.getByRole("heading", {

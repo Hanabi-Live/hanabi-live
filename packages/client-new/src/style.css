@@ -126,13 +126,15 @@ html[data-theme="dark"] .client-new-classic .person-status {
 .client-new-classic button.button {
   font-weight: 400;
 }
+#header nav > ul > li button.button,
+#lobby-small-screen-buttons .button {
+  letter-spacing: inherit;
+}
 #header nav > ul > li button.button {
+  border: 0;
   height: 2em;
   line-height: 2em;
   padding: 0 1em;
-}
-#header nav > ul > li + li {
-  margin-left: 0.25em;
 }
 #main-content {
   position: relative;
@@ -159,19 +161,6 @@ html[data-theme="dark"] .client-new-classic .person-status {
   min-height: 0;
   height: auto;
 }
-.filter-tabs {
-  display: flex;
-  gap: 0.35em;
-  flex-wrap: wrap;
-}
-.client-new-classic .filter-tabs button {
-  font-size: 0.85em;
-  padding: 0.25em 0.7em;
-}
-.client-new-classic .filter-tabs button[aria-pressed="true"] {
-  background: #308943;
-  color: white;
-}
 .classic-row-name {
   width: 100%;
 }
@@ -179,9 +168,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   color: #646464;
 }
 .classic-row-name i {
-  margin-right: 0.5em;
-}
-.lobby-games-table-options i {
   margin-right: 0.5em;
 }
 .classic-spectators {
@@ -202,30 +188,10 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   display: block;
 }
 .chat-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5em;
   flex-shrink: 0;
 }
 .chat-header .lobby-title {
   margin-bottom: 0.5em;
-}
-.chat-header .filter-tabs {
-  font-size: 0.75em;
-}
-.client-new-classic .chat-header .filter-tabs button {
-  color: #707070;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-.client-new-classic .chat-header .filter-tabs button[aria-pressed="true"] {
-  color: #308943;
-}
-.unread-badge {
-  margin-left: 0.4em;
-  font-weight: bold;
 }
 .chat-messages {
   flex: 1;
@@ -239,15 +205,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
-.chat-message > time {
-  font-size: 0.85em;
-}
-.chat-message .name-button {
-  font-weight: 400;
-}
-.chat-message.private-message {
-  color: #b02424;
-}
 .chat-message img.chat-emote {
   max-width: 100%;
   vertical-align: middle;
@@ -255,10 +212,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 }
 .chat-message small {
   font-size: 1em;
-}
-.chat-empty {
-  font-size: 0.9em;
-  margin: 0.5em 0;
 }
 .chat-composer {
   position: relative;
@@ -271,7 +224,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   min-height: 3em;
   width: 100%;
   resize: none;
-  padding: 0.6em 3em 0.6em 1em;
+  padding: calc(0.6em - 1px) 3em calc(0.6em + 1px) 1em;
   line-height: 1.8em;
   overflow-y: auto;
   scrollbar-width: none;
@@ -293,6 +246,7 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   border: 0;
   background: none;
   font-size: 13.3333px;
+  line-height: 1;
 }
 .client-new-classic .focusable-send:focus {
   position: absolute;
@@ -310,34 +264,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   bottom: 0.1em;
   font-size: 0.75em;
 }
-.pm-controls {
-  display: flex;
-  align-items: end;
-  gap: 0.6em;
-  margin-bottom: 0.75em;
-}
-.pm-controls label {
-  flex: 1;
-  margin: 0;
-  font-size: 0.85em;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-.pm-controls input {
-  height: 2.3em;
-  min-width: 0;
-}
-.pm-controls button {
-  height: 2.3em;
-  font-size: 0.85em;
-}
-.new-messages {
-  position: absolute;
-  bottom: 5em;
-  align-self: center;
-}
 .chat-panel {
   position: relative;
 }
@@ -348,9 +274,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
   background: none;
   color: inherit;
   line-height: normal;
-}
-.mobile-tabs {
-  display: none;
 }
 .notice {
   padding: 0.6em 1em;
@@ -918,7 +841,8 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .seat h2 {
   font-size: 1em;
   font-weight: 400;
-  margin: 0 0 0.5em;
+  line-height: 2.13em;
+  margin: 0;
 }
 .seat small {
   font-size: 0.85em;
@@ -927,12 +851,6 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .empty-seat,
 .seat-top {
   display: none;
-}
-.seat-actions {
-  display: flex;
-  gap: 0.5em;
-  font-size: 0.8em;
-  margin-top: 1em;
 }
 .player-stats {
   font-size: 1em;
@@ -953,29 +871,13 @@ html:not([data-theme="dark"]) .client-new-classic #lobby-games-table td {
 .player-stats summary i {
   margin-right: 0;
 }
-.seat-actions {
-  position: absolute;
-  top: 0.8em;
-  right: 0.7em;
-  display: block;
-  margin: 0;
-}
-.seat-actions summary {
-  list-style: none;
-  cursor: pointer;
-}
-.seat-actions[open] {
-  background: white;
-  border: 1px solid #aaa;
-  padding: 0.5em;
-  z-index: 2;
-}
-.seat-actions button {
-  display: block;
-  margin: 0.5em;
-}
 .client-new-classic .name-button:disabled {
   opacity: 1;
+}
+.client-new-classic .classic-row-name,
+.client-new-classic .classic-spectators,
+.client-new-classic .name-button {
+  letter-spacing: inherit;
 }
 .client-new-classic .classic-row-name,
 .client-new-classic .classic-spectators {
@@ -1019,9 +921,6 @@ html[data-theme="dark"] .classic-score-tooltip {
   padding: 0;
   margin: 0;
 }
-.client-new-classic #lobby-pregame-options {
-  font-size: 1em;
-}
 .client-new-classic.classic-password-dialog {
   left: 5em;
   right: 5em;
@@ -1056,16 +955,6 @@ html[data-theme="dark"] .classic-score-tooltip {
     right: 0;
   }
 }
-.chat-panel:has(.pm-controls) {
-  display: flex;
-  flex-direction: column;
-}
-.chat-panel:has(.pm-controls) .chat-messages {
-  height: auto;
-}
-.pm-controls {
-  flex-shrink: 0;
-}
 .player-stats > span {
   display: block;
 }
@@ -1083,60 +972,6 @@ html[data-theme="dark"] .classic-score-tooltip {
   padding-right: 0.5em;
   flex-shrink: 1;
   overflow-y: auto;
-}
-.client-new-classic .classic-room-info > .classic-invite {
-  position: absolute;
-  top: 0;
-  right: 0.5em;
-  opacity: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  color: inherit;
-}
-.classic-room-info:hover > .classic-invite,
-.classic-room-info > .classic-invite:focus-visible {
-  opacity: 1;
-}
-.chat-header .filter-tabs {
-  opacity: 0;
-}
-.chat-panel:hover .chat-header .filter-tabs,
-.chat-header .filter-tabs:focus-within,
-.chat-header .filter-tabs:has(.unread-badge),
-.chat-panel:has(.pm-controls) .filter-tabs {
-  opacity: 1;
-}
-.classic-room-info h4 {
-  margin: 0 0 1em;
-}
-.classic-room-field {
-  font-size: 1.1em;
-  line-height: 1.5;
-  margin-bottom: 1em;
-}
-.classic-room-name {
-  font: inherit;
-  margin: 0;
-  color: inherit;
-  letter-spacing: 0;
-}
-.classic-room-info h4 > span {
-  display: block;
-}
-.classic-room-info .table-badges {
-  display: block;
-}
-.classic-room-info .table-badges span {
-  display: inline-block;
-  margin-right: 0.6em;
-}
-.classic-room-info > button {
-  margin-top: 0.5em;
-  font-size: 0.85em;
-}
-.table-badges {
-  font-size: 0.85em;
 }
 .seat .player-stats details {
   margin-top: 0.5em;
@@ -1182,9 +1017,6 @@ html[data-theme="dark"] .client-new-classic .person-main.name-me {
 html[data-theme="dark"] .client-new-classic .person-main.friend {
   color: var(--color-friend);
 }
-html[data-theme="dark"] .client-new-classic .chat-header .filter-tabs button {
-  color: var(--dm-text-muted);
-}
 html[data-theme="dark"] .client-new-classic .chat-message.private-message {
   color: #ffa7a7;
 }
@@ -1224,16 +1056,7 @@ html[data-theme="dark"] .seat {
     max-width: none;
   }
 }
-@media (max-width: 840px) {
-  #header nav > ul > li + li {
-    margin-left: 0;
-  }
-}
 @media (max-height: 530px), (max-width: 620px) {
-  .chat-header .filter-tabs,
-  .client-new-classic .classic-room-info > .classic-invite {
-    opacity: 1;
-  }
   .client-new-classic #lobby-top-half,
   .client-new-classic #lobby-bottom-half {
     display: none;
@@ -1256,20 +1079,6 @@ html[data-theme="dark"] .seat {
   .client-new-classic .panel-game-chat #lobby-chat-pregame-container,
   .client-new-classic .panel-people #lobby-online-users {
     display: block;
-  }
-  .mobile-tabs {
-    display: flex;
-    gap: 0.5em;
-    justify-content: center;
-    margin-top: 1em;
-    height: 2em;
-  }
-  .client-new-classic .mobile-tabs button {
-    padding: 0 1em;
-    font-size: 0.8em;
-  }
-  .client-new-classic .mobile-tabs button[aria-pressed="true"] {
-    background: #2e7d32;
   }
   .dialog-content {
     min-width: 0;
@@ -1336,4 +1145,7 @@ html[data-theme="dark"] .seat {
     animation: none !important;
     scroll-behavior: auto !important;
   }
+}
+.client-new-classic #lobby-small-screen-buttons .button {
+  font-size: 0.8em;
 }

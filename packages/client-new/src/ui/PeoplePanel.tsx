@@ -82,10 +82,14 @@ export function PeoplePanel({
                   && user.tableID !== undefined
                   && user.status !== Status.Lobby
                   && user.status !== Status.Replay ? (
-                    <button
-                      className="text-button person-status"
-                      disabled={status !== "online"}
-                      onClick={() => {
+                    <a
+                      className="person-status"
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        if (status !== "online") {
+                          return;
+                        }
                         const table =
                           user.tableID === undefined
                             ? undefined
@@ -107,7 +111,7 @@ export function PeoplePanel({
                       }}
                     >
                       {StatusText[user.status]}
-                    </button>
+                    </a>
                   ) : (
                     StatusText[user.status]
                   )}
