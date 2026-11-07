@@ -24,7 +24,13 @@ function main {
 
   # Install dependencies.
   apt update
-  apt install --yes certbot cron curl git openssl postgresql python3 redis-server sudo
+  apt install --yes certbot cron curl git openssl postgresql python3 redis-server sudo ufw
+
+  # Allow only SSH, HTTP, and HTTPS through the firewall.
+  ufw allow OpenSSH
+  ufw allow 80/tcp
+  ufw allow 443/tcp
+  ufw --force enable
 
   # Create the service accounts.
   useradd --system --user-group --no-create-home --home-dir /home/hanabi --shell /usr/sbin/nologin hanabi
