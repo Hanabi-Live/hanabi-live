@@ -47,12 +47,14 @@ class SchemaPreparationTests(unittest.TestCase):
         with (
             patch.dict(os.environ, {"HANABI_TEST_DATABASE_URL": "postgres://localhost/postgres"}),
             patch("sys.argv", ["sqlx_schema.py"]),
-            patch("subprocess.check_output", return_value="sqlx-cli-sqlx 0.9.0"),
+            patch("subprocess.check_output", side_effect=["sqlx-cli-sqlx 0.9.0", "7\n"]),
             patch("subprocess.run", side_effect=run),
             self.assertRaises(subprocess.CalledProcessError),
         ):
             sqlx_schema.main()
         self.assertEqual(commands[0][0], "createdb")
+        self.assertIn("migration_version=7", commands[1])
+        self.assertEqual(commands[-2][:3], ["cargo", "sqlx", "prepare"])
         self.assertEqual(commands[-1][0], "dropdb")
         self.assertEqual(commands[0][-1], commands[-1][-1])
         self.assertNotEqual(commands[-1][-1], "postgres")
