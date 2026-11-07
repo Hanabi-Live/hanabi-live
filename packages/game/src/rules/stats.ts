@@ -4,7 +4,7 @@
 
 import type { Tuple } from "complete-common";
 import { assertNotNull, newArray, sumArray } from "complete-common";
-import { MAX_CLUE_NUM } from "../constants";
+import { MAX_CLUE_NUM, VALID_NUM_PLAYERS } from "../constants";
 import { PaceRisk } from "../enums/PaceRisk";
 import type { CardNote } from "../interfaces/CardNote";
 import type { CardState } from "../interfaces/CardState";
@@ -24,7 +24,7 @@ import {
   getNumDiscardedCopiesOfCard,
   getTotalCardsInDeck,
 } from "./deck";
-import { isHandLocked } from "./hand";
+import { getCardsPerHand, isHandLocked } from "./hand";
 import { reversibleGetMaxScorePerStack } from "./variants/reversible";
 import { sudokuGetMaxScorePerStack } from "./variants/sudoku";
 
@@ -291,6 +291,31 @@ export function getMinEfficiency(
   const totalClues = getStartingCluesUsable(endGameLength, deckSize, variant);
 
   return maxScore / totalClues;
+}
+
+/**
+ * @returns The minimum efficiency needed in order to win this variant, for each number of players.
+ *          This is for choosing game options, before characters are assigned, so it uses the normal
+ *          end game length (which only the Contrarian character changes).
+ */
+export function getMinEfficiencyByNumPlayers(
+  variant: Variant,
+  oneExtraCard: boolean,
+  oneLessCard: boolean,
+): ReadonlyMap<NumPlayers, number> {
+  return new Map(
+    VALID_NUM_PLAYERS.map((numPlayers) => {
+      const cardsPerHand = getCardsPerHand({
+        numPlayers,
+        oneExtraCard,
+        oneLessCard,
+      });
+      return [
+        numPlayers,
+        getMinEfficiency(numPlayers, numPlayers, variant, cardsPerHand),
+      ];
+    }),
+  );
 }
 
 /**

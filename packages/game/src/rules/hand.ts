@@ -6,7 +6,9 @@ import type { CardOrder } from "../types/CardOrder";
 import type { NumPlayers } from "../types/NumPlayers";
 import { isCardClued } from "./cardState";
 
-export function getCardsPerHand(options: Options): number {
+export function getCardsPerHand(
+  options: Pick<Options, "numPlayers" | "oneExtraCard" | "oneLessCard">,
+): number {
   return (
     getCardsPerHandNatural(options.numPlayers)
     + (options.oneExtraCard ? 1 : 0)

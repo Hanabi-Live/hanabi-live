@@ -3,10 +3,16 @@ import {
   DEFAULT_CREATE_TABLE_MAX_PLAYERS,
   errorDetails,
 } from "@hanabi-live/data";
-import { VARIANT_NAMES, isValidNumPlayers } from "@hanabi-live/game";
+import {
+  VARIANT_NAMES,
+  getMinEfficiencyByNumPlayers,
+  getVariant,
+  isHardVariant,
+  isValidNumPlayers,
+} from "@hanabi-live/game";
 import { getRandomArrayElement, isArray } from "complete-common";
 import type { SubmitEvent } from "react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { LobbyConnection } from "../connection";
 import type { Pregame, Welcome } from "../protocol";
 import { DialogField } from "./DialogField";
@@ -451,6 +457,19 @@ export function GameDialog({
               ))}
             </datalist>
           </DialogField>
+          <DialogField icon="tachometer-alt" label="Efficiency">
+            <div
+              className="input-text"
+              id="create-game-required-efficiency"
+              title="The minimum efficiency needed to get the maximum score, for each number of players. Highlighted values make this a hard variant."
+            >
+              <RequiredEfficiency
+                oneExtraCard={flags.oneExtraCard}
+                oneLessCard={flags.oneLessCard}
+                variantName={variant}
+              />
+            </div>
+          </DialogField>
           {!speedrun && (
             <div className="row" id="create-game-timed-row">
               <div className="col-3" id="create-game-timed-label">
@@ -643,5 +662,50 @@ export function GameDialog({
         </fieldset>
       </form>
     </Modal>
+  );
+}
+
+/**
+ * The minimum efficiency needed to win a variant, for each number of players, highlighting the
+ * values that make it a hard variant.
+ */
+function RequiredEfficiency({
+  variantName,
+  oneExtraCard,
+  oneLessCard,
+}: {
+  variantName: string;
+  oneExtraCard: boolean;
+  oneLessCard: boolean;
+}) {
+  // The user may still be typing the name of a custom variant.
+  if (!VARIANT_NAMES.includes(variantName)) {
+    return "-";
+  }
+
+  const variant = getVariant(variantName);
+  const efficiencies = getMinEfficiencyByNumPlayers(
+    variant,
+    oneExtraCard,
+    oneLessCard,
+  );
+  return (
+    <>
+      {[...efficiencies].map(([numPlayers, efficiency], index) => (
+        <Fragment key={numPlayers}>
+          {index > 0 && ", "}
+          {numPlayers}p:{" "}
+          <span
+            className={
+              isHardVariant(variant, efficiency)
+                ? "create-game-efficiency-hard"
+                : undefined
+            }
+          >
+            {efficiency.toFixed(2)}
+          </span>
+        </Fragment>
+      ))}
+    </>
   );
 }

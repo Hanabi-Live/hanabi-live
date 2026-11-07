@@ -12,6 +12,9 @@ import {
   MIN_PLAYERS,
   VARIANT_NAMES,
   doesVariantExist,
+  getMinEfficiencyByNumPlayers,
+  getVariant,
+  isHardVariant,
   isValidNumPlayers,
 } from "@hanabi-live/game";
 import {
@@ -71,6 +74,7 @@ export function init(): void {
     const randomVariant = getRandomArrayElement(VARIANT_NAMES);
     $("#createTableVariant").text(randomVariant);
     dropdown2.val(randomVariant);
+    updateRequiredEfficiency();
   });
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked.
@@ -128,6 +132,7 @@ export function init(): void {
 
     // Remember the new setting.
     getCheckbox("createTableOneExtraCard");
+    updateRequiredEfficiency();
   });
 
   $("#createTableOneLessCard").on("change", () => {
@@ -143,6 +148,7 @@ export function init(): void {
 
     // Remember the new setting.
     getCheckbox("createTableOneLessCard");
+    updateRequiredEfficiency();
   });
 
   // Check for changes in the various input fields so that we can remember their respective
@@ -244,6 +250,7 @@ function firstVariantDropdownInit() {
       // Update the hidden field with what the user selected.
       $("#createTableVariant").text(selection);
     }
+    updateRequiredEfficiency();
   });
 }
 
@@ -266,6 +273,7 @@ function secondVariantDropdownInit() {
 
     // Update the hidden field with what the user selected.
     $("#createTableVariant").text(search);
+    updateRequiredEfficiency();
 
     // If they chose a basic variant, revert back to the basic dropdown.
     if (BASIC_VARIANT_NAMES_SET.has(search)) {
@@ -585,7 +593,45 @@ export function ready(): boolean {
     $("#create-game-json-row").hide();
   }
 
+  updateRequiredEfficiency();
+
   return true;
+}
+
+/**
+ * Shows the minimum efficiency needed to win the selected variant, for each number of players,
+ * highlighting the values that make it a hard variant.
+ */
+function updateRequiredEfficiency() {
+  const element = $("#create-game-required-efficiency");
+  let variantName = $("#createTableVariant").text().trim();
+  if (variantName === "") {
+    variantName = DEFAULT_VARIANT_NAME;
+  }
+
+  // The user may still be typing the name of a custom variant.
+  if (!doesVariantExist(variantName)) {
+    element.text("-");
+    return;
+  }
+
+  const variant = getVariant(variantName);
+  const efficiencies = getMinEfficiencyByNumPlayers(
+    variant,
+    $("#createTableOneExtraCard").is(":checked"),
+    $("#createTableOneLessCard").is(":checked"),
+  );
+  element.empty();
+  for (const [numPlayers, efficiency] of efficiencies) {
+    if (numPlayers !== MIN_PLAYERS) {
+      element.append(", ");
+    }
+    const value = $("<span>").text(efficiency.toFixed(2));
+    if (isHardVariant(variant, efficiency)) {
+      value.addClass("create-game-efficiency-hard");
+    }
+    element.append(`${numPlayers}p: `, value);
+  }
 }
 
 function readyVariant(value: string) {

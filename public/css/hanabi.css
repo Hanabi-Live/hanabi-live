@@ -728,6 +728,17 @@ table td {
   min-height: 3em;
 }
 
+#create-game-required-efficiency {
+  /* Match the spacing of the rows that hold an input. */
+  padding-bottom: 1em;
+  cursor: help;
+}
+
+.create-game-efficiency-hard {
+  color: #b35c00;
+  font-weight: bold;
+}
+
 #create-game-timed-option-1,
 #create-game-timed-option-3 {
   line-height: 1.2em;

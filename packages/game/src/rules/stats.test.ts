@@ -4,6 +4,7 @@ import { getDefaultVariant, getVariant } from "../gameData";
 import {
   getCluesStillUsable,
   getMinEfficiency,
+  getMinEfficiencyByNumPlayers,
   getPace,
   getPaceRisk,
   getStartingCluesUsable,
@@ -96,6 +97,41 @@ describe("getStartingPace", () => {
         2,
       ),
     ).toBe(7);
+  });
+});
+
+describe("getMinEfficiencyByNumPlayers", () => {
+  test("matches getMinEfficiency for every number of players", () => {
+    const efficiencies = getMinEfficiencyByNumPlayers(
+      BLACK_VARIANT,
+      false,
+      false,
+    );
+    expect([...efficiencies.keys()]).toEqual([2, 3, 4, 5, 6]);
+    expect(efficiencies.get(2)).toBeCloseTo(
+      getMinEfficiency(2, 2, BLACK_VARIANT, CARDS_PER_HAND_2_PLAYER),
+    );
+    expect(efficiencies.get(4)).toBeCloseTo(
+      getMinEfficiency(4, 4, BLACK_VARIANT, CARDS_PER_HAND_4_PLAYER),
+    );
+  });
+
+  test("accounts for one extra or one less card per hand", () => {
+    expect(
+      getMinEfficiencyByNumPlayers(DEFAULT_VARIANT, true, false).get(2),
+    ).toBeCloseTo(
+      getMinEfficiency(
+        2,
+        2,
+        DEFAULT_VARIANT,
+        CARDS_PER_HAND_2_PLAYER_ONE_EXTRA,
+      ),
+    );
+    expect(
+      getMinEfficiencyByNumPlayers(DEFAULT_VARIANT, false, true).get(2),
+    ).toBeCloseTo(
+      getMinEfficiency(2, 2, DEFAULT_VARIANT, CARDS_PER_HAND_2_PLAYER_ONE_LESS),
+    );
   });
 });
 
