@@ -318,15 +318,23 @@ for (const previous of ["classic", "new"] as const) {
         await expect(page.getByLabel("Preference saving status")).toContainText(
           "Offline",
         );
-        await expect(page.locator(".global-notice")).toContainText(
-          "another browser tab",
-        );
-      } else {
-        await expect(page.locator("#error-modal")).toBeVisible();
-        await expect(page.locator("#error-modal")).toContainText(
-          "another browser tab",
-        );
+        await expect(page.locator(".global-notice")).toHaveCount(0);
+        await expect(
+          page.getByRole("button", { name: "Retry", exact: true }),
+        ).toHaveCount(0);
       }
+      await expect(page.locator("#error-modal")).toBeVisible();
+      await expect(page.locator("#error-modal")).toContainText(
+        "another browser tab",
+      );
+      await expect(
+        page.locator("#error-modal").getByRole("button", { name: "Reload" }),
+      ).toBeVisible();
+      await expect(
+        page.locator("#error-modal").getByRole("button", { name: "Sign Out" }),
+      ).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.locator("#error-modal")).toBeVisible();
       await other.getByRole("button", { name: "Create a table" }).click();
       await other.getByLabel("Table name", { exact: true }).fill(name);
       await other

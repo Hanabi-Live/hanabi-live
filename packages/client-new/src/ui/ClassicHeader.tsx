@@ -23,6 +23,7 @@ export function ClassicHeader({
     online,
     historyCount,
     lobbyStatus,
+    failed,
   } = useSelector(
     (state: LobbyState) => ({
       welcome: state.welcome,
@@ -32,6 +33,7 @@ export function ClassicHeader({
       pending: state.pending,
       online: state.connection === "online",
       historyCount: Object.keys(state.history).length,
+      failed: state.notice?.fatal === true,
     }),
     shallowEqual,
   );
@@ -50,7 +52,7 @@ export function ClassicHeader({
           />
         </Link>
       </h1>
-      {welcome && (
+      {welcome && !failed && (
         <nav aria-label="Main navigation" id="nav">
           <ul>
             {game ? (

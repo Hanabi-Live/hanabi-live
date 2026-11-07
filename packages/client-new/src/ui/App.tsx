@@ -17,6 +17,7 @@ import type { Table } from "../protocol";
 import type { LobbyState } from "../store";
 import { ChatPanel } from "./ChatPanel";
 import { ClassicHeader } from "./ClassicHeader";
+import { ErrorModal } from "./ErrorModal";
 import { GameDialog } from "./GameDialog";
 import { HistoryPanel } from "./HistoryPanel";
 import { Modal } from "./Modal";
@@ -743,7 +744,11 @@ export function App({ connection }: { connection: LobbyConnection }) {
               <main id="main-content">
                 <div className="lobby-notices">
                   <div
-                    className={online ? "sr-only" : "notice connection-status"}
+                    className={
+                      online || state.notice?.fatal === true
+                        ? "sr-only"
+                        : "notice connection-status"
+                    }
                   >
                     <span aria-label="Connection status" role="status">
                       {online
@@ -752,7 +757,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
                           ? "Disconnected"
                           : "Reconnecting..."}
                     </span>
-                    {!online && (
+                    {!online && state.notice?.fatal !== true && (
                       <button
                         className="text-button"
                         onClick={() => connection.retryNow()}
@@ -772,7 +777,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
                       </button>
                     </div>
                   )}
-                  {state.notice && (
+                  {state.notice && !state.notice.fatal && (
                     <div className="notice global-notice" role="alert">
                       <RichText html={state.notice.text} />
                       <button
@@ -782,11 +787,6 @@ export function App({ connection }: { connection: LobbyConnection }) {
                       >
                         <X size={16} />
                       </button>
-                      {state.notice.fatal && (
-                        <button onClick={() => connection.retryNow()}>
-                          Reconnect
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -1031,6 +1031,9 @@ export function App({ connection }: { connection: LobbyConnection }) {
               </ul>
             </form>
           </Modal>
+        )}
+        {state.notice?.fatal === true && (
+          <ErrorModal connection={connection} text={state.notice.text} />
         )}
       </div>
     </div>
