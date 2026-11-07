@@ -18,7 +18,6 @@ source "$DIR/../lib/env.sh"
 
 PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" << EOF
 UPDATE users SET last_ip='0.0.0.0';
-DELETE FROM user_settings;
 UPDATE users SET settings = '{}';
 DELETE FROM user_stats;
 DELETE FROM user_friends;

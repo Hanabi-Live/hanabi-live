@@ -49,39 +49,6 @@ CREATE TABLE users (
     settings                   JSONB    NOT NULL  DEFAULT '{}'
 );
 
-DROP TABLE IF EXISTS user_settings CASCADE;
-CREATE TABLE user_settings (
-    user_id                              INTEGER   NOT NULL,
-    desktop_notification                 BOOLEAN   NOT NULL  DEFAULT FALSE,
-    sound_move                           SMALLINT  NOT NULL  DEFAULT 0, /* See the "SoundMove" enum. */
-    sound_timer                          BOOLEAN   NOT NULL  DEFAULT TRUE,
-    keldon_mode                          BOOLEAN   NOT NULL  DEFAULT FALSE,
-    colorblind_mode                      BOOLEAN   NOT NULL  DEFAULT FALSE,
-    real_life_mode                       BOOLEAN   NOT NULL  DEFAULT FALSE,
-    reverse_hands                        BOOLEAN   NOT NULL  DEFAULT FALSE,
-    style_numbers                        BOOLEAN   NOT NULL  DEFAULT FALSE,
-    show_timer_in_untimed                BOOLEAN   NOT NULL  DEFAULT FALSE,
-    speedrun_preplay                     BOOLEAN   NOT NULL  DEFAULT FALSE,
-    speedrun_mode                        BOOLEAN   NOT NULL  DEFAULT FALSE,
-    hyphenated_conventions               BOOLEAN   NOT NULL  DEFAULT FALSE,
-    volume                               SMALLINT  NOT NULL  DEFAULT 50,
-    create_table_variant                 TEXT      NOT NULL  DEFAULT 'No Variant',
-    create_table_timed                   BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_time_base_minutes       FLOAT     NOT NULL  DEFAULT 2,
-    create_table_time_per_turn_seconds   INTEGER   NOT NULL  DEFAULT 20,
-    create_table_speedrun                BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_card_cycle              BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_deck_plays              BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_empty_clues             BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_one_extra_card          BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_one_less_card           BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_max_players             SMALLINT  NOT NULL  DEFAULT 5,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-);
-CREATE INDEX user_settings_index_user_id ON user_settings (user_id);
-
 /* User stats are per variant. */
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
