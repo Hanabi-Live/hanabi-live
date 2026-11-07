@@ -1857,6 +1857,8 @@ impl TableActor {
         {
             s.finished = Some(Utc::now());
         }
+        // `save` repeats these checks, but a failure inside it freezes the table. Checking here
+        // first rejects an invalid or oversized change while the table keeps running.
         next.validate()?;
         self.store.prepare_chat(&mut next).await?;
         ensure!(
