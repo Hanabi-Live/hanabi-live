@@ -46,7 +46,7 @@ bunx --bun --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDL
 # Also produce the unversioned bundle name that the server serves in dev mode. (Normally it is
 # only created by the esbuild watch script, but the Docker image runs in dev mode.)
 cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
-bash "$REPO_ROOT/scripts/bash/build-pips-reference.sh"
+bash "$REPO_ROOT/scripts/dev/build-pips-reference.sh"
 echo
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it

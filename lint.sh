@@ -58,8 +58,8 @@ case "$shard" in
   *) ;;
 esac
 run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
-run_parallel 1 bash "$DIR/check-prettier.sh"
-run_parallel 2 bash "$DIR/check-spelling.sh"
+run_parallel 1 bash "$DIR/scripts/lint/check-prettier.sh"
+run_parallel 2 bash "$DIR/scripts/lint/check-spelling.sh"
 run_parallel 1 run_repository_check check-knip
 run_parallel 1 run_repository_check check-shellcheck
 run_parallel 1 run_repository_check check-templates
@@ -76,7 +76,7 @@ if [[ $shard != 1 ]]; then
   if [[ ${CI:-} == true ]]; then
     bunx --bun --no-install turbo run "//#lint-rust" --cache=local:rw || status=1
   else
-    bash "$DIR/check-rust.sh" || status=1
+    bash "$DIR/scripts/lint/check-rust.sh" || status=1
   fi
 fi
 

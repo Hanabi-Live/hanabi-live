@@ -59,7 +59,7 @@ GitHub_private_key.pem
 /public/css/critical.css
 
 # Scripts can create temporary SQL files
-/scripts/bash/*.sql
+/scripts/dev/*.sql
 
 # Docs for npm packages
 /packages/game/docs

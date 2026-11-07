@@ -19,7 +19,7 @@ TypeScript interfaces remain available through `@hanabi-live/data`.
 1. From the repository root, run:
 
    ```sh
-   bash scripts/bash/generate-protocol.sh
+   bash scripts/dev/generate-protocol.sh
    ```
 
 1. Commit `packages/data/src/generated/protocol.ts` with the source changes.

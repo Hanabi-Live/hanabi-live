@@ -254,7 +254,7 @@ fn emit(
 
 fn main() -> Result<()> {
     println!(
-        "// Generated from server/protocol. Run bash scripts/bash/generate-protocol.sh.\nimport {{ z }} from \"zod\";\n"
+        "// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.\nimport {{ z }} from \"zod\";\n"
     );
     let client = hanabi_protocol::client_contracts();
     let server = hanabi_protocol::server_contracts();

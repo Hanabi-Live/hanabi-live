@@ -25,7 +25,7 @@ INPUTS = (
     ".config",
     ".github/workflows/ci.yml",
     ".github/workflows/setup-bun",
-    "scripts/typedoc_deployment.py",
+    "scripts/ci/typedoc_deployment.py",
 )
 
 

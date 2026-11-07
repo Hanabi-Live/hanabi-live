@@ -60,9 +60,9 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/cspell
-          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-${{ github.sha }}
+          key: cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'scripts/lint/check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-${{ github.sha }}
           restore-keys: |
-            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-
+            cspell-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'cspell.config.jsonc', '.gitignore', 'scripts/lint/check-spelling.sh', '.github/workflows/cspell-unused-words.yml') }}-
       - name: Restore successful package lint results
         id: lint-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -78,9 +78,9 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/prettier
-          key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'check-prettier.sh') }}-${{ github.sha }}
+          key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-${{ github.sha }}
           restore-keys: |
-            prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'check-prettier.sh') }}-
+            prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-
       - name: Run the lint shard
         run: bash lint.sh --shard=${{ matrix.shard }}/2
       - name: Cache successful formatting results
@@ -368,7 +368,7 @@ jobs:
         id: docs
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/typedoc_deployment.py prepare
+        run: python3 scripts/ci/typedoc_deployment.py prepare
       - uses: ./.github/workflows/setup-bun
         if: steps.docs.outputs.changed == 'true'
 
@@ -394,7 +394,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DEPLOYMENT_ID: ${{ steps.docs.outputs.deployment_id }}
           DEPLOYMENT_STATE: ${{ steps.pages.outcome == 'success' && 'success' || 'failure' }}
-        run: python3 scripts/typedoc_deployment.py record "$DEPLOYMENT_ID" "$DEPLOYMENT_STATE"
+        run: python3 scripts/ci/typedoc_deployment.py record "$DEPLOYMENT_ID" "$DEPLOYMENT_STATE"
 
   discord:
     name: Discord Failure Notification
