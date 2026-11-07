@@ -323,8 +323,7 @@ def deploy(root, check, apply_migrations):
     require((root / "public/js/bundles/git_revision.txt").read_text().strip() == running,
             "Installed client and running server revisions differ. Investigate the unfinished deployment first.")
     installed_version = (root / "public/js/bundles/version.txt").read_text().strip()
-    require(installed_version == running or re.fullmatch(r"[0-9]+", installed_version),
-            "Installed client version does not match the running revision or legacy version format.")
+    require(installed_version == running, "Installed client version does not match the running revision.")
     require(healthy(control(port, "/metrics")), "Recovery is unhealthy, frozen, or draining; refusing deployment.")
     github = GitHub()
     revision = github.json("/commits/main")["sha"]
