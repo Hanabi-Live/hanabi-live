@@ -35,7 +35,7 @@ podman compose --file docker-compose-dev.yml up --build --detach
 podman compose --file docker-compose-dev.yml logs --follow hanab-live-server
 ```
 
-- Then, in a browser, "http://localhost:1212/"
+- Then, in a browser, surf to: http://localhost:1212/
 
 ## For Production
 
