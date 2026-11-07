@@ -1,6 +1,7 @@
 //! PostgreSQL-backed login and identity routes.
 mod crypto;
 mod normalization;
+mod rate_limit;
 #[cfg(test)]
 pub(crate) mod test_support;
 #[cfg(test)]
@@ -44,6 +45,7 @@ pub struct AccountConfig {
 struct Accounts {
     pool: PgPool,
     config: AccountConfig,
+    limits: rate_limit::LoginLimits,
 }
 
 pub fn router(pool: PgPool, config: AccountConfig) -> Router {
@@ -57,7 +59,11 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
         )
         .route("/api/v1/identity", post(identity))
         .layer(DefaultBodyLimit::max(8192))
-        .with_state(Arc::new(Accounts { pool, config }))
+        .with_state(Arc::new(Accounts {
+            pool,
+            config,
+            limits: rate_limit::LoginLimits::default(),
+        }))
 }
 
 pub fn session_id(headers: &HeaderMap, secret: &str) -> Option<i32> {
@@ -115,6 +121,19 @@ struct Login {
     password: String,
     new_password: String,
     version: String,
+}
+
+fn too_many_attempts(wait: std::time::Duration) -> Response {
+    let minutes = wait.as_secs().div_ceil(60).max(1);
+    (
+        StatusCode::TOO_MANY_REQUESTS,
+        [(header::RETRY_AFTER, wait.as_secs().max(1).to_string())],
+        format!(
+            "Too many login attempts. Please try again in {minutes} minute{}.\n",
+            if minutes == 1 { "" } else { "s" }
+        ),
+    )
+        .into_response()
 }
 
 fn unauthorized(message: impl Into<String>) -> Response {
@@ -189,6 +208,10 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
     if let Err(message) = validate_client_version(&input.version, &state.config.version) {
         return Ok(unauthorized(message));
     }
+    let mut attempt = match state.limits.begin(ip) {
+        Ok(attempt) => attempt,
+        Err(wait) => return Ok(too_many_attempts(wait)),
+    };
     let existing = sqlx::query!(
         "SELECT id, password_hash AS \"password_hash?\" FROM users WHERE username=$1",
         username
@@ -198,12 +221,17 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
     let id: i32;
     if let Some(user) = existing {
         id = user.id;
+        if let Err(wait) = attempt.charge_account(id) {
+            return Ok(too_many_attempts(wait));
+        }
         let Some(original) = user.password_hash else {
             return Ok(unauthorized(
                 "This account requires a password reset. Please follow the <a href=\"/password-reset\">password reset instructions</a>.",
             ));
         };
         if !verify_password(input.password.clone(), original.clone()).await? {
+            attempt.keep();
+            eprintln!("Failed login for account {id} from {ip}.");
             return Ok(unauthorized("That is not the correct password."));
         }
         let automatic_upgrade =
@@ -249,6 +277,8 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
             )));
         }
         let hash = hash_password(input.password).await?;
+        // Creating an account costs as much as a guess, so it counts against the address.
+        attempt.keep();
         id = sqlx::query_scalar!(
             "INSERT INTO users (username, normalized_username, password_hash, last_ip)
              VALUES ($1,$2,$3,$4) RETURNING id",

@@ -58,6 +58,61 @@ pub(super) async fn request(
     (status, headers, body)
 }
 
+async fn login_from(app: &Router, ip: &str, username: &str, password: &str) -> Response {
+    let request = Request::builder()
+        .method("POST")
+        .uri("/login")
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+        .extension(ConnectInfo(SocketAddr::new(ip.parse().unwrap(), 12345)))
+        .body(Body::from(format!(
+            "username={username}&password={password}&version=42"
+        )))
+        .unwrap();
+    app.clone().oneshot(request).await.unwrap()
+}
+
+#[tokio::test]
+async fn login_limit_blocks_guessing_before_hashing_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    let (attacker, player) = ("203.0.113.9", "203.0.113.10");
+    assert_eq!(
+        login_from(&app, player, "Alice", "correct").await.status(),
+        StatusCode::OK
+    );
+    for _ in 0..3 {
+        assert_eq!(
+            login_from(&app, player, "Alice", "correct").await.status(),
+            StatusCode::OK,
+            "successful logins do not use up the limit"
+        );
+    }
+    for _ in 0..20 {
+        assert_eq!(
+            login_from(&app, attacker, "Alice", "wrong").await.status(),
+            StatusCode::UNAUTHORIZED
+        );
+    }
+    let blocked = login_from(&app, attacker, "Alice", "correct").await;
+    assert_eq!(blocked.status(), StatusCode::TOO_MANY_REQUESTS);
+    let wait: u64 = blocked.headers()[header::RETRY_AFTER]
+        .to_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    assert!((1..=900).contains(&wait));
+    let body = to_bytes(blocked.into_body(), 1024).await.unwrap();
+    assert!(String::from_utf8_lossy(&body).contains("Too many login attempts"));
+    assert_eq!(
+        login_from(&app, player, "Alice", "correct").await.status(),
+        StatusCode::OK,
+        "other addresses can still log in"
+    );
+    db.close().await;
+}
+
 #[tokio::test]
 async fn login_requires_matching_release_sha_or_bot_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
