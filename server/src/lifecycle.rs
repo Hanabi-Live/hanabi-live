@@ -20,10 +20,33 @@ use tokio_util::task::TaskTracker;
 #[derive(Debug)]
 pub enum StopReason {
     Shutdown,
-    Restart,
-    GracefulStop,
+    /// The optional message is an administrator's plain-text reason for the downtime.
+    Restart(Option<String>),
+    GracefulStop(Option<String>),
     LeaseLost,
     Failure(String),
+}
+impl StopReason {
+    fn reconnect(&self) -> bool {
+        matches!(self, Self::Restart(_) | Self::GracefulStop(_))
+    }
+    fn message(&self) -> Option<&str> {
+        match self {
+            Self::Restart(message) | Self::GracefulStop(message) => message.as_deref(),
+            _ => None,
+        }
+    }
+    /// HTML shown to connected users when an administrator explained the downtime.
+    fn user_notice(&self) -> Option<String> {
+        let reason = crate::accounts::escape_html(self.message()?);
+        Some(if matches!(self, Self::Restart(_)) {
+            format!("The server is restarting and will be back shortly.<br />Reason: {reason}")
+        } else {
+            format!(
+                "The server is going down for maintenance. Your accepted game progress has been saved.<br />Reason: {reason}"
+            )
+        })
+    }
 }
 pub struct Control {
     pub hub: mpsc::Sender<HubCommand>,
@@ -96,8 +119,8 @@ impl Control {
             .context("Hub stopped")?;
         received.await.context("Hub operation was interrupted")?
     }
-    pub async fn graceful_stop(&self) -> Result<()> {
-        self.request_stop(StopReason::GracefulStop).await
+    pub async fn graceful_stop(&self, message: Option<String>) -> Result<()> {
+        self.request_stop(StopReason::GracefulStop(message)).await
     }
     pub async fn request_stop(&self, reason: StopReason) -> Result<()> {
         ensure!(
@@ -108,7 +131,7 @@ impl Control {
             !self.draining.swap(true, Ordering::AcqRel),
             "The server is already draining."
         );
-        if matches!(reason, StopReason::Restart)
+        if matches!(reason, StopReason::Restart(_))
             && let Err(error) = crate::restart::prepare(&self.root).await
         {
             self.draining.store(false, Ordering::Release);
@@ -196,17 +219,18 @@ pub async fn drain_game_runtime(
         failures.push(format!("State ownership was lost during drain: {error:#}"));
     }
     if failures.is_empty() {
-        if matches!(reason, StopReason::Restart) {
-            app.announce_restart().await;
-        } else if matches!(reason, StopReason::GracefulStop) {
-            app.announce_stop().await;
+        match reason {
+            StopReason::Restart(message) => app.announce_restart(message.as_deref()).await,
+            StopReason::GracefulStop(message) => app.announce_stop(message.as_deref()).await,
+            _ => {}
         }
         let (reply, closed) = oneshot::channel();
         if app
             .hub
             .send(HubCommand::Operations {
                 command: Operation::Drained {
-                    reconnect: matches!(reason, StopReason::Restart | StopReason::GracefulStop),
+                    reconnect: reason.reconnect(),
+                    message: reason.user_notice(),
                 },
                 reply,
             })

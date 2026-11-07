@@ -76,6 +76,32 @@ afterEach(() => {
 });
 
 describe("connection ownership and recovery", () => {
+  it("keeps an administrator's downtime reason through the reconnect until dismissed", async () => {
+    const store = createLobbyStore();
+    const connection = new LobbyConnection(store, vi.fn());
+    await connection.checkSession();
+    const first = Socket.instances[0];
+    if (!first) {
+      throw new Error("Missing socket");
+    }
+    first.receive("welcome", welcome());
+    first.receive("restart", {});
+    expect(store.getState().downtime).toBeNull();
+    first.receive("restart", { message: "Upgrading the database." });
+    first.close();
+    expect(store.getState().connection).toBe("reconnecting");
+    await vi.advanceTimersByTimeAsync(0);
+    const second = Socket.instances[1];
+    if (!second) {
+      throw new Error("Missing reconnect socket");
+    }
+    second.receive("welcome", welcome());
+    expect(store.getState().downtime).toBe("Upgrading the database.");
+    connection.dismissDowntime();
+    expect(store.getState().downtime).toBeNull();
+    connection.stop();
+  });
+
   it("confirms submissions in wire order without attributing their rejection to later preferences", async () => {
     const store = createLobbyStore();
     const connection = new LobbyConnection(store, vi.fn());

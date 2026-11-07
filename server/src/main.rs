@@ -233,7 +233,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             service=services.join_next()=>StopReason::Failure(format!("HTTP listener exited unexpectedly: {service:?}"))
         }
     };
-    let replace = matches!(reason, StopReason::Restart);
+    let replace = matches!(reason, StopReason::Restart(_));
     match &reason {
         StopReason::LeaseLost => {
             failures.push("Redis state ownership or durability was lost".into());

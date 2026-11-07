@@ -38,7 +38,7 @@ macro_rules! client_contracts {
 macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
-            "restart" => Empty, Empty;
+            "restart" => Restart, Restart;
             "synced" => Empty, Empty;
             "lobbyStatus" => LobbyStatus, LobbyStatus;
             "chat" => Chat, Chat;

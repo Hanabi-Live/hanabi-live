@@ -114,9 +114,11 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
     };
     tokio::time::timeout(Duration::from_secs(2), async {
         integrations
-            .announce_restart(Duration::from_secs(4680))
+            .announce_restart(Duration::from_secs(4680), None)
             .await;
-        integrations.announce_stop(Duration::from_secs(4680)).await;
+        integrations
+            .announce_stop(Duration::from_secs(4680), None)
+            .await;
     })
     .await
     .unwrap();
@@ -164,7 +166,7 @@ async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
         bridge.event(json!({"t":"READY"})).await.unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(2),
-            bridge.announce_restart(Duration::from_secs(4680)),
+            bridge.announce_restart(Duration::from_secs(4680), None),
         )
         .await
         .unwrap();
@@ -221,11 +223,14 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         .unwrap();
     assert!(quiesced.await.unwrap().is_empty());
     bridge
-        .announce_restart(Duration::from_secs(4680))
+        .announce_restart(Duration::from_secs(4680), None)
         .await
         .unwrap();
     bridge
-        .announce_stop(Duration::from_secs(4680))
+        .announce_stop(
+            Duration::from_secs(4680),
+            Some("Upgrading <the> database & 'more'"),
+        )
         .await
         .unwrap();
     let requests = mock.requests.lock().await;
@@ -259,8 +264,8 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
             crate::restart::version()
         )));
         assert!(messages[2].ends_with(
-            "Active game progress has been saved; the server will remain stopped until explicitly started."
-        ));
+            "Active game progress has been saved; the server will remain stopped until explicitly started. Reason: Upgrading <the> database & 'more'"
+        ), "{channel}: {}", messages[2]);
     }
     drop(requests);
     let messages: Vec<String> =
@@ -274,6 +279,8 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         "All lifecycle notices must also remain in lobby history"
     );
     assert!(messages[1].contains("Uptime: 1 hour and 18 minutes"));
+    // Lobby chat is HTML, so the administrator's reason is stored escaped.
+    assert!(messages[2].ends_with("Reason: Upgrading &lt;the&gt; database &amp; &#39;more&#39;"));
     sqlx::query!(
         "UPDATE chat_log SET datetime_sent=NOW()-INTERVAL '150 seconds'
          WHERE id=(SELECT MAX(id) FROM chat_log WHERE source='server')"

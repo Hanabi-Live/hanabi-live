@@ -237,10 +237,15 @@ function openConnection(isReconnect: boolean) {
   conn.on("socketError", (error: unknown) => {
     console.error("WebSocket error:", error);
   });
-  conn.on("restart", () => {
+  conn.on("restart", (payload) => {
     if (activeConnection === conn) {
       conn.setReady(false);
       reconnectBackoff.reset();
+      // An administrator's reason for the downtime stays open through the reconnect.
+      const { message } = SERVER_COMMAND_SCHEMAS.restart.parse(payload);
+      if (message !== undefined) {
+        modals.showDowntime(message);
+      }
     }
   });
 

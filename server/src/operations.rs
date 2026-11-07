@@ -2,15 +2,30 @@ use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub enum Operation {
-    Kick { user_id: i32 },
-    Ban { user_id: i32 },
-    Unban { user_id: i32 },
-    Mute { user_id: i32 },
-    Unmute { user_id: i32 },
+    Kick {
+        user_id: i32,
+    },
+    Ban {
+        user_id: i32,
+    },
+    Unban {
+        user_id: i32,
+    },
+    Mute {
+        user_id: i32,
+    },
+    Unmute {
+        user_id: i32,
+    },
     Inspect,
-    Drained { reconnect: bool },
+    Drained {
+        reconnect: bool,
+        message: Option<String>,
+    },
     LongTables,
-    Terminate { identifier: String },
+    Terminate {
+        identifier: String,
+    },
 }
 
 pub type OperationReply = tokio::sync::oneshot::Sender<anyhow::Result<Value>>;
@@ -137,6 +152,26 @@ fn parameters(raw: &[u8]) -> HashMap<String, String> {
     }
     result
 }
+const MAX_DOWNTIME_MESSAGE_CHARS: usize = 500;
+/// An optional reason for the downtime, shown to connected users and in Discord.
+fn downtime_message(query: &HashMap<String, String>) -> Result<Option<String>> {
+    let Some(message) = query
+        .get("message")
+        .map(|m| m.trim())
+        .filter(|m| !m.is_empty())
+    else {
+        return Ok(None);
+    };
+    if message.chars().count() > MAX_DOWNTIME_MESSAGE_CHARS {
+        return Err(bad(&format!(
+            "The message cannot be longer than {MAX_DOWNTIME_MESSAGE_CHARS} characters."
+        )));
+    }
+    if message.chars().any(char::is_control) {
+        return Err(bad("The message cannot contain control characters."));
+    }
+    Ok(Some(message.to_owned()))
+}
 async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result<Response> {
     let path = request.uri().path().to_owned();
     let query = parameters(request.uri().query().unwrap_or("").as_bytes());
@@ -201,10 +236,12 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
                 return Err(bad("The server is already draining."));
             }
             control
-                .request_stop(crate::lifecycle::StopReason::Restart)
+                .request_stop(crate::lifecycle::StopReason::Restart(downtime_message(
+                    &query,
+                )?))
                 .await?;
         }
-        "/gracefulStop" => control.graceful_stop().await?,
+        "/gracefulStop" => control.graceful_stop(downtime_message(&query)?).await?,
         "/metrics" => return metrics_report(&control).await,
         "/version" => return Ok(format!("{}\n", control.version).into_response()),
         _ => return Err(Error(StatusCode::NOT_FOUND, "404 not found\n".into())),

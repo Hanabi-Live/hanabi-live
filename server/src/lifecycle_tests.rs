@@ -5,11 +5,15 @@ use std::time::Duration;
 async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Result<()> {
     let redis = crate::test_redis::RedisFixture::start(true).await?;
     for (successful, reason) in [
-        (true, StopReason::Restart),
-        (false, StopReason::Restart),
-        (true, StopReason::GracefulStop),
-        (false, StopReason::GracefulStop),
+        (true, StopReason::Restart(Some("Upgrading <db>".into()))),
+        (false, StopReason::Restart(None)),
+        (
+            true,
+            StopReason::GracefulStop(Some("Upgrading <db>".into())),
+        ),
+        (false, StopReason::GracefulStop(None)),
     ] {
+        let restart = matches!(reason, StopReason::Restart(_));
         let state =
             crate::state::RedisState::connect(&redis.url, &format!("lifecycle-{successful}"))
                 .await?;
@@ -69,9 +73,17 @@ async fn drains_notify_all_tables_before_waiting_for_acknowledgements() -> Resul
                         let _ = reply.send(handles);
                     }
                     HubCommand::Operations {
-                        command: Operation::Drained { .. },
+                        command: Operation::Drained { reconnect, message },
                         reply,
                     } => {
+                        // Users see the administrator's reason as escaped HTML.
+                        assert!(reconnect);
+                        let expected = if restart {
+                            "The server is restarting and will be back shortly.<br />Reason: Upgrading &lt;db&gt;"
+                        } else {
+                            "The server is going down for maintenance. Your accepted game progress has been saved.<br />Reason: Upgrading &lt;db&gt;"
+                        };
+                        assert_eq!(message.as_deref(), successful.then_some(expected));
                         seen.fetch_add(1, Ordering::Relaxed);
                         let _ = reply.send(Ok(json!({})));
                     }
@@ -157,13 +169,13 @@ async fn graceful_stop_does_not_wait_for_or_terminate_games() {
         .unwrap();
     let mut h = crate::operations_tests::Harness::new(pool);
     assert_eq!(h.active.load(Ordering::Acquire), 1);
-    h.control.graceful_stop().await.unwrap();
+    h.control.graceful_stop(None).await.unwrap();
     assert!(matches!(
         h.stops.recv().await,
-        Some(StopReason::GracefulStop)
+        Some(StopReason::GracefulStop(None))
     ));
     assert!(h.control.draining.load(Ordering::Acquire));
     assert!(h.operations.lock().unwrap().is_empty());
-    assert!(h.control.graceful_stop().await.is_err());
+    assert!(h.control.graceful_stop(None).await.is_err());
     h.close().await;
 }

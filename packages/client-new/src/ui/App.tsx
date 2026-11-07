@@ -27,6 +27,7 @@ import { ReplayPanel } from "./ReplayPanel";
 import { RichText } from "./RichText";
 import { SettingsPanel } from "./SettingsPanel";
 import { TablesPanel } from "./TablesPanel";
+import { WarningModal } from "./WarningModal";
 
 const suggestedOptions = options
   .unwrap()
@@ -151,6 +152,7 @@ export function App({ connection }: { connection: LobbyConnection }) {
       welcome: value.welcome,
       connection: value.connection,
       notice: value.notice,
+      downtime: value.downtime,
       lobbyError: value.lobbyError,
       tables: value.tables,
       users: value.users,
@@ -1044,8 +1046,24 @@ export function App({ connection }: { connection: LobbyConnection }) {
             </form>
           </Modal>
         )}
-        {state.notice?.fatal === true && (
-          <ErrorModal connection={connection} text={state.notice.text} />
+        {state.notice?.fatal === true ? (
+          <ErrorModal
+            connection={connection}
+            // A reconnect after a deploy fails with an outdated-client error; keep the reason
+            // visible.
+            text={
+              state.downtime === null
+                ? state.notice.text
+                : `${state.downtime}<br /><br />${state.notice.text}`
+            }
+          />
+        ) : (
+          state.downtime !== null && (
+            <WarningModal
+              close={() => connection.dismissDowntime()}
+              text={state.downtime}
+            />
+          )
         )}
       </div>
     </div>
