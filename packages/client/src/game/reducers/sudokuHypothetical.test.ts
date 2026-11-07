@@ -55,7 +55,7 @@ function expectConsistentCollections(state: GameState) {
 describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
   test("reconstructs the hand at the reported replay segment", () => {
     const gameState = replay.replay.states[60];
-    assertDefined(gameState, "Missing replay segment 60.");
+    assertDefined(gameState, "Missing replay segment: 60");
     expect(metadata.options.variantName).toBe("Sudoku (5 Suits)");
     expect(gameState.turn.currentPlayerIndex).toBe(0);
     expect(gameState.hands[0]).toEqual<unknown>([30, 38, 42, 44, 47]);
@@ -65,20 +65,20 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
     "keeps collections consistent after hypothetical plays and discards at segment %i",
     (segment) => {
       const gameState = replay.replay.states[segment];
-      assertDefined(gameState, `Missing replay segment ${segment}.`);
+      assertDefined(gameState, `Missing replay segment: ${segment}`);
       const playerIndex = gameState.turn.currentPlayerIndex;
       assertNotNull(
         playerIndex,
-        `Missing current player at segment ${segment}.`,
+        `Missing current player at segment: ${segment}`,
       );
 
       const hand = gameState.hands[playerIndex];
-      assertDefined(hand, `Missing hand at segment ${segment}.`);
+      assertDefined(hand, `Missing hand at segment: ${segment}`);
 
       for (const order of hand) {
         for (const type of ["play", "discard"] as const) {
           const card: CardState | undefined = gameState.deck[order];
-          assertDefined(card, `Missing card ${order}.`);
+          assertDefined(card, `Missing card: ${order}`);
           const context: PlanHypotheticalActionContext = {
             gameState,
             metadata,
@@ -124,7 +124,7 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
   );
   test("rejects a deck card already drawn to the other player's hand", () => {
     const gameState = replay.replay.states[59];
-    assertDefined(gameState, "Missing replay segment 59.");
+    assertDefined(gameState, "Missing replay segment: 59");
     let hypothetical = initializeHypotheticalState(
       gameState,
       false,
@@ -149,8 +149,8 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
       const cardViews = orders.map((order) => {
         const state: CardState | undefined = ongoing.deck[order];
         const identity = cardIdentities[order];
-        assertDefined(state, `Missing card ${order}.`);
-        assertDefined(identity, `Missing identity ${order}.`);
+        assertDefined(state, `Missing card: ${order}`);
+        assertDefined(identity, `Missing identity: ${order}`);
         return {
           state,
           isStackBase: false,

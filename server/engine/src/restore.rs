@@ -308,11 +308,11 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         if let Some((p, o, suit, rank)) = identity {
             ensure!(
                 seat(p) && order(o),
-                "Invalid event player or order at {index}."
+                "Invalid event player or order at index: {index}"
             );
             ensure!(
                 s.deck[o].suit_index as i32 == suit && s.deck[o].rank == rank,
-                "Event identity does not match the authoritative deck at {index}."
+                "Event identity does not match the authoritative deck at index: {index}"
             );
         }
         match e {
@@ -548,7 +548,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                         && historical.slot == 1
                         && s.options.deck_plays
                         && index == s.deck.len() - 1)),
-            "Card state does not match its action history at {index}."
+            "Card state does not match its action history at index: {index}"
         );
     }
     let played = cards.iter().filter(|c| c.played).count() as i32;

@@ -468,7 +468,7 @@ async fn websocket(
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
         Ok(true) => {
-            eprintln!("Rejected websocket for account {id} from banned {ip}.");
+            eprintln!("Rejected websocket for account {id} from banned IP: {ip}");
             return (
                 StatusCode::UNAUTHORIZED,
                 "Your IP address has been banned.\n",
@@ -493,7 +493,7 @@ async fn websocket(
     {
         Ok(true) => {}
         Ok(false) => {
-            eprintln!("Rejected websocket for deleted account {id} from {ip}.");
+            eprintln!("Rejected websocket for deleted account {id} from IP: {ip}");
             return (
                 StatusCode::UNAUTHORIZED,
                 "The account for this session no longer exists. Please sign in again.",
@@ -554,7 +554,7 @@ async fn websocket(
                         }
                         Err(message) => {
                             eprintln!(
-                                "Rejected websocket for account {id} from {ip} with version {:?}.",
+                                "Rejected websocket for account {id} from {ip} with version: {:?}",
                                 version.chars().take(100).collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
@@ -878,7 +878,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         Err(error) => {
             let detail = if let Some(json) = error.downcast_ref::<serde_json::Error>() {
                 format!(
-                    "Invalid JSON at line {}, column {}.",
+                    "Invalid JSON at line {}, column: {}",
                     json.line(),
                     json.column()
                 )

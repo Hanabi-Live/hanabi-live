@@ -151,7 +151,7 @@ impl Transport for NativeTransport {
                 return Err(crate::errors::Fault::new(
                     "discord_http_error",
                     format!(
-                        "Discord returned HTTP {}{}.",
+                        "Discord returned HTTP status: {}{}",
                         response.status().as_u16(),
                         if response.status().as_u16() == 429 {
                             " (rate limited)"

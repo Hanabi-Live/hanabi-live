@@ -205,7 +205,7 @@ pub(super) async fn list(
         {
             let value = integer(value).ok_or_else(|| {
                 Error::bad(format!(
-                    "Invalid numeric filter for {}.",
+                    "Invalid numeric filter for: {}",
                     display[index as usize]
                 ))
             })?;
