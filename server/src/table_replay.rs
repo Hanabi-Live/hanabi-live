@@ -289,4 +289,51 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn a_seed_and_a_deck_must_agree() {
+        let seed = "p2v0s1";
+        let variant = hanabi_engine::get_variant("No Variant").unwrap();
+        let seeded = hanabi_engine::create_shuffled_deck(variant, seed).unwrap();
+        let mut other = seeded.clone();
+        let different = (1..other.len())
+            .find(|&i| other[i] != other[0])
+            .unwrap();
+        other.swap(0, different);
+        let input = |seed: &str, deck: Option<&[Card]>| {
+            let mut input = json!({"players":["Alice","Bob"],"seed":seed});
+            if let Some(deck) = deck {
+                input["deck"] = json!(deck);
+            }
+            input
+        };
+        let error = |input: Value| parse(&input).err().unwrap().to_string();
+        let identities = |input: Value| {
+            parse(&input)
+                .unwrap()
+                .game
+                .deck
+                .iter()
+                .map(|c| (c.suit_index, c.rank))
+                .collect::<Vec<_>>()
+        };
+        let expected = |deck: &[Card]| {
+            deck.iter()
+                .map(|c| (c.suit_index, c.rank))
+                .collect::<Vec<_>>()
+        };
+
+        for deck in [None, Some(&[][..]), Some(&seeded[..])] {
+            assert_eq!(identities(input(seed, deck)), expected(&seeded));
+        }
+        assert_eq!(identities(input("", Some(&other))), expected(&other));
+        assert_eq!(
+            error(input(seed, Some(&other))),
+            "The deck does not match the seed"
+        );
+        assert_eq!(
+            error(input(seed, Some(&seeded[..10]))),
+            "The deck must have 50 valid cards in it."
+        );
+    }
 }
