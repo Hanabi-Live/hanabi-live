@@ -110,17 +110,14 @@ python3 install/release.py activate /absolute/deployment/root REVISION \
 
 Activation requires the service to be stopped and holds the shared lifecycle
 lock. Only Rust releases can be verified, staged, or activated. Installations
-with unresolved legacy checkpoints must complete recovery using a compatible
-pre-promotion release first; startup continues to reject those records rather
-than discard them.
+with unresolved legacy PostgreSQL checkpoints must complete recovery using a
+compatible pre-promotion release before applying migration 007.
 
 ## Storage and ownership
 
 Redis is authoritative for recoverable pregames, live games, and replay state.
-PostgreSQL retains accounts, completed games, notes, tags, chat, and statistics;
-Rust does not mirror live checkpoints into `active_games`. Its snapshot format
-and Redis namespace are unchanged by the source-layout promotion. Preserve both
-Redis persistence and PostgreSQL backups.
+PostgreSQL retains accounts, completed games, notes, tags, chat, and statistics.
+Preserve both Redis persistence and PostgreSQL backups.
 
 Pregame players have a 60-second reconnect grace period, including after server
 recovery. Disconnected players are then removed, ownership passes to a remaining

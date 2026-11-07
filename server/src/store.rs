@@ -87,15 +87,8 @@ impl Store {
             .fetch_one(&primary)
             .await?;
         ensure!(
-            version == 6,
-            "Native server requires database schema version 6"
-        );
-        let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
-            .fetch_one(&primary)
-            .await?;
-        ensure!(
-            old == 0,
-            "Legacy PostgreSQL active_games checkpoints exist. Recover them with a compatible pre-promotion release before starting this server."
+            version == 7,
+            "Native server requires database schema version 7"
         );
         let namespace = serde_json::to_string(&(
             &config.database_host,
@@ -212,13 +205,6 @@ impl Store {
         self.restore(false).await
     }
     async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
-        let old: i64 = sqlx::query_scalar!("SELECT count(*) AS \"value!\" FROM active_games")
-            .fetch_one(&self.primary)
-            .await?;
-        ensure!(
-            old == 0,
-            "Legacy PostgreSQL active game checkpoints require explicit migration"
-        );
         let mut output = vec![];
         let stored = self.state()?.load().await?;
         ensure!(
@@ -1167,6 +1153,49 @@ mod tests {
         Ok(())
     }
     #[tokio::test]
+    async fn retiring_active_games_requires_recovery_before_dropping_the_table() -> Result<()> {
+        let Some((admin, pool, name)) = database().await? else {
+            return Ok(());
+        };
+        let result = async {
+            sqlx::raw_sql(include_str!(
+                "../../install/migrations/004_active_games.sql"
+            ))
+            .execute(&pool)
+            .await?;
+            sqlx::query("INSERT INTO active_games VALUES (1, 1, 'pending checkpoint')")
+                .execute(&pool)
+                .await?;
+            let migration = include_str!("../../install/migrations/007_retire_active_games.sql");
+            let error = sqlx::raw_sql(migration).execute(&pool).await.unwrap_err();
+            ensure!(
+                error.as_database_error().is_some_and(|error| error
+                    .message()
+                    .contains("Recover legacy active_games checkpoints")),
+                "Migration failed for an unexpected reason"
+            );
+            let checkpoint: String =
+                sqlx::query_scalar("SELECT checkpoint FROM active_games WHERE game_id = 1")
+                    .fetch_one(&pool)
+                    .await?;
+            ensure!(checkpoint == "pending checkpoint");
+            sqlx::query("DELETE FROM active_games WHERE game_id = 1")
+                .execute(&pool)
+                .await?;
+            sqlx::raw_sql(migration).execute(&pool).await?;
+            let removed: bool =
+                sqlx::query_scalar("SELECT to_regclass('public.active_games') IS NULL")
+                    .fetch_one(&pool)
+                    .await?;
+            ensure!(removed, "Migration did not remove the empty table");
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        pool.close().await;
+        cleanup(admin, name).await?;
+        result
+    }
+    #[tokio::test]
     async fn recovery_refreshes_only_pregame_totals_and_persists_them_once() -> Result<()> {
         let Some((admin, pool, name)) = database().await? else {
             return Ok(());
@@ -1294,10 +1323,6 @@ mod tests {
                     && matches!(restored[0].0.phase, Phase::Pregame { .. }),
                 "Pregame not durable"
             );
-            let old: i64 = sqlx::query_scalar("SELECT count(*) FROM active_games")
-                .fetch_one(&store.primary)
-                .await?;
-            ensure!(old == 0, "PG active mirror exists");
             terminal(&mut table)?;
             table.game_mut().unwrap().idle_remaining = 0;
             table.game_mut().unwrap().players[0].stats["variant"]["averageScore"] =

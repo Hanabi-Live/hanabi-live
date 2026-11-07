@@ -485,7 +485,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
         expect(await client`SELECT id FROM games`).toEqual<unknown>([
           { id: checkpoint.game_id },
         ]);
-        expect(await client`SELECT game_id FROM active_games`).toHaveLength(0);
         expect(await checkpointProgress()).toHaveLength(0);
         expect(
           await client`SELECT user_id FROM chat_log WHERE message = 'retained authored chat'`,
