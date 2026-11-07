@@ -40,7 +40,13 @@ CREATE TABLE users (
 
     /* Games that ended normally, kept by the "count_normal_games_of_participant" triggers. */
     num_normal_games           INTEGER  NOT NULL  DEFAULT 0,
-    num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0
+    num_normal_speedrun_games  INTEGER  NOT NULL  DEFAULT 0,
+
+    /**
+     * The settings a user changed, keyed by their client-facing names. The server supplies the
+     * default for every setting that is not listed.
+     */
+    settings                   JSONB    NOT NULL  DEFAULT '{}'
 );
 
 DROP TABLE IF EXISTS user_settings CASCADE;

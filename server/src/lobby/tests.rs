@@ -160,16 +160,10 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     );
     one.unwrap();
     two.unwrap();
-    assert_eq!(
-        sqlx::query_scalar!(
-            "SELECT COUNT(*) AS \"v!\" FROM user_settings WHERE user_id=$1",
-            b
-        )
-        .fetch_one(&db.pool)
-        .await
-        .unwrap(),
-        1
-    );
+    // Concurrent changes to different settings are both kept.
+    let settings = get_settings(&db.pool, b).await.unwrap();
+    assert_eq!(settings["soundTimer"], false);
+    assert_eq!(settings["volume"], 25);
     let result = run(
         &db.pool,
         &who,
@@ -582,36 +576,39 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
 }
 
 #[tokio::test]
-async fn every_setting_round_trips_through_its_column_postgres() {
+async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
     let Some(db) = TestDb::create().await else {
         return;
     };
     let id = db.user("Alice").await;
     let defaults = get_settings(&db.pool, id).await.unwrap();
-    let names: Vec<_> = defaults.as_object().unwrap().keys().cloned().collect();
-    let mut expected: Vec<_> = settings::FIELDS
-        .iter()
-        .map(|(name, _)| (*name).to_owned())
-        .collect();
-    expected.sort();
-    assert_eq!(names, expected, "Stored settings and setting names differ");
-    for (name, kind) in settings::FIELDS {
-        let (value, stored) = match kind {
-            settings::Kind::Bool => {
-                let flipped = !defaults[name].as_bool().unwrap();
-                (flipped.to_string(), json!(flipped))
-            }
-            settings::Kind::SmallInt | settings::Kind::Int => ("7".into(), json!(7)),
-            settings::Kind::Float => ("7.5".into(), json!(7.5)),
-            settings::Kind::Text => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
+    assert_eq!(defaults, json!(settings::defaults()));
+    let stored = || async {
+        sqlx::query_scalar!("SELECT settings FROM users WHERE id=$1", id)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap()
+    };
+    assert_eq!(stored().await, json!({}), "Defaults are not stored");
+    for (name, default) in settings::defaults() {
+        let (value, expected) = match &default {
+            serde_json::Value::Bool(flag) => ((!flag).to_string(), json!(!flag)),
+            serde_json::Value::Number(number) if number.is_f64() => ("7.5".into(), json!(7.5)),
+            serde_json::Value::Number(_) => ("7".into(), json!(7)),
+            _ => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
         };
-        assert_ne!(defaults[name], stored, "{name} must change");
-        set_setting(&db.pool, id, name, &value).await.unwrap();
+        assert_ne!(default, expected, "{name} must change");
+        set_setting(&db.pool, id, &name, &value).await.unwrap();
         assert_eq!(
-            get_settings(&db.pool, id).await.unwrap()[name],
-            stored,
+            get_settings(&db.pool, id).await.unwrap()[&name],
+            expected,
             "{name}"
         );
+        assert_eq!(stored().await[&name], expected, "{name} was not stored");
     }
+    // Choosing the default again removes the stored value.
+    set_setting(&db.pool, id, "volume", "50").await.unwrap();
+    assert!(stored().await.get("volume").is_none());
+    assert_eq!(get_settings(&db.pool, id).await.unwrap()["volume"], 50);
     db.close().await;
 }
