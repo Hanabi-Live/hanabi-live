@@ -68,15 +68,17 @@ function clickLeft(card: HanabiCard, event: MouseEvent) {
   if (
     card.state.location !== globals.metadata.ourPlayerIndex
     && isCardInPlayerHand(card.state)
-    // Ensure there is at least 1 clue token available.
-    && globals.state.ongoingGame.clueTokens
-      >= getAdjustedClueTokens(1, globals.variant)
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
     && typeof card.state.location === "number"
   ) {
+    if (!isClueTokenAvailable()) {
+      rejectClueTokenAction();
+      return;
+    }
+
     const clueColor = getColorForSpeedrunClue(card.state, globals.variant);
     if (clueColor === undefined) {
       return;
@@ -157,8 +159,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     if (
       isAtMaxClueTokens(globals.state.ongoingGame.clueTokens, globals.variant)
     ) {
-      sounds.play(SoundType.Error);
-      globals.elements.cluesNumberLabelPulse!.play();
+      rejectClueTokenAction();
       return;
     }
 
@@ -177,14 +178,16 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
     && card.state.rank !== null
     // It is not possible to clue a START card with a rank clue.
     && card.state.rank !== START_CARD_RANK
-    // Ensure there is at least 1 clue token available.
-    && globals.state.ongoingGame.clueTokens
-      >= getAdjustedClueTokens(1, globals.variant)
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
   ) {
+    if (!isClueTokenAvailable()) {
+      rejectClueTokenAction();
+      return;
+    }
+
     const clueRank = getRankForSpeedrunClue(card.state);
     if (clueRank === undefined) {
       return;
@@ -199,6 +202,19 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
   }
 
   clickRightCheckAddNote(event, card, true);
+}
+
+function isClueTokenAvailable(): boolean {
+  return (
+    globals.state.ongoingGame.clueTokens
+    >= getAdjustedClueTokens(1, globals.variant)
+  );
+}
+
+/** Buzz and flash the clue count when the clue tokens do not allow an action. */
+function rejectClueTokenAction() {
+  sounds.play(SoundType.Error);
+  globals.elements.cluesNumberLabelPulse!.play();
 }
 
 /** A card may be clueable by more than one rank, so we need to figure out which rank to use. */
