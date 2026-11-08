@@ -21,9 +21,4 @@ cache_key=$(sha256sum bun.lock package.json bunfig.toml | sha256sum | cut -d " "
 bunx --bun --no-install cspell --no-progress --no-summary \
   --cache --cache-strategy content --cache-location ".cache/cspell/$cache_key" .
 
-# CI removes unused words in a separate maintenance workflow.
-if [[ ${CI:-} != true ]]; then
-  bunx --bun --no-install cspell-check-unused-words
-fi
-
 echo "Successfully spell checked $REPO_NAME in $SECONDS seconds."
