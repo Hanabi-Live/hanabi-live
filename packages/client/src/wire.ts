@@ -6,6 +6,7 @@ import type { ServerCommandData } from "@hanabi-live/data";
 import type {
   CardIdentity,
   CardOrder,
+  EndCondition,
   GameAction,
   HiddenClue,
   MsgClue,
@@ -18,7 +19,7 @@ import {
   cardOrder,
   ClueType,
   colorIndex,
-  EndCondition,
+  endConditionSchema,
   isValidNumPlayers,
   playerIndex,
   rank,
@@ -91,10 +92,7 @@ function toClue(clue: {
 }
 
 function toEndCondition(value: number): EndCondition {
-  if (!isEnumValue(value, EndCondition)) {
-    throw new TypeError(`The server sent an unknown end condition: ${value}`);
-  }
-  return value;
+  return endConditionSchema.parse(value);
 }
 
 function toStrikeNumber(value: number): 1 | 2 | 3 {
