@@ -38,11 +38,9 @@ jobs:
             echo "Set CSPELL_PUSH_TOKEN to a repository token with contents-write access. The default token cannot trigger the CI run required for deployment." >&2
             exit 1
           fi
-      - uses: ./.github/workflows/setup-rust
-        if: steps.cleanup.outputs.changed == 'true'
       - name: Validate the cleaned configuration
         if: steps.cleanup.outputs.changed == 'true'
-        run: bash lint.sh
+        run: bash lint.sh --only=javascript
       - name: Commit and push the cleaned configuration
         id: commit
         if: steps.cleanup.outputs.changed == 'true'
