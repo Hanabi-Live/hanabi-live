@@ -443,8 +443,6 @@ function playerinfo(_room: string, args: readonly string[]) {
 }
 chatCommands.set("p", playerinfo);
 chatCommands.set("playerinfo", playerinfo);
-chatCommands.set("games", playerinfo);
-chatCommands.set("stats", playerinfo);
 
 // /unfriend [username]
 chatCommands.set("unfriend", (room: string, args: readonly string[]) => {
