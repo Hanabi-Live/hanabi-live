@@ -1,7 +1,7 @@
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
-import { toGameAction, toPlayerIndex, toSoundType } from "./wire";
+import { toCardIdentity, toGameAction, toSoundType } from "./wire";
 
 /** Validates a game event as the connection does. */
 function event(action: unknown) {
@@ -53,7 +53,23 @@ describe("server game events", () => {
   });
 
   test("values outside the game's types are rejected", () => {
-    expect(() => toPlayerIndex(6)).toThrow();
+    expect(() =>
+      SERVER_COMMAND_SCHEMAS.pause.parse({
+        tableID: 1,
+        active: true,
+        playerIndex: 6,
+      }),
+    ).toThrow();
+    expect(() =>
+      event({
+        type: "clue",
+        clue: { type: 1, value: 6 },
+        giver: 0,
+        target: 1,
+        list: [3],
+        turn: 2,
+      }),
+    ).toThrow();
     expect(() =>
       event({ type: "strike", num: 4, turn: 3, order: 0 }),
     ).toThrow();
@@ -67,6 +83,16 @@ describe("server game events", () => {
       event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 0, rank: 6 }),
     ).toThrow();
     expect(toSoundType("not-a-sound")).toBeUndefined();
+  });
+});
+
+describe("card identities", () => {
+  test("unknown suits and ranks become null", () => {
+    const [identity] = SERVER_COMMAND_SCHEMAS.cardIdentities.parse({
+      tableID: 1,
+      cardIdentities: [{ suitIndex: -1, rank: 7 }],
+    }).cardIdentities;
+    expect(toCardIdentity(identity!)).toEqual({ suitIndex: null, rank: 7 });
   });
 });
 

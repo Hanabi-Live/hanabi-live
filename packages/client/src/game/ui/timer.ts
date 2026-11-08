@@ -4,7 +4,6 @@ import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import * as tooltips from "../../tooltips";
-import { toOptionalPlayerIndex } from "../../wire";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
@@ -27,7 +26,7 @@ export function update(
 ): void {
   stop();
   // -1 if the game just ended.
-  const activePlayerIndex = toOptionalPlayerIndex(data.activePlayerIndex);
+  const { activePlayerIndex } = data;
 
   // We do not need to update the timers if they are not showing.
   if (globals.elements.timer1 === null || globals.elements.timer2 === null) {

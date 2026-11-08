@@ -850,6 +850,66 @@
     "valid": false
   },
   {
+    "name": "color clues name the first suit's color",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": {
+          "type": 0,
+          "value": 0
+        },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "color clues cannot name a seventh color",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": {
+          "type": 0,
+          "value": 6
+        },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "rank clues cannot name rank 0",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "clue",
+        "clue": {
+          "type": 1,
+          "value": 0
+        },
+        "giver": 0,
+        "target": 1,
+        "list": [3, 4],
+        "turn": 2
+      }
+    },
+    "valid": false
+  },
+  {
     "name": "game over events allow no votes",
     "direction": "server",
     "command": "gameActionList",

@@ -20,10 +20,7 @@ import { ServerHandlers } from "../../serverHandlers";
 import { setBrowserAddressBarPath } from "../../utils";
 import {
   toCardIdentity,
-  toCardOrder,
   toGameAction,
-  toHypotheticalAction,
-  toPlayerIndex,
   toPlayerTuple,
   toReplayArrowOrder,
   toSoundType,
@@ -122,12 +119,11 @@ gameCommands.set("hypothetical", (data) => {
   globals.store!.dispatch({
     type: "hypoStart",
     showDrawnCards: data.showDrawnCards,
-    actions: data.actions.map(toHypotheticalAction),
+    actions: data.actions,
   });
 });
 
-gameCommands.set("hypoAction", (data) => {
-  const action = toHypotheticalAction(data);
+gameCommands.set("hypoAction", (action) => {
   globals.store!.dispatch({
     type: "hypoAction",
     action,
@@ -171,15 +167,14 @@ gameCommands.set("note", (data) => {
     return;
   }
 
-  const order = toCardOrder(data.order);
   globals.store!.dispatch({
     type: "receiveNote",
-    order,
+    order: data.order,
     notes: data.notes,
   });
 
   // Set the note indicator.
-  const card = getCardOrStackBase(order);
+  const card = getCardOrStackBase(data.order);
   if (card) {
     card.setNoteIndicator();
   }
@@ -287,9 +282,10 @@ gameCommands.set("pause", (data) => {
     type: "pause",
     active: data.active,
     // The server sends -1 once nobody is pausing, and the pauser is only shown while paused.
-    playerIndex: data.active
-      ? toPlayerIndex(data.playerIndex)
-      : globals.state.pause.playerIndex,
+    playerIndex:
+      data.active && data.playerIndex !== -1
+        ? data.playerIndex
+        : globals.state.pause.playerIndex,
   });
 });
 
@@ -512,7 +508,7 @@ function initStateStore(data: InitData) {
     ourUsername: globals.lobby.username,
     options: data.options,
     playerNames: toPlayerTuple(data.playerNames, "player names"),
-    ourPlayerIndex: toPlayerIndex(data.ourPlayerIndex),
+    ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments,
     // Like the assignments, the metadata is empty unless detrimental characters are on.
     characterMetadata: toPlayerTuple(
@@ -553,7 +549,8 @@ function initStateStore(data: InitData) {
     spoilerFree: data.spoilerFree,
     paused: data.paused,
     // The server sends -1 when nobody is pausing, and the pauser is only shown while paused.
-    pausePlayerIndex: data.paused ? toPlayerIndex(data.pausePlayerIndex) : 0,
+    pausePlayerIndex:
+      data.paused && data.pausePlayerIndex !== -1 ? data.pausePlayerIndex : 0,
     efficiencyModifier: data.sharedReplayEffMod,
   });
 

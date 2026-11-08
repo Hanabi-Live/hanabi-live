@@ -101,16 +101,9 @@ fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent 
             list,
             turn,
         } => G::Clue {
-            clue: if clue.clue_type < 0 {
-                hanabi_protocol::ReceivedClue::Hidden {
-                    clue_type: clue.clue_type,
-                    value: clue.value,
-                }
-            } else {
-                hanabi_protocol::ReceivedClue::Visible {
-                    clue_type: clue.clue_type,
-                    value: clue.value,
-                }
+            clue: hanabi_protocol::Clue {
+                clue_type: clue.clue_type,
+                value: clue.value,
             },
             giver: int(*giver),
             target: int(*target),

@@ -200,7 +200,11 @@ fn expression(schema: &Value) -> Result<String> {
                 .is_some_and(|values| !values.is_empty() && values.iter().all(Value::is_i64)),
             "TypeScript enums need the integer values listed for the server"
         );
-        format!("z.enum({})", enum_variable(name))
+        match schema["enum"].as_array().map(Vec::as_slice) {
+            // One member of the enum: its value is assignable to that member's type.
+            Some([member]) => format!("z.literal({member})"),
+            _ => format!("z.enum({})", enum_variable(name)),
+        }
     } else if let Some(values) = schema["enum"].as_array() {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
@@ -417,18 +421,63 @@ fn emit(
     Ok(())
 }
 
+/// The integer values the server lists for a TypeScript enum. A field lists either every value, or
+/// one member when each variant of a union names its own.
+#[derive(Default)]
+struct EnumValues {
+    all: Option<Value>,
+    members: BTreeSet<i64>,
+}
+
+impl EnumValues {
+    fn listed(&self) -> Result<Vec<i64>> {
+        let Some(all) = &self.all else {
+            return Ok(self.members.iter().copied().collect());
+        };
+        let all = all
+            .as_array()
+            .context("TypeScript enums need the integer values listed for the server")?
+            .iter()
+            .map(|value| {
+                value
+                    .as_i64()
+                    .context("TypeScript enum values must be integers")
+            })
+            .collect::<Result<Vec<_>>>()?;
+        ensure!(
+            self.members.iter().all(|member| all.contains(member)),
+            "A field names an enum member that the enum's full listing lacks"
+        );
+        Ok(all)
+    }
+}
+
 /// Each named TypeScript enum, with the integer values the server lists for it.
-fn enums(schema: &Value, output: &mut BTreeMap<String, Value>) -> Result<()> {
+fn enums(schema: &Value, output: &mut BTreeMap<String, EnumValues>) -> Result<()> {
     match schema {
         Value::Object(object) => {
             if let Some(name) = object.get("x-enum").and_then(Value::as_str) {
                 let values = object.get("enum").cloned().unwrap_or_default();
-                if let Some(existing) = output.insert(name.into(), values.clone()) {
-                    ensure!(
-                        existing == values,
-                        "{name} lists different values in different contracts"
-                    );
+                let entry = output.entry(name.into()).or_default();
+                match values.as_array().map(Vec::as_slice) {
+                    Some([member]) => {
+                        entry.members.insert(
+                            member
+                                .as_i64()
+                                .context("TypeScript enum values must be integers")?,
+                        );
+                    }
+                    _ => {
+                        if let Some(existing) = &entry.all {
+                            ensure!(
+                                *existing == values,
+                                "{name} lists different values in different contracts"
+                            );
+                        }
+                        entry.all = Some(values);
+                    }
                 }
+                entry.listed()?;
             }
             for value in object.values() {
                 enums(value, output)?;
@@ -450,7 +499,7 @@ fn enum_variable(name: &str) -> String {
 
 /// Declares each TypeScript enum's schema input, which fails type checking unless the enum has
 /// exactly the values the server lists for it.
-fn enum_checks(used: &BTreeMap<String, Value>) -> Result<String> {
+fn enum_checks(used: &BTreeMap<String, EnumValues>) -> Result<String> {
     if used.is_empty() {
         return Ok(String::new());
     }
@@ -462,10 +511,9 @@ fn enum_checks(used: &BTreeMap<String, Value>) -> Result<String> {
     );
     for (name, values) in used {
         let values = values
-            .as_array()
-            .context("TypeScript enums need the integer values listed for the server")?
+            .listed()?
             .iter()
-            .map(Value::to_string)
+            .map(i64::to_string)
             .collect::<Vec<_>>()
             .join(" | ");
         output.push_str(&format!(
@@ -701,5 +749,23 @@ mod tests {
             "const statusEnum: ServerEnum<typeof Status, 0 | 1> = Status;"
         );
         assert!(enums(&json!({"x-enum":"Status","enum":[0,1,2]}), &mut used).is_err());
+    }
+
+    #[test]
+    fn enum_members_named_by_union_variants_make_up_the_enum() {
+        let mut used = BTreeMap::new();
+        for member in [0, 1] {
+            enums(&json!({"x-enum":"ClueType","enum":[member]}), &mut used).unwrap();
+        }
+        assert_eq!(
+            enum_checks(&used).unwrap().lines().last().unwrap(),
+            "const clueTypeEnum: ServerEnum<typeof ClueType, 0 | 1> = ClueType;"
+        );
+        assert_eq!(
+            expression(&json!({"type":"integer","enum":[1],"x-enum":"ClueType"})).unwrap(),
+            "z.literal(1)"
+        );
+        assert!(enums(&json!({"x-enum":"ClueType","enum":[0,1]}), &mut used).is_ok());
+        assert!(enums(&json!({"x-enum":"ClueType","enum":[2]}), &mut used).is_err());
     }
 }

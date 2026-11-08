@@ -35,14 +35,8 @@ const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
 const receivedClueSchema = z.union([
-  z.strictObject({
-    type: z.enum(clueTypeEnum),
-    value: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-  }),
+  z.strictObject({ type: z.literal(0), value: z.literal([0, 1, 2, 3, 4, 5]) }),
+  z.strictObject({ type: z.literal(1), value: z.literal([1, 2, 3, 4, 5]) }),
   z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
 ]);
 const safeIntegerSchema = z
