@@ -34,7 +34,8 @@ needs PostgreSQL or Redis.
 
 Schemars derives the schema from the DTOs. Native decoding validates that schema
 before serde applies defaults. The generator translates the supported schema
-subset to Zod, with inferred `ClientWireData` and `ServerWireData` types.
+subset to Zod, with `CLIENT_COMMAND_SCHEMAS` and `SERVER_COMMAND_SCHEMAS`
+registries and their inferred `ClientCommandData` and `ServerCommandData` types.
 Unknown schema features fail generation rather than silently losing validation.
 
 ## Compatibility rules

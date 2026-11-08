@@ -1,10 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game. Logic for the game chat box is
 // located separately in "game/chat.ts".
 
-import type {
-  ServerCommandChatData,
-  ServerCommandChatPMHistoryMessageData,
-} from "@hanabi-live/data";
+import type { ServerCommandData } from "@hanabi-live/data";
 import {
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
@@ -29,6 +26,9 @@ import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { getHTMLInputElement } from "./utils";
+
+type ChatData = ServerCommandData["chat"];
+type PMHistoryMessage = ServerCommandData["chatPMHistory"]["list"][number];
 
 export enum SelfChatMessageType {
   Normal,
@@ -514,7 +514,7 @@ function textToHtml(payload?: string): string {
   return sanEl.innerHTML;
 }
 
-export function add(data: ServerCommandChatData, fast: boolean): void {
+export function add(data: ChatData, fast: boolean): void {
   addInternal(data, fast, true);
 }
 
@@ -524,10 +524,7 @@ export function removeDeletedLobbyMessage(chatID: number): void {
   $(`#lobby-chat-text [data-chat-id="${chatID}"]`).remove();
 }
 
-export function addPMHistory(
-  data: ServerCommandChatPMHistoryMessageData,
-  room?: string,
-): void {
+export function addPMHistory(data: PMHistoryMessage, room?: string): void {
   addInternal(
     {
       ...data,
@@ -539,11 +536,7 @@ export function addPMHistory(
   );
 }
 
-function addInternal(
-  data: ServerCommandChatData,
-  fast: boolean,
-  updateLiveState: boolean,
-) {
+function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   if (lobbyChatDeletionState.shouldSkipMessage(data.room, data.chatID)) {
     return;
   }
@@ -654,7 +647,7 @@ function addInternal(
 }
 
 /** Find out which chat box we should add the new chat message to. */
-function getChatBoxElement(data: ServerCommandChatData): JQuery | undefined {
+function getChatBoxElement(data: ChatData): JQuery | undefined {
   if (data.room === "lobby") {
     return $("#lobby-chat-text");
   }

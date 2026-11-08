@@ -37,6 +37,7 @@
         "lodash": "catalog:",
         "redux": "catalog:",
         "tooltipster": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@sinonjs/fake-timers": "catalog:",
@@ -92,7 +93,6 @@
       "name": "@hanabi-live/data",
       "dependencies": {
         "@hanabi-live/game": "workspace:*",
-        "complete-common": "catalog:",
         "zod": "catalog:",
       },
     },

@@ -315,8 +315,8 @@ lobbyCommands.set("welcome", (data) => {
 
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game (and ignore any specific custom path that the user has entered).
-  if (data.playingAtTables.length > 0) {
-    const firstTableID = data.playingAtTables[0];
+  const firstTableID = data.playingAtTables[0];
+  if (firstTableID !== undefined) {
     globals.conn!.send("tableReattend", {
       tableID: firstTableID,
     });

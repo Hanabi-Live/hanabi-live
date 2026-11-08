@@ -9,11 +9,11 @@ import type { z } from "zod";
 export const wireHistory = gameHistory.unwrap();
 export type HistoryGame = z.infer<typeof wireHistory>;
 const tableSchema = SERVER_COMMAND_SCHEMAS.table.unwrap();
-export type Pregame = ServerCommandData[ServerCommand.game];
-export type Welcome = ServerCommandData[ServerCommand.welcome];
+export type Pregame = ServerCommandData["game"];
+export type Welcome = ServerCommandData["welcome"];
 export type Table = z.infer<typeof tableSchema>;
-export type User = ServerCommandData[ServerCommand.user];
-export type Chat = ServerCommandData[ServerCommand.chat];
+export type User = ServerCommandData["user"];
+export type Chat = ServerCommandData["chat"];
 
 type WirePayloads = Omit<
   ServerCommandData,

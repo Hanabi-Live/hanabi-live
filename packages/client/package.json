@@ -18,7 +18,8 @@
     "linkifyjs": "catalog:",
     "lodash": "catalog:",
     "redux": "catalog:",
-    "tooltipster": "catalog:"
+    "tooltipster": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@sinonjs/fake-timers": "catalog:",

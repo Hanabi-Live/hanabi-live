@@ -896,7 +896,7 @@ export const welcomeSchema = z
     username: z.string().min(1),
   })
   .readonly();
-export const CLIENT_WIRE_SCHEMAS = {
+export const CLIENT_COMMAND_SCHEMAS = {
   action: actionRequestSchema,
   chat: chatRequestSchema,
   chatBlock: chatUserRequestSchema,
@@ -945,7 +945,7 @@ export const CLIENT_WIRE_SCHEMAS = {
   tagSearch: tagSearchRequestSchema,
   tagsDeleteAll: tagsDeleteAllRequestSchema,
 } as const;
-export const SERVER_WIRE_SCHEMAS = {
+export const SERVER_COMMAND_SCHEMAS = {
   boot: tableRequestSchema,
   cardIdentities: cardIdentitiesSchema,
   chat: chatSchema,
@@ -1001,13 +1001,11 @@ export const SERVER_WIRE_SCHEMAS = {
   warning: warningSchema,
   welcome: welcomeSchema,
 } as const;
-export type ClientWireData = {
-  [Command in keyof typeof CLIENT_WIRE_SCHEMAS]: z.infer<
-    (typeof CLIENT_WIRE_SCHEMAS)[Command]
-  >;
+export type ClientCommand = keyof typeof CLIENT_COMMAND_SCHEMAS;
+export type ClientCommandData = {
+  [Command in ClientCommand]: z.infer<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>;
 };
-export type ServerWireData = {
-  [Command in keyof typeof SERVER_WIRE_SCHEMAS]: z.infer<
-    (typeof SERVER_WIRE_SCHEMAS)[Command]
-  >;
+export type ServerCommand = keyof typeof SERVER_COMMAND_SCHEMAS;
+export type ServerCommandData = {
+  [Command in ServerCommand]: z.infer<(typeof SERVER_COMMAND_SCHEMAS)[Command]>;
 };

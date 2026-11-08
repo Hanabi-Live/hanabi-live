@@ -1,9 +1,6 @@
 export * from "./chatSymbols";
-export * from "./clientCommands";
 export * from "./clientNavigation";
 export * from "./constants";
-export * from "./enums/ClientCommand";
-export * from "./enums/ServerCommand";
 export * from "./enums/SoundMove";
 export * from "./enums/Status";
 export * from "./functions/errors";
@@ -16,7 +13,6 @@ export * from "./interfaces/GameHistory";
 export * from "./interfaces/HTTPLoginData";
 export * from "./interfaces/Settings";
 export * from "./interfaces/Spectator";
-export * from "./serverCommands";
 export * from "./types/GameID";
 export * from "./types/TableID";
 export * from "./types/UserID";

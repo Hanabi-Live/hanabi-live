@@ -131,6 +131,9 @@ export function init(): void {
 function passwordSubmit() {
   const tableIDString = passwordModalID.value;
   const tableID = parseIntSafe(tableIDString); // The server expects this as a number
+  if (tableID === undefined) {
+    return;
+  }
 
   const password = passwordModalPassword.value;
 

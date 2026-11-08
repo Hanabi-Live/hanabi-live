@@ -1,9 +1,14 @@
-import type { ServerCommand } from "@hanabi-live/data";
+import type {
+  CLIENT_COMMAND_SCHEMAS,
+  ClientCommand,
+  ServerCommand,
+} from "@hanabi-live/data";
 import {
   packWSMessageOnClient,
   SERVER_COMMAND_SCHEMAS,
   unpackWSMessage,
 } from "@hanabi-live/data";
+import type { z } from "zod";
 
 type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
 
@@ -120,7 +125,10 @@ export class Connection {
     this.callbacks[name] = callback;
   }
 
-  send(command: string, data: unknown): void {
+  send<Command extends ClientCommand>(
+    command: Command,
+    data: z.input<(typeof CLIENT_COMMAND_SCHEMAS)[Command]>,
+  ): void {
     // Resume probes must never submit gameplay commands to a stateful server.
     if (
       !this.allowApplicationCommands
