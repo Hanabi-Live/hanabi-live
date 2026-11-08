@@ -129,6 +129,12 @@ const KELDON_ACTION_LOG_LINES = 3;
 /** Pink, for the minimum efficiency of a "Hard" variant when hyphenated conventions are enabled. */
 const HARD_VARIANT_EFFICIENCY_COLOR = "#ffb2b2";
 
+/** The rings of the waiting-on-server animation at full size, in fractions of the stage height. */
+const WAITING_ON_SERVER_RING = {
+  radius: 0.053,
+  strokeWidth: 5 * STROKE_WIDTH_UNIT,
+} as const;
+
 /** The opacity of the trash can icon over the discard pile. */
 const TRASH_CAN_OPACITY = 0.2;
 
@@ -2112,8 +2118,8 @@ function createWaitingOnServerAnimation(
   const circleConfig = {
     x: waitingOnServer.width() / 2,
     y: waitingOnServer.height() / 2,
-    radius: 50,
-    strokeWidth: 5,
+    radius: WAITING_ON_SERVER_RING.radius * winH,
+    strokeWidth: WAITING_ON_SERVER_RING.strokeWidth * winH,
   } as const;
 
   const blueCircle = new Konva.Circle({
