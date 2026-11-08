@@ -214,7 +214,10 @@ Some tables (such as `chat_log`) are very large:
 
 - Adding a nullable column or a constant default is safe while the server is
   online.
-- Do not update every row in one transaction. Backfill in small ID batches with
-  `VACUUM` between batches; plan lock duration and disk headroom.
+- `ALTER TABLE` blocks all reads and writes of the table until its transaction
+  commits. Never run it before slow statements in the same migration; put it in
+  its own migration or last.
+- Do not update or delete every row in one transaction. Backfill in small ID
+  batches with `VACUUM` between batches; plan lock duration and disk headroom.
 - Add `CHECK` constraints with `NOT VALID`, then `VALIDATE CONSTRAINT` without
   blocking normal reads and writes.
