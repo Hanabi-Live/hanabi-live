@@ -1345,6 +1345,91 @@ fn validate_table_name(name: &str) -> Result<()> {
     );
     Ok(())
 }
+
+/// Reads a `!seed` or `!replay` table name into the options it sets. A replay also replaces
+/// `options` with the replayed game's options. Other names set nothing.
+async fn special_game_options(
+    store: &Store,
+    name: &str,
+    table_id: u64,
+    user: i32,
+    options: &mut Options,
+) -> Result<ExtraOptions> {
+    let mut extra = ExtraOptions::default();
+    if !name.starts_with('!') {
+        return Ok(extra);
+    }
+    let parts = name.split_whitespace().collect::<Vec<_>>();
+    match parts.first().copied() {
+        Some("!seed") => {
+            ensure!(
+                parts.len() == 2
+                    && parts[1]
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+                "Expected !seed [seed name]"
+            );
+            extra.set_seed_suffix = parts[1].into();
+        }
+        Some("!replay") => {
+            ensure!(
+                (2..=3).contains(&parts.len()),
+                "Expected !replay [game ID] [turn]"
+            );
+            let historical = store.historical(parts[1].parse()?, table_id, user).await?;
+            let turn = if parts.len() == 3 {
+                parts[2]
+                    .parse::<usize>()?
+                    .checked_sub(1)
+                    .context("Turn must be positive")?
+            } else {
+                0
+            };
+            ensure!(
+                usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
+                "Replay turn exceeds game"
+            );
+            *options = historical.game.options.clone();
+            extra.custom_seed = Some(historical.seed);
+            extra.custom_num_players = Some(options.num_players);
+            extra.set_replay = true;
+            extra.set_replay_turn = turn;
+            extra.custom_characters = Some(
+                historical
+                    .game
+                    .players
+                    .iter()
+                    .map(|p| hanabi_engine::AssignedCharacter {
+                        name: if p.character.is_empty() {
+                            "n/a".into()
+                        } else {
+                            p.character.clone()
+                        },
+                        metadata: if hanabi_engine::Character::from_name(&p.character)
+                            .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+                        {
+                            p.character_metadata
+                        } else {
+                            -1
+                        },
+                    })
+                    .collect(),
+            );
+            extra.custom_actions = historical
+                .game
+                .actions
+                .iter()
+                .map(|a| ReplayAction {
+                    kind: a.action_type,
+                    target: a.target,
+                    value: a.value,
+                })
+                .collect();
+        }
+        _ => bail!("Unknown special game prefix"),
+    }
+    Ok(extra)
+}
 fn server_chat(id: u64, message: &str) -> Chat {
     Chat {
         who: Some("Hanab Live".into()),
@@ -1826,78 +1911,7 @@ async fn prepare_table(
             options.one_less_card = false;
         }
         ensure!(valid_timed_options(&options), "Invalid timed options");
-        let mut extra = ExtraOptions::default();
-        if name.starts_with('!') {
-            let parts = name.split_whitespace().collect::<Vec<_>>();
-            if parts.first() == Some(&"!seed") {
-                ensure!(
-                    parts.len() == 2
-                        && parts[1]
-                            .bytes()
-                            .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
-                    "Expected !seed [seed name]"
-                );
-                extra.set_seed_suffix = parts[1].into();
-            } else if parts.first() == Some(&"!replay") {
-                ensure!(
-                    (2..=3).contains(&parts.len()),
-                    "Expected !replay [game ID] [turn]"
-                );
-                let historical = store
-                    .historical(parts[1].parse()?, id, session.user)
-                    .await?;
-                let turn = if parts.len() == 3 {
-                    parts[2]
-                        .parse::<usize>()?
-                        .checked_sub(1)
-                        .context("Turn must be positive")?
-                } else {
-                    0
-                };
-                ensure!(
-                    usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
-                    "Replay turn exceeds game"
-                );
-                options = historical.game.options.clone();
-                extra.custom_seed = Some(historical.seed);
-                extra.custom_characters = Some(
-                    historical
-                        .game
-                        .players
-                        .iter()
-                        .map(|p| hanabi_engine::AssignedCharacter {
-                            name: if p.character.is_empty() {
-                                "n/a".into()
-                            } else {
-                                p.character.clone()
-                            },
-                            metadata: if hanabi_engine::Character::from_name(&p.character)
-                                .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-                            {
-                                p.character_metadata
-                            } else {
-                                -1
-                            },
-                        })
-                        .collect(),
-                );
-                extra.custom_actions = historical
-                    .game
-                    .actions
-                    .iter()
-                    .map(|a| ReplayAction {
-                        kind: a.action_type,
-                        target: a.target,
-                        value: a.value,
-                    })
-                    .collect();
-                extra.custom_num_players = Some(options.num_players);
-                extra.set_replay = true;
-                extra.set_replay_turn = turn;
-            } else {
-                bail!("Unknown special game prefix");
-            }
-        }
+        let extra = special_game_options(store, &name, id, session.user, &mut options).await?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
         let player = store
@@ -3001,79 +3015,15 @@ impl TableActor {
         } else {
             ExtraOptions::default()
         };
-        if !variant_only && session.user == self.table.owner && name.starts_with('!') {
-            let parts = name.split_whitespace().collect::<Vec<_>>();
-            match parts.first().copied() {
-                Some("!seed") => {
-                    ensure!(
-                        parts.len() == 2
-                            && parts[1]
-                                .bytes()
-                                .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
-                        "Expected !seed [seed name]"
-                    );
-                    extra.set_seed_suffix = parts[1].into();
-                }
-                Some("!replay") => {
-                    ensure!(
-                        (2..=3).contains(&parts.len()),
-                        "Expected !replay [game ID] [turn]"
-                    );
-                    let historical = self
-                        .store
-                        .historical(parts[1].parse()?, self.table.id, session.user)
-                        .await?;
-                    let turn = if parts.len() == 3 {
-                        parts[2]
-                            .parse::<usize>()?
-                            .checked_sub(1)
-                            .context("Turn must be positive")?
-                    } else {
-                        0
-                    };
-                    ensure!(
-                        usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
-                        "Replay turn exceeds game"
-                    );
-                    options = historical.game.options.clone();
-                    extra.custom_seed = Some(historical.seed);
-                    extra.custom_num_players = Some(options.num_players);
-                    extra.set_replay = true;
-                    extra.set_replay_turn = turn;
-                    extra.custom_characters = Some(
-                        historical
-                            .game
-                            .players
-                            .iter()
-                            .map(|p| hanabi_engine::AssignedCharacter {
-                                name: if p.character.is_empty() {
-                                    "n/a".into()
-                                } else {
-                                    p.character.clone()
-                                },
-                                metadata: if hanabi_engine::Character::from_name(&p.character)
-                                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-                                {
-                                    p.character_metadata
-                                } else {
-                                    -1
-                                },
-                            })
-                            .collect(),
-                    );
-                    extra.custom_actions = historical
-                        .game
-                        .actions
-                        .iter()
-                        .map(|a| ReplayAction {
-                            kind: a.action_type,
-                            target: a.target,
-                            value: a.value,
-                        })
-                        .collect();
-                }
-                _ => bail!("Unknown special game prefix"),
-            }
+        if !variant_only && session.user == self.table.owner {
+            extra = special_game_options(
+                &self.store,
+                &name,
+                self.table.id,
+                session.user,
+                &mut options,
+            )
+            .await?;
         }
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
