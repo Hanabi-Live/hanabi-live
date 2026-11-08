@@ -16,9 +16,8 @@ const config = {
       ],
     },
     "packages/client": {
-      // Built with Grunt and esbuild from shell scripts; Knip finds the Vite entry point.
+      // Built with esbuild from shell scripts; Knip finds the Vite entry point.
       entry: [
-        "Gruntfile.js",
         "src/standalone/password-reset.ts",
         "src/standalone/pips-reference.ts",
         "src/standalone/public-tables.ts",
@@ -27,14 +26,12 @@ const config = {
       ignore: [
         "test_data/hanabLiveStateToCurrentRepoState.js", // Pasted into the browser console.
       ],
-      ignoreDependencies: [
-        "grunt", // Used in shell scripts.
-        "grunt-criticalcss", // Loaded by "Gruntfile.js".
-      ],
     },
     "packages/scripts": {
       entry: [
-        "src/buildCSS.mts", // Run from shell scripts.
+        // Run from shell scripts.
+        "src/buildCSS.mts",
+        "src/buildCriticalCSS.mts",
       ],
     },
     "packages/game": {

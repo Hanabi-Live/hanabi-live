@@ -40,8 +40,6 @@
     "@types/sinonjs__fake-timers": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "esbuild": "catalog:",
-    "grunt": "catalog:",
-    "grunt-criticalcss": "catalog:",
     "jsdom": "catalog:",
     "tailwindcss": "catalog:",
     "vite": "catalog:",

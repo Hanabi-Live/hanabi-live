@@ -33,10 +33,11 @@ fi
 source "$DIR/get-version.sh"
 
 # Rebuild the critical CSS from the CSS bundle.
-BUILD_CSS="$DIR/../scripts/src/buildCSS.mts"
-cd "$DIR"
-bun "$BUILD_CSS" "$DIR/../../public/css/main.$VERSION.min.css"
-# PhantomJS cannot read the OpenSSL configuration of current systems, so it gets none.
-OPENSSL_CONF=/dev/null bunx --bun --no-install grunt critical --url="$URL"
-bun "$BUILD_CSS" --critical
+SCRIPTS_DIR="$DIR/../scripts/src"
+BUNDLE="$DIR/../../public/css/main.$VERSION.min.css"
+bun "$SCRIPTS_DIR/buildCSS.mts" "$BUNDLE"
+# The page is rendered with Playwright's Chromium, which is downloaded if needed.
+bunx --bun --no-install playwright install --only-shell chromium
+bun "$SCRIPTS_DIR/buildCriticalCSS.mts" "$URL" "$BUNDLE"
+bun "$SCRIPTS_DIR/buildCSS.mts" --critical
 echo "Remember to commit the \"critical.min.css\" file if it had any changes."

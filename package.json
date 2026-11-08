@@ -40,8 +40,6 @@
       "esbuild": "0.28.2",
       "fast-deep-equal": "3.1.3",
       "git-pull-run": "2.1.0",
-      "grunt": "1.6.3",
-      "grunt-criticalcss": "2.1.0",
       "husky": "9.1.7",
       "immer": "11.1.21",
       "interactjs": "1.10.28",
@@ -53,6 +51,7 @@
       "linkify-html": "4.3.3",
       "linkifyjs": "4.3.3",
       "lodash": "4.18.1",
+      "playwright": "1.65.0",
       "postgres": "3.4.9",
       "prettier": "3.9.10",
       "prettier-plugin-sh": "0.20.2",
@@ -114,7 +113,6 @@
   "trustedDependencies": [
     "@parcel/watcher",
     "esbuild",
-    "phantomjs-prebuilt",
     "unrs-resolver"
   ]
 }
