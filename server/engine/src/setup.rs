@@ -61,7 +61,7 @@ pub fn assign_characters(
     players: &[String],
 ) -> Result<Vec<AssignedCharacter>> {
     ensure!(
-        (2..=6).contains(&players.len()),
+        hanabi_protocol::is_player_count(players.len()),
         "Character assignments require two to six players."
     );
     let mut rng = GoRandom::new(seed_hash(seed)?);

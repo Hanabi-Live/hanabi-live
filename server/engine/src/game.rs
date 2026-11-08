@@ -9,8 +9,8 @@ use crate::{
     },
     clue_type, create_shuffled_deck, get_variant, index, int,
     rules::{
-        calculate_max_score, clue_cost, draw_card, follower_misplays, has_remaining_play,
-        remove_card, sees_card, touched_orders, try_play, variant_for,
+        calculate_max_score, clue_cost, clue_cost_for, draw_card, follower_misplays,
+        has_remaining_play, remove_card, sees_card, touched_orders, try_play, variant_for,
     },
     types::reject,
 };
@@ -19,10 +19,17 @@ use anyhow::{Result, ensure};
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
 const MAX_SAFE_FLOAT: f64 = 9_007_199_254_740_991.0;
+/// Clue tokens in play at most, before a clue-starved variant doubles their count.
+pub(crate) const MAX_CLUES: i32 = 8;
+/// The most events a game can record.
+pub(crate) const MAX_EVENTS: usize = 4096;
+/// The longest seed, and the longest player, variant, or character name, in bytes.
+pub(crate) const MAX_SEED_LENGTH: usize = 4096;
+pub(crate) const MAX_NAME_LENGTH: usize = 4096;
 
 pub(crate) fn validate_options(options: &Options) -> Result<()> {
     ensure!(
-        (2..=6).contains(&options.num_players),
+        hanabi_protocol::is_player_count(options.num_players),
         "Games require two to six players."
     );
     ensure!(
@@ -36,14 +43,14 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Invalid game timing."
     );
     ensure!(
-        !options.variant_name.is_empty() && options.variant_name.len() <= 4096,
+        !options.variant_name.is_empty() && options.variant_name.len() <= MAX_NAME_LENGTH,
         "Invalid variant name."
     );
     ensure!(
         options
             .table_name
             .as_ref()
-            .is_none_or(|n| !n.is_empty() && n.len() <= 4096),
+            .is_none_or(|n| !n.is_empty() && n.len() <= MAX_NAME_LENGTH),
         "Invalid table name."
     );
     ensure!(
@@ -63,7 +70,11 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
         "The game options do not match the ordered players."
     );
     ensure!(
-        setup.seed.len() <= 4096 && setup.player_names.iter().all(|n| n.len() <= 4096),
+        setup.seed.len() <= MAX_SEED_LENGTH
+            && setup
+                .player_names
+                .iter()
+                .all(|n| n.len() <= MAX_NAME_LENGTH),
         "Game text is too long."
     );
     let variant = get_variant(&setup.options.variant_name)?;
@@ -73,7 +84,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
     };
     ensure!(
         !identities.is_empty()
-            && identities.len() <= 60
+            && identities.len() <= hanabi_protocol::MAX_DECK_SIZE
             && identities
                 .iter()
                 .all(|c| c.suit_index < variant.suits.len() && matches!(c.rank, 1..=5 | 7)),
@@ -155,7 +166,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
             .collect(),
         turn: 0,
         turns_inverted: false,
-        clue_tokens: if variant.clue_starved { 16 } else { 8 },
+        clue_tokens: MAX_CLUES * clue_cost_for(variant),
         score: 0,
         max_score: variant.max_score,
         strikes: 0,
@@ -231,7 +242,7 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
         if !target.is_some_and(|o| state.players[actor].hand.contains(&o)) {
             return reject("You cannot discard a card that is not in your hand.");
         }
-        if state.clue_tokens >= 8 * clue_cost(state) && !variant.has_inverted {
+        if state.clue_tokens >= MAX_CLUES * clue_cost(state) && !variant.has_inverted {
             return reject("You cannot discard while the team has 8 clues.");
         }
         validate_character_discard(state, actor)?;
@@ -339,7 +350,7 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
         card.rank == 5
     };
     if finished && !v.throw_it_in_a_hole {
-        state.clue_tokens = (state.clue_tokens + 1).min(8 * clue_cost(state));
+        state.clue_tokens = (state.clue_tokens + 1).min(MAX_CLUES * clue_cost(state));
     }
     state.max_score = state.max_score.min(calculate_max_score(state));
 }
@@ -508,7 +519,7 @@ pub fn apply_action(
                 && state.stacks[state.deck[order].suit_index] == 0),
             "The prepared card cannot start a Sudoku stack."
         );
-        if !is_play && state.clue_tokens < 8 * clue_cost(&state) {
+        if !is_play && state.clue_tokens < MAX_CLUES * clue_cost(&state) {
             state.clue_tokens += 1;
         }
         if deck_move {

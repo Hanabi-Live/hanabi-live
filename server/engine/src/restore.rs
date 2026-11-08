@@ -1,7 +1,10 @@
 use crate::{
     ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
-    clue_action_type, clue_type,
-    game::{MAX_SAFE_INTEGER, hand_size, validate_options},
+    clue_action_type, clue_cost_for, clue_type,
+    game::{
+        MAX_CLUES, MAX_EVENTS, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH, hand_size,
+        validate_options,
+    },
     get_variant, int,
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -32,15 +35,15 @@ fn bounded_array<'a>(value: &'a Value, name: &str, max: usize) -> Result<&'a Vec
 /// History is bounded before deserializing and cross-checked against every card,
 /// hand, stack, strike, recorded action, and terminal/turn event.
 pub fn parse_engine_state(value: Value) -> Result<EngineState> {
-    bounded_array(&value, "deck", 60)?;
-    bounded_array(&value, "actions", 512)?;
+    bounded_array(&value, "deck", hanabi_protocol::MAX_DECK_SIZE)?;
+    bounded_array(&value, "actions", hanabi_protocol::MAX_GAME_ACTIONS)?;
     for player in bounded_array(&value, "players", 6)? {
         bounded_array(player, "hand", 6)?;
     }
     for field in ["stacks", "stackStarts", "playStackDirections"] {
         bounded_array(&value, field, 6)?;
     }
-    for event in bounded_array(&value, "events", 4096)? {
+    for event in bounded_array(&value, "events", MAX_EVENTS)? {
         if event.get("type").and_then(Value::as_str) == Some("gameOver") {
             ensure!(
                 event.get("votes").is_some(),
@@ -93,7 +96,9 @@ pub fn parse_engine_state(value: Value) -> Result<EngineState> {
 /// still use `parse_engine_state`, which also rejects missing and unknown fields.
 pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     ensure!(
-        s.deck.len() <= 60 && s.actions.len() <= 512 && s.events.len() <= 4096,
+        s.deck.len() <= hanabi_protocol::MAX_DECK_SIZE
+            && s.actions.len() <= hanabi_protocol::MAX_GAME_ACTIONS
+            && s.events.len() <= MAX_EVENTS,
         "Engine state exceeds its collection bounds."
     );
     ensure!(
@@ -123,8 +128,8 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         ClueType::Color => usize::try_from(value).is_ok_and(|value| value < v.clue_colors.len()),
         ClueType::Rank => v.clue_ranks.contains(&value),
     };
-    let clue_limit = if v.clue_starved { 16 } else { 8 };
-    ensure!(s.seed.len() <= 4096, "Seed too long.");
+    let clue_limit = MAX_CLUES * clue_cost_for(v);
+    ensure!(s.seed.len() <= MAX_SEED_LENGTH, "Seed too long.");
     ensure!(
         count == s.options.num_players && seat(s.active_player_index),
         "Invalid player count or active seat."
@@ -218,8 +223,8 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     for (index, player) in s.players.iter().enumerate() {
         ensure!(
             player.index == index
-                && player.name.len() <= 4096
-                && player.character.len() <= 4096
+                && player.name.len() <= MAX_NAME_LENGTH
+                && player.character.len() <= MAX_NAME_LENGTH
                 && player.hand.len() <= hand_size(&s.options),
             "Invalid player state."
         );

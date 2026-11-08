@@ -1367,7 +1367,7 @@ fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> 
 }
 
 fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
-    if table.chat.len() >= 4096 {
+    if table.chat.len() >= crate::model::MAX_TABLE_CHAT {
         eprintln!(
             "Table {} membership notice omitted: chat history is full.",
             table.id
@@ -1866,7 +1866,7 @@ async fn prepare_table(
             .await?;
         let max_players = usize::try_from(r.max_players)
             .ok()
-            .filter(|n| (2..=6).contains(n))
+            .filter(|n| hanabi_protocol::is_player_count(*n))
             .unwrap_or(5)
             .max(extra.custom_num_players.unwrap_or(2));
         let password = r.password;
@@ -2515,7 +2515,7 @@ impl TableActor {
                 .collect()
         };
         ensure!(
-            (2..=6).contains(&participants.len()),
+            hanabi_protocol::is_player_count(participants.len()),
             "This command requires two to six participants"
         );
         let count = participants.len();
@@ -2954,7 +2954,7 @@ impl TableActor {
             request
                 .as_ref()
                 .and_then(|r| usize::try_from(r.max_players).ok())
-                .filter(|n| (2..=6).contains(n))
+                .filter(|n| hanabi_protocol::is_player_count(*n))
                 .unwrap_or(5)
         };
         let mut extra = if variant_only {
@@ -3425,7 +3425,7 @@ impl TableActor {
             bail!("Already started");
         };
         ensure!(
-            (2..=6).contains(&players.len()),
+            hanabi_protocol::is_player_count(players.len()),
             "You need at least two players"
         );
         ensure!(
@@ -4266,7 +4266,7 @@ impl TableActor {
                 // Stored as JSON text, the format table checkpoints have always used.
                 let raw = serde_json::to_string(&action)?;
                 ensure!(
-                    replay.hypothetical_actions.len() < 4096
+                    replay.hypothetical_actions.len() < crate::model::MAX_HYPOTHETICAL_ACTIONS
                         && replay
                             .hypothetical_actions
                             .iter()
@@ -4366,7 +4366,7 @@ impl TableActor {
             );
             let mut next = self.candidate();
             ensure!(
-                next.chat.len() + messages.len() <= 4096,
+                next.chat.len() + messages.len() <= crate::model::MAX_TABLE_CHAT,
                 "Chat history is full"
             );
             for (index, message) in messages.iter().enumerate() {
@@ -4392,7 +4392,10 @@ impl TableActor {
         }
         let message = authored_chat(self.table.id, &session.name, &text);
         let mut next = self.candidate();
-        ensure!(next.chat.len() < 4096, "Chat history is full");
+        ensure!(
+            next.chat.len() < crate::model::MAX_TABLE_CHAT,
+            "Chat history is full"
+        );
         next.chat.push(TableChat {
             id: None,
             user: session.user,
@@ -4437,7 +4440,7 @@ impl TableActor {
                     .collect::<Vec<_>>()
             };
             ensure!(
-                (2..=6).contains(&participants.len()),
+                hanabi_protocol::is_player_count(participants.len()),
                 "This command requires two to six participants"
             );
             let message = format!(
@@ -4542,7 +4545,10 @@ impl TableActor {
                 } else {
                     command[1..].parse()?
                 };
-                ensure!((2..=6).contains(&n), "Tables require two to six players");
+                ensure!(
+                    hanabi_protocol::is_player_count(n),
+                    "Tables require two to six players"
+                );
                 *automatic_start = Some(n);
                 *countdown = None;
                 notice = format!("The game will start as soon as {n} players have joined.");

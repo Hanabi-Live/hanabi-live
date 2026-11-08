@@ -171,7 +171,9 @@ impl TableSnapshot {
         ensure!(payload.len() <= 4 * 1024 * 1024, "Oversized checkpoint");
         let value: Value = serde_json::from_str(payload)?;
         ensure!(
-            value["chat"].as_array().is_some_and(|v| v.len() <= 4096),
+            value["chat"]
+                .as_array()
+                .is_some_and(|v| v.len() <= MAX_TABLE_CHAT),
             "Missing or oversized checkpoint chat"
         );
         let options = value["options"]
@@ -262,13 +264,15 @@ impl TableSnapshot {
             "Incompatible table checkpoint"
         );
         ensure!(
-            !self.name.is_empty() && self.name.len() <= 200 && (2..=6).contains(&self.max_players),
+            !self.name.is_empty()
+                && self.name.len() <= 200
+                && hanabi_protocol::is_player_count(self.max_players),
             "Invalid table metadata"
         );
         hanabi_engine::get_variant(&self.options.variant_name)?;
         ensure!(
             self.owner > 0
-                && (2..=6).contains(&self.options.num_players)
+                && hanabi_protocol::is_player_count(self.options.num_players)
                 && self.options.starting_player < self.options.num_players
                 && self.options.time_base.is_finite(),
             "Invalid table options"
@@ -302,7 +306,7 @@ impl TableSnapshot {
                 == self.players().len(),
             "Duplicate players"
         );
-        ensure!(self.chat.len() <= 4096, "Oversized table history");
+        ensure!(self.chat.len() <= MAX_TABLE_CHAT, "Oversized table history");
         ensure!(
             self.chat_archived <= self.chat.len(),
             "Invalid archived chat cursor"
@@ -330,7 +334,8 @@ impl TableSnapshot {
                     "Invalid pregame owner"
                 );
                 ensure!(
-                    automatic_start.is_none_or(|n| (2..=6).contains(&n)) && kicked.len() <= 4096,
+                    automatic_start.is_none_or(hanabi_protocol::is_player_count)
+                        && kicked.len() <= 4096,
                     "Invalid pregame controls"
                 );
             }
@@ -345,7 +350,7 @@ impl TableSnapshot {
         if let Phase::Replay { replay, .. } = &self.phase {
             ensure!(
                 replay.segment >= 0
-                    && replay.hypothetical_actions.len() <= 4096
+                    && replay.hypothetical_actions.len() <= MAX_HYPOTHETICAL_ACTIONS
                     && replay
                         .hypothetical_actions
                         .iter()
@@ -418,9 +423,9 @@ impl Snapshot {
         );
         let size = self.game.deck.len() + self.game.stacks.len();
         ensure!(
-            self.notes
-                .iter()
-                .all(|n| n.len() == size && n.iter().all(|t| t.len() <= 65536)),
+            self.notes.iter().all(|n| n.len() == size
+                && n.iter()
+                    .all(|t| t.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH)),
             "Invalid player notes"
         );
         ensure!(
@@ -482,6 +487,11 @@ impl Snapshot {
 pub(crate) fn small(value: usize) -> u8 {
     u8::try_from(value).unwrap_or(u8::MAX)
 }
+
+/// The most messages a table's chat keeps.
+pub const MAX_TABLE_CHAT: usize = 4096;
+/// The most moves a shared replay's hypothetical can hold.
+pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
 
 /// A time as the wire carries it: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". The clients' schemas accept only this form.

@@ -8,11 +8,12 @@ pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
     get_variant(&state.options.variant_name).expect("validated engine variant")
 }
 pub fn clue_cost(state: &EngineState) -> i32 {
-    if variant_for(state).clue_starved {
-        2
-    } else {
-        1
-    }
+    clue_cost_for(variant_for(state))
+}
+
+/// The clue tokens that a clue costs in a variant: clue-starved variants count each token twice.
+pub fn clue_cost_for(variant: &Variant) -> i32 {
+    if variant.clue_starved { 2 } else { 1 }
 }
 
 pub fn touched_orders(state: &EngineState, action: &PlayerAction) -> Vec<usize> {

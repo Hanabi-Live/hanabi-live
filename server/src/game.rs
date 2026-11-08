@@ -96,7 +96,10 @@ impl Game {
             .collect()
     }
     pub fn replay(setup: GameSetup, actions: Vec<ReplayAction>) -> Result<Self> {
-        ensure!(actions.len() <= 512, "Oversized replay");
+        ensure!(
+            actions.len() <= hanabi_protocol::MAX_GAME_ACTIONS,
+            "Oversized replay"
+        );
         let mut game = Self::create(setup)?;
         for action in actions {
             ensure!(action.kind <= 5, "Invalid historical action type");
@@ -127,7 +130,7 @@ pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
 }
 pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
     ensure!(
-        !deck.is_empty() && deck.len() <= 60,
+        !deck.is_empty() && deck.len() <= hanabi_protocol::MAX_DECK_SIZE,
         "Invalid custom deck length"
     );
     let mut bytes = vec![0x80 + u8::try_from(deck.len())?];

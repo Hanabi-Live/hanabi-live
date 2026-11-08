@@ -665,7 +665,10 @@ impl Store {
         if pending.is_empty() {
             return Ok(());
         }
-        ensure!(pending.len() <= 4096, "Oversized chat reservation");
+        ensure!(
+            pending.len() <= crate::model::MAX_TABLE_CHAT,
+            "Oversized chat reservation"
+        );
         let ids:Vec<i64>=sqlx::query_scalar!("SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)", i32::try_from(pending.len())?).fetch_all(&self.archive).await?;
         self.check_state()?;
         ensure!(
@@ -976,7 +979,7 @@ impl Store {
     }
 }
 pub fn zero_stats() -> Value {
-    json!({"numGames":0,"variant":{"numGames":0,"bestScores":(2..=6).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
+    json!({"numGames":0,"variant":{"numGames":0,"bestScores":(hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
 }
 pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
     let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
@@ -1296,7 +1299,7 @@ mod tests {
             terminal(&mut table)?;
             let template = table.game().unwrap().clone();
             let mut expected = [0_i16; 5];
-            for count in 2..=6_usize {
+            for count in hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS {
                 let mut snapshot = template.clone();
                 snapshot.players = (1..=hanabi_engine::int(count))
                     .map(|id| Player {

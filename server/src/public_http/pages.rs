@@ -173,7 +173,7 @@ pub(super) async fn page(
                 if n.is_none() {
                     return Err(Error::bad("You must first specify the number of players."));
                 }
-                if !n.is_some_and(|n| (2..=6).contains(&n)) {
+                if !n.is_some_and(hanabi_protocol::is_player_count) {
                     return Err(Error::bad("Number of players must be between 2 and 6."));
                 }
             }
@@ -223,8 +223,14 @@ pub(super) async fn page(
                     v["games"] = json!(data::tagged(&state, &params, false).await?);
                 }
                 _ => {
-                    return missing(&state, users, shared, n.filter(|n| (2..=6).contains(n)), &q)
-                        .await;
+                    return missing(
+                        &state,
+                        users,
+                        shared,
+                        n.filter(|n| hanabi_protocol::is_player_count(*n)),
+                        &q,
+                    )
+                    .await;
                 }
             }
         }
@@ -279,7 +285,7 @@ pub(super) async fn page(
             statistics["numMaxScores"] = json!(number(&row, "num_max_scores"));
             statistics["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
             statistics["bestScores"] = json!(
-                (2..=6)
+                (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
                     .map(|p| number(&row, &format!("best_score{p}")))
                     .collect::<Vec<_>>()
             );
@@ -514,10 +520,10 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
             .unwrap_or(json!({}));
         let max = i64::from(variant.max_score);
         let mut best = Vec::new();
-        for p in 2..=6 {
+        for p in hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS {
             let score = number(&row, &format!("best_score{p}"));
             if score == max {
-                totals[p - 2] += 1;
+                totals[p - hanabi_protocol::MIN_PLAYERS] += 1;
             }
             best.push(json!({"score":score,"modifier":number(&row,&format!("best_score{p}_mod"))}));
         }
@@ -580,7 +586,14 @@ async fn missing(
     if statistics.is_empty() {
         return Err(Error::bad("You can not exclude every player."));
     }
-    let counts = num_players.map_or_else(|| (2..=6).collect::<Vec<_>>(), |p| vec![p]);
+    let counts = num_players.map_or_else(
+        || {
+            (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
+                .filter_map(|p| i64::try_from(p).ok())
+                .collect::<Vec<_>>()
+        },
+        |p| vec![p],
+    );
     let mut rows = Vec::new();
     for p in counts {
         for variant in catalog::variants() {

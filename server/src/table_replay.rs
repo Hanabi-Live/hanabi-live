@@ -70,7 +70,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             .collect();
     }
     ensure!(
-        (2..=6).contains(&players.len())
+        hanabi_protocol::is_player_count(players.len())
             && players.iter().all(|n| !n.is_empty()
                 && n.len() <= 15
                 && !n
@@ -167,7 +167,10 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     for (i, row) in raw_notes.iter().enumerate() {
         ensure!(row.0.len() <= size, "Too many notes");
         for (j, text) in row.0.iter().enumerate() {
-            ensure!(text.len() <= 65536, "Note too long");
+            ensure!(
+                text.len() <= hanabi_protocol::MAX_IMPORTED_NOTE_LENGTH,
+                "Note too long"
+            );
             text.clone_into(&mut notes[i][j]);
         }
     }

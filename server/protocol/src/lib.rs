@@ -17,6 +17,47 @@ pub use registry::{
 
 pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 
+/// The fewest players a game can have.
+pub const MIN_PLAYERS: usize = 2;
+/// The most players a game can have, which also bounds every per-player list.
+pub const MAX_PLAYERS: usize = 6;
+/// The most cards a deck can have.
+pub const MAX_DECK_SIZE: usize = 60;
+/// The most actions a game can record.
+pub const MAX_GAME_ACTIONS: usize = 512;
+/// The longest note, in bytes, that an imported game can give a card.
+pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
+
+/// Whether a game can have this many players.
+pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
+    count
+        .try_into()
+        .is_ok_and(|count| (MIN_PLAYERS..=MAX_PLAYERS).contains(&count))
+}
+
+/// A number of players, as a schema whose type lists each count.
+pub struct NumPlayers;
+
+impl JsonSchema for NumPlayers {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "NumPlayers".into()
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "integer",
+            "format": "uint8",
+            "minimum": MIN_PLAYERS,
+            "maximum": MAX_PLAYERS,
+            "enum": (MIN_PLAYERS..=MAX_PLAYERS).collect::<Vec<_>>(),
+        })
+    }
+}
+
 /// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 pub struct Timestamp;
@@ -543,24 +584,24 @@ pub struct ReplayImport {
     #[schemars(with = "i64", range(min = 0, max = MAX_SAFE_INTEGER))]
     pub id: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(max = 6))]
+    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
     pub players: Option<Vec<String>>,
     /// The deck, by card order.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ImportCard>", length(max = 60))]
+    #[schemars(with = "Vec<ImportCard>", length(max = MAX_DECK_SIZE))]
     pub deck: Option<Vec<ImportCard>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ImportAction>", length(max = 512))]
+    #[schemars(with = "Vec<ImportAction>", length(max = MAX_GAME_ACTIONS))]
     pub actions: Option<Vec<ImportAction>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "ImportOptions")]
     pub options: Option<ImportOptions>,
     /// Each player's notes, indexed by card order.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ImportNoteRow>", length(max = 6))]
+    #[schemars(with = "Vec<ImportNoteRow>", length(max = MAX_PLAYERS))]
     pub notes: Option<Vec<ImportNoteRow>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<ImportCharacter>", length(max = 6))]
+    #[schemars(with = "Vec<ImportCharacter>", length(max = MAX_PLAYERS))]
     pub characters: Option<Vec<ImportCharacter>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
@@ -1228,7 +1269,7 @@ pub struct PublicGamePage {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGameRow {
     pub id: GameId,
-    #[schemars(range(min = 2, max = 6))]
+    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub num_players: u8,
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub score: i32,
@@ -1389,7 +1430,7 @@ pub struct Settings {
     pub create_table_one_less_card: bool,
     pub create_table_all_or_nothing: bool,
     pub create_table_detrimental_characters: bool,
-    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    #[schemars(with = "NumPlayers")]
     pub create_table_max_players: u8,
 }
 
@@ -1474,7 +1515,7 @@ pub struct Welcome {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct GameOptions {
-    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    #[schemars(with = "NumPlayers")]
     pub num_players: u8,
     #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
     pub starting_player: u8,
@@ -1499,7 +1540,7 @@ pub struct GameOptions {
     #[schemars(with = "String", length(min = 1))]
     pub table_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    #[schemars(with = "NumPlayers")]
     pub max_players: Option<u8>,
 }
 
@@ -1560,7 +1601,7 @@ pub struct Table {
     pub id: TableId,
     /// Whether the recipient is one of the players.
     pub joined: bool,
-    #[schemars(range(min = 2, max = 6), extend("enum" = [2, 3, 4, 5, 6]))]
+    #[schemars(with = "NumPlayers")]
     pub max_players: u8,
     #[schemars(length(min = 1))]
     pub name: String,
@@ -1645,7 +1686,7 @@ pub struct GameHistoryOtherScores {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregameBestScore {
-    #[schemars(range(min = 2, max = 6))]
+    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub num_players: u8,
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub score: i32,
@@ -1700,7 +1741,7 @@ pub struct Pregame {
     pub players: Vec<PregamePlayer>,
     pub options: GameOptions,
     pub password_protected: bool,
-    #[schemars(range(min = 2, max = 6))]
+    #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub max_players: u8,
 }
 
@@ -1928,7 +1969,7 @@ pub enum GameEvent {
     },
     PlayerTimes {
         /// Each player's time, in seat order.
-        #[schemars(length(min = 2, max = 6), extend("x-readonly" = true))]
+        #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS), extend("x-readonly" = true))]
         player_times: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         duration: i64,
@@ -1957,7 +1998,7 @@ pub struct GameActionList {
 pub struct Init {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(length(min = 2, max = 6))]
+    #[schemars(length(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub player_names: Vec<String>,
     /// The seat the recipient views the game from.
     #[schemars(with = "PlayerIndex")]
