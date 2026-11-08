@@ -14,7 +14,9 @@ fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSe
     }
 }
 fn standard() -> EngineState {
-    create_game(setup(Options::default(), None)).unwrap().state
+    create_game(setup(Options::default(), None))
+        .expect("the default options are valid")
+        .state
 }
 fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
     PlayerAction {
@@ -33,7 +35,8 @@ fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
         .collect()
 }
 fn restore(state: &EngineState) -> EngineState {
-    parse_engine_state(serde_json::to_value(state).unwrap()).unwrap()
+    parse_engine_state(serde_json::to_value(state).expect("a state serializes"))
+        .expect("a serialized state restores")
 }
 
 #[test]
@@ -603,7 +606,9 @@ fn first_accepted(
             if perfect
                 && (next.state.strikes != state.strikes
                     || next.state.max_score
-                        != get_variant(&state.options.variant_name).unwrap().max_score)
+                        != get_variant(&state.options.variant_name)
+                            .expect("the game's variant exists")
+                            .max_score)
             {
                 losing.get_or_insert(next.state);
             } else {

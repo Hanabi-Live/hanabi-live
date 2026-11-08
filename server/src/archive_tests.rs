@@ -30,7 +30,7 @@ async fn archive_reads_use_one_fresh_snapshot_across_concurrent_edits_postgres()
         ensure!(initial.actions.len() == 1 && initial.notes[0].note == "before-note"
             && initial.tags[0].tag == "before-tag", "Archive components missing");
         ensure!(load(&db.pool, 999).await?.is_none(), "Missing game looked present");
-#[allow(clippy::disallowed_methods)]
+#[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
 
         sqlx::raw_sql(
             "ALTER TABLE games RENAME TO archive_games;

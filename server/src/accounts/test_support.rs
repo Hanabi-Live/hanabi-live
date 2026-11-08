@@ -13,7 +13,10 @@ pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
         ("games", "one_extra_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
         ("games", "one_less_card", "BOOLEAN NOT NULL DEFAULT FALSE"),
     ] {
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "table and column names cannot be bound parameters"
+        )]
         sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
             "ALTER TABLE {table} RENAME COLUMN {column} TO legacy_column;
              ALTER TABLE {table} ADD COLUMN {column} {definition};
@@ -50,7 +53,10 @@ impl TestDb {
             std::process::id(),
             DATABASE_ID.fetch_add(1, Ordering::Relaxed)
         );
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "CREATE DATABASE {name}"
@@ -62,7 +68,10 @@ impl TestDb {
             .connect_with(options.database(&name))
             .await
             .unwrap();
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "the schema file has many statements, which the query macros cannot run"
+        )]
         sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
             .execute(&pool)
             .await
@@ -84,7 +93,10 @@ impl TestDb {
 
     pub async fn close(mut self) {
         self.pool.close().await;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         self.admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "DROP DATABASE {} WITH (FORCE)",

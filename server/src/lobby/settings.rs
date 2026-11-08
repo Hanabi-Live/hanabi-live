@@ -79,12 +79,9 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
             Value::Bool(value == "true")
         }
         Value::Number(number) if number.is_f64() => {
-            let number = value.parse::<f64>().ok().filter(|n| n.is_finite());
-            ensure!(
-                number.is_some(),
-                "The setting of \"{name}\" must be an float64."
-            );
-            let number = number.unwrap();
+            let Some(number) = value.parse::<f64>().ok().filter(|n| n.is_finite()) else {
+                bail!("The setting of \"{name}\" must be an float64.");
+            };
             ensure!(
                 number > 0.0 && number <= 86400.0,
                 "The setting of \"{name}\" is too large."
@@ -92,12 +89,9 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
             Value::from(number)
         }
         Value::Number(_) => {
-            let number = value.parse::<i64>().ok();
-            ensure!(
-                number.is_some(),
-                "The setting of \"{name}\" must be an integer."
-            );
-            let number = number.unwrap();
+            let Ok(number) = value.parse::<i64>() else {
+                bail!("The setting of \"{name}\" must be an integer.");
+            };
             ensure!(
                 (0..=604_800).contains(&number),
                 "The setting of \"{name}\" is too large."

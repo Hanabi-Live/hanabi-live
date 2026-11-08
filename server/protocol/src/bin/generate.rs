@@ -455,7 +455,10 @@ fn variable(name: &str) -> String {
 
 fn clean_schema(mut schema: Value) -> Value {
     for key in ["$schema", "$defs", "title"] {
-        schema.as_object_mut().unwrap().remove(key);
+        schema
+            .as_object_mut()
+            .expect("a schema is an object")
+            .remove(key);
     }
     schema
 }

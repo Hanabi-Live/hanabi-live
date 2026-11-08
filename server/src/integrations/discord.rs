@@ -509,7 +509,7 @@ impl Bridge {
             if !is_snowflake(id) {
                 continue;
             }
-            let matched = capture.get(0).unwrap();
+            let matched = capture.get(0).expect("group 0 is the whole match");
             result.push_str(&escape_html(&text[offset..matched.start()]));
             let name = match &capture[1] {
                 "#" => format!(

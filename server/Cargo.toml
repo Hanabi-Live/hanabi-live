@@ -27,6 +27,20 @@ too_many_lines = "allow"
 # The structs with many bools are wire payloads, whose JSON shape the clients rely on, and game
 # options and catalog entries, whose flags are independent settings that an enum would not model.
 struct_excessive_bools = "allow"
+# Restriction lints, chosen individually: Clippy advises against enabling that whole group.
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+dbg_macro = "warn"
+empty_drop = "warn"
+get_unwrap = "warn"
+lossy_float_literal = "warn"
+mem_forget = "warn"
+rc_buffer = "warn"
+str_to_string = "warn"
+todo = "warn"
+unimplemented = "warn"
+unwrap_used = "warn"
+verbose_file_reads = "warn"
 
 [dependencies]
 anyhow = "1"

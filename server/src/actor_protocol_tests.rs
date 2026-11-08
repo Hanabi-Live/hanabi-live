@@ -38,7 +38,10 @@ impl Harness {
             .connect_with(options.clone())
             .await?;
         let database = format!("ts_slice_{:032x}", rand::random::<u128>());
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {database}")))
             .execute(&admin)
             .await?;
@@ -46,7 +49,10 @@ impl Harness {
             .max_connections(8)
             .connect_with(options.database(&database))
             .await?;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "the schema file has many statements, which the query macros cannot run"
+        )]
         sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
             .execute(&pool)
             .await?;
@@ -235,7 +241,10 @@ impl Harness {
     async fn close(self) -> Result<()> {
         self.stop_hub().await?;
         self.store.close().await?;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "DROP DATABASE {} WITH (FORCE)",
             self.database
@@ -1926,7 +1935,7 @@ async fn findvariant_rechecks_roster_after_lookup_without_blocking_table_command
         h.send(1,"tableJoin",json!({"tableID":id})).await?;h.barrier(0).await?;
         for index in 0..3{h.frames(index)?;}
         let mut lock=h.store.primary.begin().await?;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE").execute(&mut *lock).await?;
         let finding=h.begin(1,"chat",json!({"room":format!("table{id}"),"msg":"/fv"})).await?;
         h.wait_locks(1).await?;
@@ -1960,7 +1969,10 @@ async fn findvariant_targets_only_the_current_owner_generation() -> Result<()> {
         h.frames(0)?;
         h.frames(1)?;
         let mut lock = h.store.primary.begin().await?;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "test SQL that sets up database state or failures directly"
+        )]
         sqlx::query("LOCK TABLE user_stats IN ACCESS EXCLUSIVE MODE")
             .execute(&mut *lock)
             .await?;
