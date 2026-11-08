@@ -228,6 +228,7 @@
     "resizemove",
     "rfind",
     "rngs",
+    "rposition",
     "rustc",
     "RUSTFLAGS",
     "rustls",

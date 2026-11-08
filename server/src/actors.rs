@@ -1801,6 +1801,31 @@ enum Creation {
     Table(hanabi_protocol::TableCreateRequest),
     Replay(hanabi_protocol::ReplayCreateRequest),
 }
+/// Removes the moves of a hypothetical's last turn, the way clients go back. Morphs stay, since
+/// clients keep them when going back.
+fn undo_hypothetical_turn(actions: &mut Vec<String>) {
+    let kind = |raw: &String| {
+        serde_json::from_str::<Value>(raw)
+            .ok()
+            .and_then(|v| v["type"].as_str().map(str::to_owned))
+            .unwrap_or_default()
+    };
+    let Some(last_turn) = actions.iter().rposition(|a| kind(a) == "turn") else {
+        return;
+    };
+    let start = actions[..last_turn]
+        .iter()
+        .rposition(|a| kind(a) == "turn")
+        .map_or(0, |i| i + 1);
+    let mut index = 0;
+    actions.retain(|a| {
+        let keep = !(start..=last_turn).contains(&index)
+            || matches!(kind(a).as_str(), "morph" | "unmorph");
+        index += 1;
+        keep
+    });
+}
+
 /// The table a command is for: its table ID, or for chat, its "table{id}" room.
 fn table_target(message: &ClientMessage) -> Option<u64> {
     use ClientMessage as M;
@@ -4262,12 +4287,7 @@ impl TableActor {
                 Outgoing::new(hanabi_protocol::server::HYPO_ACTION, action)
             }
             R::HypoBack { .. } => {
-                replay.hypothetical_actions.pop();
-                while replay.hypothetical_actions.last().is_some_and(|v| {
-                    serde_json::from_str::<Value>(v).is_ok_and(|v| v["type"] != "turn")
-                }) {
-                    replay.hypothetical_actions.pop();
-                }
+                undo_hypothetical_turn(&mut replay.hypothetical_actions);
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_BACK,
                     TableRequest {

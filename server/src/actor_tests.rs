@@ -869,3 +869,31 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn hypothetical_back_keeps_morphs() {
+    let action = |kind: &str, n: i64| json!({"type":kind,"order":n}).to_string();
+    let mut actions = vec![
+        action("play", 0),
+        action("turn", 1),
+        action("morph", 2),
+        action("discard", 3),
+        action("draw", 4),
+        action("turn", 5),
+        action("unmorph", 6),
+    ];
+    undo_hypothetical_turn(&mut actions);
+    assert_eq!(
+        actions,
+        [
+            action("play", 0),
+            action("turn", 1),
+            action("morph", 2),
+            action("unmorph", 6),
+        ]
+    );
+    undo_hypothetical_turn(&mut actions);
+    assert_eq!(actions, [action("morph", 2), action("unmorph", 6)]);
+    undo_hypothetical_turn(&mut actions);
+    assert_eq!(actions, [action("morph", 2), action("unmorph", 6)]);
+}
