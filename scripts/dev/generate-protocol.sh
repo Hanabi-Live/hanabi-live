@@ -25,12 +25,14 @@ for target in "packages/game/src/generated/protocol.ts --game" "packages/data/sr
     cargo run --quiet --locked --bin generate -- ${flag:+"$flag"}
   ) \
     | bunx --bun --no-install prettier --stdin-filepath "$output" > "$formatted"
-  # Rust doc comments become JSDoc, which the package's ESLint rules wrap to the file's indentation.
-  (
-    cd "$(dirname "$output")/../.."
-    bunx --bun --no-install eslint --stdin --stdin-filename "$REPO_ROOT/$output" --fix-dry-run \
-      --format json < "$formatted" || true
-  ) | bun "$REPO_ROOT/scripts/dev/eslint-output.ts" "$formatted" > "$temporary"
+  # Rust doc comments become JSDoc, which ESLint wraps to the file's indentation.
+  # ESLint fails when it reports problems; the script below reports any it could not fix.
+  {
+    bunx --bun --no-install eslint --no-config-lookup \
+      --config "$REPO_ROOT/scripts/dev/generated-protocol.eslint.config.mjs" \
+      --stdin --stdin-filename "$REPO_ROOT/$output" --fix-dry-run --format json < "$formatted" \
+      || true
+  } | bun "$REPO_ROOT/scripts/dev/eslint-output.ts" "$formatted" > "$temporary"
   if [[ ${1:-} == --check ]]; then
     if ! diff -u "$output" "$temporary"; then
       status=1
