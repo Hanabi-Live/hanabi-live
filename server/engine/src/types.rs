@@ -25,6 +25,7 @@ pub struct Options {
     pub max_players: Option<usize>,
 }
 
+/// Must match `hanabi_protocol::GameOptions::default()`; a server test checks this.
 impl Default for Options {
     fn default() -> Self {
         Self {
