@@ -273,7 +273,10 @@ impl Database {
         let options = PgConnectOptions::from_str(&uri).unwrap();
         let mut admin = PgConnection::connect_with(&options).await.unwrap();
         let name = format!("ts_slice_rust_public_{:016x}", rand::random::<u64>());
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "CREATE DATABASE {name}"
@@ -285,7 +288,10 @@ impl Database {
             .connect_with(options.database(&name))
             .await
             .unwrap();
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "the schema file has many statements, which the query macros cannot run"
+        )]
         sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
             .execute(&pool)
             .await
@@ -294,7 +300,10 @@ impl Database {
     }
     async fn close(mut self) {
         self.pool.close().await;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         self.admin
             .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
                 "DROP DATABASE {} WITH (FORCE)",
@@ -326,7 +335,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         stats_values(&body),
         ["0 (0 normally finished)", "-", "0", "-"]
     );
-    #[allow(clippy::disallowed_methods)]
+    #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES
         (1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),
@@ -565,14 +574,20 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     // A max score shows the option that kept it from counting normally, or a check.
     let (_, body) = request(app.clone(), "/scores/Alice").await;
     assert!(body.contains("fa-check score-modifier green"), "{body}");
-    #[allow(clippy::disallowed_methods)]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
     sqlx::raw_sql("UPDATE user_stats SET best_score2_mod=4 WHERE user_id=1")
         .execute(&db.pool)
         .await
         .unwrap();
     let (_, body) = request(app.clone(), "/scores/Alice").await;
     assert!(body.contains("#modifier-oneextracard"), "{body}");
-    #[allow(clippy::disallowed_methods)]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
     sqlx::raw_sql("UPDATE user_stats SET best_score2_mod=0 WHERE user_id=1")
         .execute(&db.pool)
         .await
@@ -732,7 +747,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert!(body.contains("data-authenticated=\"true\""));
-    #[allow(clippy::disallowed_methods)]
+    #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
         SELECT id,'Player'||id,'player'||id,'test','127.0.0.1' FROM generate_series(4,8) id;

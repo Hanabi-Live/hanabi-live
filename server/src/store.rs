@@ -1171,7 +1171,10 @@ mod tests {
             .connect_with(options.clone())
             .await?;
         let name = format!("ts_slice_{:032x}", rand::random::<u128>());
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {name}")))
             .execute(&admin)
             .await?;
@@ -1179,7 +1182,10 @@ mod tests {
             .max_connections(6)
             .connect_with(options.database(&name))
             .await?;
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "the schema file has many statements, which the query macros cannot run"
+        )]
         sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
             .execute(&pool)
             .await?;
@@ -1187,7 +1193,10 @@ mod tests {
         Ok(Some((admin, pool, name)))
     }
     async fn cleanup(admin: PgPool, name: String) -> Result<()> {
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "a database name cannot be a bound parameter"
+        )]
         sqlx::query(sqlx::AssertSqlSafe(format!(
             "DROP DATABASE {name} WITH (FORCE)"
         )))
@@ -1246,7 +1255,7 @@ mod tests {
             };
             let replay_revision = store.save(&replay, 0).await?;
             let mut blocked_archive = store.primary.begin().await?;
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE").execute(&mut *blocked_archive).await?;
             let startup = tokio::time::timeout(Duration::from_secs(1), store.load_for_startup()).await??;
             let cached = startup.iter().find(|(saved, _)| saved.id == table.id).context("Missing startup pregame")?;
@@ -1411,7 +1420,7 @@ mod tests {
                 store.complete(&changed, revision).await.is_err(),
                 "Completion accepted statistics that differ from the durable checkpoint"
             );
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE game_actions ADD CONSTRAINT reject_native_test CHECK(type<0)")
                 .execute(&store.primary)
                 .await?;
@@ -1436,7 +1445,7 @@ mod tests {
                     == revision,
                 "Terminal Redis state lost"
             );
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE game_actions DROP CONSTRAINT reject_native_test")
                 .execute(&store.primary)
                 .await?;
@@ -1467,10 +1476,10 @@ mod tests {
             let mut pending=recovered[0].0.clone();
             pending.pending_tag=Some(PendingTag{game_id:1,user_id:1,operation:"tag".into(),tag:"recovered-tag".into()});
             store.save(&pending,recovered[0].1).await?;
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE game_tags ADD CONSTRAINT reject_native_tag CHECK(tag <> 'recovered-tag')").execute(&store.primary).await?;
             ensure!(store.load().await.is_err(),"Rejected replay tag was not surfaced");
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE game_tags DROP CONSTRAINT reject_native_tag").execute(&store.primary).await?;
             let recovered=store.load().await?;
             ensure!(recovered[0].0.pending_tag.is_none()&&recovered[0].0.game().unwrap().tags.iter().any(|t|t.tag=="recovered-tag"),"Replay tag intent was not recovered");
@@ -1568,7 +1577,10 @@ mod tests {
         let state = RedisState::connect(&redis.url, "native-best-score-modifiers").await?;
         let store = Store::fixture(pool, state);
         let result = async {
-            #[allow(clippy::disallowed_methods)]
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up database state or failures directly"
+            )]
             sqlx::raw_sql(
                 "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
                  VALUES(9001,'Carol','carol','test','127.0.0.1');
@@ -1621,12 +1633,12 @@ mod tests {
             ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
             ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123Z","Timestamp was not canonicalized before durability");
             store.save(&table,0).await?;
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;
             ensure!(store.archive_chat(&table.chat).await.is_err(),"Partial archive failure was not surfaced");
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
             ensure!(rows==0,"Failed chat batch escaped rollback");
-            #[allow(clippy::disallowed_methods)]
+            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
             sqlx::query("ALTER TABLE chat_log DROP CONSTRAINT reject_reserved_chat").execute(&store.primary).await?;
             let (left,right)=tokio::join!(store.archive_chat(&table.chat),store.archive_chat(&table.chat));
             left?;right?;

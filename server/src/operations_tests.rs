@@ -293,7 +293,7 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         return Ok(());
     };
     let result:anyhow::Result<()>=async{
-    #[allow(clippy::disallowed_methods)]
+    #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
         "CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES({});",
         crate::store::SCHEMA_VERSION
@@ -363,7 +363,7 @@ crate::server_info::test_info(),
     assert_eq!(report["recovery"]["authority"], "Redis AOF/WAITAOF");
     assert_eq!(store.lobby_reads.options().get_max_connections(), 2);
     let mut reader = store.lobby_reads.acquire().await?;
-    #[allow(clippy::disallowed_methods)]
+    #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     let read_only: String = sqlx::query_scalar("SHOW default_transaction_read_only").fetch_one(&mut *reader).await?;
     assert_eq!(read_only, "on");
     let reader_pid: i32 = sqlx::query_scalar!("SELECT pg_backend_pid() AS \"v!\"").fetch_one(&mut *reader).await?;

@@ -1,6 +1,10 @@
-#[allow(
-    clippy::wildcard_imports,
-    reason = "the command tables below name every payload type"
+// Clippy skips wildcard_imports in test builds, where the expectation would go unfulfilled.
+#[cfg_attr(
+    not(test),
+    expect(
+        clippy::wildcard_imports,
+        reason = "the command tables below name every payload type"
+    )
 )]
 use crate::*;
 use anyhow::{Context, Result, bail};

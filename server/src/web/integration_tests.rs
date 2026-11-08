@@ -643,7 +643,10 @@ async fn websocket_defers_lobby_reads_without_an_opt_in_postgres() {
     };
     let cookie = login(&fixture, "DeferredLobby").await;
     let mut lock = fixture.db.pool.begin().await.unwrap();
-    #[allow(clippy::disallowed_methods)]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
     sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *lock)
         .await
@@ -670,7 +673,10 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
     };
     let user = fixture.db.user("FastResume").await;
     let mut lock = fixture.db.pool.begin().await.unwrap();
-    #[allow(clippy::disallowed_methods)]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
     sqlx::query("LOCK TABLE games IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *lock)
         .await
@@ -768,7 +774,10 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .await
         .unwrap();
     let mut history_lock = fixture.db.pool.begin().await.unwrap();
-    #[allow(clippy::disallowed_methods)]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that sets up database state or failures directly"
+    )]
     sqlx::query("LOCK TABLE game_tags IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *history_lock)
         .await

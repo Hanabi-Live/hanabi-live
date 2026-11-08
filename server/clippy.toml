@@ -17,3 +17,6 @@ disallowed-methods = [
   { path = "regex::bytes::RegexBuilder::new", reason = "use regex! so the pattern is compiled once" },
   { path = "regex::bytes::RegexSet::new", reason = "use regex! so the pattern is compiled once" },
 ]
+
+# Tests may unwrap: a failing unwrap is a failing test.
+allow-unwrap-in-tests = true

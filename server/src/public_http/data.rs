@@ -135,7 +135,10 @@ fn push_compare(qb: &mut QueryBuilder<Postgres>, column: &str, op: &str, value: 
 // share one generic plan. Values are always bound, and tests cover each filter and order.
 // "selected" is not materialized, so that counting and paging plan separately: a materialized
 // result would copy every matching game before the page could use an index.
-#[allow(clippy::disallowed_methods)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "the filters and sort order are composed at run time"
+)]
 fn selected(s: Selection) -> QueryBuilder<Postgres> {
     let mut qb = QueryBuilder::new("WITH selected AS NOT MATERIALIZED (SELECT ");
     qb.push(GAME_COLUMNS).push(" FROM games g WHERE TRUE");
