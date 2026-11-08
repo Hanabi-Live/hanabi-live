@@ -1174,13 +1174,15 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
   pointer-events: auto;
 }
 
+/* Grow when opened, and shrink through the transition when closed. */
 .tooltip-bubble:popover-open {
   transform: scale(1);
-  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  animation: tooltip-grow var(--tooltip-duration)
+    cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
-@starting-style {
-  .tooltip-bubble:popover-open {
+@keyframes tooltip-grow {
+  from {
     transform: scale(0);
   }
 }
