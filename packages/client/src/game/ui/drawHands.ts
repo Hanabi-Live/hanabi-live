@@ -6,8 +6,10 @@ import { CardLayout } from "./CardLayout";
 import { NameFrame } from "./NameFrame";
 import { globals } from "./UIGlobals";
 import {
+  BGA_ACTION_LOG,
   CARD_H,
   CARD_W,
+  CLUE_LOG,
   FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
   INDICATOR_OPACITY,
@@ -24,6 +26,9 @@ interface HandConfig {
   h: number;
   rot?: number;
 }
+
+/** The gap between the hands and the logs on either side, in fractions of the stage width. */
+const HAND_LOG_GAP = 0.02;
 
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
@@ -120,8 +125,8 @@ export function drawHands(winW: number, winH: number): void {
   // In Board Game Arena mode, the hands are all in a line, so they do not have to be hard-coded.
   const handPosBGA: HandConfig[][] = [];
   if (!globals.lobby.settings.keldonMode) {
-    let leftX = 0.43; // This is 0.020 away from the action log.
-    const rightX = 0.78; // This is 0.020 away from the clue log.
+    let leftX = BGA_ACTION_LOG.x + BGA_ACTION_LOG.w + HAND_LOG_GAP;
+    const rightX = CLUE_LOG.x - HAND_LOG_GAP;
     let topY = 0.03;
     const bottomY = 0.96;
     let cardSpacing = 0.1; // The amount of card widths between adjacent cards.
@@ -130,7 +135,7 @@ export function drawHands(winW: number, winH: number): void {
     if (numPlayers >= 4) {
       // The hands would overlap with the timer for spectators or the hypothetical controls during a
       // shared replay.
-      leftX = 0.44;
+      leftX += HAND_LOG_GAP / 2;
     }
     if (numPlayers >= 5) {
       // Create a bit more space for the cards.

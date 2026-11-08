@@ -10,6 +10,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   MAX_CARDS_PER_HAND,
+  MAX_CLUES,
   MAX_STRIKES,
   MAX_SUITS,
   MIN_PLAYERS,
@@ -46,8 +47,11 @@ import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import {
   ACTIVE_INDICATOR_COLOR,
+  BGA_ACTION_LOG,
   CARD_ANIMATION_LENGTH_SECONDS,
+  CLUE_LOG,
   DIALOG_CORNER_RADIUS,
+  DOUBLE_DISCARD_COLOR,
   EFFICIENCY_DECIMAL_PLACES,
   FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
@@ -289,12 +293,7 @@ function drawActionLog() {
         w: 0.4,
         h: 0.098,
       }
-    : {
-        x: 0.01,
-        y: 0.01,
-        w: 0.4,
-        h: 0.25,
-      };
+    : BGA_ACTION_LOG;
 
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
@@ -949,7 +948,7 @@ function drawScoreArea() {
   );
 
   const cluesNumberLabel = basicNumberLabel.clone({
-    text: "8",
+    text: MAX_CLUES.toString(),
     x: (labelX + labelSpacing) * winW,
     y: 0.08 * winH,
     listening: true,
@@ -1341,12 +1340,7 @@ function drawYourTurn() {
 }
 
 function drawClueLog() {
-  clueLogValues = {
-    x: 0.8,
-    y: 0.01,
-    w: 0.19,
-    h: 0.51,
-  };
+  clueLogValues = CLUE_LOG;
   const clueLogRect = new Konva.Rect({
     x: clueLogValues.x * winW,
     y: clueLogValues.y * winH,
@@ -1569,7 +1563,7 @@ function drawDiscardArea() {
     y: discardAreaValues.y * winH,
     width: discardAreaValues.w * winW,
     height: discardAreaValues.h * winH,
-    stroke: "yellow",
+    stroke: DOUBLE_DISCARD_COLOR,
     strokeWidth: 0.004 * winW,
     cornerRadius: PANEL_CORNER_RADIUS * winW,
     opacity: 0.75,

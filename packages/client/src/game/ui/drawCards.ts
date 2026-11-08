@@ -60,6 +60,10 @@ const UNKNOWN_CARD_LARGE_PIP_ALPHA = { normal: 0.1, colorblind: 0.4 } as const;
 /** The color of the pips on an unknown card or the deck. */
 const UNKNOWN_CARD_PIP_COLOR = "#444444";
 
+/** The colors that a prism suit's card fill is mixed with, as RGB components. */
+const WHITE_RGB = [255, 255, 255] as const;
+const BLACK_RGB = [0, 0, 0] as const;
+
 /** The size and baseline of the rank label, which is smaller to fit the suit in colorblind mode. */
 const RANK_LABEL_FONT = {
   normal: { fontSize: 96, textYPos: 110 },
@@ -728,12 +732,9 @@ function getSuitStyle(
     }
 
     const fillToMixArray = [fillToMixRGB.r, fillToMixRGB.g, fillToMixRGB.b];
-    let fillToMixArray2 = [255, 255, 255]; // White
-    if (suit.oneOfEach) {
-      fillToMixArray2 = [0, 0, 0]; // Black
-    }
+    const fillToMixArray2 = suit.oneOfEach ? BLACK_RGB : WHITE_RGB;
 
-    return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
+    return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix the two colors evenly
   }
 
   // Nearly all other suits have a solid fill.

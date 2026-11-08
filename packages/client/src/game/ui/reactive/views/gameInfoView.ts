@@ -8,7 +8,13 @@ import {
 import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
-import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
+import {
+  LABEL_COLOR,
+  MAX_CLUES_COLOR,
+  NO_CLUES_COLOR,
+  OFF_BLACK,
+  STRIKE_FADE,
+} from "../../constants";
 import { animate } from "../../konvaHelpers";
 import * as replay from "../../replay";
 import * as turn from "../../turn";
@@ -173,21 +179,21 @@ export function onClueTokensChanged(clueTokens: number): void {
 
     let fill: string;
     if (noCluesAvailable) {
-      fill = "red";
+      fill = NO_CLUES_COLOR;
     } else if (oneClueAvailable) {
       fill = "yellow";
     } else if (maxCluesAvailable) {
-      fill = "lime";
+      fill = MAX_CLUES_COLOR;
     } else {
       fill = LABEL_COLOR;
     }
     globals.elements.cluesNumberLabel?.fill(fill);
 
     if (noCluesAvailable) {
-      globals.elements.scoreAreaBorder?.stroke("red");
+      globals.elements.scoreAreaBorder?.stroke(NO_CLUES_COLOR);
       globals.elements.scoreAreaBorder?.show();
     } else if (maxCluesAvailable) {
-      globals.elements.scoreAreaBorder?.stroke("lime");
+      globals.elements.scoreAreaBorder?.stroke(MAX_CLUES_COLOR);
       globals.elements.scoreAreaBorder?.show();
     } else {
       globals.elements.scoreAreaBorder?.hide();

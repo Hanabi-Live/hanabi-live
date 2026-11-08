@@ -10,6 +10,7 @@ import Konva from "konva";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import {
+  DOUBLE_DISCARD_COLOR,
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   LABEL_COLOR,
@@ -109,7 +110,7 @@ export function onChanged(
       && globals.lobby.settings.hyphenatedConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
-      text3.fill("yellow");
+      text3.fill(DOUBLE_DISCARD_COLOR);
     }
   }
 

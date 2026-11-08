@@ -447,16 +447,22 @@ function drawScoreChart(
   });
 }
 
-/** Zero scores are red, the best score is green, and the rest alternate shades of blue. */
 /** The colors that the bars of ordinary scores cycle through. */
 const BAR_COLORS = ["#99bbff", "#3366ff", "#6699ff"] as const;
 
+/** Red */
+const ZERO_SCORE_BAR_COLOR = "#aa5555";
+
+/** Green */
+const BEST_SCORE_BAR_COLOR = "#00aa00";
+
+/** Zero scores are red, the best score is green, and the rest alternate shades of blue. */
 function barColor(row: ScoreFrequency, best: boolean, index: number): string {
   if (row.score === 0) {
-    return "#aa5555";
+    return ZERO_SCORE_BAR_COLOR;
   }
   if (best) {
-    return "#00aa00";
+    return BEST_SCORE_BAR_COLOR;
   }
   return BAR_COLORS[index % BAR_COLORS.length] ?? BAR_COLORS[0];
 }

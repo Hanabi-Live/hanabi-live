@@ -20,6 +20,22 @@ export const FULL_CARD_STAGE_SIZE = {
   H: 0.189,
 } as const;
 
+/** The action log in the Board Game Arena layout, in fractions of the stage. */
+export const BGA_ACTION_LOG = {
+  x: 0.01,
+  y: 0.01,
+  w: 0.4,
+  h: 0.25,
+} as const;
+
+/** The clue log, in fractions of the stage. */
+export const CLUE_LOG = {
+  x: 0.8,
+  y: 0.01,
+  w: 0.19,
+  h: 0.51,
+} as const;
+
 /** Based on the card's width, but used for both the icon's width and height. */
 export const SMALL_ICON_SIZE = 0.2 * CARD_W;
 
@@ -96,6 +112,15 @@ export const WARNING_COLOR = "#df1c2d";
 
 /** Yellow, for the circles that show that the replay leader or a queued pause is active. */
 export const ACTIVE_INDICATOR_COLOR = "#ffe03b";
+
+/** For the clue counter and the score area border when no clues are available. */
+export const NO_CLUES_COLOR = "red";
+
+/** For the clue counter and the score area border when the team is at the maximum clues. */
+export const MAX_CLUES_COLOR = "lime";
+
+/** For the discard pile border and the text that warn of a "Double Discard" situation. */
+export const DOUBLE_DISCARD_COLOR = "yellow";
 
 export const BUTTON_HOVER_COLOR = "#888888";
 export const BUTTON_PRESSED_COLOR = "#cccccc";

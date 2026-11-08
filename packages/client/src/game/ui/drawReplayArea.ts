@@ -11,6 +11,9 @@ import * as replay from "./replay";
 /** Clicks on the replay buttons closer together than this are treated as accidental. */
 const ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS = 50;
 
+/** Blue, for the normal replay shuttle. */
+const REPLAY_SHUTTLE_COLOR = "#0000cc";
+
 /** The row of replay buttons: back to the start, back, forward, and forward to the end. */
 const NUM_REPLAY_BUTTONS = 4;
 
@@ -106,7 +109,7 @@ export function drawReplayArea(winW: number, winH: number): void {
       y: (shuttleValues.h / 2) * winW,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
-    fill: "#0000cc", // Blue
+    fill: REPLAY_SHUTTLE_COLOR,
     draggable: true,
     dragBoundFunc: replay.shuttleDragBound,
     stroke: shuttleValues.stroke,

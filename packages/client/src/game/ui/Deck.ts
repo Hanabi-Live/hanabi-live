@@ -25,6 +25,9 @@ import { globals } from "./UIGlobals";
 /** The size of the count of cards left in the deck, as a fraction of the deck's height. */
 const NUM_LEFT_SIZE = 0.4;
 
+/** The dark gray outline of the number of cards remaining in the deck. */
+const NUM_LEFT_STROKE_COLOR = "#222222";
+
 /** The top of the count of cards left, as a fraction of the deck's height. */
 const NUM_LEFT_Y = 0.3;
 
@@ -61,7 +64,7 @@ export class Deck extends Konva.Group {
     this.numLeft = getTotalCardsInDeck(globals.variant);
     this.numLeftText = new Konva.Text({
       fill: "white",
-      stroke: "#222222",
+      stroke: NUM_LEFT_STROKE_COLOR,
       strokeWidth: 0.0168 * this.height(),
       align: "center",
       x: 0,
