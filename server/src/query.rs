@@ -6,7 +6,7 @@
 pub struct Query(Vec<(String, String)>);
 
 /// The largest form body, in bytes, that the account and localhost endpoints accept.
-pub const MAX_FORM_BODY_BYTES: usize = 8 * 1024;
+pub const MAX_FORM_BODY_BYTES: usize = 8 * crate::KIB;
 
 /// Longest parameter name that an error message repeats back.
 const MAX_REPEATED_NAME: usize = 64;

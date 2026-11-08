@@ -5,16 +5,13 @@ use std::{
     process::Command,
 };
 
-/// The length of a full Git commit hash, which names a server and client revision.
-pub const REVISION_LENGTH: usize = 40;
-
 pub fn validate_assets(config: &Config) -> Result<String> {
     tls::validate_static_roots(config)?;
     let client_version = std::fs::read_to_string(config.root.join("public/js/bundles/version.txt"))
         .context("Missing paired client version file")?;
     let client_version = client_version.trim();
     ensure!(
-        client_version.len() == REVISION_LENGTH
+        client_version.len() == crate::revision::REVISION_LENGTH
             && client_version.bytes().all(|c| c.is_ascii_hexdigit()),
         "Invalid paired client version"
     );

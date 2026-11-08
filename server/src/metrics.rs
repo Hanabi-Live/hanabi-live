@@ -128,7 +128,7 @@ fn bucket(limit: f64) -> String {
 }
 
 /// `/proc/self/status` reports memory in KiB.
-const BYTES_PER_KIB: u64 = 1024;
+const BYTES_PER_KIB: u64 = crate::KIB as u64;
 
 pub async fn memory() -> anyhow::Result<Value> {
     let status = tokio::fs::read_to_string("/proc/self/status").await?;

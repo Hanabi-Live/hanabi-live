@@ -82,7 +82,7 @@ fn bind(host: &str, port: u16) -> Result<TcpListener> {
 /// How long a client may take to send an HTTP/1 request's headers.
 const HEADER_READ_TIMEOUT: Duration = Duration::from_secs(30);
 /// The most bytes an HTTP/1 connection buffers.
-const MAX_HTTP1_BUFFER_BYTES: usize = 64 * 1024;
+const MAX_HTTP1_BUFFER_BYTES: usize = 64 * hanabi_live::KIB;
 /// How often an idle HTTP/2 connection is pinged.
 const HTTP2_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(30);
 /// How long an HTTP/2 ping may go unanswered before the connection closes.

@@ -10,7 +10,7 @@ use std::{
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
 /// The largest checkpoint payload, in bytes.
-pub const MAX_CHECKPOINT_BYTES: usize = 4 * 1024 * 1024;
+pub const MAX_CHECKPOINT_BYTES: usize = 4 * crate::MIB;
 const MAX_RECORDS: usize = 4096;
 const RESPONSE_TIMEOUT: Duration = Duration::from_secs(30);
 const LEASE_TIME: Duration = Duration::from_secs(5);

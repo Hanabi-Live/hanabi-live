@@ -16,11 +16,11 @@ pub struct Outbound {
 
 /// Full JSON replays share the durable state ceiling, rather than an 8 KiB
 /// text-chat limit. Separate byte budgets bound aggregate queued memory.
-pub const MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
-pub const GLOBAL_INPUT_BYTES: usize = 64 * 1024 * 1024;
-const SESSION_INPUT_BYTES: usize = 8 * 1024 * 1024;
-const SESSION_OUTPUT_BYTES: usize = 8 * 1024 * 1024;
-const GLOBAL_OUTPUT_LIMIT: usize = 128 * 1024 * 1024;
+pub const MAX_MESSAGE_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES;
+pub const GLOBAL_INPUT_BYTES: usize = 64 * crate::MIB;
+const SESSION_INPUT_BYTES: usize = 8 * crate::MIB;
+const SESSION_OUTPUT_BYTES: usize = 8 * crate::MIB;
+const GLOBAL_OUTPUT_LIMIT: usize = 128 * crate::MIB;
 static GLOBAL_OUTPUT_BYTES: LazyLock<Arc<Semaphore>> =
     LazyLock::new(|| Arc::new(Semaphore::new(GLOBAL_OUTPUT_LIMIT)));
 /// The frames a session queues for its writer.

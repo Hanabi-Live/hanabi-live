@@ -560,8 +560,9 @@ impl ScoreModifier {
 pub const MAX_TABLE_CHAT: usize = 4096;
 /// The most moves a shared replay's hypothetical can hold.
 pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
-/// The most bytes that a shared replay's hypothetical moves can hold together.
-pub const MAX_HYPOTHETICAL_BYTES: usize = 4 * 1024 * 1024;
+/// The most bytes that a shared replay's hypothetical moves can hold together. They are stored in
+/// the table's checkpoint, so they can be no larger than it.
+pub const MAX_HYPOTHETICAL_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES;
 /// The longest game tag, in bytes.
 pub const MAX_TAG_LENGTH: usize = 100;
 /// The longest table name, in bytes.

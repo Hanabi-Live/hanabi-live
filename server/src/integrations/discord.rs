@@ -28,7 +28,7 @@ const STOP_PREFIX: &str = "The server is stopping gracefully at:";
 /// The digits in a Discord identifier (a snowflake).
 const SNOWFLAKE_DIGITS: RangeInclusive<usize> = 17..=20;
 /// The largest Discord HTTP response or gateway message we accept, in bytes.
-const MAX_PAYLOAD_BYTES: usize = 1024 * 1024;
+const MAX_PAYLOAD_BYTES: usize = crate::MIB;
 /// The Discord API version that both the REST requests and the gateway connection use.
 macro_rules! discord_api_version {
     () => {

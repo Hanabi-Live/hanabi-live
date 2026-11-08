@@ -12,6 +12,11 @@ macro_rules! regex {
     }};
 }
 
+/// The bytes in a KiB.
+pub const KIB: usize = 1024;
+/// The bytes in a MiB.
+pub const MIB: usize = 1024 * KIB;
+
 pub mod accounts;
 pub mod actors;
 mod archive;
@@ -34,6 +39,7 @@ mod query;
 pub mod random;
 pub mod release;
 pub mod restart;
+pub mod revision;
 pub mod server_info;
 pub mod state;
 pub mod store;

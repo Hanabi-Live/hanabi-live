@@ -49,7 +49,7 @@ fn private_path(name: &str) -> bool {
 }
 
 /// The bytes read from a release file at a time while hashing it.
-const HASH_BUFFER_BYTES: usize = 64 * 1024;
+const HASH_BUFFER_BYTES: usize = 64 * crate::KIB;
 
 fn hash_file(path: &Path) -> Result<String> {
     let mut file = File::open(path)?;
@@ -109,7 +109,7 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     ensure!(
         manifest.revision == crate::restart::version()
-            && manifest.revision.len() == crate::restart::REVISION_LENGTH,
+            && manifest.revision.len() == crate::revision::REVISION_LENGTH,
         "Release does not match the compiled Rust revision"
     );
     ensure!(
