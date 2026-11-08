@@ -1573,6 +1573,7 @@ pub struct PlayerNotes {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardNote {
+    /// The username of the person setting the note.
     pub name: String,
     pub text: String,
     pub is_spectator: bool,
