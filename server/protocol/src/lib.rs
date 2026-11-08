@@ -33,6 +33,8 @@ pub const UNFINISHED_DATETIME: &str = "0001-01-01T00:00:00.000Z";
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.
 pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
+/// What follows the creator's name to name a table whose creator did not choose a name.
+pub const DEFAULT_TABLE_NAME_SUFFIX: &str = "'s table";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The lowest rank.
@@ -66,6 +68,8 @@ pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
 pub const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
 /// How long a game can go without a move before it ends.
 pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+/// How long a typing indicator lasts without another keystroke, in milliseconds.
+pub const TYPING_TIMEOUT_MS: u64 = 2000;
 /// The number of minutes in an hour.
 pub const MINUTES_PER_HOUR: i32 = 60;
 /// The number of seconds in an hour.

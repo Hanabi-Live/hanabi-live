@@ -1,4 +1,5 @@
 import * as chat from "../../chat";
+import { PATH } from "../../constants";
 import * as tooltips from "../../tooltips";
 import { setBrowserAddressBarPath } from "../../utils";
 import { globals } from "./UIGlobals";
@@ -16,7 +17,7 @@ export function backToLobby(): void {
   chat.updatePeopleTyping();
 
   // Update the address bar.
-  setBrowserAddressBarPath("/lobby");
+  setBrowserAddressBarPath(PATH.LOBBY);
 
   globals.lobby.conn!.send("tableUnattend", {
     tableID: globals.lobby.tableID,

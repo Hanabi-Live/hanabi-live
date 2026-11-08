@@ -1,7 +1,11 @@
 // The "Create Game" nav button.
 
 import type { Settings } from "@hanabi-live/data";
-import { SECONDS_PER_MINUTE, defaultSettings } from "@hanabi-live/data";
+import {
+  DEFAULT_TABLE_NAME_SUFFIX,
+  SECONDS_PER_MINUTE,
+  defaultSettings,
+} from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -461,7 +465,7 @@ export function ready(): boolean {
 
   if (globals.game === null || globals.currentScreen === Screen.Lobby) {
     // Create New Game
-    gameName = `${globals.username}'s table`;
+    gameName = `${globals.username}${DEFAULT_TABLE_NAME_SUFFIX}`;
     dialogOptions = globals.settings;
 
     // Show the password row.

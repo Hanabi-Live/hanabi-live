@@ -21,6 +21,12 @@ import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
 import * as turn from "./turn";
 
+/**
+ * How long after a click elsewhere in the UI (such as on the "Exit Replay" button) a clue cannot be
+ * given, so that a double-click does not give one by accident.
+ */
+const CLUE_AFTER_UI_CLICK_DELAY_MILLISECONDS = SECOND_IN_MILLISECONDS;
+
 export function checkLegal(): void {
   const clueTargetButtonGroup =
     globals.state.replay.hypothetical === null
@@ -192,7 +198,7 @@ function shouldGiveClue() {
   const clueTokenAvailable =
     ongoingGameState.clueTokens >= getClueCost(globals.variant);
   const recentlyClicked =
-    Date.now() - globals.UIClickTime <= SECOND_IN_MILLISECONDS;
+    Date.now() - globals.UIClickTime <= CLUE_AFTER_UI_CLICK_DELAY_MILLISECONDS;
 
   return (
     // We can only give clues on our turn.

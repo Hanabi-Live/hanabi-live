@@ -94,6 +94,12 @@ const CARD_FACE_SHADOW_BLUR = 10;
 /** The black outline of the rank labels, which is thicker without shadows to keep them readable. */
 const RANK_LABEL_OUTLINE_WIDTH = { withShadows: 2, withoutShadows: 8 } as const;
 
+/**
+ * How far an Omni card's background gradient extends past the top and bottom of the card, so that
+ * its first and last colors are only partly shown.
+ */
+const OMNI_BACKGROUND_GRADIENT_OVERSHOOT = 30;
+
 /** How much further apart the suit pips are spread on the deck than on an unknown card. */
 const DECK_SUIT_PIP_RING_SPREAD = 1.05;
 
@@ -768,9 +774,9 @@ function getSuitStyle(
       if (suit.name === OMNI_SUIT_NAME || suit.name === DARK_OMNI_SUIT_NAME) {
         return evenLinearGradient(ctx, suit.fillColors, [
           0,
-          -30,
+          -OMNI_BACKGROUND_GRADIENT_OVERSHOOT,
           0,
-          CARD_H + 30,
+          CARD_H + OMNI_BACKGROUND_GRADIENT_OVERSHOOT,
         ]);
       }
 

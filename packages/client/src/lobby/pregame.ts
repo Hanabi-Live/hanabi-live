@@ -12,6 +12,7 @@ import {
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
+import { PATH } from "../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
@@ -67,9 +68,9 @@ export function show(): void {
 
   // Set the browser address bar.
   setBrowserAddressBarPath(
-    `/pre-game/${globals.tableID}`,
+    `${PATH.PRE_GAME}/${globals.tableID}`,
     undefined,
-    globalThis.location.pathname === "/lobby" ? "push" : "replace",
+    globalThis.location.pathname === PATH.LOBBY ? "push" : "replace",
   );
 }
 
@@ -109,7 +110,7 @@ export function hide(updateURL = true): void {
 
   // Set the browser address bar.
   if (updateURL) {
-    setBrowserAddressBarPath("/lobby");
+    setBrowserAddressBarPath(PATH.LOBBY);
   }
 }
 

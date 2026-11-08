@@ -35,8 +35,20 @@ const PIP_BORDER_WIDTH = {
   SHADOWED_CUSTOM_FILL: 8,
 } as const;
 
+/** The radius of the area around a pip's origin that its glow and gradients cover, in its units. */
+const PIP_RADIUS = 100;
+
 /** The radius of the glow behind a pip that a positive clue has confirmed, in the pip's units. */
-const POSITIVE_PIP_HIGHLIGHT_RADIUS = 100;
+const POSITIVE_PIP_HIGHLIGHT_RADIUS = PIP_RADIUS;
+
+/** The center of that glow, offset slightly from the pip's origin to sit behind its artwork. */
+const POSITIVE_PIP_HIGHLIGHT_CENTER = { x: 3, y: 5 } as const;
+
+/**
+ * How far right the bottom of a multi-color duplicate-pip ring's gradient is from its top, in the
+ * pip's units, so that its stripes slant.
+ */
+const DUPLICATE_PIP_RING_GRADIENT_SLANT = 30;
 
 /**
  * A pip that repeats an earlier suit's pip shrinks by this factor and sits inside a ring, so that
@@ -79,7 +91,13 @@ export function drawPip(
   if (highlight === true) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(3, 5, POSITIVE_PIP_HIGHLIGHT_RADIUS, 0, FULL_CIRCLE_RADIANS);
+    ctx.arc(
+      POSITIVE_PIP_HIGHLIGHT_CENTER.x,
+      POSITIVE_PIP_HIGHLIGHT_CENTER.y,
+      POSITIVE_PIP_HIGHLIGHT_RADIUS,
+      0,
+      FULL_CIRCLE_RADIANS,
+    );
     ctx.fillStyle = POSITIVE_PIP_HIGHLIGHT_COLOR;
     ctx.fill();
     ctx.stroke();
@@ -123,7 +141,12 @@ export function drawPip(
       ctx.fillStyle = customFill!;
     } else if (suit.fill === "multi") {
       const colors = suit.fillColors;
-      const grad = ctx.createLinearGradient(0, -100, 30, 100);
+      const grad = ctx.createLinearGradient(
+        0,
+        -PIP_RADIUS,
+        DUPLICATE_PIP_RING_GRADIENT_SLANT,
+        PIP_RADIUS,
+      );
       for (const [i, color] of colors.entries()) {
         grad.addColorStop(i / (colors.length - 1), color);
       }

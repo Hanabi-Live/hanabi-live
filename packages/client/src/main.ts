@@ -6,13 +6,14 @@ import jquery from "jquery";
 import { globals } from "./Globals";
 import { Loader } from "./Loader";
 import * as chat from "./chat";
-import { NO_TABLE_ID } from "./constants";
+import { HISTORY_HASH, NO_TABLE_ID, PATH } from "./constants";
 import { initErrorListener } from "./errors";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
 import { backToLobby } from "./game/ui/backToLobby";
 import * as lobbyCreateGame from "./lobby/createGame";
 import * as lobbyHistory from "./lobby/history";
+import { getOtherScoresSeed } from "./lobby/historyHash";
 import { lobbyIdleInit } from "./lobby/lobbyIdleInit";
 import { lobbyKeyboardInit } from "./lobby/lobbyKeyboardInit";
 import { lobbyTutorialInit } from "./lobby/lobbyTutorialInit";
@@ -53,7 +54,7 @@ initErrorListener();
 
 $(document).ready(() => {
   globalThis.addEventListener("popstate", () => {
-    if (globalThis.location.pathname !== "/lobby") {
+    if (globalThis.location.pathname !== PATH.LOBBY) {
       globalThis.location.reload();
       return;
     }
@@ -61,20 +62,18 @@ $(document).ready(() => {
     const { hash } = globalThis.location;
     if (globals.currentScreen === Screen.Game) {
       backToLobby();
-      setBrowserAddressBarPath("/lobby", hash);
+      setBrowserAddressBarPath(PATH.LOBBY, hash);
     } else if (globals.currentScreen === Screen.PreGame) {
       lobbyPregame.hide(false);
       globals.conn!.send("tableUnattend", { tableID: globals.tableID });
       globals.tableID = NO_TABLE_ID;
     }
 
-    if (hash.startsWith("#history")) {
+    if (hash.startsWith(HISTORY_HASH)) {
       lobbyHistory.show();
-      if (hash.startsWith("#history-other-scores-")) {
-        const match = /^#history-other-scores-(.+)$/u.exec(hash);
-        if (match !== null && match[1] !== undefined) {
-          lobbyHistory.showOtherScoresFromURL(decodeURIComponent(match[1]));
-        }
+      const seed = getOtherScoresSeed(hash);
+      if (seed !== undefined) {
+        lobbyHistory.showOtherScoresFromURL(seed);
       }
     } else if (
       globals.currentScreen === Screen.History

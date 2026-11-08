@@ -6,11 +6,12 @@ import {
 } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME, NO_VALUE } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
-import { LOCAL_STORAGE_KEY } from "../constants";
+import { HISTORY_HASH, LOCAL_STORAGE_KEY, PATH } from "../constants";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
 import { parseGameJSON } from "./gameJSON";
 import * as history from "./history";
+import { getOtherScoresSeed } from "./historyHash";
 import { expand } from "./hypoCompress";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
@@ -31,7 +32,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
   }
 
   // Otherwise, we will stay in the lobby.
-  setBrowserAddressBarPath("/lobby");
+  setBrowserAddressBarPath(PATH.LOBBY);
 }
 
 /** Returns whether the server informed us of a table that we were at and we went back to it. */
@@ -65,9 +66,10 @@ function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
 /** Returns whether the URL path specifies somewhere to go and we went there. */
 function gotoPath(data: ServerCommandData["welcome"]): boolean {
   // Automatically create a table if we are using a "/create-table" URL.
-  if (globalThis.location.pathname === "/create-table") {
+  if (globalThis.location.pathname === PATH.CREATE_TABLE) {
     const urlParams = new URLSearchParams(globalThis.location.search);
-    const name = urlParams.get("name") ?? `${globals.username}'s table`;
+    // Without a name, the server names the table after us.
+    const name = urlParams.get("name") ?? "";
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get("timed") === "true";
     const timeBaseString =
@@ -242,30 +244,21 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
 }
 
 function restoreLobbyHistoryView(): boolean {
-  if (globalThis.location.pathname !== "/lobby") {
+  if (globalThis.location.pathname !== PATH.LOBBY) {
     return false;
   }
 
-  const scoresMatch = /^#history-other-scores-(.+)$/u.exec(
-    globalThis.location.hash,
-  );
-  if (scoresMatch !== null) {
-    const seed = scoresMatch[1];
-    if (seed !== undefined) {
-      history.show(false);
-      history.showOtherScoresFromURL(decodeURIComponent(seed));
-      return true;
-    }
+  const seed = getOtherScoresSeed(globalThis.location.hash);
+  if (seed !== undefined) {
+    history.show(false);
+    history.showOtherScoresFromURL(seed);
+    return true;
   }
 
-  switch (globalThis.location.hash) {
-    case "#history": {
-      history.show();
-      return true;
-    }
-
-    default: {
-      return false;
-    }
+  if (globalThis.location.hash === HISTORY_HASH) {
+    history.show();
+    return true;
   }
+
+  return false;
 }

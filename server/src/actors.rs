@@ -57,7 +57,7 @@ const RESTART_CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 /// How often a table checks its timers.
 const TABLE_TICK: Duration = Duration::from_millis(250);
 /// How long a typing indicator lasts without another keystroke.
-const TYPING_TIMEOUT: Duration = Duration::from_secs(2);
+const TYPING_TIMEOUT: Duration = Duration::from_millis(hanabi_protocol::TYPING_TIMEOUT_MS);
 /// The longest table password, in bytes.
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 /// The longest countdown `/startin` can set, in minutes.
@@ -1935,7 +1935,11 @@ async fn prepare_table(
             .trim_end()
             .to_owned();
         if name.is_empty() {
-            name = format!("{}'s table", session.name);
+            name = format!(
+                "{}{}",
+                session.name,
+                hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX
+            );
         }
         validate_table_name(&name)?;
         let mut options = engine_options(&r.options);

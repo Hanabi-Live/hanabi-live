@@ -1,6 +1,6 @@
 // The Hanabi game UI.
 
-import { FADE_TIME_MS } from "../constants";
+import { FADE_TIME_MS, HISTORY_HASH, PATH } from "../constants";
 import { globals } from "../Globals";
 import { tablesDraw } from "../lobby/tablesDraw";
 import { Screen } from "../lobby/types/Screen";
@@ -26,7 +26,7 @@ export function init(): void {
 export function show(): void {
   const { pathname, hash } = globalThis.location;
   historyHash =
-    pathname === "/lobby" && hash.startsWith("#history") ? hash : "";
+    pathname === PATH.LOBBY && hash.startsWith(HISTORY_HASH) ? hash : "";
 
   tooltips.clearPlayerTimeTooltips();
   globals.currentScreen = Screen.Game;
@@ -62,9 +62,9 @@ function hide() {
   if (
     globals.currentScreen !== Screen.Lobby
     && historyHash !== ""
-    && globalThis.location.pathname === "/lobby"
+    && globalThis.location.pathname === PATH.LOBBY
   ) {
-    setBrowserAddressBarPath("/lobby", historyHash);
+    setBrowserAddressBarPath(PATH.LOBBY, historyHash);
   }
   document.body.dataset["screen"] = "lobby";
   tablesDraw();

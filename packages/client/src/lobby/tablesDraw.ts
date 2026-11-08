@@ -7,6 +7,7 @@ import {
   assertDefined,
   getEnumValues,
 } from "complete-common";
+import { PATH } from "../constants";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -14,6 +15,9 @@ import { copyStringToClipboard, escapeHtml, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
+
+/** How long the tooltip that confirms a copied table link stays open. */
+const COPIED_TOOLTIP_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
 /** The lobby lists tables in this order. */
 enum TableGroup {
@@ -234,8 +238,8 @@ export function tablesDraw(): void {
             // stored game gets a link that lasts beyond this table.
             const path =
               table.sharedReplay && table.databaseID !== undefined
-                ? `/shared-replay/${table.databaseID}`
-                : `/game/${table.id}`;
+                ? `${PATH.SHARED_REPLAY}/${table.databaseID}`
+                : `${PATH.GAME}/${table.id}`;
             copyURLToClipboard(path, `#${rowId}`);
           } else {
             tableSpectate(table);
@@ -248,7 +252,7 @@ export function tablesDraw(): void {
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
             // Copy the URL that would occur from clicking on this table row.
-            copyURLToClipboard(`/game/${table.id}`, `#${rowId}`);
+            copyURLToClipboard(`${PATH.GAME}/${table.id}`, `#${rowId}`);
           } else {
             tableReattend(table);
           }
@@ -264,7 +268,7 @@ export function tablesDraw(): void {
       row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
         if (event.ctrlKey) {
           // Copy the URL that would occur from clicking on this table row.
-          copyURLToClipboard(`/pre-game/${table.id}`, `#${rowId}`);
+          copyURLToClipboard(`${PATH.PRE_GAME}/${table.id}`, `#${rowId}`);
         } else {
           tableJoin(table);
         }
@@ -354,5 +358,5 @@ function copyURLToClipboard(path: string, selector: string) {
   tooltips.open(selector);
   setTimeout(() => {
     tooltips.close(selector);
-  }, SECOND_IN_MILLISECONDS);
+  }, COPIED_TOOLTIP_MILLISECONDS);
 }

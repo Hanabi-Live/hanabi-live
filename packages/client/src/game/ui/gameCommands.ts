@@ -17,6 +17,7 @@ import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
+import { PATH } from "../../constants";
 import * as modals from "../../modals";
 import { ServerHandlers } from "../../serverHandlers";
 import { setBrowserAddressBarPath } from "../../utils";
@@ -90,7 +91,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   });
 
   // Set the browser address bar.
-  setBrowserAddressBarPath(`/shared-replay/${data.databaseID}`);
+  setBrowserAddressBarPath(`${PATH.SHARED_REPLAY}/${data.databaseID}`);
 
   // Begin the process of converting an ongoing game to a shared replay.
   globals.store!.dispatch({
@@ -455,11 +456,11 @@ type InitData = ServerCommandData["init"];
 function setURL(data: InitData) {
   let path: string;
   if (data.sharedReplay) {
-    path = `/shared-replay/${data.databaseID}`;
+    path = `${PATH.SHARED_REPLAY}/${data.databaseID}`;
   } else if (data.replay) {
-    path = `/replay/${data.databaseID}`;
+    path = `${PATH.REPLAY}/${data.databaseID}`;
   } else {
-    path = `/game/${data.tableID}${
+    path = `${PATH.GAME}/${data.tableID}${
       data.shadowing ? `/shadow/${data.ourPlayerIndex}` : ""
     }`;
   }
@@ -469,7 +470,7 @@ function setURL(data: InitData) {
   setBrowserAddressBarPath(
     path,
     hash,
-    globalThis.location.pathname === "/lobby" ? "push" : "replace",
+    globalThis.location.pathname === PATH.LOBBY ? "push" : "replace",
   );
 }
 

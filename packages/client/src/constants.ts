@@ -44,3 +44,19 @@ export const LOCAL_STORAGE_KEY = {
   WATCH_REPLAY_SPOILER_FREE: "watchReplaySpoilerFree",
   WATCH_REPLAY_VISIBILITY: "watchReplayVisibility",
 } as const;
+
+/** The site paths that the client navigates to, links to, or reads from the address bar. */
+export const PATH = {
+  LOBBY: "/lobby",
+  CREATE_TABLE: "/create-table",
+  PRE_GAME: "/pre-game",
+  GAME: "/game",
+  REPLAY: "/replay",
+  SHARED_REPLAY: "/shared-replay",
+  HISTORY: "/history",
+  SEED: "/seed",
+  VARIANT: "/variant",
+} as const;
+
+/** The lobby address hash of the history screen. */
+export const HISTORY_HASH = "#history";

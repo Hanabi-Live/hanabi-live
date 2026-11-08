@@ -6,13 +6,9 @@ import {
   CHAT_EMOJIS as emojis,
   CHAT_EMOTES as emotes,
   PROJECT_NAME,
+  TYPING_TIMEOUT_MS,
 } from "@hanabi-live/data";
-import {
-  eRange,
-  isArray,
-  SECOND_IN_MILLISECONDS,
-  trimPrefix,
-} from "complete-common";
+import { eRange, isArray, trimPrefix } from "complete-common";
 import * as KeyCode from "keycode-js";
 import linkifyHtml from "linkify-html";
 import { find as linkifyFind } from "linkifyjs";
@@ -47,6 +43,12 @@ export enum SelfChatMessageType {
   Info,
   Error,
 }
+
+/**
+ * The least time between the typing reports that we send to the server. It is shorter than the
+ * server's typing timeout so that the indicator does not flicker while we keep typing.
+ */
+const TYPING_REPORT_INTERVAL_MS = TYPING_TIMEOUT_MS / 2;
 
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -174,10 +176,10 @@ function input(this: HTMLElement, event: JQuery.Event) {
   }
 
   // If this is a pregame or game input, report to the server that we are typing. (But do not spam
-  // the server with more than one message a second.)
+  // the server with more than one message per interval.)
   if (this.id !== "lobby-chat-input") {
     const datetimeNow = Date.now();
-    if (datetimeNow - datetimeLastChatInput >= SECOND_IN_MILLISECONDS) {
+    if (datetimeNow - datetimeLastChatInput >= TYPING_REPORT_INTERVAL_MS) {
       datetimeLastChatInput = datetimeNow;
       globals.conn!.send("chatTyping", {
         tableID: globals.tableID,

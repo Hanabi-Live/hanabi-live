@@ -1,19 +1,21 @@
 // The screens that show past games and other scores.
 
 import type { GameHistory } from "@hanabi-live/data";
-import { compareGameHistory } from "@hanabi-live/data";
+import { compareGameHistory, DEFAULT_PAGE_SIZE } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import { getVariant, NO_VALUE, secondsToClockString } from "@hanabi-live/game";
+import { HISTORY_HASH, PATH } from "../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import { dateTimeFormatter, setBrowserAddressBarPath } from "../utils";
+import { getOtherScoresHash } from "./historyHash";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 
-/** The number of games that each history request asks for. */
-const HISTORY_PAGE_SIZE = 10;
+/** The number of games that each history request asks for, the same as a public history page. */
+const HISTORY_PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
 export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
@@ -30,10 +32,10 @@ export function init(): void {
 export function show(requestHistory = true): void {
   globals.currentScreen = Screen.History;
   if (
-    globalThis.location.pathname === "/lobby"
+    globalThis.location.pathname === PATH.LOBBY
     && globalThis.location.hash === ""
   ) {
-    setBrowserAddressBarPath("/lobby", "#history");
+    setBrowserAddressBarPath(PATH.LOBBY, HISTORY_HASH);
   }
 
   $("#lobby-history-other-scores").hide();
@@ -45,7 +47,10 @@ export function show(requestHistory = true): void {
 
   // Update the nav.
   nav.show("history");
-  $("#lobby-history-show-all").attr("href", `/history/${globals.username}`);
+  $("#lobby-history-show-all").attr(
+    "href",
+    `${PATH.HISTORY}/${globals.username}`,
+  );
 
   // Draw the history table.
   draw();
@@ -66,7 +71,7 @@ function request() {
 
 export function hide(): void {
   globals.currentScreen = Screen.Lobby;
-  setBrowserAddressBarPath("/lobby", undefined);
+  setBrowserAddressBarPath(PATH.LOBBY, undefined);
   tablesDraw();
 
   $("#lobby-history").hide();
@@ -179,11 +184,7 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
     button.on("click", () => {
       globals.conn!.send("historyGetSeed", { seed });
       showOtherScores();
-      setBrowserAddressBarPath(
-        "/lobby",
-        `#history-other-scores-${encodeURIComponent(seed)}`,
-        "push",
-      );
+      setBrowserAddressBarPath(PATH.LOBBY, getOtherScoresHash(seed), "push");
     });
   }
 
@@ -204,7 +205,7 @@ function showOtherScores() {
 
 function hideOtherScores() {
   globals.currentScreen = Screen.History;
-  setBrowserAddressBarPath("/lobby", "#history", "push");
+  setBrowserAddressBarPath(PATH.LOBBY, HISTORY_HASH, "push");
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history");
@@ -225,7 +226,10 @@ export function drawOtherScores(
     .on("click", hideOtherScores);
 
   // Set the link for the "View seed data" button.
-  $("#nav-buttons-history-other-scores-view-all").attr("href", `/seed/${seed}`);
+  $("#nav-buttons-history-other-scores-view-all").attr(
+    "href",
+    `${PATH.SEED}/${seed}`,
+  );
 
   const tbody = $("#lobby-history-other-scores-table-tbody");
 

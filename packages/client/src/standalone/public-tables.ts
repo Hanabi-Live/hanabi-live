@@ -13,6 +13,7 @@ import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
 import * as z from "zod";
 import { hoverTooltip } from "../Tooltip";
+import { PATH } from "../constants";
 import type { Choice, Column, Sort } from "./shared/data-table";
 import { addTableControls, Pagers } from "./shared/data-table";
 
@@ -476,7 +477,7 @@ function gameRows(
   return page.rows.map((game) => {
     const names = game.users.split(", ");
     const row: Array<Node | string> = [
-      link(`/replay/${game.id}`, game.id),
+      link(`${PATH.REPLAY}/${game.id}`, game.id),
       String(game.numPlayers),
       String(game.score),
     ];
@@ -484,19 +485,22 @@ function gameRows(
       const variant = String(game.variant);
       row.push(
         link(
-          `/variant/${encodeURIComponent(variant)}`,
+          `${PATH.VARIANT}/${encodeURIComponent(variant)}`,
           variants[variant] ?? variant,
         ),
       );
     }
     row.push(
-      link(`/history/${names.map(encodeURIComponent).join("/")}`, game.users),
+      link(
+        `${PATH.HISTORY}/${names.map(encodeURIComponent).join("/")}`,
+        game.users,
+      ),
       displayTime(game.datetime),
     );
     if (mode !== "seed") {
       row.push(
         link(
-          `/seed/${encodeURIComponent(game.seed)}`,
+          `${PATH.SEED}/${encodeURIComponent(game.seed)}`,
           mode === "variant" ? game.seed : (game.otherScores ?? ""),
         ),
       );

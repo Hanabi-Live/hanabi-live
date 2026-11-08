@@ -123,6 +123,12 @@ let spectatorsLabelValues: Values;
 
 const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 
+/**
+ * The gap between the stacked buttons in the bottom-left corner, and between them and the deck,
+ * score area, and spectators icon beside them, in fractions of the stage.
+ */
+const BOTTOM_LEFT_GAP = 0.01;
+
 /** The number of recent actions shown in the action log. */
 const ACTION_LOG_LINES = 8;
 
@@ -611,7 +617,9 @@ function drawBottomLeftButtons() {
   // The chat button.
   const chatButton = new Button({
     x: bottomLeftButtonValues.x * winW,
-    y: (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01) * winH,
+    y:
+      (bottomLeftButtonValues.y + bottomLeftButtonValues.h! + BOTTOM_LEFT_GAP)
+      * winH,
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
     // eslint-disable-next-line complete/require-ascii
@@ -634,7 +642,9 @@ function drawBottomLeftButtons() {
   // The lobby button (which takes the user back to the lobby).
   const lobbyButtonValues = {
     x: bottomLeftButtonValues.x,
-    y: bottomLeftButtonValues.y + 2 * bottomLeftButtonValues.h! + 0.02,
+    y:
+      bottomLeftButtonValues.y
+      + 2 * (bottomLeftButtonValues.h! + BOTTOM_LEFT_GAP),
     h: bottomLeftButtonValues.h,
   };
   const lobbyButton = new Button({
@@ -654,7 +664,7 @@ function drawBottomLeftButtons() {
 
 function drawDeck() {
   deckValues = {
-    x: bottomLeftButtonValues.x + bottomLeftButtonValues.w! + 0.01,
+    x: bottomLeftButtonValues.x + bottomLeftButtonValues.w! + BOTTOM_LEFT_GAP,
     y: bottomLeftButtonValues.y,
     w: FULL_CARD_STAGE_SIZE.W,
     h: FULL_CARD_STAGE_SIZE.H,
@@ -773,7 +783,7 @@ function drawScoreArea() {
     h: scoreAreaHeight,
   };
   if (!globals.lobby.settings.keldonMode) {
-    scoreAreaValues.x = deckValues.x + deckValues.w! + 0.01;
+    scoreAreaValues.x = deckValues.x + deckValues.w! + BOTTOM_LEFT_GAP;
     scoreAreaValues.y = 0.81;
   }
   globals.elements.scoreArea = new Konva.Group({
@@ -1162,7 +1172,8 @@ function drawSpectators() {
   };
   if (!globals.lobby.settings.keldonMode) {
     // Position it to the bottom-right of the score area.
-    spectatorsLabelValues.x = scoreAreaValues.x + scoreAreaValues.w! + 0.01;
+    spectatorsLabelValues.x =
+      scoreAreaValues.x + scoreAreaValues.w! + BOTTOM_LEFT_GAP;
   }
   const imageSize = 0.02;
   const spectatorsLabel = new ImageWithTooltip({

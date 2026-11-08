@@ -659,6 +659,15 @@ fn data_constants() -> String {
             "SECONDS_PER_MINUTE",
             hanabi_protocol::SECONDS_PER_MINUTE.to_string(),
         ),
+        (
+            "TYPING_TIMEOUT_MS",
+            hanabi_protocol::TYPING_TIMEOUT_MS.to_string(),
+        ),
+        (
+            "DEFAULT_TABLE_NAME_SUFFIX",
+            serde_json::to_string(hanabi_protocol::DEFAULT_TABLE_NAME_SUFFIX)
+                .expect("a string serializes"),
+        ),
     ])
 }
 
