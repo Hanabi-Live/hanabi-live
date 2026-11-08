@@ -395,7 +395,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
-        assert_eq!(value["total_rows"], total, "{path}");
+        assert_eq!(value["totalRows"], total, "{path}");
         assert_eq!(value["rows"].as_array().unwrap().len(), len, "{path}");
     }
     // Each sort column, direction, and filter assembles different SQL; exercise every one.
@@ -423,7 +423,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         let (status, body) = request(app.clone(), path).await;
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         let value: Value = serde_json::from_str(&body).unwrap();
-        assert_eq!(value["total_rows"], total, "{path}");
+        assert_eq!(value["totalRows"], total, "{path}");
         assert_eq!(value["rows"][0]["id"].as_i64(), first, "{path}");
     }
     // Responses match their wire contracts, timestamps included.
@@ -742,7 +742,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         if value.is_array() {
             assert_eq!(value[0]["id"], 4);
         } else {
-            assert_eq!(value["total_rows"], 1);
+            assert_eq!(value["totalRows"], 1);
         }
     }
     let (status, body) = request(

@@ -207,7 +207,7 @@ function initServerTable(
       if (request !== latestRequest) {
         return;
       }
-      totalRows = result.total_rows;
+      ({ totalRows } = result);
       showRows(table, gameRows(result, mode, variants));
       drawPagers();
       $("#history-error").prop("hidden", true);
@@ -379,7 +379,7 @@ function gameRows(
     const names = game.users.split(", ");
     const row = [
       link(`/replay/${game.id}`, game.id),
-      escaped(game.num_players),
+      escaped(game.numPlayers),
       escaped(game.score),
     ];
     if (mode !== "variant") {
@@ -399,7 +399,7 @@ function gameRows(
       row.push(
         link(
           `/seed/${encodeURIComponent(game.seed)}`,
-          mode === "variant" ? game.seed : (game.other_scores ?? ""),
+          mode === "variant" ? game.seed : (game.otherScores ?? ""),
         ),
       );
     }

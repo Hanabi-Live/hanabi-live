@@ -567,11 +567,11 @@ const publicGameRowSchema = z.strictObject({
    */
   datetime: z.iso.datetime({ precision: 3 }),
   id: gameIdSchema,
-  num_players: z.number().int().min(2).max(6),
+  numPlayers: z.number().int().min(2).max(6),
   /**
    * How many games used this seed. Variant lists omit it.
    */
-  other_scores: z.number().int().min(0).max(4_294_967_295).optional(),
+  otherScores: z.number().int().min(0).max(4_294_967_295).optional(),
   score: z.number().int().min(0).max(2_147_483_647),
   seed: z.string(),
   /**
@@ -593,7 +593,7 @@ export const publicGamePageSchema = z.strictObject({
    */
   info: z.string(),
   rows: z.array(publicGameRowSchema),
-  total_rows: z.number().int().min(0).max(9_007_199_254_740_991),
+  totalRows: z.number().int().min(0).max(9_007_199_254_740_991),
 });
 
 /**

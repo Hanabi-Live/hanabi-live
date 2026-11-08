@@ -212,9 +212,9 @@ pub(super) async fn list(
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'num_players',g.num_players,'score',g.score,");
+        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'numPlayers',g.num_players,'score',g.score,");
     if mode != "variants" {
-        qb.push("'variant',g.variant_id,'other_scores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
+        qb.push("'variant',g.variant_id,'otherScores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
     qb.push("'users',COALESCE((SELECT string_agg(u.username, ', ' ORDER BY lower(u.username), u.username) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),''),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
         .push(order).push(if ascending { " ASC" } else { " DESC" })
@@ -222,12 +222,14 @@ pub(super) async fn list(
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
         total_rows: page.total_rows,
-        info: if mode == "variants" {
-            "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
-        } else {
-            "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
-        }
-        .into(),
+        info: format!(
+            "Params: size=1...100, page=0..., col[x]=0|1 (sort ascending or descending by one column: 0 id, 1 numPlayers, 2 score), fcol[x]=integer (filter by {})",
+            match mode {
+                "history" => "0 id, 1 numPlayers, 2 score, 3 variant",
+                "variants" => "0 id, 1 numPlayers, 2 score",
+                _ => "0 id, 2 score",
+            }
+        ),
         rows: page.rows.0,
     })
 }

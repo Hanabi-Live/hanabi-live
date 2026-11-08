@@ -1214,7 +1214,7 @@ pub struct PasswordHashResponse {
 
 /// A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGamePage {
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub total_rows: i64,
@@ -1225,7 +1225,7 @@ pub struct PublicGamePage {
 
 /// One game in a public game list.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicGameRow {
     pub id: GameId,
     #[schemars(range(min = 2, max = 6))]
