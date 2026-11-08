@@ -6,6 +6,12 @@ type FailedCallback = (filePath: string) => void;
 
 // The list of all game-related images to preload. All of these files should have a ".png"
 // extension.
+/** How many times to retry an image that failed to load before giving up on it. */
+const MAX_IMAGE_RETRIES = 2;
+
+/** The delay before the first retry, which doubles with each retry after it. */
+const IMAGE_RETRY_BASE_DELAY_MILLISECONDS = 1000;
+
 const FILE_IDS = [
   "checkbox-on",
   "checkbox-off",
@@ -86,13 +92,13 @@ export class Loader {
       }
     });
     img.addEventListener("error", () => {
-      if (retryCount < 2) {
+      if (retryCount < MAX_IMAGE_RETRIES) {
         // Retry transient transport failures without counting the image as loaded.
         setTimeout(
           () => {
             this.loadImage(fileID, filePath, retryCount + 1);
           },
-          1000 * 2 ** retryCount,
+          IMAGE_RETRY_BASE_DELAY_MILLISECONDS * 2 ** retryCount,
         );
         return;
       }

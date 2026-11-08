@@ -244,6 +244,11 @@ export class HanabiUI {
   }
 }
 
+const STAGE_ASPECT_RATIO = 16 / 9;
+
+/** The stage seems to break for widths of around 235 px or less. */
+const MIN_STAGE_WIDTH = 240;
+
 // Initialize and size the stage depending on the window size.
 function initStageSize() {
   const size = getStageSize(window.innerWidth, window.innerHeight);
@@ -255,27 +260,17 @@ function getStageSize(
   windowWidth: number,
   windowHeight: number,
 ): { width: number; height: number } {
-  const ratio = 16 / 9;
-
-  let ww = windowWidth;
-  let wh = windowHeight;
-
-  if (ww < 240) {
-    // The stage seems to break for widths of around 235 px or less.
-    ww = 240;
-  }
-  if (wh < 135) {
-    wh = 135;
-  }
+  const ww = Math.max(windowWidth, MIN_STAGE_WIDTH);
+  const wh = Math.max(windowHeight, MIN_STAGE_WIDTH / STAGE_ASPECT_RATIO);
 
   let width: number;
   let height: number;
-  if (ww < wh * ratio) {
+  if (ww < wh * STAGE_ASPECT_RATIO) {
     width = ww;
-    height = ww / ratio;
+    height = ww / STAGE_ASPECT_RATIO;
   } else {
     height = wh;
-    width = wh * ratio;
+    width = wh * STAGE_ASPECT_RATIO;
   }
 
   width = Math.floor(width);

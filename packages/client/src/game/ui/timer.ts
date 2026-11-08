@@ -9,6 +9,15 @@ import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
 
+/** How often the local timer counts down. */
+const TICK_MILLISECONDS = 1000;
+
+/** How far a tick can drift from its interval and still sound the low-time warning. */
+const TICK_TOLERANCE_MILLISECONDS = 100;
+
+/** The time left at which the current player hears the low-time warning on every tick. */
+const LOW_TIME_WARNING_MILLISECONDS = 10_000;
+
 /**
  * This function handles the "clock" WebSocket command. It is sent at the beginning of every turn to
  * update the client about how much time each player has left. It has the following data:
@@ -122,7 +131,7 @@ export function update(
     setTickingDownTimePlayerNameTooltip(activePlayerIndex);
     setTickingDownTimeCurrentPlayerTooltip();
     globals.elements.deck?.updateDeckTooltip();
-  }, 1000);
+  }, TICK_MILLISECONDS);
 }
 
 export function stop(): void {
@@ -183,14 +192,13 @@ function setTickingDownTime(timer: TimerDisplay) {
   drawLayer(timer);
 
   // Play a sound to indicate that the current player is almost out of time. Do not play it more
-  // frequently than about once per second.
+  // frequently than once per tick.
   if (
     globals.options.timed
     && globals.lobby.settings.soundTimer
-    && millisecondsLeft > 0 // Between 0 and 10 seconds
-    && millisecondsLeft <= 10_000
-    && elapsedTime > 900
-    && elapsedTime < 1100
+    && millisecondsLeft > 0
+    && millisecondsLeft <= LOW_TIME_WARNING_MILLISECONDS
+    && Math.abs(elapsedTime - TICK_MILLISECONDS) < TICK_TOLERANCE_MILLISECONDS
     && !globals.state.pause.active
     && !globals.lobby.errorOccurred
   ) {

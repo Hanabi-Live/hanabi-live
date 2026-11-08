@@ -17,6 +17,9 @@ import { Screen } from "./types/Screen";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
+/** How long the start game button stays disabled after the player count changes. */
+const START_GAME_BUTTON_DISABLED_MILLISECONDS = 500;
+
 // Define a command handler map.
 export const lobbyCommands = new ServerHandlers();
 
@@ -89,7 +92,7 @@ lobbyCommands.set("game", (data) => {
     globals.enableStartGameButtonTimeout = setTimeout(() => {
       globals.enableStartGameButtonTimeout = null;
       pregame.toggleStartGameButton();
-    }, 500);
+    }, START_GAME_BUTTON_DISABLED_MILLISECONDS);
   }
 
   pregame.drawSpectators(globals.tableID);

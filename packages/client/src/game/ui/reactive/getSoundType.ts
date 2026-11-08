@@ -17,6 +17,16 @@ import {
 import { includes } from "complete-common";
 import { SoundType } from "../../types/SoundType";
 
+/** The sound for each consecutive blind play, starting from the first. */
+const BLIND_PLAY_SOUND_TYPES = [
+  SoundType.Blind1,
+  SoundType.Blind2,
+  SoundType.Blind3,
+  SoundType.Blind4,
+  SoundType.Blind5,
+  SoundType.Blind6,
+] as const;
+
 export const SOUND_TYPE_ACTIONS = [
   "clue",
   "discard",
@@ -164,41 +174,18 @@ export function getSoundType(
       const cardState = gameState.deck[action.order];
       const touched = cardState !== undefined && isCardClued(cardState);
       if (!touched) {
-        switch (gameState.stats.numSubsequentBlindPlays) {
-          case 1: {
-            return SoundType.Blind1;
-          }
-
-          case 2: {
-            return SoundType.Blind2;
-          }
-
-          case 3: {
-            return SoundType.Blind3;
-          }
-
-          case 4: {
-            return SoundType.Blind4;
-          }
-
-          case 5: {
-            return SoundType.Blind5;
-          }
-
-          case 6: {
-            return SoundType.Blind6;
-          }
-
-          default: {
-            if (gameState.stats.numSubsequentBlindPlays > 6) {
-              return SoundType.Blind6;
-            }
-
-            throw new Error(
-              `Failed to get the sound effect for the blind play count of: ${gameState.stats.numSubsequentBlindPlays}`,
-            );
-          }
+        // Every blind play after the last one in the list repeats its sound.
+        const { numSubsequentBlindPlays } = gameState.stats;
+        const blindPlaySoundType =
+          BLIND_PLAY_SOUND_TYPES[
+            Math.min(numSubsequentBlindPlays, BLIND_PLAY_SOUND_TYPES.length) - 1
+          ];
+        if (blindPlaySoundType === undefined) {
+          throw new Error(
+            `Failed to get the sound effect for the blind play count of: ${numSubsequentBlindPlays}`,
+          );
         }
+        return blindPlaySoundType;
       }
 
       if (isOrderChopMove(previousGameState, action, metadata)) {
