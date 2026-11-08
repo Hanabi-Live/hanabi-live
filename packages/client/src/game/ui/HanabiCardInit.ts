@@ -63,6 +63,9 @@ const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
 const borderOutsideColor = OFF_BLACK;
 
+/** The width and height of the box that each rank pip is centered in. */
+const RANK_PIP_SIZE = Math.floor(CARD_H * 0.1);
+
 function makeBorder(color: string) {
   const border = new Konva.Group({
     visible: false,
@@ -271,11 +274,15 @@ function makeCachedPips(variant: Variant) {
       fontSize: 63,
       align: "center",
       text: rank === START_CARD_RANK ? "s" : rank.toString(),
-      width: Math.floor(CARD_H * 0.1),
-      height: Math.floor(CARD_H * 0.1),
+      // Konva draws nothing when a glyph is wider than its box, which happens with fonts wider than
+      // Arial. Leave room for them, offset so that the digit stays centered on the same spot.
+      width: RANK_PIP_SIZE * 2,
+      offsetX: RANK_PIP_SIZE / 2,
+      height: RANK_PIP_SIZE,
       fill: "white",
       stroke: "black",
-      strokeWidth: 3,
+      // The outline is drawn outside the digit, so this is twice its visible width.
+      strokeWidth: 6,
       shadowEnabled: !globals.options.speedrun,
       shadowColor: "black",
       shadowOffsetX: 5,
