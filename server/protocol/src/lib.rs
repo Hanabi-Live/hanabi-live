@@ -2120,6 +2120,10 @@ pub struct Init {
     pub shared_replay_eff_mod: i64,
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
+    /// When the shared replay began, present only in shared replays.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Timestamp")]
+    pub datetime_shared_replay_started: Option<String>,
     pub paused: bool,
     /// The seat that paused, or -1.
     #[schemars(with = "PlayerIndexOrNone")]

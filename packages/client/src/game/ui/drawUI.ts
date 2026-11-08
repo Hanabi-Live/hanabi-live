@@ -683,6 +683,10 @@ function drawDeck() {
   // Also apply the card deck tooltip to the faded background rectangle.
   deckRect.tooltipName = "deck";
   deckRect.tooltipContent = globals.elements.deck.tooltipContent;
+  // Refresh the content on hover so that elapsed times are current.
+  deckRect.on("mouseover touchstart", () => {
+    globals.elements.deck?.updateDeckTooltip();
+  });
   initKonvaTooltips(deckRect, true, true);
 
   // When there are no cards left in the deck, show a label that indicates how many turns are left

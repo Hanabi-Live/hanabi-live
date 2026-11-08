@@ -538,6 +538,7 @@ function initStateStore(data: InitData) {
     shadowing: data.shadowing,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
+    datetimeSharedReplayStarted: data.datetimeSharedReplayStarted,
     replay: data.replay,
     sharedReplay: data.sharedReplay,
     databaseID: data.databaseID,

@@ -4954,6 +4954,7 @@ impl TableActor {
                 } else {
                     (s.game.turn, 0, false)
                 };
+            let shared_replay = replay && self.table.visible;
             let init = hanabi_protocol::Init {
                 table_id: TableId(self.table.id),
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
@@ -4997,11 +4998,19 @@ impl TableActor {
                 } else {
                     vec![]
                 },
-                shared_replay: replay && self.table.visible,
+                shared_replay,
                 shared_replay_leader: self.leader_name(),
                 shared_replay_segment: segment.into(),
                 shared_replay_eff_mod: efficiency.into(),
                 spoiler_free,
+                // A review of a game just played begins when the game ends; a replay of an older
+                // game begins when its table is created.
+                datetime_shared_replay_started: shared_replay.then(|| {
+                    crate::model::timestamp(
+                        s.finished
+                            .map_or(self.table.created, |f| f.max(self.table.created)),
+                    )
+                }),
                 paused: s.game.paused,
                 pause_player_index: s.pause_player_index.into(),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),

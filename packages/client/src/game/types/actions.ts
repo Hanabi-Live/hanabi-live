@@ -56,6 +56,7 @@ export interface ActionInit extends Readonly<
     ServerCommandData["init"],
     | "datetimeStarted"
     | "datetimeFinished"
+    | "datetimeSharedReplayStarted"
     | "spectating"
     | "shadowing"
     | "replay"

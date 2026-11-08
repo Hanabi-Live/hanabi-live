@@ -132,6 +132,7 @@ export class Deck extends Konva.Group {
         return;
       }
 
+      this.updateDeckTooltip();
       konvaTooltips.setActiveHover(this);
       setTimeout(() => {
         konvaTooltips.show(this);
@@ -284,6 +285,16 @@ function getTooltipContent(): string {
     content +=
       '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
     content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
+  }
+
+  const sharedReplay = globals.state.replay.shared;
+  if (sharedReplay !== null) {
+    const startedDate = new Date(sharedReplay.datetimeStarted);
+    const elapsedMilliseconds = Date.now() - startedDate.getTime();
+    const clockString = millisecondsToClockString(elapsedMilliseconds);
+    content +=
+      '<li><span class="game-tooltips-icon"><i class="fas fa-hourglass-half"></i></span>';
+    content += `&nbsp; Shared Replay Length: &nbsp;<strong>${clockString}</strong></li>`;
   }
 
   content +=

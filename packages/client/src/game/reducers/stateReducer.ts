@@ -121,6 +121,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         useSharedSegments: !inInGameReplay,
         leader: action.sharedReplayLeader,
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+        datetimeStarted: action.datetimeFinished,
         spoilerFree: false,
       };
 
@@ -154,6 +155,9 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             useSharedSegments: true,
             leader: action.sharedReplayLeader,
             amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+            // The server sends this in every shared replay.
+            datetimeStarted:
+              action.datetimeSharedReplayStarted ?? new Date().toISOString(),
             spoilerFree: action.spoilerFree,
           };
           state.notes.efficiencyModifier = action.sharedReplayEffMod;

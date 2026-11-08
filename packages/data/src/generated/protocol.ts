@@ -399,6 +399,10 @@ export const initSchema = z.strictObject({
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991),
   datetimeFinished: z.iso.datetime({ precision: 3 }),
+  /**
+   * When the shared replay began, present only in shared replays.
+   */
+  datetimeSharedReplayStarted: z.iso.datetime({ precision: 3 }).optional(),
   datetimeStarted: z.iso.datetime({ precision: 3 }),
   hasCustomSeed: z.boolean(),
   options: gameOptionsSchema,

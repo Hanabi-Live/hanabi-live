@@ -905,6 +905,59 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
 }
 
 #[tokio::test]
+async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        h.send(
+            0,
+            "replayCreate",
+            json!({"source":"json","visibility":"shared","gameJSON":{
+                "players":["Alice","Bob"],"seed":"p2v0s1",
+                "actions":[{"type":4,"target":0,"value":4}]}}),
+        )
+        .await?;
+        let id = h.receive(0, "tableStart").await?["tableID"].clone();
+        h.stop_hub().await?;
+        let (mut table, revision) = h
+            .snapshot(id.as_u64().context("Missing replay identity")?)
+            .await?;
+        let created = table.created;
+        let game = table.game_mut().context("Missing replay game")?;
+        game.started = created - chrono::TimeDelta::days(2);
+        game.finished = Some(created - chrono::TimeDelta::days(1));
+        h.store.save(&table, revision).await?;
+        h.tasks = TaskTracker::new();
+        h.hub = Hub::start(
+            h.store.clone(),
+            h.tasks.clone(),
+            crate::server_info::test_info(),
+        )
+        .await?;
+        for index in 0..h.users.len() {
+            h.replace(index).await?;
+        }
+        h.send(
+            1,
+            "tableSpectate",
+            json!({"tableID":id,"shadowingPlayerIndex":-1}),
+        )
+        .await?;
+        h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+        let init = h.receive(1, "init").await?;
+        ensure!(
+            init["datetimeSharedReplayStarted"] == crate::model::timestamp(created),
+            "The shared replay did not start when its table was created: {init}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());
