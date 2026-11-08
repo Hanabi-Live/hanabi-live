@@ -14,8 +14,9 @@ TypeScript interfaces remain available through `@hanabi-live/data`.
 
 1. Update the Rust DTO and its schema annotations in `src/lib.rs`. Register new
    message names in `src/registry.rs`.
-1. Add compatibility fixtures in `fixtures/compatibility.json`, including
-   normalization/defaults and rejection cases.
+1. If the contract relies on a default, null handling, union, bound, or
+   rejection rule that `fixtures/compatibility.json` does not cover yet, add a
+   case for it. Rust and Bun both run these cases.
 1. From the repository root, run:
 
    ```sh
@@ -56,10 +57,8 @@ The fixtures were checked against both handwritten parsers before adoption and
 are now consumed by Rust and Bun tests. Rust process and browser tests also
 exercise the generated client validators against actual server traffic.
 
-## Incremental boundary
+## Stored state
 
-Creation/update options, full table/pregame snapshots, gameplay/replay events,
-account settings, and historical-game schemas remain on their existing paths.
-Migrate them one family at a time, keeping internal state separate from wire
-DTOs. Some existing history/snapshot adapters still carry JSON values; do not
-change durable storage formats merely to replace those adapters.
+Keep internal state separate from wire DTOs. Table chat and pregame statistics
+are stored as JSON in table checkpoints; do not change durable storage formats
+merely to type those values.

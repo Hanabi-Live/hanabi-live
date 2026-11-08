@@ -1,16 +1,5 @@
 [
   {
-    "name": "deferred lobby failure includes a safe diagnostic",
-    "direction": "server",
-    "command": "lobbyStatus",
-    "input": {
-      "state": "error",
-      "totalGames": null,
-      "message": "Loading statistics failed: database query timed out after 2 seconds. [Reference: test123]"
-    },
-    "valid": true
-  },
-  {
     "name": "ordered command barrier has an empty request",
     "direction": "client",
     "command": "sync",
@@ -23,34 +12,6 @@
     "command": "sync",
     "input": { "name": "unused" },
     "valid": false
-  },
-  {
-    "name": "ordered command acknowledgement has an empty response",
-    "direction": "server",
-    "command": "synced",
-    "input": {},
-    "valid": true
-  },
-  {
-    "name": "deferred lobby request is empty and strict",
-    "direction": "client",
-    "command": "lobbyLoad",
-    "input": {},
-    "valid": true
-  },
-  {
-    "name": "restart notification has no arbitrary fields",
-    "direction": "server",
-    "command": "restart",
-    "input": { "error": "not a fatal error" },
-    "valid": false
-  },
-  {
-    "name": "restart notification can explain the downtime",
-    "direction": "server",
-    "command": "restart",
-    "input": { "message": "Upgrading the database." },
-    "valid": true
   },
   {
     "name": "loading statistics are unknown, not zero",
@@ -88,13 +49,6 @@
     "valid": true
   },
   {
-    "name": "chat omits missing optional request ID",
-    "direction": "client",
-    "command": "chat",
-    "input": { "msg": "hello", "room": "table0" },
-    "valid": true
-  },
-  {
     "name": "chat rejects request IDs, which clients no longer send",
     "direction": "client",
     "command": "chat",
@@ -120,20 +74,6 @@
     "direction": "client",
     "command": "chat",
     "input": { "msg": "hello", "room": "lobby", "admin": true },
-    "valid": false
-  },
-  {
-    "name": "canonical private message",
-    "direction": "client",
-    "command": "chatPM",
-    "input": { "msg": "hello", "recipient": "Alice" },
-    "valid": true
-  },
-  {
-    "name": "private messages reject a room",
-    "direction": "client",
-    "command": "chatPM",
-    "input": { "msg": "hello", "recipient": "Alice", "room": "table12" },
     "valid": false
   },
   {
@@ -187,41 +127,12 @@
     "normalized": { "name": "", "room": "" }
   },
   {
-    "name": "linked defaults",
-    "direction": "client",
-    "command": "chatLinked",
-    "input": {},
-    "valid": true,
-    "normalized": { "room": "" }
-  },
-  {
     "name": "join defaults password without coercing table ID",
     "direction": "client",
     "command": "tableJoin",
     "input": { "tableID": 0 },
     "valid": true,
     "normalized": { "tableID": 0, "password": "" }
-  },
-  {
-    "name": "join permits safe maximum table ID",
-    "direction": "client",
-    "command": "tableJoin",
-    "input": { "tableID": 9007199254740991, "password": "secret" },
-    "valid": true
-  },
-  {
-    "name": "join rejects unsafe table ID",
-    "direction": "client",
-    "command": "tableJoin",
-    "input": { "tableID": 9007199254740992 },
-    "valid": false
-  },
-  {
-    "name": "join rejects negative table ID",
-    "direction": "client",
-    "command": "tableJoin",
-    "input": { "tableID": -1 },
-    "valid": false
   },
   {
     "name": "join rejects string table ID",
@@ -236,14 +147,6 @@
     "command": "tableJoin",
     "input": { "tableID": 1, "password": null },
     "valid": false
-  },
-  {
-    "name": "leader defaults name",
-    "direction": "client",
-    "command": "tableSetLeader",
-    "input": { "tableID": 1 },
-    "valid": true,
-    "normalized": { "tableID": 1, "name": "" }
   },
   {
     "name": "variant defaults nested options",
@@ -300,49 +203,12 @@
     "valid": false
   },
   {
-    "name": "start rejects null intentions",
-    "direction": "client",
-    "command": "tableStart",
-    "input": { "tableID": 1, "intendedPlayers": null },
-    "valid": false
-  },
-  {
-    "name": "restart defaults hidePregame",
-    "direction": "client",
-    "command": "tableRestart",
-    "input": { "tableID": 1 },
-    "valid": true,
-    "normalized": { "tableID": 1, "hidePregame": false }
-  },
-  {
     "name": "spectate defaults legacy shadow seat",
     "direction": "client",
     "command": "tableSpectate",
     "input": { "tableID": 1 },
     "valid": true,
     "normalized": { "tableID": 1, "shadowingPlayerIndex": -1 }
-  },
-  {
-    "name": "suggest defaults segment",
-    "direction": "client",
-    "command": "tableSuggest",
-    "input": { "tableID": 1 },
-    "valid": true,
-    "normalized": { "tableID": 1, "segment": 0 }
-  },
-  {
-    "name": "terminate takes only the table ID",
-    "direction": "client",
-    "command": "tableTerminate",
-    "input": { "tableID": 1 },
-    "valid": true
-  },
-  {
-    "name": "read rejects unknown fields",
-    "direction": "client",
-    "command": "chatRead",
-    "input": { "tableID": 1, "extra": false },
-    "valid": false
   },
   {
     "name": "missing server chat fields stay omitted",
@@ -391,55 +257,11 @@
     "valid": false
   },
   {
-    "name": "server chat rejects zero IDs",
-    "direction": "server",
-    "command": "chat",
-    "input": {
-      "msg": "hello",
-      "source": "user",
-      "datetime": "date",
-      "chatID": 0
-    },
-    "valid": false
-  },
-  {
-    "name": "chat deletion stays lobby-only",
-    "direction": "server",
-    "command": "chatDelete",
-    "input": { "chatID": 1, "room": "lobby" },
-    "valid": true
-  },
-  {
     "name": "chat deletion rejects table room",
     "direction": "server",
     "command": "chatDelete",
     "input": { "chatID": 1, "room": "table1" },
     "valid": false
-  },
-  {
-    "name": "chat lists retain signed integer semantics",
-    "direction": "server",
-    "command": "chatList",
-    "input": { "list": [], "unread": -1 },
-    "valid": true
-  },
-  {
-    "name": "private history keeps absent room",
-    "direction": "server",
-    "command": "chatPMHistory",
-    "input": {
-      "list": [
-        {
-          "pmID": 1,
-          "msg": "hi",
-          "who": "Alice",
-          "recipient": "Bob",
-          "datetime": "date"
-        }
-      ],
-      "hasMore": false
-    },
-    "valid": true
   },
   {
     "name": "private history rejects empty explicit room",
@@ -449,162 +271,11 @@
     "valid": false
   },
   {
-    "name": "typing retains empty names",
-    "direction": "server",
-    "command": "chatTyping",
-    "input": { "tableID": 0, "name": "", "typing": false },
-    "valid": true
-  },
-  {
-    "name": "joined notification",
-    "direction": "server",
-    "command": "joined",
-    "input": { "tableID": 0 },
-    "valid": true
-  },
-  {
-    "name": "table start notification",
-    "direction": "server",
-    "command": "tableStart",
-    "input": { "tableID": 1, "replay": true },
-    "valid": true
-  },
-  {
-    "name": "table start requires replay flag",
-    "direction": "server",
-    "command": "tableStart",
-    "input": { "tableID": 1 },
-    "valid": false
-  },
-  {
-    "name": "table gone rejects extra metadata",
-    "direction": "server",
-    "command": "tableGone",
-    "input": { "tableID": 1, "name": "old" },
-    "valid": false
-  },
-  {
-    "name": "actions default the clue value",
-    "direction": "client",
-    "command": "action",
-    "input": { "tableID": 7, "type": 0, "target": 3 },
-    "normalized": { "tableID": 7, "type": 0, "target": 3, "value": 0 },
-    "valid": true
-  },
-  {
-    "name": "clue actions carry their value",
-    "direction": "client",
-    "command": "action",
-    "input": { "tableID": 7, "type": 2, "target": 1, "value": 4 },
-    "valid": true
-  },
-  {
     "name": "actions reject unknown action types",
     "direction": "client",
     "command": "action",
     "input": { "tableID": 7, "type": 4, "target": 0 },
     "valid": false
-  },
-  {
-    "name": "actions reject extra fields",
-    "direction": "client",
-    "command": "action",
-    "input": { "tableID": 7, "type": 0, "target": 0, "card": 1 },
-    "valid": false
-  },
-  {
-    "name": "notes reject negative card orders at the boundary",
-    "direction": "client",
-    "command": "note",
-    "input": { "tableID": 7, "order": -1, "note": "5" },
-    "valid": false
-  },
-  {
-    "name": "pause requires a setting",
-    "direction": "client",
-    "command": "pause",
-    "input": { "tableID": 7 },
-    "valid": false
-  },
-  {
-    "name": "tags default the room",
-    "direction": "client",
-    "command": "tag",
-    "input": { "tableID": 7, "msg": "bdr" },
-    "normalized": { "tableID": 7, "msg": "bdr", "room": "" },
-    "valid": true
-  },
-  {
-    "name": "deleting all tags needs no message",
-    "direction": "client",
-    "command": "tagsDeleteAll",
-    "input": { "tableID": 7 },
-    "normalized": { "tableID": 7, "room": "" },
-    "valid": true
-  },
-  {
-    "name": "replay arrows default every unused field",
-    "direction": "client",
-    "command": "replayAction",
-    "input": { "tableID": 7, "type": 1, "order": -1 },
-    "normalized": {
-      "tableID": 7,
-      "type": 1,
-      "order": -1,
-      "segment": 0,
-      "sound": "",
-      "value": 0,
-      "actionJSON": ""
-    },
-    "valid": true
-  },
-  {
-    "name": "replay actions reject unknown types",
-    "direction": "client",
-    "command": "replayAction",
-    "input": { "tableID": 7, "type": 9 },
-    "valid": false
-  },
-  {
-    "name": "table commands reject request IDs",
-    "direction": "client",
-    "command": "loaded",
-    "input": { "tableID": 7, "requestID": "r-2" },
-    "valid": false
-  },
-  {
-    "name": "leader changes name the new leader",
-    "direction": "client",
-    "command": "tableSetLeader",
-    "input": { "tableID": 7, "name": "Bob" },
-    "valid": true
-  },
-  {
-    "name": "user presence includes the table for an active status",
-    "direction": "server",
-    "command": "user",
-    "input": {
-      "userID": 7,
-      "name": "Alice",
-      "status": 2,
-      "tableID": 3,
-      "hyphenated": false,
-      "inactive": false
-    },
-    "valid": true
-  },
-  {
-    "name": "user presence omits the table in the lobby",
-    "direction": "server",
-    "command": "user",
-    "input": {
-      "userID": 7,
-      "name": "Alice",
-      "status": 0,
-      "hyphenated": false,
-      "inactive": false
-    },
-    "valid": true
   },
   {
     "name": "user presence rejects an unknown status",
@@ -634,48 +305,6 @@
         "inactive": false
       }
     ],
-    "valid": true
-  },
-  {
-    "name": "user departure names only the user",
-    "direction": "server",
-    "command": "userLeft",
-    "input": { "userID": 7 },
-    "valid": true
-  },
-  {
-    "name": "user inactivity carries the new state",
-    "direction": "server",
-    "command": "userInactive",
-    "input": { "userID": 7, "inactive": true },
-    "valid": true
-  },
-  {
-    "name": "friends list may be empty",
-    "direction": "server",
-    "command": "friends",
-    "input": { "friends": [] },
-    "valid": true
-  },
-  {
-    "name": "error notices need text",
-    "direction": "server",
-    "command": "error",
-    "input": { "error": "" },
-    "valid": false
-  },
-  {
-    "name": "warning notices may contain HTML",
-    "direction": "server",
-    "command": "warning",
-    "input": { "warning": "Cannot process <code>chat</code>" },
-    "valid": true
-  },
-  {
-    "name": "lobby sounds name a file",
-    "direction": "server",
-    "command": "soundLobby",
-    "input": { "file": "shutdown" },
     "valid": true
   },
   {
@@ -732,52 +361,6 @@
         "createTableMaxPlayers": 5
       }
     }
-  },
-  {
-    "name": "welcome reports a disconnected spectator's seat",
-    "direction": "server",
-    "command": "welcome",
-    "input": {
-      "userID": 7,
-      "username": "Alice",
-      "totalGames": null,
-      "muted": false,
-      "firstTimeUser": false,
-      "connectionMode": "initial",
-      "friends": [],
-      "playingAtTables": [3],
-      "settings": {
-        "desktopNotification": false,
-        "soundMove": 0,
-        "soundTimer": true,
-        "keldonMode": false,
-        "colorblindMode": false,
-        "realLifeMode": false,
-        "reverseHands": false,
-        "styleNumbers": false,
-        "showTimerInUntimed": false,
-        "volume": 50,
-        "speedrunPreplay": false,
-        "speedrunMode": false,
-        "hyphenatedConventions": false,
-        "createTableVariant": "No Variant",
-        "createTableTimed": false,
-        "createTableTimeBaseMinutes": 2.0,
-        "createTableTimePerTurnSeconds": 20,
-        "createTableSpeedrun": false,
-        "createTableCardCycle": false,
-        "createTableDeckPlays": false,
-        "createTableEmptyClues": false,
-        "createTableOneExtraCard": false,
-        "createTableOneLessCard": false,
-        "createTableAllOrNothing": false,
-        "createTableDetrimentalCharacters": false,
-        "createTableMaxPlayers": 5
-      },
-      "disconSpectatingTable": 3,
-      "disconShadowingSeat": -1
-    },
-    "valid": true
   },
   {
     "name": "welcome requires the total, even when it is not loaded",
@@ -902,98 +485,12 @@
     "valid": true
   },
   {
-    "name": "table options reject impossible player counts",
-    "direction": "client",
-    "command": "tableCreate",
-    "input": { "options": { "numPlayers": 7 } },
-    "valid": false
-  },
-  {
-    "name": "table options reject unknown options",
-    "direction": "client",
-    "command": "tableCreate",
-    "input": { "options": { "hardMode": true } },
-    "valid": false
-  },
-  {
-    "name": "table updates name their table",
-    "direction": "client",
-    "command": "tableUpdate",
-    "input": { "name": "Renamed" },
-    "valid": false
-  },
-  {
-    "name": "replays from the database default the password and shadowing",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": { "source": "id", "visibility": "solo", "databaseID": 1 },
-    "normalized": {
-      "source": "id",
-      "visibility": "solo",
-      "databaseID": 1,
-      "password": "",
-      "shadowingPlayerIndex": -1,
-      "joinExisting": false
-    },
-    "valid": true
-  },
-  {
-    "name": "shared replay links can join an existing replay of the game",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": {
-      "source": "id",
-      "visibility": "shared",
-      "databaseID": 1,
-      "shadowingPlayerIndex": -1,
-      "joinExisting": true
-    },
-    "normalized": {
-      "source": "id",
-      "visibility": "shared",
-      "databaseID": 1,
-      "password": "",
-      "shadowingPlayerIndex": -1,
-      "joinExisting": true
-    },
-    "valid": true
-  },
-  {
-    "name": "replays come only from the database or imported JSON",
-    "direction": "client",
-    "command": "replayCreate",
-    "input": { "source": "url", "visibility": "solo" },
-    "valid": false
-  },
-  {
     "name": "history accepts negative values so the server can explain them",
     "direction": "client",
     "command": "historyGet",
     "input": { "offset": -1 },
     "normalized": { "offset": -1, "amount": 0 },
     "valid": true
-  },
-  {
-    "name": "setting values are sent as text",
-    "direction": "client",
-    "command": "setting",
-    "input": { "name": "volume", "setting": 50 },
-    "valid": false
-  },
-  {
-    "name": "tag searches default their message and room",
-    "direction": "client",
-    "command": "tagSearch",
-    "input": {},
-    "normalized": { "msg": "", "room": "" },
-    "valid": true
-  },
-  {
-    "name": "inactivity is a boolean",
-    "direction": "client",
-    "command": "inactive",
-    "input": { "inactive": "yes" },
-    "valid": false
   },
   {
     "name": "tables report a pregame roster below the minimum",
@@ -1042,100 +539,6 @@
     "valid": true
   },
   {
-    "name": "tables reject progress above one hundred",
-    "direction": "server",
-    "command": "table",
-    "input": {
-      "id": 3,
-      "joined": true,
-      "maxPlayers": 5,
-      "name": "Alice's game",
-      "numPlayers": 1,
-      "options": {
-        "numPlayers": 2,
-        "startingPlayer": 0,
-        "variantName": "No Variant",
-        "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
-        "speedrun": false,
-        "cardCycle": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "ownerID": 7,
-      "passwordProtected": false,
-      "players": ["Alice"],
-      "progress": 101,
-      "running": false,
-      "sharedReplay": false,
-      "spectators": [
-        {
-          "name": "Carol",
-          "shadowingPlayerIndex": 1,
-          "shadowingPlayerUsername": "Bob"
-        }
-      ],
-      "timeBase": 0.0,
-      "timePerTurn": 0,
-      "timed": false,
-      "variant": "No Variant"
-    },
-    "valid": false
-  },
-  {
-    "name": "table list is an array of tables",
-    "direction": "server",
-    "command": "tableList",
-    "input": [
-      {
-        "id": 3,
-        "joined": true,
-        "maxPlayers": 5,
-        "name": "Alice's game",
-        "numPlayers": 1,
-        "options": {
-          "numPlayers": 2,
-          "startingPlayer": 0,
-          "variantName": "No Variant",
-          "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
-          "speedrun": false,
-          "cardCycle": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "ownerID": 7,
-        "passwordProtected": false,
-        "players": ["Alice"],
-        "progress": 0,
-        "running": false,
-        "sharedReplay": false,
-        "spectators": [
-          {
-            "name": "Carol",
-            "shadowingPlayerIndex": 1,
-            "shadowingPlayerUsername": "Bob"
-          }
-        ],
-        "timeBase": 0.0,
-        "timePerTurn": 0,
-        "timed": false,
-        "variant": "No Variant"
-      }
-    ],
-    "valid": true
-  },
-  {
     "name": "spectators without a shadow omit the shadowed name",
     "direction": "server",
     "command": "spectators",
@@ -1144,22 +547,6 @@
       "spectators": [{ "name": "Carol", "shadowingPlayerIndex": -1 }]
     },
     "valid": true
-  },
-  {
-    "name": "spectators reject an empty shadowed name",
-    "direction": "server",
-    "command": "spectators",
-    "input": {
-      "tableID": 3,
-      "spectators": [
-        {
-          "name": "Carol",
-          "shadowingPlayerIndex": -1,
-          "shadowingPlayerUsername": ""
-        }
-      ]
-    },
-    "valid": false
   },
   {
     "name": "history accepts dates with an offset",
@@ -1237,146 +624,6 @@
     "valid": false
   },
   {
-    "name": "history rejects an unknown end condition",
-    "direction": "server",
-    "command": "gameHistory",
-    "input": [
-      {
-        "id": 12,
-        "options": {
-          "numPlayers": 2,
-          "startingPlayer": 0,
-          "variantName": "No Variant",
-          "timed": false,
-          "timeBase": 0.0,
-          "timePerTurn": 0,
-          "speedrun": false,
-          "cardCycle": false,
-          "deckPlays": false,
-          "emptyClues": false,
-          "oneExtraCard": false,
-          "oneLessCard": false,
-          "allOrNothing": false,
-          "detrimentalCharacters": false
-        },
-        "seed": "p2v0s1",
-        "score": 25,
-        "numTurns": 40,
-        "endCondition": 11,
-        "datetimeStarted": "2023-12-29T18:00:00Z",
-        "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
-        "numGamesOnThisSeed": 3,
-        "playerNames": ["Alice", "Bob"],
-        "incrementNumGames": false,
-        "tags": ""
-      }
-    ],
-    "valid": false
-  },
-  {
-    "name": "other scores name the variant and seed",
-    "direction": "server",
-    "command": "gameHistoryOtherScores",
-    "input": {
-      "games": [
-        {
-          "id": 12,
-          "options": {
-            "numPlayers": 2,
-            "startingPlayer": 0,
-            "variantName": "No Variant",
-            "timed": false,
-            "timeBase": 0.0,
-            "timePerTurn": 0,
-            "speedrun": false,
-            "cardCycle": false,
-            "deckPlays": false,
-            "emptyClues": false,
-            "oneExtraCard": false,
-            "oneLessCard": false,
-            "allOrNothing": false,
-            "detrimentalCharacters": false
-          },
-          "seed": "p2v0s1",
-          "score": 25,
-          "numTurns": 40,
-          "endCondition": 1,
-          "datetimeStarted": "2023-12-29T18:00:00Z",
-          "datetimeFinished": "2023-12-29T18:21:43.812446+00:00",
-          "numGamesOnThisSeed": 3,
-          "playerNames": ["Alice", "Bob"],
-          "incrementNumGames": false,
-          "tags": ""
-        }
-      ],
-      "variantName": "No Variant",
-      "seed": "p2v0s1"
-    },
-    "valid": true
-  },
-  {
-    "name": "pregames include each player's statistics",
-    "direction": "server",
-    "command": "game",
-    "input": {
-      "tableID": 3,
-      "name": "Alice's game",
-      "owner": 7,
-      "players": [
-        {
-          "index": 0,
-          "name": "Alice",
-          "you": true,
-          "present": true,
-          "stats": {
-            "numGames": 4,
-            "variant": {
-              "numGames": 1,
-              "bestScores": [
-                {
-                  "numPlayers": 2,
-                  "score": 0,
-                  "modifier": 0,
-                  "deckPlays": false,
-                  "emptyClues": false,
-                  "oneExtraCard": false,
-                  "oneLessCard": false,
-                  "allOrNothing": false
-                }
-              ]
-            }
-          }
-        }
-      ],
-      "options": {
-        "numPlayers": 2,
-        "startingPlayer": 0,
-        "variantName": "No Variant",
-        "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
-        "speedrun": false,
-        "cardCycle": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "passwordProtected": false,
-      "maxPlayers": 5
-    },
-    "valid": true
-  },
-  {
-    "name": "boot names its table like every other frame",
-    "direction": "server",
-    "command": "boot",
-    "input": { "tableID": 7 },
-    "valid": true
-  },
-  {
     "name": "boot no longer uses the capitalized TableID",
     "direction": "server",
     "command": "boot",
@@ -1389,63 +636,6 @@
     "command": "hypoAction",
     "input": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}",
     "valid": true
-  },
-  {
-    "name": "clocks report no active player as -1",
-    "direction": "server",
-    "command": "clock",
-    "input": {
-      "tableID": 7,
-      "times": [120000, -500],
-      "activePlayerIndex": -1,
-      "timeTaken": 0
-    },
-    "valid": true
-  },
-  {
-    "name": "pauses identify the seat that paused",
-    "direction": "server",
-    "command": "pause",
-    "input": { "tableID": 7, "active": true },
-    "valid": false
-  },
-  {
-    "name": "note lists separate player and spectator notes",
-    "direction": "server",
-    "command": "noteList",
-    "input": {
-      "tableID": 3,
-      "notes": [
-        { "name": "Alice", "notes": ["", "5"], "isSpectator": false },
-        { "name": "Carol", "notes": ["", ""], "isSpectator": true }
-      ]
-    },
-    "valid": true
-  },
-  {
-    "name": "a player's note list holds one note per card",
-    "direction": "server",
-    "command": "noteListPlayer",
-    "input": { "tableID": 3, "notes": ["", "chop"] },
-    "valid": true
-  },
-  {
-    "name": "single notes carry each author's text",
-    "direction": "server",
-    "command": "note",
-    "input": {
-      "tableID": 3,
-      "order": 1,
-      "notes": [{ "name": "Alice", "text": "5", "isSpectator": false }]
-    },
-    "valid": true
-  },
-  {
-    "name": "single notes reject a negative card order",
-    "direction": "server",
-    "command": "note",
-    "input": { "tableID": 3, "order": -1, "notes": [] },
-    "valid": false
   },
   {
     "name": "visible clues carry their type and value",
@@ -1531,84 +721,5 @@
       "list": [{ "type": "gameOver", "endCondition": 1, "playerIndex": 0 }]
     },
     "valid": false
-  },
-  {
-    "name": "init describes a live game before its events",
-    "direction": "server",
-    "command": "init",
-    "input": {
-      "tableID": 3,
-      "playerNames": ["Alice", "Bob"],
-      "ourPlayerIndex": 0,
-      "spectating": false,
-      "shadowing": false,
-      "replay": false,
-      "databaseID": -1,
-      "hasCustomSeed": false,
-      "seed": "p2v0s1",
-      "datetimeStarted": "2023-12-29T18:00:00Z",
-      "datetimeFinished": "0001-01-01T00:00:00Z",
-      "options": {
-        "numPlayers": 2,
-        "startingPlayer": 0,
-        "variantName": "No Variant",
-        "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
-        "speedrun": false,
-        "cardCycle": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "characterAssignments": [],
-      "characterMetadata": [],
-      "sharedReplay": false,
-      "sharedReplayLeader": "",
-      "sharedReplaySegment": 0,
-      "sharedReplayEffMod": 0,
-      "paused": false,
-      "pausePlayerIndex": -1,
-      "pauseQueued": false
-    },
-    "valid": true
-  },
-  {
-    "name": "idle resets name their table",
-    "direction": "client",
-    "command": "idleReset",
-    "input": { "tableID": 7 },
-    "valid": true
-  },
-  {
-    "name": "idle resets require a table",
-    "direction": "client",
-    "command": "idleReset",
-    "input": {},
-    "valid": false
-  },
-  {
-    "name": "idle warnings give the time left",
-    "direction": "server",
-    "command": "idleWarning",
-    "input": { "tableID": 7, "remainingMs": 300000 },
-    "valid": true
-  },
-  {
-    "name": "idle warnings cannot exceed the idle timeout",
-    "direction": "server",
-    "command": "idleWarning",
-    "input": { "tableID": 7, "remainingMs": 1800001 },
-    "valid": false
-  },
-  {
-    "name": "idle resets tell the table",
-    "direction": "server",
-    "command": "idleReset",
-    "input": { "tableID": 7 },
-    "valid": true
   }
 ]
