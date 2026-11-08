@@ -16,6 +16,25 @@
       "dependsOn": ["transit"],
       "outputs": []
     },
+    "//#check-css": {
+      "inputs": [
+        "bun.lock",
+        "package.json",
+        "packages/client/Gruntfile.js",
+        "public/css/**",
+        "!public/css/main.*.min.css",
+        "scripts/lint/check-css.sh"
+      ],
+      "env": [
+        "CI",
+        "ImageOS",
+        "ImageVersion",
+        "NODE_ENV",
+        "RUNNER_ARCH",
+        "RUNNER_OS"
+      ],
+      "outputs": []
+    },
     "//#check-knip": {
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
       "env": [
