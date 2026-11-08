@@ -59,6 +59,9 @@ const LARGE_ICON_Y = 0.2 * CARD_H;
 /** The center of the radial gradient that fills a pip of a suit with several colors. */
 const MULTI_FILL_PIP_GRADIENT_CENTER = { x: 75, y: 140 } as const;
 
+/** The fraction of the gradient's radius that is filled with its first color. */
+const MULTI_FILL_PIP_GRADIENT_INNER_STOP = 0.3;
+
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it
   // will just be a gray rounded rectangle. The pips and other elements of a card are drawn on top
@@ -736,20 +739,16 @@ function getNewColorPip(
     listening: false,
   });
 
-  // Gradient numbers are magic.
   if (suit.fill === "multi") {
-    suitPip.fillRadialGradientColorStops([
-      0.3,
-      suit.fillColors[0]!,
-      0.425,
-      suit.fillColors[1]!,
-      0.65,
-      suit.fillColors[2]!,
-      0.875,
-      suit.fillColors[3]!,
-      1,
-      suit.fillColors[4]!,
-    ]);
+    // Spread the colors evenly from the inner stop to the edge.
+    const lastIndex = suit.fillColors.length - 1;
+    suitPip.fillRadialGradientColorStops(
+      suit.fillColors.flatMap((color, i) => [
+        MULTI_FILL_PIP_GRADIENT_INNER_STOP
+          + ((1 - MULTI_FILL_PIP_GRADIENT_INNER_STOP) * i) / lastIndex,
+        color,
+      ]),
+    );
     suitPip.fillRadialGradientStartPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
     suitPip.fillRadialGradientEndPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
     suitPip.fillRadialGradientStartRadius(0);
