@@ -1,9 +1,9 @@
 // The initial login page.
 
-import type { HTTPLoginData } from "@hanabi-live/data";
 import {
   VERSION,
   errorDetails,
+  loginRequestSchema,
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
@@ -108,12 +108,12 @@ function send(
 
   // Send a login request to the server; if successful, we will get a cookie back.
   const url = getURLFromPath("/login");
-  const data = {
+  const data = loginRequestSchema.parse({
     username,
     password,
     newPassword,
     version: VERSION,
-  } satisfies HTTPLoginData;
+  });
 
   // eslint-disable-next-line complete/no-object-any
   const request = $.ajax({

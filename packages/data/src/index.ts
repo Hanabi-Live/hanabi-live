@@ -9,7 +9,6 @@ export * from "./functions/tabAccount";
 export * from "./functions/time";
 export * from "./generated/protocol";
 export * from "./interfaces/GameHistory";
-export * from "./interfaces/HTTPLoginData";
 export * from "./interfaces/Settings";
 export * from "./interfaces/Spectator";
 export * from "./types/GameID";

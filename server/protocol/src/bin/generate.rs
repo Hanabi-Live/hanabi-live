@@ -388,6 +388,9 @@ fn main() -> Result<()> {
             "Spectator",
             "GameHistory",
             "ReplayGame",
+            "LoginRequest",
+            "LoginResponse",
+            "ApiError",
         ])
         .collect();
     let mut definitions = BTreeMap::new();

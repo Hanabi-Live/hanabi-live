@@ -1,11 +1,9 @@
-import { z } from "zod";
+import { loginResponseSchema } from "../generated/protocol";
 
 // Each tab remembers the account it signed in to, so that reloading or reconnecting does not switch
 // it to the account most recently signed in to in another tab. New tabs use that latest account.
 
 const STORAGE_KEY = "hanabi-account";
-
-const loginResponse = z.object({ userID: z.number().int().positive() });
 
 export function getTabAccount(): number | undefined {
   try {
@@ -35,7 +33,7 @@ export function clearTabAccount(): void {
 
 /** Remembers the account from a successful "/login" response body. */
 export function setTabAccountFromLogin(body: unknown): void {
-  const result = loginResponse.safeParse(body);
+  const result = loginResponseSchema.safeParse(body);
   if (result.success) {
     setTabAccount(result.data.userID);
   }

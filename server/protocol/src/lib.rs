@@ -880,6 +880,34 @@ pub struct TableStarted {
 #[schemars(extend("x-brand" = "UserID"))]
 pub struct UserId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
 
+/// The `/login` form. The server ignores unknown fields so that older bots can still sign in, but
+/// clients send only these.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(default, rename_all = "camelCase")]
+#[schemars(deny_unknown_fields)]
+pub struct LoginRequest {
+    pub username: String,
+    pub password: String,
+    /// Sets a new password after the current one is verified.
+    pub new_password: String,
+    pub version: String,
+}
+
+/// The body of a successful `/login` response.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct LoginResponse {
+    #[serde(rename = "userID")]
+    pub user_id: UserId,
+}
+
+/// The body of a JSON HTTP error response.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ApiError {
+    pub error: String,
+}
+
 /// A user's presence in the lobby's user list.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1554,6 +1582,9 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     }
     register!(
         ReplayGame,
+        LoginRequest,
+        LoginResponse,
+        ApiError,
         ChatRequest,
         ChatPmRequest,
         ChatHistoryRequest,
