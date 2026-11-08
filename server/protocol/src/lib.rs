@@ -1951,59 +1951,73 @@ pub struct CatalogRank(#[schemars(extend("enum" = [1, 2, 3, 4, 5, 7]))] pub u8);
 pub struct CatalogColor {
     #[schemars(length(min = 1))]
     pub name: String,
-    /// Defaults to the first letter of the name.
+    /// If not specified, assume that it is the first letter of the color.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1, max = 1))]
     pub abbreviation: Option<String>,
     #[schemars(length(min = 1))]
     pub fill: String,
-    /// Defaults to the fill.
+    /// An alternate fill when "Colorblind Mode" is enabled. If not specified, assume that it is the
+    /// same as the default fill.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub fill_colorblind: Option<String>,
 }
 
-/// An entry in `suits.json`.
+/// An entry in `suits.json`. This is similar to `Suit`, but it only has primitive types.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CatalogSuit {
+    // --------------------
+    // Mandatory properties
+    // --------------------
     #[schemars(length(min = 1))]
     pub name: String,
-    /// - Normal suits have a single capital letter, such as "R" for "Red".
-    /// - Special suits have a capital and a lowercase letter, such as "Bk" for "Black".
-    /// - Combination suits have four letters, such as "BrRa" for "Muddy Rainbow".
-    /// - Dark suits have a "D" prefix, such as "DRa" for "Dark Rainbow".
-    /// - Ambiguous suits have an "A" prefix and a number suffix, such as "AR1" for "Tomato".
-    /// - Very Ambiguous suits have a "V" prefix and a number suffix, such as "VR1" for "Tomato VA".
-    /// - Extremely Ambiguous suits have an "E" prefix and a number suffix, such as "EB1" for
-    ///   "Ice EA".
-    /// - Dual-Color suits have a "D" prefix, such as "DRY" for "Tangerine D".
+    /// The suit ID is a two character string:
+    /// - Normal suits have a single capital letter. (e.g. "R" for "Red")
+    /// - Special suits have a two character ID with a lowercase letter. (e.g. "Bk" for "Black")
+    /// - Combination suits have a four character ID. (e.g. "BrRa" for "Muddy Rainbow")
+    /// - Dark suits have a capital D prefix. (e.g. "DRa" for "Dark Rainbow")
+    /// - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
+    /// - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
+    ///   VA")
+    /// - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
+    ///   EA")
+    /// - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
     #[schemars(length(min = 1))]
     pub id: String,
-    /// A pip name, "auto", or "none".
+    /// The symbol that represents this suit: a pip name, "auto", or "none".
     #[schemars(length(min = 1))]
     pub pip: String,
-    /// The letter for the suit in card notes. Defaults to the abbreviation of the color with the
-    /// same name, or else the first letter of the name.
+    // -------------------
+    // Optional properties
+    // -------------------
+    /// The one letter abbreviation to use when representing this suit as a card note. If not
+    /// specified, use the abbreviation of the color with the same name, or else the first letter of
+    /// the suit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1, max = 1))]
     pub abbreviation: Option<String>,
-    /// Whether to create variant combinations based on this suit.
+    /// Whether or not to create variant combinations based on this suit.
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub create_variants: bool,
-    /// A simplified name to show to players. Defaults to the name.
+    /// A simplified version of the suit name to show to end-users. If not specified, use the normal
+    /// suit name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub display_name: Option<String>,
-    /// The background color of the suit's cards.
+    /// The background color of cards of the suit.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String", length(min = 1))]
     pub fill: Option<String>,
-    /// A gradient of colors for the suit's cards.
+    /// Allows for a gradient of different colors.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<String>", length(min = 1), extend("x-readonly" = true))]
     pub fill_colors: Option<Vec<String>>,
+    // -----------------------------------------
+    // Optional gameplay modification properties
+    // -----------------------------------------
     #[serde(default, skip_serializing_if = "is_false")]
     #[schemars(extend("const" = true))]
     pub one_of_each: bool,
@@ -2031,15 +2045,16 @@ pub struct CatalogSuit {
     pub inverted: bool,
 }
 
-/// An entry in `variants.json`.
+/// An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CatalogVariant {
-    /// The legacy numeric ID: "No Variant" is 0, "6 Suits" is 1, and so on. Games store this.
+    /// A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
+    /// on. This is a legacy field; we want to transition to using a more descriptive string ID,
+    /// which will allow for custom user-defined variants.
     #[schemars(range(min = 0, max = 4_294_967_295_u32))]
     pub id: u32,
-    /// A descriptive ID built from the suit IDs and modifiers, such as "R+Y+G+B+P" for
-    /// "No Variant".
+    /// A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
     #[serde(rename = "newID")]
     #[schemars(length(min = 1))]
     pub new_id: String,
@@ -2060,6 +2075,7 @@ pub struct CatalogVariant {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "u8", extend("enum" = [1, 2, 3, 4]))]
     pub stack_size: Option<u8>,
+    // The following properties are listed in order of how they appear in "variants.md".
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "CatalogRank")]
     pub special_rank: Option<u8>,
@@ -2131,6 +2147,7 @@ pub struct CatalogVariant {
 pub struct CatalogCharacter {
     #[schemars(length(min = 1))]
     pub name: String,
+    /// The first character has an ID of 0.
     #[schemars(range(min = 0, max = 4_294_967_295_u32))]
     pub id: u32,
     #[schemars(length(min = 1))]

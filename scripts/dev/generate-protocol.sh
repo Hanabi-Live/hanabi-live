@@ -7,7 +7,8 @@ if (($# > 1)) || [[ ${1:-} != "" && ${1:-} != --check ]]; then
   exit 1
 fi
 temporary=$(mktemp)
-trap 'rm -f "$temporary"' EXIT
+formatted=$(mktemp)
+trap 'rm -f "$temporary" "$formatted"' EXIT
 status=0
 # The data package and the game library do not depend on each other, so each gets its own module.
 for target in "packages/data/src/generated/protocol.ts" "packages/game/src/generated/protocol.ts --game"; do
@@ -16,7 +17,13 @@ for target in "packages/data/src/generated/protocol.ts" "packages/game/src/gener
     cd "$ROOT/server/protocol"
     cargo run --quiet --locked --bin generate -- ${flag:+"$flag"}
   ) \
-    | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
+    | bunx --bun --no-install prettier --stdin-filepath "$output" > "$formatted"
+  # Rust doc comments become JSDoc, which the package's ESLint rules wrap to the file's indentation.
+  (
+    cd "$(dirname "$output")/../.."
+    bunx --bun --no-install eslint --stdin --stdin-filename "$ROOT/$output" --fix-dry-run \
+      --format json < "$formatted" || true
+  ) | bun "$ROOT/scripts/dev/eslint-output.ts" "$formatted" > "$temporary"
   if [[ ${1:-} == --check ]]; then
     if ! diff -u "$output" "$temporary"; then
       status=1

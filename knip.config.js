@@ -10,6 +10,7 @@ const config = {
 
   workspaces: {
     ".": {
+      entry: ["scripts/dev/eslint-output.ts"], // Run by "scripts/dev/generate-protocol.sh".
       ignore: [
         "misc/file.ts", // An intentionally empty file for the root "tsconfig.json".
         "public/**", // Vendored libraries and build output.

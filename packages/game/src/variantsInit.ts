@@ -49,6 +49,9 @@ export function createVariant(
   id: number,
   newID: string,
 ): Variant {
+  // Fields are validated in the order that they appear in `CatalogVariant` (in
+  // "server/protocol/src/lib.rs").
+
   // ---------------
   // Core properties
   // ---------------
@@ -209,7 +212,8 @@ export function createVariant(
   // works normally).
   const specialRankDeceptive = variantDescription.specialRankDeceptive ?? false;
 
-  // If "criticalRank" is not specified, assume `undefined` (e.g. there are no critical ranks).
+  // Validate the "criticalRank" property. If it is not specified, assume `undefined` (e.g. there
+  // are no critical ranks).
   if (
     variantDescription.criticalRank !== undefined
     && !ranks.includes(variantDescription.criticalRank)

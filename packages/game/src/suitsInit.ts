@@ -16,6 +16,7 @@ export function suitsInit(
   for (const suitJSON of suitsJSON as readonly SuitJSON[]) {
     const { name, id, pip } = suitJSON;
 
+    // Validate the "pip" property.
     if (pip !== "none" && pip !== "auto") {
       assertEnumValue(
         pip,
@@ -54,6 +55,7 @@ export function suitsInit(
     // (This has to be before the fill validation.)
     const clueColors = getSuitClueColors(suitJSON, COLORS);
 
+    // Validate the fill.
     const { fill, fillColorblind } = getSuitFillAndFillColorblind(
       suitJSON,
       COLORS,

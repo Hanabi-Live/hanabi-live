@@ -278,7 +278,11 @@ fn expression(schema: &Value) -> Result<String> {
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
-                    fields.push(format!("{}: {field}", serde_json::to_string(name)?));
+                    fields.push(format!(
+                        "{}{}: {field}",
+                        doc_comment(property),
+                        serde_json::to_string(name)?
+                    ));
                 }
                 format!(
                     "{}({{{}}})",
@@ -325,6 +329,27 @@ fn expression(schema: &Value) -> Result<String> {
         result.push_str(&format!(".default({default})"));
     }
     Ok(result)
+}
+
+/// The schema's description, which comes from the Rust doc comment, as JSDoc. Generation formats it
+/// with the repository's ESLint rule afterwards.
+fn doc_comment(schema: &Value) -> String {
+    let Some(description) = schema.get("description").and_then(Value::as_str) else {
+        return String::new();
+    };
+    let lines = description
+        .replace("*/", "*\\/")
+        .lines()
+        .map(|line| {
+            if line.is_empty() {
+                " *".to_owned()
+            } else {
+                format!(" * {line}")
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    format!("\n/**\n{lines}\n */\n")
 }
 
 /// Writes a field's default as TypeScript: whole floats without a zero fraction, and values of a
@@ -411,7 +436,8 @@ fn emit(
         emit(&dependency, definitions, exported, active, emitted)?;
     }
     println!(
-        "{}const {} = {};",
+        "{}{}const {} = {};",
+        doc_comment(schema),
         if exported.contains(name) {
             "export "
         } else {
@@ -668,6 +694,15 @@ mod tests {
         assert!(expression(&json!({"type":"string","pattern":"^safe$"})).is_err());
         assert!(expression(&json!({"type":"integer","format":"int64"})).is_err());
         assert!(expression(&json!({"type":"string","format":"new-format"})).is_err());
+    }
+
+    #[test]
+    fn descriptions_become_jsdoc() {
+        assert_eq!(
+            doc_comment(&json!({"description":"First line.\n- An item ending */"})),
+            "\n/**\n * First line.\n * - An item ending *\\/\n */\n"
+        );
+        assert_eq!(doc_comment(&json!({"type":"string"})), "");
     }
 
     #[test]
