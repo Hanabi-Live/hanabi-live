@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { assertDefined, assertNotNull, eRange, iRange } from "complete-common";
-import { MAX_CLUE_NUM } from "../constants";
 import { CardStatus } from "../enums/CardStatus";
+import { MAX_CLUES } from "../generated/protocol";
 import { getDefaultMetadata } from "../metadata";
 import {
   colorClue,
@@ -476,7 +476,7 @@ describe("gameReducer", () => {
         DEFAULT_METADATA,
       );
 
-      expect(state.clueTokens).toBe(MAX_CLUE_NUM);
+      expect(state.clueTokens).toBe(MAX_CLUES);
       const efficiency1 = getEfficiencyFromGameState(state);
       expect(efficiency1).toBe(4); // e.g. 4 / 1
 
@@ -656,7 +656,7 @@ describe("gameReducer", () => {
           CLUE_STARVED_METADATA,
         );
 
-        expect(state.clueTokens).toBe(MAX_CLUE_NUM * 2);
+        expect(state.clueTokens).toBe(MAX_CLUES * 2);
         const efficiency1 = getEfficiencyFromGameState(state);
         expect(efficiency1).toBe(4); // e.g. 4 / 1
 
@@ -920,7 +920,7 @@ describe("gameReducer", () => {
         DEFAULT_METADATA,
       );
 
-      expect(state.clueTokens).toBe(MAX_CLUE_NUM - 1);
+      expect(state.clueTokens).toBe(MAX_CLUES - 1);
     });
   });
 

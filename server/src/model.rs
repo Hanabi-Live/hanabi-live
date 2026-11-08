@@ -268,7 +268,7 @@ impl TableSnapshot {
         );
         ensure!(
             !self.name.is_empty()
-                && self.name.len() <= 200
+                && self.name.len() <= MAX_STORED_TABLE_NAME_LENGTH
                 && hanabi_protocol::is_player_count(self.max_players),
             "Invalid table metadata"
         );
@@ -281,7 +281,7 @@ impl TableSnapshot {
             "Invalid table options"
         );
         ensure!(
-            self.shadows.len() <= 4096
+            self.shadows.len() <= MAX_SHADOWS
                 && self
                     .shadows
                     .iter()
@@ -359,7 +359,7 @@ impl TableSnapshot {
                         .iter()
                         .map(String::len)
                         .sum::<usize>()
-                        <= 4_194_304
+                        <= MAX_HYPOTHETICAL_BYTES
                     && replay
                         .hypothetical_actions
                         .iter()
@@ -559,14 +559,21 @@ impl ScoreModifier {
 pub const MAX_TABLE_CHAT: usize = 4096;
 /// The most moves a shared replay's hypothetical can hold.
 pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
+/// The most bytes that a shared replay's hypothetical moves can hold together.
+pub const MAX_HYPOTHETICAL_BYTES: usize = 4 * 1024 * 1024;
 /// The longest game tag, in bytes.
 pub const MAX_TAG_LENGTH: usize = 100;
 /// The longest table name, in bytes.
 pub const MAX_TABLE_NAME_LENGTH: usize = 45;
+/// The longest table name that a checkpoint can hold, in bytes. Generated replay names can be
+/// longer than a name that a player chooses.
+const MAX_STORED_TABLE_NAME_LENGTH: usize = 200;
 /// The longest note that a player or spectator writes during a game, in bytes.
 pub const MAX_NOTE_LENGTH: usize = 300;
 /// The most players that a pregame table remembers kicking.
 const MAX_KICKED_PLAYERS: usize = 4096;
+/// The most spectators that a table remembers, with the seat that each one shadows.
+const MAX_SHADOWS: usize = 4096;
 
 pub fn tag_too_long() -> String {
     format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")

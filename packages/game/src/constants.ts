@@ -1,9 +1,6 @@
 import { ReadonlySet } from "complete-common";
 import { START_CARD_RANK } from "./generated/protocol";
 
-export const MAX_CLUE_NUM = 8;
-export const MAX_STRIKES = 3;
-
 export const DEFAULT_VARIANT_NAME = "No Variant";
 export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const ALL_CARD_RANKS = [...DEFAULT_CARD_RANKS, START_CARD_RANK] as const;

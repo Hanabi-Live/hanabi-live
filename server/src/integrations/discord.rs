@@ -299,6 +299,28 @@ impl Transport for NativeTransport {
     }
 }
 
+/// The gateway connection's state, which the bridge keeps in an `AtomicU8`.
+#[derive(Clone, Copy)]
+enum Status {
+    Connecting,
+    Ready,
+    Degraded,
+    Closed,
+}
+
+impl Status {
+    const ALL: [Self; 4] = [Self::Connecting, Self::Ready, Self::Degraded, Self::Closed];
+
+    fn name(self) -> &'static str {
+        match self {
+            Self::Connecting => "connecting",
+            Self::Ready => "ready",
+            Self::Degraded => "degraded",
+            Self::Closed => "closed",
+        }
+    }
+}
+
 pub struct Bridge {
     app: Weak<App>,
     pool: PgPool,
@@ -372,7 +394,7 @@ impl Bridge {
             bot_id,
             outbound: Mutex::new(()),
             incoming: Mutex::new(()),
-            status: AtomicU8::new(1),
+            status: AtomicU8::new(Status::Connecting as u8),
             announced: AtomicBool::new(false),
         });
         let (events, mut receiver) = mpsc::channel(1000);
@@ -407,14 +429,14 @@ impl Bridge {
                     continue;
                 }
                 if let Err(error) = inbound.event(event).await {
-                    inbound.status.store(3, Ordering::Release);
+                    inbound.set_status(Status::Degraded);
                     let report =
                         crate::errors::Report::from_error("Processing Discord event", &error, None);
                     report.log();
                     app.alert(&report);
                 }
             }
-            inbound.status.store(4, Ordering::Release);
+            inbound.set_status(Status::Closed);
         });
         Ok(bridge)
     }
@@ -426,17 +448,20 @@ impl Bridge {
     }
 
     pub fn status(&self) -> &'static str {
-        match self.status.load(Ordering::Acquire) {
-            1 => "connecting",
-            2 => "ready",
-            3 => "degraded",
-            4 => "closed",
-            _ => "disabled",
-        }
+        let value = self.status.load(Ordering::Acquire);
+        Status::ALL
+            .into_iter()
+            .find(|status| *status as u8 == value)
+            .expect("the bridge stores only a Status")
+            .name()
+    }
+
+    fn set_status(&self, status: Status) {
+        self.status.store(status as u8, Ordering::Release);
     }
 
     pub fn degrade(&self) {
-        self.status.store(3, Ordering::Release);
+        self.set_status(Status::Degraded);
     }
 
     async fn lookup(&self, path: String, field: &str, fallback: &str) -> String {
@@ -692,7 +717,7 @@ impl Bridge {
         let data = &event["d"];
         match event["t"].as_str() {
             Some("READY" | "RESUMED") => {
-                self.status.store(2, Ordering::Release);
+                self.set_status(Status::Ready);
                 if !self.announced.swap(true, Ordering::AcqRel) {
                     let now = Utc::now();
                     let mut message = format!(
@@ -712,7 +737,7 @@ impl Bridge {
                 }
             }
             Some("TRANSPORT_DISCONNECTED") => {
-                self.status.store(3, Ordering::Release);
+                self.set_status(Status::Degraded);
             }
             Some("MESSAGE_CREATE") => {
                 if data["guild_id"] != self.config.guild

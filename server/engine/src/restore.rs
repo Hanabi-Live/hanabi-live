@@ -1,14 +1,14 @@
 use crate::{
     Character, ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
-    RecordedActionType, clue_action_type, clue_cost_for, clue_type,
+    RecordedActionType, StackDirection, clue_action_type, clue_cost_for, clue_type,
     game::{
-        MAX_CLUES, MAX_EVENTS, MAX_HAND_SIZE, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH,
-        hand_size, validate_options,
+        MAX_EVENTS, MAX_HAND_SIZE, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH, hand_size,
+        validate_options,
     },
     get_variant, int,
 };
 use anyhow::{Context, Result, bail, ensure};
-use hanabi_protocol::{MAX_PLAYERS, MAX_SUITS, START_CARD_RANK};
+use hanabi_protocol::{MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MAX_SUITS, START_CARD_RANK};
 use serde_json::Value;
 use std::collections::HashSet;
 
@@ -174,7 +174,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Invalid score bounds."
     );
     ensure!(
-        (0..=3).contains(&s.strikes) && (-1..=1).contains(&s.last_clue_type_given),
+        (0..=MAX_STRIKES).contains(&s.strikes) && (-1..=1).contains(&s.last_clue_type_given),
         "Invalid counters."
     );
     ensure!(
@@ -186,9 +186,8 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     ensure!(
         s.stacks
             .iter()
-            .all(|r| matches!(*r, 0..=5 | START_CARD_RANK))
-            && s.stack_starts.iter().all(|r| (0..=5).contains(r))
-            && s.play_stack_directions.iter().all(|d| (0..=3).contains(d)),
+            .all(|r| (0..=MAX_RANK).contains(r) || *r == START_CARD_RANK)
+            && s.stack_starts.iter().all(|r| (0..=MAX_RANK).contains(r)),
         "Invalid stack values."
     );
     if v.sudoku {
@@ -209,14 +208,16 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     }
     if !v.has_reversed_suits() {
         ensure!(
-            s.play_stack_directions
-                .iter()
-                .all(|d| *d == 0 || (v.sudoku && *d == 3)),
+            s.play_stack_directions.iter().all(|d| {
+                *d == StackDirection::Undecided || (v.sudoku && *d == StackDirection::Finished)
+            }),
             "Invalid stack direction."
         );
     } else if !v.up_or_down {
         ensure!(
-            s.play_stack_directions.iter().all(|d| *d != 0),
+            s.play_stack_directions
+                .iter()
+                .all(|d| *d != StackDirection::Undecided),
             "Reversed stacks must have a direction."
         );
     }
@@ -257,7 +258,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         ensure!(
             c.order == i
                 && c.suit_index < v.suits.len()
-                && matches!(c.rank, 1..=5 | START_CARD_RANK)
+                && ((1..=MAX_RANK).contains(&c.rank) || c.rank == START_CARD_RANK)
                 && (-1..=int(MAX_HAND_SIZE)).contains(&c.slot),
             "Invalid card identity or slot."
         );

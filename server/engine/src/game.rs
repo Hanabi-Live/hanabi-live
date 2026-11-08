@@ -1,8 +1,8 @@
 use crate::{
     ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
     EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_CHARACTER,
-    Options, PlayerAction, RecordedAction, RecordedActionType, Termination, Transition,
-    assign_characters,
+    Options, PlayerAction, RecordedAction, RecordedActionType, StackDirection, Termination,
+    Transition, assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -16,7 +16,9 @@ use crate::{
     types::reject,
 };
 use anyhow::{Result, ensure};
-use hanabi_protocol::{MAX_PLAYERS, MIN_PLAYERS, START_CARD_RANK};
+use hanabi_protocol::{
+    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, START_CARD_RANK,
+};
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
@@ -25,8 +27,6 @@ pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
     reason = "a float represents MAX_SAFE_INTEGER exactly"
 )]
 const MAX_SAFE_FLOAT: f64 = MAX_SAFE_INTEGER as f64;
-/// Clue tokens in play at most, before a clue-starved variant doubles their count.
-pub const MAX_CLUES: i32 = 8;
 /// The most events a game can record.
 pub(crate) const MAX_EVENTS: usize = 4096;
 /// The longest seed, and the longest player, variant, or character name, in bytes.
@@ -164,9 +164,13 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
             .iter()
             .map(|suit| {
                 if variant.has_reversed_suits() && !variant.up_or_down {
-                    if suit.reversed { 2 } else { 1 }
+                    if suit.reversed {
+                        StackDirection::Down
+                    } else {
+                        StackDirection::Up
+                    }
                 } else {
-                    0
+                    StackDirection::Undecided
                 }
             })
             .collect(),
@@ -257,7 +261,9 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
             return reject("You cannot discard a card that is not in your hand.");
         }
         if state.clue_tokens >= MAX_CLUES * clue_cost(state) && !variant.has_inverted {
-            return reject("You cannot discard while the team has 8 clues.");
+            return reject(format!(
+                "You cannot discard while the team has {MAX_CLUES} clues."
+            ));
         }
         validate_character_discard(state, actor)?;
     } else {
@@ -361,11 +367,12 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
         rank: card.rank,
     });
     let finished = if v.has_reversed_suits() {
-        (card.rank == 1 || card.rank == 5) && state.play_stack_directions[card.suit_index] == 3
+        (card.rank == 1 || card.rank == MAX_RANK)
+            && state.play_stack_directions[card.suit_index] == StackDirection::Finished
     } else if v.sudoku {
-        state.play_stack_directions[card.suit_index] == 3
+        state.play_stack_directions[card.suit_index] == StackDirection::Finished
     } else {
-        card.rank == 5
+        card.rank == MAX_RANK
     };
     if finished && !v.throw_it_in_a_hole {
         state.clue_tokens = (state.clue_tokens + 1).min(MAX_CLUES * clue_cost(state));
@@ -414,7 +421,7 @@ fn check_end(state: &mut EngineState) -> bool {
         return true;
     }
     let v = variant_for(state);
-    if state.strikes == 3 {
+    if state.strikes == MAX_STRIKES {
         state.end_condition = Strikeout;
     } else if state.options.speedrun && state.max_score < v.max_score {
         state.end_condition = SpeedrunFail;

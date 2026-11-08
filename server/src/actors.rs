@@ -43,6 +43,8 @@ type Reply = oneshot::Sender<Result<()>>;
 
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
+/// Appended to the name of a table that a split creates.
+const SPLIT_SUFFIX: &str = " (split)";
 
 use hanabi_protocol::SafeInteger;
 
@@ -4263,7 +4265,7 @@ impl TableActor {
                             .map(String::len)
                             .sum::<usize>()
                             + raw.len()
-                            <= 4_194_304,
+                            <= crate::model::MAX_HYPOTHETICAL_BYTES,
                     "Too many hypothetical actions"
                 );
                 replay.hypothetical_actions.push(raw);
@@ -4806,8 +4808,11 @@ impl TableActor {
         let mut destination = self.table.clone();
         destination.id = allocation.id;
         destination.name = format!(
-            "{} (split)",
-            crate::accounts::truncate_to_max_bytes(self.table.name.trim(), 37)
+            "{}{SPLIT_SUFFIX}",
+            crate::accounts::truncate_to_max_bytes(
+                self.table.name.trim(),
+                MAX_TABLE_NAME_LENGTH - SPLIT_SUFFIX.len()
+            )
         );
         destination.owner = selected[0].id;
         destination.created = Utc::now();

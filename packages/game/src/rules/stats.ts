@@ -4,8 +4,8 @@
 
 import type { Tuple } from "complete-common";
 import { assertNotNull, newArray, sumArray } from "complete-common";
-import { MAX_CLUE_NUM } from "../constants";
 import { PaceRisk } from "../enums/PaceRisk";
+import { MAX_CLUES } from "../generated/protocol";
 import type { CardNote } from "../interfaces/CardNote";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
@@ -434,7 +434,7 @@ export function getStartingCluesUsable(
     endGameLength,
     discardClueTokenValue,
     suitCompleteClueTokenValue,
-    MAX_CLUE_NUM,
+    MAX_CLUES,
   );
   assertNotNull(startingClues, "The starting clues usable was null.");
 

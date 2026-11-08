@@ -2,10 +2,10 @@
 
 import type { Tuple } from "complete-common";
 import { newArray, sumArray } from "complete-common";
-import { MAX_CLUE_NUM } from "../../constants";
 import type { CardStatus } from "../../enums/CardStatus";
 import type { StackDirection } from "../../enums/StackDirection";
 import { getVariant } from "../../gameData";
+import { MAX_CLUES } from "../../generated/protocol";
 import type { GameMetadata } from "../../interfaces/GameMetadata";
 import type { GameState } from "../../interfaces/GameState";
 import type { Variant } from "../../interfaces/Variant";
@@ -60,7 +60,7 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
     playStackDirections,
     playStackStarts,
   );
-  const clueTokens = getAdjustedClueTokens(MAX_CLUE_NUM, variant);
+  const clueTokens = getAdjustedClueTokens(MAX_CLUES, variant);
   const hands = newArray<number[]>(options.numPlayers, []) as Tuple<
     CardOrder[],
     NumPlayers

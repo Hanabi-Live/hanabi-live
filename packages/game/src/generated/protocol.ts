@@ -6,6 +6,8 @@ export const MAX_PLAYERS = 6;
 export const MAX_SUITS = 6;
 export const MAX_DECK_SIZE = 60;
 export const START_CARD_RANK = 7;
+export const MAX_CLUES = 8;
+export const MAX_STRIKES = 3;
 
 /**
  * The kind of a clue in a game event. Actions name clues with `ActionType` instead.

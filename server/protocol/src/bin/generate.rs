@@ -643,6 +643,8 @@ fn game_library_constants() -> String {
             "START_CARD_RANK",
             hanabi_protocol::START_CARD_RANK.to_string(),
         ),
+        ("MAX_CLUES", hanabi_protocol::MAX_CLUES.to_string()),
+        ("MAX_STRIKES", hanabi_protocol::MAX_STRIKES.to_string()),
     ];
     let mut output = String::new();
     for (name, value) in constants {

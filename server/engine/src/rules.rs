@@ -1,9 +1,12 @@
 use crate::{
-    Character, EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant,
-    int, is_card_touched,
+    Character, EngineCard, EngineEvent, EngineState, PlayerAction, StackDirection, Variant,
+    clue_type, get_variant, int, is_card_touched,
 };
-use hanabi_protocol::START_CARD_RANK;
+use hanabi_protocol::{MAX_RANK, START_CARD_RANK};
 use std::collections::HashSet;
+
+/// The turns left after the last card is drawn when a Contrarian plays.
+const CONTRARIAN_FINAL_TURNS: i32 = 2;
 
 pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
     get_variant(&state.options.variant_name).expect("validated engine variant")
@@ -86,15 +89,18 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         });
     }
     if state.deck_index == state.deck.len() && !state.options.all_or_nothing {
-        state.end_turn = state.turn + int(state.players.len()) + 1;
-        if state.options.detrimental_characters
+        // Each player gets one more turn, unless a Contrarian shortens the final round.
+        let final_turns = if state.options.detrimental_characters
             && state
                 .players
                 .iter()
                 .any(|p| p.character() == Some(Character::Contrarian))
         {
-            state.end_turn = state.turn + 3;
-        }
+            CONTRARIAN_FINAL_TURNS
+        } else {
+            int(state.players.len())
+        };
+        state.end_turn = state.turn + final_turns + 1;
     }
 }
 
@@ -126,24 +132,24 @@ fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
     let direction = state.play_stack_directions[suit];
     if v.has_reversed_suits() {
         return match direction {
-            0 => {
+            StackDirection::Undecided => {
                 if stack == 0 {
-                    vec![1, 5, START_CARD_RANK]
+                    vec![1, MAX_RANK, START_CARD_RANK]
                 } else {
-                    vec![2, 4]
+                    vec![2, MAX_RANK - 1]
                 }
             }
-            1 => vec![stack + 1],
-            2 => vec![if !v.up_or_down && stack == 0 {
-                5
+            StackDirection::Up => vec![stack + 1],
+            StackDirection::Down => vec![if !v.up_or_down && stack == 0 {
+                MAX_RANK
             } else {
                 stack - 1
             }],
-            _ => vec![],
+            StackDirection::Finished => vec![],
         };
     }
     if v.sudoku {
-        return if direction == 3 {
+        return if direction == StackDirection::Finished {
             vec![]
         } else if stack == 0 {
             v.ranks
@@ -155,7 +161,11 @@ fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
             vec![stack % v.stack_size + 1]
         };
     }
-    if stack == 5 { vec![] } else { vec![stack + 1] }
+    if stack == MAX_RANK {
+        vec![]
+    } else {
+        vec![stack + 1]
+    }
 }
 
 pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
@@ -172,12 +182,12 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
             }
             state.stack_starts[suit] = rank;
         } else {
-            if direction == 3 || rank != stack % v.stack_size + 1 {
+            if direction == StackDirection::Finished || rank != stack % v.stack_size + 1 {
                 return false;
             }
             let final_rank = (state.stack_starts[suit] + v.stack_size - 2) % v.stack_size + 1;
             if rank == final_rank {
-                state.play_stack_directions[suit] = 3;
+                state.play_stack_directions[suit] = StackDirection::Finished;
             }
         }
         return true;
@@ -186,14 +196,16 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
         return false;
     }
     if v.has_reversed_suits() {
-        if direction == 0 {
+        if direction == StackDirection::Undecided {
             if rank == 1 || rank == 2 {
-                state.play_stack_directions[suit] = 1;
-            } else if rank == 4 || rank == 5 {
-                state.play_stack_directions[suit] = 2;
+                state.play_stack_directions[suit] = StackDirection::Up;
+            } else if rank == MAX_RANK - 1 || rank == MAX_RANK {
+                state.play_stack_directions[suit] = StackDirection::Down;
             }
-        } else if (direction == 1 && rank == 5) || (direction == 2 && rank == 1) {
-            state.play_stack_directions[suit] = 3;
+        } else if (direction == StackDirection::Up && rank == MAX_RANK)
+            || (direction == StackDirection::Down && rank == 1)
+        {
+            state.play_stack_directions[suit] = StackDirection::Finished;
         }
     }
     true
@@ -233,14 +245,14 @@ fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {
         .collect()
 }
 fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i32 {
-    if !(available.contains(&if down { 5 } else { 1 })
+    if !(available.contains(&if down { MAX_RANK } else { 1 })
         || (up_or_down && available.contains(&START_CARD_RANK)))
     {
         return 0;
     }
     let mut score = 1;
-    let mut rank = if down { 4 } else { 2 };
-    while (1..=5).contains(&rank) {
+    let mut rank = if down { MAX_RANK - 1 } else { 2 };
+    while (1..=MAX_RANK).contains(&rank) {
         if !available.contains(&rank) {
             break;
         }
@@ -254,7 +266,7 @@ fn slot(value: i32) -> usize {
     usize::try_from(value).expect("sudoku slots are not negative")
 }
 fn sudoku_scores(available: &HashSet<i32>, size: i32) -> Vec<i32> {
-    let mut scores = vec![size; 5];
+    let mut scores = vec![size; slot(size)];
     let mut last_dead = -1;
     for rank in 0..size {
         if !available.contains(&(rank + 1)) {
@@ -314,14 +326,13 @@ pub fn calculate_max_score(state: &EngineState) -> i32 {
             let up = reversible_walk(&available, v.up_or_down, false);
             let down = reversible_walk(&available, v.up_or_down, true);
             score += match direction {
-                0 => up.max(down),
-                1 => up,
-                2 => down,
-                3 => v.stack_size,
-                _ => unreachable!("validated direction"),
+                StackDirection::Undecided => up.max(down),
+                StackDirection::Up => up,
+                StackDirection::Down => down,
+                StackDirection::Finished => v.stack_size,
             };
         } else {
-            for rank in 1..=5 {
+            for rank in 1..=MAX_RANK {
                 if !available.contains(&rank) {
                     break;
                 }

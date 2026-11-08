@@ -1,6 +1,8 @@
 use crate::int;
 use anyhow::{Result, anyhow};
-use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant, ClueType, START_CARD_RANK};
+use hanabi_protocol::{
+    CatalogColor, CatalogSuit, CatalogVariant, ClueType, MAX_RANK, START_CARD_RANK,
+};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -139,7 +141,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         }
         colors
     });
-    let stack_size = entry.stack_size.map_or(5, i32::from);
+    let stack_size = entry.stack_size.map_or(MAX_RANK, i32::from);
     let mut ranks: Vec<i32> = (1..=stack_size).collect();
     if entry.up_or_down {
         ranks.push(START_CARD_RANK);
@@ -244,9 +246,9 @@ pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
         1 if variant.up_or_down || suit.reversed => 1,
         1 if variant.scarce_ones => 2,
         1 => 3,
-        2..=4 => 2,
-        5 if suit.reversed => 3,
-        5 => 1,
+        2..MAX_RANK => 2,
+        MAX_RANK if suit.reversed => 3,
+        MAX_RANK => 1,
         START_CARD_RANK if variant.up_or_down => 1,
         _ => 0,
     }

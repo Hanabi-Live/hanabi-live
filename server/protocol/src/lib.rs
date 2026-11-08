@@ -24,8 +24,14 @@ pub const MIN_PLAYERS: usize = 2;
 pub const MAX_PLAYERS: usize = 6;
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
+/// The highest normal rank, which is also a suit's stack size unless the variant sets one.
+pub const MAX_RANK: i32 = 5;
 /// The rank of a stack's start card, which Up or Down variants add to each suit.
 pub const START_CARD_RANK: i32 = 7;
+/// Clue tokens in play at most, before a clue-starved variant doubles their count.
+pub const MAX_CLUES: i32 = 8;
+/// The strikes that end a game.
+pub const MAX_STRIKES: i32 = 3;
 /// The most cards a deck can have.
 pub const MAX_DECK_SIZE: usize = 60;
 /// The most actions a game can record.

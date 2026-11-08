@@ -1,6 +1,6 @@
 // Functions related to clues: gaining clues, giving clues, applying clues.
 
-import { MAX_CLUE_NUM } from "../constants";
+import { MAX_CLUES } from "../generated/protocol";
 import type { Variant } from "../interfaces/Variant";
 import type { ActionDiscard, ActionPlay } from "../types/gameActions";
 
@@ -75,7 +75,7 @@ export function isAtMaxClueTokens(
   clueTokens: number,
   variant: Variant,
 ): boolean {
-  return clueTokens >= getAdjustedClueTokens(MAX_CLUE_NUM, variant);
+  return clueTokens >= getAdjustedClueTokens(MAX_CLUES, variant);
 }
 
 /**

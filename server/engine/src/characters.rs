@@ -6,6 +6,11 @@ use crate::{
 };
 use anyhow::Result;
 
+/// The clues at or below which a Panicky player must discard twice.
+const PANICKY_MAX_CLUES: i32 = 4;
+/// The clues that a Miser needs before giving one.
+const MISER_MIN_CLUES: i32 = 4;
+
 fn reject_character<T>(player: &EnginePlayer, reason: &str) -> Result<T> {
     reject(format!("You are {}, {reason}", player.character))
 }
@@ -64,7 +69,9 @@ pub(crate) fn validate_character_action(
         {
             return reject_character(
                 p,
-                "so you must discard again since there are 4 or less clues available.",
+                &format!(
+                    "so you must discard again since there are {PANICKY_MAX_CLUES} or less clues available."
+                ),
             );
         }
     }
@@ -157,8 +164,13 @@ pub(crate) fn validate_character_clue(
         {
             Some("so you cannot clue the player to your right.")
         }
-        Some(Character::Miser) if state.clue_tokens < 4 * clue_cost(state) => {
-            Some("so you cannot give a clue unless there are 4 or more clues available.")
+        Some(Character::Miser) if state.clue_tokens < MISER_MIN_CLUES * clue_cost(state) => {
+            return reject_character(
+                p,
+                &format!(
+                    "so you cannot give a clue unless there are {MISER_MIN_CLUES} or more clues available."
+                ),
+            );
         }
         Some(Character::Compulsive)
             if touched
@@ -274,7 +286,7 @@ pub(crate) fn needs_second_action(
     } else if p.character() == Some(Character::Panicky)
         && action.action_type == RecordedActionType::Discard
     {
-        if p.character_metadata == -1 && state.clue_tokens <= 4 * cost {
+        if p.character_metadata == -1 && state.clue_tokens <= PANICKY_MAX_CLUES * cost {
             p.character_metadata = 0;
             return true;
         }

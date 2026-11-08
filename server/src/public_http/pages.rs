@@ -496,9 +496,12 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
         .map(|row| Ok((i64::from(row.variant_id), serde_json::to_value(row)?)))
         .collect()
 }
+/// The player counts that a variant has a best score for.
+const PLAYER_COUNTS: usize = hanabi_protocol::MAX_PLAYERS - hanabi_protocol::MIN_PLAYERS + 1;
+
 async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let statistics = user_stats(state, id).await?;
-    let mut totals = [0; 5];
+    let mut totals = [0; PLAYER_COUNTS];
     let mut rows = Vec::new();
     for variant in catalog::variants() {
         let row = statistics
@@ -524,7 +527,7 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let total: i64 = totals.iter().sum();
     let variants = i64::try_from(catalog::variants().len())?;
     Ok(
-        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*5),
+        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*i64::try_from(PLAYER_COUNTS)?),
         "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
     )
 }
@@ -618,7 +621,7 @@ async fn missing(
             } else {
                 stacks - p / i64::from(variant.stack_size) - 1
             };
-            let clues = (i64::from(hanabi_engine::MAX_CLUES) * multiplier + finished + cards
+            let clues = (i64::from(hanabi_protocol::MAX_CLUES) * multiplier + finished + cards
                 - (hand - 1) * p
                 - max)
                 / multiplier;
