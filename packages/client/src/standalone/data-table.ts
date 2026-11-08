@@ -1,5 +1,7 @@
 // Sort headers, a filter row, and pagers for the tables on the server's public pages.
 
+import { DEFAULT_PAGE_SIZE } from "@hanabi-live/data";
+
 /** How long to wait after the last keystroke in a filter box before applying it. */
 const FILTER_DELAY_MILLISECONDS = 300;
 
@@ -228,7 +230,7 @@ export class Pagers {
 }
 
 function pageSize(value: string | undefined): number {
-  return value === "all" ? Infinity : Number(value ?? 10);
+  return value === "all" ? Infinity : Number(value ?? DEFAULT_PAGE_SIZE);
 }
 
 function on(

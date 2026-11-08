@@ -640,6 +640,10 @@ fn data_constants() -> String {
     exported_constants(&[
         ("MAX_VOLUME", hanabi_protocol::MAX_VOLUME.to_string()),
         (
+            "DEFAULT_PAGE_SIZE",
+            hanabi_protocol::DEFAULT_PAGE_SIZE.to_string(),
+        ),
+        (
             "MAX_PRIVATE_HISTORY_MESSAGES",
             hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
         ),

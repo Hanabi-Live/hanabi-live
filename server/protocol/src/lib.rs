@@ -64,6 +64,8 @@ pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
+/// The rows on a page of a public listing when the request does not name a size.
+pub const DEFAULT_PAGE_SIZE: i64 = 10;
 /// The most private messages that one history request can ask for.
 pub const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
@@ -81,7 +83,9 @@ fn seats() -> Vec<i64> {
 
 /// Every seat index after -1, which means no seat.
 fn seats_or_none() -> Vec<i64> {
-    std::iter::once(i64::from(NO_VALUE)).chain(seats()).collect()
+    std::iter::once(i64::from(NO_VALUE))
+        .chain(seats())
+        .collect()
 }
 
 /// Every normal rank, which are also the ranks that clues can name.
@@ -1906,7 +1910,8 @@ pub struct SuitIndexOrUnknown(
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct RankOrUnknown(
-    #[schemars(range(min = NO_VALUE, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))] pub i64,
+    #[schemars(range(min = NO_VALUE, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))]
+    pub i64,
 );
 
 /// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
