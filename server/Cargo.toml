@@ -9,38 +9,63 @@ license = "GPL-3.0-only"
 members = ["engine", "protocol"]
 resolver = "3"
 
+# Every lint set here is an error rather than a warning: a warning that does not fail the build is
+# not acted on.
 [workspace.lints.rust]
+# Default: allow. Requires visible lifetimes on borrowing types, such as `Formatter<'_>`. The
+# priority puts this group below the single lints, as Clippy requires.
 rust_2018_idioms = { level = "deny", priority = -1 }
+# Default: allow. The server has no need for unsafe code; forbid also rejects any local allow.
 unsafe_code = "forbid"
+# Default: allow. Removes paths that their imports already cover. Deny, not forbid, because serde's
+# derives allow this lint in the code they generate.
 unused_qualifications = "deny"
 
 [workspace.lints.clippy]
-pedantic = { level = "warn", priority = -1 }
-# Pedantic lints whose fixes add boilerplate rather than catch mistakes: these crates are not
-# published libraries.
+# Default: allow. Stricter lints that catch lossy casts, needless copies, and unclear code. The
+# priority lets the single lints below override the group.
+pedantic = { level = "deny", priority = -1 }
+# Pedantic, so enabled by the group above. Their fixes add boilerplate rather than catch mistakes:
+# these crates are not published libraries.
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 must_use_candidate = "allow"
-# Line count is a weak signal: most long functions are a `match` over message types with short
-# arms, and splitting them to fit a limit would not make them clearer.
+# Pedantic, so enabled by the group above. Line count is a weak signal: most long functions are a
+# `match` over message types with short arms, and splitting them to fit a limit would not make them
+# clearer.
 too_many_lines = "allow"
-# The structs with many bools are wire payloads, whose JSON shape the clients rely on, and game
-# options and catalog entries, whose flags are independent settings that an enum would not model.
+# Pedantic, so enabled by the group above. The structs with many bools are wire payloads, whose
+# JSON shape the clients rely on, and game options and catalog entries, whose flags are independent
+# settings that an enum would not model.
 struct_excessive_bools = "allow"
-# Restriction lints, chosen individually: Clippy advises against enabling that whole group.
-allow_attributes = "warn"
-allow_attributes_without_reason = "warn"
-dbg_macro = "warn"
-empty_drop = "warn"
-get_unwrap = "warn"
-lossy_float_literal = "warn"
-mem_forget = "warn"
-rc_buffer = "warn"
-str_to_string = "warn"
-todo = "warn"
-unimplemented = "warn"
-unwrap_used = "warn"
-verbose_file_reads = "warn"
+# The lints below are from the restriction group, which is allowed by default. Clippy advises
+# choosing them individually rather than enabling the whole group.
+# Requires #[expect] instead of #[allow], so a suppression that is no longer needed fails.
+allow_attributes = "deny"
+# Requires every suppression to state its reason.
+allow_attributes_without_reason = "deny"
+# Rejects debugging output left in the code.
+dbg_macro = "deny"
+# Rejects an empty Drop implementation, which only blocks moving fields out of the type.
+empty_drop = "deny"
+# Requires `v[i]` instead of `v.get(i).unwrap()`, which panics the same way less directly.
+get_unwrap = "deny"
+# Rejects float literals that cannot be represented exactly.
+lossy_float_literal = "deny"
+# Rejects mem::forget, which leaks the value's resources.
+mem_forget = "deny"
+# Requires Rc<str> or Rc<[T]> instead of Rc<String> or Rc<Vec<T>>, which add an indirection.
+rc_buffer = "deny"
+# Requires `to_owned` for &str, which says what it does.
+str_to_string = "deny"
+# Rejects unfinished code.
+todo = "deny"
+# Rejects unfinished code.
+unimplemented = "deny"
+# Requires `expect` with a message, or real error handling, instead of `unwrap` outside tests.
+unwrap_used = "deny"
+# Requires fs::read or fs::read_to_string instead of opening a file and reading it manually.
+verbose_file_reads = "deny"
 
 [dependencies]
 anyhow = "1"
