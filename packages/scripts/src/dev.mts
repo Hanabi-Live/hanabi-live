@@ -280,7 +280,6 @@ type Child = Subprocess<"ignore", "pipe", "pipe">;
 
 let server: Child | undefined;
 let classicClient: Child | undefined;
-let newClient: Child | undefined;
 let revision: string | undefined;
 let stopping = false;
 let building = false;
@@ -312,24 +311,6 @@ function startServer() {
   );
 }
 
-function startNewClient() {
-  // Vite reads the client version when it starts.
-  const child = start(
-    "new",
-    ["bunx", "--bun", "--no-install", "vite", "build", "--watch"],
-    path.join(ROOT, "packages/client-new"),
-  );
-  newClient = child;
-  background(
-    child.exited.then(async (code) => {
-      if (!stopping && newClient === child) {
-        log("new", `Exited with code ${code}.`);
-        await shutDown(1);
-      }
-    }),
-  );
-}
-
 async function rebuild() {
   const built = await buildServer();
   if (built === undefined) {
@@ -340,13 +321,6 @@ async function rebuild() {
     // A commit changes the revision compiled into the server.
     revision = built;
     writeVersion(built);
-    if (newClient !== undefined) {
-      const previous = newClient;
-      newClient = undefined;
-      previous.kill();
-      await previous.exited;
-      startNewClient();
-    }
   }
   startServer();
 }
@@ -384,7 +358,6 @@ async function shutDown(code: number) {
   }
   stopping = true;
   log("dev", "Stopping...");
-  newClient?.kill();
   classicClient?.kill();
   await stopServer();
   process.exit(code);
@@ -424,7 +397,6 @@ async function main() {
     "--sourcemap=linked",
     "--watch=forever",
   ]);
-  startNewClient();
   startServer();
   watchServerSources();
   log("dev", `Ready: http://localhost:${setting(env, "PORT", DEV_PORT)}/`);

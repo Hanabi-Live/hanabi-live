@@ -1,14 +1,8 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type { NewLobbyNavigation } from "@hanabi-live/data";
-import {
-  NEW_LOBBY_NAVIGATION_KEY,
-  newLobbyNavigation,
-  setTabAccount,
-} from "@hanabi-live/data";
+import { setTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
-import { finishReturningToNewLobby } from "../game/ui/backToLobby";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as modals from "../modals";
 import { ServerHandlers } from "../serverHandlers";
@@ -141,10 +135,7 @@ lobbyCommands.set("joined", (data) => {
   pregame.drawSpectators(data.tableID);
 });
 
-lobbyCommands.set("left", (data) => {
-  if (finishReturningToNewLobby(data.tableID)) {
-    return;
-  }
+lobbyCommands.set("left", () => {
   // We left a table, so transition between screens.
   pregame.hide();
 });
@@ -279,39 +270,7 @@ lobbyCommands.set("welcome", (data) => {
     globals.totalGames?.toString() ?? "loading...",
   );
   playerSettings.setPlayerSettings();
-  let navigation: NewLobbyNavigation | undefined;
-  if (
-    globalThis.location.pathname === "/game"
-    && sessionStorage.getItem("hanabi-lobby") === "new"
-  ) {
-    const raw = sessionStorage.getItem(NEW_LOBBY_NAVIGATION_KEY);
-    if (raw !== null) {
-      sessionStorage.removeItem(NEW_LOBBY_NAVIGATION_KEY);
-      try {
-        navigation = newLobbyNavigation.parse(JSON.parse(raw));
-      } catch (error) {
-        console.error("Invalid lobby navigation", error);
-        modals.showError(
-          "The game request could not be restored. Return to the new lobby and try again.",
-        );
-        return;
-      }
-    }
-  }
-  lobbyLogin.hide(data.firstTimeUser && navigation === undefined);
-  if (navigation !== undefined) {
-    if (navigation.kind === "replay") {
-      globals.conn!.send("replayCreate", navigation.request);
-    } else if (data.playingAtTables.includes(navigation.tableID)) {
-      globals.conn!.send("tableReattend", { tableID: navigation.tableID });
-    } else {
-      globals.conn!.send("tableSpectate", {
-        tableID: navigation.tableID,
-        shadowingPlayerIndex: navigation.shadowingPlayerIndex,
-      });
-    }
-    return;
-  }
+  lobbyLogin.hide(data.firstTimeUser);
 
   // If the server has informed us that we are currently playing in an ongoing game, automatically
   // reconnect to that game (and ignore any specific custom path that the user has entered).

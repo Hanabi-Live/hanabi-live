@@ -91,27 +91,6 @@
       ],
       "outputs": []
     },
-    "@hanabi-live/client-new#test": {
-      "dependsOn": ["transit"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/.github/workflows/ci.yml",
-        "$TURBO_ROOT$/.github/workflows/setup-bun/**",
-        "$TURBO_ROOT$/package.json",
-        "$TURBO_ROOT$/packages/client/get-version.sh"
-      ],
-      "env": [
-        "CI",
-        "HANABI_BUILD_REVISION",
-        "ImageOS",
-        "ImageVersion",
-        "NODE_ENV",
-        "RUNNER_ARCH",
-        "RUNNER_OS",
-        "TZ"
-      ],
-      "outputs": []
-    },
     "//#lint-rust": {
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
       "env": [

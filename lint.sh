@@ -53,7 +53,7 @@ run_parallel() {
 
 lint_filters=()
 case "$shard" in
-  1) lint_filters=(--filter=@hanabi-live/client-new --filter=@hanabi-live/testing) ;;
+  1) lint_filters=(--filter=@hanabi-live/testing) ;;
   2) lint_filters=(--filter=@hanabi-live/client --filter=@hanabi-live/data --filter=@hanabi-live/game --filter=@hanabi-live/scripts) ;;
   *) ;;
 esac
