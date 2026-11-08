@@ -390,7 +390,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?fcol%5B3%5D=1", 1, 1),
         ("/api/v1/seed/same?fcol%5B2%5D=15", 1, 1),
         ("/api/v1/variants/0?fcol%5B2%5D=25", 1, 1),
-        ("/api/v1/history/Alice?size=0", 3, 0),
         ("/api/v1/history/Alice?page=2&size=2", 3, 0),
     ] {
         let (status, body) = request(app.clone(), path).await;
@@ -414,7 +413,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/api/v1/history/Alice?fcol%5B3%5D=0", 2, Some(2)),
         ("/api/v1/seed/same?col%5B2%5D=0", 2, Some(2)),
         ("/api/v1/seed/same?fcol%5B0%5D=1", 1, Some(1)),
-        ("/api/v1/seed/same?fcol%5B1%5D=3", 2, Some(1)),
         ("/api/v1/variants/0?col%5B0%5D=0", 2, Some(1)),
         ("/api/v1/variants/0?fcol%5B0%5D=2", 1, Some(2)),
         ("/api/v1/variants/0?fcol%5B1%5D=2", 2, Some(1)),
@@ -603,6 +601,47 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ),
         ("/variant/no", 400, "must be a number"),
         ("/api/v1/seed-full/same?size=0", 400, "Page size"),
+        // Every URL rejects a parameter that it does not take, or one repeated.
+        ("/api/v1/history/Alice?size=0", 400, "Page size"),
+        ("/api/v1/history/Alice?page=-1", 400, "nonnegative"),
+        (
+            "/api/v1/history/Alice?utm_source=x",
+            400,
+            "This URL takes: page",
+        ),
+        ("/api/v1/history/Alice?size=1&size=2", 400, "more than once"),
+        ("/api/v1/history/Alice?col%5B2%5D=2", 400, "sort direction"),
+        (
+            "/api/v1/history/Alice?col%5B0%5D=0&col%5B2%5D=1",
+            400,
+            "one column at a time",
+        ),
+        (
+            "/api/v1/history/Alice?fcol%5B2%5D=",
+            400,
+            "Invalid numeric filter",
+        ),
+        (
+            "/api/v1/seed/same?fcol%5B1%5D=2",
+            400,
+            "Unknown query parameter",
+        ),
+        ("/api/v1/variants?page=1", 400, "takes no parameters"),
+        (
+            "/api/v1/history-full/Alice?start=x",
+            400,
+            "must be an integer",
+        ),
+        ("/history/Alice?api=1", 400, "takes no value"),
+        ("/scores/Alice?api", 400, "takes no parameters"),
+        ("/stats?utm_source=x", 400, "takes no parameters"),
+        ("/lobby?utm_source=x", 400, "Unknown query parameter"),
+        ("/lobby?login=", 400, "cannot be empty"),
+        (
+            "/missing-scores/Alice?excludePlayers=Bob",
+            400,
+            "takes no parameters",
+        ),
         ("/api/v1/seed-full/same?size=101", 400, "Page size"),
         ("/api/v1/seed-full/same?page=-1", 400, "nonnegative"),
         (

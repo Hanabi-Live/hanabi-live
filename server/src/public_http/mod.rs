@@ -81,17 +81,47 @@ impl IntoResponse for Error {
 }
 type Result<T> = std::result::Result<T, Error>;
 type Params = HashMap<String, String>;
-type Query = Vec<(String, String)>;
+use crate::query::Query;
 
-fn query(raw: Option<String>) -> Query {
-    url::form_urlencoded::parse(raw.as_deref().unwrap_or("").as_bytes())
-        .into_owned()
-        .collect()
+/// Parses a request's query string, rejecting any parameter that the URL does not take.
+fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
+    Query::parse(raw, accepted).map_err(Error::bad)
 }
-fn first<'a>(q: &'a Query, name: &str) -> Option<&'a str> {
-    q.iter()
-        .find(|(key, _)| key == name)
-        .map(|(_, v)| v.as_str())
+
+/// The parameters of the game lists, which sort by one column and filter by others. The column
+/// indexes are the table's: 0 is the ID, 1 the number of players, 2 the score, and 3 the variant.
+const HISTORY_LIST_PARAMETERS: &[&str] = &[
+    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[1]", "fcol[2]", "fcol[3]",
+];
+const VARIANT_LIST_PARAMETERS: &[&str] = &[
+    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[1]", "fcol[2]",
+];
+const SEED_LIST_PARAMETERS: &[&str] = &[
+    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[2]",
+];
+
+/// The page size and offset that a request asks for, or `None` when it names neither.
+fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
+    if q.get("size").is_none() && q.get("page").is_none() {
+        return Ok(None);
+    }
+    let size = match q.get("size") {
+        None => 10,
+        Some(size) => integer(size)
+            .filter(|n| (1..=100).contains(n))
+            .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?,
+    };
+    let page = match q.get("page") {
+        None => 0,
+        Some(page) => integer(page)
+            .filter(|n| *n >= 0)
+            .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?,
+    };
+    let offset = page
+        .checked_mul(size)
+        .filter(|n| *n <= 9_007_199_254_740_991)
+        .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
+    Ok(Some((size, offset)))
 }
 fn integer(s: &str) -> Option<i64> {
     let digits = s.strip_prefix(['+', '-']).unwrap_or(s);
@@ -239,8 +269,16 @@ async fn api_response(
     params: &Params,
     raw: Option<String>,
 ) -> Result<Response> {
-    let q = query(raw);
     let mode = uri.path().split('/').nth(3).unwrap_or("");
+    let accepted: &[&str] = match mode {
+        "history" => HISTORY_LIST_PARAMETERS,
+        "seed" => SEED_LIST_PARAMETERS,
+        "variants" if params.contains_key("id") => VARIANT_LIST_PARAMETERS,
+        "history-full" | "full-history" => &["start", "end"],
+        "seed-full" | "full-seed" => &["page", "size"],
+        _ => &[],
+    };
+    let q = strict_query(raw.as_deref(), accepted)?;
     Ok(match mode {
         "variants" if !params.contains_key("id") => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
@@ -252,22 +290,20 @@ async fn api_response(
             let seed = mode.contains("seed");
             let mut s =
                 data::selection(state, params, if seed { "seed" } else { "history" }).await?;
-            if !seed {
-                s.start = first(&q, "start").and_then(integer);
-                s.end = first(&q, "end").and_then(integer);
-            } else if first(&q, "size").is_some() || first(&q, "page").is_some() {
-                let size = first(&q, "size").unwrap_or("10");
-                let size = integer(size)
-                    .filter(|n| (1..=100).contains(n))
-                    .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?;
-                let page = integer(first(&q, "page").unwrap_or("0"))
-                    .filter(|n| *n >= 0)
-                    .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?;
-                let offset = page
-                    .checked_mul(size)
-                    .filter(|n| *n <= 9_007_199_254_740_991)
-                    .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
-                s.page = Some((size, offset));
+            if seed {
+                s.page = pagination(&q)?;
+            } else {
+                let bound = |name: &str| {
+                    q.get(name)
+                        .map(|value| {
+                            integer(value).ok_or_else(|| {
+                                Error::bad(format!("The {name} game ID must be an integer."))
+                            })
+                        })
+                        .transpose()
+                };
+                s.start = bound("start")?;
+                s.end = bound("end")?;
             }
             Json(data::history(state, s, seed).await?).into_response()
         }

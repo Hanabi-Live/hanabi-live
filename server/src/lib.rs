@@ -26,6 +26,7 @@ pub mod operations;
 #[cfg(test)]
 mod operations_tests;
 pub mod public_http;
+mod query;
 pub mod random;
 pub mod release;
 pub mod restart;

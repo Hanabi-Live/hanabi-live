@@ -177,7 +177,26 @@ pub fn router(app: Arc<App>) -> Router {
         .layer(middleware::from_fn_with_state(app.clone(), check_origin));
     public_http::router(app.store.lobby_reads.clone(), app.public.clone())
         .merge(authenticated)
+        .layer(middleware::from_fn(reject_get_bodies))
         .layer(middleware::from_fn_with_state(app, alert_server_errors))
+}
+
+/// Rejects a GET or HEAD request that has a body: no route reads one.
+async fn reject_get_bodies(request: Request, next: Next) -> Response {
+    let has_body = request.headers().contains_key(header::TRANSFER_ENCODING)
+        || request
+            .headers()
+            .get(header::CONTENT_LENGTH)
+            .is_some_and(|length| length.as_bytes() != b"0");
+    if has_body
+        && matches!(
+            *request.method(),
+            axum::http::Method::GET | axum::http::Method::HEAD
+        )
+    {
+        return accounts::api_error(StatusCode::BAD_REQUEST, "GET requests cannot have a body.");
+    }
+    next.run(request).await
 }
 
 /// Posts HTTP server errors to the error alerts. Error responses carry their report (see
@@ -487,6 +506,21 @@ async fn websocket(
             else { "The server is not accepting connections while it starts or drains for maintenance." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
+    let query = match accounts::account_query(uri.query(), &["account", "reconnect", "version"]) {
+        Ok(query) => query,
+        Err(message) => return accounts::api_error(StatusCode::BAD_REQUEST, message),
+    };
+    let reconnect = match query.get("reconnect") {
+        None => false,
+        Some("1") => true,
+        Some(_) => {
+            return accounts::api_error(
+                StatusCode::BAD_REQUEST,
+                "The query parameter \"reconnect\" must be 1.",
+            );
+        }
+    };
+    let version = query.get("version").unwrap_or_default().to_owned();
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
         eprintln!("Rejected websocket from {ip} without a valid session.");
@@ -548,11 +582,6 @@ async fn websocket(
             "The server's session identifier space is exhausted. An administrator must restart the server.",
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
-    let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
-        .any(|(key, value)| key == "reconnect" && value == "1");
-    let version = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
-        .find_map(|(key, value)| (key == "version").then(|| value.into_owned()))
-        .unwrap_or_default();
     let version_check = accounts::validate_client_version(&version, &app.version);
     upgrade
         .max_message_size(crate::transport::MAX_MESSAGE_BYTES)

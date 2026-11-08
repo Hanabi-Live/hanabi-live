@@ -158,6 +158,36 @@ async fn loopback_routes_admission() {
     let (status, body) = request(app.clone(), "/version", None).await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert!(body.contains("test-commit"), "{body}");
+    // Each command takes only its own parameters, and a body only if it reads one.
+    for (path, body, expected) in [
+        ("/version?verbose", None, "takes no parameters"),
+        ("/gracefulStop?message=a&message=b", None, "more than once"),
+        (
+            "/ban?username=Alice",
+            Some("username=Alice"),
+            "takes no parameters",
+        ),
+        (
+            "/ban",
+            Some("username=Alice&reason=x"),
+            "This URL takes: username.",
+        ),
+    ] {
+        let (status, text) = request(app.clone(), path, body).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{path}");
+        assert!(text.contains(expected), "{path}: {text}");
+    }
+    let mut with_body = Request::builder()
+        .uri("/version")
+        .body(Body::from("x"))
+        .unwrap();
+    with_body
+        .extensions_mut()
+        .insert(ConnectInfo("127.0.0.1:1234".parse::<SocketAddr>().unwrap()));
+    assert_eq!(
+        app.clone().oneshot(with_body).await.unwrap().status(),
+        StatusCode::BAD_REQUEST
+    );
     for removed in ["/getLongTables", "/terminate?tableID=7"] {
         assert_eq!(
             request(app.clone(), removed, None).await.0,

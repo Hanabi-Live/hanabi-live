@@ -137,6 +137,68 @@ async fn connect_query(fixture: &test_support::Fixture, cookie: &str, query: &st
 }
 
 #[tokio::test]
+async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "StrictHttp").await;
+    let client = reqwest::Client::new();
+    let requests = [
+        client.get(format!("{}/test-cookie", fixture.url)).body("x"),
+        client.get(format!("{}/test-cookie?utm_source=x", fixture.url)),
+        client.get(format!("{}/test-cookie?account=0", fixture.url)),
+        client.get(format!("{}/logout?dev=1", fixture.url)),
+        client.get(format!("{}/logout?return=%2F", fixture.url)),
+        client
+            .post(format!("{}/api/v1/identity/token", fixture.url))
+            .body("token=x"),
+    ];
+    for request in requests {
+        let response = request
+            .header("Origin", &fixture.url)
+            .header(header::COOKIE, &cookie)
+            .send()
+            .await
+            .unwrap();
+        let url = response.url().clone();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{url}");
+        let error: hanabi_protocol::ApiError = response.json().await.unwrap();
+        assert!(!error.error.is_empty(), "{url}");
+    }
+}
+
+#[tokio::test]
+async fn websocket_rejects_parameters_it_does_not_take_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    let cookie = login(&fixture, "StrictQuery").await;
+    for query in [
+        "fastResume=1",
+        "reconnect=0",
+        "account=x",
+        "version=42&version=42",
+    ] {
+        let mut request = format!("ws://{}/ws?{query}", fixture.address)
+            .into_client_request()
+            .unwrap();
+        request
+            .headers_mut()
+            .insert(header::COOKIE, HeaderValue::from_str(&cookie).unwrap());
+        request
+            .headers_mut()
+            .insert(header::ORIGIN, HeaderValue::from_str(&fixture.url).unwrap());
+        match connect_async(request).await {
+            Err(tokio_tungstenite::tungstenite::Error::Http(response)) => {
+                assert_eq!(response.status(), StatusCode::BAD_REQUEST, "{query}");
+            }
+            Err(error) => panic!("{query}: {error}"),
+            Ok(_) => panic!("{query}: the connection was accepted"),
+        }
+    }
+}
+
+#[tokio::test]
 async fn websocket_checks_client_version_with_existing_cookie_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
@@ -145,7 +207,6 @@ async fn websocket_checks_client_version_with_existing_cookie_postgres() {
     for query in [
         "",
         "reconnect=1",
-        "fastResume=1",
         "version=",
         "version=41",
         "version=41&reconnect=1",

@@ -173,11 +173,12 @@ function initServerTable(
       page: String(page),
       size: String(size),
     });
-    const config = (table.get(0) as TablesorterTable | undefined)?.config;
-    if (config !== undefined) {
-      for (const [column, direction] of config.sortList) {
-        params.append(`col[${column}]`, String(direction));
-      }
+    // The server sorts by one column, the first that the table is sorted by.
+    const sort = (table.get(0) as TablesorterTable | undefined)?.config
+      ?.sortList[0];
+    if (sort !== undefined) {
+      const [column, direction] = sort;
+      params.append(`col[${column}]`, String(direction));
     }
     for (const [column, text] of $.tablesorter.getFilters(table).entries()) {
       if (text !== undefined && text !== "") {

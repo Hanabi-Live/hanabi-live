@@ -173,52 +173,40 @@ pub(super) async fn list(
     q: &Query,
     mode: &str,
 ) -> Result<hanabi_protocol::PublicGamePage> {
-    let size = first(q, "size")
-        .and_then(integer)
-        .filter(|n| (0..=100).contains(n))
-        .unwrap_or(10);
-    let page = first(q, "page").and_then(integer).unwrap_or(0).max(0);
-    let offset = page
-        .checked_mul(size)
-        .filter(|v| *v <= 9_007_199_254_740_991)
-        .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
+    let (size, offset) = pagination(q)?.unwrap_or((10, 0));
     let fields = ["id", "num_players", "score", "variant_id"];
     let display = ["id", "numPlayers", "score", "variantID"];
     let mut order = if mode == "history" { "id" } else { "score" };
     let mut ascending = false;
     let mut sorted = false;
-    let mut seen = std::collections::HashSet::new();
     let mut qb = selected(s);
-    for (key, value) in q {
-        if !seen.insert(key) {
-            continue;
-        }
-        if let Some(index) = key
-            .strip_prefix("col[")
+    // The URL's accepted parameters limit the indexes to the columns that it sorts and filters by.
+    let index = |key: &str, prefix: &str| {
+        key.strip_prefix(prefix)
             .and_then(|k| k.strip_suffix(']'))
-            .and_then(integer)
-            && (0..3).contains(&index)
-            && !sorted
-        {
-            order = fields[index as usize];
-            ascending = value == "0";
+            .and_then(|k| k.parse::<usize>().ok())
+    };
+    for (key, value) in q.iter() {
+        if let Some(index) = index(key, "col[") {
+            if sorted {
+                return Err(Error::bad("Sort by one column at a time."));
+            }
+            ascending = match value {
+                "0" => true,
+                "1" => false,
+                _ => {
+                    return Err(Error::bad(
+                        "A sort direction must be 0 (ascending) or 1 (descending).",
+                    ));
+                }
+            };
+            order = fields[index];
             sorted = true;
-        }
-        if let Some(index) = key
-            .strip_prefix("fcol[")
-            .and_then(|k| k.strip_suffix(']'))
-            .and_then(integer)
-            && (0..if mode == "history" { 4 } else { 3 }).contains(&index)
-            && !(mode == "seed" && index == 1)
-            && !value.is_empty()
-        {
+        } else if let Some(index) = index(key, "fcol[") {
             let value = integer(value).ok_or_else(|| {
-                Error::bad(format!(
-                    "Invalid numeric filter for: {}",
-                    display[index as usize]
-                ))
+                Error::bad(format!("Invalid numeric filter for: {}", display[index]))
             })?;
-            push_compare(&mut qb, fields[index as usize], "=", value);
+            push_compare(&mut qb, fields[index], "=", value);
         }
     }
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)

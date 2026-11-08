@@ -822,14 +822,17 @@ move for the current situation.
 | `/api/v1/seed-full/[seed]`                    | Lists all the games played on a specific seed.                                                              |
 
 Notes: The following query parameters can be used by adding a `?` at the end of
-the URL (e.g. `/api/v1/variants/1?size=50&page=2`):
+the URL (e.g. `/api/v1/variants/1?size=50&page=2`). Group 1 applies to the
+paginated lists, and `size` and `page` also to `/api/v1/seed-full`. Group 2
+applies to `/api/v1/history-full`. A request with any other parameter, or with a
+parameter repeated, is rejected.
 
 | Group | Parameter | Type    | Explanation                             | Values                    |
 | ----- | --------- | ------- | --------------------------------------- | ------------------------- |
-| 1     | size      | integer | controls the number of results          | 0 to 100                  |
+| 1     | size      | integer | controls the number of results          | 1 to 100                  |
 | 1     | page      | integer | displays a specific page of the results | 0 to ...                  |
-| 1     | col[x]    | integer | sorts by column x (0, 1, ...)           | 0 ascending, 1 descending |
-| 1     | fcol[x]   | string  | filters by column x (0, 1, ...)         | filter value              |
+| 1     | col[x]    | integer | sorts by one column x (0, 1, 2)         | 0 ascending, 1 descending |
+| 1     | fcol[x]   | integer | filters by column x (0, 1, ...)         | filter value              |
 | 2     | start     | integer | sets the starting ID of the data        | ...                       |
 | 2     | end       | integer | sets the ending ID of the data          | ...                       |
 

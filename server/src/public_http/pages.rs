@@ -63,10 +63,36 @@ fn render(state: &PublicState, template: &str, mut values: Value) -> Result<Resp
     .into_response())
 }
 
+/// The parameters that the main page's script reads. The client keeps them in the address bar as it
+/// moves between the lobby's paths, so every main-page path takes all of them.
+const MAIN_PAGE_PARAMETERS: &[&str] = &[
+    "dev",
+    "login",
+    // The table settings of a "/create-table" link.
+    "allOrNothing",
+    "cardCycle",
+    "deckPlays",
+    "detrimentalCharacters",
+    "emptyClues",
+    "name",
+    "oneExtraCard",
+    "oneLessCard",
+    "password",
+    "speedrun",
+    "timeBase",
+    "timed",
+    "timePerTurn",
+    "variantName",
+];
+
 pub(super) async fn main_page(
     State(state): State<PublicState>,
     headers: HeaderMap,
+    RawQuery(raw): RawQuery,
 ) -> Result<Response> {
+    let q = strict_query(raw.as_deref(), MAIN_PAGE_PARAMETERS)?;
+    q.flag("dev").map_err(Error::bad)?;
+    q.nonempty("login").map_err(Error::bad)?;
     let user_id = headers
         .get(axum::http::header::COOKIE)
         .and_then(|v| v.to_str().ok())
@@ -104,8 +130,25 @@ pub(super) async fn page(
     Path(params): Path<Params>,
     RawQuery(raw): RawQuery,
 ) -> Result<Response> {
-    let q = query(raw);
     let mode = uri.path().split('/').nth(1).unwrap_or("");
+    let accepted: &[&str] = match mode {
+        "history" | "tags" | "seed" | "variant" | "tag" => &["api"],
+        "shared-missing-scores" => &[
+            "excludePlayers",
+            "excludeVariants",
+            "minEfficiency",
+            "maxEfficiency",
+        ],
+        _ => &[],
+    };
+    let q = match strict_query(raw.as_deref(), accepted) {
+        Ok(q) => q,
+        // The replay export is JSON.
+        Err(error) if mode == "export" => return Ok(error.json()),
+        Err(error) => return Err(error),
+    };
+    // Redirects to the page's JSON API.
+    let api_redirect = q.flag("api").map_err(Error::bad)?;
     let mut v = json!({"title":"History","page":mode,"stats":{},"games":[],"frequencies":[]});
     match mode {
         "export" => {
@@ -159,7 +202,7 @@ pub(super) async fn page(
                             .collect::<Vec<_>>()
                             .join("/")
                     );
-                    if first(&q, "api").is_some() {
+                    if api_redirect {
                         return Ok(Redirect::permanent(&api).into_response());
                     }
                     v["apiPath"] = json!(api);
@@ -169,7 +212,7 @@ pub(super) async fn page(
                     }
                 }
                 "tags" => {
-                    if first(&q, "api").is_some() {
+                    if api_redirect {
                         return Ok(Redirect::permanent(&format!(
                             "/api/v1/tags/{}",
                             encoded(&users[0].1)
@@ -192,7 +235,7 @@ pub(super) async fn page(
                 .filter(|s| !s.is_empty())
                 .ok_or_else(|| Error::not_found("Error: You must specify a seed."))?;
             let api = format!("/api/v1/seed/{}", encoded(seed));
-            if first(&q, "api").is_some() {
+            if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
@@ -216,7 +259,7 @@ pub(super) async fn page(
             let variant = catalog::variant(id)
                 .ok_or_else(|| Error::bad("Error: That is not a valid variant ID."))?;
             let api = format!("/api/v1/variants/{id}");
-            if first(&q, "api").is_some() {
+            if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["title"] = json!("Variant Stats");
@@ -251,7 +294,7 @@ pub(super) async fn page(
                 .filter(|s| !s.is_empty())
                 .ok_or_else(|| Error::not_found("Error: You must specify a tag."))?;
             let tag = data::sanitize_tag(raw)?;
-            if first(&q, "api").is_some() {
+            if api_redirect {
                 return Ok(
                     Redirect::permanent(&format!("/api/v1/tag/{}", encoded(&tag))).into_response(),
                 );
@@ -500,28 +543,22 @@ async fn missing(
             "Error: You must specify at least two players.",
         ));
     }
-    let terms = |key| {
-        first(q, key)
+    // Only the shared page takes these parameters, so they are absent from the others.
+    let terms = |key| -> Result<Vec<String>> {
+        Ok(q.nonempty(key)
+            .map_err(Error::bad)?
             .unwrap_or("")
             .split(',')
             .map(str::trim)
             .filter(|s| !s.is_empty())
             .map(crate::accounts::normalize_string)
-            .collect::<Vec<_>>()
+            .collect())
     };
-    let excluded_players = if shared {
-        terms("excludePlayers")
-    } else {
-        Vec::new()
-    };
-    let excluded_variants = if shared {
-        terms("excludeVariants")
-    } else {
-        Vec::new()
-    };
+    let excluded_players = terms("excludePlayers")?;
+    let excluded_variants = terms("excludeVariants")?;
     let mut bounds = [None, None];
     for (i, key) in ["minEfficiency", "maxEfficiency"].iter().enumerate() {
-        if shared && let Some(s) = first(q, key).map(str::trim).filter(|s| !s.is_empty()) {
+        if let Some(s) = q.nonempty(key).map_err(Error::bad)?.map(str::trim) {
             bounds[i] = s.parse::<f64>().ok().filter(|n| n.is_finite());
             if bounds[i].is_none() {
                 return Err(Error::bad(format!(
@@ -599,8 +636,8 @@ async fn missing(
         "namesTitle":if shared {format!("Missing Scores for {}",names_title(&names))}else{format!("{} Profile",possessive(&users[0].1))},
         "singleMissingScores":!shared,"requestedNumPlayers":num_players.unwrap_or(0),
         "players":players,"rows":rows,"advancedFiltersActive":!excluded_players.is_empty()||!excluded_variants.is_empty()||bounds.iter().any(Option::is_some),
-        "excludeVariants":first(q,"excludeVariants").unwrap_or(""),
-        "minEfficiency":first(q,"minEfficiency").unwrap_or(""),"maxEfficiency":first(q,"maxEfficiency").unwrap_or("")});
+        "excludeVariants":q.get("excludeVariants").unwrap_or(""),
+        "minEfficiency":q.get("minEfficiency").unwrap_or(""),"maxEfficiency":q.get("maxEfficiency").unwrap_or("")});
     if !shared {
         v["summary"] = score_summary(state, users[0].0).await?;
     }

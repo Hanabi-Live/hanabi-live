@@ -18,7 +18,7 @@ pub enum Operation {
 
 pub type OperationReply = tokio::sync::oneshot::Sender<anyhow::Result<Value>>;
 
-use crate::{lifecycle::Control, metrics};
+use crate::{lifecycle::Control, metrics, query::Query};
 use anyhow::Context;
 use axum::{
     Json, Router,
@@ -31,7 +31,6 @@ use axum::{
 };
 use serde_json::json;
 use std::{
-    collections::HashMap,
     net::SocketAddr,
     sync::{Arc, atomic::Ordering},
 };
@@ -124,18 +123,9 @@ type Result<T> = std::result::Result<T, Error>;
 fn bad(message: &str) -> Error {
     Error(StatusCode::BAD_REQUEST, format!("{message}\n"))
 }
-fn parameters(raw: &[u8]) -> HashMap<String, String> {
-    let mut result = HashMap::new();
-    for (key, value) in url::form_urlencoded::parse(raw) {
-        result
-            .entry(key.into_owned())
-            .or_insert_with(|| value.into_owned());
-    }
-    result
-}
 const MAX_DOWNTIME_MESSAGE_CHARS: usize = 500;
 /// An optional reason for the downtime, shown to connected users and in Discord.
-fn downtime_message(query: &HashMap<String, String>) -> Result<Option<String>> {
+fn downtime_message(query: &Query) -> Result<Option<String>> {
     let Some(message) = query
         .get("message")
         .map(|m| m.trim())
@@ -155,14 +145,30 @@ fn downtime_message(query: &HashMap<String, String>) -> Result<Option<String>> {
 }
 async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result<Response> {
     let path = request.uri().path().to_owned();
-    let query = parameters(request.uri().query().unwrap_or("").as_bytes());
+    // Each command takes exactly these query parameters, and a form body only if it lists fields.
+    let (accepted_query, accepted_body): (&[&str], Option<&[&str]>) = match path.as_str() {
+        "/ban" | "/mute" => (&[], Some(&["username"])),
+        "/gracefulRestart" | "/gracefulStop" => (&["message"], None),
+        "/metrics" | "/version" => (&[], None),
+        _ => return Err(Error(StatusCode::NOT_FOUND, "404 not found\n".into())),
+    };
+    let query =
+        Query::parse(request.uri().query(), accepted_query).map_err(|message| bad(&message))?;
     let body = to_bytes(request.into_body(), 8192).await.map_err(|_| {
         Error(
             StatusCode::PAYLOAD_TOO_LARGE,
             "Request body too large.\n".into(),
         )
     })?;
-    let body = parameters(&body);
+    let body = match accepted_body {
+        Some(accepted) => {
+            let form =
+                std::str::from_utf8(&body).map_err(|_| bad("The form body is not UTF-8."))?;
+            Query::parse(Some(form), accepted).map_err(|message| bad(&message))?
+        }
+        None if body.is_empty() => Query::default(),
+        None => return Err(bad("This command takes no body.")),
+    };
     match path.as_str() {
         "/ban" | "/mute" => return user_action(&control, &path, &body).await,
         "/gracefulRestart" => {
@@ -184,15 +190,11 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         "/gracefulStop" => control.graceful_stop(downtime_message(&query)?).await?,
         "/metrics" => return metrics_report(&control).await,
         "/version" => return Ok(format!("{}\n", control.version).into_response()),
-        _ => return Err(Error(StatusCode::NOT_FOUND, "404 not found\n".into())),
+        _ => unreachable!("Every command is listed above"),
     }
     Ok("success\n".into_response())
 }
-async fn user_action(
-    control: &Control,
-    path: &str,
-    body: &HashMap<String, String>,
-) -> Result<Response> {
+async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Response> {
     let name = body
         .get("username")
         .filter(|v| !v.is_empty())

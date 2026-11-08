@@ -19,11 +19,11 @@ pub use normalization::{
 };
 pub use rate_limit::TooMuchPasswordWork;
 
-use crate::cookie;
+use crate::{cookie, query::Query};
 use anyhow::Result;
 use axum::{
     Form, Json, Router,
-    extract::{ConnectInfo, DefaultBodyLimit, Query, State},
+    extract::{ConnectInfo, DefaultBodyLimit, State},
     http::{HeaderMap, StatusCode, Uri, header},
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -34,7 +34,7 @@ use hanabi_protocol::{
     LoginResponse, PasswordHashRequest, PasswordHashResponse,
 };
 use sqlx::PgPool;
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 #[derive(Clone)]
 pub struct AccountConfig {
@@ -97,6 +97,19 @@ pub fn session_id(headers: &HeaderMap, secret: &str, query: Option<&str>) -> Opt
 
 fn parse_account(value: &str) -> Option<i32> {
     value.parse().ok().filter(|id| *id > 0)
+}
+
+/// Parses the query string of a route that may name an account with `?account=`. It rejects any
+/// parameter that the route does not take, and an account that is not a user ID.
+pub(crate) fn account_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query, String> {
+    let query = Query::parse(raw, accepted)?;
+    if query
+        .get("account")
+        .is_some_and(|value| parse_account(value).is_none())
+    {
+        return Err("The account must be a positive user ID.".into());
+    }
+    Ok(query)
 }
 
 fn with_cookies(mut response: Response, cookies: impl IntoIterator<Item = String>) -> Response {
@@ -357,13 +370,17 @@ async fn update_password_if_unchanged(
 }
 
 /// Signs out of the requested account, or the most recent sign-in, without affecting other accounts.
-async fn logout(
-    State(state): State<Arc<Accounts>>,
-    headers: HeaderMap,
-    Query(query): Query<HashMap<String, String>>,
-) -> Response {
+async fn logout(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
+    let query = match account_query(uri.query(), &["account", "dev"]) {
+        Ok(query) => query,
+        Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
+    };
+    let dev = match query.flag("dev") {
+        Ok(dev) => dev,
+        Err(message) => return api_error(StatusCode::BAD_REQUEST, message),
+    };
     let latest = session_id(&headers, &state.config.secret, None);
-    let requested = query.get("account").and_then(|value| parse_account(value));
+    let requested = query.get("account").and_then(parse_account);
     let mut cookies = Vec::new();
     if let Some(id) = requested.or(latest) {
         cookies.push(cookie_header(
@@ -381,14 +398,7 @@ async fn logout(
             StatusCode::MOVED_PERMANENTLY,
             [
                 (header::CACHE_CONTROL, "no-store"),
-                (
-                    header::LOCATION,
-                    if query.contains_key("dev") {
-                        "/?dev"
-                    } else {
-                        "/"
-                    },
-                ),
+                (header::LOCATION, if dev { "/?dev" } else { "/" }),
             ],
         )
             .into_response(),
@@ -397,6 +407,9 @@ async fn logout(
 }
 
 async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
+    if let Err(message) = account_query(uri.query(), &["account"]) {
+        return api_error(StatusCode::BAD_REQUEST, message);
+    }
     if session_id(&headers, &state.config.secret, uri.query()).is_some() {
         "OK\n".into_response()
     } else {
@@ -420,7 +433,14 @@ async fn identity_token(
     ConnectInfo(address): ConnectInfo<SocketAddr>,
     uri: Uri,
     headers: HeaderMap,
+    body: axum::body::Bytes,
 ) -> Response {
+    if let Err(message) = account_query(uri.query(), &["account"]) {
+        return api_error(StatusCode::BAD_REQUEST, message);
+    }
+    if !body.is_empty() {
+        return api_error(StatusCode::BAD_REQUEST, "This request takes no body.");
+    }
     let result: Result<Response> = async {
         if is_banned(&state.pool, &address.ip().to_string()).await? {
             return Ok(banned());
