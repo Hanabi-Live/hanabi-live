@@ -11,7 +11,7 @@ pub fn validate_assets(config: &Config) -> Result<String> {
         .context("Missing paired client version file")?;
     let client_version = client_version.trim();
     ensure!(
-        client_version.len() == crate::revision::REVISION_LENGTH
+        client_version.len() == crate::git::GIT_REVISION_LENGTH
             && client_version.bytes().all(|c| c.is_ascii_hexdigit()),
         "Invalid paired client version"
     );

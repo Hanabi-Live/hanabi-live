@@ -109,7 +109,7 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     ensure!(
         manifest.revision == crate::restart::version()
-            && manifest.revision.len() == crate::revision::REVISION_LENGTH,
+            && manifest.revision.len() == crate::git::GIT_REVISION_LENGTH,
         "Release does not match the compiled Rust revision"
     );
     ensure!(

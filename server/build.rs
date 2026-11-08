@@ -1,7 +1,7 @@
-#[path = "src/revision.rs"]
-mod revision;
+#[path = "src/git.rs"]
+mod git;
 
-use revision::REVISION_LENGTH;
+use git::GIT_REVISION_LENGTH;
 use std::{
     collections::BTreeSet,
     env,
@@ -55,7 +55,7 @@ fn git_path(root: &Path, name: &str) -> Result<PathBuf, String> {
 
 pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version, String> {
     if let Some(commit) = supplied_revision {
-        if commit.len() != REVISION_LENGTH
+        if commit.len() != GIT_REVISION_LENGTH
             || !commit
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
@@ -83,7 +83,7 @@ pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version,
         Err(error) => return Err(error),
     };
     let commit = checked(root, &["rev-parse", "--verify", "HEAD^{commit}"])?;
-    if commit.len() != REVISION_LENGTH || !commit.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+    if commit.len() != GIT_REVISION_LENGTH || !commit.bytes().all(|byte| byte.is_ascii_hexdigit()) {
         return Err("Git returned an invalid commit identifier".into());
     }
     let mut watched = BTreeSet::from([git_path(root, "HEAD")?]);
@@ -128,7 +128,7 @@ pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version,
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=src/revision.rs");
+    println!("cargo:rerun-if-changed=src/git.rs");
     println!("cargo:rerun-if-env-changed=HANABI_BUILD_REVISION");
     let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("Cargo manifest directory"));
     let supplied_revision = env::var_os("HANABI_BUILD_REVISION");
