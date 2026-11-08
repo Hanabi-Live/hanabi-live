@@ -116,11 +116,17 @@ export const ACTIVE_INDICATOR_COLOR = "#ffe03b";
 /** For the clue counter and the score area border when no clues are available. */
 export const NO_CLUES_COLOR = "red";
 
+/** For the clue counter when the team has one clue left. */
+export const ONE_CLUE_COLOR = "yellow";
+
 /** For the clue counter and the score area border when the team is at the maximum clues. */
 export const MAX_CLUES_COLOR = "lime";
 
 /** For the discard pile border and the text that warn of a "Double Discard" situation. */
 export const DOUBLE_DISCARD_COLOR = "yellow";
+
+/** For the "Your Turn" text and the line under the current player's hand in the Keldon layout. */
+export const CURRENT_TURN_COLOR = "yellow";
 
 export const BUTTON_HOVER_COLOR = "#888888";
 export const BUTTON_PRESSED_COLOR = "#cccccc";
@@ -215,6 +221,13 @@ export const DIALOG_CORNER_RADIUS = 0.01;
 
 /** The opacity of a control that cannot be used right now. */
 export const DISABLED_OPACITY = 0.2;
+
+/** The sizes shared by the dialogs drawn over the game board, as fractions of the stage height. */
+export const DIALOG = {
+  TITLE_Y: 0.1,
+  TITLE_FONT_SIZE: 0.08,
+  BUTTON_H: 0.1,
+} as const;
 
 /** The opacity of the dark overlay shown behind dialogs such as the full action log. */
 export const STAGE_FADE_OPACITY = 0.3;

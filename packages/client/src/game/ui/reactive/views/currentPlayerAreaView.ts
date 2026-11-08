@@ -14,6 +14,7 @@ import {
   FULL_TURN_DEGREES,
   HALF_TURN_DEGREES,
   LABEL_COLOR,
+  NO_CLUES_COLOR,
   TEXT_SHRINK_FACTOR,
 } from "../../constants";
 import { degreesToRadians, radiansToDegrees } from "../../konvaHelpers";
@@ -95,7 +96,7 @@ export function onChanged(
 
     if (clueTokens < getAdjustedClueTokens(1, globals.variant)) {
       specialText = `(cannot clue; ${cluesTokensText} clues left)`;
-      text3.fill("red");
+      text3.fill(NO_CLUES_COLOR);
     } else if (isAtMaxClueTokens(clueTokens, globals.variant)) {
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
@@ -153,8 +154,9 @@ export function onChanged(
     const spacing = 0.04 * winH;
     text1.y(totalH / 2 - text1H / 2 - spacing);
     text2.y(totalH / 2 - text2H / 2 + spacing * 0.25);
-    text3.y(totalH / 2 - text1H / 2 + spacing * 1.5);
     text3.fitText(specialText);
+    const text3H = text3.measureSize(text3.text()).height;
+    text3.y(totalH / 2 - text3H / 2 + spacing * 1.5);
     text3.show();
   }
 

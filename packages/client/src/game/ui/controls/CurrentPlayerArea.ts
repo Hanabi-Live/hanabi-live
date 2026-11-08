@@ -4,6 +4,7 @@ import { globals } from "../UIGlobals";
 import {
   FONT_FAMILY,
   LABEL_COLOR,
+  NO_CLUES_COLOR,
   PANEL_CORNER_RADIUS,
   PANEL_OPACITY,
   TEXT_SHADOW,
@@ -106,7 +107,7 @@ export class CurrentPlayerArea extends Konva.Group {
       fontSize,
       text: "",
       align: "center",
-      fill: "red",
+      fill: NO_CLUES_COLOR,
       ...TEXT_SHADOW,
       listening: false,
     });

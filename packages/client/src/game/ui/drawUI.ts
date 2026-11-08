@@ -50,6 +50,8 @@ import {
   BGA_ACTION_LOG,
   CARD_ANIMATION_LENGTH_SECONDS,
   CLUE_LOG,
+  CURRENT_TURN_COLOR,
+  DIALOG,
   DIALOG_CORNER_RADIUS,
   DOUBLE_DISCARD_COLOR,
   EFFICIENCY_DECIMAL_PLACES,
@@ -810,10 +812,17 @@ function drawScoreArea() {
   const labelX = 0.02;
   const labelSpacing = 0.06;
 
+  /** The heights of the rows of labels, as fractions of the stage height. */
+  const labelRowY = {
+    turn: 0.01,
+    score: 0.045,
+    clues: 0.08,
+  } as const;
+
   const turnTextLabel = basicTextLabel.clone({
     text: "Turn",
     x: labelX * winW,
-    y: 0.01 * winH,
+    y: labelRowY.turn * winH,
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
@@ -833,7 +842,7 @@ function drawScoreArea() {
   globals.elements.turnNumberLabel = basicNumberLabel.clone({
     text: "1",
     x: (labelX + labelSpacing) * winW,
-    y: 0.01 * winH,
+    y: labelRowY.turn * winH,
     listening: true,
   }) as TextWithTooltip;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
@@ -857,7 +866,7 @@ function drawScoreArea() {
   globals.elements.scoreTextLabel = basicTextLabel.clone({
     text: "Score",
     x: labelX * winW,
-    y: 0.045 * winH,
+    y: labelRowY.score * winH,
     listening: true,
     visible:
       !globals.variant.throwItInAHole
@@ -874,7 +883,7 @@ function drawScoreArea() {
   globals.elements.scoreNumberLabel = basicNumberLabel.clone({
     text: "0",
     x: (labelX + labelSpacing) * winW,
-    y: 0.045 * winH,
+    y: labelRowY.score * winH,
     listening: true,
     visible:
       !globals.variant.throwItInAHole
@@ -891,7 +900,7 @@ function drawScoreArea() {
   globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
     text: "",
     x: (labelX + labelSpacing) * winW,
-    y: 0.05 * winH,
+    y: (labelRowY.score + 0.005) * winH,
     fontSize: 0.017 * winH,
     listening: true,
     visible:
@@ -913,7 +922,7 @@ function drawScoreArea() {
     globals.elements.playsTextLabel = basicTextLabel.clone({
       text: "Plays",
       x: labelX * winW,
-      y: 0.045 * winH,
+      y: labelRowY.score * winH,
       listening: true,
     }) as Konva.Text;
     globals.elements.scoreArea.add(globals.elements.playsTextLabel);
@@ -927,7 +936,7 @@ function drawScoreArea() {
     globals.elements.playsNumberLabel = basicNumberLabel.clone({
       text: "0",
       x: (labelX + labelSpacing) * winW,
-      y: 0.045 * winH,
+      y: labelRowY.score * winH,
       listening: true,
     }) as Konva.Text;
     globals.elements.scoreArea.add(globals.elements.playsNumberLabel);
@@ -942,7 +951,7 @@ function drawScoreArea() {
   const cluesTextLabel = basicTextLabel.clone({
     text: "Clues",
     x: labelX * winW,
-    y: 0.08 * winH,
+    y: labelRowY.clues * winH,
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(cluesTextLabel);
@@ -956,7 +965,7 @@ function drawScoreArea() {
   const cluesNumberLabel = basicNumberLabel.clone({
     text: MAX_CLUES.toString(),
     x: (labelX + labelSpacing) * winW,
-    y: 0.08 * winH,
+    y: labelRowY.clues * winH,
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(cluesNumberLabel);
@@ -1337,7 +1346,7 @@ function drawYourTurn() {
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: FONT_FAMILY,
-    fill: "yellow",
+    fill: CURRENT_TURN_COLOR,
     align: "center",
     text: "Your\nTurn",
     listening: false,
@@ -2200,6 +2209,10 @@ function drawHypotheticalArea() {
     h: 0.05,
   };
 
+  // The circle is centered on the text.
+  const hypoTextY = hypoValues.h * 0.4;
+  const hypoFontSize = 0.06;
+
   // The "Hypothetical" circle that shows we are currently in a hypothetical.
   globals.elements.hypoCircle = new Konva.Group({
     x: hypoValues.x * winW,
@@ -2211,7 +2224,7 @@ function drawHypotheticalArea() {
 
   const circle = new Konva.Ellipse({
     x: hypoValues.w! * 0.5 * winW,
-    y: hypoValues.h * 0.5 * winW,
+    y: (hypoTextY + hypoFontSize / 2) * winH,
     radiusX: hypoValues.w! * 0.4 * winW,
     radiusY: hypoValues.h * winH,
     ...INDICATOR_ELLIPSE_STYLE,
@@ -2221,10 +2234,10 @@ function drawHypotheticalArea() {
   globals.elements.hypoCircle.add(circle);
 
   const text = new FitText({
-    y: hypoValues.h * 0.4 * winH,
+    y: hypoTextY * winH,
     name: "text",
     width: hypoValues.w! * winW,
-    fontSize: 0.06 * winH,
+    fontSize: hypoFontSize * winH,
     fontFamily: FONT_FAMILY,
     fill: LABEL_COLOR,
     align: "center",
@@ -2382,10 +2395,10 @@ function drawPauseArea() {
   globals.elements.pauseArea.add(pauseRect);
 
   const pauseTitle = new Konva.Text({
-    y: 0.1 * winH,
+    y: DIALOG.TITLE_Y * winH,
     width: pauseAreaValues.w * winW,
     fontFamily: FONT_FAMILY,
-    fontSize: 0.08 * winH,
+    fontSize: DIALOG.TITLE_FONT_SIZE * winH,
     text: "Game Paused",
     align: "center",
     fill: "white",
@@ -2416,7 +2429,7 @@ function drawPauseArea() {
     x: spacing * winW,
     y: buttonH * winH,
     width: button1W * winW,
-    height: 0.1 * winH,
+    height: DIALOG.BUTTON_H * winH,
     text: "Unpause",
   });
   globals.elements.pauseButton.on("click tap", () => {
@@ -2433,7 +2446,7 @@ function drawPauseArea() {
     x: (pauseAreaValues.w - button2W * 2 - spacing * 2) * winW,
     y: buttonH * winH,
     width: button2W * winW,
-    height: 0.1 * winH,
+    height: DIALOG.BUTTON_H * winH,
     // eslint-disable-next-line complete/require-ascii
     text: "💬",
   });
@@ -2447,7 +2460,7 @@ function drawPauseArea() {
       x: (pauseAreaValues.w - button2W - spacing * 1.5) * winW,
       y: buttonH * winH,
       width: button2W * winW,
-      height: 0.1 * winH,
+      height: DIALOG.BUTTON_H * winH,
     },
     [globals.imageLoader!.get("home")],
   );
@@ -2483,10 +2496,10 @@ function drawRestartArea() {
   globals.elements.restartArea.add(restartContents);
 
   const restartTitle = new Konva.Text({
-    y: 0.1 * winH,
+    y: DIALOG.TITLE_Y * winH,
     width: restartAreaValues.w * winW,
     fontFamily: FONT_FAMILY,
-    fontSize: 0.08 * winH,
+    fontSize: DIALOG.TITLE_FONT_SIZE * winH,
     text: "Restart?",
     align: "center",
     fill: "white",
@@ -2503,7 +2516,7 @@ function drawRestartArea() {
     x: spacing * winW,
     y: buttonH * winH,
     width: buttonW * winW,
-    height: 0.1 * winH,
+    height: DIALOG.BUTTON_H * winH,
     text: "Restart game",
   });
   restartGameButton.on("click tap", () => {
@@ -2515,7 +2528,7 @@ function drawRestartArea() {
     x: (2 * spacing + buttonW) * winW,
     y: buttonH * winH,
     width: buttonW * winW,
-    height: 0.1 * winH,
+    height: DIALOG.BUTTON_H * winH,
     text: "Remake table",
   });
   restartTableButton.on("click tap", () => {
@@ -2527,7 +2540,7 @@ function drawRestartArea() {
     x: (restartAreaValues.w - buttonW / 2 - spacing) * winW,
     y: (buttonH * 1.5 + spacing) * winH,
     width: (buttonW / 2) * winW,
-    height: 0.1 * winH,
+    height: DIALOG.BUTTON_H * winH,
     text: "Cancel",
   });
   restartCancelButton.on("click tap", () => {

@@ -44,9 +44,15 @@ export function drawHands(winW: number, winH: number): void {
   const keldonHandH = FULL_CARD_STAGE_SIZE.H;
   /** The width of a hand that does not span the board, such as in 4-player games. */
   const narrowHandW = 0.34;
-  const handPos6H = 0.165;
+  /**
+   * The height of a hand whose cards are shrunk to make room, such as in the top row of 6-player
+   * games or when each hand has one extra card.
+   */
+  const reducedHandH = 0.165;
   const handPos6Ratio = narrowHandW / keldonHandH;
-  const handPos6W = handPos6H * handPos6Ratio * 0.75;
+  const handPos6W = reducedHandH * handPos6Ratio * 0.75;
+  /** The size of a hand that runs down the left or right side of the board. */
+  const sideHand = { w: 0.301, h: 0.18 } as const;
   handPos[2] = [
     { x: 0.19, y: 0.77, w: 0.42, h: keldonHandH, rot: 0 },
     { x: 0.19, y: 0.01, w: 0.42, h: keldonHandH, rot: 0 },
@@ -64,59 +70,58 @@ export function drawHands(winW: number, winH: number): void {
   ];
   handPos[5] = [
     { x: 0.23, y: 0.77, w: narrowHandW, h: keldonHandH, rot: 0 },
-    { x: 0.03, y: 0.756, w: 0.301, h: 0.18, rot: -90 },
+    { x: 0.03, y: 0.756, w: sideHand.w, h: sideHand.h, rot: -90 },
     { x: 0.0205, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.44, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
-    { x: 0.77, y: 0.238, w: 0.301, h: 0.18, rot: 90 },
+    { x: 0.77, y: 0.238, w: sideHand.w, h: sideHand.h, rot: 90 },
   ];
   handPos[6] = [
     { x: 0.273, y: 0.77, w: narrowHandW * 0.75, h: keldonHandH, rot: 0 },
-    { x: 0.03, y: 0.72, w: 0.301 * 0.8, h: 0.18, rot: -90 },
-    { x: 0.0235, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
-    { x: 0.289, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
-    { x: 0.5535, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
-    { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
+    { x: 0.03, y: 0.72, w: sideHand.w * 0.8, h: sideHand.h, rot: -90 },
+    { x: 0.0235, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
+    { x: 0.289, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
+    { x: 0.5535, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
+    { x: 0.77, y: 0.292, w: sideHand.w * 0.8, h: sideHand.h, rot: 90 },
   ];
   if (globals.options.oneExtraCard) {
-    const reducedH = 0.165;
     const adjustedYUs = 0.018;
     const adjustedYOther = 0.013;
 
     // 2-player
-    handPos[2][0]!.h = reducedH;
-    handPos[2][1]!.h = reducedH;
+    handPos[2][0]!.h = reducedHandH;
+    handPos[2][1]!.h = reducedHandH;
     handPos[2][0]!.y += adjustedYUs;
     handPos[2][1]!.y += adjustedYOther;
 
     // 3-player
-    handPos[3][0]!.h = reducedH;
-    handPos[3][1]!.h = reducedH;
-    handPos[3][2]!.h = reducedH;
+    handPos[3][0]!.h = reducedHandH;
+    handPos[3][1]!.h = reducedHandH;
+    handPos[3][2]!.h = reducedHandH;
     handPos[3][0]!.y += adjustedYUs;
 
     // 4-player
-    handPos[4][0]!.h = reducedH;
-    handPos[4][1]!.h = reducedH;
-    handPos[4][2]!.h = reducedH;
-    handPos[4][3]!.h = reducedH;
+    handPos[4][0]!.h = reducedHandH;
+    handPos[4][1]!.h = reducedHandH;
+    handPos[4][2]!.h = reducedHandH;
+    handPos[4][3]!.h = reducedHandH;
     handPos[4][0]!.y += adjustedYUs;
     handPos[4][2]!.y += adjustedYOther;
 
     // 5-player
-    handPos[5][0]!.h = reducedH;
-    handPos[5][1]!.h = reducedH - 0.02;
-    handPos[5][2]!.h = reducedH;
-    handPos[5][3]!.h = reducedH;
-    handPos[5][4]!.h = reducedH - 0.02;
+    handPos[5][0]!.h = reducedHandH;
+    handPos[5][1]!.h = reducedHandH - 0.02;
+    handPos[5][2]!.h = reducedHandH;
+    handPos[5][3]!.h = reducedHandH;
+    handPos[5][4]!.h = reducedHandH - 0.02;
     handPos[5][0]!.y += adjustedYUs;
 
     // 6-player
-    handPos[6][0]!.h = reducedH - 0.01;
-    handPos[6][1]!.h = reducedH - 0.02;
-    handPos[6][2]!.h = reducedH - 0.03;
-    handPos[6][3]!.h = reducedH - 0.03;
-    handPos[6][4]!.h = reducedH - 0.03;
-    handPos[6][5]!.h = reducedH - 0.02;
+    handPos[6][0]!.h = reducedHandH - 0.01;
+    handPos[6][1]!.h = reducedHandH - 0.02;
+    handPos[6][2]!.h = reducedHandH - 0.03;
+    handPos[6][3]!.h = reducedHandH - 0.03;
+    handPos[6][4]!.h = reducedHandH - 0.03;
+    handPos[6][5]!.h = reducedHandH - 0.02;
     handPos[6][2]!.y += adjustedYOther;
     handPos[6][3]!.y += adjustedYOther;
     handPos[6][4]!.y += adjustedYOther;

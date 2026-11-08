@@ -9,10 +9,12 @@ import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
 import {
+  CURRENT_TURN_COLOR,
   LABEL_COLOR,
   MAX_CLUES_COLOR,
   NO_CLUES_COLOR,
   OFF_BLACK,
+  ONE_CLUE_COLOR,
   STRIKE_FADE,
 } from "../../constants";
 import { animate } from "../../konvaHelpers";
@@ -82,7 +84,7 @@ export function onCurrentPlayerIndexChanged(
     const currentPlayerRect =
       globals.elements.playerHandBlackLines[currentPlayerIndex];
     if (currentPlayerRect !== undefined) {
-      currentPlayerRect.fill("yellow");
+      currentPlayerRect.fill(CURRENT_TURN_COLOR);
     }
   } else {
     // In addition to bolding the player's name, show a black rectangle around the player's hand to
@@ -181,7 +183,7 @@ export function onClueTokensChanged(clueTokens: number): void {
     if (noCluesAvailable) {
       fill = NO_CLUES_COLOR;
     } else if (oneClueAvailable) {
-      fill = "yellow";
+      fill = ONE_CLUE_COLOR;
     } else if (maxCluesAvailable) {
       fill = MAX_CLUES_COLOR;
     } else {
