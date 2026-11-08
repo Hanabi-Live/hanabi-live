@@ -1,10 +1,6 @@
 {% extends "layout.html" %}{% block body %}
 
 <style>
-  th:hover {
-    background-color: rgb(220, 220, 220);
-    cursor: pointer;
-  }
   .stat-description {
     /* Override the existing width since the columns are shorter on this page */
     width: 11em;
@@ -39,7 +35,11 @@
   </header>
 
   <!-- Main -->
-  <section id="main" class="container max history-page">
+  <section
+    id="main"
+    class="container max history-page"
+    data-page="missing-scores"
+  >
     <header>
       <h2><img src="/public/img/logos/header.svg" width="259" /></h2>
     </header>
@@ -190,35 +190,31 @@
               </div>
             </div>
           </form>
-          {% endif %}
-
-          <!-- Pagination controls -->
-          <div class="pager">
-            Page:
-            <select class="gotoPage"></select>
-            <i class="fas fa-fast-backward first"></i>
-            <i class="fas fa-backward prev"></i>
-            <span class="pagedisplay"></span>
-            <i class="fas fa-forward next"></i>
-            <i class="fas fa-fast-forward last"></i>
-            <select class="pagesize" title="Select page size">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="all">All Rows</option>
-            </select>
-          </div>
-          <!-- End of pagination controls -->
+          {% endif %} {% include "public-pager.html" %}
 
           <table class="history">
             <thead>
               <tr>
-                <th width="55%">Variant</th>
-                <th width="15%" class="center"># of Players</th>
-                <th width="15%" class="sorter-current-max-score center">
+                <th width="55%" data-filter="none">Variant</th>
+                <th
+                  width="15%"
+                  class="center"
+                  data-sort="none"
+                  data-filter="none"
+                >
+                  # of Players
+                </th>
+                <th
+                  width="15%"
+                  class="center"
+                  data-sort="ratio"
+                  data-filter="none"
+                >
                   Highest Score
                 </th>
-                <th width="15%" class="sorter-efficiency center">Efficiency</th>
+                <th width="15%" class="center" data-filter="none">
+                  Efficiency
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -245,259 +241,11 @@
             </tbody>
           </table>
 
-          <!-- Pagination controls -->
-          <div class="pager">
-            Page:
-            <select class="gotoPage"></select>
-            <i class="fas fa-fast-backward first"></i>
-            <i class="fas fa-backward prev"></i>
-            <span class="pagedisplay"></span>
-            <i class="fas fa-forward next"></i>
-            <i class="fas fa-fast-forward last"></i>
-            <select class="pagesize" title="Select page size">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="all">All Rows</option>
-            </select>
-          </div>
-          <!-- End of pagination controls -->
+          {% include "public-pager.html" %}
         </section>
       </div>
     </div>
   </section>
 </div>
 
-<!-- Tooltips -->
-<div class="hidden">
-  <div id="modifier-deckplays" class="profile-tooltip">
-    This score is not legitimate since the
-    <strong>Bottom-Deck Blind-Play</strong> option was used.
-  </div>
-  <div id="modifier-emptyclues" class="profile-tooltip">
-    This score is not legitimate since the <strong>Empty Clue</strong> option
-    was used.
-  </div>
-  <div id="modifier-oneextracard" class="profile-tooltip">
-    This score is not legitimate since the
-    <strong>One Extra Card</strong> option was used.
-  </div>
-  <div id="modifier-onelesscard" class="profile-tooltip">
-    This score is not legitimate since the
-    <strong>One Less Card</strong> option was used.
-  </div>
-  <div id="modifier-allornothing" class="profile-tooltip">
-    This score is not legitimate since the
-    <strong>All or Nothing</strong> option was used.
-  </div>
-</div>
-
-<script
-  type="text/javascript"
-  src="/public/js/lib/jquery-3.5.0.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="/public/js/lib/jquery.tablesorter-2.31.3.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="/public/js/lib/jquery.tablesorter.pager-2.31.3.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="/public/js/lib/widget-filter-2.30.0.min.js"
-></script>
-<script
-  type="text/javascript"
-  src="/public/js/lib/tooltipster.bundle.min.js"
-></script>
-<script type="text/javascript">
-  $(document).ready(() => {
-    // Initialize the tooltips
-    $(".tooltip").tooltipster({
-      animation: "grow",
-      contentAsHTML: true,
-      delay: 0,
-      theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
-    });
-    const pagerOptions = {
-      // target the pager markup - see the HTML block below
-      container: $(".pager"),
-      // output string - default is '{page}/{totalPages}';
-      // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
-      // also {page:input} & {startRow:input} will add a modifiable input in place of the value
-      output: "{startRow} - {endRow} / {filteredRows} ({totalRows})",
-      // if true, the table will remain the same height no matter how many records are displayed. The space is made up by an empty
-      // table row set to a height to compensate; default is false
-      fixedHeight: true,
-      // remove rows from the table to speed up the sort of large tables.
-      // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-      removeRows: false,
-      // go to page selector - select dropdown that sets the current page
-      cssGoto: ".gotoPage",
-    };
-
-    // Add parser for $currentScore / $maxScore column
-    $.tablesorter.addParser({
-      id: "current-max-score", // matches all table header cells with class "sorter-current-max-score"
-      is: function (s, table, cell, $cell) {
-        // return false so this parser is not auto detected
-        return false;
-      },
-      format: function (s, table, cell, cellIndex) {
-        try {
-          // Expected s format: int / int &nbsp;[<i ...></i>]
-          const [currentScore, maxScore] = s.split(" / ");
-          if (maxScore == 0) {
-            return 0;
-          }
-          return currentScore / maxScore;
-        } catch {
-          return 0;
-        }
-      },
-      type: "numeric",
-    });
-
-    // Initialize the table sorting
-    $("table:not(.plain)")
-      .tablesorter({
-        headers: {
-          0: { filter: false },
-          1: { filter: false, sorter: false },
-          2: { filter: false },
-          3: { filter: false },
-        },
-        widgets: ["zebra", "filter"],
-        // Filter options
-        // From https://mottie.github.io/tablesorter/docs/example-widget-filter.html
-        widgetOptions: {
-          filter_cssFilter: "",
-          filter_childRows: false,
-          filter_hideFilters: false,
-          filter_ignoreCase: true,
-          filter_reset: "",
-          filter_saveFilters: true,
-          filter_searchDelay: 300,
-          filter_startsWith: false,
-          filter_functions: {},
-        },
-      })
-
-      // Bind to pager events
-      // *********************
-      .bind(
-        "pagerChange pagerComplete pagerInitialized pageMoved",
-        function (e, c) {
-          var msg =
-            '"</span> event triggered, '
-            + (e.type === "pagerChange" ? "going to" : "now on")
-            + ' page <span class="typ">'
-            + (c.page + 1)
-            + "/"
-            + c.totalPages
-            + "</span>";
-          $("#display")
-            .append('<li><span class="str">"' + e.type + msg + "</li>")
-            .find("li:first")
-            .remove();
-        },
-      )
-
-      .bind("filterEnd", () => {
-        setRowColors();
-      })
-
-      // Initialize the pager plugin
-      // ****************************
-      .tablesorterPager(pagerOptions);
-
-    initSharedMissingScoresFilters();
-    $("#filter-by-players").change(function () {
-      window.location =
-        this.dataset.profilePath + (this.value === "0" ? "" : "/" + this.value);
-    });
-  });
-
-  const initSharedMissingScoresFilters = () => {
-    // The gear icon shows/hides the advanced filters
-    $("#advanced-filters-toggle").click(() => {
-      const form = document.getElementById("advanced-filters");
-      form.hidden = !form.hidden;
-      $("#advanced-filters-toggle").attr(
-        "aria-expanded",
-        (!form.hidden).toString(),
-      );
-    });
-
-    // The filters are passed to the server as query parameters, which keeps the URL shareable
-    // e.g. "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5"
-    $("#advanced-filters").submit((event) => {
-      event.preventDefault();
-
-      const excludedPlayers = $(".include-player:not(:checked)")
-        .map((_, element) => element.value)
-        .get();
-      if (excludedPlayers.length === $(".include-player").length) {
-        $("#advanced-filters-error").text(
-          "At least one player must be included.",
-        );
-        document.getElementById("advanced-filters-error").hidden = false;
-        return;
-      }
-
-      const minEfficiency = $("#min-efficiency").val().trim();
-      const maxEfficiency = $("#max-efficiency").val().trim();
-      if (
-        minEfficiency !== ""
-        && maxEfficiency !== ""
-        && Number(minEfficiency) > Number(maxEfficiency)
-      ) {
-        $("#advanced-filters-error").text(
-          "The min efficiency can not be greater than the max efficiency.",
-        );
-        document.getElementById("advanced-filters-error").hidden = false;
-        return;
-      }
-
-      const params = new URLSearchParams();
-      if (excludedPlayers.length > 0) {
-        params.set("excludePlayers", excludedPlayers.join(","));
-      }
-      const excludeVariants = $("#exclude-variants").val().trim();
-      if (excludeVariants !== "") {
-        params.set("excludeVariants", excludeVariants);
-      }
-      if (minEfficiency !== "") {
-        params.set("minEfficiency", minEfficiency);
-      }
-      if (maxEfficiency !== "") {
-        params.set("maxEfficiency", maxEfficiency);
-      }
-
-      const query = params.toString();
-      window.location =
-        window.location.pathname + (query === "" ? "" : `?${query}`);
-    });
-
-    $("#advanced-filters-reset").click(() => {
-      window.location = window.location.pathname;
-    });
-  };
-
-  // In the Alpha HTML5 template, table rows are supposed to alternate colors
-  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
-  const setRowColors = () => {
-    const selector = "table.history.tablesorter tbody tr:not(.filtered)";
-    const numRows = $(selector).length;
-    const color1 = "#f8f8f8";
-    const color2 = "white";
-    for (let i = 0; i < numRows; i++) {
-      const colorForThisRow = i % 2 == 0 ? color1 : color2;
-      $(selector).eq(i).css("background-color", colorForThisRow);
-    }
-  };
-</script>
-
-{% endblock %}
+{% include "public-table-scripts.html" %} {% endblock %}

@@ -314,7 +314,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "Average score",
         "<table",
         "class=\"pager\"",
-        "tablesorter",
     ] {
         assert!(
             !body.contains(removed),

@@ -1,10 +1,4 @@
 {% extends "layout.html" %}{% block body %}
-<style>
-  th:hover {
-    background-color: rgb(220, 220, 220);
-    cursor: pointer;
-  }
-</style>
 <div id="page-wrapper">
   <header id="header">
     <h1>{% include "logo.html" %}</h1>
@@ -189,10 +183,10 @@
             <table class="history">
               <thead>
                 <tr>
-                  <th class="filter-select">Variant</th>
+                  <th data-filter="select">Variant</th>
                   <th class="center">Total Games</th>
                   {% for players in [2,3,4,5,6] %}
-                  <th class="center sorter-current-max-score">
+                  <th class="center" data-sort="ratio">
                     {{ players }}-Player Best Score
                   </th>
                   {% endfor %}
@@ -236,13 +230,13 @@
               <thead>
                 <tr>
                   <th>Game ID</th>
-                  <th class="filter-select filter-match"># of Players</th>
+                  <th data-filter="select"># of Players</th>
                   <th>Score</th>
                   {% if page != "variant" %}
-                  <th class="filter-select">Variant</th>
+                  <th data-filter="select">Variant</th>
                   {% endif %}
                   <th>Players</th>
-                  <th class="sorter-date-and-time">Date &amp; Time</th>
+                  <th>Date &amp; Time</th>
                   {% if page != "seed" %}
                   <th>
                     {% if page == "variant" %}Seed{% else %}Other Scores{% endif
