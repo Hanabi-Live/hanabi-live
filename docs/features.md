@@ -758,7 +758,7 @@ move for the current situation.
   tag is to the other players (in order to avoid leaking information about the
   game).
 - Tags added during a replay will echo to everyone in the replay.
-- You can use the `/tagdelete [tag]` command to delete an existing tag, or
+- You can use the `/untag [tag]` command to delete an existing tag, or
   `/tagsdeleteall` to delete all your tags in that game.
 - You can use the `/tagsearch [tag]` command to search through all games for a
   specific tag.

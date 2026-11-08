@@ -108,10 +108,10 @@ If you need general help with the website, then read the
 
 ## Replay Commands
 
-| Command            | Description                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------------- |
-| `/copy`            | Copy the current game (and hypothetical, if any) in your clipboard as a URL for sharing. |
-| `/suggest [turn]`  | Suggest a specific turn for the shared replay leader to go to                            |
-| `/tagdelete [tag]` | Delete an existing tag from the game                                                     |
-| `/tags`            | Show all of the tags for this game                                                       |
-| `/tagsdeleteall`   | Delete all user's tags from the game                                                     |
+| Command           | Description                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `/copy`           | Copy the current game (and hypothetical, if any) in your clipboard as a URL for sharing. |
+| `/suggest [turn]` | Suggest a specific turn for the shared replay leader to go to                            |
+| `/untag [tag]`    | Delete an existing tag from the game                                                     |
+| `/tags`           | Show all of the tags for this game                                                       |
+| `/tagsdeleteall`  | Delete all user's tags from the game                                                     |

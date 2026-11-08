@@ -360,10 +360,10 @@ chatCommands.set("tag", (room: string, args: readonly string[]) => {
   });
 });
 
-function tagdelete(room: string, args: readonly string[]) {
+function untag(room: string, args: readonly string[]) {
   if (globals.tableID === NO_TABLE_ID) {
     sendSelfPMFromServer(
-      "You are not currently at a table, so you cannot use the <code>/tagdelete</code> command.",
+      "You are not currently at a table, so you cannot use the <code>/untag</code> command.",
       room,
       SelfChatMessageType.Error,
     );
@@ -377,9 +377,8 @@ function tagdelete(room: string, args: readonly string[]) {
   });
 }
 
-// /tagdelete [tag]
-chatCommands.set("tagdelete", tagdelete);
-chatCommands.set("untag", tagdelete);
+// /untag [tag]
+chatCommands.set("untag", untag);
 
 // /tagsearch
 chatCommands.set("tagsearch", (room: string, args: readonly string[]) => {
