@@ -434,7 +434,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     .unwrap();
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice").await;
     let games: Vec<Value> = serde_json::from_str(&body).unwrap();
-    assert!(!games.is_empty());
+    assert_ne!(games, Vec::<Value>::new());
     for game in &games {
         hanabi_protocol::validate::<hanabi_protocol::GameHistory>(game).unwrap();
     }
