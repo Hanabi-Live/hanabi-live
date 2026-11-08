@@ -1,10 +1,7 @@
 // The "Create Game" nav button.
 
 import type { Settings } from "@hanabi-live/data";
-import {
-  DEFAULT_CREATE_TABLE_MAX_PLAYERS,
-  errorDetails,
-} from "@hanabi-live/data";
+import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -25,6 +22,8 @@ import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLInputElement } from "../utils";
+import type { GameJSON } from "./gameJSON";
+import { parseGameJSON } from "./gameJSON";
 import { Screen } from "./types/Screen";
 
 const BASIC_VARIANT_NAMES = [
@@ -343,20 +342,14 @@ function submit() {
       'The value of the "createTableJSON" element is not a string.',
     );
   }
-  let gameJSON: unknown;
+  let gameJSON: GameJSON | undefined;
   if (gameJSONString !== "") {
-    try {
-      gameJSON = JSON.parse(gameJSONString);
-    } catch (error) {
-      modals.showError(
-        escapeHtml(errorDetails(error, "Parsing custom game JSON")),
-      );
+    const parsed = parseGameJSON(gameJSONString);
+    if ("error" in parsed) {
+      modals.showError(escapeHtml(parsed.error));
       return;
     }
-    if (typeof gameJSON !== "object") {
-      modals.showError("That is not a valid JSON object.");
-      return;
-    }
+    ({ gameJSON } = parsed);
   }
 
   const options = {

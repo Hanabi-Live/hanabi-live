@@ -373,7 +373,9 @@ fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> u
 async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<()> {
     let (_redis, store, _state) = fixture_store("live-idle-warning").await?;
     let id = store.allocate_table().await?;
-    let imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    let imported = replay_helpers::parse(&hanabi_protocol::decode(
+        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+    )?)?;
     let mut snapshot = replay_helpers::snapshot(imported, id, 1);
     snapshot.idle_remaining = IDLE_WARNING_MS;
     let mut table = pregame(id);
@@ -438,7 +440,9 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
 async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<()> {
     let (_redis, store, _state) = fixture_store("live-spectator-idle").await?;
     let id = store.allocate_table().await?;
-    let imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    let imported = replay_helpers::parse(&hanabi_protocol::decode(
+        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+    )?)?;
     let mut snapshot = replay_helpers::snapshot(imported, id, 1);
     snapshot.idle_remaining = 1000;
     let mut table = pregame(id);
@@ -469,7 +473,9 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
 }
 
 pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> {
-    let mut imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    let mut imported = replay_helpers::parse(&hanabi_protocol::decode(
+        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+    )?)?;
     imported.game.terminate(0, condition, -1, None, None)?;
     let snapshot = replay_helpers::snapshot(imported, id, 1);
     let mut table = pregame(id);

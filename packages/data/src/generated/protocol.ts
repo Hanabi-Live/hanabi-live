@@ -775,11 +775,97 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
     type: z.literal("efficiencyMod"),
   }),
 ]);
+const importActionSchema = z.object({
+  target: z
+    .number()
+    .int()
+    .min(-2_147_483_648)
+    .max(2_147_483_647)
+    .nullable()
+    .optional(),
+  type: z.number().int().min(0).max(255).nullable().optional(),
+  value: z
+    .number()
+    .int()
+    .min(-2_147_483_648)
+    .max(2_147_483_647)
+    .nullable()
+    .optional(),
+});
+const importCardSchema = z.object({
+  rank: z
+    .number()
+    .int()
+    .min(-2_147_483_648)
+    .max(2_147_483_647)
+    .nullable()
+    .optional(),
+  suitIndex: z
+    .number()
+    .int()
+    .min(0)
+    .max(9_007_199_254_740_991)
+    .nullable()
+    .optional(),
+});
+const importCharacterSchema = z.object({
+  metadata: z
+    .number()
+    .int()
+    .min(-2_147_483_648)
+    .max(2_147_483_647)
+    .nullable()
+    .optional(),
+  name: z.string().nullable().optional(),
+});
+const importNoteRowSchema = z.array(z.string().nullable());
+const importOptionsSchema = z.object({
+  allOrNothing: z.boolean().nullable().optional(),
+  cardCycle: z.boolean().nullable().optional(),
+  deckPlays: z.boolean().nullable().optional(),
+  detrimentalCharacters: z.boolean().nullable().optional(),
+  emptyClues: z.boolean().nullable().optional(),
+  oneExtraCard: z.boolean().nullable().optional(),
+  oneLessCard: z.boolean().nullable().optional(),
+  speedrun: z.boolean().nullable().optional(),
+  startingPlayer: z
+    .number()
+    .int()
+    .min(0)
+    .max(9_007_199_254_740_991)
+    .nullable()
+    .optional(),
+  timeBase: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .nullable()
+    .optional(),
+  timePerTurn: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .nullable()
+    .optional(),
+  timed: z.boolean().nullable().optional(),
+  variant: z.string().nullable().optional(),
+});
+export const replayImportSchema = z.object({
+  actions: z.array(importActionSchema).max(512).nullable().optional(),
+  characters: z.array(importCharacterSchema).max(6).nullable().optional(),
+  deck: z.array(importCardSchema).max(60).nullable().optional(),
+  notes: z.array(importNoteRowSchema).max(6).nullable().optional(),
+  options: z.union([importOptionsSchema, z.null()]).optional(),
+  players: z.array(z.string()).max(6).nullable().optional(),
+  seed: z.string().nullable().optional(),
+});
 const replaySourceSchema = z.enum(["id", "json"]);
 const replayVisibilitySchema = z.enum(["solo", "shared"]);
 export const replayCreateRequestSchema = z.strictObject({
   databaseID: z.number().int().min(1).max(2_147_483_647).optional(),
-  gameJSON: z.unknown().optional(),
+  gameJSON: replayImportSchema.optional(),
   joinExisting: z.boolean().default(false),
   password: z.string().default(""),
   shadowingPlayerIndex: z
@@ -959,7 +1045,7 @@ export const tableSchema = z
   .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableCreateRequestSchema = z.strictObject({
-  gameJSON: z.unknown().optional(),
+  gameJSON: replayImportSchema.optional(),
   hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()
@@ -1028,7 +1114,7 @@ export const tableSuggestRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableUpdateRequestSchema = z.strictObject({
-  gameJSON: z.unknown().optional(),
+  gameJSON: replayImportSchema.optional(),
   hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()

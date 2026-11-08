@@ -1,7 +1,7 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { replayGameSchema } from "@hanabi-live/data";
+import { replayImportSchema } from "@hanabi-live/data";
 
 vi.mock("./history", () => ({
   show: vi.fn(),
@@ -62,7 +62,7 @@ describe("replay URL loading", () => {
 
     parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
 
-    const gameJSON = replayGameSchema.parse(
+    const gameJSON = replayImportSchema.parse(
       JSON.parse(expand(`${payload}${suffix}`)!),
     );
     expect(send).toHaveBeenCalledWith("replayCreate", {

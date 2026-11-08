@@ -3,6 +3,7 @@ import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
+import { parseGameJSON } from "./gameJSON";
 import * as history from "./history";
 import { expand } from "./hypoCompress";
 
@@ -154,17 +155,12 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         return;
       }
 
-      let gameJSON: unknown;
-      try {
-        gameJSON = JSON.parse(gameJSONString);
-      } catch {
+      const parsed = parseGameJSON(gameJSONString);
+      if ("error" in parsed) {
         setBrowserAddressBarPath("/lobby");
         return;
       }
-      if (typeof gameJSON !== "object") {
-        setBrowserAddressBarPath("/lobby");
-        return;
-      }
+      const { gameJSON } = parsed;
 
       const visibility = globalThis.location.pathname.includes("shared-")
         ? "shared"
