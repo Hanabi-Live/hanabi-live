@@ -8,6 +8,8 @@ use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
 pub const IDLE_TIMEOUT_MS: i64 = 1_800_000;
+/// How long before an idle game ends to warn its table.
+pub const IDLE_WARNING_MS: i64 = 300_000;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

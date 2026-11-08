@@ -9,6 +9,8 @@ export enum ServerCommand {
   connected = "connected",
   clock = "clock",
   pause = "pause",
+  idleWarning = "idleWarning",
+  idleReset = "idleReset",
   noteListPlayer = "noteListPlayer",
   noteList = "noteList",
   note = "note",

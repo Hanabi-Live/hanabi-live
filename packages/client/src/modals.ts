@@ -17,11 +17,15 @@ let allowCloseModal = true;
 let downtimeMessage: string | null = null;
 let currentModal: HTMLElement | null = null;
 let morphDragArea: DragAreaType = null;
+let idleCountdown: ReturnType<typeof setInterval> | null = null;
 
 const createGameSubmit = getHTMLElement("#create-game-submit");
 const createTablePassword = getHTMLInputElement("#createTablePassword");
 const errorModalButton = getHTMLElement("#error-modal-button");
 const errorModalDescription = getHTMLElement("#error-modal-description");
+const idleModalClose = getHTMLElement("#idle-modal-close");
+const idleModalDescription = getHTMLElement("#idle-modal-description");
+const idleModalKeep = getHTMLElement("#idle-modal-keep");
 const pageCover = getHTMLElement("#page-cover");
 const modalsContainer = getHTMLElement("#modals-container");
 const morphModalButtonCancel = getHTMLElement("#morph-modal-button-cancel");
@@ -62,6 +66,11 @@ export function init(): void {
 
   // Warning modal setup.
   warningModalButton.addEventListener("pointerdown", () => {
+    closeModals();
+  });
+
+  // Idle modal setup.
+  idleModalClose.addEventListener("pointerdown", () => {
     closeModals();
   });
 
@@ -277,6 +286,70 @@ export function showWarning(msg: string): void {
     warningModalButton.focus();
   };
   showModal("#warning-modal", true, undefined, ready);
+}
+
+/**
+ * Warns that an ongoing game will end soon because nobody has taken a turn, counting down until it
+ * ends. Players get a button that keeps the game going.
+ */
+export function showIdleWarning(
+  remainingMs: number,
+  keepPlaying: (() => void) | null,
+): void {
+  if (globals.errorOccurred) {
+    return;
+  }
+
+  const deadline = Date.now() + remainingMs;
+  const countdown = document.createElement("strong");
+  idleModalDescription.replaceChildren(
+    "Nobody has taken a turn in a while, so this game will end in ",
+    countdown,
+    keepPlaying === null
+      ? " unless a player takes a turn or keeps it going."
+      : " unless someone takes a turn or keeps it going.",
+  );
+  function update() {
+    const seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    countdown.textContent = `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}`;
+  }
+  update();
+  stopIdleCountdown();
+  idleCountdown = setInterval(() => {
+    if (currentModal?.id === "idle-modal") {
+      update();
+    } else {
+      stopIdleCountdown();
+    }
+  }, 1000);
+
+  idleModalKeep.style.display = keepPlaying === null ? "none" : "";
+  // We can't use "addEventListener" because we can't easily remove the previous listener.
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  idleModalKeep.onpointerdown = () => {
+    keepPlaying?.();
+    closeIdleWarning();
+  };
+
+  globals.lastActiveElement = document.activeElement as HTMLElement;
+  showModal("#idle-modal", true, undefined, () => {
+    (keepPlaying === null ? idleModalClose : idleModalKeep).focus();
+  });
+}
+
+/** Closes the idle warning (and only it), for example after a turn keeps the game going. */
+export function closeIdleWarning(): void {
+  stopIdleCountdown();
+  if (currentModal?.id === "idle-modal") {
+    closeModals();
+  }
+}
+
+function stopIdleCountdown() {
+  if (idleCountdown !== null) {
+    clearInterval(idleCountdown);
+    idleCountdown = null;
+  }
 }
 
 /** The reason stays visible if a reconnect error (such as an outdated client) replaces it. */

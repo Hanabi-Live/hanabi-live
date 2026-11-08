@@ -23,6 +23,7 @@ import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
+import * as modals from "../../modals";
 import { setBrowserAddressBarPath } from "../../utils";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
@@ -54,6 +55,7 @@ export const gameCommands = new Map<string, CommandCallback>();
 
 // Received when the server wants to force the client to go back to the lobby
 gameCommands.set("boot", () => {
+  modals.closeIdleWarning();
   timer.stop();
   globals.game!.hide();
 });
@@ -93,6 +95,8 @@ interface FinishOngoingGameData {
   sharedReplayLeader: string;
 }
 gameCommands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+  modals.closeIdleWarning();
+
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
   // with the shared replay leader.
   globals.store!.dispatch({
@@ -268,6 +272,9 @@ interface GameActionData {
   action: GameAction;
 }
 gameCommands.set("gameAction", (data: GameActionData) => {
+  // A turn restarts the server's idle timer.
+  modals.closeIdleWarning();
+
   // Update the game state.
   globals.store!.dispatch(data.action);
 });
@@ -303,6 +310,28 @@ interface PauseData {
   active: boolean;
   playerIndex: PlayerIndex;
 }
+interface IdleWarningData {
+  tableID: number;
+  remainingMs: number;
+}
+gameCommands.set("idleWarning", (data: IdleWarningData) => {
+  modals.showIdleWarning(
+    data.remainingMs,
+    globals.state.playing
+      ? () => {
+          globals.lobby.conn!.send("idleReset", {
+            tableID: globals.lobby.tableID,
+          });
+        }
+      : null,
+  );
+});
+
+// Received when a player keeps an idle game going.
+gameCommands.set("idleReset", () => {
+  modals.closeIdleWarning();
+});
+
 gameCommands.set("pause", (data: PauseData) => {
   const soundType = data.active ? SoundType.GamePaused : SoundType.GameUnpaused;
   globals.game!.sounds.play(soundType);

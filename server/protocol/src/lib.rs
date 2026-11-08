@@ -419,6 +419,17 @@ pub struct Connected {
     pub list: Vec<bool>,
 }
 
+/// Sent when an ongoing game is about to end because nobody has taken a turn for too long.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct IdleWarning {
+    #[serde(rename = "tableID")]
+    pub table_id: TableId,
+    /// How long until the game ends, unless someone takes a turn or keeps it going.
+    #[schemars(range(min = 0, max = 1_800_000))]
+    pub remaining_ms: i64,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Pause {
@@ -1455,6 +1466,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ReplayCreateRequest,
         Clock,
         Connected,
+        IdleWarning,
         Pause,
         VoteChange,
         CardIdentity,

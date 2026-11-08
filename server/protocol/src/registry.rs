@@ -48,6 +48,7 @@ macro_rules! client_contracts {
             ReplayCreate "replayCreate" => ReplayCreateRequest, ReplayCreateRequest;
             Action "action" => ActionRequest, ActionRequest;
             Pause "pause" => PauseRequest, PauseRequest;
+            IdleReset "idleReset" => TableRequest, TableRequest;
             Note "note" => NoteRequest, NoteRequest;
             Tag "tag" => TagRequest, TagRequest;
             TagDelete "tagDelete" => TagRequest, TagRequest;
@@ -64,6 +65,8 @@ macro_rules! server_contracts {
             CLOCK "clock" => Clock, Clock;
             CONNECTED "connected" => Connected, Connected;
             PAUSE "pause" => Pause, Pause;
+            IDLE_WARNING "idleWarning" => IdleWarning, IdleWarning;
+            IDLE_RESET "idleReset" => TableRequest, TableRequest;
             VOTE_CHANGE "voteChange" => VoteChange, VoteChange;
             CARD_IDENTITIES "cardIdentities" => CardIdentities, CardIdentities;
             FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame, FinishOngoingGame;
