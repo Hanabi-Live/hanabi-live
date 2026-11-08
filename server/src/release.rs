@@ -200,10 +200,7 @@ mod tests {
 
     #[test]
     fn verify_requires_paired_sha_assets() {
-        let root = std::env::temp_dir().join(format!(
-            "hanabi-sha-release-{:032x}",
-            rand::random::<u128>()
-        ));
+        let root = crate::tls::fixture_root("hanabi-sha-release").unwrap();
         let revision = crate::restart::version();
         for (name, value) in [
             ("hanabi-live".into(), "binary"),

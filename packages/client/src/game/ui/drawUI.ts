@@ -61,6 +61,7 @@ import {
   STRIKE_ARROW_ORDERS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
+  TOOLTIP_INDENT,
   WARNING_COLOR,
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
@@ -1447,17 +1448,16 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyTextLabel);
   efficiencyTextLabel.tooltipName = "efficiency-text";
-  const padding = "&nbsp; &nbsp; &nbsp; &nbsp; ";
   const efficiencyTextLabelContent = `
     Efficiency is calculated by: <br />
-    ${padding}&nbsp; &nbsp; <em>(number of cards played +<br />
-    ${padding}&nbsp; &nbsp; number of touched cards) /<br />
-    ${padding}&nbsp; &nbsp; number of clues given or lost</em><br />
-    ${padding}The first number is the minimum amount of efficiency needed from <br />
-    ${padding}this turn onward in order to win (i.e. future required efficiency).<br />
-    ${padding}The second number shows the minimum possible efficiency needed<br />
-    ${padding}to win with the current number of players and the current variant.<br />
-    ${padding}(For more information, click on the "Help" button in the lobby.)
+    ${TOOLTIP_INDENT}&nbsp; &nbsp; <em>(number of cards played +<br />
+    ${TOOLTIP_INDENT}&nbsp; &nbsp; number of touched cards) /<br />
+    ${TOOLTIP_INDENT}&nbsp; &nbsp; number of clues given or lost</em><br />
+    ${TOOLTIP_INDENT}The first number is the minimum amount of efficiency needed from <br />
+    ${TOOLTIP_INDENT}this turn onward in order to win (i.e. future required efficiency).<br />
+    ${TOOLTIP_INDENT}The second number shows the minimum possible efficiency needed<br />
+    ${TOOLTIP_INDENT}to win with the current number of players and the current variant.<br />
+    ${TOOLTIP_INDENT}(For more information, click on the "Help" button in the lobby.)
   `;
   efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
   initKonvaTooltips(efficiencyTextLabel, true, false);

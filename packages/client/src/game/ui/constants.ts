@@ -259,3 +259,10 @@ export const STRIKE_ARROW_ORDERS = [
   ReplayArrowOrder.Strike2,
   ReplayArrowOrder.Strike3,
 ] as const satisfies Tuple<ReplayArrowOrder, typeof MAX_STRIKES>;
+
+// --------
+// Tooltips
+// --------
+
+/** The HTML that indents a continuation line in a tooltip. */
+export const TOOLTIP_INDENT = "&nbsp; &nbsp; &nbsp; &nbsp; ";

@@ -28,6 +28,13 @@ import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { getHTMLInputElement } from "./utils";
 
+/** Formats chat timestamps as 24-hour "HH:MM" regardless of the browser's locale. */
+const chatTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
 type ChatData = ServerCommandData["chat"];
 type PMHistoryMessage = ServerCommandData["chatPMHistory"]["list"][number];
 
@@ -564,10 +571,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   }
   const msg = getPreparedMessage(rawMsg);
 
-  // TypeScript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
-  // format the hours manually.
-  const dateObj = new Date(data.datetime);
-  const datetime = `${padTwoDigits(dateObj.getHours())}:${padTwoDigits(dateObj.getMinutes())}`;
+  const datetime = chatTimeFormatter.format(new Date(data.datetime));
 
   const chatIDAttribute = getLobbyChatIDAttribute(data.room, data.chatID);
   let line = `<span id="chat-line-${chatLineNum}"${chatIDAttribute}`;
@@ -903,8 +907,4 @@ function formatChatMessage(msg: string, type: SelfChatMessageType): string {
       return `<span class="red">${msg}</span>`;
     }
   }
-}
-
-function padTwoDigits(value: number): string {
-  return value.toString().padStart(2, "0");
 }
