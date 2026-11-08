@@ -23,7 +23,12 @@ const PASSWORD_SALT_BYTES: usize = 16;
 const IDENTITY_TOKEN_BYTES: usize = 96;
 /// How long an identity token stays valid, in hours.
 const IDENTITY_TOKEN_LIFETIME_HOURS: i64 = 24;
-static HASH_ADMISSION: LazyLock<HashAdmission> = LazyLock::new(|| HashAdmission::new(4, 32));
+/// The password hashes that run at once.
+const HASH_WORKERS: usize = 4;
+/// The password hashes that can wait for a worker before new requests are refused.
+const HASH_QUEUE: usize = 32;
+static HASH_ADMISSION: LazyLock<HashAdmission> =
+    LazyLock::new(|| HashAdmission::new(HASH_WORKERS, HASH_QUEUE));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HashOverload {

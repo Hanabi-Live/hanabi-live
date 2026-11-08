@@ -49,9 +49,14 @@ fn git_path(root: &Path, name: &str) -> Result<PathBuf, String> {
     .map(PathBuf::from)
 }
 
+/// The hex digits of a SHA-1 commit ID, which a supplied revision must use.
+const SHA1_HEX_LENGTH: usize = 40;
+/// The hex digits of a commit ID in a SHA-256 repository.
+const SHA256_HEX_LENGTH: usize = 64;
+
 pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version, String> {
     if let Some(commit) = supplied_revision {
-        if commit.len() != 40
+        if commit.len() != SHA1_HEX_LENGTH
             || !commit
                 .bytes()
                 .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
@@ -79,7 +84,9 @@ pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version,
         Err(error) => return Err(error),
     };
     let commit = checked(root, &["rev-parse", "--verify", "HEAD^{commit}"])?;
-    if !matches!(commit.len(), 40 | 64) || !commit.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+    if !matches!(commit.len(), SHA1_HEX_LENGTH | SHA256_HEX_LENGTH)
+        || !commit.bytes().all(|byte| byte.is_ascii_hexdigit())
+    {
         return Err("Git returned an invalid commit identifier".into());
     }
     let mut watched = BTreeSet::from([git_path(root, "HEAD")?]);

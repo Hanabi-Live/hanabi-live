@@ -52,10 +52,13 @@ fn private_path(name: &str) -> bool {
     })
 }
 
+/// The bytes read from a release file at a time while hashing it.
+const HASH_BUFFER_BYTES: usize = 64 * 1024;
+
 fn hash_file(path: &Path) -> Result<String> {
     let mut file = File::open(path)?;
     let mut digest = Sha256::new();
-    let mut buffer = vec![0; 65536];
+    let mut buffer = vec![0; HASH_BUFFER_BYTES];
     loop {
         let size = file.read(&mut buffer)?;
         if size == 0 {

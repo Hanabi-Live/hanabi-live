@@ -2,9 +2,10 @@ use crate::{
     game::{Game, Options},
     lobby::{Effect, OnlineUser},
     model::{
-        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MAX_NOTE_LENGTH,
-        MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, NoteOwner, PendingTag, Phase, Player, ReplayState,
-        Snapshot, TableChat, TableSnapshot, Tag, engine_options, small, tag_too_long, wire_options,
+        CLOCK_UNITS_PER_SECOND, ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS,
+        MAX_NOTE_LENGTH, MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, NoteOwner, PendingTag, Phase,
+        Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag, engine_options, small,
+        tag_too_long, wire_options,
     },
     operations::Operation,
     server_info::ServerInfo,
@@ -61,8 +62,6 @@ const TYPING_TIMEOUT: Duration = Duration::from_secs(2);
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 /// The longest countdown `/startin` can set, in minutes.
 const MAX_START_IN_MINUTES: f64 = 10.0;
-/// Player clocks hold milliseconds; time options hold seconds.
-const CLOCK_UNITS_PER_SECOND: i32 = 1000;
 /// The time added to each clock of a timed game when a graceful restart drains its table, so that
 /// players do not lose time to the restart.
 const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
@@ -70,6 +69,11 @@ const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
 const FLOAT_MANTISSA_BITS: i32 = f64::MANTISSA_DIGITS.cast_signed();
 /// The power of two of the smallest positive subnormal `f64`.
 const FLOAT_MIN_EXPONENT: i32 = f64::MIN_EXP - FLOAT_MANTISSA_BITS;
+/// The prefix of a hexadecimal float.
+const HEX_PREFIX: &str = "0x";
+const HEX_RADIX: u32 = 16;
+/// The binary digits that one hexadecimal digit holds.
+const HEX_DIGIT_BITS: u32 = HEX_RADIX.trailing_zeros();
 
 /// Whether an untimed game, or a timed game within the clock limits.
 fn valid_timed_options(options: &Options) -> bool {
@@ -443,7 +447,7 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
         time_base: 0.0,
         time_per_turn: 0,
         timed: false,
-        variant: "No Variant".into(),
+        variant: hanabi_protocol::DEFAULT_VARIANT_NAME.into(),
     }
 }
 #[cfg(test)]
@@ -1457,7 +1461,7 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
         return None;
     }
     let cleaned = value.replace('_', "").to_ascii_lowercase();
-    let (mantissa, power) = cleaned[2..].split_once('p')?;
+    let (mantissa, power) = cleaned[HEX_PREFIX.len()..].split_once('p')?;
     let fraction = mantissa
         .split_once('.')
         .map_or(0, |(_, fraction)| fraction.len());
@@ -1471,12 +1475,12 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
     let exponent = power.saturating_sub(
         i64::try_from(fraction)
             .unwrap_or(i64::MAX)
-            .saturating_mul(4),
+            .saturating_mul(i64::from(HEX_DIGIT_BITS)),
     );
     let mut bits = Vec::new();
     for digit in mantissa.chars().filter(|c| *c != '.') {
-        let value = digit.to_digit(16)?;
-        for bit in (0..4).rev() {
+        let value = digit.to_digit(HEX_RADIX)?;
+        for bit in (0..HEX_DIGIT_BITS).rev() {
             bits.push((value >> bit) & 1);
         }
     }
@@ -4890,7 +4894,8 @@ impl TableActor {
             .cloned()
             .collect::<Vec<_>>();
         ensure!(
-            players.len() >= 2 && (!hide || players.len() == self.table.players().len()),
+            players.len() >= hanabi_protocol::MIN_PLAYERS
+                && (!hide || players.len() == self.table.players().len()),
             "Original players must attend to restart"
         );
         let snapshot = self.table.game().context("Missing completed game")?;

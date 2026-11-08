@@ -2,8 +2,9 @@
 
 import type { Tuple } from "complete-common";
 import { newArray } from "complete-common";
-import { DEFAULT_PLAYER_NAMES, DEFAULT_VARIANT_NAME } from "./constants";
+import { DEFAULT_PLAYER_NAMES } from "./constants";
 import { getVariant } from "./gameData";
+import { DEFAULT_VARIANT_NAME } from "./generated/protocol";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import { defaultOptions } from "./interfaces/Options";
 import { getCardsPerHand } from "./rules/hand";

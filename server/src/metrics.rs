@@ -127,6 +127,9 @@ fn bucket(limit: f64) -> String {
     }
 }
 
+/// `/proc/self/status` reports memory in KiB.
+const BYTES_PER_KIB: u64 = 1024;
+
 pub async fn memory() -> anyhow::Result<Value> {
     let status = tokio::fs::read_to_string("/proc/self/status").await?;
     let field = |name: &str| -> anyhow::Result<u64> {
@@ -139,7 +142,7 @@ pub async fn memory() -> anyhow::Result<Value> {
             .nth(1)
             .ok_or_else(|| anyhow::anyhow!("Invalid memory report"))?
             .parse::<u64>()?
-            * 1024)
+            * BYTES_PER_KIB)
     };
     Ok(json!({"residentBytes":field("VmRSS:")?,"virtualBytes":field("VmSize:")?}))
 }

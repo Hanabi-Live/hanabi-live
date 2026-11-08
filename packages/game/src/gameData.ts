@@ -1,7 +1,7 @@
 import { assertDefined } from "complete-common";
 import { charactersInit } from "./charactersInit";
 import { colorsInit } from "./colorsInit";
-import { DEFAULT_VARIANT_NAME } from "./constants";
+import { DEFAULT_VARIANT_NAME } from "./generated/protocol";
 import type { Character } from "./interfaces/Character";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";

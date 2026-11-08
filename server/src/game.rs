@@ -122,10 +122,15 @@ impl Game {
     }
 }
 pub fn unshuffled_deck() -> Vec<Card> {
-    hanabi_engine::create_deck(hanabi_engine::get_variant("No Variant").expect("catalog"))
+    hanabi_engine::create_deck(
+        hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME).expect("catalog"),
+    )
 }
 pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
-    hanabi_engine::create_shuffled_deck(hanabi_engine::get_variant("No Variant")?, seed)
+    hanabi_engine::create_shuffled_deck(
+        hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME)?,
+        seed,
+    )
 }
 pub fn options() -> Value {
     serde_json::to_value(Options {

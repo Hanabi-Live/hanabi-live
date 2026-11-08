@@ -3,6 +3,7 @@ import * as z from "zod";
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 6;
+export const DEFAULT_VARIANT_NAME = "No Variant";
 export const MAX_SUITS = 6;
 export const MAX_DECK_SIZE = 60;
 export const START_CARD_RANK = 7;

@@ -37,7 +37,9 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         "Invalid seed"
     );
     let raw = input.options.clone().unwrap_or_default();
-    let variant_name = raw.variant.unwrap_or_else(|| "No Variant".into());
+    let variant_name = raw
+        .variant
+        .unwrap_or_else(|| hanabi_protocol::DEFAULT_VARIANT_NAME.into());
     let variant = hanabi_engine::get_variant(&variant_name)?;
     let has_characters = raw.detrimental_characters.is_some();
     let defaults = Options::default();
@@ -323,7 +325,7 @@ mod tests {
     #[test]
     fn a_seed_and_a_deck_must_agree() {
         let seed = "p2v0s1";
-        let variant = hanabi_engine::get_variant("No Variant").unwrap();
+        let variant = hanabi_engine::get_variant(hanabi_protocol::DEFAULT_VARIANT_NAME).unwrap();
         let seeded = hanabi_engine::create_shuffled_deck(variant, seed).unwrap();
         let mut other = seeded.clone();
         let different = (1..other.len()).find(|&i| other[i] != other[0]).unwrap();

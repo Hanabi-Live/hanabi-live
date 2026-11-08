@@ -2,24 +2,29 @@
 use anyhow::{Result, ensure};
 use std::sync::OnceLock;
 
+/// Seeds that begin with this marker carry a one-character label, such as "legacy-1-".
+const LEGACY_SEED_MARKER: &str = "legacy-";
+/// The labelled prefix that a legacy seed's hash skips, as Go's `len("legacy-x-")` does.
+const LEGACY_SEED_PREFIX: &str = "legacy-x-";
+/// The CRC-64 ECMA polynomial in reversed bit order, as Go's `crc64.ECMA` table uses it.
+const CRC64_ECMA_REVERSED: u64 = 0xc96c_5795_d787_0f42;
+
 pub fn seed_hash(seed: &str) -> Result<i64> {
     let bytes = seed.as_bytes();
-    let bytes = if seed.starts_with("legacy-") {
-        ensure!(bytes.len() >= 9, "Malformed legacy seed");
-        &bytes[9..]
+    let bytes = if seed.starts_with(LEGACY_SEED_MARKER) {
+        ensure!(
+            bytes.len() >= LEGACY_SEED_PREFIX.len(),
+            "Malformed legacy seed"
+        );
+        &bytes[LEGACY_SEED_PREFIX.len()..]
     } else {
         bytes
     };
     let mut crc = u64::MAX;
     for byte in bytes {
         crc ^= u64::from(*byte);
-        for _ in 0..8 {
-            crc = (crc >> 1)
-                ^ if crc & 1 != 0 {
-                    0xc96c_5795_d787_0f42
-                } else {
-                    0
-                };
+        for _ in 0..u8::BITS {
+            crc = (crc >> 1) ^ if crc & 1 != 0 { CRC64_ECMA_REVERSED } else { 0 };
         }
     }
     Ok((!crc).cast_signed())

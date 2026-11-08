@@ -26,6 +26,8 @@ pub const MAX_PLAYERS: usize = 6;
 pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 /// The player limit of a table whose creator did not choose one.
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
+/// The variant of a game or table that does not choose one.
+pub const DEFAULT_VARIANT_NAME: &str = "No Variant";
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The lowest rank.
@@ -46,10 +48,12 @@ pub const MAX_GAME_ACTIONS: usize = 512;
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
 pub const SECONDS_PER_MINUTE: i32 = 60;
+/// The number of seconds in a day.
+pub const SECONDS_PER_DAY: i32 = 24 * 60 * SECONDS_PER_MINUTE;
 /// The longest starting clock a timed game can have, in seconds (one week).
-pub const MAX_TIME_BASE_SECONDS: i32 = 7 * 24 * 60 * 60;
+pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
 /// The most time a timed game can add each turn, in seconds (one day).
-pub const MAX_TIME_PER_TURN_SECONDS: i64 = 24 * 60 * 60;
+pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
 /// The most private messages that one history request can ask for.
@@ -1514,7 +1518,7 @@ impl Default for Settings {
             speedrun_preplay: false,
             speedrun_mode: false,
             hyphenated_conventions: false,
-            create_table_variant: "No Variant".into(),
+            create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
             create_table_time_base_minutes: 2.0,
             create_table_time_per_turn_seconds: 20,
@@ -1614,7 +1618,7 @@ impl Default for GameOptions {
         Self {
             num_players: 2,
             starting_player: 0,
-            variant_name: "No Variant".into(),
+            variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,
             time_base: 0.0,

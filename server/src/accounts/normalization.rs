@@ -18,15 +18,22 @@ static IDENTITY: LazyLock<IdentityData> = LazyLock::new(|| {
     .expect("checked-in Go identity data")
 });
 
+/// Code points below this, ASCII without DEL, are kept as they are.
+const PASSTHROUGH_LIMIT: u32 = 0x7f;
+/// The highest code point that the identity tables transliterate.
+const MAX_TRANSLITERATED: u32 = 0xe_ffff;
+/// The code points in each page of the identity tables.
+const IDENTITY_PAGE_SIZE: u32 = 256;
+
 pub fn normalize_string(input: &str) -> String {
     let mut result = String::new();
     for ch in input.chars() {
         let cp = ch as u32;
-        if cp < 127 {
+        if cp < PASSTHROUGH_LIMIT {
             result.push(ch);
-        } else if cp <= 0xeffff
-            && let Some(page) = IDENTITY.pages.get(&(cp / 256).to_string())
-            && let Some(text) = page.get((cp % 256) as usize)
+        } else if cp <= MAX_TRANSLITERATED
+            && let Some(page) = IDENTITY.pages.get(&(cp / IDENTITY_PAGE_SIZE).to_string())
+            && let Some(text) = page.get((cp % IDENTITY_PAGE_SIZE) as usize)
         {
             result.push_str(text);
         }

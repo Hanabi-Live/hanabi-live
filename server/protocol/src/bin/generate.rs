@@ -658,6 +658,11 @@ fn game_library_constants() -> String {
     exported_constants(&[
         ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
         ("MAX_PLAYERS", hanabi_protocol::MAX_PLAYERS.to_string()),
+        (
+            "DEFAULT_VARIANT_NAME",
+            serde_json::to_string(hanabi_protocol::DEFAULT_VARIANT_NAME)
+                .expect("a string serializes"),
+        ),
         ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
         ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),
         (

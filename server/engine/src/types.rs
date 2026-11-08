@@ -1,4 +1,5 @@
 pub use hanabi_protocol::{ActionType, ClueType, EndCondition, RecordedActionType};
+use hanabi_protocol::{DEFAULT_VARIANT_NAME, MIN_PLAYERS};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -30,9 +31,9 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Self {
-            num_players: 2,
+            num_players: MIN_PLAYERS,
             starting_player: 0,
-            variant_name: "No Variant".into(),
+            variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,
             time_base: 0.0,

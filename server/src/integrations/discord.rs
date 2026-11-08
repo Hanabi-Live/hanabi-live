@@ -50,9 +50,16 @@ const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
 const GUILD_TEXT_CHANNEL: i64 = 0;
 /// Discord's channel type for a guild announcement channel.
 const GUILD_ANNOUNCEMENT_CHANNEL: i64 = 5;
-/// The gateway intents we identify with: guilds, guild messages, direct messages, and message
-/// content.
-const INTENTS: u64 = 1 << 0 | 1 << 9 | 1 << 12 | 1 << 15;
+/// Discord gateway intent flags.
+mod intent {
+    pub const GUILDS: u64 = 1 << 0;
+    pub const GUILD_MESSAGES: u64 = 1 << 9;
+    pub const DIRECT_MESSAGES: u64 = 1 << 12;
+    pub const MESSAGE_CONTENT: u64 = 1 << 15;
+}
+/// The gateway intents we identify with.
+const INTENTS: u64 =
+    intent::GUILDS | intent::GUILD_MESSAGES | intent::DIRECT_MESSAGES | intent::MESSAGE_CONTENT;
 
 /// Discord gateway opcodes.
 mod opcode {
