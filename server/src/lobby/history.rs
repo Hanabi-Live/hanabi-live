@@ -1,23 +1,6 @@
+use crate::archive::GameRecord;
 use anyhow::{Context, Result};
-use serde_json::Value;
-use sqlx::PgPool;
-use std::{collections::HashMap, sync::LazyLock};
-
-static VARIANTS: LazyLock<HashMap<i64, String>> = LazyLock::new(|| {
-    let variants: Vec<Value> = serde_json::from_str(include_str!(
-        "../../../packages/game/src/json/variants.json"
-    ))
-    .unwrap();
-    variants
-        .iter()
-        .map(|v| {
-            (
-                v["id"].as_i64().unwrap(),
-                v["name"].as_str().unwrap().to_owned(),
-            )
-        })
-        .collect()
-});
+use sqlx::{PgPool, types::Json};
 
 pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Result<Vec<i32>> {
     // A player is in one game at a time, so their game IDs follow the order their games finished.
@@ -35,26 +18,7 @@ pub async fn history_ids(pool: &PgPool, id: i32, offset: i64, amount: i64) -> Re
 }
 
 struct HistoryRow {
-    id: i32,
-    num_players: i16,
-    variant_id: i16,
-    timed: bool,
-    time_base: i32,
-    time_per_turn: i32,
-    speedrun: bool,
-    card_cycle: bool,
-    deck_plays: bool,
-    empty_clues: bool,
-    one_extra_card: bool,
-    one_less_card: bool,
-    all_or_nothing: bool,
-    detrimental_characters: bool,
-    seed: String,
-    score: i16,
-    num_turns: i16,
-    end_condition: i16,
-    datetime_started: chrono::DateTime<chrono::Utc>,
-    datetime_finished: chrono::DateTime<chrono::Utc>,
+    game: Json<GameRecord>,
     player_names: Vec<String>,
     tags: String,
     num_games_on_this_seed: i32,
@@ -69,10 +33,7 @@ pub async fn get_history(
         ($order:literal) => {
             sqlx::query_as!(
                 HistoryRow,
-        "SELECT g.id,g.num_players,g.variant_id,g.timed,g.time_base,g.time_per_turn,g.speedrun,
-            g.card_cycle,g.deck_plays,g.empty_clues,g.one_extra_card,g.one_less_card,
-            g.all_or_nothing,g.detrimental_characters,g.seed,g.score,g.num_turns,g.end_condition,
-            g.datetime_started,g.datetime_finished,
+        "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
             COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")
                 FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),
                 '{}') AS \"player_names!\",
@@ -94,35 +55,17 @@ pub async fn get_history(
     };
     let mut result = Vec::new();
     for row in rows {
+        let game = row.game.0;
         result.push(hanabi_protocol::GameHistory {
-            id: hanabi_protocol::GameId(row.id),
-            options: hanabi_protocol::GameOptions {
-                num_players: u8::try_from(row.num_players)
-                    .context("Invalid stored player count")?,
-                variant_name: VARIANTS
-                    .get(&i64::from(row.variant_id))
-                    .map_or_else(|| "Unknown".into(), Clone::clone),
-                variant_id: Some(u32::try_from(row.variant_id).context("Invalid stored variant")?),
-                timed: row.timed,
-                time_base: f64::from(row.time_base),
-                time_per_turn: i64::from(row.time_per_turn),
-                speedrun: row.speedrun,
-                card_cycle: row.card_cycle,
-                deck_plays: row.deck_plays,
-                empty_clues: row.empty_clues,
-                one_extra_card: row.one_extra_card,
-                one_less_card: row.one_less_card,
-                all_or_nothing: row.all_or_nothing,
-                detrimental_characters: row.detrimental_characters,
-                ..hanabi_protocol::GameOptions::default()
-            },
-            seed: row.seed,
-            score: i32::from(row.score),
-            num_turns: i32::from(row.num_turns),
-            end_condition: u8::try_from(row.end_condition)
+            id: hanabi_protocol::GameId(game.id),
+            options: crate::model::wire_options(&crate::store::options_from_record(&game)?),
+            score: i32::from(game.score),
+            num_turns: i32::from(game.num_turns),
+            end_condition: u8::try_from(game.end_condition)
                 .context("Invalid stored end condition")?,
-            datetime_started: time(row.datetime_started),
-            datetime_finished: time(row.datetime_finished),
+            datetime_started: time(game.datetime_started),
+            datetime_finished: time(game.datetime_finished),
+            seed: game.seed,
             num_games_on_this_seed: i64::from(row.num_games_on_this_seed),
             player_names: row.player_names,
             increment_num_games: false,
