@@ -2,7 +2,7 @@ use crate::{
     Character, EngineCard, EngineEvent, EngineState, PlayerAction, StackDirection, Variant,
     clue_type, get_variant, int, is_card_touched,
 };
-use hanabi_protocol::{MAX_RANK, MIN_RANK, START_CARD_RANK};
+use hanabi_protocol::{MAX_RANK, MIN_RANK, NO_VALUE, START_CARD_RANK};
 use std::collections::HashSet;
 
 /// The turns left after the last card is drawn when a Contrarian plays.
@@ -123,7 +123,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
             .iter_mut()
             .find(|p| p.character() == Some(Character::Insistent))
         {
-            insistent.character_metadata = -1;
+            insistent.character_metadata = NO_VALUE;
         }
     }
 }
@@ -184,10 +184,12 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
             }
             state.stack_starts[suit] = rank;
         } else {
-            if direction == StackDirection::Finished || rank != stack % v.stack_size + 1 {
+            if direction == StackDirection::Finished
+                || rank != next_sudoku_rank(stack, v.stack_size)
+            {
                 return false;
             }
-            let final_rank = (state.stack_starts[suit] + v.stack_size - 2) % v.stack_size + 1;
+            let final_rank = previous_sudoku_rank(state.stack_starts[suit], v.stack_size);
             if rank == final_rank {
                 state.play_stack_directions[suit] = StackDirection::Finished;
             }
@@ -205,7 +207,7 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
                 state.play_stack_directions[suit] = StackDirection::Down;
             }
         } else if (direction == StackDirection::Up && rank == MAX_RANK)
-            || (direction == StackDirection::Down && rank == 1)
+            || (direction == StackDirection::Down && rank == MIN_RANK)
         {
             state.play_stack_directions[suit] = StackDirection::Finished;
         }
@@ -263,24 +265,32 @@ fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i3
     }
     score
 }
+/// The rank after `rank` on a sudoku stack of `size` ranks, which wraps from the top to the bottom.
+fn next_sudoku_rank(rank: i32, size: i32) -> i32 {
+    (rank - MIN_RANK + 1) % size + MIN_RANK
+}
+/// The rank before `rank` on a sudoku stack of `size` ranks, which wraps from the bottom to the top.
+fn previous_sudoku_rank(rank: i32, size: i32) -> i32 {
+    (rank - MIN_RANK + size - 1) % size + MIN_RANK
+}
 /// The index of a sudoku slot, which counts up from zero.
 fn slot(value: i32) -> usize {
     usize::try_from(value).expect("sudoku slots are not negative")
 }
 fn sudoku_scores(available: &HashSet<i32>, size: i32) -> Vec<i32> {
     let mut scores = vec![size; slot(size)];
-    let mut last_dead = -1;
-    for rank in 0..size {
-        if !available.contains(&(rank + 1)) {
-            for write in last_dead + 1..rank {
-                scores[slot(write)] = rank - write;
+    let mut last_dead = None;
+    for position in 0..size {
+        if !available.contains(&(position + MIN_RANK)) {
+            for write in last_dead.map_or(0, |dead| dead + 1)..position {
+                scores[slot(write)] = position - write;
             }
-            scores[slot(rank)] = 0;
-            last_dead = rank;
+            scores[slot(position)] = 0;
+            last_dead = Some(position);
         }
     }
-    if last_dead != -1 {
-        for write in last_dead + 1..size {
+    if let Some(dead) = last_dead {
+        for write in dead + 1..size {
             scores[slot(write)] = (scores[0] + size - write).min(size);
         }
     }
@@ -293,7 +303,7 @@ fn best_assignment(scores: &[Vec<i32>], free: &[i32], index: usize) -> i32 {
     free.iter()
         .map(|rank| {
             let remaining: Vec<i32> = free.iter().copied().filter(|r| r != rank).collect();
-            scores[index][slot(*rank - 1)] + best_assignment(scores, &remaining, index + 1)
+            scores[index][slot(*rank - MIN_RANK)] + best_assignment(scores, &remaining, index + 1)
         })
         .max()
         .unwrap_or(0)

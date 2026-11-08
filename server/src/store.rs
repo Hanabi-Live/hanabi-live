@@ -8,6 +8,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SubsecRound, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
+use hanabi_protocol::NO_VALUE;
 use serde_json::{Value, json};
 
 use sqlx::{
@@ -55,6 +56,8 @@ const LOBBY_READ_CONNECTIONS: u32 = 2;
 const STATS_SLOTS: usize = 32;
 /// The fractional-second digits that a PostgreSQL timestamp keeps (microseconds).
 const DATABASE_TIMESTAMP_DIGITS: u16 = 6;
+/// The stored character assignment of a player without a character.
+pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 
 /// The namespaces of the transaction advisory locks that serialize writes of the same record.
 #[derive(Clone, Copy)]
@@ -435,7 +438,7 @@ impl Store {
                 let assignment = hanabi_engine::characters()
                     .iter()
                     .find(|c| c.name == character.character)
-                    .map_or(Ok(-1), |c| i16::try_from(c.id))?;
+                    .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
                 let metadata = if hanabi_engine::Character::from_name(&character.character)
                     .is_some_and(hanabi_engine::Character::has_assigned_metadata)
                 {
@@ -513,7 +516,7 @@ impl Store {
             let assignment = hanabi_engine::characters()
                 .iter()
                 .find(|c| c.name == character.character)
-                .map_or(Ok(-1), |c| i16::try_from(c.id))?;
+                .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
             let metadata = if hanabi_engine::Character::from_name(&character.character)
                 .is_some_and(hanabi_engine::Character::has_assigned_metadata)
             {
@@ -597,7 +600,7 @@ impl Store {
                 .iter()
                 .find(|c| i16::try_from(c.id).ok() == Some(assignment));
             ensure!(
-                assignment == -1 || character.is_some(),
+                assignment == NO_CHARACTER_ASSIGNMENT || character.is_some(),
                 "Unknown stored character"
             );
             let name = character.map_or("", |c| c.name.as_str());
@@ -608,7 +611,7 @@ impl Store {
                 {
                     i32::from(r.character_metadata)
                 } else {
-                    -1
+                    NO_VALUE
                 },
             });
         }
@@ -657,7 +660,7 @@ impl Store {
             turn_elapsed: 0,
             timer_started: false,
             idle_remaining: IDLE_TIMEOUT_MS,
-            pause_player_index: -1,
+            pause_player_index: NO_VALUE,
             queued_pauses: vec![false; n],
             notes,
             spectator_notes: BTreeMap::new(),
@@ -1108,7 +1111,7 @@ mod tests {
                 turn_elapsed: 0,
                 timer_started: true,
                 idle_remaining: IDLE_TIMEOUT_MS,
-                pause_player_index: -1,
+                pause_player_index: NO_VALUE,
                 queued_pauses: vec![false, false],
                 notes: vec![vec![String::new(); 55]; 2],
                 spectator_notes: BTreeMap::new(),

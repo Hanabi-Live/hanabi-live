@@ -2,7 +2,7 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
-use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, ReplayAction};
+use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, NO_VALUE, ReplayAction};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -299,7 +299,7 @@ impl TableSnapshot {
                 && self.players().iter().enumerate().all(|(index, p)| (p.id > 0
                     || (matches!(self.phase, Phase::Replay { .. })
                         && self.extra.no_write_to_database
-                        && p.id == -1 - hanabi_engine::int(index)))
+                        && p.id == placeholder_player_id(index)))
                     && !p.name.is_empty()
                     && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
             "Invalid players"
@@ -454,7 +454,7 @@ impl Snapshot {
             "Invalid runtime timing"
         );
         ensure!(
-            (-1..hanabi_engine::int(n)).contains(&self.pause_player_index)
+            (NO_VALUE..hanabi_engine::int(n)).contains(&self.pause_player_index)
                 && self.game.paused == (self.pause_player_index >= 0),
             "Invalid pause state"
         );
@@ -578,6 +578,12 @@ pub const MAX_NOTE_LENGTH: usize = 300;
 const MAX_KICKED_PLAYERS: usize = 4096;
 /// The most spectators that a table remembers, with the seat that each one shadows.
 const MAX_SHADOWS: usize = 4096;
+
+/// The ID of the player in a seat of a replay that is not written to the database. It is negative,
+/// so it cannot match a user.
+pub fn placeholder_player_id(seat: usize) -> i32 {
+    -1 - hanabi_engine::int(seat)
+}
 
 pub fn tag_too_long() -> String {
     format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")

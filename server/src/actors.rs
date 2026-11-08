@@ -74,6 +74,14 @@ const HEX_PREFIX: &str = "0x";
 const HEX_RADIX: u32 = 16;
 /// The binary digits that one hexadecimal digit holds.
 const HEX_DIGIT_BITS: u32 = HEX_RADIX.trailing_zeros();
+/// `NO_VALUE` in the one-byte fields that name the seat a spectator shadows.
+#[expect(clippy::cast_possible_truncation, reason = "NO_VALUE fits in a byte")]
+const NO_SHADOWED_SEAT: i8 = NO_VALUE as i8;
+/// The fewest players for the Impostor command, which needs more than one other player.
+const MIN_IMPOSTOR_PLAYERS: usize = MIN_PLAYERS + 1;
+/// The groups that the split command divides a pregame into: the players who stay and those who
+/// move to a new table.
+const SPLIT_GROUPS: usize = 2;
 
 /// Whether an untimed game, or a timed game within the clock limits.
 fn valid_timed_options(options: &Options) -> bool {
@@ -83,7 +91,7 @@ fn valid_timed_options(options: &Options) -> bool {
             && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS).contains(&options.time_per_turn))
 }
 
-use hanabi_protocol::SafeInteger;
+use hanabi_protocol::{NO_VALUE, SafeInteger};
 
 fn int(value: usize) -> i64 {
     i64::try_from(value).unwrap_or(i64::MAX)
@@ -148,8 +156,8 @@ fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent 
             turn,
         } => G::Clue {
             clue: hanabi_protocol::Clue {
-                // The wire marks a clue that the recipient may not see with -1.
-                clue_type: clue.clue_type.map_or(-1, i32::from),
+                // The wire marks a clue that the recipient may not see with NO_VALUE.
+                clue_type: clue.clue_type.map_or(NO_VALUE, i32::from),
                 value: clue.value,
             },
             giver: int(*giver),
@@ -931,7 +939,7 @@ impl Hub {
                         welcome.discon_shadowing_seat = Some(
                             shadow
                                 .and_then(|seat| i8::try_from(seat).ok())
-                                .unwrap_or(-1),
+                                .unwrap_or(NO_SHADOWED_SEAT),
                         );
                     }
                     self.sessions.insert(
@@ -1410,7 +1418,7 @@ async fn special_game_options(
                         {
                             p.character_metadata
                         } else {
-                            -1
+                            NO_VALUE
                         },
                     })
                     .collect(),
@@ -1726,7 +1734,7 @@ fn replay_table(
     let id = snapshot.table_id;
     let options = snapshot.game.options.clone();
     for (index, player) in snapshot.players.iter_mut().enumerate() {
-        player.id = -1 - hanabi_engine::int(index);
+        player.id = crate::model::placeholder_player_id(index);
     }
     let name = format!(
         "{} replay for {}",
@@ -2097,7 +2105,7 @@ impl TableActor {
                 shadowing_player_index: a
                     .shadow
                     .and_then(|seat| i8::try_from(seat).ok())
-                    .unwrap_or(-1),
+                    .unwrap_or(NO_SHADOWED_SEAT),
                 shadowing_player_username: a
                     .shadow
                     .and_then(|seat| self.table.players().get(seat))
@@ -2802,7 +2810,7 @@ impl TableActor {
             active_player_index: if live {
                 int(s.game.active_player_index)
             } else {
-                -1
+                i64::from(NO_VALUE)
             },
             time_taken: if !live || s.game.paused {
                 0
@@ -2829,7 +2837,11 @@ impl TableActor {
             Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
                 return self
-                    .reattend(session, spectate, Some(shadow.map_or(-1, int)))
+                    .reattend(
+                        session,
+                        spectate,
+                        Some(shadow.map_or(i64::from(NO_VALUE), int)),
+                    )
                     .await;
             }
         };
@@ -3720,8 +3732,9 @@ impl TableActor {
                 .filter(|(_, v)| **v)
                 .map(|(i, _)| i)
                 .collect::<Vec<_>>();
-            terminate = if s.players.len() == 2 {
-                seats.len() == 2
+            terminate = if s.players.len() == MIN_PLAYERS {
+                // A majority of two players would let either one end the game alone.
+                seats.len() == s.players.len()
             } else {
                 seats.len() * 2 >= s.players.len()
             };
@@ -3735,7 +3748,11 @@ impl TableActor {
                 } else {
                     EndCondition::TerminatedByPlayer
                 },
-                if vote { -1 } else { hanabi_engine::int(seat) },
+                if vote {
+                    NO_VALUE
+                } else {
+                    hanabi_engine::int(seat)
+                },
                 votes,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),
@@ -3814,7 +3831,7 @@ impl TableActor {
                 s.pause_player_index = if s.game.paused {
                     hanabi_engine::int(seat)
                 } else {
-                    -1
+                    NO_VALUE
                 };
                 if !s.game.paused {
                     s.turn_elapsed = 0;
@@ -4565,7 +4582,10 @@ impl TableActor {
                 *countdown = None;
             }
             "impostor" => {
-                ensure!(players.len() > 2, "Impostor requires more than two players");
+                ensure!(
+                    players.len() >= MIN_IMPOSTOR_PLAYERS,
+                    "Impostor requires at least {MIN_IMPOSTOR_PLAYERS} players"
+                );
                 let chosen = rand::random_range(0..players.len());
                 let mut e = self.effects();
                 for (i, p) in players.iter().enumerate() {
@@ -4729,10 +4749,13 @@ impl TableActor {
             bail!("Split requires a pregame");
         };
         let selected = if automatic {
-            ensure!(players.len() >= 2, "At least two players required");
+            ensure!(
+                players.len() >= SPLIT_GROUPS,
+                "At least {SPLIT_GROUPS} players required"
+            );
             let mut sorted = players.clone();
             sorted.sort_by_key(|p| std::cmp::Reverse(p.stats["numGames"].as_u64().unwrap_or(0)));
-            let mid = sorted.len() / 2;
+            let mid = sorted.len() / SPLIT_GROUPS;
             if sorted[..mid].iter().any(|p| p.id == self.table.owner) {
                 sorted[mid..].to_vec()
             } else {
@@ -4940,7 +4963,11 @@ impl TableActor {
                 spectating: a.spectator && !replay,
                 shadowing: a.shadow.is_some() && !replay,
                 replay,
-                database_id: if replay { s.game_id.into() } else { -1 },
+                database_id: if replay {
+                    s.game_id.into()
+                } else {
+                    NO_VALUE.into()
+                },
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 datetime_started: crate::model::timestamp(s.started),
@@ -4958,7 +4985,7 @@ impl TableActor {
                             hanabi_engine::characters()
                                 .iter()
                                 .find(|c| c.name == p.character)
-                                .map_or(SafeInteger(-1), |c| SafeInteger(c.id.into()))
+                                .map_or(SafeInteger(NO_VALUE.into()), |c| SafeInteger(c.id.into()))
                         })
                         .collect()
                 } else {
@@ -5191,7 +5218,11 @@ impl TableActor {
                 } else {
                     EndCondition::Timeout
                 },
-                if idle { -1 } else { hanabi_engine::int(active) },
+                if idle {
+                    NO_VALUE
+                } else {
+                    hanabi_engine::int(active)
+                },
                 None,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),

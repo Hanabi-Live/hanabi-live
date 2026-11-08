@@ -93,7 +93,7 @@ pub(super) async fn export(
         let mut characters = Vec::new();
         for p in &players {
             let character = i64::from(p.character_assignment);
-            let name = if character == -1 {
+            let name = if character == i64::from(crate::store::NO_CHARACTER_ASSIGNMENT) {
                 ""
             } else {
                 catalog::character(character).ok_or_else(|| {

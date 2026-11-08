@@ -4,7 +4,7 @@ use crate::{
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
-use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS};
+use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS, NO_VALUE};
 
 /// The highest rank a Dumbfounded or Awkward character is assigned, which leaves out the top rank.
 const MAX_CHARACTER_RANK: i32 = MAX_RANK - 1;
@@ -85,7 +85,7 @@ pub fn assign_characters(
                     NO_CHARACTER
                 }
                 .into(),
-                metadata: -1,
+                metadata: NO_VALUE,
             });
             continue;
         }
@@ -108,7 +108,7 @@ pub fn assign_characters(
             Some(Character::Dumbfounded | Character::Awkward) => {
                 int(rng.index(usize::try_from(MAX_CHARACTER_RANK)?)) + 1
             }
-            _ => -1,
+            _ => NO_VALUE,
         };
         assigned.push(AssignedCharacter {
             name: character.name.clone(),

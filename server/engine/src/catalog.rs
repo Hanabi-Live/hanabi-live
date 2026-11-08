@@ -142,7 +142,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         colors
     });
     let stack_size = entry.stack_size.map_or(MAX_RANK, i32::from);
-    let mut ranks: Vec<i32> = (1..=stack_size).collect();
+    let mut ranks: Vec<i32> = (MIN_RANK..=stack_size).collect();
     if entry.up_or_down {
         ranks.push(START_CARD_RANK);
     }
@@ -277,7 +277,7 @@ pub fn is_card_touched(
             }
             if variant.synesthesia
                 && !suit.no_clue_ranks
-                && (rank - 1) % int(variant.clue_colors.len()) == value
+                && (rank - MIN_RANK) % int(variant.clue_colors.len()) == value
             {
                 return true;
             }
@@ -300,7 +300,7 @@ pub fn is_card_touched(
                     == if rank == START_CARD_RANK {
                         int(variant.clue_colors.len()) - 1
                     } else {
-                        (rank - 1) % int(variant.clue_colors.len())
+                        (rank - MIN_RANK) % int(variant.clue_colors.len())
                     };
             }
             suit.clue_colors.contains(color)
@@ -322,11 +322,8 @@ pub fn is_card_touched(
                 return rank >= value;
             }
             if variant.odds_and_evens {
-                return if value == 1 {
-                    [1, 3, 5].contains(&rank)
-                } else {
-                    [2, 4].contains(&rank)
-                };
+                // The 1 clue touches the odd ranks and the 2 clue the even ones, but not a start card.
+                return (MIN_RANK..=MAX_RANK).contains(&rank) && rank % 2 == value % 2;
             }
             if variant.special_rank == Some(rank) {
                 if variant.special_rank_all_clue_ranks {

@@ -130,7 +130,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     }
     let public = bind(config.listen_host(), config.port())?;
     let address = public.local_addr()?;
-    let operations_listener = bind("127.0.0.1", config.localhost_port)?;
+    let operations_listener = bind(hanabi_live::config::LOOPBACK_IPV4, config.localhost_port)?;
     let operations_address = operations_listener.local_addr()?;
     let redirect = if config.use_tls() {
         Some(bind(config.listen_host(), hanabi_live::config::HTTP_PORT)?)

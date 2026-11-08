@@ -17,7 +17,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 use hanabi_protocol::{
-    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK, START_CARD_RANK,
+    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK, NO_VALUE, START_CARD_RANK,
 };
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
@@ -106,7 +106,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
             .iter()
             .map(|_| AssignedCharacter {
                 name: String::new(),
-                metadata: -1,
+                metadata: NO_VALUE,
             })
             .collect()
     };
@@ -179,10 +179,10 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
         score: 0,
         max_score: variant.max_score,
         strikes: 0,
-        last_clue_type_given: -1,
+        last_clue_type_given: NO_VALUE,
         end_condition: EndCondition::InProgress,
-        end_player: -1,
-        end_turn: -1,
+        end_player: NO_VALUE,
+        end_turn: NO_VALUE,
         started_timer: false,
         paused: false,
         events: vec![],
@@ -479,7 +479,7 @@ fn finish_action(
     state.events.push(EngineEvent::Turn {
         num: state.turn,
         current_player_index: if ended {
-            -1
+            NO_VALUE
         } else {
             int(state.active_player_index)
         },
@@ -552,7 +552,7 @@ pub fn apply_action(
         }
         remove_card(&mut state, actor, order);
         if deck_move {
-            state.deck[order].slot = -1;
+            state.deck[order].slot = NO_VALUE;
         }
         if is_play {
             play(&mut state, actor, order);
@@ -592,9 +592,9 @@ pub fn terminate_game(
     ) {
         return reject("That is not a valid value for the end game action.");
     }
-    if termination.player_index < -1
+    if termination.player_index < NO_VALUE
         || termination.player_index >= int(previous.players.len())
-        || (termination.condition == EndCondition::Timeout && termination.player_index == -1)
+        || (termination.condition == EndCondition::Timeout && termination.player_index == NO_VALUE)
     {
         return reject("That is not a valid player for a timeout.");
     }
@@ -621,7 +621,7 @@ pub fn terminate_game(
             termination.condition,
             EndCondition::TerminatedByVote | EndCondition::IdleTimeout
         ) {
-            -1
+            NO_VALUE
         } else {
             termination.player_index
         },

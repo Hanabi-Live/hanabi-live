@@ -28,6 +28,10 @@ pub struct Config {
 pub const HTTP_PORT: u16 = 80;
 /// The HTTPS port that the default HTTP port becomes when TLS is configured.
 pub const HTTPS_PORT: u16 = 443;
+/// The IPv4 loopback address, where the operations HTTP server listens.
+pub const LOOPBACK_IPV4: &str = "127.0.0.1";
+/// The IPv6 loopback address.
+const LOOPBACK_IPV6: &str = "::1";
 /// The port of the operations HTTP server when `LOCALHOST_PORT` is unset.
 const DEFAULT_LOCALHOST_PORT: u16 = 8081;
 /// The PostgreSQL port when `DB_PORT` is unset.
@@ -54,8 +58,10 @@ impl Config {
         self.tls_cert_file.is_some()
     }
     pub fn is_dev(&self) -> bool {
-        matches!(self.domain.as_str(), "localhost" | "127.0.0.1" | "::1")
-            || self.domain.starts_with("192.168.")
+        matches!(
+            self.domain.as_str(),
+            "localhost" | LOOPBACK_IPV4 | LOOPBACK_IPV6
+        ) || self.domain.starts_with("192.168.")
             || self.domain.starts_with("10.")
     }
     pub fn listen_host(&self) -> &str {
@@ -86,8 +92,8 @@ impl Config {
         let listen_host = field(
             "LISTEN_HOST",
             match domain.as_str() {
-                "localhost" | "127.0.0.1" => "127.0.0.1",
-                "::1" => "::1",
+                "localhost" | LOOPBACK_IPV4 => LOOPBACK_IPV4,
+                LOOPBACK_IPV6 => LOOPBACK_IPV6,
                 _ => "0.0.0.0",
             },
         );

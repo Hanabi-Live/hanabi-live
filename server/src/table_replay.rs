@@ -6,7 +6,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::{RecordedActionType, ReplayAction, ReplayImport};
+use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
 /// The longest seed that a replay import can name, in bytes.
@@ -167,7 +167,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
                             .contains(&a.value),
                 RecordedActionType::GameOver =>
                     usize::try_from(a.target).is_ok_and(|t| t < players.len()),
-                RecordedActionType::GameOverByVote => a.target == -1,
+                RecordedActionType::GameOverByVote => a.target == NO_VALUE,
             },
             "Invalid action at index {i}"
         );
@@ -258,7 +258,7 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
         turn_elapsed: 0,
         timer_started: false,
         idle_remaining: IDLE_TIMEOUT_MS,
-        pause_player_index: -1,
+        pause_player_index: NO_VALUE,
         queued_pauses: vec![false; n],
         notes: imported.notes,
         spectator_notes: BTreeMap::new(),

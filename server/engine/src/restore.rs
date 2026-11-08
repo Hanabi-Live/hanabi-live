@@ -9,7 +9,7 @@ use crate::{
 };
 use anyhow::{Context, Result, bail, ensure};
 use hanabi_protocol::{
-    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MAX_SUITS, MIN_RANK, START_CARD_RANK,
+    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MAX_SUITS, MIN_RANK, NO_VALUE, START_CARD_RANK,
 };
 use serde_json::Value;
 use std::collections::HashSet;
@@ -144,11 +144,11 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Invalid player count or active seat."
     );
     ensure!(
-        s.end_player == -1 || signed_seat(s.end_player),
+        s.end_player == NO_VALUE || signed_seat(s.end_player),
         "Invalid ending seat."
     );
     ensure!(
-        s.end_condition != EndCondition::InProgress || s.end_player == -1,
+        s.end_condition != EndCondition::InProgress || s.end_player == NO_VALUE,
         "An ongoing game cannot have an ending player."
     );
     ensure!(
@@ -164,7 +164,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Invalid turn counter."
     );
     ensure!(
-        s.end_turn == -1 || (s.end_turn >= s.turn && s.end_turn <= s.turn + int(count) + 1),
+        s.end_turn == NO_VALUE || (s.end_turn >= s.turn && s.end_turn <= s.turn + int(count) + 1),
         "Invalid final turn."
     );
     ensure!(
@@ -176,7 +176,8 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Invalid score bounds."
     );
     ensure!(
-        (0..=MAX_STRIKES).contains(&s.strikes) && (-1..=1).contains(&s.last_clue_type_given),
+        (0..=MAX_STRIKES).contains(&s.strikes)
+            && (NO_VALUE..=i32::from(ClueType::Rank)).contains(&s.last_clue_type_given),
         "Invalid counters."
     );
     ensure!(
@@ -225,9 +226,9 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     }
     ensure!(
         if s.options.all_or_nothing || s.deck_index < s.deck.len() {
-            s.end_turn == -1
+            s.end_turn == NO_VALUE
         } else {
-            s.end_turn != -1
+            s.end_turn != NO_VALUE
         },
         "Final-round state does not match the deck cursor."
     );
@@ -242,7 +243,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         );
         if player.character() == Some(Character::Genius) {
             ensure!(
-                player.character_metadata == -1
+                player.character_metadata == NO_VALUE
                     || (signed_seat(player.character_metadata)
                         && player.character_metadata != int(index)),
                 "Invalid second-clue target."
@@ -261,7 +262,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
             c.order == i
                 && c.suit_index < v.suits.len()
                 && ((MIN_RANK..=MAX_RANK).contains(&c.rank) || c.rank == START_CARD_RANK)
-                && (-1..=int(MAX_HAND_SIZE)).contains(&c.slot),
+                && (NO_VALUE..=int(MAX_HAND_SIZE)).contains(&c.slot),
             "Invalid card identity or slot."
         );
         ensure!(
@@ -464,12 +465,13 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
             } => {
                 ensure!(
                     (0..=s.turn).contains(num)
-                        && (*current_player_index == -1 || signed_seat(*current_player_index)),
+                        && (*current_player_index == NO_VALUE
+                            || signed_seat(*current_player_index)),
                     "Invalid turn event."
                 );
                 ensure!(
                     last_turn.is_none_or(|(n, _)| *num >= n)
-                        && (*current_player_index != -1
+                        && (*current_player_index != NO_VALUE
                             || s.end_condition != EndCondition::InProgress),
                     "Inconsistent turn history."
                 );
@@ -543,7 +545,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                         == if s.end_condition == EndCondition::InProgress {
                             int(s.active_player_index)
                         } else {
-                            -1
+                            NO_VALUE
                         },
         },
         "Current turn does not match its event history."
@@ -561,7 +563,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 && card.discarded == historical.discarded
                 && card.failed == historical.failed
                 && (card.slot == historical.slot
-                    || (card.slot == -1
+                    || (card.slot == NO_VALUE
                         && historical.slot == 1
                         && s.options.deck_plays
                         && index == s.deck.len() - 1)),
@@ -611,12 +613,14 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     && clue_type(a.action_type).is_some_and(|t| valid_clue(t, a.value))
             }
             RecordedActionType::GameOverByVote => {
-                a.target == -1 && a.value == i32::from(EndCondition::TerminatedByVote)
+                a.target == NO_VALUE && a.value == i32::from(EndCondition::TerminatedByVote)
             }
             RecordedActionType::GameOver => match EndCondition::try_from(a.value) {
                 Ok(EndCondition::Timeout) => signed_seat(a.target),
-                Ok(EndCondition::TerminatedByPlayer) => a.target == -1 || signed_seat(a.target),
-                Ok(EndCondition::IdleTimeout) => a.target == -1,
+                Ok(EndCondition::TerminatedByPlayer) => {
+                    a.target == NO_VALUE || signed_seat(a.target)
+                }
+                Ok(EndCondition::IdleTimeout) => a.target == NO_VALUE,
                 _ => false,
             },
         };

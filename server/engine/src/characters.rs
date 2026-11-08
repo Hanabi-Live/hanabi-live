@@ -5,7 +5,7 @@ use crate::{
     types::reject,
 };
 use anyhow::Result;
-use hanabi_protocol::MAX_RANK;
+use hanabi_protocol::{MAX_RANK, NO_VALUE};
 
 /// The clues at or below which a Panicky player must discard twice.
 const PANICKY_MAX_CLUES: i32 = 4;
@@ -40,7 +40,7 @@ pub(crate) fn validate_character_action(
         Some(Character::Vindictive) if m == 0 && !clue => {
             Some("so you must give a clue if you have been given a clue on this go-around.")
         }
-        Some(Character::Insistent) if m != -1 && !clue => {
+        Some(Character::Insistent) if m != NO_VALUE && !clue => {
             Some("so you must continue to clue the same card until it is played or discarded.")
         }
         Some(Character::Impulsive)
@@ -65,7 +65,7 @@ pub(crate) fn validate_character_action(
     if let Some(reason) = reason {
         return reject_character(p, reason);
     }
-    if m != -1 {
+    if m != NO_VALUE {
         if p.character() == Some(Character::Genius) {
             if action.action_type != RecordedActionType::RankClue {
                 return reject_character(p, "so you must now give a rank clue.");
@@ -203,12 +203,12 @@ pub(crate) fn validate_character_clue(
             Some("so cannot give the same clue type twice in a row.")
         }
         Some(Character::Insistent)
-            if m != -1 && touched.iter().all(|o| !state.deck[*o].insistent_touched) =>
+            if m != NO_VALUE && touched.iter().all(|o| !state.deck[*o].insistent_touched) =>
         {
             Some("so you must continue to clue a card until it is played or discarded.")
         }
         Some(Character::Genius)
-            if m == -1 && state.clue_tokens < GENIUS_MIN_CLUES * clue_cost(state) =>
+            if m == NO_VALUE && state.clue_tokens < GENIUS_MIN_CLUES * clue_cost(state) =>
         {
             return reject_character(
                 p,
@@ -217,7 +217,7 @@ pub(crate) fn validate_character_clue(
                 ),
             );
         }
-        Some(Character::Genius) if m == -1 && clue != Some(ClueType::Color) => {
+        Some(Character::Genius) if m == NO_VALUE && clue != Some(ClueType::Color) => {
             Some("so you must give a color clue first.")
         }
         _ => None,
@@ -250,8 +250,8 @@ pub(crate) fn character_post_clue(
     }
     let p = &mut state.players[actor];
     if p.character() == Some(Character::MoodSwings) {
-        p.character_metadata = clue_type(action.action_type).map_or(-1, i32::from);
-    } else if p.character() == Some(Character::Insistent) && p.character_metadata == -1 {
+        p.character_metadata = clue_type(action.action_type).map_or(NO_VALUE, i32::from);
+    } else if p.character() == Some(Character::Insistent) && p.character_metadata == NO_VALUE {
         for o in touched {
             state.deck[*o].insistent_touched = true;
         }
@@ -275,12 +275,12 @@ pub(crate) fn character_post_action(
     }
     let p = &mut state.players[actor];
     match p.character() {
-        Some(Character::Vindictive | Character::Impulsive) => p.character_metadata = -1,
+        Some(Character::Vindictive | Character::Impulsive) => p.character_metadata = NO_VALUE,
         Some(Character::Indolent) => {
             p.character_metadata = if action.action_type == RecordedActionType::Play {
                 0
             } else {
-                -1
+                NO_VALUE
             };
         }
         Some(Character::Contrarian) => state.turns_inverted = !state.turns_inverted,
@@ -308,23 +308,23 @@ pub(crate) fn needs_second_action(
             return true;
         }
         if action.action_type == RecordedActionType::RankClue {
-            p.character_metadata = -1;
+            p.character_metadata = NO_VALUE;
         }
     } else if p.character() == Some(Character::Panicky)
         && action.action_type == RecordedActionType::Discard
     {
-        if p.character_metadata == -1 && state.clue_tokens <= PANICKY_MAX_CLUES * cost {
+        if p.character_metadata == NO_VALUE && state.clue_tokens <= PANICKY_MAX_CLUES * cost {
             p.character_metadata = 0;
             return true;
         }
         if p.character_metadata == 0 {
-            p.character_metadata = -1;
+            p.character_metadata = NO_VALUE;
         }
     }
     false
 }
 pub(crate) fn has_taken_last_turn(state: &EngineState) -> bool {
-    if state.end_turn == -1 {
+    if state.end_turn == NO_VALUE {
         return false;
     }
     if !state.options.detrimental_characters {

@@ -1,5 +1,6 @@
 use crate::{Character, EngineEvent, EngineState, rules::variant_for};
 use anyhow::{Result, bail};
+use hanabi_protocol::NO_VALUE;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
@@ -50,7 +51,7 @@ pub fn events_for_recipient(
             match &mut event {
                 EngineEvent::Clue { clue, .. } if variant_for(state).duck => {
                     clue.clue_type = None;
-                    clue.value = -1;
+                    clue.value = NO_VALUE;
                 }
                 EngineEvent::Draw {
                     player_index,
@@ -66,8 +67,8 @@ pub fn events_for_recipient(
                                 || (player.character() == Some(Character::Oblivious)
                                     && *player_index == (index + count - 1) % count)));
                     if hidden {
-                        *suit_index = -1;
-                        *rank = -1;
+                        *suit_index = NO_VALUE;
+                        *rank = NO_VALUE;
                     }
                 }
                 EngineEvent::CardIdentity {
@@ -77,8 +78,8 @@ pub fn events_for_recipient(
                     ..
                 } => {
                     if *player_index == index {
-                        *suit_index = -1;
-                        *rank = -1;
+                        *suit_index = NO_VALUE;
+                        *rank = NO_VALUE;
                     }
                 }
                 EngineEvent::Play {
@@ -90,8 +91,8 @@ pub fn events_for_recipient(
                     failed: true,
                     ..
                 } if variant_for(state).throw_it_in_a_hole => {
-                    *suit_index = -1;
-                    *rank = -1;
+                    *suit_index = NO_VALUE;
+                    *rank = NO_VALUE;
                 }
                 _ => {}
             }
