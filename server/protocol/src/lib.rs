@@ -15,7 +15,8 @@ pub use registry::{
     server_contracts, validate,
 };
 
-pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
+/// The largest integer that JavaScript numbers hold exactly (`Number.MAX_SAFE_INTEGER`).
+pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
 
 /// The fewest players a game can have.
 pub const MIN_PLAYERS: usize = 2;
