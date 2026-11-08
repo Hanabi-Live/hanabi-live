@@ -9,4 +9,4 @@ REPO_ROOT=$(cd -- "$DIR/../.." &> /dev/null && pwd)
 
 cd "$REPO_ROOT"
 
-find . \( -name ".husky" -o -path "dist" -o -name "node_modules" \) -prune -o -type f -name "*.sh" -exec shellcheck {} +
+find . \( -name ".husky" -o -name "dist" -o -name "node_modules" \) -prune -o -type f -name "*.sh" -exec shellcheck {} +
