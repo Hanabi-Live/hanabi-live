@@ -344,7 +344,7 @@ pub struct Clock {
     #[schemars(inner(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER)))]
     pub times: Vec<i64>,
     /// -1 when the game has no active player.
-    #[schemars(range(min = -1, max = 5))]
+    #[schemars(with = "PlayerIndexOrNone")]
     pub active_player_index: i64,
     #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
     pub time_taken: i64,
@@ -377,7 +377,7 @@ pub struct Pause {
     pub table_id: TableId,
     pub active: bool,
     /// The seat that paused, or -1.
-    #[schemars(range(min = -1, max = 5))]
+    #[schemars(with = "PlayerIndexOrNone")]
     pub player_index: i64,
 }
 
@@ -391,9 +391,9 @@ pub struct VoteChange {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CardIdentity {
-    #[schemars(range(min = -1, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "SuitIndexOrUnknown")]
     pub suit_index: i64,
-    #[schemars(range(min = -1, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "RankOrUnknown")]
     pub rank: i64,
 }
 
@@ -743,7 +743,8 @@ pub enum HypotheticalAction {
         failed: bool,
     },
     Clue {
-        clue: ReceivedClue,
+        #[schemars(with = "ReceivedClue")]
+        clue: Clue,
         #[schemars(with = "PlayerIndex")]
         giver: i64,
         #[schemars(with = "PlayerIndex")]
@@ -1603,7 +1604,7 @@ pub struct NoteListPlayer {
 pub struct Note {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "CardOrder")]
     pub order: i64,
     pub notes: Vec<CardNote>,
 }
@@ -1648,16 +1649,32 @@ pub struct RankOrUnknown(
     #[schemars(range(min = -1, max = 7), extend("enum" = [-1, 1, 2, 3, 4, 5, 7]))] pub i64,
 );
 
-/// A clue as its recipient sees it. A clue the recipient may not see hides both its type and value.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+/// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Clue {
+    #[serde(rename = "type")]
+    pub clue_type: i32,
+    pub value: i32,
+}
+
+/// A clue as its recipient sees it: a color clue names a suit's color, a rank clue names a rank,
+/// and a clue the recipient may not see hides both its type and value.
+#[derive(JsonSchema)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum ReceivedClue {
-    Visible {
-        /// The `ClueType` enum: 0 for a color clue, 1 for a rank clue.
+    Color {
         #[serde(rename = "type")]
-        #[schemars(range(min = 0, max = 1), extend("enum" = [0, 1], "x-enum" = "ClueType"))]
+        #[schemars(range(min = 0, max = 0), extend("enum" = [0], "x-enum" = "ClueType"))]
         clue_type: i32,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
+        value: i32,
+    },
+    Rank {
+        #[serde(rename = "type")]
+        #[schemars(range(min = 1, max = 1), extend("enum" = [1], "x-enum" = "ClueType"))]
+        clue_type: i32,
+        #[schemars(range(min = 1, max = 5), extend("enum" = [1, 2, 3, 4, 5]))]
         value: i32,
     },
     Hidden {
@@ -1720,7 +1737,8 @@ pub enum GameEvent {
         failed: bool,
     },
     Clue {
-        clue: ReceivedClue,
+        #[schemars(with = "ReceivedClue")]
+        clue: Clue,
         #[schemars(with = "PlayerIndex")]
         giver: i64,
         #[schemars(with = "PlayerIndex")]
@@ -1801,9 +1819,10 @@ pub struct GameActionList {
 pub struct Init {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
+    #[schemars(length(min = 2, max = 6))]
     pub player_names: Vec<String>,
     /// The seat the recipient views the game from.
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "PlayerIndex")]
     pub our_player_index: i64,
     pub spectating: bool,
     pub shadowing: bool,
@@ -1829,7 +1848,8 @@ pub struct Init {
     /// Whether the shared replay hides what happens later in the game.
     pub spoiler_free: bool,
     pub paused: bool,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    /// The seat that paused, or -1.
+    #[schemars(with = "PlayerIndexOrNone")]
     pub pause_player_index: i64,
     pub pause_queued: bool,
 }

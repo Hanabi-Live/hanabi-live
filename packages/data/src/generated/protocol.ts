@@ -34,9 +34,11 @@ export const apiErrorSchema = z.strictObject({
   diagnosticID: z.string().optional(),
   error: z.string(),
 });
+const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
+const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 const cardIdentitySchema = z.strictObject({
-  rank: z.number().int().min(-1).max(9_007_199_254_740_991),
-  suitIndex: z.number().int().min(-1).max(9_007_199_254_740_991),
+  rank: rankOrUnknownSchema,
+  suitIndex: suitIndexOrUnknownSchema,
 });
 export const cardIdentitiesSchema = z.strictObject({
   cardIdentities: z.array(cardIdentitySchema),
@@ -154,8 +156,9 @@ export const chatUserRequestSchema = z
   .strictObject({ name: z.string().default(""), room: z.string().default("") })
   .readonly()
   .default({ name: "", room: "" });
+const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 export const clockSchema = z.strictObject({
-  activePlayerIndex: z.number().int().min(-1).max(5),
+  activePlayerIndex: playerIndexOrNoneSchema,
   tableID: tableIdSchema,
   timeTaken: z.number().int().min(0).max(9_007_199_254_740_991),
   times: z.array(
@@ -180,17 +183,9 @@ export const friendsSchema = z
   .readonly();
 const cardOrderSchema = z.number().int().min(0).max(65).brand<"CardOrder">();
 const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
-const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
-const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
 const receivedClueSchema = z.union([
-  z.strictObject({
-    type: z.literal([0, 1]),
-    value: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-  }),
+  z.strictObject({ type: z.literal(0), value: z.literal([0, 1, 2, 3, 4, 5]) }),
+  z.strictObject({ type: z.literal(1), value: z.literal([1, 2, 3, 4, 5]) }),
   z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
 ]);
 const safeIntegerSchema = z
@@ -198,7 +193,6 @@ const safeIntegerSchema = z
   .int()
   .min(-9_007_199_254_740_991)
   .max(9_007_199_254_740_991);
-const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 const gameEventSchema = z.discriminatedUnion("type", [
   z.strictObject({
     order: cardOrderSchema,
@@ -434,19 +428,11 @@ export const initSchema = z.strictObject({
   datetimeStarted: z.string(),
   hasCustomSeed: z.boolean(),
   options: gameOptionsSchema,
-  ourPlayerIndex: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
-  pausePlayerIndex: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991),
+  ourPlayerIndex: playerIndexSchema,
+  pausePlayerIndex: playerIndexOrNoneSchema,
   pauseQueued: z.boolean(),
   paused: z.boolean(),
-  playerNames: z.array(z.string()),
+  playerNames: z.array(z.string()).min(2).max(6),
   replay: z.boolean(),
   seed: z.string(),
   shadowing: z.boolean(),
@@ -498,7 +484,7 @@ const cardNoteSchema = z.strictObject({
 });
 export const noteSchema = z.strictObject({
   notes: z.array(cardNoteSchema),
-  order: z.number().int().min(0).max(9_007_199_254_740_991),
+  order: cardOrderSchema,
   tableID: tableIdSchema,
 });
 const playerNotesSchema = z.strictObject({
@@ -521,7 +507,7 @@ export const noteRequestSchema = z.strictObject({
 });
 export const pauseSchema = z.strictObject({
   active: z.boolean(),
-  playerIndex: z.number().int().min(-1).max(5),
+  playerIndex: playerIndexOrNoneSchema,
   tableID: tableIdSchema,
 });
 const pauseSettingSchema = z.enum([
