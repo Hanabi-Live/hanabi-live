@@ -329,17 +329,20 @@ interface PlayStackValues {
 }
 
 function drawPlayStacks() {
-  let yOffset: number;
+  const numSuits = globals.variant.suits.length;
 
-  if (
-    globals.variant.suits.length === MAX_SUITS
-    || globals.variant.showSuitNames
-  ) {
+  // The row has room for MAX_SUITS small stacks or one fewer full-size stack. Suit names need the
+  // space of the small stacks.
+  const fullSizeStackSlots = MAX_SUITS - 1;
+  const smallStacks = numSuits === MAX_SUITS || globals.variant.showSuitNames;
+  const numStackSlots = smallStacks ? MAX_SUITS : fullSizeStackSlots;
+
+  let yOffset: number;
+  if (smallStacks) {
     cardWidth = 0.06;
     cardHeight = 0.151;
     yOffset = 0.019;
   } else {
-    // 3, 4, or 5 stacks.
     cardWidth = 0.075;
     cardHeight = 0.189;
     yOffset = 0;
@@ -353,45 +356,28 @@ function drawPlayStacks() {
   if (globals.variant.showSuitNames) {
     playStackValues.y -= 0.018;
   }
+
+  // In BGA mode, a full row of stacks spreads out to the width of the action log.
+  const fillsActionLogWidth =
+    !globals.lobby.settings.keldonMode && numSuits >= fullSizeStackSlots;
   if (!globals.lobby.settings.keldonMode) {
     playStackValues.x = actionLogValues.x;
     playStackValues.y = actionLogValues.y + actionLogValues.h! + 0.02;
-    if (globals.variant.suits.length > 4) {
+    if (fillsActionLogWidth) {
       playStackValues.spacing = actionLogValues.w!;
-      playStackValues.spacing -= cardWidth * globals.variant.suits.length;
-      playStackValues.spacing /= globals.variant.suits.length - 1;
+      playStackValues.spacing -= cardWidth * numSuits;
+      playStackValues.spacing /= numSuits - 1;
     } else {
       playStackValues.spacing = 0.006;
     }
   }
-  playStackValues.w = cardWidth * globals.variant.suits.length;
-  playStackValues.w +=
-    playStackValues.spacing * (globals.variant.suits.length - 1);
+  playStackValues.w = cardWidth * numSuits;
+  playStackValues.w += playStackValues.spacing * (numSuits - 1);
 
-  // Variants with less than 5 stacks will be left-aligned instead of centered unless we manually
-  // adjust them.
-  if (
-    (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
-    || (globals.variant.suits.length === 5
-      && globals.variant.showSuitNames
-      && globals.lobby.settings.keldonMode)
-  ) {
-    playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
-  } else if (
-    globals.variant.suits.length === 4
-    && globals.variant.showSuitNames
-  ) {
-    playStackValues.x += cardWidth + playStackValues.spacing;
-  } else if (
-    globals.variant.suits.length === 3
-    && !globals.variant.showSuitNames
-  ) {
-    playStackValues.x += ((cardWidth + playStackValues.spacing) / 2) * 2;
-  } else if (
-    globals.variant.suits.length === 3
-    && globals.variant.showSuitNames
-  ) {
-    playStackValues.x += (cardWidth + playStackValues.spacing) * 1.5;
+  // Center the stacks within the slots of the row.
+  if (!fillsActionLogWidth) {
+    playStackValues.x +=
+      ((numStackSlots - numSuits) / 2) * (cardWidth + playStackValues.spacing);
   }
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants (centered in the middle
@@ -489,12 +475,10 @@ function drawPlayStacks() {
   // This is the invisible rectangle that players drag cards to in order to play them. Make it a
   // little big bigger than the stacks.
   const overlap = 0.03;
-  let w = cardWidth * globals.variant.suits.length;
-  w += playStackValues.spacing * (globals.variant.suits.length - 1);
   playAreaValues = {
     x: playStackValues.x,
     y: playStackValues.y,
-    w,
+    w: playStackValues.w,
     h: cardHeight,
   };
   globals.elements.playArea = new Konva.Rect({
