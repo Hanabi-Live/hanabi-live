@@ -827,6 +827,11 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
   top: 0.4em;
 }
 
+/* The checkbox is drawn lower than its row, so keep the same gap above the "Watch" button. */
+#replay-spoiler-free-row {
+  padding-bottom: 1.1em;
+}
+
 /*
   Settings
 */
