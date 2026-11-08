@@ -94,7 +94,7 @@
     "//#lint-rust": {
       "inputs": [
         "server/**",
-        "!server/target/**",
+        "!server/**/target/**",
         "!**/*.md",
         ".cargo/config.toml",
         "rust-toolchain.toml",
