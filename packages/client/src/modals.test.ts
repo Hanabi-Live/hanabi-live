@@ -8,6 +8,12 @@ const dom = new JSDOM(`<!doctype html><body>
       <p id="warning-modal-description"></p>
       <button id="warning-modal-button"></button>
     </div>
+    <div id="confirm-modal" class="hidden">
+      <h3 id="confirm-modal-title"></h3>
+      <p id="confirm-modal-description"></p>
+      <button id="confirm-modal-confirm"></button>
+      <button id="confirm-modal-cancel"></button>
+    </div>
     <div id="error-modal" class="hidden">
       <p id="error-modal-description"></p>
       <button id="error-modal-button"></button>
@@ -33,6 +39,7 @@ const domGlobals = {
   document: dom.window.document,
   HTMLElement: dom.window.HTMLElement,
   HTMLInputElement: dom.window.HTMLInputElement,
+  MutationObserver: dom.window.MutationObserver,
 };
 const savedGlobals = new Map<string, PropertyDescriptor | undefined>();
 
@@ -98,6 +105,47 @@ test("the idle warning counts down and only lets players keep the game going", a
   );
   expect(keepPlayingCalls).toBe(1);
   expect(idleModal?.parentElement?.id).toBe("modals-container");
+});
+
+test("a confirmation runs exactly one of its callbacks", async () => {
+  const modals = await import("./modals");
+  modals.init();
+  const { document } = dom.window;
+  const pageCover = document.querySelector<HTMLElement>("#page-cover")!;
+
+  const onConfirm = mock<() => void>();
+  const onCancel = mock<() => void>();
+  modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
+  await wait(150);
+  document.querySelector<HTMLElement>("#confirm-modal-confirm")!.click();
+  expect(onConfirm).toHaveBeenCalledTimes(1);
+  expect(onCancel).not.toHaveBeenCalled();
+
+  // Dismissing the modal in any way cancels, and a modal opened right after another one closes
+  // stays visible.
+  const onConfirm2 = mock<() => void>();
+  const onCancel2 = mock<() => void>();
+  modals.askForConfirmation(
+    "Title",
+    "Description",
+    "OK",
+    onConfirm2,
+    onCancel2,
+  );
+  await wait(150);
+  expect(pageCover.style.display).toBe("flex");
+
+  // Escape closes the modal without also reaching the screen behind it.
+  const screenKeydown = mock<() => void>();
+  document.addEventListener("keydown", screenKeydown);
+  document.dispatchEvent(
+    new dom.window.KeyboardEvent("keydown", { key: "Escape" }),
+  );
+  document.removeEventListener("keydown", screenKeydown);
+  expect(screenKeydown).not.toHaveBeenCalled();
+  expect(onConfirm2).not.toHaveBeenCalled();
+  expect(onCancel2).toHaveBeenCalledTimes(1);
+  expect(onConfirm).toHaveBeenCalledTimes(1);
 });
 
 test("a warning shown after an error does not replace the error modal", async () => {

@@ -16,9 +16,15 @@ let allowCloseModal = true;
 /** An administrator's reason for a restart or stop, shown until its warning modal is closed. */
 let downtimeMessage: string | null = null;
 let currentModal: HTMLElement | null = null;
+let confirmModalOnConfirm: (() => void) | null = null;
+let confirmModalOnCancel: (() => void) | null = null;
 let morphDragArea: DragAreaType = null;
 let idleCountdown: ReturnType<typeof setInterval> | null = null;
 
+const confirmModalCancel = getHTMLElement("#confirm-modal-cancel");
+const confirmModalConfirm = getHTMLElement("#confirm-modal-confirm");
+const confirmModalDescription = getHTMLElement("#confirm-modal-description");
+const confirmModalTitle = getHTMLElement("#confirm-modal-title");
 const createGameSubmit = getHTMLElement("#create-game-submit");
 const createTablePassword = getHTMLInputElement("#createTablePassword");
 const errorModalButton = getHTMLElement("#error-modal-button");
@@ -46,6 +52,8 @@ export function init(): void {
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && currentModal !== null) {
+      // The key press must not also act on the screen behind the modal (e.g. leaving a replay).
+      event.stopImmediatePropagation();
       closeModals();
     }
   });
@@ -71,6 +79,18 @@ export function init(): void {
 
   // Idle modal setup.
   idleModalClose.addEventListener("pointerdown", () => {
+    closeModals();
+  });
+
+  // Confirm modal setup. Use "click" so that the buttons also work from the keyboard.
+  confirmModalConfirm.addEventListener("click", () => {
+    const onConfirm = confirmModalOnConfirm;
+    confirmModalOnConfirm = null;
+    confirmModalOnCancel = null;
+    closeModals();
+    onConfirm?.();
+  });
+  confirmModalCancel.addEventListener("click", () => {
     closeModals();
   });
 
@@ -352,6 +372,42 @@ function stopIdleCountdown() {
   }
 }
 
+/**
+ * Asks the user to confirm an action. `onCancel` runs however the modal is dismissed, including
+ * when another modal replaces it.
+ */
+export function askForConfirmation(
+  title: string,
+  description: string,
+  confirmText: string,
+  onConfirm: () => void,
+  onCancel?: () => void,
+): void {
+  // An error stops the connection and can only be left by reloading.
+  if (globals.errorOccurred) {
+    onCancel?.();
+    return;
+  }
+
+  confirmModalTitle.textContent = title;
+  confirmModalDescription.textContent = description;
+  confirmModalConfirm.textContent = confirmText;
+
+  // Store the screen's active element.
+  globals.lastActiveElement = document.activeElement as HTMLElement;
+
+  // eslint-disable-next-line func-style
+  const ready = () => {
+    confirmModalConfirm.focus();
+  };
+  showModal("#confirm-modal", true, undefined, ready);
+
+  // Showing the modal closes any previous one (and cancels its confirmation), so the new callbacks
+  // must be stored afterward.
+  confirmModalOnConfirm = onConfirm;
+  confirmModalOnCancel = onCancel ?? null;
+}
+
 /** The reason stays visible if a reconnect error (such as an outdated client) replaces it. */
 export function showDowntime(msg: string): void {
   showWarning(msg);
@@ -465,13 +521,21 @@ export function closeModals(fast = false): void {
     pageCover.style.display = "none";
   } else {
     setTimeout(() => {
-      pageCover.style.display = "none";
+      // A modal may have been opened in the meantime (e.g. a confirmation after a prompt).
+      if (currentModal === null) {
+        pageCover.style.display = "none";
+      }
     }, 100);
   }
 
   if (globals.lastActiveElement !== null) {
     globals.lastActiveElement.focus();
   }
+
+  const onCancel = confirmModalOnCancel;
+  confirmModalOnConfirm = null;
+  confirmModalOnCancel = null;
+  onCancel?.();
 }
 
 export function isModalVisible(): boolean {

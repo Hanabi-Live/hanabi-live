@@ -432,25 +432,37 @@ function setNoteIndicatorAndCheckForSpecialNote() {
   }
 }
 
-function suggestTurn(who: string, room: string, segment: number) {
-  // We minus one to account for the fact that turns are presented to the user starting from 1.
-  const internalSegment = segment - 1;
-  if (
+function canFollowSuggestion(): boolean {
+  return (
     globals.state.finished
     && globals.state.replay.shared !== null
     && globals.state.replay.shared.amLeader
     && globals.state.replay.hypothetical === null
-  ) {
+  );
+}
+
+function suggestTurn(who: string, room: string, segment: number) {
+  // We minus one to account for the fact that turns are presented to the user starting from 1.
+  const internalSegment = segment - 1;
+  if (canFollowSuggestion()) {
     const leaderSuggested = who === globals.metadata.ourUsername;
     if (
       leaderSuggested
-      || internalSegment === globals.state.replay.shared.segment
-      // eslint-disable-next-line no-alert
-      || globalThis.confirm(
-        `${who} suggests that we go to turn ${segment}. Agree?`,
-      )
+      || internalSegment === globals.state.replay.shared!.segment
     ) {
       replay.goToSegment(internalSegment);
+    } else {
+      modals.askForConfirmation(
+        "Turn Suggestion",
+        `${who} suggests that we go to turn ${segment}. Agree?`,
+        `Go to Turn ${segment}`,
+        () => {
+          // The replay may have changed while the modal was open.
+          if (canFollowSuggestion()) {
+            replay.goToSegment(internalSegment);
+          }
+        },
+      );
     }
     if (leaderSuggested) {
       sendSelfPMFromServer(
