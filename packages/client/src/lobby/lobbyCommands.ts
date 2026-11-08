@@ -254,30 +254,7 @@ lobbyCommands.set("welcome", (data) => {
   playerSettings.setPlayerSettings();
   lobbyLogin.hide(data.firstTimeUser);
 
-  // If the server has informed us that we are currently playing in an ongoing game, automatically
-  // reconnect to that game (and ignore any specific custom path that the user has entered).
-  const firstTableID = data.playingAtTables[0];
-  if (firstTableID !== undefined) {
-    globals.conn!.send("tableReattend", {
-      tableID: firstTableID,
-    });
-    return;
-  }
-
-  // If the server has informed us that were previously spectating an ongoing shared replay,
-  // automatically spectate that table (and ignore any specific custom path that the user has
-  // entered).
-  if (
-    data.disconSpectatingTable !== undefined
-    && data.disconSpectatingTable > 0
-  ) {
-    globals.conn!.send("tableSpectate", {
-      tableID: data.disconSpectatingTable,
-      shadowingPlayerIndex: data.disconShadowingSeat,
-    });
-    return;
-  }
-
-  // If we have entered a specific URL, we might want to go somewhere specific instead of the lobby.
+  // Go to the table that we were at before we disconnected, or somewhere specific if we have
+  // entered a specific URL.
   url.parseAndGoto(data);
 });

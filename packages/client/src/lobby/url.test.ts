@@ -1,7 +1,7 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { replayImportSchema } from "@hanabi-live/data";
+import { replayImportSchema, tableIdSchema } from "@hanabi-live/data";
 
 vi.mock("./history", () => ({
   show: vi.fn(),
@@ -15,6 +15,16 @@ const { globals } = await import("../Globals");
 const history = await import("./history");
 const { expand } = await import("./hypoCompress");
 const { parseAndGoto } = await import("./url");
+
+function welcome(
+  data: Partial<ServerCommandData["welcome"]> = {},
+): ServerCommandData["welcome"] {
+  return {
+    firstTimeUser: false,
+    playingAtTables: [],
+    ...data,
+  } as ServerCommandData["welcome"];
+}
 
 describe("replay URL loading", () => {
   const payload = "215abcde,00ba,0";
@@ -60,7 +70,7 @@ describe("replay URL loading", () => {
       },
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
+    parseAndGoto(welcome());
 
     const gameJSON = replayImportSchema.parse(
       JSON.parse(expand(`${payload}${suffix}`)!),
@@ -85,7 +95,7 @@ describe("replay URL loading", () => {
       value: new URL("https://hanab.live/lobby#history"),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
+    parseAndGoto(welcome());
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(show).toHaveBeenCalledWith();
@@ -100,7 +110,7 @@ describe("replay URL loading", () => {
       value: new URL(url),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
+    parseAndGoto(welcome());
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(showOtherScores).toHaveBeenCalledWith("p4v0s1");
@@ -118,11 +128,51 @@ describe("replay URL loading", () => {
       value: new URL(`https://hanab.live${pathname}`),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
+    parseAndGoto(welcome());
 
     expect(send).toHaveBeenCalledWith("tableSpectate", {
       tableID: 123,
       shadowingPlayerIndex,
     });
   });
+
+  const tableID = tableIdSchema.parse(123);
+
+  test.each([
+    ["/replay/456", { playingAtTables: [tableID] }],
+    [
+      "/replay/456",
+      { disconSpectatingTable: tableID, disconShadowingSeat: -1 },
+    ],
+  ])("route %s takes precedence over reconnecting", (pathname, data) => {
+    const send = vi.spyOn(globals.conn!, "send");
+    Object.defineProperty(globalThis, "location", {
+      configurable: true,
+      value: new URL(`https://hanab.live${pathname}`),
+    });
+
+    parseAndGoto(welcome(data));
+
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledWith(
+      "replayCreate",
+      expect.objectContaining({ databaseID: 456, visibility: "solo" }),
+    );
+  });
+
+  test.each(["/lobby", "/game/123", "/game/123/shadow/0"])(
+    "route %s returns to an ongoing game",
+    (pathname) => {
+      const send = vi.spyOn(globals.conn!, "send");
+      Object.defineProperty(globalThis, "location", {
+        configurable: true,
+        value: new URL(`https://hanab.live${pathname}`),
+      });
+
+      parseAndGoto(welcome({ playingAtTables: [tableID] }));
+
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(send).toHaveBeenCalledWith("tableReattend", { tableID });
+    },
+  );
 });

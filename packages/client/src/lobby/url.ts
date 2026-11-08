@@ -1,5 +1,9 @@
 import type { ServerCommandData } from "@hanabi-live/data";
-import { defaultSettings, SECONDS_PER_MINUTE } from "@hanabi-live/data";
+import {
+  defaultSettings,
+  SECONDS_PER_MINUTE,
+  tableIdSchema,
+} from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME, NO_VALUE } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
@@ -9,12 +13,56 @@ import * as history from "./history";
 import { expand } from "./hypoCompress";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
-  // Disable custom path functionality for first time users, and do nothing else when we restore a
-  // lobby history view.
-  if (data.firstTimeUser || restoreLobbyHistoryView()) {
+  // A link to a specific game or replay takes precedence over returning to the table that we were
+  // at before we disconnected. (Custom paths are disabled for first time users.)
+  if (!data.firstTimeUser && gotoPath(data)) {
     return;
   }
 
+  // Otherwise, go back to the table that we were at. Do nothing else for first time users or when
+  // we restore a lobby history view.
+  if (
+    reconnectToTable(data)
+    || data.firstTimeUser
+    || restoreLobbyHistoryView()
+  ) {
+    return;
+  }
+
+  // Otherwise, we will stay in the lobby.
+  setBrowserAddressBarPath("/lobby");
+}
+
+/** Returns whether the server informed us of a table that we were at and we went back to it. */
+function reconnectToTable(data: ServerCommandData["welcome"]): boolean {
+  // If the server has informed us that we are currently playing in an ongoing game, automatically
+  // reconnect to that game.
+  const firstTableID = data.playingAtTables[0];
+  if (firstTableID !== undefined) {
+    globals.conn!.send("tableReattend", {
+      tableID: firstTableID,
+    });
+    return true;
+  }
+
+  // If the server has informed us that were previously spectating an ongoing shared replay,
+  // automatically spectate that table.
+  if (
+    data.disconSpectatingTable !== undefined
+    && data.disconSpectatingTable > 0
+  ) {
+    globals.conn!.send("tableSpectate", {
+      tableID: data.disconSpectatingTable,
+      shadowingPlayerIndex: data.disconShadowingSeat,
+    });
+    return true;
+  }
+
+  return false;
+}
+
+/** Returns whether the URL path specifies somewhere to go and we went there. */
+function gotoPath(data: ServerCommandData["welcome"]): boolean {
   // Automatically create a table if we are using a "/create-table" URL.
   if (globalThis.location.pathname === "/create-table") {
     const urlParams = new URLSearchParams(globalThis.location.search);
@@ -58,7 +106,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
       },
       password,
     });
-    return;
+    return true;
   }
 
   // Automatically join a pre-game if we are using a "/pre-game/123" URL.
@@ -75,21 +123,26 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
           tableID,
           password,
         });
-        return;
+        return true;
       }
     }
   }
 
-  // Automatically spectate a game if we are using a "/game/123" URL. We can also shadow a player in
-  // a seat with "/game/123/shadow/0" (We want to spectate it instead of reattend it because if we
-  // are at this point, it is assumed that if we were in the respective game, we would have already
-  // tried to join it.)
+  // Automatically spectate a game if we are using a "/game/123" URL (or reattend it if we are one
+  // of its players). We can also shadow a player in a seat with "/game/123/shadow/0".
   const gameMatch = /\/game\/(\d+)/u.exec(globalThis.location.pathname);
   if (gameMatch !== null) {
     const tableIDString = gameMatch[1];
     if (tableIDString !== undefined) {
       const tableID = parseIntSafe(tableIDString);
       if (tableID !== undefined && tableID > 0) {
+        if (data.playingAtTables.includes(tableIdSchema.parse(tableID))) {
+          globals.conn!.send("tableReattend", {
+            tableID,
+          });
+          return true;
+        }
+
         const shadowMatch = /\/shadow\/(\d+)/u.exec(
           globalThis.location.pathname,
         );
@@ -112,7 +165,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
           tableID,
           shadowingPlayerIndex,
         });
-        return;
+        return true;
       }
     }
   }
@@ -137,7 +190,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
           // A link to a shared replay should join the one that people are already watching.
           joinExisting: true,
         });
-        return;
+        return true;
       }
     }
   }
@@ -153,14 +206,12 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
       // The server expects the uncompressed JSON.
       const gameJSONString = expand(gameJSONStringCompressed);
       if (gameJSONString === undefined) {
-        setBrowserAddressBarPath("/lobby");
-        return;
+        return false;
       }
 
       const parsed = parseGameJSON(gameJSONString);
       if ("error" in parsed) {
-        setBrowserAddressBarPath("/lobby");
-        return;
+        return false;
       }
       const { gameJSON } = parsed;
 
@@ -178,12 +229,11 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         visibility,
         shadowingPlayerIndex: NO_VALUE,
       });
-      return;
+      return true;
     }
   }
 
-  // Otherwise, we will stay in the lobby.
-  setBrowserAddressBarPath("/lobby");
+  return false;
 }
 
 function restoreLobbyHistoryView(): boolean {
