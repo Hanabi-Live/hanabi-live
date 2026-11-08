@@ -18,7 +18,12 @@ cd "$REPO_ROOT"
 # Spell check every file using CSpell.
 # "--no-progress" and "--no-summary" make it only output errors.
 cache_key=$(sha256sum bun.lock package.json bunfig.toml | sha256sum | cut -d " " -f 1)
-bunx --bun --no-install cspell --no-progress --no-summary \
-  --cache --cache-strategy content --cache-location ".cache/cspell/$cache_key" .
+bunx --bun --no-install cspell \
+  --no-progress \
+  --no-summary \
+  --cache \
+  --cache-strategy content \
+  --cache-location ".cache/cspell/$cache_key" \
+  .
 
 echo "Successfully spell checked $REPO_NAME in $SECONDS seconds."
