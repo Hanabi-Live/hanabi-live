@@ -71,9 +71,10 @@ Use Conventional Commits for commit messages:
 
 ## Before pushing
 
-Use `GITHUB_TOKEN_PERSONAL_CLASSIC` for GitHub CLI authentication:
-`GH_TOKEN="$GITHUB_TOKEN_PERSONAL_CLASSIC" gh <command>`. Do not print or commit
-the token.
+Use `GITHUB_TOKEN` for GitHub CLI authentication:
+`GH_TOKEN="$GITHUB_TOKEN" gh <command>`. If it is empty, source `~/.env` first:
+`( set -a; source ~/.env; set +a; GH_TOKEN="$GITHUB_TOKEN" gh <command> )`. Do
+not print or commit the token.
 
 Use Bun for JavaScript dependency management; its version is pinned in the root
 `package.json`. Use `bun install --frozen-lockfile`, `bun run <script>`, and
