@@ -13,6 +13,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   CardStatus,
+  DEFAULT_CARD_RANKS,
   PipState,
   StackDirection,
   canCardPossiblyBeFromEmpathy,
@@ -28,7 +29,7 @@ import {
   isCardDiscarded,
   isCardPlayed,
 } from "@hanabi-live/game";
-import { assertDefined, assertNotNull, iRange } from "complete-common";
+import { assertDefined, assertNotNull } from "complete-common";
 import Konva from "konva";
 import * as tooltips from "../../tooltips";
 import { noteEqual, noteHasMeaning, parseNote } from "../reducers/notesReducer";
@@ -1312,7 +1313,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         }
       }
 
-      for (const rank of iRange(1, 5)) {
+      for (const rank of DEFAULT_CARD_RANKS) {
         const prismClueColorIndex = (rank - 1) % variant.clueColors.length;
         const prismClueColor = variant.clueColors[prismClueColorIndex];
         if (prismClueColor !== undefined) {

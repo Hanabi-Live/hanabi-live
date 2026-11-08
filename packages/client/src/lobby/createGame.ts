@@ -405,7 +405,7 @@ function getTextboxForTimePerTurn(setting: keyof Settings): number {
   let value = parseIntSafe(valueString);
   if (value === undefined) {
     // They have entered an invalid amount of seconds, so revert to using the default value.
-    value = 20;
+    value = defaultSettings.createTableTimePerTurnSeconds;
 
     // Also change the value of the actual element on the page.
     element.val(value.toString());
@@ -421,7 +421,7 @@ function getTextboxForTimeBase(setting: keyof Settings): number {
   let value = parseFloatSafe(valueString);
   if (value === undefined) {
     // They have entered an invalid amount of minutes, so revert to using the default value.
-    value = 2;
+    value = defaultSettings.createTableTimeBaseMinutes;
 
     // Also change the value of the actual element on the page.
     element.val(value.toString());

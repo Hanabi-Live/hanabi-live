@@ -1,4 +1,5 @@
 import type { ServerCommandData } from "@hanabi-live/data";
+import { defaultSettings } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
@@ -23,9 +24,13 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
     const name = urlParams.get("name") ?? `${globals.username}'s table`;
     const variantName = urlParams.get("variantName") ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get("timed") === "true";
-    const timeBaseString = urlParams.get("timeBase") ?? "120";
+    const timeBaseString =
+      urlParams.get("timeBase")
+      ?? (defaultSettings.createTableTimeBaseMinutes * 60).toString();
     const timeBase = parseIntSafe(timeBaseString);
-    const timePerTurnString = urlParams.get("timePerTurn") ?? "20";
+    const timePerTurnString =
+      urlParams.get("timePerTurn")
+      ?? defaultSettings.createTableTimePerTurnSeconds.toString();
     const timePerTurn = parseIntSafe(timePerTurnString);
     const speedrun = urlParams.get("speedrun") === "true";
     const cardCycle = urlParams.get("cardCycle") === "true";

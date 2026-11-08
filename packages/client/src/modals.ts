@@ -1,6 +1,7 @@
 // Modals (boxes that hover on top of the UI).
 
 import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
+import { START_CARD_RANK } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";
@@ -636,7 +637,7 @@ function fillMorphModalWithRadios(
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] = rank === START_CARD_RANK ? "S" : rank.toString();
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -645,7 +646,7 @@ function fillMorphModalWithRadios(
 
         // Set textbox data attribute.
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = rank === 7 ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] = rank === START_CARD_RANK ? "S" : rank.toString();
       });
 
       row.append(cell);

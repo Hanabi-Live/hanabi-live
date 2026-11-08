@@ -2,7 +2,11 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import { MAX_PLAYERS } from "@hanabi-live/game";
-import { SECOND_IN_MILLISECONDS, assertDefined, iRange } from "complete-common";
+import {
+  SECOND_IN_MILLISECONDS,
+  assertDefined,
+  getEnumValues,
+} from "complete-common";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
@@ -10,6 +14,16 @@ import { copyStringToClipboard, escapeHtml, getURLFromPath } from "../utils";
 import * as createGame from "./createGame";
 import { getOptionIcons, initializeOptionTooltips } from "./pregame";
 import { Screen } from "./types/Screen";
+
+/** The lobby lists tables in this order. */
+enum TableGroup {
+  /** Tables that we are currently in. */
+  Joined,
+  Unstarted,
+  PasswordProtected,
+  Ongoing,
+  SharedReplay,
+}
 
 export function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
@@ -27,19 +41,19 @@ export function tablesDraw(): void {
   $("#lobby-games").removeClass("align-center-v");
   $("#lobby-games-table-container").show();
 
-  // We want the tables to be drawn in a certain order:
-  // 1) Tables that we are currently in + tables our friends are currently in
-  // 2) Unstarted tables
-  // 3) Unstarted & password-protected tables
-  // 4) Ongoing tables
-  // 5) Shared replays
+  // Tables that we or our friends are in come first, then each group of the remaining tables.
   let sortedTableIDs: number[] = [];
   for (const friends of [true, false]) {
-    for (const i of iRange(1, 5)) {
+    for (const group of getEnumValues(TableGroup)) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
         // Tables that we are currently in.
-        if (friends && i === 1 && table.joined && !table.sharedReplay) {
+        if (
+          friends
+          && group === TableGroup.Joined
+          && table.joined
+          && !table.sharedReplay
+        ) {
           tableIDsOfThisType.push(id);
         }
 
@@ -50,7 +64,7 @@ export function tablesDraw(): void {
         }
 
         if (
-          i === 2
+          group === TableGroup.Unstarted
           && !table.running
           && !table.passwordProtected
           && !table.joined
@@ -58,7 +72,7 @@ export function tablesDraw(): void {
           // Unstarted tables
           tableIDsOfThisType.push(id);
         } else if (
-          i === 3
+          group === TableGroup.PasswordProtected
           && !table.running
           && table.passwordProtected
           && !table.joined
@@ -66,14 +80,18 @@ export function tablesDraw(): void {
           // Unstarted & password-protected tables.
           tableIDsOfThisType.push(id);
         } else if (
-          i === 4
+          group === TableGroup.Ongoing
           && table.running
           && !table.sharedReplay
           && !table.joined
         ) {
           // Ongoing tables
           tableIDsOfThisType.push(id);
-        } else if (i === 5 && table.running && table.sharedReplay) {
+        } else if (
+          group === TableGroup.SharedReplay
+          && table.running
+          && table.sharedReplay
+        ) {
           // Shared replays
           tableIDsOfThisType.push(id);
         }
