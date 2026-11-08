@@ -20,6 +20,11 @@ const endConditionEnum: ServerEnum<
 
 export const clueTypeSchema = z.enum(clueTypeEnum);
 export const endConditionSchema = z.enum(endConditionEnum);
+export const cardNoteSchema = z.strictObject({
+  isSpectator: z.boolean(),
+  name: z.string(),
+  text: z.string(),
+});
 export const cardOrderSchema = z
   .number()
   .int()

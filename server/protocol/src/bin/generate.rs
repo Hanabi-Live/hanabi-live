@@ -16,6 +16,7 @@ const TYPESCRIPT_ENUMS: &[(&str, bool, &str)] = &[
 /// they reference. The data package does not depend on the game library, so its protocol module
 /// has its own copy.
 const GAME_LIBRARY_SCHEMAS: &[&str] = &[
+    "CardNote",
     "CardOrder",
     "GameEvent",
     "GameOptions",

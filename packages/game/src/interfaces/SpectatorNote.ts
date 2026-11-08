@@ -1,7 +1,8 @@
-export interface SpectatorNote {
-  /** The username of the person setting the note. */
-  readonly name: string;
+import type { z } from "zod";
+import type { cardNoteSchema } from "../generated/protocol";
 
-  readonly text: string;
-  readonly isSpectator: boolean;
-}
+/** Generated from the server's wire contract. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SpectatorNote extends Readonly<
+  z.infer<typeof cardNoteSchema>
+> {}
