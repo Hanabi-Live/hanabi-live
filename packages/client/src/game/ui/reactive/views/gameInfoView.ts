@@ -8,6 +8,7 @@ import {
 import { eRange } from "complete-common";
 import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
+import * as arrows from "../../arrows";
 import {
   CURRENT_TURN_COLOR,
   LABEL_COLOR,
@@ -19,7 +20,6 @@ import {
 } from "../../constants";
 import { animate } from "../../konvaHelpers";
 import * as replay from "../../replay";
-import * as turn from "../../turn";
 
 /** The H-Group's "Low Score Phase" lasts until the score reaches this many cards for each suit. */
 const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;
@@ -74,7 +74,7 @@ export function onCurrentPlayerIndexChanged(
 
   if (currentPlayerIndex === null) {
     // The game has ended. Ensure that the clue UI is not showing.
-    turn.hideArrowsAndDisableDragging();
+    arrows.hideAll();
   } else if (globals.lobby.settings.keldonMode) {
     // In addition to bolding the player's name, change the color of their black line to signify
     // that it is their turn.

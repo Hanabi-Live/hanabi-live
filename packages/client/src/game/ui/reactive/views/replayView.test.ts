@@ -6,9 +6,6 @@ vi.mock("../../../../utils", () => ({ escapeHtml: vi.fn() }));
 vi.mock("../../konvaTooltips", () => ({}));
 vi.mock("../../timer", () => ({}));
 vi.mock("../../zen", () => ({ toggleZen: vi.fn() }));
-vi.mock("../../ourHand", () => ({
-  checkSetDraggableAll: vi.fn(),
-}));
 vi.mock("../../replay", () => ({
   adjustShuttles: vi.fn(),
 }));
@@ -36,7 +33,6 @@ vi.mock("../../UIGlobals", () => ({
   },
 }));
 const { globals } = await import("../../UIGlobals");
-const ourHand = await import("../../ourHand");
 const replay = await import("../../replay");
 const cluesView = await import("./cluesView");
 const { onActiveChanged } = await import("./replayView");
@@ -58,7 +54,6 @@ describe("replay activation", () => {
     );
     expect(replay.adjustShuttles).toHaveBeenCalledWith(true);
     expect(cluesView.refreshArrows).toHaveBeenCalledWith(true);
-    expect(ourHand.checkSetDraggableAll).toHaveBeenCalledTimes(1);
   });
 
   test("preserves visible replay controls outside a hypothetical", () => {
@@ -80,6 +75,5 @@ describe("replay activation", () => {
     expect(globals.elements.replayArea?.visible).toHaveBeenLastCalledWith(true);
     expect(replay.adjustShuttles).not.toHaveBeenCalled();
     expect(cluesView.refreshArrows).toHaveBeenCalledWith(false);
-    expect(ourHand.checkSetDraggableAll).toHaveBeenCalledTimes(1);
   });
 });

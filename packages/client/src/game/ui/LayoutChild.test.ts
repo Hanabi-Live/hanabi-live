@@ -5,7 +5,9 @@ vi.mock("../../modals", () => ({}));
 vi.mock("../../sounds", () => ({}));
 vi.mock("./confirmPlay", () => ({ confirmPlay: vi.fn() }));
 vi.mock("./cursor", () => ({}));
-vi.mock("./isOurTurn", () => ({ isOurTurn: vi.fn() }));
+vi.mock("./reactive/views/draggableView", () => ({
+  draggablePlayerIndex: () => 0,
+}));
 vi.mock("./turn", () => ({}));
 const { LayoutChild } = await import("./LayoutChild");
 const { globals } = await import("./UIGlobals");

@@ -12,6 +12,7 @@ import * as cardsView from "./views/cardsView";
 import * as cluesView from "./views/cluesView";
 import * as currentPlayerAreaView from "./views/currentPlayerAreaView";
 import * as deckView from "./views/deckView";
+import * as draggableView from "./views/draggableView";
 import * as gameInfoView from "./views/gameInfoView";
 import * as hypotheticalView from "./views/hypotheticalView";
 import * as initView from "./views/initView";
@@ -416,6 +417,12 @@ const otherObservers = [
     premoveView.shouldShowCancelButtonChanged,
   ),
   subAfterInit((s) => s.premove, premoveView.onChanged),
+
+  // Card dragging
+  subAfterInit(
+    (s) => draggableView.draggablePlayerIndex(s),
+    draggableView.onDraggablePlayerIndexChanged,
+  ),
 
   // Pause
   subAfterInit((s) => s.pause, pauseView.onChanged),

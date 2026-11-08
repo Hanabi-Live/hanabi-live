@@ -20,18 +20,3 @@ export function get(): CardLayout {
 
   return ourHand;
 }
-
-export function checkSetDraggableAll(): void {
-  if (!globals.state.playing) {
-    return;
-  }
-
-  const { ourPlayerIndex } = globals.metadata;
-  const ourHand = globals.elements.playerHands[ourPlayerIndex];
-  assertDefined(
-    ourHand,
-    `Failed to get our hand with an index of: ${ourPlayerIndex}`,
-  );
-
-  ourHand.checkSetDraggableAll();
-}

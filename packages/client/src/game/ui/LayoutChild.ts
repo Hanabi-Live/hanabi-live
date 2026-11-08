@@ -11,7 +11,7 @@ import type { PlayStack } from "./PlayStack";
 import { globals } from "./UIGlobals";
 import { confirmPlay } from "./confirmPlay";
 import * as cursor from "./cursor";
-import { isOurTurn } from "./isOurTurn";
+import { draggablePlayerIndex } from "./reactive/views/draggableView";
 import * as turn from "./turn";
 
 /** Parent of a `HanabiCard`. It has a `CardLayout` or `PlayStack` parent. */
@@ -59,9 +59,7 @@ export class LayoutChild extends Konva.Group {
       return;
     }
 
-    if (
-      this.shouldBeDraggable(globals.state.visibleState.turn.currentPlayerIndex)
-    ) {
+    if (this.shouldBeDraggable(draggablePlayerIndex(globals.state))) {
       this.draggable(true);
       // eslint-disable-next-line @typescript-eslint/unbound-method
       this.on("dragend", this.dragEnd);
@@ -82,7 +80,7 @@ export class LayoutChild extends Konva.Group {
     }
   }
 
-  shouldBeDraggable(currentPlayerIndex: PlayerIndex | null): boolean {
+  shouldBeDraggable(draggableIndex: PlayerIndex | null): boolean {
     // Rarely, if the game is restarted when a tween is happening, we can get here without the card
     // being defined.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -90,31 +88,13 @@ export class LayoutChild extends Konva.Group {
       return false;
     }
 
-    // First, handle the special case of a hypothetical.
-    if (globals.state.replay.hypothetical !== null) {
-      return (
-        (globals.state.replay.shared === null
-          || globals.state.replay.shared.amLeader)
-        && currentPlayerIndex === this.card.state.location
-        && !this.blank
-      );
-    }
-
     return (
-      // If it is not our turn, then the card should not need to be draggable yet (unless we have
-      // the "Enable pre-playing cards" feature enabled).
-      (isOurTurn() || globals.lobby.settings.speedrunPreplay)
-      // Cards should not be draggable if there is a queued move.
-      && globals.state.premove === null
-      && !globals.options.speedrun // Cards should never be draggable while speedrunning
-      && !globals.lobby.settings.speedrunMode  // Cards should never be draggable while speedrunning
-      // Only our cards should be draggable.
-      && this.card.state.location === globals.metadata.ourPlayerIndex
-      // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
-      // replay, or in a shared replay.
-      && globals.state.playing
-      // Cards should not be draggable if they are currently playing an animation. (This function
-      // will be called again upon the completion of the animation.)
+      draggableIndex !== null
+      && this.card.state.location === draggableIndex
+      // A morphed card with an unknown identity cannot be played or discarded.
+      && !this.blank
+      // Cards should not be draggable while they are playing an animation. (This function will be
+      // called again upon the completion of the animation.)
       && !this.card.tweening
     );
   }

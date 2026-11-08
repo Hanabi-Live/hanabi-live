@@ -3,7 +3,6 @@ import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { DISABLED_OPACITY } from "../../constants";
 import { isOurTurn } from "../../isOurTurn";
-import * as ourHand from "../../ourHand";
 import * as turn from "../../turn";
 
 export function shouldShowYourTurnIndicator(state: State): boolean {
@@ -113,8 +112,6 @@ export function onLastClueTypeChanged(lastClueType: ClueType | null): void {
 }
 
 export function onOngoingTurnChanged(): void {
-  ourHand.checkSetDraggableAll();
-
   if (isOurTurn()) {
     turn.begin();
   }

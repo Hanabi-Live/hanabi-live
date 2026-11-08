@@ -1,6 +1,7 @@
 import { MIN_PLAYERS } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
+import * as arrows from "../../arrows";
 import * as clues from "../../clues";
 import type { PlayerButton } from "../../controls/PlayerButton";
 import { changeStartingHandVisibility } from "../../hypothetical";
@@ -41,10 +42,8 @@ export function onActiveChanged(data: {
   replayActive: boolean;
 }): void {
   if (!data.hypotheticalActive && data.replayActive) {
-    turn.hideArrowsAndDisableDragging();
+    arrows.hideAll();
   }
-
-  checkSetDraggableAllHands();
 
   // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
   // changes in the middle of a hypothetical.
@@ -78,8 +77,6 @@ export function shouldShowHypoControlsChanged(shouldShow: boolean): void {
     globals.elements.clueAreaDisabled?.setCenter();
   }
 
-  // We might need to change the draggable property of a hand.
-  checkSetDraggableAllHands();
   globals.layers.UI.batchDraw();
 }
 
@@ -105,7 +102,7 @@ export function onActiveOrAmLeaderChanged(data: {
   globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
 
   if (visibleForFollowersInHypo) {
-    turn.hideArrowsAndDisableDragging();
+    arrows.hideAll();
   }
 
   const visibleForLeaderInSharedReplay =
@@ -137,9 +134,6 @@ export function onStatesLengthChanged(): void {
     }
   }
 
-  // Set the current player's hand to be draggable.
-  checkSetDraggableAllHands();
-
   globals.layers.UI.batchDraw();
 }
 
@@ -168,10 +162,4 @@ export function onDrawnCardsInHypotheticalChanged(
   changeStartingHandVisibility();
 
   globals.layers.UI.batchDraw();
-}
-
-function checkSetDraggableAllHands() {
-  for (const hand of globals.elements.playerHands) {
-    hand.checkSetDraggableAll();
-  }
 }

@@ -3,7 +3,6 @@ import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
 import { globals } from "../../UIGlobals";
-import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
 import * as timer from "../../timer";
 import { toggleZen } from "../../zen";
@@ -24,7 +23,6 @@ export function onActiveChanged(active: boolean): void {
   }
 
   cluesView.refreshArrows(active);
-  ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
 }

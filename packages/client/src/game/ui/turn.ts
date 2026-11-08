@@ -7,7 +7,6 @@ import * as arrows from "./arrows";
 import { PREPLAY_DELAY_MILLISECONDS } from "./constants";
 import * as hypothetical from "./hypothetical";
 import { isOurTurn } from "./isOurTurn";
-import * as ourHand from "./ourHand";
 import * as replay from "./replay";
 
 export function begin(): void {
@@ -78,7 +77,7 @@ function handlePremove() {
       ...oldPremove,
     });
 
-    hideArrowsAndDisableDragging();
+    arrows.hideAll();
   }, PREPLAY_DELAY_MILLISECONDS);
 }
 
@@ -100,7 +99,7 @@ export function end(clientAction: ClientAction): void {
 
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay in case we preplayed a card in the replay.
-    hideArrowsAndDisableDragging();
+    arrows.hideAll();
     showWaitingOnServerAnimation();
     globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
@@ -122,14 +121,4 @@ function showWaitingOnServerAnimation() {
 
   globals.elements.waitingOnServer!.show();
   globals.elements.waitingOnServerAnimation!.start();
-}
-
-export function hideArrowsAndDisableDragging(): void {
-  arrows.hideAll();
-
-  // Make all of the cards in our hand not draggable. (But we need to keep them draggable if the
-  // pre-play setting is enabled.)
-  if (!globals.lobby.settings.speedrunPreplay) {
-    ourHand.checkSetDraggableAll();
-  }
 }

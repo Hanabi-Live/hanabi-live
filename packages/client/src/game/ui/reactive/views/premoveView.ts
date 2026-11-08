@@ -35,8 +35,6 @@ export function onChanged(
     }
   } else if (action !== null && previousAction === null) {
     // We just specified a premove action.
-    ourHand.checkSetDraggableAll();
-
     let text = "Cancel Pre-";
     switch (action.type) {
       case ActionType.Play: {

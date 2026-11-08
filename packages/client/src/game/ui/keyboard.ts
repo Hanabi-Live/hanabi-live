@@ -20,13 +20,13 @@ import {
 import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
+import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import { confirmPlay } from "./confirmPlay";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 import { setGlobalEmpathy } from "./setGlobalEmpathy";
-import * as turn from "./turn";
 
 type Callback = () => void;
 
@@ -485,5 +485,5 @@ function sendAction(
     });
   }
 
-  turn.hideArrowsAndDisableDragging();
+  arrows.hideAll();
 }
