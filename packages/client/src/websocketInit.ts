@@ -9,6 +9,7 @@ import {
   tableIdSchema,
   withTabAccount,
 } from "@hanabi-live/data";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands";
 import { Connection } from "./Connection";
 import { gameCommands } from "./game/ui/gameCommands";
@@ -20,9 +21,9 @@ import { ReconnectBackoff } from "./reconnect";
 import { escapeHtml } from "./utils";
 
 const reconnectBackoff = new ReconnectBackoff();
-const CONNECT_TIMEOUT_MS = 15_000;
-const WELCOME_TIMEOUT_MS = 15_000;
-const COOKIE_CHECK_TIMEOUT_MS = 10_000;
+const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
+const WELCOME_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
+const COOKIE_CHECK_TIMEOUT_MS = 10 * SECOND_IN_MILLISECONDS;
 let activeConnection: Connection | undefined;
 let websocketURL = "";
 let recovering = false;
@@ -181,7 +182,7 @@ function registerReconnectWakeListeners() {
   globalThis.addEventListener("pageshow", wakeReconnect);
 }
 
-function reconnectAfterTimeout(conn: Connection) {
+function reconnectAfterTimeout(conn: Connection, timeoutMs: number) {
   if (activeConnection !== conn || stopped) {
     return;
   }
@@ -189,7 +190,7 @@ function reconnectAfterTimeout(conn: Connection) {
   clearConnectTimer();
   clearWelcomeTimer();
   console.warn(
-    "WebSocket handshake exceeded its 15-second deadline; attempting to reconnect.",
+    `WebSocket handshake exceeded its ${timeoutMs / SECOND_IN_MILLISECONDS}-second deadline; attempting to reconnect.`,
   );
   // Do not depend on a browser emitting close for a stalled CONNECTING socket.
   activeConnection = undefined;
@@ -212,7 +213,7 @@ function openConnection(isReconnect: boolean) {
 
   connectTimer = setTimeout(() => {
     if (conn.ws.readyState === WebSocket.CONNECTING) {
-      reconnectAfterTimeout(conn);
+      reconnectAfterTimeout(conn, CONNECT_TIMEOUT_MS);
     }
   }, CONNECT_TIMEOUT_MS);
 
@@ -225,7 +226,7 @@ function openConnection(isReconnect: boolean) {
     // Even an open socket can be stuck before the server sends "welcome".
     clearWelcomeTimer();
     welcomeTimer = setTimeout(() => {
-      reconnectAfterTimeout(conn);
+      reconnectAfterTimeout(conn, WELCOME_TIMEOUT_MS);
     }, WELCOME_TIMEOUT_MS);
   });
   conn.on("close", () => {

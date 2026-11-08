@@ -637,10 +637,13 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
 
 /// The protocol's limits that the data package exports under the same names.
 fn data_constants() -> String {
-    exported_constants(&[(
-        "MAX_PRIVATE_HISTORY_MESSAGES",
-        hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
-    )])
+    exported_constants(&[
+        ("MAX_VOLUME", hanabi_protocol::MAX_VOLUME.to_string()),
+        (
+            "MAX_PRIVATE_HISTORY_MESSAGES",
+            hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
+        ),
+    ])
 }
 
 /// Writes each named value as an exported constant.
@@ -658,6 +661,7 @@ fn game_library_constants() -> String {
     exported_constants(&[
         ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
         ("MAX_PLAYERS", hanabi_protocol::MAX_PLAYERS.to_string()),
+        ("NO_VALUE", hanabi_protocol::NO_VALUE.to_string()),
         (
             "DEFAULT_VARIANT_NAME",
             serde_json::to_string(hanabi_protocol::DEFAULT_VARIANT_NAME)

@@ -17,6 +17,9 @@ import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
+/** The number of games that each history request asks for. */
+const HISTORY_PAGE_SIZE = 10;
+
 export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
     if (globals.currentScreen !== Screen.History) {
@@ -24,7 +27,7 @@ export function init(): void {
     }
     globals.conn!.send("historyGet", {
       offset: globals.history.size,
-      amount: 10,
+      amount: HISTORY_PAGE_SIZE,
     });
   });
 }
@@ -59,7 +62,7 @@ export function show(requestHistory = true): void {
 function request() {
   globals.conn!.send("historyGet", {
     offset: 0,
-    amount: 10,
+    amount: HISTORY_PAGE_SIZE,
   });
   if (globals.history.size === 0) {
     $("#lobby-history-no").text("Loading history...");
@@ -159,8 +162,8 @@ export function draw(): void {
     tooltips.create(`#lobby-history-table-${i}-options`);
   }
 
-  // Do not show the "Show More History" if we have 10 or less games played.
-  if (globals.totalGames !== null && globals.totalGames <= 10) {
+  // Do not show the "Show More History" button if the first page holds every game.
+  if (globals.totalGames !== null && globals.totalGames <= HISTORY_PAGE_SIZE) {
     $("#lobby-history-show-more").hide();
   } else {
     $("#lobby-history-show-more").show();

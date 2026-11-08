@@ -14,6 +14,7 @@ import {
 } from "@hanabi-live/game";
 import * as z from "zod";
 
+export const MAX_VOLUME = 100;
 export const MAX_PRIVATE_HISTORY_MESSAGES = 100;
 
 /**

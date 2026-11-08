@@ -2,7 +2,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
-import { millisecondsToClockString } from "@hanabi-live/game";
+import { millisecondsToClockString, NO_VALUE } from "@hanabi-live/game";
 import * as tooltips from "../../tooltips";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
@@ -112,8 +112,8 @@ export function update(
   }
   setTickingDownTimeCurrentPlayerTooltip();
 
-  // The server will send an active player index of -1 when the game is over.
-  if (activePlayerIndex === -1) {
+  // The server sends no active player when the game is over.
+  if (activePlayerIndex === NO_VALUE) {
     return;
   }
 

@@ -4,7 +4,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { CardIdentity, GameAction, NumPlayers } from "@hanabi-live/game";
-import { isValidNumPlayers } from "@hanabi-live/game";
+import { isValidNumPlayers, NO_VALUE } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { SoundType } from "./game/types/SoundType";
 
@@ -25,11 +25,11 @@ export function toPlayerTuple<T>(
   return [...values] as unknown as Tuple<T, NumPlayers>;
 }
 
-/** The server marks an unknown suit or rank with -1; the game state uses null. */
+/** The server marks an unknown suit or rank with `NO_VALUE`; the game state uses null. */
 export function toCardIdentity(identity: WireCardIdentity): CardIdentity {
   return {
-    suitIndex: identity.suitIndex === -1 ? null : identity.suitIndex,
-    rank: identity.rank === -1 ? null : identity.rank,
+    suitIndex: identity.suitIndex === NO_VALUE ? null : identity.suitIndex,
+    rank: identity.rank === NO_VALUE ? null : identity.rank,
   };
 }
 

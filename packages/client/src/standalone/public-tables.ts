@@ -8,6 +8,8 @@ import {
   scoreFrequencySchema,
   variantNamesSchema,
 } from "@hanabi-live/data";
+import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
+import { iRange } from "complete-common";
 import jquery from "jquery";
 import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
 import * as z from "zod";
@@ -201,10 +203,13 @@ function initServerTable(
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
 ) {
-  const playerCounts: Choice[] = [2, 3, 4, 5, 6].map((value) => ({
-    value: String(value),
-    text: String(value),
-  }));
+  const playerCounts: Choice[] = Array.from(
+    iRange(MIN_PLAYERS, MAX_PLAYERS),
+    (value) => ({
+      value: String(value),
+      text: String(value),
+    }),
+  );
   const variantChoices: Choice[] = Object.entries(variants).map(
     ([value, text]) => ({ value, text }),
   );

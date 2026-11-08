@@ -1,6 +1,6 @@
 // The "Settings" nav button.
 
-import { SoundMove } from "@hanabi-live/data";
+import { MAX_VOLUME, SoundMove } from "@hanabi-live/data";
 import {
   assertDefined,
   assertEnumValue,
@@ -58,7 +58,7 @@ export function init(): void {
       `The value of the "#settings-volume-slider" element could not be converted to a number: ${volumeString}`,
     );
 
-    audio.volume = volume / 100;
+    audio.volume = volume / MAX_VOLUME;
     audio.play().catch((error: unknown) => {
       console.error("Failed to play the test sound:", error);
     });

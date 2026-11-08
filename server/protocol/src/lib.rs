@@ -24,6 +24,8 @@ pub const MIN_PLAYERS: usize = 2;
 pub const MAX_PLAYERS: usize = 6;
 /// The highest seat index, which also bounds a starting player.
 pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
+/// The value that marks no seat, or a suit or rank that the recipient may not see.
+pub const NO_VALUE: i32 = -1;
 /// The player limit of a table whose creator did not choose one.
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.
@@ -79,7 +81,7 @@ fn seats() -> Vec<i64> {
 
 /// Every seat index after -1, which means no seat.
 fn seats_or_none() -> Vec<i64> {
-    std::iter::once(-1).chain(seats()).collect()
+    std::iter::once(i64::from(NO_VALUE)).chain(seats()).collect()
 }
 
 /// Every normal rank, which are also the ranks that clues can name.
@@ -89,7 +91,7 @@ fn ranks() -> Vec<i32> {
 
 /// Every rank a card can have, after -1, which means an unknown rank.
 fn ranks_or_unknown() -> Vec<i32> {
-    std::iter::once(-1).chain(catalog_ranks()).collect()
+    std::iter::once(NO_VALUE).chain(catalog_ranks()).collect()
 }
 
 /// Every rank a catalog can name: the normal ranks and the start card's.
@@ -340,8 +342,8 @@ pub struct TableSuggestRequest {
     pub segment: i64,
 }
 
-fn negative_one() -> i64 {
-    -1
+fn no_value() -> i64 {
+    i64::from(NO_VALUE)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -349,7 +351,7 @@ fn negative_one() -> i64 {
 pub struct TableSpectateRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[serde(default = "negative_one")]
+    #[serde(default = "no_value")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shadowing_player_index: i64,
 }
@@ -468,7 +470,7 @@ pub struct ReplayCreateRequest {
     /// Replays cannot have a password; anything else is rejected.
     #[serde(default)]
     pub password: String,
-    #[serde(default = "negative_one")]
+    #[serde(default = "no_value")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shadowing_player_index: i64,
     /// For a shared replay of a database game, spectate an existing shared replay of that game
@@ -1579,7 +1581,7 @@ pub struct Welcome {
     pub discon_spectating_table: Option<TableId>,
     /// The seat the user was shadowing at that table, or -1 for none.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i8", range(min = -1, max = MAX_SEAT))]
+    #[schemars(with = "i8", range(min = NO_VALUE, max = MAX_SEAT))]
     pub discon_shadowing_seat: Option<i8>,
 }
 
@@ -1650,7 +1652,7 @@ pub struct Spectator {
     #[schemars(length(min = 1))]
     pub name: String,
     /// The seat being shadowed, or -1 for none.
-    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))]
+    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))]
     pub shadowing_player_index: i8,
     /// Present only while shadowing a seat.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1883,7 +1885,7 @@ pub struct PlayerIndex(
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct PlayerIndexOrNone(
-    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
+    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
 /// A card's position in the initial deck, which identifies it. Stack bases follow the cards of the
@@ -1897,14 +1899,14 @@ pub struct CardOrder(#[schemars(range(min = 0, max = MAX_CARD_ORDER))] pub i64);
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct SuitIndexOrUnknown(
-    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
+    #[schemars(range(min = NO_VALUE, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
 /// A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct RankOrUnknown(
-    #[schemars(range(min = -1, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))] pub i64,
+    #[schemars(range(min = NO_VALUE, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))] pub i64,
 );
 
 /// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
@@ -1937,9 +1939,9 @@ pub enum ReceivedClue {
     },
     Hidden {
         #[serde(rename = "type")]
-        #[schemars(extend("const" = -1))]
+        #[schemars(extend("const" = NO_VALUE))]
         clue_type: i32,
-        #[schemars(extend("const" = -1))]
+        #[schemars(extend("const" = NO_VALUE))]
         value: i32,
     },
 }

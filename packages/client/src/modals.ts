@@ -1,8 +1,12 @@
 // Modals (boxes that hover on top of the UI).
 
 import type { Rank, Suit, SuitRankTuple, Variant } from "@hanabi-live/game";
-import { START_CARD_RANK } from "@hanabi-live/game";
-import { assertDefined, parseIntSafe } from "complete-common";
+import { millisecondsToClockString, START_CARD_RANK } from "@hanabi-live/game";
+import {
+  assertDefined,
+  parseIntSafe,
+  SECOND_IN_MILLISECONDS,
+} from "complete-common";
 import { globals } from "./Globals";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
@@ -340,8 +344,9 @@ export function showIdleWarning(
       : " unless someone takes a turn or keeps it going.",
   );
   function update() {
-    const seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-    countdown.textContent = `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}`;
+    countdown.textContent = millisecondsToClockString(
+      Math.max(0, deadline - Date.now()),
+    );
   }
   update();
   stopIdleCountdown();
@@ -351,7 +356,7 @@ export function showIdleWarning(
     } else {
       stopIdleCountdown();
     }
-  }, 1000);
+  }, SECOND_IN_MILLISECONDS);
 
   idleModalKeep.style.display = keepPlaying === null ? "none" : "";
   // We can't use "addEventListener" because we can't easily remove the previous listener.
