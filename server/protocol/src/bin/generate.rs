@@ -446,6 +446,8 @@ fn main() -> Result<()> {
         .copied()
         .chain([
             "TableId",
+            "GameId",
+            "UserId",
             "ChatHistoryMessage",
             "Settings",
             "Spectator",

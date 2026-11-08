@@ -1,7 +1,5 @@
 import type { z } from "zod";
-import { tableIdSchema } from "../generated/protocol";
-
-export const tableID = tableIdSchema;
+import type { tableIdSchema } from "../generated/protocol";
 
 // Adding `& number` makes the type opaque, which makes for cleaner mouseover tooltips.
-export type TableID = z.infer<typeof tableID> & number;
+export type TableID = z.infer<typeof tableIdSchema> & number;

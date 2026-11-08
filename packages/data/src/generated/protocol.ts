@@ -361,7 +361,7 @@ export const gameActionListSchema = z.strictObject({
   list: z.array(gameEventSchema),
   tableID: tableIdSchema,
 });
-const gameIdSchema = z
+export const gameIdSchema = z
   .number()
   .int()
   .min(0)
@@ -512,7 +512,7 @@ export const loginRequestSchema = z.strictObject({
   username: z.string().default(""),
   version: z.string().default(""),
 });
-const userIdSchema = z
+export const userIdSchema = z
   .number()
   .int()
   .min(0)

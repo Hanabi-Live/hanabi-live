@@ -1,6 +1,5 @@
-import { z } from "zod";
-
-export const userID = z.number().int().brand("UserID");
+import type { z } from "zod";
+import type { userIdSchema } from "../generated/protocol";
 
 // Adding `& number` makes the type opaque, which makes for cleaner mouseover tooltips.
-export type UserID = z.infer<typeof userID> & number;
+export type UserID = z.infer<typeof userIdSchema> & number;
