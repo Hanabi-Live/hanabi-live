@@ -925,7 +925,7 @@ impl Store {
         )
         .execute(&mut *tx)
         .await?;
-        let modifier = crate::model::ScoreModifier::of(&s.game.options).bits();
+        let modifier = crate::model::ScoreModifier::of(&s.game.options);
         for p in &s.players {
             sqlx::query!(
                 "INSERT INTO user_stats(user_id,variant_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
@@ -948,18 +948,18 @@ impl Store {
                 p.id,
                 v,
                 i16::try_from(s.game.score)?,
-                modifier,
+                modifier.bits(),
                 players,
             )
             .execute(&mut *tx)
             .await?;
         }
         sqlx::query!(
-            "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4=0 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
-             best_score3=CASE WHEN $5=3 AND $4=0 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
-             best_score4=CASE WHEN $5=4 AND $4=0 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
-             best_score5=CASE WHEN $5=5 AND $4=0 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
-             best_score6=CASE WHEN $5=6 AND $4=0 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
+            "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
+             best_score3=CASE WHEN $5=3 AND $4 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
+             best_score4=CASE WHEN $5=4 AND $4 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
+             best_score5=CASE WHEN $5=5 AND $4 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
+             best_score6=CASE WHEN $5=6 AND $4 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
              num_games=s.n,num_max_scores=s.maximum
              FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum
              FROM games WHERE variant_id=$1 AND NOT speedrun) s
@@ -967,7 +967,7 @@ impl Store {
             v,
             i16::try_from(s.game.score)?,
             i16::try_from(variant.max_score)?,
-            i32::from(modifier),
+            modifier == crate::model::ScoreModifier::default(),
             players,
         )
         .execute(&mut *tx)
@@ -990,7 +990,14 @@ impl Store {
     }
 }
 pub fn zero_stats() -> Value {
-    json!({"numGames":0,"variant":{"numGames":0,"bestScores":(hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
+    let best_scores = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
+        .map(|n| {
+            let mut best = json!({"numPlayers":n,"score":0});
+            crate::model::ScoreModifier::default().write(&mut best);
+            best
+        })
+        .collect::<Vec<_>>();
+    json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
 }
 pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
     let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;

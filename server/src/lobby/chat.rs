@@ -336,7 +336,8 @@ pub async fn private_history(
         }
         found
     };
-    let before = data.before_id.unwrap_or(0);
+    // Chat IDs are positive, so a non-positive cursor means no cursor.
+    let before = data.before_id.filter(|id| *id > 0);
     let rows = sqlx::query!(
         "SELECT c.id, c.message, c.datetime_sent,
          COALESCE(u.username, 'Deleted user #' || c.user_id) AS who,
@@ -346,7 +347,7 @@ pub async fn private_history(
          WHERE (c.user_id=$1 OR c.recipient_id=$1)
            AND ($2::int IS NULL OR (c.user_id=$1 AND c.recipient_id=$2)
                 OR (c.user_id=$2 AND c.recipient_id=$1))
-           AND ($3::bigint <= 0 OR c.id < $3)
+           AND ($3::bigint IS NULL OR c.id < $3)
          ORDER BY c.id DESC LIMIT $4",
         caller.id,
         peer,

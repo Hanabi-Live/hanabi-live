@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4 THEN GREATEST(best_score2,$2) ELSE best_score2 END,\n             best_score3=CASE WHEN $5=3 AND $4 THEN GREATEST(best_score3,$2) ELSE best_score3 END,\n             best_score4=CASE WHEN $5=4 AND $4 THEN GREATEST(best_score4,$2) ELSE best_score4 END,\n             best_score5=CASE WHEN $5=5 AND $4 THEN GREATEST(best_score5,$2) ELSE best_score5 END,\n             best_score6=CASE WHEN $5=6 AND $4 THEN GREATEST(best_score6,$2) ELSE best_score6 END,\n             num_games=s.n,num_max_scores=s.maximum\n             FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum\n             FROM games WHERE variant_id=$1 AND NOT speedrun) s\n             WHERE variant_id=$1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2",
+        "Int2",
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "08022afeda18714d689c95169b5e0cd63080746b3d2f98942c071d7282554c92"
+}
