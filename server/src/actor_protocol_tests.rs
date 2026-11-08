@@ -1036,6 +1036,56 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
 }
 
 #[tokio::test]
+async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnecting() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol", "Dave", "Erin"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let game = h.create(0, "Spectated game", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":game})).await?;
+        h.send(0, "tableStart", json!({"tableID":game})).await?;
+        h.send(2, "tableSpectate", json!({"tableID":game,"shadowingPlayerIndex":1}))
+            .await?;
+        let replay = h.replay(3).await?;
+        h.send(4, "tableSpectate", json!({"tableID":replay})).await?;
+
+        // Carol shadows seat 1 of the ongoing game; Erin watches Dave's shared replay.
+        for restarted in [false, true] {
+            if restarted {
+                h.restart().await?;
+            } else {
+                for index in [2, 4] {
+                    h.replace(index).await?;
+                }
+            }
+            for (index, table, seat) in [(2, game, 1), (4, replay, -1)] {
+                let welcome = h.receive(index, "welcome").await?;
+                ensure!(
+                    welcome["disconSpectatingTable"] == json!(table)
+                        && welcome["disconShadowingSeat"] == json!(seat),
+                    "A spectator was not sent back to their table (restarted: {restarted}): {welcome}"
+                );
+                // The client spectates the table it was told about.
+                h.send(
+                    index,
+                    "tableSpectate",
+                    json!({"tableID":table,"shadowingPlayerIndex":seat}),
+                )
+                .await?;
+                ensure!(
+                    h.receive(index, "tableStart").await?["tableID"] == json!(table),
+                    "A spectator did not rejoin their table (restarted: {restarted})"
+                );
+            }
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
         return Ok(());
