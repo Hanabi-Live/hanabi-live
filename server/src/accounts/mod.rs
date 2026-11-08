@@ -29,8 +29,9 @@ use axum::{
     routing::{get, post},
 };
 use chrono::{DateTime, Utc};
-use hanabi_protocol::{ApiError, LoginRequest, LoginResponse};
-use serde_json::json;
+use hanabi_protocol::{
+    ApiError, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest, LoginResponse,
+};
 use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
@@ -398,10 +399,10 @@ fn api_error(status: StatusCode, message: &str) -> Response {
     (status, Json(ApiError::new(message))).into_response()
 }
 
+pub(crate) const BANNED: &str = "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";
+
 fn api_banned() -> Response {
-    (StatusCode::BAD_REQUEST, Json(
-        "Your IP address has been banned. Please contact an administrator if you think this is a mistake."
-    )).into_response()
+    api_error(StatusCode::BAD_REQUEST, BANNED)
 }
 
 async fn identity_token(
@@ -433,10 +434,14 @@ async fn identity_token(
         let ip = address.ip().to_string();
         let result = regenerate_token(&state.pool, &state.config.secret, id, &ip).await?;
         eprintln!("Issued identity token for account {id} from IP: {ip}");
-        Ok(Json(json!({
-            "username":username, "token":result.token,
-            "expires_at":result.expires_at.format("%a, %d %b %Y %H:%M:%S GMT").to_string()
-        }))
+        Ok(Json(IdentityTokenResponse {
+            username,
+            token: result.token,
+            expires_at: result
+                .expires_at
+                .format("%a, %d %b %Y %H:%M:%S GMT")
+                .to_string(),
+        })
         .into_response())
     }
     .await;
@@ -454,7 +459,8 @@ async fn identity(
         }
         let token = body
             .ok()
-            .and_then(|Json(value)| value["token"].as_str().map(str::to_owned));
+            .and_then(|Json(value)| serde_json::from_value::<IdentityRequest>(value).ok())
+            .map(|request| request.token);
         let Some(token) = token.filter(|token| !token.is_empty()) else {
             return Ok(api_error(
                 StatusCode::BAD_REQUEST,
@@ -474,7 +480,10 @@ async fn identity(
             let ip = address.ip().to_string();
             if expiry > Utc::now() && verify_password(&ip, token, row.token_hash.clone()).await? {
                 eprintln!("Verified identity token from IP: {ip}");
-                return Ok(Json(json!({"username":row.username.clone()})).into_response());
+                return Ok(Json(IdentityResponse {
+                    username: row.username.clone(),
+                })
+                .into_response());
             }
         }
         Ok(api_error(

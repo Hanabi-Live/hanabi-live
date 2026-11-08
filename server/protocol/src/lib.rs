@@ -1126,6 +1126,79 @@ impl ApiError {
     }
 }
 
+/// The `/api/v1/identity` request. Like the login form, the server ignores unknown fields.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[schemars(deny_unknown_fields)]
+pub struct IdentityRequest {
+    #[schemars(length(min = 1))]
+    pub token: String,
+}
+
+/// The account that an identity token belongs to.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityResponse {
+    pub username: String,
+}
+
+/// A newly issued identity token, from `/api/v1/identity/token`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityTokenResponse {
+    pub username: String,
+    pub token: String,
+    /// An HTTP date, such as "Fri, 01 Jan 2027 00:00:00 GMT".
+    pub expires_at: String,
+}
+
+/// A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PublicGamePage {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub total_rows: i64,
+    /// The accepted parameters, or why the request was rejected.
+    pub info: String,
+    /// Null when the request was rejected.
+    pub rows: Option<Vec<PublicGameRow>>,
+}
+
+/// One game in a public game list.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PublicGameRow {
+    pub id: GameId,
+    #[schemars(range(min = 2, max = 6))]
+    pub num_players: u8,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub score: i32,
+    /// The variant ID. Variant lists omit it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32")]
+    pub variant: Option<u32>,
+    /// How many games used this seed. Variant lists omit it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u32")]
+    pub other_scores: Option<u32>,
+    /// The players' names, separated by commas.
+    pub users: String,
+    /// When the game finished, such as "2026-01-01 - 01:00:00 UTC".
+    pub datetime: String,
+    pub seed: String,
+}
+
+/// A variant in `/api/v1/variants-full`, keyed by its ID.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PublicVariant {
+    pub name: String,
+    pub suits: Vec<String>,
+    #[schemars(range(min = 1, max = 7))]
+    pub stack_size: u8,
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub max_score: u32,
+}
+
 /// A user's presence in the lobby's user list.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1867,6 +1940,12 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         LoginRequest,
         LoginResponse,
         ApiError,
+        IdentityRequest,
+        IdentityResponse,
+        IdentityTokenResponse,
+        PublicGamePage,
+        PublicGameRow,
+        PublicVariant,
         ChatRequest,
         ChatPmRequest,
         ChatHistoryRequest,

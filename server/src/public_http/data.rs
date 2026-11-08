@@ -19,6 +19,14 @@ struct HistoryRow {
     tags: String,
 }
 
+/// The rows are built in SQL, so that counting and paging stay in one statement, and decoded into
+/// their wire type.
+#[derive(sqlx::FromRow)]
+struct PageRow {
+    total_rows: i64,
+    rows: sqlx::types::Json<Vec<hanabi_protocol::PublicGameRow>>,
+}
+
 #[derive(Default)]
 pub(super) struct Selection {
     pub users: Vec<i32>,
@@ -164,7 +172,7 @@ pub(super) async fn list(
     s: Selection,
     q: &Query,
     mode: &str,
-) -> Result<Value> {
+) -> Result<hanabi_protocol::PublicGamePage> {
     let size = first(q, "size")
         .and_then(integer)
         .filter(|n| (0..=100).contains(n))
@@ -216,20 +224,33 @@ pub(super) async fn list(
     qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
-        .push(") SELECT jsonb_build_object('total_rows',(SELECT count(*) FROM selected),'rows',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'num_players',g.num_players,'score',g.score,");
+        .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'num_players',g.num_players,'score',g.score,");
     if mode != "variants" {
         qb.push("'variant',g.variant_id,'other_scores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
     qb.push("'users',COALESCE((SELECT string_agg(u.username, ', ' ORDER BY lower(u.username), u.username) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),''),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\" - \"HH24:MI:SS \"UTC\"'),'seed',g.seed) ORDER BY g.")
         .push(order).push(if ascending { " ASC" } else { " DESC" })
-        .push(",g.id DESC) FROM paged g),'[]'::jsonb))");
-    let mut result: Value = qb.build_query_scalar().fetch_one(&state.pool).await?;
-    result["info"] = json!(if mode == "variants" {
-        "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
-    } else {
-        "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
-    });
-    Ok(result)
+        .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
+    let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
+    Ok(hanabi_protocol::PublicGamePage {
+        total_rows: page.total_rows,
+        info: if mode == "variants" {
+            "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 1: num_players, 2: score)"
+        } else {
+            "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
+        }
+        .into(),
+        rows: Some(page.rows.0),
+    })
+}
+
+/// The list response for a rejected request, with the reason in place of the parameters.
+pub(super) fn rejected(reason: String) -> hanabi_protocol::PublicGamePage {
+    hanabi_protocol::PublicGamePage {
+        total_rows: 0,
+        info: reason,
+        rows: None,
+    }
 }
 
 /// The public history lists the lobby's `GameHistory` contract, with the stored starting player.
