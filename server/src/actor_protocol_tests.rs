@@ -827,9 +827,9 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
     };
     let outcome = async {
         let game: i32 = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
              all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-             VALUES('Linked game',2,0,false,120,20,false,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
+             VALUES('Linked game',2,0,false,120,20,false,false,false,false,false,false,false,'p2v0s1',0,1,4,NOW(),NOW())
              RETURNING id")
         .fetch_one(&h.store.primary)
         .await?;
@@ -1724,10 +1724,10 @@ async fn pregame_total_counts_only_normal_non_speedrun_games() -> Result<()> {
     };
     let outcome = async {
         let games: Vec<i32> = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
              all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
              SELECT 'Stats fixture',2,CASE WHEN n=2 THEN 1 ELSE 0 END,false,120,20,
-             n IN (8,9),false,false,false,false,false,false,false,
+             n IN (8,9),false,false,false,false,false,false,
              'stats-'||n,CASE WHEN n IN (1,8) THEN 25 ELSE 0 END,30,
              CASE n WHEN 3 THEN 2 WHEN 4 THEN 3 WHEN 5 THEN 4 WHEN 6 THEN 6
                     WHEN 7 THEN 10 WHEN 9 THEN 5 ELSE 1 END,NOW(),NOW()
@@ -1837,7 +1837,7 @@ async fn option_proposals_publish_changed_values_but_keep_apply_button_private()
             for expected in ["Bob&lt;&amp;&gt; proposes the following options:", "Table Name: <b>Proposal</b>", "Variant: <b>6 Suits</b>", "Timed: <b>120 / 20</b>", "Max Players: <b>2</b>", "Empty Clues: <b>Yes</b>", "Players above the new limit will be removed."] {
                 ensure!(text.contains(expected), "Missing proposal detail: {expected}");
             }
-            ensure!(!text.contains("Speedrun:") && !text.contains("Card Cycling:"));
+            ensure!(!text.contains("Speedrun:") && !text.contains("Bottom-Deck:"));
             let button = messages.iter().find(|m| m["msg"].as_str().is_some_and(|s| s.contains("new-options")));
             if index == 0 {
                 let button = button.context("Owner is missing the apply button")?;

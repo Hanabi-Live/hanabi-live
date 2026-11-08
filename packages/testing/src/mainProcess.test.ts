@@ -584,7 +584,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           variantName: "Rainbow (6 Suits)",
           detrimentalCharacters: true,
           oneLessCard: true,
-          cardCycle: true,
           emptyClues: true,
         },
       });
@@ -627,7 +626,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
           variantName: "Rainbow (6 Suits)",
           detrimentalCharacters: true,
           oneLessCard: true,
-          cardCycle: true,
           emptyClues: true,
         });
         expect(game.init.characterAssignments).toHaveLength(6);

@@ -324,12 +324,6 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
     tooltipHTML += "Speedrun</li>";
   }
 
-  if (options.cardCycle) {
-    icons.push(OptionIcons.CardCycle);
-    tooltipHTML += `<li><i class="${OptionIcons.CardCycle}"></i>&nbsp; `;
-    tooltipHTML += "Card Cycling</li>";
-  }
-
   if (options.deckPlays) {
     icons.push(OptionIcons.DeckPlays);
     tooltipHTML += `<li><i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i>&nbsp; `;

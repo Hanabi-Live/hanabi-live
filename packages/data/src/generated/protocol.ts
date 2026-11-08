@@ -724,7 +724,6 @@ const importNoteRowSchema = z.array(z.string());
  */
 const importOptionsSchema = z.strictObject({
   allOrNothing: z.boolean().optional(),
-  cardCycle: z.boolean().optional(),
   deckPlays: z.boolean().optional(),
   /**
    * When present, even as false, the game must assign every player a character.
@@ -838,7 +837,6 @@ const replayNoteRowSchema = z.array(z.string());
  */
 const replayOptionsSchema = z.strictObject({
   allOrNothing: z.boolean().optional(),
-  cardCycle: z.boolean().optional(),
   deckPlays: z.boolean().optional(),
   detrimentalCharacters: z.boolean().optional(),
   emptyClues: z.boolean().optional(),
@@ -933,7 +931,6 @@ export const settingsSchema = z
   .strictObject({
     colorblindMode: z.boolean().default(false),
     createTableAllOrNothing: z.boolean().default(false),
-    createTableCardCycle: z.boolean().default(false),
     createTableDeckPlays: z.boolean().default(false),
     createTableDetrimentalCharacters: z.boolean().default(false),
     createTableEmptyClues: z.boolean().default(false),
@@ -1057,7 +1054,6 @@ export const tableCreateRequestSchema = z.strictObject({
   name: z.string().default(""),
   options: gameOptionsSchema.default({
     allOrNothing: false,
-    cardCycle: false,
     deckPlays: false,
     detrimentalCharacters: false,
     emptyClues: false,
@@ -1125,7 +1121,6 @@ export const tableUpdateRequestSchema = z.strictObject({
   name: z.string().default(""),
   options: gameOptionsSchema.default({
     allOrNothing: false,
-    cardCycle: false,
     deckPlays: false,
     detrimentalCharacters: false,
     emptyClues: false,

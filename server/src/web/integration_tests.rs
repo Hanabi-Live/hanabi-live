@@ -429,9 +429,9 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .await
         .unwrap();
     let historical:i32=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-         speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
          all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         VALUES('Authored history',3,1,true,180,30,false,true,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
+         VALUES('Authored history',3,1,true,180,30,false,false,true,false,false,false,true,'p3v1s42',30,40,1,NOW(),NOW()) RETURNING id").fetch_one(&fixture.db.pool).await.unwrap();
     let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
          VALUES($1,$2,0,0,0) RETURNING id", historical, alice_id).fetch_one(&fixture.db.pool).await.unwrap();
     sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,0,'authored note')", participant).execute(&fixture.db.pool).await.unwrap();
@@ -459,7 +459,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     assert_eq!(history[0]["id"], historical);
     assert_eq!(history[0]["options"]["variantName"], "6 Suits");
     assert_eq!(history[0]["options"]["timeBase"], 180.0);
-    assert_eq!(history[0]["options"]["cardCycle"], true);
+    assert_eq!(history[0]["options"]["emptyClues"], true);
     assert_eq!(history[0]["tags"], "authored");
     let mut bob = connect(&fixture, &bob_cookie, false).await;
     let bob_welcome = receive(&mut bob, "welcome").await;
@@ -741,9 +741,9 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         shared.push(fixture.db.user(&format!("Historian{index:05}")).await);
     }
     let games:Vec<i32>=sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-         speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
          all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         SELECT 'Historical game '||n,6,1,true,180,30,false,true,false,true,false,false,false,true,
+         SELECT 'Historical game '||n,6,1,true,180,30,false,false,true,false,false,false,true,
          'p6v1s'||n,30,72,1,NOW(),NOW() FROM generate_series(1,200) n ORDER BY n RETURNING id").fetch_all(&fixture.db.pool).await.unwrap();
     let mut players = vec![alice];
     players.extend(&shared);

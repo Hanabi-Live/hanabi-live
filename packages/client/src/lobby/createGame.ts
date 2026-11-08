@@ -152,9 +152,6 @@ export function init(): void {
   $("#createTableTimePerTurnSeconds").on("change", () => {
     getTextboxForTimePerTurn();
   });
-  $("#createTableCardCycle").on("change", () => {
-    getCheckbox("createTableCardCycle");
-  });
   $("#createTableDeckPlays").on("change", () => {
     getCheckbox("createTableDeckPlays");
   });
@@ -335,7 +332,6 @@ function submit() {
     timeBase: timeBaseSeconds,
     timePerTurn,
     speedrun: getCheckbox("createTableSpeedrun"),
-    cardCycle: getCheckbox("createTableCardCycle"),
     deckPlays: getCheckbox("createTableDeckPlays"),
     emptyClues: getCheckbox("createTableEmptyClues"),
     oneExtraCard: getCheckbox("createTableOneExtraCard"),
@@ -526,7 +522,6 @@ export function ready(): boolean {
   // Hide the extra options if we do not have any selected.
   if (
     globals.settings.createTableSpeedrun
-    || globals.settings.createTableCardCycle
     || globals.settings.createTableDeckPlays
     || globals.settings.createTableEmptyClues
     || globals.settings.createTableOneExtraCard

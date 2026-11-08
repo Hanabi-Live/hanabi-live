@@ -397,15 +397,6 @@ fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_
         turn: state.turn,
     });
     character_post_clue(state, actor, action, &touched);
-    let hand = &mut state.players[actor].hand;
-    if state.options.card_cycle
-        && hand.len() > 1
-        && let Some(chop) = hand.iter().position(|&o| !state.deck[o].touched)
-        && chop != hand.len() - 1
-    {
-        let order = hand.remove(chop);
-        hand.push(order);
-    }
 }
 
 fn check_end(state: &mut EngineState) -> bool {

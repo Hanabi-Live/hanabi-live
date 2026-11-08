@@ -380,7 +380,6 @@ export const gameEventSchema = z.discriminatedUnion("type", [
 export const gameOptionsSchema = z
   .strictObject({
     allOrNothing: z.boolean().default(false),
-    cardCycle: z.boolean().default(false),
     deckPlays: z.boolean().default(false),
     detrimentalCharacters: z.boolean().default(false),
     emptyClues: z.boolean().default(false),

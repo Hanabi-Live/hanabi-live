@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,\n             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,\n             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished\n             FROM games WHERE id=$1",
+  "query": "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,\n             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,\n             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished\n             FROM games WHERE id=$1",
   "describe": {
     "columns": [
       {
@@ -104,17 +104,6 @@
       },
       {
         "ordinal": 9,
-        "name": "card_cycle",
-        "type_info": "Bool",
-        "origin": {
-          "Table": {
-            "table": "games",
-            "name": "card_cycle"
-          }
-        }
-      },
-      {
-        "ordinal": 10,
         "name": "deck_plays",
         "type_info": "Bool",
         "origin": {
@@ -125,7 +114,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "empty_clues",
         "type_info": "Bool",
         "origin": {
@@ -136,7 +125,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "one_extra_card",
         "type_info": "Bool",
         "origin": {
@@ -147,7 +136,7 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 12,
         "name": "one_less_card",
         "type_info": "Bool",
         "origin": {
@@ -158,7 +147,7 @@
         }
       },
       {
-        "ordinal": 14,
+        "ordinal": 13,
         "name": "all_or_nothing",
         "type_info": "Bool",
         "origin": {
@@ -169,7 +158,7 @@
         }
       },
       {
-        "ordinal": 15,
+        "ordinal": 14,
         "name": "detrimental_characters",
         "type_info": "Bool",
         "origin": {
@@ -180,7 +169,7 @@
         }
       },
       {
-        "ordinal": 16,
+        "ordinal": 15,
         "name": "seed",
         "type_info": "Text",
         "origin": {
@@ -191,7 +180,7 @@
         }
       },
       {
-        "ordinal": 17,
+        "ordinal": 16,
         "name": "score",
         "type_info": "Int2",
         "origin": {
@@ -202,7 +191,7 @@
         }
       },
       {
-        "ordinal": 18,
+        "ordinal": 17,
         "name": "num_turns",
         "type_info": "Int2",
         "origin": {
@@ -213,7 +202,7 @@
         }
       },
       {
-        "ordinal": 19,
+        "ordinal": 18,
         "name": "end_condition",
         "type_info": "Int2",
         "origin": {
@@ -224,7 +213,7 @@
         }
       },
       {
-        "ordinal": 20,
+        "ordinal": 19,
         "name": "datetime_started",
         "type_info": "Timestamptz",
         "origin": {
@@ -235,7 +224,7 @@
         }
       },
       {
-        "ordinal": 21,
+        "ordinal": 20,
         "name": "datetime_finished",
         "type_info": "Timestamptz",
         "origin": {
@@ -272,9 +261,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "93353f9338ce626c700859e76728d684417f480bcd5e1f9e5e1577e60213ceb7"
+  "hash": "7b16e7ae4b380de60f8201b5cd8ea99a58cc8796080238bd3d9e9b8f976a8dc7"
 }

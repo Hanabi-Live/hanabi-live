@@ -53,7 +53,6 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         time_base: raw.time_base.map_or(defaults.time_base, seconds),
         time_per_turn: raw.time_per_turn.unwrap_or(defaults.time_per_turn),
         speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
-        card_cycle: raw.card_cycle.unwrap_or(defaults.card_cycle),
         deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),
         empty_clues: raw.empty_clues.unwrap_or(defaults.empty_clues),
         one_extra_card: raw.one_extra_card.unwrap_or(defaults.one_extra_card),

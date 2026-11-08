@@ -642,9 +642,6 @@ pub struct ReplayOptions {
     pub speedrun: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
-    pub card_cycle: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
     pub deck_plays: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
@@ -773,9 +770,6 @@ pub struct ImportOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub speedrun: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "bool")]
-    pub card_cycle: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub deck_plays: Option<bool>,
@@ -1522,7 +1516,6 @@ pub struct Settings {
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub create_table_time_per_turn_seconds: i32,
     pub create_table_speedrun: bool,
-    pub create_table_card_cycle: bool,
     pub create_table_deck_plays: bool,
     pub create_table_empty_clues: bool,
     pub create_table_one_extra_card: bool,
@@ -1554,7 +1547,6 @@ impl Default for Settings {
             create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,
             create_table_time_per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
             create_table_speedrun: false,
-            create_table_card_cycle: false,
             create_table_deck_plays: false,
             create_table_empty_clues: false,
             create_table_one_extra_card: false,
@@ -1628,7 +1620,6 @@ pub struct GameOptions {
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub time_per_turn: i64,
     pub speedrun: bool,
-    pub card_cycle: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
     pub one_extra_card: bool,
@@ -1655,7 +1646,6 @@ impl Default for GameOptions {
             time_base: 0.0,
             time_per_turn: 0,
             speedrun: false,
-            card_cycle: false,
             deck_plays: false,
             empty_clues: false,
             one_extra_card: false,

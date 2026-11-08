@@ -35,7 +35,6 @@ pub struct GameRecord {
     pub time_base: i32,
     pub time_per_turn: i32,
     pub speedrun: bool,
-    pub card_cycle: bool,
     pub deck_plays: bool,
     pub empty_clues: bool,
     pub one_extra_card: bool,

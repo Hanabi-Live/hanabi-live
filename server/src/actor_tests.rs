@@ -124,7 +124,6 @@ fn option_summaries_include_only_changes_and_escape_values() {
     options.timed = true;
     assert!(option_changes(&table, &options, &table.name, table.max_players).contains("120 / 30"));
     options.timed = false;
-    options.card_cycle = true;
     options.deck_plays = true;
     options.empty_clues = true;
     options.one_extra_card = true;
@@ -137,7 +136,6 @@ fn option_summaries_include_only_changes_and_escape_values() {
     assert!(summary.contains("Max Players: <b>2</b>"));
     assert!(!summary.contains("Timed:"));
     for label in [
-        "Card Cycling",
         "Bottom-Deck",
         "Empty Clues",
         "One Extra Card",
@@ -149,10 +147,10 @@ fn option_summaries_include_only_changes_and_escape_values() {
         assert!(summary.contains(&format!("{label}: <b>Yes</b>")));
     }
     table.options = options.clone();
-    options.card_cycle = false;
+    options.deck_plays = false;
     assert_eq!(
         option_changes(&table, &options, &table.name, table.max_players),
-        "<span class=\"cp\">Card Cycling: <b>No</b></span>"
+        "<span class=\"cp\">Bottom-Deck: <b>No</b></span>"
     );
 }
 
@@ -834,6 +832,23 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     replied.await?;
     task.await?;
     store.close().await?;
+    Ok(())
+}
+
+#[test]
+fn checkpoints_from_before_card_cycling_was_removed_still_restore() -> Result<()> {
+    let mut value = serde_json::to_value(review(1, EndCondition::TerminatedByPlayer)?)?;
+    for pointer in ["/options", "/phase/snapshot/game/options"] {
+        value
+            .pointer_mut(pointer)
+            .and_then(Value::as_object_mut)
+            .context("Missing checkpoint options")?
+            .insert("cardCycle".into(), json!(false));
+    }
+    let restored = TableSnapshot::decode(&value.to_string())?;
+    ensure!(restored.game().is_some(), "Missing restored review");
+    value["options"]["cardCycle"] = json!(true);
+    ensure!(TableSnapshot::decode(&value.to_string()).is_err());
     Ok(())
 }
 

@@ -483,9 +483,9 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
 
 async fn game(db: &TestDb, user: i32, seed: &str, score: i16) -> i32 {
     let id = sqlx::query_scalar!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-            speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+            speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
             all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-         VALUES('test',2,0,false,120,20,false,false,false,false,false,false,false,false,$1,$2,30,1,NOW(),NOW())
+         VALUES('test',2,0,false,120,20,false,false,false,false,false,false,false,$1,$2,30,1,NOW(),NOW())
          RETURNING id", seed, score).fetch_one(&db.pool).await.unwrap();
     sqlx::query!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
          VALUES($1,$2,0,0,0)", id, user).execute(&db.pool).await.unwrap();

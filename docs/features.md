@@ -246,15 +246,6 @@ that have not been played yet and have only one copy remaining.)
 - Speedrunning games will not count towards your statistics.
 - If this mode is enabled, then the "Timed" option will be disabled.
 
-### Card Cycling
-
-- Each game has the option to enable algorithmic card cycling.
-- If enabled, whenever a player gives a clue, their oldest unclued card will be
-  moved to their newest slot.
-- This is a way to play that is used by
-  [Alessandro Iraci's](https://sites.google.com/view/iraci) group from the
-  [Scuola Normale Superiore di Pisa](https://www.sns.it/en).
-
 ### Bottom Deck Blind Plays
 
 - Each game has the option to allow a special "house" rule.

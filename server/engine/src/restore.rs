@@ -81,7 +81,6 @@ pub fn parse_engine_state(value: Value) -> Result<EngineState> {
         "timeBase",
         "timePerTurn",
         "speedrun",
-        "cardCycle",
         "deckPlays",
         "emptyClues",
         "oneExtraCard",
@@ -451,13 +450,6 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     target: int(*target),
                     value: clue.value,
                 });
-                if s.options.card_cycle {
-                    let hand = &mut hands[*giver];
-                    if let Some(chop) = hand.iter().position(|&o| !cards[o].touched) {
-                        let o = hand.remove(chop);
-                        hand.push(o);
-                    }
-                }
             }
             EngineEvent::Turn {
                 num,

@@ -264,10 +264,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         (1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),
         (3,'<script>alert(1)</script>','<script>alert(1)</script>','test','127.0.0.1');
         INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,
-          card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
+          deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,
           seed,score,num_turns,end_condition,datetime_started,datetime_finished)
         SELECT id,'test',2,CASE WHEN id=3 THEN 1 ELSE 0 END,id=3,120,20,id=3,
-          id=3,id=3,id=3,id=3,id=3,id=3,id=3,
+          id=3,id=3,id=3,id=3,id=3,id=3,
           CASE WHEN id=3 THEN 'custom-seed' ELSE 'same' END,
           CASE WHEN id=1 THEN 25 WHEN id=2 THEN 15 ELSE 0 END,10,CASE WHEN id=2 THEN 2 ELSE 1 END,
           '2026-01-01T00:00:00Z'::timestamptz,'2026-01-01T01:00:00Z'::timestamptz FROM generate_series(1,3) id;
@@ -427,7 +427,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     for key in [
         "timed",
         "speedrun",
-        "cardCycle",
         "deckPlays",
         "emptyClues",
         "oneExtraCard",
@@ -673,10 +672,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
         SELECT id,'Player'||id,'player'||id,'test','127.0.0.1' FROM generate_series(4,8) id;
         INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
-        speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+        speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
         SELECT 4,name,6,starting_player,variant_id,timed,time_base,time_per_turn,
-        speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+        speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,'six-player',score,num_turns,end_condition,datetime_started,datetime_finished
         FROM games WHERE id=1;
         INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)

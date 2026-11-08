@@ -221,18 +221,6 @@ export function getOptionIcons(
     `;
   }
 
-  if (options.cardCycle) {
-    html += `<li><i id="${idPrefix}-options-card-cycle-${rowId}" class="${OptionIcons.CardCycle}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-card-cycle-${rowId}"></i></li>`;
-    html += `
-      <div class="hidden">
-        <div id="${idPrefix}-tooltip-card-cycle-${rowId}" class="${idPrefix}-tooltip-icon">
-          The <strong>Card Cycling</strong> option is enabled.
-        </div>
-      </div>
-    `;
-  }
-
   if (options.deckPlays) {
     html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DeckPlays}" `;
     html += 'style="position: relative; left: 0.2em;" ';
@@ -318,9 +306,6 @@ export function initializeOptionTooltips(
   }
   if (options.speedrun) {
     tooltips.create(`#${idPrefix}-options-speedrun-${rowId}`);
-  }
-  if (options.cardCycle) {
-    tooltips.create(`#${idPrefix}-options-card-cycle-${rowId}`);
   }
   if (options.deckPlays) {
     tooltips.create(`#${idPrefix}-options-deck-plays-${rowId}`);

@@ -1671,7 +1671,6 @@ fn option_changes(
     }
     for (label, proposed, previous) in [
         ("Speedrun", options.speedrun, current.speedrun),
-        ("Card Cycling", options.card_cycle, current.card_cycle),
         ("Bottom-Deck", options.deck_plays, current.deck_plays),
         ("Empty Clues", options.empty_clues, current.empty_clues),
         (

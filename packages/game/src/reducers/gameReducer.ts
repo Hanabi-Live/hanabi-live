@@ -10,7 +10,6 @@ import { VALID_PLAYER_INDEXES } from "../constants";
 import { getVariant } from "../gameData";
 import { ClueType, EndCondition } from "../generated/protocol";
 import type { CardNote } from "../interfaces/CardNote";
-import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import type { Variant } from "../interfaces/Variant";
@@ -25,7 +24,6 @@ import {
   getNewClueTokensAfterAction,
 } from "../rules/clueTokens";
 import { isInitialDealFinished } from "../rules/deck";
-import { getChopIndex } from "../rules/hand";
 import { getStackDirection, getStackStartRank } from "../rules/playStacks";
 import {
   getClueText,
@@ -149,15 +147,6 @@ function gameReducerFunction(
         turn: gameState.turn.turnNum + 1,
         text,
       });
-
-      // Handle the "Card Cycling" game option.
-      const giverHand = gameState.hands[action.giver];
-      assertDefined(
-        giverHand,
-        `Failed to find the hand at index: ${action.giver}`,
-      );
-
-      cardCycle(giverHand, castDraft(gameState.deck), metadata);
 
       break;
     }
@@ -626,31 +615,6 @@ function gameReducerFunction(
       variant,
     ),
   );
-}
-
-function cardCycle(
-  // eslint-disable-next-line complete/prefer-readonly-parameter-types
-  hand: number[],
-  deck: readonly CardState[],
-  metadata: GameMetadata,
-) {
-  if (!metadata.options.cardCycle) {
-    return;
-  }
-
-  // We do not need to reorder anything if the chop is slot 1 (the left-most card).
-  const chopIndex = getChopIndex(hand, deck);
-  if (chopIndex === hand.length - 1) {
-    return;
-  }
-
-  // Remove the chop card from their hand.
-  const newHand = hand.splice(chopIndex, 1);
-  const removedCardOrder = newHand[0];
-  if (removedCardOrder !== undefined) {
-    // Add it to the end (the left-most position).
-    hand.push(removedCardOrder);
-  }
 }
 
 function throwItInAHolePlayedOrMisplayed(

@@ -319,12 +319,6 @@ function getTooltipContent(): string {
     content += "&nbsp; Speedrun</li>";
   }
 
-  if (globals.options.cardCycle) {
-    content += '<li><span class="game-tooltips-icon">';
-    content += `<i class="${OptionIcons.CardCycle}"></i></span>`;
-    content += "&nbsp; Card Cycling</li>";
-  }
-
   if (globals.options.deckPlays) {
     content += '<li><span class="game-tooltips-icon">';
     content += `<i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i></span>`;

@@ -406,7 +406,7 @@ impl Store {
         let existing = sqlx::query_as!(
             crate::archive::GameRecord,
             "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
-             speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
+             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
              detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished
              FROM games WHERE id=$1",
             s.game_id
@@ -510,7 +510,7 @@ impl Store {
             tx.commit().await?;
             return Ok(times);
         }
-        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(o.starting_player)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.card_cycle, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
+        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(o.starting_player)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
         for (seat, p) in s.players.iter().enumerate() {
             let character = &s.game.players[seat];
             let assignment = hanabi_engine::characters()
@@ -1010,7 +1010,6 @@ pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> 
         time_base: f64::from(row.time_base),
         time_per_turn: i64::from(row.time_per_turn),
         speedrun: row.speedrun,
-        card_cycle: row.card_cycle,
         deck_plays: row.deck_plays,
         empty_clues: row.empty_clues,
         one_extra_card: row.one_extra_card,
@@ -1173,9 +1172,9 @@ mod tests {
         let store = Store::fixture(pool, state.clone());
         let result = async {
             sqlx::query!("INSERT INTO games(name,num_players,variant_id,timed,time_base,time_per_turn,
-                 speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,
+                 speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,
                  all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-                 SELECT 'Recovery stats',2,0,false,120,20,false,false,false,false,false,false,
+                 SELECT 'Recovery stats',2,0,false,120,20,false,false,false,false,false,
                  false,false,'recovery-'||n,0,30,CASE n WHEN 1 THEN 1 ELSE 4 END,NOW(),NOW()
                  FROM generate_series(1,2) n")
             .execute(&store.primary)

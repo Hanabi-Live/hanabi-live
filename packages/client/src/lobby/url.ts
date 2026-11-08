@@ -32,7 +32,6 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
       ?? defaultSettings.createTableTimePerTurnSeconds.toString();
     const timePerTurn = parseIntSafe(timePerTurnString);
     const speedrun = urlParams.get("speedrun") === "true";
-    const cardCycle = urlParams.get("cardCycle") === "true";
     const deckPlays = urlParams.get("deckPlays") === "true";
     const emptyClues = urlParams.get("emptyClues") === "true";
     const oneExtraCard = urlParams.get("oneExtraCard") === "true";
@@ -50,7 +49,6 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         timeBase,
         timePerTurn,
         speedrun,
-        cardCycle,
         deckPlays,
         emptyClues,
         oneExtraCard,

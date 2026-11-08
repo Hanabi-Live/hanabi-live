@@ -81,7 +81,6 @@ pub(super) async fn export(
         time_base: row.timed.then_some(i64::from(row.time_base)),
         time_per_turn: row.timed.then_some(i64::from(row.time_per_turn)),
         speedrun: flag(row.speedrun),
-        card_cycle: flag(row.card_cycle),
         deck_plays: flag(row.deck_plays),
         empty_clues: flag(row.empty_clues),
         one_extra_card: flag(row.one_extra_card),

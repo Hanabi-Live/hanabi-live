@@ -247,7 +247,6 @@ fn restores_multi_action_turn_and_continues_identically() {
     let initial = create_game(setup(
         Options {
             detrimental_characters: true,
-            card_cycle: true,
             ..Options::default()
         },
         Some(assignments("Genius", "Slow-Witted")),
@@ -639,7 +638,6 @@ fn long_character_histories_are_bounded_and_restorable() {
             Options {
                 variant_name: variant_name.into(),
                 empty_clues: true,
-                card_cycle: true,
                 detrimental_characters: true,
                 ..Options::default()
             },

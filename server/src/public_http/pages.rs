@@ -80,7 +80,6 @@ const MAIN_PAGE_PARAMETERS: &[&str] = &[
     "login",
     // The table settings of a "/create-table" link.
     "allOrNothing",
-    "cardCycle",
     "deckPlays",
     "detrimentalCharacters",
     "emptyClues",

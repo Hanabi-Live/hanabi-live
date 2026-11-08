@@ -144,7 +144,7 @@
     // If this value is not specified, "No Variant" will be assumed.
     "variant": "No Variant",
 
-    // Any other website option can be specified, such as "cardCycle" or "emptyClues". A full list
+    // Any other website option can be specified, such as "deckPlays" or "emptyClues". A full list
     // of options can be found in the "OptionsJSON" struct, located here:
     // https://github.com/Hanabi-Live/hanabi-live/blob/main/server/engine/src/types.rs
     // The various options are documented here:
