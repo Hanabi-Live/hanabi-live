@@ -2,8 +2,11 @@
 
 ## Starting work
 
-When you receive a prompt and HEAD is detached, first fast-forward it to the
-latest remote `main`: run `git fetch` and `git merge --ff-only origin/main`.
+When you receive a prompt:
+
+- If you are not in a worktree and on the "main" branch, run `git pull`.
+- If HEAD is detached, first fast-forward it to the latest remote `main`: run
+  `git fetch` and `git merge --ff-only origin/main`.
 
 ## Configuration and customization
 
