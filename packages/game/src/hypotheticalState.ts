@@ -7,10 +7,7 @@ import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
 import { gameReducer } from "./reducers/gameReducer";
-import type { CardOrder } from "./types/CardOrder";
 import type { PlayerIndex } from "./types/PlayerIndex";
-import type { Rank } from "./types/Rank";
-import type { SuitIndex } from "./types/SuitIndex";
 import type {
   ActionClue,
   ActionDiscard,
@@ -18,6 +15,7 @@ import type {
   ActionPlay,
   ActionStrike,
   ActionTurn,
+  HypotheticalWireAction,
 } from "./types/gameActions";
 
 export interface HypotheticalState {
@@ -43,22 +41,15 @@ export interface HypotheticalState {
   readonly startingPlayerIndex: PlayerIndex | null;
 }
 
-export interface ActionHypotheticalMorph {
-  readonly type: "morph";
+/** Shows a card as another identity, or as blank when its suit and rank are -1. */
+export type ActionHypotheticalMorph = Readonly<
+  Extract<HypotheticalWireAction, { type: "morph" }>
+>;
 
-  /** -1 represents a card of an unknown card. */
-  readonly suitIndex: SuitIndex | -1;
-
-  /** -1 represents a card of an unknown rank. */
-  readonly rank: Rank | -1;
-
-  readonly order: CardOrder;
-}
-
-export interface ActionHypotheticalUnmorph {
-  readonly type: "unmorph";
-  readonly order: CardOrder;
-}
+/** Shows a morphed card as its original identity again. */
+export type ActionHypotheticalUnmorph = Readonly<
+  Extract<HypotheticalWireAction, { type: "unmorph" }>
+>;
 
 /** A game action that a hypothetical move can produce. */
 export type HypotheticalGameAction =

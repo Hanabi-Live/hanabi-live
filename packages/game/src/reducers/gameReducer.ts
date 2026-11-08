@@ -3,9 +3,10 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable unicorn/no-null */
 
-import { assertDefined, assertNotNull, tupleEntries } from "complete-common";
+import { assertDefined, assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { castDraft, original, produce } from "immer";
+import { VALID_PLAYER_INDEXES } from "../constants";
 import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
@@ -433,9 +434,12 @@ function gameReducerFunction(
     }
 
     case "playerTimes": {
-      for (const [playerIndex, playerTime] of tupleEntries(
-        action.playerTimes,
-      )) {
+      for (const playerIndex of VALID_PLAYER_INDEXES) {
+        const playerTime = action.playerTimes[playerIndex];
+        if (playerTime === undefined) {
+          break;
+        }
+
         // Player times are negative in untimed games.
         const modifier = metadata.options.timed ? 1 : -1;
         const milliseconds = playerTime * modifier;
