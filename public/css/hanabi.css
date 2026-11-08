@@ -383,6 +383,14 @@ table td {
   margin-right: 0.625em;
 }
 
+/*
+ * The password key icon is intentionally spaced wider than other icons: its solid head sits on
+ * its right edge, so the usual spacing looks cramped against the table name.
+ */
+#lobby-games-table .icon-label {
+  margin-right: 0.625em;
+}
+
 /* This icon is larger than the text of its button. */
 .button .lobby-button-icon.icon-label {
   margin-right: 0.4em;
