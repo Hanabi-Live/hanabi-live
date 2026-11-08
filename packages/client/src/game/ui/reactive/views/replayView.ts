@@ -56,7 +56,9 @@ export function onSegmentChanged(
   // If we are on the last segment, disable the forward replay buttons.
   const onFinalSegment = data.replaySegment !== data.ongoingGameSegment;
   globals.elements.replayForwardButton?.setEnabled(onFinalSegment);
-  globals.elements.replayForwardFullButton?.setEnabled(onFinalSegment);
+  globals.elements.replayForwardFullButton?.setEnabled(
+    onFinalSegment && !replay.isSpoilerFree(),
+  );
 
   if (
     previousData === undefined

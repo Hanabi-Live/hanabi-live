@@ -23,6 +23,7 @@ function gameInit(tableID: number, shadowing = false, ourPlayerIndex = 0) {
     sharedReplayLeader: "",
     sharedReplaySegment: 0,
     sharedReplayEffMod: 0,
+    spoilerFree: false,
     paused: false,
     pausePlayerIndex: -1,
     pauseQueued: false,

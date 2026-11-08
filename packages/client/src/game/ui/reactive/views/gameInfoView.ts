@@ -9,6 +9,7 @@ import { setBrowserAddressBarPath } from "../../../../utils";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
 import { animate } from "../../konvaHelpers";
+import * as replay from "../../replay";
 import * as turn from "../../turn";
 
 export function onTurnChanged(data: {
@@ -246,7 +247,11 @@ export function onOngoingOrVisibleStrikesChanged(data: {
         strikeX.tween.destroy();
         strikeX.tween = null;
       }
-      const opacity = data.ongoingStrikes[i] === undefined ? 0 : STRIKE_FADE;
+      // Spoiler-free reviews hide future strikes.
+      const opacity =
+        data.ongoingStrikes[i] === undefined || replay.isSpoilerFree()
+          ? 0
+          : STRIKE_FADE;
       animate(
         strikeX,
         {

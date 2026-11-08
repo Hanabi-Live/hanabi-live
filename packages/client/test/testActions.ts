@@ -29,6 +29,7 @@ export function init(): ActionInit {
     databaseID: 1,
     sharedReplaySegment: 0,
     sharedReplayLeader: "",
+    spoilerFree: false,
     paused: false,
     pausePlayerIndex: 0,
   };

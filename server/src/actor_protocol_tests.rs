@@ -885,6 +885,41 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
 }
 
 #[tokio::test]
+async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let request = |visibility: &str| {
+            json!({"source":"json","visibility":visibility,"spoilerFree":true,
+                "gameJSON":{"players":["Alice","Bob"],"seed":"p2v0s1"}})
+        };
+        ensure!(
+            h.send(0, "replayCreate", request("solo")).await.is_err(),
+            "A solo replay was created as a spoiler-free review"
+        );
+        h.send(0, "replayCreate", request("shared")).await?;
+        let id = h.receive(0, "tableStart").await?["tableID"].clone();
+        h.send(
+            1,
+            "tableSpectate",
+            json!({"tableID":id,"shadowingPlayerIndex":-1}),
+        )
+        .await?;
+        h.send(1, "getGameInfo1", json!({"tableID":id})).await?;
+        let init = h.receive(1, "init").await?;
+        ensure!(
+            init["sharedReplay"] == true && init["spoilerFree"] == true,
+            "A spectator joined a spoiler-free review without being told: {init}"
+        );
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());

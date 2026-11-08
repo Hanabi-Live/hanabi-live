@@ -1068,7 +1068,7 @@ impl Hub {
                     mut allocation,
                     reply,
                 } => {
-                    let table = replay_table(*snapshot, false, session.user, &session.name);
+                    let table = replay_table(*snapshot, false, false, session.user, &session.name);
                     let store = self.store.clone();
                     let hub = self.sender.clone();
                     self.tasks.spawn(async move {
@@ -1543,6 +1543,7 @@ struct VariantDiscovery {
 fn replay_table(
     mut snapshot: Snapshot,
     shared: bool,
+    spoiler_free: bool,
     owner: i32,
     owner_name: &str,
 ) -> TableSnapshot {
@@ -1587,6 +1588,7 @@ fn replay_table(
                 hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
+                spoiler_free,
             },
         },
         chat: vec![],
@@ -1680,6 +1682,11 @@ async fn prepare_table(
                     r.password.is_empty(),
                     "You cannot create a replay with a password."
                 );
+                let shared = r.visibility == hanabi_protocol::ReplayVisibility::Shared;
+                ensure!(
+                    shared || !r.spoiler_free,
+                    "Only a shared replay can be a spoiler-free review."
+                );
                 let mut warnings = vec![];
                 let mut custom_seed = None;
                 let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
@@ -1699,7 +1706,8 @@ async fn prepare_table(
                 };
                 let mut table = replay_table(
                     snapshot,
-                    r.visibility == hanabi_protocol::ReplayVisibility::Shared,
+                    shared,
+                    r.spoiler_free,
                     session.user,
                     &session.name,
                 );
@@ -4843,11 +4851,16 @@ impl TableActor {
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
         if part == 1 {
-            let (segment, efficiency) = if let Phase::Replay { replay, .. } = &self.table.phase {
-                (replay.segment, replay.efficiency_modifier)
-            } else {
-                (s.game.turn, 0)
-            };
+            let (segment, efficiency, spoiler_free) =
+                if let Phase::Replay { replay, .. } = &self.table.phase {
+                    (
+                        replay.segment,
+                        replay.efficiency_modifier,
+                        replay.spoiler_free,
+                    )
+                } else {
+                    (s.game.turn, 0, false)
+                };
             let init = hanabi_protocol::Init {
                 table_id: TableId(self.table.id),
                 player_names: s.players.iter().map(|p| p.name.clone()).collect(),
@@ -4893,6 +4906,7 @@ impl TableActor {
                 shared_replay_leader: self.leader_name(),
                 shared_replay_segment: segment.into(),
                 shared_replay_eff_mod: efficiency.into(),
+                spoiler_free,
                 paused: s.game.paused,
                 pause_player_index: s.pause_player_index.into(),
                 pause_queued: seat.is_some_and(|i| s.queued_pauses[i]),

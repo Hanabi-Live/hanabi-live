@@ -482,6 +482,7 @@ pub(super) fn review(id: u64, condition: EndCondition) -> Result<TableSnapshot> 
             hypothetical: false,
             hypothetical_actions: vec![],
             show_drawn_cards: false,
+            spoiler_free: false,
         },
         snapshot: Box::new(snapshot),
     };

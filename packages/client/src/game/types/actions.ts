@@ -61,6 +61,7 @@ export interface ActionInit {
   readonly databaseID: number;
   readonly sharedReplaySegment: number;
   readonly sharedReplayLeader: string;
+  readonly spoilerFree: boolean;
   readonly paused: boolean;
   readonly pausePlayerIndex: PlayerIndex;
 }

@@ -474,6 +474,7 @@ export const initSchema = z.strictObject({
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991),
   spectating: z.boolean(),
+  spoilerFree: z.boolean(),
   tableID: tableIdSchema,
 });
 export const lobbyStatusSchema = z.discriminatedUnion("state", [
@@ -593,6 +594,7 @@ export const replayCreateRequestSchema = z.strictObject({
     .max(9_007_199_254_740_991)
     .default(-1),
   source: replaySourceSchema,
+  spoilerFree: z.boolean().default(false),
   visibility: replayVisibilitySchema,
 });
 export const replayEfficiencyModSchema = z.strictObject({
