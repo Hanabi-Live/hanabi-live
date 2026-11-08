@@ -7,11 +7,14 @@ import { Screen } from "../lobby/types/Screen";
 import * as usersDraw from "../lobby/usersDraw";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
-import { getHTMLElement } from "../utils";
+import { getHTMLElement, setBrowserAddressBarPath } from "../utils";
 import * as chat from "./chat";
 import { HanabiUI } from "./ui/HanabiUI";
 
 const lobbyChatText = getHTMLElement("#lobby-chat-text");
+
+/** The history screen's address (e.g. "#history"), if a replay was opened from one. */
+let historyHash = "";
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
@@ -22,6 +25,10 @@ export function init(): void {
 }
 
 export function show(): void {
+  const { pathname, hash } = globalThis.location;
+  historyHash =
+    pathname === "/lobby" && hash.startsWith("#history") ? hash : "";
+
   tooltips.clearPlayerTimeTooltips();
   globals.currentScreen = Screen.Game;
   document.body.dataset["screen"] = "game";
@@ -44,7 +51,22 @@ export function show(): void {
 }
 
 function hide() {
-  globals.currentScreen = Screen.Lobby;
+  // Account that we could be going back to one of the history screens. (We could have entered a
+  // solo replay from one of the history screens.) They are still shown inside the hidden page.
+  if (isDisplayed("#lobby-history")) {
+    globals.currentScreen = Screen.History;
+  } else if (isDisplayed("#lobby-history-other-scores")) {
+    globals.currentScreen = Screen.HistoryOtherScores;
+  } else {
+    globals.currentScreen = Screen.Lobby;
+  }
+  if (
+    globals.currentScreen !== Screen.Lobby
+    && historyHash !== ""
+    && globalThis.location.pathname === "/lobby"
+  ) {
+    setBrowserAddressBarPath("/lobby", historyHash);
+  }
   document.body.dataset["screen"] = "lobby";
   tablesDraw();
   usersDraw.draw();
@@ -56,15 +78,7 @@ function hide() {
 
   $("#game").hide(); // We can't fade this out as it will overlap
   $("body").off("contextmenu"); // Enable the right-click context menu
-  $("#page-wrapper").fadeIn(FADE_TIME_MS, () => {
-    // Also account that we could be going back to one of the history screens. (We could have
-    // entered a solo replay from one of the history screens.)
-    if ($("#lobby-history").is(":visible")) {
-      globals.currentScreen = Screen.History;
-    } else if ($("#lobby-history-other-scores").is(":visible")) {
-      globals.currentScreen = Screen.HistoryOtherScores;
-    }
-  });
+  $("#page-wrapper").fadeIn(FADE_TIME_MS);
 
   // Make sure that there are not any game-related modals showing.
   $("#game-chat-modal").hide();
@@ -74,6 +88,11 @@ function hide() {
 
   // Scroll to the bottom of the chat.
   lobbyChatText.scrollTop = lobbyChatText.scrollHeight;
+}
+
+/** Whether an element is displayed, even if a hidden ancestor keeps it from being visible. */
+function isDisplayed(selector: string) {
+  return $(selector).css("display") !== "none";
 }
 
 // These are references to some functions and submodules that need to be interacted with in the UI
