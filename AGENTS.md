@@ -221,5 +221,9 @@ Some tables (such as `chat_log`) are very large:
   its own migration or last.
 - Do not update or delete every row in one transaction. Backfill in small ID
   batches with `VACUUM` between batches; plan lock duration and disk headroom.
+- To change a large column's type or format: add a new nullable column, deploy
+  code that writes both, backfill in batches, deploy code that reads the new
+  column, then drop the old one. Never rename or drop a column the running
+  server still uses.
 - Add `CHECK` constraints with `NOT VALID`, then `VALIDATE CONSTRAINT` without
   blocking normal reads and writes.
