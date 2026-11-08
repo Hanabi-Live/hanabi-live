@@ -242,16 +242,17 @@ export function tablesDraw(): void {
       row.attr("id", rowId);
       if (table.numPlayers >= MAX_PLAYERS) {
         row.addClass("full");
-      } else {
-        row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
-          if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row.
-            copyURLToClipboard(`/pre-game/${table.id}`, `#${rowId}`);
-          } else {
-            tableJoin(table);
-          }
-        });
       }
+
+      // Trying to join a full table tells its players that someone else wants to play.
+      row.on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
+        if (event.ctrlKey) {
+          // Copy the URL that would occur from clicking on this table row.
+          copyURLToClipboard(`/pre-game/${table.id}`, `#${rowId}`);
+        } else {
+          tableJoin(table);
+        }
+      });
     }
 
     row.appendTo(tbody);

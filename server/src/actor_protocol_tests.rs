@@ -920,6 +920,51 @@ async fn spoiler_free_reviews_are_shared_replays_that_tell_everyone() -> Result<
 }
 
 #[tokio::test]
+async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        h.send(
+            0,
+            "tableCreate",
+            json!({"name":"Full table","options":{},"maxPlayers":2}),
+        )
+        .await?;
+        let id = h.receive(0, "joined").await?["tableID"].clone();
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        h.receive(0, "chat").await?; // "Bob joined the game."
+        for _ in 0..2 {
+            let error = h
+                .send(2, "tableJoin", json!({"tableID":id}))
+                .await
+                .err()
+                .context("Carol joined a full table")?;
+            ensure!(
+                error.to_string().contains("This table is full."),
+                "Unexpected error: {error}"
+            );
+        }
+        let chat = h.receive(0, "chat").await?;
+        ensure!(
+            chat["msg"] == "Carol tried to join, but the table is full.",
+            "Unexpected chat: {chat}"
+        );
+        let (table, _) = h.snapshot(id.as_u64().context("Missing table ID")?).await?;
+        let notices = table
+            .chat
+            .iter()
+            .filter(|c| c.message.to_string().contains("tried to join"))
+            .count();
+        ensure!(notices == 1, "The table was told {notices} times");
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());

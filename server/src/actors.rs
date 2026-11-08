@@ -1902,6 +1902,9 @@ struct TableActor {
     /// Whether the table was warned that the game is about to end for inactivity. Kept in memory:
     /// after a restart, the warning is sent again.
     idle_warned: bool,
+    /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
+    /// the table can be told again.
+    full_join_notices: HashSet<i32>,
     _permit: OwnedSemaphorePermit,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
     info: Arc<ServerInfo>,
@@ -1929,6 +1932,7 @@ impl TableActor {
             hub,
             anchor: Instant::now(),
             idle_warned: false,
+            full_join_notices: HashSet::new(),
             _permit: permit,
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
             info,
@@ -3132,10 +3136,14 @@ impl TableActor {
             "You were kicked from this table"
         );
         ensure!(
-            players.len() < self.table.max_players && !players.iter().any(|p| p.id == session.user),
-            "Table is full or already joined"
+            !players.iter().any(|p| p.id == session.user),
+            "You have already joined this table."
         );
+        let full = players.len() >= self.table.max_players;
         self.ensure_not_blocked(&session, "You cannot join this table.")?;
+        if full {
+            return self.join_full(&session).await;
+        }
         if let Some(hash) = &self.table.password_hash {
             let hash = hash.clone();
             let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
@@ -3177,6 +3185,33 @@ impl TableActor {
             }
         }
         self.publish(e).await
+    }
+    /// Tells a full table, once per person, that someone else wants to play, so that the players
+    /// can consider splitting into two tables.
+    async fn join_full(&mut self, session: &Arc<Session>) -> Result<()> {
+        if self.table.password_hash.is_some() || !self.full_join_notices.insert(session.user) {
+            bail!("This table is full.");
+        }
+        let mut next = self.candidate();
+        let message = membership_notice(
+            &mut next,
+            &format!(
+                "{} tried to join, but the table is full.",
+                crate::accounts::escape_html(&session.name)
+            ),
+        );
+        self.persist(next).await?;
+        let mut e = self.effects();
+        if let Some(message) = message {
+            for attendee in self.audience() {
+                e.messages.push((
+                    attendee.session.clone(),
+                    frame(hanabi_protocol::server::CHAT, message.clone()),
+                ));
+            }
+        }
+        self.publish(e).await?;
+        bail!("This table is full. The players were told that you want to join.");
     }
     async fn reattend(
         &mut self,
