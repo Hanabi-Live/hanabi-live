@@ -3,6 +3,11 @@ import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { toGameAction, toPlayerIndex, toSoundType } from "./wire";
 
+/** Validates a game event as the connection does. */
+function event(action: unknown) {
+  return SERVER_COMMAND_SCHEMAS.gameAction.parse({ tableID: 1, action }).action;
+}
+
 describe("server game events", () => {
   test("status events are not applied", () => {
     expect(
@@ -30,14 +35,16 @@ describe("server game events", () => {
   });
 
   test("hidden clues stay hidden", () => {
-    const action = toGameAction({
-      type: "clue",
-      clue: { type: -1, value: -1 },
-      giver: 0,
-      target: 1,
-      list: [3, 4],
-      turn: 2,
-    });
+    const action = toGameAction(
+      event({
+        type: "clue",
+        clue: { type: -1, value: -1 },
+        giver: 0,
+        target: 1,
+        list: [3, 4],
+        turn: 2,
+      }),
+    );
     if (action?.type !== "clue") {
       throw new Error("Expected a clue action");
     }
@@ -48,7 +55,16 @@ describe("server game events", () => {
   test("values outside the game's types are rejected", () => {
     expect(() => toPlayerIndex(6)).toThrow();
     expect(() =>
-      toGameAction({ type: "strike", num: 4, turn: 3, order: 0 }),
+      event({ type: "strike", num: 4, turn: 3, order: 0 }),
+    ).toThrow();
+    expect(() =>
+      event({ type: "draw", playerIndex: 0, order: 66, suitIndex: 0, rank: 1 }),
+    ).toThrow();
+    expect(() =>
+      event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 6, rank: 1 }),
+    ).toThrow();
+    expect(() =>
+      event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 0, rank: 6 }),
     ).toThrow();
     expect(toSoundType("not-a-sound")).toBeUndefined();
   });

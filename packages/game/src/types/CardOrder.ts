@@ -1,6 +1,8 @@
-import { z } from "zod";
+import type { z } from "zod";
+import { cardOrderSchema } from "../generated/protocol";
 
-export const cardOrder = z.number().int().min(0).max(65).brand("CardOrder");
+/** The server's wire contracts define the valid card orders. */
+export const cardOrder = cardOrderSchema;
 
 /**
  * A number from 0 to 65, representing the order of the card in the initial deck. (65 is the maximum

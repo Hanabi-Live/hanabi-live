@@ -10,70 +10,100 @@
     "name": "ordered command barrier rejects extra fields",
     "direction": "client",
     "command": "sync",
-    "input": { "name": "unused" },
+    "input": {
+      "name": "unused"
+    },
     "valid": false
   },
   {
     "name": "loading statistics are unknown, not zero",
     "direction": "server",
     "command": "lobbyStatus",
-    "input": { "state": "loading", "totalGames": null },
+    "input": {
+      "state": "loading",
+      "totalGames": null
+    },
     "valid": true
   },
   {
     "name": "failed lobby reads remain explicitly unavailable",
     "direction": "server",
     "command": "lobbyStatus",
-    "input": { "state": "error", "totalGames": null },
+    "input": {
+      "state": "error",
+      "totalGames": null
+    },
     "valid": true
   },
   {
     "name": "ready statistics can accurately report zero games",
     "direction": "server",
     "command": "lobbyStatus",
-    "input": { "state": "ready", "totalGames": 0 },
+    "input": {
+      "state": "ready",
+      "totalGames": 0
+    },
     "valid": true
   },
   {
     "name": "ready statistics cannot omit the real total",
     "direction": "server",
     "command": "lobbyStatus",
-    "input": { "state": "ready", "totalGames": null },
+    "input": {
+      "state": "ready",
+      "totalGames": null
+    },
     "valid": false
   },
   {
     "name": "chat preserves escaped text",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "&lt;hello&gt;", "room": "lobby" },
+    "input": {
+      "msg": "&lt;hello&gt;",
+      "room": "lobby"
+    },
     "valid": true
   },
   {
     "name": "chat rejects request IDs, which clients no longer send",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "hello", "room": "lobby", "requestID": "r" },
+    "input": {
+      "msg": "hello",
+      "room": "lobby",
+      "requestID": "r"
+    },
     "valid": false
   },
   {
     "name": "chat rejects empty messages",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "", "room": "lobby" },
+    "input": {
+      "msg": "",
+      "room": "lobby"
+    },
     "valid": false
   },
   {
     "name": "chat rejects missing room",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "hello" },
+    "input": {
+      "msg": "hello"
+    },
     "valid": false
   },
   {
     "name": "chat rejects unknown fields",
     "direction": "client",
     "command": "chat",
-    "input": { "msg": "hello", "room": "lobby", "admin": true },
+    "input": {
+      "msg": "hello",
+      "room": "lobby",
+      "admin": true
+    },
     "valid": false
   },
   {
@@ -82,7 +112,9 @@
     "command": "chatPMHistoryGet",
     "input": {},
     "valid": true,
-    "normalized": { "amount": 0 }
+    "normalized": {
+      "amount": 0
+    }
   },
   {
     "name": "private history accepts signed safe boundaries",
@@ -100,21 +132,27 @@
     "name": "private history rejects unsafe integers",
     "direction": "client",
     "command": "chatPMHistoryGet",
-    "input": { "amount": 9007199254740992 },
+    "input": {
+      "amount": 9007199254740992
+    },
     "valid": false
   },
   {
     "name": "private history rejects null filters",
     "direction": "client",
     "command": "chatPMHistoryGet",
-    "input": { "beforeID": null },
+    "input": {
+      "beforeID": null
+    },
     "valid": false
   },
   {
     "name": "native parser retains integral float token rejection",
     "direction": "client",
     "command": "chatPMHistoryGet",
-    "input": { "amount": 1.0 },
+    "input": {
+      "amount": 1.0
+    },
     "valid": true,
     "nativeValid": false
   },
@@ -124,51 +162,82 @@
     "command": "chatFriend",
     "input": {},
     "valid": true,
-    "normalized": { "name": "", "room": "" }
+    "normalized": {
+      "name": "",
+      "room": ""
+    }
   },
   {
     "name": "join defaults password without coercing table ID",
     "direction": "client",
     "command": "tableJoin",
-    "input": { "tableID": 0 },
+    "input": {
+      "tableID": 0
+    },
     "valid": true,
-    "normalized": { "tableID": 0, "password": "" }
+    "normalized": {
+      "tableID": 0,
+      "password": ""
+    }
   },
   {
     "name": "join rejects string table ID",
     "direction": "client",
     "command": "tableJoin",
-    "input": { "tableID": "1" },
+    "input": {
+      "tableID": "1"
+    },
     "valid": false
   },
   {
     "name": "join rejects null password instead of defaulting",
     "direction": "client",
     "command": "tableJoin",
-    "input": { "tableID": 1, "password": null },
+    "input": {
+      "tableID": 1,
+      "password": null
+    },
     "valid": false
   },
   {
     "name": "variant defaults nested options",
     "direction": "client",
     "command": "tableSetVariant",
-    "input": { "tableID": 1 },
+    "input": {
+      "tableID": 1
+    },
     "valid": true,
-    "normalized": { "tableID": 1, "options": { "variantName": "" } }
+    "normalized": {
+      "tableID": 1,
+      "options": {
+        "variantName": ""
+      }
+    }
   },
   {
     "name": "variant defaults supplied empty options",
     "direction": "client",
     "command": "tableSetVariant",
-    "input": { "tableID": 1, "options": {} },
+    "input": {
+      "tableID": 1,
+      "options": {}
+    },
     "valid": true,
-    "normalized": { "tableID": 1, "options": { "variantName": "" } }
+    "normalized": {
+      "tableID": 1,
+      "options": {
+        "variantName": ""
+      }
+    }
   },
   {
     "name": "variant rejects null options",
     "direction": "client",
     "command": "tableSetVariant",
-    "input": { "tableID": 1, "options": null },
+    "input": {
+      "tableID": 1,
+      "options": null
+    },
     "valid": false
   },
   {
@@ -177,7 +246,10 @@
     "command": "tableSetVariant",
     "input": {
       "tableID": 1,
-      "options": { "variantName": "No Variant", "extra": true }
+      "options": {
+        "variantName": "No Variant",
+        "extra": true
+      }
     },
     "valid": false
   },
@@ -206,9 +278,14 @@
     "name": "spectate defaults legacy shadow seat",
     "direction": "client",
     "command": "tableSpectate",
-    "input": { "tableID": 1 },
+    "input": {
+      "tableID": 1
+    },
     "valid": true,
-    "normalized": { "tableID": 1, "shadowingPlayerIndex": -1 }
+    "normalized": {
+      "tableID": 1,
+      "shadowingPlayerIndex": -1
+    }
   },
   {
     "name": "missing server chat fields stay omitted",
@@ -253,28 +330,43 @@
     "name": "server chat rejects unknown sources",
     "direction": "server",
     "command": "chat",
-    "input": { "msg": "hello", "source": "other", "datetime": "date" },
+    "input": {
+      "msg": "hello",
+      "source": "other",
+      "datetime": "date"
+    },
     "valid": false
   },
   {
     "name": "chat deletion rejects table room",
     "direction": "server",
     "command": "chatDelete",
-    "input": { "chatID": 1, "room": "table1" },
+    "input": {
+      "chatID": 1,
+      "room": "table1"
+    },
     "valid": false
   },
   {
     "name": "private history rejects empty explicit room",
     "direction": "server",
     "command": "chatPMHistory",
-    "input": { "list": [], "hasMore": false, "room": "" },
+    "input": {
+      "list": [],
+      "hasMore": false,
+      "room": ""
+    },
     "valid": false
   },
   {
     "name": "actions reject unknown action types",
     "direction": "client",
     "command": "action",
-    "input": { "tableID": 7, "type": 4, "target": 0 },
+    "input": {
+      "tableID": 7,
+      "type": 4,
+      "target": 0
+    },
     "valid": false
   },
   {
@@ -320,7 +412,9 @@
       "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
-      "settings": { "volume": 70 }
+      "settings": {
+        "volume": 70
+      }
     },
     "valid": true,
     "normalized": {
@@ -418,7 +512,9 @@
       "connectionMode": "initial",
       "friends": [],
       "playingAtTables": [3],
-      "settings": { "createTableMaxPlayers": 7 }
+      "settings": {
+        "createTableMaxPlayers": 7
+      }
     },
     "valid": false
   },
@@ -457,7 +553,10 @@
     "command": "tableCreate",
     "input": {
       "name": "Custom",
-      "gameJSON": { "players": ["Alice", "Bob"], "deck": [] }
+      "gameJSON": {
+        "players": ["Alice", "Bob"],
+        "deck": []
+      }
     },
     "normalized": {
       "name": "Custom",
@@ -480,7 +579,10 @@
       "password": "",
       "maxPlayers": 5,
       "hidePregame": false,
-      "gameJSON": { "players": ["Alice", "Bob"], "deck": [] }
+      "gameJSON": {
+        "players": ["Alice", "Bob"],
+        "deck": []
+      }
     },
     "valid": true
   },
@@ -488,8 +590,13 @@
     "name": "history accepts negative values so the server can explain them",
     "direction": "client",
     "command": "historyGet",
-    "input": { "offset": -1 },
-    "normalized": { "offset": -1, "amount": 0 },
+    "input": {
+      "offset": -1
+    },
+    "normalized": {
+      "offset": -1,
+      "amount": 0
+    },
     "valid": true
   },
   {
@@ -544,7 +651,12 @@
     "command": "spectators",
     "input": {
       "tableID": 3,
-      "spectators": [{ "name": "Carol", "shadowingPlayerIndex": -1 }]
+      "spectators": [
+        {
+          "name": "Carol",
+          "shadowingPlayerIndex": -1
+        }
+      ]
     },
     "valid": true
   },
@@ -627,7 +739,9 @@
     "name": "boot no longer uses the capitalized TableID",
     "direction": "server",
     "command": "boot",
-    "input": { "TableID": 7 },
+    "input": {
+      "TableID": 7
+    },
     "valid": false
   },
   {
@@ -637,7 +751,12 @@
     "input": {
       "tableID": 4,
       "type": "hypoAction",
-      "action": { "type": "morph", "order": 3, "suitIndex": -1, "rank": 2 }
+      "action": {
+        "type": "morph",
+        "order": 3,
+        "suitIndex": -1,
+        "rank": 2
+      }
     },
     "valid": true
   },
@@ -645,14 +764,22 @@
     "name": "replay actions take only their own fields",
     "direction": "client",
     "command": "replayAction",
-    "input": { "tableID": 4, "type": "segment", "segment": 2, "order": 0 },
+    "input": {
+      "tableID": 4,
+      "type": "segment",
+      "segment": 2,
+      "order": 0
+    },
     "valid": false
   },
   {
     "name": "replay actions require their fields",
     "direction": "client",
     "command": "replayAction",
-    "input": { "tableID": 4, "type": "segment" },
+    "input": {
+      "tableID": 4,
+      "type": "segment"
+    },
     "valid": false
   },
   {
@@ -670,7 +797,10 @@
       "tableID": 3,
       "action": {
         "type": "clue",
-        "clue": { "type": 1, "value": 5 },
+        "clue": {
+          "type": 1,
+          "value": 5
+        },
         "giver": 0,
         "target": 1,
         "list": [3, 4],
@@ -687,7 +817,10 @@
       "tableID": 3,
       "action": {
         "type": "clue",
-        "clue": { "type": -1, "value": -1 },
+        "clue": {
+          "type": -1,
+          "value": -1
+        },
         "giver": 0,
         "target": 1,
         "list": [3, 4],
@@ -704,7 +837,10 @@
       "tableID": 3,
       "action": {
         "type": "clue",
-        "clue": { "type": -1, "value": 5 },
+        "clue": {
+          "type": -1,
+          "value": 5
+        },
         "giver": 0,
         "target": 1,
         "list": [3, 4],
@@ -743,7 +879,168 @@
     "command": "gameActionList",
     "input": {
       "tableID": 3,
-      "list": [{ "type": "gameOver", "endCondition": 1, "playerIndex": 0 }]
+      "list": [
+        {
+          "type": "gameOver",
+          "endCondition": 1,
+          "playerIndex": 0
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "name": "cards can be unknown or a stack's start card",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 0,
+        "suitIndex": -1,
+        "rank": 7
+      }
+    },
+    "valid": true
+  },
+  {
+    "name": "seats stop at the sixth player",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 6,
+        "order": 0,
+        "suitIndex": 0,
+        "rank": 1
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "card orders stop after the stack bases of the largest deck",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 66,
+        "suitIndex": 0,
+        "rank": 1
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "suits stop at the sixth suit",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 0,
+        "suitIndex": 6,
+        "rank": 1
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "ranks skip 6",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "draw",
+        "playerIndex": 0,
+        "order": 0,
+        "suitIndex": 0,
+        "rank": 6
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "a game ends on the third strike",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "strike",
+        "num": 4,
+        "turn": 3,
+        "order": 0
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "game over votes are seats",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "gameOver",
+        "endCondition": 4,
+        "playerIndex": -1,
+        "votes": [0, 6]
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "game over events name a known end condition",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "gameOver",
+        "endCondition": 11,
+        "playerIndex": 0,
+        "votes": null
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "player times have one entry per player",
+    "direction": "server",
+    "command": "gameAction",
+    "input": {
+      "tableID": 3,
+      "action": {
+        "type": "playerTimes",
+        "playerTimes": [1000],
+        "duration": 1000
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "hypothetical actions use the game's bounds",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": "hypoAction",
+      "action": {
+        "type": "morph",
+        "order": 66,
+        "suitIndex": -1,
+        "rank": 2
+      }
     },
     "valid": false
   }

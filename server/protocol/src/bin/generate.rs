@@ -12,9 +12,15 @@ const TYPESCRIPT_ENUMS: &[(&str, bool, &str)] = &[
     ("Status", false, "../enums/Status"),
 ];
 
-/// Schemas the game library also needs. `--game` writes these to its package. The data package
-/// does not depend on the game library, so its protocol module has its own copy.
-const GAME_LIBRARY_SCHEMAS: &[&str] = &["GameOptions"];
+/// Schemas the game library also needs. `--game` writes these to its package, with the schemas
+/// they reference. The data package does not depend on the game library, so its protocol module
+/// has its own copy.
+const GAME_LIBRARY_SCHEMAS: &[&str] = &[
+    "CardOrder",
+    "GameEvent",
+    "GameOptions",
+    "HypotheticalAction",
+];
 
 fn game_owned(name: &str) -> bool {
     TYPESCRIPT_ENUMS
@@ -113,6 +119,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "maximum",
                 "minLength",
                 "maxLength",
+                "minItems",
                 "maxItems",
                 "default",
                 "x-brand",
@@ -279,6 +286,7 @@ fn expression(schema: &Value) -> Result<String> {
         ("maximum", "max"),
         ("minLength", "min"),
         ("maxLength", "max"),
+        ("minItems", "min"),
         ("maxItems", "max"),
     ] {
         if let Some(value) = schema.get(keyword)
@@ -493,18 +501,15 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
     let mut active = BTreeSet::new();
     let mut emitted = BTreeSet::new();
     for name in GAME_LIBRARY_SCHEMAS {
-        let schema = definitions
-            .get(*name)
-            .context("Missing schema definition")?;
-        let mut named = BTreeMap::new();
-        enums(schema, &mut named)?;
-        let mut dependencies = BTreeSet::new();
-        references(schema, &mut dependencies)?;
-        ensure!(
-            named.is_empty() && dependencies.is_empty(),
-            "Game library schemas must be self-contained: {name}"
-        );
         emit(name, definitions, &exported, &mut active, &mut emitted)?;
+    }
+    // The game library cannot import the client's enums.
+    for name in &emitted {
+        let mut named = BTreeMap::new();
+        enums(&definitions[name], &mut named)?;
+        if let Some(other) = named.keys().find(|known| !game_owned(known)) {
+            bail!("The game library schema {name} uses {other}, which the game does not own");
+        }
     }
     Ok(())
 }

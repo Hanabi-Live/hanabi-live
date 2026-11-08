@@ -712,73 +712,73 @@ pub struct Hypothetical {
 )]
 pub enum HypotheticalAction {
     Draw {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     Play {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     Discard {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
         failed: bool,
     },
     Clue {
         clue: ReceivedClue,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         giver: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         target: i64,
         /// The orders of the cards the clue touched.
-        #[schemars(extend("x-readonly" = true))]
+        #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
         list: Vec<SafeInteger>,
         ignore_negative: bool,
     },
     Strike {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 1, max = 3), extend("enum" = [1, 2, 3]))]
         num: i64,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
     },
     Turn {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         num: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndexOrNone")]
         current_player_index: i64,
     },
     /// Shows a card as another identity.
     Morph {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     /// Shows a morphed card as its original identity again.
     Unmorph {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
     },
 }
@@ -1611,6 +1611,41 @@ pub struct Note {
 #[serde(transparent)]
 pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))] pub i64);
 
+/// A seat in a game. The game library's `PlayerIndex` type.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct PlayerIndex(
+    #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))] pub i64,
+);
+
+/// A seat, or -1 for no player.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct PlayerIndexOrNone(
+    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))] pub i64,
+);
+
+/// A card's position in the initial deck, which identifies it. Stack bases follow the 60 cards of
+/// the largest deck.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+#[schemars(extend("x-brand" = "CardOrder"))]
+pub struct CardOrder(#[schemars(range(min = 0, max = 65))] pub i64);
+
+/// A card's suit, or -1 when the recipient may not see it.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct SuitIndexOrUnknown(
+    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))] pub i64,
+);
+
+/// A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct RankOrUnknown(
+    #[schemars(range(min = -1, max = 7), extend("enum" = [-1, 1, 2, 3, 4, 5, 7]))] pub i64,
+);
+
 /// A clue as its recipient sees it. A clue the recipient may not see hides both its type and value.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged, deny_unknown_fields)]
@@ -1642,64 +1677,64 @@ pub enum ReceivedClue {
 )]
 pub enum GameEvent {
     Draw {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     Play {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     CardIdentity {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
     },
     Discard {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         player_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "SuitIndexOrUnknown")]
         suit_index: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "RankOrUnknown")]
         rank: i64,
         failed: bool,
     },
     Clue {
         clue: ReceivedClue,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         giver: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndex")]
         target: i64,
         /// The orders of the cards the clue touched.
-        #[schemars(extend("x-readonly" = true))]
+        #[schemars(with = "Vec<CardOrder>", extend("x-readonly" = true))]
         list: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
     },
     Strike {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(range(min = 1, max = 3), extend("enum" = [1, 2, 3]))]
         num: i64,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "CardOrder")]
         order: i64,
     },
     Status {
@@ -1713,23 +1748,29 @@ pub enum GameEvent {
     Turn {
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         num: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndexOrNone")]
         current_player_index: i64,
     },
     GameOver {
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        /// The `EndCondition` enum.
+        #[schemars(
+            range(min = 0, max = 10),
+            extend("enum" = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "x-enum" = "EndCondition")
+        )]
         end_condition: i64,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "PlayerIndexOrNone")]
         player_index: i64,
         /// The players who voted to end the game, or null.
         #[schemars(
+            with = "Option<Vec<PlayerIndex>>",
             required,
             extend("type" = ["array", "null"], "x-readonly" = true)
         )]
         votes: Option<Vec<SafeInteger>>,
     },
     PlayerTimes {
-        #[schemars(extend("x-readonly" = true))]
+        /// Each player's time, in seat order.
+        #[schemars(length(min = 2, max = 6), extend("x-readonly" = true))]
         player_times: Vec<SafeInteger>,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         duration: i64,

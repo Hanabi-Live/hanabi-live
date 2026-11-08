@@ -20,6 +20,127 @@ const endConditionEnum: ServerEnum<
 
 export const clueTypeSchema = z.enum(clueTypeEnum);
 export const endConditionSchema = z.enum(endConditionEnum);
+export const cardOrderSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(65)
+  .brand<"CardOrder">();
+const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
+const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
+const receivedClueSchema = z.union([
+  z.strictObject({
+    type: z.enum(clueTypeEnum),
+    value: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+  }),
+  z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
+]);
+const safeIntegerSchema = z
+  .number()
+  .int()
+  .min(-9_007_199_254_740_991)
+  .max(9_007_199_254_740_991);
+const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
+export const gameEventSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("draw"),
+  }),
+  z.strictObject({
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("play"),
+  }),
+  z.strictObject({
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("cardIdentity"),
+  }),
+  z.strictObject({
+    failed: z.boolean(),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("discard"),
+  }),
+  z.strictObject({
+    clue: receivedClueSchema,
+    giver: playerIndexSchema,
+    list: z.array(cardOrderSchema).readonly(),
+    target: playerIndexSchema,
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("clue"),
+  }),
+  z.strictObject({
+    num: z.literal([1, 2, 3]),
+    order: cardOrderSchema,
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("strike"),
+  }),
+  z.strictObject({
+    clues: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    maxScore: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    score: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("status"),
+  }),
+  z.strictObject({
+    currentPlayerIndex: playerIndexOrNoneSchema,
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("turn"),
+  }),
+  z.strictObject({
+    endCondition: z.enum(endConditionEnum),
+    playerIndex: playerIndexOrNoneSchema,
+    type: z.literal("gameOver"),
+    votes: z.array(playerIndexSchema).readonly().nullable(),
+  }),
+  z.strictObject({
+    duration: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerTimes: z.array(safeIntegerSchema).min(2).max(6).readonly(),
+    type: z.literal("playerTimes"),
+  }),
+]);
 export const gameOptionsSchema = z
   .strictObject({
     allOrNothing: z.boolean().default(false),
@@ -46,3 +167,61 @@ export const gameOptionsSchema = z
     variantName: z.string().min(1).default("No Variant"),
   })
   .readonly();
+export const hypotheticalActionSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("draw"),
+  }),
+  z.strictObject({
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("play"),
+  }),
+  z.strictObject({
+    failed: z.boolean(),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("discard"),
+  }),
+  z.strictObject({
+    clue: receivedClueSchema,
+    giver: playerIndexSchema,
+    ignoreNegative: z.boolean(),
+    list: z.array(cardOrderSchema).readonly(),
+    target: playerIndexSchema,
+    type: z.literal("clue"),
+  }),
+  z.strictObject({
+    num: z.literal([1, 2, 3]),
+    order: cardOrderSchema,
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("strike"),
+  }),
+  z.strictObject({
+    currentPlayerIndex: playerIndexOrNoneSchema,
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("turn"),
+  }),
+  z.strictObject({
+    order: cardOrderSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
+    type: z.literal("morph"),
+  }),
+  z.strictObject({ order: cardOrderSchema, type: z.literal("unmorph") }),
+]);

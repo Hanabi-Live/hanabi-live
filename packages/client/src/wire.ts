@@ -7,20 +7,16 @@ import type {
   ActionIncludingHypothetical,
   CardIdentity,
   CardOrder,
-  EndCondition,
   GameAction,
   HiddenClue,
   MsgClue,
   NumPlayers,
   PlayerIndex,
-  Rank,
-  SuitIndex,
 } from "@hanabi-live/game";
 import {
   cardOrder,
   ClueType,
   colorIndex,
-  endConditionSchema,
   isValidNumPlayers,
   playerIndex,
   rank,
@@ -46,15 +42,6 @@ export function toOptionalPlayerIndex(value: number): PlayerIndex | -1 {
 
 export function toCardOrder(value: number): CardOrder {
   return cardOrder.parse(value);
-}
-
-/** Server card identities use -1 for an unknown suit or rank. */
-function toSuitIndex(value: number): SuitIndex | -1 {
-  return value === -1 ? -1 : suitIndex.parse(value);
-}
-
-function toRank(value: number): Rank | -1 {
-  return value === -1 ? -1 : rank.parse(value);
 }
 
 /** Checks that a list has one entry per player. */
@@ -93,17 +80,6 @@ function toClue(clue: {
     : { type: ClueType.Rank, value: rankClueNumber.parse(clue.value) };
 }
 
-function toEndCondition(value: number): EndCondition {
-  return endConditionSchema.parse(value);
-}
-
-function toStrikeNumber(value: number): 1 | 2 | 3 {
-  if (value !== 1 && value !== 2 && value !== 3) {
-    throw new TypeError(`The server sent an invalid strike number: ${value}`);
-  }
-  return value;
-}
-
 /** A replay arrow points at a card, or at a part of the board that negative values name. */
 export function toReplayArrowOrder(
   value: number,
@@ -118,51 +94,20 @@ export function toReplayArrowOrder(
 }
 
 /**
- * Converts a game event from the server into the action the game state applies. Status events
- * return undefined: the client computes clue counts and scores itself.
+ * Converts a game event from the server into the action the game state applies. The game library
+ * derives its event types from the same wire contracts. Status events return undefined: the client
+ * computes clue counts and scores itself.
  */
 export function toGameAction(event: WireEvent): GameAction | undefined {
   switch (event.type) {
-    case "draw":
-    case "play":
-    case "cardIdentity": {
-      return {
-        type: event.type,
-        playerIndex: toPlayerIndex(event.playerIndex),
-        order: toCardOrder(event.order),
-        suitIndex: toSuitIndex(event.suitIndex),
-        rank: toRank(event.rank),
-      };
-    }
-
-    case "discard": {
-      return {
-        type: "discard",
-        playerIndex: toPlayerIndex(event.playerIndex),
-        order: toCardOrder(event.order),
-        suitIndex: toSuitIndex(event.suitIndex),
-        rank: toRank(event.rank),
-        failed: event.failed,
-      };
-    }
-
     case "clue": {
       return {
         type: "clue",
         clue: toClue(event.clue),
-        giver: toPlayerIndex(event.giver),
-        target: toPlayerIndex(event.target),
-        list: event.list.map(toCardOrder),
+        giver: event.giver,
+        target: event.target,
+        list: event.list,
         ignoreNegative: false,
-      };
-    }
-
-    case "strike": {
-      return {
-        type: "strike",
-        num: toStrikeNumber(event.num),
-        order: toCardOrder(event.order),
-        turn: event.turn,
       };
     }
 
@@ -170,29 +115,8 @@ export function toGameAction(event: WireEvent): GameAction | undefined {
       return undefined;
     }
 
-    case "turn": {
-      return {
-        type: "turn",
-        num: event.num,
-        currentPlayerIndex: toOptionalPlayerIndex(event.currentPlayerIndex),
-      };
-    }
-
-    case "gameOver": {
-      return {
-        type: "gameOver",
-        endCondition: toEndCondition(event.endCondition),
-        playerIndex: toOptionalPlayerIndex(event.playerIndex),
-        votes: event.votes === null ? null : event.votes.map(toPlayerIndex),
-      };
-    }
-
-    case "playerTimes": {
-      return {
-        type: "playerTimes",
-        playerTimes: toPlayerTuple(event.playerTimes, "player times"),
-        duration: event.duration,
-      };
+    default: {
+      return event;
     }
   }
 }
@@ -201,73 +125,9 @@ export function toGameAction(event: WireEvent): GameAction | undefined {
 export function toHypotheticalAction(
   action: WireHypotheticalAction,
 ): ActionIncludingHypothetical {
-  switch (action.type) {
-    case "draw":
-    case "play": {
-      return {
-        type: action.type,
-        playerIndex: toPlayerIndex(action.playerIndex),
-        order: toCardOrder(action.order),
-        suitIndex: toSuitIndex(action.suitIndex),
-        rank: toRank(action.rank),
-      };
-    }
-
-    case "discard": {
-      return {
-        type: "discard",
-        playerIndex: toPlayerIndex(action.playerIndex),
-        order: toCardOrder(action.order),
-        suitIndex: toSuitIndex(action.suitIndex),
-        rank: toRank(action.rank),
-        failed: action.failed,
-      };
-    }
-
-    case "clue": {
-      return {
-        type: "clue",
-        clue: toClue(action.clue),
-        giver: toPlayerIndex(action.giver),
-        target: toPlayerIndex(action.target),
-        list: action.list.map(toCardOrder),
-        ignoreNegative: action.ignoreNegative,
-      };
-    }
-
-    case "strike": {
-      return {
-        type: "strike",
-        num: toStrikeNumber(action.num),
-        order: toCardOrder(action.order),
-        turn: action.turn,
-      };
-    }
-
-    case "turn": {
-      return {
-        type: "turn",
-        num: action.num,
-        currentPlayerIndex: toOptionalPlayerIndex(action.currentPlayerIndex),
-      };
-    }
-
-    case "morph": {
-      return {
-        type: "morph",
-        order: toCardOrder(action.order),
-        suitIndex: toSuitIndex(action.suitIndex),
-        rank: toRank(action.rank),
-      };
-    }
-
-    case "unmorph": {
-      return {
-        type: "unmorph",
-        order: toCardOrder(action.order),
-      };
-    }
-  }
+  return action.type === "clue"
+    ? { ...action, clue: toClue(action.clue) }
+    : action;
 }
 
 /** Sounds the server names that the client does not have are not played. */

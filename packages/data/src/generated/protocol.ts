@@ -178,6 +178,10 @@ export const finishOngoingGameSchema = z.strictObject({
 export const friendsSchema = z
   .strictObject({ friends: z.array(z.string()).readonly() })
   .readonly();
+const cardOrderSchema = z.number().int().min(0).max(65).brand<"CardOrder">();
+const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
+const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
 const receivedClueSchema = z.union([
   z.strictObject({
     type: z.literal([0, 1]),
@@ -194,113 +198,42 @@ const safeIntegerSchema = z
   .int()
   .min(-9_007_199_254_740_991)
   .max(9_007_199_254_740_991);
+const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 const gameEventSchema = z.discriminatedUnion("type", [
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("draw"),
   }),
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("play"),
   }),
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("cardIdentity"),
   }),
   z.strictObject({
     failed: z.boolean(),
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("discard"),
   }),
   z.strictObject({
     clue: receivedClueSchema,
-    giver: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    list: z.array(safeIntegerSchema).readonly(),
-    target: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    giver: playerIndexSchema,
+    list: z.array(cardOrderSchema).readonly(),
+    target: playerIndexSchema,
     turn: z
       .number()
       .int()
@@ -309,16 +242,8 @@ const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("clue"),
   }),
   z.strictObject({
-    num: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    num: z.literal([1, 2, 3]),
+    order: cardOrderSchema,
     turn: z
       .number()
       .int()
@@ -345,11 +270,7 @@ const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("status"),
   }),
   z.strictObject({
-    currentPlayerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    currentPlayerIndex: playerIndexOrNoneSchema,
     num: z
       .number()
       .int()
@@ -358,18 +279,10 @@ const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("turn"),
   }),
   z.strictObject({
-    endCondition: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    endCondition: z.literal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+    playerIndex: playerIndexOrNoneSchema,
     type: z.literal("gameOver"),
-    votes: z.array(safeIntegerSchema).readonly().nullable(),
+    votes: z.array(playerIndexSchema).readonly().nullable(),
   }),
   z.strictObject({
     duration: z
@@ -377,7 +290,7 @@ const gameEventSchema = z.discriminatedUnion("type", [
       .int()
       .min(-9_007_199_254_740_991)
       .max(9_007_199_254_740_991),
-    playerTimes: z.array(safeIntegerSchema).readonly(),
+    playerTimes: z.array(safeIntegerSchema).min(2).max(6).readonly(),
     type: z.literal("playerTimes"),
   }),
 ]);
@@ -444,102 +357,38 @@ export const hypoShowDrawnCardsSchema = z.strictObject({
 });
 export const hypotheticalActionSchema = z.discriminatedUnion("type", [
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("draw"),
   }),
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("play"),
   }),
   z.strictObject({
     failed: z.boolean(),
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    playerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    playerIndex: playerIndexSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("discard"),
   }),
   z.strictObject({
     clue: receivedClueSchema,
-    giver: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    giver: playerIndexSchema,
     ignoreNegative: z.boolean(),
-    list: z.array(safeIntegerSchema).readonly(),
-    target: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    list: z.array(cardOrderSchema).readonly(),
+    target: playerIndexSchema,
     type: z.literal("clue"),
   }),
   z.strictObject({
-    num: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    num: z.literal([1, 2, 3]),
+    order: cardOrderSchema,
     turn: z
       .number()
       .int()
@@ -548,11 +397,7 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     type: z.literal("strike"),
   }),
   z.strictObject({
-    currentPlayerIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    currentPlayerIndex: playerIndexOrNoneSchema,
     num: z
       .number()
       .int()
@@ -561,31 +406,12 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     type: z.literal("turn"),
   }),
   z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    rank: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    suitIndex: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
+    order: cardOrderSchema,
+    rank: rankOrUnknownSchema,
+    suitIndex: suitIndexOrUnknownSchema,
     type: z.literal("morph"),
   }),
-  z.strictObject({
-    order: z
-      .number()
-      .int()
-      .min(-9_007_199_254_740_991)
-      .max(9_007_199_254_740_991),
-    type: z.literal("unmorph"),
-  }),
+  z.strictObject({ order: cardOrderSchema, type: z.literal("unmorph") }),
 ]);
 export const hypotheticalSchema = z.strictObject({
   actions: z.array(hypotheticalActionSchema),
