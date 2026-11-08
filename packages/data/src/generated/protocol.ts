@@ -16,6 +16,7 @@ export const actionRequestSchema = z.strictObject({
   type: z.literal([0, 1, 2, 3]),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
+export const apiErrorSchema = z.strictObject({ error: z.string() });
 const cardIdentitySchema = z.strictObject({
   rank: z.number().int().min(-1).max(9_007_199_254_740_991),
   suitIndex: z.number().int().min(-1).max(9_007_199_254_740_991),
@@ -489,6 +490,19 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
     totalGames: z.number().int().min(0).max(9_007_199_254_740_991),
   }),
 ]);
+export const loginRequestSchema = z.strictObject({
+  newPassword: z.string().default(""),
+  password: z.string().default(""),
+  username: z.string().default(""),
+  version: z.string().default(""),
+});
+const userIdSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(2_147_483_647)
+  .brand<"UserID">();
+export const loginResponseSchema = z.strictObject({ userID: userIdSchema });
 const cardNoteSchema = z.strictObject({
   isSpectator: z.boolean(),
   name: z.string(),
@@ -551,12 +565,6 @@ const pregamePlayerSchema = z.strictObject({
   stats: pregameStatsSchema,
   you: z.boolean(),
 });
-const userIdSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(2_147_483_647)
-  .brand<"UserID">();
 export const pregameSchema = z.strictObject({
   maxPlayers: z.number().int().min(2).max(6),
   name: z.string(),

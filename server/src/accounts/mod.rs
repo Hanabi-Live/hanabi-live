@@ -29,7 +29,7 @@ use axum::{
     routing::{get, post},
 };
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+use hanabi_protocol::{ApiError, LoginRequest, LoginResponse};
 use serde_json::json;
 use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -141,15 +141,6 @@ fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -
     result
 }
 
-#[derive(Default, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
-struct Login {
-    username: String,
-    password: String,
-    new_password: String,
-    version: String,
-}
-
 fn too_many_attempts(wait: std::time::Duration) -> Response {
     let minutes = wait.as_secs().div_ceil(60).max(1);
     (
@@ -209,7 +200,7 @@ fn account_failure(operation: &'static str, error: anyhow::Error, json_response:
 async fn login(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
-    Form(input): Form<Login>,
+    Form(input): Form<LoginRequest>,
 ) -> Response {
     match login_inner(&state, &address.ip().to_string(), input).await {
         Ok(response) => response,
@@ -217,7 +208,7 @@ async fn login(
     }
 }
 
-async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Response> {
+async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<Response> {
     if is_banned(&state.pool, ip).await? {
         return Ok(unauthorized(
             "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
@@ -326,7 +317,10 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
     eprintln!("Successful login for account {id} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
     Ok(with_cookies(
-        Json(json!({ "userID": id })).into_response(),
+        Json(LoginResponse {
+            user_id: hanabi_protocol::UserId(id),
+        })
+        .into_response(),
         [
             cookie_header(&state.config, cookie::NAME, &signed, false),
             cookie_header(&state.config, &cookie::account_name(id), &signed, false),
@@ -401,7 +395,13 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
 }
 
 fn api_error(status: StatusCode, message: &str) -> Response {
-    (status, Json(json!({ "error": message }))).into_response()
+    (
+        status,
+        Json(ApiError {
+            error: message.into(),
+        }),
+    )
+        .into_response()
 }
 
 fn api_banned() -> Response {
