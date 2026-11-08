@@ -836,8 +836,7 @@ pub struct ActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     #[serde(rename = "type")]
-    #[schemars(with = "ActionType")]
-    pub kind: u8,
+    pub kind: ActionType,
     /// The card order for a play or discard; the player index for a clue.
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub target: i32,
@@ -1262,8 +1261,7 @@ pub struct User {
     pub user_id: UserId,
     #[schemars(length(min = 1))]
     pub name: String,
-    #[schemars(with = "Status")]
-    pub status: u8,
+    pub status: Status,
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]
     pub table_id: Option<TableId>,
@@ -1340,8 +1338,7 @@ pub enum LobbySound {
 #[schemars(extend("x-readonly" = true))]
 pub struct Settings {
     pub desktop_notification: bool,
-    #[schemars(with = "SoundMove")]
-    pub sound_move: u8,
+    pub sound_move: SoundMove,
     pub sound_timer: bool,
     pub keldon_mode: bool,
     pub colorblind_mode: bool,
@@ -1377,7 +1374,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             desktop_notification: false,
-            sound_move: 0,
+            sound_move: SoundMove::All,
             sound_timer: true,
             keldon_mode: false,
             colorblind_mode: false,
@@ -1589,8 +1586,7 @@ pub struct GameHistory {
     pub score: i32,
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub num_turns: i32,
-    #[schemars(with = "EndCondition")]
-    pub end_condition: u8,
+    pub end_condition: EndCondition,
     #[schemars(extend("x-date" = true))]
     pub datetime_started: String,
     #[schemars(extend("x-date" = true))]
@@ -1896,8 +1892,7 @@ pub enum GameEvent {
         current_player_index: i64,
     },
     GameOver {
-        #[schemars(with = "EndCondition")]
-        end_condition: i64,
+        end_condition: EndCondition,
         #[schemars(with = "PlayerIndexOrNone")]
         player_index: i64,
         /// The players who voted to end the game, or null.

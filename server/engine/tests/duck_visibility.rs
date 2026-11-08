@@ -61,7 +61,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
                                     && let EngineEvent::Clue { clue, .. } = &mut event
                                 {
                                     *clue = Clue {
-                                        clue_type: -1,
+                                        clue_type: None,
                                         value: -1,
                                     };
                                 }

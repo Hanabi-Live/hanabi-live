@@ -717,7 +717,10 @@ fn synesthesia_touches_white_but_not_null_by_rank() {
             .iter()
             .position(|c| c == "Green")
             .unwrap() as i32;
-        assert_eq!(is_card_touched(variant, 0, green, 4, 3), touched);
-        assert!(!is_card_touched(variant, 0, green, 4, 2));
+        assert_eq!(
+            is_card_touched(variant, ClueType::Color, green, 4, 3),
+            touched
+        );
+        assert!(!is_card_touched(variant, ClueType::Color, green, 4, 2));
     }
 }

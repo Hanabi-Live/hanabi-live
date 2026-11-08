@@ -734,7 +734,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         1,
         Presence {
             session: old.clone(),
-            status: 2,
+            status: hanabi_protocol::Status::Playing,
             table: Some(42),
         },
     );
@@ -793,7 +793,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Effects(Effects {
             table: 42,
             view,
-            statuses: vec![(old.clone(), 2, Some(42))],
+            statuses: vec![(old.clone(), hanabi_protocol::Status::Playing, Some(42))],
             messages: vec![(old.clone(), "secret private frame".into())],
         }))
         .await?;

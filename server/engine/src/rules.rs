@@ -1,5 +1,6 @@
 use crate::{
-    EngineCard, EngineEvent, EngineState, PlayerAction, Variant, get_variant, is_card_touched,
+    EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant,
+    is_card_touched,
 };
 use std::collections::HashSet;
 
@@ -27,13 +28,15 @@ pub fn touched_orders(state: &EngineState, action: &PlayerAction) -> Vec<usize> 
         .copied()
         .filter(|&order| {
             let card = &state.deck[order];
-            is_card_touched(
-                variant_for(state),
-                action.action_type - 2,
-                action.value,
-                card.suit_index,
-                card.rank,
-            )
+            clue_type(action.action_type).is_some_and(|clue_type| {
+                is_card_touched(
+                    variant_for(state),
+                    clue_type,
+                    action.value,
+                    card.suit_index,
+                    card.rank,
+                )
+            })
         })
         .collect()
 }

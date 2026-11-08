@@ -61,7 +61,8 @@ pub async fn get_history(
             options: crate::model::wire_options(&crate::store::options_from_record(&game)?),
             score: i32::from(game.score),
             num_turns: i32::from(game.num_turns),
-            end_condition: u8::try_from(game.end_condition)
+            end_condition: hanabi_protocol::EndCondition::try_from(i32::from(game.end_condition))
+                .map_err(anyhow::Error::msg)
                 .context("Invalid stored end condition")?,
             datetime_started: time(game.datetime_started),
             datetime_finished: time(game.datetime_finished),

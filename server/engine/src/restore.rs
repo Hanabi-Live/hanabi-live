@@ -2,7 +2,7 @@ use crate::{
     game::{MAX_SAFE_INTEGER, hand_size, validate_options},
     *,
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::HashSet;
 
@@ -107,12 +107,9 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     let seat = |i: usize| i < count;
     let signed_seat = |i: i32| i >= 0 && (i as usize) < count;
     let order = |o: usize| o < s.deck_index && o < s.deck.len();
-    let valid_clue = |t: i32, value: i32| {
-        if t == 0 {
-            value >= 0 && (value as usize) < v.clue_colors.len()
-        } else {
-            t == 1 && v.clue_ranks.contains(&value)
-        }
+    let valid_clue = |clue_type: ClueType, value: i32| match clue_type {
+        ClueType::Color => value >= 0 && (value as usize) < v.clue_colors.len(),
+        ClueType::Rank => v.clue_ranks.contains(&value),
     };
     let clue_limit = if v.clue_starved { 16 } else { 8 };
     ensure!(s.seed.len() <= 4096, "Seed too long.");
@@ -416,10 +413,9 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     seat(*giver) && seat(*target) && giver != target && (0..=s.turn).contains(turn),
                     "Invalid clue participants or turn."
                 );
-                ensure!(
-                    valid_clue(clue.clue_type, clue.value),
-                    "Invalid variant clue."
-                );
+                let Some(clue_type) = clue.clue_type.filter(|t| valid_clue(*t, clue.value)) else {
+                    bail!("Invalid variant clue.");
+                };
                 ensure!(
                     list.iter().all(|o| order(*o) && hands[*target].contains(o))
                         && list.iter().collect::<HashSet<_>>().len() == list.len(),
@@ -429,7 +425,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     cards[o].touched = true;
                 }
                 actions.push(RecordedAction {
-                    action_type: clue.clue_type + 2,
+                    action_type: clue_action_type(clue_type),
                     target: *target as i32,
                     value: clue.value,
                 });
@@ -587,7 +583,10 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     for a in &s.actions {
         let valid = match a.action_type {
             0 | 1 => a.target >= 0 && order(a.target as usize) && a.value == 0,
-            2 | 3 => signed_seat(a.target) && valid_clue(a.action_type - 2, a.value),
+            2 | 3 => {
+                signed_seat(a.target)
+                    && clue_type(a.action_type).is_some_and(|t| valid_clue(t, a.value))
+            }
             5 => a.target == -1 && a.value == EndCondition::TerminatedByVote as i32,
             4 => match EndCondition::try_from(a.value) {
                 Ok(EndCondition::Timeout) => signed_seat(a.target),

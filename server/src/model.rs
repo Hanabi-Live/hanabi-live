@@ -441,7 +441,7 @@ impl Snapshot {
             seed: self.seed.clone(),
             score: self.game.score,
             num_turns: self.game.turn,
-            end_condition: u8::try_from(i32::from(self.game.end_condition)).unwrap_or(0),
+            end_condition: self.game.end_condition,
             datetime_started: time(self.started),
             datetime_finished: time(self.finished.unwrap_or(self.started)),
             num_games_on_this_seed: count,

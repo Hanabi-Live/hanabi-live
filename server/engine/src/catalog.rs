@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant};
+use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant, ClueType};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -253,7 +253,7 @@ pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
 
 pub fn is_card_touched(
     variant: &Variant,
-    clue_type: i32,
+    clue_type: ClueType,
     value: i32,
     suit_index: usize,
     rank: i32,
@@ -261,81 +261,82 @@ pub fn is_card_touched(
     let Some(suit) = variant.suits.get(suit_index) else {
         return false;
     };
-    if clue_type == 0 {
-        let Some(color) = usize::try_from(value)
-            .ok()
-            .and_then(|i| variant.clue_colors.get(i))
-        else {
-            return false;
-        };
-        if variant.color_clues_touch_nothing {
-            return false;
-        }
-        if variant.synesthesia
-            && !suit.no_clue_ranks
-            && (rank - 1) % variant.clue_colors.len() as i32 == value
-        {
-            return true;
-        }
-        if suit.all_clue_colors {
-            return true;
-        }
-        if suit.no_clue_colors {
-            return false;
-        }
-        if variant.special_rank == Some(rank) {
-            if variant.special_rank_all_clue_colors {
-                return true;
-            }
-            if variant.special_rank_no_clue_colors {
+    match clue_type {
+        ClueType::Color => {
+            let Some(color) = usize::try_from(value)
+                .ok()
+                .and_then(|i| variant.clue_colors.get(i))
+            else {
                 return false;
-            }
-        }
-        if suit.prism {
-            return value
-                == if rank == 7 {
-                    variant.clue_colors.len() as i32 - 1
-                } else {
-                    (rank - 1) % variant.clue_colors.len() as i32
-                };
-        }
-        suit.clue_colors.contains(color)
-    } else if clue_type == 1 {
-        if variant.rank_clues_touch_nothing {
-            return false;
-        }
-        if suit.all_clue_ranks {
-            return true;
-        }
-        if suit.no_clue_ranks {
-            return false;
-        }
-        if variant.funnels {
-            return rank <= value;
-        }
-        if variant.chimneys {
-            return rank >= value;
-        }
-        if variant.odds_and_evens {
-            return if value == 1 {
-                [1, 3, 5].contains(&rank)
-            } else {
-                [2, 4].contains(&rank)
             };
-        }
-        if variant.special_rank == Some(rank) {
-            if variant.special_rank_all_clue_ranks {
-                return true;
-            }
-            if variant.special_rank_no_clue_ranks {
+            if variant.color_clues_touch_nothing {
                 return false;
             }
-            if variant.special_rank_deceptive {
-                return value == variant.clue_ranks[suit_index % variant.clue_ranks.len()];
+            if variant.synesthesia
+                && !suit.no_clue_ranks
+                && (rank - 1) % variant.clue_colors.len() as i32 == value
+            {
+                return true;
             }
+            if suit.all_clue_colors {
+                return true;
+            }
+            if suit.no_clue_colors {
+                return false;
+            }
+            if variant.special_rank == Some(rank) {
+                if variant.special_rank_all_clue_colors {
+                    return true;
+                }
+                if variant.special_rank_no_clue_colors {
+                    return false;
+                }
+            }
+            if suit.prism {
+                return value
+                    == if rank == 7 {
+                        variant.clue_colors.len() as i32 - 1
+                    } else {
+                        (rank - 1) % variant.clue_colors.len() as i32
+                    };
+            }
+            suit.clue_colors.contains(color)
         }
-        rank == value
-    } else {
-        false
+        ClueType::Rank => {
+            if variant.rank_clues_touch_nothing {
+                return false;
+            }
+            if suit.all_clue_ranks {
+                return true;
+            }
+            if suit.no_clue_ranks {
+                return false;
+            }
+            if variant.funnels {
+                return rank <= value;
+            }
+            if variant.chimneys {
+                return rank >= value;
+            }
+            if variant.odds_and_evens {
+                return if value == 1 {
+                    [1, 3, 5].contains(&rank)
+                } else {
+                    [2, 4].contains(&rank)
+                };
+            }
+            if variant.special_rank == Some(rank) {
+                if variant.special_rank_all_clue_ranks {
+                    return true;
+                }
+                if variant.special_rank_no_clue_ranks {
+                    return false;
+                }
+                if variant.special_rank_deceptive {
+                    return value == variant.clue_ranks[suit_index % variant.clue_ranks.len()];
+                }
+            }
+            rank == value
+        }
     }
 }

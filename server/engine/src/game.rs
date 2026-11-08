@@ -242,7 +242,9 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                 action.value
             ));
         }
-        if variant.alternating_clues && state.last_clue_type_given == action.action_type - 2 {
+        if variant.alternating_clues
+            && clue_type(action.action_type).map(i32::from) == Some(state.last_clue_type_given)
+        {
             return reject("You cannot give two clues of the same time in a row in this variant.");
         }
         validate_character_clue(state, actor, action)?;
@@ -324,17 +326,17 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     }
     state.max_score = state.max_score.min(calculate_max_score(state));
 }
-fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction) {
+fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_type: ClueType) {
     let touched = touched_orders(state, action);
     state.actions.push(*action);
     state.clue_tokens -= clue_cost(state);
-    state.last_clue_type_given = action.action_type - 2;
+    state.last_clue_type_given = i32::from(clue_type);
     for &order in &touched {
         state.deck[order].touched = true;
     }
     state.events.push(EngineEvent::Clue {
         clue: Clue {
-            clue_type: action.action_type - 2,
+            clue_type: Some(clue_type),
             value: action.value,
         },
         giver: actor,
@@ -465,8 +467,8 @@ pub fn apply_action(
     validate_action(previous, actor, action)?;
     validate_timing(previous, &timing)?;
     let mut state = previous.clone();
-    if action.action_type == 2 || action.action_type == 3 {
-        give_clue(&mut state, actor, action);
+    if let Some(clue_type) = clue_type(action.action_type) {
+        give_clue(&mut state, actor, action, clue_type);
     } else {
         let order = action.target as usize;
         let deck_move = state.options.deck_plays

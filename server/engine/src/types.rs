@@ -1,4 +1,4 @@
-pub use hanabi_protocol::EndCondition;
+pub use hanabi_protocol::{ActionType, ClueType, EndCondition};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -132,9 +132,27 @@ pub struct EnginePlayer {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Clue {
+    /// `None` in the events of a recipient who may not see the clue's type.
     #[serde(rename = "type")]
-    pub clue_type: i32,
+    pub clue_type: Option<ClueType>,
     pub value: i32,
+}
+
+/// The kind of clue that a recorded action gives, or `None` for an action that is not a clue.
+pub fn clue_type(action_type: i32) -> Option<ClueType> {
+    match ActionType::try_from(action_type) {
+        Ok(ActionType::ColorClue) => Some(ClueType::Color),
+        Ok(ActionType::RankClue) => Some(ClueType::Rank),
+        _ => None,
+    }
+}
+
+/// The recorded action type that gives a kind of clue.
+pub fn clue_action_type(clue_type: ClueType) -> i32 {
+    i32::from(match clue_type {
+        ClueType::Color => ActionType::ColorClue,
+        ClueType::Rank => ActionType::RankClue,
+    })
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -12,7 +12,8 @@ use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
     Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, ReplayAction,
-    SoundLobby, TableId, TableRequest, TableStarted, User, UserId, UserLeft, UserList, Warning,
+    SoundLobby, Status, TableId, TableRequest, TableStarted, User, UserId, UserLeft, UserList,
+    Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -102,7 +103,8 @@ fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent 
             turn,
         } => G::Clue {
             clue: hanabi_protocol::Clue {
-                clue_type: clue.clue_type,
+                // The wire marks a clue that the recipient may not see with -1.
+                clue_type: clue.clue_type.map_or(-1, i32::from),
                 value: clue.value,
             },
             giver: int(*giver),
@@ -136,7 +138,7 @@ fn wire_event(event: &hanabi_engine::EngineEvent) -> hanabi_protocol::GameEvent 
             player_index,
             votes,
         } => G::GameOver {
-            end_condition: i32::from(*end_condition).into(),
+            end_condition: *end_condition,
             player_index: (*player_index).into(),
             votes: votes
                 .as_ref()
@@ -267,13 +269,13 @@ struct Entry {
 }
 struct Presence {
     session: Arc<Session>,
-    status: u8,
+    status: Status,
     table: Option<u64>,
 }
 pub struct Effects {
     pub table: u64,
     pub view: TableView,
-    pub statuses: Vec<(Arc<Session>, u8, Option<u64>)>,
+    pub statuses: Vec<(Arc<Session>, Status, Option<u64>)>,
     pub messages: Vec<(Arc<Session>, String)>,
 }
 pub enum HubCommand {
@@ -504,7 +506,7 @@ impl Hub {
             user_id: UserId(p.session.user),
             name: p.session.name.clone(),
             status: p.status,
-            table_id: if p.status == 4 {
+            table_id: if p.status == Status::Replay {
                 Some(TableId(0))
             } else {
                 p.table.map(TableId)
@@ -885,7 +887,7 @@ impl Hub {
                         session.user,
                         Presence {
                             session: session.clone(),
-                            status: 0,
+                            status: Status::Lobby,
                             table: None,
                         },
                     );
@@ -2297,7 +2299,8 @@ impl TableActor {
         self.replay_absent_until = None;
         let mut e = self.effects();
         if matches!(self.table.phase, Phase::Pregame { .. }) {
-            e.statuses.push((s.clone(), 1, Some(self.table.id)));
+            e.statuses
+                .push((s.clone(), Status::PreGame, Some(self.table.id)));
             self.pregame_messages(&mut e);
             e.messages.push((
                 s.clone(),
@@ -2312,7 +2315,11 @@ impl TableActor {
         } else {
             e.statuses.push((
                 s.clone(),
-                if self.table.visible { 5 } else { 4 },
+                if self.table.visible {
+                    Status::SharedReplay
+                } else {
+                    Status::Replay
+                },
                 Some(self.table.id),
             ));
             e.messages.push((
@@ -2787,7 +2794,8 @@ impl TableActor {
             }
             ClientMessage::Action(r) => {
                 let action = ReplayAction {
-                    kind: r.kind,
+                    // A turn's recorded action type is its `ActionType` value.
+                    kind: r.kind as u8,
                     target: r.target,
                     value: r.value,
                 };
@@ -3097,7 +3105,7 @@ impl TableActor {
         let mut e = self.effects();
         for p in removed {
             if let Some(a) = self.attendees.remove(&p.id) {
-                e.statuses.push((a.session.clone(), 0, None));
+                e.statuses.push((a.session.clone(), Status::Lobby, None));
                 e.messages.push((
                     a.session,
                     frame(
@@ -3282,13 +3290,17 @@ impl TableActor {
         e.statuses.push((
             session.clone(),
             if replay {
-                if self.table.visible { 5 } else { 4 }
+                if self.table.visible {
+                    Status::SharedReplay
+                } else {
+                    Status::Replay
+                }
             } else if spectating {
-                3
+                Status::Spectating
             } else if pregame {
-                1
+                Status::PreGame
             } else {
-                2
+                Status::Playing
             },
             Some(self.table.id),
         ));
@@ -3342,7 +3354,7 @@ impl TableActor {
         self.persist(next).await?;
         self.attendees.remove(&session.user);
         let mut e = self.effects();
-        e.statuses.push((session.clone(), 0, None));
+        e.statuses.push((session.clone(), Status::Lobby, None));
         e.messages.push((
             session,
             frame(
@@ -3511,11 +3523,11 @@ impl TableActor {
             e.statuses.push((
                 a.session.clone(),
                 if replay {
-                    5
+                    Status::SharedReplay
                 } else if a.spectator {
-                    3
+                    Status::Spectating
                 } else {
-                    2
+                    Status::Playing
                 },
                 Some(self.table.id),
             ));
@@ -3615,7 +3627,11 @@ impl TableActor {
             for a in self.audience() {
                 e.statuses.push((
                     a.session.clone(),
-                    if self.table.visible { 5 } else { 4 },
+                    if self.table.visible {
+                        Status::SharedReplay
+                    } else {
+                        Status::Replay
+                    },
                     Some(self.table.id),
                 ));
                 if s.players.iter().any(|p| p.id == a.session.user) {
@@ -4570,7 +4586,7 @@ impl TableActor {
         if let Some(user) = boot
             && let Some(a) = self.attendees.remove(&user)
         {
-            e.statuses.push((a.session.clone(), 0, None));
+            e.statuses.push((a.session.clone(), Status::Lobby, None));
             e.messages.push((
                 a.session,
                 frame(
@@ -4656,7 +4672,9 @@ impl TableActor {
                     },
                 ),
             ));
-            effects.statuses.push((session.clone(), 0, None));
+            effects
+                .statuses
+                .push((session.clone(), Status::Lobby, None));
         }
         self.pregame_messages(&mut effects);
         self.publish(effects).await?;
@@ -5175,7 +5193,7 @@ impl TableActor {
         }
         let mut e = self.effects();
         for a in self.audience() {
-            e.statuses.push((a.session.clone(), 0, None));
+            e.statuses.push((a.session.clone(), Status::Lobby, None));
             e.messages.push((
                 a.session.clone(),
                 frame(

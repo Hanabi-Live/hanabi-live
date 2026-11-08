@@ -46,7 +46,7 @@ pub fn events_for_recipient(
         .map(|mut event| {
             match &mut event {
                 EngineEvent::Clue { clue, .. } if variant_for(state).duck => {
-                    clue.clue_type = -1;
+                    clue.clue_type = None;
                     clue.value = -1;
                 }
                 EngineEvent::Draw {

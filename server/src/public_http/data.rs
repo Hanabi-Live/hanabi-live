@@ -253,7 +253,9 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory>
         seed: g.seed,
         score: i32::from(g.score),
         num_turns: i32::from(g.num_turns),
-        end_condition: u8::try_from(g.end_condition).context("Invalid stored end condition")?,
+        end_condition: hanabi_protocol::EndCondition::try_from(i32::from(g.end_condition))
+            .map_err(anyhow::Error::msg)
+            .context("Invalid stored end condition")?,
         datetime_started: row.started,
         datetime_finished: row.finished,
         num_games_on_this_seed: i64::from(row.seed_count),
