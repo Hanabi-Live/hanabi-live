@@ -24,7 +24,7 @@ use axum::{
     },
     http::{HeaderMap, StatusCode, Uri, header},
     middleware::{self, Next},
-    response::Response,
+    response::{IntoResponse, Response},
     routing::get,
 };
 use chrono::{DateTime, Utc};
@@ -177,8 +177,32 @@ pub fn router(app: Arc<App>) -> Router {
         .layer(middleware::from_fn_with_state(app.clone(), check_origin));
     public_http::router(app.store.lobby_reads.clone(), app.public.clone())
         .merge(authenticated)
+        .fallback(|uri: Uri| async move { route_error(&uri, StatusCode::NOT_FOUND, "Not found.") })
+        .method_not_allowed_fallback(|uri: Uri| async move {
+            route_error(
+                &uri,
+                StatusCode::METHOD_NOT_ALLOWED,
+                "This URL does not accept that method.",
+            )
+        })
         .layer(middleware::from_fn(reject_get_bodies))
         .layer(middleware::from_fn_with_state(app, alert_server_errors))
+}
+
+/// Whether a URL answers with JSON rather than an HTML page, which decides the form of its errors.
+fn serves_json(path: &str) -> bool {
+    path.starts_with("/api/")
+        || path == "/export"
+        || path.starts_with("/export/")
+        || matches!(path, "/login" | "/logout" | "/test-cookie" | "/ws")
+}
+
+fn route_error(uri: &Uri, status: StatusCode, message: &str) -> Response {
+    if serves_json(uri.path()) {
+        accounts::api_error(status, message)
+    } else {
+        (status, message.to_owned()).into_response()
+    }
 }
 
 /// Rejects a GET or HEAD request that has a body: no route reads one.

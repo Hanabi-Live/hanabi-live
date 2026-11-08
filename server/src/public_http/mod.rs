@@ -309,6 +309,6 @@ async fn api_response(
         }
         "tags" => Json(data::tagged(state, params, false).await?).into_response(),
         "tag" => Json(data::tagged(state, params, true).await?).into_response(),
-        _ => return Err(Error::not_found("404 not found")),
+        _ => return Err(Error::not_found("Not found.")),
     })
 }

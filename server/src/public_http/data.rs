@@ -49,14 +49,14 @@ pub(super) async fn players(
     for i in 1..=if multiple { 6 } else { 1 } {
         let Some(name) = params.get(&format!("player{i}")).filter(|n| !n.is_empty()) else {
             if i == 1 {
-                return Err(Error::not_found("Error: You must specify a player."));
+                return Err(Error::not_found("You must specify a player."));
             }
             break;
         };
         let normalized = crate::accounts::normalize_string(name);
         if !seen.insert(normalized.clone()) {
             return Err(Error::not_found(
-                "Error: You can not specify the same player twice.",
+                "You can not specify the same player twice.",
             ));
         }
         let user = sqlx::query!(
@@ -68,9 +68,9 @@ pub(super) async fn players(
         .map(|row| (row.id, row.username));
         users.push(user.ok_or_else(|| {
             Error::not_found(if multiple {
-                format!("Error: The player of \"{name}\" does not exist in the database.")
+                format!("The player of \"{name}\" does not exist in the database.")
             } else {
-                "Error: That player does not exist in the database.".into()
+                "That player does not exist in the database.".into()
             })
         })?);
     }
@@ -88,18 +88,20 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
                 .collect()
         }
         "variants" => {
-            s.variant = p
+            let raw = p
                 .get("id")
-                .and_then(|v| integer(v))
-                .filter(|id| catalog::variant(*id).is_some());
-            if s.variant.is_none() {
-                return Err(Error::bad("Missing valid variant ID"));
+                .filter(|v| !v.is_empty())
+                .ok_or_else(|| Error::not_found("You must specify a variant ID."))?;
+            let id = integer(raw).ok_or_else(|| Error::bad("The variant ID must be a number."))?;
+            if catalog::variant(id).is_none() {
+                return Err(Error::not_found("That variant does not exist."));
             }
+            s.variant = Some(id);
         }
         _ => {
             s.seed = p.get("seed").filter(|v| !v.is_empty()).cloned();
             if s.seed.is_none() {
-                return Err(Error::bad("Missing seed"));
+                return Err(Error::not_found("You must specify a seed."));
             }
         }
     }
@@ -315,7 +317,7 @@ pub(super) async fn tagged(
         let value = params
             .get("tag")
             .filter(|v| !v.is_empty())
-            .ok_or_else(|| Error::not_found("Error: You must specify a tag."))?;
+            .ok_or_else(|| Error::not_found("You must specify a tag."))?;
         s.tag = Some(sanitize_tag(value)?);
     } else {
         s.tag_user = Some(players(state, params, false).await?[0].0);

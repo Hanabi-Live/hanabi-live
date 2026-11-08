@@ -168,14 +168,10 @@ pub(super) async fn page(
             let n = params.get("numPlayers").and_then(|n| integer(n));
             if shared {
                 if n.is_none() {
-                    return Err(Error::bad(
-                        "Error: You must first specify the number of players.",
-                    ));
+                    return Err(Error::bad("You must first specify the number of players."));
                 }
                 if !n.is_some_and(|n| (2..=6).contains(&n)) {
-                    return Err(Error::bad(
-                        "Error: Number of players must be between 2 and 6.",
-                    ));
+                    return Err(Error::bad("Number of players must be between 2 and 6."));
                 }
             }
             let users = data::players(&state, &params, shared || mode == "history").await?;
@@ -233,7 +229,7 @@ pub(super) async fn page(
             let seed = params
                 .get("seed")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("Error: You must specify a seed."))?;
+                .ok_or_else(|| Error::not_found("You must specify a seed."))?;
             let api = format!("/api/v1/seed/{}", encoded(seed));
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
@@ -253,11 +249,10 @@ pub(super) async fn page(
             let raw = params
                 .get("id")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("Error: You must specify a variant ID."))?;
-            let id = integer(raw)
-                .ok_or_else(|| Error::bad("Error: The variant ID must be a number."))?;
+                .ok_or_else(|| Error::not_found("You must specify a variant ID."))?;
+            let id = integer(raw).ok_or_else(|| Error::bad("The variant ID must be a number."))?;
             let variant = catalog::variant(id)
-                .ok_or_else(|| Error::bad("Error: That is not a valid variant ID."))?;
+                .ok_or_else(|| Error::not_found("That variant does not exist."))?;
             let api = format!("/api/v1/variants/{id}");
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
@@ -292,7 +287,7 @@ pub(super) async fn page(
             let raw = params
                 .get("tag")
                 .filter(|s| !s.is_empty())
-                .ok_or_else(|| Error::not_found("Error: You must specify a tag."))?;
+                .ok_or_else(|| Error::not_found("You must specify a tag."))?;
             let tag = data::sanitize_tag(raw)?;
             if api_redirect {
                 return Ok(
@@ -303,7 +298,7 @@ pub(super) async fn page(
             v["namesTitle"] = json!(format!("Games With a Tag of: {tag}"));
             v["games"] = json!(data::tagged(&state, &params, true).await?);
         }
-        _ => return Err(Error::not_found("404 not found")),
+        _ => return Err(Error::not_found("Not found.")),
     }
     render(&state, "public-page.html", v)
 }
@@ -539,9 +534,7 @@ async fn missing(
     q: &Query,
 ) -> Result<Response> {
     if shared && users.len() < 2 {
-        return Err(Error::not_found(
-            "Error: You must specify at least two players.",
-        ));
+        return Err(Error::not_found("You must specify at least two players."));
     }
     // Only the shared page takes these parameters, so they are absent from the others.
     let terms = |key| -> Result<Vec<String>> {
@@ -562,7 +555,7 @@ async fn missing(
             bounds[i] = s.parse::<f64>().ok().filter(|n| n.is_finite());
             if bounds[i].is_none() {
                 return Err(Error::bad(format!(
-                    "Error: The {} efficiency must be a number.",
+                    "The {} efficiency must be a number.",
                     if i == 0 { "minimum" } else { "maximum" }
                 )));
             }
@@ -576,7 +569,7 @@ async fn missing(
         }
     }
     if stats.is_empty() {
-        return Err(Error::bad("Error: You can not exclude every player."));
+        return Err(Error::bad("You can not exclude every player."));
     }
     let counts = num_players.map_or_else(|| (2..=6).collect::<Vec<_>>(), |p| vec![p]);
     let mut rows = Vec::new();

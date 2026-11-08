@@ -165,6 +165,39 @@ async fn http_routes_reject_parameters_and_bodies_they_do_not_take_postgres() {
         let error: hanabi_protocol::ApiError = response.json().await.unwrap();
         assert!(!error.error.is_empty(), "{url}");
     }
+    // Errors that the router itself produces take the same form as the URL's other errors.
+    let oversized = "a".repeat(9000);
+    for (request, status, json) in [
+        (
+            client.get(format!("{}/api/v1/nope", fixture.url)),
+            404,
+            true,
+        ),
+        (client.get(format!("{}/nope", fixture.url)), 404, false),
+        (client.get(format!("{}/login", fixture.url)), 405, true),
+        (
+            client.post(format!("{}/api/v1/variants", fixture.url)),
+            405,
+            true,
+        ),
+        (
+            client
+                .post(format!("{}/api/v1/identity/token", fixture.url))
+                .body(oversized.clone()),
+            413,
+            true,
+        ),
+    ] {
+        let response = request.header("Origin", &fixture.url).send().await.unwrap();
+        let url = response.url().clone();
+        assert_eq!(response.status().as_u16(), status, "{url}");
+        let body = response.text().await.unwrap();
+        assert_eq!(
+            serde_json::from_str::<hanabi_protocol::ApiError>(&body).is_ok(),
+            json,
+            "{url}: {body}"
+        );
+    }
 }
 
 #[tokio::test]

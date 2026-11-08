@@ -44,6 +44,13 @@ pub fn router(control: Arc<Control>) -> Router {
         router = router.route(path, get(handle));
     }
     router
+        .fallback(|| async { (StatusCode::NOT_FOUND, "Not found.\n") })
+        .method_not_allowed_fallback(|| async {
+            (
+                StatusCode::METHOD_NOT_ALLOWED,
+                "This URL does not accept that method.\n",
+            )
+        })
         .layer(middleware::from_fn_with_state(control.clone(), guard))
         .layer(middleware::from_fn(crate::errors::http_context))
         .with_state(control)
@@ -150,7 +157,7 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
         "/ban" | "/mute" => (&[], Some(&["username"])),
         "/gracefulRestart" | "/gracefulStop" => (&["message"], None),
         "/metrics" | "/version" => (&[], None),
-        _ => return Err(Error(StatusCode::NOT_FOUND, "404 not found\n".into())),
+        _ => return Err(Error(StatusCode::NOT_FOUND, "Not found.\n".into())),
     };
     let query =
         Query::parse(request.uri().query(), accepted_query).map_err(|message| bad(&message))?;
@@ -198,7 +205,7 @@ async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Resp
     let name = body
         .get("username")
         .filter(|v| !v.is_empty())
-        .ok_or_else(|| bad("Error: You must specify a username."))?;
+        .ok_or_else(|| bad("You must specify a username."))?;
     let account = sqlx::query!(
         "SELECT id,username,last_ip FROM users WHERE normalized_username=$1",
         crate::accounts::normalize_string(name)

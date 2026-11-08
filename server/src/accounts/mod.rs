@@ -221,11 +221,14 @@ async fn login(
     ConnectInfo(address): ConnectInfo<SocketAddr>,
     input: Result<Form<LoginRequest>, axum::extract::rejection::FormRejection>,
 ) -> Response {
-    let Ok(Form(input)) = input else {
-        return api_error(
-            StatusCode::BAD_REQUEST,
-            "The login form must contain only a username, password, newPassword, and version.",
-        );
+    let input = match input {
+        Ok(Form(input)) => input,
+        Err(rejection) => {
+            return unreadable_body(
+                rejection.status(),
+                "The login form must contain only a username, password, newPassword, and version.",
+            );
+        }
     };
     match login_inner(&state, &address.ip().to_string(), input).await {
         Ok(response) => response,
@@ -424,6 +427,15 @@ pub(crate) fn api_error(status: StatusCode, message: impl Into<String>) -> Respo
 
 pub(crate) const BANNED: &str = "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";
 
+/// The error for a request body that could not be read: too large, or not in the expected form.
+fn unreadable_body(status: StatusCode, malformed: &str) -> Response {
+    if status == StatusCode::PAYLOAD_TOO_LARGE {
+        api_error(status, "The request body is too large.")
+    } else {
+        api_error(StatusCode::BAD_REQUEST, malformed)
+    }
+}
+
 pub(crate) fn banned() -> Response {
     api_error(StatusCode::FORBIDDEN, BANNED)
 }
@@ -433,13 +445,17 @@ async fn identity_token(
     ConnectInfo(address): ConnectInfo<SocketAddr>,
     uri: Uri,
     headers: HeaderMap,
-    body: axum::body::Bytes,
+    body: Result<axum::body::Bytes, axum::extract::rejection::BytesRejection>,
 ) -> Response {
     if let Err(message) = account_query(uri.query(), &["account"]) {
         return api_error(StatusCode::BAD_REQUEST, message);
     }
-    if !body.is_empty() {
-        return api_error(StatusCode::BAD_REQUEST, "This request takes no body.");
+    match body {
+        Ok(body) if body.is_empty() => {}
+        Ok(_) => return api_error(StatusCode::BAD_REQUEST, "This request takes no body."),
+        Err(rejection) => {
+            return unreadable_body(rejection.status(), "This request takes no body.");
+        }
     }
     let result: Result<Response> = async {
         if is_banned(&state.pool, &address.ip().to_string()).await? {
@@ -487,10 +503,17 @@ async fn identity(
         if is_banned(&state.pool, &address.ip().to_string()).await? {
             return Ok(banned());
         }
-        let token = body
-            .ok()
-            .and_then(|Json(value)| hanabi_protocol::decode::<IdentityRequest>(&value).ok())
-            .map(|request| request.token);
+        let token = match body {
+            Ok(Json(value)) => hanabi_protocol::decode::<IdentityRequest>(&value)
+                .ok()
+                .map(|request| request.token),
+            Err(rejection) => {
+                return Ok(unreadable_body(
+                    rejection.status(),
+                    "The request must be a JSON object with only a non-empty token.",
+                ));
+            }
+        };
         let Some(token) = token else {
             return Ok(api_error(
                 StatusCode::BAD_REQUEST,
@@ -530,10 +553,13 @@ async fn password_hash(
     ConnectInfo(address): ConnectInfo<SocketAddr>,
     body: Result<Json<serde_json::Value>, axum::extract::rejection::JsonRejection>,
 ) -> Response {
-    let Some(request) = body
-        .ok()
-        .and_then(|Json(value)| hanabi_protocol::decode::<PasswordHashRequest>(&value).ok())
-    else {
+    let request = match body {
+        Ok(Json(value)) => hanabi_protocol::decode::<PasswordHashRequest>(&value).ok(),
+        Err(rejection) => {
+            return unreadable_body(rejection.status(), "You must specify a password.");
+        }
+    };
+    let Some(request) = request else {
         return api_error(StatusCode::BAD_REQUEST, "You must specify a password.");
     };
     match hash_password(&address.ip().to_string(), request.password).await {

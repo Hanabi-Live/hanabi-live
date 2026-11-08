@@ -18,17 +18,16 @@ pub(super) async fn export(
     let raw = params
         .get("databaseID")
         .filter(|v| !v.is_empty())
-        .ok_or_else(|| Error::not_found("Error: You must specify a database game ID."))?;
-    let id =
-        integer(raw).ok_or_else(|| Error::bad("Error: That is not a valid database game ID."))?;
+        .ok_or_else(|| Error::not_found("You must specify a database game ID."))?;
+    let id = integer(raw).ok_or_else(|| Error::bad("That is not a valid database game ID."))?;
     if !(1..=i32::MAX as i64).contains(&id) {
         return Err(Error::not_found(
-            "Error: That game does not exist in the database.",
+            "That game does not exist in the database.",
         ));
     }
     let archive = crate::archive::load(&state.pool, id as i32)
         .await?
-        .ok_or_else(|| Error::not_found("Error: That game does not exist in the database."))?;
+        .ok_or_else(|| Error::not_found("That game does not exist in the database."))?;
     let row = archive.game;
     let players = archive.players;
     if players.len() != usize::try_from(row.num_players)?
