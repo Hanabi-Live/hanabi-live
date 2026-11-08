@@ -353,6 +353,87 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
     Ok(())
 }
 
+/// Counts the published messages of one command, emptying the notifications.
+fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> usize {
+    let prefix = format!("{command} ");
+    let mut count = 0;
+    while let Ok(notification) = notifications.try_recv() {
+        if let HubCommand::Effects(effects) = notification {
+            count += effects
+                .messages
+                .iter()
+                .filter(|(_, message)| message.starts_with(&prefix))
+                .count();
+        }
+    }
+    count
+}
+
+#[tokio::test]
+async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<()> {
+    let (_redis, store, _state) = fixture_store("live-idle-warning").await?;
+    let id = store.allocate_table().await?;
+    let imported = replay_helpers::parse(&json!({"players":["Alice","Bob"],"seed":"p2v0s1"}))?;
+    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    snapshot.idle_remaining = IDLE_WARNING_MS;
+    let mut table = pregame(id);
+    table.options = snapshot.game.options.clone();
+    table.phase = Phase::Live {
+        snapshot: Box::new(snapshot),
+    };
+    let revision = store.save(&table, 0).await?;
+    let (hub, mut notifications) = mpsc::channel(64);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table,
+        revision,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
+    );
+    let player = actor.table.players()[0].id;
+    let (alice, _alice_frames) = Session::new(player, "Alice".into(), 1, false);
+    let (viewer, _viewer_frames) = Session::new(99, "Viewer".into(), 1, false);
+    actor.reattend(alice.clone(), false, None).await?;
+    actor.reattend(viewer.clone(), true, None).await?;
+    published(&mut notifications, "idleWarning");
+
+    // Both attendees are warned once, not on every tick.
+    actor.tick().await?;
+    actor.tick().await?;
+    ensure!(
+        published(&mut notifications, "idleWarning") == 2,
+        "The table was not warned exactly once"
+    );
+
+    // Only players can keep the game going.
+    ensure!(
+        actor.idle_reset(viewer.clone()).await.is_err(),
+        "A spectator kept an idle game going"
+    );
+    actor.idle_reset(alice.clone()).await?;
+    ensure!(
+        actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+        "Keeping the game going did not restart the idle timer"
+    );
+    ensure!(
+        published(&mut notifications, "idleReset") == 2,
+        "The table was not told that the game was kept going"
+    );
+
+    // The warning is sent again the next time the game is about to end.
+    actor.table.game_mut().unwrap().idle_remaining = IDLE_WARNING_MS;
+    actor.anchor = Instant::now();
+    actor.tick().await?;
+    ensure!(
+        published(&mut notifications, "idleWarning") == 2,
+        "The table was not warned again"
+    );
+    store.close().await?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<()> {
     let (_redis, store, _state) = fixture_store("live-spectator-idle").await?;

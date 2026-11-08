@@ -12,6 +12,11 @@ const dom = new JSDOM(`<!doctype html><body>
       <p id="error-modal-description"></p>
       <button id="error-modal-button"></button>
     </div>
+    <div id="idle-modal" class="hidden">
+      <p id="idle-modal-description"></p>
+      <button id="idle-modal-keep"></button>
+      <button id="idle-modal-close"></button>
+    </div>
     <button id="create-game-submit"></button>
     <input id="createTablePassword" />
     <button id="morph-modal-button-cancel"></button>
@@ -60,6 +65,40 @@ await mock.module("./game/ui/HanabiCardClick", () => ({
   morphReplayFromModal: mock(),
 }));
 await mock.module("./lobby/nav", () => ({ show: mock() }));
+
+async function wait(milliseconds: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+// This must run before the error test, whose error modal cannot be closed.
+test("the idle warning counts down and only lets players keep the game going", async () => {
+  const modals = await import("./modals");
+  const { document } = dom.window;
+  const idleModal = document.querySelector("#idle-modal");
+  const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
+
+  modals.showIdleWarning(299_000, null);
+  await wait(150);
+  expect(idleModal?.parentElement?.id).toBe("page-cover");
+  expect(
+    document.querySelector("#idle-modal-description strong")?.textContent,
+  ).toBe("4:59");
+  expect(keep?.style.display).toBe("none");
+
+  let keepPlayingCalls = 0;
+  modals.showIdleWarning(299_000, () => {
+    keepPlayingCalls++;
+  });
+  await wait(150);
+  expect(keep?.style.display).toBe("");
+  keep?.onpointerdown?.(
+    new dom.window.Event("pointerdown") as unknown as PointerEvent,
+  );
+  expect(keepPlayingCalls).toBe(1);
+  expect(idleModal?.parentElement?.id).toBe("modals-container");
+});
 
 test("a warning shown after an error does not replace the error modal", async () => {
   const modals = await import("./modals");

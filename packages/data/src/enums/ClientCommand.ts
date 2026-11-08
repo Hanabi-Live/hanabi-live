@@ -7,6 +7,7 @@ export enum ClientCommand {
   loaded = "loaded",
   action = "action",
   pause = "pause",
+  idleReset = "idleReset",
   note = "note",
   tag = "tag",
   tagDelete = "tagDelete",

@@ -428,6 +428,10 @@ export const hypotheticalSchema = z.strictObject({
   actions: z.array(z.string()),
   showDrawnCards: z.boolean(),
 });
+export const idleWarningSchema = z.strictObject({
+  remainingMs: z.number().int().min(0).max(1_800_000),
+  tableID: tableIdSchema,
+});
 export const inactiveRequestSchema = z.strictObject({ inactive: z.boolean() });
 export const initSchema = z.strictObject({
   characterAssignments: z.array(safeIntegerSchema),
@@ -912,6 +916,7 @@ export const CLIENT_WIRE_SCHEMAS = {
   getGameInfo2: tableCommandSchema,
   historyGet: historyRequestSchema,
   historyGetSeed: historySeedRequestSchema,
+  idleReset: tableRequestSchema,
   inactive: inactiveRequestSchema,
   loaded: tableCommandSchema,
   lobbyLoad: emptySchema,
@@ -964,6 +969,8 @@ export const SERVER_WIRE_SCHEMAS = {
   hypoShowDrawnCards: hypoShowDrawnCardsSchema,
   hypoStart: tableRequestSchema,
   hypothetical: hypotheticalSchema,
+  idleReset: tableRequestSchema,
+  idleWarning: idleWarningSchema,
   init: initSchema,
   joined: tableRequestSchema,
   left: tableRequestSchema,

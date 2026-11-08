@@ -146,6 +146,7 @@ pub fn handles(message: &ClientMessage) -> bool {
         | M::ReplayCreate(_)
         | M::Action(_)
         | M::Pause(_)
+        | M::IdleReset(_)
         | M::Note(_)
         | M::Tag(_)
         | M::TagDelete(_)

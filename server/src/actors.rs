@@ -11,8 +11,8 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
-    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, SoundLobby, TableId, TableRequest,
-    TableStarted, User, UserId, UserLeft, UserList, Warning,
+    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, SoundLobby, TableId,
+    TableRequest, TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -1635,6 +1635,7 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
         M::TableUpdate(r) => r.table_id,
         M::Action(r) => r.table_id,
         M::Pause(r) => r.table_id,
+        M::IdleReset(r) => r.table_id,
         M::Note(r) => r.table_id,
         M::Tag(r) | M::TagDelete(r) => r.table_id,
         M::TagsDeleteAll(r) => r.table_id,
@@ -1890,6 +1891,9 @@ struct TableActor {
     store: Store,
     hub: mpsc::Sender<HubCommand>,
     anchor: Instant,
+    /// Whether the table was warned that the game is about to end for inactivity. Kept in memory:
+    /// after a restart, the warning is sent again.
+    idle_warned: bool,
     _permit: OwnedSemaphorePermit,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
     info: Arc<ServerInfo>,
@@ -1916,6 +1920,7 @@ impl TableActor {
             store,
             hub,
             anchor: Instant::now(),
+            idle_warned: false,
             _permit: permit,
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
             info,
@@ -2790,6 +2795,7 @@ impl TableActor {
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
             ClientMessage::Pause(r) => self.pause(session, &r.setting).await,
+            ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
             ClientMessage::Tag(r) | ClientMessage::TagDelete(r) => {
                 self.tag(session, &r.msg, &r.room, name).await
@@ -3695,6 +3701,27 @@ impl TableActor {
             self.transitions(from).await?;
         }
         Ok(())
+    }
+    /// A player keeps an idle game going, restarting its idle timer.
+    async fn idle_reset(&mut self, session: Arc<Session>) -> Result<()> {
+        ensure!(self.attending(&session), "Not attending");
+        self.seat(&session)?;
+        self.live()?;
+        let mut next = self.candidate();
+        next.game_mut().context("Missing game")?.idle_remaining = IDLE_TIMEOUT_MS;
+        // Like arrows and sounds, an idle reset only restarts the idle timer, so it skips the durable
+        // write.
+        self.apply_without_checkpoint(next)?;
+        self.idle_warned = false;
+        let mut e = self.effects();
+        self.add_all(
+            &mut e,
+            hanabi_protocol::server::IDLE_RESET,
+            TableRequest {
+                table_id: TableId(self.table.id),
+            },
+        );
+        self.publish(e).await
     }
     async fn pause(&mut self, session: Arc<Session>, mut setting: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
@@ -5042,6 +5069,24 @@ impl TableActor {
         }
         let active = s.game.active_player_index;
         let idle = s.idle_remaining == 0;
+        // Warn the table once before the game ends for inactivity. The warning is sent again after
+        // a turn or an idle reset restarts the timer.
+        if s.idle_remaining > IDLE_WARNING_MS {
+            self.idle_warned = false;
+        } else if !idle && !self.idle_warned {
+            self.idle_warned = true;
+            let remaining_ms = s.idle_remaining;
+            let mut e = self.effects();
+            self.add_all(
+                &mut e,
+                hanabi_protocol::server::IDLE_WARNING,
+                IdleWarning {
+                    table_id: TableId(self.table.id),
+                    remaining_ms,
+                },
+            );
+            self.publish(e).await?;
+        }
         let timeout =
             s.game.options.timed && s.timer_started && !s.game.paused && s.clocks[active] <= 0;
         if idle || timeout {

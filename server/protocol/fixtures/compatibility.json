@@ -1575,5 +1575,40 @@
       "pauseQueued": false
     },
     "valid": true
+  },
+  {
+    "name": "idle resets name their table",
+    "direction": "client",
+    "command": "idleReset",
+    "input": { "tableID": 7 },
+    "valid": true
+  },
+  {
+    "name": "idle resets require a table",
+    "direction": "client",
+    "command": "idleReset",
+    "input": {},
+    "valid": false
+  },
+  {
+    "name": "idle warnings give the time left",
+    "direction": "server",
+    "command": "idleWarning",
+    "input": { "tableID": 7, "remainingMs": 300000 },
+    "valid": true
+  },
+  {
+    "name": "idle warnings cannot exceed the idle timeout",
+    "direction": "server",
+    "command": "idleWarning",
+    "input": { "tableID": 7, "remainingMs": 1800001 },
+    "valid": false
+  },
+  {
+    "name": "idle resets tell the table",
+    "direction": "server",
+    "command": "idleReset",
+    "input": { "tableID": 7 },
+    "valid": true
   }
 ]
