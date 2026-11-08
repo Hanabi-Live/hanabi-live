@@ -131,14 +131,11 @@ function getSuitClueColors(
     });
   }
 
-  // The "Unknown" suit is not supposed to have clue colors.
-  if (suitJSON.name === "Unknown") {
-    return [];
-  }
-
-  // Some special suits do not have clue colors explicitly assigned to them.
+  // The "Unknown" suit is not supposed to have clue colors, and some special suits do not have clue
+  // colors explicitly assigned to them.
   if (
-    suitJSON.allClueColors === true
+    suitJSON.name === "Unknown"
+    || suitJSON.allClueColors === true
     || suitJSON.noClueColors === true
     || suitJSON.prism === true
   ) {

@@ -39,8 +39,6 @@ const config = {
     },
     "packages/game": {
       entry: ["src/**/*.test.ts"],
-      // Required by the compiled library because of "importHelpers".
-      ignoreDependencies: ["tslib"],
     },
     "packages/testing": {
       entry: ["src/**/*.test.ts"],

@@ -151,16 +151,16 @@ function subscribeToCardChanges(order: CardOrder) {
       const morphedIdentity = s.replay.hypothetical?.morphedIdentities[order];
       const identity =
         morphedIdentity
-        ?? (card.suitIndex !== null && card.rank !== null
-          ? { suitIndex: card.suitIndex, rank: card.rank }
-          : s.cardIdentities[order]);
+        ?? (card.suitIndex === null || card.rank === null
+          ? s.cardIdentities[order]
+          : { suitIndex: card.suitIndex, rank: card.rank });
 
       const status =
-        identity !== undefined
-        && identity.suitIndex !== null
-        && identity.rank !== null
-          ? s.visibleState!.cardStatus[identity.suitIndex][identity.rank]
-          : null;
+        identity === undefined
+        || identity.suitIndex === null
+        || identity.rank === null
+          ? null
+          : s.visibleState!.cardStatus[identity.suitIndex][identity.rank];
 
       return {
         status,

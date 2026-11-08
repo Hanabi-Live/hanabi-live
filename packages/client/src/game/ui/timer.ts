@@ -216,12 +216,12 @@ function setTickingDownTime(timer: TimerDisplay) {
 function setTickingDownTimePlayerNameTooltip(
   playerIndex: PlayerIndex | typeof NO_VALUE,
 ) {
-  if (playerIndex === NO_VALUE) {
-    return;
-  }
-
   // This tooltip is disabled in speedrun mode.
-  if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
+  if (
+    playerIndex === NO_VALUE
+    || globals.lobby.settings.speedrunMode
+    || globals.options.speedrun
+  ) {
     return;
   }
 

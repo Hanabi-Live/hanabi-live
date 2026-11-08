@@ -117,7 +117,7 @@ function initLocalTable(
   }));
   const ratios = new Set(
     headers.flatMap((header, index) =>
-      header.dataset["sort"] === "ratio" ? [index] : [],
+      header.dataset["sort"] === "ratio" ? index : [],
     ),
   );
 

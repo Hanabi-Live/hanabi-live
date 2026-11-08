@@ -439,11 +439,12 @@ function gameCallback<Command extends ServerCommand>(
   commandFunction: (data: ServerCommandData[Command]) => void,
 ) {
   return (data: ServerCommandData[Command]) => {
-    if (!isCurrentConnection(conn)) {
-      return;
-    }
     // Ignore game events outside a loaded game, or while the UI is loading.
-    if (globals.currentScreen !== Screen.Game || globals.ui === null) {
+    if (
+      !isCurrentConnection(conn)
+      || globals.currentScreen !== Screen.Game
+      || globals.ui === null
+    ) {
       return;
     }
     if (

@@ -34,13 +34,12 @@ const emptyNote: CardNote = {
 };
 
 function getIdentity(
-  state: CardState,
   note: CardNote = emptyNote,
   cardIdentity: CardIdentity = unknownIdentity,
 ) {
   return getCardIdentityToShow({
     cardIdentity,
-    state,
+    state: baseCard,
     note,
     empathy: false,
     isStackBase: false,
@@ -51,9 +50,10 @@ function getIdentity(
 describe("card presentation", () => {
   describe("visible identity", () => {
     test("shows a known suit while leaving an unknown rank hidden", () => {
-      expect(
-        getIdentity(baseCard, emptyNote, { suitIndex: 1, rank: null }),
-      ).toEqual({ suitIndex: 1, rank: null });
+      expect(getIdentity(emptyNote, { suitIndex: 1, rank: null })).toEqual({
+        suitIndex: 1,
+        rank: null,
+      });
     });
 
     test("uses note possibilities when they determine a suit or rank", () => {
@@ -64,7 +64,7 @@ describe("card presentation", () => {
           [2, 2],
         ],
       };
-      expect(getIdentity(baseCard, suitNote)).toEqual({
+      expect(getIdentity(suitNote)).toEqual({
         suitIndex: 2,
         rank: null,
       });
@@ -76,7 +76,7 @@ describe("card presentation", () => {
           [1, 3],
         ],
       };
-      expect(getIdentity(baseCard, rankNote)).toEqual({
+      expect(getIdentity(rankNote)).toEqual({
         suitIndex: null,
         rank: 3,
       });

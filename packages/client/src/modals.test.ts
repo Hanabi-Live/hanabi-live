@@ -73,9 +73,12 @@ vi.mock("./game/ui/HanabiCardClick", () => ({
 }));
 vi.mock("./lobby/nav", () => ({ show: vi.fn() }));
 
-async function wait(milliseconds: number) {
+/** Long enough for a modal to finish opening or closing. */
+const MODAL_WAIT_MILLISECONDS = 150;
+
+async function waitForModal() {
   await new Promise((resolve) => {
-    setTimeout(resolve, milliseconds);
+    setTimeout(resolve, MODAL_WAIT_MILLISECONDS);
   });
 }
 
@@ -87,7 +90,7 @@ test("the idle warning counts down and only lets players keep the game going", a
   const keep = document.querySelector<HTMLElement>("#idle-modal-keep");
 
   modals.showIdleWarning(299_000, null);
-  await wait(150);
+  await waitForModal();
   expect(idleModal?.parentElement?.id).toBe("page-cover");
   expect(
     document.querySelector("#idle-modal-description strong")?.textContent,
@@ -98,7 +101,7 @@ test("the idle warning counts down and only lets players keep the game going", a
   modals.showIdleWarning(299_000, () => {
     keepPlayingCalls++;
   });
-  await wait(150);
+  await waitForModal();
   expect(keep?.style.display).toBe("");
   keep?.onpointerdown?.(
     new dom.window.Event("pointerdown") as unknown as PointerEvent,
@@ -116,7 +119,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   const onConfirm = vi.fn<() => void>();
   const onCancel = vi.fn<() => void>();
   modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
-  await wait(150);
+  await waitForModal();
   document.querySelector<HTMLElement>("#confirm-modal-confirm")!.click();
   expect(onConfirm).toHaveBeenCalledTimes(1);
   expect(onCancel).not.toHaveBeenCalled();
@@ -132,7 +135,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
     onConfirm2,
     onCancel2,
   );
-  await wait(150);
+  await waitForModal();
   expect(pageCover.style.display).toBe("flex");
 
   // Escape closes the modal without also reaching the screen behind it.

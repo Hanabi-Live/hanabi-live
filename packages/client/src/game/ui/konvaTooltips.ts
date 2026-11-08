@@ -50,13 +50,12 @@ export function initKonvaTooltips(
 }
 
 export function show(element: NodeWithTooltip): void {
-  // Do not do anything if we are no longer in the game.
-  if (globals.lobby.currentScreen !== Screen.Game) {
-    return;
-  }
-
-  // Do not do anything if the user has moved the mouse away in the meantime.
-  if (globals.activeHover !== element) {
+  // Do not do anything if we are no longer in the game or if the user has moved the mouse away in
+  // the meantime.
+  if (
+    globals.lobby.currentScreen !== Screen.Game
+    || globals.activeHover !== element
+  ) {
     return;
   }
 

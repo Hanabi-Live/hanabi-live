@@ -18,14 +18,9 @@ export function lobbyKeyboardInit(): void {
       return;
     }
 
-    // The rest of the lobby hotkeys only use alt; do not do anything if other modifiers are
-    // pressed.
-    if (event.ctrlKey || event.shiftKey || event.metaKey) {
-      return;
-    }
-
-    // Ignore hotkeys if a modal is open.
-    if (isModalVisible()) {
+    // The rest of the lobby hotkeys only use alt; do not do anything if other modifiers are pressed
+    // or if a modal is open.
+    if (event.ctrlKey || event.shiftKey || event.metaKey || isModalVisible()) {
       return;
     }
 

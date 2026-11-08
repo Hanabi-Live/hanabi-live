@@ -105,8 +105,7 @@ export function draw(): void {
   // Add all of the history.
   for (const [i, gameData] of games.entries()) {
     const { id } = gameData;
-    const variant = getVariant(gameData.options.variantName);
-    const { maxScore } = variant;
+    const { maxScore } = getVariant(gameData.options.variantName);
 
     const row = $("<tr>");
 
@@ -279,8 +278,7 @@ export function drawOtherScores(
 
     // Column 6 - Seed. Chop off the prefix.
     const match = /p\dv\d+s(\d+)/u.exec(game.seed);
-    let seedNumberSuffix: string;
-    seedNumberSuffix =
+    let seedNumberSuffix: string =
       match === null || match.length < 2 ? "Unknown" : match[1]!;
     if (ourGame) {
       seedNumberSuffix = `<strong>${seedNumberSuffix}</strong>`;

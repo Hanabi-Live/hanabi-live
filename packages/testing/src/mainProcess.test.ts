@@ -80,15 +80,13 @@ databaseDescribe("compiled application entry point (rust)", () => {
             return [];
           }
           const { snapshot } = table.phase;
-          return [
-            {
-              game_id: snapshot.game_id,
-              revision: record.revision,
-              turn: snapshot.game.turn,
-              active_player_index: snapshot.game.activePlayerIndex,
-              clocks: snapshot.clocks,
-            },
-          ];
+          return {
+            game_id: snapshot.game_id,
+            revision: record.revision,
+            turn: snapshot.game.turn,
+            active_player_index: snapshot.game.activePlayerIndex,
+            clocks: snapshot.clocks,
+          };
         });
       }
       try {

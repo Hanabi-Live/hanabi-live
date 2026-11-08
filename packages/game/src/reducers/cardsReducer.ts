@@ -60,17 +60,14 @@ export function cardsReducer(
         ),
       };
       newDeck[order] = card;
-      if (!shouldSeeSlot2CardIdentity(metadata)) {
-        break;
-      }
-
       if (
-        action.playerIndex === metadata.ourPlayerIndex
+        !shouldSeeSlot2CardIdentity(metadata)
+        || action.playerIndex === metadata.ourPlayerIndex
         || action.suitIndex === -1
         || action.rank === -1
       ) {
-        // The server scrubs the identity from cards that slide from slot 1 to slot 2 in our own
-        // hand in order to prevent leaking information.
+        // Otherwise, the server scrubs the identity from cards that slide from slot 1 to slot 2 in
+        // our own hand in order to prevent leaking information.
         break;
       }
 
@@ -182,14 +179,14 @@ export function cardsReducer(
       const goesIntoHole =
         variant.throwItInAHole && (action.type === "play" || action.failed);
       const revealedToPlayer =
-        action.suitIndex !== -1 && action.rank !== -1 && !goesIntoHole
-          ? newArray(MAX_PLAYERS, true)
-          : card.revealedToPlayer;
+        action.suitIndex === -1 || action.rank === -1 || goesIntoHole
+          ? card.revealedToPlayer
+          : newArray(MAX_PLAYERS, true);
 
       const possibleCards =
-        action.suitIndex !== -1 && action.rank !== -1
-          ? ([[action.suitIndex, action.rank]] as readonly SuitRankTuple[])
-          : card.possibleCards;
+        action.suitIndex === -1 || action.rank === -1
+          ? card.possibleCards
+          : ([[action.suitIndex, action.rank]] as readonly SuitRankTuple[]);
 
       newDeck[order] = {
         ...card,

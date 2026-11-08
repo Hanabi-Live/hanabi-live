@@ -14,11 +14,7 @@ const gameDiv = getHTMLElement("#game");
 
 export function set(cursorType: CursorType): void {
   // It is possible to receive cursor events before the UI has initialized.
-  if (globals.store === null) {
-    return;
-  }
-
-  if (cursorType === currentCursorType) {
+  if (globals.store === null || cursorType === currentCursorType) {
     return;
   }
 

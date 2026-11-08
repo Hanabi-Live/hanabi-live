@@ -141,16 +141,16 @@ export function init(): void {
   // Check for changes in the various input fields so that we can remember their respective
   // settings.
   $("#create-game-variant-dropdown1").on("change", () => {
-    getVariantName("createTableVariant");
+    getVariantName();
   });
   $("#create-game-variant-dropdown2").on("change", () => {
-    getVariantName("createTableVariant");
+    getVariantName();
   });
   $("#createTableTimeBaseMinutes").on("change", () => {
-    getTextboxForTimeBase("createTableTimeBaseMinutes");
+    getTextboxForTimeBase();
   });
   $("#createTableTimePerTurnSeconds").on("change", () => {
-    getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
+    getTextboxForTimePerTurn();
   });
   $("#createTableCardCycle").on("change", () => {
     getCheckbox("createTableCardCycle");
@@ -276,7 +276,7 @@ function submit() {
     let foundErrors = false;
 
     try {
-      const timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
+      const timeValue = getTextboxForTimeBase();
       timeBaseSeconds = Math.round(timeValue * SECONDS_PER_MINUTE);
     } catch {
       // Invalid value, inform the UI and do not close the tooltip.
@@ -285,7 +285,7 @@ function submit() {
     }
 
     try {
-      timePerTurn = getTextboxForTimePerTurn("createTableTimePerTurnSeconds");
+      timePerTurn = getTextboxForTimePerTurn();
     } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimePerTurnSeconds").addClass("wrongInput");
@@ -330,7 +330,7 @@ function submit() {
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
   const options = {
-    variantName: getVariantName("createTableVariant"), // This is a hidden span field.
+    variantName: getVariantName(), // This is a hidden span field.
     timed,
     timeBase: timeBaseSeconds,
     timePerTurn,
@@ -395,7 +395,8 @@ function getTextboxValue(setting: keyof Settings): string {
   return element.value.trim();
 }
 
-function getTextboxForTimePerTurn(setting: keyof Settings): number {
+function getTextboxForTimePerTurn(): number {
+  const setting = "createTableTimePerTurnSeconds";
   const element = $(`#${setting}`);
   const valueString = getTextboxValue(setting);
   let value = parseIntSafe(valueString);
@@ -411,7 +412,8 @@ function getTextboxForTimePerTurn(setting: keyof Settings): number {
   return value;
 }
 
-function getTextboxForTimeBase(setting: keyof Settings): number {
+function getTextboxForTimeBase(): number {
+  const setting = "createTableTimeBaseMinutes";
   const element = $(`#${setting}`);
   const valueString = getTextboxValue(setting);
   let value = parseFloatSafe(valueString);
@@ -427,7 +429,8 @@ function getTextboxForTimeBase(setting: keyof Settings): number {
   return value;
 }
 
-function getVariantName(setting: keyof Settings): string {
+function getVariantName(): string {
+  const setting = "createTableVariant";
   const element = $(`#${setting}`);
   let value = element.text();
   value = value.trim(); // Remove all leading and trailing whitespace
@@ -522,20 +525,20 @@ export function ready(): boolean {
 
   // Hide the extra options if we do not have any selected.
   if (
-    !globals.settings.createTableSpeedrun
-    && !globals.settings.createTableCardCycle
-    && !globals.settings.createTableDeckPlays
-    && !globals.settings.createTableEmptyClues
-    && !globals.settings.createTableOneExtraCard
-    && !globals.settings.createTableOneLessCard
-    && !globals.settings.createTableAllOrNothing
-    && !globals.settings.createTableDetrimentalCharacters
+    globals.settings.createTableSpeedrun
+    || globals.settings.createTableCardCycle
+    || globals.settings.createTableDeckPlays
+    || globals.settings.createTableEmptyClues
+    || globals.settings.createTableOneExtraCard
+    || globals.settings.createTableOneLessCard
+    || globals.settings.createTableAllOrNothing
+    || globals.settings.createTableDetrimentalCharacters
   ) {
-    $("#create-game-extra-options").hide();
-    $("#create-game-show-extra-options-row").show();
-  } else {
     $("#create-game-extra-options").show();
     $("#create-game-show-extra-options-row").hide();
+  } else {
+    $("#create-game-extra-options").hide();
+    $("#create-game-show-extra-options-row").show();
   }
 
   return true;

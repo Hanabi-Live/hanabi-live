@@ -56,10 +56,10 @@ export function shrink(JSONString: string): string | undefined {
 
   // Check if compression succeeded.
   const decompressed = expand(compressed);
-  if (decompressed === undefined) {
-    return undefined;
-  }
-  if (!isEqual(gameDataJSON, parseGameJSON(decompressed))) {
+  if (
+    decompressed === undefined
+    || !isEqual(gameDataJSON, parseGameJSON(decompressed))
+  ) {
     return undefined;
   }
 

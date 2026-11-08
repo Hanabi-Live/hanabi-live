@@ -422,8 +422,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
         playerIndex + 1
       }-tooltip" class="lobby-pregame-tooltip">
   `;
-  const variant = getVariant(globals.game.options.variantName);
-  const { maxScore } = variant;
+  const { maxScore } = getVariant(globals.game.options.variantName);
   for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
     const bestScoreObject =
       variantStats.bestScores[bestScorePlayer - MIN_PLAYERS];

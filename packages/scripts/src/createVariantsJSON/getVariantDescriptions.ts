@@ -272,18 +272,13 @@ function getVariantsForSpecialRanks(
     const specialClueRanks = getSpecialClueRanks(specialRank);
 
     for (const suit of suitsToCreateVariantsFor) {
-      // There are no one-of-each special ranks (e.g. Black-Ones)
-      if (suit.oneOfEach === true) {
-        continue;
-      }
-
-      // There are no prism special ranks (e.g. Prism-Ones)
-      if (suit.prism === true) {
-        continue;
-      }
-
-      // There are no inverted special ranks... Yet. (e.g. Inverted-Ones)
-      if (suit.inverted === true) {
+      // There are no one-of-each special ranks (e.g. Black-Ones), prism special ranks (e.g.
+      // Prism-Ones), or inverted special ranks... Yet. (e.g. Inverted-Ones)
+      if (
+        suit.oneOfEach === true
+        || suit.prism === true
+        || suit.inverted === true
+      ) {
         continue;
       }
 
@@ -1065,7 +1060,7 @@ function getReversedVariants(
     const variantSuits = [...basicSuits];
 
     // Change the final suit to be a reversed suit.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, unicorn/prefer-at
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     variantSuits[variantSuits.length - 1]! += SUIT_REVERSED_SUFFIX;
 
     variantDescriptions.push({

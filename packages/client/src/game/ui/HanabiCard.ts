@@ -726,12 +726,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   setStatus(): void {
     const { visibleState } = globals.state;
-    if (visibleState === null) {
-      return;
-    }
-
     // Do not show any status in real life mode.
-    if (globals.lobby.settings.realLifeMode) {
+    if (visibleState === null || globals.lobby.settings.realLifeMode) {
       return;
     }
 
@@ -862,15 +858,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       this.offsetX(offsetX);
       this.offsetY(offsetY);
     } else {
-      animate(
-        this,
-        {
-          offsetX,
-          offsetY,
-          duration: RAISE_DURATION_SECONDS,
-        },
-        false,
-      );
+      animate(this, {
+        offsetX,
+        offsetY,
+        duration: RAISE_DURATION_SECONDS,
+      });
     }
   }
 

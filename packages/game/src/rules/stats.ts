@@ -467,12 +467,11 @@ export function getDoubleDiscardCard(
   variant: Variant,
 ): CardOrder | null {
   const cardDiscarded = gameState.deck[orderOfDiscardedCard];
-  if (cardDiscarded === undefined) {
-    return null;
-  }
-
   // It is never a double discard situation if the game is over.
-  if (gameState.turn.currentPlayerIndex === null) {
+  if (
+    cardDiscarded === undefined
+    || gameState.turn.currentPlayerIndex === null
+  ) {
     return null;
   }
 

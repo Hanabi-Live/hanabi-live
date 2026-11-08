@@ -42,7 +42,7 @@ const omniSuitIndex = variant.suits.findIndex(
   (suit) => suit.name === "Dark Omni",
 ) as SuitIndex;
 const regularSuitIndexes = variant.suits.flatMap((suit, index) =>
-  suit.name !== "Dark Omni" && !suit.reversed ? [index as SuitIndex] : [],
+  suit.name === "Dark Omni" || suit.reversed ? [] : (index as SuitIndex),
 );
 
 function makeCluedCard(

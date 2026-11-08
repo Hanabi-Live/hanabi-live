@@ -358,7 +358,7 @@ function makeUnknownCard<Canvas>(
 
   drawCardBackground(ctx, enableShadows);
   ctx.fillStyle = "black";
-  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
+  cardBorderPath(ctx, enableShadows);
 
   ctx.save();
   ctx.globalAlpha = 0.5;
@@ -438,7 +438,7 @@ function drawCardBase(
     variant,
     colorblindMode,
   );
-  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
+  cardBorderPath(ctx, enableShadows);
 
   // Draw the borders (on visible cards) and the color fill.
   ctx.globalAlpha = 0.3;
@@ -453,11 +453,8 @@ function drawCardBase(
   ctx.restore();
 }
 
-function cardBorderPath(
-  ctx: CanvasRenderingContext2D,
-  padding: number,
-  enableShadows: boolean,
-) {
+function cardBorderPath(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
+  const padding = CARD_BORDER_PADDING;
   const roundedCornerSeverity = enableShadows ? 0.08 : 0.12;
   const xRadians = CARD_W * roundedCornerSeverity;
   const yRadians = CARD_W * roundedCornerSeverity;
@@ -597,7 +594,7 @@ function drawCardBackground(
   enableShadows: boolean,
 ) {
   ctx.save();
-  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
+  cardBorderPath(ctx, enableShadows);
 
   ctx.fillStyle = "white";
   ctx.fill();
@@ -617,13 +614,9 @@ function getSuitStyle(
     // In Synesthesia variants, color the number itself with the color that it contributes to the
     // card.
     if (variant.synesthesia) {
-      if (rank === STACK_BASE_RANK) {
-        return suit.fill;
-      }
-
-      // If the suit does not get clued by its rank, then coloring the rank is misleading, so use
-      // the suit color.
-      if (suit.noClueRanks) {
+      // Stack bases have no rank color. If the suit does not get clued by its rank, then coloring
+      // the rank is misleading, so use the suit color.
+      if (rank === STACK_BASE_RANK || suit.noClueRanks) {
         return suit.fill;
       }
       const prismColorIndex = (rank - 1) % variant.clueColors.length;

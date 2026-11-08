@@ -74,17 +74,5 @@ export default defineConfig(
     },
   },
 
-  {
-    // The shared configuration only recognizes test files with JavaScript and TypeScript
-    // extensions.
-    files: ["**/*.test.tsx"],
-    rules: {
-      "import-x/no-extraneous-dependencies": [
-        "error",
-        { devDependencies: true, optionalDependencies: false },
-      ],
-    },
-  },
-
   { ignores: ["**/test_data/*.js"] },
 );

@@ -95,17 +95,17 @@ function acknowledgeChatRead(
     }
 
     const UIState = globals.ui.globals.state;
-    if (!UIState.playing && !UIState.finished) {
+    if (UIState.playing || UIState.finished) {
+      // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
+      // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
+      globals.chatUnread++;
+      globals.ui.updateChatLabel();
+    } else {
       // The chat window was not open; pop open the chat window every time for spectators.
       gameChat.toggle(false);
       globals.conn!.send("chatRead", {
         tableID: globals.tableID,
       });
-    } else {
-      // The chat window was not open; by default, keep it closed. Change the "Chat" button to say
-      // "Chat (1)" (or e.g. "Chat (2)", if they have multiple unread messages).
-      globals.chatUnread++;
-      globals.ui.updateChatLabel();
     }
   }
 }

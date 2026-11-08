@@ -20,9 +20,9 @@ const { registerMouseHandlers, setEmpathyOnHand } =
   await import("./HanabiCardMouse");
 const { globals } = await import("./UIGlobals");
 
-function makeCard(location: number, parent: unknown): HanabiCard {
+function makeCard(parent: unknown): HanabiCard {
   return {
-    state: { location },
+    state: { location: 0 },
     layout: { parent },
   } as unknown as HanabiCard;
 }
@@ -33,7 +33,7 @@ describe("setEmpathyOnHand", () => {
     const hand = { children: [{}], setEmpathy };
     Object.assign(globals, { elements: { playerHands: [hand] } });
 
-    setEmpathyOnHand(makeCard(0, hand), true);
+    setEmpathyOnHand(makeCard(hand), true);
 
     expect(setEmpathy).toHaveBeenCalledWith(true);
   });
@@ -46,7 +46,7 @@ describe("setEmpathyOnHand", () => {
 
     // The state still says this card is in hand, but its UI node is in the deck.
     expect(() => {
-      setEmpathyOnHand(makeCard(0, deck), true);
+      setEmpathyOnHand(makeCard(deck), true);
     }).not.toThrow();
     expect(setEmpathy).not.toHaveBeenCalled();
   });
@@ -60,7 +60,7 @@ describe("setEmpathyOnHand", () => {
       elements: { playerHands: [firstHand, secondHand] },
     });
 
-    setEmpathyOnHand(makeCard(0, secondHand), true);
+    setEmpathyOnHand(makeCard(secondHand), true);
 
     expect(setEmpathy0).not.toHaveBeenCalled();
     expect(setEmpathy1).not.toHaveBeenCalled();

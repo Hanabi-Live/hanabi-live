@@ -26,7 +26,7 @@ describe("integration", () => {
 
     describe("at turn 5", () => {
       test("has the correct cards on each player's hands", () => {
-        const turn5State = getGameStateAtTurn(testState, 4);
+        const turn5State = getTurn5GameState(testState);
         expect(turn5State.hands).toEqual<unknown>([
           [0, 1, 2, 3],
           [4, 5, 6, 7],
@@ -36,7 +36,7 @@ describe("integration", () => {
       });
 
       test("has the correct stats", () => {
-        const turn5State = getGameStateAtTurn(testState, 4);
+        const turn5State = getTurn5GameState(testState);
         expect(turn5State.turn.turnNum).toBe(4);
         expect(turn5State.turn.currentPlayerIndex).toBe(0);
         expect(turn5State.score).toBe(2);
@@ -60,7 +60,7 @@ describe("integration", () => {
       test.each([...eRange(18)])(
         "card %i has the correct pips and possibilities",
         (order) => {
-          const turn5State = getGameStateAtTurn(testState, 4);
+          const turn5State = getTurn5GameState(testState);
 
           const card = turn5State.deck[order];
           assertDefined(card, `Failed to find the card at order: ${order}`);
@@ -167,9 +167,10 @@ describe("integration", () => {
   });
 });
 
-function getGameStateAtTurn(state: State, turn: number): GameState {
-  const gameState = state.replay.states[turn];
-  assertDefined(gameState, `Failed to get the game state at turn: ${turn}`);
+function getTurn5GameState(state: State): GameState {
+  // Turns are 0-indexed in the replay states.
+  const gameState = state.replay.states[4];
+  assertDefined(gameState, "Failed to get the game state at turn 5.");
 
   return gameState;
 }

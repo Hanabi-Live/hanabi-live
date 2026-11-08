@@ -139,12 +139,9 @@ export function give(): void {
     || playerButton === null
     || clueOrRankButton === undefined
     || clueOrRankButton === null
+    || !shouldGiveClue()
   ) {
-    // They have not selected a player or a clue type.
-    return;
-  }
-
-  if (!shouldGiveClue()) {
+    // They have not selected a player or a clue type, or a clue cannot be given.
     return;
   }
 

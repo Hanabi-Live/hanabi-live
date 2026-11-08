@@ -375,24 +375,8 @@ function getVariantShowSuitNames(
     return true;
   }
 
-  // If a variant has a reversed suit, we want to show the suit names so that the stack direction is
-  // easily identifiable.
+  // If a variant has a reversed suit, or in "Up or Down" and "Sudoku" variants, we want to show the
+  // suit names so that the stack directions and status are easily identifiable.
   const variantHasReversedSuits = suits.some((suit: Suit) => suit.reversed);
-  if (variantHasReversedSuits) {
-    return true;
-  }
-
-  // In "Up or Down" variants, we always want to show the suit names so that the stack directions
-  // are easily identifiable.
-  if (upOrDown) {
-    return true;
-  }
-
-  // In "Sudoku" variants, we always want to show the suit names so that the stack status is easily
-  // identifiable.
-  if (sudoku) {
-    return true;
-  }
-
-  return false;
+  return variantHasReversedSuits || upOrDown || sudoku;
 }

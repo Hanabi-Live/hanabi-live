@@ -104,19 +104,14 @@ export function destroy(): void {
 }
 
 function keydown(event: JQuery.KeyDownEvent) {
-  // Disable hotkeys if we not currently in a game. (This should not be possible, as the handler
-  // gets unregistered upon going back to the lobby, but double check just in case.)
-  if (globals.lobby.currentScreen !== Screen.Game) {
-    return;
-  }
-
-  // Disable keyboard hotkeys if we are editing a note.
-  if (globals.editingNote !== null) {
-    return;
-  }
-
-  // Disable keyboard hotkeys if there's a visible modal.
-  if (isModalVisible()) {
+  // Disable hotkeys if we not currently in a game, if we are editing a note, or if there's a
+  // visible modal. (Not being in a game should not be possible, as the handler gets unregistered
+  // upon going back to the lobby, but double check just in case.)
+  if (
+    globals.lobby.currentScreen !== Screen.Game
+    || globals.editingNote !== null
+    || isModalVisible()
+  ) {
     return;
   }
 

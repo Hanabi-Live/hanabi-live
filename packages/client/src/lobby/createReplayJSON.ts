@@ -80,18 +80,18 @@ export function createJSONFromReplay(room: string): void {
         suitIndex: morph.suitIndex,
         rank: morph.rank,
       });
-    } else if (cardIdentity.suitIndex !== null && cardIdentity.rank !== null) {
-      game.deck.push({
-        suitIndex: cardIdentity.suitIndex,
-        rank: cardIdentity.rank,
-      });
-    } else {
+    } else if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
       sendSelfPMFromServer(
         "The deck is still loading. Please try again after it loads.",
         room,
         SelfChatMessageType.Error,
       );
       return;
+    } else {
+      game.deck.push({
+        suitIndex: cardIdentity.suitIndex,
+        rank: cardIdentity.rank,
+      });
     }
   }
 

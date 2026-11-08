@@ -9,12 +9,9 @@ import * as history from "./history";
 import { expand } from "./hypoCompress";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
-  // Disable custom path functionality for first time users.
-  if (data.firstTimeUser) {
-    return;
-  }
-
-  if (restoreLobbyHistoryView()) {
+  // Disable custom path functionality for first time users, and do nothing else when we restore a
+  // lobby history view.
+  if (data.firstTimeUser || restoreLobbyHistoryView()) {
     return;
   }
 

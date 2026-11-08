@@ -182,7 +182,6 @@ export function getCardPipPresentation(
   const rankPips = variant.ranks.map((rank) => ({
     rank,
     state: rankPipStates.get(rank) ?? PipState.Hidden,
-    // eslint-disable-next-line unicorn/prefer-includes
     positive: state.positiveRankClues.some(
       (positiveRank) => positiveRank === rank,
     ),

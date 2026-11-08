@@ -61,9 +61,9 @@ export async function httpError(
       ? "The server returned no explanation."
       : detail.slice(0, 4096);
   const referenceText =
-    reference !== null && reference !== "" && !detail.includes(reference)
-      ? ` [Reference: ${reference}]`
-      : "";
+    reference === null || reference === "" || detail.includes(reference)
+      ? ""
+      : ` [Reference: ${reference}]`;
   return new Error(
     `${operation} failed (HTTP ${status}). ${explanation}${referenceText}`,
   );

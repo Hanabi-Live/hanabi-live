@@ -37,7 +37,6 @@ describe("gain", () => {
       playAction,
       0,
       DEFAULT_VARIANT,
-      false,
     );
     expect(clueTokens).toBe(0);
   });
