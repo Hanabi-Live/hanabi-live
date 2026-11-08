@@ -256,7 +256,9 @@ impl TableSnapshot {
     }
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == FORMAT && self.id > 0 && self.id <= 9_007_199_254_740_991,
+            self.format == FORMAT
+                && self.id > 0
+                && self.id <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs(),
             "Incompatible table checkpoint"
         );
         ensure!(
@@ -428,12 +430,14 @@ impl Snapshot {
             "Invalid spectator notes"
         );
         ensure!(
-            (0..=9_007_199_254_740_991).contains(&self.duration)
-                && (0..=9_007_199_254_740_991).contains(&self.turn_elapsed)
+            (0..=hanabi_protocol::MAX_SAFE_INTEGER).contains(&self.duration)
+                && (0..=hanabi_protocol::MAX_SAFE_INTEGER).contains(&self.turn_elapsed)
                 && self
                     .clocks
                     .iter()
-                    .all(|clock| (-9_007_199_254_740_991..=9_007_199_254_740_991).contains(clock))
+                    .all(|clock| (-hanabi_protocol::MAX_SAFE_INTEGER
+                        ..=hanabi_protocol::MAX_SAFE_INTEGER)
+                        .contains(clock))
                 && (0..=IDLE_TIMEOUT_MS).contains(&self.idle_remaining),
             "Invalid runtime timing"
         );

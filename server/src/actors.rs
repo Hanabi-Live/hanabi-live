@@ -2188,7 +2188,9 @@ impl TableActor {
     fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
         let live = matches!(next.phase, Phase::Live { .. });
-        let delta = self.anchor.elapsed().as_millis().min(9_007_199_254_740_991) as i64;
+        let delta = i64::try_from(self.anchor.elapsed().as_millis())
+            .unwrap_or(i64::MAX)
+            .min(hanabi_protocol::MAX_SAFE_INTEGER);
         if let Some(s) = next.game_mut() {
             s.idle_remaining = (s.idle_remaining - delta).max(0);
             if live && s.game.end_condition == EndCondition::InProgress {

@@ -84,7 +84,7 @@ pub fn valid_room(room: &str) -> bool {
                 && id.bytes().all(|b| b.is_ascii_digit())
                 && id
                     .parse::<u64>()
-                    .is_ok_and(|id| id <= 9_007_199_254_740_991)
+                    .is_ok_and(|id| id <= hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs())
         })
 }
 

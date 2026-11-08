@@ -93,7 +93,7 @@ impl StateId {
             }
             Self::Table(id) => {
                 ensure!(
-                    (1..=9_007_199_254_740_991).contains(&id),
+                    (1..=hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()).contains(&id),
                     "Invalid table identity"
                 );
                 Ok(format!("t:{id}"))
@@ -379,7 +379,7 @@ impl RedisState {
     pub async fn save(&self, id: StateId, expected: i64, payload: &str) -> Result<i64> {
         self.check()?;
         ensure!(
-            (0..9_007_199_254_740_991).contains(&expected),
+            (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
             "Invalid checkpoint revision"
         );
         ensure!(

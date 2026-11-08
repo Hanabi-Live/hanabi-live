@@ -119,7 +119,7 @@ fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
     };
     let offset = page
         .checked_mul(size)
-        .filter(|n| *n <= 9_007_199_254_740_991)
+        .filter(|n| *n <= hanabi_protocol::MAX_SAFE_INTEGER)
         .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
     Ok(Some((size, offset)))
 }

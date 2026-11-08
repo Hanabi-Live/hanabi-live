@@ -16,7 +16,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 
-pub(crate) const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
+pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
 const MAX_SAFE_FLOAT: f64 = 9_007_199_254_740_991.0;
 
