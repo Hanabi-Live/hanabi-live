@@ -1,5 +1,6 @@
 // The navigation bar at the top of the lobby.
 
+import { clearTabAccount, withTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import { initModal, showWarning } from "../modals";
 import * as tooltips from "../tooltips";
@@ -52,7 +53,9 @@ export function init(): void {
   // The "Sign Out" button.
   $(".signout").on("click", () => {
     // Add the query parameters to the end to preserve using "?dev".
-    globalThis.location.assign(`/logout${globalThis.location.search}`);
+    const path = withTabAccount(`/logout${globalThis.location.search}`);
+    clearTabAccount();
+    globalThis.location.assign(path);
   });
 
   // The "Games" bottom screen toggle button.

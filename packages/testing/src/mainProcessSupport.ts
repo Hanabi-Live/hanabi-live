@@ -279,22 +279,19 @@ export async function login(
     }),
     signal: AbortSignal.timeout(10_000),
   });
-  const body = await response.text();
-  expect({ status: response.status, body }).toEqual({
-    status: 200,
-    body: "OK\n",
-  });
+  expect(response.status).toBe(200);
+  const body: unknown = await response.json();
   const cookie = response.headers
     .getSetCookie()
     .find((value) => value.startsWith("hanabi.sid="))
     ?.split(";", 1)[0];
   assertDefined(cookie, "Login did not return a session cookie.");
-  expect(
-    decodeSessionCookie(
-      cookie.slice("hanabi.sid=".length),
-      "synthetic-process-smoke-secret-".repeat(8),
-    ),
-  ).toBeGreaterThan(0);
+  const userID = decodeSessionCookie(
+    cookie.slice("hanabi.sid=".length),
+    "synthetic-process-smoke-secret-".repeat(8),
+  );
+  expect(userID).toBeGreaterThan(0);
+  expect(body).toEqual({ userID });
   return cookie;
 }
 

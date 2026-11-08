@@ -9,6 +9,7 @@ export * from "./enums/Status";
 export * from "./functions/errors";
 export * from "./functions/golem";
 export * from "./functions/history";
+export * from "./functions/tabAccount";
 export * from "./functions/time";
 export * from "./generated/protocol";
 export * from "./interfaces/GameHistory";
