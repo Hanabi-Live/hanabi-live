@@ -137,12 +137,15 @@ The production server is Rust in `server/`; its binary is `hanabi-live`.
 the pinned third-party Tern migration tool for source installations and release
 bundles.
 
-Migrated public payloads are owned by `server/protocol`, without database,
-actor, or game-engine dependencies. Update the Rust DTOs (and the shared
-compatibility fixtures when a change relies on a rule they do not cover), then
-run `bash scripts/dev/generate-protocol.sh`. Commit the generated TypeScript
-files; do not edit them by hand. `bash lint.sh` checks for generation drift.
-Keep legacy compatibility differences explicit.
+`server/protocol` owns every JSON payload exchanged between the server and its
+clients, and the format of the game catalog in `packages/game/src/json`. It has
+no database, actor, or game-engine dependencies. Clients use only the generated
+schemas and their inferred types; do not hand-write TypeScript interfaces for
+these payloads. Update the Rust DTOs (and the shared compatibility fixtures when
+a change relies on a rule they do not cover), then run
+`bash scripts/dev/generate-protocol.sh`. Commit the generated TypeScript files;
+do not edit them by hand. `bash lint.sh` checks for generation drift. Keep
+legacy compatibility differences explicit.
 
 ## Production server
 

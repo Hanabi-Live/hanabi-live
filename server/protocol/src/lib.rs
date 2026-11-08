@@ -1,4 +1,5 @@
-//! Public wire contracts only: no database, actor, engine, or transport dependencies.
+//! Public wire contracts and the game catalog format only: no database, actor, engine, or
+//! transport dependencies.
 
 pub use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
