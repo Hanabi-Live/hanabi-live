@@ -146,7 +146,7 @@ export const test = base.extend<
           ),
         );
         await sql`CREATE TABLE schema_version(version integer NOT NULL PRIMARY KEY)`;
-        await sql`INSERT INTO schema_version VALUES(14)`;
+        await sql`INSERT INTO schema_version VALUES(15)`;
         await Promise.all(
           [
             "packages/game/src/json",
