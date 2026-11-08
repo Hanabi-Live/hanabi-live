@@ -23,6 +23,7 @@ import {
   LobbyChatDeletionState,
 } from "./chatDeletion";
 import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
+import { acceptOptionsFromGuest } from "./lobby/createGame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
 import { getHTMLInputElement } from "./utils";
@@ -614,6 +615,13 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   // Add the new line and fade it in.
   chat.append(line);
   $(`#chat-line-${chatLineNum}`).fadeIn(FADE_TIME_MS).css("display", "block");
+  const { suggestedOptions } = data;
+  if (suggestedOptions !== undefined) {
+    $(`#chat-line-${chatLineNum} button.new-options`).on("click", (event) => {
+      acceptOptionsFromGuest(suggestedOptions);
+      $(event.currentTarget).text("sent").prop("disabled", true);
+    });
+  }
   $(`#chat-line-${chatLineNum} a.suggestion`).each((_, element) => {
     const chatInput = $("#lobby-chat-pregame-input");
     $(element).on("click", () => {
