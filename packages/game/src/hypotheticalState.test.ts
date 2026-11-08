@@ -12,6 +12,7 @@ import { getInitialGameState } from "./reducers/initialStates/initialGameState";
 import { draw, rankClue } from "./testActions";
 import type { CardOrder } from "./types/CardOrder";
 import type { PlayerIndex } from "./types/PlayerIndex";
+import type { SuitRankTuple } from "./types/SuitRankTuple";
 
 const metadata = getDefaultMetadata(2);
 let startingState = getInitialGameState(metadata);
@@ -529,4 +530,80 @@ describe("hypothetical state", () => {
       }
     },
   );
+
+  test("deduces empathy from the identities that cards are shown as", () => {
+    // The first player holds a green 5 (order 0), and the second player has a 5 clued (order 5).
+    const identities = [
+      [2, 5],
+      [0, 1],
+      [0, 1],
+      [1, 1],
+      [1, 1],
+      [0, 5],
+      [3, 1],
+      [3, 1],
+      [4, 1],
+      [4, 1],
+    ] as const;
+    let dealtState = getInitialGameState(metadata);
+    for (const [order, [suitIndex, rank]] of identities.entries()) {
+      dealtState = gameReducer(
+        dealtState,
+        draw(order < 5 ? 0 : 1, order, suitIndex, rank),
+        true,
+        false,
+        false,
+        true,
+        metadata,
+      );
+    }
+    const cluedOrder = 5;
+    const green5: SuitRankTuple = [2, 5];
+    const yellow5: SuitRankTuple = [1, 5];
+
+    let state = initializeHypotheticalState(
+      dealtState,
+      true,
+      [rankClue(5, 0, [cluedOrder], 1)],
+      false,
+      metadata,
+    );
+    function empathy() {
+      return state.ongoing.deck[cluedOrder]?.possibleCardsForEmpathy;
+    }
+    expect(empathy()).not.toContainEqual(green5);
+
+    state = hypotheticalStateReducer(
+      state,
+      { type: "morph", order: 0 as CardOrder, suitIndex: 3, rank: 1 },
+      false,
+      metadata,
+    );
+    expect(empathy()).toContainEqual(green5);
+
+    state = hypotheticalStateReducer(
+      state,
+      { type: "morph", order: 1 as CardOrder, suitIndex: 1, rank: 5 },
+      false,
+      metadata,
+    );
+    expect(empathy()).toContainEqual(green5);
+    expect(empathy()).not.toContainEqual(yellow5);
+
+    state = hypotheticalStateReducer(
+      state,
+      { type: "unmorph", order: 0 as CardOrder },
+      false,
+      metadata,
+    );
+    state = hypotheticalStateReducer(
+      state,
+      { type: "unmorph", order: 1 as CardOrder },
+      false,
+      metadata,
+    );
+    expect(empathy()).not.toContainEqual(green5);
+    expect(empathy()).toContainEqual(yellow5);
+    expect(state.ongoing.deck[0]).toMatchObject({ suitIndex: 2, rank: 5 });
+  });
 });

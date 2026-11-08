@@ -1,5 +1,6 @@
 import { arrayCopyTwoDimensional, tupleKeys } from "complete-common";
 import { getVariant } from "../gameData";
+import type { CardIdentity } from "../interfaces/CardIdentity";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
@@ -74,6 +75,143 @@ function makeDeductions(
   }
 
   return newDeck;
+}
+
+/**
+ * Recalculates the possibilities of every card in a hand from its clues, as if each card with a
+ * full identity in `identities` had that identity. (A hypothetical can show a card as another card,
+ * and empathy should match what is shown.) The cards keep their real identities.
+ */
+export function recalculateDeductions(
+  deck: readonly CardState[],
+  hands: GameState["hands"],
+  identities: ReadonlyArray<CardIdentity | undefined>,
+  metadata: GameMetadata,
+): readonly CardState[] {
+  const variant = getVariant(metadata.options.variantName);
+  const cardCountMap = getCardCountMap(variant);
+  const { ourPlayerIndex } = metadata;
+
+  const workingDeck = deck.map((card): CardState => {
+    if (typeof card.location !== "number") {
+      return card;
+    }
+
+    const shownIdentity = getFullIdentity(identities[card.order]);
+    if (shownIdentity !== undefined) {
+      const [suitIndex, rank] = shownIdentity;
+      return {
+        ...card,
+        suitIndex,
+        rank,
+        possibleCards: [shownIdentity],
+        possibleCardsForEmpathy: card.possibleCardsFromClues,
+      };
+    }
+
+    return {
+      ...card,
+      possibleCards:
+        card.suitIndex === null || card.rank === null
+          ? card.possibleCardsFromClues
+          : [[card.suitIndex, card.rank]],
+      possibleCardsForEmpathy: card.possibleCardsFromClues,
+    };
+  });
+
+  // Our own possibilities come first, because they are needed to pretend like we know what the
+  // other players see. Possibilities only shrink, so repeat until nothing changes.
+  const playerIndexes = [
+    ourPlayerIndex,
+    ...[...tupleKeys(hands)].filter(
+      (playerIndex) => playerIndex !== ourPlayerIndex,
+    ),
+  ];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const playerIndex of playerIndexes) {
+      for (const hand of hands) {
+        for (const order of hand) {
+          const card = workingDeck[order];
+          if (
+            card === undefined
+            || (playerIndex !== ourPlayerIndex && playerIndex !== card.location)
+            || card.revealedToPlayer[playerIndex] === true
+          ) {
+            continue;
+          }
+
+          updateCardPossibilities(
+            card,
+            playerIndex,
+            ourPlayerIndex,
+            workingDeck,
+            cardCountMap,
+            metadata,
+          );
+          const newCard = workingDeck[order] ?? card;
+          if (
+            newCard.possibleCards.length !== card.possibleCards.length
+            || newCard.possibleCardsForEmpathy.length
+              !== card.possibleCardsForEmpathy.length
+          ) {
+            changed = true;
+          }
+        }
+      }
+    }
+  }
+
+  const newDeck = deck.map((card) => {
+    const workingCard = workingDeck[card.order];
+    if (workingCard === undefined || workingCard === card) {
+      return card;
+    }
+
+    // A shown identity only changes what the players see, so keep what we know about the card.
+    const possibleCards =
+      getFullIdentity(identities[card.order]) === undefined
+        ? workingCard.possibleCards
+        : card.possibleCards;
+    const { possibleCardsForEmpathy } = workingCard;
+    if (
+      possibilitiesEqual(possibleCards, card.possibleCards)
+      && possibilitiesEqual(
+        possibleCardsForEmpathy,
+        card.possibleCardsForEmpathy,
+      )
+    ) {
+      return card;
+    }
+
+    return { ...card, possibleCards, possibleCardsForEmpathy };
+  });
+
+  return newDeck.every((card, order) => card === deck[order]) ? deck : newDeck;
+}
+
+function getFullIdentity(
+  identity: CardIdentity | undefined,
+): SuitRankTuple | undefined {
+  return identity === undefined
+    || identity.suitIndex === null
+    || identity.rank === null
+    ? undefined
+    : [identity.suitIndex, identity.rank];
+}
+
+function possibilitiesEqual(
+  a: readonly SuitRankTuple[],
+  b: readonly SuitRankTuple[],
+): boolean {
+  return (
+    a.length === b.length
+    && a.every(
+      ([suitIndex, rank], index) =>
+        b[index]?.[0] === suitIndex && b[index][1] === rank,
+    )
+  );
 }
 
 /** Mutates the deck in-place. */

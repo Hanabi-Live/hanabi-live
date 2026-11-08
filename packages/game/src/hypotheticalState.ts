@@ -6,6 +6,7 @@ import { castDraft, produce } from "immer";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { GameMetadata } from "./interfaces/GameMetadata";
 import type { GameState } from "./interfaces/GameState";
+import { recalculateDeductions } from "./reducers/cardDeductionReducer";
 import { gameReducer } from "./reducers/gameReducer";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type {
@@ -39,6 +40,9 @@ export interface HypotheticalState {
   readonly morphedIdentities: readonly CardIdentity[];
 
   readonly startingPlayerIndex: PlayerIndex | null;
+
+  /** Whether empathy has been deduced from cards shown as other identities. */
+  readonly deducedFromShownIdentities: boolean;
 }
 
 /** Shows a card as another identity, or as blank when its suit and rank are -1. */
@@ -84,6 +88,7 @@ export function initializeHypotheticalState(
     drawnCardsInHypothetical: [],
     morphedIdentities: [],
     startingPlayerIndex: ongoing.turn.currentPlayerIndex,
+    deducedFromShownIdentities: false,
   };
 
   for (const action of actions) {
@@ -94,9 +99,52 @@ export function initializeHypotheticalState(
 }
 
 /** Applies a hypothetical action, restores a saved state, or toggles drawn card identities. */
-export const hypotheticalStateReducer = produce(
-  hypotheticalStateReducerFunction,
-);
+export function hypotheticalStateReducer(
+  state: HypotheticalState,
+  action: HypotheticalStateAction,
+  finished: boolean,
+  metadata: GameMetadata,
+): HypotheticalState {
+  const newState = produceHypotheticalState(state, action, finished, metadata);
+  // Restoring an original identity can leave undefined elements behind.
+  const shownIdentities: ReadonlyArray<CardIdentity | undefined> =
+    newState.morphedIdentities;
+
+  // Empathy should match the identities that cards in hands are shown as. Once it has been deduced
+  // from them, changing them or restoring an earlier state needs a recalculation as well.
+  const { ongoing } = newState;
+  const showsOtherIdentities = shownIdentities.some(
+    (identity, order) =>
+      identity !== undefined
+      && identity.suitIndex !== null
+      && identity.rank !== null
+      && typeof ongoing.deck[order]?.location === "number",
+  );
+  const shownIdentitiesChanged =
+    action.type === "morph"
+    || action.type === "unmorph"
+    || action.type === "back";
+  if (
+    !showsOtherIdentities
+    && !(newState.deducedFromShownIdentities && shownIdentitiesChanged)
+  ) {
+    return newState;
+  }
+
+  const deck = recalculateDeductions(
+    ongoing.deck,
+    ongoing.hands,
+    shownIdentities,
+    metadata,
+  );
+  return {
+    ...newState,
+    ongoing: deck === ongoing.deck ? ongoing : { ...ongoing, deck },
+    deducedFromShownIdentities: true,
+  };
+}
+
+const produceHypotheticalState = produce(hypotheticalStateReducerFunction);
 
 function hypotheticalStateReducerFunction(
   state: Draft<HypotheticalState>,
