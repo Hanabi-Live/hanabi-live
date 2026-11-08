@@ -99,8 +99,10 @@
               aria-expanded="{{ 'true' if advancedFiltersActive else 'false' }}"
               aria-controls="advanced-filters"
             >
+              {% if advancedFiltersActive %}
+              <i class="fas fa-cog icon-label"></i>Filters active {% else %}
               <i class="fas fa-cog"></i>
-              {% if advancedFiltersActive %}&nbsp;Filters active{% endif %}
+              {% endif %}
             </button>
           </div>
 

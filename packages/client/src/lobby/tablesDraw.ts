@@ -125,7 +125,7 @@ export function tablesDraw(): void {
     // Column 1 - Name.
     let name = escapeHtml(table.name);
     if (table.passwordProtected && !table.running && !table.sharedReplay) {
-      name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
+      name = `<i class="fas fa-key fa-sm icon-label"></i>${name}`;
     }
     $("<td>").html(name).appendTo(row);
 

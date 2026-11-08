@@ -186,8 +186,8 @@ export function getOptionIcons(
   let html = "";
 
   if (options.timed) {
-    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.Timed}" `;
-    html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>&nbsp; (`;
+    html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.Timed} icon-label" `;
+    html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>(`;
     html += secondsToClockString(options.timeBase);
     html += " + ";
     html += secondsToClockString(options.timePerTurn);

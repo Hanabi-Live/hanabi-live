@@ -170,7 +170,7 @@ function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
     .attr("type", "button")
     .addClass("button fit margin0");
   button.html(
-    `<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`,
+    `<i class="fas fa-chart-bar lobby-button-icon icon-label"></i>${gameCount - 1}`,
   );
   button.attr("id", `history-other-scores-${id}`);
   if (gameCount - 1 === 0) {
@@ -316,7 +316,7 @@ function makeOptions(
 
   if (options.timed) {
     icons.push(OptionIcons.Timed);
-    tooltipHTML += `<li><i class="${OptionIcons.Timed}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.Timed} icon-label"></i>`;
     tooltipHTML += `Timed (${secondsToClockString(
       options.timeBase,
     )} + ${secondsToClockString(options.timePerTurn)})`;
@@ -325,43 +325,43 @@ function makeOptions(
 
   if (options.speedrun) {
     icons.push(OptionIcons.Speedrun);
-    tooltipHTML += `<li><i class="${OptionIcons.Speedrun}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.Speedrun} icon-label"></i>`;
     tooltipHTML += "Speedrun</li>";
   }
 
   if (options.deckPlays) {
     icons.push(OptionIcons.DeckPlays);
-    tooltipHTML += `<li><i class="${OptionIcons.DeckPlays}" style="${DECK_PLAYS_ICON_STYLE}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.DeckPlays} icon-label" style="${DECK_PLAYS_ICON_STYLE}"></i>`;
     tooltipHTML += "Bottom-Deck Blind-Plays</li>";
   }
 
   if (options.emptyClues) {
     icons.push(OptionIcons.EmptyClues);
-    tooltipHTML += `<li><i class="${OptionIcons.EmptyClues}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.EmptyClues} icon-label"></i>`;
     tooltipHTML += "Empty Clues</li>";
   }
 
   if (options.oneExtraCard) {
     icons.push(OptionIcons.OneExtraCard);
-    tooltipHTML += `<li><i class="${OptionIcons.OneExtraCard}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.OneExtraCard} icon-label"></i>`;
     tooltipHTML += "One Extra Card</li>";
   }
 
   if (options.oneLessCard) {
     icons.push(OptionIcons.OneLessCard);
-    tooltipHTML += `<li><i class="${OptionIcons.OneLessCard}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.OneLessCard} icon-label"></i>`;
     tooltipHTML += "One Less Card</li>";
   }
 
   if (options.allOrNothing) {
     icons.push(OptionIcons.AllOrNothing);
-    tooltipHTML += `<li><i class="${OptionIcons.AllOrNothing}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.AllOrNothing} icon-label"></i>`;
     tooltipHTML += "All or Nothing</li>";
   }
 
   if (options.detrimentalCharacters) {
     icons.push(OptionIcons.DetrimentalCharacters);
-    tooltipHTML += `<li><i class="${OptionIcons.DetrimentalCharacters}"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.DetrimentalCharacters} icon-label"></i>`;
     tooltipHTML += "Detrimental Characters</li>";
   }
 

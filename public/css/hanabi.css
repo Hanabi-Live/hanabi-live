@@ -374,6 +374,24 @@ table td {
   margin-right: 0.3em;
 }
 
+/* An icon before its label. */
+.icon-label {
+  margin-right: 0.4em;
+}
+
+.button .icon-label {
+  margin-right: 0.625em;
+}
+
+/* This icon is larger than the text of its button. */
+.button .lobby-button-icon.icon-label {
+  margin-right: 0.4em;
+}
+
+#nav-buttons-history > li:first-child {
+  margin-right: 0.375em;
+}
+
 .nav-hotkey-indicator {
   border-bottom: 1px solid #999;
 }
