@@ -17,13 +17,7 @@
       "outputs": []
     },
     "//#check-knip": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "!**/*.md",
-        "!**/dist/**",
-        "!**/node_modules/**",
-        "packages/**"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
       "env": [
         "CI",
         "ImageOS",
@@ -35,15 +29,7 @@
       "outputs": []
     },
     "//#check-shellcheck": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "!**/*.md",
-        "**/*.sh",
-        "!**/.husky/**",
-        "**/.shellcheckrc",
-        "!**/node_modules/**",
-        "!dist/**"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/.husky/**"],
       "env": [
         "CI",
         "ImageOS",
