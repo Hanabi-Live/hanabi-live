@@ -1,21 +1,14 @@
 // Functions for timed games (and the timer that ticks up in untimed games).
 
+import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString } from "@hanabi-live/game";
 import * as tooltips from "../../tooltips";
+import { toOptionalPlayerIndex } from "../../wire";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
 import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
-
-export interface ClockData {
-  times: number[];
-
-  /** -1 if the game just ended. */
-  activePlayerIndex: PlayerIndex | -1;
-
-  timeTaken: number;
-}
 
 /**
  * This function handles the "clock" WebSocket command. It is sent at the beginning of every turn to
@@ -29,8 +22,12 @@ export interface ClockData {
  * }
  * ```
  */
-export function update(data: ClockData): void {
+export function update(
+  data: Omit<ServerCommandData["clock"], "tableID">,
+): void {
   stop();
+  // -1 if the game just ended.
+  const activePlayerIndex = toOptionalPlayerIndex(data.activePlayerIndex);
 
   // We do not need to update the timers if they are not showing.
   if (globals.elements.timer1 === null || globals.elements.timer2 === null) {
@@ -53,11 +50,11 @@ export function update(data: ClockData): void {
 
   // Record the data
   globals.playerTimes = data.times;
-  globals.activePlayerIndex = data.activePlayerIndex;
+  globals.activePlayerIndex = activePlayerIndex;
   globals.timeTaken = data.timeTaken;
 
   // Keep track of what the active player's time was when they started their turn.
-  globals.startingTurnTime = globals.playerTimes[data.activePlayerIndex]!;
+  globals.startingTurnTime = globals.playerTimes[activePlayerIndex]!;
 
   // Mark the time that we updated the local player times.
   globals.lastTimerUpdateTimeMS = Date.now();
@@ -77,10 +74,10 @@ export function update(data: ClockData): void {
 
   const ourTurn =
     globals.state.playing
-    && data.activePlayerIndex === globals.metadata.ourPlayerIndex;
+    && activePlayerIndex === globals.metadata.ourPlayerIndex;
   if (!ourTurn) {
     // Update the UI with the value of the timer for the active player.
-    let time = globals.playerTimes[data.activePlayerIndex]!;
+    let time = globals.playerTimes[activePlayerIndex]!;
     if (!globals.options.timed) {
       // Invert it to show how much time each player is taking.
       time *= -1;
@@ -89,16 +86,15 @@ export function update(data: ClockData): void {
     const text = millisecondsToClockString(time);
     globals.elements.timer2.setTimerText(text);
 
-    if (data.activePlayerIndex !== -1) {
-      const activePlayerName =
-        globals.metadata.playerNames[data.activePlayerIndex];
+    if (activePlayerIndex !== -1) {
+      const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
       if (activePlayerName !== undefined) {
         globals.elements.timer2.setLabelText(activePlayerName);
       }
     }
   }
 
-  globals.elements.timer2.visible(!ourTurn && data.activePlayerIndex !== -1);
+  globals.elements.timer2.visible(!ourTurn && activePlayerIndex !== -1);
   globals.layers.timer.batchDraw();
 
   // Update the timer tooltips for each player.
@@ -109,7 +105,7 @@ export function update(data: ClockData): void {
   setTickingDownTimeCurrentPlayerTooltip();
 
   // The server will send an active player index of -1 when the game is over.
-  if (data.activePlayerIndex === -1) {
+  if (activePlayerIndex === -1) {
     return;
   }
 
@@ -124,7 +120,7 @@ export function update(data: ClockData): void {
   // eslint-disable-next-line unicorn/prefer-global-this
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
-    setTickingDownTimePlayerNameTooltip(data.activePlayerIndex);
+    setTickingDownTimePlayerNameTooltip(activePlayerIndex);
     setTickingDownTimeCurrentPlayerTooltip();
     globals.elements.deck?.updateDeckTooltip();
   }, 1000);

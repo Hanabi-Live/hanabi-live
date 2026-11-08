@@ -461,6 +461,113 @@ pub struct CardIdentity {
     pub rank: i64,
 }
 
+/// A game in the replay format: exported by the server and copied by the client. Importing accepts
+/// older and looser JSON too, so the `gameJSON` request fields stay untyped.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayGame {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub id: i64,
+    pub players: Vec<String>,
+    pub deck: Vec<ReplayCard>,
+    pub actions: Vec<ReplayAction>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "ReplayOptions")]
+    pub options: Option<ReplayOptions>,
+    /// Each player's notes, indexed by card order.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<ReplayNoteRow>")]
+    pub notes: Option<Vec<Vec<String>>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<ReplayCharacter>")]
+    pub characters: Option<Vec<ReplayCharacter>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub seed: Option<String>,
+}
+
+/// One player's notes, indexed by card order.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+#[expect(dead_code, reason = "Only describes the schema of a note row")]
+struct ReplayNoteRow(Vec<String>);
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayCard {
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub suit_index: i64,
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub rank: i64,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ReplayAction {
+    #[serde(rename = "type")]
+    #[schemars(range(min = 0, max = 255))]
+    pub kind: u8,
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub target: i32,
+    #[serde(default)]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub value: i32,
+}
+
+/// Only options that differ from their defaults are included.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ReplayOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub variant: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i64", range(min = 0, max = 5))]
+    pub starting_player: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub timed: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_base: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "i64", range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_per_turn: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub speedrun: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub card_cycle: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub deck_plays: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub empty_clues: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub one_extra_card: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub one_less_card: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub all_or_nothing: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "bool")]
+    pub detrimental_characters: Option<bool>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ReplayCharacter {
+    /// Empty when the player has no character.
+    pub name: String,
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub metadata: i32,
+}
+
 /// Every card's identity, by card order, once a game ends.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -1446,6 +1553,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         )+};
     }
     register!(
+        ReplayGame,
         ChatRequest,
         ChatPmRequest,
         ChatHistoryRequest,

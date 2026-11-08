@@ -37,7 +37,7 @@ export function toPlayerIndex(value: number): PlayerIndex {
 }
 
 /** Server seats use -1 for "no player". */
-function toOptionalPlayerIndex(value: number): PlayerIndex | -1 {
+export function toOptionalPlayerIndex(value: number): PlayerIndex | -1 {
   return value === -1 ? -1 : toPlayerIndex(value);
 }
 

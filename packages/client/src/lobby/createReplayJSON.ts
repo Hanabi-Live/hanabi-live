@@ -20,9 +20,9 @@ import type {
   ClientAction,
   ClientActionClue,
 } from "../game/types/ClientAction";
-import type { JSONGame } from "../game/types/JSONGame";
 import type { ReplayState } from "../game/types/ReplayState";
 import { globals } from "../game/ui/UIGlobals";
+import type { GameJSON } from "./hypoCompress";
 import { shrink } from "./hypoCompress";
 
 const PLAY_REGEX =
@@ -53,7 +53,7 @@ export function createJSONFromReplay(room: string): void {
   }
 
   // Anonymize the players
-  const game: JSONGame = {
+  const game: GameJSON = {
     players: DEFAULT_PLAYER_NAMES.slice(0, globals.metadata.playerNames.length),
     deck: [],
     actions: [],
@@ -78,11 +78,18 @@ export function createJSONFromReplay(room: string): void {
         suitIndex: morph.suitIndex,
         rank: morph.rank,
       });
-    } else {
+    } else if (cardIdentity.suitIndex !== null && cardIdentity.rank !== null) {
       game.deck.push({
         suitIndex: cardIdentity.suitIndex,
         rank: cardIdentity.rank,
       });
+    } else {
+      sendSelfPMFromServer(
+        "The deck is still loading. Please try again after it loads.",
+        room,
+        SelfChatMessageType.Error,
+      );
+      return;
     }
   }
 
@@ -102,7 +109,7 @@ export function createJSONFromReplay(room: string): void {
 
   // Copy actions up to current segment.
   const { replay } = globals.state;
-  game.actions = getGameActionsFromState(replay);
+  game.actions = [...getGameActionsFromState(replay)];
 
   // Add the hypothetical from the log, after the current segment.
   if (replay.hypothetical !== null) {

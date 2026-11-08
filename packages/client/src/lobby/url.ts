@@ -4,7 +4,6 @@ import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
 import * as history from "./history";
-import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";
 
 export function parseAndGoto(data: ServerCommandData["welcome"]): void {
@@ -155,9 +154,9 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         return;
       }
 
-      let gameJSON: GameJSON;
+      let gameJSON: unknown;
       try {
-        gameJSON = JSON.parse(gameJSONString) as GameJSON;
+        gameJSON = JSON.parse(gameJSONString);
       } catch {
         setBrowserAddressBarPath("/lobby");
         return;

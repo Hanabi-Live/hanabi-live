@@ -601,6 +601,55 @@ export const replayEfficiencyModSchema = z.strictObject({
   mod: z.number().int().min(-2_147_483_648).max(2_147_483_647),
   tableID: tableIdSchema,
 });
+const replayActionSchema = z.strictObject({
+  target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  type: z.number().int().min(0).max(255),
+  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
+});
+const replayCardSchema = z.strictObject({
+  rank: z.number().int().min(-9_007_199_254_740_991).max(9_007_199_254_740_991),
+  suitIndex: z.number().int().min(0).max(9_007_199_254_740_991),
+});
+const replayCharacterSchema = z.strictObject({
+  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+  name: z.string(),
+});
+const replayNoteRowSchema = z.array(z.string());
+const replayOptionsSchema = z.strictObject({
+  allOrNothing: z.boolean().optional(),
+  cardCycle: z.boolean().optional(),
+  deckPlays: z.boolean().optional(),
+  detrimentalCharacters: z.boolean().optional(),
+  emptyClues: z.boolean().optional(),
+  oneExtraCard: z.boolean().optional(),
+  oneLessCard: z.boolean().optional(),
+  speedrun: z.boolean().optional(),
+  startingPlayer: z.number().int().min(0).max(5).optional(),
+  timeBase: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .optional(),
+  timePerTurn: z
+    .number()
+    .int()
+    .min(-9_007_199_254_740_991)
+    .max(9_007_199_254_740_991)
+    .optional(),
+  timed: z.boolean().optional(),
+  variant: z.string().optional(),
+});
+export const replayGameSchema = z.strictObject({
+  actions: z.array(replayActionSchema),
+  characters: z.array(replayCharacterSchema).optional(),
+  deck: z.array(replayCardSchema),
+  id: z.number().int().min(0).max(9_007_199_254_740_991),
+  notes: z.array(replayNoteRowSchema).optional(),
+  options: replayOptionsSchema.optional(),
+  players: z.array(z.string()),
+  seed: z.string().optional(),
+});
 export const replayIndicatorSchema = z.strictObject({
   order: z
     .number()
