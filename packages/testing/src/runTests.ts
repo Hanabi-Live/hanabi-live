@@ -231,7 +231,52 @@ async function runInherited(
   return code ?? (signal === null ? 1 : 128);
 }
 
+/** The suites this runner can run. Turborepo caches each one separately. */
+const SUITES = ["rust", "bun"] as const;
+type Suite = (typeof SUITES)[number];
+
+function isSuite(value: string | undefined): value is Suite {
+  return SUITES.includes(value as Suite);
+}
+
+async function runSuite(
+  suite: Suite,
+  args: readonly string[],
+  env: NodeJS.ProcessEnv,
+): Promise<number> {
+  switch (suite) {
+    case "rust": {
+      return await runInherited(
+        "cargo",
+        ["test", "--locked", "--workspace", ...args],
+        { cwd: path.join(ROOT, "server"), env },
+      );
+    }
+
+    case "bun": {
+      await buildServer();
+      return await runInherited(
+        process.execPath,
+        [
+          "test",
+          "--parallel=4",
+          "--isolate",
+          "--tsconfig-override",
+          "tsconfig.monorepo.json",
+          ...TEST_DIRECTORIES,
+          ...args,
+        ],
+        { cwd: ROOT, env },
+      );
+    }
+  }
+}
+
 async function main(): Promise<number> {
+  const [suite, ...args] = process.argv.slice(2);
+  if (!isSuite(suite)) {
+    throw new Error(`The first argument must be one of: ${SUITES.join(", ")}`);
+  }
   await checkRedis();
   let database: DisposablePostgres | undefined;
   let url = process.env["HANABI_TEST_DATABASE_URL"];
@@ -241,31 +286,10 @@ async function main(): Promise<number> {
   }
 
   try {
-    await buildServer();
-    const env = { ...process.env, HANABI_TEST_DATABASE_URL: url };
-    const filters = process.argv.slice(2);
-    // Arguments such as "-t <pattern>" narrow the Bun tests, so a run with them skips Rust.
-    const rustCode =
-      filters.length === 0
-        ? await runInherited("cargo", ["test", "--locked", "--workspace"], {
-            cwd: path.join(ROOT, "server"),
-            env,
-          })
-        : 0;
-    const bunCode = await runInherited(
-      process.execPath,
-      [
-        "test",
-        "--parallel=4",
-        "--isolate",
-        "--tsconfig-override",
-        "tsconfig.monorepo.json",
-        ...TEST_DIRECTORIES,
-        ...filters,
-      ],
-      { cwd: ROOT, env },
-    );
-    return rustCode === 0 ? bunCode : rustCode;
+    return await runSuite(suite, args, {
+      ...process.env,
+      HANABI_TEST_DATABASE_URL: url,
+    });
   } finally {
     await database?.stop();
   }

@@ -83,14 +83,16 @@ not print or commit the token.
 Use Bun for JavaScript dependency management; its version is pinned in the root
 `package.json`. Use `bun install --frozen-lockfile`, `bun run <script>`, and
 `bunx --bun --no-install <tool>`. Bun is also the JavaScript runtime. Commit
-`bun.lock`, not an npm lockfile. `bun run test` runs the client tests with
-Vitest, then prepares native integration backends and runs the Rust tests and
-the other suites with Bun's native test runner and per-file isolation. Arguments
-go to the Bun test runner (such as `-t <pattern>`) and skip the Rust tests. It
-starts a disposable PostgreSQL server, which needs `initdb` and `postgres` on
-`PATH` (or set `HANABI_TEST_DATABASE_URL` to one), and the integration suites
-need `redis-server` on `PATH`. Keep automatic `.env` loading disabled in
-`bunfig.toml`; applications and build scripts manage their own configuration.
+`bun.lock`, not an npm lockfile. `bun run test` runs three suites, each cached
+by Turborepo and rerun only when its inputs change: `test-client` (Vitest),
+`test-rust` (`cargo test`), and `test-bun` (Bun's native test runner, including
+integration tests against the compiled server). Run one with `bun run <suite>`;
+arguments to `test-bun` go to the Bun test runner (such as `-t <pattern>`). The
+Rust and Bun suites each start a disposable PostgreSQL server, which needs
+`initdb` and `postgres` on `PATH` (or set `HANABI_TEST_DATABASE_URL` to one),
+and the integration suites need `redis-server` on `PATH`. Keep automatic `.env`
+loading disabled in `bunfig.toml`; applications and build scripts manage their
+own configuration.
 
 External dependency versions belong in the root `package.json`
 `workspaces.catalog`. Reference them with `catalog:` in package manifests; use

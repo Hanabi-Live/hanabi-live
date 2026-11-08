@@ -77,7 +77,10 @@
     "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.mts",
     "lint-rust": "bash scripts/lint/check-rust.sh",
     "prepare": "husky",
-    "test": "bun run --cwd packages/client test && bun packages/testing/src/runTests.ts",
+    "test": "bunx --bun --no-install turbo run test-client test-rust test-bun --cache=local:rw --output-logs=new-only --concurrency=1",
+    "test-bun": "bun packages/testing/src/runTests.ts bun",
+    "test-client": "bun run --cwd packages/client test",
+    "test-rust": "bun packages/testing/src/runTests.ts rust",
     "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
   },
   "dependencies": {

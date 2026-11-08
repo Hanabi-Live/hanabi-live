@@ -116,8 +116,64 @@
       "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
       "outputs": []
     },
-    "//#test": {
-      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+    "//#test-client": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!install/**",
+        "!packages/scripts/**",
+        "!packages/testing/**",
+        "!public/**",
+        "!server/**"
+      ],
+      "env": [
+        "CI",
+        "ImageOS",
+        "ImageVersion",
+        "NODE_ENV",
+        "RUNNER_ARCH",
+        "RUNNER_OS",
+        "TZ"
+      ],
+      "outputs": []
+    },
+    "//#test-rust": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!packages/client/**",
+        "!packages/data/**/*.ts",
+        "!packages/game/**/*.ts",
+        "!packages/scripts/**",
+        "!packages/testing/**",
+        "!public/**"
+      ],
+      "env": [
+        "CARGO_BUILD_TARGET",
+        "CARGO_ENCODED_RUSTFLAGS",
+        "CI",
+        "HANABI_BUILD_REVISION",
+        "HANABI_TEST_DATABASE_URL",
+        "ImageOS",
+        "ImageVersion",
+        "LD_LIBRARY_PATH",
+        "NODE_ENV",
+        "RUNNER_ARCH",
+        "RUNNER_OS",
+        "RUSTFLAGS",
+        "RUSTUP_TOOLCHAIN",
+        "TZ"
+      ],
+      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "outputs": []
+    },
+    "//#test-bun": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!packages/client/**",
+        "!public/**"
+      ],
       "env": [
         "CARGO_BUILD_TARGET",
         "CARGO_ENCODED_RUSTFLAGS",

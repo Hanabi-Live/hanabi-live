@@ -130,7 +130,7 @@ jobs:
             test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Test the TypeScript and Rust code
-        run: bunx --bun --no-install turbo run "//#test" --cache=local:rw
+        run: bun run test
 
       - name: Cache successful JavaScript test results
         if: steps.test-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
