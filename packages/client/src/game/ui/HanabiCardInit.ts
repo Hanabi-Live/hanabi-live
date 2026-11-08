@@ -40,7 +40,7 @@ import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 const CARD_SHADOW_OPACITY = 0.4;
 
 /** The fill of an unclued rank pip, gray so that the pips do not stand out from the card. */
-const RANK_PIP_COLOR = "#d6d6d6";
+const RANK_PIP_COLOR = "#ebebeb";
 
 /**
  * The size of the large icons drawn over the middle of a card, such as a question mark. Based on
