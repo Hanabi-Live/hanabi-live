@@ -253,38 +253,16 @@ pub(super) fn rejected(reason: String) -> hanabi_protocol::PublicGamePage {
     }
 }
 
-/// The public history lists the lobby's `GameHistory` contract, with the stored starting player.
+/// The public history lists the lobby's `GameHistory` contract.
 fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory> {
     let g = row.game;
-    let variant = catalog::variant(i64::from(g.variant_id))
-        .and_then(|variant| variant["name"].as_str())
-        .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
-    let stored = |value: i16| u8::try_from(value).context("Invalid stored game value");
     Ok(hanabi_protocol::GameHistory {
         id: hanabi_protocol::GameId(g.id),
-        options: hanabi_protocol::GameOptions {
-            num_players: stored(g.num_players)?,
-            starting_player: stored(g.starting_player)?,
-            variant_name: variant.into(),
-            variant_id: Some(u32::try_from(g.variant_id).context("Invalid stored variant")?),
-            timed: g.timed,
-            time_base: f64::from(g.time_base),
-            time_per_turn: i64::from(g.time_per_turn),
-            speedrun: g.speedrun,
-            card_cycle: g.card_cycle,
-            deck_plays: g.deck_plays,
-            empty_clues: g.empty_clues,
-            one_extra_card: g.one_extra_card,
-            one_less_card: g.one_less_card,
-            all_or_nothing: g.all_or_nothing,
-            detrimental_characters: g.detrimental_characters,
-            table_name: None,
-            max_players: None,
-        },
+        options: crate::model::wire_options(&crate::store::options_from_record(&g)?),
         seed: g.seed,
         score: i32::from(g.score),
         num_turns: i32::from(g.num_turns),
-        end_condition: stored(g.end_condition)?,
+        end_condition: u8::try_from(g.end_condition).context("Invalid stored end condition")?,
         datetime_started: row.started,
         datetime_finished: row.finished,
         num_games_on_this_seed: i64::from(row.seed_count),
