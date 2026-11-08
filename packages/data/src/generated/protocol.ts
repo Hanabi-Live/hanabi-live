@@ -14,6 +14,8 @@ import {
 } from "@hanabi-live/game";
 import * as z from "zod";
 
+export const MAX_PRIVATE_HISTORY_MESSAGES = 100;
+
 /**
  * The kind of a turn that a player takes, in the `action` command.
  */

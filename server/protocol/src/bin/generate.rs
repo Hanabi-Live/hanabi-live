@@ -635,9 +635,27 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
     Ok(())
 }
 
+/// The protocol's limits that the data package exports under the same names.
+fn data_constants() -> String {
+    exported_constants(&[(
+        "MAX_PRIVATE_HISTORY_MESSAGES",
+        hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
+    )])
+}
+
+/// Writes each named value as an exported constant.
+fn exported_constants(constants: &[(&str, String)]) -> String {
+    let mut output = String::new();
+    for (name, value) in constants {
+        writeln!(output, "export const {name} = {value};")
+            .expect("writing to a string cannot fail");
+    }
+    output
+}
+
 /// The protocol's limits that the game library exports under the same names.
 fn game_library_constants() -> String {
-    let constants = [
+    exported_constants(&[
         ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
         ("MAX_PLAYERS", hanabi_protocol::MAX_PLAYERS.to_string()),
         ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
@@ -648,13 +666,7 @@ fn game_library_constants() -> String {
         ),
         ("MAX_CLUES", hanabi_protocol::MAX_CLUES.to_string()),
         ("MAX_STRIKES", hanabi_protocol::MAX_STRIKES.to_string()),
-    ];
-    let mut output = String::new();
-    for (name, value) in constants {
-        writeln!(output, "export const {name} = {value};")
-            .expect("writing to a string cannot fail");
-    }
-    output
+    ])
 }
 
 fn main() -> Result<()> {
@@ -724,6 +736,7 @@ fn main() -> Result<()> {
     print!("{}", enum_imports(&module.enums()));
     print!("{}", module.schema_imports(GAME_LIBRARY));
     println!("import * as z from \"zod\";\n");
+    print!("{}", data_constants());
     println!("{}", enum_declarations(false));
     print!("{}", module.output);
     for (name, contracts) in [

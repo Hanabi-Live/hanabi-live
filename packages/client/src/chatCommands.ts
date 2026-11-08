@@ -1,4 +1,4 @@
-import { VERSION } from "@hanabi-live/data";
+import { MAX_PRIVATE_HISTORY_MESSAGES, VERSION } from "@hanabi-live/data";
 import { VARIANT_NAMES } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "./Globals";
@@ -184,6 +184,9 @@ chatCommands.set("msg", pm);
 chatCommands.set("tell", pm);
 chatCommands.set("t", pm);
 
+/** The amount of private messages that "/pmhistory" requests when none is given. */
+const DEFAULT_PM_HISTORY_AMOUNT = 5;
+
 interface PMHistoryCommandArgs {
   readonly username?: string;
   readonly amount: number;
@@ -193,7 +196,7 @@ export function parsePMHistoryCommandArgs(
   args: readonly string[],
 ): PMHistoryCommandArgs | undefined {
   if (args.length === 0) {
-    return { amount: 5 };
+    return { amount: DEFAULT_PM_HISTORY_AMOUNT };
   }
   if (args.length > 2) {
     return undefined;
@@ -203,7 +206,7 @@ export function parsePMHistoryCommandArgs(
   const secondArg = args[1];
 
   let username: string | undefined;
-  let amount = 5;
+  let amount = DEFAULT_PM_HISTORY_AMOUNT;
 
   if (secondArg === undefined) {
     const parsedAmount = parseIntSafe(firstArg);
@@ -221,7 +224,7 @@ export function parsePMHistoryCommandArgs(
     amount = parsedAmount;
   }
 
-  if (amount < 1 || amount > 100) {
+  if (amount < 1 || amount > MAX_PRIVATE_HISTORY_MESSAGES) {
     return undefined;
   }
 
@@ -235,7 +238,7 @@ function pmHistory(room: string, args: readonly string[]) {
     sendSelfPMFromServer(
       "The format of the /pmhistory command is: "
         + "<code>/pmhistory [username] [amount]</code> or "
-        + "<code>/pmhistory [amount]</code>, where amount is between 1 and 100.",
+        + `<code>/pmhistory [amount]</code>, where amount is between 1 and ${MAX_PRIVATE_HISTORY_MESSAGES}.`,
       room,
       SelfChatMessageType.Info,
     );

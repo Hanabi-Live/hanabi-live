@@ -52,6 +52,8 @@ pub const MAX_TIME_BASE_SECONDS: i32 = 7 * 24 * 60 * 60;
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = 24 * 60 * 60;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
+/// The most private messages that one history request can ask for.
+pub const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 /// A table's progress, as a percentage, once its game reaches the maximum score or its replay
 /// reaches the last turn.
 pub const MAX_PROGRESS: u8 = 100;

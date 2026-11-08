@@ -3,7 +3,10 @@ use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, r
 use crate::transport::Outgoing;
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
-use hanabi_protocol::{Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource};
+use hanabi_protocol::{
+    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource,
+    MAX_PRIVATE_HISTORY_MESSAGES,
+};
 use serde::Deserialize;
 use serde_json::json;
 use sqlx::PgPool;
@@ -303,9 +306,6 @@ pub async fn private_message(
         },
     ])
 }
-
-/// The most private messages that one history request can ask for.
-const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
 
 pub async fn private_history(
     pool: &PgPool,
