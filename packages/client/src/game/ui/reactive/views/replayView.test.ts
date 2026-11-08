@@ -1,28 +1,28 @@
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-await mock.module("konva", () => ({ default: {} }));
-await mock.module("../../../../tooltips", () => ({}));
-await mock.module("../../../../utils", () => ({ escapeHtml: mock() }));
-await mock.module("../../konvaTooltips", () => ({}));
-await mock.module("../../timer", () => ({}));
-await mock.module("../../zen", () => ({ toggleZen: mock() }));
-await mock.module("../../ourHand", () => ({
-  checkSetDraggableAll: mock(),
+vi.mock("konva", () => ({ default: {} }));
+vi.mock("../../../../tooltips", () => ({}));
+vi.mock("../../../../utils", () => ({ escapeHtml: vi.fn() }));
+vi.mock("../../konvaTooltips", () => ({}));
+vi.mock("../../timer", () => ({}));
+vi.mock("../../zen", () => ({ toggleZen: vi.fn() }));
+vi.mock("../../ourHand", () => ({
+  checkSetDraggableAll: vi.fn(),
 }));
-await mock.module("../../replay", () => ({
-  adjustShuttles: mock(),
+vi.mock("../../replay", () => ({
+  adjustShuttles: vi.fn(),
 }));
-await mock.module("./cluesView", () => ({
-  refreshArrows: mock(),
+vi.mock("./cluesView", () => ({
+  refreshArrows: vi.fn(),
 }));
-await mock.module("../../UIGlobals", () => ({
+vi.mock("../../UIGlobals", () => ({
   globals: {
     elements: {
       replayArea: {
-        visible: mock(),
+        visible: vi.fn(),
       },
       premoveCancelButton: {
-        show: mock(),
+        show: vi.fn(),
       },
     },
     state: {
@@ -30,7 +30,7 @@ await mock.module("../../UIGlobals", () => ({
     },
     layers: {
       UI: {
-        batchDraw: mock(),
+        batchDraw: vi.fn(),
       },
     },
   },
@@ -43,7 +43,7 @@ const { onActiveChanged } = await import("./replayView");
 
 describe("replay activation", () => {
   beforeEach(() => {
-    mock.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("keeps replay controls hidden in a hypothetical when observers reinitialize", () => {

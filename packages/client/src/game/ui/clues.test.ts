@@ -3,11 +3,11 @@ import {
   getDefaultMetadata,
   getDefaultVariant,
 } from "@hanabi-live/game";
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("./arrows", () => ({ hideAll: mock(), set: mock() }));
-await mock.module("./turn", () => ({}));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./arrows", () => ({ hideAll: vi.fn(), set: vi.fn() }));
+vi.mock("./turn", () => ({}));
 const { globals } = await import("./UIGlobals");
 const arrows = await import("./arrows");
 const { checkLegal } = await import("./clues");
@@ -22,7 +22,7 @@ describe("hypothetical clue matching", () => {
       visibleRank: 1,
       visibleSuitIndex: 0,
     };
-    const setEnabled = mock();
+    const setEnabled = vi.fn();
     Object.assign(globals, {
       metadata,
       variant,

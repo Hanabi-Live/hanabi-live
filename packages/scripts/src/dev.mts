@@ -1,7 +1,9 @@
 // Runs Hanab Live for local development:
 // - PostgreSQL and Redis in containers (see "compose.yml"), with the schema loaded on first use.
 // - The server, rebuilt and restarted whenever its sources change.
-// - Watch builds of both clients. "bun run dev down" stops the containers; their data is kept.
+// - The client from Vite's development server, which reloads the page when the client changes.
+// - A watch build of the standalone pips reference. "bun run dev down" stops the containers; their
+//   data is kept.
 
 import type { Subprocess } from "bun";
 import {
@@ -29,7 +31,7 @@ const SERVER_SOURCES = [
 ] as const;
 const DEV_PORT = "1212";
 
-type Label = "build" | "client" | "dev" | "new" | "server" | "services";
+type Label = "build" | "client" | "dev" | "pips" | "server" | "services";
 
 function log(label: Label, line: string) {
   console.log(`[${label}] ${line}`);
@@ -279,7 +281,8 @@ async function buildServer(): Promise<string | undefined> {
 type Child = Subprocess<"ignore", "pipe", "pipe">;
 
 let server: Child | undefined;
-let classicClient: Child | undefined;
+let client: Child | undefined;
+let pipsReference: Child | undefined;
 let revision: string | undefined;
 let stopping = false;
 let building = false;
@@ -358,9 +361,21 @@ async function shutDown(code: number) {
   }
   stopping = true;
   log("dev", "Stopping...");
-  classicClient?.kill();
+  client?.kill();
+  pipsReference?.kill();
   await stopServer();
   process.exit(code);
+}
+
+function stopWhenExited(label: Label, child: Child) {
+  background(
+    child.exited.then(async (code) => {
+      if (!stopping) {
+        log(label, `Exited with code ${code}.`);
+        await shutDown(1);
+      }
+    }),
+  );
 }
 
 async function main() {
@@ -383,16 +398,19 @@ async function main() {
   }
   writeVersion(revision);
 
-  classicClient = start("client", [
+  client = start(
+    "client",
+    ["bunx", "--bun", "--no-install", "vite"],
+    path.join(ROOT, "packages/client"),
+  );
+  pipsReference = start("pips", [
     "bunx",
     "--bun",
     "--no-install",
     "esbuild",
-    "packages/client/src/main.ts",
     "packages/client/src/standalone/pips-reference.ts",
     "--bundle",
-    "--outdir=public/js/bundles",
-    "--entry-names=[name].min",
+    "--outfile=public/js/bundles/pips-reference.min.js",
     "--minify",
     "--sourcemap=linked",
     "--watch=forever",
@@ -402,14 +420,8 @@ async function main() {
   log("dev", `Ready: http://localhost:${setting(env, "PORT", DEV_PORT)}/`);
 
   // A client watcher that stops is unexpected, so stop everything rather than serve stale code.
-  background(
-    classicClient.exited.then(async (code) => {
-      if (!stopping) {
-        log("client", `Exited with code ${code}.`);
-        await shutDown(1);
-      }
-    }),
-  );
+  stopWhenExited("client", client);
+  stopWhenExited("pips", pipsReference);
 }
 
 await main();

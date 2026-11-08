@@ -1,5 +1,5 @@
 import { EndCondition } from "@hanabi-live/game";
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { toGameAction, toPlayerIndex, toSoundType } from "./wire";
 
 describe("server game events", () => {

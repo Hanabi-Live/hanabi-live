@@ -2,7 +2,8 @@
   "name": "@hanabi-live/client",
   "private": true,
   "scripts": {
-    "lint": "bash ./lint.sh"
+    "lint": "bash ./lint.sh",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hanabi-live/data": "workspace:*",
@@ -35,6 +36,8 @@
     "grunt-contrib-concat": "catalog:",
     "grunt-contrib-cssmin": "catalog:",
     "grunt-criticalcss": "catalog:",
-    "jsdom": "catalog:"
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

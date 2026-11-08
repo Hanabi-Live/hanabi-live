@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { LocalStorageStub } from "./testLocalStorage";
 import { getStoredPreference, isDarkMode } from "./theme";
 
@@ -36,7 +36,7 @@ describe("theme", () => {
   beforeEach(() => {
     localStorageStub.clear();
     matchMediaMock.matches = false;
-    mock.restore();
+    vi.restoreAllMocks();
   });
 
   describe("getStoredPreference", () => {
@@ -65,7 +65,7 @@ describe("theme", () => {
     });
 
     test("returns null when localStorage throws", () => {
-      spyOn(localStorageStub, "getItem").mockImplementation(() => {
+      vi.spyOn(localStorageStub, "getItem").mockImplementation(() => {
         throw new Error("unavailable");
       });
       expect(getStoredPreference()).toBeNull();

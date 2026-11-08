@@ -11,8 +11,8 @@ import {
   initializeHypotheticalState,
   planHypotheticalAction,
 } from "@hanabi-live/game";
-import { describe, expect, test } from "bun:test";
 import { assertDefined, assertNotNull } from "complete-common";
+import { describe, expect, test } from "vitest";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import sudokuGame from "../../../test_data/sudoku_hypothetical_1663033.json";
 import { initialState } from "./initialStates/initialState";

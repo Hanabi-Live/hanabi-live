@@ -1,16 +1,16 @@
 import { getVariant } from "@hanabi-live/game";
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { SoundType } from "../types/SoundType";
 import type { HanabiCard } from "./HanabiCard";
 
-const play = mock();
-const end = mock();
-const pulse = mock();
+const play = vi.fn();
+const end = vi.fn();
+const pulse = vi.fn();
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("../../sounds", () => ({ play }));
-await mock.module("./turn", () => ({ end }));
-await mock.module("./clickNotes", () => ({ clickRightCheckAddNote: mock() }));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("../../sounds", () => ({ play }));
+vi.mock("./turn", () => ({ end }));
+vi.mock("./clickNotes", () => ({ clickRightCheckAddNote: vi.fn() }));
 const { mouseDownSpeedrun } = await import("./HanabiCardClickSpeedrun");
 const { globals } = await import("./UIGlobals");
 

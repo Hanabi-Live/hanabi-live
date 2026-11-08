@@ -6,8 +6,8 @@ import {
   getEfficiencyFromGameState,
   getFutureEfficiency,
 } from "@hanabi-live/game";
-import { beforeAll, describe, expect, test } from "bun:test";
 import { assertDefined, eRange } from "complete-common";
+import { beforeAll, describe, expect, test } from "vitest";
 import { loadGameJSON } from "../../../test/loadGameJSON";
 import rainbowOnesAndPinkGame from "../../../test_data/rainbow-ones_and_pink.json";
 import upOrDownGame from "../../../test_data/up_or_down.json";

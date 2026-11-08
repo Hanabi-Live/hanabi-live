@@ -217,9 +217,8 @@
             <h3>Client bundle not found</h3>
             <p>
               This appears to be a development installation of {{ projectName
-              }}. The "public/js/bundles/main.min.js" file was not found. Start
-              the server with <code>bun run dev</code>, and then refresh the
-              page.
+              }}. The client development server was not found. Start the server
+              with <code>bun run dev</code>, and then refresh the page.
             </p>
           </section>
           {% endif %}
@@ -1932,9 +1931,11 @@
 <div id="domain" class="hidden">{{ domain }}</div>
 
 {% if isDev %}
+<!-- "bun run dev" serves the client with Vite, which reloads the page when the client changes. -->
+<script type="module" src="http://localhost:5173/@vite/client"></script>
 <script
-  type="text/javascript"
-  src="/public/js/bundles/main.min.js"
+  type="module"
+  src="http://localhost:5173/src/main.ts"
   onerror="
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('client-bundle-error').classList.remove('hidden');

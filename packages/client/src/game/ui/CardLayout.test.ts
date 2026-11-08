@@ -1,13 +1,13 @@
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
 import type { LayoutChild } from "./LayoutChild";
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
 const { CardLayout } = await import("./CardLayout");
 
 describe("CardLayout.setEmpathy", () => {
   test("uses the stored card when the first Konva child is not a card", () => {
-    const setEmpathy = mock();
+    const setEmpathy = vi.fn();
     const layoutChild = {
       card: { setEmpathy },
       children: [{}],

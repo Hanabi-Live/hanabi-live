@@ -1,14 +1,14 @@
 import type { CardOrder } from "@hanabi-live/game";
 import { getDefaultMetadata } from "@hanabi-live/game";
-import type { Mock } from "bun:test";
-import { describe, expect, mock, test } from "bun:test";
 import { createStore } from "redux";
+import type { Mock } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import type { HanabiCard } from "./HanabiCard";
 
-await mock.module("../reducers/uiReducer", () => ({ uiReducer: mock() }));
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("./HanabiCardMouse", () => ({ setEmpathyOnHand: mock() }));
+vi.mock("../reducers/uiReducer", () => ({ uiReducer: vi.fn() }));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } = await import("../reducers/initialStates/initialState");
 const { stateReducer } = await import("../reducers/stateReducer");
 const { ReplayActionType } = await import("../types/ReplayActionType");
@@ -40,7 +40,7 @@ function setup(shared: boolean) {
         : null,
     },
   });
-  const send = mock();
+  const send = vi.fn();
   Object.assign(globals, {
     store,
     lobby: { tableID: 42, conn: { send } },

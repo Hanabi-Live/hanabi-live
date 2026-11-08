@@ -1,24 +1,24 @@
 import { VERSION } from "@hanabi-live/data";
 import type { InstalledClock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 let clock: InstalledClock;
 const originalFetch = globalThis.fetch;
 
-await mock.module("./Globals", () => ({
+vi.mock("./Globals", () => ({
   globals: { conn: null, currentScreen: "Login", ui: null },
 }));
-await mock.module("./commands", () => ({
-  commands: new Map([["error", mock()]]),
+vi.mock("./commands", () => ({
+  commands: new Map([["error", vi.fn()]]),
 }));
-await mock.module("./lobby/lobbyCommands", () => ({
-  lobbyCommands: new Map([["welcome", mock()]]),
+vi.mock("./lobby/lobbyCommands", () => ({
+  lobbyCommands: new Map([["welcome", vi.fn()]]),
 }));
-await mock.module("./game/ui/gameCommands", () => ({
+vi.mock("./game/ui/gameCommands", () => ({
   gameCommands: new Map(),
 }));
-await mock.module("./modals", () => ({ showError: mock() }));
+vi.mock("./modals", () => ({ showError: vi.fn() }));
 const { globals } = await import("./Globals");
 const { commands } = await import("./commands");
 const { websocketInit } = await import("./websocketInit");
@@ -98,9 +98,9 @@ beforeEach(() => {
 
   globalThis.WebSocket = MockSocket as unknown as typeof WebSocket;
   globalThis.fetch = Object.assign(
-    mock<
-      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
-    >().mockResolvedValue(new Response(null, { status: 200 })),
+    vi
+      .fn<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>()
+      .mockResolvedValue(new Response(null, { status: 200 })),
     { preconnect: originalFetch.preconnect },
   );
   Object.defineProperties(globalThis, {
@@ -110,7 +110,7 @@ beforeEach(() => {
     },
     document: {
       configurable: true,
-      value: { visibilityState: "visible", addEventListener: mock() },
+      value: { visibilityState: "visible", addEventListener: vi.fn() },
     },
     location: {
       configurable: true,
@@ -118,12 +118,12 @@ beforeEach(() => {
         hostname: "localhost",
         protocol: "https:",
         port: "",
-        reload: mock(),
+        reload: vi.fn(),
       },
     },
     addEventListener: {
       configurable: true,
-      value: mock(),
+      value: vi.fn(),
     },
     $: {
       configurable: true,
@@ -169,9 +169,8 @@ describe("initial WebSocket handshake watchdog", () => {
 
   test("a hanging reconnect cookie check times out and retries", async () => {
     let firstSignal: AbortSignal | null | undefined;
-    const request = mock<
-      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
-    >()
+    const request = vi
+      .fn<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>()
       .mockImplementationOnce(
         async (_input, init) =>
           await new Promise<Response>((_resolve) => {

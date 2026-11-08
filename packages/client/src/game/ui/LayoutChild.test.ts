@@ -1,12 +1,12 @@
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("../../modals", () => ({}));
-await mock.module("../../sounds", () => ({}));
-await mock.module("./confirmPlay", () => ({ confirmPlay: mock() }));
-await mock.module("./cursor", () => ({}));
-await mock.module("./isOurTurn", () => ({ isOurTurn: mock() }));
-await mock.module("./turn", () => ({}));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("../../modals", () => ({}));
+vi.mock("../../sounds", () => ({}));
+vi.mock("./confirmPlay", () => ({ confirmPlay: vi.fn() }));
+vi.mock("./cursor", () => ({}));
+vi.mock("./isOurTurn", () => ({ isOurTurn: vi.fn() }));
+vi.mock("./turn", () => ({}));
 const { LayoutChild } = await import("./LayoutChild");
 const { globals } = await import("./UIGlobals");
 
@@ -15,17 +15,17 @@ describe("LayoutChild initialization without a pointer", () => {
     "updates drag state with pointer %p",
     (pointer) => {
       const shape = {};
-      const getIntersection = mock(
+      const getIntersection = vi.fn(
         (_pointer: Readonly<{ x: number; y: number }>) => shape,
       );
-      const setCursor = mock();
-      const draggable = mock();
+      const setCursor = vi.fn();
+      const draggable = vi.fn();
       const child = {
         shouldBeDraggable: () => true,
         draggable,
-        on: mock(),
-        off: mock(),
-        dragEnd: mock(),
+        on: vi.fn(),
+        off: vi.fn(),
+        dragEnd: vi.fn(),
         card: { isAncestorOf: () => true, setCursor },
       } as unknown as InstanceType<typeof LayoutChild>;
       Object.assign(globals, {

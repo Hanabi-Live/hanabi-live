@@ -102,7 +102,7 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
         }
         assert_eq!(parents["emoji-picker"].as_deref(), Some("emoji-modal"));
         assert!(body.contains(if development {
-            "/public/js/bundles/main.min.js"
+            "http://localhost:5173/src/main.ts"
         } else {
             "/public/js/bundles/main.test-version.min.js"
         }));

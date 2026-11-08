@@ -38,13 +38,10 @@ cd "$DIR"
 
 # The client is written in TypeScript and spread out across many files. We need to pack it into one
 # JavaScript file before sending it to end-users.
-echo "Packing the TypeScript using esbuild..."
+echo "Packing the TypeScript using Vite..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
-JS_BUNDLE_PATH="$JS_BUNDLES_DIR/main.$VERSION.min.js"
-bunx --bun --no-install esbuild "$DIR/src/main.ts" --bundle --outfile="$JS_BUNDLE_PATH" --minify --sourcemap="linked"
-# Also produce the unversioned bundle name that the server serves in dev mode.
-cp "$JS_BUNDLE_PATH" "$JS_BUNDLES_DIR/main.min.js"
+bunx --bun --no-install vite build
 bash "$REPO_ROOT/scripts/dev/build-pips-reference.sh"
 echo
 
@@ -79,8 +76,8 @@ rm -rf "$GRUNT_OUTPUT_DIR"
 # results.)
 cd "$JS_BUNDLES_DIR"
 # shellcheck disable=SC2010,SC2143
-if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "main.min.js" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v "main.min.js" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
+if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
 fi
 
 # Clean up the files in the CSS directory.

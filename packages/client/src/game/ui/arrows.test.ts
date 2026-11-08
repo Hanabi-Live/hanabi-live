@@ -1,19 +1,19 @@
 import { ClueType, getDefaultVariant } from "@hanabi-live/game";
-import { describe, expect, mock, test } from "bun:test";
 import type Konva from "konva";
+import { describe, expect, test, vi } from "vitest";
 
 import type { Arrow } from "./controls/Arrow";
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("./HanabiCard", () => ({ HanabiCard: Date }));
-await mock.module("./CardLayout", () => ({ CardLayout: Date }));
-await mock.module("./controls/StrikeSquare", () => ({ StrikeSquare: Date }));
-await mock.module("./getCardOrStackBase", () => ({
-  getCardOrStackBase: mock(),
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./HanabiCard", () => ({ HanabiCard: Date }));
+vi.mock("./CardLayout", () => ({ CardLayout: Date }));
+vi.mock("./controls/StrikeSquare", () => ({ StrikeSquare: Date }));
+vi.mock("./getCardOrStackBase", () => ({
+  getCardOrStackBase: vi.fn(),
 }));
-await mock.module("./konvaHelpers", () => ({}));
-await mock.module("./drawPip", () => ({ drawPip: mock() }));
-await mock.module("../../tooltips", () => ({}));
+vi.mock("./konvaHelpers", () => ({}));
+vi.mock("./drawPip", () => ({ drawPip: vi.fn() }));
+vi.mock("../../tooltips", () => ({}));
 const { globals } = await import("./UIGlobals");
 const { set } = await import("./arrows");
 
@@ -21,38 +21,38 @@ describe("clue arrow suit pips", () => {
   test("clears a reused color pip for a Quacker clue and a highlight", () => {
     let pipVisible = false;
     const suitPip = {
-      sceneFunc: mock(),
-      show: mock(() => {
+      sceneFunc: vi.fn(),
+      show: vi.fn(() => {
         pipVisible = true;
       }),
-      hide: mock(() => {
+      hide: vi.fn(() => {
         pipVisible = false;
       }),
     };
     const arrow = {
       pointingTo: null,
       tween: null,
-      show: mock(),
-      moveToTop: mock(),
-      rotation: mock(),
+      show: vi.fn(),
+      moveToTop: vi.fn(),
+      rotation: vi.fn(),
       text: {
-        rotation: mock(),
-        hide: mock(),
-        show: mock(),
-        text: mock(),
+        rotation: vi.fn(),
+        hide: vi.fn(),
+        show: vi.fn(),
+        text: vi.fn(),
       },
       circle: {
-        hide: mock(),
-        show: mock(),
-        stroke: mock(),
-        fill: mock(),
+        hide: vi.fn(),
+        show: vi.fn(),
+        stroke: vi.fn(),
+        fill: vi.fn(),
       },
       base: {
-        stroke: mock(),
-        fill: mock(),
+        stroke: vi.fn(),
+        fill: vi.fn(),
       },
       suitPip,
-      setAbsolutePosition: mock(),
+      setAbsolutePosition: vi.fn(),
     } as unknown as Arrow;
     const deck = {
       getAbsolutePosition: () => ({ x: 10, y: 20 }),
@@ -62,7 +62,7 @@ describe("clue arrow suit pips", () => {
     const variant = getDefaultVariant();
     Object.assign(globals, {
       elements: { arrows: [arrow], deck },
-      layers: { arrow: { batchDraw: mock() } },
+      layers: { arrow: { batchDraw: vi.fn() } },
       lobby: { settings: { colorblindMode: true } },
       // Character ID 34 is Quacker; player 1 has no character.
       metadata: { characterAssignments: [34, null] },

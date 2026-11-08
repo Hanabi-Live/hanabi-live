@@ -14,10 +14,10 @@ import {
   getInitialCardState,
   planHypotheticalAction,
 } from "@hanabi-live/game";
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
-await mock.module("./UIGlobals", () => ({ globals: {} }));
-await mock.module("./HanabiCardMouse", () => ({ setEmpathyOnHand: mock() }));
+vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } = await import("../reducers/initialStates/initialState");
 const { ActionType } = await import("../types/ActionType");
 const { globals } = await import("./UIGlobals");
@@ -98,7 +98,7 @@ describe("client hypothetical planning", () => {
     (rank) => {
       const context = makeContext(rank);
       const state = initialState(context.metadata);
-      const dispatch = mock();
+      const dispatch = vi.fn();
       Object.assign(globals, {
         metadata: context.metadata,
         variant: context.variant,
@@ -139,7 +139,7 @@ describe("client hypothetical planning", () => {
   test("reads the layout card for a hypothetical clue", () => {
     const context = makeContext();
     const state = initialState(context.metadata);
-    const dispatch = mock();
+    const dispatch = vi.fn();
     const handChild = {
       card: {
         state: context.gameState.deck[1],
@@ -154,7 +154,7 @@ describe("client hypothetical planning", () => {
       variant: context.variant,
       elements: {
         playerHands: [
-          { children: { each: mock() } },
+          { children: { each: vi.fn() } },
           {
             children: {
               each: (callback: (child: unknown) => void) => {

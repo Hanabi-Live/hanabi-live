@@ -1,5 +1,5 @@
 import { compareGameHistory } from "@hanabi-live/data";
-import { expect, test } from "bun:test";
+import { expect, test } from "vitest";
 
 test("history follows completion time rather than ID allocation order", () => {
   const games = [

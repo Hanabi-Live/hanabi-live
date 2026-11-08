@@ -19,11 +19,8 @@ const ROOT = path.resolve(__dirname, "../../..");
 // eslint-disable-next-line @typescript-eslint/strict-void-return -- promisify ignores the ChildProcess return value.
 const run = promisify(execFile);
 
-const TEST_DIRECTORIES = [
-  "packages/client/src",
-  "packages/game/src",
-  "packages/testing/src",
-] as const;
+// The client's tests run with Vitest from the root "test" script.
+const TEST_DIRECTORIES = ["packages/game/src", "packages/testing/src"] as const;
 
 const MISSING_POSTGRES =
   'The integration tests need PostgreSQL. Put the PostgreSQL server programs ("initdb" and "postgres") on your PATH, or set HANABI_TEST_DATABASE_URL to a disposable local server.';

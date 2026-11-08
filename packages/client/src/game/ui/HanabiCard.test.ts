@@ -1,19 +1,19 @@
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
-await mock.module("./UIGlobals", () => ({ globals: { activeHover: null } }));
-await mock.module("../../tooltips", () => ({}));
-await mock.module("../../Globals", () => ({ globals: {} }));
-await mock.module("./noteCheckImpossibility", () => ({
-  checkNoteImpossibility: mock(),
-  possibleCardsFromNoteAndClues: mock(),
+vi.mock("./UIGlobals", () => ({ globals: { activeHover: null } }));
+vi.mock("../../tooltips", () => ({}));
+vi.mock("../../Globals", () => ({ globals: {} }));
+vi.mock("./noteCheckImpossibility", () => ({
+  checkNoteImpossibility: vi.fn(),
+  possibleCardsFromNoteAndClues: vi.fn(),
 }));
-await mock.module("./HanabiCardMouse", () => ({
-  registerMouseHandlers: mock(),
-  setCursor: mock(),
-  setEmpathyOnHand: mock(),
+vi.mock("./HanabiCardMouse", () => ({
+  registerMouseHandlers: vi.fn(),
+  setCursor: vi.fn(),
+  setEmpathyOnHand: vi.fn(),
 }));
-await mock.module("./notes", () => ({}));
-await mock.module("./LayoutChild", () => ({ LayoutChild: mock() }));
+vi.mock("./notes", () => ({}));
+vi.mock("./LayoutChild", () => ({ LayoutChild: vi.fn() }));
 const { HanabiCard } = await import("./HanabiCard");
 
 describe("removeLayoutChildFromParent", () => {
@@ -23,17 +23,17 @@ describe("removeLayoutChildFromParent", () => {
       parent: null,
       x: () => 1,
       y: () => 1,
-      off: mock((event: string) => {
+      off: vi.fn((event: string) => {
         calls.push(`off ${event}`);
       }),
-      draggable: mock((value: boolean) => {
+      draggable: vi.fn((value: boolean) => {
         calls.push(`draggable ${value}`);
       }),
     };
     const card = {
       dragging: true,
       layout,
-      setEmpathy: mock(),
+      setEmpathy: vi.fn(),
     } as unknown as InstanceType<typeof HanabiCard>;
 
     HanabiCard.prototype.removeLayoutChildFromParent.call(card);
