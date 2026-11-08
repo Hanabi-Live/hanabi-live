@@ -1,3 +1,4 @@
+import { changeStartingHandVisibility } from "./hypothetical";
 import { globals } from "./UIGlobals";
 
 export function setGlobalEmpathy(enabled: boolean): void {
@@ -8,5 +9,10 @@ export function setGlobalEmpathy(enabled: boolean): void {
   globals.globalEmpathyEnabled = enabled;
   for (const hand of globals.elements.playerHands) {
     hand.setEmpathy(enabled);
+  }
+
+  // Turning off global empathy also turned it off for the hypothetical's starting hand.
+  if (!enabled && globals.state.replay.hypothetical !== null) {
+    changeStartingHandVisibility();
   }
 }
