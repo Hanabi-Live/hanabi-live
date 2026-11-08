@@ -144,17 +144,20 @@ pub fn decode(encoded: &str, secret: &str, now: i64) -> Result<i32> {
 }
 
 fn uint(value: u64) -> Vec<u8> {
-    if value < 128 {
-        return vec![value as u8];
+    if let Ok(byte) = u8::try_from(value)
+        && byte < 128
+    {
+        return vec![byte];
     }
     let bytes = value.to_be_bytes();
     let start = bytes.iter().position(|byte| *byte != 0).unwrap_or(7);
-    let mut out = vec![(256 - (8 - start)) as u8];
+    // The prefix is the negated length of the big-endian value.
+    let mut out = vec![0_u8.wrapping_sub(u8::try_from(8 - start).expect("a u64 has eight bytes"))];
     out.extend_from_slice(&bytes[start..]);
     out
 }
 fn frame(value: &[u8]) -> Vec<u8> {
-    let mut out = uint(value.len() as u64);
+    let mut out = uint(u64::try_from(value.len()).expect("lengths fit in u64"));
     out.extend_from_slice(value);
     out
 }
@@ -174,7 +177,7 @@ pub fn encode(id: i32, secret: &str, timestamp: i64) -> Result<String> {
     values.extend(frame(b"int"));
     values.push(4);
     let mut value = vec![0];
-    value.extend(uint(id as u64 * 2));
+    value.extend(uint(u64::try_from(id)? * 2));
     values.extend(frame(&value));
     let mut payload = frame(&declaration);
     payload.extend(frame(&values));

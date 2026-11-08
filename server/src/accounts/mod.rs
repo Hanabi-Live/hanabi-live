@@ -142,7 +142,7 @@ pub async fn is_muted(pool: &PgPool, ip: &str) -> Result<bool> {
 fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -> String {
     let mut result = format!(
         "{name}={value}; Path=/; Max-Age={}",
-        if clear { 0 } else { 31536000 }
+        if clear { 0 } else { 31_536_000 }
     );
     if !config.is_dev {
         if !config.domain.is_empty() {
@@ -197,9 +197,8 @@ fn failure_diagnostic(error: &anyhow::Error) -> String {
     crate::errors::Report::from_error("Account operation", error, Some(30)).description
 }
 
-fn account_failure(operation: &'static str, error: anyhow::Error) -> Response {
-    let report =
-        crate::errors::Report::from_error(format!("Account {operation}"), &error, Some(30));
+fn account_failure(operation: &'static str, error: &anyhow::Error) -> Response {
+    let report = crate::errors::Report::from_error(format!("Account {operation}"), error, Some(30));
     let mut response = report.response(true);
     if let Some(TooMuchPasswordWork(wait)) = error.downcast_ref() {
         response.headers_mut().insert(
@@ -232,7 +231,7 @@ async fn login(
     };
     match login_inner(&state, &address.ip().to_string(), input).await {
         Ok(response) => response,
-        Err(error) => account_failure("login", error),
+        Err(error) => account_failure("login", &error),
     }
 }
 
@@ -488,7 +487,7 @@ async fn identity_token(
         .into_response())
     }
     .await;
-    result.unwrap_or_else(|error| account_failure("identity-token", error))
+    result.unwrap_or_else(|error| account_failure("identity-token", &error))
 }
 
 async fn identity(
@@ -542,7 +541,7 @@ async fn identity(
         ))
     }
     .await;
-    result.unwrap_or_else(|error| account_failure("identity-lookup", error))
+    result.unwrap_or_else(|error| account_failure("identity-lookup", &error))
 }
 
 /// Hashes a new password, which a user gives to an administrator to reset their account.
@@ -561,6 +560,6 @@ async fn password_hash(
     };
     match hash_password(&address.ip().to_string(), request.password).await {
         Ok(hash) => Json(PasswordHashResponse { hash }).into_response(),
-        Err(error) => account_failure("password-hash", error),
+        Err(error) => account_failure("password-hash", &error),
     }
 }

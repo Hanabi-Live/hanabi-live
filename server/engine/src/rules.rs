@@ -1,5 +1,5 @@
 use crate::{
-    EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant,
+    EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant, int,
     is_card_touched,
 };
 use std::collections::HashSet;
@@ -64,7 +64,7 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
     state.events.push(EngineEvent::Draw {
         player_index: player,
         order: card.order,
-        suit_index: card.suit_index as i32,
+        suit_index: int(card.suit_index),
         rank: card.rank,
     });
     if state.options.detrimental_characters
@@ -76,12 +76,12 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
         state.events.push(EngineEvent::CardIdentity {
             player_index: player,
             order: previous.order,
-            suit_index: previous.suit_index as i32,
+            suit_index: int(previous.suit_index),
             rank: previous.rank,
         });
     }
     if state.deck_index == state.deck.len() && !state.options.all_or_nothing {
-        state.end_turn = state.turn + state.players.len() as i32 + 1;
+        state.end_turn = state.turn + int(state.players.len()) + 1;
         if state.options.detrimental_characters
             && state.players.iter().any(|p| p.character == "Contrarian")
         {
@@ -96,7 +96,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
         .iter()
         .position(|&o| o == order)
         .expect("validated hand card");
-    state.deck[order].slot = (hand.len() - index) as i32;
+    state.deck[order].slot = int(hand.len() - index);
     hand.remove(index);
     if state.options.detrimental_characters && state.deck[order].insistent_touched {
         for &remaining in hand.iter() {
@@ -196,8 +196,8 @@ pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &Engin
         return false;
     }
     let v = variant_for(state);
-    let size = v.ranks.len() as i32;
-    let played = state
+    let size = int(v.ranks.len());
+    let reached = state
         .stacks
         .iter()
         .enumerate()
@@ -211,7 +211,7 @@ pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &Engin
             }
         })
         .count();
-    played < 2
+    reached < 2
 }
 
 fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {
@@ -223,7 +223,7 @@ fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {
         .collect()
 }
 fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i32 {
-    if !available.contains(&if down { 5 } else { 1 }) && !(up_or_down && available.contains(&7)) {
+    if !(available.contains(&if down { 5 } else { 1 }) || (up_or_down && available.contains(&7))) {
         return 0;
     }
     let mut score = 1;
@@ -237,21 +237,25 @@ fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i3
     }
     score
 }
+/// The index of a sudoku slot, which counts up from zero.
+fn slot(value: i32) -> usize {
+    usize::try_from(value).expect("sudoku slots are not negative")
+}
 fn sudoku_scores(available: &HashSet<i32>, size: i32) -> Vec<i32> {
     let mut scores = vec![size; 5];
     let mut last_dead = -1;
     for rank in 0..size {
         if !available.contains(&(rank + 1)) {
             for write in last_dead + 1..rank {
-                scores[write as usize] = rank - write;
+                scores[slot(write)] = rank - write;
             }
-            scores[rank as usize] = 0;
+            scores[slot(rank)] = 0;
             last_dead = rank;
         }
     }
     if last_dead != -1 {
         for write in last_dead + 1..size {
-            scores[write as usize] = (scores[0] + size - write).min(size);
+            scores[slot(write)] = (scores[0] + size - write).min(size);
         }
     }
     scores
@@ -263,7 +267,7 @@ fn best_assignment(scores: &[Vec<i32>], free: &[i32], index: usize) -> i32 {
     free.iter()
         .map(|rank| {
             let remaining: Vec<i32> = free.iter().copied().filter(|r| r != rank).collect();
-            scores[index][(*rank - 1) as usize] + best_assignment(scores, &remaining, index + 1)
+            scores[index][slot(*rank - 1)] + best_assignment(scores, &remaining, index + 1)
         })
         .max()
         .unwrap_or(0)
@@ -280,7 +284,7 @@ pub fn calculate_max_score(state: &EngineState) -> i32 {
             } else if start == 0 {
                 unassigned.push(scores);
             } else {
-                independent += scores[(start - 1) as usize];
+                independent += scores[slot(start - 1)];
             }
         }
         let free: Vec<i32> = v

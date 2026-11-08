@@ -305,16 +305,14 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     let test_url = url::Url::parse(&std::env::var("HANABI_TEST_DATABASE_URL")?)?;
     let host = test_url
         .query_pairs()
-        .find(|(key, _)| key == "host")
-        .map(|(_, value)| value.into_owned())
-        .unwrap_or_else(|| options.get_host().to_owned());
+        .find(|(key, _)| key == "host").map_or_else(|| options.get_host().to_owned(), |(_, value)| value.into_owned());
     let password = percent_encoding::percent_decode_str(test_url.password().unwrap_or(""))
         .decode_utf8()?
         .into_owned();
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let config = crate::config::Config::from_values(
-        root.clone(),
-        [
+        &root,
+        &[
             ("SESSION_SECRET", "test".repeat(32)),
             ("REDIS_URL", redis.url.clone()),
             ("DB_HOST", host),
@@ -382,7 +380,7 @@ crate::server_info::test_info(),
     store.cancel_lobby_reads().await?;
     let cancelled = tokio::time::timeout(Duration::from_millis(500), slow_read).await??
         .expect_err("Background read survived maintenance cancellation");
-    assert_eq!(cancelled.as_database_error().and_then(|error| error.code()).as_deref(), Some("57014"));
+    assert_eq!(cancelled.as_database_error().and_then(sqlx::error::DatabaseError::code).as_deref(), Some("57014"));
     let usable: i32 = sqlx::query_scalar!("SELECT 1 AS \"v!\"").fetch_one(&store.primary).await?;
     assert_eq!(usable, 1, "Read cancellation interfered with the primary pool");
     h.close().await;

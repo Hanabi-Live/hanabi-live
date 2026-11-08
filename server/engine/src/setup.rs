@@ -1,5 +1,5 @@
 use crate::{
-    AssignedCharacter, DeckCard, Variant, characters, num_copies_of_card,
+    AssignedCharacter, DeckCard, Variant, characters, int, num_copies_of_card,
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
@@ -80,7 +80,7 @@ pub fn assign_characters(
             continue;
         }
         let character = loop {
-            let candidate = &catalog[rng.intn(catalog.len() as u64) as usize];
+            let candidate = &catalog[rng.index(catalog.len())];
             if (players.len() != 2 || !candidate.not_two_player)
                 && assigned.iter().all(|c| c.name != candidate.name)
             {
@@ -93,9 +93,9 @@ pub fn assign_characters(
                     !variant.clue_colors.is_empty(),
                     "Character requires clue colors"
                 );
-                rng.intn(variant.clue_colors.len() as u64) as i32
+                int(rng.index(variant.clue_colors.len()))
             }
-            "Dumbfounded" | "Awkward" => rng.intn(4) as i32 + 1,
+            "Dumbfounded" | "Awkward" => int(rng.index(4)) + 1,
             _ => -1,
         };
         assigned.push(AssignedCharacter {

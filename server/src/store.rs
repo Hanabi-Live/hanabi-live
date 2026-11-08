@@ -32,6 +32,35 @@ pub struct Store {
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
+/// The whole seconds that the database stores for a time base, which option validation bounds.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "option validation bounds the time base"
+)]
+fn stored_seconds(time_base: f64) -> i32 {
+    time_base as i32
+}
+
+/// Opens a pool whose connections time out stuck statements and transactions.
+async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
+    Ok(PgPoolOptions::new()
+        .max_connections(max)
+        .acquire_timeout(Duration::from_secs(30))
+        .after_connect(|c, _| {
+            Box::pin(async move {
+                sqlx::query!("SET statement_timeout = 30000")
+                    .execute(&mut *c)
+                    .await?;
+                sqlx::query!("SET idle_in_transaction_session_timeout = 30000")
+                    .execute(c)
+                    .await?;
+                Ok(())
+            })
+        })
+        .connect_with(options)
+        .await?)
+}
+
 impl Store {
     #[cfg(test)]
     pub(crate) fn fixture(primary: PgPool, state: RedisState) -> Self {
@@ -59,24 +88,6 @@ impl Store {
         let primary_name = format!("hanabi-live-{instance:016x}-primary");
         let archive_name = format!("hanabi-live-{instance:016x}-archive");
         let lobby_name = format!("hanabi-live-{instance:016x}-lobby");
-        async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
-            Ok(PgPoolOptions::new()
-                .max_connections(max)
-                .acquire_timeout(Duration::from_secs(30))
-                .after_connect(|c, _| {
-                    Box::pin(async move {
-                        sqlx::query!("SET statement_timeout = 30000")
-                            .execute(&mut *c)
-                            .await?;
-                        sqlx::query!("SET idle_in_transaction_session_timeout = 30000")
-                            .execute(c)
-                            .await?;
-                        Ok(())
-                    })
-                })
-                .connect_with(options)
-                .await?)
-        }
         let primary = pool(options.clone().application_name(&primary_name), 8).await?;
         let archive = pool(options.clone().application_name(&archive_name), 2).await?;
         let lobby_reads = PgPoolOptions::new()
@@ -137,14 +148,14 @@ impl Store {
         Ok(())
     }
     pub fn state_lost(&self) -> CancellationToken {
-        self.state
-            .as_ref()
-            .map(RedisState::lost)
-            .unwrap_or_else(|| {
+        self.state.as_ref().map_or_else(
+            || {
                 let token = CancellationToken::new();
                 token.cancel();
                 token
-            })
+            },
+            RedisState::lost,
+        )
     }
     pub async fn allocate_table(&self) -> Result<u64> {
         self.state()?.allocate_table().await
@@ -368,7 +379,7 @@ impl Store {
             let existing_options = options_from_record(&row)?;
             let mut expected = o.clone();
             expected.variant_id = Some(variant.id);
-            expected.time_base = f64::from(o.time_base as i32);
+            expected.time_base = f64::from(stored_seconds(o.time_base));
             expected.table_name = None;
             expected.max_players = None;
             ensure!(
@@ -389,7 +400,7 @@ impl Store {
                 let assignment = hanabi_engine::characters()
                     .iter()
                     .find(|c| c.name == character.character)
-                    .map_or(-1, |c| c.id as i16);
+                    .map_or(Ok(-1), |c| i16::try_from(c.id))?;
                 let metadata = if matches!(
                     character.character.as_str(),
                     "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
@@ -400,7 +411,7 @@ impl Store {
                 };
                 ensure!(
                     row.user_id == player.id
-                        && row.seat == seat as i16
+                        && i16::try_from(seat).ok() == Some(row.seat)
                         && row.character_assignment == assignment
                         && row.character_metadata == metadata,
                     "Conflicting participant identity"
@@ -425,8 +436,8 @@ impl Store {
             );
             for (row, (seat, order, note)) in notes.iter().zip(expected_notes) {
                 ensure!(
-                    row.seat == seat as i16
-                        && row.card_order == order as i16
+                    i16::try_from(seat).ok() == Some(row.seat)
+                        && i16::try_from(order).ok() == Some(row.card_order)
                         && row.note.clone() == *note,
                     "Conflicting authored note"
                 );
@@ -470,13 +481,13 @@ impl Store {
             tx.commit().await?;
             return Ok(times);
         }
-        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)", s.game_id, &s.name, o.num_players as i16, o.starting_player as i16, variant.id as i16, o.timed, o.time_base as i32, o.time_per_turn as i32, o.speedrun, o.card_cycle, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, s.game.score as i16, s.game.turn as i16, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
+        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,card_cycle,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(o.starting_player)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.card_cycle, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
         for (seat, p) in s.players.iter().enumerate() {
             let character = &s.game.players[seat];
             let assignment = hanabi_engine::characters()
                 .iter()
                 .find(|c| c.name == character.character)
-                .map_or(-1, |c| c.id as i16);
+                .map_or(Ok(-1), |c| i16::try_from(c.id))?;
             let metadata = if matches!(
                 character.character.as_str(),
                 "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
@@ -485,23 +496,33 @@ impl Store {
             } else {
                 0
             };
-            let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, seat as i16, assignment, metadata).fetch_one(&mut *tx).await?;
+            let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, i16::try_from(seat)?, assignment, metadata).fetch_one(&mut *tx).await?;
             for (order, note) in s.notes[seat]
                 .iter()
                 .enumerate()
                 .filter(|(_, n)| !n.is_empty())
             {
-                sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, order as i16, note).execute(&mut *tx).await?;
+                sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, i16::try_from(order)?, note).execute(&mut *tx).await?;
             }
         }
         let kinds: Vec<i16> = s
             .game
             .actions
             .iter()
-            .map(|a| a.action_type as i16)
-            .collect();
-        let targets: Vec<i16> = s.game.actions.iter().map(|a| a.target as i16).collect();
-        let values: Vec<i16> = s.game.actions.iter().map(|a| a.value as i16).collect();
+            .map(|a| i16::try_from(a.action_type))
+            .collect::<Result<_, _>>()?;
+        let targets: Vec<i16> = s
+            .game
+            .actions
+            .iter()
+            .map(|a| i16::try_from(a.target))
+            .collect::<Result<_, _>>()?;
+        let values: Vec<i16> = s
+            .game
+            .actions
+            .iter()
+            .map(|a| i16::try_from(a.value))
+            .collect::<Result<_, _>>()?;
         sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut *tx).await?;
         if s.game.identities() != hanabi_engine::create_shuffled_deck(variant, &s.seed)? {
             sqlx::query!(
@@ -550,7 +571,10 @@ impl Store {
         let mut characters = vec![];
         let mut notes = vec![vec![String::new(); deck.len() + variant.suits.len()]; rows.len()];
         for (seat, r) in rows.iter().enumerate() {
-            ensure!(r.seat == seat as i16, "Invalid replay seat");
+            ensure!(
+                i16::try_from(seat).ok() == Some(r.seat),
+                "Invalid replay seat"
+            );
             players.push(Player {
                 id: r.user_id,
                 name: r.name.clone(),
@@ -559,7 +583,7 @@ impl Store {
             let assignment = r.character_assignment;
             let character = hanabi_engine::characters()
                 .iter()
-                .find(|c| c.id as i16 == assignment);
+                .find(|c| i16::try_from(c.id).ok() == Some(assignment));
             ensure!(
                 assignment == -1 || character.is_some(),
                 "Unknown stored character"
@@ -642,7 +666,7 @@ impl Store {
             return Ok(());
         }
         ensure!(pending.len() <= 4096, "Oversized chat reservation");
-        let ids:Vec<i64>=sqlx::query_scalar!("SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)", pending.len() as i32).fetch_all(&self.archive).await?;
+        let ids:Vec<i64>=sqlx::query_scalar!("SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)", i32::try_from(pending.len())?).fetch_all(&self.archive).await?;
         self.check_state()?;
         ensure!(
             ids.len() == pending.len(),
@@ -800,7 +824,7 @@ impl Store {
              best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
              FROM user_stats WHERE user_id=$1 AND variant_id=$2",
             id,
-            variant as i16
+            i16::try_from(variant)?
         )
         .fetch_optional(&self.primary)
         .await?;
@@ -870,7 +894,7 @@ impl Store {
     }
     pub(crate) async fn refresh(&self, s: &Snapshot) -> Result<()> {
         let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
-        let v = variant.id as i16;
+        let v = i16::try_from(variant.id)?;
         let players = i32::try_from(s.players.len())?;
         let mut tx = self.archive.begin().await?;
         sqlx::query!("SELECT pg_advisory_xact_lock(17483,$1)", i32::from(v))
@@ -909,7 +933,7 @@ impl Store {
                  WHERE user_id=$1 AND variant_id=$2",
                 p.id,
                 v,
-                s.game.score as i16,
+                i16::try_from(s.game.score)?,
                 modifier,
                 players,
             )
@@ -927,8 +951,8 @@ impl Store {
              FROM games WHERE variant_id=$1 AND NOT speedrun) s
              WHERE variant_id=$1",
             v,
-            s.game.score as i16,
-            variant.max_score as i16,
+            i16::try_from(s.game.score)?,
+            i16::try_from(variant.max_score)?,
             i32::from(modifier),
             players,
         )
@@ -1274,15 +1298,15 @@ mod tests {
             let mut expected = [0_i16; 5];
             for count in 2..=6_usize {
                 let mut snapshot = template.clone();
-                snapshot.players = (1..=count as i32)
+                snapshot.players = (1..=hanabi_engine::int(count))
                     .map(|id| Player {
                         id,
                         name: format!("Player{id}"),
                         stats: zero_stats(),
                     })
                     .collect();
-                snapshot.game.score = count as i32 + 10;
-                expected[count - 2] = count as i16 + 10;
+                snapshot.game.score = hanabi_engine::int(count) + 10;
+                expected[count - 2] = i16::try_from(count)? + 10;
                 store.refresh(&snapshot).await?;
                 let user = sqlx::query!(
                     "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
@@ -1506,7 +1530,7 @@ mod tests {
         let (reply, received) = oneshot::channel();
         hub.send(HubCommand::Client {
             session,
-            message: crate::actors::client_message(command, data)?,
+            message: crate::actors::client_message(command, &data)?,
             reply,
         })
         .await?;
@@ -1662,7 +1686,8 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) = Session::new(index as i32 + 1, (*name).into(), 1, false);
+            let (session, frames) =
+                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1732,7 +1757,8 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) = Session::new(index as i32 + 1, (*name).into(), 1, false);
+            let (session, frames) =
+                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1887,7 +1913,8 @@ mod tests {
         let mut users = vec![];
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, outgoing) = Session::new(i as i32 + 1, (*name).into(), 1, false);
+            let (session, outgoing) =
+                Session::new(hanabi_engine::int(i) + 1, (*name).into(), 1, false);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1906,7 +1933,7 @@ mod tests {
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
-            let active=s.game.active_player_index;let actor=s.players[active].id as usize-1;
+            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id)?-1;
             send(&hub,users[actor].clone(),"loaded",json!({"tableID":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;

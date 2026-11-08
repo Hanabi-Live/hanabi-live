@@ -53,7 +53,7 @@ impl Integrations {
     }
 
     pub fn status(&self) -> serde_json::Value {
-        serde_json::json!({"discord":self.discord.as_ref().map(|bridge|bridge.status()).unwrap_or(if self.discord_failed {"degraded"} else {"disabled"})})
+        serde_json::json!({"discord":self.discord.as_ref().map_or(if self.discord_failed {"degraded"} else {"disabled"}, |bridge|bridge.status())})
     }
 
     pub async fn mirror(&self, chat_id: i32, raw: Option<&str>) {

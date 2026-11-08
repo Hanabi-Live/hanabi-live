@@ -1,7 +1,24 @@
-use crate::{characters::*, rules::*, types::reject, *};
+use crate::{
+    ActionRejected, AssignedCharacter, Clue, ClueType, CompletionTiming, EndCondition, EngineCard,
+    EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options, PlayerAction,
+    RecordedAction, Termination, Transition, assign_characters, characters,
+    characters::{
+        character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
+        needs_second_action, validate_character_action, validate_character_clue,
+        validate_character_discard, validate_character_play,
+    },
+    clue_type, create_shuffled_deck, get_variant, index, int,
+    rules::{
+        calculate_max_score, clue_cost, draw_card, follower_misplays, has_remaining_play,
+        remove_card, sees_card, touched_orders, try_play, variant_for,
+    },
+    types::reject,
+};
 use anyhow::{Result, ensure};
 
 pub(crate) const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
+/// `MAX_SAFE_INTEGER`, which a float represents exactly.
+const MAX_SAFE_FLOAT: f64 = 9_007_199_254_740_991.0;
 
 pub(crate) fn validate_options(options: &Options) -> Result<()> {
     ensure!(
@@ -14,7 +31,7 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
     );
     ensure!(
         options.time_base.is_finite()
-            && options.time_base.abs() <= MAX_SAFE_INTEGER as f64
+            && options.time_base.abs() <= MAX_SAFE_FLOAT
             && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_per_turn),
         "Invalid game timing."
     );
@@ -229,7 +246,7 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
             return reject("You need at least 1 clue token available in order to give a clue.");
         }
         if action.action_type == 2
-            && (action.value < 0 || action.value as usize >= variant.clue_colors.len())
+            && index(action.value).is_none_or(|value| value >= variant.clue_colors.len())
         {
             return reject(format!(
                 "You cannot give a color clue with a value of \"{}\".",
@@ -248,13 +265,13 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
             return reject("You cannot give two clues of the same time in a row in this variant.");
         }
         validate_character_clue(state, actor, action)?;
-        if touched_orders(state, action)
+        let may_touch_nothing = state.options.empty_clues
+            || (action.action_type == 2 && variant.color_clues_touch_nothing)
+            || (action.action_type == 3 && variant.rank_clues_touch_nothing);
+        let touches_a_card = touched_orders(state, action)
             .iter()
-            .all(|&order| !sees_card(state, actor, target, order))
-            && !state.options.empty_clues
-            && !(action.action_type == 2 && variant.color_clues_touch_nothing)
-            && !(action.action_type == 3 && variant.rank_clues_touch_nothing)
-        {
+            .any(|&order| sees_card(state, actor, target, order));
+        if !touches_a_card && !may_touch_nothing {
             return Err(ActionRejected {
                 message: "You cannot give a clue that touches 0 cards in the hand.".into(),
                 silent: state.options.speedrun,
@@ -270,7 +287,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
     if !card.failed {
         state.actions.push(RecordedAction {
             action_type: 1,
-            target: order as i32,
+            target: int(order),
             value: 0,
         });
     }
@@ -278,7 +295,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
     state.events.push(EngineEvent::Discard {
         player_index: player,
         order,
-        suit_index: card.suit_index as i32,
+        suit_index: int(card.suit_index),
         rank: card.rank,
         failed: card.failed,
     });
@@ -287,7 +304,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
 fn play(state: &mut EngineState, player: usize, order: usize) {
     state.actions.push(RecordedAction {
         action_type: 0,
-        target: order as i32,
+        target: int(order),
         value: 0,
     });
     // Stack direction/start changes precede Follower's forced failure.
@@ -311,7 +328,7 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
     state.events.push(EngineEvent::Play {
         player_index: player,
         order,
-        suit_index: card.suit_index as i32,
+        suit_index: int(card.suit_index),
         rank: card.rank,
     });
     let finished = if v.has_reversed_suits() {
@@ -340,7 +357,7 @@ fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_
             value: action.value,
         },
         giver: actor,
-        target: action.target as usize,
+        target: index(action.target).expect("the clue target was validated"),
         list: touched.clone(),
         turn: state.turn,
     });
@@ -357,7 +374,10 @@ fn give_clue(state: &mut EngineState, actor: usize, action: &PlayerAction, clue_
 }
 
 fn check_end(state: &mut EngineState) -> bool {
-    use EndCondition::*;
+    use EndCondition::{
+        AllOrNothingFail, AllOrNothingSoftlock, CharacterSoftlock, IdleTimeout, Normal,
+        SpeedrunFail, Strikeout, TerminatedByPlayer, TerminatedByVote, Timeout,
+    };
     if matches!(
         state.end_condition,
         Timeout | TerminatedByPlayer | TerminatedByVote | IdleTimeout | CharacterSoftlock
@@ -376,7 +396,7 @@ fn check_end(state: &mut EngineState) -> bool {
         && state.clue_tokens < clue_cost(state)
     {
         state.end_condition = AllOrNothingSoftlock;
-        state.end_player = state.active_player_index as i32;
+        state.end_player = int(state.active_player_index);
     } else if state.turn == state.end_turn
         || state.score == state.max_score
         || !has_remaining_play(state)
@@ -426,7 +446,7 @@ fn finish_action(
         current_player_index: if ended {
             -1
         } else {
-            state.active_player_index as i32
+            int(state.active_player_index)
         },
     });
     if ended {
@@ -443,7 +463,7 @@ fn finish_action(
         }
     }
 }
-fn validate_timing(state: &EngineState, timing: &Option<CompletionTiming>) -> Result<()> {
+fn validate_timing(state: &EngineState, timing: Option<&CompletionTiming>) -> Result<()> {
     if let Some(timing) = timing {
         ensure!(
             timing.player_times.len() == state.players.len()
@@ -465,12 +485,12 @@ pub fn apply_action(
     timing: Option<CompletionTiming>,
 ) -> Result<Transition> {
     validate_action(previous, actor, action)?;
-    validate_timing(previous, &timing)?;
+    validate_timing(previous, timing.as_ref())?;
     let mut state = previous.clone();
     if let Some(clue_type) = clue_type(action.action_type) {
         give_clue(&mut state, actor, action, clue_type);
     } else {
-        let order = action.target as usize;
+        let order = usize::try_from(action.target)?;
         let deck_move = state.options.deck_plays
             && state.deck_index + 1 == state.deck.len()
             && order == state.deck_index;
@@ -522,7 +542,7 @@ pub fn terminate_game(
     mut timing: Option<CompletionTiming>,
 ) -> Result<Transition> {
     check_ongoing(previous)?;
-    validate_timing(previous, &timing)?;
+    validate_timing(previous, timing.as_ref())?;
     if termination.actor_index >= previous.players.len() {
         return reject("You are not playing in this game.");
     }
@@ -537,7 +557,7 @@ pub fn terminate_game(
         return reject("That is not a valid value for the end game action.");
     }
     if termination.player_index < -1
-        || termination.player_index >= previous.players.len() as i32
+        || termination.player_index >= int(previous.players.len())
         || (termination.condition == EndCondition::Timeout && termination.player_index == -1)
     {
         return reject("That is not a valid player for a timeout.");
@@ -577,7 +597,7 @@ pub fn terminate_game(
     if termination.condition == EndCondition::Timeout
         && let Some(t) = &mut timing
     {
-        t.player_times[termination.player_index as usize] = 0;
+        t.player_times[usize::try_from(termination.player_index)?] = 0;
     }
     finish_action(
         &mut state,

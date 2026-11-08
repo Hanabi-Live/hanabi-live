@@ -50,9 +50,8 @@ impl Transport for MockTransport {
                 }
                 tokio::time::sleep(self.restart_delay).await;
                 anyhow::ensure!(
-                    !self
-                        .failed_restart_channel
-                        .is_some_and(|channel| path == format!("/channels/{channel}/messages")),
+                    self.failed_restart_channel
+                        .is_none_or(|channel| path != format!("/channels/{channel}/messages")),
                     "Synthetic channel delivery failure"
                 );
             }
@@ -66,7 +65,7 @@ impl Transport for MockTransport {
             } else if path.contains("/members/") {
                 json!({"nick":"Nick <@333333333333333333>","user":{"username":"Nick"}})
             } else if method == Method::POST {
-                json!({"id":format!("{}",700000000000000000_u64+self.next.fetch_add(1,Ordering::Relaxed))})
+                json!({"id":format!("{}",700_000_000_000_000_000_u64+self.next.fetch_add(1,Ordering::Relaxed))})
             } else {
                 json!({"guild_id":"444444444444444444","type":0,"name":"general"})
             })
@@ -113,10 +112,10 @@ async fn lifecycle_announcements_reach_both_channels_despite_network_latency_pos
     };
     tokio::time::timeout(Duration::from_secs(2), async {
         integrations
-            .announce_restart(Duration::from_secs(4680), None)
+            .announce_restart(Duration::from_mins(78), None)
             .await;
         integrations
-            .announce_stop(Duration::from_secs(4680), None)
+            .announce_stop(Duration::from_mins(78), None)
             .await;
     })
     .await
@@ -165,7 +164,7 @@ async fn failed_restart_channel_does_not_cancel_other_delivery_postgres() {
         bridge.event(json!({"t":"READY"})).await.unwrap();
         let result = tokio::time::timeout(
             Duration::from_secs(2),
-            bridge.announce_restart(Duration::from_secs(4680), None),
+            bridge.announce_restart(Duration::from_mins(78), None),
         )
         .await
         .unwrap();
@@ -222,12 +221,12 @@ async fn discord_lifecycle_announcements_match_across_channels_postgres() {
         .unwrap();
     assert!(quiesced.await.unwrap().is_empty());
     bridge
-        .announce_restart(Duration::from_secs(4680), None)
+        .announce_restart(Duration::from_mins(78), None)
         .await
         .unwrap();
     bridge
         .announce_stop(
-            Duration::from_secs(4680),
+            Duration::from_mins(78),
             Some("Upgrading <the> database & 'more'"),
         )
         .await

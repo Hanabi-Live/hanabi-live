@@ -81,7 +81,7 @@ async fn run(
         "synthetic-lobby-secret",
         caller,
         online,
-        crate::actors::client_message(command, data).unwrap(),
+        crate::actors::client_message(command, &data).unwrap(),
     )
     .await
     .unwrap()
@@ -107,7 +107,7 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
             .contains("already")
     );
     let _ = run(&db.pool, &who, &[], "chatUnfriend", data.clone()).await;
-    assert!(friends(&db.pool, a).await.unwrap().is_empty());
+    assert_eq!(friends(&db.pool, a).await.unwrap(), Vec::<String>::new());
     let (one, two) = tokio::join!(
         change_friend(&db.pool, a, b, true),
         change_friend(&db.pool, a, b, true)
@@ -346,12 +346,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         json!({"amount":10,"username":"Alice"}),
     )
     .await;
-    assert!(
-        self_data(&result, "chatPMHistory")["list"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
+    assert_eq!(self_data(&result, "chatPMHistory")["list"], json!([]));
     let result = run(
         &db.pool,
         &who,
@@ -360,12 +355,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         json!({"amount":10,"beforeID":message["pmID"]}),
     )
     .await;
-    assert!(
-        self_data(&result, "chatPMHistory")["list"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
+    assert_eq!(self_data(&result, "chatPMHistory")["list"], json!([]));
     for text in ["/not-a-command private", "/token extra", "/help"] {
         let result = run(
             &db.pool,
@@ -401,7 +391,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
-            crate::actors::client_message("chat", json!({"msg":"not lobby","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"msg":"not lobby","room":"table42"}))
                 .unwrap()
         )
         .await
@@ -414,7 +404,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
-            crate::actors::client_message("chat", json!({"msg":"/findvariant","room":"table42"}))
+            crate::actors::client_message("chat", &json!({"msg":"/findvariant","room":"table42"}))
                 .unwrap()
         )
         .await
@@ -545,8 +535,14 @@ async fn lobby_history_pages_include_only_own_games_postgres() {
         history_ids(&db.pool, a, 99, 0).await.unwrap(),
         vec![shared, own]
     );
-    assert!(history_ids(&db.pool, a, 99, 10).await.unwrap().is_empty());
-    assert!(history_ids(&db.pool, d, 0, 10).await.unwrap().is_empty());
+    assert_eq!(
+        history_ids(&db.pool, a, 99, 10).await.unwrap(),
+        Vec::<i32>::new()
+    );
+    assert_eq!(
+        history_ids(&db.pool, d, 0, 10).await.unwrap(),
+        Vec::<i32>::new()
+    );
     db.close().await;
 }
 
@@ -579,11 +575,9 @@ async fn lobby_directed_linked_seeds_and_histories_postgres() {
         blocked_seeds(&db.pool, &[c], "p2v0s").await.unwrap(),
         vec!["p2v0s2"]
     );
-    assert!(
-        blocked_seeds(&db.pool, &[a], "p3v0s")
-            .await
-            .unwrap()
-            .is_empty()
+    assert_eq!(
+        blocked_seeds(&db.pool, &[a], "p3v0s").await.unwrap(),
+        Vec::<String>::new()
     );
     assert!(
         self_data(

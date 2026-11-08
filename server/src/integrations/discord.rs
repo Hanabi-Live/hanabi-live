@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{
     collections::{HashMap, HashSet},
+    fmt::Write as _,
     sync::{
         Arc, Weak,
         atomic::{AtomicBool, AtomicU8, Ordering},
@@ -208,7 +209,7 @@ impl Transport for NativeTransport {
                     let interval = hello["d"]["heartbeat_interval"]
                         .as_u64()
                         .context("Missing heartbeat")?;
-                    ensure!((1000..=120000).contains(&interval), "Invalid heartbeat");
+                    ensure!((1000..=120_000).contains(&interval), "Invalid heartbeat");
                     let identify = if session.is_empty() {
                         json!({"op":2,"d":{"token":self.token,"intents":1|512|4096|32768,
                             "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})
@@ -223,7 +224,7 @@ impl Transport for NativeTransport {
                     let mut acknowledged = true;
                     loop {
                         tokio::select! {
-                            _=cancel.cancelled()=>{let _=tokio::time::timeout(Duration::from_secs(1),socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
+                            ()=cancel.cancelled()=>{let _=tokio::time::timeout(Duration::from_secs(1),socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
                             _=heartbeat.tick()=>{
                                 ensure!(acknowledged,"Discord heartbeat was not acknowledged");
                                 socket.send(Message::Text(json!({"op":1,"d":sequence}).to_string().into())).await?;
@@ -257,13 +258,13 @@ impl Transport for NativeTransport {
                     Ok(())
                 };
                 let result =
-                    tokio::select! {_=cancel.cancelled()=>return Ok(()),result=attempt=>result};
+                    tokio::select! {()=cancel.cancelled()=>return Ok(()),result=attempt=>result};
                 let _ = events.try_send(json!({"t":"TRANSPORT_DISCONNECTED"}));
                 if let Err(error) = result {
                     crate::errors::Report::from_error("Reconnecting Discord gateway", &error, None)
                         .log();
                 }
-                tokio::select! {_=cancel.cancelled()=>break,_=tokio::time::sleep(Duration::from_secs(5))=>{}}
+                tokio::select! {()=cancel.cancelled()=>break,()=tokio::time::sleep(Duration::from_secs(5))=>{}}
             }
             Ok(())
         })
@@ -352,7 +353,7 @@ impl Bridge {
         let lost = app.lease_lost.clone();
         app.background.spawn(async move {
             tokio::select! {
-                _=lost.cancelled()=>{},
+                ()=lost.cancelled()=>{},
                 result=gateway.gateway(events,cancel)=>{if let Err(error)=result {
                     crate::errors::Report::from_error("Discord gateway", &error, None).log();
                 }}
@@ -364,7 +365,7 @@ impl Bridge {
         app.background.spawn(async move {
             loop {
                 let event = tokio::select! {
-                    _=shutdown.cancelled()=>break,
+                    ()=shutdown.cancelled()=>break,
                     event=receiver.recv()=>event,
                 };
                 let Some(event) = event else {
@@ -462,12 +463,13 @@ impl Bridge {
     }
 
     pub async fn render(&self, text: &str) -> String {
-        match tokio::time::timeout(Duration::from_secs(5), self.render_inner(text)).await {
-            Ok(rendered) => rendered,
-            Err(_) => {
-                self.degrade();
-                escape_html(text)
-            }
+        if let Ok(rendered) =
+            tokio::time::timeout(Duration::from_secs(5), self.render_inner(text)).await
+        {
+            rendered
+        } else {
+            self.degrade();
+            escape_html(text)
         }
     }
 
@@ -669,10 +671,11 @@ impl Bridge {
                     );
                     if let Some(down) = last_shutdown(&self.pool).await? {
                         let seconds = (now - down).num_seconds().max(0).unsigned_abs();
-                        message.push_str(&format!(
+                        write!(
+                            message,
                             " - Downtime: {}",
                             crate::lifecycle::duration(seconds)
-                        ));
+                        )?;
                     }
                     self.announce(&message).await?;
                 }
@@ -704,9 +707,8 @@ impl Bridge {
                     .lines()
                     .map(|line| line.split(' ').next().unwrap_or("").to_ascii_lowercase())
                     .find(|cmd| cmd == "/subscribe" || cmd == "/unsubscribe");
-                let text = match normalize_chat(subscription.as_deref().unwrap_or(content)) {
-                    Ok(text) => text,
-                    Err(_) => return Ok(()),
+                let Ok(text) = normalize_chat(subscription.as_deref().unwrap_or(content)) else {
+                    return Ok(());
                 };
                 let class = lobby::classify_chat(&text);
                 if subscription.is_none()

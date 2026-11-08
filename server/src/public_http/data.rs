@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, Params, PublicState, Query, Result, catalog, integer, pagination};
 use crate::archive::GameRecord;
 use anyhow::Context;
 use sqlx::{Postgres, QueryBuilder};
@@ -83,7 +83,7 @@ pub(super) async fn selection(state: &PublicState, p: &Params, mode: &str) -> Re
                 .await?
                 .into_iter()
                 .map(|u| u.0)
-                .collect()
+                .collect();
         }
         "variants" => {
             let raw = p

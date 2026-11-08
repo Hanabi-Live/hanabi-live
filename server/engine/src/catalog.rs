@@ -1,3 +1,4 @@
+use crate::int;
 use anyhow::{Result, anyhow};
 use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant, ClueType};
 use serde::Serialize;
@@ -147,7 +148,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         id: entry.id,
         new_id: entry.new_id,
         name: entry.name,
-        max_score: variant_suits.len() as i32 * stack_size,
+        max_score: int(variant_suits.len()) * stack_size,
         has_inverted: variant_suits.iter().any(|suit| suit.inverted),
         suits: variant_suits,
         ranks,
@@ -274,7 +275,7 @@ pub fn is_card_touched(
             }
             if variant.synesthesia
                 && !suit.no_clue_ranks
-                && (rank - 1) % variant.clue_colors.len() as i32 == value
+                && (rank - 1) % int(variant.clue_colors.len()) == value
             {
                 return true;
             }
@@ -295,9 +296,9 @@ pub fn is_card_touched(
             if suit.prism {
                 return value
                     == if rank == 7 {
-                        variant.clue_colors.len() as i32 - 1
+                        int(variant.clue_colors.len()) - 1
                     } else {
-                        (rank - 1) % variant.clue_colors.len() as i32
+                        (rank - 1) % int(variant.clue_colors.len())
                     };
             }
             suit.clue_colors.contains(color)

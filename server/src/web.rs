@@ -73,10 +73,10 @@ impl App {
     }
 
     pub fn integration_status(&self) -> Value {
-        self.integrations
-            .get()
-            .map(|integrations| integrations.status())
-            .unwrap_or_else(|| json!({"discord":"disabled"}))
+        self.integrations.get().map_or_else(
+            || json!({"discord":"disabled"}),
+            |integrations| integrations.status(),
+        )
     }
 
     pub async fn announce_restart(&self, message: Option<&str>) {
@@ -175,7 +175,7 @@ pub fn router(app: Arc<App>) -> Router {
         .with_state(app.clone())
         .merge(accounts)
         .layer(middleware::from_fn_with_state(app.clone(), check_origin));
-    public_http::router(app.store.lobby_reads.clone(), app.public.clone())
+    public_http::router(app.store.lobby_reads.clone(), &app.public)
         .merge(authenticated)
         .fallback(|uri: Uri| async move { route_error(&uri, StatusCode::NOT_FOUND, "Not found.") })
         .method_not_allowed_fallback(|uri: Uri| async move {
@@ -240,6 +240,8 @@ async fn alert_server_errors(
 }
 
 fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -> bool {
+    use crate::tls::SITE_HOSTS;
+
     let Some(origin) = headers.get(header::ORIGIN) else {
         return true;
     };
@@ -280,7 +282,7 @@ fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -
     // HTTP/2 carries :authority in the request URI, not necessarily in a Host header.
     let Some(host) = uri
         .authority()
-        .map(|authority| authority.as_str())
+        .map(axum::http::uri::Authority::as_str)
         .or(header_host)
         .and_then(parse_host)
     else {
@@ -296,7 +298,6 @@ fn origin_allowed(headers: &HeaderMap, uri: &Uri, domain: &str, use_tls: bool) -
             return false;
         }
     }
-    use crate::tls::SITE_HOSTS;
     let configured_host = origin.host_str() == configured.host_str()
         || (configured
             .host_str()
@@ -487,8 +488,8 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 StatusCode::GATEWAY_TIMEOUT))?
         };
         let result = tokio::select! {
-            _ = session.cancel.cancelled() => return,
-            _ = app.read_shutdown.cancelled() => return,
+            () = session.cancel.cancelled() => return,
+            () = app.read_shutdown.cancelled() => return,
             result = result => result,
         };
         let _admission = app.admission.read().await;
@@ -526,8 +527,7 @@ async fn websocket(
 ) -> Response {
     if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
         return crate::errors::Report::known("Opening a live connection", "server_unavailable",
-            if !app.healthy() { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." }
-            else { "The server is not accepting connections while it starts or drains for maintenance." },
+            if app.healthy() { "The server is not accepting connections while it starts or drains for maintenance." } else { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." },
             StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
     let query = match accounts::account_query(uri.query(), &["account", "reconnect", "version"]) {
@@ -721,9 +721,9 @@ async fn connection(
     let writer = tokio::spawn(async move {
         loop {
             tokio::select! {
-                _=writer_session.cancel.cancelled()=>break,
-                _=writer_session.lease_lost.cancelled()=>break,
-                _=writer_shutdown.cancelled()=>break,
+                ()=writer_session.cancel.cancelled()=>break,
+                ()=writer_session.lease_lost.cancelled()=>break,
+                ()=writer_shutdown.cancelled()=>break,
                 next=outgoing.recv()=>{
                     let Some(Outbound {message,permit,completion,global_permit})=next else {break;};
                     let send=sink.send(message);
@@ -731,13 +731,12 @@ async fn connection(
                     // Recheck the monotonic Redis deadline on every poll, including
                     // the first poll after a stalled executor resumes.
                     let guarded=futures_util::future::poll_fn(|cx| {
-                        if !writer_session.active() {Poll::Ready(None)}
-                        else {send.as_mut().poll(cx).map(Some)}
+                        if writer_session.active() {send.as_mut().poll(cx).map(Some)} else {Poll::Ready(None)}
                     });
                     let result=tokio::select! {
-                        _=writer_session.cancel.cancelled()=>None,
-                        _=writer_session.lease_lost.cancelled()=>None,
-                        _=writer_shutdown.cancelled()=>None,
+                        ()=writer_session.cancel.cancelled()=>None,
+                        ()=writer_session.lease_lost.cancelled()=>None,
+                        ()=writer_shutdown.cancelled()=>None,
                         result=tokio::time::timeout(Duration::from_secs(5),guarded)=>result.ok().flatten(),
                     };
                     drop(permit);
@@ -777,9 +776,9 @@ async fn connection(
     let reader = tokio::spawn(async move {
         loop {
             tokio::select! {
-                _=reader_session.cancel.cancelled()=>break,
-                _=reader_session.lease_lost.cancelled()=>break,
-                _=reader_shutdown.cancelled()=>break,
+                ()=reader_session.cancel.cancelled()=>break,
+                ()=reader_session.lease_lost.cancelled()=>break,
+                ()=reader_shutdown.cancelled()=>break,
                 next=stream.next()=>match next {
                     Some(Ok(Message::Text(text)))=>{
                         let Some(message)=incoming_bytes.admit(&reader_session,&text) else {break;};
@@ -811,8 +810,8 @@ async fn connection(
         load_lobby(app.clone(), session.clone(), false);
         loop {
             let command = tokio::select! {
-                _=session.cancel.cancelled()=>break,
-                _=app.shutdown.cancelled()=>break,
+                ()=session.cancel.cancelled()=>break,
+                ()=app.shutdown.cancelled()=>break,
                 command=commands.recv()=>command,
             };
             let Some(command) = command else {
@@ -1063,7 +1062,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             );
             let effects = if history {
                 tokio::select! {
-                    _ = app.read_shutdown.cancelled() => return Ok(()),
+                    () = app.read_shutdown.cancelled() => return Ok(()),
                     result = work => result?,
                 }
             } else {

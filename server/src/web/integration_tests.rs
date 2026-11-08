@@ -540,7 +540,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         "reconnect"
     );
     let alice_generation = Session::new(
-        welcome["userID"].as_i64().unwrap() as i32,
+        i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap(),
         "Alicè".into(),
         1,
         true,
@@ -553,7 +553,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .send(HubCommand::LobbyEffects {
             session: alice_generation,
             effects: vec![Effect::ToUser {
-                id: bob_welcome["userID"].as_i64().unwrap() as i32,
+                id: i32::try_from(bob_welcome["userID"].as_i64().unwrap()).unwrap(),
                 generation: 2,
                 message: crate::transport::Outgoing::new(
                     hanabi_protocol::server::CHAT,

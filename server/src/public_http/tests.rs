@@ -52,7 +52,7 @@ async fn rendered_shell_preserves_modal_and_game_container_nesting() {
     for development in [false, true] {
         let mut config = config();
         config.is_dev = development;
-        let (status, body) = request(router(pool.clone(), config), "/").await;
+        let (status, body) = request(router(pool.clone(), &config), "/").await;
         assert_eq!(status, StatusCode::OK, "{body}");
         let mut stack: Vec<Option<String>> = Vec::new();
         let mut parents = HashMap::new();
@@ -114,7 +114,7 @@ async fn shell_routes_metadata_and_static_files() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused:unused@localhost/unused")
         .unwrap();
-    let app = router(pool, config());
+    let app = router(pool, &config());
     for path in [
         "/",
         "/lobby",
@@ -173,7 +173,7 @@ async fn shell_routes_metadata_and_static_files() {
         PgPoolOptions::new()
             .connect_lazy("postgres://unused:unused@localhost/unused")
             .unwrap(),
-        unsafe_config,
+        &unsafe_config,
     );
     let (status, body) = request(app, "/").await;
     assert_eq!(status, StatusCode::OK);
@@ -188,7 +188,7 @@ async fn stats_database_failure_is_not_an_empty_success() {
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
     pool.close().await;
-    let (status, body) = request(router(pool, config()), "/stats").await;
+    let (status, body) = request(router(pool, &config()), "/stats").await;
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
     assert!(body.contains("GET /stats failed"));
     assert!(body.contains("database connection pool is closed"));
@@ -310,14 +310,14 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let Some(db) = Database::create().await else {
         return;
     };
-    let app = router(db.pool.clone(), config());
+    let app = router(db.pool.clone(), &config());
     let (status, body) = request(app.clone(), "/stats").await;
     assert_eq!(status, StatusCode::OK, "{body}");
-    let stats =
+    let stat_pattern =
         regex!(r#"(?s)<li>\s*<span class="stat-description"\s*>(.*?)</span\s*>\s*(.*?)\s*</li>"#);
     let normalize = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let stats_values = |html: &str| {
-        stats
+        stat_pattern
             .captures_iter(html)
             .map(|item| normalize(&item[2]))
             .collect::<Vec<_>>()
@@ -434,7 +434,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     .unwrap();
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice").await;
     let games: Vec<Value> = serde_json::from_str(&body).unwrap();
-    assert!(!games.is_empty());
+    assert_ne!(games, Vec::<Value>::new());
     for game in &games {
         hanabi_protocol::validate::<hanabi_protocol::GameHistory>(game).unwrap();
     }
@@ -758,7 +758,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     assert!(deck.iter().any(|card| card.rank == 7));
     sqlx::query!(
         "UPDATE games SET variant_id=$1 WHERE id=3",
-        variant.id as i16
+        i16::try_from(variant.id).unwrap()
     )
     .execute(&db.pool)
     .await

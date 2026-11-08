@@ -273,8 +273,12 @@ impl TableSnapshot {
         );
         ensure!(
             self.shadows.len() <= 4096
-                && self.shadows.iter().all(|(id, seat)| *id > 0
-                    && seat.is_none_or(|seat| seat >= 0 && (seat as usize) < self.players().len())),
+                && self
+                    .shadows
+                    .iter()
+                    .all(|(id, seat)| *id > 0
+                        && seat.is_none_or(|seat| usize::try_from(seat)
+                            .is_ok_and(|seat| seat < self.players().len()))),
             "Invalid persisted spectator"
         );
         ensure!(
@@ -282,7 +286,7 @@ impl TableSnapshot {
                 && self.players().iter().enumerate().all(|(index, p)| (p.id > 0
                     || (matches!(self.phase, Phase::Replay { .. })
                         && self.extra.no_write_to_database
-                        && p.id == -1 - index as i32))
+                        && p.id == -1 - hanabi_engine::int(index)))
                     && !p.name.is_empty()
                     && p.name.len() <= 100),
             "Invalid players"
@@ -434,7 +438,7 @@ impl Snapshot {
             "Invalid runtime timing"
         );
         ensure!(
-            (-1..n as i32).contains(&self.pause_player_index)
+            (-1..hanabi_engine::int(n)).contains(&self.pause_player_index)
                 && self.game.paused == (self.pause_player_index >= 0),
             "Invalid pause state"
         );

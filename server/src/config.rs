@@ -56,16 +56,15 @@ impl Config {
             .filter(|p| !p.as_os_str().is_empty())
             .unwrap_or(Path::new("."))
             .canonicalize()?;
-        Self::from_values(root, values)
+        Self::from_values(&root, &values)
     }
 
-    pub fn from_values(root: PathBuf, values: HashMap<String, String>) -> Result<Self> {
+    pub fn from_values(root: &Path, values: &HashMap<String, String>) -> Result<Self> {
         let field = |key: &str, default: &str| {
             values
                 .get(key)
                 .filter(|s| !s.is_empty())
-                .map(String::as_str)
-                .unwrap_or(default)
+                .map_or(default, String::as_str)
                 .to_owned()
         };
         let domain = field("DOMAIN", "localhost");
@@ -124,7 +123,7 @@ impl Config {
             }
         }
         Ok(Self {
-            root: root.clone(),
+            root: root.to_path_buf(),
             secret,
             port: field("PORT", "80").parse().context("Invalid PORT")?,
             localhost_port: field("LOCALHOST_PORT", "8081")
@@ -166,7 +165,7 @@ mod tests {
             if let Some(value) = configured {
                 values.insert("REDIS_URL".into(), value.into());
             }
-            let config = Config::from_values(root.clone(), values).unwrap();
+            let config = Config::from_values(&root, &values).unwrap();
             assert_eq!(config.redis_url, expected);
         }
     }
@@ -184,7 +183,7 @@ mod tests {
         .map(|(k, v)| (k.into(), v))
         .collect();
         let before = std::env::var("DOMAIN");
-        let config = Config::from_values(root.clone(), values.clone()).unwrap();
+        let config = Config::from_values(&root, &values).unwrap();
         assert_eq!(config.listen_host(), "0.0.0.0");
         assert_eq!(config.port(), 80);
         assert_eq!(std::env::var("DOMAIN"), before);
@@ -199,25 +198,21 @@ mod tests {
         ] {
             let mut values = values.clone();
             values.insert(key.into(), value.into());
-            assert!(Config::from_values(root.clone(), values).is_err(), "{key}");
+            assert!(Config::from_values(&root, &values).is_err(), "{key}");
         }
         let mut values = values;
         values.insert("DOMAIN".into(), "localhost".into());
         assert_eq!(
-            Config::from_values(root.clone(), values.clone())
-                .unwrap()
-                .listen_host(),
+            Config::from_values(&root, &values).unwrap().listen_host(),
             "127.0.0.1"
         );
         values.insert("LISTEN_HOST".into(), "0.0.0.0".into());
         assert_eq!(
-            Config::from_values(root.clone(), values.clone())
-                .unwrap()
-                .listen_host(),
+            Config::from_values(&root, &values).unwrap().listen_host(),
             "0.0.0.0"
         );
         values.insert("TLS_CERT_FILE".into(), "cert.pem".into());
         values.insert("TLS_KEY_FILE".into(), "key.pem".into());
-        assert_eq!(Config::from_values(root, values).unwrap().port(), 443);
+        assert_eq!(Config::from_values(&root, &values).unwrap().port(), 443);
     }
 }

@@ -135,7 +135,7 @@ const MAX_DOWNTIME_MESSAGE_CHARS: usize = 500;
 fn downtime_message(query: &Query) -> Result<Option<String>> {
     let Some(message) = query
         .get("message")
-        .map(|m| m.trim())
+        .map(str::trim)
         .filter(|m| !m.is_empty())
     else {
         return Ok(None);

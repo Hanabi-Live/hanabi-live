@@ -1,3 +1,7 @@
+#[allow(
+    clippy::wildcard_imports,
+    reason = "the command tables below name every payload type"
+)]
 use crate::*;
 use anyhow::{Context, Result, bail};
 use serde::de::DeserializeOwned;
@@ -215,7 +219,15 @@ macro_rules! server_messages {
 
 /// Every message the server can send. Building a frame requires one of these and its payload type.
 pub mod server {
-    use super::{ServerMessage, *};
+    use super::{
+        CardIdentities, Chat, ChatDelete, ChatHistory, ChatList, ChatTyping, Clock, Connected,
+        Empty, ErrorNotice, FinishOngoingGame, Friends, GameAction, GameActionList,
+        GameHistoryList, GameHistoryOtherScores, HypoShowDrawnCards, Hypothetical,
+        HypotheticalAction, IdleWarning, Init, LobbyStatus, Note, NoteList, NoteListPlayer, Pause,
+        Pregame, ReplayEfficiencyMod, ReplayIndicator, ReplayLeader, ReplaySegment, ReplaySound,
+        Restart, ServerMessage, SoundLobby, Spectators, Suggestion, Table, TableList, TableRequest,
+        TableStarted, User, UserInactive, UserLeft, UserList, VoteChange, Warning, Welcome,
+    };
     server_contracts!(server_messages);
 }
 

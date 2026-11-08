@@ -102,11 +102,10 @@ impl Control {
             .map(|app| app.store.clone())
     }
     pub fn integration_status(&self) -> Value {
-        self.application
-            .get()
-            .and_then(Weak::upgrade)
-            .map(|app| app.integration_status())
-            .unwrap_or_else(|| json!({"discord":"disabled"}))
+        self.application.get().and_then(Weak::upgrade).map_or_else(
+            || json!({"discord":"disabled"}),
+            |app| app.integration_status(),
+        )
     }
     pub fn activate(&self) {
         self.accepting.store(true, Ordering::Release);
@@ -249,7 +248,7 @@ pub async fn drain_game_runtime(
     let (reply, stopped) = oneshot::channel();
     if app.hub.send(HubCommand::Stop(reply)).await.is_ok() {
         if let Err(error) = stopped.await {
-            failures.push(error.to_string())
+            failures.push(error.to_string());
         }
     } else {
         failures.push("Hub stopped before shutdown acknowledgement".into());

@@ -1,5 +1,5 @@
 use crate::{
-    EndCondition, EnginePlayer, EngineState, PlayerAction, RecordedAction,
+    EndCondition, EnginePlayer, EngineState, PlayerAction, RecordedAction, index, int,
     rules::{clue_cost, touched_orders},
     types::reject,
 };
@@ -30,7 +30,7 @@ pub(crate) fn validate_character_action(
         "Impulsive"
             if m == 0
                 && (action.action_type != 0
-                    || p.hand.last().copied().map(|o| o as i32) != Some(action.target)) =>
+                    || p.hand.last().copied().map(int) != Some(action.target)) =>
         {
             Some("so you must play your slot 1 card after it has been clued.")
         }
@@ -70,7 +70,7 @@ pub(crate) fn validate_character_play(
     let p = &state.players[actor];
     if state.options.detrimental_characters
         && p.character == "Hesitant"
-        && p.hand.last().copied().map(|o| o as i32) == Some(action.target)
+        && p.hand.last().copied().map(int) == Some(action.target)
     {
         return reject("You cannot play that card since you are a Hesitant character.");
     }
@@ -107,7 +107,7 @@ pub(crate) fn validate_character_clue(
         return Ok(());
     }
     let p = &state.players[actor];
-    let target = &state.players[action.target as usize];
+    let target = &state.players[usize::try_from(action.target)?];
     let touched = touched_orders(state, action);
     let m = p.character_metadata;
     let t = action.action_type - 2;
@@ -116,11 +116,7 @@ pub(crate) fn validate_character_clue(
         "Dumbfounded" if t == 1 && action.value != m => {
             Some("so you can not give that type of clue.")
         }
-        "Inept"
-            if touched
-                .iter()
-                .any(|o| state.deck[*o].suit_index as i32 == m) =>
-        {
+        "Inept" if touched.iter().any(|o| int(state.deck[*o].suit_index) == m) => {
             Some("so you cannot give clues that touch a specific suit.")
         }
         "Awkward" if touched.iter().any(|o| state.deck[*o].rank == m) => {
@@ -136,12 +132,12 @@ pub(crate) fn validate_character_clue(
         "Picky" if (action.value + i32::from(t == 0)) % 2 == 0 => {
             Some("so you can only clue odd numbers or odd colors.")
         }
-        "Spiteful" if action.target as usize == (actor + 1) % state.players.len() => {
+        "Spiteful" if index(action.target) == Some((actor + 1) % state.players.len()) => {
             Some("so you cannot clue the player to your left.")
         }
         "Insolent"
-            if action.target as usize
-                == (actor + state.players.len() - 1) % state.players.len() =>
+            if index(action.target)
+                == Some((actor + state.players.len() - 1) % state.players.len()) =>
         {
             Some("so you cannot clue the player to your right.")
         }
@@ -196,7 +192,7 @@ pub(crate) fn character_post_clue(
         }
         p.character_metadata = 0;
     }
-    let target = &mut state.players[action.target as usize];
+    let target = &mut state.players[index(action.target).expect("the clue target was validated")];
     if target.character == "Vindictive"
         || (target.character == "Impulsive"
             && target.hand.last().is_some_and(|o| touched.contains(o)))
@@ -259,7 +255,7 @@ pub(crate) fn has_taken_last_turn(state: &EngineState) -> bool {
         return false;
     }
     if !state.options.detrimental_characters {
-        return state.end_turn != state.turn + state.players.len() as i32 + 1;
+        return state.end_turn != state.turn + int(state.players.len()) + 1;
     }
     let mut active = state.active_player_index;
     let mut inverted = state.turns_inverted;
@@ -284,6 +280,6 @@ pub(crate) fn check_character_softlock(state: &mut EngineState) {
         && (p.character == "Vindictive" || p.character == "Insistent")
     {
         state.end_condition = EndCondition::CharacterSoftlock;
-        state.end_player = p.index as i32;
+        state.end_player = int(p.index);
     }
 }

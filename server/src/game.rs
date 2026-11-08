@@ -77,7 +77,7 @@ impl Game {
                 shadowing_player_index: None,
             },
             |i| Recipient::Player {
-                player_index: i as i32,
+                player_index: hanabi_engine::int(i),
             },
         );
         hanabi_engine::events_for_recipient(&self.0, recipient, Some(&self.events[from..]))
@@ -130,13 +130,13 @@ pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
         !deck.is_empty() && deck.len() <= 60,
         "Invalid custom deck length"
     );
-    let mut bytes = vec![0x80 + deck.len() as u8];
+    let mut bytes = vec![0x80 + u8::try_from(deck.len())?];
     for c in deck {
         ensure!(
             c.suit_index < 6 && matches!(c.rank, 1..=5 | 7),
             "Invalid card"
         );
-        bytes.push((c.suit_index * 8 + c.rank as usize) as u8);
+        bytes.push(u8::try_from(c.suit_index * 8 + usize::try_from(c.rank)?)?);
     }
     Ok(bytes)
 }

@@ -78,8 +78,8 @@ mod tests {
         let root = crate::tls::fixture_root("restart")?;
         std::fs::create_dir_all(root.join("public/js/bundles"))?;
         let config = Config::from_values(
-            root.clone(),
-            [
+            &root,
+            &[
                 ("SESSION_SECRET", "x".repeat(128)),
                 ("REDIS_URL", "redis://localhost".into()),
             ]

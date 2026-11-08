@@ -105,8 +105,8 @@ export const catalogSuitSchema = z.strictObject({
    * The suit ID is a two character string:
    * - Normal suits have a single capital letter. (e.g. "R" for "Red")
    * - Special suits have a two character ID with a lowercase letter. (e.g. "Bk" for "Black")
-   * - Combination suits have a four character ID. (e.g. "BrRa" for "Muddy Rainbow")
-   * - Dark suits have a capital D prefix. (e.g. "DRa" for "Dark Rainbow")
+   * - Combination suits have a four character ID. (e.g. `BrRa` for "Muddy Rainbow")
+   * - Dark suits have a capital D prefix. (e.g. `DRa` for "Dark Rainbow")
    * - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
    * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
    *  VA")

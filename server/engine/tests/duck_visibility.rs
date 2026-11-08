@@ -32,7 +32,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
             let action = values
                 .map(|value| PlayerAction {
                     action_type: kind,
-                    target: target as i32,
+                    target: int(target),
                     value,
                 })
                 .find(|action| !touched_orders(&state, action).is_empty())
@@ -42,7 +42,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
             let authoritative = state.clone();
             for events in [None, Some(transition.events.as_slice())] {
                 let original = clues(events.unwrap_or(&state.events));
-                assert!(!original.is_empty());
+                assert_ne!(original, [] as [hanabi_engine::EngineEvent; 0]);
                 for index in 0..3 {
                     for recipient in [
                         Recipient::Player {

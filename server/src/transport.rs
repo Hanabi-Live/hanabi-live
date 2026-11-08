@@ -51,7 +51,7 @@ impl InboundBudget {
             session.cancel.cancel();
             return None;
         }
-        let length = text.len() as u32;
+        let length = u32::try_from(text.len()).unwrap_or(u32::MAX);
         let Ok(local) = self.bytes.clone().try_acquire_many_owned(length) else {
             eprintln!("Closing connection exceeding its input byte budget.");
             session.cancel.cancel();
@@ -223,7 +223,7 @@ impl Session {
         };
         let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
             .clone()
-            .try_acquire_many_owned(message.len() as u32)
+            .try_acquire_many_owned(u32::try_from(message.len()).unwrap_or(u32::MAX))
         else {
             self.cancel.cancel();
             return;
@@ -255,7 +255,7 @@ impl Session {
             };
             let Ok(global_permit) = GLOBAL_OUTPUT_BYTES
                 .clone()
-                .try_acquire_many_owned(message.len() as u32)
+                .try_acquire_many_owned(u32::try_from(message.len()).unwrap_or(u32::MAX))
             else {
                 self.cancel.cancel();
                 return None;

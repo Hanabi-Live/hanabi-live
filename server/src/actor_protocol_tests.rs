@@ -19,7 +19,7 @@ struct Harness {
     tasks: TaskTracker,
     users: Vec<Arc<Session>>,
     outgoing: Vec<mpsc::Receiver<Outbound>>,
-    _redis: RedisFixture,
+    redis: RedisFixture,
 }
 impl Harness {
     async fn new(names: &[&str]) -> Result<Option<Self>> {
@@ -51,7 +51,7 @@ impl Harness {
             .execute(&pool)
             .await?;
         for (index, name) in names.iter().enumerate() {
-            sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", index as i32+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
+            sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", hanabi_engine::int(index)+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
         }
         let redis = RedisFixture::start(true).await?;
         let state = RedisState::connect(&redis.url, "actor-protocol").await?;
@@ -72,10 +72,11 @@ impl Harness {
             tasks,
             users: vec![],
             outgoing: vec![],
-            _redis: redis,
+            redis,
         };
         for (index, name) in names.iter().enumerate() {
-            let (session, outgoing) = Session::new(index as i32 + 1, (*name).into(), 1, false);
+            let (session, outgoing) =
+                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
             h.register(session.clone()).await?;
             h.users.push(session);
             h.outgoing.push(outgoing);
@@ -83,7 +84,7 @@ impl Harness {
         Ok(Some(h))
     }
     async fn register(&self, session: Arc<Session>) -> Result<()> {
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         self.hub
             .send(HubCommand::Register {
                 session,
@@ -92,7 +93,7 @@ impl Harness {
                 reply,
             })
             .await?;
-        received.await?
+        replied.await?
     }
     async fn replace(&mut self, index: usize) -> Result<(Arc<Session>, mpsc::Receiver<Outbound>)> {
         let old = self.users[index].clone();
@@ -108,15 +109,15 @@ impl Harness {
         command: &str,
         data: Value,
     ) -> Result<oneshot::Receiver<Result<()>>> {
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         self.hub
             .send(HubCommand::Client {
                 session: self.users[index].clone(),
-                message: crate::actors::client_message(command, data)?,
+                message: crate::actors::client_message(command, &data)?,
                 reply,
             })
             .await?;
-        Ok(received)
+        Ok(replied)
     }
     async fn send(&self, index: usize, command: &str, data: Value) -> Result<()> {
         tokio::time::timeout(
@@ -126,7 +127,7 @@ impl Harness {
         .await??
     }
     async fn barrier(&self, index: usize) -> Result<()> {
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         self.hub
             .send(HubCommand::Directory {
                 session: self.users[index].clone(),
@@ -134,7 +135,7 @@ impl Harness {
                 reply,
             })
             .await?;
-        received.await??;
+        replied.await??;
         Ok(())
     }
     fn frames(&mut self, index: usize) -> Result<Vec<(String, Value)>> {
@@ -197,17 +198,17 @@ impl Harness {
         }).await?
     }
     async fn stop_hub(&self) -> Result<()> {
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         self.hub.send(HubCommand::Quiesce(reply)).await?;
-        for handle in received.await? {
-            let (reply, received) = oneshot::channel();
+        for handle in replied.await? {
+            let (reply, replied) = oneshot::channel();
             if handle.sender.send(TableCommand::Drain(reply)).await.is_ok() {
-                tokio::time::timeout(Duration::from_secs(10), received).await???;
+                tokio::time::timeout(Duration::from_secs(10), replied).await???;
             }
         }
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         self.hub.send(HubCommand::Stop(reply)).await?;
-        received.await?;
+        replied.await?;
         self.tasks.close();
         self.tasks.wait().await;
         Ok(())
@@ -302,7 +303,7 @@ async fn player_shadow_from_saved_games_is_cleared_on_reattend() -> Result<()> {
         let (mut table, revision) = h.snapshot(id).await?;
         let alice = table.players().iter().position(|p| p.id == 1).unwrap();
         let bob = table.players().iter().position(|p| p.id == 2).unwrap();
-        table.shadows.insert(2, Some(alice as i32));
+        table.shadows.insert(2, Some(hanabi_engine::int(alice)));
         h.store.save(&table, revision).await?;
         h.tasks = TaskTracker::new();
         h.hub = Hub::start(
@@ -390,7 +391,7 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             let action = values
                 .map(|value| hanabi_engine::PlayerAction {
                     action_type: kind,
-                    target: target as i32,
+                    target: hanabi_engine::int(target),
                     value,
                 })
                 .find(|action| !hanabi_engine::touched_orders(game, action).is_empty())
@@ -525,7 +526,7 @@ async fn leader_transfers_announce_the_actor_and_target_once_to_the_table() -> R
                 h.frames(index)?;
             }
             let before = h.snapshot(id).await?.0.chat.len();
-            let actor = if phase == 1 { 1 } else { 0 };
+            let actor = usize::from(phase == 1);
             let target = 1 - actor;
             let data = json!({"tableID":id,"name":h.users[target].name});
             h.send(actor, "tableSetLeader", data).await?;
@@ -620,16 +621,19 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
                 h.users[0].cancel.cancel();
             }
             actor
-                .cleanup(Instant::now() - Duration::from_secs(61))
+                .cleanup(Instant::now().checked_sub(Duration::from_secs(61)).unwrap())
                 .await?;
             ensure!(
                 !actor.retired,
                 "Empty review did not receive a reconnect grace period"
             );
             let (_sender, receiver) = mpsc::channel(4);
-            tokio::time::timeout(Duration::from_secs(2), actor.run(receiver, None))
-                .await
-                .context("Abandoned review did not expire on its own timer")?;
+            Box::pin(tokio::time::timeout(
+                Duration::from_secs(2),
+                actor.run(receiver, None),
+            ))
+            .await
+            .context("Abandoned review did not expire on its own timer")?;
             ensure!(
                 h.state.get(StateId::Table(id)).await?.is_none(),
                 "Expired review remains in Redis"
@@ -668,7 +672,7 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
             crate::server_info::test_info(),
         );
         actor
-            .cleanup(Instant::now() - Duration::from_secs(61))
+            .cleanup(Instant::now().checked_sub(Duration::from_secs(61)).unwrap())
             .await?;
         actor.reattend(h.users[1].clone(), true, None).await?;
         actor.tick().await?;
@@ -695,7 +699,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
     let Some(h) = Harness::new(&["Alice", "Bob"]).await? else {
         return Ok(());
     };
-    let outcome = async {
+    let outcome = Box::pin(async {
         let id = h.store.allocate_table().await?;
         let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
         let revision = h.store.save(&table, 0).await?;
@@ -714,7 +718,9 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
             actor.persist(next).await?;
-            actor.anchor = Instant::now() - Duration::from_millis(900);
+            actor.anchor = Instant::now()
+                .checked_sub(Duration::from_millis(900))
+                .unwrap();
             actor.chat(h.users[0].clone(), text).await?;
             let (saved, _) = h.snapshot(id).await?;
             ensure!(
@@ -728,7 +734,9 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
         let mut next = actor.candidate();
         next.game_mut().unwrap().idle_remaining = 1000;
         actor.persist(next).await?;
-        actor.anchor = Instant::now() - Duration::from_millis(900);
+        actor.anchor = Instant::now()
+            .checked_sub(Duration::from_millis(900))
+            .unwrap();
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
         ensure!(
@@ -736,7 +744,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
             "Inactive review did not expire automatically"
         );
         Ok(())
-    }
+    })
     .await;
     h.close().await?;
     outcome
@@ -771,7 +779,9 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
             actor.persist(next).await?;
-            actor.anchor = Instant::now() - Duration::from_millis(900);
+            actor.anchor = Instant::now()
+                .checked_sub(Duration::from_millis(900))
+                .unwrap();
             actor
                 .replay_action(h.users[0].clone(), serde_json::from_value(request)?)
                 .await?;
@@ -991,11 +1001,11 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 "secret",
                 &caller,
                 &[],
-                crate::actors::client_message(command, json!({"name":name,"room":"lobby"}))?,
+                crate::actors::client_message(command, &json!({"name":name,"room":"lobby"}))?,
             )
             .await?
             .context("Missing lobby effects")?;
-            let (reply, received) = oneshot::channel();
+            let (reply, replied) = oneshot::channel();
             h.hub
                 .send(HubCommand::LobbyEffects {
                     session,
@@ -1003,7 +1013,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                     reply,
                 })
                 .await?;
-            received.await?
+            replied.await?
         };
 
         // Alice blocks Bob: Bob can neither join nor spectate Alice's table.
@@ -1299,7 +1309,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             } else {
                 json!({"tableID":id,"type":1,"target":hand[0]})
             };
-            let actor = snapshot.players[active].id as usize - 1;
+            let actor = usize::try_from(snapshot.players[active].id)? - 1;
             h.send(actor, "action", action).await?;
             for index in 0..3 {
                 h.frames(index)?;
@@ -1377,7 +1387,7 @@ async fn chat_read_positions_survive_game_start_reconnect_and_remake() -> Result
             h.send(index, "getGameInfo2", json!({"tableID":id})).await?;
             let history = h.receive(index, "chatList").await?;
             ensure!(
-                history["unread"] == if index == 0 { 0 } else { 1 },
+                history["unread"] == i32::from(index != 0),
                 "Game start reset the chat read position: {history}"
             );
             h.send(index, "loaded", json!({"tableID":id})).await?;
@@ -1684,9 +1694,13 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
 }
 
 /// Browsers send whole numbers such as `0.0` as `0`, as `JSON.stringify` does.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "only whole floats are converted"
+)]
 fn browser_json(value: Value) -> Value {
     match value {
-        Value::Number(n) if n.as_f64().is_some_and(|f| f == f.round()) && !n.is_i64() => {
+        Value::Number(n) if n.as_f64().is_some_and(|f| f % 1.0 == 0.0) && !n.is_i64() => {
             json!(n.as_f64().unwrap() as i64)
         }
         Value::Array(items) => Value::Array(items.into_iter().map(browser_json).collect()),
@@ -1708,7 +1722,7 @@ async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<(
         .iter()
         .filter(|v| Some(v.name.as_str()) != except)
         .collect::<Vec<_>>();
-    sqlx::query!("INSERT INTO user_stats(user_id,variant_id,best_score2) SELECT $1,v.id,v.score FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2", user, &variants.iter().map(|v|v.id as i16).collect::<Vec<_>>(), &variants.iter().map(|v|v.max_score as i16).collect::<Vec<_>>()).execute(&h.store.primary).await?;
+    sqlx::query!("INSERT INTO user_stats(user_id,variant_id,best_score2) SELECT $1,v.id,v.score FROM UNNEST($2::smallint[],$3::smallint[]) AS v(id,score) ON CONFLICT(user_id,variant_id) DO UPDATE SET best_score2=excluded.best_score2", user, &variants.iter().map(|v|i16::try_from(v.id)).collect::<Result<Vec<_>,_>>()?, &variants.iter().map(|v|i16::try_from(v.max_score)).collect::<Result<Vec<_>,_>>()?).execute(&h.store.primary).await?;
     Ok(())
 }
 
@@ -2112,17 +2126,17 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         return Ok(());
     };
     let outcome = async {
-        let replay = h.replay(0).await?;
+        let replay_id = h.replay(0).await?;
         let pregame = h.create(0, "Concurrent pregame", json!({})).await?;
         ensure!(
-            matches!(h.snapshot(replay).await?.0.phase, Phase::Replay { .. })
+            matches!(h.snapshot(replay_id).await?.0.phase, Phase::Replay { .. })
                 && matches!(h.snapshot(pregame).await?.0.phase, Phase::Pregame { .. }),
             "Creation evicted the attended replay"
         );
         h.send(
             0,
             "replayAction",
-            json!({"tableID":replay,"type":"segment","segment":1}),
+            json!({"tableID":replay_id,"type":"segment","segment":1}),
         )
         .await?;
         h.send(0, "tableUnattend", json!({"tableID":pregame}))
@@ -2158,21 +2172,21 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         ensure!(!old_alice.active(), "Human replacement was not fenced");
         h.send(0, "tableReattend", json!({"tableID":pregame}))
             .await?;
-        h.send(0, "tableSpectate", json!({"tableID":replay}))
+        h.send(0, "tableSpectate", json!({"tableID":replay_id}))
             .await?;
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         h.hub
             .send(HubCommand::Client {
                 session: old_alice,
                 message: crate::actors::client_message(
                     "replayAction",
-                    json!({"tableID":replay,"type":"segment","segment":9}),
+                    &json!({"tableID":replay_id,"type":"segment","segment":9}),
                 )?,
                 reply,
             })
             .await?;
         ensure!(
-            received.await?.is_err(),
+            replied.await?.is_err(),
             "Old generation mutated a separately attended replay"
         );
         h.hub.send(HubCommand::Logout(h.users[3].clone())).await?;
@@ -2204,7 +2218,7 @@ async fn pending_join_claim_survives_replacement_until_the_committed_view_is_pub
         let second = h.create(2, "Second", json!({})).await?;
         h.barrier(1).await?;
         h.frames(1)?;
-        let mut control = redis::Client::open(h._redis.url.as_str())?
+        let mut control = redis::Client::open(h.redis.url.as_str())?
             .get_multiplexed_async_connection()
             .await?;
         redis::cmd("CLIENT")
@@ -2310,7 +2324,7 @@ async fn paused_clock_survives_deadline_then_unpaused_disconnected_player_times_
         let (initial, _) = h.snapshot(id).await?;
         let game = initial.game().unwrap();
         let active = game.game.active_player_index;
-        let actor = game.players[active].id as usize - 1;
+        let actor = usize::try_from(game.players[active].id)? - 1;
         let remaining = 1 - actor;
         let game_id = game.game_id;
         h.send(actor, "pause", json!({"tableID":id,"setting":"pause"}))
@@ -2392,7 +2406,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
             sessions.push(session);
             outgoing.push(receiver);
         }
-        let (reply, received) = oneshot::channel();
+        let (reply, replied) = oneshot::channel();
         h.hub
             .send(HubCommand::Operations {
                 command: Operation::Ban {
@@ -2402,7 +2416,7 @@ async fn ban_disconnects_every_session_from_the_banned_ip() -> Result<()> {
                 reply,
             })
             .await?;
-        received.await??;
+        replied.await??;
         // Commands are no longer checked against the ban list, so other accounts on the
         // banned address must be disconnected too.
         ensure!(

@@ -139,7 +139,7 @@ impl Drop for LeaseGuard {
 }
 impl Ownership {
     fn elapsed(&self) -> u64 {
-        self.start.elapsed().as_millis() as u64
+        u64::try_from(self.start.elapsed().as_millis()).unwrap_or(u64::MAX)
     }
     fn check(&self) -> Result<()> {
         if self.lost.is_cancelled() || self.elapsed() >= self.deadline.load(Ordering::Acquire) {
@@ -164,7 +164,7 @@ async fn durable(connection: &mut MultiplexedConnection) -> Result<()> {
     let (local, _replicas): (i64, i64) = redis::cmd("WAITAOF")
         .arg(1)
         .arg(0)
-        .arg(RESPONSE_TIMEOUT.as_millis() as u64)
+        .arg(RESPONSE_TIMEOUT.as_secs() * 1000)
         .query_async(connection)
         .await?;
     ensure!(local >= 1, "Redis did not confirm local AOF durability");
@@ -228,11 +228,7 @@ impl RedisState {
                 .any(|line| line.trim() == "maxmemory_policy:noeviction"),
             "Redis must use maxmemory-policy noeviction to preserve acknowledged state"
         );
-        let encoded = namespace
-            .as_bytes()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
+        let encoded = hex::encode(namespace);
         let prefix = format!("hanabi:{{{encoded}}}");
         let key = format!("{prefix}:owner");
         let token = format!("{:032x}", rand::random::<u128>());
@@ -242,7 +238,7 @@ impl RedisState {
         let safe_window = lease_ms * 3 / 4;
         let request_start;
         loop {
-            let before = started.elapsed().as_millis() as u64;
+            let before = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
             let acquired: Option<String> = redis::cmd("SET")
                 .arg(&key)
                 .arg(&token)
@@ -275,8 +271,8 @@ impl RedisState {
         tasks.spawn(async move {
             loop {
                 tokio::select! {
-                    _ = renewing.lost.cancelled() => break,
-                    _ = tokio::time::sleep(lease_time / 5) => {}
+                    () = renewing.lost.cancelled() => break,
+                    () = tokio::time::sleep(lease_time / 5) => {}
                 }
                 if renewing.check().is_err() {
                     break;
@@ -301,7 +297,7 @@ impl RedisState {
                     Ok::<(), anyhow::Error>(())
                 };
                 let result = tokio::select! {
-                    _ = renewing.lost.cancelled() => break,
+                    () = renewing.lost.cancelled() => break,
                     result = refreshed => result,
                 };
                 if let Err(error) = result {
@@ -318,8 +314,8 @@ impl RedisState {
         tasks.spawn(async move {
             loop {
                 tokio::select! {
-                    _ = watchdog.lost.cancelled() => break,
-                    _ = tokio::time::sleep(Duration::from_millis(10)) => {
+                    () = watchdog.lost.cancelled() => break,
+                    () = tokio::time::sleep(Duration::from_millis(10)) => {
                         if watchdog.check().is_err() { break; }
                     }
                 }
@@ -438,7 +434,7 @@ impl RedisState {
         let id = self.reply(result)?;
         ensure!(id > 0, "Invalid allocated table ID");
         self.acknowledge(&mut connection).await?;
-        Ok(id as u64)
+        Ok(id.cast_unsigned())
     }
 
     pub async fn remove(&self, id: StateId, expected: i64) -> Result<()> {

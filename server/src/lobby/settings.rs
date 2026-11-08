@@ -96,7 +96,7 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
             );
             let number = number.unwrap();
             ensure!(
-                (0..=604800).contains(&number),
+                (0..=604_800).contains(&number),
                 "The setting of \"{name}\" is too large."
             );
             ensure!(

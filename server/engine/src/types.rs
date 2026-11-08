@@ -138,6 +138,16 @@ pub struct Clue {
     pub value: i32,
 }
 
+/// Converts a count or index, which a game bounds to a few hundred, to a wire integer.
+pub fn int(value: usize) -> i32 {
+    i32::try_from(value).unwrap_or(i32::MAX)
+}
+
+/// The index that a wire integer refers to, or `None` if it is negative.
+pub fn index(value: i32) -> Option<usize> {
+    usize::try_from(value).ok()
+}
+
 /// The kind of clue that a recorded action gives, or `None` for an action that is not a clue.
 pub fn clue_type(action_type: i32) -> Option<ClueType> {
     match ActionType::try_from(action_type) {

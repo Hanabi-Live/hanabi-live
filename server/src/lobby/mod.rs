@@ -1,5 +1,5 @@
-//! Actor-independent commands. Apply every ToSelf effect only to the caller's
-//! captured generation; apply ToUser only if its captured generation still lives.
+//! Actor-independent commands. Apply every `ToSelf` effect only to the caller's
+//! captured generation; apply `ToUser` only if its captured generation still lives.
 mod chat;
 mod history;
 mod relationships;

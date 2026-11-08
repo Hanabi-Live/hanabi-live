@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    Error, HashMap, HeaderMap, IntoResponse, Json, Params, Path, PublicState, Query, RawQuery,
+    Response, Result, State, Value, catalog, data, encoded, integer, json, replay, strict_query,
+};
 use axum::response::{Html, Redirect};
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
@@ -180,13 +183,13 @@ pub(super) async fn page(
                 "scores" | "profile" => {
                     v["page"] = json!("scores");
                     v["title"] = json!("Scores");
-                    let mut stats = aggregate(&state, Some(users[0].0), None).await?;
+                    let mut statistics = aggregate(&state, Some(users[0].0), None).await?;
                     let summary = score_summary(&state, users[0].0).await?;
-                    stats
+                    statistics
                         .as_object_mut()
                         .expect("stats")
                         .extend(summary.as_object().expect("summary").clone());
-                    v["stats"] = stats;
+                    v["stats"] = statistics;
                 }
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
@@ -260,7 +263,7 @@ pub(super) async fn page(
             v["title"] = json!("Variant Stats");
             v["namesTitle"] = json!(format!("Global Statistics for {}", variant.name));
             v["apiPath"] = json!(api);
-            let mut stats = aggregate(&state, None, Some(id)).await?;
+            let mut statistics = aggregate(&state, None, Some(id)).await?;
             let row = sqlx::query_as!(
                 crate::database::VariantStats,
                 "SELECT variant_id,num_games,best_score2,best_score3,best_score4,best_score5,best_score6,
@@ -273,15 +276,15 @@ pub(super) async fn page(
             .transpose()?;
             let row = row.unwrap_or(json!({}));
             let games = number(&row, "num_games");
-            stats["numMaxScores"] = json!(number(&row, "num_max_scores"));
-            stats["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
-            stats["bestScores"] = json!(
+            statistics["numMaxScores"] = json!(number(&row, "num_max_scores"));
+            statistics["maxScoreRate"] = json!(percentage(number(&row, "num_max_scores"), games));
+            statistics["bestScores"] = json!(
                 (2..=6)
                     .map(|p| number(&row, &format!("best_score{p}")))
                     .collect::<Vec<_>>()
             );
-            stats["maxScore"] = json!(variant.max_score);
-            v["stats"] = stats;
+            statistics["maxScore"] = json!(variant.max_score);
+            v["stats"] = statistics;
         }
         "tag" => {
             let raw = params
@@ -306,13 +309,18 @@ pub(super) async fn page(
 fn number(v: &Value, key: &str) -> i64 {
     v[key].as_i64().unwrap_or(0)
 }
+/// Converts a count to a float for display; counts are far below the 2^53 that floats hold exactly.
+#[expect(clippy::cast_precision_loss, reason = "counts are far below 2^53")]
+fn float(n: i64) -> f64 {
+    n as f64
+}
 fn percentage(n: i64, total: i64) -> String {
     let s = format!(
         "{:.1}",
         if total == 0 {
             0.0
         } else {
-            n as f64 * 100.0 / total as f64
+            float(n) * 100.0 / float(total)
         }
     );
     s.strip_suffix(".0").unwrap_or(&s).to_owned()
@@ -328,7 +336,7 @@ fn duration(seconds: i64) -> String {
         return unit(seconds, "second");
     }
     if seconds < 3600 {
-        return unit((seconds as f64 / 60.0).round() as i64, "minute");
+        return unit((seconds + 30) / 60, "minute");
     }
     let hours = seconds / 3600;
     let days = ((hours - 1) / 24).max(0);
@@ -378,14 +386,14 @@ async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>)
         return compute_aggregate(state, user, variant).await;
     }
     let mut totals = state.site_totals.lock().await;
-    if let Some((computed, stats)) = totals.get(&variant)
+    if let Some((computed, statistics)) = totals.get(&variant)
         && computed.elapsed() < SITE_TOTALS_LIFETIME
     {
-        return Ok(stats.clone());
+        return Ok(statistics.clone());
     }
-    let stats = compute_aggregate(state, None, variant).await?;
-    totals.insert(variant, (std::time::Instant::now(), stats.clone()));
-    Ok(stats)
+    let statistics = compute_aggregate(state, None, variant).await?;
+    totals.insert(variant, (std::time::Instant::now(), statistics.clone()));
+    Ok(statistics)
 }
 
 async fn compute_aggregate(
@@ -455,7 +463,7 @@ async fn compute_aggregate(
         }
     };
     transaction.commit().await?;
-    let mut stats = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
+    let mut statistics = json!({"numGamesNormal":normal,"numGamesOther":other,"numGamesTotal":normal+other,
         "numGamesSpeedrun":speed,"timePlayed":duration(played),
         "timePlayedSpeedrun":duration(speed_played)});
     if let Some(user) = user {
@@ -470,7 +478,7 @@ async fn compute_aggregate(
             3 | 23 => "rd",
             _ => "th",
         };
-        stats["dateJoined"] = json!(format!(
+        statistics["dateJoined"] = json!(format!(
             "{} {}{}, {}",
             date.format("%B"),
             date.day(),
@@ -478,7 +486,7 @@ async fn compute_aggregate(
             date.year()
         ));
     }
-    Ok(stats)
+    Ok(statistics)
 }
 
 async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>> {
@@ -496,11 +504,11 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
         .collect()
 }
 async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
-    let stats = user_stats(state, id).await?;
+    let statistics = user_stats(state, id).await?;
     let mut totals = [0; 5];
     let mut rows = Vec::new();
     for variant in catalog::variants() {
-        let row = stats
+        let row = statistics
             .get(&i64::from(variant.id))
             .cloned()
             .unwrap_or(json!({}));
@@ -520,9 +528,10 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
         );
     }
     let total: i64 = totals.iter().sum();
+    let variants = i64::try_from(catalog::variants().len())?;
     Ok(
-        json!({"rows":rows,"total":total,"percentage":percentage(total,catalog::variants().len() as i64*5),
-        "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,catalog::variants().len() as i64)})).collect::<Vec<_>>()}),
+        json!({"rows":rows,"total":total,"percentage":percentage(total,variants*5),
+        "perType":totals.iter().map(|t| json!({"total":t,"percentage":percentage(*t,variants)})).collect::<Vec<_>>()}),
     )
 }
 
@@ -562,13 +571,13 @@ async fn missing(
         }
     }
     let players: Vec<Value> = users.iter().map(|u| json!({"name":u.1,"excluded":excluded_players.contains(&crate::accounts::normalize_string(&u.1))})).collect();
-    let mut stats = Vec::new();
+    let mut statistics = Vec::new();
     for (index, user) in users.iter().enumerate() {
         if players[index]["excluded"] == false {
-            stats.push(user_stats(state, user.0).await?);
+            statistics.push(user_stats(state, user.0).await?);
         }
     }
-    if stats.is_empty() {
+    if statistics.is_empty() {
         return Err(Error::bad("You can not exclude every player."));
     }
     let counts = num_players.map_or_else(|| (2..=6).collect::<Vec<_>>(), |p| vec![p]);
@@ -585,7 +594,7 @@ async fn missing(
             let id = i64::from(variant.id);
             let max = i64::from(variant.max_score);
             let mut best = (0, 0);
-            for (index, s) in stats.iter().enumerate() {
+            for (index, s) in statistics.iter().enumerate() {
                 if let Some(row) = s.get(&id) {
                     let score = (
                         number(row, &format!("best_score{p}")),
@@ -599,13 +608,13 @@ async fn missing(
             if best == (max, 0) {
                 continue;
             }
-            let cards = (state.config.deck_size)(id as i32)? as i64;
+            let cards = i64::try_from((state.config.deck_size)(i32::try_from(id)?)?)?;
             let hand = match p {
                 2 | 3 => 5,
                 4 | 5 => 4,
                 _ => 3,
             };
-            let stacks = variant.suits.len() as i64;
+            let stacks = i64::try_from(variant.suits.len())?;
             let multiplier = if variant.clue_starved { 2 } else { 1 };
             let finished = if variant.throw_it_in_a_hole {
                 0
@@ -613,7 +622,7 @@ async fn missing(
                 stacks - p / i64::from(variant.stack_size) - 1
             };
             let clues = (8 * multiplier + finished + cards - (hand - 1) * p - max) / multiplier;
-            let efficiency = max as f64 / clues as f64;
+            let efficiency = float(max) / float(clues);
             let rounded = (efficiency * 100.0).round() / 100.0;
             if bounds[0].is_some_and(|min| rounded < min)
                 || bounds[1].is_some_and(|max| rounded > max)

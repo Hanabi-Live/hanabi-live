@@ -1,10 +1,22 @@
 use crate::{
+    ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
+    clue_action_type, clue_type,
     game::{MAX_SAFE_INTEGER, hand_size, validate_options},
-    *,
+    get_variant, int,
 };
 use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::HashSet;
+
+/// A card's state as the event history replays it.
+#[derive(Clone, Default)]
+struct HistoricalCard {
+    touched: bool,
+    played: bool,
+    discarded: bool,
+    failed: bool,
+    slot: i32,
+}
 
 fn bounded_array<'a>(value: &'a Value, name: &str, max: usize) -> Result<&'a Vec<Value>> {
     let values = value
@@ -105,10 +117,10 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     let v = get_variant(&s.options.variant_name)?;
     let count = s.players.len();
     let seat = |i: usize| i < count;
-    let signed_seat = |i: i32| i >= 0 && (i as usize) < count;
+    let signed_seat = |i: i32| usize::try_from(i).is_ok_and(|i| i < count);
     let order = |o: usize| o < s.deck_index && o < s.deck.len();
     let valid_clue = |clue_type: ClueType, value: i32| match clue_type {
-        ClueType::Color => value >= 0 && (value as usize) < v.clue_colors.len(),
+        ClueType::Color => usize::try_from(value).is_ok_and(|value| value < v.clue_colors.len()),
         ClueType::Rank => v.clue_ranks.contains(&value),
     };
     let clue_limit = if v.clue_starved { 16 } else { 8 };
@@ -134,11 +146,11 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Invalid deck cursor."
     );
     ensure!(
-        s.turn >= 0 && s.turn as usize <= s.actions.len() + 1,
+        usize::try_from(s.turn).is_ok_and(|turn| turn <= s.actions.len() + 1),
         "Invalid turn counter."
     );
     ensure!(
-        s.end_turn == -1 || (s.end_turn >= s.turn && s.end_turn <= s.turn + count as i32 + 1),
+        s.end_turn == -1 || (s.end_turn >= s.turn && s.end_turn <= s.turn + int(count) + 1),
         "Invalid final turn."
     );
     ensure!(
@@ -215,7 +227,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
             ensure!(
                 player.character_metadata == -1
                     || (signed_seat(player.character_metadata)
-                        && player.character_metadata != index as i32),
+                        && player.character_metadata != int(index)),
                 "Invalid second-clue target."
             );
         }
@@ -257,14 +269,6 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         }
     }
 
-    #[derive(Clone, Default)]
-    struct HistoricalCard {
-        touched: bool,
-        played: bool,
-        discarded: bool,
-        failed: bool,
-        slot: i32,
-    }
     let mut cards = vec![HistoricalCard::default(); s.deck.len()];
     let mut hands = vec![Vec::<usize>::new(); count];
     let mut stacks = vec![0; v.suits.len()];
@@ -308,7 +312,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 "Invalid event player or order at index: {index}"
             );
             ensure!(
-                s.deck[o].suit_index as i32 == suit && s.deck[o].rank == rank,
+                int(s.deck[o].suit_index) == suit && s.deck[o].rank == rank,
                 "Event identity does not match the authoritative deck at index: {index}"
             );
         }
@@ -342,14 +346,14 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     .context("Card removal does not match the historical hand.")?;
                 let card = &mut cards[*order];
                 ensure!(!card.played && !card.discarded, "Card removed twice.");
-                card.slot = (hand.len() - position) as i32;
+                card.slot = int(hand.len() - position);
                 hand.remove(position);
                 if matches!(e, EngineEvent::Play { .. }) {
                     card.played = true;
-                    stacks[*suit_index as usize] = *rank;
+                    stacks[usize::try_from(*suit_index)?] = *rank;
                     actions.push(RecordedAction {
                         action_type: 0,
-                        target: *order as i32,
+                        target: int(*order),
                         value: 0,
                     });
                 } else if let EngineEvent::Discard { failed, .. } = e {
@@ -361,7 +365,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     if !failed {
                         actions.push(RecordedAction {
                             action_type: 1,
-                            target: *order as i32,
+                            target: int(*order),
                             value: 0,
                         });
                     }
@@ -398,7 +402,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 cards[*o].failed = true;
                 actions.push(RecordedAction {
                     action_type: 0,
-                    target: *o as i32,
+                    target: int(*o),
                     value: 0,
                 });
             }
@@ -426,7 +430,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 }
                 actions.push(RecordedAction {
                     action_type: clue_action_type(clue_type),
-                    target: *target as i32,
+                    target: int(*target),
                     value: clue.value,
                 });
                 if s.options.card_cycle {
@@ -520,7 +524,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 num == s.turn
                     && player
                         == if s.end_condition == EndCondition::InProgress {
-                            s.active_player_index as i32
+                            int(s.active_player_index)
                         } else {
                             -1
                         },
@@ -547,7 +551,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
             "Card state does not match its action history at index: {index}"
         );
     }
-    let played = cards.iter().filter(|c| c.played).count() as i32;
+    let played = int(cards.iter().filter(|c| c.played).count());
     ensure!(
         s.score
             == if s.end_condition as i32 > EndCondition::Normal as i32 {
@@ -582,7 +586,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     );
     for a in &s.actions {
         let valid = match a.action_type {
-            0 | 1 => a.target >= 0 && order(a.target as usize) && a.value == 0,
+            0 | 1 => usize::try_from(a.target).is_ok_and(order) && a.value == 0,
             2 | 3 => {
                 signed_seat(a.target)
                     && clue_type(a.action_type).is_some_and(|t| valid_clue(t, a.value))
