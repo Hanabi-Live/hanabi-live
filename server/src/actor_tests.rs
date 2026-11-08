@@ -71,12 +71,15 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
             let body: Value = serde_json::from_str(body)?;
             assert_eq!(body, json!({"tableID":42,"action":expected}));
             if expected["type"] == "draw" {
-                let player = expected["playerIndex"].as_u64().unwrap() as usize;
-                let order = expected["order"].as_u64().unwrap() as usize;
+                let player = usize::try_from(expected["playerIndex"].as_u64().unwrap()).unwrap();
+                let order = usize::try_from(expected["order"].as_u64().unwrap()).unwrap();
                 let (suit, rank) = if hidden == Some(player) {
                     (-1, -1)
                 } else {
-                    (game.deck[order].suit_index as i32, game.deck[order].rank)
+                    (
+                        hanabi_engine::int(game.deck[order].suit_index),
+                        game.deck[order].rank,
+                    )
                 };
                 assert_eq!(expected["suitIndex"], suit);
                 assert_eq!(expected["rank"], rank);
@@ -237,7 +240,9 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
             capacity.try_acquire_owned()?,
             crate::server_info::test_info(),
         );
-        actor.anchor = Instant::now() - Duration::from_millis(900);
+        actor.anchor = Instant::now()
+            .checked_sub(Duration::from_millis(900))
+            .unwrap();
         let (viewer, _frames) = Session::new(if shared { 3 } else { 1 }, "Viewer".into(), 1, false);
         actor.reattend(viewer, shared, None).await?;
         actor.anchor -= Duration::from_secs(2);
@@ -285,7 +290,7 @@ async fn idle_reviews_expire_without_someone_joining() -> Result<()> {
         capacity.try_acquire_owned()?,
         crate::server_info::test_info(),
     );
-    actor.anchor = Instant::now() - Duration::from_secs(2);
+    actor.anchor = Instant::now().checked_sub(Duration::from_secs(2)).unwrap();
     actor.tick().await?;
     ensure!(
         actor.retired && state.get(StateId::Table(id)).await?.is_none(),
@@ -461,7 +466,9 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
         capacity.try_acquire_owned()?,
         crate::server_info::test_info(),
     );
-    actor.anchor = Instant::now() - Duration::from_millis(900);
+    actor.anchor = Instant::now()
+        .checked_sub(Duration::from_millis(900))
+        .unwrap();
     let (viewer, _frames) = Session::new(3, "Viewer".into(), 1, false);
     actor.reattend(viewer, true, None).await?;
     ensure!(
@@ -522,7 +529,11 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
         owner.cancel.cancel();
         actor.cleanup(now).await?;
         actor
-            .cleanup(now + PREGAME_RECONNECT_GRACE - Duration::from_millis(1))
+            .cleanup(
+                (now + PREGAME_RECONNECT_GRACE)
+                    .checked_sub(Duration::from_millis(1))
+                    .unwrap(),
+            )
             .await?;
         ensure!(
             !actor.retired && state.get(StateId::Table(id)).await?.is_some(),
@@ -540,10 +551,9 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
             match notification {
                 HubCommand::Retire(table) => removed |= table == id,
                 HubCommand::Effects(effects) => {
-                    observer_booted |= effects
-                        .messages
-                        .iter()
-                        .any(|(session, message)| session.user == 2 && message.starts_with("boot "))
+                    observer_booted |= effects.messages.iter().any(|(session, message)| {
+                        session.user == 2 && message.starts_with("boot ")
+                    });
                 }
                 _ => {}
             }
@@ -597,7 +607,11 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
     owner.cancel.cancel();
     actor.cleanup(later).await?;
     actor
-        .cleanup(later + PREGAME_RECONNECT_GRACE - Duration::from_millis(1))
+        .cleanup(
+            (later + PREGAME_RECONNECT_GRACE)
+                .checked_sub(Duration::from_millis(1))
+                .unwrap(),
+        )
         .await?;
     ensure!(
         !actor.retired,
@@ -750,35 +764,35 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         },
     );
     let task = tokio::spawn(hub.run());
-    let (reply, received) = oneshot::channel();
+    let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Route {
             session: old.clone(),
             table: 42,
             command: Command::Client(Box::new(crate::actors::client_message(
                 "getGameInfo1",
-                json!({"tableID":42}),
+                &json!({"tableID":42}),
             )?)),
             reply,
         })
         .await?;
     ensure!(
-        tokio::time::timeout(Duration::from_secs(1), received)
+        tokio::time::timeout(Duration::from_secs(1), replied)
             .await??
             .is_err(),
         "Saturated table queue admitted work"
     );
-    let (reply, received) = oneshot::channel();
+    let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Sync {
             session: old.clone(),
             reply,
         })
         .await?;
-    tokio::time::timeout(Duration::from_secs(1), received).await???;
+    tokio::time::timeout(Duration::from_secs(1), replied).await???;
     ensure!(old_frames.try_recv().is_ok(), "Hub blocked on table");
     let (new, mut new_frames) = Session::new(1, "Alice".into(), 2, false);
-    let (reply, received) = oneshot::channel();
+    let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Register {
             session: new.clone(),
@@ -787,7 +801,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
             reply,
         })
         .await?;
-    received.await??;
+    replied.await??;
     ensure!(!old.active(), "Replacement did not cancel old session");
     sender
         .send(HubCommand::Effects(Effects {
@@ -797,14 +811,14 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
             messages: vec![(old.clone(), "secret private frame".into())],
         }))
         .await?;
-    let (reply, received) = oneshot::channel();
+    let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Sync {
             session: new.clone(),
             reply,
         })
         .await?;
-    received.await??;
+    replied.await??;
     while let Ok(frame) = new_frames.try_recv() {
         ensure!(
             !frame.message.to_text()?.contains("secret"),
@@ -815,9 +829,9 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         old_frames.try_recv().is_err(),
         "Old generation received private output"
     );
-    let (reply, received) = oneshot::channel();
+    let (reply, replied) = oneshot::channel();
     sender.send(HubCommand::Stop(reply)).await?;
-    received.await?;
+    replied.await?;
     task.await?;
     store.close().await?;
     Ok(())

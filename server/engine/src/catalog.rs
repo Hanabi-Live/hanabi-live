@@ -1,3 +1,4 @@
+use crate::int;
 use anyhow::{Result, anyhow};
 use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant, ClueType};
 use serde::Serialize;
@@ -62,6 +63,7 @@ pub struct Variant {
     pub has_inverted: bool,
 }
 impl Variant {
+    #[must_use]
     pub fn has_reversed_suits(&self) -> bool {
         self.up_or_down || self.suits.iter().any(|s| s.reversed)
     }
@@ -147,7 +149,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         id: entry.id,
         new_id: entry.new_id,
         name: entry.name,
-        max_score: variant_suits.len() as i32 * stack_size,
+        max_score: int(variant_suits.len()) * stack_size,
         has_inverted: variant_suits.iter().any(|suit| suit.inverted),
         suits: variant_suits,
         ranks,
@@ -232,6 +234,7 @@ pub fn variant_names() -> impl Iterator<Item = &'static str> {
     variants().iter().map(|v| v.name.as_str())
 }
 
+#[must_use]
 pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
     if suit.one_of_each || variant.critical_rank == Some(rank) {
         return 1;
@@ -251,6 +254,7 @@ pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
     }
 }
 
+#[must_use]
 pub fn is_card_touched(
     variant: &Variant,
     clue_type: ClueType,
@@ -274,7 +278,7 @@ pub fn is_card_touched(
             }
             if variant.synesthesia
                 && !suit.no_clue_ranks
-                && (rank - 1) % variant.clue_colors.len() as i32 == value
+                && (rank - 1) % int(variant.clue_colors.len()) == value
             {
                 return true;
             }
@@ -295,9 +299,9 @@ pub fn is_card_touched(
             if suit.prism {
                 return value
                     == if rank == 7 {
-                        variant.clue_colors.len() as i32 - 1
+                        int(variant.clue_colors.len()) - 1
                     } else {
-                        (rank - 1) % variant.clue_colors.len() as i32
+                        (rank - 1) % int(variant.clue_colors.len())
                     };
             }
             suit.clue_colors.contains(color)

@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, Params, PublicState, Result, StatusCode, catalog, integer, json};
 
 /// An archived game that cannot be exported. Its code and game ID reach the server log and the
 /// error alerts, so the game and the failed check can be found later.
@@ -20,12 +20,12 @@ pub(super) async fn export(
         .filter(|v| !v.is_empty())
         .ok_or_else(|| Error::not_found("You must specify a database game ID."))?;
     let id = integer(raw).ok_or_else(|| Error::bad("That is not a valid database game ID."))?;
-    if !(1..=i32::MAX as i64).contains(&id) {
+    let Some(game_id) = i32::try_from(id).ok().filter(|id| *id >= 1) else {
         return Err(Error::not_found(
             "That game does not exist in the database.",
         ));
-    }
-    let archive = crate::archive::load(&state.pool, id as i32)
+    };
+    let archive = crate::archive::load(&state.pool, game_id)
         .await?
         .ok_or_else(|| Error::not_found("That game does not exist in the database."))?;
     let row = archive.game;
@@ -61,7 +61,7 @@ pub(super) async fn export(
             )
         };
         let cards = crate::game::decode_deck(bytes).map_err(|_| invalid())?;
-        if cards.len() > (state.config.deck_size)(variant_id as i32)? {
+        if cards.len() > (state.config.deck_size)(i32::from(row.variant_id))? {
             return Err(invalid());
         }
         let suits = variant.suits.len();
@@ -71,7 +71,7 @@ pub(super) async fn export(
         json!(cards)
     } else {
         // Never substitute a standard deck or claim a custom replay was seeded.
-        (state.config.seeded_deck)(variant_id as i32, &seed).map_err(|_| {
+        (state.config.seeded_deck)(i32::from(row.variant_id), &seed).map_err(|_| {
             export_failure(
                 "archive_invalid_seed",
                 "The archived game's seed cannot produce a deck",

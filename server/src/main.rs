@@ -190,7 +190,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             let mut server = axum_server::from_tcp(redirect)?.handle(redirect_handle);
             http_settings(&mut server);
             let service = request_timeout(tls::redirect_router(
-                config.root.clone(),
+                &config.root,
                 &config.domain,
                 address.port(),
             ))
@@ -203,7 +203,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
         let integrations = config.integrations.clone();
         app.background.spawn(async move {
             tokio::select! {
-                _ = integration_app.shutdown.cancelled() => {},
+                () = integration_app.shutdown.cancelled() => {},
                 result = integration_app.start_integrations(&integrations) => {
                     if let Err(error) = result {
                         eprintln!("Optional integrations failed to initialize: {error:#}");
@@ -229,7 +229,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     } else {
         tokio::select! {
             biased;
-            _=lease_lost.cancelled()=>StopReason::LeaseLost,
+            ()=lease_lost.cancelled()=>StopReason::LeaseLost,
             _=interrupt.recv()=>StopReason::Shutdown,
             _=terminate.recv()=>StopReason::Shutdown,
             request=stop_requests.recv()=>request.unwrap_or_else(||StopReason::Failure("Lifecycle control channel closed".into())),
@@ -277,7 +277,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
         match service {
             Ok((_, Ok(()))) => {}
             Ok((name, Err(error))) => {
-                failures.push(format!("{name} listener shutdown failed: {error}"))
+                failures.push(format!("{name} listener shutdown failed: {error}"));
             }
             Err(error) => failures.push(format!("HTTP listener task failed: {error}")),
         }

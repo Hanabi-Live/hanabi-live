@@ -66,6 +66,7 @@ fn executable(root: &Path) -> Result<PathBuf> {
     );
     Ok(current)
 }
+#[must_use]
 pub fn version() -> &'static str {
     env!("HANABI_BUILD_COMMIT")
 }
@@ -78,8 +79,8 @@ mod tests {
         let root = crate::tls::fixture_root("restart")?;
         std::fs::create_dir_all(root.join("public/js/bundles"))?;
         let config = Config::from_values(
-            root.clone(),
-            [
+            &root,
+            &[
                 ("SESSION_SECRET", "x".repeat(128)),
                 ("REDIS_URL", "redis://localhost".into()),
             ]

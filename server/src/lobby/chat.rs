@@ -77,6 +77,7 @@ const DELEGATED: &[&str] = &[
     "impostor",
 ];
 
+#[must_use]
 pub fn valid_room(room: &str) -> bool {
     room == "lobby"
         || room.strip_prefix("table").is_some_and(|id| {
@@ -117,6 +118,7 @@ pub enum GeneralResponse {
     Runtime { command: String, args: Vec<String> },
 }
 
+#[must_use]
 pub fn general_response(message: &str) -> Option<GeneralResponse> {
     let (command, args) = parsed(message)?;
     if let Some(response) = simple(&command) {
@@ -152,6 +154,7 @@ pub fn general_response(message: &str) -> Option<GeneralResponse> {
     None
 }
 
+#[must_use]
 pub fn classify_chat(message: &str) -> Classification {
     let Some((command, _)) = parsed(message) else {
         return Classification::Text;
@@ -352,9 +355,10 @@ pub async fn private_history(
     )
     .fetch_all(pool)
     .await?;
-    let more = rows.len() > amount as usize;
+    let shown = usize::try_from(amount)?;
+    let more = rows.len() > shown;
     let mut list = Vec::new();
-    for row in rows.iter().take(amount as usize).rev() {
+    for row in rows.iter().take(shown).rev() {
         list.push(ChatHistoryMessage {
             pm_id: i64::from(row.id),
             msg: row.message.clone(),
@@ -482,9 +486,7 @@ pub async fn lobby_chat(
         caller.id,
         "user",
         caller.name.as_str(),
-        rendered
-            .map(str::to_owned)
-            .unwrap_or_else(|| escape_html(&message)),
+        rendered.map_or_else(|| escape_html(&message), str::to_owned),
         message.clone(),
     ))
     .chain(public_response.map(|r| (0, "server", "Hanab Live", r.clone(), r)))
@@ -550,13 +552,13 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
                 continue;
             }
 
-            if simple(&command).is_none()
-                && !WEBSITE.contains(&command.as_str())
-                && !DELEGATED.contains(&command.as_str())
-                && !["random", "replay"].contains(&command.as_str())
-                && !(source == "discord"
-                    && ["subscribe", "unsubscribe"].contains(&command.as_str()))
-            {
+            let known = simple(&command).is_some()
+                || WEBSITE.contains(&command.as_str())
+                || DELEGATED.contains(&command.as_str())
+                || ["random", "replay"].contains(&command.as_str())
+                || (source == "discord"
+                    && ["subscribe", "unsubscribe"].contains(&command.as_str()));
+            if !known {
                 continue;
             }
         }

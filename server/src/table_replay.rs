@@ -15,6 +15,16 @@ pub struct Imported {
     pub warnings: Vec<String>,
     pub extra: ExtraOptions,
 }
+/// Converts imported whole seconds to the float that options hold. Option validation rejects any
+/// value beyond 2^53, so precision lost above it never reaches a game.
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "option validation rejects values beyond 2^53"
+)]
+fn seconds(value: i64) -> f64 {
+    value as f64
+}
+
 pub fn parse(input: &ReplayImport) -> Result<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
     ensure!(
@@ -33,9 +43,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             None => defaults.starting_player,
         },
         timed: raw.timed.unwrap_or(defaults.timed),
-        time_base: raw
-            .time_base
-            .map_or(defaults.time_base, |value| value as f64),
+        time_base: raw.time_base.map_or(defaults.time_base, seconds),
         time_per_turn: raw.time_per_turn.unwrap_or(defaults.time_per_turn),
         speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
         card_cycle: raw.card_cycle.unwrap_or(defaults.card_cycle),
@@ -95,7 +103,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     if deck.is_empty()
         && let Some(seeded) = &seeded
     {
-        deck = seeded.clone();
+        deck.clone_from(seeded);
     }
     ensure!(
         deck.len() == hanabi_engine::create_deck(variant).len()
@@ -135,17 +143,14 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     for (i, a) in actions.iter().enumerate() {
         ensure!(
             match a.kind {
-                0 | 1 => a.target >= 0 && (a.target as usize) < deck.len() && a.value == 0,
+                0 | 1 => usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
                 2 =>
-                    a.target >= 0
-                        && (a.target as usize) < players.len()
-                        && a.value >= 0
-                        && a.value as usize <= variant.clue_colors.len(),
+                    usize::try_from(a.target).is_ok_and(|t| t < players.len())
+                        && usize::try_from(a.value).is_ok_and(|v| v <= variant.clue_colors.len()),
                 3 =>
-                    a.target >= 0
-                        && (a.target as usize) < players.len()
+                    usize::try_from(a.target).is_ok_and(|t| t < players.len())
                         && (1..=5).contains(&a.value),
-                4 => a.target >= 0 && (a.target as usize) < players.len(),
+                4 => usize::try_from(a.target).is_ok_and(|t| t < players.len()),
                 5 => a.target == -1,
                 _ => false,
             },
@@ -163,7 +168,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         ensure!(row.0.len() <= size, "Too many notes");
         for (j, text) in row.0.iter().enumerate() {
             ensure!(text.len() <= 65536, "Note too long");
-            notes[i][j] = text.to_owned();
+            text.clone_into(&mut notes[i][j]);
         }
     }
     let extra = ExtraOptions {
@@ -229,7 +234,7 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
             .iter()
             .enumerate()
             .map(|(i, p)| Player {
-                id: i as i32 + 1,
+                id: hanabi_engine::int(i) + 1,
                 name: p.name.clone(),
                 stats: zero_stats(),
             })

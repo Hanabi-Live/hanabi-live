@@ -642,6 +642,8 @@ async fn login_rejects_unknown_form_fields() {
 
 #[tokio::test]
 async fn password_reset_hashes_only_a_password() {
+    use argon2::PasswordVerifier;
+
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
         .unwrap();
@@ -657,7 +659,6 @@ async fn password_reset_hashes_only_a_password() {
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let response: PasswordHashResponse = serde_json::from_str(&body).unwrap();
-    use argon2::PasswordVerifier;
     argon2::Argon2::default()
         .verify_password(
             b"secret",
@@ -667,7 +668,7 @@ async fn password_reset_hashes_only_a_password() {
     for body in [
         "",
         "password=secret",
-        r#"{}"#,
+        "{}",
         r#"{"password":""}"#,
         r#"{"password":null}"#,
         r#"{"password":"secret","username":"Alice"}"#,
@@ -683,7 +684,7 @@ async fn password_reset_hashes_only_a_password() {
 #[tokio::test]
 async fn too_much_password_work_is_rate_limited() {
     let error = TooMuchPasswordWork(std::time::Duration::from_secs(90));
-    let response = account_failure("login", error.into());
+    let response = account_failure("login", &error.into());
     assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(response.headers()[header::RETRY_AFTER], "90");
     let body = to_bytes(response.into_body(), 1024).await.unwrap();
@@ -698,7 +699,7 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
         HashOverload::WaitExpired,
         HashOverload::Unavailable,
     ] {
-        let response = account_failure("test", reason.into());
+        let response = account_failure("test", &reason.into());
         assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         assert_eq!(response.headers()[header::RETRY_AFTER], "1");
         let body = to_bytes(response.into_body(), 1024).await.unwrap();
@@ -707,7 +708,7 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
     }
     let error = anyhow::anyhow!("synthetic-sensitive-password-token-and-query");
     assert!(!failure_diagnostic(&error).contains("synthetic-sensitive"));
-    let response = account_failure("test", error);
+    let response = account_failure("test", &error);
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     let body =
         String::from_utf8(to_bytes(response.into_body(), 1024).await.unwrap().to_vec()).unwrap();

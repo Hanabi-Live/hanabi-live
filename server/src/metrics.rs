@@ -62,8 +62,12 @@ pub struct Measurement {
     failed: bool,
 }
 impl Metrics {
+    #[must_use]
     pub fn start(&self, name: &str) -> Measurement {
-        let mut metrics = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        let mut metrics = self
+            .0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let metric = metrics.entry(name.into()).or_insert_with(|| Metric {
             duration_buckets_seconds: LIMITS.iter().map(|limit| (bucket(*limit), 0)).collect(),
             ..Metric::default()
@@ -76,8 +80,14 @@ impl Metrics {
             failed: true,
         }
     }
+    #[must_use]
     pub fn snapshot(&self) -> Value {
-        json!(*self.0.lock().unwrap_or_else(|e| e.into_inner()))
+        json!(
+            *self
+                .0
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+        )
     }
 }
 impl Measurement {
@@ -88,7 +98,11 @@ impl Measurement {
 impl Drop for Measurement {
     fn drop(&mut self) {
         let duration = self.started.elapsed().as_secs_f64();
-        let mut metrics = self.metrics.0.lock().unwrap_or_else(|e| e.into_inner());
+        let mut metrics = self
+            .metrics
+            .0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let metric = metrics.get_mut(&self.name).expect("registered operation");
         metric.in_flight -= 1;
         metric.completed += 1;

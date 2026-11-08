@@ -12,6 +12,7 @@ pub struct ServerInfo {
 }
 
 impl ServerInfo {
+    #[must_use]
     pub fn new(use_tls: bool, domain: &str) -> Self {
         Self {
             base_url: format!("{}://{domain}", if use_tls { "https" } else { "http" }),
@@ -20,10 +21,12 @@ impl ServerInfo {
         }
     }
 
+    #[must_use]
     pub fn public_url(&self, path: &str) -> String {
         format!("{}{path}", self.base_url)
     }
 
+    #[must_use]
     pub fn uptime(&self) -> Duration {
         self.started.elapsed()
     }

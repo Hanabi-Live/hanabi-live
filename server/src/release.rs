@@ -15,6 +15,7 @@ use std::{
 
 const RUNTIME_FILES: &[&str] = &[".env", "logs", "motd.txt", "letsencrypt", ".lifecycle.lock"];
 
+#[derive(Clone, Copy)]
 pub enum Mode {
     Run,
     Inspect,
@@ -50,7 +51,7 @@ fn private_path(name: &str) -> bool {
 fn hash_file(path: &Path) -> Result<String> {
     let mut file = File::open(path)?;
     let mut digest = Sha256::new();
-    let mut buffer = [0; 65536];
+    let mut buffer = vec![0; 65536];
     loop {
         let size = file.read(&mut buffer)?;
         if size == 0 {

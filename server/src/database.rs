@@ -79,7 +79,7 @@ mod tests {
              datetime_finished)
              VALUES('Counts',$1,0,false,0,0,$2,false,false,false,false,false,false,false,
              'counts-'||gen_random_uuid(),0,1,$3,NOW(),NOW()) RETURNING id",
-            players.len() as i16,
+            i16::try_from(players.len()).unwrap(),
             speedrun,
             end_condition,
         )
@@ -92,7 +92,7 @@ mod tests {
                  character_metadata) VALUES($1,$2,$3,0,0)",
                 id,
                 player,
-                seat as i16,
+                i16::try_from(seat).unwrap(),
             )
             .execute(&db.pool)
             .await

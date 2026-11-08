@@ -23,16 +23,14 @@ fn action(action_type: i32, target: i32, value: i32) -> PlayerAction {
         value,
     }
 }
-fn assignments(first: &str, second: &str) -> Option<Vec<AssignedCharacter>> {
-    Some(
-        [first, second]
-            .iter()
-            .map(|name| AssignedCharacter {
-                name: (*name).into(),
-                metadata: -1,
-            })
-            .collect(),
-    )
+fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
+    [first, second]
+        .iter()
+        .map(|name| AssignedCharacter {
+            name: (*name).into(),
+            metadata: -1,
+        })
+        .collect()
 }
 fn restore(state: &EngineState) -> EngineState {
     parse_engine_state(serde_json::to_value(state).unwrap()).unwrap()
@@ -216,7 +214,7 @@ fn restores_multi_action_turn_and_continues_identically() {
             card_cycle: true,
             ..Options::default()
         },
-        assignments("Genius", "Slow-Witted"),
+        Some(assignments("Genius", "Slow-Witted")),
     ))
     .unwrap()
     .state;
@@ -360,7 +358,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
             detrimental_characters: true,
             ..Options::default()
         },
-        assignments("Slow-Witted", "n/a"),
+        Some(assignments("Slow-Witted", "n/a")),
     ))
     .unwrap()
     .state;
@@ -521,11 +519,11 @@ fn custom_shortened_legacy_decks_are_preserved_without_reshuffling() {
 }
 
 fn potential(state: &EngineState) -> f64 {
-    2.0 * state
+    2.0 * f64::from(int(state
         .deck
         .iter()
         .filter(|c| !c.played && !c.discarded)
-        .count() as f64
+        .count()))
         + f64::from(state.clue_tokens) / f64::from(clue_cost(state))
 }
 fn first_accepted(
@@ -582,7 +580,7 @@ fn long_character_histories_are_bounded_and_restorable() {
                 detrimental_characters: true,
                 ..Options::default()
             },
-            assignments("Genius", partner),
+            Some(assignments("Genius", partner)),
         );
         input.deck = Some(deck);
         let mut state = create_game(input).unwrap().state;
@@ -592,14 +590,14 @@ fn long_character_histories_are_bounded_and_restorable() {
             }
             let p = &state.players[state.active_player_index];
             let clues = vec![
-                action(2, 1 - p.index as i32, 0),
-                action(3, 1 - p.index as i32, 1),
+                action(2, 1 - int(p.index), 0),
+                action(3, 1 - int(p.index), 1),
             ];
             let discards: Vec<_> = p
                 .hand
                 .iter()
                 .filter(|o| **o != 0)
-                .map(|o| action(1, *o as i32, 0))
+                .map(|o| action(1, int(*o), 0))
                 .collect();
             let candidates = if p.character == "Panicky" {
                 [discards, clues].concat()
@@ -613,7 +611,7 @@ fn long_character_histories_are_bounded_and_restorable() {
         }
         assert_eq!(state.end_condition, EndCondition::Normal, "{variant_name}");
         assert_eq!(state.deck_index, state.deck.len());
-        assert!(state.actions.len() > 60 && state.turn < state.actions.len() as i32);
+        assert!(state.actions.len() > 60 && state.turn < int(state.actions.len()));
         assert!(
             state.actions.len() <= 2 * state.deck.len() + 9
                 && state.events.len() <= 8 * state.deck.len() + 31
@@ -632,7 +630,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             detrimental_characters: true,
             ..Options::default()
         },
-        assignments("Slow-Witted", "n/a"),
+        Some(assignments("Slow-Witted", "n/a")),
     );
     let mut deck = create_shuffled_deck(get_variant("6 Suits").unwrap(), "p2v0s1").unwrap();
     deck.sort_by_key(|c| (c.rank, c.suit_index));
@@ -643,9 +641,9 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             break;
         }
         let p = &state.players[state.active_player_index];
-        let mut candidates = vec![action(2, 1 - p.index as i32, 0)];
+        let mut candidates = vec![action(2, 1 - int(p.index), 0)];
         for t in [1, 0] {
-            candidates.extend(p.hand.iter().map(|o| action(t, *o as i32, 0)));
+            candidates.extend(p.hand.iter().map(|o| action(t, int(*o), 0)));
         }
         let before = potential(&state);
         state = restore(&first_accepted(&state, candidates, true));
@@ -716,7 +714,8 @@ fn synesthesia_touches_white_but_not_null_by_rank() {
             .clue_colors
             .iter()
             .position(|c| c == "Green")
-            .unwrap() as i32;
+            .map(int)
+            .unwrap();
         assert_eq!(
             is_card_touched(variant, ClueType::Color, green, 4, 3),
             touched

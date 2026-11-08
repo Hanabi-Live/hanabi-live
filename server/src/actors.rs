@@ -1,7 +1,11 @@
 use crate::{
     game::{Game, Options},
     lobby::{Effect, OnlineUser},
-    model::{Phase, *},
+    model::{
+        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, NoteOwner, PendingTag, Phase,
+        Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag, engine_options, small,
+        wire_options,
+    },
     operations::Operation,
     server_info::ServerInfo,
     store::Store,
@@ -18,7 +22,9 @@ use hanabi_protocol::{
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::{
+    cmp::Ordering,
     collections::{BTreeMap, HashMap, HashSet},
+    fmt::Write as _,
     sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
@@ -188,7 +194,10 @@ pub struct PlayingClaim {
 impl PlayingClaim {
     fn acquire(users: &Arc<Mutex<HashSet<i32>>>, user: i32) -> Result<Self> {
         ensure!(
-            users.lock().unwrap_or_else(|e| e.into_inner()).insert(user),
+            users
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .insert(user),
             "Another playing-table request is already pending."
         );
         Ok(Self {
@@ -201,7 +210,7 @@ impl Drop for PlayingClaim {
     fn drop(&mut self) {
         self.users
             .lock()
-            .unwrap_or_else(|e| e.into_inner())
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
             .remove(&self.user);
     }
 }
@@ -376,8 +385,8 @@ pub enum TableCommand {
 }
 /// Decodes a command the way the WebSocket parser does, for tests that build commands by name.
 #[cfg(test)]
-pub(crate) fn client_message(name: &str, data: Value) -> Result<ClientMessage> {
-    ClientMessage::decode(name, &data)?.with_context(|| format!("Unregistered command {name}"))
+pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> {
+    ClientMessage::decode(name, data)?.with_context(|| format!("Unregistered command {name}"))
 }
 
 #[cfg(test)]
@@ -1374,6 +1383,18 @@ fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     Some(message)
 }
 
+/// Converts a float that validation has already bounded to an integer, dropping any fraction.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "callers pass floats that validation bounds"
+)]
+fn truncate(value: f64) -> i64 {
+    value as i64
+}
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "the mantissa is rounded to 53 bits before it becomes a float"
+)]
 fn parse_start_minutes(argument: &str) -> Option<f64> {
     let value = format!("0{argument}");
     if regex!(r"(?i)^\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?(?:e[+-]?\d(?:_?\d)*)?$").is_match(&value) {
@@ -1395,7 +1416,11 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
             i64::MAX
         }
     });
-    let exponent = power.saturating_sub((fraction as i64).saturating_mul(4));
+    let exponent = power.saturating_sub(
+        i64::try_from(fraction)
+            .unwrap_or(i64::MAX)
+            .saturating_mul(4),
+    );
     let mut bits = Vec::new();
     for digit in mantissa.chars().filter(|c| *c != '.') {
         let value = digit.to_digit(16)?;
@@ -1407,7 +1432,7 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
         return Some(0.0);
     };
     let bits = &bits[first..];
-    let size = bits.len() as i64;
+    let size = i64::try_from(bits.len()).ok()?;
     if exponent.saturating_add(size) < -1074 {
         return Some(0.0);
     }
@@ -1415,7 +1440,7 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
         return None;
     }
     let shift = 0.max(size - 53).max(-1074 - exponent);
-    let kept = (size - shift).max(0) as usize;
+    let kept = usize::try_from((size - shift).max(0)).ok()?;
     let mut rounded = bits[..kept]
         .iter()
         .fold(0_u64, |v, bit| (v << 1) | u64::from(*bit));
@@ -1447,6 +1472,10 @@ fn options_suggestion(
         )
     }
 }
+#[expect(
+    clippy::float_cmp,
+    reason = "any change to the time setting is reported"
+)]
 fn option_changes(
     table: &TableSnapshot,
     options: &Options,
@@ -1456,10 +1485,12 @@ fn option_changes(
     let current = &table.options;
     let mut changes = String::new();
     let mut add = |label: &str, value: &str| {
-        changes.push_str(&format!(
+        write!(
+            changes,
             "<span class=\"cp\">{label}: <b>{}</b></span>",
             crate::accounts::escape_html(value)
-        ));
+        )
+        .expect("writing to a string cannot fail");
     };
     if name != table.name {
         add("Table Name", name);
@@ -1525,18 +1556,16 @@ fn is_variant_discovery(command: &Command) -> bool {
     let ClientMessage::Chat(request) = &**message else {
         return false;
     };
-    crate::accounts::normalize_chat(&request.msg)
-        .ok()
-        .is_some_and(|text| {
-            matches!(
-                text.split_whitespace()
-                    .next()
-                    .unwrap_or("")
-                    .to_ascii_lowercase()
-                    .as_str(),
-                "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
-            )
-        })
+    crate::accounts::normalize_chat(&request.msg).is_ok_and(|text| {
+        matches!(
+            text.split_whitespace()
+                .next()
+                .unwrap_or("")
+                .to_ascii_lowercase()
+                .as_str(),
+            "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
+        )
+    })
 }
 struct VariantDiscovery {
     requester: Arc<Session>,
@@ -1553,7 +1582,7 @@ fn replay_table(
     let id = snapshot.table_id;
     let options = snapshot.game.options.clone();
     for (index, player) in snapshot.players.iter_mut().enumerate() {
-        player.id = -1 - index as i32;
+        player.id = -1 - hanabi_engine::int(index);
     }
     let name = format!(
         "{} replay for {}",
@@ -1618,7 +1647,11 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
     use ClientMessage as M;
     let id = match message {
         M::Chat(r) => return r.room.strip_prefix("table")?.parse().ok(),
-        M::ChatRead(r) | M::ChatTyping(r) | M::TableLeave(r) | M::TableReattend(r) => r.table_id,
+        M::ChatRead(r)
+        | M::ChatTyping(r)
+        | M::TableLeave(r)
+        | M::TableReattend(r)
+        | M::IdleReset(r) => r.table_id,
         M::TableUnattend(r)
         | M::TableTerminate(r)
         | M::TableVoteForTermination(r)
@@ -1635,7 +1668,6 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
         M::TableUpdate(r) => r.table_id,
         M::Action(r) => r.table_id,
         M::Pause(r) => r.table_id,
-        M::IdleReset(r) => r.table_id,
         M::Note(r) => r.table_id,
         M::Tag(r) | M::TagDelete(r) => r.table_id,
         M::TagsDeleteAll(r) => r.table_id,
@@ -1690,7 +1722,7 @@ async fn prepare_table(
                 let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
                     let imported =
                         replay_helpers::parse(r.game_json.as_ref().context("Missing game JSON")?)?;
-                    warnings = imported.warnings.clone();
+                    warnings.clone_from(&imported.warnings);
                     custom_seed = Some(imported.extra.custom_seed.clone());
                     replay_helpers::snapshot(imported, id, session.user)
                 } else {
@@ -1738,7 +1770,7 @@ async fn prepare_table(
         ensure!(
             !options.timed
                 || (options.time_base > 0.0
-                    && options.time_base <= 604800.0
+                    && options.time_base <= 604_800.0
                     && (1..=86400).contains(&options.time_per_turn)),
             "Invalid timed options"
         );
@@ -1775,7 +1807,7 @@ async fn prepare_table(
                     0
                 };
                 ensure!(
-                    turn < historical.game.turn as usize,
+                    usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
                     "Replay turn exceeds game"
                 );
                 options = historical.game.options.clone();
@@ -1808,12 +1840,14 @@ async fn prepare_table(
                     .game
                     .actions
                     .iter()
-                    .map(|a| ReplayAction {
-                        kind: a.action_type as u8,
-                        target: a.target,
-                        value: a.value,
+                    .map(|a| {
+                        Ok(ReplayAction {
+                            kind: u8::try_from(a.action_type)?,
+                            target: a.target,
+                            value: a.value,
+                        })
                     })
-                    .collect();
+                    .collect::<Result<_>>()?;
                 extra.custom_num_players = Some(options.num_players);
                 extra.set_replay = true;
                 extra.set_replay_turn = turn;
@@ -2204,7 +2238,7 @@ impl TableActor {
                     .and_then(|seat| usize::try_from(seat).ok())
                     .and_then(|seat| old_ids.get(seat))
                     .and_then(|id| new_ids.iter().position(|new| new == id))
-                    .map(|seat| seat as i32);
+                    .map(hanabi_engine::int);
             }
         }
         if let Some(s) = next.game_mut()
@@ -2436,7 +2470,7 @@ impl TableActor {
                         },
                     }
                 },
-                _=self.cleanup.notified()=>{if let Err(e)=self.cleanup(Instant::now()).await{eprintln!("Table cleanup: {e}");}},
+                ()=self.cleanup.notified()=>{if let Err(e)=self.cleanup(Instant::now()).await{eprintln!("Table cleanup: {e}");}},
                 _=tick.tick()=>{if !self.frozen&&self.store.check_state().is_ok()&&let Err(e)=self.tick().await{eprintln!("Table timer: {e}");}},
             }
         }
@@ -2689,7 +2723,7 @@ impl TableActor {
                 .identities()
                 .iter()
                 .map(|card| hanabi_protocol::CardIdentity {
-                    suit_index: card.suit_index as i64,
+                    suit_index: int(card.suit_index),
                     rank: i64::from(card.rank),
                 })
                 .collect(),
@@ -2704,7 +2738,7 @@ impl TableActor {
             table_id: TableId(self.table.id),
             times: s.clocks.clone(),
             active_player_index: if live {
-                s.game.active_player_index as i64
+                int(s.game.active_player_index)
             } else {
                 -1
             },
@@ -2733,7 +2767,7 @@ impl TableActor {
             Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
                 return self
-                    .reattend(session, spectate, Some(shadow.map_or(-1, |s| s as i64)))
+                    .reattend(session, spectate, Some(shadow.map_or(-1, int)))
                     .await;
             }
         };
@@ -2890,7 +2924,7 @@ impl TableActor {
         ensure!(
             !options.timed
                 || (options.time_base > 0.0
-                    && options.time_base <= 604800.0
+                    && options.time_base <= 604_800.0
                     && (1..=86400).contains(&options.time_per_turn)),
             "Invalid timed options"
         );
@@ -2962,7 +2996,7 @@ impl TableActor {
                             0
                         };
                         ensure!(
-                            turn < historical.game.turn as usize,
+                            usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
                             "Replay turn exceeds game"
                         );
                         options = historical.game.options.clone();
@@ -2998,12 +3032,14 @@ impl TableActor {
                             .game
                             .actions
                             .iter()
-                            .map(|a| ReplayAction {
-                                kind: a.action_type as u8,
-                                target: a.target,
-                                value: a.value,
+                            .map(|a| {
+                                Ok(ReplayAction {
+                                    kind: u8::try_from(a.action_type)?,
+                                    target: a.target,
+                                    value: a.value,
+                                })
                             })
-                            .collect();
+                            .collect::<Result<_>>()?;
                     }
                     _ => bail!("Unknown special game prefix"),
                 }
@@ -3266,7 +3302,8 @@ impl TableActor {
             None
         };
         let mut next = self.candidate();
-        next.shadows.insert(session.user, shadow.map(|v| v as i32));
+        next.shadows
+            .insert(session.user, shadow.map(hanabi_engine::int));
         if replay {
             next.game_mut().context("Missing replay")?.idle_remaining = IDLE_TIMEOUT_MS;
         }
@@ -3432,7 +3469,7 @@ impl TableActor {
         let mut rng =
             hanabi_engine::random::GoRandom::new(hanabi_engine::random::seed_hash(&seed)?);
         for i in 0..deck.len() {
-            let other = rng.intn(i as u64 + 1) as usize;
+            let other = rng.index(i + 1);
             if extra.custom_seed.is_none() && !extra.custom_deck_is_shuffled {
                 deck.swap(i, other);
             }
@@ -3490,7 +3527,7 @@ impl TableActor {
             game,
             clocks: vec![
                 if options.timed {
-                    (options.time_base * 1000.0) as i64
+                    truncate(options.time_base * 1000.0)
                 } else {
                     0
                 };
@@ -3577,7 +3614,7 @@ impl TableActor {
         let active = s.game.active_player_index;
         if s.game.end_condition == EndCondition::InProgress && s.queued_pauses[active] {
             s.queued_pauses[active] = false;
-            s.pause_player_index = active as i32;
+            s.pause_player_index = hanabi_engine::int(active);
             s.game.paused = true;
         }
         self.persist(next).await?;
@@ -3595,11 +3632,11 @@ impl TableActor {
                 .position(|p| p.id == a.session.user)
             {
                 Recipient::Player {
-                    player_index: seat as i32,
+                    player_index: hanabi_engine::int(seat),
                 }
             } else {
                 Recipient::Spectator {
-                    shadowing_player_index: a.shadow.map(|i| i as i32),
+                    shadowing_player_index: a.shadow.map(hanabi_engine::int),
                 }
             };
             for event in hanabi_engine::events_for_recipient(
@@ -3734,7 +3771,7 @@ impl TableActor {
                 } else {
                     EndCondition::TerminatedByPlayer
                 },
-                if vote { -1 } else { seat as i32 },
+                if vote { -1 } else { hanabi_engine::int(seat) },
                 votes,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),
@@ -3810,7 +3847,11 @@ impl TableActor {
             P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
             P::Pause | P::Unpause => {
                 s.game.paused = setting == P::Pause;
-                s.pause_player_index = if s.game.paused { seat as i32 } else { -1 };
+                s.pause_player_index = if s.game.paused {
+                    hanabi_engine::int(seat)
+                } else {
+                    -1
+                };
                 if !s.game.paused {
                     s.turn_elapsed = 0;
                 }
@@ -4160,6 +4201,8 @@ impl TableActor {
         session: Arc<Session>,
         r: hanabi_protocol::ReplayActionRequest,
     ) -> Result<()> {
+        use hanabi_protocol::ReplayActionRequest as R;
+
         ensure!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
             "You must lead this shared replay"
@@ -4168,7 +4211,6 @@ impl TableActor {
         let Phase::Replay { snapshot, replay } = &mut next.phase else {
             bail!("Not a replay");
         };
-        use hanabi_protocol::ReplayActionRequest as R;
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
         let message = match r {
@@ -4420,9 +4462,7 @@ impl TableActor {
             return self.publish(e).await;
         }
         if command == "tags" || command == "taglist" {
-            let messages = if !matches!(self.table.phase, Phase::Replay { .. }) {
-                vec!["You can only perform this command while in a replay.".to_owned()]
-            } else {
+            let messages = if matches!(self.table.phase, Phase::Replay { .. }) {
                 let id = self.table.game().expect("replay game").game_id;
                 let tags = self
                     .store
@@ -4442,6 +4482,8 @@ impl TableActor {
                     }));
                     lines
                 }
+            } else {
+                vec!["You can only perform this command while in a replay.".to_owned()]
             };
             ensure!(
                 self.attending(&session),
@@ -4511,14 +4553,14 @@ impl TableActor {
                     "Minutes must be between zero and ten"
                 );
                 *countdown =
-                    Some(Utc::now() + ChronoDuration::seconds((minutes * 60.0).ceil() as i64));
-                let seconds = (minutes * 60.0).ceil() as i64;
-                let wait = if seconds < 60 {
-                    format!("{seconds} seconds")
-                } else if seconds == 60 {
-                    "1 minute".into()
-                } else {
-                    format!("{} minutes", crate::accounts::escape_html(args[0]))
+                    Some(Utc::now() + ChronoDuration::seconds(truncate((minutes * 60.0).ceil())));
+                let seconds = truncate((minutes * 60.0).ceil());
+                let wait = match seconds.cmp(&60) {
+                    Ordering::Less => format!("{seconds} seconds"),
+                    Ordering::Equal => "1 minute".into(),
+                    Ordering::Greater => {
+                        format!("{} minutes", crate::accounts::escape_html(args[0]))
+                    }
                 };
                 notice = format!("The game will automatically start in {wait}.");
             }
@@ -4971,11 +5013,11 @@ impl TableActor {
                 }
             } else if !a.spectator {
                 Recipient::Player {
-                    player_index: seat.context("Missing player")? as i32,
+                    player_index: hanabi_engine::int(seat.context("Missing player")?),
                 }
             } else {
                 Recipient::Spectator {
-                    shadowing_player_index: a.shadow.map(|i| i as i32),
+                    shadowing_player_index: a.shadow.map(hanabi_engine::int),
                 }
             };
             let list = hanabi_engine::events_for_recipient(&s.game.0, recipient, None)?;
@@ -5171,7 +5213,7 @@ impl TableActor {
                 } else {
                     EndCondition::Timeout
                 },
-                if idle { -1 } else { active as i32 },
+                if idle { -1 } else { hanabi_engine::int(active) },
                 None,
                 Some(CompletionTiming {
                     player_times: s.clocks.clone(),

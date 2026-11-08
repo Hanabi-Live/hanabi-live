@@ -14,15 +14,15 @@ use std::{
 };
 
 const IP_LIMIT: usize = 20;
-const IP_WINDOW: Duration = Duration::from_secs(15 * 60);
+const IP_WINDOW: Duration = Duration::from_mins(15);
 /// The most that NIST SP 800-63B allows. A low limit would make it easy to lock someone out.
 const ACCOUNT_LIMIT: usize = 100;
-const ACCOUNT_WINDOW: Duration = Duration::from_secs(60 * 60);
+const ACCOUNT_WINDOW: Duration = Duration::from_hours(1);
 const MAX_TRACKED_KEYS: usize = 10_000;
 /// Every password check or hash costs the same, whether or not it succeeds, so all of them share
 /// one budget per address. A visit needs one or two.
 const WORK_LIMIT: usize = 30;
-const WORK_WINDOW: Duration = Duration::from_secs(5 * 60);
+const WORK_WINDOW: Duration = Duration::from_mins(5);
 static WORK: LazyLock<Mutex<Counter<IpAddr>>> =
     LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
 

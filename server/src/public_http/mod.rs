@@ -134,7 +134,7 @@ fn encoded(s: &str) -> String {
     percent_encoding::utf8_percent_encode(s, percent_encoding::NON_ALPHANUMERIC).to_string()
 }
 
-pub fn router(pool: PgPool, config: PublicConfig) -> Router {
+pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     let state = PublicState {
         pool,
         config: config.clone(),
@@ -182,7 +182,7 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
         let mut path = root.to_owned();
         router = router.route(&path, get(pages::page));
         for i in 1..=6 {
-            path.push_str(&format!("/{{player{i}}}"));
+            path = format!("{path}/{{player{i}}}");
             router = router.route(&path, get(pages::page));
         }
     }
@@ -195,7 +195,7 @@ pub fn router(pool: PgPool, config: PublicConfig) -> Router {
         let mut path = format!("/api/v1/{root}");
         api = api.route(&path, get(api_handler));
         for i in 1..=6 {
-            path.push_str(&format!("/{{player{i}}}"));
+            path = format!("{path}/{{player{i}}}");
             api = api.route(&path, get(api_handler));
         }
     }

@@ -23,10 +23,13 @@ pub fn events_for_recipient(
 ) -> Result<Vec<EngineEvent>> {
     let index = match recipient {
         Recipient::Player { player_index } => {
-            if player_index < 0 || player_index as usize >= state.players.len() {
+            let Some(index) = usize::try_from(player_index)
+                .ok()
+                .filter(|&i| i < state.players.len())
+            else {
                 bail!("Invalid game recipient.");
-            }
-            Some(player_index as usize)
+            };
+            Some(index)
         }
         Recipient::Spectator {
             shadowing_player_index,

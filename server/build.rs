@@ -117,7 +117,7 @@ pub fn discover(root: &Path, supplied_revision: Option<&str>) -> Result<Version,
             return Err("Cyclic symbolic Git reference".into());
         }
         // Continue through symbolic branch aliases as well as HEAD itself.
-        name = target.trim().to_owned();
+        target.trim().clone_into(&mut name);
     }
     Ok(Version { commit, watched })
 }

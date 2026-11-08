@@ -14,7 +14,7 @@ use tokio_util::{sync::CancellationToken, task::TaskTracker};
 const IGNORED_CODES: [&str; 1] = ["server_draining"];
 
 /// Repeats of the same failure are counted instead of posted until this much time has passed.
-const REPEAT_INTERVAL: Duration = Duration::from_secs(10 * 60);
+const REPEAT_INTERVAL: Duration = Duration::from_mins(10);
 
 pub struct Alerts {
     queue: Option<mpsc::Sender<Report>>,
@@ -57,6 +57,7 @@ impl Throttle {
 }
 
 impl Alerts {
+    #[must_use]
     pub fn start(
         bridge: Option<Arc<Bridge>>,
         development: bool,

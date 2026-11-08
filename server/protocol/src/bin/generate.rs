@@ -1,6 +1,7 @@
 use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 
 /// The wire enums that the game library declares. The data package declares the rest.
 const GAME_LIBRARY_ENUMS: &[&str] = &["ClueType", "EndCondition"];
@@ -53,11 +54,13 @@ fn enum_declarations(game: bool) -> String {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        output.push_str(&format!(
-            "{}export enum {} {{\n{members}\n}}\n",
+        writeln!(
+            output,
+            "{}export enum {} {{\n{members}\n}}",
             jsdoc(wire.description),
             wire.name
-        ));
+        )
+        .expect("writing to a string cannot fail");
     }
     output
 }
@@ -230,30 +233,27 @@ fn expression(schema: &Value) -> Result<String> {
             .iter()
             .map(|value| value.as_i64().context("Wire enum values must be integers"))
             .collect::<Result<Vec<_>>>()?;
-        match values.as_slice() {
+        if let [member] = values.as_slice() {
             // One member of the enum: its value is assignable to that member's type.
-            [member] => {
-                ensure!(
-                    members.contains(member),
-                    "{} has no member with the value {member}",
-                    wire.name
-                );
-                format!("z.literal({member})")
-            }
-            _ => {
-                ensure!(
-                    values == members,
-                    "A field lists other values than {} has",
-                    wire.name
-                );
-                format!("z.enum({})", wire.name)
-            }
+            ensure!(
+                members.contains(member),
+                "{} has no member with the value {member}",
+                wire.name
+            );
+            format!("z.literal({member})")
+        } else {
+            ensure!(
+                values == members,
+                "A field lists other values than {} has",
+                wire.name
+            );
+            format!("z.enum({})", wire.name)
         }
     } else if let Some(values) = schema["enum"].as_array() {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
             format!("z.literal({})", values[0])
-        } else if values.iter().all(|value| value.is_i64()) {
+        } else if values.iter().all(serde_json::Value::is_i64) {
             // The listed integers already bound the value, so no range is appended below.
             format!("z.literal({})", serde_json::to_string(values)?)
         } else {
@@ -318,10 +318,7 @@ fn expression(schema: &Value) -> Result<String> {
                             !required.iter().any(|value| value == name),
                             "Required fields cannot acquire client-only defaults"
                         );
-                        field.push_str(&format!(
-                            ".default({})",
-                            default_literal(property, default)?
-                        ));
+                        write!(field, ".default({})", default_literal(property, default)?)?;
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
@@ -348,7 +345,7 @@ fn expression(schema: &Value) -> Result<String> {
         if let Some(value) = schema.get(keyword)
             && !enumerated
         {
-            result.push_str(&format!(".{method}({})", literal(value)));
+            write!(result, ".{method}({})", literal(value))?;
         }
     }
     if let Some(format) = schema["format"].as_str() {
@@ -373,18 +370,18 @@ fn expression(schema: &Value) -> Result<String> {
         );
     }
     if let Some(brand) = schema.get("x-brand") {
-        result.push_str(&format!(".brand<{brand}>()"));
+        write!(result, ".brand<{brand}>()")?;
     }
     if schema["x-readonly"] == true {
         result.push_str(".readonly()");
     }
     if let Some(default) = schema.get("x-undefined-default") {
-        result.push_str(&format!(".default({default})"));
+        write!(result, ".default({default})")?;
     }
     Ok(result)
 }
 
-/// The schema's description, which comes from the Rust doc comment, as JSDoc with the same line
+/// The schema's description, which comes from the Rust doc comment, as `JSDoc` with the same line
 /// breaks.
 fn doc_comment(schema: &Value) -> String {
     schema
@@ -393,7 +390,7 @@ fn doc_comment(schema: &Value) -> String {
         .map_or_else(String::new, jsdoc)
 }
 
-/// Text as a JSDoc comment, with the same line breaks. Rust's doc attributes start each line with
+/// Text as a `JSDoc` comment, with the same line breaks. Rust's doc attributes start each line with
 /// the space after `///`, which is removed.
 fn jsdoc(text: &str) -> String {
     if text.trim().is_empty() {
@@ -416,6 +413,10 @@ fn jsdoc(text: &str) -> String {
 }
 
 /// Writes whole floats, including those nested in object defaults, as JavaScript integers.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "only whole floats within the safe integer range are converted"
+)]
 fn whole_floats_as_integers(value: &Value) -> Value {
     match value {
         Value::Number(number) if number.is_f64() => number
@@ -533,8 +534,9 @@ impl<'a> Module<'a> {
         for dependency in dependencies {
             self.emit(&dependency)?;
         }
-        self.output.push_str(&format!(
-            "{}{}const {} = {};\n",
+        writeln!(
+            self.output,
+            "{}{}const {} = {};",
             doc_comment(schema),
             if self.exported.contains(name) {
                 "export "
@@ -543,7 +545,7 @@ impl<'a> Module<'a> {
             },
             variable(name),
             expression(schema).with_context(|| format!("Cannot translate the {name} schema"))?
-        ));
+        )?;
         self.active.remove(name);
         self.emitted.insert(name.into());
         Ok(())

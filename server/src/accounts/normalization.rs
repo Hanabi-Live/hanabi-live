@@ -18,6 +18,7 @@ static IDENTITY: LazyLock<IdentityData> = LazyLock::new(|| {
     .expect("checked-in Go identity data")
 });
 
+#[must_use]
 pub fn normalize_string(input: &str) -> String {
     let mut result = String::new();
     for ch in input.chars() {
@@ -34,14 +35,17 @@ pub fn normalize_string(input: &str) -> String {
     result.to_lowercase()
 }
 
+#[must_use]
 pub fn normalize_username(input: &str) -> String {
     normalize_string(input.trim())
 }
 
+#[must_use]
 pub fn has_username_emoji(input: &str) -> bool {
     regex!(&IDENTITY.username_emoji_pattern).is_match(input)
 }
 
+#[must_use]
 pub fn max_consecutive_marks(input: &str) -> usize {
     let mut count = 0;
     let mut maximum = 0;
@@ -57,6 +61,7 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     maximum
 }
 
+#[must_use]
 pub fn truncate_to_max_bytes(input: &str, max: usize) -> &str {
     let mut end = input.len().min(max);
     while !input.is_char_boundary(end) {
@@ -66,6 +71,7 @@ pub fn truncate_to_max_bytes(input: &str, max: usize) -> &str {
 }
 
 /// Removes characters that chat messages and notes do not allow.
+#[must_use]
 pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
     regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").replace_all(input, "")
 }
@@ -83,6 +89,7 @@ pub fn normalize_chat(input: &str) -> Result<String, &'static str> {
     Ok(message.to_owned())
 }
 
+#[must_use]
 pub fn escape_html(input: &str) -> String {
     input
         .replace('&', "&amp;")

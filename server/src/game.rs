@@ -71,13 +71,14 @@ impl Game {
         .state;
         Ok(())
     }
+    #[must_use]
     pub fn projected(&self, seat: Option<usize>, from: usize) -> Vec<Event> {
         let recipient = seat.map_or(
             Recipient::Spectator {
                 shadowing_player_index: None,
             },
             |i| Recipient::Player {
-                player_index: i as i32,
+                player_index: hanabi_engine::int(i),
             },
         );
         hanabi_engine::events_for_recipient(&self.0, recipient, Some(&self.events[from..]))
@@ -86,6 +87,7 @@ impl Game {
     pub fn validate_recovery(&self) -> Result<()> {
         hanabi_engine::validate_engine_state(&self.0)
     }
+    #[must_use]
     pub fn identities(&self) -> Vec<Card> {
         self.deck
             .iter()
@@ -119,6 +121,7 @@ impl Game {
         Ok(game)
     }
 }
+#[must_use]
 pub fn unshuffled_deck() -> Vec<Card> {
     hanabi_engine::create_deck(hanabi_engine::get_variant("No Variant").expect("catalog"))
 }
@@ -130,13 +133,13 @@ pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
         !deck.is_empty() && deck.len() <= 60,
         "Invalid custom deck length"
     );
-    let mut bytes = vec![0x80 + deck.len() as u8];
+    let mut bytes = vec![0x80 + u8::try_from(deck.len())?];
     for c in deck {
         ensure!(
             c.suit_index < 6 && matches!(c.rank, 1..=5 | 7),
             "Invalid card"
         );
-        bytes.push((c.suit_index * 8 + c.rank as usize) as u8);
+        bytes.push(u8::try_from(c.suit_index * 8 + usize::try_from(c.rank)?)?);
     }
     Ok(bytes)
 }
@@ -155,6 +158,7 @@ pub fn decode_deck(bytes: &[u8]) -> Result<Vec<Card>> {
     encode_deck(&cards)?;
     Ok(cards)
 }
+#[must_use]
 pub fn options() -> Value {
     serde_json::to_value(Options {
         variant_id: Some(0),

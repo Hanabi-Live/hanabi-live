@@ -150,7 +150,7 @@ async fn canonical_host(State(origin): State<Arc<str>>, request: Request, next: 
     next.run(request).await
 }
 
-pub fn redirect_router(root: PathBuf, domain: &str, https_port: u16) -> Router {
+pub fn redirect_router(root: &std::path::Path, domain: &str, https_port: u16) -> Router {
     let origin = https_origin(domain, https_port);
     Router::new()
         .route("/.well-known/acme-challenge/{token}", get(challenge))
@@ -183,13 +183,11 @@ async fn challenge(State(state): State<RedirectState>, Path(token): Path<String>
         return StatusCode::NOT_FOUND.into_response();
     }
     let path = state.acme.join(token);
-    let resolved = match tokio::fs::canonicalize(&path).await {
-        Ok(p) => p,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+    let Ok(resolved) = tokio::fs::canonicalize(&path).await else {
+        return StatusCode::NOT_FOUND.into_response();
     };
-    let root = match tokio::fs::canonicalize(&state.acme).await {
-        Ok(p) => p,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+    let Ok(root) = tokio::fs::canonicalize(&state.acme).await else {
+        return StatusCode::NOT_FOUND.into_response();
     };
     if !resolved.starts_with(root) {
         return StatusCode::NOT_FOUND.into_response();
@@ -331,10 +329,10 @@ mod tests {
         Ok(())
     }
 
-    fn config(root: PathBuf) -> Config {
+    fn config(root: &std::path::Path) -> Config {
         Config::from_values(
             root,
-            [
+            &[
                 ("SESSION_SECRET", "x".repeat(128)),
                 ("REDIS_URL", "redis://localhost".into()),
                 ("TLS_CERT_FILE", "cert.pem".into()),
@@ -353,7 +351,7 @@ mod tests {
         let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()])?;
         std::fs::write(root.join("cert.pem"), cert.cert.pem())?;
         std::fs::write(root.join("key.pem"), cert.signing_key.serialize_pem())?;
-        let config = config(root.clone());
+        let config = config(&root);
         let tls = configuration(&config).await?.context("TLS")?;
         let listener = std::net::TcpListener::bind("127.0.0.1:0")?;
         listener.set_nonblocking(true)?;
@@ -393,7 +391,7 @@ mod tests {
             root.join("letsencrypt/.well-known/acme-challenge/test_token"),
             "proof",
         )?;
-        let router = redirect_router(root.clone(), "localhost", address.port());
+        let router = redirect_router(&root, "localhost", address.port());
         let response = router
             .clone()
             .oneshot(

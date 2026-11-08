@@ -22,7 +22,7 @@ pub fn seed_hash(seed: &str) -> Result<i64> {
                 };
         }
     }
-    Ok(!crc as i64)
+    Ok((!crc).cast_signed())
 }
 
 pub struct GoRandom {
@@ -57,15 +57,16 @@ impl GoRandom {
             }
         };
         let mut state = [0; 607];
-        for index in -20_i32..607 {
+        for _ in 0..20 {
             x = step(x);
-            if index >= 0 {
-                let mut value = (x as u64) << 40;
-                x = step(x);
-                value ^= (x as u64) << 20;
-                x = step(x);
-                state[index as usize] = value ^ x as u64 ^ cooked[index as usize] as u64;
-            }
+        }
+        for (slot, cooked) in state.iter_mut().zip(cooked) {
+            x = step(x);
+            let mut value = x.cast_unsigned() << 40;
+            x = step(x);
+            value ^= x.cast_unsigned() << 20;
+            x = step(x);
+            *slot = value ^ x.cast_unsigned() ^ cooked.cast_unsigned();
         }
         Self {
             state,
@@ -83,8 +84,8 @@ impl GoRandom {
     }
 
     pub fn intn(&mut self, bound: u64) -> u64 {
-        assert!(bound > 0 && bound <= i64::MAX as u64);
-        let small = bound <= i32::MAX as u64;
+        assert!(bound > 0 && i64::try_from(bound).is_ok());
+        let small = i32::try_from(bound).is_ok();
         let range = 1_u64 << if small { 31 } else { 63 };
         let maximum = range - 1 - range % bound;
         loop {
@@ -102,9 +103,16 @@ impl GoRandom {
         }
     }
 
+    /// Returns a random index below `len`, drawing the same value as `intn`.
+    pub fn index(&mut self, len: usize) -> usize {
+        let bound = u64::try_from(len).expect("lengths fit in u64");
+        usize::try_from(self.intn(bound)).expect("the value is below a length")
+    }
+
     pub fn shuffle<T>(&mut self, values: &mut [T]) {
         for index in 0..values.len() {
-            values.swap(index, self.intn(index as u64 + 1) as usize);
+            let other = self.index(index + 1);
+            values.swap(index, other);
         }
     }
 }
