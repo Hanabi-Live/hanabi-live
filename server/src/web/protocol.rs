@@ -122,7 +122,7 @@ mod tests {
         assert!(
             parse(&format!(
                 "replayAction {}",
-                json!({"tableID":1,"type":0,"actionJSON":"x".repeat(65537)})
+                json!({"tableID":1,"type":5,"action":"{\"type\":\"turn\"}"})
             ))
             .is_err()
         );

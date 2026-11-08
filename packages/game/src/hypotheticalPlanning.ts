@@ -5,6 +5,7 @@ import { possibleCardsFromNoteAndClues } from "./cardPresentation";
 import { START_CARD_RANK } from "./constants";
 import { ClueType } from "./enums/ClueType";
 import { StackDirection } from "./enums/StackDirection";
+import type { HypotheticalGameAction } from "./hypotheticalState";
 import type { CardIdentity } from "./interfaces/CardIdentity";
 import type { CardNote } from "./interfaces/CardNote";
 import type { CardState } from "./interfaces/CardState";
@@ -19,7 +20,7 @@ import {
 } from "./rules/playStacks";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
-import type { GameAction } from "./types/gameActions";
+import type { ActionDraw } from "./types/gameActions";
 import type { MsgClue } from "./types/MsgClue";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type { Rank } from "./types/Rank";
@@ -241,7 +242,7 @@ function getMorphedStackBaseRank(
 export function planHypotheticalAction(
   intent: HypotheticalActionIntent,
   context: PlanHypotheticalActionContext,
-): readonly GameAction[] | null {
+): readonly HypotheticalGameAction[] | null {
   const { gameState, metadata, variant } = context;
   const playerIndex = gameState.turn.currentPlayerIndex;
   if (playerIndex === null) {
@@ -271,7 +272,7 @@ export function planHypotheticalAction(
     });
   }
 
-  const actions: GameAction[] = [];
+  const actions: HypotheticalGameAction[] = [];
   if (intent.type === "play" || intent.type === "discard") {
     // Reject cards held by other players to prevent duplicated card orders.
     const isInOtherHand = gameState.hands.some(
@@ -368,7 +369,7 @@ export function planHypotheticalAction(
     if (gameState.deck.length < context.cardIdentities.length) {
       const nextCardOrder = gameState.deck.length as CardOrder;
       const nextCard = context.cardIdentities[nextCardOrder];
-      const drawAction: GameAction = {
+      const drawAction: ActionDraw = {
         type: "draw",
         order: nextCardOrder,
         playerIndex,

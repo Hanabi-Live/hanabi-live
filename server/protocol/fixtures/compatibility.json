@@ -631,11 +631,31 @@
     "valid": false
   },
   {
-    "name": "hypothetical actions are client JSON text",
+    "name": "hypothetical actions are typed objects",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": 5,
+      "action": { "type": "morph", "order": 3, "suitIndex": -1, "rank": 2 }
+    },
+    "valid": true,
+    "normalized": {
+      "tableID": 4,
+      "type": 5,
+      "action": { "type": "morph", "order": 3, "suitIndex": -1, "rank": 2 },
+      "order": 0,
+      "segment": 0,
+      "sound": "",
+      "value": 0
+    }
+  },
+  {
+    "name": "hypothetical actions are objects, not JSON text",
     "direction": "server",
     "command": "hypoAction",
     "input": "{\"type\":\"turn\",\"num\":1,\"currentPlayerIndex\":0}",
-    "valid": true
+    "valid": false
   },
   {
     "name": "visible clues carry their type and value",

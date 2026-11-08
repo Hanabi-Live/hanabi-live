@@ -762,10 +762,10 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
             crate::server_info::test_info(),
         );
         actor.initialize(h.users[0].clone(), vec![]).await?;
-        let action = json!({"type":"turn","num":1,"currentPlayerIndex":1}).to_string();
+        let action = json!({"type":"turn","num":1,"currentPlayerIndex":1});
         for request in [
             json!({"tableID":id,"type":3}),
-            json!({"tableID":id,"type":5,"actionJSON":action}),
+            json!({"tableID":id,"type":5,"action":action}),
             json!({"tableID":id,"type":6}),
         ] {
             let mut next = actor.candidate();

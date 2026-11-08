@@ -1797,12 +1797,12 @@ mod tests {
                 json!({"tableID":id,"type":3}),
             )
             .await?;
-            let raw = " { \"type\": \"turn\", \"num\": 7 } ";
+            let action = json!({"type":"turn","num":7,"currentPlayerIndex":1});
             send(
                 &hub,
                 users[0].clone(),
                 "replayAction",
-                json!({"tableID":id,"type":5,"actionJSON":raw}),
+                json!({"tableID":id,"type":5,"action":action}),
             )
             .await?;
             let tables = store.load().await?;
@@ -1811,7 +1811,13 @@ mod tests {
                 anyhow::bail!("Not a replay");
             };
             ensure!(
-                replay.hypothetical && replay.hypothetical_actions == vec![raw],
+                replay.hypothetical
+                    && replay
+                        .hypothetical_actions
+                        .iter()
+                        .map(|raw| serde_json::from_str::<Value>(raw))
+                        .collect::<Result<Vec<_>, _>>()?
+                        == vec![action],
                 "Hypothetical was not recovered exactly"
             );
             send(
