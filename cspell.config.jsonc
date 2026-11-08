@@ -43,8 +43,6 @@
     "emojis.json",
     // Most emote names are not words.
     "emotes.json",
-    // Word lists
-    "words.txt",
     // Rust build output. ".gitignore" excludes it, but CSpell would still search it, which is slow.
     "server/target/**",
     // @template-customization-end
