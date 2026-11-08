@@ -113,12 +113,17 @@ export function init(): void {
     })
 
     .on("dragend resizeend", (event: Interact.InteractEvent) => {
-      // The modal was moved or resized; store the window dimensions in a cookie so that it will
-      // persist between refreshes.
+      // The modal was moved or resized; store its size and its distance from the right and top
+      // edges of the window so that it will persist between refreshes. Anchoring to the right edge
+      // keeps the modal in the same place relative to the edge when the window size changes.
+      const rect = event.target.getBoundingClientRect();
       localStorage.setItem("chatWindowWidth", event.target.style.width);
       localStorage.setItem("chatWindowHeight", event.target.style.height);
-      localStorage.setItem("chatWindowX", event.target.dataset["x"] ?? "0");
-      localStorage.setItem("chatWindowY", event.target.dataset["y"] ?? "0");
+      localStorage.setItem(
+        "chatWindowRight",
+        (window.innerWidth - rect.right).toString(),
+      );
+      localStorage.setItem("chatWindowTop", rect.top.toString());
     });
 
   $("#game-chat-modal-header-close").click(() => {
@@ -158,43 +163,39 @@ export function show(focusInput = true): void {
     globals.ui.updateChatLabel();
   }
 
-  // Set the modal to the default position.
+  // Set the modal to the default size and position.
   modal.css(DEFAULT_CHAT_MODAL_SIZE);
   modal.css(DEFAULT_CHAT_MODAL_POSITION);
+  moveElement(modal, 0, 0);
 
   // If there is a stored size + position for the chat box, set that.
-  let resetPosition = true;
   const width = localStorage.getItem("chatWindowWidth") ?? "";
   const height = localStorage.getItem("chatWindowHeight") ?? "";
-  const xString = localStorage.getItem("chatWindowX") ?? "";
-  const yString = localStorage.getItem("chatWindowY") ?? "";
+  const right = parseFloatSafe(localStorage.getItem("chatWindowRight") ?? "");
+  const top = parseFloatSafe(localStorage.getItem("chatWindowTop") ?? "");
 
-  if (width !== "" && height !== "" && xString !== "" && yString !== "") {
-    resetPosition = false;
-
+  if (
+    width !== ""
+    && height !== ""
+    && right !== undefined
+    && top !== undefined
+  ) {
     modal.css("width", width);
     modal.css("height", height);
 
-    const x = parseFloatSafe(xString);
-    const y = parseFloatSafe(yString);
-
-    if (x !== undefined && y !== undefined) {
-      moveElement(modal, x, y);
-    }
+    // The stored width may be a percentage, so measure the modal after applying it.
+    const modalWidth = modal[0]!.getBoundingClientRect().width;
+    modal.css({
+      left: `${window.innerWidth - right - modalWidth}px`,
+      top: `${top}px`,
+    });
 
     // Just in case, reset the size and position if the stored location puts the chat box offscreen.
     // (This is possible if the window size has changed since the last time.)
     if (isOffscreen(modal)) {
-      resetPosition = true;
+      modal.css(DEFAULT_CHAT_MODAL_SIZE);
+      modal.css(DEFAULT_CHAT_MODAL_POSITION);
     }
-  }
-
-  if (resetPosition) {
-    modal.css(DEFAULT_CHAT_MODAL_SIZE);
-    modal.css("webkitTransform", "translate(0px, 0px)");
-    modal.css("transform", "translate(0px, 0px)");
-    modal.attr("data-x", 0);
-    modal.attr("data-y", 0);
   }
 
   // Scroll to the bottom of the chat.
