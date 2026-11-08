@@ -10,9 +10,16 @@ import Konva from "konva";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, TEXT_SHRINK_FACTOR } from "../../constants";
+import { degreesToRadians, radiansToDegrees } from "../../konvaHelpers";
 
 /** The most times the player name shrinks before it is drawn as it is. */
 const MAX_SHRINK_STEPS = 100;
+
+/**
+ * In Keldon mode, how far behind each hand the arrow aims, as a fraction of the stage height (600
+ * pixels on a 1080-pixel stage).
+ */
+const IMAGINARY_PLAYER_DISTANCE = 600 / 1080;
 
 export function isVisible(state: State): boolean {
   return (
@@ -218,10 +225,10 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
   if (globals.lobby.settings.keldonMode) {
     // Make sure that the arrow points to an imaginary person behind the hand of cards.
     const winH = globals.stage.height();
-    const distanceToImaginaryPlayer = (600 / 1080) * winH;
+    const distanceToImaginaryPlayer = IMAGINARY_PLAYER_DISTANCE * winH;
     const handRotation =
       globals.metadata.ourPlayerIndex === playerIndex ? 180 : hand.origRotation;
-    const rot = (-handRotation / 180) * Math.PI;
+    const rot = degreesToRadians(-handRotation);
     centerPos.x += distanceToImaginaryPlayer * -Math.sin(rot); // -sin(x) = cos(x + PI / 2)
     centerPos.y -= distanceToImaginaryPlayer * Math.cos(rot); // cos(x) = sin(x + PI / 2)
   }
@@ -231,7 +238,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
   const x = centerPos.x - thisPos.x;
   const y = centerPos.y - thisPos.y;
   const radians = Math.atan(y / x);
-  let rotation = radians * (180 / Math.PI);
+  let rotation = radiansToDegrees(radians);
   if (x < 0) {
     rotation += 180;
   }

@@ -249,6 +249,9 @@ const STAGE_ASPECT_RATIO = 16 / 9;
 /** The stage seems to break for widths of around 235 px or less. */
 const MIN_STAGE_WIDTH = 240;
 
+/** A stage that would fill at least this fraction of the window is stretched to fill it exactly. */
+const FILL_WINDOW_FRACTION = 0.98;
+
 // Initialize and size the stage depending on the window size.
 function initStageSize() {
   const size = getStageSize(window.innerWidth, window.innerHeight);
@@ -276,10 +279,10 @@ function getStageSize(
   width = Math.floor(width);
   height = Math.floor(height);
 
-  if (width > 0.98 * ww) {
+  if (width > FILL_WINDOW_FRACTION * ww) {
     width = ww;
   }
-  if (height > 0.98 * wh) {
+  if (height > FILL_WINDOW_FRACTION * wh) {
     height = wh;
   }
 

@@ -43,7 +43,10 @@ import {
   FONT_FAMILY,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
+  PANEL_CORNER_RADIUS,
+  PANEL_OPACITY,
   RIGHT_MOUSE_BUTTON,
+  STAGE_FADE_OPACITY,
   TEXT_SHADOW,
   WARNING_COLOR,
 } from "./constants";
@@ -208,7 +211,7 @@ function drawBackground() {
     y: 0,
     width: winW,
     height: winH,
-    opacity: 0.3,
+    opacity: STAGE_FADE_OPACITY,
     fill: "black",
     visible: false,
     listening: true,
@@ -629,7 +632,7 @@ function drawDeck() {
     width: deckValues.w! * winW,
     height: deckValues.h! * winH,
     fill: "black",
-    opacity: 0.2,
+    opacity: PANEL_OPACITY,
     cornerRadius: 0.006 * winW,
     listening: true,
   });
@@ -753,7 +756,7 @@ function drawScoreArea() {
     height: scoreAreaValues.h! * winH,
     stroke: WARNING_COLOR,
     strokeWidth: 0.003 * winW,
-    cornerRadius: 0.01 * winW,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     visible: false,
     listening: false,
   });
@@ -766,8 +769,8 @@ function drawScoreArea() {
     width: scoreAreaValues.w! * winW,
     height: scoreAreaValues.h! * winH,
     fill: "black",
-    opacity: 0.2,
-    cornerRadius: 0.01 * winW,
+    opacity: PANEL_OPACITY,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     listening: false,
   });
   globals.elements.scoreArea.add(scoreAreaRect);
@@ -1350,8 +1353,8 @@ function drawClueLog() {
     width: clueLogValues.w! * winW,
     height: clueLogValues.h! * winH,
     fill: "black",
-    opacity: 0.2,
-    cornerRadius: 0.01 * winW,
+    opacity: PANEL_OPACITY,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     listening: false,
   });
   globals.layers.UI.add(clueLogRect);
@@ -1375,8 +1378,8 @@ function drawStatistics() {
     width: clueLogValues.w! * winW,
     height: 0.09 * winH,
     fill: "black",
-    opacity: 0.2,
-    cornerRadius: 0.01 * winW,
+    opacity: PANEL_OPACITY,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     listening: false,
   });
   globals.layers.UI.add(statsRect);
@@ -1540,15 +1543,22 @@ function drawStatistics() {
 }
 
 function drawDiscardArea() {
+  const discardAreaValues = {
+    x: 0.8,
+    y: 0.63,
+    w: 0.19,
+    h: 0.36,
+  };
+
   // The red border that surrounds the discard pile when the team is at 8 clues.
   globals.elements.noDiscardBorder = new Konva.Rect({
-    x: 0.8 * winW,
-    y: 0.63 * winH,
-    width: 0.19 * winW,
-    height: 0.36 * winH,
+    x: discardAreaValues.x * winW,
+    y: discardAreaValues.y * winH,
+    width: discardAreaValues.w * winW,
+    height: discardAreaValues.h * winH,
     stroke: WARNING_COLOR,
     strokeWidth: 0.005 * winW,
-    cornerRadius: 0.01 * winW,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     visible: false,
     listening: false,
   });
@@ -1556,13 +1566,13 @@ function drawDiscardArea() {
 
   // The yellow border that surrounds the discard pile when it is a "Double Discard" situation.
   globals.elements.noDoubleDiscardBorder = new Konva.Rect({
-    x: 0.8 * winW,
-    y: 0.63 * winH,
-    width: 0.19 * winW,
-    height: 0.36 * winH,
+    x: discardAreaValues.x * winW,
+    y: discardAreaValues.y * winH,
+    width: discardAreaValues.w * winW,
+    height: discardAreaValues.h * winH,
     stroke: "yellow",
     strokeWidth: 0.004 * winW,
-    cornerRadius: 0.01 * winW,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     opacity: 0.75,
     visible: false,
     listening: false,
@@ -1571,13 +1581,13 @@ function drawDiscardArea() {
 
   // The faded rectangle around the trash can.
   const discardAreaRect = new Konva.Rect({
-    x: 0.8 * winW,
-    y: 0.63 * winH,
-    width: 0.19 * winW,
-    height: 0.36 * winH,
+    x: discardAreaValues.x * winW,
+    y: discardAreaValues.y * winH,
+    width: discardAreaValues.w * winW,
+    height: discardAreaValues.h * winH,
     fill: "black",
-    opacity: 0.2,
-    cornerRadius: 0.01 * winW,
+    opacity: PANEL_OPACITY,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
   });
   globals.layers.UI.add(discardAreaRect);
 
@@ -1593,12 +1603,13 @@ function drawDiscardArea() {
   });
   globals.layers.UI.add(trashcan);
 
-  // This is the invisible rectangle that players drag cards to in order to discard them.
+  // This is the invisible rectangle that players drag cards to in order to discard them. It extends
+  // to the edges of the stage so that cards dropped beside the discard pile still count.
   globals.elements.discardArea = new Konva.Rect({
-    x: 0.8 * winW,
-    y: 0.63 * winH,
-    width: 0.2 * winW,
-    height: 0.37 * winH,
+    x: discardAreaValues.x * winW,
+    y: discardAreaValues.y * winH,
+    width: (1 - discardAreaValues.x) * winW,
+    height: (1 - discardAreaValues.y) * winH,
     listening: false,
   });
 }

@@ -76,11 +76,44 @@ export const TEXT_SHADOW = {
   shadowOpacity: 0.9,
 } as const;
 
+// -------
+// Buttons
+// -------
+
+/** The opacity of a button's black background. */
+export const BUTTON_OPACITY = 0.6;
+
+/** The corner radius of a button, as a fraction of its height. */
+export const BUTTON_CORNER_RADIUS = 0.12;
+
+/**
+ * Where the middle of a button's text sits, as a fraction of the button's height. It is a smidgeon
+ * off the exact middle, which looks better.
+ */
+export const BUTTON_TEXT_MIDDLE = 0.525;
+
+// ------
+// Panels
+// ------
+
+/** The opacity of the translucent black background behind each area of the game board. */
+export const PANEL_OPACITY = 0.2;
+
+/** The corner radius of each area of the game board, as a fraction of the stage width. */
+export const PANEL_CORNER_RADIUS = 0.01;
+
+/** The opacity of a control that cannot be used right now. */
+export const DISABLED_OPACITY = 0.2;
+
+/** The opacity of the dark overlay shown behind dialogs such as the full action log. */
+export const STAGE_FADE_OPACITY = 0.3;
+
+/** The opacity of the dark overlay while the game is paused. */
+export const PAUSED_STAGE_FADE_OPACITY = 0.8;
+
 // ------
 // Timers
 // ------
-
-export const TIMER_OPACITY = 0.2;
 
 /** The opacity of a timer while it flashes red to warn that time is running out. */
 export const TIMER_WARNING_OPACITY = 0.7;

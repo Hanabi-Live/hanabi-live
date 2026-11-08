@@ -4,7 +4,9 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import { globals } from "./UIGlobals";
 import {
+  BUTTON_CORNER_RADIUS,
   BUTTON_HOVER_COLOR,
+  BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
   FONT_FAMILY,
 } from "./constants";
@@ -31,9 +33,9 @@ export class ColorButton extends Konva.Group {
       y: 0,
       width: w,
       height: h,
-      cornerRadius: 0.12 * h,
+      cornerRadius: BUTTON_CORNER_RADIUS * h,
       fill: "black",
-      opacity: 0.6,
+      opacity: BUTTON_OPACITY,
       listening: true,
     });
     this.add(this.background);
@@ -43,7 +45,7 @@ export class ColorButton extends Konva.Group {
       y: 0.1 * h,
       width: 0.8 * w,
       height: 0.8 * h,
-      cornerRadius: 0.12 * 0.8 * h,
+      cornerRadius: BUTTON_CORNER_RADIUS * 0.8 * h,
       fill: config["color"] as string | undefined,
       opacity: 0.9,
       listening: false,

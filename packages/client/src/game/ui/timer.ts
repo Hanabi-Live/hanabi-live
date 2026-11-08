@@ -7,7 +7,7 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import * as tooltips from "../../tooltips";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
-import { TIMER_OPACITY, TIMER_WARNING_OPACITY } from "./constants";
+import { PANEL_OPACITY, TIMER_WARNING_OPACITY } from "./constants";
 import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
 
@@ -120,8 +120,8 @@ export function update(
   }
 
   // Reset both timers to black background, if player was running out of time.
-  globals.elements.timer1.oval.fill("black").opacity(TIMER_OPACITY);
-  globals.elements.timer2.oval.fill("black").opacity(TIMER_OPACITY);
+  globals.elements.timer1.oval.fill("black").opacity(PANEL_OPACITY);
+  globals.elements.timer2.oval.fill("black").opacity(PANEL_OPACITY);
 
   // Start the local timer for the active player.
   const activeTimer = ourTurn
@@ -205,7 +205,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     && !globals.lobby.errorOccurred
   ) {
     timer.oval.opacity(
-      timer.oval.fill() === "black" ? TIMER_WARNING_OPACITY : TIMER_OPACITY,
+      timer.oval.fill() === "black" ? TIMER_WARNING_OPACITY : PANEL_OPACITY,
     );
     timer.oval.fill(timer.oval.fill() === "black" ? "red" : "black");
     globals.game!.sounds.play(SoundType.Tone);

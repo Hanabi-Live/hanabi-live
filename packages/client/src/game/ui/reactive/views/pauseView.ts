@@ -1,9 +1,16 @@
 import type { PauseState } from "../../../types/PauseState";
 import { globals } from "../../UIGlobals";
+import {
+  DISABLED_OPACITY,
+  PAUSED_STAGE_FADE_OPACITY,
+  STAGE_FADE_OPACITY,
+} from "../../constants";
 import { isOurTurn } from "../../isOurTurn";
 
 export function onChanged(pause: PauseState): void {
-  const stageFadeOpacity = pause.active ? 0.8 : 0.3;
+  const stageFadeOpacity = pause.active
+    ? PAUSED_STAGE_FADE_OPACITY
+    : STAGE_FADE_OPACITY;
   globals.elements.stageFade?.opacity(stageFadeOpacity);
   globals.elements.stageFade?.visible(pause.active);
 
@@ -24,7 +31,7 @@ export function onChanged(pause: PauseState): void {
       globals.elements.pauseButton?.opacity(1);
     } else {
       globals.elements.pauseButton?.setEnabled(false);
-      globals.elements.pauseButton?.opacity(0.2);
+      globals.elements.pauseButton?.opacity(DISABLED_OPACITY);
     }
   }
 

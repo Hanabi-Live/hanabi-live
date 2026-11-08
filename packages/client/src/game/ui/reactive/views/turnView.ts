@@ -1,6 +1,7 @@
 import { ClueType, getAdjustedClueTokens } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
+import { DISABLED_OPACITY } from "../../constants";
 import { isOurTurn } from "../../isOurTurn";
 import * as ourHand from "../../ourHand";
 import * as turn from "../../turn";
@@ -49,7 +50,7 @@ export function shouldIndicateNoClues(state: State): boolean {
 
 export function shouldIndicateNoCluesChanged(shouldIndicate: boolean): void {
   globals.elements.clueAreaDisabled!.visible(shouldIndicate);
-  const opacity = shouldIndicate ? 0.2 : 1;
+  const opacity = shouldIndicate ? DISABLED_OPACITY : 1;
   globals.elements.clueArea!.opacity(opacity);
   globals.layers.UI.batchDraw();
 }

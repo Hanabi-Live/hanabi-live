@@ -13,6 +13,7 @@ import { NO_VALUE } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands";
 import { Connection } from "./Connection";
+import { HTTP_STATUS } from "./constants";
 import { gameCommands } from "./game/ui/gameCommands";
 import { globals } from "./Globals";
 import { lobbyCommands } from "./lobby/lobbyCommands";
@@ -126,9 +127,9 @@ async function attemptReconnect() {
       return;
     }
     if (
-      response.status === 204
-      || response.status === 401
-      || response.status === 403
+      response.status === HTTP_STATUS.NO_CONTENT
+      || response.status === HTTP_STATUS.UNAUTHORIZED
+      || response.status === HTTP_STATUS.FORBIDDEN
     ) {
       // The cookie is gone: loading the page afresh restores normal sign-in.
       stopRecovery();

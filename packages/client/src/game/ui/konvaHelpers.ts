@@ -149,3 +149,12 @@ export function animate(
     node.tween = new Konva.Tween(config).play();
   }
 }
+
+/** Konva rotations are in degrees, but `Math` works in radians. */
+export function degreesToRadians(degrees: number): number {
+  return (degrees / 180) * Math.PI;
+}
+
+export function radiansToDegrees(radians: number): number {
+  return (radians / Math.PI) * 180;
+}

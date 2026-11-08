@@ -164,9 +164,8 @@ function checkShowNoteTooltip(card: HanabiCard) {
   }
 
   // If we are spectating and there is a new note, mark it as seen.
-  if (card.noteIndicator.rotated) {
-    card.noteIndicator.rotated = false;
-    card.noteIndicator.rotate(-15);
+  if (card.noteIndicator.tilted) {
+    card.noteIndicator.setTilted(false);
     globals.layers.card.batchDraw();
   }
 

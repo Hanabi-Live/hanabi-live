@@ -1,4 +1,5 @@
 import { httpError, withTabAccount } from "@hanabi-live/data";
+import { HTTP_STATUS } from "../constants";
 import { ReconnectBackoff } from "../reconnect";
 
 const MAX_ATTEMPTS = 3;
@@ -15,7 +16,10 @@ async function checkCookieAttempt(
   try {
     const response = await fetchCookieOnce();
     // Only retry transient HTTP failures.
-    if (response.status < 500 && response.status !== 429) {
+    if (
+      response.status < HTTP_STATUS.INTERNAL_SERVER_ERROR
+      && response.status !== HTTP_STATUS.TOO_MANY_REQUESTS
+    ) {
       return response;
     }
     throw await httpError(response, "Checking your saved session");

@@ -2,9 +2,12 @@ import { assertNotNull } from "complete-common";
 import Konva from "konva";
 import { globals } from "../UIGlobals";
 import {
+  BUTTON_CORNER_RADIUS,
   BUTTON_DISABLED_TEXT_COLOR,
   BUTTON_HOVER_COLOR,
+  BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
+  BUTTON_TEXT_MIDDLE,
   FONT_FAMILY,
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
@@ -36,9 +39,9 @@ export class CheckButton extends Konva.Group {
       y: 0,
       width: w,
       height: h,
-      cornerRadius: 0.12 * h,
+      cornerRadius: BUTTON_CORNER_RADIUS * h,
       fill: "black",
-      opacity: 0.6,
+      opacity: BUTTON_OPACITY,
       listening: true,
     });
     this.add(this.background);
@@ -98,7 +101,7 @@ export class CheckButton extends Konva.Group {
     if (config["text"] !== undefined) {
       this.textElement = new Konva.Text({
         x: checkW + checkX * 1.5,
-        y: (0.525 - textSize / 2 / h) * h, // A smidgeon higher than vertically centered
+        y: (BUTTON_TEXT_MIDDLE - textSize / 2 / h) * h,
         width: w,
         height: 0.5 * h,
         fontSize: textSize,

@@ -3,7 +3,7 @@ import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
-import { animate } from "./konvaHelpers";
+import { animate, degreesToRadians } from "./konvaHelpers";
 
 /** Represents a player's hand (or a discard pile). It is composed of `LayoutChild` objects. */
 export class CardLayout extends Konva.Group {
@@ -199,7 +199,7 @@ export class CardLayout extends Konva.Group {
 
     // The rotation comes from Konva in clockwise degrees but we need to convert it to
     // counter-clockwise radians.
-    const rot = (-this.origRotation / 180) * Math.PI;
+    const rot = degreesToRadians(-this.origRotation);
 
     pos.x += (w / 2) * Math.cos(rot);
     pos.y -= (w / 2) * Math.sin(rot);

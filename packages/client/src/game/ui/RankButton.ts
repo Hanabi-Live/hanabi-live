@@ -1,7 +1,9 @@
 import type { Clue } from "@hanabi-live/game";
 import Konva from "konva";
 import {
+  BUTTON_CORNER_RADIUS,
   BUTTON_HOVER_COLOR,
+  BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
   FONT_FAMILY,
 } from "./constants";
@@ -26,9 +28,9 @@ export class RankButton extends Konva.Group {
       y: 0,
       width: w,
       height: h,
-      cornerRadius: 0.12 * h,
+      cornerRadius: BUTTON_CORNER_RADIUS * h,
       fill: "black",
-      opacity: 0.6,
+      opacity: BUTTON_OPACITY,
       listening: true,
     });
     this.add(this.background);

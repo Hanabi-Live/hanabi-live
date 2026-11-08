@@ -1,7 +1,13 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../../theme";
 import { globals } from "../UIGlobals";
-import { FONT_FAMILY, LABEL_COLOR, TEXT_SHADOW } from "../constants";
+import {
+  FONT_FAMILY,
+  LABEL_COLOR,
+  PANEL_CORNER_RADIUS,
+  PANEL_OPACITY,
+  TEXT_SHADOW,
+} from "../constants";
 import { FitText } from "./FitText";
 
 interface ElementValues {
@@ -47,9 +53,9 @@ export class CurrentPlayerArea extends Konva.Group {
     this.rect1 = new Konva.Rect({
       width: box1Width * winW,
       height: values.h * winH,
-      cornerRadius: 0.01 * winW,
+      cornerRadius: PANEL_CORNER_RADIUS * winW,
       fill: "black",
-      opacity: 0.2,
+      opacity: PANEL_OPACITY,
       listening: false,
     });
     this.add(this.rect1);
@@ -114,9 +120,9 @@ export class CurrentPlayerArea extends Konva.Group {
       x: arrowValues.x * winW,
       width: arrowValues.w * winW,
       height: values.h * winH,
-      cornerRadius: 0.01 * winW,
+      cornerRadius: PANEL_CORNER_RADIUS * winW,
       fill: "black",
-      opacity: 0.2,
+      opacity: PANEL_OPACITY,
       listening: false,
     });
     this.add(rect2);

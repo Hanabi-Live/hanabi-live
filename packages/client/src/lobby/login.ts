@@ -11,7 +11,7 @@ import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
 import type { z } from "zod";
 import { globals } from "../Globals";
-import { FADE_TIME_MS } from "../constants";
+import { FADE_TIME_MS, HTTP_STATUS } from "../constants";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
 import { checkCookieWithRetry } from "./cookieProbe";
@@ -188,7 +188,7 @@ export function automaticLogin(): void {
         return;
       }
 
-      if (response.status === 200) {
+      if (response.status === HTTP_STATUS.OK) {
         console.log(
           "WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.",
         );
@@ -196,7 +196,7 @@ export function automaticLogin(): void {
         return;
       }
 
-      if (response.status === 204) {
+      if (response.status === HTTP_STATUS.NO_CONTENT) {
         console.log(
           "Either we have not previously logged in or the existing cookie is expired.",
         );

@@ -5,7 +5,13 @@ import type {
   SuitRankTuple,
   Variant,
 } from "@hanabi-live/game";
-import { ALL_RESERVED_NOTES, START_CARD_RANK } from "@hanabi-live/game";
+import {
+  ALL_RESERVED_NOTES,
+  RANK_GROUP_NAMES,
+  SQUISH_GROUP_NAME,
+  START_CARD_RANK,
+  SUIT_GROUP_NAMES,
+} from "@hanabi-live/game";
 import { eRange, newArray } from "complete-common";
 
 /**
@@ -317,15 +323,30 @@ export function getPossibilitiesFromKeywords(
 }
 
 function extractSuitText(match: RegExpMatchArray): string | undefined {
-  return match[1] ?? match[4] ?? match[5] ?? undefined;
+  return firstGroup(match, SUIT_GROUP_NAMES);
 }
 
 function extractRankText(match: RegExpMatchArray): string | undefined {
-  return match[2] ?? match[3] ?? match[6] ?? undefined;
+  return firstGroup(match, RANK_GROUP_NAMES);
+}
+
+/** Only one alternative of an identity note pattern matches, so at most one group is defined. */
+function firstGroup(
+  match: RegExpMatchArray,
+  groupNames: readonly string[],
+): string | undefined {
+  for (const groupName of groupNames) {
+    const text = match.groups?.[groupName];
+    if (text !== undefined) {
+      return text;
+    }
+  }
+
+  return undefined;
 }
 
 function extractSquishText(match: RegExpMatchArray): string | undefined {
-  const text = match[7]?.trim();
+  const text = match.groups?.[SQUISH_GROUP_NAME]?.trim();
 
   if (text !== undefined && !ALL_RESERVED_NOTES.has(text.toLowerCase())) {
     return text;

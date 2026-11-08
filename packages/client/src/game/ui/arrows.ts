@@ -284,7 +284,7 @@ function getPos(element: Konva.Node, rot: number) {
     // Instead, back it off a little bit (accounting for the rotation of the hand).
     const winH = globals.stage.height();
     const distance = -0.075 * winH;
-    const rotRadians = (-rot / 180) * Math.PI;
+    const rotRadians = konvaHelpers.degreesToRadians(-rot);
     pos.x += distance * Math.sin(rotRadians); // sin(x) = cos(x + (PI * 3 / 2))
     pos.y -= distance * -Math.cos(rotRadians); // -cos(x) = sin(x + (PI * 3 / 2))
   } else if (element instanceof StrikeSquare) {

@@ -6,7 +6,7 @@ import type { ContainerConfig } from "konva/types/Container";
 import { getCanvasColors } from "../../theme";
 import { MultiFitText } from "./MultiFitText";
 import { globals } from "./UIGlobals";
-import { FONT_FAMILY } from "./constants";
+import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants";
 import { FitText } from "./controls/FitText";
 
 export class FullActionLog extends Konva.Group {
@@ -43,7 +43,7 @@ export class FullActionLog extends Konva.Group {
       height: 0.96 * winH,
       fill: "black",
       opacity: 0.9,
-      cornerRadius: 0.01 * winW,
+      cornerRadius: PANEL_CORNER_RADIUS * winW,
       listening: false,
     });
     Konva.Group.prototype.add.call(this, rect);

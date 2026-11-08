@@ -887,14 +887,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.noteIndicator.visible(visible);
 
     // Spectators
-    if (
-      visible
-      && !globals.state.playing
-      && !globals.state.finished
-      && !this.noteIndicator.rotated
-    ) {
-      this.noteIndicator.rotate(15);
-      this.noteIndicator.rotated = true;
+    if (visible && !globals.state.playing && !globals.state.finished) {
+      this.noteIndicator.setTilted(true);
     }
 
     globals.layers.card.batchDraw();

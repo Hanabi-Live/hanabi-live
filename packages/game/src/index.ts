@@ -29,6 +29,7 @@ export type * from "./interfaces/Variant";
 export type * from "./interfaces/VariantDescription";
 export type * from "./interfaces/VariantJSON";
 export * from "./metadata";
+export * from "./notes";
 export * from "./reducers/cardDeductionReducer";
 export * from "./reducers/cardPossibilitiesReducer";
 export * from "./reducers/cardsReducer";
