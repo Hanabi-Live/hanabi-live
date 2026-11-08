@@ -206,9 +206,12 @@ function getCursorType(card: HanabiCard) {
 
 // The look cursor should show if Empathy can be used on the card.
 function shouldShowLookCursor(card: HanabiCard) {
-  // It is not possible to use Empathy on a stack base. If the card wouldn't be possible to click
-  // anyway, don't show the cursor.
-  if (card.isStackBase || card.layout.isListening() === false) {
+  if (
+    // It is not possible to use Empathy on a stack base.
+    card.isStackBase
+    // If the card wouldn't be possible to click anyway, don't show the cursor.
+    || card.layout.isListening() === false
+  ) {
     return false;
   }
 
