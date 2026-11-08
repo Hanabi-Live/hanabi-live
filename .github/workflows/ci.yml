@@ -129,7 +129,7 @@ jobs:
             test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
             test-turbo-v1-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Test the TypeScript code
+      - name: Test the TypeScript and Rust code
         run: bunx --bun --no-install turbo run "//#test" --cache=local:rw
 
       - name: Cache successful JavaScript test results
@@ -162,7 +162,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/workflows/setup-redis
       - uses: ./.github/workflows/setup-rust
       - name: Identify the SQLx cache platform
         id: platform
@@ -190,8 +189,6 @@ jobs:
           key: ${{ steps.sqlx.outputs.cache-primary-key }}
       - name: Check SQLx metadata against a disposable schema
         run: python3 sqlx_schema.py
-      - name: Test Rust rules, actors, and Redis/PostgreSQL durability
-        run: cargo test --locked --workspace
 
   native-release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

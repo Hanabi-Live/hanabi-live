@@ -217,6 +217,20 @@ async function buildServer() {
   );
 }
 
+/** Runs a command with its output shown, and returns its exit code. */
+async function runInherited(
+  command: string,
+  args: readonly string[],
+  options: { readonly cwd: string; readonly env: NodeJS.ProcessEnv },
+): Promise<number> {
+  const child = spawn(command, args, { ...options, stdio: "inherit" });
+  const [code, signal] = (await once(child, "close")) as [
+    number | null,
+    NodeJS.Signals | null,
+  ];
+  return code ?? (signal === null ? 1 : 128);
+}
+
 async function main(): Promise<number> {
   await checkRedis();
   let database: DisposablePostgres | undefined;
@@ -228,7 +242,17 @@ async function main(): Promise<number> {
 
   try {
     await buildServer();
-    const tests = spawn(
+    const env = { ...process.env, HANABI_TEST_DATABASE_URL: url };
+    const filters = process.argv.slice(2);
+    // Arguments such as "-t <pattern>" narrow the Bun tests, so a run with them skips Rust.
+    const rustCode =
+      filters.length === 0
+        ? await runInherited("cargo", ["test", "--locked", "--workspace"], {
+            cwd: path.join(ROOT, "server"),
+            env,
+          })
+        : 0;
+    const bunCode = await runInherited(
       process.execPath,
       [
         "test",
@@ -237,19 +261,11 @@ async function main(): Promise<number> {
         "--tsconfig-override",
         "tsconfig.monorepo.json",
         ...TEST_DIRECTORIES,
-        ...process.argv.slice(2),
+        ...filters,
       ],
-      {
-        cwd: ROOT,
-        stdio: "inherit",
-        env: { ...process.env, HANABI_TEST_DATABASE_URL: url },
-      },
+      { cwd: ROOT, env },
     );
-    const [code, signal] = (await once(tests, "close")) as [
-      number | null,
-      NodeJS.Signals | null,
-    ];
-    return code ?? (signal === null ? 1 : 128);
+    return rustCode === 0 ? bunCode : rustCode;
   } finally {
     await database?.stop();
   }
