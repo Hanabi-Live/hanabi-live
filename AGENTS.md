@@ -1,5 +1,10 @@
 # AGENTS.md
 
+## Starting work
+
+When you receive a prompt and HEAD is detached, first fast-forward it to the
+latest remote `main`: run `git fetch` and `git merge --ff-only origin/main`.
+
 ## Configuration and customization
 
 Do not add environment variables, configuration options, or customization unless
