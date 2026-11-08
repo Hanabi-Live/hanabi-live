@@ -104,11 +104,17 @@ const RANK_PIP_SIZE = Math.floor(CARD_H * 0.1);
 const RANK_PIP_FONT_SIZE = 63;
 
 /**
- * The outline around a rank pip's digit and around the X over a suit pip that has been ruled out,
- * which keeps them readable on any card. It is drawn centered on the edge, so this is twice its
- * visible width.
+ * The outline around the X over a suit pip that has been ruled out, which keeps it readable on any
+ * card. It is drawn centered on the edge, so this is twice its visible width.
  */
 const PIP_OUTLINE_WIDTH = 6;
+
+/**
+ * The outline around a rank pip's digit. The fill covers its inner half, so this is twice its
+ * visible width. At hand size, a thinner outline is narrower than a screen pixel and fades in and
+ * out depending on where the digit lands on the pixel grid.
+ */
+const RANK_PIP_OUTLINE_WIDTH = 10;
 
 /** The outline around a suit pip. */
 const SUIT_PIP_STROKE_WIDTH = 5;
@@ -329,7 +335,7 @@ function makeCachedPips(variant: Variant) {
       height: RANK_PIP_SIZE,
       fill: RANK_PIP_COLOR,
       stroke: "black",
-      strokeWidth: PIP_OUTLINE_WIDTH,
+      strokeWidth: RANK_PIP_OUTLINE_WIDTH,
       listening: false,
     });
     rankPipsMap.set(rank, rankPip);
