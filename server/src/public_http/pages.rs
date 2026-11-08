@@ -165,7 +165,6 @@ pub(super) async fn page(
                 .await
                 .map_or_else(Error::json, |game| Json(game).into_response()));
         }
-        "videos" => v["title"] = json!("Videos"),
         "password-reset" => v["title"] = json!("Password Reset"),
         "stats" => {
             v["title"] = json!("Stats");

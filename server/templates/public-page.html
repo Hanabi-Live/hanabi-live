@@ -24,32 +24,9 @@
         <section class="box">
           <h2 class="align-center">
             {% if namesTitle %}{{ namesTitle }}{% elif name %}{{ name|possessive
-            }} Profile{% elif page == "videos" %}List of Videos{% else %}{{
-            title }}{% endif %}
+            }} Profile{% else %}{{ title }}{% endif %}
           </h2>
-          {% include "profile-buttons.html" %} {% if page == "videos" %}
-          <h3>Introduction</h3>
-          <ul>
-            <li>
-              <a href="https://www.youtube.com/watch?v=VrFCekQb4nY"
-                >The Rules of the Game</a
-              >
-            </li>
-          </ul>
-          <h3>Other (Old / Outdated)</h3>
-          <ul>
-            <li>
-              <a href="https://www.youtube.com/watch?v=yyrtUm9i6uM"
-                >The Perfect Game</a
-              >
-            </li>
-            <li>
-              <a href="https://www.youtube.com/watch?v=JnSLF0p4yiw"
-                >A Typical Game on Keldon</a
-              >
-            </li>
-          </ul>
-          {% elif page == "password-reset" %}
+          {% include "profile-buttons.html" %} {% if page == "password-reset" %}
           <p>
             Since Hanabi Live does not ask for or store your email address, the
             only way to reset the password for an account is for an
@@ -291,5 +268,5 @@
     </div>
   </section>
 </div>
-{% if page not in ["password-reset","videos","stats"] %}{% include
+{% if page not in ["password-reset","stats"] %}{% include
 "public-table-scripts.html" %}{% endif %} {% endblock %}

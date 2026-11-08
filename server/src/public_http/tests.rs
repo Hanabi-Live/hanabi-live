@@ -154,14 +154,9 @@ async fn shell_routes_metadata_and_static_files() {
             .0,
         StatusCode::NOT_FOUND
     );
-    for (path, hook) in [
-        ("/videos", "VrFCekQb4nY"),
-        ("/password-reset", "id=\"password-reset-form\""),
-    ] {
-        let (status, body) = request(app.clone(), path).await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert!(body.contains(hook));
-    }
+    let (status, body) = request(app.clone(), "/password-reset").await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    assert!(body.contains("id=\"password-reset-form\""));
     let mut unsafe_config = config();
     unsafe_config.domain = "</div><script>alert(7)</script>".into();
     unsafe_config.client_version = "\"><script>alert(8)</script>".into();
