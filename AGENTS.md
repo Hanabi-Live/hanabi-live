@@ -7,6 +7,14 @@ they are absolutely necessary or there is a strong, concrete reason. Prefer a
 simple, documented behavior over speculative flexibility. When a new option is
 justified, explain the use case and why a fixed behavior is insufficient.
 
+## Constants
+
+Name a limit, timeout, or protocol value once and refer to it everywhere,
+including in error messages that state it. Derive related values (such as
+`MAX_DECK_SIZE + 1`) instead of writing the result. Put values shared with
+clients or the game catalog in `server/protocol`. A literal used once whose
+meaning is obvious from context can stay inline.
+
 ## Documentation
 
 Default to no documentation changes. Update prose only when explicitly requested
