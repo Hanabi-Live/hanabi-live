@@ -30,6 +30,20 @@ interface HandConfig {
 /** The gap between the hands and the logs on either side, in fractions of the stage width. */
 const HAND_LOG_GAP = 0.02;
 
+/**
+ * How far a name frame below a hand extends past each side of it, in fractions of the stage width.
+ */
+const NAME_FRAME_INSET_X = 0.005;
+
+/** The width of the name frame of a hand that runs down the left or right side of the board. */
+const SIDE_NAME_FRAME_W = 0.12;
+
+/**
+ * How far left of a hand on the right side of the board its name frame starts, in fractions of the
+ * stage width.
+ */
+const RIGHT_SIDE_NAME_FRAME_OFFSET_X = 0.111;
+
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -204,8 +218,8 @@ export function drawHands(winW: number, winH: number): void {
   ];
   namePos[3] = [
     { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
-    { x: 0.0075, y: 0.775, w: 0.12, h: namePosValues.h },
-    { x: 0.675, y: 0.775, w: 0.12, h: namePosValues.h },
+    { x: 0.0075, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
+    { x: 0.675, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
   ];
   namePos[4] = [
     { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
@@ -215,88 +229,86 @@ export function drawHands(winW: number, winH: number): void {
   ];
   namePos[5] = [
     {
-      x: handPos[5][0]!.x - 0.005,
+      x: handPos[5][0]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][0]!.y + handPos[5][1]!.h + 0.02,
-      w: handPos[5][0]!.w + 0.01,
+      w: handPos[5][0]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[5][1]!.x - 0.0095,
       y: handPos[5][1]!.y + 0.022,
-      w: 0.12,
+      w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
     {
-      x: handPos[5][2]!.x - 0.005,
+      x: handPos[5][2]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][2]!.y + handPos[5][2]!.h + 0.005,
-      w: handPos[5][2]!.w + 0.01,
+      w: handPos[5][2]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
-      x: handPos[5][3]!.x - 0.005,
+      x: handPos[5][3]!.x - NAME_FRAME_INSET_X,
       y: handPos[5][3]!.y + handPos[5][3]!.h + 0.005,
-      w: handPos[5][3]!.w + 0.01,
+      w: handPos[5][3]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
-      x: handPos[5][4]!.x - 0.006 - 0.105,
+      x: handPos[5][4]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
       y: handPos[5][1]!.y + 0.025,
-      w: 0.12,
+      w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
   ];
   namePos[6] = [
     {
-      x: handPos[6][0]!.x - 0.005,
+      x: handPos[6][0]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][0]!.y + handPos[6][1]!.h + 0.02,
-      w: handPos[6][0]!.w + 0.01,
+      w: handPos[6][0]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
       x: handPos[6][1]!.x - 0.009,
       y: handPos[6][1]!.y + 0.01,
-      w: 0.12,
+      w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
     {
-      x: handPos[6][2]!.x - 0.005,
+      x: handPos[6][2]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][2]!.y + handPos[6][2]!.h + 0.02,
-      w: handPos[6][2]!.w + 0.01,
+      w: handPos[6][2]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
-      x: handPos[6][3]!.x - 0.005,
+      x: handPos[6][3]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][3]!.y + handPos[6][3]!.h + 0.02,
-      w: handPos[6][3]!.w + 0.01,
+      w: handPos[6][3]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
-      x: handPos[6][4]!.x - 0.005,
+      x: handPos[6][4]!.x - NAME_FRAME_INSET_X,
       y: handPos[6][4]!.y + handPos[6][4]!.h + 0.02,
-      w: handPos[6][4]!.w + 0.01,
+      w: handPos[6][4]!.w + NAME_FRAME_INSET_X * 2,
       h: namePosValues.h,
     },
     {
-      x: handPos[6][5]!.x - 0.006 - 0.105,
+      x: handPos[6][5]!.x - RIGHT_SIDE_NAME_FRAME_OFFSET_X,
       y: handPos[6][1]!.y + 0.01,
-      w: 0.12,
+      w: SIDE_NAME_FRAME_W,
       h: namePosValues.h,
     },
   ];
 
   if (!globals.lobby.settings.keldonMode) {
     const i = numPlayers;
-    const namePosBGAMod = {
-      x: 0.005,
-      y: 0.01,
-    };
+    /** The gap between a hand and the name frame below it, in fractions of the stage height. */
+    const nameFrameGapY = 0.01;
     namePosBGA[i] = [];
     for (const j of eRange(i)) {
       namePosBGA[i].push({
-        x: handPosBGA[i]![j]!.x - namePosBGAMod.x,
-        y: handPosBGA[i]![j]!.y + handPosBGA[i]![j]!.h + namePosBGAMod.y,
+        x: handPosBGA[i]![j]!.x - NAME_FRAME_INSET_X,
+        y: handPosBGA[i]![j]!.y + handPosBGA[i]![j]!.h + nameFrameGapY,
         h: namePosValues.h,
-        w: handPosBGA[i]![j]!.w + namePosBGAMod.x * 2,
+        w: handPosBGA[i]![j]!.w + NAME_FRAME_INSET_X * 2,
       });
     }
   }
@@ -418,8 +430,8 @@ export function drawHands(winW: number, winH: number): void {
     } else {
       // In BGA mode, we show a black box around a player's hand to indicate that it is their turn.
       // The box extends past the hand by these fractions of its size, split evenly between opposite
-      // sides. The black box should always be as wide as the name frame.
-      const paddingW = numPlayers === 5 ? 0.055 : 0.025;
+      // sides. The box is exactly as wide as the name frame below the hand.
+      const paddingW = (NAME_FRAME_INSET_X * 2) / handValues.w;
       const paddingH = 0.075;
       const turnRectValues = {
         x: handValues.x,

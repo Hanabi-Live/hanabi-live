@@ -72,6 +72,16 @@ const RANK_LABEL_FONT = {
   colorblind: { fontSize: 68, textYPos: 83 },
 } as const;
 
+/**
+ * How far above and below the card's center the top and bottom suit pips are drawn. They are closer
+ * together in colorblind mode to make room for the corner labels, which include the suit's
+ * abbreviation.
+ */
+const SUIT_PIP_OFFSET_Y = {
+  normal: { rank2: 90, ranks3To5: 120 },
+  colorblind: { rank2: 60, ranks3To5: 80 },
+} as const;
+
 /** The line that a gradient follows down the rank label in the top-left corner of a card. */
 const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
 
@@ -275,6 +285,9 @@ function drawSuitPips(
   enableShadows: boolean,
 ) {
   const scale = 0.4;
+  const pipOffsetY = colorblindMode
+    ? SUIT_PIP_OFFSET_Y.colorblind
+    : SUIT_PIP_OFFSET_Y.normal;
 
   // The middle for card 1.
   if (rank === 1) {
@@ -285,7 +298,7 @@ function drawSuitPips(
     ctx.restore();
   } else if (rank === 2) {
     // Top and bottom for card 2.
-    const symbolYPos = colorblindMode ? 60 : 90;
+    const symbolYPos = pipOffsetY.rank2;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
@@ -304,7 +317,7 @@ function drawSuitPips(
 
   // Top and bottom for cards 3, 4, 5.
   if (rank >= 3 && rank <= 5) {
-    const symbolYPos = colorblindMode ? 80 : 120;
+    const symbolYPos = pipOffsetY.ranks3To5;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);

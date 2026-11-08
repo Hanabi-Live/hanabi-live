@@ -100,6 +100,19 @@ const BORDER_OUTSIDE_COLOR = OFF_BLACK;
 /** The width and height of the box that each rank pip is centered in. */
 const RANK_PIP_SIZE = Math.floor(CARD_H * 0.1);
 
+/** The rank pip's digits are larger than its box so that they are easy to read. */
+const RANK_PIP_FONT_SIZE = 63;
+
+/**
+ * The outline around a rank pip's digit and around the X over a suit pip that has been ruled out,
+ * which keeps them readable on any card. It is drawn centered on the edge, so this is twice its
+ * visible width.
+ */
+const PIP_OUTLINE_WIDTH = 6;
+
+/** The outline around a suit pip. */
+const SUIT_PIP_STROKE_WIDTH = 5;
+
 function makeBorder(color: string) {
   const border = new Konva.Group({
     visible: false,
@@ -272,7 +285,7 @@ function makeCachedPips(variant: Variant) {
       offset,
       fill: "black",
       stroke: "white",
-      strokeWidth: 6,
+      strokeWidth: PIP_OUTLINE_WIDTH,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
@@ -303,7 +316,7 @@ function makeCachedPips(variant: Variant) {
       y,
       fontFamily: RANK_FONT_FAMILY,
       fontStyle: "bold",
-      fontSize: 63,
+      fontSize: RANK_PIP_FONT_SIZE,
       align: "center",
       text:
         rank === START_CARD_RANK
@@ -316,8 +329,7 @@ function makeCachedPips(variant: Variant) {
       height: RANK_PIP_SIZE,
       fill: RANK_PIP_COLOR,
       stroke: "black",
-      // The outline is drawn outside the digit, so this is twice its visible width.
-      strokeWidth: 6,
+      strokeWidth: PIP_OUTLINE_WIDTH,
       listening: false,
     });
     rankPipsMap.set(rank, rankPip);
@@ -724,7 +736,7 @@ function getNewColorPip(
     offset,
     fill,
     stroke: "black",
-    strokeWidth: 5,
+    strokeWidth: SUIT_PIP_STROKE_WIDTH,
     sceneFunc: (ctx: KonvaContext.Context) => {
       drawPip(
         ctx as unknown as CanvasRenderingContext2D,
