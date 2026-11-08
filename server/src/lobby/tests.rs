@@ -671,9 +671,9 @@ async fn every_setting_round_trips_and_only_changes_are_stored_postgres() {
     assert_eq!(stored().await, json!({}), "Defaults are not stored");
     for (name, default) in settings::defaults() {
         let (value, expected) = match &default {
-            serde_json::Value::Bool(flag) => ((!flag).to_string(), json!(!flag)),
-            serde_json::Value::Number(number) if number.is_f64() => ("7.5".into(), json!(7.5)),
-            serde_json::Value::Number(_) => ("2".into(), json!(2)),
+            Value::Bool(flag) => ((!flag).to_string(), json!(!flag)),
+            Value::Number(number) if number.is_f64() => ("7.5".into(), json!(7.5)),
+            Value::Number(_) => ("2".into(), json!(2)),
             _ => ("Rainbow (6 Suits)".into(), json!("Rainbow (6 Suits)")),
         };
         assert_ne!(default, expected, "{name} must change");

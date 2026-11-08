@@ -164,7 +164,7 @@ async fn redirect(State(state): State<RedirectState>, uri: Uri) -> Response {
     (
         StatusCode::MOVED_PERMANENTLY,
         [(
-            axum::http::header::LOCATION,
+            header::LOCATION,
             format!(
                 "{}{}",
                 state.origin,
@@ -193,7 +193,7 @@ async fn challenge(State(state): State<RedirectState>, Path(token): Path<String>
         return StatusCode::NOT_FOUND.into_response();
     }
     match tokio::fs::read(resolved).await {
-        Ok(bytes) => ([(axum::http::header::CONTENT_TYPE, "text/plain")], bytes).into_response(),
+        Ok(bytes) => ([(header::CONTENT_TYPE, "text/plain")], bytes).into_response(),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             StatusCode::NOT_FOUND.into_response()
         }

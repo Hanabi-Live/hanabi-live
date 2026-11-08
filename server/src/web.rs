@@ -521,7 +521,7 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
 async fn websocket(
     State(app): State<Arc<App>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
-    uri: axum::http::Uri,
+    uri: Uri,
     headers: HeaderMap,
     upgrade: WebSocketUpgrade,
 ) -> Response {

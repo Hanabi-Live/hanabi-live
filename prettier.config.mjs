@@ -32,6 +32,7 @@ const config = {
     "prettier-plugin-packagejson", // Prettier does not format "package.json" by default.
     // @template-customization-start
     "prettier-plugin-sh", // Prettier does not format Bash files by default.
+    "prettier-plugin-toml", // Prettier does not format TOML files by default.
     // @template-customization-end
   ],
 

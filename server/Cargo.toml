@@ -11,6 +11,7 @@ resolver = "3"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
+unused_qualifications = "deny"
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }
@@ -27,7 +28,9 @@ await_holding_lock = "deny"
 anyhow = "1"
 argon2 = "0.6"
 axum = { version = "0.8", features = ["ws"] }
-axum-server = { version = "0.8", default-features = false, features = ["tls-rustls-no-provider"] }
+axum-server = { version = "0.8", default-features = false, features = [
+  "tls-rustls-no-provider"
+] }
 base64 = "0.23"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
@@ -40,14 +43,33 @@ hanabi_protocol = { path = "protocol" }
 minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"
-redis = { version = "1", default-features = false, features = ["script", "tokio-rustls-comp", "tls-rustls-webpki-roots"] }
+redis = { version = "1", default-features = false, features = [
+  "script",
+  "tokio-rustls-comp",
+  "tls-rustls-webpki-roots"
+] }
 regex = "1"
-reqwest = { version = "0.13", default-features = false, features = ["form", "json", "rustls-no-provider"] }
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+reqwest = { version = "0.13", default-features = false, features = [
+  "form",
+  "json",
+  "rustls-no-provider"
+] }
+rustls = { version = "0.23", default-features = false, features = [
+  "ring",
+  "std",
+  "tls12"
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 sha2 = "0.11"
-sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "postgres", "chrono", "json", "macros", "derive"] }
+sqlx = { version = "0.9", default-features = false, features = [
+  "runtime-tokio",
+  "postgres",
+  "chrono",
+  "json",
+  "macros",
+  "derive"
+] }
 tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["rt"] }
 tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
@@ -57,7 +79,10 @@ url = "2"
 
 [dev-dependencies]
 rcgen = "0.14"
-tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = [
+  "ring",
+  "tls12"
+] }
 tower = { version = "0.5", features = ["util"] }
 
 # Keep real password costs without debug-only hashing latency exhausting admission in tests.

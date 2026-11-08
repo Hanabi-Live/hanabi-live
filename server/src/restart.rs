@@ -79,7 +79,7 @@ mod tests {
     use super::*;
     #[test]
     fn restart_preflight_checks_version_without_sources() -> Result<()> {
-        let root = crate::tls::fixture_root("restart")?;
+        let root = tls::fixture_root("restart")?;
         std::fs::create_dir_all(root.join("public/js/bundles"))?;
         let config = Config::from_values(
             &root,

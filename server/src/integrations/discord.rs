@@ -403,7 +403,7 @@ impl Bridge {
                     break;
                 };
                 let _admission = app.admission.clone().read_owned().await;
-                if !app.accepting.load(std::sync::atomic::Ordering::Acquire) || !app.healthy() {
+                if !app.accepting.load(Ordering::Acquire) || !app.healthy() {
                     continue;
                 }
                 if let Err(error) = inbound.event(event).await {
@@ -1032,7 +1032,7 @@ fn spoilers(text: &str) -> String {
 /// Announcements are stored as lobby chat HTML, so the administrator's text is escaped.
 fn downtime_reason(message: Option<&str>) -> String {
     message.map_or_else(String::new, |message| {
-        format!(" Reason: {}", crate::accounts::escape_html(message))
+        format!(" Reason: {}", escape_html(message))
     })
 }
 
