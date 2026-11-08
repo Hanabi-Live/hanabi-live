@@ -95,7 +95,6 @@
       "inputs": [
         "!**/*.md",
         ".cargo/config.toml",
-        ".editorconfig",
         ".prettierignore",
         "bun.lock",
         "install/database_schema.sql",
@@ -110,9 +109,7 @@
         "packages/game/tsconfig*.json",
         "prettier.config.mjs",
         "rust-toolchain.toml",
-        "scripts/dev/eslint-output.ts",
         "scripts/dev/generate-protocol.sh",
-        "scripts/dev/generated-protocol.eslint.config.mjs",
         "scripts/lint/check-rust.sh",
         "server/**",
         "!server/**/target/**"

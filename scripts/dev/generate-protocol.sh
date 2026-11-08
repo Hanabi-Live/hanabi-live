@@ -13,8 +13,7 @@ if (($# > 1)) || [[ ${1:-} != "" && ${1:-} != --check ]]; then
 fi
 
 temporary=$(mktemp)
-formatted=$(mktemp)
-trap 'rm -f "$temporary" "$formatted"' EXIT
+trap 'rm -f "$temporary"' EXIT
 status=0
 
 # The data package imports the game library's schemas, so the game library's module comes first.
@@ -24,15 +23,7 @@ for target in "packages/game/src/generated/protocol.ts --game" "packages/data/sr
     cd "$REPO_ROOT/server/protocol"
     cargo run --quiet --locked --bin generate -- ${flag:+"$flag"}
   ) \
-    | bunx --bun --no-install prettier --stdin-filepath "$output" > "$formatted"
-  # Rust doc comments become JSDoc, which ESLint wraps to the file's indentation.
-  # ESLint fails when it reports problems; the script below reports any it could not fix.
-  {
-    bunx --bun --no-install eslint --no-config-lookup \
-      --config "$REPO_ROOT/scripts/dev/generated-protocol.eslint.config.mjs" \
-      --stdin --stdin-filename "$REPO_ROOT/$output" --fix-dry-run --format json < "$formatted" \
-      || true
-  } | bun "$REPO_ROOT/scripts/dev/eslint-output.ts" "$formatted" > "$temporary"
+    | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
   if [[ ${1:-} == --check ]]; then
     if ! diff -u "$output" "$temporary"; then
       status=1

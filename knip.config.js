@@ -10,11 +10,6 @@ const config = {
 
   workspaces: {
     ".": {
-      // Used by "scripts/dev/generate-protocol.sh".
-      entry: [
-        "scripts/dev/eslint-output.ts",
-        "scripts/dev/generated-protocol.eslint.config.mjs",
-      ],
       ignore: [
         "misc/file.ts", // An intentionally empty file for the root "tsconfig.json".
         "public/**", // Vendored libraries and build output.
@@ -62,10 +57,8 @@ const config = {
     "complete-lint", // This is a linting meta-package.
     "eslint", // Provided by "complete-lint".
     "eslint-config-complete", // Provided by "complete-lint".
-    "eslint-plugin-complete", // Provided by "complete-lint".
     "prettier-plugin-organize-imports", // Provided by "complete-lint".
     "prettier-plugin-packagejson", // Provided by "complete-lint".
-    "typescript-eslint", // Provided by "complete-lint".
   ],
 };
 

@@ -21,22 +21,34 @@ const endConditionEnum: ServerEnum<
 export const clueTypeSchema = z.enum(clueTypeEnum);
 export const endConditionSchema = z.enum(endConditionEnum);
 
-/** An entry in `characters.json`: a detrimental character. */
+/**
+ * An entry in `characters.json`: a detrimental character.
+ */
 export const catalogCharacterSchema = z.strictObject({
   description: z.string().min(1),
   emoji: z.string().min(1),
-  /** The first character has an ID of 0. */
+  /**
+   * The first character has an ID of 0.
+   */
   id: z.number().int().min(0).max(4_294_967_295),
   name: z.string().min(1),
-  /** Excluded from two-player games. */
+  /**
+   * Excluded from two-player games.
+   */
   not2P: z.literal(true).optional(),
-  /** Whether the character's random color or rank is stored with the game. */
+  /**
+   * Whether the character's random color or rank is stored with the game.
+   */
   writeMetadataToDatabase: z.literal(true).optional(),
 });
 
-/** An entry in `colors.json`. */
+/**
+ * An entry in `colors.json`.
+ */
 export const catalogColorSchema = z.strictObject({
-  /** If not specified, assume that it is the first letter of the color. */
+  /**
+   * If not specified, assume that it is the first letter of the color.
+   */
   abbreviation: z.string().min(1).max(1).optional(),
   fill: z.string().min(1),
   /**
@@ -47,7 +59,9 @@ export const catalogColorSchema = z.strictObject({
   name: z.string().min(1),
 });
 
-/** An entry in `suits.json`. This is similar to `Suit`, but it only has primitive types. */
+/**
+ * An entry in `suits.json`. This is similar to `Suit`, but it only has primitive types.
+ */
 export const catalogSuitSchema = z.strictObject({
   /**
    * The one letter abbreviation to use when representing this suit as a card note. If not
@@ -57,18 +71,26 @@ export const catalogSuitSchema = z.strictObject({
   abbreviation: z.string().min(1).max(1).optional(),
   allClueColors: z.literal(true).optional(),
   allClueRanks: z.literal(true).optional(),
-  /** The colors that touch this suit. When omitted, the color with the suit's name does. */
+  /**
+   * The colors that touch this suit. When omitted, the color with the suit's name does.
+   */
   clueColors: z.array(z.string()).readonly().optional(),
-  /** Whether or not to create variant combinations based on this suit. */
+  /**
+   * Whether or not to create variant combinations based on this suit.
+   */
   createVariants: z.literal(true).optional(),
   /**
    * A simplified version of the suit name to show to end-users. If not specified, use the normal
    * suit name.
    */
   displayName: z.string().min(1).optional(),
-  /** The background color of cards of the suit. */
+  /**
+   * The background color of cards of the suit.
+   */
   fill: z.string().min(1).optional(),
-  /** Allows for a gradient of different colors. */
+  /**
+   * Allows for a gradient of different colors.
+   */
   fillColors: z.array(z.string()).min(1).readonly().optional(),
   /**
    * The suit ID is a two character string:
@@ -89,24 +111,36 @@ export const catalogSuitSchema = z.strictObject({
   noClueColors: z.literal(true).optional(),
   noClueRanks: z.literal(true).optional(),
   oneOfEach: z.literal(true).optional(),
-  /** The symbol that represents this suit: a pip name, "auto", or "none". */
+  /**
+   * The symbol that represents this suit: a pip name, "auto", or "none".
+   */
   pip: z.string().min(1),
   prism: z.literal(true).optional(),
 });
 
-/** A card rank. 7 is the rank of a stack's start card. */
+/**
+ * A card rank. 7 is the rank of a stack's start card.
+ */
 export const catalogRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 
-/** A rank that clues can name. */
+/**
+ * A rank that clues can name.
+ */
 export const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
 
-/** An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types. */
+/**
+ * An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types.
+ */
 export const catalogVariantSchema = z.strictObject({
   alternatingClues: z.literal(true).optional(),
   chimneys: z.literal(true).optional(),
-  /** The colors that players can clue. When omitted, the suits' clue colors. */
+  /**
+   * The colors that players can clue. When omitted, the suits' clue colors.
+   */
   clueColors: z.array(z.string()).readonly().optional(),
-  /** The ranks that players can clue. When omitted, 1 through 5. */
+  /**
+   * The ranks that players can clue. When omitted, 1 through 5.
+   */
   clueRanks: z.array(rankClueNumberSchema).readonly().optional(),
   clueStarved: z.literal(true).optional(),
   colorCluesTouchNothing: z.literal(true).optional(),
@@ -116,12 +150,14 @@ export const catalogVariantSchema = z.strictObject({
   funnels: z.literal(true).optional(),
   /**
    * A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
-   * on. This is a legacy field; we want to transition to using a more descriptive string ID, which
-   * will allow for custom user-defined variants.
+   * on. This is a legacy field; we want to transition to using a more descriptive string ID,
+   * which will allow for custom user-defined variants.
    */
   id: z.number().int().min(0).max(4_294_967_295),
   name: z.string().min(1),
-  /** A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`. */
+  /**
+   * A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
+   */
   newID: z.string().min(1),
   oddsAndEvens: z.literal(true).optional(),
   rankCluesTouchNothing: z.literal(true).optional(),
@@ -132,20 +168,28 @@ export const catalogVariantSchema = z.strictObject({
   specialRankDeceptive: z.literal(true).optional(),
   specialRankNoClueColors: z.literal(true).optional(),
   specialRankNoClueRanks: z.literal(true).optional(),
-  /** The number of cards in each stack. When omitted, 5. */
+  /**
+   * The number of cards in each stack. When omitted, 5.
+   */
   stackSize: z.literal([1, 2, 3, 4]).optional(),
   sudoku: z.literal(true).optional(),
-  /** Suit names, which may end in " Reversed". */
+  /**
+   * Suit names, which may end in " Reversed".
+   */
   suits: z.array(z.string()).min(1).readonly(),
   synesthesia: z.literal(true).optional(),
   throwItInAHole: z.literal(true).optional(),
   upOrDown: z.literal(true).optional(),
 });
 
-/** One author's note on a single card. */
+/**
+ * One author's note on a single card.
+ */
 export const cardNoteSchema = z.strictObject({
   isSpectator: z.boolean(),
-  /** The username of the person setting the note. */
+  /**
+   * The username of the person setting the note.
+   */
   name: z.string(),
   text: z.string(),
 });
@@ -161,10 +205,14 @@ export const cardOrderSchema = z
   .max(65)
   .brand<"CardOrder">();
 
-/** A seat in a game. The game library's `PlayerIndex` type. */
+/**
+ * A seat in a game. The game library's `PlayerIndex` type.
+ */
 export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
-/** A seat, or -1 for no player. */
+/**
+ * A seat, or -1 for no player.
+ */
 export const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 
 /**
@@ -173,8 +221,8 @@ export const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 export const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
 
 /**
- * A clue as its recipient sees it: a color clue names a suit's color, a rank clue names a rank, and
- * a clue the recipient may not see hides both its type and value.
+ * A clue as its recipient sees it: a color clue names a suit's color, a rank clue names a rank,
+ * and a clue the recipient may not see hides both its type and value.
  */
 export const receivedClueSchema = z.union([
   z.strictObject({ type: z.literal(0), value: z.literal([0, 1, 2, 3, 4, 5]) }),
@@ -182,17 +230,23 @@ export const receivedClueSchema = z.union([
   z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
 ]);
 
-/** An integer that JavaScript represents exactly. */
+/**
+ * An integer that JavaScript represents exactly.
+ */
 export const safeIntegerSchema = z
   .number()
   .int()
   .min(-9_007_199_254_740_991)
   .max(9_007_199_254_740_991);
 
-/** A card's suit, or -1 when the recipient may not see it. */
+/**
+ * A card's suit, or -1 when the recipient may not see it.
+ */
 export const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 
-/** One game event as a particular recipient sees it. Unknown card identities are -1. */
+/**
+ * One game event as a particular recipient sees it. Unknown card identities are -1.
+ */
 export const gameEventSchema = z.discriminatedUnion("type", [
   z.strictObject({
     order: cardOrderSchema,
@@ -226,7 +280,9 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z.strictObject({
     clue: receivedClueSchema,
     giver: playerIndexSchema,
-    /** The orders of the cards the clue touched. */
+    /**
+     * The orders of the cards the clue touched.
+     */
     list: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
     turn: z
@@ -274,11 +330,15 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("turn"),
   }),
   z.strictObject({
-    /** The `EndCondition` enum. */
+    /**
+     * The `EndCondition` enum.
+     */
     endCondition: z.enum(endConditionEnum),
     playerIndex: playerIndexOrNoneSchema,
     type: z.literal("gameOver"),
-    /** The players who voted to end the game, or null. */
+    /**
+     * The players who voted to end the game, or null.
+     */
     votes: z.array(playerIndexSchema).readonly().nullable(),
   }),
   z.strictObject({
@@ -287,7 +347,9 @@ export const gameEventSchema = z.discriminatedUnion("type", [
       .int()
       .min(-9_007_199_254_740_991)
       .max(9_007_199_254_740_991),
-    /** Each player's time, in seat order. */
+    /**
+     * Each player's time, in seat order.
+     */
     playerTimes: z.array(safeIntegerSchema).min(2).max(6).readonly(),
     type: z.literal("playerTimes"),
   }),
@@ -355,7 +417,9 @@ export const hypotheticalActionSchema = z.discriminatedUnion("type", [
     clue: receivedClueSchema,
     giver: playerIndexSchema,
     ignoreNegative: z.boolean(),
-    /** The orders of the cards the clue touched. */
+    /**
+     * The orders of the cards the clue touched.
+     */
     list: z.array(cardOrderSchema).readonly(),
     target: playerIndexSchema,
     type: z.literal("clue"),

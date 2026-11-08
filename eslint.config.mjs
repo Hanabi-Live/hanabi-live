@@ -133,6 +133,15 @@ export const hanabiConfigBase = defineConfig(
 
   // @template-customization-start
 
+  // The wire contracts generated from "server/protocol" keep the line breaks of their Rust doc
+  // comments.
+  {
+    files: ["**/src/generated/**"],
+    rules: {
+      "complete/format-jsdoc-comments": "off",
+    },
+  },
+
   {
     ignores: [
       "packages/data/src/version.js",

@@ -344,8 +344,8 @@ fn expression(schema: &Value) -> Result<String> {
     Ok(result)
 }
 
-/// The schema's description, which comes from the Rust doc comment, as JSDoc. Generation formats it
-/// with the repository's ESLint rule afterwards.
+/// The schema's description, which comes from the Rust doc comment, as JSDoc with the same line
+/// breaks.
 fn doc_comment(schema: &Value) -> String {
     let Some(description) = schema.get("description").and_then(Value::as_str) else {
         return String::new();
