@@ -14,7 +14,7 @@ export function lobbyKeyboardInit(): void {
       && !$(".ss-search").is(":visible") // Make an exception if the variant dropdown is open
     ) {
       event.preventDefault();
-      $("#create-game-submit").trigger("click");
+      clickElement("#create-game-submit");
       return;
     }
 
@@ -35,51 +35,51 @@ export function lobbyKeyboardInit(): void {
       // Alt + j.
       if (globals.currentScreen === Screen.Lobby) {
         // Click on the first "Join" button in the table list.
-        $(".lobby-games-join-first-table-button").trigger("click");
+        clickElement(".lobby-games-join-first-table-button");
       } else if (globals.currentScreen === Screen.PreGame) {
         // Click on the "Join Game" button.
-        $("#nav-buttons-pregame-join").trigger("click");
+        clickElement("#nav-buttons-pregame-join");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_N) {
       // Alt + n. Click the "Create Game" button.
       if (globals.currentScreen === Screen.Lobby) {
-        $("#nav-buttons-lobby-create-game").trigger("click");
+        clickElement("#nav-buttons-lobby-create-game");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_H) {
       // Alt + h. Click the "Show History" button.
       if (globals.currentScreen === Screen.Lobby) {
-        $("#nav-buttons-lobby-history").trigger("click");
+        clickElement("#nav-buttons-lobby-history");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_A) {
       // Alt + a. Click on the "Watch Specific Replay" button. (We can't use "Alt + w" because that
       // conflicts with LastPass.)
       if (globals.currentScreen === Screen.Lobby) {
-        $("#nav-buttons-lobby-replay").trigger("click");
+        clickElement("#nav-buttons-lobby-replay");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_O) {
       // Alt + o. Click the "Sign Out" button.
       if (globals.currentScreen === Screen.Lobby) {
-        $("#nav-buttons-lobby-sign-out").trigger("click");
+        clickElement("#nav-buttons-lobby-sign-out");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_S) {
       // Alt + s. Click on the "Start Game" button.
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-start").trigger("click");
+        clickElement("#nav-buttons-pregame-start");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_P) {
       // Alt + p. Click on the "Spectate Game" button.
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-spectate").trigger("click");
+        clickElement("#nav-buttons-pregame-spectate");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_C) {
       // Alt + c. Click on the "Change Options" button.
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-change-options").trigger("click");
+        clickElement("#nav-buttons-pregame-change-options");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_L) {
       // Alt + l. Click on the "Leave Game" button.
       if (globals.currentScreen === Screen.PreGame) {
-        $("#nav-buttons-pregame-leave").trigger("click");
+        clickElement("#nav-buttons-pregame-leave");
       }
     } else if (event.altKey && event.which === KeyCode.KEY_R) {
       // Alt + r
@@ -97,17 +97,17 @@ function clickReturnToLobby() {
   // the "scores" screen.)
   switch (globals.currentScreen) {
     case Screen.PreGame: {
-      $("#nav-buttons-pregame-unattend").trigger("click");
+      clickElement("#nav-buttons-pregame-unattend");
       break;
     }
 
     case Screen.History: {
-      $("#nav-buttons-history-return").trigger("click");
+      clickElement("#nav-buttons-history-return");
       break;
     }
 
     case Screen.HistoryOtherScores: {
-      $("#nav-buttons-history-other-scores-return").trigger("click");
+      clickElement("#nav-buttons-history-other-scores-return");
       break;
     }
 
@@ -115,4 +115,12 @@ function clickReturnToLobby() {
       break;
     }
   }
+}
+
+/**
+ * Use a native click so that handlers registered with `addEventListener` also run. The jQuery
+ * `trigger("click")` method does not perform a native click on links.
+ */
+function clickElement(selector: string) {
+  document.querySelector<HTMLElement>(selector)?.click();
 }
