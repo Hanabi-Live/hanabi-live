@@ -1,4 +1,4 @@
-import { ActionType, SITE_URL } from "@hanabi-live/data";
+import { ActionType, RecordedActionType, SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -108,7 +108,7 @@ export function createJSONFromReplay(room: string): void {
 
   // Copy actions up to current segment.
   const { replay } = globals.state;
-  game.actions = [...getGameActionsFromState(replay)];
+  game.actions = getGameActionsFromState(replay).map(toRecordedAction);
 
   // Add the hypothetical from the log, after the current segment.
   if (replay.hypothetical !== null) {
@@ -116,7 +116,7 @@ export function createJSONFromReplay(room: string): void {
     const { log } = states.at(-1)!;
     if (replay.segment < log.length) {
       const logLines = log.slice(replay.segment + 1);
-      const actions = getGameActionsFromLog(logLines);
+      const actions = getGameActionsFromLog(logLines).map(toRecordedAction);
       const newActions = [...game.actions, ...actions];
       game.actions = newActions;
     }
@@ -412,4 +412,22 @@ function getColorIndexFromColorName(
   );
 
   return colorIndex === -1 ? undefined : (colorIndex as ColorIndex);
+}
+
+/** Each turn's type in a game's record. */
+const RECORDED_ACTION_TYPES = {
+  [ActionType.Play]: RecordedActionType.Play,
+  [ActionType.Discard]: RecordedActionType.Discard,
+  [ActionType.ColorClue]: RecordedActionType.ColorClue,
+  [ActionType.RankClue]: RecordedActionType.RankClue,
+} as const satisfies Record<ActionType, RecordedActionType>;
+
+/** A turn as an exported game records it. */
+function toRecordedAction(action: ClientAction): {
+  readonly type: RecordedActionType;
+  readonly target: number;
+  readonly value?: number;
+} {
+  const { type, ...rest } = action;
+  return { ...rest, type: RECORDED_ACTION_TYPES[type] };
 }

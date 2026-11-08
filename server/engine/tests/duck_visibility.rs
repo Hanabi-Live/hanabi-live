@@ -25,10 +25,14 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
             interpretation: Interpretation::Live,
         })?
         .state;
-        for kind in [2, 3] {
+        for kind in [RecordedActionType::ColorClue, RecordedActionType::RankClue] {
             let actor = state.active_player_index;
             let target = (actor + 1) % state.players.len();
-            let values = if kind == 2 { 0..5 } else { 1..6 };
+            let values = if kind == RecordedActionType::ColorClue {
+                0..5
+            } else {
+                1..6
+            };
             let action = values
                 .map(|value| PlayerAction {
                     action_type: kind,

@@ -16,7 +16,7 @@ fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSe
 fn standard() -> EngineState {
     create_game(setup(Options::default(), None)).unwrap().state
 }
-fn action(action_type: i32, target: i32, value: i32) -> PlayerAction {
+fn action(action_type: RecordedActionType, target: i32, value: i32) -> PlayerAction {
     PlayerAction {
         action_type,
         target,
@@ -69,7 +69,20 @@ fn typed_validation_preserves_collection_limits_and_rejects_nonfinite_options() 
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     let state = standard();
     let before = serde_json::to_value(&state).unwrap();
-    for kind in [-1, 4, 5, i32::MAX] {
+    // A recorded action type that is not a turn cannot come from a client, and other numbers are
+    // not action types at all.
+    for kind in [-1, i32::MAX] {
+        assert!(
+            serde_json::from_value::<PlayerAction>(
+                serde_json::json!({"type": kind, "target": 0, "value": 3})
+            )
+            .is_err()
+        );
+    }
+    for kind in [
+        RecordedActionType::GameOver,
+        RecordedActionType::GameOverByVote,
+    ] {
         assert!(
             apply_action(&state, 0, &action(kind, 0, 3), None)
                 .unwrap_err()
@@ -78,32 +91,52 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
         );
     }
     for target in [-1, 5, 50, i32::MAX] {
-        assert!(apply_action(&state, 0, &action(0, target, 0), None).is_err());
+        assert!(
+            apply_action(
+                &state,
+                0,
+                &action(RecordedActionType::Play, target, 0),
+                None
+            )
+            .is_err()
+        );
     }
     for a in [
-        action(2, -1, 0),
-        action(3, 0, 1),
-        action(2, 1, -1),
-        action(2, 1, 5),
-        action(3, 1, 0),
-        action(3, 1, 7),
+        action(RecordedActionType::ColorClue, -1, 0),
+        action(RecordedActionType::RankClue, 0, 1),
+        action(RecordedActionType::ColorClue, 1, -1),
+        action(RecordedActionType::ColorClue, 1, 5),
+        action(RecordedActionType::RankClue, 1, 0),
+        action(RecordedActionType::RankClue, 1, 7),
     ] {
         assert!(validate_action(&state, 0, &a).is_err());
     }
-    assert!(apply_action(&state, 1, &action(0, 5, 0), None).is_err());
-    assert!(apply_action(&state, usize::MAX, &action(0, 0, 0), None).is_err());
+    assert!(apply_action(&state, 1, &action(RecordedActionType::Play, 5, 0), None).is_err());
+    assert!(
+        apply_action(
+            &state,
+            usize::MAX,
+            &action(RecordedActionType::Play, 0, 0),
+            None
+        )
+        .is_err()
+    );
     let mut paused = state.clone();
     paused.paused = true;
     assert!(
-        apply_action(&paused, 0, &action(0, 0, 0), None)
+        apply_action(&paused, 0, &action(RecordedActionType::Play, 0, 0), None)
             .unwrap_err()
             .to_string()
             .contains("paused")
     );
     assert!(restore(&paused).paused);
-    let result = apply_action(&state, 0, &action(3, 1, 1), None).unwrap();
+    let result =
+        apply_action(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
     assert_eq!(serde_json::to_value(&state).unwrap(), before);
-    assert_eq!(result.state.actions, vec![action(3, 1, 1)]);
+    assert_eq!(
+        result.state.actions,
+        vec![action(RecordedActionType::RankClue, 1, 1)]
+    );
     for malformed in [
         json!({"type":0.5,"target":0,"value":0}),
         json!({"type":0,"target":1.5,"value":0}),
@@ -218,15 +251,32 @@ fn restores_multi_action_turn_and_continues_identically() {
     ))
     .unwrap()
     .state;
-    let midway = apply_action(&initial, 0, &action(2, 1, 3), None)
-        .unwrap()
-        .state;
+    let midway = apply_action(
+        &initial,
+        0,
+        &action(RecordedActionType::ColorClue, 1, 3),
+        None,
+    )
+    .unwrap()
+    .state;
     assert_eq!(midway.turn, 0);
     assert_eq!(midway.players[0].character_metadata, 1);
     let restored = restore(&midway);
     assert_eq!(
-        apply_action(&midway, 0, &action(3, 1, 1), None).unwrap(),
-        apply_action(&restored, 0, &action(3, 1, 1), None).unwrap()
+        apply_action(
+            &midway,
+            0,
+            &action(RecordedActionType::RankClue, 1, 1),
+            None
+        )
+        .unwrap(),
+        apply_action(
+            &restored,
+            0,
+            &action(RecordedActionType::RankClue, 1, 1),
+            None
+        )
+        .unwrap()
     );
 }
 
@@ -265,7 +315,15 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     assert_eq!(ended.state.active_player_index, 2);
     assert_eq!(ended.state.players[2].character_metadata, 4);
     assert_eq!(restore(&ended.state), ended.state);
-    assert!(apply_action(&ended.state, 0, &action(0, 0, 0), None).is_err());
+    assert!(
+        apply_action(
+            &ended.state,
+            0,
+            &action(RecordedActionType::Play, 0, 0),
+            None
+        )
+        .is_err()
+    );
     let state = standard();
     let timing = Some(CompletionTiming {
         player_times: vec![1234, -1234],
@@ -341,7 +399,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         apply_action(
             &state,
             0,
-            &action(3, 1, 1),
+            &action(RecordedActionType::RankClue, 1, 1),
             Some(CompletionTiming {
                 player_times: vec![0],
                 duration: 0
@@ -395,7 +453,7 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
     assert_eq!(draws, 10);
     assert_eq!(revealed, vec![5, 6, 7, 8]);
     assert!(
-        apply_action(&state, 0, &action(3, 1, 4), None)
+        apply_action(&state, 0, &action(RecordedActionType::RankClue, 1, 4), None)
             .unwrap_err()
             .to_string()
             .contains("touches 0 cards")
@@ -471,7 +529,7 @@ fn custom_shortened_legacy_decks_are_preserved_without_reshuffling() {
     let next = apply_action(
         &state,
         0,
-        &action(0, 0, 0),
+        &action(RecordedActionType::Play, 0, 0),
         Some(CompletionTiming {
             player_times: vec![0, 0],
             duration: 123,
@@ -514,7 +572,7 @@ fn custom_shortened_legacy_decks_are_preserved_without_reshuffling() {
     }]);
     let state = create_game(input).unwrap().state;
     let before = state.clone();
-    assert!(apply_action(&state, 0, &action(0, 0, 0), None).is_err());
+    assert!(apply_action(&state, 0, &action(RecordedActionType::Play, 0, 0), None).is_err());
     assert_eq!(state, before);
 }
 
@@ -590,14 +648,14 @@ fn long_character_histories_are_bounded_and_restorable() {
             }
             let p = &state.players[state.active_player_index];
             let clues = vec![
-                action(2, 1 - int(p.index), 0),
-                action(3, 1 - int(p.index), 1),
+                action(RecordedActionType::ColorClue, 1 - int(p.index), 0),
+                action(RecordedActionType::RankClue, 1 - int(p.index), 1),
             ];
             let discards: Vec<_> = p
                 .hand
                 .iter()
                 .filter(|o| **o != 0)
-                .map(|o| action(1, int(*o), 0))
+                .map(|o| action(RecordedActionType::Discard, int(*o), 0))
                 .collect();
             let candidates = if p.character == "Panicky" {
                 [discards, clues].concat()
@@ -641,8 +699,8 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             break;
         }
         let p = &state.players[state.active_player_index];
-        let mut candidates = vec![action(2, 1 - int(p.index), 0)];
-        for t in [1, 0] {
+        let mut candidates = vec![action(RecordedActionType::ColorClue, 1 - int(p.index), 0)];
+        for t in [RecordedActionType::Discard, RecordedActionType::Play] {
             candidates.extend(p.hand.iter().map(|o| action(t, int(*o), 0)));
         }
         let before = potential(&state);

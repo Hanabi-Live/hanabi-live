@@ -1,7 +1,7 @@
 use crate::{
     ActionRejected, AssignedCharacter, Clue, ClueType, CompletionTiming, EndCondition, EngineCard,
     EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options, PlayerAction,
-    RecordedAction, Termination, Transition, assign_characters, characters,
+    RecordedAction, RecordedActionType, Termination, Transition, assign_characters, characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -223,7 +223,7 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
     if state.paused {
         return reject("You cannot perform a game action when the game is paused.");
     }
-    if !(0..=3).contains(&action.action_type) {
+    if action.action_type.is_game_over() {
         return reject("That is not a valid action type.");
     }
     validate_character_action(state, actor, action)?;
@@ -232,12 +232,12 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
     let deck_move = state.options.deck_plays
         && state.deck_index + 1 == state.deck.len()
         && target == Some(state.deck_index);
-    if action.action_type == 0 {
+    if action.action_type == RecordedActionType::Play {
         validate_character_play(state, actor, action)?;
         if !deck_move && !target.is_some_and(|o| state.players[actor].hand.contains(&o)) {
             return reject("You cannot play a card that is not in your hand.");
         }
-    } else if action.action_type == 1 {
+    } else if action.action_type == RecordedActionType::Discard {
         if deck_move {
             if !variant.has_inverted {
                 return reject("You cannot discard the last card in non-Inverted games");
@@ -261,7 +261,7 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
         if state.clue_tokens < clue_cost(state) {
             return reject("You need at least 1 clue token available in order to give a clue.");
         }
-        if action.action_type == 2
+        if action.action_type == RecordedActionType::ColorClue
             && index(action.value).is_none_or(|value| value >= variant.clue_colors.len())
         {
             return reject(format!(
@@ -269,7 +269,9 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
                 action.value
             ));
         }
-        if action.action_type == 3 && !variant.clue_ranks.contains(&action.value) {
+        if action.action_type == RecordedActionType::RankClue
+            && !variant.clue_ranks.contains(&action.value)
+        {
             return reject(format!(
                 "You cannot give a rank clue with a value of \"{}\".",
                 action.value
@@ -282,8 +284,10 @@ pub fn validate_action(state: &EngineState, actor: usize, action: &PlayerAction)
         }
         validate_character_clue(state, actor, action)?;
         let may_touch_nothing = state.options.empty_clues
-            || (action.action_type == 2 && variant.color_clues_touch_nothing)
-            || (action.action_type == 3 && variant.rank_clues_touch_nothing);
+            || (action.action_type == RecordedActionType::ColorClue
+                && variant.color_clues_touch_nothing)
+            || (action.action_type == RecordedActionType::RankClue
+                && variant.rank_clues_touch_nothing);
         let touches_a_card = touched_orders(state, action)
             .iter()
             .any(|&order| sees_card(state, actor, target, order));
@@ -302,7 +306,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
     let card = &mut state.deck[order];
     if !card.failed {
         state.actions.push(RecordedAction {
-            action_type: 1,
+            action_type: RecordedActionType::Discard,
             target: int(order),
             value: 0,
         });
@@ -319,7 +323,7 @@ fn discard(state: &mut EngineState, player: usize, order: usize) {
 }
 fn play(state: &mut EngineState, player: usize, order: usize) {
     state.actions.push(RecordedAction {
-        action_type: 0,
+        action_type: RecordedActionType::Play,
         target: int(order),
         value: 0,
     });
@@ -512,11 +516,12 @@ pub fn apply_action(
             && order == state.deck_index;
         let inverted = state.interpretation == Interpretation::Live
             && variant_for(&state).suits[state.deck[order].suit_index].inverted;
-        let is_play = if inverted {
-            action.action_type == 1
-        } else {
-            action.action_type == 0
-        };
+        let is_play = action.action_type
+            == if inverted {
+                RecordedActionType::Discard
+            } else {
+                RecordedActionType::Play
+            };
         ensure!(
             !(is_play
                 && variant_for(&state).sudoku
@@ -593,9 +598,9 @@ pub fn terminate_game(
     state.end_player = termination.player_index;
     let action = RecordedAction {
         action_type: if termination.condition == EndCondition::TerminatedByVote {
-            5
+            RecordedActionType::GameOverByVote
         } else {
-            4
+            RecordedActionType::GameOver
         },
         target: if matches!(
             termination.condition,

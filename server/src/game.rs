@@ -102,11 +102,10 @@ impl Game {
         );
         let mut game = Self::create(setup)?;
         for action in actions {
-            ensure!(action.kind <= 5, "Invalid historical action type");
             if game.end_condition != EndCondition::InProgress {
                 break;
             }
-            if action.kind >= 4 {
+            if action.kind.is_game_over() {
                 let condition = EndCondition::try_from(action.value).map_err(anyhow::Error::msg)?;
                 game.terminate(
                     game.active_player_index,

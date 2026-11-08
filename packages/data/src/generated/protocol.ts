@@ -25,6 +25,28 @@ export enum ActionType {
 }
 
 /**
+ * The type of an action in a game's record: a turn, or the end of the game. The database
+ * stores these values in `game_actions`.
+ */
+export enum RecordedActionType {
+  Play = 0,
+  Discard = 1,
+  ColorClue = 2,
+  RankClue = 3,
+
+  /**
+   * The game ended. The value is its `EndCondition`, and the target is the player who ended
+   * it, or -1.
+   */
+  GameOver = 4,
+
+  /**
+   * The players voted to end the game.
+   */
+  GameOverByVote = 5,
+}
+
+/**
  * The parts of the board that a shared-replay arrow can point at, besides cards.
  */
 export enum ReplayArrowOrder {
@@ -652,7 +674,7 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
  */
 const importActionSchema = z.strictObject({
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
-  type: z.number().int().min(0).max(255).optional(),
+  type: z.enum(RecordedActionType).optional(),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
 });
 
@@ -771,7 +793,7 @@ export const replayEfficiencyModSchema = z.strictObject({
 });
 const replayActionSchema = z.strictObject({
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  type: z.number().int().min(0).max(255),
+  type: z.enum(RecordedActionType),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
 const replayCardSchema = z.strictObject({

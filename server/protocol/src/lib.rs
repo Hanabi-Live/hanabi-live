@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 mod enums;
 pub use enums::{
-    ActionType, ClueType, EndCondition, ReplayArrowOrder, SoundMove, Status, WIRE_ENUMS, WireEnum,
-    WireEnumMember,
+    ActionType, ClueType, EndCondition, RecordedActionType, ReplayArrowOrder, SoundMove, Status,
+    WIRE_ENUMS, WireEnum, WireEnumMember,
 };
 mod registry;
 pub use registry::{
@@ -510,8 +510,7 @@ pub struct ReplayCard {
 #[serde(deny_unknown_fields)]
 pub struct ReplayAction {
     #[serde(rename = "type")]
-    #[schemars(range(min = 0, max = 255))]
-    pub kind: u8,
+    pub kind: RecordedActionType,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub target: i32,
     #[serde(default)]
@@ -630,8 +629,8 @@ pub struct ImportCard {
 #[serde(deny_unknown_fields)]
 pub struct ImportAction {
     #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", range(min = 0, max = 255))]
-    pub kind: Option<u8>,
+    #[schemars(with = "RecordedActionType")]
+    pub kind: Option<RecordedActionType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "i32", range(min = i32::MIN, max = i32::MAX))]
     pub target: Option<i32>,

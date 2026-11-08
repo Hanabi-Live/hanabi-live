@@ -454,7 +454,7 @@ impl Store {
             );
             for (row, a) in rows.iter().zip(&s.game.actions) {
                 ensure!(
-                    i32::from(row.r#type) == a.action_type
+                    i32::from(row.r#type) == i32::from(a.action_type)
                         && i32::from(row.target) == a.target
                         && i32::from(row.value) == a.value,
                     "Conflicting action"
@@ -509,7 +509,7 @@ impl Store {
             .game
             .actions
             .iter()
-            .map(|a| i16::try_from(a.action_type))
+            .map(|a| i16::try_from(i32::from(a.action_type)))
             .collect::<Result<_, _>>()?;
         let targets: Vec<i16> = s
             .game

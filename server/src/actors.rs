@@ -1840,14 +1840,12 @@ async fn prepare_table(
                     .game
                     .actions
                     .iter()
-                    .map(|a| {
-                        Ok(ReplayAction {
-                            kind: u8::try_from(a.action_type)?,
-                            target: a.target,
-                            value: a.value,
-                        })
+                    .map(|a| ReplayAction {
+                        kind: a.action_type,
+                        target: a.target,
+                        value: a.value,
                     })
-                    .collect::<Result<_>>()?;
+                    .collect();
                 extra.custom_num_players = Some(options.num_players);
                 extra.set_replay = true;
                 extra.set_replay_turn = turn;
@@ -2830,8 +2828,7 @@ impl TableActor {
             }
             ClientMessage::Action(r) => {
                 let action = ReplayAction {
-                    // A turn's recorded action type is its `ActionType` value.
-                    kind: r.kind as u8,
+                    kind: r.kind.into(),
                     target: r.target,
                     value: r.value,
                 };
@@ -3034,14 +3031,12 @@ impl TableActor {
                             .game
                             .actions
                             .iter()
-                            .map(|a| {
-                                Ok(ReplayAction {
-                                    kind: u8::try_from(a.action_type)?,
-                                    target: a.target,
-                                    value: a.value,
-                                })
+                            .map(|a| ReplayAction {
+                                kind: a.action_type,
+                                target: a.target,
+                                value: a.value,
                             })
-                            .collect::<Result<_>>()?;
+                            .collect();
                     }
                     _ => bail!("Unknown special game prefix"),
                 }
@@ -3500,7 +3495,7 @@ impl TableActor {
                 break;
             }
             let actor = game.active_player_index;
-            if a.kind >= 4 {
+            if a.kind.is_game_over() {
                 game.terminate(
                     actor,
                     EndCondition::try_from(a.value).map_err(anyhow::Error::msg)?,

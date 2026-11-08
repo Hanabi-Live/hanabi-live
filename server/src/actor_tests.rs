@@ -23,7 +23,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     game.apply(
         0,
         ReplayAction {
-            kind: 3,
+            kind: hanabi_protocol::RecordedActionType::RankClue,
             target: 1,
             value: rank,
         },

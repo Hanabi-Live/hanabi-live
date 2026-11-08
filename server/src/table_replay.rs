@@ -6,7 +6,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::{ReplayAction, ReplayImport};
+use hanabi_protocol::{RecordedActionType, ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
 pub struct Imported {
@@ -135,7 +135,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         .iter()
         .flatten()
         .map(|action| ReplayAction {
-            kind: action.kind.unwrap_or(0),
+            kind: action.kind.unwrap_or(RecordedActionType::Play),
             target: action.target.unwrap_or(0),
             value: action.value.unwrap_or(0),
         })
@@ -143,16 +143,17 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     for (i, a) in actions.iter().enumerate() {
         ensure!(
             match a.kind {
-                0 | 1 => usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
-                2 =>
+                RecordedActionType::Play | RecordedActionType::Discard =>
+                    usize::try_from(a.target).is_ok_and(|t| t < deck.len()) && a.value == 0,
+                RecordedActionType::ColorClue =>
                     usize::try_from(a.target).is_ok_and(|t| t < players.len())
                         && usize::try_from(a.value).is_ok_and(|v| v <= variant.clue_colors.len()),
-                3 =>
+                RecordedActionType::RankClue =>
                     usize::try_from(a.target).is_ok_and(|t| t < players.len())
                         && (1..=5).contains(&a.value),
-                4 => usize::try_from(a.target).is_ok_and(|t| t < players.len()),
-                5 => a.target == -1,
-                _ => false,
+                RecordedActionType::GameOver =>
+                    usize::try_from(a.target).is_ok_and(|t| t < players.len()),
+                RecordedActionType::GameOverByVote => a.target == -1,
             },
             "Invalid action at index {i}"
         );
@@ -201,12 +202,12 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             break;
         }
         let active = game.active_player_index;
-        let result = if a.kind < 4 {
-            game.apply(active, a)
-        } else {
+        let result = if a.kind.is_game_over() {
             EndCondition::try_from(a.value)
                 .map_err(anyhow::Error::msg)
                 .and_then(|c| game.terminate(active, c, a.target, None, None))
+        } else {
+            game.apply(active, a)
         };
         if let Err(e) = result {
             warnings.push(format!(

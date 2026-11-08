@@ -1,4 +1,4 @@
-pub use hanabi_protocol::{ActionType, ClueType, EndCondition};
+pub use hanabi_protocol::{ActionType, ClueType, EndCondition, RecordedActionType};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -89,7 +89,7 @@ pub struct GameSetup {
 #[serde(deny_unknown_fields)]
 pub struct PlayerAction {
     #[serde(rename = "type")]
-    pub action_type: i32,
+    pub action_type: RecordedActionType,
     pub target: i32,
     pub value: i32,
 }
@@ -97,7 +97,7 @@ pub type RecordedAction = PlayerAction;
 impl From<&hanabi_protocol::ReplayAction> for PlayerAction {
     fn from(a: &hanabi_protocol::ReplayAction) -> Self {
         Self {
-            action_type: i32::from(a.kind),
+            action_type: a.kind,
             target: a.target,
             value: a.value,
         }
@@ -149,20 +149,20 @@ pub fn index(value: i32) -> Option<usize> {
 }
 
 /// The kind of clue that a recorded action gives, or `None` for an action that is not a clue.
-pub fn clue_type(action_type: i32) -> Option<ClueType> {
-    match ActionType::try_from(action_type) {
-        Ok(ActionType::ColorClue) => Some(ClueType::Color),
-        Ok(ActionType::RankClue) => Some(ClueType::Rank),
+pub const fn clue_type(action_type: RecordedActionType) -> Option<ClueType> {
+    match action_type {
+        RecordedActionType::ColorClue => Some(ClueType::Color),
+        RecordedActionType::RankClue => Some(ClueType::Rank),
         _ => None,
     }
 }
 
 /// The recorded action type that gives a kind of clue.
-pub fn clue_action_type(clue_type: ClueType) -> i32 {
-    i32::from(match clue_type {
-        ClueType::Color => ActionType::ColorClue,
-        ClueType::Rank => ActionType::RankClue,
-    })
+pub const fn clue_action_type(clue_type: ClueType) -> RecordedActionType {
+    match clue_type {
+        ClueType::Color => RecordedActionType::ColorClue,
+        ClueType::Rank => RecordedActionType::RankClue,
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

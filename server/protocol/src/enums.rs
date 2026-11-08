@@ -95,6 +95,44 @@ wire_enum! {
 }
 
 wire_enum! {
+    /// The type of an action in a game's record: a turn, or the end of the game. The database
+    /// stores these values in `game_actions`.
+    pub enum RecordedActionType {
+        Play = 0,
+        Discard = 1,
+        ColorClue = 2,
+        RankClue = 3,
+        /// The game ended. The value is its `EndCondition`, and the target is the player who ended
+        /// it, or -1.
+        GameOver = 4,
+        /// The players voted to end the game.
+        GameOverByVote = 5,
+    }
+}
+
+impl RecordedActionType {
+    pub const fn is_clue(self) -> bool {
+        matches!(self, Self::ColorClue | Self::RankClue)
+    }
+
+    pub const fn is_game_over(self) -> bool {
+        matches!(self, Self::GameOver | Self::GameOverByVote)
+    }
+}
+
+/// A turn is recorded with the same type.
+impl From<ActionType> for RecordedActionType {
+    fn from(action: ActionType) -> Self {
+        match action {
+            ActionType::Play => Self::Play,
+            ActionType::Discard => Self::Discard,
+            ActionType::ColorClue => Self::ColorClue,
+            ActionType::RankClue => Self::RankClue,
+        }
+    }
+}
+
+wire_enum! {
     /// The kind of a clue in a game event. Actions name clues with `ActionType` instead.
     pub enum ClueType {
         Color = 0,
@@ -164,6 +202,7 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     ActionType::WIRE,
     ClueType::WIRE,
     EndCondition::WIRE,
+    RecordedActionType::WIRE,
     ReplayArrowOrder::WIRE,
     SoundMove::WIRE,
     Status::WIRE,

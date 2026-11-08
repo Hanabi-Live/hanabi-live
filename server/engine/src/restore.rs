@@ -1,6 +1,6 @@
 use crate::{
     ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
-    clue_action_type, clue_cost_for, clue_type,
+    RecordedActionType, clue_action_type, clue_cost_for, clue_type,
     game::{
         MAX_CLUES, MAX_EVENTS, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH, hand_size,
         validate_options,
@@ -357,7 +357,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     card.played = true;
                     stacks[usize::try_from(*suit_index)?] = *rank;
                     actions.push(RecordedAction {
-                        action_type: 0,
+                        action_type: RecordedActionType::Play,
                         target: int(*order),
                         value: 0,
                     });
@@ -369,7 +369,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                     );
                     if !failed {
                         actions.push(RecordedAction {
-                            action_type: 1,
+                            action_type: RecordedActionType::Discard,
                             target: int(*order),
                             value: 0,
                         });
@@ -406,7 +406,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 );
                 cards[*o].failed = true;
                 actions.push(RecordedAction {
-                    action_type: 0,
+                    action_type: RecordedActionType::Play,
                     target: int(*o),
                     value: 0,
                 });
@@ -570,13 +570,13 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         .actions
         .iter()
         .copied()
-        .filter(|a| a.action_type < 4)
+        .filter(|a| !a.action_type.is_game_over())
         .collect();
     let terminal: Vec<_> = s
         .actions
         .iter()
         .enumerate()
-        .filter(|(_, a)| a.action_type >= 4)
+        .filter(|(_, a)| a.action_type.is_game_over())
         .collect();
     ensure!(
         terminal.is_empty()
@@ -591,19 +591,22 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
     );
     for a in &s.actions {
         let valid = match a.action_type {
-            0 | 1 => usize::try_from(a.target).is_ok_and(order) && a.value == 0,
-            2 | 3 => {
+            RecordedActionType::Play | RecordedActionType::Discard => {
+                usize::try_from(a.target).is_ok_and(order) && a.value == 0
+            }
+            RecordedActionType::ColorClue | RecordedActionType::RankClue => {
                 signed_seat(a.target)
                     && clue_type(a.action_type).is_some_and(|t| valid_clue(t, a.value))
             }
-            5 => a.target == -1 && a.value == EndCondition::TerminatedByVote as i32,
-            4 => match EndCondition::try_from(a.value) {
+            RecordedActionType::GameOverByVote => {
+                a.target == -1 && a.value == i32::from(EndCondition::TerminatedByVote)
+            }
+            RecordedActionType::GameOver => match EndCondition::try_from(a.value) {
                 Ok(EndCondition::Timeout) => signed_seat(a.target),
                 Ok(EndCondition::TerminatedByPlayer) => a.target == -1 || signed_seat(a.target),
                 Ok(EndCondition::IdleTimeout) => a.target == -1,
                 _ => false,
             },
-            _ => false,
         };
         ensure!(valid, "Invalid recorded action.");
     }

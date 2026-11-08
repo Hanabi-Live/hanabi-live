@@ -1,4 +1,4 @@
-import { replayGameSchema } from "@hanabi-live/data";
+import { RecordedActionType, replayGameSchema } from "@hanabi-live/data";
 import {
   DEFAULT_PLAYER_NAMES,
   MAX_PLAYERS,
@@ -8,7 +8,7 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { isEqual } from "lodash";
-import type { z } from "zod";
+import * as z from "zod";
 
 /** A game in the replay format, generated from the server's contract. */
 export type GameJSON = z.input<typeof replayGameSchema>;
@@ -314,6 +314,9 @@ function decompressActions(src: string): readonly Action[] | undefined {
   while (s < src.length) {
     const compressedAction = src.slice(s, s + 2);
     const action = stringToAction(compressedAction, typeRange);
+    if (action === undefined) {
+      return undefined;
+    }
     actions.push(action);
     s += 2;
   }
@@ -338,16 +341,20 @@ function actionToString(action: Action, typeRange: MinMax): string {
  * one representing `Action.type` and `Action.value` and the second representing the
  * `Action.target`.
  */
-function stringToAction(src: string, typeRange: MinMax): Action {
+function stringToAction(src: string, typeRange: MinMax): Action | undefined {
   const r = typeRange.max - typeRange.min + 1;
   const index = BASE62.indexOf(src.charAt(0));
   let type = index % r;
   const val = Math.floor((index - type) / r);
   type += typeRange.min;
   const target = BASE62.indexOf(src.charAt(1));
+  const recordedType = z.enum(RecordedActionType).safeParse(type);
+  if (!recordedType.success) {
+    return undefined;
+  }
 
   return {
-    type,
+    type: recordedType.data,
     target,
     value: val === 0 ? undefined : val - 1,
   };

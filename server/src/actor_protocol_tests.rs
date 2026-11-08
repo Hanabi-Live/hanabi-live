@@ -382,12 +382,19 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             h.frames(index)?;
         }
         let mut originals = vec![];
-        for kind in [2, 3] {
+        for kind in [
+            hanabi_protocol::RecordedActionType::ColorClue,
+            hanabi_protocol::RecordedActionType::RankClue,
+        ] {
             let (table, _) = h.snapshot(id).await?;
             let game = &table.game().unwrap().game.0;
             let seat = game.active_player_index;
             let target = (seat + 1) % game.players.len();
-            let values = if kind == 2 { 0..5 } else { 1..6 };
+            let values = if kind == hanabi_protocol::RecordedActionType::ColorClue {
+                0..5
+            } else {
+                1..6
+            };
             let action = values
                 .map(|value| hanabi_engine::PlayerAction {
                     action_type: kind,
@@ -408,7 +415,8 @@ async fn duck_clue_identity_is_private_in_live_history_and_recovery_but_not_comp
             )
             .await?;
             h.barrier(index).await?;
-            let clue = json!({"type":kind-2,"value":action.value});
+            let clue =
+                json!({"type":hanabi_engine::clue_type(kind).map(i32::from),"value":action.value});
             originals.push(clue.clone());
             for index in 0..5 {
                 let events = h
