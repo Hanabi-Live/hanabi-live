@@ -366,7 +366,7 @@ function getTooltipContent(): string {
 
 function tooltipItem(iconClass: string, html: string, iconStyle?: string) {
   const style = iconStyle === undefined ? "" : ` style="${iconStyle}"`;
-  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"${style}></i></span>&nbsp; ${html}</li>`;
+  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"${style}></i></span>${html}</li>`;
 }
 
 function tooltipField(iconClass: string, label: string, valueHTML: string) {

@@ -42,9 +42,9 @@ export function initKonvaTooltips(
 
   let content = element.tooltipContent;
   if (!customContent) {
-    content = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">`;
+    content = `<div class="info-tooltip" style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">`;
     content += '<i class="fas fa-info-circle fa-sm"></i>';
-    content += ` &nbsp;${element.tooltipContent}</span>`;
+    content += `<div>${element.tooltipContent}</div></div>`;
   }
   tooltips.setContent(`#tooltip-${element.tooltipName}`, content);
 }

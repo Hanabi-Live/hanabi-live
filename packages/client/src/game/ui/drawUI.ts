@@ -63,7 +63,6 @@ import {
   STRIKE_ARROW_ORDERS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
-  TOOLTIP_INDENT,
   WARNING_COLOR,
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
@@ -1132,7 +1131,7 @@ function drawScoreArea() {
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent = `
       <strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />
-      ${TOOLTIP_INDENT}<strong>Right click</strong> to terminate immediately.
+      <strong>Right click</strong> to terminate immediately.
     `;
     initKonvaTooltips(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
@@ -1431,8 +1430,8 @@ function drawStatistics() {
   paceTextLabel.tooltipName = "pace";
   paceTextLabel.tooltipContent = `
     Pace is a measure of how many discards can happen while<br />
-    ${TOOLTIP_INDENT}still having a chance to get the maximum score.<br />
-    ${TOOLTIP_INDENT}(For more information, click on the "Help" button in the lobby.)
+    still having a chance to get the maximum score.<br />
+    (For more information, click on the "Help" button in the lobby.)
   `;
   initKonvaTooltips(paceTextLabel, true, false);
 
@@ -1466,15 +1465,17 @@ function drawStatistics() {
   globals.layers.UI.add(efficiencyTextLabel);
   efficiencyTextLabel.tooltipName = "efficiency-text";
   const efficiencyTextLabelContent = `
-    Efficiency is calculated by: <br />
-    ${TOOLTIP_INDENT}&nbsp; &nbsp; <em>(number of cards played +<br />
-    ${TOOLTIP_INDENT}&nbsp; &nbsp; number of touched cards) /<br />
-    ${TOOLTIP_INDENT}&nbsp; &nbsp; number of clues given or lost</em><br />
-    ${TOOLTIP_INDENT}The first number is the minimum amount of efficiency needed from <br />
-    ${TOOLTIP_INDENT}this turn onward in order to win (i.e. future required efficiency).<br />
-    ${TOOLTIP_INDENT}The second number shows the minimum possible efficiency needed<br />
-    ${TOOLTIP_INDENT}to win with the current number of players and the current variant.<br />
-    ${TOOLTIP_INDENT}(For more information, click on the "Help" button in the lobby.)
+    Efficiency is calculated by:
+    <em class="tooltip-indent">
+      (number of cards played +<br />
+      number of touched cards) /<br />
+      number of clues given or lost
+    </em>
+    The first number is the minimum amount of efficiency needed from<br />
+    this turn onward in order to win (i.e. future required efficiency).<br />
+    The second number shows the minimum possible efficiency needed<br />
+    to win with the current number of players and the current variant.<br />
+    (For more information, click on the "Help" button in the lobby.)
   `;
   efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
   initKonvaTooltips(efficiencyTextLabel, true, false);

@@ -5,7 +5,6 @@ import { globals } from "../../UIGlobals";
 import {
   EFFICIENCY_DECIMAL_PLACES,
   LABEL_COLOR,
-  TOOLTIP_INDENT,
   WARNING_COLOR,
 } from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";
@@ -113,7 +112,7 @@ export function onEfficiencyChanged(data: {
 
   // Update the tooltip
   const tooltipContent = `
-    ${formatLine("Current cards gotten", data.cardsGotten, false)}
+    ${formatLine("Current cards gotten", data.cardsGotten)}
     ${formatLine(
       "Current cards noted as gotten",
       cardsGottenByNotes !== null && shouldModifyEff ? cardsGottenByNotes : "-",
@@ -156,9 +155,8 @@ export function onEfficiencyChanged(data: {
   globals.layers.UI.batchDraw();
 }
 
-function formatLine(left: string, right: number | string, indented = true) {
-  const indent = indented ? TOOLTIP_INDENT : "";
-  return `${indent}<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
+function formatLine(left: string, right: number | string) {
+  return `<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
 }
 
 export function onPaceOrPaceRiskChanged(data: {
@@ -250,7 +248,7 @@ export function onMaxTurnsChanged(data: {
   assertNotNull(label, "turnNumberLabel is not initialized.");
 
   label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
-${TOOLTIP_INDENT}<span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
-${TOOLTIP_INDENT}<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
+<span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
+<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
   initKonvaTooltips(label, true, false);
 }

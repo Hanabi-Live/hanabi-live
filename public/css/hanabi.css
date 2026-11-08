@@ -1234,7 +1234,21 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
 .game-tooltips-icon {
   display: inline-block;
   width: 0.5em;
+  margin-right: 0.4em;
   text-align: center;
+}
+
+/* An info icon beside a block of text, so that every line of the text starts at the same place. */
+.info-tooltip {
+  display: flex;
+  gap: 0.625em;
+  align-items: baseline;
+  line-height: 1.44;
+}
+
+.tooltip-indent {
+  display: block;
+  padding-left: 0.625em;
 }
 
 .game-tooltips-ol {
