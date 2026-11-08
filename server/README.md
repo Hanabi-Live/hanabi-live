@@ -170,6 +170,8 @@ Native checks, from this directory:
 ```sh
 cargo fmt --all --check
 cargo clippy --locked --workspace --all-targets -- -D warnings
+cargo deny --locked --workspace check
+cargo machete
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
   cargo test --locked --workspace
 ```
