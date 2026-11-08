@@ -9,6 +9,9 @@ import { globals } from "./UIGlobals";
 import { FONT_FAMILY, PANEL_CORNER_RADIUS } from "./constants";
 import { FitText } from "./controls/FitText";
 
+/** The opacity of the log's background, which mostly hides the board behind it. */
+const BACKGROUND_OPACITY = 0.9;
+
 export class FullActionLog extends Konva.Group {
   buffer: Array<{ turnNum: number; text: string }> = [];
   logText: MultiFitText | null = null;
@@ -46,7 +49,7 @@ export class FullActionLog extends Konva.Group {
       width,
       height,
       fill: "black",
-      opacity: 0.9,
+      opacity: BACKGROUND_OPACITY,
       cornerRadius: PANEL_CORNER_RADIUS * winW,
       listening: false,
     });

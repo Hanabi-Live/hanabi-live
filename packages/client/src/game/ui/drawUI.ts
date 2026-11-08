@@ -115,6 +115,15 @@ let spectatorsLabelValues: Values;
 
 const leaderPlaceholder = getHTMLElement("#leader-placeholder");
 
+/** The number of recent actions shown in the action log. */
+const ACTION_LOG_LINES = 8;
+
+/** The number of recent actions shown in the smaller action log of the Keldon layout. */
+const KELDON_ACTION_LOG_LINES = 3;
+
+/** The opacity of the trash can icon over the discard pile. */
+const TRASH_CAN_OPACITY = 0.2;
+
 export function drawUI(): void {
   globals.elements.restartWaitingOnServerAnimation?.stop();
 
@@ -301,10 +310,9 @@ function drawActionLog() {
   });
 
   // The action log
-  let maxLines = 8;
-  if (globals.lobby.settings.keldonMode) {
-    maxLines = 3;
-  }
+  const maxLines = globals.lobby.settings.keldonMode
+    ? KELDON_ACTION_LOG_LINES
+    : ACTION_LOG_LINES;
   globals.elements.actionLog = new MultiFitText(
     {
       align: "center",
@@ -666,13 +674,8 @@ function drawDeck() {
     width: deckValues.w! * 0.15 * winW,
     height: deckValues.w! * 0.15 * winW,
     image: globals.imageLoader!.get("question-mark"),
-    shadowColor: "black",
+    ...TEXT_SHADOW,
     shadowBlur: 2,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
   });
   // This goes on the same layer as the gameIDLabel.
   globals.layers.arrow.add(globals.elements.gameInfoImage);
@@ -1572,7 +1575,7 @@ function drawDiscardArea() {
     y: 0.65 * winH,
     width: 0.15 * winW,
     height: 0.33 * winH,
-    opacity: 0.2,
+    opacity: TRASH_CAN_OPACITY,
     image: globals.imageLoader!.get("trashcan"),
     listening: false,
   });
@@ -2538,7 +2541,6 @@ function drawExtraAnimations() {
     width: size * winW,
     height: size * winH,
     image: globals.imageLoader!.get("replay-forward-border"),
-    border: 100,
     visible: false,
     listening: false,
   });

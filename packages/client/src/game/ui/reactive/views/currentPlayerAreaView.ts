@@ -114,15 +114,13 @@ export function onChanged(
   }
 
   // eslint-disable-next-line func-style
-  const setPlayerText = (threeLines: boolean) => {
+  const setPlayerText = (numLines: number) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
     text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]!);
 
-    let maxSize = (values.h / 3) * winH;
-    if (threeLines) {
-      maxSize = (values.h / 4) * winH;
-    }
+    // The name may fill one share of the area, with one more share than there are lines.
+    const maxSize = (values.h / (numLines + 1)) * winH;
     text2.width(textValues.w * winW);
     text2.resize();
 
@@ -142,16 +140,14 @@ export function onChanged(
   const totalH = currentPlayerArea.height();
   const text1H = text1.measureSize(text1.text()).height;
   if (specialText === "") {
-    // 2 lines
-    setPlayerText(false);
+    setPlayerText(2);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.03 * winH;
     text1.y(totalH / 2 - text1H / 2 - spacing);
     text2.y(totalH / 2 - text2H / 2 + spacing);
     text3.hide();
   } else {
-    // 3 lines
-    setPlayerText(true);
+    setPlayerText(3);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.04 * winH;
     text1.y(totalH / 2 - text1H / 2 - spacing);

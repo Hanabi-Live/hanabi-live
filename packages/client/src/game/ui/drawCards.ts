@@ -39,6 +39,27 @@ const CARD_BORDER_PADDING = 4;
 /** The thickness of the card's outline. */
 const CARD_BORDER_WIDTH = 8;
 
+/** The opacity of a card's color fill, which lets the card background show through. */
+const CARD_FILL_ALPHA = 0.3;
+
+/** The opacity of a card's colored outline. */
+const CARD_BORDER_ALPHA = 0.7;
+
+/** The opacity of the dark fill of an unknown card or the deck. */
+const UNKNOWN_CARD_FILL_ALPHA = 0.5;
+
+/** The opacity of the dark outline of an unknown card or the deck. */
+const UNKNOWN_CARD_BORDER_ALPHA = 0.6;
+
+/** The color of the pips on an unknown card or the deck. */
+const UNKNOWN_CARD_PIP_COLOR = "#444444";
+
+/** The size and baseline of the rank label, which is smaller to fit the suit in colorblind mode. */
+const RANK_LABEL_FONT = {
+  normal: { fontSize: 96, textYPos: 110 },
+  colorblind: { fontSize: 68, textYPos: 83 },
+} as const;
+
 /** The line that a gradient follows down the rank label in the top-left corner of a card. */
 const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
 
@@ -112,20 +133,16 @@ export function drawCards<Canvas, Image>(
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
-        let textYPos: number;
         let rankLabel = rank.toString();
         if (rank === START_CARD_RANK) {
           rankLabel = START_CARD_RANK_LABEL;
         }
-        let fontSize: number;
         if (colorblindMode) {
           rankLabel += getSuitAbbreviationForVariant(suit, variant);
-          fontSize = 68;
-          textYPos = 83;
-        } else {
-          fontSize = 96;
-          textYPos = 110;
         }
+        const { fontSize, textYPos } = colorblindMode
+          ? RANK_LABEL_FONT.colorblind
+          : RANK_LABEL_FONT.normal;
 
         ctx.font = `bold ${fontSize}pt ${RANK_FONT_FAMILY}`;
 
@@ -361,14 +378,14 @@ function makeUnknownCard<Canvas>(
   cardBorderPath(ctx, enableShadows);
 
   ctx.save();
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = UNKNOWN_CARD_FILL_ALPHA;
   ctx.fill();
-  ctx.globalAlpha = 0.6;
+  ctx.globalAlpha = UNKNOWN_CARD_BORDER_ALPHA;
   ctx.lineWidth = CARD_BORDER_WIDTH;
   ctx.stroke();
   ctx.restore();
 
-  ctx.fillStyle = "#444444";
+  ctx.fillStyle = UNKNOWN_CARD_PIP_COLOR;
   ctx.lineWidth = CARD_BORDER_WIDTH;
   ctx.lineJoin = "round";
 
@@ -400,7 +417,7 @@ function makeDeckBack<Canvas>(
       DECK_SUIT_PIP_RING_SPREAD * position.x,
       DECK_SUIT_PIP_RING_SPREAD * position.y,
     );
-    drawPip(ctx, suit, variant, true, "#444444"); // Pips on the back of the deck should be gray.
+    drawPip(ctx, suit, variant, true, UNKNOWN_CARD_PIP_COLOR);
     ctx.restore();
   }
 
@@ -441,9 +458,9 @@ function drawCardBase(
   cardBorderPath(ctx, enableShadows);
 
   // Draw the borders (on visible cards) and the color fill.
-  ctx.globalAlpha = 0.3;
+  ctx.globalAlpha = CARD_FILL_ALPHA;
   ctx.fill();
-  ctx.globalAlpha = 0.7;
+  ctx.globalAlpha = CARD_BORDER_ALPHA;
   ctx.lineWidth = CARD_BORDER_WIDTH;
   // The borders should be more opaque for the stack base.
   if (rank === STACK_BASE_RANK) {

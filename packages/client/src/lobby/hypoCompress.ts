@@ -29,6 +29,12 @@ const COMPRESSED_PARTS = 3;
 /** How often a hyphen is inserted so that a long compressed game wraps when it is posted. */
 const HYPHEN_INTERVAL = 20;
 
+/** The length of the min and max digits that start a compressed deck or list of actions. */
+const RANGE_HEADER_LENGTH = 2;
+
+/** The length of a compressed action: one character for its type and value, one for its target. */
+const COMPRESSED_ACTION_LENGTH = 2;
+
 const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /**
@@ -242,7 +248,7 @@ function decompressDeck(src: string): readonly DeckCard[] | undefined {
     return undefined;
   }
 
-  let s = 2;
+  let s = RANGE_HEADER_LENGTH;
   while (s < src.length) {
     const compressedDeckCard = src.charAt(s);
     const deckCard = stringToDeckCard(compressedDeckCard, rankRange);
@@ -325,15 +331,15 @@ function decompressActions(src: string): readonly Action[] | undefined {
     return [];
   }
 
-  let s = 2;
+  let s = RANGE_HEADER_LENGTH;
   while (s < src.length) {
-    const compressedAction = src.slice(s, s + 2);
+    const compressedAction = src.slice(s, s + COMPRESSED_ACTION_LENGTH);
     const action = stringToAction(compressedAction, typeRange);
     if (action === undefined) {
       return undefined;
     }
     actions.push(action);
-    s += 2;
+    s += COMPRESSED_ACTION_LENGTH;
   }
 
   return actions;

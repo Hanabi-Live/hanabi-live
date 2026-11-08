@@ -2,6 +2,12 @@ import { PROJECT_NAME } from "@hanabi-live/data";
 import { showError } from "./modals";
 import { escapeHtml } from "./utils";
 
+/**
+ * Where the Brave browser on iOS reports errors from code it injects: the character directly after
+ * the opening `<!doctype HTML>` of each page.
+ */
+const INJECTED_ERROR_LOCATION = { lineno: 1, colno: 16 } as const;
+
 /** Initialize a global error handler that will show errors to the end-user. */
 export function initErrorListener(): void {
   globalThis.addEventListener("error", (errorEvent) => {
@@ -13,13 +19,11 @@ export function initErrorListener(): void {
         && errorEvent.colno === 0
         && errorEvent.filename === ""
         && errorEvent.error === null)
-      || (errorEvent.lineno === 1
-        && errorEvent.colno === 16
+      || (errorEvent.lineno === INJECTED_ERROR_LOCATION.lineno
+        && errorEvent.colno === INJECTED_ERROR_LOCATION.colno
         && !errorEvent.filename.endsWith("/main.min.js"))
     ) {
-      // Some buggy code that the browser injected is causing an error. Safe to ignore. This occurs
-      // on the Brave browser on iOS. Line 1:16 corresponds to the character directly after the
-      // opening <!doctype HTML> of each page.
+      // Some buggy code that the browser injected is causing an error. Safe to ignore.
       return;
     }
 

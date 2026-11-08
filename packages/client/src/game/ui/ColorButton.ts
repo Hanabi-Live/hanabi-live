@@ -15,6 +15,9 @@ import {
 import { drawPip } from "./drawPip";
 import { drawLayer } from "./konvaHelpers";
 
+/** The opacity of the color swatch that fills the button. */
+const COLOR_SWATCH_OPACITY = 0.9;
+
 export class ColorButton extends Konva.Group {
   pressed = false;
   clue: Clue;
@@ -52,7 +55,7 @@ export class ColorButton extends Konva.Group {
       height: colorScale * h,
       cornerRadius: BUTTON_CORNER_RADIUS * colorScale * h,
       fill: config["color"] as string | undefined,
-      opacity: 0.9,
+      opacity: COLOR_SWATCH_OPACITY,
       listening: false,
     });
     this.add(backgroundColor);
