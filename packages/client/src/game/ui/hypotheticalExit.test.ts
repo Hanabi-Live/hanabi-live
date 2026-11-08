@@ -35,6 +35,7 @@ function setup(shared: boolean) {
             useSharedSegments: true,
             leader: metadata.ourUsername,
             amLeader: true,
+            spoilerFree: false,
           }
         : null,
     },

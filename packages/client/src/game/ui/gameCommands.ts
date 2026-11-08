@@ -566,6 +566,7 @@ function initStateStore(data: InitData) {
     databaseID: data.databaseID,
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,
+    spoilerFree: data.spoilerFree,
     paused: data.paused,
     // The server sends -1 when nobody is pausing, and the pauser is only shown while paused.
     pausePlayerIndex: data.paused ? toPlayerIndex(data.pausePlayerIndex) : 0,

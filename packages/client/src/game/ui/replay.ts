@@ -44,6 +44,11 @@ export function exit(): void {
   });
 }
 
+/** Spoiler-free reviews hide what happens later in the game. */
+export function isSpoilerFree(): boolean {
+  return globals.state.replay.shared?.spoilerFree === true;
+}
+
 function getCurrentReplaySegment() {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active
@@ -152,6 +157,10 @@ export function backFull(): void {
 }
 
 export function forwardFull(): void {
+  if (isSpoilerFree()) {
+    return;
+  }
+
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   goToSegment(finalSegment, true);
 }
@@ -184,6 +193,10 @@ function segmentFromBarPosition(x: number, w: number) {
 
 // Called when a position in the bar is clicked.
 export function barClick(this: Konva.Rect): void {
+  if (isSpoilerFree()) {
+    return;
+  }
+
   const rectX =
     globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
   const w = globals.elements.replayBar!.width();
@@ -283,6 +296,14 @@ function positionReplayShuttle(
 }
 
 export function adjustShuttles(fast: boolean): void {
+  // The turn slider would show how long the game lasts.
+  if (isSpoilerFree()) {
+    globals.elements.replayBar!.hide();
+    globals.elements.replayShuttle!.hide();
+    globals.elements.replayShuttleShared!.hide();
+    return;
+  }
+
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller.
   let smaller = false;
   if (
@@ -330,7 +351,10 @@ export function promptTurn(): void {
   const currentSegment = getCurrentReplaySegment() + 1;
 
   setTurnInput.min = "1";
-  setTurnInput.max = Math.max(finalSegment, currentSegment).toString();
+  // The maximum turn would show how long the game lasts.
+  setTurnInput.max = isSpoilerFree()
+    ? ""
+    : Math.max(finalSegment, currentSegment).toString();
   setTurnInput.value = currentSegment.toString();
 
   // We can't use "addEventListener" because we can't easily remove the previous listener.

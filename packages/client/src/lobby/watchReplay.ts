@@ -13,6 +13,10 @@ export function init(): void {
   $("#replay-source-id").change(replaySourceChange);
   $("#replay-source-json").change(replaySourceChange);
 
+  // Only shared replays can be spoiler-free reviews.
+  $("#replay-visibility-solo").change(replayVisibilityChange);
+  $("#replay-visibility-shared").change(replayVisibilityChange);
+
   $("#replay-tooltip").on("keypress", (event) => {
     if (event.which === KeyCode.KEY_RETURN) {
       event.preventDefault();
@@ -41,6 +45,15 @@ function replaySourceChange() {
   } else {
     throw new Error('Invalid value for "replay-source".');
   }
+
+  // Redraw the tooltip so that the new elements will fit better.
+  tooltips.reposition("#nav-buttons-lobby-replay");
+}
+
+function replayVisibilityChange() {
+  $("#replay-spoiler-free-row").toggle(
+    $("#replay-visibility-shared").prop("checked") === true,
+  );
 
   // Redraw the tooltip so that the new elements will fit better.
   tooltips.reposition("#nav-buttons-lobby-replay");
@@ -144,12 +157,18 @@ function submit() {
 
   localStorage.setItem("watchReplayVisibility", visibility);
 
+  // Spoiler-Free Review
+  const spoilerFreeChecked = $("#replay-spoiler-free").prop("checked") === true;
+  localStorage.setItem("watchReplaySpoilerFree", spoilerFreeChecked.toString());
+  const spoilerFree = visibility === "shared" && spoilerFreeChecked;
+
   if (source === "id") {
     globals.conn!.send("replayCreate", {
       source,
       databaseID,
       visibility,
       shadowingPlayerIndex: -1,
+      spoilerFree,
     });
   } else if (source === "json") {
     globals.conn!.send("replayCreate", {
@@ -157,6 +176,7 @@ function submit() {
       gameJSON,
       visibility,
       shadowingPlayerIndex: -1,
+      spoilerFree,
     });
   }
 
@@ -218,6 +238,12 @@ export function ready(): boolean {
   }
   $(visibilityBox).prop("checked", true);
   $(visibilityBox).change();
+
+  // Set the "Spoiler-Free Review" checkbox.
+  $("#replay-spoiler-free").prop(
+    "checked",
+    localStorage.getItem("watchReplaySpoilerFree") === "true",
+  );
 
   // Redraw the tooltip so that the new elements will fit better.
   tooltips.reposition("#nav-buttons-lobby-replay");

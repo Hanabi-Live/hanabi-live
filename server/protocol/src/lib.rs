@@ -393,6 +393,10 @@ pub struct ReplayCreateRequest {
     /// instead of creating another one, if there is one.
     #[serde(default)]
     pub join_existing: bool,
+    /// For a shared replay, hide what happens later in the game: the turn slider, jumping to the
+    /// end, and future strikes.
+    #[serde(default)]
+    pub spoiler_free: bool,
 }
 
 /// Every player's remaining time, in milliseconds.
@@ -1426,6 +1430,8 @@ pub struct Init {
     pub shared_replay_segment: i64,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub shared_replay_eff_mod: i64,
+    /// Whether the shared replay hides what happens later in the game.
+    pub spoiler_free: bool,
     pub paused: bool,
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub pause_player_index: i64,

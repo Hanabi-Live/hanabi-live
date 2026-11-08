@@ -101,6 +101,9 @@ pub struct ReplayState {
     pub hypothetical: bool,
     pub hypothetical_actions: Vec<String>,
     pub show_drawn_cards: bool,
+    /// Whether the shared replay hides what happens later in the game.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub spoiler_free: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "phase", rename_all = "camelCase", deny_unknown_fields)]
@@ -232,6 +235,7 @@ impl TableSnapshot {
                 hypothetical: false,
                 hypothetical_actions: vec![],
                 show_drawn_cards: false,
+                spoiler_free: false,
             },
         };
         Ok(())

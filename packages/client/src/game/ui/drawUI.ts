@@ -976,8 +976,10 @@ function drawScoreArea() {
       // Left-click
       case 0: {
         // Left-clicking a strike X or a strike square takes us to the turn that the strike
-        // happened.
-        const { strikes } = globals.state.ongoingGame;
+        // happened. Spoiler-free reviews only reveal strikes that have already happened.
+        const { strikes } = replay.isSpoilerFree()
+          ? globals.state.visibleState!
+          : globals.state.ongoingGame;
         const strike = strikes[this.num];
         if (strike === undefined) {
           // There is no strike yet that corresponds to this square / X, so do nothing.
