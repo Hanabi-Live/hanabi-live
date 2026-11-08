@@ -119,7 +119,7 @@ export function draw(): void {
 
     // Column 5 - Options.
     const options = makeOptions(i, gameData.options, false);
-    $("<td>").html(options).appendTo(row);
+    $("<td>").html(options.html).appendTo(row);
 
     // Column 6 - Other Players.
     const playerNamesString = gameData.playerNames
@@ -152,7 +152,9 @@ export function draw(): void {
     row.appendTo(tbody);
 
     // Initialize the tooltips, if any (this has to be done after adding the HTML to the page).
-    tooltips.create(`#lobby-history-table-${i}-options`);
+    if (options.tooltipSelector !== undefined) {
+      tooltips.create(options.tooltipSelector);
+    }
   }
 
   // Do not show the "Show More History" button if the first page holds every game.
@@ -256,7 +258,7 @@ export function drawOtherScores(
 
     // Column 3 - Options.
     const options = makeOptions(i, game.options, true);
-    $("<td>").html(options).appendTo(row);
+    $("<td>").html(options.html).appendTo(row);
 
     // Column 4 - Players.
     let playerNamesString = game.playerNames.join(", ");
@@ -292,7 +294,9 @@ export function drawOtherScores(
     row.appendTo(tbody);
 
     // Initialize the tooltips, if any. (This has to be done after adding the HTML to the page.)
-    tooltips.create(`#lobby-history-table-${i}-options-other-scores`);
+    if (options.tooltipSelector !== undefined) {
+      tooltips.create(options.tooltipSelector);
+    }
   }
 }
 
@@ -300,7 +304,12 @@ export function drawOtherScores(
 // Subroutines
 // -----------
 
-function makeOptions(i: number, options: Options, otherScores: boolean) {
+/** Returns the options cell, and the selector of its tooltip if the game has any options. */
+function makeOptions(
+  i: number,
+  options: Options,
+  otherScores: boolean,
+): { html: string; tooltipSelector?: string } {
   // Start to build the tooltip content HTML, if any
   let tooltipHTML = "";
   const icons: string[] = [];
@@ -357,7 +366,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   }
 
   if (tooltipHTML === "") {
-    return "[none]";
+    return { html: "[none]" };
   }
 
   let id = `lobby-history-table-${i}-options`;
@@ -377,7 +386,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
     </div>
   `;
 
-  return html;
+  return { html, tooltipSelector: `#${id}` };
 }
 
 /** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
