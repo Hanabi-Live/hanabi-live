@@ -6,7 +6,9 @@ import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import { NO_TABLE_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
-import { Screen } from "./lobby/types/Screen";
+import type { Screen } from "./lobby/types/Screen";
+import { friendsChanged, screenChanged, usernameChanged } from "./sessionSlice";
+import { store } from "./store";
 
 type Game = ServerCommandData["game"];
 
@@ -19,14 +21,45 @@ export class Globals {
   // ----------------------------------------
 
   userID = -1;
-  username = "";
   totalGames: number | null = null;
   muted = false;
 
   /** Contains the settings for the "Settings" tooltip and the "Create Game" tooltip. */
   settings = defaultSettings;
 
-  friends: readonly string[] = [];
+  // ----------------------------------------------------------------
+  // Values that React components read (which are stored in "store.ts")
+  // ----------------------------------------------------------------
+
+  /* eslint-disable @typescript-eslint/class-methods-use-this -- These delegate to the store. */
+
+  /** From the "welcome" message. */
+  get username(): string {
+    return store.getState().session.username;
+  }
+
+  set username(username: string) {
+    store.dispatch(usernameChanged(username));
+  }
+
+  /** From the "welcome" and "friends" messages. */
+  get friends(): readonly string[] {
+    return store.getState().session.friends;
+  }
+
+  set friends(friends: readonly string[]) {
+    store.dispatch(friendsChanged(friends));
+  }
+
+  get currentScreen(): Screen {
+    return store.getState().session.screen;
+  }
+
+  set currentScreen(screen: Screen) {
+    store.dispatch(screenChanged(screen));
+  }
+
+  /* eslint-enable @typescript-eslint/class-methods-use-this */
 
   // -----------------------
   // Miscellaneous variables
@@ -57,8 +90,6 @@ export class Globals {
 
   /** Equal to the data from the "game" command. */
   game: Game | null = null;
-
-  currentScreen: Screen = Screen.Login;
 
   /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
   tableID = NO_TABLE_ID;

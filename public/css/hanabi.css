@@ -1943,12 +1943,6 @@ span.tableSpinner:after {
   color: unset;
 }
 
-/* Hyphenated empty placeholder */
-.lobby-hyphen-empty {
-  width: 0.75em;
-  display: inline-block;
-}
-
 div.noteTitle {
   width: 100%;
   height: 10px;

@@ -1,0 +1,14 @@
+/*
+  Tailwind is only used by the React components. It leaves out its base styles, which would restyle
+  the classic interface. The "tw" prefix (e.g. "tw:flex") keeps class names in the jQuery code and
+  ordinary words in components, such as "hidden" or "container", from generating utilities that
+  would also apply to classic elements.
+*/
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+
+/*
+  The utilities are not in a layer, so that they override classic rules with the same specificity
+  that target the same element. (Rules outside of a layer always beat rules inside one.)
+*/
+@import "tailwindcss/utilities.css" source(none);
+@source "./**/*.tsx";

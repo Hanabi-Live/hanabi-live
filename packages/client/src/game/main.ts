@@ -4,7 +4,6 @@ import { FADE_TIME_MS } from "../constants";
 import { globals } from "../Globals";
 import { tablesDraw } from "../lobby/tablesDraw";
 import { Screen } from "../lobby/types/Screen";
-import * as usersDraw from "../lobby/usersDraw";
 import * as sounds from "../sounds";
 import * as tooltips from "../tooltips";
 import { getHTMLElement, setBrowserAddressBarPath } from "../utils";
@@ -69,7 +68,6 @@ function hide() {
   }
   document.body.dataset["screen"] = "lobby";
   tablesDraw();
-  usersDraw.draw();
 
   if (globals.ui !== null) {
     globals.ui.destroy();

@@ -1,3 +1,5 @@
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { defineConfig } from "vitest/config";
@@ -17,6 +19,7 @@ function readVersion(code: string): string {
 }
 
 export default defineConfig(({ command }) => ({
+  plugins: [react(), tailwindcss()],
   publicDir: false,
   resolve: {
     alias: {
@@ -51,6 +54,6 @@ export default defineConfig(({ command }) => ({
     origin: `http://localhost:${DEV_SERVER_PORT}`,
   },
   test: {
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
 }));

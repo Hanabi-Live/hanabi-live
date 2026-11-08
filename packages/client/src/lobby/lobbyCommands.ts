@@ -8,6 +8,7 @@ import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as modals from "../modals";
 import { ServerHandlers } from "../serverHandlers";
 import * as sounds from "../sounds";
+import { store } from "../store";
 import { toSoundType } from "../wire";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
@@ -16,7 +17,12 @@ import * as pregame from "./pregame";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 import * as url from "./url";
-import * as usersDraw from "./usersDraw";
+import {
+  userChanged,
+  userInactiveChanged,
+  userLeft,
+  usersListed,
+} from "./users/usersSlice";
 
 /** How long the start game button stays disabled after the player count changes. */
 const START_GAME_BUTTON_DISABLED_MILLISECONDS = 500;
@@ -59,12 +65,6 @@ lobbyCommands.set("friends", (data) => {
 
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
   // happen to be our friend will be shown in the correct color.
-  if (
-    globals.currentScreen === Screen.Lobby
-    || globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.draw();
-  }
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
@@ -205,35 +205,19 @@ lobbyCommands.set("tableStart", (data) => {
 // Received by the client when a user connects or has a new status.
 lobbyCommands.set("user", (data) => {
   globals.userMap.set(data.userID, data);
-  if (
-    globals.currentScreen === Screen.Lobby
-    || globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.draw();
-  }
+  store.dispatch(userChanged(data));
 });
 
 lobbyCommands.set("userList", (dataList) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }
-  if (
-    globals.currentScreen === Screen.Lobby
-    || globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.draw();
-  }
+  store.dispatch(usersListed(dataList));
 });
 
 lobbyCommands.set("userLeft", (data) => {
   globals.userMap.delete(data.userID);
-
-  if (
-    globals.currentScreen === Screen.Lobby
-    || globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.draw();
-  }
+  store.dispatch(userLeft(data.userID));
 });
 
 lobbyCommands.set("userInactive", (data) => {
@@ -249,13 +233,7 @@ lobbyCommands.set("userInactive", (data) => {
     inactive,
   };
   globals.userMap.set(userID, newUser);
-
-  if (
-    globals.currentScreen === Screen.Lobby
-    || globals.currentScreen === Screen.PreGame
-  ) {
-    usersDraw.setInactive(user.userID, user.inactive);
-  }
+  store.dispatch(userInactiveChanged(data));
 });
 
 // Received by the client upon first connecting.

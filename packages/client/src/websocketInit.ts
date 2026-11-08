@@ -18,8 +18,10 @@ import { gameCommands } from "./game/ui/gameCommands";
 import { globals } from "./Globals";
 import { lobbyCommands } from "./lobby/lobbyCommands";
 import { Screen } from "./lobby/types/Screen";
+import { usersCleared } from "./lobby/users/usersSlice";
 import * as modals from "./modals";
 import { ReconnectBackoff } from "./reconnect";
+import { store } from "./store";
 import { escapeHtml } from "./utils";
 
 const reconnectBackoff = new ReconnectBackoff();
@@ -277,6 +279,7 @@ function openConnection(isReconnect: boolean) {
       recovering = false;
       globals.conn = conn;
       globals.userMap.clear();
+      store.dispatch(usersCleared());
       globals.tableMap.clear();
       if (
         globals.currentScreen === Screen.Game

@@ -8,5 +8,8 @@
 
   "compilerOptions": {
     "lib": ["DOM", "ES2023"],
+    "jsx": "react-jsx",
+    // Types for the CSS imports that Vite bundles.
+    "types": ["bun", "vite/client"],
   },
 }

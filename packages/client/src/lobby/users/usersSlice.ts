@@ -1,0 +1,111 @@
+// The users who are currently online, from the "userList", "user", "userLeft", and "userInactive"
+// server messages.
+
+import type { ServerCommandData, UserID } from "@hanabi-live/data";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import {
+  createEntityAdapter,
+  createSelector,
+  createSlice,
+} from "@reduxjs/toolkit";
+import type { RootState } from "../../store";
+
+type User = ServerCommandData["user"];
+
+/** How a user relates to us, which decides their color and position in the list. */
+type UserKind = "self" | "friend" | "other";
+
+export interface UserRow {
+  readonly user: User;
+  readonly kind: UserKind;
+}
+
+/** We are listed first, then our friends, then everyone else. */
+const KIND_ORDER = {
+  self: 0,
+  friend: 1,
+  other: 2,
+} as const satisfies Record<UserKind, number>;
+
+const usersAdapter = createEntityAdapter({
+  selectId: (user: User) => user.userID,
+});
+
+const usersSlice = createSlice({
+  name: "users",
+  initialState: usersAdapter.getInitialState(),
+  reducers: {
+    userChanged(state, action: PayloadAction<User>) {
+      usersAdapter.setOne(state, action.payload);
+    },
+    usersListed(state, action: PayloadAction<readonly User[]>) {
+      usersAdapter.setMany(state, action.payload);
+    },
+    userLeft(state, action: PayloadAction<UserID>) {
+      usersAdapter.removeOne(state, action.payload);
+    },
+    userInactiveChanged(
+      state,
+      action: PayloadAction<{ userID: UserID; inactive: boolean }>,
+    ) {
+      const { userID, inactive } = action.payload;
+      usersAdapter.updateOne(state, { id: userID, changes: { inactive } });
+    },
+    usersCleared(state) {
+      usersAdapter.removeAll(state);
+    },
+  },
+});
+
+export const {
+  userChanged,
+  usersListed,
+  userLeft,
+  userInactiveChanged,
+  usersCleared,
+} = usersSlice.actions;
+export const usersReducer = usersSlice.reducer;
+
+const usersSelectors = usersAdapter.getSelectors(
+  (state: RootState) => state.users,
+);
+
+export const selectUserCount = usersSelectors.selectTotal;
+
+export const selectUserRows = createSelector(
+  [
+    usersSelectors.selectAll,
+    (state: RootState) => state.session.username,
+    (state: RootState) => state.session.friends,
+  ],
+  (
+    users: readonly User[],
+    username: string,
+    friends: readonly string[],
+  ): readonly UserRow[] => {
+    const friendNames = new Set(friends);
+    return users
+      .map((user) => ({
+        user,
+        kind: getKind(user.name, username, friendNames),
+      }))
+      .toSorted((a, b) => {
+        const kindOrder = KIND_ORDER[a.kind] - KIND_ORDER[b.kind];
+        return kindOrder === 0
+          ? // Sort case-insensitively, which does not happen by default.
+            a.user.name.toLowerCase().localeCompare(b.user.name.toLowerCase())
+          : kindOrder;
+      });
+  },
+);
+
+function getKind(
+  name: string,
+  username: string,
+  friendNames: ReadonlySet<string>,
+): UserKind {
+  if (name === username) {
+    return "self";
+  }
+  return friendNames.has(name) ? "friend" : "other";
+}

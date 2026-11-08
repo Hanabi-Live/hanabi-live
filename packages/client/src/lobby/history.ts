@@ -15,7 +15,6 @@ import {
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
-import * as usersDraw from "./usersDraw";
 
 /** The number of games that each history request asks for. */
 const HISTORY_PAGE_SIZE = 10;
@@ -73,7 +72,6 @@ export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   setBrowserAddressBarPath("/lobby", undefined);
   tablesDraw();
-  usersDraw.draw();
 
   $("#lobby-history").hide();
   $("#lobby-history-other-scores").hide();

@@ -85,6 +85,18 @@ export function create(
   }
 }
 
+/**
+ * Adds a default tooltip with HTML content to an element that React renders. Returns a function
+ * that removes it.
+ */
+export function attach(element: HTMLElement, content: string): () => void {
+  const tooltip = $(element);
+  tooltip.tooltipster({ ...defaultOptions, content });
+  return () => {
+    tooltip.tooltipster("destroy");
+  };
+}
+
 export function open(selector: string): void {
   const tooltip = getElementFromSelector(selector);
   if (isTooltipster(tooltip)) {

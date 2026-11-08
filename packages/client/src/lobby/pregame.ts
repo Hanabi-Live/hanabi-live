@@ -22,14 +22,12 @@ import {
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
-import * as usersDraw from "./usersDraw";
 
 const lobbyChatText = getHTMLElement("#lobby-chat-text");
 const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
 
 export function show(): void {
   globals.currentScreen = Screen.PreGame;
-  usersDraw.draw();
 
   // Replace the list of current games with a list of the current players.
   $("#lobby-pregame").show();
@@ -82,7 +80,6 @@ export function show(): void {
 export function hide(updateURL = true): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
-  usersDraw.draw();
 
   // Replace the list of current players with a list of the current games.
   $("#lobby-pregame").hide();

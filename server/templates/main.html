@@ -809,17 +809,7 @@
               >0</span
             >)
           </h3>
-          <div id="lobby-users-container">
-            <table id="lobby-users-table" class="slim-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="lobby-users-table-tbody"></tbody>
-            </table>
-          </div>
+          <div id="lobby-users-container"></div>
         </section>
       </div>
     </div>
@@ -1922,6 +1912,13 @@
 {% if isDev %}
 <!-- "bun run dev" serves the client with Vite, which reloads the page when the client changes. -->
 <script type="module" src="http://localhost:5173/@vite/client"></script>
+<!-- React Fast Refresh, which updates edited components without reloading the page. -->
+<script type="module">
+  import { injectIntoGlobalHook } from "http://localhost:5173/@react-refresh";
+  injectIntoGlobalHook(window);
+  window.$RefreshReg$ = () => {};
+  window.$RefreshSig$ = () => (type) => type;
+</script>
 <script
   type="module"
   src="http://localhost:5173/src/main.ts"

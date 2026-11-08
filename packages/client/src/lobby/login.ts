@@ -18,7 +18,6 @@ import { checkCookieWithRetry } from "./cookieProbe";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
-import * as usersDraw from "./usersDraw";
 
 /** How long the change-password form and the scroll to an error take to animate. */
 const ANIMATION_TIME_MS = 500;
@@ -268,7 +267,6 @@ export function hide(firstTimeUser: boolean): void {
   // Show the lobby
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
-  usersDraw.draw(); // If we were in the tutorial, we have to re-draw all of the user rows
   $("#lobby").show();
   $("#lobby-history").hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text will
