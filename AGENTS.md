@@ -63,6 +63,11 @@ accounts and their own tables.
 When driving a browser, mute its audio (for Chromium, `--mute-audio`) unless you
 are debugging sound.
 
+When running in WSL, the host cannot render screenshots saved inside WSL. Copy
+each screenshot to the Windows host first, such as the Windows temporary
+directory (`wslpath "$(cmd.exe /c 'echo %TEMP%' | tr -d '\r')"`), and share the
+copy.
+
 ## Delivering changes
 
 After making changes, complete the required checks, commit, and push
