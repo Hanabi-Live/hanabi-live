@@ -37,6 +37,13 @@ pub(crate) async fn normal_game_count(
         .unwrap_or(0))
 }
 
+// The statistics tables have one best-score column for each player count, from `best_score2` to
+// `best_score6`, and queries name those columns directly.
+const _: () = assert!(
+    hanabi_protocol::MIN_PLAYERS == 2 && hanabi_protocol::MAX_PLAYERS == 6,
+    "The best-score columns must match the supported player counts"
+);
+
 #[derive(Serialize)]
 pub(crate) struct UserStats {
     pub user_id: i32,

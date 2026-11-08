@@ -1783,6 +1783,13 @@ fn replay_table(
         pending_tag: None,
     }
 }
+/// The part of a game that a client requests as it loads one: first the setup, then the state.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum GameInfo {
+    Init,
+    State,
+}
+
 /// A pregame change to a table: only its variant, or every option.
 enum TableChange {
     Variant(String),
@@ -2854,8 +2861,8 @@ impl TableActor {
             }
             ClientMessage::TableUnattend(_) => self.leave(session, false).await,
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
-            ClientMessage::GetGameInfo1(_) => self.info(session, 1).await,
-            ClientMessage::GetGameInfo2(_) => self.info(session, 2).await,
+            ClientMessage::GetGameInfo1(_) => self.info(session, GameInfo::Init).await,
+            ClientMessage::GetGameInfo2(_) => self.info(session, GameInfo::State).await,
             ClientMessage::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
@@ -3511,7 +3518,7 @@ impl TableActor {
             turn_elapsed: 0,
             timer_started: false,
             idle_remaining: IDLE_TIMEOUT_MS,
-            pause_player_index: -1,
+            pause_player_index: NO_VALUE,
             queued_pauses: vec![false; n],
             notes: vec![vec![String::new(); size]; n],
             spectator_notes: BTreeMap::new(),
@@ -4932,7 +4939,7 @@ impl TableActor {
         self.transfer(self.candidate(), destination, allocation, moving, true)
             .await
     }
-    async fn info(&self, session: Arc<Session>, part: u8) -> Result<()> {
+    async fn info(&self, session: Arc<Session>, part: GameInfo) -> Result<()> {
         ensure!(
             self.attending(&session),
             "Reattend before requesting private game data"
@@ -4943,7 +4950,7 @@ impl TableActor {
         let seat = s.players.iter().position(|p| p.id == session.user);
         let display_seat = seat.or_else(|| s.players.iter().position(|p| p.name == session.name));
         let mut e = self.effects();
-        if part == 1 {
+        if part == GameInfo::Init {
             let (segment, efficiency, spoiler_free) =
                 if let Phase::Replay { replay, .. } = &self.table.phase {
                     (

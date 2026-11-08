@@ -75,6 +75,12 @@ pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = SECONDS_PER_DAY as i64;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
+/// The volume setting of a new user.
+pub const DEFAULT_VOLUME: u8 = MAX_VOLUME / 2;
+/// The starting clock that a new user's timed tables have, in minutes.
+pub const DEFAULT_TIME_BASE_MINUTES: f64 = 2.0;
+/// The time that a new user's timed tables add each turn, in seconds.
+pub const DEFAULT_TIME_PER_TURN_SECONDS: i32 = 20;
 /// The rows on a page of a public listing when the request does not name a size.
 pub const DEFAULT_PAGE_SIZE: i64 = 10;
 /// The most private messages that one history request can ask for.
@@ -1537,14 +1543,14 @@ impl Default for Settings {
             reverse_hands: false,
             style_numbers: false,
             show_timer_in_untimed: false,
-            volume: 50,
+            volume: DEFAULT_VOLUME,
             speedrun_preplay: false,
             speedrun_mode: false,
             hyphenated_conventions: false,
             create_table_variant: DEFAULT_VARIANT_NAME.into(),
             create_table_timed: false,
-            create_table_time_base_minutes: 2.0,
-            create_table_time_per_turn_seconds: 20,
+            create_table_time_base_minutes: DEFAULT_TIME_BASE_MINUTES,
+            create_table_time_per_turn_seconds: DEFAULT_TIME_PER_TURN_SECONDS,
             create_table_speedrun: false,
             create_table_card_cycle: false,
             create_table_deck_plays: false,

@@ -21,7 +21,7 @@ pub use normalization::{
 pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;
 
-use crate::{cookie, query::Query};
+use crate::{cookie, public_http::API_PREFIX, query::Query};
 use anyhow::Result;
 use axum::{
     Form, Json, Router,
@@ -59,10 +59,10 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
         .route("/logout", get(logout))
         .route("/test-cookie", get(test_cookie))
         .route(
-            "/api/v1/identity/token",
+            &format!("{API_PREFIX}/identity/token"),
             get(identity_token).post(identity_token),
         )
-        .route("/api/v1/identity", post(identity))
+        .route(&format!("{API_PREFIX}/identity"), post(identity))
         .route("/password-reset", post(password_hash))
         .layer(DefaultBodyLimit::max(crate::query::MAX_FORM_BODY_BYTES))
         .with_state(Arc::new(Accounts {

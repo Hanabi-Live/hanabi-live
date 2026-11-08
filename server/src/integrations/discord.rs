@@ -29,7 +29,20 @@ const STOP_PREFIX: &str = "The server is stopping gracefully at:";
 const SNOWFLAKE_DIGITS: RangeInclusive<usize> = 17..=20;
 /// The largest Discord HTTP response or gateway message we accept, in bytes.
 const MAX_PAYLOAD_BYTES: usize = 1024 * 1024;
-const GATEWAY_URL: &str = "wss://gateway.discord.gg/?v=10&encoding=json";
+/// The Discord API version that both the REST requests and the gateway connection use.
+macro_rules! discord_api_version {
+    () => {
+        "10"
+    };
+}
+const GATEWAY_URL: &str = concat!(
+    "wss://gateway.discord.gg/?v=",
+    discord_api_version!(),
+    "&encoding=json"
+);
+const DISCORD_API: &str = concat!("https://discord.com/api/v", discord_api_version!());
+/// Discord requires bots to identify themselves with their URL and version.
+const DISCORD_USER_AGENT: &str = "DiscordBot (https://github.com/Hanabi-Live/hanabi-live, 1)";
 /// How long a Discord HTTP request may take.
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 /// The most Discord HTTP requests in flight at once.
@@ -194,12 +207,9 @@ impl Transport for NativeTransport {
             );
             let mut request = self
                 .client
-                .request(method, format!("https://discord.com/api/v10{path}"))
+                .request(method, format!("{DISCORD_API}{path}"))
                 .header("Authorization", format!("Bot {}", self.token))
-                .header(
-                    "User-Agent",
-                    "DiscordBot (https://github.com/Hanabi-Live/hanabi-live, 1)",
-                );
+                .header("User-Agent", DISCORD_USER_AGENT);
             if let Some(body) = body {
                 request = request.json(&body);
             }

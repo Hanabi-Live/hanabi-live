@@ -57,7 +57,11 @@ async fn inspect(connection: &mut PgConnection) -> Result<State> {
             bail!("Migration {version} failed partway; repair the database before continuing");
         }
         let applied = connection.list_applied_migrations(HISTORY_TABLE).await?;
-        let current = applied.last().map_or(-1, |migration| migration.version);
+        let Some(current) = applied.last().map(|migration| migration.version) else {
+            bail!(
+                "Database has an empty migration history, older than baseline {BASELINE}; upgrade it with an earlier release first"
+            );
+        };
         ensure!(
             current >= BASELINE,
             "Database schema version {current} is older than baseline {BASELINE}; upgrade it with an earlier release first"

@@ -18,6 +18,9 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 
+/// The path that every versioned HTTP API route begins with.
+pub(crate) const API_PREFIX: &str = "/api/v1";
+
 pub type DeckFactory = fn(i32, &str) -> anyhow::Result<Value>;
 pub type DeckSize = fn(i32) -> anyhow::Result<usize>;
 
@@ -187,7 +190,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         .route("/password-reset", get(pages::page));
     let mut api = Router::new();
     for root in ["history", "history-full"] {
-        let mut path = format!("/api/v1/{root}");
+        let mut path = format!("{API_PREFIX}/{root}");
         api = api.route(&path, get(api_handler));
         for i in 1..=hanabi_protocol::MAX_PLAYERS {
             path = format!("{path}/{{player{i}}}");
@@ -201,13 +204,16 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         ("tag", "tag"),
     ] {
         api = api
-            .route(&format!("/api/v1/{root}"), get(api_handler))
-            .route(&format!("/api/v1/{root}/{{{param}}}"), get(api_handler));
+            .route(&format!("{API_PREFIX}/{root}"), get(api_handler))
+            .route(
+                &format!("{API_PREFIX}/{root}/{{{param}}}"),
+                get(api_handler),
+            );
     }
     api = api
-        .route("/api/v1/variants", get(api_handler))
-        .route("/api/v1/variants-full", get(api_handler))
-        .route("/api/v1/variants/{id}", get(api_handler))
+        .route(&format!("{API_PREFIX}/variants"), get(api_handler))
+        .route(&format!("{API_PREFIX}/variants-full"), get(api_handler))
+        .route(&format!("{API_PREFIX}/variants/{{id}}"), get(api_handler))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             ban_check,
@@ -263,7 +269,11 @@ async fn api_response(
     params: &Params,
     raw: Option<String>,
 ) -> Result<Response> {
-    let mode = uri.path().split('/').nth(3).unwrap_or("");
+    let mode = uri
+        .path()
+        .strip_prefix(API_PREFIX)
+        .and_then(|rest| rest.split('/').nth(1))
+        .unwrap_or("");
     let list_parameters = match mode {
         "history" | "seed" => data::list_parameters(mode),
         "variants" if params.contains_key("id") => data::list_parameters(mode),

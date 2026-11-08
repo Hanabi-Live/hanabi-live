@@ -1,6 +1,7 @@
 use super::{
-    Error, HashMap, HeaderMap, IntoResponse, Json, Params, Path, PublicState, Query, RawQuery,
-    Response, Result, State, Value, catalog, data, encoded, integer, json, replay, strict_query,
+    API_PREFIX, Error, HashMap, HeaderMap, IntoResponse, Json, Params, Path, PublicState, Query,
+    RawQuery, Response, Result, State, Value, catalog, data, encoded, integer, json, replay,
+    strict_query,
 };
 use axum::response::{Html, Redirect};
 use hanabi_engine::EndCondition;
@@ -203,7 +204,7 @@ pub(super) async fn page(
                 "history" => {
                     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();
                     let api = format!(
-                        "/api/v1/history/{}",
+                        "{API_PREFIX}/history/{}",
                         names
                             .iter()
                             .map(|n| encoded(n))
@@ -222,7 +223,7 @@ pub(super) async fn page(
                 "tags" => {
                     if api_redirect {
                         return Ok(Redirect::permanent(&format!(
-                            "/api/v1/tags/{}",
+                            "{API_PREFIX}/tags/{}",
                             encoded(&users[0].1)
                         ))
                         .into_response());
@@ -248,7 +249,7 @@ pub(super) async fn page(
                 .get("seed")
                 .filter(|s| !s.is_empty())
                 .ok_or_else(|| Error::not_found("You must specify a seed."))?;
-            let api = format!("/api/v1/seed/{}", encoded(seed));
+            let api = format!("{API_PREFIX}/seed/{}", encoded(seed));
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
             }
@@ -271,7 +272,7 @@ pub(super) async fn page(
             let id = integer(raw).ok_or_else(|| Error::bad("The variant ID must be a number."))?;
             let variant = catalog::variant(id)
                 .ok_or_else(|| Error::not_found("That variant does not exist."))?;
-            let api = format!("/api/v1/variants/{id}");
+            let api = format!("{API_PREFIX}/variants/{id}");
             if api_redirect {
                 return Ok(Redirect::permanent(&api).into_response());
             }
@@ -309,7 +310,8 @@ pub(super) async fn page(
             let tag = data::sanitize_tag(raw)?;
             if api_redirect {
                 return Ok(
-                    Redirect::permanent(&format!("/api/v1/tag/{}", encoded(&tag))).into_response(),
+                    Redirect::permanent(&format!("{API_PREFIX}/tag/{}", encoded(&tag)))
+                        .into_response(),
                 );
             }
             v["page"] = json!("tagged");
