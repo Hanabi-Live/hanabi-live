@@ -9,6 +9,10 @@ const TYPESCRIPT_ENUMS: &[(&str, &str)] = &[
     ("Status", "../enums/Status"),
 ];
 
+/// Schemas the game library owns. It cannot depend on `@hanabi-live/data`, so `--game` writes these
+/// to its package and the protocol module imports them from it.
+const GAME_LIBRARY_SCHEMAS: &[&str] = &["GameOptions"];
+
 fn literal(value: &Value) -> String {
     let Some(number) = value.as_i64() else {
         return value.to_string();
@@ -425,8 +429,59 @@ fn enum_checks(used: &BTreeMap<String, Value>) -> Result<String> {
     Ok(output)
 }
 
+/// Writes the schemas the game library owns. They cannot use the protocol's TypeScript enums, which
+/// the game library would have to import from itself.
+fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
+    println!("import {{ z }} from \"zod\";\n");
+    let exported = GAME_LIBRARY_SCHEMAS.iter().copied().collect();
+    let mut active = BTreeSet::new();
+    let mut emitted = BTreeSet::new();
+    for name in GAME_LIBRARY_SCHEMAS {
+        let schema = definitions
+            .get(*name)
+            .context("Missing schema definition")?;
+        let mut used = BTreeMap::new();
+        enums(schema, &mut used)?;
+        let mut dependencies = BTreeSet::new();
+        references(schema, &mut dependencies)?;
+        ensure!(
+            used.is_empty() && dependencies.is_empty(),
+            "Game library schemas must be self-contained: {name}"
+        );
+        emit(name, definitions, &exported, &mut active, &mut emitted)?;
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
+    let game = match std::env::args().nth(1).as_deref() {
+        None => false,
+        Some("--game") => true,
+        Some(argument) => bail!("Unknown argument: {argument}"),
+    };
+    let mut definitions = BTreeMap::new();
+    for (name, schema) in hanabi_protocol::schemas() {
+        let mut entries = BTreeMap::from([(name, clean_schema(schema.clone()))]);
+        if let Some(nested) = schema["$defs"].as_object() {
+            entries.extend(
+                nested
+                    .iter()
+                    .map(|(name, value)| (name.clone(), clean_schema(value.clone()))),
+            );
+        }
+        for (name, value) in entries {
+            if let Some(existing) = definitions.insert(name.clone(), value.clone()) {
+                ensure!(
+                    existing == value,
+                    "Conflicting wire schema definition: {name}"
+                );
+            }
+        }
+    }
     println!("// Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.");
+    if game {
+        return game_library(&definitions);
+    }
     let mut used = BTreeMap::new();
     for schema in hanabi_protocol::schemas().values() {
         enums(schema, &mut used)?;
@@ -436,6 +491,14 @@ fn main() -> Result<()> {
             println!("import {{ {name} }} from \"{module}\";");
         }
     }
+    let imported = GAME_LIBRARY_SCHEMAS
+        .iter()
+        .map(|name| variable(name))
+        .collect::<Vec<_>>();
+    println!(
+        "import {{ {} }} from \"@hanabi-live/game\";",
+        imported.join(", ")
+    );
     println!("import {{ z }} from \"zod\";\n");
     println!("{}", enum_checks(&used)?);
     let client = hanabi_protocol::client_contracts();
@@ -458,27 +521,11 @@ fn main() -> Result<()> {
             "ApiError",
         ])
         .collect();
-    let mut definitions = BTreeMap::new();
-    for (name, schema) in hanabi_protocol::schemas() {
-        let mut entries = BTreeMap::from([(name, clean_schema(schema.clone()))]);
-        if let Some(nested) = schema["$defs"].as_object() {
-            entries.extend(
-                nested
-                    .iter()
-                    .map(|(name, value)| (name.clone(), clean_schema(value.clone()))),
-            );
-        }
-        for (name, value) in entries {
-            if let Some(existing) = definitions.insert(name.clone(), value.clone()) {
-                ensure!(
-                    existing == value,
-                    "Conflicting wire schema definition: {name}"
-                );
-            }
-        }
-    }
     let mut active = BTreeSet::new();
-    let mut emitted = BTreeSet::new();
+    let mut emitted = GAME_LIBRARY_SCHEMAS
+        .iter()
+        .map(|name| (*name).to_owned())
+        .collect();
     for name in &exported {
         emit(name, &definitions, &exported, &mut active, &mut emitted)?;
     }

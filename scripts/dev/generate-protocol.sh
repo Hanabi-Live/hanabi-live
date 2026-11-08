@@ -8,18 +8,25 @@ if (($# > 1)) || [[ ${1:-} != "" && ${1:-} != --check ]]; then
 fi
 temporary=$(mktemp)
 trap 'rm -f "$temporary"' EXIT
-output=packages/data/src/generated/protocol.ts
-(
-  cd "$ROOT/server/protocol"
-  cargo run --quiet --locked --bin generate
-) \
-  | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
-if [[ ${1:-} == --check ]]; then
-  if ! diff -u "$output" "$temporary"; then
-    echo "Wire contracts are stale. Run bash scripts/dev/generate-protocol.sh." >&2
-    exit 1
+status=0
+# The game library cannot depend on the data package, so it gets the schemas it owns separately.
+for target in "packages/data/src/generated/protocol.ts" "packages/game/src/generated/protocol.ts --game"; do
+  read -r output flag <<< "$target"
+  (
+    cd "$ROOT/server/protocol"
+    cargo run --quiet --locked --bin generate -- ${flag:+"$flag"}
+  ) \
+    | bunx --bun --no-install prettier --stdin-filepath "$output" > "$temporary"
+  if [[ ${1:-} == --check ]]; then
+    if ! diff -u "$output" "$temporary"; then
+      status=1
+    fi
+  else
+    mkdir -p "$(dirname "$output")"
+    cp "$temporary" "$output"
   fi
-else
-  mkdir -p "$(dirname "$output")"
-  cp "$temporary" "$output"
+done
+if ((status != 0)); then
+  echo "Wire contracts are stale. Run bash scripts/dev/generate-protocol.sh." >&2
 fi
+exit "$status"
