@@ -1,5 +1,6 @@
 use super::*;
 use crate::archive::GameRecord;
+use anyhow::Context;
 use sqlx::{Postgres, QueryBuilder};
 
 const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.variant_id,
@@ -231,17 +232,45 @@ pub(super) async fn list(
     Ok(result)
 }
 
-fn options(g: &GameRecord) -> Result<Value> {
+/// The public history lists the lobby's `GameHistory` contract, with the stored starting player.
+fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory> {
+    let g = row.game;
     let variant = catalog::variant(i64::from(g.variant_id))
+        .and_then(|variant| variant["name"].as_str())
         .ok_or_else(|| anyhow::anyhow!("Unknown historical variant"))?;
-    Ok(json!({
-        "variantID":g.variant_id,"variantName":variant["name"],
-        "numPlayers":g.num_players,"timed":g.timed,"timeBase":g.time_base,
-        "timePerTurn":g.time_per_turn,"speedrun":g.speedrun,"cardCycle":g.card_cycle,
-        "deckPlays":g.deck_plays,"emptyClues":g.empty_clues,"oneExtraCard":g.one_extra_card,
-        "oneLessCard":g.one_less_card,"allOrNothing":g.all_or_nothing,
-        "detrimentalCharacters":g.detrimental_characters,"startingPlayer":g.starting_player
-    }))
+    let stored = |value: i16| u8::try_from(value).context("Invalid stored game value");
+    Ok(hanabi_protocol::GameHistory {
+        id: hanabi_protocol::GameId(g.id),
+        options: hanabi_protocol::GameOptions {
+            num_players: stored(g.num_players)?,
+            starting_player: stored(g.starting_player)?,
+            variant_name: variant.into(),
+            variant_id: Some(u32::try_from(g.variant_id).context("Invalid stored variant")?),
+            timed: g.timed,
+            time_base: f64::from(g.time_base),
+            time_per_turn: i64::from(g.time_per_turn),
+            speedrun: g.speedrun,
+            card_cycle: g.card_cycle,
+            deck_plays: g.deck_plays,
+            empty_clues: g.empty_clues,
+            one_extra_card: g.one_extra_card,
+            one_less_card: g.one_less_card,
+            all_or_nothing: g.all_or_nothing,
+            detrimental_characters: g.detrimental_characters,
+            table_name: None,
+            max_players: None,
+        },
+        seed: g.seed,
+        score: i32::from(g.score),
+        num_turns: i32::from(g.num_turns),
+        end_condition: stored(g.end_condition)?,
+        datetime_started: row.started,
+        datetime_finished: row.finished,
+        num_games_on_this_seed: i64::from(row.seed_count),
+        player_names: row.names,
+        increment_num_games: false,
+        tags: row.tags,
+    })
 }
 
 pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) -> Result<Value> {
@@ -266,23 +295,13 @@ pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) 
             .push(" OFFSET ")
             .push_bind(offset);
     }
-    let mut result = Vec::new();
-    for row in qb
+    let result = qb
         .build_query_as::<HistoryRow>()
         .fetch_all(&state.pool)
         .await?
-    {
-        let g = row.game;
-        let options = options(&g)?;
-        result.push(json!({
-            "id":g.id,"options":options,"seed":g.seed,"score":g.score,
-            "numTurns":g.num_turns,"endCondition":g.end_condition,
-            "datetimeStarted":row.started,"datetimeFinished":row.finished,
-            "numGamesOnThisSeed":row.seed_count,
-            "playerNames":row.names,
-            "tags":row.tags,"incrementNumGames":false
-        }));
-    }
+        .into_iter()
+        .map(game_history)
+        .collect::<anyhow::Result<Vec<_>>>()?;
     Ok(json!(result))
 }
 
