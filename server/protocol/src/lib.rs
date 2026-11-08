@@ -403,10 +403,6 @@ pub struct TableCreateRequest {
     pub max_players: i64,
     #[serde(default)]
     pub hide_pregame: bool,
-    /// A game to play from a custom deck, in the replay import format.
-    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "ReplayImport")]
-    pub game_json: Option<ReplayImport>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -425,9 +421,6 @@ pub struct TableUpdateRequest {
     pub max_players: i64,
     #[serde(default)]
     pub hide_pregame: bool,
-    #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "ReplayImport")]
-    pub game_json: Option<ReplayImport>,
 }
 
 /// `id` replays a finished game from the database; `json` imports a game in the replay format.
@@ -558,9 +551,7 @@ pub struct ReplayGame {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "Vec<ReplayCharacter>")]
     pub characters: Option<Vec<ReplayCharacter>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub seed: Option<String>,
+    pub seed: String,
 }
 
 /// One player's notes, indexed by card order.

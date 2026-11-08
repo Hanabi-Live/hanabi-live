@@ -1,4 +1,4 @@
-use crate::game::{AssignedCharacter, Card, Game, Options};
+use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
@@ -23,8 +23,12 @@ pub struct Player {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExtraOptions {
     pub custom_seed: Option<String>,
-    pub custom_deck: Option<Vec<Card>>,
-    pub custom_deck_is_shuffled: bool,
+    /// Tables saved before custom decks were removed still carry these fields. A replayed game's
+    /// deck always matched its seed, so the values are ignored.
+    #[serde(rename = "customDeck", skip_serializing)]
+    pub legacy_custom_deck: serde::de::IgnoredAny,
+    #[serde(rename = "customDeckIsShuffled", skip_serializing)]
+    pub legacy_custom_deck_is_shuffled: serde::de::IgnoredAny,
     pub custom_actions: Vec<ReplayAction>,
     pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
@@ -725,5 +729,19 @@ mod tests {
         let wire = hanabi_protocol::GameOptions::default();
         assert_eq!(wire_options(&defaults), wire);
         assert_eq!(engine_options(&wire), defaults);
+    }
+
+    #[test]
+    fn saved_tables_with_custom_deck_fields_still_load() {
+        let extra: ExtraOptions = serde_json::from_value(serde_json::json!({
+            "customSeed": "p2v0s1",
+            "customDeck": [{"suitIndex": 0, "rank": 1}],
+            "customDeckIsShuffled": true,
+        }))
+        .unwrap();
+        assert_eq!(extra.custom_seed.as_deref(), Some("p2v0s1"));
+        let saved = serde_json::to_value(&extra).unwrap();
+        assert!(saved.get("customDeck").is_none());
+        assert!(saved.get("customDeckIsShuffled").is_none());
     }
 }

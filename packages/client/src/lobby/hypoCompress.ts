@@ -137,7 +137,7 @@ export function expand(data: string): string | undefined {
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
 function gameJSONCompress(data: GameJSON): string | undefined {
-  const seed = data.seed ?? "";
+  const { seed } = data;
   if (!/^[\d\-A-Za-z]*$/u.test(seed)) {
     return undefined;
   }

@@ -548,45 +548,6 @@
     "valid": true
   },
   {
-    "name": "table creation passes an imported game through unchanged",
-    "direction": "client",
-    "command": "tableCreate",
-    "input": {
-      "name": "Custom",
-      "gameJSON": {
-        "players": ["Alice", "Bob"],
-        "deck": []
-      }
-    },
-    "normalized": {
-      "name": "Custom",
-      "options": {
-        "numPlayers": 2,
-        "startingPlayer": 0,
-        "variantName": "No Variant",
-        "timed": false,
-        "timeBase": 0.0,
-        "timePerTurn": 0,
-        "speedrun": false,
-        "cardCycle": false,
-        "deckPlays": false,
-        "emptyClues": false,
-        "oneExtraCard": false,
-        "oneLessCard": false,
-        "allOrNothing": false,
-        "detrimentalCharacters": false
-      },
-      "password": "",
-      "maxPlayers": 5,
-      "hidePregame": false,
-      "gameJSON": {
-        "players": ["Alice", "Bob"],
-        "deck": []
-      }
-    },
-    "valid": true
-  },
-  {
     "name": "replay import accepts an exported game, including its ID",
     "direction": "client",
     "command": "replayCreate",

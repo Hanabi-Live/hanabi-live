@@ -1,4 +1,4 @@
-use super::{Error, Params, PublicState, Result, StatusCode, catalog, integer, json};
+use super::{Error, Params, PublicState, Result, StatusCode, catalog, integer};
 
 /// An archived game that cannot be exported. Its code and game ID reach the server log and the
 /// error alerts, so the game and the failed check can be found later.
@@ -50,35 +50,14 @@ pub(super) async fn export(
             id,
         )
     })?;
-    let custom = archive.deck;
-    let seed: String = row.seed.clone();
-    let deck = if let Some(bytes) = &custom {
-        let invalid = || {
-            export_failure(
-                "archive_invalid_deck",
-                "The archived game's custom deck is invalid",
-                id,
-            )
-        };
-        let cards = crate::game::decode_deck(bytes).map_err(|_| invalid())?;
-        if cards.len() > (state.config.deck_size)(i32::from(row.variant_id))? {
-            return Err(invalid());
-        }
-        let suits = variant.suits.len();
-        if cards.iter().any(|card| card.suit_index >= suits) {
-            return Err(invalid());
-        }
-        json!(cards)
-    } else {
-        // Never substitute a standard deck or claim a custom replay was seeded.
-        (state.config.seeded_deck)(i32::from(row.variant_id), &seed).map_err(|_| {
-            export_failure(
-                "archive_invalid_seed",
-                "The archived game's seed cannot produce a deck",
-                id,
-            )
-        })?
-    };
+    let seed = row.seed.clone();
+    let deck = (state.config.seeded_deck)(i32::from(row.variant_id), &seed).map_err(|_| {
+        export_failure(
+            "archive_invalid_seed",
+            "The archived game's seed cannot produce a deck",
+            id,
+        )
+    })?;
     let deck: Vec<hanabi_protocol::ReplayCard> = serde_json::from_value(deck)?;
     let deck_len = deck.len();
     let mut notes = vec![vec![String::new(); deck_len + variant.suits.len()]; players.len()];
@@ -142,6 +121,6 @@ pub(super) async fn export(
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
         notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,
-        seed: custom.is_none().then_some(seed),
+        seed,
     })
 }

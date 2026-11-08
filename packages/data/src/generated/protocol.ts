@@ -857,7 +857,7 @@ export const replayGameSchema = z.strictObject({
   notes: z.array(replayNoteRowSchema).optional(),
   options: replayOptionsSchema.optional(),
   players: z.array(z.string()),
-  seed: z.string().optional(),
+  seed: z.string(),
 });
 
 /**
@@ -1024,10 +1024,6 @@ export const tableSchema = z
   .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
 export const tableCreateRequestSchema = z.strictObject({
-  /**
-   * A game to play from a custom deck, in the replay import format.
-   */
-  gameJSON: replayImportSchema.optional(),
   hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()
@@ -1099,7 +1095,6 @@ export const tableSuggestRequestSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const tableUpdateRequestSchema = z.strictObject({
-  gameJSON: replayImportSchema.optional(),
   hidePregame: z.boolean().default(false),
   maxPlayers: z
     .number()

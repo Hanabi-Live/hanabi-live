@@ -1,6 +1,6 @@
 use crate::{
     game::{Card, Game, Options},
-    model::{ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
+    model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
     store::zero_stats,
 };
 use anyhow::{Context, Result, ensure};
@@ -16,7 +16,8 @@ pub struct Imported {
     pub game: Game,
     pub notes: Vec<Vec<String>>,
     pub warnings: Vec<String>,
-    pub extra: ExtraOptions,
+    /// The seed that the import named, if any.
+    pub custom_seed: Option<String>,
 }
 /// Converts imported whole seconds to the float that options hold. Option validation rejects any
 /// value beyond 2^53, so precision lost above it never reaches a game.
@@ -186,15 +187,6 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
             text.clone_into(&mut notes[i][j]);
         }
     }
-    let extra = ExtraOptions {
-        custom_seed: (!seed.is_empty()).then(|| seed.into()),
-        custom_deck: Some(deck.clone()),
-        custom_deck_is_shuffled: false,
-        custom_actions: actions.clone(),
-        custom_characters: (!characters.is_empty()).then_some(characters.clone()),
-        custom_num_players: Some(players.len()),
-        ..ExtraOptions::default()
-    };
     let mut game = Game::create(GameSetup {
         options,
         player_names: players,
@@ -231,7 +223,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         game,
         notes,
         warnings,
-        extra,
+        custom_seed: (!seed.is_empty()).then(|| seed.into()),
     })
 }
 pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {

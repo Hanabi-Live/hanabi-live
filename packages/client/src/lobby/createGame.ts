@@ -21,9 +21,7 @@ import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
-import { escapeHtml, getHTMLInputElement } from "../utils";
-import type { GameJSON } from "./gameJSON";
-import { parseGameJSON } from "./gameJSON";
+import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
 
 const BASIC_VARIANT_NAMES = [
@@ -335,23 +333,6 @@ function submit() {
     : defaultSettings.createTableMaxPlayers;
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
-  // Game JSON is not saved.
-  const gameJSONString = $("#createTableJSON").val();
-  if (typeof gameJSONString !== "string") {
-    throw new TypeError(
-      'The value of the "createTableJSON" element is not a string.',
-    );
-  }
-  let gameJSON: GameJSON | undefined;
-  if (gameJSONString !== "") {
-    const parsed = parseGameJSON(gameJSONString);
-    if ("error" in parsed) {
-      modals.showError(escapeHtml(parsed.error));
-      return;
-    }
-    ({ gameJSON } = parsed);
-  }
-
   const options = {
     variantName: getVariantName("createTableVariant"), // This is a hidden span field.
     timed,
@@ -375,7 +356,6 @@ function submit() {
       name,
       options,
       password,
-      gameJSON,
       maxPlayers,
     });
     $("#nav-buttons-lobby-create-game").addClass("disabled");
@@ -494,9 +474,6 @@ export function ready(): boolean {
 
     // Ensure create-game-table-number is empty.
     $("#create-game-table-number").val("");
-
-    // Show JSON row
-    $("#create-game-json-row").removeClass("hidden");
   } else {
     // Change Options
     dialogTitle = "Change Game Options";
@@ -509,9 +486,6 @@ export function ready(): boolean {
 
     // Ensure create-game-table-number has a value.
     $("#create-game-table-number").val(globals.tableID);
-
-    // Hide JSON row
-    $("#create-game-json-row").addClass("hidden");
   }
 
   // Set UI Elements and values.
@@ -566,11 +540,6 @@ export function ready(): boolean {
   } else {
     $("#create-game-extra-options").show();
     $("#create-game-show-extra-options-row").hide();
-  }
-
-  // Hide the JSON field if we are not in a development environment.
-  if (globalThis.location.hostname !== "localhost") {
-    $("#create-game-json-row").hide();
   }
 
   return true;
