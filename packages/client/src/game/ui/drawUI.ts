@@ -1107,12 +1107,10 @@ function drawScoreArea() {
       },
     );
     terminateButton.tooltipName = "kill";
-    let terminateContent =
-      "<strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />";
-    terminateContent += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    terminateContent +=
-      "<strong>Right click</strong> to terminate immediately.";
-    terminateButton.tooltipContent = terminateContent;
+    terminateButton.tooltipContent = `
+      <strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />
+      ${TOOLTIP_INDENT}<strong>Right click</strong> to terminate immediately.
+    `;
     initKonvaTooltips(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
@@ -1408,15 +1406,11 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(paceTextLabel);
   paceTextLabel.tooltipName = "pace";
-  let paceContent =
-    "Pace is a measure of how many discards can happen while<br />";
-  paceContent += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-  paceContent += "still having a chance to get the maximum score.<br />";
-  paceContent += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-  paceContent +=
-    '(For more information, click on the "Help" button in the lobby.)';
-  globals.layers.UI.add(paceTextLabel);
-  paceTextLabel.tooltipContent = paceContent;
+  paceTextLabel.tooltipContent = `
+    Pace is a measure of how many discards can happen while<br />
+    ${TOOLTIP_INDENT}still having a chance to get the maximum score.<br />
+    ${TOOLTIP_INDENT}(For more information, click on the "Help" button in the lobby.)
+  `;
   initKonvaTooltips(paceTextLabel, true, false);
 
   const paceNumberLabel = basicNumberLabel.clone({

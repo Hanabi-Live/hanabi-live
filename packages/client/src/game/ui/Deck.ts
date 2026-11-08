@@ -232,15 +232,15 @@ function getTooltipContent(): string {
 
   const currentTable = globals.lobby.tableMap.get(globals.lobby.tableID);
   if (currentTable !== undefined) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-signature"></i></span>';
-    content += `&nbsp; Table name: &nbsp;${escapeHtml(currentTable.name)}</li>`;
+    content += tooltipField(
+      "fas fa-signature",
+      "Table name",
+      escapeHtml(currentTable.name),
+    );
 
     const owner = globals2.userMap.get(currentTable.ownerID);
     const ownerName = owner?.name ?? "Unknown";
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-crown"></i></span>';
-    content += `&nbsp; Owner: &nbsp;${escapeHtml(ownerName)}</li>`;
+    content += tooltipField("fas fa-crown", "Owner", escapeHtml(ownerName));
   }
 
   if (
@@ -249,30 +249,33 @@ function getTooltipContent(): string {
     // JSON replays are hard-coded to have a database ID of 0.
     && globals.state.replay.databaseID !== 0
   ) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-fingerprint"></i></span>';
-    content += `&nbsp; Database ID: &nbsp;<strong>${globals.state.replay.databaseID}</strong></li>`;
+    content += tooltipField(
+      "fas fa-fingerprint",
+      "Database ID",
+      `<strong>${globals.state.replay.databaseID}</strong>`,
+    );
   }
 
   if (globals.state.finished || globals.metadata.hasCustomSeed) {
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-    const seed =
-      globals.metadata.seed === "JSON" ? "n/a" : globals.metadata.seed;
-    content += `&nbsp; Seed: &nbsp;<strong>${escapeHtml(seed)}</strong>`;
-    if (globals.metadata.seed === "JSON") {
-      content += " (JSON game)";
-    }
-    content += "</li>";
+    const isJSON = globals.metadata.seed === "JSON";
+    const seed = isJSON ? "n/a" : globals.metadata.seed;
+    const suffix = isJSON ? " (JSON game)" : "";
+    content += tooltipField(
+      "fas fa-seedling",
+      "Seed",
+      `<strong>${escapeHtml(seed)}</strong>${suffix}`,
+    );
   }
 
   if (globals.state.finished && globals.state.datetimeFinished !== null) {
     const datetimeFinishedDate = new Date(globals.state.datetimeFinished);
     const formattedDatetimeFinished =
       dateTimeFormatter.format(datetimeFinishedDate);
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
-    content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
+    content += tooltipField(
+      "fas fa-calendar",
+      "Date Played",
+      `<strong>${formattedDatetimeFinished}</strong>`,
+    );
   }
 
   // "datetimeStarted" and "datetimeFinished" are initialized to strings during the "init" command,
@@ -287,9 +290,11 @@ function getTooltipContent(): string {
       : new Date();
     const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
-    content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
+    content += tooltipField(
+      "fas fa-stopwatch",
+      "Game Length",
+      `<strong>${clockString}</strong>`,
+    );
   }
 
   const sharedReplay = globals.state.replay.shared;
@@ -297,61 +302,73 @@ function getTooltipContent(): string {
     const startedDate = new Date(sharedReplay.datetimeStarted);
     const elapsedMilliseconds = Date.now() - startedDate.getTime();
     const clockString = millisecondsToClockString(elapsedMilliseconds);
-    content +=
-      '<li><span class="game-tooltips-icon"><i class="fas fa-hourglass-half"></i></span>';
-    content += `&nbsp; Shared Replay Length: &nbsp;<strong>${clockString}</strong></li>`;
+    content += tooltipField(
+      "fas fa-hourglass-half",
+      "Shared Replay Length",
+      `<strong>${clockString}</strong>`,
+    );
   }
 
-  content +=
-    '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
-  content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
+  content += tooltipField(
+    "fas fa-rainbow",
+    "Variant",
+    `<strong>${globals.variant.name}</strong>`,
+  );
 
   if (globals.options.timed) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.Timed}"></i></span>`;
-    content += "&nbsp; Timed: ";
-    content += secondsToClockString(globals.options.timeBase);
-    content += " + ";
-    content += secondsToClockString(globals.options.timePerTurn);
-    content += "</li>";
+    const timeBase = secondsToClockString(globals.options.timeBase);
+    const timePerTurn = secondsToClockString(globals.options.timePerTurn);
+    content += tooltipItem(
+      OptionIcons.Timed,
+      `Timed: ${timeBase} + ${timePerTurn}`,
+    );
   }
 
   if (globals.options.speedrun) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.Speedrun}"></i></span>`;
-    content += "&nbsp; Speedrun</li>";
+    content += tooltipItem(OptionIcons.Speedrun, "Speedrun");
   }
 
   if (globals.options.deckPlays) {
-    content += '<li><span class="game-tooltips-icon">';
-    content += `<i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i></span>`;
-    content += "&nbsp; Bottom-Deck Blind Plays</li>";
+    content += tooltipItem(
+      OptionIcons.DeckPlays,
+      "Bottom-Deck Blind Plays",
+      "position: relative; left: 0.2em;",
+    );
   }
 
   if (globals.options.emptyClues) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.EmptyClues}"></i></span>`;
-    content += "&nbsp; Empty Clues</li>";
+    content += tooltipItem(OptionIcons.EmptyClues, "Empty Clues");
   }
 
   if (globals.options.oneExtraCard) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.OneExtraCard}"></i></span>`;
-    content += "&nbsp; One Extra Card</li>";
+    content += tooltipItem(OptionIcons.OneExtraCard, "One Extra Card");
   }
 
   if (globals.options.oneLessCard) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.OneLessCard}"></i></span>`;
-    content += "&nbsp; One Less Card</li>";
+    content += tooltipItem(OptionIcons.OneLessCard, "One Less Card");
   }
 
   if (globals.options.allOrNothing) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.AllOrNothing}"></i></span>`;
-    content += "&nbsp; All or Nothing</li>";
+    content += tooltipItem(OptionIcons.AllOrNothing, "All or Nothing");
   }
 
   if (globals.options.detrimentalCharacters) {
-    content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.DetrimentalCharacters}"></i></span>`;
-    content += "&nbsp; Detrimental Characters</li>";
+    content += tooltipItem(
+      OptionIcons.DetrimentalCharacters,
+      "Detrimental Characters",
+    );
   }
 
   content += "</ul>";
 
   return content;
+}
+
+function tooltipItem(iconClass: string, html: string, iconStyle?: string) {
+  const style = iconStyle === undefined ? "" : ` style="${iconStyle}"`;
+  return `<li><span class="game-tooltips-icon"><i class="${iconClass}"${style}></i></span>&nbsp; ${html}</li>`;
+}
+
+function tooltipField(iconClass: string, label: string, valueHTML: string) {
+  return tooltipItem(iconClass, `${label}: &nbsp;${valueHTML}`);
 }
