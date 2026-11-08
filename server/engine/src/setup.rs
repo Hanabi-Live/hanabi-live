@@ -4,7 +4,7 @@ use crate::{
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
-use hanabi_protocol::MAX_RANK;
+use hanabi_protocol::{MAX_PLAYERS, MAX_RANK, MIN_PLAYERS};
 
 /// The highest rank a Dumbfounded or Awkward character is assigned, which leaves out the top rank.
 const MAX_CHARACTER_RANK: i32 = MAX_RANK - 1;
@@ -67,7 +67,7 @@ pub fn assign_characters(
 ) -> Result<Vec<AssignedCharacter>> {
     ensure!(
         hanabi_protocol::is_player_count(players.len()),
-        "Character assignments require two to six players."
+        "Character assignments require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
     let mut rng = GoRandom::new(seed_hash(seed)?);
     let catalog = characters();

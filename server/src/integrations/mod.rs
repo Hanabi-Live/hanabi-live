@@ -99,7 +99,7 @@ impl Integrations {
                     bridge.degrade();
                     let error = match result {
                         Err(_) => crate::errors::Fault::new("discord_announcement_timeout",
-                            "Discord lifecycle announcement exceeded five seconds; continuing the drained shutdown.",
+                            format!("Discord lifecycle announcement exceeded {} seconds; continuing the drained shutdown.", ANNOUNCEMENT_TIMEOUT.as_secs()),
                             axum::http::StatusCode::GATEWAY_TIMEOUT).into(),
                         Ok(Err(error)) => error,
                         Ok(Ok(())) => unreachable!(),

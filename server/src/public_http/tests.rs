@@ -620,7 +620,7 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         ("/export", 404, "specify a database"),
         ("/export/no", 400, "not a valid database"),
         ("/export/99999", 404, "does not exist"),
-        ("/shared-missing-scores/2/Alice", 404, "at least two"),
+        ("/shared-missing-scores/2/Alice", 404, "specify at least"),
         (
             "/shared-missing-scores/2/Alice/Bob?excludePlayers=Alice,Bob",
             400,

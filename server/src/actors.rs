@@ -16,9 +16,9 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
-    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, ReplayAction,
-    SECONDS_PER_MINUTE, SoundLobby, Status, TableId, TableRequest, TableStarted, User, UserId,
-    UserLeft, UserList, Warning,
+    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, MAX_PLAYERS,
+    MIN_PLAYERS, ReplayAction, SECONDS_PER_MINUTE, SoundLobby, Status, TableId, TableRequest,
+    TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -433,7 +433,7 @@ pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
         id: TableId(1),
         joined: false,
-        max_players: 5,
+        max_players: hanabi_protocol::DEFAULT_MAX_PLAYERS,
         name: "test".into(),
         num_players: 1,
         options: hanabi_protocol::GameOptions::default(),
@@ -1907,11 +1907,7 @@ async fn prepare_table(
             .ok()
             .filter(|n| hanabi_protocol::is_player_count(*n))
             .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
-            .max(
-                extra
-                    .custom_num_players
-                    .unwrap_or(hanabi_protocol::MIN_PLAYERS),
-            );
+            .max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         let password = r.password;
         let password_hash = if password.is_empty() {
             None
@@ -2566,7 +2562,7 @@ impl TableActor {
         };
         ensure!(
             hanabi_protocol::is_player_count(participants.len()),
-            "This command requires two to six participants"
+            "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
         );
         let count = participants.len();
         let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
@@ -3081,11 +3077,7 @@ impl TableActor {
         }
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
-        max_players = max_players.max(
-            extra
-                .custom_num_players
-                .unwrap_or(hanabi_protocol::MIN_PLAYERS),
-        );
+        max_players = max_players.max(extra.custom_num_players.unwrap_or(MIN_PLAYERS));
         if session.user != self.table.owner {
             let changes = option_changes(&self.table, &options, &name, max_players);
             ensure!(!changes.is_empty(), "There are no new options proposed.");
@@ -3458,7 +3450,7 @@ impl TableActor {
         };
         ensure!(
             hanabi_protocol::is_player_count(players.len()),
-            "You need at least two players"
+            "You need at least {MIN_PLAYERS} players"
         );
         ensure!(
             self.table
@@ -4470,7 +4462,7 @@ impl TableActor {
             };
             ensure!(
                 hanabi_protocol::is_player_count(participants.len()),
-                "This command requires two to six participants"
+                "This command requires {MIN_PLAYERS} to {MAX_PLAYERS} participants"
             );
             let message = format!(
                 "{}/shared-missing-scores/{}/{}",
@@ -4576,7 +4568,7 @@ impl TableActor {
                 };
                 ensure!(
                     hanabi_protocol::is_player_count(n),
-                    "Tables require two to six players"
+                    "Tables require {MIN_PLAYERS} to {MAX_PLAYERS} players"
                 );
                 *automatic_start = Some(n);
                 *countdown = None;
@@ -4894,8 +4886,7 @@ impl TableActor {
             .cloned()
             .collect::<Vec<_>>();
         ensure!(
-            players.len() >= hanabi_protocol::MIN_PLAYERS
-                && (!hide || players.len() == self.table.players().len()),
+            players.len() >= MIN_PLAYERS && (!hide || players.len() == self.table.players().len()),
             "Original players must attend to restart"
         );
         let snapshot = self.table.game().context("Missing completed game")?;

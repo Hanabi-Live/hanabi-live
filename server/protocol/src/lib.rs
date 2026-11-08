@@ -48,6 +48,12 @@ pub const MAX_GAME_ACTIONS: usize = 512;
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
 /// The number of seconds in a minute.
 pub const SECONDS_PER_MINUTE: i32 = 60;
+/// Player clocks and idle timers hold milliseconds; time options hold seconds.
+pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
+/// The clock units in a minute.
+pub const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
+/// How long a game can go without a move before it ends.
+pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
 /// The number of seconds in a day.
 pub const SECONDS_PER_DAY: i32 = 24 * 60 * SECONDS_PER_MINUTE;
 /// The longest starting clock a timed game can have, in seconds (one week).
@@ -506,7 +512,7 @@ pub struct IdleWarning {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
     /// How long until the game ends, unless someone takes a turn or keeps it going.
-    #[schemars(range(min = 0, max = 1_800_000))]
+    #[schemars(range(min = 0, max = IDLE_TIMEOUT_MS))]
     pub remaining_ms: i64,
 }
 
@@ -1590,7 +1596,7 @@ pub struct GameOptions {
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(min = 0, max = 4_294_967_295_u32))]
+    #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
     pub variant_id: Option<u32>,
     pub timed: bool,
     pub time_base: f64,
@@ -1616,7 +1622,7 @@ pub struct GameOptions {
 impl Default for GameOptions {
     fn default() -> Self {
         Self {
-            num_players: 2,
+            num_players: u8::try_from(MIN_PLAYERS).expect("the player limits fit in a byte"),
             starting_player: 0,
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
@@ -2232,7 +2238,7 @@ pub struct CatalogVariant {
     /// A number from 0 to N. For example, "No Variant" is variant 0, "6 Suits" is variant 1, and so
     /// on. This is a legacy field; we want to transition to using a more descriptive string ID,
     /// which will allow for custom user-defined variants.
-    #[schemars(range(min = 0, max = 4_294_967_295_u32))]
+    #[schemars(range(min = 0, max = u32::MAX))]
     pub id: u32,
     /// A string that describes the variant. For example, "No Variant" is `R+Y+G+B+P`.
     #[serde(rename = "newID")]
@@ -2328,7 +2334,7 @@ pub struct CatalogCharacter {
     #[schemars(length(min = 1))]
     pub name: String,
     /// The first character has an ID of 0.
-    #[schemars(range(min = 0, max = 4_294_967_295_u32))]
+    #[schemars(range(min = 0, max = u32::MAX))]
     pub id: u32,
     #[schemars(length(min = 1))]
     pub description: String,

@@ -36,7 +36,7 @@ pub(crate) const MAX_NAME_LENGTH: usize = 4096;
 pub(crate) fn validate_options(options: &Options) -> Result<()> {
     ensure!(
         hanabi_protocol::is_player_count(options.num_players),
-        "Games require two to six players."
+        "Games require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
     ensure!(
         options.starting_player < options.num_players,

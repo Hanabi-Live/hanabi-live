@@ -2,17 +2,13 @@ use crate::game::{AssignedCharacter, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
-use hanabi_protocol::{ReplayAction, SECONDS_PER_MINUTE};
+use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, ReplayAction};
+pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
-/// Player clocks and idle timers hold milliseconds; time options hold seconds.
-pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
-const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
-/// How long a game can go without a move before it ends.
-pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 

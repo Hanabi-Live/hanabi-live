@@ -258,7 +258,7 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         let restored = TableSnapshot::decode(&saved.payload)?;
         let snapshot = restored.game().context("Missing review")?;
         ensure!(
-            snapshot.idle_remaining == 1_800_000,
+            snapshot.idle_remaining == IDLE_TIMEOUT_MS,
             "Viewer did not receive a fresh review window"
         );
         ensure!(

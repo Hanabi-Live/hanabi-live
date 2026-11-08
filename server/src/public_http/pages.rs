@@ -552,8 +552,11 @@ async fn missing(
     num_players: Option<i64>,
     q: &Query,
 ) -> Result<Response> {
-    if shared && users.len() < 2 {
-        return Err(Error::not_found("You must specify at least two players."));
+    if shared && users.len() < hanabi_protocol::MIN_PLAYERS {
+        return Err(Error::not_found(format!(
+            "You must specify at least {} players.",
+            hanabi_protocol::MIN_PLAYERS
+        )));
     }
     // Only the shared page takes these parameters, so they are absent from the others.
     let terms = |key| -> Result<Vec<String>> {
