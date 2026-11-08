@@ -188,7 +188,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     for root in ["/history", "/shared-missing-scores/{numPlayers}"] {
         let mut path = root.to_owned();
         router = router.route(&path, get(pages::page));
-        for i in 1..=6 {
+        for i in 1..=hanabi_protocol::MAX_PLAYERS {
             path = format!("{path}/{{player{i}}}");
             router = router.route(&path, get(pages::page));
         }
@@ -201,7 +201,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     for root in ["history", "history-full", "full-history"] {
         let mut path = format!("/api/v1/{root}");
         api = api.route(&path, get(api_handler));
-        for i in 1..=6 {
+        for i in 1..=hanabi_protocol::MAX_PLAYERS {
             path = format!("{path}/{{player{i}}}");
             api = api.route(&path, get(api_handler));
         }

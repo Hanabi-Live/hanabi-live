@@ -2,6 +2,7 @@ use crate::{
     Character, EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant,
     int, is_card_touched,
 };
+use hanabi_protocol::START_CARD_RANK;
 use std::collections::HashSet;
 
 pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
@@ -127,7 +128,7 @@ fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
         return match direction {
             0 => {
                 if stack == 0 {
-                    vec![1, 5, 7]
+                    vec![1, 5, START_CARD_RANK]
                 } else {
                     vec![2, 4]
                 }
@@ -232,7 +233,9 @@ fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {
         .collect()
 }
 fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i32 {
-    if !(available.contains(&if down { 5 } else { 1 }) || (up_or_down && available.contains(&7))) {
+    if !(available.contains(&if down { 5 } else { 1 })
+        || (up_or_down && available.contains(&START_CARD_RANK)))
+    {
         return 0;
     }
     let mut score = 1;

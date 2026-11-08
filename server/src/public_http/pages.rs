@@ -178,7 +178,11 @@ pub(super) async fn page(
                     return Err(Error::bad("You must first specify the number of players."));
                 }
                 if !n.is_some_and(hanabi_protocol::is_player_count) {
-                    return Err(Error::bad("Number of players must be between 2 and 6."));
+                    return Err(Error::bad(format!(
+                        "Number of players must be between {} and {}.",
+                        hanabi_protocol::MIN_PLAYERS,
+                        hanabi_protocol::MAX_PLAYERS
+                    )));
                 }
             }
             let users = data::players(&state, &params, shared || mode == "history").await?;

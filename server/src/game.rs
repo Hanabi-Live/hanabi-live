@@ -140,7 +140,8 @@ pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
     let mut bytes = vec![DECK_HEADER + u8::try_from(deck.len())?];
     for c in deck {
         ensure!(
-            c.suit_index < 6 && matches!(c.rank, 1..=5 | 7),
+            c.suit_index < hanabi_protocol::MAX_SUITS
+                && matches!(c.rank, 1..=5 | hanabi_protocol::START_CARD_RANK),
             "Invalid card"
         );
         bytes.push(u8::try_from(c.suit_index)? * RANKS_PER_SUIT + u8::try_from(c.rank)?);

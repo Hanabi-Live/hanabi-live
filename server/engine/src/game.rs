@@ -16,6 +16,7 @@ use crate::{
     types::reject,
 };
 use anyhow::{Result, ensure};
+use hanabi_protocol::{MAX_PLAYERS, MIN_PLAYERS, START_CARD_RANK};
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
@@ -61,7 +62,7 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
     ensure!(
         options
             .max_players
-            .is_none_or(|n| (options.num_players..=6).contains(&n)),
+            .is_none_or(|n| (options.num_players..=MAX_PLAYERS).contains(&n)),
         "Invalid player capacity."
     );
     get_variant(&options.variant_name)?;
@@ -201,8 +202,11 @@ pub(crate) fn hand_size(options: &Options) -> usize {
         - usize::from(options.one_less_card)
 }
 
+/// The largest hand: the fewest players, with one extra card.
+pub(crate) const MAX_HAND_SIZE: usize = normal_hand_size(MIN_PLAYERS) + 1;
+
 /// Each player's hand size without the options that change it.
-pub fn normal_hand_size(num_players: usize) -> usize {
+pub const fn normal_hand_size(num_players: usize) -> usize {
     match num_players {
         2 | 3 => 5,
         4 | 5 => 4,
@@ -530,7 +534,7 @@ pub fn apply_action(
         ensure!(
             !(is_play
                 && variant_for(&state).sudoku
-                && state.deck[order].rank == 7
+                && state.deck[order].rank == START_CARD_RANK
                 && state.stacks[state.deck[order].suit_index] == 0),
             "The prepared card cannot start a Sudoku stack."
         );

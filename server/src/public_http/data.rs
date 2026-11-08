@@ -44,7 +44,11 @@ pub(super) async fn players(
 ) -> Result<Vec<(i32, String)>> {
     let mut users = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    for i in 1..=if multiple { 6 } else { 1 } {
+    for i in 1..=if multiple {
+        hanabi_protocol::MAX_PLAYERS
+    } else {
+        1
+    } {
         let Some(name) = params.get(&format!("player{i}")).filter(|n| !n.is_empty()) else {
             if i == 1 {
                 return Err(Error::not_found("You must specify a player."));

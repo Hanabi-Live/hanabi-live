@@ -22,6 +22,10 @@ pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
 pub const MIN_PLAYERS: usize = 2;
 /// The most players a game can have, which also bounds every per-player list.
 pub const MAX_PLAYERS: usize = 6;
+/// The most suits a variant can have.
+pub const MAX_SUITS: usize = 6;
+/// The rank of a stack's start card, which Up or Down variants add to each suit.
+pub const START_CARD_RANK: i32 = 7;
 /// The most cards a deck can have.
 pub const MAX_DECK_SIZE: usize = 60;
 /// The most actions a game can record.
@@ -234,7 +238,7 @@ pub struct TableStartRequest {
     #[schemars(with = "String")]
     pub intended_variant: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "Vec<String>", length(max = 6))]
+    #[schemars(with = "Vec<String>", length(max = MAX_PLAYERS))]
     pub intended_players: Option<Vec<String>>,
 }
 
@@ -1606,7 +1610,7 @@ pub struct Table {
     #[schemars(length(min = 1))]
     pub name: String,
     /// The current number of players, which can be below the minimum during a pregame.
-    #[schemars(range(min = 0, max = 6))]
+    #[schemars(range(min = 0, max = MAX_PLAYERS))]
     pub num_players: u8,
     pub options: GameOptions,
     #[serde(rename = "ownerID")]
@@ -1830,7 +1834,8 @@ pub struct SuitIndexOrUnknown(
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct RankOrUnknown(
-    #[schemars(range(min = -1, max = 7), extend("enum" = [-1, 1, 2, 3, 4, 5, 7]))] pub i64,
+    #[schemars(range(min = -1, max = START_CARD_RANK), extend("enum" = [-1, 1, 2, 3, 4, 5, START_CARD_RANK]))]
+    pub i64,
 );
 
 /// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
@@ -2055,7 +2060,7 @@ pub struct RankClueNumber(#[schemars(extend("enum" = [1, 2, 3, 4, 5]))] pub u8);
 /// A card rank. 7 is the rank of a stack's start card.
 #[derive(JsonSchema)]
 #[serde(transparent)]
-pub struct CatalogRank(#[schemars(extend("enum" = [1, 2, 3, 4, 5, 7]))] pub u8);
+pub struct CatalogRank(#[schemars(extend("enum" = [1, 2, 3, 4, 5, START_CARD_RANK]))] pub u8);
 
 /// An entry in `colors.json`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]

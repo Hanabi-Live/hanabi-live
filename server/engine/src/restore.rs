@@ -2,12 +2,13 @@ use crate::{
     Character, ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
     RecordedActionType, clue_action_type, clue_cost_for, clue_type,
     game::{
-        MAX_CLUES, MAX_EVENTS, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH, hand_size,
-        validate_options,
+        MAX_CLUES, MAX_EVENTS, MAX_HAND_SIZE, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH,
+        hand_size, validate_options,
     },
     get_variant, int,
 };
 use anyhow::{Context, Result, bail, ensure};
+use hanabi_protocol::{MAX_PLAYERS, MAX_SUITS, START_CARD_RANK};
 use serde_json::Value;
 use std::collections::HashSet;
 
@@ -37,11 +38,11 @@ fn bounded_array<'a>(value: &'a Value, name: &str, max: usize) -> Result<&'a Vec
 pub fn parse_engine_state(value: Value) -> Result<EngineState> {
     bounded_array(&value, "deck", hanabi_protocol::MAX_DECK_SIZE)?;
     bounded_array(&value, "actions", hanabi_protocol::MAX_GAME_ACTIONS)?;
-    for player in bounded_array(&value, "players", 6)? {
-        bounded_array(player, "hand", 6)?;
+    for player in bounded_array(&value, "players", MAX_PLAYERS)? {
+        bounded_array(player, "hand", MAX_HAND_SIZE)?;
     }
     for field in ["stacks", "stackStarts", "playStackDirections"] {
-        bounded_array(&value, field, 6)?;
+        bounded_array(&value, field, MAX_SUITS)?;
     }
     for event in bounded_array(&value, "events", MAX_EVENTS)? {
         if event.get("type").and_then(Value::as_str) == Some("gameOver") {
@@ -50,9 +51,13 @@ pub fn parse_engine_state(value: Value) -> Result<EngineState> {
                 "Missing game-over votes field."
             );
         }
-        for field in ["list", "votes", "playerTimes"] {
+        for (field, bound) in [
+            ("list", MAX_HAND_SIZE),
+            ("votes", MAX_PLAYERS),
+            ("playerTimes", MAX_PLAYERS),
+        ] {
             if event.get(field).is_some_and(|v| !v.is_null()) {
-                bounded_array(event, field, 6)?;
+                bounded_array(event, field, bound)?;
             }
         }
     }
@@ -102,18 +107,20 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Engine state exceeds its collection bounds."
     );
     ensure!(
-        s.players.len() <= 6
-            && s.players.iter().all(|p| p.hand.len() <= 6)
-            && s.stacks.len() <= 6
-            && s.stack_starts.len() <= 6
-            && s.play_stack_directions.len() <= 6,
+        s.players.len() <= MAX_PLAYERS
+            && s.players.iter().all(|p| p.hand.len() <= MAX_HAND_SIZE)
+            && s.stacks.len() <= MAX_SUITS
+            && s.stack_starts.len() <= MAX_SUITS
+            && s.play_stack_directions.len() <= MAX_SUITS,
         "Engine state exceeds its player or stack bounds."
     );
     for event in &s.events {
         let bounded = match event {
-            EngineEvent::Clue { list, .. } => list.len() <= 6,
-            EngineEvent::GameOver { votes, .. } => votes.as_ref().is_none_or(|v| v.len() <= 6),
-            EngineEvent::PlayerTimes { player_times, .. } => player_times.len() <= 6,
+            EngineEvent::Clue { list, .. } => list.len() <= MAX_HAND_SIZE,
+            EngineEvent::GameOver { votes, .. } => {
+                votes.as_ref().is_none_or(|v| v.len() <= MAX_PLAYERS)
+            }
+            EngineEvent::PlayerTimes { player_times, .. } => player_times.len() <= MAX_PLAYERS,
             _ => true,
         };
         ensure!(bounded, "Event exceeds its collection bounds.");
@@ -177,7 +184,9 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         "Stack count does not match the variant."
     );
     ensure!(
-        s.stacks.iter().all(|r| matches!(*r, 0..=5 | 7))
+        s.stacks
+            .iter()
+            .all(|r| matches!(*r, 0..=5 | START_CARD_RANK))
             && s.stack_starts.iter().all(|r| (0..=5).contains(r))
             && s.play_stack_directions.iter().all(|d| (0..=3).contains(d)),
         "Invalid stack values."
@@ -248,8 +257,8 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         ensure!(
             c.order == i
                 && c.suit_index < v.suits.len()
-                && matches!(c.rank, 1..=5 | 7)
-                && (-1..=6).contains(&c.slot),
+                && matches!(c.rank, 1..=5 | START_CARD_RANK)
+                && (-1..=int(MAX_HAND_SIZE)).contains(&c.slot),
             "Invalid card identity or slot."
         );
         ensure!(
