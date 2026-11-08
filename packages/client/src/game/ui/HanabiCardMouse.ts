@@ -328,7 +328,28 @@ function dragStart(card: HanabiCard) {
     && card.layout.parent !== null
     && globals.lobby.settings.keldonMode
   ) {
-    card.layout.rotation(-card.layout.parent.rotation());
+    const { parent } = card.layout;
+    const rotation = card.layout.rotation();
+    const { x, y } = card.layout.position();
+    card.layout.rotation(-parent.rotation());
+
+    // Releasing the card without moving it fires no "dragend", so nothing lays out the hand again.
+    // (The straightened card also leaves the pointer, so the card does not get the release either.)
+    globalThis.addEventListener(
+      "pointerup",
+      () => {
+        const position = card.layout.position();
+        if (
+          card.layout.parent === parent
+          && position.x === x
+          && position.y === y
+        ) {
+          card.layout.rotation(rotation);
+          globals.layers.card.batchDraw();
+        }
+      },
+      { capture: true, once: true },
+    );
   }
 
   // Hide any visible arrows on the rest of a hand when the card begins to be dragged.
