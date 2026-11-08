@@ -3,9 +3,9 @@
 import { describe, expect, test } from "bun:test";
 import type { Tuple } from "complete-common";
 import { eRange, newArray } from "complete-common";
-import { START_CARD_RANK } from "../constants";
 import { StackDirection } from "../enums/StackDirection";
 import { getDefaultVariant, getVariant } from "../gameData";
+import { START_CARD_RANK } from "../generated/protocol";
 import { getInitialCardState } from "../reducers/initialStates/initialCardState";
 import type { CardOrder } from "../types/CardOrder";
 import type { NumSuits } from "../types/NumSuits";

@@ -7,11 +7,7 @@
 // explicitly instead of through a global "jQuery", which Vite's development server does not
 // provide.
 
-import {
-  MAX_CARDS_IN_A_DECK,
-  MAX_PLAYERS,
-  MAX_SUITS_IN_A_VARIANT,
-} from "@hanabi-live/game";
+import { MAX_DECK_SIZE, MAX_PLAYERS, MAX_SUITS } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import jquery from "jquery";
 import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
@@ -250,7 +246,7 @@ function createPlayerTooltips() {
 function createCardTooltips() {
   // Dynamically create the card note tooltips. (We add the number of suits because we also need
   // note tooltips for the stack bases.)
-  for (const order of eRange(MAX_CARDS_IN_A_DECK + MAX_SUITS_IN_A_VARIANT)) {
+  for (const order of eRange(MAX_DECK_SIZE + MAX_SUITS)) {
     const id = `tooltip-card-${order}`;
     appendDiv("#game-tooltips", id);
     create(`#${id}`, gameOptions);

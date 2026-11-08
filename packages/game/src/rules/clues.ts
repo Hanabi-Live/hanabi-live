@@ -1,8 +1,7 @@
 // Functions related to the clue objects themselves: converting, getting names, etc.
 
 import { assertDefined } from "complete-common";
-import { START_CARD_RANK } from "../constants";
-import { ClueType } from "../generated/protocol";
+import { ClueType, START_CARD_RANK } from "../generated/protocol";
 import type { Color } from "../interfaces/Color";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Suit } from "../interfaces/Suit";

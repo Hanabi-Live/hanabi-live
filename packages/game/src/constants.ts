@@ -1,6 +1,5 @@
 import { ReadonlySet } from "complete-common";
-
-export const START_CARD_RANK = 7;
+import { START_CARD_RANK } from "./generated/protocol";
 
 export const MAX_CLUE_NUM = 8;
 export const MAX_STRIKES = 3;
@@ -16,15 +15,11 @@ export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
  */
 export const DEFAULT_FINISHED_STACK_LENGTH = 5;
 
-export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 6;
-
 /** The valid amount of players that can be in a game. */
 export const VALID_NUM_PLAYERS = [2, 3, 4, 5, 6] as const;
 
 export const VALID_PLAYER_INDEXES = [0, 1, 2, 3, 4, 5] as const;
 
-export const MAX_SUITS_IN_A_VARIANT = 6;
 export const VALID_SUIT_INDEXES = [0, 1, 2, 3, 4, 5] as const;
 
 /**
@@ -33,9 +28,6 @@ export const VALID_SUIT_INDEXES = [0, 1, 2, 3, 4, 5] as const;
  * @alias
  */
 export const VALID_CLUE_COLOR_INDEXES = VALID_SUIT_INDEXES;
-
-const MAX_CARDS_IN_A_SUIT = 10;
-export const MAX_CARDS_IN_A_DECK = MAX_CARDS_IN_A_SUIT * MAX_SUITS_IN_A_VARIANT;
 
 export const DEFAULT_PLAYER_NAMES = [
   "Alice",

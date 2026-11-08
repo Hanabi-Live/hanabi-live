@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 
-import { START_CARD_RANK } from "../constants";
 import { StackDirection } from "../enums/StackDirection";
+import { START_CARD_RANK } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameState } from "../interfaces/GameState";
 import type { Variant } from "../interfaces/Variant";

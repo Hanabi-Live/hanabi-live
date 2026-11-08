@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { START_CARD_RANK } from "../../constants";
 import { CardStatus } from "../../enums/CardStatus";
 import { StackDirection } from "../../enums/StackDirection";
 import { getVariant } from "../../gameData";
+import { START_CARD_RANK } from "../../generated/protocol";
 import type { CardState } from "../../interfaces/CardState";
 import type { GameState } from "../../interfaces/GameState";
 import type { Rank } from "../../types/Rank";

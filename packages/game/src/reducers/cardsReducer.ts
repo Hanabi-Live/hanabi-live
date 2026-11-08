@@ -9,8 +9,8 @@ import {
   newArray,
   tupleKeys,
 } from "complete-common";
-import { MAX_PLAYERS } from "../constants";
 import { getVariant } from "../gameData";
+import { MAX_PLAYERS } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";

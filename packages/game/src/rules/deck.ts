@@ -1,8 +1,8 @@
 // Functions related to deck information: total cards, drawing cards
 
 import { sumArray } from "complete-common";
-import { START_CARD_RANK } from "../constants";
 import { getVariant } from "../gameData";
+import { START_CARD_RANK } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Suit } from "../interfaces/Suit";

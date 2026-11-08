@@ -4,9 +4,9 @@ import {
   DEFAULT_CARD_RANKS,
   DEFAULT_CLUE_RANKS,
   DEFAULT_FINISHED_STACK_LENGTH,
-  START_CARD_RANK,
 } from "./constants";
 import { Pip } from "./enums/Pip";
+import { START_CARD_RANK } from "./generated/protocol";
 import type { Color } from "./interfaces/Color";
 import type { Suit } from "./interfaces/Suit";
 import type { Variant } from "./interfaces/Variant";

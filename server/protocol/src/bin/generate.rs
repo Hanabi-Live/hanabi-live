@@ -623,12 +623,33 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
         bail!("The game library's schemas use {other}, which the game does not declare");
     }
     println!("import * as z from \"zod\";\n");
+    print!("{}", game_library_constants());
     println!("{}", enum_declarations(true));
     for name in GAME_LIBRARY_ENUMS {
         println!("export const {} = z.enum({name});", variable(name));
     }
     print!("{}", module.output);
     Ok(())
+}
+
+/// The protocol's limits that the game library exports under the same names.
+fn game_library_constants() -> String {
+    let constants = [
+        ("MIN_PLAYERS", hanabi_protocol::MIN_PLAYERS.to_string()),
+        ("MAX_PLAYERS", hanabi_protocol::MAX_PLAYERS.to_string()),
+        ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
+        ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),
+        (
+            "START_CARD_RANK",
+            hanabi_protocol::START_CARD_RANK.to_string(),
+        ),
+    ];
+    let mut output = String::new();
+    for (name, value) in constants {
+        writeln!(output, "export const {name} = {value};")
+            .expect("writing to a string cannot fail");
+    }
+    output
 }
 
 fn main() -> Result<()> {
