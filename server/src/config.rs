@@ -24,13 +24,22 @@ pub struct Config {
     pub(crate) database_password: String,
 }
 
+/// The plain HTTP port, which redirects to HTTPS when TLS is configured.
+pub const HTTP_PORT: u16 = 80;
+/// The HTTPS port that the default HTTP port becomes when TLS is configured.
+pub const HTTPS_PORT: u16 = 443;
+/// The shortest session signing key, in bytes.
+const MIN_SESSION_SECRET_LENGTH: usize = 128;
+/// The longest label in a domain name.
+const MAX_DOMAIN_LABEL_LENGTH: usize = 63;
+
 impl Config {
     pub fn secret(&self) -> &str {
         &self.secret
     }
     pub fn port(&self) -> u16 {
-        if self.use_tls() && self.port == 80 {
-            443
+        if self.use_tls() && self.port == HTTP_PORT {
+            HTTPS_PORT
         } else {
             self.port
         }
@@ -82,14 +91,17 @@ impl Config {
         ensure!(
             domain.parse::<IpAddr>().is_ok()
                 || domain.split('.').all(|part| !part.is_empty()
-                    && part.len() <= 63
+                    && part.len() <= MAX_DOMAIN_LABEL_LENGTH
                     && !part.starts_with('-')
                     && !part.ends_with('-')
                     && part.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-')),
             "Invalid DOMAIN"
         );
         let secret = field("SESSION_SECRET", "");
-        ensure!(secret.len() >= 128, "Session signing key is too short");
+        ensure!(
+            secret.len() >= MIN_SESSION_SECRET_LENGTH,
+            "SESSION_SECRET must be at least {MIN_SESSION_SECRET_LENGTH} bytes"
+        );
         let redis_url = field("REDIS_URL", "redis://127.0.0.1:6379");
         let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
         ensure!(
@@ -125,7 +137,9 @@ impl Config {
         Ok(Self {
             root: root.to_path_buf(),
             secret,
-            port: field("PORT", "80").parse().context("Invalid PORT")?,
+            port: field("PORT", &HTTP_PORT.to_string())
+                .parse()
+                .context("Invalid PORT")?,
             localhost_port: field("LOCALHOST_PORT", "8081")
                 .parse()
                 .context("Invalid LOCALHOST_PORT")?,

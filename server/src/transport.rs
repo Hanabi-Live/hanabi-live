@@ -20,8 +20,13 @@ pub const MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
 pub const GLOBAL_INPUT_BYTES: usize = 64 * 1024 * 1024;
 const SESSION_INPUT_BYTES: usize = 8 * 1024 * 1024;
 const SESSION_OUTPUT_BYTES: usize = 8 * 1024 * 1024;
+const GLOBAL_OUTPUT_LIMIT: usize = 128 * 1024 * 1024;
 static GLOBAL_OUTPUT_BYTES: LazyLock<Arc<Semaphore>> =
-    LazyLock::new(|| Arc::new(Semaphore::new(128 * 1024 * 1024)));
+    LazyLock::new(|| Arc::new(Semaphore::new(GLOBAL_OUTPUT_LIMIT)));
+/// The frames a session queues for its writer.
+const OUTBOUND_QUEUE: usize = 64;
+/// The WebSocket close code for "Service Restart", which tells clients to reconnect.
+pub const SERVICE_RESTART_CLOSE_CODE: u16 = 1012;
 
 pub struct Inbound {
     pub text: String,
@@ -129,7 +134,7 @@ impl Session {
         lease_lost: CancellationToken,
         health: HealthCheck,
     ) -> (Arc<Self>, mpsc::Receiver<Outbound>) {
-        let (outbound, receiver) = mpsc::channel(64);
+        let (outbound, receiver) = mpsc::channel(OUTBOUND_QUEUE);
         (
             Arc::new(Self {
                 user: metadata.user,
@@ -412,7 +417,10 @@ mod tests {
         assert!(session.active());
         drop(receiver.try_recv().unwrap());
         let mut completed = session
-            .close_after(&["soundLobby {}".into(), "error {}".into()], 1012)
+            .close_after(
+                &["soundLobby {}".into(), "error {}".into()],
+                SERVICE_RESTART_CLOSE_CODE,
+            )
             .unwrap();
         session.emit("must not follow close");
         assert_eq!(
@@ -426,7 +434,7 @@ mod tests {
         let close = receiver.try_recv().unwrap();
         assert!(matches!(
             close.message,
-            Message::Close(Some(CloseFrame { code: 1012, .. }))
+            Message::Close(Some(CloseFrame { code, .. })) if code == SERVICE_RESTART_CLOSE_CODE
         ));
         close.completion.unwrap().send(()).unwrap();
         assert!(completed.try_recv().is_ok());

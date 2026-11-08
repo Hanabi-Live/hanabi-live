@@ -70,25 +70,44 @@ fn bind(host: &str, port: u16) -> Result<TcpListener> {
     Ok(listener)
 }
 
+/// How long a client may take to send an HTTP/1 request's headers.
+const HEADER_READ_TIMEOUT: Duration = Duration::from_secs(30);
+/// The most bytes an HTTP/1 connection buffers.
+const MAX_HTTP1_BUFFER_BYTES: usize = 64 * 1024;
+/// How often an idle HTTP/2 connection is pinged.
+const HTTP2_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(30);
+/// How long an HTTP/2 ping may go unanswered before the connection closes.
+const HTTP2_KEEP_ALIVE_TIMEOUT: Duration = Duration::from_secs(10);
+/// How long an HTTP request may take before the server answers 408.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+/// How long a client may take to complete a TLS handshake.
+const TLS_HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(10);
+/// How long shutdown waits to cancel in-flight lobby reads, which is optional.
+const LOBBY_READ_CANCEL_TIMEOUT: Duration = Duration::from_millis(250);
+/// How long shutdown waits for every game to save before it reports a non-durable stop.
+const GAME_DRAIN_DEADLINE: Duration = Duration::from_secs(120);
+/// How long listeners have to finish their connections once shutdown closes them.
+const LISTENER_SHUTDOWN_GRACE: Duration = Duration::from_secs(30);
+
 fn http_settings<A>(server: &mut axum_server::Server<SocketAddr, A>) {
     server
         .http_builder()
         .http1()
         .timer(hyper_util::rt::TokioTimer::new())
-        .header_read_timeout(Duration::from_secs(30))
-        .max_buf_size(64 * 1024);
+        .header_read_timeout(HEADER_READ_TIMEOUT)
+        .max_buf_size(MAX_HTTP1_BUFFER_BYTES);
     server
         .http_builder()
         .http2()
         .timer(hyper_util::rt::TokioTimer::new())
-        .keep_alive_interval(Some(Duration::from_secs(30)))
-        .keep_alive_timeout(Duration::from_secs(10));
+        .keep_alive_interval(Some(HTTP2_KEEP_ALIVE_INTERVAL))
+        .keep_alive_timeout(HTTP2_KEEP_ALIVE_TIMEOUT);
 }
 
 fn request_timeout(router: axum::Router) -> axum::Router {
     router.layer(tower_http::timeout::TimeoutLayer::with_status_code(
         axum::http::StatusCode::REQUEST_TIMEOUT,
-        Duration::from_secs(30),
+        REQUEST_TIMEOUT,
     ))
 }
 
@@ -105,7 +124,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     let operations_listener = bind("127.0.0.1", config.localhost_port)?;
     let operations_address = operations_listener.local_addr()?;
     let redirect = if config.use_tls() {
-        Some(bind(config.listen_host(), 80)?)
+        Some(bind(config.listen_host(), hanabi_live::config::HTTP_PORT)?)
     } else {
         None
     };
@@ -164,7 +183,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
             let mut server = axum_server::from_tcp_rustls(public, tls)?
                 .map(|acceptor| {
                     acceptor
-                        .handshake_timeout(Duration::from_secs(10))
+                        .handshake_timeout(TLS_HANDSHAKE_TIMEOUT)
                         .acceptor(axum_server::accept::NoDelayAcceptor::new())
                 })
                 .handle(public_handle);
@@ -247,7 +266,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     }
     app.accepting.store(false, Ordering::Release);
     app.read_shutdown.cancel();
-    match tokio::time::timeout(Duration::from_millis(250), app.store.cancel_lobby_reads()).await {
+    match tokio::time::timeout(LOBBY_READ_CANCEL_TIMEOUT, app.store.cancel_lobby_reads()).await {
         Ok(Ok(())) => {}
         result => eprintln!("Optional read cancellation did not complete: {result:?}"),
     }
@@ -257,7 +276,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
         drop(admitted);
     }
     match tokio::time::timeout(
-        Duration::from_secs(120),
+        GAME_DRAIN_DEADLINE,
         drain_game_runtime(&app, &tables, &reason),
     )
     .await
@@ -271,7 +290,7 @@ async fn run(config: Config, version: String) -> Result<bool> {
     }
     app.shutdown.cancel();
     for handle in handles {
-        handle.graceful_shutdown(Some(Duration::from_secs(30)));
+        handle.graceful_shutdown(Some(LISTENER_SHUTDOWN_GRACE));
     }
     while let Some(service) = services.join_next().await {
         match service {

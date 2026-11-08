@@ -47,6 +47,14 @@ pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
 /// How long the lobby read pool, which also serves the public pages, waits for a connection or a
 /// statement.
 pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
+/// Connections in the pool that serves gameplay and other writes.
+const PRIMARY_CONNECTIONS: u32 = 8;
+/// Connections in the pool that archives finished games.
+const ARCHIVE_CONNECTIONS: u32 = 2;
+/// Connections in the pool that serves lobby reads and the public pages.
+const LOBBY_READ_CONNECTIONS: u32 = 2;
+/// The most derived-statistics refreshes that can run or wait at once.
+const STATS_SLOTS: usize = 32;
 
 /// The namespaces of the transaction advisory locks that serialize writes of the same record.
 #[derive(Clone, Copy)]
@@ -97,7 +105,7 @@ impl Store {
             lobby_name: String::new(),
             state: Some(state),
             stats: TaskTracker::new(),
-            stats_slots: Arc::new(Semaphore::new(32)),
+            stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         }
     }
     pub async fn connect(config: &crate::config::Config) -> Result<Self> {
@@ -112,10 +120,18 @@ impl Store {
         let primary_name = format!("hanabi-live-{instance:016x}-primary");
         let archive_name = format!("hanabi-live-{instance:016x}-archive");
         let lobby_name = format!("hanabi-live-{instance:016x}-lobby");
-        let primary = pool(options.clone().application_name(&primary_name), 8).await?;
-        let archive = pool(options.clone().application_name(&archive_name), 2).await?;
+        let primary = pool(
+            options.clone().application_name(&primary_name),
+            PRIMARY_CONNECTIONS,
+        )
+        .await?;
+        let archive = pool(
+            options.clone().application_name(&archive_name),
+            ARCHIVE_CONNECTIONS,
+        )
+        .await?;
         let lobby_reads = PgPoolOptions::new()
-            .max_connections(2)
+            .max_connections(LOBBY_READ_CONNECTIONS)
             .acquire_timeout(LOBBY_READ_TIMEOUT)
             .connect_lazy_with(options.application_name(&lobby_name).options([
                 (
@@ -146,7 +162,7 @@ impl Store {
             lobby_name,
             state: Some(state),
             stats: TaskTracker::new(),
-            stats_slots: Arc::new(Semaphore::new(32)),
+            stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
         })
     }
     pub(crate) fn state(&self) -> Result<&RedisState> {

@@ -87,7 +87,7 @@ fn https_origin(domain: &str, https_port: u16) -> String {
     } else {
         domain.into()
     };
-    if https_port == 443 {
+    if https_port == crate::config::HTTPS_PORT {
         format!("https://{host}")
     } else {
         format!("https://{host}:{https_port}")

@@ -29,6 +29,21 @@ const STOP_PREFIX: &str = "The server is stopping gracefully at:";
 const SNOWFLAKE_DIGITS: RangeInclusive<usize> = 17..=20;
 /// The largest Discord HTTP response or gateway message we accept, in bytes.
 const MAX_PAYLOAD_BYTES: usize = 1024 * 1024;
+const GATEWAY_URL: &str = "wss://gateway.discord.gg/?v=10&encoding=json";
+/// How long a Discord HTTP request may take.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
+/// The most Discord HTTP requests in flight at once.
+const MAX_CONCURRENT_REQUESTS: usize = 4;
+/// How long the gateway may take to send its greeting.
+const HELLO_TIMEOUT: Duration = Duration::from_secs(20);
+/// How long closing the gateway connection may take during shutdown.
+const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
+/// How long to wait before reconnecting to the gateway.
+const RECONNECT_DELAY: Duration = Duration::from_secs(5);
+/// The gateway events queued before the gateway reader waits.
+const EVENT_QUEUE: usize = 1000;
+/// How long resolving Discord mentions in a message may take before the raw text is used.
+const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
 /// The gateway intents we identify with: guilds, guild messages, direct messages, and message
 /// content.
 const INTENTS: u64 = 1 << 0 | 1 << 9 | 1 << 12 | 1 << 15;
@@ -144,10 +159,10 @@ impl NativeTransport {
             client: reqwest::Client::builder()
                 .no_proxy()
                 .redirect(reqwest::redirect::Policy::none())
-                .timeout(Duration::from_secs(10))
+                .timeout(REQUEST_TIMEOUT)
                 .build()?,
             token,
-            requests: Arc::new(Semaphore::new(4)),
+            requests: Arc::new(Semaphore::new(MAX_CONCURRENT_REQUESTS)),
         })
     }
 }
@@ -224,12 +239,12 @@ impl Transport for NativeTransport {
                         .max_message_size(Some(MAX_PAYLOAD_BYTES))
                         .max_frame_size(Some(MAX_PAYLOAD_BYTES));
                     let (mut socket, _) = tokio_tungstenite::connect_async_with_config(
-                        "wss://gateway.discord.gg/?v=10&encoding=json",
+                        GATEWAY_URL,
                         Some(config),
                         false,
                     )
                     .await?;
-                    let first = tokio::time::timeout(Duration::from_secs(20), socket.next())
+                    let first = tokio::time::timeout(HELLO_TIMEOUT, socket.next())
                         .await?
                         .context("Missing Discord greeting")??;
                     let hello: Value = serde_json::from_str(first.to_text()?)?;
@@ -252,7 +267,7 @@ impl Transport for NativeTransport {
                     let mut acknowledged = true;
                     loop {
                         tokio::select! {
-                            ()=cancel.cancelled()=>{let _=tokio::time::timeout(Duration::from_secs(1),socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
+                            ()=cancel.cancelled()=>{let _=tokio::time::timeout(CLOSE_TIMEOUT,socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
                             _=heartbeat.tick()=>{
                                 ensure!(acknowledged,"Discord heartbeat was not acknowledged");
                                 socket.send(Message::Text(json!({"op":opcode::HEARTBEAT,"d":sequence}).to_string().into())).await?;
@@ -292,7 +307,7 @@ impl Transport for NativeTransport {
                     crate::errors::Report::from_error("Reconnecting Discord gateway", &error, None)
                         .log();
                 }
-                tokio::select! {()=cancel.cancelled()=>break,()=tokio::time::sleep(Duration::from_secs(5))=>{}}
+                tokio::select! {()=cancel.cancelled()=>break,()=tokio::time::sleep(RECONNECT_DELAY)=>{}}
             }
             Ok(())
         })
@@ -397,7 +412,7 @@ impl Bridge {
             status: AtomicU8::new(Status::Connecting as u8),
             announced: AtomicBool::new(false),
         });
-        let (events, mut receiver) = mpsc::channel(1000);
+        let (events, mut receiver) = mpsc::channel(EVENT_QUEUE);
         let gateway = bridge.transport.clone();
         let cancel = app.shutdown.child_token();
         let lost = app.lease_lost.clone();
@@ -516,9 +531,7 @@ impl Bridge {
     }
 
     pub async fn render(&self, text: &str) -> String {
-        if let Ok(rendered) =
-            tokio::time::timeout(Duration::from_secs(5), self.render_inner(text)).await
-        {
+        if let Ok(rendered) = tokio::time::timeout(RENDER_TIMEOUT, self.render_inner(text)).await {
             rendered
         } else {
             self.degrade();

@@ -16,6 +16,12 @@ const IGNORED_CODES: [&str; 1] = ["server_draining"];
 /// Repeats of the same failure are counted instead of posted until this much time has passed.
 const REPEAT_INTERVAL: Duration = Duration::from_mins(10);
 
+/// The alerts queued before new ones are dropped.
+const QUEUE: usize = 30;
+
+/// How long shutdown waits for the alert being sent.
+const SHUTDOWN_SEND_GRACE: Duration = Duration::from_secs(2);
+
 pub struct Alerts {
     queue: Option<mpsc::Sender<Report>>,
 }
@@ -67,7 +73,7 @@ impl Alerts {
         let Some(bridge) = bridge.filter(|_| !development) else {
             return Arc::new(Self { queue: None });
         };
-        let (queue, mut reports) = mpsc::channel::<Report>(30);
+        let (queue, mut reports) = mpsc::channel::<Report>(QUEUE);
         tracker.spawn(async move {
             let sending = async {
                 let mut throttle = Throttle::default();
@@ -84,7 +90,7 @@ impl Alerts {
             tokio::select! {
                 () = &mut sending => {},
                 () = shutdown.cancelled() => {
-                    let _ = tokio::time::timeout(Duration::from_secs(2), &mut sending).await;
+                    let _ = tokio::time::timeout(SHUTDOWN_SEND_GRACE, &mut sending).await;
                 },
             }
         });

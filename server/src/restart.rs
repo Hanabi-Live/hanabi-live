@@ -25,10 +25,13 @@ pub fn validate_assets(config: &Config) -> Result<String> {
     Ok(client_version.to_owned())
 }
 
+/// How long the new binary's startup check may take before a restart is abandoned.
+const PREFLIGHT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
+
 pub async fn prepare(root: &Path) -> Result<()> {
     let executable = executable(root)?;
     let status = tokio::time::timeout(
-        std::time::Duration::from_secs(30),
+        PREFLIGHT_TIMEOUT,
         tokio::process::Command::new(executable)
             .arg("--check-startup")
             .current_dir(root)

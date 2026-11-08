@@ -45,6 +45,18 @@ const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 /// Appended to the name of a table that a split creates.
 const SPLIT_SUFFIX: &str = " (split)";
+/// The commands the hub queues before senders wait.
+const HUB_QUEUE: usize = 512;
+/// The most tables open at once.
+const MAX_TABLES: usize = 256;
+/// The commands a table queues before senders wait.
+const TABLE_QUEUE: usize = 64;
+/// How long a graceful restart waits for connections to receive their closing messages.
+const RESTART_CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
+/// How often a table checks its timers.
+const TABLE_TICK: Duration = Duration::from_millis(250);
+/// How long a typing indicator lasts without another keystroke.
+const TYPING_TIMEOUT: Duration = Duration::from_secs(2);
 
 use hanabi_protocol::SafeInteger;
 
@@ -448,7 +460,7 @@ impl Hub {
         info: Arc<ServerInfo>,
     ) -> Result<mpsc::Sender<HubCommand>> {
         let restored = store.load_for_startup().await?;
-        let (sender, receiver) = mpsc::channel(512);
+        let (sender, receiver) = mpsc::channel(HUB_QUEUE);
         let mut hub = Self {
             receiver,
             sender: sender.clone(),
@@ -457,7 +469,7 @@ impl Hub {
             closing: false,
             store,
             tasks: tasks.clone(),
-            capacity: Arc::new(Semaphore::new(256)),
+            capacity: Arc::new(Semaphore::new(MAX_TABLES)),
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
             info,
         };
@@ -495,7 +507,7 @@ impl Hub {
         mut actor: TableActor,
         initial: Option<(Arc<Session>, Vec<String>, Reply)>,
     ) -> TableHandle {
-        let (sender, receiver) = mpsc::channel(64);
+        let (sender, receiver) = mpsc::channel(TABLE_QUEUE);
         actor.playing_claims = self.playing_claims.clone();
         let handle = TableHandle {
             sender,
@@ -805,11 +817,14 @@ impl Hub {
             let receipts = self
                 .sessions
                 .values()
-                .filter_map(|p| p.session.close_after(&messages, 1012))
+                .filter_map(|p| {
+                    p.session
+                        .close_after(&messages, crate::transport::SERVICE_RESTART_CLOSE_CODE)
+                })
                 .collect::<Vec<_>>();
             self.tasks.spawn(async move {
                 let closed = match tokio::time::timeout(
-                    Duration::from_secs(1),
+                    RESTART_CLOSE_TIMEOUT,
                     futures_util::future::join_all(receipts),
                 )
                 .await
@@ -2400,7 +2415,7 @@ impl TableActor {
             let result = self.initialize(session, warnings).await;
             let _ = reply.send(result);
         }
-        let mut tick = tokio::time::interval(Duration::from_millis(250));
+        let mut tick = tokio::time::interval(TABLE_TICK);
         tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
         let mut discovery: Option<(VariantDiscovery, Reply)> = None;
         loop {
@@ -4321,7 +4336,7 @@ impl TableActor {
         let a = self.attendees.get_mut(&session.user).expect("attendee");
         let notify = typing && a.typing_until.is_none();
         if typing {
-            a.typing_until = Some(Instant::now() + Duration::from_secs(2));
+            a.typing_until = Some(Instant::now() + TYPING_TIMEOUT);
         } else {
             self.chat_read.insert(session.user, self.table.chat.len());
         }

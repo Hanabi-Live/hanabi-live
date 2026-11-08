@@ -54,6 +54,18 @@ const LOBBY_HISTORY_MESSAGES: i64 = 50;
 /// The most characters of a client-supplied value, such as an origin or a version, that a log
 /// line repeats.
 const MAX_LOGGED_CLIENT_TEXT: usize = 100;
+/// The most WebSocket connections open at once.
+const MAX_SOCKETS: usize = 4096;
+/// The most lobby statistics loads that can run at once.
+const LOBBY_SLOTS: usize = 64;
+/// How long sending an error to a rejected or failed connection may take.
+const ERROR_SEND_TIMEOUT: Duration = Duration::from_secs(5);
+/// How long writing one frame to a connection may take before it is dropped.
+const WRITE_TIMEOUT: Duration = Duration::from_secs(5);
+/// How long sending the last frames to a closing connection may take.
+const CLOSE_SEND_TIMEOUT: Duration = Duration::from_secs(1);
+/// The received messages a connection queues before reading pauses.
+const INBOUND_QUEUE: usize = 64;
 
 pub struct App {
     pub store: Store,
@@ -119,9 +131,9 @@ impl App {
             version: public.client_version.to_string(),
             accepting: AtomicBool::new(true),
             generation: AtomicU64::new(1),
-            sockets: Arc::new(Semaphore::new(4096)),
+            sockets: Arc::new(Semaphore::new(MAX_SOCKETS)),
             incoming_bytes: Arc::new(Semaphore::new(crate::transport::GLOBAL_INPUT_BYTES)),
-            lobby_slots: Arc::new(Semaphore::new(64)),
+            lobby_slots: Arc::new(Semaphore::new(LOBBY_SLOTS)),
             connections: TaskTracker::new(),
             background: TaskTracker::new(),
             shutdown: CancellationToken::new(),
@@ -654,7 +666,7 @@ async fn websocket(
                                     .collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
-                            tokio::time::timeout(Duration::from_secs(5), async {
+                            tokio::time::timeout(ERROR_SEND_TIMEOUT, async {
                                 socket
                                     .send(Message::Text(
                                         frame(
@@ -704,7 +716,7 @@ async fn connection(
         Ok(data) => data,
         Err(error) => {
             let _ = tokio::time::timeout(
-                Duration::from_secs(5),
+                ERROR_SEND_TIMEOUT,
                 socket.send(Message::Text(
                     frame(
                         hanabi_protocol::server::ERROR,
@@ -758,7 +770,7 @@ async fn connection(
                         ()=writer_session.cancel.cancelled()=>None,
                         ()=writer_session.lease_lost.cancelled()=>None,
                         ()=writer_shutdown.cancelled()=>None,
-                        result=tokio::time::timeout(Duration::from_secs(5),guarded)=>result.ok().flatten(),
+                        result=tokio::time::timeout(WRITE_TIMEOUT,guarded)=>result.ok().flatten(),
                     };
                     drop(permit);
                     drop(global_permit);
@@ -782,15 +794,13 @@ async fn connection(
                     error: report.text(),
                 },
             );
-            let _ = tokio::time::timeout(
-                Duration::from_secs(1),
-                sink.send(Message::Text(message.into())),
-            )
-            .await;
+            let _ =
+                tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Text(message.into())))
+                    .await;
         }
-        let _ = tokio::time::timeout(Duration::from_secs(1), sink.send(Message::Close(None))).await;
+        let _ = tokio::time::timeout(CLOSE_SEND_TIMEOUT, sink.send(Message::Close(None))).await;
     });
-    let (incoming, mut commands) = mpsc::channel::<Inbound>(64);
+    let (incoming, mut commands) = mpsc::channel::<Inbound>(INBOUND_QUEUE);
     let incoming_bytes = InboundBudget::new(app.incoming_bytes.clone());
     let reader_session = session.clone();
     let reader_shutdown = app.shutdown.clone();

@@ -373,6 +373,8 @@ const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
 } else {
     std::time::Duration::from_secs(300)
 };
+/// How long a site-wide statistics scan may run, longer than the lobby pool's usual limit.
+const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
 
 async fn aggregate(state: &PublicState, user: Option<i32>, variant: Option<i64>) -> Result<Value> {
     if user.is_some() {
@@ -395,10 +397,12 @@ async fn compute_aggregate(
     variant: Option<i64>,
 ) -> Result<Value> {
     let mut transaction = state.pool.begin().await?;
-    // This scan can legitimately take longer than the pool's usual 2 second limit.
-    sqlx::query_scalar!("SELECT set_config('statement_timeout','20000',true)")
-        .fetch_one(&mut *transaction)
-        .await?;
+    sqlx::query_scalar!(
+        "SELECT set_config('statement_timeout',$1,true)",
+        AGGREGATE_STATEMENT_TIMEOUT.as_millis().to_string()
+    )
+    .fetch_one(&mut *transaction)
+    .await?;
     // Each case has its own query: a shared `$1 IS NULL OR ...` query gets a generic plan that
     // cannot use an index. The variant is compared as the column's own SMALLINT, because a cast
     // column cannot use its index either. A player's totals start from their own games.

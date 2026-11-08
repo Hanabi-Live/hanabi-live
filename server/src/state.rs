@@ -14,6 +14,20 @@ pub const MAX_CHECKPOINT_BYTES: usize = 4 * 1024 * 1024;
 const MAX_RECORDS: usize = 4096;
 const RESPONSE_TIMEOUT: Duration = Duration::from_secs(30);
 const LEASE_TIME: Duration = Duration::from_secs(5);
+/// The shortest lease that ownership accepts.
+const MIN_LEASE_TIME: Duration = Duration::from_millis(100);
+/// How long startup waits for another server to release ownership.
+const ACQUISITION_TIMEOUT: Duration = Duration::from_secs(10);
+/// How long to wait between attempts to take ownership.
+const ACQUISITION_RETRY: Duration = Duration::from_millis(25);
+/// The percentage of a lease during which ownership is trusted, leaving the rest as a margin.
+const SAFE_LEASE_PERCENT: u64 = 75;
+/// How many times ownership is renewed per lease.
+const RENEWALS_PER_LEASE: u32 = 5;
+/// How often the watchdog checks that ownership is still trusted.
+const WATCHDOG_INTERVAL: Duration = Duration::from_millis(10);
+/// The longest state namespace, in bytes.
+const MAX_NAMESPACE_LENGTH: usize = 1024;
 
 const RESERVE: &str = r"
 if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
@@ -165,7 +179,7 @@ async fn durable(connection: &mut MultiplexedConnection) -> Result<()> {
     let (local, _replicas): (i64, i64) = redis::cmd("WAITAOF")
         .arg(1)
         .arg(0)
-        .arg(RESPONSE_TIMEOUT.as_secs() * 1000)
+        .arg(u64::try_from(RESPONSE_TIMEOUT.as_millis())?)
         .query_async(connection)
         .await?;
     ensure!(local >= 1, "Redis did not confirm local AOF durability");
@@ -174,7 +188,7 @@ async fn durable(connection: &mut MultiplexedConnection) -> Result<()> {
 
 impl RedisState {
     pub async fn connect(url: &str, namespace: &str) -> Result<Self> {
-        Self::connect_timed(url, namespace, LEASE_TIME, Duration::from_secs(10)).await
+        Self::connect_timed(url, namespace, LEASE_TIME, ACQUISITION_TIMEOUT).await
     }
 }
 
@@ -186,7 +200,7 @@ impl RedisState {
         acquisition: Duration,
     ) -> Result<Self> {
         ensure!(
-            !namespace.is_empty() && namespace.len() <= 1024,
+            !namespace.is_empty() && namespace.len() <= MAX_NAMESPACE_LENGTH,
             "Invalid Redis namespace"
         );
         let client = redis::Client::open(url).map_err(|_| anyhow::anyhow!("Invalid REDIS_URL"))?;
@@ -234,9 +248,9 @@ impl RedisState {
         let key = format!("{prefix}:owner");
         let token = format!("{:032x}", rand::random::<u128>());
         let started = Instant::now();
+        ensure!(lease_time >= MIN_LEASE_TIME, "Ownership interval too short");
         let lease_ms = u64::try_from(lease_time.as_millis())?;
-        ensure!(lease_ms >= 100, "Ownership interval too short");
-        let safe_window = lease_ms * 3 / 4;
+        let safe_window = lease_ms * SAFE_LEASE_PERCENT / 100;
         let request_start;
         loop {
             let before = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
@@ -256,7 +270,7 @@ impl RedisState {
                 started.elapsed() < acquisition,
                 "Another server owns this Redis state namespace"
             );
-            tokio::time::sleep(Duration::from_millis(25)).await;
+            tokio::time::sleep(ACQUISITION_RETRY).await;
         }
         durable(&mut connection).await?;
         let owner = Arc::new(Ownership {
@@ -273,7 +287,7 @@ impl RedisState {
             loop {
                 tokio::select! {
                     () = renewing.lost.cancelled() => break,
-                    () = tokio::time::sleep(lease_time / 5) => {}
+                    () = tokio::time::sleep(lease_time / RENEWALS_PER_LEASE) => {}
                 }
                 if renewing.check().is_err() {
                     break;
@@ -316,7 +330,7 @@ impl RedisState {
             loop {
                 tokio::select! {
                     () = watchdog.lost.cancelled() => break,
-                    () = tokio::time::sleep(Duration::from_millis(10)) => {
+                    () = tokio::time::sleep(WATCHDOG_INTERVAL) => {
                         if watchdog.check().is_err() { break; }
                     }
                 }
