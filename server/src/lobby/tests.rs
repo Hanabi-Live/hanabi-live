@@ -161,20 +161,6 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
     let settings = serde_json::to_value(get_settings(&db.pool, b).await.unwrap()).unwrap();
     assert_eq!(settings["soundTimer"], false);
     assert_eq!(settings["volume"], 25);
-    let result = run(
-        &db.pool,
-        &who,
-        &[],
-        "chatPlayerInfo",
-        json!({"name":"Bob","room":"lobby"}),
-    )
-    .await;
-    assert!(
-        self_data(&result, "chat")["msg"]
-            .as_str()
-            .unwrap()
-            .contains("0 non-speedrun")
-    );
     let result = run(&db.pool, &who, &[], "inactive", json!({"inactive":true})).await;
     assert!(matches!(result.first(), Some(Effect::Inactive(true))));
     db.close().await;

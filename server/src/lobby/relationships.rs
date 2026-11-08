@@ -141,8 +141,7 @@ pub async fn relationship(
         "chatLink" => "link",
         "chatUnlink" => "unlink",
         "chatBlock" => "block",
-        "chatUnblock" => "unblock",
-        _ => "info",
+        _ => "unblock",
     };
     let normalized = normalize_string(name);
     if name.is_empty() {
@@ -150,45 +149,22 @@ pub async fn relationship(
             "The format of the /{verb} command is: /{verb} [username]"
         ))]);
     }
-    if verb != "info" && normalized == caller.normalized_name {
+    if normalized == caller.normalized_name {
         return Ok(vec![warning(&format!("You cannot {verb} yourself."))]);
     }
-    let user = sqlx::query!(
-        "SELECT id, username FROM users WHERE normalized_username=$1",
+    let target: Option<i32> = sqlx::query_scalar!(
+        "SELECT id FROM users WHERE normalized_username=$1",
         normalized
     )
     .fetch_optional(pool)
     .await?;
-    let Some(user) = user else {
+    let Some(target) = target else {
         return Ok(vec![warning(&format!(
             "The username of \"{}\" does not exist in the database.",
             escape_html(name)
         ))]);
     };
-    let target: i32 = user.id;
     let escaped = escape_html(name);
-    if verb == "info" {
-        let count = crate::database::normal_game_count(pool, target, false).await?;
-        let canonical: String = user.username.clone();
-        let url: String = canonical
-            .bytes()
-            .map(|b| {
-                if b.is_ascii_alphanumeric() || b"-_.!~*'()".contains(&b) {
-                    (b as char).to_string()
-                } else {
-                    format!("%{b:02X}")
-                }
-            })
-            .collect();
-        return Ok(vec![notice(
-            &caller.name,
-            &format!(
-                "\"{escaped}\" has played {count} non-speedrun games. More stats <a href=\"/scores/{}\" target=\"_blank\" rel=\"noopener noreferrer\">here</a>.",
-                escape_html(&url)
-            ),
-            room,
-        )]);
-    }
     if matches!(verb, "block" | "unblock") {
         return block(pool, caller, target, &escaped, verb == "block", room).await;
     }

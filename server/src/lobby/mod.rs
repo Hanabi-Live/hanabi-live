@@ -119,7 +119,6 @@ pub fn handles(message: &ClientMessage) -> bool {
         | M::ChatBlock(_)
         | M::ChatUnblock(_)
         | M::ChatBlocked(_)
-        | M::ChatPlayerInfo(_)
         | M::TagSearch(_)
         | M::Chat(_) => true,
         M::LobbyLoad(_)
@@ -223,8 +222,7 @@ pub async fn dispatch(
         | ClientMessage::ChatLink(request)
         | ClientMessage::ChatUnlink(request)
         | ClientMessage::ChatBlock(request)
-        | ClientMessage::ChatUnblock(request)
-        | ClientMessage::ChatPlayerInfo(request) => {
+        | ClientMessage::ChatUnblock(request) => {
             relationships::relationship(pool, caller, command, &request.name, &request.room).await?
         }
         ClientMessage::HistoryGet(hanabi_protocol::HistoryRequest { offset, amount }) => {

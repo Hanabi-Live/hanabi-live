@@ -1231,7 +1231,6 @@ export const CLIENT_COMMAND_SCHEMAS = {
   chatLinked: chatLinkedRequestSchema,
   chatPM: chatPmRequestSchema,
   chatPMHistoryGet: chatHistoryRequestSchema,
-  chatPlayerInfo: chatUserRequestSchema,
   chatRead: tableRequestSchema,
   chatTyping: tableRequestSchema,
   chatUnblock: chatUserRequestSchema,

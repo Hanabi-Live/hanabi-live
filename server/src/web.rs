@@ -878,13 +878,11 @@ async fn connection(
                         operation,
                         &error,
                         // History reads use the lobby read pool.
-                        Some(
-                            if matches!(name, "historyGet" | "historyGetSeed" | "chatPlayerInfo") {
-                                crate::store::LOBBY_READ_TIMEOUT
-                            } else {
-                                crate::store::DATABASE_TIMEOUT
-                            },
-                        ),
+                        Some(if matches!(name, "historyGet" | "historyGetSeed") {
+                            crate::store::LOBBY_READ_TIMEOUT
+                        } else {
+                            crate::store::DATABASE_TIMEOUT
+                        }),
                     );
                     report.log();
                     app.alert(&report);
@@ -971,9 +969,7 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Resu
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
-        ClientMessage::HistoryGet(_)
-            | ClientMessage::HistoryGetSeed(_)
-            | ClientMessage::ChatPlayerInfo(_)
+        ClientMessage::HistoryGet(_) | ClientMessage::HistoryGetSeed(_)
     )
 }
 

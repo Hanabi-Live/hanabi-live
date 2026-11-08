@@ -24,7 +24,6 @@ macro_rules! client_contracts {
             ChatUnfriend "chatUnfriend" => ChatUserRequest;
             ChatLink "chatLink" => ChatUserRequest;
             ChatUnlink "chatUnlink" => ChatUserRequest;
-            ChatPlayerInfo "chatPlayerInfo" => ChatUserRequest;
             ChatLinked "chatLinked" => ChatLinkedRequest;
             ChatBlock "chatBlock" => ChatUserRequest;
             ChatUnblock "chatUnblock" => ChatUserRequest;

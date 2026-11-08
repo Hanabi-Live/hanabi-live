@@ -66,9 +66,8 @@ mod tests {
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
                 "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
                 "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
-                | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
-                | "chatBlock" | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet"
-                | "tagSearch" => json!({}),
+                | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatBlock"
+                | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet" | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));
