@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f8f9ca5fd68f9d4494925dd645b34ec6b3cffdc1ac8e96d5cbf27cdd54fcec21"
+}

@@ -30,6 +30,8 @@ static RESPONSES: LazyLock<Vec<SimpleResponse>> = LazyLock::new(|| {
 });
 
 const WEBSITE: &[&str] = &[
+    "block",
+    "blocked",
     "f",
     "friend",
     "friends",
@@ -38,6 +40,7 @@ const WEBSITE: &[&str] = &[
     "msg",
     "pm",
     "terminate",
+    "unblock",
     "unfriend",
     "unlink",
     "version",
@@ -269,6 +272,12 @@ pub async fn private_message(
             escape_html(&recipient)
         ))]);
     };
+    if super::blocked_between(pool, caller.id, &[target.id]).await? {
+        return Ok(vec![warning(&format!(
+            "You cannot send a private message to \"{}\".",
+            escape_html(&target.name)
+        ))]);
+    }
     let message = escape_html(&message);
     let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)

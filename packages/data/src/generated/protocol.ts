@@ -895,6 +895,8 @@ export const welcomeSchema = z
 export const CLIENT_WIRE_SCHEMAS = {
   action: actionRequestSchema,
   chat: chatRequestSchema,
+  chatBlock: chatUserRequestSchema,
+  chatBlocked: chatLinkedRequestSchema,
   chatFriend: chatUserRequestSchema,
   chatLink: chatUserRequestSchema,
   chatLinked: chatLinkedRequestSchema,
@@ -903,6 +905,7 @@ export const CLIENT_WIRE_SCHEMAS = {
   chatPlayerInfo: chatUserRequestSchema,
   chatRead: tableRequestSchema,
   chatTyping: tableRequestSchema,
+  chatUnblock: chatUserRequestSchema,
   chatUnfriend: chatUserRequestSchema,
   chatUnlink: chatUserRequestSchema,
   getGameInfo1: tableCommandSchema,

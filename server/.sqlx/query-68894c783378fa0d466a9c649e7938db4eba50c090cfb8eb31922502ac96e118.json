@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT blocked_id AS \"id!\" FROM user_blocks WHERE user_id=$1\n         UNION SELECT user_id FROM user_blocks WHERE blocked_id=$1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "68894c783378fa0d466a9c649e7938db4eba50c090cfb8eb31922502ac96e118"
+}

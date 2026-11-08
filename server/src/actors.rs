@@ -735,6 +735,18 @@ impl Hub {
                 Effect::RelationshipChanged { .. } => {
                     ensure!(session.is_some(), "External relationship effect rejected");
                 }
+                Effect::BlocksChanged {
+                    user_id,
+                    target_id,
+                    blocked,
+                } => {
+                    ensure!(session.is_some(), "External block effect rejected");
+                    for (user, other) in [(user_id, target_id), (target_id, user_id)] {
+                        if let Some(p) = self.sessions.get(&user) {
+                            p.session.set_blocked(other, blocked);
+                        }
+                    }
+                }
                 _ => bail!("Runtime effects must be resolved before hub publication"),
             }
         }
@@ -1637,6 +1649,9 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
         | M::ChatUnlink(_)
         | M::ChatPlayerInfo(_)
         | M::ChatLinked(_)
+        | M::ChatBlock(_)
+        | M::ChatUnblock(_)
+        | M::ChatBlocked(_)
         | M::Setting(_)
         | M::Inactive(_)
         | M::HistoryGet(_)
@@ -2806,6 +2821,9 @@ impl TableActor {
             | ClientMessage::ChatUnlink(_)
             | ClientMessage::ChatPlayerInfo(_)
             | ClientMessage::ChatLinked(_)
+            | ClientMessage::ChatBlock(_)
+            | ClientMessage::ChatUnblock(_)
+            | ClientMessage::ChatBlocked(_)
             | ClientMessage::Setting(_)
             | ClientMessage::Inactive(_)
             | ClientMessage::HistoryGet(_)
@@ -3077,6 +3095,17 @@ impl TableActor {
         self.add_chat(&mut e, &message);
         self.publish(e).await
     }
+    /// Rejects a user who has blocked, or was blocked by, a player at this table or its owner.
+    fn ensure_not_blocked(&self, session: &Session, message: &str) -> Result<()> {
+        let others = self
+            .table
+            .players()
+            .iter()
+            .map(|p| p.id)
+            .chain([self.table.owner]);
+        ensure!(!session.blocks_any(others), "{message}");
+        Ok(())
+    }
     async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
         let Phase::Pregame {
             players, kicked, ..
@@ -3092,6 +3121,7 @@ impl TableActor {
             players.len() < self.table.max_players && !players.iter().any(|p| p.id == session.user),
             "Table is full or already joined"
         );
+        self.ensure_not_blocked(&session, "You cannot join this table.")?;
         if let Some(hash) = &self.table.password_hash {
             let hash = hash.clone();
             let valid = crate::accounts::verify_password(&session.ip, password, hash).await?;
@@ -3154,6 +3184,16 @@ impl TableActor {
             !spectating || seat.is_none() || replay,
             "Players cannot spectate their own ongoing game"
         );
+        if seat.is_none() {
+            self.ensure_not_blocked(
+                &session,
+                if replay {
+                    "You cannot join this replay."
+                } else {
+                    "You cannot spectate this table."
+                },
+            )?;
+        }
         let shadow = if spectating {
             requested_shadow
                 .and_then(|v| usize::try_from(v).ok())

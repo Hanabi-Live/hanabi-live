@@ -83,6 +83,8 @@ pub struct Session {
     pub lobby_load: Arc<Semaphore>,
     health: HealthCheck,
     hyphenated: AtomicBool,
+    /// Users who have blocked, or were blocked by, this user.
+    blocks: std::sync::Mutex<std::collections::BTreeSet<i32>>,
     inactive: AtomicBool,
     closing: AtomicBool,
     superseded: AtomicBool,
@@ -136,6 +138,7 @@ impl Session {
                 ip: metadata.ip,
                 generation: metadata.generation,
                 hyphenated: AtomicBool::new(metadata.hyphenated),
+                blocks: std::sync::Mutex::default(),
                 inactive: AtomicBool::new(false),
                 closing: AtomicBool::new(false),
                 superseded: AtomicBool::new(false),
@@ -169,6 +172,28 @@ impl Session {
 
     pub fn hyphenated(&self) -> bool {
         self.hyphenated.load(Ordering::Acquire)
+    }
+
+    /// Whether this user has blocked, or was blocked by, any of `users`.
+    pub fn blocks_any(&self, users: impl IntoIterator<Item = i32>) -> bool {
+        let blocks = self
+            .blocks
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        users.into_iter().any(|user| blocks.contains(&user))
+    }
+
+    /// Records whether any block remains between this user and `other`.
+    pub fn set_blocked(&self, other: i32, blocked: bool) {
+        let mut blocks = self
+            .blocks
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if blocked {
+            blocks.insert(other);
+        } else {
+            blocks.remove(&other);
+        }
     }
 
     pub fn set_hyphenated(&self, value: bool) {

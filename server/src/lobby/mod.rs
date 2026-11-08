@@ -12,7 +12,7 @@ pub use chat::{
     lobby_history, server_chat, valid_room,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
-pub use relationships::{change_friend, friend_ids, friends};
+pub use relationships::{block_relations, blocked_between, change_friend, friend_ids, friends};
 pub use settings::{get_settings, set_setting};
 
 use crate::accounts::{escape_html, normalize_string};
@@ -54,6 +54,12 @@ pub enum Effect {
         user_id: i32,
         target_id: i32,
         added: bool,
+    },
+    /// Whether any block remains between two users after one of them changed it.
+    BlocksChanged {
+        user_id: i32,
+        target_id: i32,
+        blocked: bool,
     },
     DiscordMirror {
         chat_id: i32,
@@ -110,6 +116,9 @@ pub fn handles(message: &ClientMessage) -> bool {
         | M::ChatLink(_)
         | M::ChatUnlink(_)
         | M::ChatLinked(_)
+        | M::ChatBlock(_)
+        | M::ChatUnblock(_)
+        | M::ChatBlocked(_)
         | M::ChatPlayerInfo(_)
         | M::TagSearch(_)
         | M::Chat(_) => true,
@@ -205,13 +214,15 @@ pub async fn dispatch(
         ClientMessage::ChatPMHistoryGet(request) => {
             chat::private_history(pool, caller, &request).await?
         }
-        ClientMessage::ChatLinked(request) => {
+        ClientMessage::ChatLinked(request) | ClientMessage::ChatBlocked(request) => {
             relationships::relationship(pool, caller, command, "", &request.room).await?
         }
         ClientMessage::ChatFriend(request)
         | ClientMessage::ChatUnfriend(request)
         | ClientMessage::ChatLink(request)
         | ClientMessage::ChatUnlink(request)
+        | ClientMessage::ChatBlock(request)
+        | ClientMessage::ChatUnblock(request)
         | ClientMessage::ChatPlayerInfo(request) => {
             relationships::relationship(pool, caller, command, &request.name, &request.room).await?
         }

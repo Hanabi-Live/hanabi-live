@@ -313,6 +313,7 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
 struct Bootstrap {
     name: String,
     normalized_name: String,
+    blocks: Vec<i32>,
     welcome: hanabi_protocol::Welcome,
     initial: Vec<String>,
 }
@@ -332,9 +333,10 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
     .context("The authenticated user no longer exists.")?;
     let name: String = row.username.clone();
     let normalized_name: String = row.normalized_username.clone();
-    let (settings, friends, muted) = tokio::try_join!(
+    let (settings, friends, blocks, muted) = tokio::try_join!(
         lobby::get_settings(pool, id),
         lobby::friends(pool, id),
+        lobby::block_relations(pool, id),
         accounts::is_muted(pool, ip)
     )?;
     let created: DateTime<Utc> = row.datetime_created;
@@ -365,6 +367,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
     Ok(Bootstrap {
         name,
         normalized_name,
+        blocks,
         welcome,
         initial: vec![frame(
             hanabi_protocol::server::LOBBY_STATUS,
@@ -662,6 +665,9 @@ async fn connection(
         app.lease_lost.clone(),
         Arc::new(move || !shutdown.is_cancelled() && store.check_state().is_ok()),
     );
+    for other in data.blocks {
+        session.set_blocked(other, true);
+    }
     let (mut sink, mut stream) = socket.split();
     let writer_session = session.clone();
     let writer_shutdown = app.shutdown.clone();

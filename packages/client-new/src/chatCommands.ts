@@ -35,6 +35,8 @@ export function sendChat(
     unfriend: "chatUnfriend",
     link: "chatLink",
     unlink: "chatUnlink",
+    block: "chatBlock",
+    unblock: "chatUnblock",
   };
   if (users[command]) {
     if (!name) {
@@ -53,6 +55,9 @@ export function sendChat(
   }
   if (["linked", "links"].includes(command)) {
     return connection.send("chatLinked", { room });
+  }
+  if (command === "blocked") {
+    return connection.send("chatBlocked", { room });
   }
   if (["msg", "pm", "t", "tell", "w", "whisper"].includes(command)) {
     const [recipient, ...words] = args;

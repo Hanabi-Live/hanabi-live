@@ -22,6 +22,32 @@ pub async fn friend_ids(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
     )
 }
 
+/// Whether `user` and any of `others` have blocked each other, in either direction.
+pub async fn blocked_between(pool: &PgPool, user: i32, others: &[i32]) -> Result<bool> {
+    if others.is_empty() {
+        return Ok(false);
+    }
+    Ok(sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM user_blocks
+         WHERE (user_id=$1 AND blocked_id=ANY($2)) OR (blocked_id=$1 AND user_id=ANY($2))) AS \"value!\"",
+        user,
+        others
+    )
+    .fetch_one(pool)
+    .await?)
+}
+
+/// Everyone who has blocked, or was blocked by, `id`.
+pub async fn block_relations(pool: &PgPool, id: i32) -> Result<Vec<i32>> {
+    Ok(sqlx::query_scalar!(
+        "SELECT blocked_id AS \"id!\" FROM user_blocks WHERE user_id=$1
+         UNION SELECT user_id FROM user_blocks WHERE blocked_id=$1",
+        id
+    )
+    .fetch_all(pool)
+    .await?)
+}
+
 pub async fn change_friend(pool: &PgPool, id: i32, target: i32, add: bool) -> Result<bool> {
     let mut tx = pool.begin().await?;
     sqlx::query!("SELECT id FROM users WHERE id=$1 FOR UPDATE", id)
@@ -65,6 +91,28 @@ pub async fn relationship(
     name: &str,
     room: &str,
 ) -> Result<Vec<Effect>> {
+    if command == "chatBlocked" {
+        let names: Vec<String> = sqlx::query_scalar!(
+            "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
+             WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
+            caller.id
+        )
+        .fetch_all(pool)
+        .await?;
+        let message = if names.is_empty() {
+            "Currently, you have not blocked anyone.".into()
+        } else {
+            format!(
+                "Currently blocked players: {}",
+                names
+                    .iter()
+                    .map(|n| escape_html(n))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        return Ok(vec![notice(&caller.name, &message, room)]);
+    }
     if command == "chatLinked" {
         let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
@@ -92,6 +140,8 @@ pub async fn relationship(
         "chatUnfriend" => "unfriend",
         "chatLink" => "link",
         "chatUnlink" => "unlink",
+        "chatBlock" => "block",
+        "chatUnblock" => "unblock",
         _ => "info",
     };
     let normalized = normalize_string(name);
@@ -138,6 +188,9 @@ pub async fn relationship(
             ),
             room,
         )]);
+    }
+    if matches!(verb, "block" | "unblock") {
+        return block(pool, caller, target, &escaped, verb == "block", room).await;
     }
     let add = matches!(verb, "friend" | "link");
     let friend = matches!(verb, "friend" | "unfriend");
@@ -201,4 +254,54 @@ pub async fn relationship(
         )));
     }
     Ok(effects)
+}
+
+async fn block(
+    pool: &PgPool,
+    caller: &Caller,
+    target: i32,
+    escaped: &str,
+    add: bool,
+    room: &str,
+) -> Result<Vec<Effect>> {
+    let result = if add {
+        sqlx::query!(
+            "INSERT INTO user_blocks(user_id,blocked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+            caller.id,
+            target
+        )
+        .execute(pool)
+        .await?
+    } else {
+        sqlx::query!(
+            "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
+            caller.id,
+            target
+        )
+        .execute(pool)
+        .await?
+    };
+    if result.rows_affected() == 0 {
+        return Ok(vec![warning(&if add {
+            format!("\"{escaped}\" is already blocked.")
+        } else {
+            format!("\"{escaped}\" is not blocked, so you cannot unblock them.")
+        })]);
+    }
+    let message = if add {
+        format!(
+            "Successfully blocked \"{escaped}\". You can no longer join or spectate each other's tables or send each other private messages."
+        )
+    } else {
+        format!("Successfully unblocked \"{escaped}\".")
+    };
+    Ok(vec![
+        notice(&caller.name, &message, room),
+        Effect::BlocksChanged {
+            user_id: caller.id,
+            target_id: target,
+            // The other user may have blocked this one too.
+            blocked: blocked_between(pool, caller.id, &[target]).await?,
+        },
+    ])
 }

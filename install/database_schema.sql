@@ -89,6 +89,17 @@ CREATE TABLE user_linkages (
     PRIMARY KEY (user_id, linked_id)
 );
 
+/* Blocked players cannot join or spectate each other's tables or exchange private messages. */
+DROP TABLE IF EXISTS user_blocks CASCADE;
+CREATE TABLE user_blocks (
+    user_id     INTEGER  NOT NULL,
+    blocked_id  INTEGER  NOT NULL,
+    FOREIGN KEY (user_id)    REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, blocked_id)
+);
+CREATE INDEX user_blocks_index_blocked_id ON user_blocks (blocked_id);
+
 DROP TABLE IF EXISTS user_identity_tokens CASCADE;
 CREATE TABLE user_identity_tokens (
     user_id           INTEGER      NOT NULL  PRIMARY KEY,

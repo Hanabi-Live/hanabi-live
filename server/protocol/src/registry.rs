@@ -18,6 +18,9 @@ macro_rules! client_contracts {
             ChatUnlink "chatUnlink" => ChatUserRequest, ChatUserRequest;
             ChatPlayerInfo "chatPlayerInfo" => ChatUserRequest, ChatUserRequest;
             ChatLinked "chatLinked" => ChatLinkedRequest, ChatLinkedRequest;
+            ChatBlock "chatBlock" => ChatUserRequest, ChatUserRequest;
+            ChatUnblock "chatUnblock" => ChatUserRequest, ChatUserRequest;
+            ChatBlocked "chatBlocked" => ChatLinkedRequest, ChatLinkedRequest;
             ChatRead "chatRead" => TableRequest, TableRequest;
             ChatTyping "chatTyping" => TableRequest, TableRequest;
             TableJoin "tableJoin" => TableJoinRequest, TableJoinRequest;

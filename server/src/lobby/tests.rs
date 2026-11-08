@@ -181,6 +181,95 @@ async fn lobby_relationships_atomic_settings_and_parameterization_postgres() {
 }
 
 #[tokio::test]
+async fn blocked_players_cannot_message_each_other_postgres() {
+    let Some(db) = TestDb::create().await else {
+        return;
+    };
+    let a = db.user("Alice").await;
+    let b = db.user("Bob").await;
+    let alice = caller(a, "Alice");
+    let bob = caller(b, "Bob");
+    let online_user = |id, name: &str| OnlineUser {
+        id,
+        name: name.into(),
+        normalized_name: normalize_username(name),
+        generation: 1,
+    };
+    let online = vec![online_user(a, "Alice"), online_user(b, "Bob")];
+    let warning_of = |effects: &[Effect]| {
+        self_data(effects, "warning")["warning"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    let notice_of = |effects: &[Effect]| {
+        self_data(effects, "chat")["msg"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    let bob_name = json!({"name":"bob","room":"lobby"});
+
+    let blocked = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
+    assert!(notice_of(&blocked).contains("Successfully blocked"));
+    let repeated = run(&db.pool, &alice, &[], "chatBlock", bob_name.clone()).await;
+    assert!(warning_of(&repeated).contains("already blocked"));
+    let list = run(
+        &db.pool,
+        &alice,
+        &[],
+        "chatBlocked",
+        json!({"room":"lobby"}),
+    )
+    .await;
+    assert_eq!(notice_of(&list), "Currently blocked players: Bob");
+    let own = run(&db.pool, &alice, &[], "chatBlock", json!({"name":"Alice"})).await;
+    assert!(warning_of(&own).contains("cannot block yourself"));
+
+    // Messages are refused in both directions, and nothing is stored.
+    for (from, to) in [(&alice, "Bob"), (&bob, "Alice")] {
+        let result = run(
+            &db.pool,
+            from,
+            &online,
+            "chatPM",
+            json!({"msg":"hello","recipient":to}),
+        )
+        .await;
+        assert!(warning_of(&result).contains("cannot send a private message"));
+    }
+    let stored: i64 = sqlx::query_scalar!("SELECT COUNT(*) AS \"v!\" FROM chat_log_pm")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(stored, 0);
+
+    let unblocked = run(&db.pool, &alice, &[], "chatUnblock", bob_name.clone()).await;
+    assert!(notice_of(&unblocked).contains("Successfully unblocked"));
+    let missing = run(&db.pool, &alice, &[], "chatUnblock", bob_name).await;
+    assert!(warning_of(&missing).contains("not blocked"));
+    let list = run(
+        &db.pool,
+        &alice,
+        &[],
+        "chatBlocked",
+        json!({"room":"lobby"}),
+    )
+    .await;
+    assert_eq!(notice_of(&list), "Currently, you have not blocked anyone.");
+    let result = run(
+        &db.pool,
+        &bob,
+        &online,
+        "chatPM",
+        json!({"msg":"hello again","recipient":"Alice"}),
+    )
+    .await;
+    assert_eq!(self_data(&result, "chat")["msg"], "hello again");
+    db.close().await;
+}
+
+#[tokio::test]
 async fn lobby_private_messages_and_command_privacy_postgres() {
     let Some(db) = TestDb::create().await else {
         return;

@@ -885,6 +885,77 @@ async fn shared_replay_links_join_an_existing_replay_of_the_same_game() -> Resul
 }
 
 #[tokio::test]
+async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let refused = async |h: &Harness, index: usize, command: &str, id: u64| -> Result<String> {
+            match h.send(index, command, json!({"tableID":id})).await {
+                Ok(()) => bail!("{command} was allowed"),
+                Err(error) => Ok(error.to_string()),
+            }
+        };
+        // Run the lobby command and hand its effects to the hub, as the web layer does.
+        let change = async |h: &Harness, index: usize, command: &str, name: &str| -> Result<()> {
+            let session = h.users[index].clone();
+            let caller = crate::lobby::Caller {
+                id: session.user,
+                name: session.name.clone(),
+                normalized_name: session.normalized_name.clone(),
+                ip: session.ip.clone(),
+                generation: session.generation,
+            };
+            let effects = crate::lobby::dispatch(
+                &h.store.primary,
+                "secret",
+                &caller,
+                &[],
+                crate::actors::client_message(command, json!({"name":name,"room":"lobby"}))?,
+            )
+            .await?
+            .context("Missing lobby effects")?;
+            let (reply, received) = oneshot::channel();
+            h.hub
+                .send(HubCommand::LobbyEffects {
+                    session,
+                    effects,
+                    reply,
+                })
+                .await?;
+            received.await?
+        };
+
+        // Alice blocks Bob: Bob can neither join nor spectate Alice's table.
+        change(&h, 0, "chatBlock", "Bob").await?;
+        let id = h.create(0, "Blocking", json!({})).await?;
+        ensure!(refused(&h, 1, "tableJoin", id).await? == "You cannot join this table.");
+        ensure!(refused(&h, 1, "tableSpectate", id).await? == "You cannot spectate this table.");
+        h.send(2, "tableJoin", json!({"tableID":id})).await?;
+
+        // Carol blocks Alice after sitting down; she can still return to her own seat.
+        change(&h, 2, "chatBlock", "Alice").await?;
+        h.send(2, "tableReattend", json!({"tableID":id})).await?;
+        h.send(0, "tableStart", json!({"tableID":id})).await?;
+        ensure!(refused(&h, 1, "tableSpectate", id).await? == "You cannot spectate this table.");
+
+        // The block applies whoever made it: Alice cannot join a replay that Bob leads.
+        let replay = h.replay(1).await?;
+        ensure!(refused(&h, 0, "tableSpectate", replay).await? == "You cannot join this replay.");
+
+        // Unblocking takes effect for both sessions right away.
+        change(&h, 0, "chatUnblock", "Bob").await?;
+        h.send(0, "tableSpectate", json!({"tableID":replay}))
+            .await?;
+        h.send(1, "tableSpectate", json!({"tableID":id})).await?;
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
         return Ok(());

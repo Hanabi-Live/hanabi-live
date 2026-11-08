@@ -67,7 +67,8 @@ mod tests {
                 "replayAction" => json!({"tableID":1,"type":0}),
                 "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
                 | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
-                | "chatPMHistoryGet" | "tagSearch" => json!({}),
+                | "chatBlock" | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet"
+                | "tagSearch" => json!({}),
                 _ => json!({"tableID":1}),
             };
             parse(&format!("{command} {value}")).unwrap_or_else(|e| panic!("{command}: {e}"));

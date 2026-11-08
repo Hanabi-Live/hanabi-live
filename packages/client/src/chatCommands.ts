@@ -110,6 +110,33 @@ chatCommands.set("unlink", unlink);
 chatCommands.set("linked", linked);
 chatCommands.set("links", linked);
 
+// The /block and /unblock commands share one handler.
+function blockCommand(command: "block" | "unblock") {
+  return (room: string, args: readonly string[]) => {
+    if (args.length === 0) {
+      sendSelfPMFromServer(
+        `The format of the /${command} command is: <code>/${command} Alice</code>`,
+        room,
+        SelfChatMessageType.Info,
+      );
+      return;
+    }
+
+    globals.conn!.send(command === "block" ? "chatBlock" : "chatUnblock", {
+      name: args.join(" "),
+      room,
+    });
+  };
+}
+
+chatCommands.set("block", blockCommand("block"));
+chatCommands.set("unblock", blockCommand("unblock"));
+
+// /blocked
+chatCommands.set("blocked", (room: string) => {
+  globals.conn!.send("chatBlocked", { room });
+});
+
 // /pm [username] [msg]
 function pm(room: string, args: readonly string[]) {
   // Validate that the format of the command is correct.

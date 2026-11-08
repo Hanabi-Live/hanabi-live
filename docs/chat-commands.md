@@ -32,20 +32,23 @@ If you need general help with the website, then read the
 
 ## General Commands (that work everywhere except for Discord)
 
-| Command                          | Description                                                         |
-| -------------------------------- | ------------------------------------------------------------------- |
-| `/pm [username] [msg]`           | Send a private message                                              |
-| `/pmhistory [username] [amount]` | Show recent private messages with a player (default 5, maximum 100) |
-| `/pmhistory [amount]`            | Show recent private messages with anyone (default 5, maximum 100)   |
-| `/r [msg]`                       | Reply to a private message                                          |
-| `/friend [username]`             | Add someone to your friends list                                    |
-| `/friends`                       | Show a list of all your friends                                     |
-| `/unfriend [username]`           | Remove someone from your friends list                               |
-| `/link [username]`               | Add someone to your linked accounts                                 |
-| `/linked`                        | Show a list of all your linked accounts                             |
-| `/unlink [username]`             | Remove someone from your linked accounts                            |
-| `/tagsearch [tag]`               | Search through all games for a specific tag                         |
-| `/version`                       | Show the version number of the client code                          |
+| Command                          | Description                                                          |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `/pm [username] [msg]`           | Send a private message                                               |
+| `/pmhistory [username] [amount]` | Show recent private messages with a player (default 5, maximum 100)  |
+| `/pmhistory [amount]`            | Show recent private messages with anyone (default 5, maximum 100)    |
+| `/r [msg]`                       | Reply to a private message                                           |
+| `/friend [username]`             | Add someone to your friends list                                     |
+| `/friends`                       | Show a list of all your friends                                      |
+| `/unfriend [username]`           | Remove someone from your friends list                                |
+| `/link [username]`               | Add someone to your linked accounts                                  |
+| `/linked`                        | Show a list of all your linked accounts                              |
+| `/unlink [username]`             | Remove someone from your linked accounts                             |
+| `/block [username]`              | Stop someone from joining or spectating your tables or messaging you |
+| `/blocked`                       | Show a list of everyone you have blocked                             |
+| `/unblock [username]`            | Remove someone from your blocked list                                |
+| `/tagsearch [tag]`               | Search through all games for a specific tag                          |
+| `/version`                       | Show the version number of the client code                           |
 
 <br />
 

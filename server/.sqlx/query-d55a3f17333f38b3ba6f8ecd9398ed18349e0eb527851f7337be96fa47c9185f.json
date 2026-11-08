@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS(SELECT 1 FROM user_blocks\n         WHERE (user_id=$1 AND blocked_id=ANY($2)) OR (blocked_id=$1 AND user_id=ANY($2))) AS \"value!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d55a3f17333f38b3ba6f8ecd9398ed18349e0eb527851f7337be96fa47c9185f"
+}
