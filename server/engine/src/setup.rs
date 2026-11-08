@@ -1,5 +1,6 @@
 use crate::{
-    AssignedCharacter, DeckCard, Variant, characters, int, num_copies_of_card,
+    AssignedCharacter, Character, DeckCard, NO_CHARACTER, Variant, characters, int,
+    num_copies_of_card,
     random::{GoRandom, seed_hash},
 };
 use anyhow::{Result, ensure};
@@ -74,7 +75,12 @@ pub fn assign_characters(
         .contains(&player.as_str())
         {
             assigned.push(AssignedCharacter {
-                name: if index == 0 { "Genius" } else { "n/a" }.into(),
+                name: if index == 0 {
+                    Character::Genius.name()
+                } else {
+                    NO_CHARACTER
+                }
+                .into(),
                 metadata: -1,
             });
             continue;
@@ -87,15 +93,15 @@ pub fn assign_characters(
                 break candidate;
             }
         };
-        let metadata = match character.name.as_str() {
-            "Fuming" | "Inept" => {
+        let metadata = match Character::from_name(&character.name) {
+            Some(Character::Fuming | Character::Inept) => {
                 ensure!(
                     !variant.clue_colors.is_empty(),
                     "Character requires clue colors"
                 );
                 int(rng.index(variant.clue_colors.len()))
             }
-            "Dumbfounded" | "Awkward" => int(rng.index(4)) + 1,
+            Some(Character::Dumbfounded | Character::Awkward) => int(rng.index(4)) + 1,
             _ => -1,
         };
         assigned.push(AssignedCharacter {

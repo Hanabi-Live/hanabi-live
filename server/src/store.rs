@@ -401,10 +401,9 @@ impl Store {
                     .iter()
                     .find(|c| c.name == character.character)
                     .map_or(Ok(-1), |c| i16::try_from(c.id))?;
-                let metadata = if matches!(
-                    character.character.as_str(),
-                    "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
-                ) {
+                let metadata = if hanabi_engine::Character::from_name(&character.character)
+                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+                {
                     i16::try_from(character.character_metadata)?
                 } else {
                     0
@@ -488,10 +487,9 @@ impl Store {
                 .iter()
                 .find(|c| c.name == character.character)
                 .map_or(Ok(-1), |c| i16::try_from(c.id))?;
-            let metadata = if matches!(
-                character.character.as_str(),
-                "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
-            ) {
+            let metadata = if hanabi_engine::Character::from_name(&character.character)
+                .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+            {
                 i16::try_from(character.character_metadata)?
             } else {
                 0
@@ -591,7 +589,9 @@ impl Store {
             let name = character.map_or("", |c| c.name.as_str());
             characters.push(AssignedCharacter {
                 name: name.into(),
-                metadata: if matches!(name, "Fuming" | "Dumbfounded" | "Inept" | "Awkward") {
+                metadata: if hanabi_engine::Character::from_name(name)
+                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+                {
                     i32::from(r.character_metadata)
                 } else {
                     -1

@@ -15,6 +15,7 @@
 //! than a catalog deck (the separate public replay-import validator may impose
 //! stricter import requirements).
 mod catalog;
+mod character;
 mod characters;
 mod game;
 mod restore;
@@ -28,6 +29,7 @@ pub mod random;
 
 pub use anyhow::Result;
 pub use catalog::*;
+pub use character::{Character, NO_CHARACTER};
 pub use game::*;
 pub use restore::{parse_engine_state, validate_engine_state};
 pub use rules::{

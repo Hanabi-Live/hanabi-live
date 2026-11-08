@@ -1,4 +1,4 @@
-use crate::{EngineEvent, EngineState, rules::variant_for};
+use crate::{Character, EngineEvent, EngineState, rules::variant_for};
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 
@@ -60,10 +60,10 @@ pub fn events_for_recipient(
                 } => {
                     let hidden = *player_index == index
                         || (state.options.detrimental_characters
-                            && (player.character == "Slow-Witted"
-                                || (player.character == "Blind Spot"
+                            && (player.character() == Some(Character::SlowWitted)
+                                || (player.character() == Some(Character::BlindSpot)
                                     && *player_index == (index + 1) % count)
-                                || (player.character == "Oblivious"
+                                || (player.character() == Some(Character::Oblivious)
                                     && *player_index == (index + count - 1) % count)));
                     if hidden {
                         *suit_index = -1;

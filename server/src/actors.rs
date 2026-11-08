@@ -1825,10 +1825,9 @@ async fn prepare_table(
                             } else {
                                 p.character.clone()
                             },
-                            metadata: if matches!(
-                                p.character.as_str(),
-                                "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
-                            ) {
+                            metadata: if hanabi_engine::Character::from_name(&p.character)
+                                .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+                            {
                                 p.character_metadata
                             } else {
                                 -1
@@ -3016,10 +3015,10 @@ impl TableActor {
                                     } else {
                                         p.character.clone()
                                     },
-                                    metadata: if matches!(
-                                        p.character.as_str(),
-                                        "Fuming" | "Dumbfounded" | "Inept" | "Awkward"
-                                    ) {
+                                    metadata: if hanabi_engine::Character::from_name(&p.character)
+                                        .is_some_and(
+                                            hanabi_engine::Character::has_assigned_metadata,
+                                        ) {
                                         p.character_metadata
                                     } else {
                                         -1

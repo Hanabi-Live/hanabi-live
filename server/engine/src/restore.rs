@@ -1,5 +1,5 @@
 use crate::{
-    ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
+    Character, ClueType, EndCondition, EngineEvent, EngineState, Interpretation, RecordedAction,
     RecordedActionType, clue_action_type, clue_cost_for, clue_type,
     game::{
         MAX_CLUES, MAX_EVENTS, MAX_NAME_LENGTH, MAX_SAFE_INTEGER, MAX_SEED_LENGTH, hand_size,
@@ -228,7 +228,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 && player.hand.len() <= hand_size(&s.options),
             "Invalid player state."
         );
-        if player.character == "Genius" {
+        if player.character() == Some(Character::Genius) {
             ensure!(
                 player.character_metadata == -1
                     || (signed_seat(player.character_metadata)

@@ -1,7 +1,8 @@
 use crate::{
-    ActionRejected, AssignedCharacter, Clue, ClueType, CompletionTiming, EndCondition, EngineCard,
-    EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, Options, PlayerAction,
-    RecordedAction, RecordedActionType, Termination, Transition, assign_characters, characters,
+    ActionRejected, AssignedCharacter, Character, Clue, ClueType, CompletionTiming, EndCondition,
+    EngineCard, EngineEvent, EnginePlayer, EngineState, GameSetup, Interpretation, NO_CHARACTER,
+    Options, PlayerAction, RecordedAction, RecordedActionType, Termination, Transition,
+    assign_characters,
     characters::{
         character_post_action, character_post_clue, check_character_softlock, has_taken_last_turn,
         needs_second_action, validate_character_action, validate_character_clue,
@@ -110,9 +111,9 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
         "Invalid prepared character assignments."
     );
     ensure!(
-        assigned.iter().all(|a| a.name == "n/a"
+        assigned.iter().all(|a| a.name == NO_CHARACTER
             || a.name.is_empty()
-            || characters().iter().any(|c| c.name == a.name)),
+            || Character::from_name(&a.name).is_some()),
         "Unknown character assignment."
     );
     let players = setup

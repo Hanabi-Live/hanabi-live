@@ -1,6 +1,6 @@
 use crate::{
-    EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant, int,
-    is_card_touched,
+    Character, EngineCard, EngineEvent, EngineState, PlayerAction, Variant, clue_type, get_variant,
+    int, is_card_touched,
 };
 use std::collections::HashSet;
 
@@ -47,10 +47,10 @@ pub(crate) fn sees_card(state: &EngineState, viewer: usize, holder: usize, order
         return true;
     }
     let n = state.players.len();
-    match state.players[viewer].character.as_str() {
-        "Blind Spot" if holder == (viewer + 1) % n => false,
-        "Oblivious" if holder == (viewer + n - 1) % n => false,
-        "Slow-Witted" => state.players[holder].hand.last() != Some(&order),
+    match state.players[viewer].character() {
+        Some(Character::BlindSpot) if holder == (viewer + 1) % n => false,
+        Some(Character::Oblivious) if holder == (viewer + n - 1) % n => false,
+        Some(Character::SlowWitted) => state.players[holder].hand.last() != Some(&order),
         _ => true,
     }
 }
@@ -70,7 +70,10 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
     });
     if state.options.detrimental_characters
         && state.players[player].hand.len() > 1
-        && state.players.iter().any(|p| p.character == "Slow-Witted")
+        && state
+            .players
+            .iter()
+            .any(|p| p.character() == Some(Character::SlowWitted))
     {
         let hand = &state.players[player].hand;
         let previous = &state.deck[hand[hand.len() - 2]];
@@ -84,7 +87,10 @@ pub(crate) fn draw_card(state: &mut EngineState, player: usize) {
     if state.deck_index == state.deck.len() && !state.options.all_or_nothing {
         state.end_turn = state.turn + int(state.players.len()) + 1;
         if state.options.detrimental_characters
-            && state.players.iter().any(|p| p.character == "Contrarian")
+            && state
+                .players
+                .iter()
+                .any(|p| p.character() == Some(Character::Contrarian))
         {
             state.end_turn = state.turn + 3;
         }
@@ -106,7 +112,7 @@ pub(crate) fn remove_card(state: &mut EngineState, player: usize, order: usize) 
         if let Some(insistent) = state
             .players
             .iter_mut()
-            .find(|p| p.character == "Insistent")
+            .find(|p| p.character() == Some(Character::Insistent))
         {
             insistent.character_metadata = -1;
         }
@@ -193,7 +199,9 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
 }
 
 pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &EngineCard) -> bool {
-    if !state.options.detrimental_characters || state.players[player].character != "Follower" {
+    if !state.options.detrimental_characters
+        || state.players[player].character() != Some(Character::Follower)
+    {
         return false;
     }
     let v = variant_for(state);
