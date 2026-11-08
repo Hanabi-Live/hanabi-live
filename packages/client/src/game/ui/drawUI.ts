@@ -1112,25 +1112,25 @@ function drawScoreArea() {
       [globals.imageLoader!.get("skull")],
     );
     globals.elements.scoreArea.add(terminateButton as unknown as Konva.Group);
-    terminateButton.on(
-      "click tap",
-      (event: Konva.KonvaEventObject<MouseEvent>) => {
-        if (event.evt.button === LEFT_MOUSE_BUTTON) {
-          // Left click.
-          globals.lobby.conn!.send("tableVoteForTermination", {
-            tableID: globals.lobby.tableID,
-          });
-        } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
-          // Right click.
-          globals.lobby.conn!.send("tableTerminate", {
-            tableID: globals.lobby.tableID,
-          });
-        }
-      },
-    );
+    function voteForTermination() {
+      globals.lobby.conn!.send("tableVoteForTermination", {
+        tableID: globals.lobby.tableID,
+      });
+    }
+    terminateButton.on("click", (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (event.evt.button === LEFT_MOUSE_BUTTON) {
+        voteForTermination();
+      } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
+        globals.lobby.conn!.send("tableTerminate", {
+          tableID: globals.lobby.tableID,
+        });
+      }
+    });
+    // Touch events have no mouse button, so a tap always votes.
+    terminateButton.on("tap", voteForTermination);
     terminateButton.tooltipName = "kill";
     terminateButton.tooltipContent = `
-      <strong>Left click</strong> to cast a vote to terminate the game (click again to cancel the vote).<br />
+      <strong>Left click</strong> or <strong>tap</strong> to cast a vote to terminate the game (again to cancel the vote).<br />
       <strong>Right click</strong> to terminate immediately.
     `;
     initKonvaTooltips(terminateButton, true, false);

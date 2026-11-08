@@ -451,22 +451,6 @@ chatCommands.set("version", (room: string) => {
   sendSelfPMFromServer(msg, room, SelfChatMessageType.Info);
 });
 
-// /vote
-chatCommands.set("vote", (room: string) => {
-  // Votes to terminate the ongoing game. This is the same as left-clicking the skull button.
-  if (globals.tableID === NO_TABLE_ID) {
-    sendSelfPMFromServer(
-      "You are not currently at a table, so you cannot use the <code>/vote</code> command.",
-      room,
-      SelfChatMessageType.Error,
-    );
-    return;
-  }
-  globals.conn!.send("tableVoteForTermination", {
-    tableID: globals.tableID,
-  });
-});
-
 export function getVariantFromArgs(args: readonly string[]): string {
   const patterns = {
     doubleSpaces: / {2,}/gu,
