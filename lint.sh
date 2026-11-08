@@ -12,17 +12,20 @@ REPO_NAME="$(basename "$DIR")"
 
 SECONDS=0
 
-shard=all
+# CI runs the checks that need the Rust toolchain in a separate job, so that the JavaScript checks
+# do not wait for it to be installed. Locally, run every check.
+usage="Usage: $0 [--only=javascript|--only=rust]"
+only=all
 if (($# > 1)); then
-  echo "Usage: $0 [--shard=1/2|--shard=2/2]" >&2
+  echo "$usage" >&2
   exit 2
 fi
 case "${1-}" in
   "") ;;
-  --shard=1/2) shard=1 ;;
-  --shard=2/2) shard=2 ;;
+  --only=javascript) only=javascript ;;
+  --only=rust) only=rust ;;
   *)
-    echo "Usage: $0 [--shard=1/2|--shard=2/2]" >&2
+    echo "$usage" >&2
     exit 2
     ;;
 esac
@@ -53,27 +56,21 @@ process_ids=()
 run_parallel() {
   local group=$1
   shift
-  if [[ $shard == all || $shard == "$group" ]]; then
+  if [[ $only == all || $only == "$group" ]]; then
     "$@" &
     process_ids+=("$!")
   fi
 }
 
-lint_filters=()
-case "$shard" in
-  1) lint_filters=(--filter=@hanabi-live/testing) ;;
-  2) lint_filters=(--filter=@hanabi-live/client --filter=@hanabi-live/data --filter=@hanabi-live/game --filter=@hanabi-live/scripts) ;;
-  *) ;;
-esac
-run_parallel "$shard" bunx --bun --no-install turbo run lint --cache=local:rw --continue=always "${lint_filters[@]}"
-run_parallel 1 bash "$DIR/scripts/lint/check-prettier.sh"
-run_parallel 2 bash "$DIR/scripts/lint/check-spelling.sh"
-run_parallel 1 run_repository_check check-knip
-run_parallel 1 run_repository_check check-shellcheck
-run_parallel 1 run_repository_check check-templates
-run_parallel 2 run_repository_check check-variant-files
-run_parallel 1 run_repository_check lint-package-json
-run_parallel 2 lint_rust
+run_parallel javascript bunx --bun --no-install turbo run lint --cache=local:rw --continue=always
+run_parallel javascript bash "$DIR/scripts/lint/check-prettier.sh"
+run_parallel javascript bash "$DIR/scripts/lint/check-spelling.sh"
+run_parallel javascript run_repository_check check-knip
+run_parallel javascript run_repository_check check-shellcheck
+run_parallel javascript run_repository_check check-templates
+run_parallel javascript run_repository_check check-variant-files
+run_parallel javascript run_repository_check lint-package-json
+run_parallel rust lint_rust
 
 status=0
 for pid in "${process_ids[@]}"; do
@@ -85,8 +82,8 @@ if ((status != 0)); then
   exit "$status"
 fi
 
-if [[ $shard == all ]]; then
+if [[ $only == all ]]; then
   echo "Successfully linted $REPO_NAME in $SECONDS seconds."
 else
-  echo "Successfully linted shard $shard/2 of $REPO_NAME in $SECONDS seconds."
+  echo "Successfully ran the $only checks for $REPO_NAME in $SECONDS seconds."
 fi

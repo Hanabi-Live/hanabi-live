@@ -29,16 +29,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        checks: [javascript, rust]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/workflows/setup-bun
       - uses: ./.github/workflows/setup-rust
-        if: matrix.shard == 2
+        if: matrix.checks == 'rust'
       - name: Restore spelling file cache
-        if: matrix.shard == 2
+        if: matrix.checks == 'javascript'
         id: cspell-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -51,12 +51,12 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .turbo/cache
-          key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
+          key: lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.checks }}-${{ hashFiles('bun.lock', 'turbo.json') }}-${{ github.sha }}
           restore-keys: |
-            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
-            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.shard }}-
+            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.checks }}-${{ hashFiles('bun.lock', 'turbo.json') }}-
+            lint-turbo-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.checks }}-
       - name: Restore formatting file cache
-        if: matrix.shard == 1
+        if: matrix.checks == 'javascript'
         id: prettier-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -64,10 +64,10 @@ jobs:
           key: prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-${{ github.sha }}
           restore-keys: |
             prettier-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('bun.lock', 'package.json', 'bunfig.toml', 'prettier.config.mjs', '.prettierignore', '.editorconfig', 'tsconfig*.json', 'packages/*/tsconfig*.json', 'scripts/lint/check-prettier.sh') }}-
-      - name: Run the lint shard
-        run: bash lint.sh --shard=${{ matrix.shard }}/2
+      - name: Run the ${{ matrix.checks }} checks
+        run: bash lint.sh --only=${{ matrix.checks }}
       - name: Cache successful formatting results
-        if: matrix.shard == 1 && steps.prettier-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: matrix.checks == 'javascript' && steps.prettier-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/prettier
@@ -79,7 +79,7 @@ jobs:
           path: .turbo/cache
           key: ${{ steps.lint-cache.outputs.cache-primary-key }}
       - name: Cache successful spelling results
-        if: matrix.shard == 2 && steps.cspell-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: matrix.checks == 'javascript' && steps.cspell-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/cspell

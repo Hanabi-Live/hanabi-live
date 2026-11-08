@@ -106,10 +106,10 @@ bash lint.sh
 ```
 
 This is the same entrypoint CI uses for TypeScript checks, Rust formatting and
-Clippy, Prettier, spelling, ShellCheck, and repository consistency. CI runs
-complementary shards; run the no-argument command above before pushing. It
-requires Bun, JavaScript dependencies, the pinned Rust toolchain, and
-ShellCheck, but no running PostgreSQL or Redis services.
+Clippy, Prettier, spelling, ShellCheck, and repository consistency. CI runs the
+JavaScript and Rust checks in separate jobs; run the no-argument command above
+before pushing. It requires Bun, JavaScript dependencies, the pinned Rust
+toolchain, and ShellCheck, but no running PostgreSQL or Redis services.
 
 Run it against the final changes, even if package-specific checks already
 passed. Fix any failures and rerun the full suite before pushing. If a required
