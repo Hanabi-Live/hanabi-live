@@ -430,8 +430,9 @@ export function drawHands(winW: number, winH: number): void {
     } else {
       // In BGA mode, we show a black box around a player's hand to indicate that it is their turn.
       // The box extends past the hand by these fractions of its size, split evenly between opposite
-      // sides. The box is exactly as wide as the name frame below the hand.
-      const paddingW = (NAME_FRAME_INSET_X * 2) / handValues.w;
+      // sides. These were tuned by eye for how the box looks around the cards; it is not meant to
+      // match the width of the name frame below the hand.
+      const paddingW = numPlayers === 5 ? 0.055 : 0.025;
       const paddingH = 0.075;
       const turnRectValues = {
         x: handValues.x,
