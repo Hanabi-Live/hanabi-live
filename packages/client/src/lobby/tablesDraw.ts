@@ -230,14 +230,12 @@ export function tablesDraw(): void {
         .attr("id", rowId)
         .on("click", (event: JQuery.ClickEvent<HTMLElement>) => {
           if (event.ctrlKey) {
-            // Copy the URL that would occur from clicking on this table row.
-            let gameID = table.id.toString();
-            if (table.sharedReplay) {
-              gameID = table.name.slice("Shared replay for game #".length);
-            }
-            const path = table.sharedReplay
-              ? `/shared-replay/${gameID}`
-              : `/game/${gameID}`;
+            // Copy the URL that would occur from clicking on this table row. A shared replay of a
+            // stored game gets a link that lasts beyond this table.
+            const path =
+              table.sharedReplay && table.databaseID !== undefined
+                ? `/shared-replay/${table.databaseID}`
+                : `/game/${table.id}`;
             copyURLToClipboard(path, `#${rowId}`);
           } else {
             tableSpectate(table);

@@ -16,7 +16,7 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
-    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, MAX_PLAYERS,
+    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, GameId, IdleWarning, MAX_PLAYERS,
     MIN_PLAYERS, ReplayAction, SECONDS_PER_MINUTE, SoundLobby, Status, TableId, TableRequest,
     TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
@@ -439,6 +439,7 @@ pub(crate) fn client_message(name: &str, data: &Value) -> Result<ClientMessage> 
 #[cfg(test)]
 pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
+        database_id: None,
         id: TableId(1),
         joined: false,
         max_players: hanabi_protocol::DEFAULT_MAX_PLAYERS,
@@ -2059,13 +2060,14 @@ impl TableActor {
             0
         };
         let spectators = self.spectators();
+        let replay_game = match &self.table.phase {
+            Phase::Replay { snapshot, .. } if snapshot.game_id > 0 => Some(snapshot.game_id),
+            _ => None,
+        };
         TableView {
             players: self.table.players().iter().map(|p| p.id).collect(),
             replay,
-            replay_game: match &self.table.phase {
-                Phase::Replay { snapshot, .. } if snapshot.game_id > 0 => Some(snapshot.game_id),
-                _ => None,
-            },
+            replay_game,
             visible: self.table.visible,
             reconnects: self
                 .table
@@ -2076,6 +2078,7 @@ impl TableActor {
                 .collect(),
             inspection: json!({"running":running,"replay":replay,"frozen":self.frozen}),
             data: hanabi_protocol::Table {
+                database_id: replay_game.map(GameId),
                 id: TableId(self.table.id),
                 joined: false,
                 max_players: small(self.table.max_players),

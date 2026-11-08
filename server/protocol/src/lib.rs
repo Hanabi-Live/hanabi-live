@@ -1687,6 +1687,14 @@ pub struct Spectators {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct Table {
+    /// The game that a replay shows, if it is stored in the database.
+    #[serde(
+        default,
+        rename = "databaseID",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[schemars(with = "GameId")]
+    pub database_id: Option<GameId>,
     pub id: TableId,
     /// Whether the recipient is one of the players.
     pub joined: bool,

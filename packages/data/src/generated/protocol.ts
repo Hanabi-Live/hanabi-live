@@ -1007,6 +1007,10 @@ export const suggestionSchema = z.strictObject({
  */
 export const tableSchema = z
   .strictObject({
+    /**
+     * The game that a replay shows, if it is stored in the database.
+     */
+    databaseID: gameIdSchema.optional(),
     id: tableIdSchema,
     /**
      * Whether the recipient is one of the players.
