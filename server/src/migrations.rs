@@ -30,7 +30,7 @@ fn migrator() -> Migrator {
     let mut migrator = sqlx::migrate!("../install/migrations");
     // Retired migrations stay in the history after their files are deleted.
     migrator.set_ignore_missing(true);
-    // `apply` holds the lock itself, across schema installation and conversion too.
+    // `apply` holds the lock itself, across schema installation too.
     migrator.set_locking(false);
     migrator
 }
@@ -38,8 +38,6 @@ fn migrator() -> Migrator {
 enum State {
     /// The database has no tables.
     Empty,
-    /// The database has only the version table that the Tern migration tool maintained.
-    Legacy(i64),
     /// The versions recorded in the `SQLx` history, in ascending order.
     History(Vec<AppliedMigration>),
 }
@@ -70,23 +68,6 @@ async fn inspect(connection: &mut PgConnection) -> Result<State> {
         );
         return Ok(State::History(applied));
     }
-    if table_exists(connection, "schema_version").await? {
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "the legacy version table is not part of the schema that checks queries"
-        )]
-        let (version, rows): (i32, i64) = sqlx::query_as(
-            "SELECT COALESCE(MIN(version), -1), count(*) FROM public.schema_version",
-        )
-        .fetch_one(&mut *connection)
-        .await?;
-        let version = i64::from(version);
-        ensure!(
-            rows == 1 && (BASELINE..=SCHEMA_VERSION).contains(&version),
-            "Database schema version {version} is outside the supported range {BASELINE} to {SCHEMA_VERSION}"
-        );
-        return Ok(State::Legacy(version));
-    }
     let empty: bool = sqlx::query_scalar!(
         "SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public') AS \"empty!\""
     )
@@ -101,46 +82,27 @@ async fn inspect(connection: &mut PgConnection) -> Result<State> {
 
 /// Describes each step that `apply` would perform, in order.
 fn pending(state: &State, migrator: &Migrator) -> Vec<String> {
-    let (mut steps, applied) = match state {
+    let applied: BTreeSet<_> = match state {
         State::Empty => {
             return vec![format!("install the schema at version {SCHEMA_VERSION}")];
         }
-        State::Legacy(version) => (
-            vec![format!(
-                "record schema version {version} in {HISTORY_TABLE}"
-            )],
-            migrator
-                .iter()
-                .map(|migration| migration.version)
-                .filter(|number| number <= version)
-                .collect(),
-        ),
-        State::History(applied) => (
-            Vec::new(),
-            applied
-                .iter()
-                .map(|migration| migration.version)
-                .collect::<BTreeSet<_>>(),
-        ),
+        State::History(applied) => applied.iter().map(|migration| migration.version).collect(),
     };
-    steps.extend(
-        migrator
-            .iter()
-            .filter(|migration| !applied.contains(&migration.version))
-            .map(|migration| {
-                format!(
-                    "migration {:03} {}",
-                    migration.version, migration.description
-                )
-            }),
-    );
-    steps
+    migrator
+        .iter()
+        .filter(|migration| !applied.contains(&migration.version))
+        .map(|migration| {
+            format!(
+                "migration {:03} {}",
+                migration.version, migration.description
+            )
+        })
+        .collect()
 }
 
 fn current_version(state: &State) -> String {
     match state {
         State::Empty => "none".into(),
-        State::Legacy(version) => version.to_string(),
         State::History(applied) => applied
             .last()
             .map_or(BASELINE, |migration| migration.version)
@@ -148,27 +110,8 @@ fn current_version(state: &State) -> String {
     }
 }
 
-/// Records the migrations that the installed or legacy schema already contains, without running
-/// them.
-async fn record(connection: &mut PgConnection, migrator: &Migrator, through: i64) -> Result<()> {
-    connection.ensure_migrations_table(HISTORY_TABLE).await?;
-    let baseline = Migration::new(
-        BASELINE,
-        BASELINE_DESCRIPTION.into(),
-        MigrationType::Simple,
-        "".into_sql_str(),
-        false,
-    );
-    connection.skip(HISTORY_TABLE, &baseline).await?;
-    for migration in migrator
-        .iter()
-        .filter(|migration| migration.version <= through)
-    {
-        connection.skip(HISTORY_TABLE, migration).await?;
-    }
-    Ok(())
-}
-
+/// Installs the schema into an empty database and records the baseline and every migration, which
+/// the schema already contains, without running them.
 async fn install(connection: &mut PgConnection, migrator: &Migrator) -> Result<()> {
     let mut transaction = connection.begin().await?;
     #[expect(
@@ -179,7 +122,18 @@ async fn install(connection: &mut PgConnection, migrator: &Migrator) -> Result<(
         .execute(&mut *transaction)
         .await
         .context("Unable to install the database schema")?;
-    record(&mut transaction, migrator, SCHEMA_VERSION).await?;
+    transaction.ensure_migrations_table(HISTORY_TABLE).await?;
+    let baseline = Migration::new(
+        BASELINE,
+        BASELINE_DESCRIPTION.into(),
+        MigrationType::Simple,
+        "".into_sql_str(),
+        false,
+    );
+    transaction.skip(HISTORY_TABLE, &baseline).await?;
+    for migration in migrator.iter() {
+        transaction.skip(HISTORY_TABLE, migration).await?;
+    }
     transaction.commit().await?;
     Ok(())
 }
@@ -190,14 +144,8 @@ pub async fn apply(connection: &mut PgConnection) -> Result<Vec<String>> {
     connection.lock().await?;
     let state = inspect(connection).await?;
     let steps = pending(&state, &migrator);
-    match state {
-        State::Empty => install(connection, &migrator).await?,
-        State::Legacy(version) => {
-            let mut transaction = connection.begin().await?;
-            record(&mut transaction, &migrator, version).await?;
-            transaction.commit().await?;
-        }
-        State::History(_) => {}
+    if matches!(state, State::Empty) {
+        install(connection, &migrator).await?;
     }
     migrator.run(&mut *connection).await?;
     connection.unlock().await?;
