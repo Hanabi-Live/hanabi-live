@@ -4,14 +4,16 @@ type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;
 type FailedCallback = (filePath: string) => void;
 
-// The list of all game-related images to preload. All of these files should have a ".png"
-// extension.
 /** How many times to retry an image that failed to load before giving up on it. */
 const MAX_IMAGE_RETRIES = 2;
 
 /** The delay before the first retry, which doubles with each retry after it. */
 const IMAGE_RETRY_BASE_DELAY_MILLISECONDS = 1000;
 
+/**
+ * The list of all game-related images to preload. All of these files should have a ".png"
+ * extension.
+ */
 const FILE_IDS = [
   "checkbox-on",
   "checkbox-off",
