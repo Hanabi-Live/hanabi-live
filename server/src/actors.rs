@@ -1699,7 +1699,7 @@ async fn prepare_table(
                 let mut custom_seed = None;
                 let snapshot = if r.source == hanabi_protocol::ReplaySource::Json {
                     let imported =
-                        replay_helpers::parse(r.game_json.as_ref().unwrap_or(&Value::Null))?;
+                        replay_helpers::parse(r.game_json.as_ref().context("Missing game JSON")?)?;
                     warnings = imported.warnings.clone();
                     custom_seed = Some(imported.extra.custom_seed.clone());
                     replay_helpers::snapshot(imported, id, session.user)

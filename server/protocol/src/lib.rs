@@ -264,8 +264,8 @@ pub struct TableCreateRequest {
     pub hide_pregame: bool,
     /// A game to play from a custom deck, in the replay import format.
     #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "serde_json::Value")]
-    pub game_json: Option<serde_json::Value>,
+    #[schemars(with = "ReplayImport")]
+    pub game_json: Option<ReplayImport>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -285,8 +285,8 @@ pub struct TableUpdateRequest {
     #[serde(default)]
     pub hide_pregame: bool,
     #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "serde_json::Value")]
-    pub game_json: Option<serde_json::Value>,
+    #[schemars(with = "ReplayImport")]
+    pub game_json: Option<ReplayImport>,
 }
 
 /// `id` replays a finished game from the database; `json` imports a game in the replay format.
@@ -317,8 +317,8 @@ pub struct ReplayCreateRequest {
     #[schemars(with = "i32", range(min = 1, max = i32::MAX))]
     pub database_id: Option<i32>,
     #[serde(default, rename = "gameJSON", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "serde_json::Value")]
-    pub game_json: Option<serde_json::Value>,
+    #[schemars(with = "ReplayImport")]
+    pub game_json: Option<ReplayImport>,
     /// Replays cannot have a password; anything else is rejected.
     #[serde(default)]
     pub password: String,
@@ -502,6 +502,117 @@ pub struct ReplayCharacter {
     pub name: String,
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub metadata: i32,
+}
+
+/// A game to import. It accepts what `ReplayGame` exports and what other Hanabi tools write, so
+/// unlike other contracts, its objects ignore unknown fields and null means absent. The server checks
+/// the game itself, such as whether the deck matches the seed.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+#[schemars(extend("x-loose" = true))]
+pub struct ReplayImport {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = 6))]
+    pub players: Option<Vec<String>>,
+    /// The deck, by card order. A seed alone determines it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = 60))]
+    pub deck: Option<Vec<ImportCard>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = 512))]
+    pub actions: Option<Vec<ImportAction>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub options: Option<ImportOptions>,
+    /// Each player's notes, indexed by card order.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = 6))]
+    pub notes: Option<Vec<ImportNoteRow>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(length(max = 6))]
+    pub characters: Option<Vec<ImportCharacter>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seed: Option<String>,
+}
+
+/// One player's imported notes, indexed by card order. A missing note is empty.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct ImportNoteRow(pub Vec<Option<String>>);
+
+/// A card in an imported deck. A missing identity is 0.
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+#[schemars(extend("x-loose" = true))]
+pub struct ImportCard {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub suit_index: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub rank: Option<i32>,
+}
+
+/// An action in an imported game. Missing fields are 0.
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[schemars(extend("x-loose" = true))]
+pub struct ImportAction {
+    #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0, max = 255))]
+    pub kind: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub target: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub value: Option<i32>,
+}
+
+/// A player's character in an imported game. A missing name is no character.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[schemars(extend("x-loose" = true))]
+pub struct ImportCharacter {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = i32::MIN, max = i32::MAX))]
+    pub metadata: Option<i32>,
+}
+
+/// The options of an imported game. Missing options take their defaults.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+#[schemars(extend("x-loose" = true))]
+pub struct ImportOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variant: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
+    pub starting_player: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timed: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_base: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    pub time_per_turn: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speedrun: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card_cycle: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deck_plays: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub empty_clues: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub one_extra_card: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub one_less_card: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub all_or_nothing: Option<bool>,
+    /// When present, even as false, the game must assign every player a character.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detrimental_characters: Option<bool>,
 }
 
 /// Every card's identity, by card order, once a game ends.
@@ -1667,6 +1778,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     }
     register!(
         ReplayGame,
+        ReplayImport,
         LoginRequest,
         LoginResponse,
         ApiError,

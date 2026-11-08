@@ -115,6 +115,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "default",
                 "x-brand",
                 "x-readonly",
+                "x-loose",
                 "x-undefined-default",
                 "x-enum",
                 "x-date",
@@ -230,9 +231,15 @@ fn expression(schema: &Value) -> Result<String> {
             "null" => "z.null()".into(),
             "array" => format!("z.array({})", expression(&schema["items"])?),
             "object" => {
+                // Only an explicitly loose object, such as an imported file, ignores unknown fields.
+                let loose = schema["x-loose"] == true;
                 ensure!(
-                    schema["additionalProperties"] == false,
-                    "Wire objects must be strict"
+                    if loose {
+                        schema.get("additionalProperties").is_none()
+                    } else {
+                        schema["additionalProperties"] == false
+                    },
+                    "Wire objects must be strict unless marked loose"
                 );
                 let required = schema["required"].as_array().cloned().unwrap_or_default();
                 let mut fields = Vec::new();
@@ -255,7 +262,11 @@ fn expression(schema: &Value) -> Result<String> {
                     }
                     fields.push(format!("{}: {field}", serde_json::to_string(name)?));
                 }
-                format!("z.strictObject({{{}}})", fields.join(","))
+                format!(
+                    "{}({{{}}})",
+                    if loose { "z.object" } else { "z.strictObject" },
+                    fields.join(",")
+                )
             }
             other => bail!("Unsupported schema type: {other}"),
         }
@@ -553,6 +564,7 @@ fn main() -> Result<()> {
             "Spectator",
             "GameHistory",
             "ReplayGame",
+            "ReplayImport",
             "LoginRequest",
             "LoginResponse",
             "ApiError",

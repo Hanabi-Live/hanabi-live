@@ -1,12 +1,13 @@
 // The "Watch Specific Replay" nav button.
 
-import { errorDetails } from "@hanabi-live/data";
 import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";
 import * as tooltips from "../tooltips";
 import { escapeHtml } from "../utils";
+import type { GameJSON } from "./gameJSON";
+import { parseGameJSON } from "./gameJSON";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected.
@@ -113,18 +114,14 @@ function submit() {
       'The value of the "replay-json" element is not a string.',
     );
   }
-  let gameJSON: unknown;
+  let gameJSON: GameJSON | undefined;
   if (source === "json") {
-    try {
-      gameJSON = JSON.parse(gameJSONString);
-    } catch (error) {
-      showReplayError(escapeHtml(errorDetails(error, "Parsing replay JSON")));
+    const parsed = parseGameJSON(gameJSONString);
+    if ("error" in parsed) {
+      showReplayError(escapeHtml(parsed.error));
       return;
     }
-    if (typeof gameJSON !== "object") {
-      showReplayError("Error: That is not a valid JSON object.");
-      return;
-    }
+    ({ gameJSON } = parsed);
     localStorage.setItem("watchReplayJSON", gameJSONString);
   }
 

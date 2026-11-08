@@ -6,7 +6,7 @@ use crate::{
 use anyhow::{Context, Result, ensure};
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use serde_json::{Value, json};
+use hanabi_protocol::ReplayImport;
 use std::collections::BTreeMap;
 
 pub struct Imported {
@@ -15,52 +15,41 @@ pub struct Imported {
     pub warnings: Vec<String>,
     pub extra: ExtraOptions,
 }
-pub fn parse(input: &Value) -> Result<Imported> {
-    ensure!(input.is_object(), "Invalid game JSON");
-    let array = |key: &str, max: usize| -> Result<Vec<Value>> {
-        let value = input.get(key).filter(|v| !v.is_null());
-        let list = match value {
-            None => vec![],
-            Some(v) => v.as_array().context("Expected array")?.clone(),
-        };
-        ensure!(list.len() <= max, "Oversized {key}");
-        Ok(list)
-    };
-    let seed = match input.get("seed").filter(|v| !v.is_null()) {
-        None => "",
-        Some(v) => v.as_str().context("Invalid seed type")?,
-    };
+pub fn parse(input: &ReplayImport) -> Result<Imported> {
+    let seed = input.seed.as_deref().unwrap_or("");
     ensure!(
         seed.len() <= 45 && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Invalid seed"
     );
-    let mut raw_options = input
-        .get("options")
-        .filter(|v| !v.is_null())
-        .cloned()
-        .unwrap_or(json!({}));
-    let raw = raw_options
-        .as_object_mut()
-        .context("Invalid import options")?;
-    raw.retain(|_, v| !v.is_null());
-    let variant_name = match raw.remove("variant") {
-        None => "No Variant".into(),
-        Some(v) => v.as_str().context("Invalid variant name")?.to_owned(),
-    };
+    let raw = input.options.clone().unwrap_or_default();
+    let variant_name = raw.variant.unwrap_or_else(|| "No Variant".into());
     let variant = hanabi_engine::get_variant(&variant_name)?;
-    let has_characters = raw.contains_key("detrimentalCharacters");
-    ensure!(
-        raw.get("timeBase").is_none_or(|v| v.as_i64().is_some()),
-        "Replay base time must be an integer"
-    );
-    let defaults = serde_json::to_value(Options::default())?;
-    raw.retain(|k, _| defaults.get(k).is_some());
-    raw.insert("variantName".into(), json!(variant_name));
-    let mut options: Options = serde_json::from_value(raw_options)?;
-    let mut players: Vec<String> = array("players", 6)?
-        .into_iter()
-        .map(serde_json::from_value)
-        .collect::<std::result::Result<_, _>>()?;
+    let has_characters = raw.detrimental_characters.is_some();
+    let defaults = Options::default();
+    let mut options = Options {
+        variant_name,
+        starting_player: match raw.starting_player {
+            Some(index) => usize::try_from(index)?,
+            None => defaults.starting_player,
+        },
+        timed: raw.timed.unwrap_or(defaults.timed),
+        time_base: raw
+            .time_base
+            .map_or(defaults.time_base, |value| value as f64),
+        time_per_turn: raw.time_per_turn.unwrap_or(defaults.time_per_turn),
+        speedrun: raw.speedrun.unwrap_or(defaults.speedrun),
+        card_cycle: raw.card_cycle.unwrap_or(defaults.card_cycle),
+        deck_plays: raw.deck_plays.unwrap_or(defaults.deck_plays),
+        empty_clues: raw.empty_clues.unwrap_or(defaults.empty_clues),
+        one_extra_card: raw.one_extra_card.unwrap_or(defaults.one_extra_card),
+        one_less_card: raw.one_less_card.unwrap_or(defaults.one_less_card),
+        all_or_nothing: raw.all_or_nothing.unwrap_or(defaults.all_or_nothing),
+        detrimental_characters: raw
+            .detrimental_characters
+            .unwrap_or(defaults.detrimental_characters),
+        ..defaults
+    };
+    let mut players = input.players.clone().unwrap_or_default();
     if players.is_empty() {
         let pattern = regex!(r"^(?:legacy-\d+-)?p([2-6])v\d+s[-0-9A-Za-z]+$");
         let count: usize = pattern
@@ -87,11 +76,15 @@ pub fn parse(input: &Value) -> Result<Imported> {
         options.starting_player < players.len(),
         "Invalid starting player"
     );
-    let mut deck: Vec<Card> = array("deck", 60)?
-        .into_iter()
-        .map(|v| -> Result<Card> {
-            ensure!(v.is_object(),"Invalid card object");
-            Ok(serde_json::from_value(json!({"suitIndex":v.get("suitIndex").filter(|v|!v.is_null()).cloned().unwrap_or(json!(0)),"rank":v.get("rank").filter(|v|!v.is_null()).cloned().unwrap_or(json!(0))}))?)
+    let mut deck: Vec<Card> = input
+        .deck
+        .iter()
+        .flatten()
+        .map(|card| -> Result<Card> {
+            Ok(Card {
+                suit_index: usize::try_from(card.suit_index.unwrap_or(0))?,
+                rank: card.rank.unwrap_or(0),
+            })
         })
         .collect::<Result<_>>()?;
     let seeded = if seed.is_empty() {
@@ -116,28 +109,29 @@ pub fn parse(input: &Value) -> Result<Imported> {
         seeded.as_ref().is_none_or(|d| *d == deck),
         "The deck does not match the seed"
     );
-    let characters: Vec<AssignedCharacter> = array("characters", 6)?
-        .into_iter()
-        .map(|v|->Result<AssignedCharacter>{ensure!(v.is_object(),"Invalid character object");Ok(serde_json::from_value(json!({"name":v.get("name").filter(|v|!v.is_null()).cloned().unwrap_or(json!("")),"metadata":v.get("metadata").filter(|v|!v.is_null()).cloned().unwrap_or(json!(0))}))?)})
-        .collect::<Result<_>>()?;
+    let characters: Vec<AssignedCharacter> = input
+        .characters
+        .iter()
+        .flatten()
+        .map(|character| AssignedCharacter {
+            name: character.name.clone().unwrap_or_default(),
+            metadata: character.metadata.unwrap_or(0),
+        })
+        .collect();
     ensure!(
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
-    let actions: Vec<Action> = array("actions", 512)?
-        .into_iter()
-        .map(|mut v| -> Result<Action> {
-            ensure!(v.is_object(), "Invalid action object");
-            for key in ["type", "target", "value"] {
-                if v.get(key).is_none_or(Value::is_null) {
-                    v[key] = json!(0);
-                }
-            }
-            Ok(serde_json::from_value(
-                json!({"type":v["type"],"target":v["target"],"value":v["value"]}),
-            )?)
+    let actions: Vec<Action> = input
+        .actions
+        .iter()
+        .flatten()
+        .map(|action| Action {
+            kind: action.kind.unwrap_or(0),
+            target: action.target.unwrap_or(0),
+            value: action.value.unwrap_or(0),
         })
-        .collect::<Result<_>>()?;
+        .collect();
     for (i, a) in actions.iter().enumerate() {
         ensure!(
             match a.kind {
@@ -159,21 +153,16 @@ pub fn parse(input: &Value) -> Result<Imported> {
         );
     }
     let size = deck.len() + variant.suits.len();
-    let raw_notes = array("notes", 6)?;
+    let raw_notes = input.notes.as_deref().unwrap_or_default();
     ensure!(
         raw_notes.is_empty() || raw_notes.len() == players.len(),
         "Invalid note rows"
     );
     let mut notes = vec![vec![String::new(); size]; players.len()];
     for (i, row) in raw_notes.iter().enumerate() {
-        let row = row.as_array().context("Invalid note row")?;
-        ensure!(row.len() <= size, "Too many notes");
-        for (j, text) in row.iter().enumerate() {
-            let text = if text.is_null() {
-                ""
-            } else {
-                text.as_str().context("Invalid note text")?
-            };
+        ensure!(row.0.len() <= size, "Too many notes");
+        for (j, text) in row.0.iter().enumerate() {
+            let text = text.as_deref().unwrap_or("");
             ensure!(text.len() <= 65536, "Note too long");
             notes[i][j] = text.to_owned();
         }
@@ -269,6 +258,32 @@ pub fn snapshot(imported: Imported, table_id: u64, owner: i32) -> Snapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::{Value, json};
+
+    fn import(input: &Value) -> Result<Imported> {
+        parse(&hanabi_protocol::decode(input)?)
+    }
+
+    #[test]
+    fn files_from_other_tools_keep_importing() {
+        // Null means absent, and unknown fields at any level are ignored.
+        let imported = import(&json!({
+            "id": 7,
+            "seed": "p2v0s1",
+            "players": null,
+            "deck": null,
+            "actions": [{"type": 5, "target": -1, "value": 4, "turn": 1}],
+            "options": {"variant": null, "speedrun": null, "tableName": "x", "numPlayers": "two"},
+            "notes": [[null, "a"], []],
+            "characters": null,
+            "source": "another tool"
+        }))
+        .unwrap();
+        assert_eq!(imported.game.players.len(), 2);
+        assert_eq!(imported.notes[0][1], "a");
+        assert!(import(&json!({"seed":"p2v0s1","options":{"timeBase":1.5}})).is_err());
+    }
+
     #[test]
     fn malformed_import_elements_return_errors_instead_of_panicking() {
         for (field, value) in [
@@ -282,7 +297,7 @@ mod tests {
             let mut input = json!({"seed":"p2v0s1"});
             input[field] = value;
             assert!(
-                std::panic::catch_unwind(|| parse(&input))
+                std::panic::catch_unwind(|| import(&input))
                     .expect("untrusted JSON must not panic")
                     .is_err(),
                 "{field}"
@@ -305,9 +320,9 @@ mod tests {
             }
             input
         };
-        let error = |input: Value| parse(&input).err().unwrap().to_string();
+        let error = |input: Value| import(&input).err().unwrap().to_string();
         let identities = |input: Value| {
-            parse(&input)
+            import(&input)
                 .unwrap()
                 .game
                 .deck
