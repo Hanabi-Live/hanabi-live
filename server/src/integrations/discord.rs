@@ -964,7 +964,7 @@ pub async fn link_copy(pool: &PgPool, chat_id: i32, id: &str) -> Result<bool> {
 
 fn decode_html(text: &str) -> String {
     regex!(r"&(?:amp|apos|gt|lt|quot|#34|#39);")
-        .replace_all(text, |captures: &regex::Captures| match &captures[0] {
+        .replace_all(text, |captures: &regex::Captures<'_>| match &captures[0] {
             "&amp;" => "&",
             "&lt;" => "<",
             "&gt;" => ">",
