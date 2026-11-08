@@ -105,7 +105,8 @@ pub fn verify(root: &Path) -> Result<()> {
         "Unsupported native release"
     );
     ensure!(
-        manifest.revision == crate::restart::version() && manifest.revision.len() == 40,
+        manifest.revision == crate::restart::version()
+            && manifest.revision.len() == crate::restart::REVISION_LENGTH,
         "Release does not match the compiled Rust revision"
     );
     ensure!(

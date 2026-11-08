@@ -38,7 +38,7 @@ impl ServerInfo {
                 ),
                 format!(
                     "Uptime: {}",
-                    format_duration(self.started.elapsed().as_secs())
+                    crate::lifecycle::duration(self.started.elapsed().as_secs())
                 ),
             ],
             "replay" => {
@@ -76,31 +76,6 @@ impl ServerInfo {
             }
             _ => anyhow::bail!("Invalid runtime chat command"),
         })
-    }
-}
-
-fn format_duration(seconds: u64) -> String {
-    let unit =
-        |value: u64, name: &str| format!("{value} {name}{}", if value == 1 { "" } else { "s" });
-    if seconds < 60 {
-        return unit(seconds, "second");
-    }
-    if seconds < 3600 {
-        return unit((seconds + 30) / 60, "minute");
-    }
-    let total_hours = seconds / 3600;
-    let minutes = seconds / 60 - total_hours * 60;
-    let days = (total_hours - 1) / 24;
-    let hours = total_hours - days * 24;
-    if days > 0 {
-        format!(
-            "{}, {}, and {}",
-            unit(days, "day"),
-            unit(hours, "hour"),
-            unit(minutes, "minute")
-        )
-    } else {
-        format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
     }
 }
 

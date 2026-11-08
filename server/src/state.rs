@@ -9,7 +9,8 @@ use std::{
 };
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
-const MAX_PAYLOAD: usize = 4 * 1024 * 1024;
+/// The largest checkpoint payload, in bytes.
+pub const MAX_CHECKPOINT_BYTES: usize = 4 * 1024 * 1024;
 const MAX_RECORDS: usize = 4096;
 const RESPONSE_TIMEOUT: Duration = Duration::from_secs(30);
 const LEASE_TIME: Duration = Duration::from_secs(5);
@@ -27,7 +28,7 @@ const ALLOCATE_TABLE: &str = r"
 if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
 if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[2]) then return -3 end
 local current = redis.call('GET', KEYS[4])
-if current and tonumber(current) >= 9007199254740991 then return -3 end
+if current and tonumber(current) >= tonumber(ARGV[3]) then return -3 end
 local id = redis.call('INCR', KEYS[4])
 local member = 't:' .. redis.call('GET', KEYS[4])
 local key = KEYS[2] .. member
@@ -383,7 +384,7 @@ impl RedisState {
             "Invalid checkpoint revision"
         );
         ensure!(
-            !payload.is_empty() && payload.len() <= MAX_PAYLOAD,
+            !payload.is_empty() && payload.len() <= MAX_CHECKPOINT_BYTES,
             "Invalid checkpoint size"
         );
         let mut connection = self.connection.clone();
@@ -429,6 +430,7 @@ impl RedisState {
             .key(format!("{}:table-counter", self.prefix))
             .arg(&self.owner.token)
             .arg(MAX_RECORDS)
+            .arg(hanabi_protocol::MAX_SAFE_INTEGER)
             .invoke_async(&mut connection)
             .await;
         let id = self.reply(result)?;
@@ -462,7 +464,7 @@ impl RedisState {
                 .key(&self.owner.key)
                 .key(self.key(id)?)
                 .arg(&self.owner.token)
-                .arg(MAX_PAYLOAD)
+                .arg(MAX_CHECKPOINT_BYTES)
                 .invoke_async(&mut connection)
                 .await;
         let (revision, payload, creator) = match result {
@@ -479,7 +481,7 @@ impl RedisState {
                 ensure!(
                     revision >= 0
                         && (revision == 0) == payload.is_empty()
-                        && payload.len() <= MAX_PAYLOAD
+                        && payload.len() <= MAX_CHECKPOINT_BYTES
                         && !creator.is_empty(),
                     "Invalid stored Redis checkpoint"
                 );

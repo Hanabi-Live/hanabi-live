@@ -19,7 +19,11 @@ use anyhow::{Result, ensure};
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
-const MAX_SAFE_FLOAT: f64 = 9_007_199_254_740_991.0;
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "a float represents MAX_SAFE_INTEGER exactly"
+)]
+const MAX_SAFE_FLOAT: f64 = MAX_SAFE_INTEGER as f64;
 /// Clue tokens in play at most, before a clue-starved variant doubles their count.
 pub const MAX_CLUES: i32 = 8;
 /// The most events a game can record.

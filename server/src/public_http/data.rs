@@ -291,10 +291,8 @@ pub(super) async fn history(
 }
 
 pub(super) fn sanitize_tag(value: &str) -> Result<String> {
-    if value.len() > 100 {
-        return Err(Error::not_found(
-            "Tags cannot be longer than 100 characters.",
-        ));
+    if value.len() > crate::model::MAX_TAG_LENGTH {
+        return Err(Error::not_found(crate::model::tag_too_long()));
     }
     let value: String = value
         .chars()

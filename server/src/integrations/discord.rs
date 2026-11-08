@@ -13,6 +13,7 @@ use sqlx::PgPool;
 use std::{
     collections::{HashMap, HashSet},
     fmt::Write as _,
+    ops::RangeInclusive,
     sync::{
         Arc, Weak,
         atomic::{AtomicBool, AtomicU8, Ordering},
@@ -24,6 +25,29 @@ use tokio_util::sync::CancellationToken;
 
 const RESTART_PREFIX: &str = "The server went down for a restart at:";
 const STOP_PREFIX: &str = "The server is stopping gracefully at:";
+/// The digits in a Discord identifier (a snowflake).
+const SNOWFLAKE_DIGITS: RangeInclusive<usize> = 17..=20;
+/// The largest Discord HTTP response or gateway message we accept, in bytes.
+const MAX_PAYLOAD_BYTES: usize = 1024 * 1024;
+/// The gateway intents we identify with: guilds, guild messages, direct messages, and message
+/// content.
+const INTENTS: u64 = 1 << 0 | 1 << 9 | 1 << 12 | 1 << 15;
+
+/// Discord gateway opcodes.
+mod opcode {
+    pub const DISPATCH: i64 = 0;
+    pub const HEARTBEAT: i64 = 1;
+    pub const IDENTIFY: i64 = 2;
+    pub const RESUME: i64 = 6;
+    pub const RECONNECT: i64 = 7;
+    pub const INVALID_SESSION: i64 = 9;
+    pub const HELLO: i64 = 10;
+    pub const HEARTBEAT_ACK: i64 = 11;
+}
+
+fn is_snowflake(id: &str) -> bool {
+    SNOWFLAKE_DIGITS.contains(&id.len()) && id.bytes().all(|b| b.is_ascii_digit())
+}
 
 #[derive(Clone)]
 pub struct Configuration {
@@ -77,10 +101,14 @@ impl Configuration {
             (KEYS[2], &config.lobby),
             (KEYS[3], &config.development),
         ] {
-            if !(17..=20).contains(&id.len()) || !id.bytes().all(|b| b.is_ascii_digit()) {
+            if !is_snowflake(id) {
                 return Err(crate::errors::Fault::new(
                     "discord_configuration",
-                    format!("{key} must contain a 17-20 digit Discord identifier."),
+                    format!(
+                        "{key} must contain a {}-{} digit Discord identifier.",
+                        SNOWFLAKE_DIGITS.start(),
+                        SNOWFLAKE_DIGITS.end()
+                    ),
                     axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 )
                 .into());
@@ -155,7 +183,7 @@ impl Transport for NativeTransport {
                     format!(
                         "Discord returned HTTP status: {}{}",
                         response.status().as_u16(),
-                        if response.status().as_u16() == 429 {
+                        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
                             " (rate limited)"
                         } else {
                             ""
@@ -168,7 +196,7 @@ impl Transport for NativeTransport {
             let mut bytes = Vec::new();
             while let Some(chunk) = response.chunk().await? {
                 ensure!(
-                    bytes.len() + chunk.len() <= 1_048_576,
+                    bytes.len() + chunk.len() <= MAX_PAYLOAD_BYTES,
                     "Oversized Discord response"
                 );
                 bytes.extend(chunk);
@@ -193,8 +221,8 @@ impl Transport for NativeTransport {
                 let attempt = async {
                     use tokio_tungstenite::tungstenite::{Message, protocol::WebSocketConfig};
                     let config = WebSocketConfig::default()
-                        .max_message_size(Some(1_048_576))
-                        .max_frame_size(Some(1_048_576));
+                        .max_message_size(Some(MAX_PAYLOAD_BYTES))
+                        .max_frame_size(Some(MAX_PAYLOAD_BYTES));
                     let (mut socket, _) = tokio_tungstenite::connect_async_with_config(
                         "wss://gateway.discord.gg/?v=10&encoding=json",
                         Some(config),
@@ -205,16 +233,16 @@ impl Transport for NativeTransport {
                         .await?
                         .context("Missing Discord greeting")??;
                     let hello: Value = serde_json::from_str(first.to_text()?)?;
-                    ensure!(hello["op"] == 10, "Invalid Discord greeting");
+                    ensure!(hello["op"] == opcode::HELLO, "Invalid Discord greeting");
                     let interval = hello["d"]["heartbeat_interval"]
                         .as_u64()
                         .context("Missing heartbeat")?;
                     ensure!((1000..=120_000).contains(&interval), "Invalid heartbeat");
                     let identify = if session.is_empty() {
-                        json!({"op":2,"d":{"token":self.token,"intents":1|512|4096|32768,
+                        json!({"op":opcode::IDENTIFY,"d":{"token":self.token,"intents":INTENTS,
                             "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})
                     } else {
-                        json!({"op":6,"d":{"token":self.token,"session_id":session,"seq":sequence}})
+                        json!({"op":opcode::RESUME,"d":{"token":self.token,"session_id":session,"seq":sequence}})
                     };
                     socket
                         .send(Message::Text(identify.to_string().into()))
@@ -227,7 +255,7 @@ impl Transport for NativeTransport {
                             ()=cancel.cancelled()=>{let _=tokio::time::timeout(Duration::from_secs(1),socket.close(None)).await;return Ok::<(),anyhow::Error>(());}
                             _=heartbeat.tick()=>{
                                 ensure!(acknowledged,"Discord heartbeat was not acknowledged");
-                                socket.send(Message::Text(json!({"op":1,"d":sequence}).to_string().into())).await?;
+                                socket.send(Message::Text(json!({"op":opcode::HEARTBEAT,"d":sequence}).to_string().into())).await?;
                                 acknowledged=false;
                             }
                             next=socket.next()=>{
@@ -237,14 +265,14 @@ impl Transport for NativeTransport {
                                         let value:Value=serde_json::from_str(&text)?;
                                         if let Some(seq)=value["s"].as_i64() {sequence=Some(seq);}
                                         match value["op"].as_i64() {
-                                            Some(0)=>{
+                                            Some(opcode::DISPATCH)=>{
                                                 if value["t"]=="READY" {session=value["d"]["session_id"].as_str().context("Missing session")?.into();}
                                                 events.try_send(value).map_err(|_|anyhow::anyhow!("Discord event capacity exhausted"))?;
                                             }
-                                            Some(1)=>socket.send(Message::Text(json!({"op":1,"d":sequence}).to_string().into())).await?,
-                                            Some(7)=>break,
-                                            Some(9)=>{if value["d"]!=true {session.clear();sequence=None;}break;}
-                                            Some(11)=>acknowledged=true,
+                                            Some(opcode::HEARTBEAT)=>socket.send(Message::Text(json!({"op":opcode::HEARTBEAT,"d":sequence}).to_string().into())).await?,
+                                            Some(opcode::RECONNECT)=>break,
+                                            Some(opcode::INVALID_SESSION)=>{if value["d"]!=true {session.clear();sequence=None;}break;}
+                                            Some(opcode::HEARTBEAT_ACK)=>acknowledged=true,
                                             _=>{},
                                         }
                                     }
@@ -476,10 +504,13 @@ impl Bridge {
     async fn render_inner(&self, text: &str) -> String {
         let mut result = String::new();
         let mut offset = 0;
-        for capture in regex!(r"<(@!?|@&|#)([0-9]{17,19})>").captures_iter(text) {
+        for capture in regex!(r"<(@!?|@&|#)([0-9]+)>").captures_iter(text) {
+            let id = &capture[2];
+            if !is_snowflake(id) {
+                continue;
+            }
             let matched = capture.get(0).unwrap();
             result.push_str(&escape_html(&text[offset..matched.start()]));
-            let id = &capture[2];
             let name = match &capture[1] {
                 "#" => format!(
                     "#{}",
@@ -696,10 +727,7 @@ impl Bridge {
                     .context("Missing message identity")?;
                 let author = data["author"]["id"].as_str().context("Missing author")?;
                 ensure!(
-                    (17..=20).contains(&id.len())
-                        && id.bytes().all(|b| b.is_ascii_digit())
-                        && (17..=20).contains(&author.len())
-                        && author.bytes().all(|b| b.is_ascii_digit()),
+                    is_snowflake(id) && is_snowflake(author),
                     "Invalid Discord identity"
                 );
                 let content = data["content"].as_str().unwrap_or("");

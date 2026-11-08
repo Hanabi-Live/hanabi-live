@@ -336,30 +336,9 @@ fn percentage(n: i64, total: i64) -> String {
     s.strip_suffix(".0").unwrap_or(&s).to_owned()
 }
 fn duration(seconds: i64) -> String {
-    fn unit(n: i64, label: &str) -> String {
-        format!("{n} {label}{}", if n == 1 { "" } else { "s" })
-    }
-    if seconds == 0 {
-        return "-".into();
-    }
-    if seconds < 60 {
-        return unit(seconds, "second");
-    }
-    if seconds < 3600 {
-        return unit((seconds + 30) / 60, "minute");
-    }
-    let hours = seconds / 3600;
-    let days = ((hours - 1) / 24).max(0);
-    let minutes = seconds / 60 - hours * 60;
-    if days > 0 {
-        format!(
-            "{}, {}, and {}",
-            unit(days, "day"),
-            unit(hours - days * 24, "hour"),
-            unit(minutes, "minute")
-        )
-    } else {
-        format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
+    match u64::try_from(seconds) {
+        Ok(0) | Err(_) => "-".into(),
+        Ok(seconds) => crate::lifecycle::duration(seconds),
     }
 }
 pub(super) fn possessive(name: &str) -> String {

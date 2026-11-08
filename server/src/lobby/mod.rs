@@ -272,10 +272,8 @@ pub async fn dispatch(
         }
         ClientMessage::TagSearch(request) => {
             let raw = request.msg.as_str();
-            if raw.len() > 100 {
-                return Ok(Some(vec![warning(
-                    "Tags cannot be longer than 100 characters.",
-                )]));
+            if raw.len() > crate::model::MAX_TAG_LENGTH {
+                return Ok(Some(vec![warning(&crate::model::tag_too_long())]));
             }
             let replaced: String = raw
                 .chars()

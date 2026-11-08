@@ -2,9 +2,9 @@ use crate::{
     game::{Game, Options},
     lobby::{Effect, OnlineUser},
     model::{
-        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, NoteOwner, PendingTag, Phase,
-        Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag, engine_options, small,
-        wire_options,
+        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MAX_TAG_LENGTH, NoteOwner,
+        PendingTag, Phase, Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag,
+        engine_options, small, tag_too_long, wire_options,
     },
     operations::Operation,
     server_info::ServerInfo,
@@ -3975,10 +3975,7 @@ impl TableActor {
         operation: &str,
     ) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
-        ensure!(
-            raw.len() <= 100,
-            "Tags cannot be longer than 100 characters."
-        );
+        ensure!(raw.len() <= MAX_TAG_LENGTH, tag_too_long());
         let tag = crate::accounts::normalize_string(
             raw.chars()
                 .map(|c| if c.is_whitespace() { ' ' } else { c })

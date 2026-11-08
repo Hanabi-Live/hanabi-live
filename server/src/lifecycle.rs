@@ -150,18 +150,23 @@ impl Control {
     }
 }
 
+/// Formats a duration in words, such as "2 hours and 5 minutes", rounding to the minute after the
+/// first minute.
 pub fn duration(seconds: u64) -> String {
+    const MINUTE: u64 = 60;
+    const HOUR: u64 = 60 * MINUTE;
+    const HOURS_PER_DAY: u64 = 24;
     let unit = |n, label| format!("{n} {label}{}", if n == 1 { "" } else { "s" });
-    if seconds < 60 {
+    if seconds < MINUTE {
         return unit(seconds, "second");
     }
-    if seconds < 3600 {
-        return unit((seconds + 30) / 60, "minute");
+    if seconds < HOUR {
+        return unit((seconds + MINUTE / 2) / MINUTE, "minute");
     }
-    let total = seconds / 3600;
-    let days = total.saturating_sub(1) / 24;
-    let hours = total - days * 24;
-    let minutes = seconds / 60 - total * 60;
+    let total = seconds / HOUR;
+    let days = total.saturating_sub(1) / HOURS_PER_DAY;
+    let hours = total - days * HOURS_PER_DAY;
+    let minutes = seconds % HOUR / MINUTE;
     if days == 0 {
         format!("{} and {}", unit(hours, "hour"), unit(minutes, "minute"))
     } else {

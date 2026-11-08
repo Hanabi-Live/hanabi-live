@@ -72,10 +72,8 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     ensure!(
         hanabi_protocol::is_player_count(players.len())
             && players.iter().all(|n| !n.is_empty()
-                && n.len() <= 15
-                && !n
-                    .chars()
-                    .any(|c| "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?".contains(c))),
+                && n.len() <= crate::accounts::MAX_USERNAME_LENGTH
+                && !n.contains(|c| crate::accounts::USERNAME_SPECIAL_CHARACTERS.contains(c))),
         "Invalid players"
     );
     options.num_players = players.len();

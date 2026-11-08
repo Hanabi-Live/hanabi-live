@@ -92,27 +92,36 @@ pub fn escape_html(input: &str) -> String {
         .replace('\'', "&#39;")
 }
 
-pub fn validate_username(input: &str) -> Result<&str, &'static str> {
+/// The shortest username, in bytes.
+pub const MIN_USERNAME_LENGTH: usize = 2;
+/// The longest username, in bytes.
+pub const MAX_USERNAME_LENGTH: usize = 15;
+/// Characters that usernames cannot contain.
+pub const USERNAME_SPECIAL_CHARACTERS: &str = "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?";
+
+pub fn validate_username(input: &str) -> Result<&str, String> {
     let name = input.trim();
     if name.chars().any(char::is_whitespace) {
-        return Err("Usernames cannot contain any whitespace characters.");
+        return Err("Usernames cannot contain any whitespace characters.".into());
     }
-    if name.len() < 2 {
-        return Err("Usernames must be 2 characters or more.");
+    if name.len() < MIN_USERNAME_LENGTH {
+        return Err(format!(
+            "Usernames must be {MIN_USERNAME_LENGTH} characters or more."
+        ));
     }
-    if name.len() > 15 {
-        return Err("Usernames must be 15 characters or less.");
+    if name.len() > MAX_USERNAME_LENGTH {
+        return Err(format!(
+            "Usernames must be {MAX_USERNAME_LENGTH} characters or less."
+        ));
     }
-    if name.contains(|ch| "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?".contains(ch)) {
-        return Err(
-            "Usernames cannot contain any special characters other than underscores, hyphens, and periods.",
-        );
+    if name.contains(|ch| USERNAME_SPECIAL_CHARACTERS.contains(ch)) {
+        return Err("Usernames cannot contain any special characters other than underscores, hyphens, and periods.".into());
     }
     if has_username_emoji(name) {
-        return Err("Usernames cannot contain any emojis.");
+        return Err("Usernames cannot contain any emojis.".into());
     }
     if max_consecutive_marks(name) > 3 {
-        return Err("Usernames cannot contain two or more consecutive diacritics.");
+        return Err("Usernames cannot contain two or more consecutive diacritics.".into());
     }
     if matches!(
         normalize_string(name).as_str(),
@@ -125,7 +134,7 @@ pub fn validate_username(input: &str) -> Result<&str, &'static str> {
             | "hanabilive"
             | "nabilive"
     ) {
-        return Err("That username is reserved. Please choose a different one.");
+        return Err("That username is reserved. Please choose a different one.".into());
     }
     Ok(name)
 }

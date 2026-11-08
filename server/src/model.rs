@@ -168,7 +168,10 @@ impl TableChat {
 }
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
-        ensure!(payload.len() <= 4 * 1024 * 1024, "Oversized checkpoint");
+        ensure!(
+            payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
+            "Oversized checkpoint"
+        );
         let value: Value = serde_json::from_str(payload)?;
         ensure!(
             value["chat"]
@@ -381,7 +384,7 @@ impl TableSnapshot {
                         edit.operation.as_str(),
                         "tag" | "tagDelete" | "tagsDeleteAll"
                     )
-                    && edit.tag.len() <= 100,
+                    && edit.tag.len() <= MAX_TAG_LENGTH,
                 "Invalid durable tag edit"
             );
             ensure!(
@@ -556,6 +559,12 @@ impl ScoreModifier {
 pub const MAX_TABLE_CHAT: usize = 4096;
 /// The most moves a shared replay's hypothetical can hold.
 pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
+/// The longest game tag, in bytes.
+pub const MAX_TAG_LENGTH: usize = 100;
+
+pub fn tag_too_long() -> String {
+    format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")
+}
 
 /// A time as the wire carries it: RFC 3339 in UTC, with milliseconds, such as
 /// "2026-01-01T12:00:00.000Z". The clients' schemas accept only this form.
