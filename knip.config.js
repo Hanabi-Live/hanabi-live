@@ -25,7 +25,6 @@ const config = {
         "src/**/*.test.ts",
       ],
       ignore: [
-        "lib/*.d.ts", // Types for the vendored plugins.
         "test_data/hanabLiveStateToCurrentRepoState.js", // Pasted into the browser console.
       ],
       ignoreDependencies: [

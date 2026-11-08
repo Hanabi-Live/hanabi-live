@@ -5,7 +5,6 @@ import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";
-import * as tooltips from "../tooltips";
 import { escapeHtml } from "../utils";
 import type { GameJSON } from "./gameJSON";
 import { parseGameJSON } from "./gameJSON";
@@ -47,18 +46,12 @@ function replaySourceChange() {
   } else {
     throw new Error('Invalid value for "replay-source".');
   }
-
-  // Redraw the tooltip so that the new elements will fit better.
-  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 function replayVisibilityChange() {
   $("#replay-spoiler-free-row").toggle(
     $("#replay-visibility-shared").prop("checked") === true,
   );
-
-  // Redraw the tooltip so that the new elements will fit better.
-  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 function submit() {
@@ -184,9 +177,6 @@ function submit() {
 function showReplayError(text: string) {
   $("#replay-error-row").show();
   $("#replay-error-row-text").text(text);
-
-  // Redraw the tooltip so that the new elements will fit better.
-  tooltips.reposition("#nav-buttons-lobby-replay");
 }
 
 // This function is executed every time the "Watch Specific Replay" button is clicked (after the
@@ -242,9 +232,6 @@ export function ready(): boolean {
     "checked",
     localStorage.getItem("watchReplaySpoilerFree") === "true",
   );
-
-  // Redraw the tooltip so that the new elements will fit better.
-  tooltips.reposition("#nav-buttons-lobby-replay");
 
   return true;
 }

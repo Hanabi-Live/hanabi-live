@@ -1148,10 +1148,73 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
   position: absolute;
 }
 
-.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big
-  .tooltipster-content {
-  font-size: 1.5em;
+/* The popover that holds a tooltip and its arrow (see "Tooltip.ts") */
+.tooltip-bubble {
+  --tooltip-background: #fff;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0 0 var(--tooltip-arrow-size);
+  border: none;
+  background: none;
+  overflow: visible;
+  pointer-events: none;
+  transform: scale(0);
+  transition:
+    transform var(--tooltip-duration),
+    overlay var(--tooltip-duration) allow-discrete,
+    display var(--tooltip-duration) allow-discrete;
+}
+
+.tooltip-bubble[data-side="bottom"] {
+  padding: var(--tooltip-arrow-size) 0 0;
+}
+
+.tooltip-bubble.tooltip-interactive {
+  pointer-events: auto;
+}
+
+.tooltip-bubble:popover-open {
+  transform: scale(1);
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+@starting-style {
+  .tooltip-bubble:popover-open {
+    transform: scale(0);
+  }
+}
+
+.tooltip-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: var(--tooltip-arrow-x);
+  margin-left: calc(-1 * var(--tooltip-arrow-size));
+  border: var(--tooltip-arrow-size) solid transparent;
+  border-top-color: var(--tooltip-background);
+  border-bottom-width: 0;
+}
+
+.tooltip-bubble[data-side="bottom"]::after {
+  top: 0;
+  bottom: auto;
+  border-color: transparent transparent var(--tooltip-background);
+  border-width: 0 var(--tooltip-arrow-size) var(--tooltip-arrow-size);
+}
+
+.tooltip-box {
+  max-width: calc(100vw - 2 * var(--tooltip-window-margin));
+  max-height: calc(
+    100vh - 2 * var(--tooltip-window-margin) - var(--tooltip-arrow-size)
+  );
+  overflow: auto;
   padding: 0.5em;
+  border-radius: 5px;
+  background: var(--tooltip-background);
+  box-shadow: 0 0 10px 6px rgb(0 0 0 / 10%);
+  color: #8d8d8d;
+  font-size: 1.5em;
   line-height: 1em;
 }
 
@@ -1179,8 +1242,7 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
 }
 
 /* prevent unwanted selection when double clicking */
-.konvajs-content canvas,
-.tooltipster-arrow-border {
+.konvajs-content canvas {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;

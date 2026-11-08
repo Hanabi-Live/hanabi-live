@@ -127,12 +127,12 @@ export function show(card: HanabiCard): void {
   const rect = card.getClientRect({});
   const posX = rect.x + rect.width / 2;
   let posY = rect.y;
-  tooltips.setInstanceOption(tooltip, "side", "top");
+  tooltips.setSide(tooltip, "top");
 
   // Flip the tooltip if it is too close to the top of the screen.
   if (posY < TOOLTIP_FLIP_THRESHOLD_PX) {
     posY = rect.y + rect.height;
-    tooltips.setInstanceOption(tooltip, "side", "bottom");
+    tooltips.setSide(tooltip, "bottom");
   }
 
   // Update the tooltip position.
@@ -146,7 +146,7 @@ export function show(card: HanabiCard): void {
     }
     shownNote += card.suitDescriptionNote();
   }
-  tooltips.setInstanceContent(tooltip, shownNote);
+  tooltips.setContent(tooltip, shownNote);
   tooltips.open(tooltip);
 }
 
@@ -170,8 +170,7 @@ export function openEditTooltip(
   // re-open the tooltip. Detect if this is happening and do nothing. The "focusout" event does not
   // fire on mobile, therefore we only check for desktop clients.
   const tooltip = `#tooltip-${card.tooltipName}`;
-  const status = tooltips.getStatus(tooltip);
-  if (isDesktop && status.state === "disappearing") {
+  if (isDesktop && tooltips.isClosing(tooltip)) {
     return;
   }
 
@@ -189,7 +188,10 @@ export function openEditTooltip(
   input.setAttribute("autocorrect", "off");
   input.setAttribute("autocapitalize", "off");
 
-  tooltips.setInstanceContent(tooltip, input.outerHTML);
+  tooltips.setContent(tooltip, input.outerHTML);
+
+  // A card without a note has an empty tooltip, which "show" leaves closed.
+  tooltips.open(tooltip);
 
   const noteTextbox = $(`#tooltip-${card.tooltipName}-input`);
   let shouldRemovePipe = true;

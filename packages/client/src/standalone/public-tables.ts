@@ -11,9 +11,8 @@ import {
 } from "@hanabi-live/data";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@hanabi-live/game";
 import { iRange } from "complete-common";
-import jquery from "jquery";
-import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
 import * as z from "zod";
+import { hoverTooltip } from "../Tooltip";
 import type { Choice, Column, Sort } from "./data-table";
 import { addTableControls, Pagers } from "./data-table";
 
@@ -38,12 +37,9 @@ init().catch((error: unknown) => {
 });
 
 async function init() {
-  jquery(".tooltip").tooltipster({
-    animation: "grow",
-    contentAsHTML: true,
-    delay: 0,
-    theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
-  });
+  for (const anchor of document.querySelectorAll<HTMLElement>(".tooltip")) {
+    hoverTooltip(anchor);
+  }
 
   const main = document.querySelector("#main");
   if (!(main instanceof HTMLElement)) {

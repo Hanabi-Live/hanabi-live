@@ -322,5 +322,5 @@ export function onLeaderOrSpectatorsChanged(data: {
   if (away) {
     content += " (away)";
   }
-  tooltips.setInstanceContent("#tooltip-leader", content);
+  tooltips.setContent("#tooltip-leader", content);
 }

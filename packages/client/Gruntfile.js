@@ -34,8 +34,6 @@ module.exports = function Gruntfile(grunt) {
         src: [
           path.join(cssLibDir, "fontawesome.min.css"),
           path.join(cssLibDir, "solid.min.css"),
-          path.join(cssLibDir, "tooltipster.bundle.min.css"),
-          path.join(cssLibDir, "tooltipster-sideTip-shadow.min.css"),
           path.join(cssLibDir, "alpha.css"),
           path.join(cssDir, "hanabi.css"),
           path.join(cssDir, "dark.css"),

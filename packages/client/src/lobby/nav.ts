@@ -4,7 +4,6 @@ import { clearTabAccount, withTabAccount } from "@hanabi-live/data";
 import { NO_TABLE_ID } from "../constants";
 import { globals } from "../Globals";
 import { initModal, showWarning } from "../modals";
-import * as tooltips from "../tooltips";
 import * as createGame from "./createGame";
 import * as history from "./history";
 import * as pregame from "./pregame";
@@ -185,14 +184,6 @@ export function init(): void {
 
     globals.conn!.send("tableLeave", { tableID: globals.tableID });
     tablesDraw.tableSpectate(table);
-  });
-
-  // The "Change Options" button. (Also initialized in the "initTooltips()" function.)
-  $("#nav-buttons-pregame-change-options").unbind("click");
-  $("#nav-buttons-pregame-change-options").on("click", () => {
-    if (!$("#nav-buttons-pregame-change-options").hasClass("disabled")) {
-      tooltips.open("#nav-buttons-pregame-change-options");
-    }
   });
 
   // The "Return to Lobby" button (from the "Pregame" screen).

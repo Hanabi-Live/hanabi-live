@@ -46,7 +46,7 @@ export function initKonvaTooltips(
     content += '<i class="fas fa-info-circle fa-sm"></i>';
     content += ` &nbsp;${element.tooltipContent}</span>`;
   }
-  tooltips.setInstanceContent(`#tooltip-${element.tooltipName}`, content);
+  tooltips.setContent(`#tooltip-${element.tooltipName}`, content);
 }
 
 export function show(element: NodeWithTooltip): void {

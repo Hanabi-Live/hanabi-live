@@ -155,7 +155,7 @@ export class Deck extends Konva.Group {
     // rectangle behind the card (so that the tooltip will work when there are 0 cards left in the
     // deck).
     this.tooltipContent = getTooltipContent();
-    tooltips.setInstanceContent("#tooltip-deck", this.tooltipContent);
+    tooltips.setContent("#tooltip-deck", this.tooltipContent);
   }
 
   // When dragging the deck, change the cursor to emulate the behavior when dragging a card. It does

@@ -21,7 +21,6 @@ import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
 import { DIMMED_OPACITY } from "../constants";
 import * as modals from "../modals";
-import * as tooltips from "../tooltips";
 import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
 
@@ -106,10 +105,6 @@ export function init(): void {
   $("#create-game-show-extra-options").on("click", () => {
     $("#create-game-extra-options").show();
     $("#create-game-show-extra-options-row").hide();
-
-    // Redraw the tooltip so that the new elements will fit better.
-    tooltips.reposition("#nav-buttons-lobby-create-game");
-    tooltips.reposition("#nav-buttons-pregame-change-options");
   });
 
   // Disable some checkboxes if a checkbox is checked.

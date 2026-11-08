@@ -354,41 +354,13 @@ html[data-theme="dark"] footer {
   color: var(--dm-text-muted);
 }
 
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow
-  .tooltipster-box {
-  background-color: var(--dm-surface);
+html[data-theme="dark"] .tooltip-bubble {
+  --tooltip-background: var(--dm-surface);
+}
+
+html[data-theme="dark"] .tooltip-box {
   border: 1px solid var(--dm-border);
-}
-
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow
-  .tooltipster-content {
   color: var(--dm-text);
-}
-
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow.tooltipster-bottom
-  .tooltipster-arrow-border {
-  border-bottom-color: var(--dm-surface);
-}
-
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow.tooltipster-top
-  .tooltipster-arrow-border {
-  border-top-color: var(--dm-surface);
-}
-
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow.tooltipster-left
-  .tooltipster-arrow-border {
-  border-left-color: var(--dm-surface);
-}
-
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow.tooltipster-right
-  .tooltipster-arrow-border {
-  border-right-color: var(--dm-surface);
 }
 
 html[data-theme="dark"] div.noteTitle {
@@ -399,17 +371,13 @@ html[data-theme="dark"] div.noteTitle span {
   background-color: var(--dm-surface);
 }
 
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow
-  input[type="text"] {
+html[data-theme="dark"] .tooltip-box input[type="text"] {
   background-color: var(--note-input-bg);
   border-color: var(--note-input-border);
   color: inherit;
 }
 
-html[data-theme="dark"]
-  .tooltipster-sidetip.tooltipster-shadow
-  input[type="text"]:focus {
+html[data-theme="dark"] .tooltip-box input[type="text"]:focus {
   border-color: var(--note-input-border-focus);
   box-shadow: 0 0 0 2px var(--note-input-border-focus);
 }

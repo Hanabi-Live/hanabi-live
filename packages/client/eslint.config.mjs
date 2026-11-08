@@ -86,5 +86,5 @@ export default defineConfig(
     },
   },
 
-  { ignores: ["**/lib/*.js", "**/test_data/*.js"] },
+  { ignores: ["**/test_data/*.js"] },
 );

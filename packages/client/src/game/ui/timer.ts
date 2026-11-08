@@ -238,7 +238,7 @@ function setTickingDownTimePlayerNameTooltip(
   content += ":<br /><strong>";
   content += millisecondsToClockString(milliseconds);
   content += "</strong>";
-  tooltips.setInstanceContent(`#tooltip-player-${playerIndex}`, content);
+  tooltips.setContent(`#tooltip-player-${playerIndex}`, content);
 }
 
 function setTickingDownTimeCurrentPlayerTooltip() {
@@ -262,5 +262,5 @@ function setTickingDownTimeCurrentPlayerTooltip() {
   let content = "Time taken on this turn:<br /><strong>";
   content += millisecondsToClockString(time);
   content += "</strong>";
-  tooltips.setInstanceContent("#tooltip-time-taken", content);
+  tooltips.setContent("#tooltip-time-taken", content);
 }

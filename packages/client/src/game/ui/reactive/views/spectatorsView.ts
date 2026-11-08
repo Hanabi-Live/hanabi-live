@@ -58,7 +58,7 @@ export function onSpectatorsChanged(data: {
     let content = "<strong>";
     content += globals.state.finished ? "Shared Replay Viewers" : "Spectators";
     content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
-    tooltips.setInstanceContent("#tooltip-spectators", content);
+    tooltips.setContent("#tooltip-spectators", content);
   } else {
     tooltips.close("#tooltip-spectators");
   }
