@@ -1,5 +1,10 @@
 import type { Tuple } from "complete-common";
-import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
+import {
+  HOUR_IN_MILLISECONDS,
+  MINUTE_IN_MILLISECONDS,
+  SECOND_IN_MILLISECONDS,
+  assertDefined,
+} from "complete-common";
 import { getVariant } from "../gameData";
 import { ClueType, EndCondition } from "../generated/protocol";
 import type { GameMetadata } from "../interfaces/GameMetadata";
@@ -17,6 +22,9 @@ import type {
 import { getCardName } from "./card";
 import { getClueName } from "./clues";
 import { getCardSlot } from "./hand";
+
+const SECONDS_PER_MINUTE = MINUTE_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
+const SECONDS_PER_HOUR = HOUR_IN_MILLISECONDS / SECOND_IN_MILLISECONDS;
 
 const HYPO_PREFIX = "[Hypo] ";
 const NUMBER_WORDS = [
@@ -297,16 +305,22 @@ export function getPlayerName(
 export function millisecondsToClockString(milliseconds: number): string {
   // Non timed games measure time in negative values.
   const time = Math.abs(milliseconds);
-  const seconds = Math.ceil(time / SECOND_IN_MILLISECONDS);
-  const minutes = Math.floor(seconds / 60);
-  const paddedSeconds = pad2(seconds % 60);
-
-  return `${minutes}:${paddedSeconds}`;
+  return secondsToClockString(Math.ceil(time / SECOND_IN_MILLISECONDS));
 }
 
-function pad2(num: number) {
-  if (num < 10) {
-    return `0${num}`;
-  }
-  return num.toString();
+/** Formats a duration as "m:ss", or as "h:mm:ss" when it is at least an hour long. */
+export function secondsToClockString(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR);
+  const minutes = Math.floor(
+    (totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,
+  );
+  const seconds = padTwoDigits(totalSeconds % SECONDS_PER_MINUTE);
+
+  return hours > 0
+    ? `${hours}:${padTwoDigits(minutes)}:${seconds}`
+    : `${minutes}:${seconds}`;
+}
+
+function padTwoDigits(value: number): string {
+  return value.toString().padStart(2, "0");
 }

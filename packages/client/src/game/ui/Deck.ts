@@ -3,12 +3,13 @@ import type { CardOrder } from "@hanabi-live/game";
 import {
   getTotalCardsInDeck,
   millisecondsToClockString,
+  secondsToClockString,
 } from "@hanabi-live/game";
 import Konva from "konva";
 import { OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
-import { dateTimeFormatter, escapeHtml, timerFormatter } from "../../utils";
+import { dateTimeFormatter, escapeHtml } from "../../utils";
 import * as arrows from "./arrows";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
@@ -308,9 +309,9 @@ function getTooltipContent(): string {
   if (globals.options.timed) {
     content += `<li><span class="game-tooltips-icon"><i class="${OptionIcons.Timed}"></i></span>`;
     content += "&nbsp; Timed: ";
-    content += timerFormatter(globals.options.timeBase);
+    content += secondsToClockString(globals.options.timeBase);
     content += " + ";
-    content += timerFormatter(globals.options.timePerTurn);
+    content += secondsToClockString(globals.options.timePerTurn);
     content += "</li>";
   }
 

@@ -4,7 +4,6 @@ export * from "./functions/errors";
 export * from "./functions/golem";
 export * from "./functions/history";
 export * from "./functions/tabAccount";
-export * from "./functions/time";
 export * from "./generated/protocol";
 export type * from "./interfaces/GameHistory";
 export * from "./interfaces/Settings";

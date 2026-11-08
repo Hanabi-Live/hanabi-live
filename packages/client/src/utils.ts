@@ -87,5 +87,3 @@ export function setBrowserAddressBarPath(
     globalThis.history.replaceState(undefined, "", path);
   }
 }
-
-export { timerFormatter } from "@hanabi-live/data";

@@ -7,18 +7,14 @@ import {
   MAX_PLAYERS,
   MIN_PLAYERS,
   NO_VALUE,
+  secondsToClockString,
 } from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
 import { OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
-import {
-  escapeHtml,
-  getHTMLElement,
-  setBrowserAddressBarPath,
-  timerFormatter,
-} from "../utils";
+import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
@@ -192,14 +188,14 @@ export function getOptionIcons(
   if (options.timed) {
     html += `<li><i id="${idPrefix}-options-timer-${rowId}" class="${OptionIcons.Timed}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-timer-${rowId}"></i>&nbsp; (`;
-    html += timerFormatter(options.timeBase);
+    html += secondsToClockString(options.timeBase);
     html += " + ";
-    html += timerFormatter(options.timePerTurn);
+    html += secondsToClockString(options.timePerTurn);
     html += ")</li>";
     html += `
       <div class="hidden">
         <div id="${idPrefix}-tooltip-timer-${rowId}" class="${idPrefix}-tooltip-icon">
-          This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
+          This is a <strong>Timed Game</strong>. The base time is <strong>${secondsToClockString(
             options.timeBase,
           )} minute${options.timeBase === SECONDS_PER_MINUTE ? "" : "s"}</strong> plus <strong>${
             options.timePerTurn

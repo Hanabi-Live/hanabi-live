@@ -3,15 +3,11 @@
 import type { GameHistory } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
-import { getVariant, NO_VALUE } from "@hanabi-live/game";
+import { getVariant, NO_VALUE, secondsToClockString } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
-import {
-  dateTimeFormatter,
-  setBrowserAddressBarPath,
-  timerFormatter,
-} from "../utils";
+import { dateTimeFormatter, setBrowserAddressBarPath } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
@@ -312,9 +308,9 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   if (options.timed) {
     icons.push(OptionIcons.Timed);
     tooltipHTML += `<li><i class="${OptionIcons.Timed}"></i>&nbsp; `;
-    tooltipHTML += `Timed (${timerFormatter(
+    tooltipHTML += `Timed (${secondsToClockString(
       options.timeBase,
-    )} + ${timerFormatter(options.timePerTurn)})`;
+    )} + ${secondsToClockString(options.timePerTurn)})`;
     tooltipHTML += "</li>";
   }
 
