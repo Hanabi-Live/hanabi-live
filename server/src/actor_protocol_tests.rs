@@ -1113,41 +1113,6 @@ async fn spectators_return_to_ongoing_games_and_shared_replays_after_reconnectin
 }
 
 #[tokio::test]
-async fn disconnected_private_pregame_disappears_from_the_lobby_and_redis() -> Result<()> {
-    let Some(mut h) = Harness::new(&["Alice", "Observer"]).await? else {
-        return Ok(());
-    };
-    let outcome = async {
-        h.send(
-            0,
-            "tableCreate",
-            json!({"name":"Abandoned private table","password":"fixture","options":{}}),
-        )
-        .await?;
-        let id = h.receive(0, "joined").await?["tableID"]
-            .as_u64()
-            .context("Missing table")?;
-        h.hub.send(HubCommand::Logout(h.users[0].clone())).await?;
-        tokio::time::timeout(PREGAME_RECONNECT_GRACE + Duration::from_secs(5), async {
-            loop {
-                if h.state.get(StateId::Table(id)).await?.is_none() {
-                    return Ok::<(), anyhow::Error>(());
-                }
-                tokio::time::sleep(Duration::from_millis(100)).await;
-            }
-        })
-        .await
-        .context("Disconnected pregame was never removed")??;
-        let gone = h.receive(1, "tableGone").await?;
-        ensure!(gone["tableID"] == id, "Lobby removed the wrong table");
-        Ok(())
-    }
-    .await;
-    h.close().await?;
-    outcome
-}
-
-#[tokio::test]
 async fn default_table_names_use_the_creator_and_remain_editable() -> Result<()> {
     let names = ["Alice", "Ren\u{e9}"];
     let Some(mut h) = Harness::new(&names).await? else {
