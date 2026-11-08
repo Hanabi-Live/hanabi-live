@@ -3,7 +3,7 @@ import { describe, expect, mock, test } from "bun:test";
 await mock.module("./UIGlobals", () => ({ globals: {} }));
 await mock.module("../../modals", () => ({}));
 await mock.module("../../sounds", () => ({}));
-await mock.module("./checkMisplay", () => ({ checkMisplay: mock() }));
+await mock.module("./confirmPlay", () => ({ confirmPlay: mock() }));
 await mock.module("./cursor", () => ({}));
 await mock.module("./isOurTurn", () => ({ isOurTurn: mock() }));
 await mock.module("./turn", () => ({}));

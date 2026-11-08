@@ -9,7 +9,7 @@ import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";
 import type { PlayStack } from "./PlayStack";
 import { globals } from "./UIGlobals";
-import { checkMisplay } from "./checkMisplay";
+import { confirmPlay } from "./confirmPlay";
 import * as cursor from "./cursor";
 import { isOurTurn } from "./isOurTurn";
 import * as turn from "./turn";
@@ -157,12 +157,6 @@ export class LayoutChild extends Konva.Group {
     this.continueDragAction(draggedTo);
   }
 
-  // Before we play a card, do a check to ensure that it is actually playable to prevent silly
-  // mistakes from players. (But disable this in speedruns, hypotheticals and certain variants.)
-  checkMisplay(): boolean {
-    return checkMisplay(this.card.state);
-  }
-
   checkHypoUnknown(draggedTo: "playArea" | "discardArea"): boolean {
     const { suitIndex, rank } = this.card.getMorphedIdentity();
     if (suitIndex !== null && rank !== null) {
@@ -179,30 +173,40 @@ export class LayoutChild extends Konva.Group {
   }
 
   continueDragAction(draggedTo: "playArea" | "discardArea" | null): void {
-    const cancelMisplay = draggedTo === "playArea" && this.checkMisplay();
-
-    if (cancelMisplay || draggedTo === null) {
-      // The card was dragged to an invalid location; tween it back to the hand.
+    const returnToHand = () => {
       (this.parent as unknown as CardLayout | PlayStack).doLayout();
-      return;
-    }
+    };
 
-    let type: ActionType;
     switch (draggedTo) {
+      case null: {
+        // The card was dragged to an invalid location; tween it back to the hand.
+        returnToHand();
+        break;
+      }
+
       case "playArea": {
-        type = ActionType.Play;
+        // Before we play a card, ensure that it is actually playable to prevent silly mistakes from
+        // players. (But this is disabled in speedruns, hypotheticals and certain variants.)
+        confirmPlay(
+          this.card.state,
+          () => {
+            turn.end({
+              type: ActionType.Play,
+              target: this.card.state.order,
+            });
+          },
+          returnToHand,
+        );
         break;
       }
 
       case "discardArea": {
-        type = ActionType.Discard;
+        turn.end({
+          type: ActionType.Discard,
+          target: this.card.state.order,
+        });
         break;
       }
     }
-
-    turn.end({
-      type,
-      target: this.card.state.order,
-    });
   }
 }
