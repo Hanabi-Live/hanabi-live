@@ -70,7 +70,7 @@ export interface ActionInit extends Readonly<
 > {
   readonly type: "init";
 
-  /** The server sends -1 when nobody is pausing; the state keeps a seat. */
+  /** The server sends `NO_VALUE` when nobody is pausing; the state keeps a seat. */
   readonly pausePlayerIndex: PlayerIndex;
 }
 
@@ -98,7 +98,7 @@ interface ActionPause extends Readonly<
 > {
   readonly type: "pause";
 
-  /** The server sends -1 when nobody is pausing; the state keeps a seat. */
+  /** The server sends `NO_VALUE` when nobody is pausing; the state keeps a seat. */
   readonly playerIndex: PlayerIndex;
 }
 

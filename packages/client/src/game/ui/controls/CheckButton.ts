@@ -5,6 +5,7 @@ import {
   BUTTON_DISABLED_TEXT_COLOR,
   BUTTON_HOVER_COLOR,
   BUTTON_PRESSED_COLOR,
+  FONT_FAMILY,
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
 
@@ -101,7 +102,7 @@ export class CheckButton extends Konva.Group {
         width: w,
         height: 0.5 * h,
         fontSize: textSize,
-        fontFamily: "Verdana",
+        fontFamily: FONT_FAMILY,
         fill: "white",
         align: "left",
         text: config["text"] as string,

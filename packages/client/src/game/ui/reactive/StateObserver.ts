@@ -1,4 +1,5 @@
 import type { GameState } from "@hanabi-live/game";
+import { NO_VALUE } from "@hanabi-live/game";
 import type { Store, Unsubscribe } from "redux";
 import type { State } from "../../types/State";
 import type { Action } from "../../types/actions";
@@ -242,7 +243,7 @@ const ongoingGameObservers: Subscriptions = [
   // Alternating Clues UI
   subAfterInit((s) => {
     const type = s.visibleState!.clues.at(-1)?.type;
-    return type === -1 ? null : type;
+    return type === NO_VALUE ? null : type;
   }, turnView.onLastClueTypeChanged),
 
   // Segment + current player index.

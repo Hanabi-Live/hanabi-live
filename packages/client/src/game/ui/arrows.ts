@@ -15,6 +15,7 @@ import {
   isCardDiscarded,
   isCardInPlayerHand,
   isCardPlayed,
+  NO_VALUE,
 } from "@hanabi-live/game";
 import { assertEnumValue } from "complete-common";
 import Konva from "konva";
@@ -28,6 +29,7 @@ import {
   ARROW_COLOR,
   CARD_ANIMATION_DELAY_SECONDS,
   CARD_ANIMATION_LENGTH_SECONDS,
+  RIGHT_MOUSE_BUTTON,
 } from "./constants";
 import type { Arrow } from "./controls/Arrow";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
@@ -152,7 +154,7 @@ export function set(
       globals.metadata.characterAssignments,
     );
     if (
-      clue.type === -1
+      clue.type === NO_VALUE
       || globals.variant.duck
       || (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
@@ -370,7 +372,7 @@ export function click(
   order: CardOrder | ReplayArrowOrder,
 ): void {
   // "event.evt.buttons" is always 0 here.
-  if (event.evt.button !== 2) {
+  if (event.evt.button !== RIGHT_MOUSE_BUTTON) {
     // We only care about right-clicks.
     return;
   }

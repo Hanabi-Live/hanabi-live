@@ -1,6 +1,6 @@
 import type { ServerCommandData } from "@hanabi-live/data";
-import { defaultSettings } from "@hanabi-live/data";
-import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
+import { defaultSettings, SECONDS_PER_MINUTE } from "@hanabi-live/data";
+import { DEFAULT_VARIANT_NAME, NO_VALUE } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
@@ -26,7 +26,9 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
     const timed = urlParams.get("timed") === "true";
     const timeBaseString =
       urlParams.get("timeBase")
-      ?? (defaultSettings.createTableTimeBaseMinutes * 60).toString();
+      ?? (
+        defaultSettings.createTableTimeBaseMinutes * SECONDS_PER_MINUTE
+      ).toString();
     const timeBase = parseIntSafe(timeBaseString);
     const timePerTurnString =
       urlParams.get("timePerTurn")
@@ -96,7 +98,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         const shadowMatch = /\/shadow\/(\d+)/u.exec(
           globalThis.location.pathname,
         );
-        let shadowingPlayerIndex = -1;
+        let shadowingPlayerIndex = NO_VALUE;
         if (shadowMatch !== null) {
           const shadowingPlayerIndexString = shadowMatch[1];
           if (shadowingPlayerIndexString !== undefined) {
@@ -136,7 +138,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
           databaseID,
           source: "id",
           visibility,
-          shadowingPlayerIndex: -1,
+          shadowingPlayerIndex: NO_VALUE,
           // A link to a shared replay should join the one that people are already watching.
           joinExisting: true,
         });
@@ -179,7 +181,7 @@ export function parseAndGoto(data: ServerCommandData["welcome"]): void {
         source,
         gameJSON,
         visibility,
-        shadowingPlayerIndex: -1,
+        shadowingPlayerIndex: NO_VALUE,
       });
       return;
     }

@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { FONT_FAMILY } from "../constants";
 
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
@@ -96,7 +97,7 @@ export class Arrow extends Konva.Group {
       // nudge it downwards.
       height: this.circle.height() * 1.09,
       fontSize: y * 0.38,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       align: "center",
       verticalAlign: "middle",

@@ -1,11 +1,19 @@
 import type { PlayerIndex } from "@hanabi-live/game";
+import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
 import { globals } from "./UIGlobals";
 import { backToLobby } from "./backToLobby";
-import { LABEL_COLOR, MIN_FONT_SIZE, TEXT_SHRINK_FACTOR } from "./constants";
+import {
+  FONT_FAMILY,
+  LABEL_COLOR,
+  LEFT_MOUSE_BUTTON,
+  MIN_FONT_SIZE,
+  RIGHT_MOUSE_BUTTON,
+  TEXT_SHRINK_FACTOR,
+} from "./constants";
 import * as konvaTooltips from "./konvaTooltips";
 
 /** The shadow of the name and its lines, which only the active player's lines show. */
@@ -50,7 +58,7 @@ export class NameFrame extends Konva.Group {
       y: 0,
       height: config.height,
       align: "center",
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fontSize: config.height,
       text: config.name,
       fill: LABEL_COLOR,
@@ -72,10 +80,10 @@ export class NameFrame extends Konva.Group {
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
         // "event.evt.buttons" is always 0 here.
-        if (event.evt.button === 0) {
+        if (event.evt.button === LEFT_MOUSE_BUTTON) {
           // Left-click
           this.leftClick();
-        } else if (event.evt.button === 2) {
+        } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
           // Right-click
           this.rightClick();
         }
@@ -183,7 +191,7 @@ export class NameFrame extends Konva.Group {
     const playerName = this.playerName.text();
     const shadowingPlayerIndex =
       globals.metadata.playerNames.indexOf(playerName);
-    if (shadowingPlayerIndex === -1) {
+    if (shadowingPlayerIndex === NO_VALUE) {
       throw new Error(
         `Failed to find the index corresponding to player: ${playerName}`,
       );
@@ -201,7 +209,7 @@ export class NameFrame extends Konva.Group {
       let oldShadowingPlayerIndex: PlayerIndex | undefined;
       if (
         ourSpectator !== undefined
-        && ourSpectator.shadowingPlayerIndex !== -1
+        && ourSpectator.shadowingPlayerIndex !== NO_VALUE
       ) {
         oldShadowingPlayerIndex = ourSpectator.shadowingPlayerIndex;
       }

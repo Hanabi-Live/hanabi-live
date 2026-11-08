@@ -1,5 +1,10 @@
 import Konva from "konva";
-import { LABEL_COLOR, TIMER_OPACITY } from "../constants";
+import {
+  FONT_FAMILY,
+  LABEL_COLOR,
+  TEXT_SHADOW,
+  TIMER_OPACITY,
+} from "../constants";
 import { FitText } from "./FitText";
 
 export class TimerDisplay extends Konva.Group {
@@ -35,17 +40,11 @@ export class TimerDisplay extends Konva.Group {
       width: config.width,
       height: config.height,
       fontSize: config["fontSize"] as number | undefined,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       align: "center",
       text: "??:??",
       fill: LABEL_COLOR,
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       listening: false,
     });
     this.add(this.timerText);
@@ -58,17 +57,11 @@ export class TimerDisplay extends Konva.Group {
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing
       fontSize: (config["labelFontSize"] || config["fontSize"]) as
         number | undefined,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       align: "center",
       text: config["label"] as string | undefined,
       fill: LABEL_COLOR,
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       listening: false,
     });
     this.add(this.labelText);

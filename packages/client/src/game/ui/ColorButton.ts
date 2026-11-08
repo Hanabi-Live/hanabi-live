@@ -3,7 +3,11 @@ import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import { globals } from "./UIGlobals";
-import { BUTTON_HOVER_COLOR, BUTTON_PRESSED_COLOR } from "./constants";
+import {
+  BUTTON_HOVER_COLOR,
+  BUTTON_PRESSED_COLOR,
+  FONT_FAMILY,
+} from "./constants";
 import { drawPip } from "./drawPip";
 import { drawLayer } from "./konvaHelpers";
 
@@ -55,7 +59,7 @@ export class ColorButton extends Konva.Group {
           width: w,
           height: 0.6 * h,
           fontSize: 0.5 * h,
-          fontFamily: "Verdana",
+          fontFamily: FONT_FAMILY,
           fill: "white",
           stroke: "black",
           strokeWidth: 0.014_87 * h,

@@ -2,6 +2,7 @@
 
 import { setTabAccount } from "@hanabi-live/data";
 import { globals } from "../Globals";
+import { NO_TABLE_ID } from "../constants";
 import * as gameMain from "../game/main";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as modals from "../modals";
@@ -177,7 +178,7 @@ lobbyCommands.set("tableGone", (data) => {
     && globals.tableID === data.tableID
   ) {
     pregame.hide();
-    globals.tableID = -1;
+    globals.tableID = NO_TABLE_ID;
   }
 });
 

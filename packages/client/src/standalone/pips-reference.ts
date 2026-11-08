@@ -6,6 +6,9 @@ import { Pip, SUITS_MAP } from "@hanabi-live/game";
 import { assertEnumValue, assertNotNull, getEnumValues } from "complete-common";
 import { drawPip } from "../game/ui/drawPip";
 
+/** The width and height of each pip's canvas, in pixels. */
+const PIP_CANVAS_SIZE = 200;
+
 document.addEventListener("DOMContentLoaded", () => {
   const uniquePips = new Map<
     string,
@@ -53,8 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.className = "pip-wrapper";
 
     const canvas = document.createElement("canvas");
-    canvas.width = 200;
-    canvas.height = 200;
+    canvas.width = PIP_CANVAS_SIZE;
+    canvas.height = PIP_CANVAS_SIZE;
     canvas.className = "pip-canvas";
 
     const ctx = canvas.getContext("2d");
@@ -62,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Center the drawing.
     ctx.save();
-    ctx.translate(100, 100);
+    ctx.translate(PIP_CANVAS_SIZE / 2, PIP_CANVAS_SIZE / 2);
 
     const mockSuit: Partial<Suit> = {
       pip,

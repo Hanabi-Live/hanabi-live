@@ -1,5 +1,5 @@
 import type { StateClue } from "@hanabi-live/game";
-import { msgClueToClue } from "@hanabi-live/game";
+import { msgClueToClue, NO_VALUE } from "@hanabi-live/game";
 import equal from "fast-deep-equal";
 import { ClueEntry } from "../../ClueEntry";
 import { globals } from "../../UIGlobals";
@@ -44,7 +44,7 @@ function updateArrows(
   }
 
   const clue =
-    clueForSegment.type === -1
+    clueForSegment.type === NO_VALUE
       ? clueForSegment
       : msgClueToClue(clueForSegment, globals.variant);
 

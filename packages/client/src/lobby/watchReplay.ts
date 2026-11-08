@@ -1,5 +1,6 @@
 // The "Watch Specific Replay" nav button.
 
+import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
@@ -164,7 +165,7 @@ function submit() {
       source,
       databaseID,
       visibility,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: NO_VALUE,
       spoilerFree,
     });
   } else if (source === "json") {
@@ -172,7 +173,7 @@ function submit() {
       source,
       gameJSON,
       visibility,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: NO_VALUE,
       spoilerFree,
     });
   }

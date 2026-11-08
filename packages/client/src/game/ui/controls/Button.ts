@@ -4,6 +4,7 @@ import {
   BUTTON_DISABLED_TEXT_COLOR,
   BUTTON_HOVER_COLOR,
   BUTTON_PRESSED_COLOR,
+  FONT_FAMILY,
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
 import { FitText } from "./FitText";
@@ -56,7 +57,7 @@ export class Button extends Konva.Group {
         width: w,
         height: 0.5 * h,
         fontSize: textSize,
-        fontFamily: "Verdana",
+        fontFamily: FONT_FAMILY,
         fill: "white",
         align: "center",
         text: config["text"] as string,

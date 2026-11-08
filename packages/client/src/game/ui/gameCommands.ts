@@ -11,6 +11,7 @@ import {
   getMinEfficiency,
   getVariant,
   isHardVariant,
+  NO_VALUE,
 } from "@hanabi-live/game";
 import type { Tuple } from "complete-common";
 import { iRange, newArray } from "complete-common";
@@ -100,7 +101,7 @@ gameCommands.set("finishOngoingGame", (data) => {
   });
   if (
     globals.state.replay.actions.some(
-      (action) => action.type === "clue" && action.clue.type === -1,
+      (action) => action.type === "clue" && action.clue.type === NO_VALUE,
     )
   ) {
     // Completed replays may reveal clues; replace the restricted history before exporting it.
@@ -280,9 +281,10 @@ gameCommands.set("pause", (data) => {
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
-    // The server sends -1 once nobody is pausing, and the pauser is only shown while paused.
+    // The server sends `NO_VALUE` once nobody is pausing, and the pauser is only shown while
+    // paused.
     playerIndex:
-      data.active && data.playerIndex !== -1
+      data.active && data.playerIndex !== NO_VALUE
         ? data.playerIndex
         : globals.state.pause.playerIndex,
   });
@@ -475,11 +477,11 @@ function initStateStore(data: InitData) {
   // Set the variant (as a helper reference).
   globals.variant = getVariant(data.options.variantName);
 
-  // Handle the special case of when players can be given assignments of "-1" during debugging
+  // Handle the special case of when players can be given assignments of `NO_VALUE` during debugging
   // (which corresponds to a null character).
   let characterAssignments = data.characterAssignments.map(
     (characterAssignment) =>
-      characterAssignment === -1 ? null : characterAssignment,
+      characterAssignment === NO_VALUE ? null : characterAssignment,
   ) as Tuple<number | null, NumPlayers> | [];
 
   if (characterAssignments.length === 0) {
@@ -508,7 +510,7 @@ function initStateStore(data: InitData) {
     // Like the assignments, the metadata is empty unless detrimental characters are on.
     characterMetadata: toPlayerTuple(
       data.characterMetadata.length === 0
-        ? newArray(data.options.numPlayers, -1)
+        ? newArray(data.options.numPlayers, NO_VALUE)
         : data.characterMetadata,
       "character metadata entries",
     ),
@@ -543,9 +545,12 @@ function initStateStore(data: InitData) {
     sharedReplayLeader: data.sharedReplayLeader,
     spoilerFree: data.spoilerFree,
     paused: data.paused,
-    // The server sends -1 when nobody is pausing, and the pauser is only shown while paused.
+    // The server sends `NO_VALUE` when nobody is pausing, and the pauser is only shown while
+    // paused.
     pausePlayerIndex:
-      data.paused && data.pausePlayerIndex !== -1 ? data.pausePlayerIndex : 0,
+      data.paused && data.pausePlayerIndex !== NO_VALUE
+        ? data.pausePlayerIndex
+        : 0,
     sharedReplayEffMod: data.sharedReplayEffMod,
   });
 

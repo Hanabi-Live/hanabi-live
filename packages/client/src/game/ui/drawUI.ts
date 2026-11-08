@@ -40,7 +40,11 @@ import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  FONT_FAMILY,
   LABEL_COLOR,
+  LEFT_MOUSE_BUTTON,
+  RIGHT_MOUSE_BUTTON,
+  TEXT_SHADOW,
   WARNING_COLOR,
 } from "./constants";
 import { Arrow } from "./controls/Arrow";
@@ -220,17 +224,11 @@ function initReusableObjects() {
     width: 0.11 * winW,
     height: 0.03 * winH,
     fontSize: 0.026 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     align: "left",
     text: "Placeholder text",
     fill: LABEL_COLOR,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     listening: false,
   });
   basicNumberLabel = basicTextLabel.clone() as Konva.Text;
@@ -294,15 +292,9 @@ function drawActionLog() {
     {
       align: "center",
       fontSize: 0.028 * winH,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: LABEL_COLOR,
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       x: 0.01 * winW,
       y: 0.003 * winH,
       width: (actionLogValues.w! - 0.02) * winW,
@@ -470,7 +462,7 @@ function drawPlayStacks() {
         width: 0.08 * winW,
         height: 0.051 * winH,
         fontSize: 0.02 * winH,
-        fontFamily: "Verdana",
+        fontFamily: FONT_FAMILY,
         align: "center",
         text,
         fill: LABEL_COLOR,
@@ -589,7 +581,7 @@ function drawBottomLeftButtons() {
   });
   globals.layers.UI.add(chatButton as unknown as Konva.Group);
   chatButton.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 2) {
+    if (event.evt.button === RIGHT_MOUSE_BUTTON) {
       toggleZen();
     } else {
       globals.game!.chat.toggle();
@@ -650,17 +642,11 @@ function drawDeck() {
     x: deckValues.x * winW,
     y: (deckValues.y + 0.01) * winH,
     width: deckValues.w! * winW,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fill: "white",
     align: "center",
     fontSize: 0.019 * winH,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: globals.state.finished && globals.state.replay.databaseID !== null,
     listening: false,
   });
@@ -798,11 +784,11 @@ function drawScoreArea() {
   globals.elements.scoreArea.add(turnTextLabel);
   turnTextLabel.on("click", (event: Konva.KonvaEventObject<MouseEvent>) => {
     // "event.evt.buttons" is always 0 here.
-    if (event.evt.button === 0) {
+    if (event.evt.button === LEFT_MOUSE_BUTTON) {
       // Left-click. We want to be able to left-click the turn number to go to a specific turn in
       // the replay.
       replay.promptTurn();
-    } else if (event.evt.button === 2) {
+    } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
       // Right-click
       arrows.click(event, ReplayArrowOrder.Turn);
     }
@@ -821,11 +807,11 @@ function drawScoreArea() {
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
       // "event.evt.buttons" is always 0 here.
-      if (event.evt.button === 0) {
+      if (event.evt.button === LEFT_MOUSE_BUTTON) {
         // Left-click. We want to be able to left-click the turn number to go to a specific turn in
         // the replay.
         replay.promptTurn();
-      } else if (event.evt.button === 2) {
+      } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
         // Right-click.
         arrows.click(event, ReplayArrowOrder.Turn);
       }
@@ -1122,12 +1108,12 @@ function drawScoreArea() {
     terminateButton.on(
       "click tap",
       (event: Konva.KonvaEventObject<MouseEvent>) => {
-        if (event.evt.button === 0) {
+        if (event.evt.button === LEFT_MOUSE_BUTTON) {
           // Left click.
           globals.lobby.conn!.send("tableVoteForTermination", {
             tableID: globals.lobby.tableID,
           });
-        } else if (event.evt.button === 2) {
+        } else if (event.evt.button === RIGHT_MOUSE_BUTTON) {
           // Right click.
           globals.lobby.conn!.send("tableTerminate", {
             tableID: globals.lobby.tableID,
@@ -1167,13 +1153,7 @@ function drawSpectators() {
     // (This is not a typo; we want it to have the same width and height.)
     align: "center",
     image: globals.imageLoader!.get("eyes"),
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: false,
     listening: true,
   });
@@ -1189,17 +1169,11 @@ function drawSpectators() {
     width: 0.03 * winW,
     height: 0.03 * winH,
     fontSize: 0.03 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     align: "center",
     text: "0",
     fill: LABEL_COLOR,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: false,
     listening: false,
   });
@@ -1234,13 +1208,7 @@ function drawSharedReplay() {
     width: size,
     height: size,
     image: globals.imageLoader!.get("crown"),
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: false,
     listening: true,
   });
@@ -1360,7 +1328,7 @@ function drawYourTurn() {
     x: -0.004 * winW,
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fill: "yellow",
     align: "center",
     text: "Your\nTurn",
@@ -1420,15 +1388,9 @@ function drawStatistics() {
     width: 0.15 * winW,
     height: 0.03 * winH,
     fontSize: 0.02 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fill: LABEL_COLOR,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     align: "center",
     listening: false,
   });
@@ -1713,7 +1675,7 @@ function drawTimers() {
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
       // "event.evt.buttons" is always 0 here.
-      if (event.evt.button === 2) {
+      if (event.evt.button === RIGHT_MOUSE_BUTTON) {
         // Right-click
         timerClick();
       }
@@ -2103,7 +2065,7 @@ function drawClueAreaDisabled(offsetX: number) {
     y: clueAreaValues.h! * 0.4 * winH,
     width: clueAreaValues.w! * winW,
     fontSize: 0.07 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     align: "center",
     text: "No clues",
     fill: LABEL_COLOR,
@@ -2252,7 +2214,7 @@ function drawHypotheticalArea() {
     name: "text",
     width: hypoValues.w! * winW,
     fontSize: 0.06 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fill: LABEL_COLOR,
     align: "center",
     text: "Hypothetical",
@@ -2408,18 +2370,12 @@ function drawPauseArea() {
   const pauseTitle = new Konva.Text({
     y: 0.1 * winH,
     width: pauseAreaValues.w * winW,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fontSize: 0.08 * winH,
     text: "Game Paused",
     align: "center",
     fill: "white",
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     listening: false,
   });
   globals.elements.pauseArea.add(pauseTitle);
@@ -2427,18 +2383,12 @@ function drawPauseArea() {
   globals.elements.pauseText = new Konva.Text({
     y: 0.21 * winH,
     width: pauseAreaValues.w * winW,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fontSize: 0.05 * winH,
     text: "by: [username]",
     align: "center",
     fill: "white",
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     listening: false,
   });
   globals.elements.pauseArea.add(globals.elements.pauseText);
@@ -2521,18 +2471,12 @@ function drawRestartArea() {
   const restartTitle = new Konva.Text({
     y: 0.1 * winH,
     width: restartAreaValues.w * winW,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     fontSize: 0.08 * winH,
     text: "Restart?",
     align: "center",
     fill: "white",
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     listening: false,
   });
   restartContents.add(restartTitle);

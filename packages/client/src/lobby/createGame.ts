@@ -1,7 +1,7 @@
 // The "Create Game" nav button.
 
 import type { Settings } from "@hanabi-live/data";
-import { defaultSettings } from "@hanabi-live/data";
+import { SECONDS_PER_MINUTE, defaultSettings } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -282,7 +282,7 @@ function submit() {
 
     try {
       const timeValue = getTextboxForTimeBase("createTableTimeBaseMinutes");
-      timeBaseSeconds = Math.round(timeValue * 60);
+      timeBaseSeconds = Math.round(timeValue * SECONDS_PER_MINUTE);
     } catch {
       // Invalid value, inform the UI and do not close the tooltip.
       $("#createTableTimeBaseMinutes").addClass("wrongInput");

@@ -24,6 +24,7 @@ import type { HanabiCard } from "./HanabiCard";
 import { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import { clickRightCheckAddNote } from "./clickNotes";
+import { LEFT_MOUSE_BUTTON, RIGHT_MOUSE_BUTTON } from "./constants";
 import { colorToColorIndex } from "./convert";
 import * as turn from "./turn";
 
@@ -41,9 +42,9 @@ export function mouseDownSpeedrun(card: HanabiCard, event: MouseEvent): void {
     return;
   }
 
-  if (event.button === 0) {
+  if (event.button === LEFT_MOUSE_BUTTON) {
     clickLeft(card, event);
-  } else if (event.button === 2) {
+  } else if (event.button === RIGHT_MOUSE_BUTTON) {
     clickRight(card, event);
   }
 }

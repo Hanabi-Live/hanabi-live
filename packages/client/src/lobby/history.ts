@@ -3,7 +3,7 @@
 import type { GameHistory } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
-import { getVariant } from "@hanabi-live/game";
+import { getVariant, NO_VALUE } from "@hanabi-live/game";
 import { OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
@@ -441,7 +441,7 @@ function makeReplayButton(databaseID: number, visibility: "solo" | "shared") {
       source: "id",
       databaseID,
       visibility,
-      shadowingPlayerIndex: -1,
+      shadowingPlayerIndex: NO_VALUE,
     });
     if (visibility === "shared") {
       hide();

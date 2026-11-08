@@ -5,6 +5,7 @@ import { getCharacterNameForPlayer, getClueName } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import { globals } from "./UIGlobals";
+import { FONT_FAMILY } from "./constants";
 import { FitText } from "./controls/FitText";
 import { drawLayer } from "./konvaHelpers";
 import * as replay from "./replay";
@@ -48,7 +49,7 @@ export class ClueEntry extends Konva.Group {
       width: 0.3 * w,
       height: h,
       fontSize: 0.9 * h,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       text: globals.metadata.playerNames[clue.giver],
       verticalAlign: "middle",
@@ -62,7 +63,7 @@ export class ClueEntry extends Konva.Group {
       width: 0.3 * w,
       height: h,
       fontSize: 0.9 * h,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       text: globals.metadata.playerNames[clue.target],
       verticalAlign: "middle",
@@ -87,7 +88,7 @@ export class ClueEntry extends Konva.Group {
       height: h,
       align: "center",
       fontSize: 0.9 * h,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       text: clueName,
       verticalAlign: "middle",
@@ -102,7 +103,7 @@ export class ClueEntry extends Konva.Group {
       height: h,
       align: "center",
       fontSize: 0.9 * h,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       text: "✘", // eslint-disable-line complete/require-ascii
       visible: false,

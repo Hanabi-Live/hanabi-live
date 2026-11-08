@@ -8,6 +8,9 @@ import { Shuttle } from "./controls/Shuttle";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 
+/** Clicks on the replay buttons closer together than this are treated as accidental. */
+const ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS = 50;
+
 export function drawReplayArea(winW: number, winH: number): void {
   const replayAreaValues = {
     x: 0.15,
@@ -160,7 +163,10 @@ export function drawReplayArea(winW: number, winH: number): void {
     );
     globals.elements.replayBackButton.on("click tap", () => {
       // Prevent accidental double clicks.
-      if (Date.now() - globals.UIClickTime < 50) {
+      if (
+        Date.now() - globals.UIClickTime
+        < ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS
+      ) {
         return;
       }
       globals.UIClickTime = Date.now();
@@ -187,7 +193,10 @@ export function drawReplayArea(winW: number, winH: number): void {
     );
     globals.elements.replayForwardButton.on("click tap", () => {
       // Prevent accidental double clicks.
-      if (Date.now() - globals.UIClickTime < 50) {
+      if (
+        Date.now() - globals.UIClickTime
+        < ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS
+      ) {
         return;
       }
       globals.UIClickTime = Date.now();

@@ -59,11 +59,22 @@ export const BUTTON_DISABLED_TEXT_COLOR = "#444444";
 // Text
 // ----
 
+/** The font of all text drawn on the game board. */
+export const FONT_FAMILY = "Verdana";
+
 /** The smallest font size that text shrinks to when it does not fit. */
 export const MIN_FONT_SIZE = 5;
 
 /** The factor that text shrinks by on each step until it fits. */
 export const TEXT_SHRINK_FACTOR = 0.9;
+
+/** The dark glow that keeps text readable over the game board. */
+export const TEXT_SHADOW = {
+  shadowColor: "black",
+  shadowBlur: 10,
+  shadowOffset: { x: 0, y: 0 },
+  shadowOpacity: 0.9,
+} as const;
 
 // ------
 // Timers
@@ -82,3 +93,13 @@ export const CARD_ANIMATION_LENGTH_SECONDS = 0.5;
 export const CARD_ANIMATION_DELAY_SECONDS = 0.1;
 export const PREPLAY_DELAY_MILLISECONDS = 75;
 export const DOUBLE_TAP_DELAY_MILLISECONDS = 500;
+
+// -------------
+// Mouse buttons
+// -------------
+
+/** The `MouseEvent.button` value of the primary (usually left) button. */
+export const LEFT_MOUSE_BUTTON = 0;
+
+/** The `MouseEvent.button` value of the secondary (usually right) button. */
+export const RIGHT_MOUSE_BUTTON = 2;

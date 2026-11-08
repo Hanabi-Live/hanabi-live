@@ -1,6 +1,7 @@
 // The navigation bar at the top of the lobby.
 
 import { clearTabAccount, withTabAccount } from "@hanabi-live/data";
+import { NO_TABLE_ID } from "../constants";
 import { globals } from "../Globals";
 import { initModal, showWarning } from "../modals";
 import * as tooltips from "../tooltips";
@@ -200,7 +201,7 @@ export function init(): void {
     globals.conn!.send("tableUnattend", {
       tableID: globals.tableID,
     });
-    globals.tableID = -1;
+    globals.tableID = NO_TABLE_ID;
   });
 
   // The "Leave Game" button.
@@ -219,7 +220,7 @@ export function init(): void {
       globals.conn!.send("tableUnattend", {
         tableID: globals.tableID,
       });
-      globals.tableID = -1;
+      globals.tableID = NO_TABLE_ID;
     } else {
       globals.conn!.send("tableLeave", {
         tableID: globals.tableID,

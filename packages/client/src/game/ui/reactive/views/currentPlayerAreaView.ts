@@ -11,6 +11,9 @@ import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { LABEL_COLOR, TEXT_SHRINK_FACTOR } from "../../constants";
 
+/** The most times the player name shrinks before it is drawn as it is. */
+const MAX_SHRINK_STEPS = 100;
+
 export function isVisible(state: State): boolean {
   return (
     // Do not show it we happen to have the in-game replay open.
@@ -109,9 +112,9 @@ export function onChanged(
     text2.resize();
 
     // We need to adjust the font size of the player name, depending on how long the name is.
-    // Continue to shrink the text until it reaches the maximum size. Run at most 100 times; in most
-    // cases, it will take around 15.
-    for (const _i of eRange(100)) {
+    // Continue to shrink the text until it reaches the maximum size. In most cases, it will take
+    // around 15 steps.
+    for (const _i of eRange(MAX_SHRINK_STEPS)) {
       if (text2.measureSize(text2.text()).height <= maxSize) {
         break;
       }

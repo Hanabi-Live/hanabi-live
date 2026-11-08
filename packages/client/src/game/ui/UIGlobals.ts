@@ -4,7 +4,7 @@ import type {
   Options,
   PlayerIndex,
 } from "@hanabi-live/game";
-import { getDefaultVariant } from "@hanabi-live/game";
+import { getDefaultVariant, NO_VALUE } from "@hanabi-live/game";
 import { ReadonlyMap } from "complete-common";
 import Konva from "konva";
 import type * as Redux from "redux";
@@ -83,7 +83,7 @@ export class UIGlobals {
    *
    * This is a legacy variable; kill this and use `state.currentPlayerIndex` instead.
    */
-  activePlayerIndex: PlayerIndex | -1 = -1;
+  activePlayerIndex: PlayerIndex | typeof NO_VALUE = NO_VALUE;
 
   timeTaken = 0;
   startingTurnTime = 0;
@@ -158,7 +158,7 @@ export class UIGlobals {
     this.lastNote = "";
     this.timerID = null;
     this.playerTimes = [];
-    this.activePlayerIndex = -1; // Legacy variable
+    this.activePlayerIndex = NO_VALUE; // Legacy variable
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;

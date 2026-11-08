@@ -3,6 +3,7 @@
 import type { ServerCommandData } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { millisecondsToClockString, NO_VALUE } from "@hanabi-live/game";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import * as tooltips from "../../tooltips";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
@@ -11,7 +12,7 @@ import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
 
 /** How often the local timer counts down. */
-const TICK_MILLISECONDS = 1000;
+const TICK_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
 /** How far a tick can drift from its interval and still sound the low-time warning. */
 const TICK_TOLERANCE_MILLISECONDS = 100;
@@ -35,7 +36,7 @@ export function update(
   data: Omit<ServerCommandData["clock"], "tableID">,
 ): void {
   stop();
-  // -1 if the game just ended.
+  // `NO_VALUE` if the game just ended.
   const { activePlayerIndex } = data;
 
   // We do not need to update the timers if they are not showing.
@@ -44,7 +45,7 @@ export function update(
   }
 
   if (globals.state.finished) {
-    globals.activePlayerIndex = -1;
+    globals.activePlayerIndex = NO_VALUE;
     globals.elements.timer1.hide();
     globals.elements.timer2.hide();
     globals.layers.timer.batchDraw();
@@ -95,7 +96,7 @@ export function update(
     const text = millisecondsToClockString(time);
     globals.elements.timer2.setTimerText(text);
 
-    if (activePlayerIndex !== -1) {
+    if (activePlayerIndex !== NO_VALUE) {
       const activePlayerName = globals.metadata.playerNames[activePlayerIndex];
       if (activePlayerName !== undefined) {
         globals.elements.timer2.setLabelText(activePlayerName);
@@ -103,7 +104,7 @@ export function update(
     }
   }
 
-  globals.elements.timer2.visible(!ourTurn && activePlayerIndex !== -1);
+  globals.elements.timer2.visible(!ourTurn && activePlayerIndex !== NO_VALUE);
   globals.layers.timer.batchDraw();
 
   // Update the timer tooltips for each player.
@@ -151,7 +152,7 @@ export function resumeAfterResize(): void {
   if (
     globals.state.finished
     || globals.playerTimes.length === 0
-    || globals.activePlayerIndex === -1
+    || globals.activePlayerIndex === NO_VALUE
   ) {
     return;
   }
@@ -212,8 +213,10 @@ function setTickingDownTime(timer: TimerDisplay) {
 }
 
 /** Update the tooltip that appears when you hover over a player's name. */
-function setTickingDownTimePlayerNameTooltip(playerIndex: PlayerIndex | -1) {
-  if (playerIndex === -1) {
+function setTickingDownTimePlayerNameTooltip(
+  playerIndex: PlayerIndex | typeof NO_VALUE,
+) {
+  if (playerIndex === NO_VALUE) {
     return;
   }
 

@@ -6,6 +6,7 @@ import type { ContainerConfig } from "konva/types/Container";
 import { getCanvasColors } from "../../theme";
 import { MultiFitText } from "./MultiFitText";
 import { globals } from "./UIGlobals";
+import { FONT_FAMILY } from "./constants";
 import { FitText } from "./controls/FitText";
 
 export class FullActionLog extends Konva.Group {
@@ -50,7 +51,7 @@ export class FullActionLog extends Konva.Group {
     // The text for each action.
     this.textOptions = {
       fontSize: 0.025 * winH,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       x: 0.04 * winW,
       y: 0.01 * winH,
@@ -62,7 +63,7 @@ export class FullActionLog extends Konva.Group {
     // The turn numbers for each action.
     this.numbersOptions = {
       fontSize: 0.025 * winH,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: getCanvasColors().actionLogNumber,
       x: 0.01 * winW,
       y: 0.01 * winH,
@@ -74,7 +75,7 @@ export class FullActionLog extends Konva.Group {
     // The text displayed when the selected player hasn't taken any actions.
     const emptyMessageOptions = {
       fontSize: 0.025 * winH,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       x: 0.04 * winW,
       y: 0.01 * winH,

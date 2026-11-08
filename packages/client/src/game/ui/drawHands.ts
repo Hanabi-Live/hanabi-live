@@ -5,7 +5,13 @@ import Konva from "konva";
 import { CardLayout } from "./CardLayout";
 import { NameFrame } from "./NameFrame";
 import { globals } from "./UIGlobals";
-import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
+import {
+  CARD_H,
+  CARD_W,
+  FONT_FAMILY,
+  OFF_BLACK,
+  TEXT_SHADOW,
+} from "./constants";
 import { TextWithTooltip } from "./controls/TextWithTooltip";
 import { initKonvaTooltips } from "./konvaTooltips";
 
@@ -487,17 +493,11 @@ function drawDetrimentalCharacters(
     x: playerNamePos[numPlayers]![j]!.x * winW - width2 / 2,
     y: playerNamePos[numPlayers]![j]!.y * winH - height2 / 2,
     fontSize: 0.03 * winH,
-    fontFamily: "Verdana",
+    fontFamily: FONT_FAMILY,
     align: "center",
     text: character.emoji,
     fill: "yellow",
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     listening: true,
   });
   charIcon.emoji = true; // Mark that this is a text element containing only emoji

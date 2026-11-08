@@ -6,6 +6,7 @@ import jquery from "jquery";
 import { globals } from "./Globals";
 import { Loader } from "./Loader";
 import * as chat from "./chat";
+import { NO_TABLE_ID } from "./constants";
 import { initErrorListener } from "./errors";
 import * as gameChat from "./game/chat";
 import * as game from "./game/main";
@@ -63,7 +64,7 @@ $(document).ready(() => {
     } else if (globals.currentScreen === Screen.PreGame) {
       lobbyPregame.hide(false);
       globals.conn!.send("tableUnattend", { tableID: globals.tableID });
-      globals.tableID = -1;
+      globals.tableID = NO_TABLE_ID;
     }
 
     if (hash.startsWith("#history")) {

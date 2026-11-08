@@ -4,6 +4,7 @@ import type { GameHistory, ServerCommandData, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
+import { NO_TABLE_ID } from "./constants";
 import type { HanabiUI } from "./game/ui/HanabiUI";
 import { Screen } from "./lobby/types/Screen";
 
@@ -59,8 +60,8 @@ export class Globals {
 
   currentScreen: Screen = Screen.Login;
 
-  /** Equal to the table we are joined to or -1 if no table. */
-  tableID = -1;
+  /** Equal to the table we are joined to or `NO_TABLE_ID` if no table. */
+  tableID = NO_TABLE_ID;
 
   errorOccurred = false;
 

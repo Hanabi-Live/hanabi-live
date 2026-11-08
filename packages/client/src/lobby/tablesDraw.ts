@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables.
 
 import type { ServerCommandData } from "@hanabi-live/data";
-import { MAX_PLAYERS } from "@hanabi-live/game";
+import { MAX_PLAYERS, NO_VALUE } from "@hanabi-live/game";
 import {
   SECOND_IN_MILLISECONDS,
   assertDefined,
@@ -280,7 +280,7 @@ export function tablesDraw(): void {
 
 export function tableSpectate(
   table: ServerCommandData["table"],
-  shadowingPlayerIndex = -1,
+  shadowingPlayerIndex = NO_VALUE,
 ): void {
   if (
     globals.currentScreen !== Screen.Lobby

@@ -21,6 +21,7 @@ import {
   FINESSE_COLOR,
   OFF_BLACK,
   SMALL_ICON_SIZE,
+  TEXT_SHADOW,
   TOP_LEFT_X,
   TOP_LEFT_Y,
 } from "./constants";
@@ -411,13 +412,7 @@ export function note(
     height: SMALL_ICON_SIZE,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: shouldShowIndicator(),
     listening: false,
   });
@@ -442,13 +437,7 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
     height: SMALL_ICON_SIZE,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
-    shadowColor: "black",
-    shadowBlur: 10,
-    shadowOffset: {
-      x: 0,
-      y: 0,
-    },
-    shadowOpacity: 0.9,
+    ...TEXT_SHADOW,
     visible: false,
     listening: false,
   });

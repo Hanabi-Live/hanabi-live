@@ -9,6 +9,7 @@ import {
   tableIdSchema,
   withTabAccount,
 } from "@hanabi-live/data";
+import { NO_VALUE } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { commands } from "./commands";
 import { Connection } from "./Connection";
@@ -326,7 +327,7 @@ function openConnection(isReconnect: boolean) {
                 globals.ui.globals.store !== null
                 && globals.ui.globals.state.shadowing
                   ? globals.ui.globals.metadata.ourPlayerIndex
-                  : -1,
+                  : NO_VALUE,
             }),
           },
         );

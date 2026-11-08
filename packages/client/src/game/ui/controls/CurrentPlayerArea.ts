@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { getCanvasColors } from "../../../theme";
 import { globals } from "../UIGlobals";
-import { LABEL_COLOR } from "../constants";
+import { FONT_FAMILY, LABEL_COLOR, TEXT_SHADOW } from "../constants";
 import { FitText } from "./FitText";
 
 interface ElementValues {
@@ -66,18 +66,12 @@ export class CurrentPlayerArea extends Konva.Group {
     this.text1 = new FitText({
       x: textValues.x * winW,
       width: textValues.w * winW,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fontSize: 0.08 * winH,
       text: "Current player:",
       align: "center",
       fill: LABEL_COLOR,
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       listening: false,
     });
     this.add(this.text1);
@@ -85,18 +79,12 @@ export class CurrentPlayerArea extends Konva.Group {
     this.text2 = new FitText({
       x: textValues.x * winW,
       width: textValues.w * winW,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fontSize: 0.08 * winH,
       text: "",
       align: "center",
       fill: getCanvasColors().currentPlayerText,
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       listening: false,
     });
     this.add(this.text2);
@@ -104,18 +92,12 @@ export class CurrentPlayerArea extends Konva.Group {
     this.text3 = new FitText({
       x: textValues.x2 * winW,
       width: textValues.w2 * winW,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fontSize: 0.08 * winH,
       text: "",
       align: "center",
       fill: "red",
-      shadowColor: "black",
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
+      ...TEXT_SHADOW,
       listening: false,
     });
     this.add(this.text3);

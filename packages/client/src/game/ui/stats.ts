@@ -5,6 +5,7 @@ import * as modals from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
+import { RIGHT_MOUSE_BUTTON } from "./constants";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";
 
 const setModifierButton = getHTMLElement("#set-modifier-button");
@@ -38,7 +39,7 @@ export function efficiencyLabelClick(
   event: Konva.KonvaEventObject<MouseEvent>,
 ): void {
   // "event.evt.buttons" is always 0 here.
-  if (event.evt.button === 2) {
+  if (event.evt.button === RIGHT_MOUSE_BUTTON) {
     arrows.click(event, ReplayArrowOrder.Efficiency);
     return;
   }

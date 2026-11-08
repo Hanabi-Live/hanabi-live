@@ -1,7 +1,13 @@
 // The lobby area that shows all of the players in the current unstarted game.
 
+import { SECONDS_PER_MINUTE } from "@hanabi-live/data";
 import type { Options, PlayerIndex } from "@hanabi-live/game";
-import { MAX_PLAYERS, MIN_PLAYERS, getVariant } from "@hanabi-live/game";
+import {
+  getVariant,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  NO_VALUE,
+} from "@hanabi-live/game";
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
@@ -198,7 +204,7 @@ export function getOptionIcons(
         <div id="${idPrefix}-tooltip-timer-${rowId}" class="${idPrefix}-tooltip-icon">
           This is a <strong>Timed Game</strong>. The base time is <strong>${timerFormatter(
             options.timeBase,
-          )} minute${options.timeBase === 60 ? "" : "s"}</strong> plus <strong>${
+          )} minute${options.timeBase === SECONDS_PER_MINUTE ? "" : "s"}</strong> plus <strong>${
             options.timePerTurn
           } second${options.timePerTurn === 1 ? "" : "s"}</strong> per turn.
         </div>
@@ -492,14 +498,14 @@ export function drawSpectators(tableID: number): void {
   for (const spectator of table.spectators) {
     const nameSpan = getNameSpan(spectator.name);
     const item = $("<li>").html(`&bull; ${nameSpan.prop("outerHTML")}`);
-    if (spectator.shadowingPlayerIndex !== -1) {
+    if (spectator.shadowingPlayerIndex !== NO_VALUE) {
       if (spectator.name === globals.username) {
         $(`#lobby-pregame-player-${spectator.shadowingPlayerIndex + 1} .shadow`)
           .removeClass("shadow")
           .addClass("unShadow")
           .on("click", (event) => {
             event.stopPropagation();
-            reattend(-1);
+            reattend(NO_VALUE);
           })
           // eslint-disable-next-line complete/require-ascii
           .append(" 🕵️");
@@ -562,7 +568,7 @@ export function toggleJoinSpectateButtons(): void {
   }
 }
 
-function reattend(shadowingPlayerIndex: PlayerIndex | -1) {
+function reattend(shadowingPlayerIndex: PlayerIndex | typeof NO_VALUE) {
   setTimeout(() => {
     globals.conn!.send("tableUnattend", {
       tableID: globals.tableID,

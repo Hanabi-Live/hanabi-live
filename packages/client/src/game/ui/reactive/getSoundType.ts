@@ -6,13 +6,14 @@ import type {
   GameState,
 } from "@hanabi-live/game";
 import {
+  canCardPossiblyBeFromCluesOnly,
   ClueType,
   EndCondition,
-  canCardPossiblyBeFromCluesOnly,
   getCharacterNameForPlayer,
   getVariant,
   isCardClued,
   isHandLocked,
+  NO_VALUE,
 } from "@hanabi-live/game";
 import { includes } from "complete-common";
 import { SoundType } from "../../types/SoundType";
@@ -66,7 +67,7 @@ export function getSoundType(
 
   switch (action.type) {
     case "clue": {
-      if (action.clue.type === -1) {
+      if (action.clue.type === NO_VALUE) {
         return SoundType.Quack;
       }
       if (metadata.options.detrimentalCharacters) {

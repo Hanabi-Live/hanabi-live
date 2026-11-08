@@ -1,6 +1,10 @@
 import type { Clue } from "@hanabi-live/game";
 import Konva from "konva";
-import { BUTTON_HOVER_COLOR, BUTTON_PRESSED_COLOR } from "./constants";
+import {
+  BUTTON_HOVER_COLOR,
+  BUTTON_PRESSED_COLOR,
+  FONT_FAMILY,
+} from "./constants";
 import { drawLayer } from "./konvaHelpers";
 
 export class RankButton extends Konva.Group {
@@ -35,7 +39,7 @@ export class RankButton extends Konva.Group {
       width: w,
       height: 0.5 * h,
       fontSize: 0.5 * h,
-      fontFamily: "Verdana",
+      fontFamily: FONT_FAMILY,
       fill: "white",
       align: "center",
       text: config["label"] as string,

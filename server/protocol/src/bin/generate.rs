@@ -647,6 +647,10 @@ fn data_constants() -> String {
             "MAX_PRIVATE_HISTORY_MESSAGES",
             hanabi_protocol::MAX_PRIVATE_HISTORY_MESSAGES.to_string(),
         ),
+        (
+            "SECONDS_PER_MINUTE",
+            hanabi_protocol::SECONDS_PER_MINUTE.to_string(),
+        ),
     ])
 }
 

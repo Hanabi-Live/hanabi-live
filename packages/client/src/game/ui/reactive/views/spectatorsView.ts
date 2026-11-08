@@ -1,4 +1,5 @@
 import type { Spectator } from "@hanabi-live/data";
+import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
@@ -38,7 +39,7 @@ export function onSpectatorsChanged(data: {
 
       // Spectators can also be shadowing a specific player. However, only show this in ongoing
       // games. (Perspective shifts in replays are inconsequential.)
-      if (spectator.shadowingPlayerIndex !== -1 && !data.finished) {
+      if (spectator.shadowingPlayerIndex !== NO_VALUE && !data.finished) {
         const playerName =
           globals.metadata.playerNames[spectator.shadowingPlayerIndex];
         assertDefined(
