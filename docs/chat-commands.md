@@ -42,7 +42,7 @@ If you need general help with the website, then read the
 | `/friends`                       | Show a list of all your friends                                      |
 | `/unfriend [username]`           | Remove someone from your friends list                                |
 | `/link [username]`               | Add someone to your linked accounts                                  |
-| `/linked`                        | Show a list of all your linked accounts                              |
+| `/links`                         | Show a list of all your linked accounts                              |
 | `/unlink [username]`             | Remove someone from your linked accounts                             |
 | `/block [username]`              | Stop someone from joining or spectating your tables or messaging you |
 | `/blocked`                       | Show a list of everyone you have blocked                             |

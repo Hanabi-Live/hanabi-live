@@ -98,14 +98,13 @@ function unlink(room: string, args: readonly string[]) {
 }
 
 // /links
-function linked() {
+function links() {
   globals.conn!.send("chatLinked", {});
 }
 
 chatCommands.set("link", link);
 chatCommands.set("unlink", unlink);
-chatCommands.set("linked", linked);
-chatCommands.set("links", linked);
+chatCommands.set("links", links);
 
 // The /block and /unblock commands share one handler.
 function blockCommand(command: "block" | "unblock") {
