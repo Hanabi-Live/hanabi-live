@@ -10,21 +10,13 @@ import {
   FONT_FAMILY,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
+  LINE_SHADOW,
   MIN_FONT_SIZE,
   RIGHT_MOUSE_BUTTON,
+  STROKE_WIDTH_UNIT,
   TEXT_SHRINK_FACTOR,
 } from "./constants";
 import * as konvaTooltips from "./konvaTooltips";
-
-/** The shadow of the name and its lines, which only the active player's lines show. */
-const SHADOW = {
-  shadowColor: "black",
-  shadowBlur: 5,
-  shadowOffset: {
-    x: 0,
-    y: 3,
-  },
-} as const;
 
 const NAME_SHADOW_OPACITY = 0.9;
 const ACTIVE_SHADOW_OPACITY = 0.6;
@@ -62,7 +54,7 @@ export class NameFrame extends Konva.Group {
       fontSize: config.height,
       text: config.name,
       fill: LABEL_COLOR,
-      ...SHADOW,
+      ...LINE_SHADOW,
       shadowOpacity: NAME_SHADOW_OPACITY,
       listening: true, // Needed so that we can click on a player's name to shadow them
     });
@@ -93,7 +85,7 @@ export class NameFrame extends Konva.Group {
 
     w *= 1.4;
 
-    this.defaultStrokeWidth = 0.001_056 * globals.stage.height();
+    this.defaultStrokeWidth = STROKE_WIDTH_UNIT * globals.stage.height();
 
     this.leftLine = new Konva.Line({
       points: [
@@ -107,7 +99,7 @@ export class NameFrame extends Konva.Group {
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
       lineJoin: "round",
-      ...SHADOW,
+      ...LINE_SHADOW,
       shadowOpacity: 0,
       listening: false,
     });
@@ -125,7 +117,7 @@ export class NameFrame extends Konva.Group {
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
       lineJoin: "round",
-      ...SHADOW,
+      ...LINE_SHADOW,
       shadowOpacity: 0,
       listening: false,
     });

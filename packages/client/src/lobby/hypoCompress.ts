@@ -20,6 +20,15 @@ interface MinMax {
   max: number;
 }
 
+/**
+ * The number of comma-separated parts of a compressed game: the players and deck, the actions, and
+ * the variant ID. An optional seed follows them.
+ */
+const COMPRESSED_PARTS = 3;
+
+/** How often a hyphen is inserted so that a long compressed game wraps when it is posted. */
+const HYPHEN_INTERVAL = 20;
+
 const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /**
@@ -69,15 +78,21 @@ function parseGameJSON(JSONString: string) {
 /** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
 export function expand(data: string): string | undefined {
   const parts = data.split(",");
-  const seed = parts[3] ?? "";
-  if (parts.length < 3 || parts.length > 4 || !/^[\d\-A-Za-z]*$/u.test(seed)) {
+  const seed = parts[COMPRESSED_PARTS] ?? "";
+  if (
+    parts.length < COMPRESSED_PARTS
+    || parts.length > COMPRESSED_PARTS + 1
+    || !/^[\d\-A-Za-z]*$/u.test(seed)
+  ) {
     return undefined;
   }
   // Remove wrapping hyphens from the compressed data, never from the seed.
-  const normal = parts.slice(0, 3).join(",").replaceAll("-", "");
+  const normal = parts.slice(0, COMPRESSED_PARTS).join(",").replaceAll("-", "");
 
-  // The compressed string is composed of 3 substrings separated by commas.
-  const [playersAndDeck, actionsString, variantIDString] = normal.split(",", 3);
+  const [playersAndDeck, actionsString, variantIDString] = normal.split(
+    ",",
+    COMPRESSED_PARTS,
+  );
   assertDefined(
     playersAndDeck,
     "Failed to parse the players and deck from the compress hypothetical string.",
@@ -174,8 +189,8 @@ function gameJSONCompress(data: GameJSON): string | undefined {
     return undefined;
   }
 
-  // Add hyphens every 20 characters for URL posting (hyphens make the text wrap).
-  out = out.match(/.{1,20}/gu)!.join("-");
+  // Add hyphens for URL posting (hyphens make the text wrap).
+  out = out.match(new RegExp(`.{1,${HYPHEN_INTERVAL}}`, "gu"))!.join("-");
 
   return `${out},${seed}`;
 }

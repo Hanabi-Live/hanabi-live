@@ -15,6 +15,12 @@ export const TOP_LEFT_Y = 0.05 * CARD_H;
 export const BOTTOM_LEFT_X = 0.06 * CARD_W;
 export const BOTTOM_LEFT_Y = 0.82 * CARD_H;
 
+/** The shadow that the card images cast under their pips and rank labels. */
+export const CARD_IMAGE_SHADOW_COLOR = "rgba(0, 0, 0, 0.9)";
+
+/** Turns off a canvas shadow. */
+export const NO_SHADOW_COLOR = "rgba(0, 0, 0, 0)";
+
 // ------
 // Colors
 // ------
@@ -67,6 +73,22 @@ export const MIN_FONT_SIZE = 5;
 
 /** The factor that text shrinks by on each step until it fits. */
 export const TEXT_SHRINK_FACTOR = 0.9;
+
+/**
+ * The width of the thinnest outline on the game board, as a fraction of the stage height. Thicker
+ * outlines are multiples of it.
+ */
+export const STROKE_WIDTH_UNIT = 0.001_056;
+
+/** The shadow under a player's name and the lines beside it, and under the variant label. */
+export const LINE_SHADOW = {
+  shadowColor: "black",
+  shadowBlur: 5,
+  shadowOffset: {
+    x: 0,
+    y: 3,
+  },
+} as const;
 
 /** The dark glow that keeps text readable over the game board. */
 export const TEXT_SHADOW = {

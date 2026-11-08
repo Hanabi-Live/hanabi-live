@@ -1,5 +1,6 @@
 // Functions related to hand management.
 
+import { MIN_PLAYERS } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { Options } from "../interfaces/Options";
 import type { CardOrder } from "../types/CardOrder";
@@ -31,6 +32,9 @@ function getCardsPerHandNatural(numPlayers: NumPlayers): number {
     }
   }
 }
+
+/** The largest hand: the fewest players, with one extra card. */
+export const MAX_CARDS_PER_HAND = getCardsPerHandNatural(MIN_PLAYERS) + 1;
 
 /** For example, slot 1 is the newest (left-most) card, which is at index 4 (in a 3-player game). */
 export function getCardSlot(

@@ -7,7 +7,12 @@ import {
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
 import type { CardRendererBackend } from "./cardRendererBackend";
-import { CARD_H, CARD_W } from "./constants";
+import {
+  CARD_H,
+  CARD_IMAGE_SHADOW_COLOR,
+  CARD_W,
+  NO_SHADOW_COLOR,
+} from "./constants";
 import { drawPip } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";
 
@@ -24,6 +29,18 @@ const STACK_BASE_RANK = 0;
  * drawing purposes.
  */
 const UNKNOWN_CARD_RANK = 6;
+
+/** How far the card's outline is inset from the edges of its image. */
+const CARD_BORDER_PADDING = 4;
+
+/** The thickness of the card's outline. */
+const CARD_BORDER_WIDTH = 8;
+
+/** The line that a gradient follows down the rank label in the top-left corner of a card. */
+const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
+
+/** The distance of the rank label from the left edge of a card. */
+const RANK_LABEL_X = 19;
 
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
@@ -339,18 +356,18 @@ function makeUnknownCard<Canvas>(
 
   drawCardBackground(ctx, enableShadows);
   ctx.fillStyle = "black";
-  cardBorderPath(ctx, 4, enableShadows);
+  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
 
   ctx.save();
   ctx.globalAlpha = 0.5;
   ctx.fill();
   ctx.globalAlpha = 0.6;
-  ctx.lineWidth = 8;
+  ctx.lineWidth = CARD_BORDER_WIDTH;
   ctx.stroke();
   ctx.restore();
 
   ctx.fillStyle = "#444444";
-  ctx.lineWidth = 8;
+  ctx.lineWidth = CARD_BORDER_WIDTH;
   ctx.lineJoin = "round";
 
   ctx.translate(CARD_W / 2, CARD_H / 2);
@@ -428,15 +445,15 @@ function drawCardBase(
     variant,
     colorblindMode,
   );
-  cardBorderPath(ctx, 4, enableShadows);
+  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
 
   // Draw the borders (on visible cards) and the color fill.
   ctx.globalAlpha = 0.3;
   ctx.fill();
   ctx.globalAlpha = 0.7;
-  ctx.lineWidth = 8;
+  ctx.lineWidth = CARD_BORDER_WIDTH;
   // The borders should be more opaque for the stack base.
-  if (rank === 0) {
+  if (rank === STACK_BASE_RANK) {
     ctx.globalAlpha = 1;
   }
   ctx.stroke();
@@ -471,11 +488,11 @@ function cardBorderPath(
 
 function drawShape(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
   if (enableShadows) {
-    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+    ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
   }
   ctx.fill();
   if (enableShadows) {
-    ctx.shadowColor = "rgba(0, 0, 0, 0)";
+    ctx.shadowColor = NO_SHADOW_COLOR;
   }
   ctx.stroke();
 }
@@ -488,13 +505,13 @@ function drawText(
 ) {
   ctx.save();
   if (enableShadows) {
-    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-    ctx.fillText(indexLabel, 19, textYPos);
-    ctx.shadowColor = "rgba(0, 0, 0, 0)";
-    ctx.strokeText(indexLabel, 19, textYPos);
+    ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
+    ctx.fillText(indexLabel, RANK_LABEL_X, textYPos);
+    ctx.shadowColor = NO_SHADOW_COLOR;
+    ctx.strokeText(indexLabel, RANK_LABEL_X, textYPos);
   } else {
-    ctx.strokeText(indexLabel, 19, textYPos);
-    ctx.fillText(indexLabel, 19, textYPos);
+    ctx.strokeText(indexLabel, RANK_LABEL_X, textYPos);
+    ctx.fillText(indexLabel, RANK_LABEL_X, textYPos);
   }
   ctx.restore();
 }
@@ -512,15 +529,14 @@ function drawDualColorTriangles(
   ctx.save();
   ctx.lineWidth = 1;
   const triangleSize = 50;
-  const borderSize = 8;
   const sliceAngle = Math.PI / 2 / count;
 
   // Top-right
   drawColorTriangle(
     ctx,
     clueColors,
-    CARD_W - borderSize,
-    borderSize,
+    CARD_W - CARD_BORDER_WIDTH,
+    CARD_BORDER_WIDTH,
     Math.PI,
     -1,
     triangleSize,
@@ -532,8 +548,8 @@ function drawDualColorTriangles(
   drawColorTriangle(
     ctx,
     clueColors,
-    borderSize,
-    CARD_H - borderSize,
+    CARD_BORDER_WIDTH,
+    CARD_H - CARD_BORDER_WIDTH,
     1.5 * Math.PI,
     1,
     triangleSize,
@@ -588,7 +604,7 @@ function drawCardBackground(
   enableShadows: boolean,
 ) {
   ctx.save();
-  cardBorderPath(ctx, 4, enableShadows);
+  cardBorderPath(ctx, CARD_BORDER_PADDING, enableShadows);
 
   ctx.fillStyle = "white";
   ctx.fill();
@@ -640,16 +656,24 @@ function getSuitStyle(
       if (allClueColors) {
         if (allClueRanks) {
           const rainbow = getSuit(dark ? "Dark Omni" : "Omni");
-          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+          return evenLinearGradient(
+            ctx,
+            rainbow.fillColors,
+            RANK_LABEL_GRADIENT,
+          );
         }
 
         if (noClueRanks) {
           const rainbow = getSuit(dark ? "Cocoa Rainbow" : "Muddy Rainbow");
-          return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+          return evenLinearGradient(
+            ctx,
+            rainbow.fillColors,
+            RANK_LABEL_GRADIENT,
+          );
         }
 
         const rainbow = getSuit(dark ? "Dark Rainbow" : "Rainbow");
-        return evenLinearGradient(ctx, rainbow.fillColors, [0, 14, 0, 110]);
+        return evenLinearGradient(ctx, rainbow.fillColors, RANK_LABEL_GRADIENT);
       }
 
       if (noClueColors) {
@@ -676,7 +700,7 @@ function getSuitStyle(
 
   if (suit.prism) {
     // Prism cards have a custom color depending on their rank.
-    if (rank === 0) {
+    if (rank === STACK_BASE_RANK) {
       return suit.fill;
     }
 
@@ -710,7 +734,7 @@ function getSuitStyle(
   // specific element of the card that we are filling in.
   switch (cardArea) {
     case CardArea.Number: {
-      return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
+      return evenLinearGradient(ctx, suit.fillColors, RANK_LABEL_GRADIENT);
     }
 
     case CardArea.Background: {

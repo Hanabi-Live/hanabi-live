@@ -9,6 +9,8 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import {
+  MAX_CARDS_PER_HAND,
+  MAX_SUITS,
   getTotalCardsInDeck,
   newColorClue,
   newRankClue,
@@ -43,10 +45,12 @@ import {
   FONT_FAMILY,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
+  LINE_SHADOW,
   PANEL_CORNER_RADIUS,
   PANEL_OPACITY,
   RIGHT_MOUSE_BUTTON,
   STAGE_FADE_OPACITY,
+  STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
   WARNING_COLOR,
 } from "./constants";
@@ -325,7 +329,10 @@ interface PlayStackValues {
 function drawPlayStacks() {
   let yOffset: number;
 
-  if (globals.variant.suits.length === 6 || globals.variant.showSuitNames) {
+  if (
+    globals.variant.suits.length === MAX_SUITS
+    || globals.variant.showSuitNames
+  ) {
     cardWidth = 0.06;
     cardHeight = 0.151;
     yOffset = 0.019;
@@ -499,7 +506,7 @@ function drawPlayStacks() {
 
 function drawDiscardStacks() {
   const discardStackSpacing =
-    globals.variant.suits.length === 6 ? 0.038 : 0.047;
+    globals.variant.suits.length === MAX_SUITS ? 0.038 : 0.047;
 
   for (const [suitIndex, suit] of globals.variant.suits.entries()) {
     // Make the discard stack for this suit.
@@ -722,7 +729,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     stroke: "yellow",
     cornerRadius: 0.01 * winH,
-    strokeWidth: 0.010_56 * winH,
+    strokeWidth: 10 * STROKE_WIDTH_UNIT * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -1031,7 +1038,7 @@ function drawScoreArea() {
         width: 0.03 * winW,
         height: 0.053 * winH,
         stroke: "black",
-        strokeWidth: 0.002_11 * winH,
+        strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
         cornerRadius: 0.005 * winW,
         listening: true,
       },
@@ -1197,7 +1204,7 @@ function drawSharedReplay() {
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
     visible: false,
     listening: false,
   });
@@ -1318,7 +1325,7 @@ function drawYourTurn() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.004_22 * winH,
+    strokeWidth: 4 * STROKE_WIDTH_UNIT * winH,
     offset: {
       x: -0.0175 * winW,
       y: -0.036 * winH,
@@ -1405,12 +1412,7 @@ function drawStatistics() {
     stroke: LABEL_COLOR,
     strokeWidth: 1,
     lineJoin: "round",
-    shadowColor: "black",
-    shadowBlur: 5,
-    shadowOffset: {
-      x: 0,
-      y: 3,
-    },
+    ...LINE_SHADOW,
     shadowOpacity: 0,
     listening: false,
   });
@@ -1615,7 +1617,7 @@ function drawDiscardArea() {
 }
 
 function drawArrows() {
-  repeat(6, () => {
+  repeat(MAX_CARDS_PER_HAND, () => {
     const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
     globals.layers.arrow.add(arrow as unknown as Konva.Group);
     globals.elements.arrows.push(arrow);
@@ -1661,7 +1663,7 @@ function drawTimers() {
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: "#ffe03b", // Yellow
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
     visible: false,
     listening: false,
   });
@@ -1869,8 +1871,8 @@ function drawClueArea() {
   });
 
   // In a hypo, the lower part of the clue UI slides left independently of the clue target buttons.
-  // The limiting factor on how far it can slide is when there's 6 color buttons.
-  const maxColorWidth = buttonW * 6 + buttonXSpacing * 5;
+  // The limiting factor on how far it can slide is when there is a color button for every suit.
+  const maxColorWidth = buttonW * MAX_SUITS + buttonXSpacing * (MAX_SUITS - 1);
   const lowerClueAreaWidth = maxColorWidth * winW;
   const offsetX = -0.5 * (clueAreaValues.w! * winW - lowerClueAreaWidth);
   function setLeft(this: SlidableGroup) {
@@ -2052,7 +2054,7 @@ function drawClueAreaDisabled(offsetX: number) {
       (clueAreaValues.h! - spacing.y) * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.005_28 * winH,
+    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line1);
@@ -2066,7 +2068,7 @@ function drawClueAreaDisabled(offsetX: number) {
       spacing.y * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 0.005_28 * winH,
+    strokeWidth: 5 * STROKE_WIDTH_UNIT * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(line2);
@@ -2081,7 +2083,7 @@ function drawClueAreaDisabled(offsetX: number) {
     text: "No clues",
     fill: LABEL_COLOR,
     stroke: "black",
-    strokeWidth: 0.002_11 * winH,
+    strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
     listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
@@ -2114,22 +2116,23 @@ function createWaitingOnServerAnimation(
   waitingOnServer: Konva.Group,
   layer: Konva.Layer,
 ): Konva.Animation {
-  const blueCircle = new Konva.Circle({
+  const circleConfig = {
     x: waitingOnServer.width() / 2,
     y: waitingOnServer.height() / 2,
     radius: 50,
-    stroke: "blue",
     strokeWidth: 5,
+  } as const;
+
+  const blueCircle = new Konva.Circle({
+    ...circleConfig,
+    stroke: "blue",
   });
 
   waitingOnServer.add(blueCircle);
 
   const redCircle = new Konva.Circle({
-    x: waitingOnServer.width() / 2,
-    y: waitingOnServer.height() / 2,
-    radius: 50,
+    ...circleConfig,
     stroke: "red",
-    strokeWidth: 5,
   });
 
   waitingOnServer.add(redCircle);
@@ -2215,7 +2218,7 @@ function drawHypotheticalArea() {
     fill: "black",
     opacity: 0.5,
     stroke: "black",
-    strokeWidth: 0.004_22 * winH,
+    strokeWidth: 4 * STROKE_WIDTH_UNIT * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);

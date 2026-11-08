@@ -1,5 +1,6 @@
 import type { Suit, Variant } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
+import { CARD_IMAGE_SHADOW_COLOR, NO_SHADOW_COLOR } from "./constants";
 import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions";
 
 export function drawPip(
@@ -36,7 +37,7 @@ export function drawPip(
 
   // Handle the shadow.
   if (shadow === true) {
-    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+    ctx.shadowColor = CARD_IMAGE_SHADOW_COLOR;
   }
 
   const hasCustomFill = customFill !== undefined && customFill !== "";
@@ -110,7 +111,7 @@ export function drawPip(
   // Draw a black border around the shape.
   if (shadow === true) {
     ctx.lineWidth = lineWidth ?? (hasCustomFill ? 8 : 5);
-    ctx.shadowColor = "rgba(0, 0, 0, 0)";
+    ctx.shadowColor = NO_SHADOW_COLOR;
   } else {
     ctx.lineWidth = 3;
   }

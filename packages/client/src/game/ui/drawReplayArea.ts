@@ -11,6 +11,9 @@ import * as replay from "./replay";
 /** Clicks on the replay buttons closer together than this are treated as accidental. */
 const ACCIDENTAL_DOUBLE_CLICK_MILLISECONDS = 50;
 
+/** The row of replay buttons: back to the start, back, forward, and forward to the end. */
+const NUM_REPLAY_BUTTONS = 4;
+
 export function drawReplayArea(winW: number, winH: number): void {
   const replayAreaValues = {
     x: 0.15,
@@ -132,7 +135,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayBackFullButton = new Button(
       {
         x: x * winW,
-        y: 0.07 * winH,
+        y: replayButtonValues.y * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
         listening: true,
@@ -152,7 +155,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayBackButton = new Button(
       {
         x: x * winW,
-        y: 0.07 * winH,
+        y: replayButtonValues.y * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
@@ -182,7 +185,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayForwardButton = new Button(
       {
         x: x * winW,
-        y: 0.07 * winH,
+        y: replayButtonValues.y * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
@@ -212,7 +215,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     globals.elements.replayForwardFullButton = new Button(
       {
         x: x * winW,
-        y: 0.07 * winH,
+        y: replayButtonValues.y * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
@@ -231,7 +234,9 @@ export function drawReplayArea(winW: number, winH: number): void {
   }
 
   const extra = 0.04;
-  const totalWidth = replayButtonValues.w * 4 + replayButtonValues.spacing * 3;
+  const totalWidth =
+    replayButtonValues.w * NUM_REPLAY_BUTTONS
+    + replayButtonValues.spacing * (NUM_REPLAY_BUTTONS - 1);
   const bottomButtonValues = {
     y: 0.17,
     w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,

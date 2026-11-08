@@ -1,7 +1,11 @@
 // Initialization functions for the HanabiCard object.
 
 import type { Suit, Variant } from "@hanabi-live/game";
-import { START_CARD_RANK, hasReversedSuits } from "@hanabi-live/game";
+import {
+  DEFAULT_CARD_RANKS,
+  START_CARD_RANK,
+  hasReversedSuits,
+} from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
@@ -29,6 +33,12 @@ import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { drawPip } from "./drawPip";
 
+/** The opacity of the shadow under a card and under the pips drawn on it. */
+const CARD_SHADOW_OPACITY = 0.4;
+
+/** The center of the radial gradient that fills a pip of a suit with several colors. */
+const MULTI_FILL_PIP_GRADIENT_CENTER = { x: 75, y: 140 } as const;
+
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it
   // will just be a gray rounded rectangle. The pips and other elements of a card are drawn on top
@@ -43,7 +53,7 @@ export function image(getBareName: () => string): Konva.Image {
       x: Math.floor(0.04 * CARD_W),
       y: Math.floor(0.04 * CARD_W),
     },
-    shadowOpacity: 0.4,
+    shadowOpacity: CARD_SHADOW_OPACITY,
     listening: true, // As the main card element, this must be listening in order for events to fire
   });
   (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
@@ -249,7 +259,7 @@ function makeCachedPips(variant: Variant) {
         const xx = Math.floor(CARD_W * 0.25 - width * 0.5);
         const xy = Math.floor(CARD_H * 0.25 - width * 0.05);
         ctx.translate(-1.4 * width, -2 * width);
-        drawX(ctx, shape, xx, xy, 50, width);
+        drawX(ctx, shape, xx, xy, width, width);
       },
       listening: false,
     });
@@ -261,7 +271,7 @@ function makeCachedPips(variant: Variant) {
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
     const x =
-      variant.ranks.length === 5
+      variant.ranks.length === DEFAULT_CARD_RANKS.length
         ? Math.floor(CARD_W * (rank * 0.19 - 0.14))
         : Math.floor(
             CARD_W * ((rank === START_CARD_RANK ? 0 : rank) * 0.15 + 0.05),
@@ -288,7 +298,7 @@ function makeCachedPips(variant: Variant) {
       shadowColor: "black",
       shadowOffsetX: 5,
       shadowOffsetY: 5,
-      shadowOpacity: 0.4,
+      shadowOpacity: CARD_SHADOW_OPACITY,
       shadowForStrokeEnabled: true,
       listening: false,
     });
@@ -307,7 +317,7 @@ function makeCachedPips(variant: Variant) {
         const width = 13;
         const xx = Math.floor(CARD_W * 0.05);
         const xy = Math.floor(CARD_H * 0.047);
-        drawX(ctx, shape, xx, xy, 13, width);
+        drawX(ctx, shape, xx, xy, width, width);
       },
       listening: false,
     });
@@ -698,7 +708,7 @@ function getNewColorPip(
     shadowColor: "black",
     shadowOffsetX: 15,
     shadowOffsetY: 15,
-    shadowOpacity: 0.4,
+    shadowOpacity: CARD_SHADOW_OPACITY,
     shadowForStrokeEnabled: true,
     sceneFunc: (ctx: KonvaContext.Context) => {
       drawPip(
@@ -728,14 +738,8 @@ function getNewColorPip(
       1,
       suit.fillColors[4]!,
     ]);
-    suitPip.fillRadialGradientStartPoint({
-      x: 75,
-      y: 140,
-    });
-    suitPip.fillRadialGradientEndPoint({
-      x: 75,
-      y: 140,
-    });
+    suitPip.fillRadialGradientStartPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
+    suitPip.fillRadialGradientEndPoint(MULTI_FILL_PIP_GRADIENT_CENTER);
     suitPip.fillRadialGradientStartRadius(0);
     suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
   }

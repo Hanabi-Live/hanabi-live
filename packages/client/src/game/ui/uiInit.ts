@@ -3,7 +3,7 @@ import Konva from "konva";
 import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
-import { LABEL_COLOR } from "./constants";
+import { LABEL_COLOR, STROKE_WIDTH_UNIT } from "./constants";
 import { drawCards } from "./drawCards";
 import * as drawCardsBrowser from "./drawCardsBrowser";
 import { drawUI } from "./drawUI";
@@ -59,7 +59,7 @@ export function uiInit(): void {
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: getCanvasColors().loadingLabelStroke,
-    strokeWidth: 0.001_056 * winH,
+    strokeWidth: STROKE_WIDTH_UNIT * winH,
     text: "Loading...",
     align: "center",
     x: 0,
@@ -76,7 +76,7 @@ export function uiInit(): void {
   const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: getCanvasColors().loadingLabelStroke,
-    strokeWidth: 0.001_056 * winH,
+    strokeWidth: STROKE_WIDTH_UNIT * winH,
     text: "0 / 0",
     align: "center",
     x: 0,
