@@ -5,8 +5,21 @@ import * as modals from "../../modals";
 import * as tooltips from "../../tooltips";
 import { globals } from "./UIGlobals";
 import { backToLobby } from "./backToLobby";
-import { LABEL_COLOR } from "./constants";
+import { LABEL_COLOR, MIN_FONT_SIZE, TEXT_SHRINK_FACTOR } from "./constants";
 import * as konvaTooltips from "./konvaTooltips";
+
+/** The shadow of the name and its lines, which only the active player's lines show. */
+const SHADOW = {
+  shadowColor: "black",
+  shadowBlur: 5,
+  shadowOffset: {
+    x: 0,
+    y: 3,
+  },
+} as const;
+
+const NAME_SHADOW_OPACITY = 0.9;
+const ACTIVE_SHADOW_OPACITY = 0.6;
 
 export class NameFrame extends Konva.Group {
   playerIndex: PlayerIndex;
@@ -41,19 +54,17 @@ export class NameFrame extends Konva.Group {
       fontSize: config.height,
       text: config.name,
       fill: LABEL_COLOR,
-      shadowColor: "black",
-      shadowBlur: 5,
-      shadowOffset: {
-        x: 0,
-        y: 3,
-      },
-      shadowOpacity: 0.9,
+      ...SHADOW,
+      shadowOpacity: NAME_SHADOW_OPACITY,
       listening: true, // Needed so that we can click on a player's name to shadow them
     });
 
     let w = this.playerName.width();
-    while (w > 0.65 * config.width && this.playerName.fontSize() > 5) {
-      this.playerName.fontSize(this.playerName.fontSize() * 0.9);
+    while (
+      w > 0.65 * config.width
+      && this.playerName.fontSize() > MIN_FONT_SIZE
+    ) {
+      this.playerName.fontSize(this.playerName.fontSize() * TEXT_SHRINK_FACTOR);
       w = this.playerName.width();
     }
     this.playerName.offsetX(w / 2);
@@ -88,12 +99,7 @@ export class NameFrame extends Konva.Group {
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
       lineJoin: "round",
-      shadowColor: "black",
-      shadowBlur: 5,
-      shadowOffset: {
-        x: 0,
-        y: 3,
-      },
+      ...SHADOW,
       shadowOpacity: 0,
       listening: false,
     });
@@ -111,12 +117,7 @@ export class NameFrame extends Konva.Group {
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
       lineJoin: "round",
-      shadowColor: "black",
-      shadowBlur: 5,
-      shadowOffset: {
-        x: 0,
-        y: 3,
-      },
+      ...SHADOW,
       shadowOpacity: 0,
       listening: false,
     });
@@ -152,9 +153,9 @@ export class NameFrame extends Konva.Group {
     this.leftLine.strokeWidth(strokeWidth);
     this.rightLine.strokeWidth(strokeWidth);
 
-    this.playerName.shadowOpacity(active ? 0.6 : 0);
-    this.leftLine.shadowOpacity(active ? 0.6 : 0);
-    this.rightLine.shadowOpacity(active ? 0.6 : 0);
+    this.playerName.shadowOpacity(active ? ACTIVE_SHADOW_OPACITY : 0);
+    this.leftLine.shadowOpacity(active ? ACTIVE_SHADOW_OPACITY : 0);
+    this.rightLine.shadowOpacity(active ? ACTIVE_SHADOW_OPACITY : 0);
 
     this.playerName.fontStyle(active ? "bold" : "normal");
   }

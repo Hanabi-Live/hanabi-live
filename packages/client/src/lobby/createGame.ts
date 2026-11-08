@@ -19,6 +19,7 @@ import {
 } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
+import { DIMMED_OPACITY } from "../constants";
 import * as modals from "../modals";
 import * as tooltips from "../tooltips";
 import { getHTMLInputElement } from "../utils";
@@ -114,7 +115,7 @@ export function init(): void {
   // Disable some checkboxes if a checkbox is checked.
   $("#createTableOneExtraCard").on("change", () => {
     if ($("#createTableOneExtraCard").is(":checked")) {
-      $("#createTableOneLessCardRow").fadeTo(0, 0.3);
+      $("#createTableOneLessCardRow").fadeTo(0, DIMMED_OPACITY);
       $("#createTableOneLessCard").prop("disabled", true);
       $("#createTableOneLessCardLabel").css("cursor", "auto");
     } else {
@@ -129,7 +130,7 @@ export function init(): void {
 
   $("#createTableOneLessCard").on("change", () => {
     if ($("#createTableOneLessCard").is(":checked")) {
-      $("#createTableOneExtraCardRow").fadeTo(0, 0.3);
+      $("#createTableOneExtraCardRow").fadeTo(0, DIMMED_OPACITY);
       $("#createTableOneExtraCard").prop("disabled", true);
       $("#createTableOneExtraCardLabel").css("cursor", "auto");
     } else {

@@ -55,6 +55,25 @@ export const BUTTON_HOVER_COLOR = "#888888";
 export const BUTTON_PRESSED_COLOR = "#cccccc";
 export const BUTTON_DISABLED_TEXT_COLOR = "#444444";
 
+// ----
+// Text
+// ----
+
+/** The smallest font size that text shrinks to when it does not fit. */
+export const MIN_FONT_SIZE = 5;
+
+/** The factor that text shrinks by on each step until it fits. */
+export const TEXT_SHRINK_FACTOR = 0.9;
+
+// ------
+// Timers
+// ------
+
+export const TIMER_OPACITY = 0.2;
+
+/** The opacity of a timer while it flashes red to warn that time is running out. */
+export const TIMER_WARNING_OPACITY = 0.7;
+
 // --------------
 // Time constants
 // --------------

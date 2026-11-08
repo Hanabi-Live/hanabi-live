@@ -63,6 +63,9 @@ import * as notes from "./notes";
 const DECK_BACK_IMAGE = "deck-back";
 const UNKNOWN_SUIT = getSuit("Unknown");
 
+/** How long a card takes to rise, fall, or move its shadow. */
+const RAISE_DURATION_SECONDS = 0.05;
+
 /** Represents a single card. It has a `LayoutChild` parent. */
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   // ---------------
@@ -818,7 +821,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     );
   }
 
-  setShadowOffset(duration = 0.05): void {
+  setShadowOffset(duration = RAISE_DURATION_SECONDS): void {
     // Shadow special effects
     const shadowOffset = this.dragging
       ? Math.floor(0.12 * CARD_W)
@@ -842,8 +845,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
 
-    const duration = 0.05;
-    this.setShadowOffset(duration);
+    this.setShadowOffset();
 
     // Cards are raised when:
     // - they have one or more positive clues on them
@@ -860,7 +862,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
         {
           offsetX,
           offsetY,
-          duration,
+          duration: RAISE_DURATION_SECONDS,
         },
         false,
       );

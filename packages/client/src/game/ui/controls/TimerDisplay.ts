@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { LABEL_COLOR } from "../constants";
+import { LABEL_COLOR, TIMER_OPACITY } from "../constants";
 import { FitText } from "./FitText";
 
 export class TimerDisplay extends Konva.Group {
@@ -24,7 +24,7 @@ export class TimerDisplay extends Konva.Group {
       height: config.height,
       fill: "black",
       cornerRadius: config["cornerRadius"] as number | number[] | undefined,
-      opacity: 0.2,
+      opacity: TIMER_OPACITY,
       listening: true,
     });
     this.add(this._oval);

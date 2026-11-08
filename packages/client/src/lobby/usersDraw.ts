@@ -3,6 +3,7 @@
 import type { UserID } from "@hanabi-live/data";
 import { Status, StatusText } from "@hanabi-live/data";
 import { globals } from "../Globals";
+import { DIMMED_OPACITY } from "../constants";
 import * as tooltips from "../tooltips";
 import { escapeHtml } from "../utils";
 import * as tablesDraw from "./tablesDraw";
@@ -189,7 +190,7 @@ function setLink(userID: UserID) {
 
 export function setInactive(userID: number, inactive: boolean): void {
   if (inactive) {
-    $(`#online-users-${userID}`).fadeTo(0, 0.3);
+    $(`#online-users-${userID}`).fadeTo(0, DIMMED_OPACITY);
     $(`#online-users-${userID}-zzz`).show();
   } else {
     $(`#online-users-${userID}`).fadeTo(0, 1);

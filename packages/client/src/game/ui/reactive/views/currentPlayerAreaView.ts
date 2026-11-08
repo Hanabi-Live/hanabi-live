@@ -9,7 +9,7 @@ import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
-import { LABEL_COLOR } from "../../constants";
+import { LABEL_COLOR, TEXT_SHRINK_FACTOR } from "../../constants";
 
 export function isVisible(state: State): boolean {
   return (
@@ -115,7 +115,7 @@ export function onChanged(
       if (text2.measureSize(text2.text()).height <= maxSize) {
         break;
       }
-      text2.width(text2.width() * 0.9);
+      text2.width(text2.width() * TEXT_SHRINK_FACTOR);
       text2.resize();
     }
     text2.x(rect1.width() / 2 - text2.width() / 2);

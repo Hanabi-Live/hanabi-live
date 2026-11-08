@@ -9,6 +9,11 @@ import { FitText } from "./controls/FitText";
 import { drawLayer } from "./konvaHelpers";
 import * as replay from "./replay";
 
+const BACKGROUND_OPACITY = 0.1;
+
+/** The opacity of an entry under the mouse or related to the card under the mouse. */
+const HIGHLIGHT_OPACITY = 0.4;
+
 export class ClueEntry extends Konva.Group {
   clue: StateClue;
 
@@ -32,7 +37,7 @@ export class ClueEntry extends Konva.Group {
       width: w,
       height: h,
       fill: "white",
-      opacity: 0.1,
+      opacity: BACKGROUND_OPACITY,
       listening: true,
     });
     this.add(this.background);
@@ -107,11 +112,11 @@ export class ClueEntry extends Konva.Group {
 
     // Add a mouseover highlighting effect.
     this.background.on("mouseover", () => {
-      this.background.opacity(0.4);
+      this.background.opacity(HIGHLIGHT_OPACITY);
       drawLayer(this);
     });
     this.background.on("mouseout", () => {
-      this.background.opacity(0.1);
+      this.background.opacity(BACKGROUND_OPACITY);
       drawLayer(this);
     });
 
@@ -126,7 +131,7 @@ export class ClueEntry extends Konva.Group {
    * it.
    */
   showMatch(targetCardOrder: CardOrder | null): void {
-    this.background.opacity(0.1);
+    this.background.opacity(BACKGROUND_OPACITY);
     this.background.fill("white");
     this.negativeMarker.hide();
 
@@ -136,7 +141,7 @@ export class ClueEntry extends Konva.Group {
 
     for (const cardOrder of this.clue.list) {
       if (cardOrder === targetCardOrder) {
-        this.background.opacity(0.4);
+        this.background.opacity(HIGHLIGHT_OPACITY);
         // (The background is already set to white.)
         return;
       }
@@ -144,7 +149,7 @@ export class ClueEntry extends Konva.Group {
 
     for (const cardOrder of this.clue.negativeList) {
       if (cardOrder === targetCardOrder) {
-        this.background.opacity(0.4);
+        this.background.opacity(HIGHLIGHT_OPACITY);
         this.background.fill("#ff7777");
         if (globals.lobby.settings.colorblindMode) {
           this.negativeMarker.show();

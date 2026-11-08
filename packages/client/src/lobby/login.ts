@@ -20,6 +20,9 @@ import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
+/** How long the change-password form and the scroll to an error take to animate. */
+const ANIMATION_TIME_MS = 500;
+
 const FIREFOX_WARNING_COOKIE_NAME = "acceptedFirefoxWarning";
 
 const changePassword = getHTMLInputElement("#change-password");
@@ -55,12 +58,15 @@ export function init(): void {
       $("#login-password").attr("placeholder", "Old Password");
       $("#change-password-container")
         .slideDown()
-        .delay(500)
+        .delay(ANIMATION_TIME_MS)
         .removeClass("hidden");
       $("#login-button").html("Sign In & Change Password");
     } else {
       $("#login-password").attr("placeholder", "Password");
-      $("#change-password-container").slideUp().delay(500).addClass("hidden");
+      $("#change-password-container")
+        .slideUp()
+        .delay(ANIMATION_TIME_MS)
+        .addClass("hidden");
       $("#login-button").html("Sign In");
     }
     $("#login-username").trigger("focus");
@@ -299,7 +305,7 @@ function formError(msg: string) {
       {
         scrollTop: offset.top,
       },
-      500,
+      ANIMATION_TIME_MS,
     );
   }, 0);
 }
