@@ -56,8 +56,8 @@ impl<E: Into<anyhow::Error>> From<E> for Error {
         let report = crate::errors::Report::from_error(
             crate::errors::http_operation("Loading public data"),
             &error.into(),
-            // Public pages use the lobby read pool, whose statements are limited to 2 seconds.
-            Some(2),
+            // Public pages use the lobby read pool.
+            Some(crate::store::LOBBY_READ_TIMEOUT),
         );
         Self(report.status, report.text(), Some(Box::new(report)))
     }
@@ -100,16 +100,23 @@ const SEED_LIST_PARAMETERS: &[&str] = &[
     "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[2]",
 ];
 
+/// The rows on a page of a public listing when the request does not name a size.
+pub(super) const DEFAULT_PAGE_SIZE: i64 = 10;
+/// The most rows that a page of a public listing can have.
+pub(super) const MAX_PAGE_SIZE: i64 = 100;
+
 /// The page size and offset that a request asks for, or `None` when it names neither.
 fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {
     if q.get("size").is_none() && q.get("page").is_none() {
         return Ok(None);
     }
     let size = match q.get("size") {
-        None => 10,
+        None => DEFAULT_PAGE_SIZE,
         Some(size) => integer(size)
-            .filter(|n| (1..=100).contains(n))
-            .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?,
+            .filter(|n| (1..=MAX_PAGE_SIZE).contains(n))
+            .ok_or_else(|| {
+                Error::bad(format!("Page size must be between 1 and {MAX_PAGE_SIZE}."))
+            })?,
     };
     let page = match q.get("page") {
         None => 0,

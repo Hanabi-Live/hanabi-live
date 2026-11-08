@@ -2,9 +2,9 @@ use crate::{
     game::{Game, Options},
     lobby::{Effect, OnlineUser},
     model::{
-        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MAX_TAG_LENGTH, NoteOwner,
-        PendingTag, Phase, Player, ReplayState, Snapshot, TableChat, TableSnapshot, Tag,
-        engine_options, small, tag_too_long, wire_options,
+        ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, MAX_NOTE_LENGTH,
+        MAX_TABLE_NAME_LENGTH, MAX_TAG_LENGTH, NoteOwner, PendingTag, Phase, Player, ReplayState,
+        Snapshot, TableChat, TableSnapshot, Tag, engine_options, small, tag_too_long, wire_options,
     },
     operations::Operation,
     server_info::ServerInfo,
@@ -1748,10 +1748,9 @@ async fn prepare_table(
                 return Ok((table, revision, warnings));
             }
         };
-        let mut name = r.name.trim().to_owned();
-        while name.len() > 45 {
-            name.pop();
-        }
+        let mut name = crate::accounts::truncate_to_max_bytes(r.name.trim(), MAX_TABLE_NAME_LENGTH)
+            .trim_end()
+            .to_owned();
         if name.is_empty() {
             name = format!("{}'s table", session.name);
         }
@@ -2935,7 +2934,7 @@ impl TableActor {
         } else {
             crate::accounts::truncate_to_max_bytes(
                 request.as_ref().map_or("", |r| r.name.as_str()),
-                45,
+                MAX_TABLE_NAME_LENGTH,
             )
             .trim()
             .to_owned()
@@ -3874,7 +3873,7 @@ impl TableActor {
         ensure!(self.attending(&session), "Not attending");
         self.live()?;
         let order = usize::try_from(order)?;
-        let text = crate::accounts::truncate_to_max_bytes(note, 300);
+        let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
             .trim()
             .to_owned();
@@ -4905,7 +4904,7 @@ impl TableActor {
             let suffix = format!(" (#{count})");
             format!(
                 "{}{suffix}",
-                crate::accounts::truncate_to_max_bytes(&base, 45 - suffix.len())
+                crate::accounts::truncate_to_max_bytes(&base, MAX_TABLE_NAME_LENGTH - suffix.len())
             )
         };
         destination.extra = ExtraOptions {

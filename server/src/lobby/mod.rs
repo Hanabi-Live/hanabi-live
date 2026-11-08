@@ -244,7 +244,7 @@ pub async fn dispatch(
             let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")
-            } else if !seed.bytes().all(|b| (32..=126).contains(&b)) {
+            } else if !seed.bytes().all(|b| b == b' ' || b.is_ascii_graphic()) {
                 Some("Seeds can only contain ASCII characters.")
             } else if !seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') {
                 Some("Seeds can only contain letters, numbers, and hyphens.")

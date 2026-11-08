@@ -173,7 +173,7 @@ pub(super) async fn list(
     q: &Query,
     mode: &str,
 ) -> Result<hanabi_protocol::PublicGamePage> {
-    let (size, offset) = pagination(q)?.unwrap_or((10, 0));
+    let (size, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
     let fields = ["id", "num_players", "score", "variant_id"];
     let display = ["id", "numPlayers", "score", "variantID"];
     let mut order = if mode == "history" { "id" } else { "score" };
@@ -223,7 +223,8 @@ pub(super) async fn list(
     Ok(hanabi_protocol::PublicGamePage {
         total_rows: page.total_rows,
         info: format!(
-            "Params: size=1...100, page=0..., col[x]=0|1 (sort ascending or descending by one column: 0 id, 1 numPlayers, 2 score), fcol[x]=integer (filter by {})",
+            "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: 0 id, 1 numPlayers, 2 score), fcol[x]=integer (filter by {})",
+            super::MAX_PAGE_SIZE,
             match mode {
                 "history" => "0 id, 1 numPlayers, 2 score, 3 variant",
                 "variants" => "0 id, 1 numPlayers, 2 score",

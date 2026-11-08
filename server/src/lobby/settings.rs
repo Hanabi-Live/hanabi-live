@@ -6,6 +6,9 @@ use sqlx::PgPool;
 /// user changed; everything else comes from `Default`.
 pub use hanabi_protocol::Settings;
 
+/// The loudest volume setting.
+const MAX_VOLUME: i64 = 100;
+
 /// Every setting with its default value, keyed by its client-facing name.
 pub(super) fn defaults() -> serde_json::Map<String, Value> {
     match serde_json::to_value(Settings::default()) {
@@ -100,8 +103,8 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
                 "The setting of \"{name}\" is too large."
             );
             ensure!(
-                name != "volume" || number <= 100,
-                "The setting of \"volume\" must be between 0 and 100."
+                name != "volume" || number <= MAX_VOLUME,
+                "The setting of \"volume\" must be between 0 and {MAX_VOLUME}."
             );
             Value::from(number)
         }

@@ -80,10 +80,11 @@ impl Report {
     pub fn from_error(
         operation: impl Into<String>,
         error: &anyhow::Error,
-        database_seconds: Option<u64>,
+        database_timeout: Option<std::time::Duration>,
     ) -> Self {
-        let limit =
-            database_seconds.map_or(String::new(), |seconds| format!(" after {seconds} seconds"));
+        let limit = database_timeout.map_or(String::new(), |timeout| {
+            format!(" after {} seconds", timeout.as_secs())
+        });
         let (code, description, status) = if let Some(fault) = error.downcast_ref::<Fault>() {
             (fault.code, fault.description.clone(), fault.status)
         } else if let Some(database) = error.downcast_ref::<sqlx::Error>() {
@@ -297,7 +298,7 @@ mod tests {
         let report = Report::from_error(
             "Loading game history",
             &sqlx::Error::PoolTimedOut.into(),
-            Some(2),
+            Some(crate::store::LOBBY_READ_TIMEOUT),
         );
         assert_eq!(report.code, "database_pool_timeout");
         assert!(
@@ -320,7 +321,7 @@ mod tests {
         let report = Report::from_error(
             "GET /api/v1/variants/{id}",
             &sqlx::Error::PoolTimedOut.into(),
-            Some(2),
+            Some(crate::store::LOBBY_READ_TIMEOUT),
         );
         let response = report.response(true);
         assert!(response.status().is_server_error());
@@ -363,7 +364,11 @@ mod tests {
             .execute(&mut *connection)
             .await
             .unwrap_err();
-        let report = Report::from_error("Loading game history", &error.into(), Some(2));
+        let report = Report::from_error(
+            "Loading game history",
+            &error.into(),
+            Some(crate::store::LOBBY_READ_TIMEOUT),
+        );
         assert_eq!(report.code, "database_query_timeout");
         assert_eq!(report.status, StatusCode::GATEWAY_TIMEOUT);
         assert!(report.text().contains("timed out after 2 seconds"));
@@ -372,7 +377,11 @@ mod tests {
             .execute(&mut *connection)
             .await
             .unwrap_err();
-        let report = Report::from_error("Loading data", &error.into(), Some(2));
+        let report = Report::from_error(
+            "Loading data",
+            &error.into(),
+            Some(crate::store::LOBBY_READ_TIMEOUT),
+        );
         assert!(report.text().contains("SQLSTATE 22P02"));
         assert!(!report.text().contains("synthetic-password-token"));
         #[allow(clippy::disallowed_methods)]
@@ -380,7 +389,11 @@ mod tests {
             .execute(&mut *connection)
             .await
             .unwrap_err();
-        let report = Report::from_error("Loading data", &error.into(), Some(2));
+        let report = Report::from_error(
+            "Loading data",
+            &error.into(),
+            Some(crate::store::LOBBY_READ_TIMEOUT),
+        );
         assert_eq!(report.code, "database_query_cancelled");
         assert!(!report.text().contains("timed out"));
         drop(connection);

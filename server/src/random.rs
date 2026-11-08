@@ -25,8 +25,23 @@ pub fn seed_hash(seed: &str) -> Result<i64> {
     Ok((!crc).cast_signed())
 }
 
+// Go's `math/rand` source: an additive lagged Fibonacci generator, seeded with a
+// Park-Miller generator that avoids overflow by splitting `i32::MAX` by its multiplier.
+/// The generator's state length (Go's `rngLen`).
+const RNG_LEN: usize = 607;
+/// The lag between the two state words that each step adds (Go's `rngTap`).
+const RNG_TAP: usize = 273;
+/// Park-Miller's multiplier, and the quotient and remainder of `i32::MAX` divided by it.
+const SEED_A: i64 = 48_271;
+const SEED_Q: i64 = 44_488;
+const SEED_R: i64 = 3399;
+/// The seed that Go uses in place of zero.
+const ZERO_SEED: i64 = 89_482_311;
+/// The seeding steps that Go discards before filling the state.
+const DISCARDED_SEED_STEPS: usize = 20;
+
 pub struct GoRandom {
-    state: [u64; 607],
+    state: [u64; RNG_LEN],
     tap: usize,
     feed: usize,
 }
@@ -38,7 +53,7 @@ impl GoRandom {
             let words: Vec<String> =
                 serde_json::from_str(include_str!("../../packages/data/src/json/goRandom.json"))
                     .expect("checked-in Go random constants");
-            assert_eq!(words.len(), 607);
+            assert_eq!(words.len(), RNG_LEN);
             words
                 .iter()
                 .map(|word| word.parse().expect("signed Go constant"))
@@ -46,18 +61,18 @@ impl GoRandom {
         });
         let mut x = seed.rem_euclid(i64::from(i32::MAX));
         if x == 0 {
-            x = 89_482_311;
+            x = ZERO_SEED;
         }
         let step = |x: i64| {
-            let next = 48_271 * (x % 44_488) - 3399 * (x / 44_488);
+            let next = SEED_A * (x % SEED_Q) - SEED_R * (x / SEED_Q);
             if next < 0 {
                 next + i64::from(i32::MAX)
             } else {
                 next
             }
         };
-        let mut state = [0; 607];
-        for _ in 0..20 {
+        let mut state = [0; RNG_LEN];
+        for _ in 0..DISCARDED_SEED_STEPS {
             x = step(x);
         }
         for (slot, cooked) in state.iter_mut().zip(cooked) {
@@ -71,13 +86,13 @@ impl GoRandom {
         Self {
             state,
             tap: 0,
-            feed: 334,
+            feed: RNG_LEN - RNG_TAP,
         }
     }
 
     pub fn int63(&mut self) -> u64 {
-        self.tap = (self.tap + 606) % 607;
-        self.feed = (self.feed + 606) % 607;
+        self.tap = (self.tap + RNG_LEN - 1) % RNG_LEN;
+        self.feed = (self.feed + RNG_LEN - 1) % RNG_LEN;
         let value = self.state[self.feed].wrapping_add(self.state[self.tap]);
         self.state[self.feed] = value;
         value & (u64::MAX >> 1)

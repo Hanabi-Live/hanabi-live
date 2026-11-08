@@ -45,6 +45,16 @@ use std::{
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
+/// How long loading a connecting user's lobby statistics may take.
+const LOBBY_LOAD_DEADLINE: Duration = Duration::from_secs(10);
+/// How long after creating an account a user is still welcomed as a first-time user.
+const FIRST_TIME_USER_WINDOW: chrono::TimeDelta = chrono::TimeDelta::seconds(10);
+/// The lobby chat messages sent to a user who connects.
+const LOBBY_HISTORY_MESSAGES: i64 = 50;
+/// The most characters of a client-supplied value, such as an origin or a version, that a log
+/// line repeats.
+const MAX_LOGGED_CLIENT_TEXT: usize = 100;
+
 pub struct App {
     pub store: Store,
     pub hub: mpsc::Sender<HubCommand>,
@@ -320,12 +330,16 @@ fn log_rejection(request: &Request, reason: &str) {
             address.ip().to_string()
         });
     // Clients control the origin, so it is escaped and shortened.
-    let origin: String = request
-        .headers()
-        .get(header::ORIGIN)
-        .map_or("no origin".to_owned(), |origin| {
-            format!("{origin:?}").chars().take(100).collect()
-        });
+    let origin: String =
+        request
+            .headers()
+            .get(header::ORIGIN)
+            .map_or("no origin".to_owned(), |origin| {
+                format!("{origin:?}")
+                    .chars()
+                    .take(MAX_LOGGED_CLIENT_TEXT)
+                    .collect()
+            });
     eprintln!(
         "Rejected {} from {ip} with {origin} because of {reason}.",
         request.uri().path()
@@ -388,7 +402,7 @@ async fn bootstrap(app: &App, id: i32, ip: &str, reconnect: bool) -> Result<Boot
         username: name.clone(),
         total_games: None,
         muted,
-        first_time_user: (Utc::now() - created).num_milliseconds() < 10000,
+        first_time_user: Utc::now() - created < FIRST_TIME_USER_WINDOW,
         settings,
         connection_mode: if reconnect {
             hanabi_protocol::ConnectionMode::Reconnect
@@ -424,7 +438,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
     let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];
     if !reconnect {
-        let chat = lobby::lobby_history(pool, 50).await?;
+        let chat = lobby::lobby_history(pool, LOBBY_HISTORY_MESSAGES).await?;
         initial.push(frame(
             hanabi_protocol::server::CHAT_LIST,
             hanabi_protocol::ChatList {
@@ -479,12 +493,16 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 "lobby_queue_full", "The lobby read queue is full. Please retry statistics shortly.",
                 StatusCode::SERVICE_UNAVAILABLE))?;
             tokio::time::timeout(
-                Duration::from_secs(10),
+                LOBBY_LOAD_DEADLINE,
                 lobby_initial(&app, session.user, reconnect),
             )
             .await
             .map_err(|_| crate::errors::Fault::new(
-                "lobby_load_timeout", "Loading lobby statistics exceeded the 10-second deadline. Please retry statistics.",
+                "lobby_load_timeout",
+                format!(
+                    "Loading lobby statistics exceeded the {}-second deadline. Please retry statistics.",
+                    LOBBY_LOAD_DEADLINE.as_secs()
+                ),
                 StatusCode::GATEWAY_TIMEOUT))?
         };
         let result = tokio::select! {
@@ -507,7 +525,7 @@ fn load_lobby(app: Arc<App>, session: Arc<Session>, reconnect: bool) {
                 ));
             }
             Err(error) => {
-                let report = crate::errors::Report::from_error("Loading lobby statistics", &error, Some(2));
+                let report = crate::errors::Report::from_error("Loading lobby statistics", &error, Some(crate::store::LOBBY_READ_TIMEOUT));
                 report.log();
                 session.emit(&frame(
                     hanabi_protocol::server::LOBBY_STATUS,
@@ -560,7 +578,7 @@ async fn websocket(
             return crate::errors::Report::from_error(
                 "Checking live-connection access",
                 &error,
-                Some(30),
+                Some(crate::store::DATABASE_TIMEOUT),
             )
             .response(true);
         }
@@ -584,7 +602,7 @@ async fn websocket(
             return crate::errors::Report::from_error(
                 "Checking the live-connection account",
                 &error.into(),
-                Some(30),
+                Some(crate::store::DATABASE_TIMEOUT),
             )
             .response(true);
         }
@@ -630,7 +648,10 @@ async fn websocket(
                         Err(message) => {
                             eprintln!(
                                 "Rejected websocket for account {id} from {ip} with version: {:?}",
-                                version.chars().take(100).collect::<String>()
+                                version
+                                    .chars()
+                                    .take(MAX_LOGGED_CLIENT_TEXT)
+                                    .collect::<String>()
                             );
                             // Browsers cannot read HTTP errors from a failed WebSocket upgrade.
                             tokio::time::timeout(Duration::from_secs(5), async {
@@ -656,7 +677,7 @@ async fn websocket(
                         let report = crate::errors::Report::from_error(
                             "WebSocket session",
                             &error,
-                            Some(30),
+                            Some(crate::store::DATABASE_TIMEOUT),
                         );
                         report.log();
                         app.alert(&report);
@@ -846,12 +867,12 @@ async fn connection(
                     let report = crate::errors::Report::from_error(
                         operation,
                         &error,
-                        // History reads use the lobby pool's 2-second statement timeout.
+                        // History reads use the lobby read pool.
                         Some(
                             if matches!(name, "historyGet" | "historyGetSeed" | "chatPlayerInfo") {
-                                2
+                                crate::store::LOBBY_READ_TIMEOUT
                             } else {
-                                30
+                                crate::store::DATABASE_TIMEOUT
                             },
                         ),
                     );

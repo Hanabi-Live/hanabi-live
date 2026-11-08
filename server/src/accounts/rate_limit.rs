@@ -26,16 +26,24 @@ const WORK_WINDOW: Duration = Duration::from_mins(5);
 static WORK: LazyLock<Mutex<Counter<IpAddr>>> =
     LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
 
+/// Describes how long a rate-limited client must wait, in whole minutes rounded up.
+pub(super) fn minutes_to_wait(wait: Duration) -> String {
+    let minutes = wait
+        .as_secs()
+        .div_ceil(Duration::from_mins(1).as_secs())
+        .max(1);
+    format!("{minutes} minute{}", if minutes == 1 { "" } else { "s" })
+}
+
 #[derive(Debug)]
 pub struct TooMuchPasswordWork(pub Duration);
 
 impl fmt::Display for TooMuchPasswordWork {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let minutes = self.0.as_secs().div_ceil(60).max(1);
         write!(
             formatter,
-            "Too many password checks came from your network. Please try again in {minutes} minute{}.",
-            if minutes == 1 { "" } else { "s" }
+            "Too many password checks came from your network. Please try again in {}.",
+            minutes_to_wait(self.0)
         )
     }
 }

@@ -1,4 +1,4 @@
-use anyhow::{Result, ensure};
+use anyhow::{Result, bail, ensure};
 pub use hanabi_engine::{AssignedCharacter, DeckCard as Card, EngineEvent as Event, Options};
 use hanabi_engine::{
     CompletionTiming, EndCondition, EngineState, GameSetup, Interpretation, PlayerAction,
@@ -127,31 +127,40 @@ pub fn unshuffled_deck() -> Vec<Card> {
 pub fn standard_deck(seed: &str) -> Result<Vec<Card>> {
     hanabi_engine::create_shuffled_deck(hanabi_engine::get_variant("No Variant")?, seed)
 }
+/// A stored deck starts with this marker plus the number of cards.
+const DECK_HEADER: u8 = 0x80;
+/// Each card after the header is stored as `suit_index * RANKS_PER_SUIT + rank`.
+const RANKS_PER_SUIT: u8 = 8;
+
 pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
     ensure!(
         !deck.is_empty() && deck.len() <= hanabi_protocol::MAX_DECK_SIZE,
         "Invalid custom deck length"
     );
-    let mut bytes = vec![0x80 + u8::try_from(deck.len())?];
+    let mut bytes = vec![DECK_HEADER + u8::try_from(deck.len())?];
     for c in deck {
         ensure!(
             c.suit_index < 6 && matches!(c.rank, 1..=5 | 7),
             "Invalid card"
         );
-        bytes.push(u8::try_from(c.suit_index * 8 + usize::try_from(c.rank)?)?);
+        bytes.push(u8::try_from(c.suit_index)? * RANKS_PER_SUIT + u8::try_from(c.rank)?);
     }
     Ok(bytes)
 }
 pub fn decode_deck(bytes: &[u8]) -> Result<Vec<Card>> {
+    let Some((&header, cards)) = bytes.split_first() else {
+        bail!("Invalid stored deck");
+    };
     ensure!(
-        bytes.len() >= 2 && bytes.len() <= 61 && usize::from(bytes[0]) == 0x80 + bytes.len() - 1,
+        (1..=hanabi_protocol::MAX_DECK_SIZE).contains(&cards.len())
+            && usize::from(header) == usize::from(DECK_HEADER) + cards.len(),
         "Invalid stored deck"
     );
-    let cards = bytes[1..]
+    let cards = cards
         .iter()
         .map(|v| Card {
-            suit_index: usize::from(v / 8),
-            rank: i32::from(v % 8),
+            suit_index: usize::from(v / RANKS_PER_SUIT),
+            rank: i32::from(v % RANKS_PER_SUIT),
         })
         .collect::<Vec<_>>();
     encode_deck(&cards)?;

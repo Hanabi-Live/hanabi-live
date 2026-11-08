@@ -115,7 +115,7 @@ impl From<anyhow::Error> for Error {
         let report = crate::errors::Report::from_error(
             crate::errors::http_operation("Localhost operation"),
             &error,
-            Some(30),
+            Some(crate::store::DATABASE_TIMEOUT),
         );
         report.log();
         Self(report.status, report.text())
@@ -161,12 +161,14 @@ async fn handle(State(control): State<Arc<Control>>, request: Request) -> Result
     };
     let query =
         Query::parse(request.uri().query(), accepted_query).map_err(|message| bad(&message))?;
-    let body = to_bytes(request.into_body(), 8192).await.map_err(|_| {
-        Error(
-            StatusCode::PAYLOAD_TOO_LARGE,
-            "Request body too large.\n".into(),
-        )
-    })?;
+    let body = to_bytes(request.into_body(), crate::query::MAX_FORM_BODY_BYTES)
+        .await
+        .map_err(|_| {
+            Error(
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "Request body too large.\n".into(),
+            )
+        })?;
     let body = match accepted_body {
         Some(accepted) => {
             let form =

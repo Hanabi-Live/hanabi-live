@@ -9,6 +9,9 @@ use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{RecordedActionType, ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
+/// The longest seed that a replay import can name, in bytes.
+const MAX_IMPORTED_SEED_LENGTH: usize = 45;
+
 pub struct Imported {
     pub game: Game,
     pub notes: Vec<Vec<String>>,
@@ -28,7 +31,8 @@ fn seconds(value: i64) -> f64 {
 pub fn parse(input: &ReplayImport) -> Result<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
     ensure!(
-        seed.len() <= 45 && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+        seed.len() <= MAX_IMPORTED_SEED_LENGTH
+            && seed.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'),
         "Invalid seed"
     );
     let raw = input.options.clone().unwrap_or_default();

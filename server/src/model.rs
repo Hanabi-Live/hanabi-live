@@ -297,7 +297,7 @@ impl TableSnapshot {
                         && self.extra.no_write_to_database
                         && p.id == -1 - hanabi_engine::int(index)))
                     && !p.name.is_empty()
-                    && p.name.len() <= 100),
+                    && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
             "Invalid players"
         );
         ensure!(
@@ -338,7 +338,7 @@ impl TableSnapshot {
                 );
                 ensure!(
                     automatic_start.is_none_or(hanabi_protocol::is_player_count)
-                        && kicked.len() <= 4096,
+                        && kicked.len() <= MAX_KICKED_PLAYERS,
                     "Invalid pregame controls"
                 );
             }
@@ -432,9 +432,9 @@ impl Snapshot {
             "Invalid player notes"
         );
         ensure!(
-            self.spectator_notes
-                .values()
-                .all(|n| n.notes.len() == size && n.notes.iter().all(|t| t.len() <= 1200)),
+            self.spectator_notes.values().all(
+                |n| n.notes.len() == size && n.notes.iter().all(|t| t.len() <= MAX_NOTE_LENGTH)
+            ),
             "Invalid spectator notes"
         );
         ensure!(
@@ -561,6 +561,12 @@ pub const MAX_TABLE_CHAT: usize = 4096;
 pub const MAX_HYPOTHETICAL_ACTIONS: usize = 4096;
 /// The longest game tag, in bytes.
 pub const MAX_TAG_LENGTH: usize = 100;
+/// The longest table name, in bytes.
+pub const MAX_TABLE_NAME_LENGTH: usize = 45;
+/// The longest note that a player or spectator writes during a game, in bytes.
+pub const MAX_NOTE_LENGTH: usize = 300;
+/// The most players that a pregame table remembers kicking.
+const MAX_KICKED_PLAYERS: usize = 4096;
 
 pub fn tag_too_long() -> String {
     format!("Tags cannot be longer than {MAX_TAG_LENGTH} characters.")

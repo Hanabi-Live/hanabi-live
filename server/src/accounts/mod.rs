@@ -63,7 +63,7 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
         )
         .route("/api/v1/identity", post(identity))
         .route("/password-reset", post(password_hash))
-        .layer(DefaultBodyLimit::max(8192))
+        .layer(DefaultBodyLimit::max(crate::query::MAX_FORM_BODY_BYTES))
         .with_state(Arc::new(Accounts {
             pool,
             config,
@@ -159,12 +159,11 @@ fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -
 }
 
 fn too_many_attempts(wait: std::time::Duration) -> Response {
-    let minutes = wait.as_secs().div_ceil(60).max(1);
     let mut response = api_error(
         StatusCode::TOO_MANY_REQUESTS,
         format!(
-            "Too many login attempts. Please try again in {minutes} minute{}.",
-            if minutes == 1 { "" } else { "s" }
+            "Too many login attempts. Please try again in {}.",
+            rate_limit::minutes_to_wait(wait)
         ),
     );
     response.headers_mut().insert(
@@ -195,11 +194,20 @@ pub fn validate_client_version(version: &str, current: &str) -> Result<(), Strin
 
 #[cfg(test)]
 fn failure_diagnostic(error: &anyhow::Error) -> String {
-    crate::errors::Report::from_error("Account operation", error, Some(30)).description
+    crate::errors::Report::from_error(
+        "Account operation",
+        error,
+        Some(crate::store::DATABASE_TIMEOUT),
+    )
+    .description
 }
 
 fn account_failure(operation: &'static str, error: &anyhow::Error) -> Response {
-    let report = crate::errors::Report::from_error(format!("Account {operation}"), error, Some(30));
+    let report = crate::errors::Report::from_error(
+        format!("Account {operation}"),
+        error,
+        Some(crate::store::DATABASE_TIMEOUT),
+    );
     let mut response = report.response(true);
     if let Some(TooMuchPasswordWork(wait)) = error.downcast_ref() {
         response.headers_mut().insert(

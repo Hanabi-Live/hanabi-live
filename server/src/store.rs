@@ -41,23 +41,47 @@ fn stored_seconds(time_base: f64) -> i32 {
     time_base as i32
 }
 
+/// How long the primary and archive pools wait for a connection, a statement, or an idle
+/// transaction.
+pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
+/// How long the lobby read pool, which also serves the public pages, waits for a connection or a
+/// statement.
+pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
+
+/// The namespaces of the transaction advisory locks that serialize writes of the same record.
+#[derive(Clone, Copy)]
+#[repr(i32)]
+pub(crate) enum LockSpace {
+    /// A game being archived, by game ID.
+    Game = 17482,
+    /// A variant's statistics, by variant ID.
+    VariantStats = 17483,
+    /// A durable chat message, by chat ID.
+    Chat = 17484,
+}
+
+/// Holds the advisory lock on `key` in `space` until the transaction ends.
+pub(crate) async fn advisory_lock(
+    connection: &mut sqlx::PgConnection,
+    space: LockSpace,
+    key: i32,
+) -> Result<()> {
+    sqlx::query!("SELECT pg_advisory_xact_lock($1,$2)", space as i32, key)
+        .execute(connection)
+        .await?;
+    Ok(())
+}
+
 /// Opens a pool whose connections time out stuck statements and transactions.
 async fn pool(options: PgConnectOptions, max: u32) -> Result<PgPool> {
+    let timeout = DATABASE_TIMEOUT.as_millis();
     Ok(PgPoolOptions::new()
         .max_connections(max)
-        .acquire_timeout(Duration::from_secs(30))
-        .after_connect(|c, _| {
-            Box::pin(async move {
-                sqlx::query!("SET statement_timeout = 30000")
-                    .execute(&mut *c)
-                    .await?;
-                sqlx::query!("SET idle_in_transaction_session_timeout = 30000")
-                    .execute(c)
-                    .await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
+        .acquire_timeout(DATABASE_TIMEOUT)
+        .connect_with(options.options([
+            ("statement_timeout", timeout),
+            ("idle_in_transaction_session_timeout", timeout),
+        ]))
         .await?)
 }
 
@@ -92,10 +116,13 @@ impl Store {
         let archive = pool(options.clone().application_name(&archive_name), 2).await?;
         let lobby_reads = PgPoolOptions::new()
             .max_connections(2)
-            .acquire_timeout(Duration::from_secs(2))
+            .acquire_timeout(LOBBY_READ_TIMEOUT)
             .connect_lazy_with(options.application_name(&lobby_name).options([
-                ("statement_timeout", "2000"),
-                ("default_transaction_read_only", "on"),
+                (
+                    "statement_timeout",
+                    LOBBY_READ_TIMEOUT.as_millis().to_string(),
+                ),
+                ("default_transaction_read_only", "on".to_owned()),
             ]));
         let version: i32 = sqlx::query_scalar!("SELECT version FROM schema_version")
             .fetch_one(&primary)
@@ -361,9 +388,7 @@ impl Store {
         let o = &s.game.options;
         let variant = hanabi_engine::get_variant(&o.variant_name)?;
         let mut tx = self.archive.begin().await?;
-        sqlx::query!("SELECT pg_advisory_xact_lock(17482,$1)", s.game_id)
-            .execute(&mut *tx)
-            .await?;
+        advisory_lock(&mut tx, LockSpace::Game, s.game_id).await?;
         self.check_state()?;
         let existing = sqlx::query_as!(
             crate::archive::GameRecord,
@@ -696,9 +721,7 @@ impl Store {
         for entry in entries {
             let id = entry.id.context("Missing durable chat identity")?;
             ensure!(id > 0, "Invalid durable chat identity");
-            sqlx::query!("SELECT pg_advisory_xact_lock(17484,$1)", id)
-                .execute(&mut *tx)
-                .await?;
+            advisory_lock(&mut tx, LockSpace::Chat, id).await?;
             self.check_state()?;
             let msg = entry.message["msg"]
                 .as_str()
@@ -902,9 +925,7 @@ impl Store {
         let v = i16::try_from(variant.id)?;
         let players = i32::try_from(s.players.len())?;
         let mut tx = self.archive.begin().await?;
-        sqlx::query!("SELECT pg_advisory_xact_lock(17483,$1)", i32::from(v))
-            .execute(&mut *tx)
-            .await?;
+        advisory_lock(&mut tx, LockSpace::VariantStats, i32::from(v)).await?;
         sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", &s.seed).execute(&mut *tx).await?;
         sqlx::query!(
             "INSERT INTO variant_stats(variant_id) VALUES($1) ON CONFLICT DO NOTHING",
@@ -1644,9 +1665,7 @@ mod tests {
         sqlx::query!("SELECT id FROM games WHERE id=1 FOR UPDATE")
             .fetch_one(&mut *blocker)
             .await?;
-        sqlx::query!("SELECT pg_advisory_xact_lock(17484,$1)", chat_id)
-            .execute(&mut *blocker)
-            .await?;
+        advisory_lock(&mut blocker, LockSpace::Chat, chat_id).await?;
         let old = store.clone();
         let old_tag = tokio::spawn(async move {
             old.apply_tag(&PendingTag {

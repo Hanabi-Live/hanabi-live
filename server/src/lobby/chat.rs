@@ -304,16 +304,19 @@ pub async fn private_message(
     ])
 }
 
+/// The most private messages that one history request can ask for.
+const MAX_PRIVATE_HISTORY_MESSAGES: i64 = 100;
+
 pub async fn private_history(
     pool: &PgPool,
     caller: &Caller,
     data: &ChatHistoryRequest,
 ) -> Result<Vec<Effect>> {
     let amount = data.amount;
-    if !(1..=100).contains(&amount) {
-        return Ok(vec![warning(
-            "Private message history amount must be between 1 and 100.",
-        )]);
+    if !(1..=MAX_PRIVATE_HISTORY_MESSAGES).contains(&amount) {
+        return Ok(vec![warning(&format!(
+            "Private message history amount must be between 1 and {MAX_PRIVATE_HISTORY_MESSAGES}."
+        ))]);
     }
     let username = data.username.as_deref().unwrap_or("");
     let peer: Option<i32> = if username.is_empty() {

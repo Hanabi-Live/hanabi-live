@@ -1290,9 +1290,7 @@ async fn remade_tables_publish_fresh_statistics_for_every_player() -> Result<()>
             h.send(index, "loaded", json!({"tableID":id})).await?;
         }
         let mut lock = h.store.primary.begin().await?;
-        sqlx::query!("SELECT pg_advisory_xact_lock(17483,0)")
-            .execute(&mut *lock)
-            .await?;
+        crate::store::advisory_lock(&mut lock, crate::store::LockSpace::VariantStats, 0).await?;
         let score = loop {
             let (table, _) = h.snapshot(id).await?;
             let snapshot = table.game().context("Missing game")?;

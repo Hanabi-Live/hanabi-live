@@ -70,8 +70,11 @@ pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
     regex!(r"[^\p{L}\p{M}\p{N}\p{P}\p{S} ]").replace_all(input, "")
 }
 
+/// The longest chat message, in bytes; longer messages are truncated.
+const MAX_CHAT_LENGTH: usize = 300;
+
 pub fn normalize_chat(input: &str) -> Result<String, &'static str> {
-    let truncated = truncate_to_max_bytes(input, 300);
+    let truncated = truncate_to_max_bytes(input, MAX_CHAT_LENGTH);
     let cleaned = remove_disallowed_characters(truncated);
     let message = cleaned.trim();
     if message.is_empty() {
