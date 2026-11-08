@@ -116,16 +116,17 @@ export function update(card: HanabiCard, text: string): void {
 export function show(card: HanabiCard): void {
   const tooltip = `#tooltip-${card.tooltipName}`;
 
-  // We want the tooltip to appear above the card by default.
-  const pos = card.getAbsolutePosition();
-  const posX = pos.x;
-  let posY = pos.y - (card.height() * card.layout.scale().y) / 2;
+  // We want the tooltip to appear above the card by default. Use the on-screen bounds so that cards
+  // in rotated hands are measured correctly.
+  const rect = card.getClientRect({});
+  const posX = rect.x + rect.width / 2;
+  let posY = rect.y;
   tooltips.setInstanceOption(tooltip, "side", "top");
 
   // Flip the tooltip if it is too close to the top of the screen.
   if (posY < 200) {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout.
-    posY = pos.y + (card.height() * card.layout.scale().y) / 2;
+    posY = rect.y + rect.height;
     tooltips.setInstanceOption(tooltip, "side", "bottom");
   }
 
