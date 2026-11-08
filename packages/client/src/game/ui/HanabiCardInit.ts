@@ -39,6 +39,9 @@ import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 /** The opacity of the shadow under a card. */
 const CARD_SHADOW_OPACITY = 0.4;
 
+/** The fill of an unclued rank pip, gray so that the pips do not stand out from the card. */
+const RANK_PIP_COLOR = "#d6d6d6";
+
 /**
  * The size of the large icons drawn over the middle of a card, such as a question mark. Based on
  * the card's width, but used for both the icon's width and height.
@@ -303,7 +306,7 @@ function makeCachedPips(variant: Variant) {
       width: RANK_PIP_SIZE * 2,
       offsetX: RANK_PIP_SIZE / 2,
       height: RANK_PIP_SIZE,
-      fill: "white",
+      fill: RANK_PIP_COLOR,
       stroke: "black",
       // The outline is drawn outside the digit, so this is twice its visible width.
       strokeWidth: 6,
