@@ -1,6 +1,6 @@
 import type { InstalledClock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Loader } from "./Loader";
 
 let clock: InstalledClock;
@@ -45,7 +45,7 @@ describe("image loader", () => {
 
   test("finishes after all images load successfully", () => {
     const loader = new Loader();
-    const onFinished = mock();
+    const onFinished = vi.fn();
     loader.finishedCallback = () => {
       onFinished();
     };
@@ -63,7 +63,7 @@ describe("image loader", () => {
     const loader = new Loader();
     const fileID = "crown";
     const firstImage = getImage(loader, fileID);
-    const onFinished = mock();
+    const onFinished = vi.fn();
     loader.finishedCallback = () => {
       onFinished();
     };
@@ -91,8 +91,8 @@ describe("image loader", () => {
   test("reports a permanent error after bounded retries", () => {
     const loader = new Loader();
     const fileID = "crown";
-    const onFailed = mock();
-    const onFinished = mock();
+    const onFailed = vi.fn();
+    const onFinished = vi.fn();
     loader.failedCallback = (filePath) => {
       onFailed(filePath);
     };
@@ -118,7 +118,7 @@ describe("image loader", () => {
     const loader = new Loader();
     getImage(loader, "crown").emit("load");
 
-    const onProgress = mock();
+    const onProgress = vi.fn();
     loader.progressCallback = (numLoaded, size) => {
       onProgress(numLoaded, size);
     };

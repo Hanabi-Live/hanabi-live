@@ -1,6 +1,6 @@
 import type { InstalledClock } from "@sinonjs/fake-timers";
 import { install } from "@sinonjs/fake-timers";
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { checkCookieWithRetry } from "./cookieProbe";
 
 const originalFetch = globalThis.fetch;
@@ -15,9 +15,9 @@ describe("cached login cookie check", () => {
   test.each([200, 204, 401, 403])(
     "handles HTTP %s without retrying",
     async (status) => {
-      const request = mock<() => Promise<Response>>().mockResolvedValue(
-        new Response(null, { status }),
-      );
+      const request = vi
+        .fn<() => Promise<Response>>()
+        .mockResolvedValue(new Response(null, { status }));
       globalThis.fetch = Object.assign(request, {
         preconnect: originalFetch.preconnect,
       });
@@ -39,7 +39,8 @@ describe("cached login cookie check", () => {
         "Date",
       ],
     });
-    const request = mock<() => Promise<Response>>()
+    const request = vi
+      .fn<() => Promise<Response>>()
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce(new Response(null, { status: 200 }));
     globalThis.fetch = Object.assign(request, {
@@ -65,9 +66,9 @@ describe("cached login cookie check", () => {
         "Date",
       ],
     });
-    const request = mock<() => Promise<Response>>().mockResolvedValue(
-      new Response(null, { status: 503 }),
-    );
+    const request = vi
+      .fn<() => Promise<Response>>()
+      .mockResolvedValue(new Response(null, { status: 503 }));
     globalThis.fetch = Object.assign(request, {
       preconnect: originalFetch.preconnect,
     });
@@ -94,9 +95,8 @@ describe("cached login cookie check", () => {
         "Date",
       ],
     });
-    const request = mock<
-      (...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>
-    >()
+    const request = vi
+      .fn<(...args: Parameters<typeof fetch>) => ReturnType<typeof fetch>>()
       .mockImplementationOnce(
         async (_input, init) =>
           await new Promise<Response>((_resolve, reject) => {

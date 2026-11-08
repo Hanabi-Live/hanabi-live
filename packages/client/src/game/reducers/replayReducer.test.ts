@@ -1,13 +1,13 @@
 import type { CardOrder, GameMetadata, GameState } from "@hanabi-live/game";
 import { draw, rankClue } from "@hanabi-live/game";
-import { beforeAll, describe, expect, mock, test } from "bun:test";
 import { assertDefined, assertNotNull } from "complete-common";
+import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import testGame from "../../../test_data/up_or_down.json";
 import type { State } from "../types/State";
 
-await mock.module("./uiReducer", () => ({
-  uiReducer: mock(),
+vi.mock("./uiReducer", () => ({
+  uiReducer: vi.fn(),
 }));
 const { loadGameJSON } = await import("../../../test/loadGameJSON");
 const { hypoAction, hypoBack, hypoEnd, hypoStart, init } =

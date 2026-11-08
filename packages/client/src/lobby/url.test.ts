@@ -1,16 +1,16 @@
 import type { ServerCommandData } from "@hanabi-live/data";
-import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { replayGameSchema } from "@hanabi-live/data";
 
-await mock.module("./history", () => ({
-  show: mock(),
-  showOtherScoresFromURL: mock(),
+vi.mock("./history", () => ({
+  show: vi.fn(),
+  showOtherScoresFromURL: vi.fn(),
 }));
-await mock.module("../Globals", () => ({
-  globals: { conn: { send: mock() } },
+vi.mock("../Globals", () => ({
+  globals: { conn: { send: vi.fn() } },
 }));
-await mock.module("../utils", () => ({ setBrowserAddressBarPath: mock() }));
+vi.mock("../utils", () => ({ setBrowserAddressBarPath: vi.fn() }));
 const { globals } = await import("../Globals");
 const history = await import("./history");
 const { expand } = await import("./hypoCompress");
@@ -38,7 +38,7 @@ describe("replay URL loading", () => {
     } else {
       Object.defineProperty(globalThis, "localStorage", storageDescriptor);
     }
-    mock.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test.each([
@@ -47,8 +47,8 @@ describe("replay URL loading", () => {
     ["shared-replay-json", "", "", "shared"],
     ["replay-json", ",", "", "solo"],
   ])("%s preserves embedded seed %s", (route, suffix, seed, visibility) => {
-    const setItem = mock();
-    const send = spyOn(globals.conn!, "send");
+    const setItem = vi.fn();
+    const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -79,7 +79,7 @@ describe("replay URL loading", () => {
   });
 
   test("restores the personal history route", () => {
-    const show = spyOn(history, "show");
+    const show = vi.spyOn(history, "show");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL("https://hanab.live/lobby#history"),
@@ -92,8 +92,8 @@ describe("replay URL loading", () => {
   });
 
   test("restores the other scores history route", () => {
-    const show = spyOn(history, "show");
-    const showOtherScores = spyOn(history, "showOtherScoresFromURL");
+    const show = vi.spyOn(history, "show");
+    const showOtherScores = vi.spyOn(history, "showOtherScoresFromURL");
     const url = "https://hanab.live/lobby#history-other-scores-p4v0s1";
     Object.defineProperty(globalThis, "location", {
       configurable: true,
@@ -112,7 +112,7 @@ describe("replay URL loading", () => {
     ["/game/123/shadow/0", 0],
     ["/game/123/shadow/2", 2],
   ])("route %s => seat %i", (pathname, shadowingPlayerIndex) => {
-    const send = spyOn(globals.conn!, "send");
+    const send = vi.spyOn(globals.conn!, "send");
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       value: new URL(`https://hanab.live${pathname}`),

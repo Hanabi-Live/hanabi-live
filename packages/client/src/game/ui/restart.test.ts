@@ -1,14 +1,14 @@
-import { beforeEach, expect, mock, test } from "bun:test";
+import { beforeEach, expect, test, vi } from "vitest";
 
-const send = mock();
-const setEnabled = mock();
-const contentsVisible = mock();
-const waitingVisible = mock();
-const start = mock();
-const stop = mock();
-const show = mock();
+const send = vi.fn();
+const setEnabled = vi.fn();
+const contentsVisible = vi.fn();
+const waitingVisible = vi.fn();
+const start = vi.fn();
+const stop = vi.fn();
+const show = vi.fn();
 
-await mock.module("./UIGlobals", () => ({
+vi.mock("./UIGlobals", () => ({
   globals: {
     restartPending: false,
     lobby: { tableID: 42, conn: { send } },
@@ -19,14 +19,14 @@ await mock.module("./UIGlobals", () => ({
       restartWaitingOnServerAnimation: { start, stop },
       restartArea: { show },
     },
-    layers: { UI2: { batchDraw: mock() } },
+    layers: { UI2: { batchDraw: vi.fn() } },
   },
 }));
 const { globals } = await import("./UIGlobals");
 const { request, setPending } = await import("./restart");
 
 beforeEach(() => {
-  mock.clearAllMocks();
+  vi.clearAllMocks();
   globals.restartPending = false;
 });
 
@@ -74,7 +74,7 @@ test("a rejected restart restores the controls and allows retrying", () => {
 
 test("rebuilding the pending UI does not allow another restart", () => {
   request(false);
-  mock.clearAllMocks();
+  vi.clearAllMocks();
 
   setPending(globals.restartPending);
   request(true);

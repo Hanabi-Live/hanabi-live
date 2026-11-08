@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, expect, mock, test } from "bun:test";
 import { JSDOM } from "jsdom";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
 
 const dom = new JSDOM(`<!doctype html><body>
   <div id="page-cover"></div>
@@ -64,14 +64,14 @@ afterAll(() => {
   }
 });
 
-await mock.module("./Globals", () => ({
+vi.mock("./Globals", () => ({
   globals: { errorOccurred: false, lastActiveElement: null },
 }));
-await mock.module("./game/reducers/noteIdentity", () => ({}));
-await mock.module("./game/ui/HanabiCardClick", () => ({
-  morphReplayFromModal: mock(),
+vi.mock("./game/reducers/noteIdentity", () => ({}));
+vi.mock("./game/ui/HanabiCardClick", () => ({
+  morphReplayFromModal: vi.fn(),
 }));
-await mock.module("./lobby/nav", () => ({ show: mock() }));
+vi.mock("./lobby/nav", () => ({ show: vi.fn() }));
 
 async function wait(milliseconds: number) {
   await new Promise((resolve) => {
@@ -113,8 +113,8 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   const { document } = dom.window;
   const pageCover = document.querySelector<HTMLElement>("#page-cover")!;
 
-  const onConfirm = mock<() => void>();
-  const onCancel = mock<() => void>();
+  const onConfirm = vi.fn<() => void>();
+  const onCancel = vi.fn<() => void>();
   modals.askForConfirmation("Title", "Description", "OK", onConfirm, onCancel);
   await wait(150);
   document.querySelector<HTMLElement>("#confirm-modal-confirm")!.click();
@@ -123,8 +123,8 @@ test("a confirmation runs exactly one of its callbacks", async () => {
 
   // Dismissing the modal in any way cancels, and a modal opened right after another one closes
   // stays visible.
-  const onConfirm2 = mock<() => void>();
-  const onCancel2 = mock<() => void>();
+  const onConfirm2 = vi.fn<() => void>();
+  const onCancel2 = vi.fn<() => void>();
   modals.askForConfirmation(
     "Title",
     "Description",
@@ -136,7 +136,7 @@ test("a confirmation runs exactly one of its callbacks", async () => {
   expect(pageCover.style.display).toBe("flex");
 
   // Escape closes the modal without also reaching the screen behind it.
-  const screenKeydown = mock<() => void>();
+  const screenKeydown = vi.fn<() => void>();
   document.addEventListener("keydown", screenKeydown);
   document.dispatchEvent(
     new dom.window.KeyboardEvent("keydown", { key: "Escape" }),

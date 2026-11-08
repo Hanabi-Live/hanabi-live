@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { setBrowserAddressBarPath } from "./utils";
 
 describe("setBrowserAddressBarPath", () => {
@@ -25,8 +25,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("pushes a lobby-to-pregame transition", () => {
-    const pushState = mock();
-    const replaceState = mock();
+    const pushState = vi.fn();
+    const replaceState = vi.fn();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -45,8 +45,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("replaces an existing URL instead of duplicating a history entry", () => {
-    const pushState = mock();
-    const replaceState = mock();
+    const pushState = vi.fn();
+    const replaceState = vi.fn();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,
@@ -65,8 +65,8 @@ describe("setBrowserAddressBarPath", () => {
   });
 
   test("turn-number updates keep replacing the active entry", () => {
-    const pushState = mock();
-    const replaceState = mock();
+    const pushState = vi.fn();
+    const replaceState = vi.fn();
     Object.defineProperties(globalThis, {
       location: {
         configurable: true,

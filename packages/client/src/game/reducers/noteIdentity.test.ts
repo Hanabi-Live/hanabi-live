@@ -1,7 +1,7 @@
 import type { SuitRankTuple } from "@hanabi-live/game";
 import { getDefaultVariant, getVariant } from "@hanabi-live/game";
-import { describe, expect, test } from "bun:test";
 import { iRange } from "complete-common";
+import { describe, expect, test } from "vitest";
 import { getPossibilitiesFromKeywords } from "./noteIdentity";
 
 const DEFAULT_VARIANT = getDefaultVariant();

@@ -3,8 +3,9 @@
 // Tooltipster is a jQuery library, so we import it purely for the side-effects (e.g. so that it can
 // add the ".tooltipster" property to the "$" object).
 
-// ScrollableTip is a Tooltipster library that allows for a scrolling tooltip. We import it for the
-// side-effects for the same reason.
+// ScrollableTip is a Tooltipster plugin that allows for a scrolling tooltip. It is installed
+// explicitly instead of through a global "jQuery", which Vite's development server does not
+// provide.
 
 import {
   MAX_CARDS_IN_A_DECK,
@@ -12,10 +13,13 @@ import {
   MAX_SUITS_IN_A_VARIANT,
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
+import jquery from "jquery";
 import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
-import "../lib/tooltipster-scrollableTip.min"; // eslint-disable-line import-x/no-unassigned-import
+import { installScrollableTip } from "../lib/tooltipster-scrollableTip.min";
 import { globals } from "./game/ui/UIGlobals";
 import { getHTMLElement } from "./utils";
+
+installScrollableTip(jquery);
 
 // Constants
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;

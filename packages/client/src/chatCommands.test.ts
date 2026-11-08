@@ -1,15 +1,15 @@
-import { describe, expect, mock, test } from "bun:test";
+import { describe, expect, test, vi } from "vitest";
 
-await mock.module("./chat", () => ({
+vi.mock("./chat", () => ({
   SelfChatMessageType: {},
-  sendSelfPMFromServer: mock(),
-  sendChat: mock(),
+  sendSelfPMFromServer: vi.fn(),
+  sendChat: vi.fn(),
 }));
-await mock.module("./Globals", () => ({ globals: {} }));
-await mock.module("./lobby/createGame", () => ({}));
-await mock.module("./modals", () => ({}));
-await mock.module("./lobby/createReplayJSON.ts", () => ({
-  createJSONFromReplay: mock(),
+vi.mock("./Globals", () => ({ globals: {} }));
+vi.mock("./lobby/createGame", () => ({}));
+vi.mock("./modals", () => ({}));
+vi.mock("./lobby/createReplayJSON.ts", () => ({
+  createJSONFromReplay: vi.fn(),
 }));
 const {
   getVariantFromArgs,

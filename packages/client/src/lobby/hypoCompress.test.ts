@@ -1,5 +1,5 @@
 import { replayGameSchema } from "@hanabi-live/data";
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { expand, shrink } from "./hypoCompress";
 
 describe("replay URL seed metadata", () => {

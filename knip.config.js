@@ -16,18 +16,17 @@ const config = {
       ],
     },
     "packages/client": {
-      // Built with esbuild and Grunt from shell scripts.
+      // Built with Grunt and esbuild from shell scripts; Knip finds the Vite entry point.
       entry: [
         "Gruntfile.js",
-        "src/main.ts",
         "src/standalone/pips-reference.ts",
         "src/**/*.test.ts",
       ],
       ignore: [
+        "lib/*.d.ts", // Types for the vendored plugins.
         "test_data/hanabLiveStateToCurrentRepoState.js", // Pasted into the browser console.
       ],
       ignoreDependencies: [
-        "esbuild", // Used in shell scripts.
         "grunt", // Used in shell scripts.
         "grunt-contrib-concat", // Loaded by "Gruntfile.js".
         "grunt-contrib-cssmin", // Loaded by "Gruntfile.js".

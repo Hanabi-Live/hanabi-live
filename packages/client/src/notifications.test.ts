@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
-await mock.module("./modals", () => ({ showWarning: mock() }));
+vi.mock("./modals", () => ({ showWarning: vi.fn() }));
 const { send } = await import("./notifications");
 
 const originalNotification = Object.getOwnPropertyDescriptor(
@@ -14,12 +14,23 @@ interface NotificationStub {
 
 function installNotificationMock(permission: NotificationPermission) {
   const notification =
-    mock<(...args: readonly unknown[]) => NotificationStub>();
+    vi.fn<(...args: readonly unknown[]) => NotificationStub>();
   Object.defineProperty(globalThis, "Notification", {
     configurable: true,
     value: Object.assign(notification, { permission }),
   });
   return notification;
+}
+
+// Vitest only constructs mocks whose implementation is a function or a class.
+function illegalConstructor(): never {
+  throw new TypeError(
+    "Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.",
+  );
+}
+
+function failingConstructor(): never {
+  throw new RangeError("Unexpected notification failure.");
 }
 
 afterEach(() => {
@@ -45,9 +56,13 @@ describe("desktop notifications", () => {
   });
 
   test("creates a notification and attaches a click handler on desktop", () => {
-    const listener = mock<(event: string, callback: () => void) => void>();
+    const listener = vi.fn<(event: string, callback: () => void) => void>();
     const notification = installNotificationMock("granted");
-    notification.mockReturnValue({ addEventListener: listener });
+    function notificationStub() {
+      return { addEventListener: listener };
+    }
+    // Vitest only constructs mocks whose implementation is a function or a class.
+    notification.mockImplementation(notificationStub);
 
     send("It is your turn.", "turn");
 
@@ -60,11 +75,7 @@ describe("desktop notifications", () => {
 
   test("does not crash when Android Chrome forbids constructing notifications", () => {
     const notification = installNotificationMock("granted");
-    notification.mockImplementation(() => {
-      throw new TypeError(
-        "Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.",
-      );
-    });
+    notification.mockImplementation(illegalConstructor);
     expect(() => {
       send("It is your turn.", "turn");
     }).not.toThrow();
@@ -73,9 +84,7 @@ describe("desktop notifications", () => {
 
   test("does not conceal unrelated notification failures", () => {
     const notification = installNotificationMock("granted");
-    notification.mockImplementation(() => {
-      throw new RangeError("Unexpected notification failure.");
-    });
+    notification.mockImplementation(failingConstructor);
     expect(() => {
       send("It is your turn.", "turn");
     }).toThrow(RangeError);

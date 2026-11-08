@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { createStore } from "redux";
+import { describe, expect, test } from "vitest";
 import { observeStore } from "./observeStore";
 
 function stepReducer(
