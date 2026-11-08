@@ -11,6 +11,9 @@ import {
 } from "../constants";
 import { FitText } from "./FitText";
 
+/** How far the shadow around the outline of the current player arrow spreads. */
+const ARROW_SHADOW_BLUR = 75;
+
 interface ElementValues {
   x: number;
   y: number;
@@ -157,7 +160,7 @@ export class CurrentPlayerArea extends Konva.Group {
       fill: "black",
       stroke: "black",
       strokeWidth: baseArrowLength * 2,
-      shadowBlur: 75,
+      shadowBlur: ARROW_SHADOW_BLUR,
       shadowOpacity: 1,
       listening: false,
     });

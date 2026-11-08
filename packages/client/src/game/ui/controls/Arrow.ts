@@ -1,6 +1,12 @@
 import Konva from "konva";
 import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants";
 
+/** How far the shadow around the arrow's outline spreads, as a multiple of its pointer length. */
+const SHADOW_BLUR_LENGTHS = 4;
+
+/** The outline of the circle that shows the clue, as a multiple of the arrow's pointer length. */
+const CIRCLE_STROKE_WIDTH_LENGTHS = 0.25;
+
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
 export class Arrow extends Konva.Group {
@@ -46,7 +52,7 @@ export class Arrow extends Konva.Group {
       fill: "black",
       stroke: "black",
       strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
-      shadowBlur: pointerLength * 4,
+      shadowBlur: pointerLength * SHADOW_BLUR_LENGTHS,
       shadowOpacity: 1,
       listening: false,
     });
@@ -82,7 +88,7 @@ export class Arrow extends Konva.Group {
       radius: pointerLength * 2.25,
       fill: "black",
       stroke: "white",
-      strokeWidth: pointerLength * 0.25,
+      strokeWidth: pointerLength * CIRCLE_STROKE_WIDTH_LENGTHS,
       visible: false,
       listening: false,
     });

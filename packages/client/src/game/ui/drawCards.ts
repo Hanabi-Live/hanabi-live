@@ -82,6 +82,35 @@ const SUIT_PIP_OFFSET_Y = {
   colorblind: { rank2: 60, ranks3To5: 80 },
 } as const;
 
+/** The scale of the suit pips at the top, bottom, and sides of a card's face. */
+const FACE_PIP_SCALE = 0.4;
+
+/** How much larger than {@link FACE_PIP_SCALE} the other suit pips on a card's face are drawn. */
+const FACE_PIP_SCALE_MULTIPLIER = {
+  rank1: 1.8,
+  rank2: 1.4,
+
+  /** The pip in the middle of a 3 or a 5. */
+  center: 1.2,
+
+  stackBase: 2.5,
+
+  /** The large pip in the middle of an unknown card or a start card. */
+  large: 3,
+} as const;
+
+/** How far left and right of the card's center the side suit pips on a 4 or a 5 are drawn. */
+const FACE_PIP_OFFSET_X = 90;
+
+/**
+ * Where a deceptive card's clue rank is drawn relative to its rank label, and how large it is. It
+ * goes to the right of the label, or below it in colorblind mode.
+ */
+const DECEPTIVE_RANK_LABEL = {
+  normal: { x: CARD_W / 4 + CARD_W / 50, y: CARD_H / 40, scale: 0.5 },
+  colorblind: { x: CARD_W / 20, y: CARD_H / 5, scale: 0.65 },
+} as const;
+
 /** The line that a gradient follows down the rank label in the top-left corner of a card. */
 const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
 
@@ -199,13 +228,11 @@ export function drawCards<Canvas, Image>(
         ) {
           const deceptiveRank =
             variant.clueRanks[suitIndex % variant.clueRanks.length]!;
-          if (colorblindMode) {
-            ctx.translate(CARD_W / 20, CARD_H / 5);
-            ctx.scale(0.65, 0.65);
-          } else {
-            ctx.translate(CARD_W / 4 + CARD_W / 50, CARD_H / 40);
-            ctx.scale(0.5, 0.5);
-          }
+          const deceptiveLabel = colorblindMode
+            ? DECEPTIVE_RANK_LABEL.colorblind
+            : DECEPTIVE_RANK_LABEL.normal;
+          ctx.translate(deceptiveLabel.x, deceptiveLabel.y);
+          ctx.scale(deceptiveLabel.scale, deceptiveLabel.scale);
           if (styleNumbers && !colorblindMode) {
             drawStylizedRank(ctx, deceptiveRank);
             ctx.fill();
@@ -298,7 +325,7 @@ function drawSuitPips(
   colorblindMode: boolean,
   enableShadows: boolean,
 ) {
-  const scale = 0.4;
+  const scale = FACE_PIP_SCALE;
   const pipOffsetY = colorblindMode
     ? SUIT_PIP_OFFSET_Y.colorblind
     : SUIT_PIP_OFFSET_Y.normal;
@@ -307,7 +334,10 @@ function drawSuitPips(
   if (rank === 1) {
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 1.8, scale * 1.8);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank1,
+    );
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   } else if (rank === 2) {
@@ -316,14 +346,20 @@ function drawSuitPips(
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
-    ctx.scale(scale * 1.4, scale * 1.4);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
+    );
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, symbolYPos);
-    ctx.scale(scale * 1.4, scale * 1.4);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
+      scale * FACE_PIP_SCALE_MULTIPLIER.rank2,
+    );
     ctx.rotate(Math.PI);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
@@ -352,14 +388,14 @@ function drawSuitPips(
   if (rank === 4 || rank === 5) {
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(-90, 0);
+    ctx.translate(-FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
 
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(90, 0);
+    ctx.translate(FACE_PIP_OFFSET_X, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
     drawPip(ctx, suit, variant, enableShadows);
@@ -371,7 +407,10 @@ function drawSuitPips(
     ctx.globalAlpha = 1;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 1.2, scale * 1.2);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.center,
+      scale * FACE_PIP_SCALE_MULTIPLIER.center,
+    );
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
@@ -381,7 +420,10 @@ function drawSuitPips(
     ctx.globalAlpha = 1;
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 2.5, scale * 2.5);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
+      scale * FACE_PIP_SCALE_MULTIPLIER.stackBase,
+    );
     drawPip(ctx, suit, variant, enableShadows);
     ctx.restore();
   }
@@ -399,7 +441,10 @@ function drawSuitPips(
         : UNKNOWN_CARD_LARGE_PIP_ALPHA.normal;
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 3, scale * 3);
+    ctx.scale(
+      scale * FACE_PIP_SCALE_MULTIPLIER.large,
+      scale * FACE_PIP_SCALE_MULTIPLIER.large,
+    );
     drawPip(ctx, suit, variant, enableShadows, undefined, lineWidth);
     ctx.restore();
   }

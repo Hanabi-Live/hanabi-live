@@ -12,6 +12,9 @@ import { FitText } from "./FitText";
 /** The background of a timer that is not flashing a warning. */
 const PANEL_COLOR = "black";
 
+/** How far down the label below the time is, as a multiple of the timer's vertical spacing. */
+const LABEL_Y_SPACES = 6;
+
 export class TimerDisplay extends Konva.Group {
   timerText: FitText;
   labelText: FitText;
@@ -53,7 +56,7 @@ export class TimerDisplay extends Konva.Group {
 
     this.labelText = new FitText({
       x: 0,
-      y: 6 * config["spaceH"],
+      y: LABEL_Y_SPACES * config["spaceH"],
       width: config.width,
       height: config.height,
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/prefer-nullish-coalescing

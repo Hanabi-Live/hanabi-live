@@ -22,6 +22,9 @@ import * as konvaTooltips from "./konvaTooltips";
 const NAME_SHADOW_OPACITY = 0.9;
 const ACTIVE_SHADOW_OPACITY = 0.6;
 
+/** How many times thicker the frame lines are around the name of the player whose turn it is. */
+const ACTIVE_STROKE_WIDTH_MULTIPLIER = 3;
+
 /** The widest a player name can be before it shrinks, as a fraction of the name frame width. */
 const MAX_NAME_WIDTH_FRACTION = 0.65;
 
@@ -155,7 +158,7 @@ export class NameFrame extends Konva.Group {
 
   setActive(active: boolean): void {
     const strokeWidth = active
-      ? 3 * this.defaultStrokeWidth
+      ? ACTIVE_STROKE_WIDTH_MULTIPLIER * this.defaultStrokeWidth
       : this.defaultStrokeWidth;
     this.leftLine.strokeWidth(strokeWidth);
     this.rightLine.strokeWidth(strokeWidth);

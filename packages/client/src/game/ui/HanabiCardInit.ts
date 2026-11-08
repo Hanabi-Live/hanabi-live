@@ -119,6 +119,28 @@ const RANK_PIP_OUTLINE_WIDTH = 10;
 /** The outline around a suit pip. */
 const SUIT_PIP_STROKE_WIDTH = 5;
 
+/** The size of the X over a suit pip that has been ruled out, in the pip's units. */
+const SUIT_PIP_X_SIZE = 50;
+
+/** How far the X over a suit pip is shifted to center it on the pip, as multiples of its size. */
+const SUIT_PIP_X_NUDGE = { x: -1.4, y: -2 } as const;
+
+/** The size of the X over a rank pip that has been ruled out. */
+const RANK_PIP_X_SIZE = 13;
+
+/** The outline around the X over a rank pip that has been ruled out. */
+const RANK_PIP_X_STROKE_WIDTH = 2;
+
+/**
+ * Where the rank pips go along the bottom of a card, as fractions of the card width. The pips of a
+ * variant with the usual five ranks are spread further apart than those of a variant with a start
+ * card.
+ */
+const RANK_PIP_X = {
+  defaultRanks: { start: -0.14, spacing: 0.19 },
+  otherRanks: { start: 0.05, spacing: 0.15 },
+} as const;
+
 function makeBorder(color: string) {
   const border = new Konva.Group({
     visible: false,
@@ -295,10 +317,10 @@ function makeCachedPips(variant: Variant) {
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = 50;
+        const width = SUIT_PIP_X_SIZE;
         const xx = Math.floor(CARD_W * 0.25 - width * 0.5);
         const xy = Math.floor(CARD_H * 0.25 - width * 0.05);
-        ctx.translate(-1.4 * width, -2 * width);
+        ctx.translate(SUIT_PIP_X_NUDGE.x * width, SUIT_PIP_X_NUDGE.y * width);
         drawX(ctx, shape, xx, xy, width, width);
       },
       listening: false,
@@ -312,9 +334,16 @@ function makeCachedPips(variant: Variant) {
   for (const rank of variant.ranks) {
     const x =
       variant.ranks.length === DEFAULT_CARD_RANKS.length
-        ? Math.floor(CARD_W * (rank * 0.19 - 0.14))
+        ? Math.floor(
+            CARD_W
+              * (rank * RANK_PIP_X.defaultRanks.spacing
+                + RANK_PIP_X.defaultRanks.start),
+          )
         : Math.floor(
-            CARD_W * ((rank === START_CARD_RANK ? 0 : rank) * 0.15 + 0.05),
+            CARD_W
+              * ((rank === START_CARD_RANK ? 0 : rank)
+                * RANK_PIP_X.otherRanks.spacing
+                + RANK_PIP_X.otherRanks.start),
           );
     const y = 0;
     const rankPip = new RankPip({
@@ -346,11 +375,11 @@ function makeCachedPips(variant: Variant) {
       y: Math.floor(CARD_H * 0.02),
       fill: "black",
       stroke: "black",
-      strokeWidth: 2,
+      strokeWidth: RANK_PIP_X_STROKE_WIDTH,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = 13;
+        const width = RANK_PIP_X_SIZE;
         const xx = Math.floor(CARD_W * 0.05);
         const xy = Math.floor(CARD_H * 0.047);
         drawX(ctx, shape, xx, xy, width, width);
