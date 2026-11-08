@@ -5,14 +5,8 @@
 import { transform } from "lightningcss";
 import path from "node:path";
 
-const CSS_DIR = path.resolve(
-  import.meta.dir,
-  "..",
-  "..",
-  "..",
-  "public",
-  "css",
-);
+const REPO_ROOT = path.resolve(import.meta.dir, "..", "..", "..");
+const CSS_DIR = path.resolve(REPO_ROOT, "public", "css");
 
 /** The stylesheets in the bundle, in order. Development pages load them separately. */
 const BUNDLE = [
