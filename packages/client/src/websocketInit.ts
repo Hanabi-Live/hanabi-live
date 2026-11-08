@@ -6,7 +6,7 @@ import {
   VERSION,
   errorDetails,
   httpError,
-  tableID as tableIDSchema,
+  tableIdSchema,
   withTabAccount,
 } from "@hanabi-live/data";
 import { commands } from "./commands";
@@ -285,7 +285,7 @@ function openConnection(isReconnect: boolean) {
         globals.muted = data.muted;
         globals.settings = data.settings;
         globals.friends = data.friends;
-        const retained = tableIDSchema.parse(globals.tableID);
+        const retained = tableIdSchema.parse(globals.tableID);
         conn.on("tableStart", (payload) => {
           const table = SERVER_COMMAND_SCHEMAS.tableStart.parse(payload);
           if (!isCurrentConnection(conn)) {
