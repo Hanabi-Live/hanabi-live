@@ -20,7 +20,7 @@ pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
 /// `MAX_SAFE_INTEGER`, which a float represents exactly.
 const MAX_SAFE_FLOAT: f64 = 9_007_199_254_740_991.0;
 /// Clue tokens in play at most, before a clue-starved variant doubles their count.
-pub(crate) const MAX_CLUES: i32 = 8;
+pub const MAX_CLUES: i32 = 8;
 /// The most events a game can record.
 pub(crate) const MAX_EVENTS: usize = 4096;
 /// The longest seed, and the longest player, variant, or character name, in bytes.
@@ -192,12 +192,17 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
 }
 
 pub(crate) fn hand_size(options: &Options) -> usize {
-    let normal = match options.num_players {
+    normal_hand_size(options.num_players) + usize::from(options.one_extra_card)
+        - usize::from(options.one_less_card)
+}
+
+/// Each player's hand size without the options that change it.
+pub fn normal_hand_size(num_players: usize) -> usize {
+    match num_players {
         2 | 3 => 5,
         4 | 5 => 4,
         _ => 3,
-    };
-    normal + usize::from(options.one_extra_card) - usize::from(options.one_less_card)
+    }
 }
 
 fn check_ongoing(state: &EngineState) -> Result<()> {

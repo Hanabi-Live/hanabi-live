@@ -4,9 +4,13 @@ use super::{
 };
 use axum::response::{Html, Redirect};
 
+/// The option that a score page names for a best score's stored modifier, if any.
+fn shown_modifier(bits: i64) -> Result<Option<&'static str>> {
+    Ok(crate::model::ScoreModifier::from_bits(i16::try_from(bits)?).shown())
+}
+
 pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
-    env.add_filter("bitand", |a: i64, b: i64| a & b);
     env.add_filter("urlencode", |s: String| encoded(&s));
     env.add_filter("possessive", |s: String| possessive(&s));
     env.add_filter("history_date", |s: String| {
@@ -525,7 +529,8 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
             if score == max {
                 totals[p - hanabi_protocol::MIN_PLAYERS] += 1;
             }
-            best.push(json!({"score":score,"modifier":number(&row,&format!("best_score{p}_mod"))}));
+            let modifier = number(&row, &format!("best_score{p}_mod"));
+            best.push(json!({"score":score,"modifierName":shown_modifier(modifier)?}));
         }
         let games = number(&row, "num_games");
         rows.push(
@@ -622,19 +627,18 @@ async fn missing(
                 continue;
             }
             let cards = i64::try_from((state.config.deck_size)(i32::try_from(id)?)?)?;
-            let hand = match p {
-                2 | 3 => 5,
-                4 | 5 => 4,
-                _ => 3,
-            };
+            let hand = i64::try_from(hanabi_engine::normal_hand_size(usize::try_from(p)?))?;
             let stacks = i64::try_from(variant.suits.len())?;
-            let multiplier = if variant.clue_starved { 2 } else { 1 };
+            let multiplier = i64::from(hanabi_engine::clue_cost_for(variant));
             let finished = if variant.throw_it_in_a_hole {
                 0
             } else {
                 stacks - p / i64::from(variant.stack_size) - 1
             };
-            let clues = (8 * multiplier + finished + cards - (hand - 1) * p - max) / multiplier;
+            let clues = (i64::from(hanabi_engine::MAX_CLUES) * multiplier + finished + cards
+                - (hand - 1) * p
+                - max)
+                / multiplier;
             let efficiency = float(max) / float(clues);
             let rounded = (efficiency * 100.0).round() / 100.0;
             if bounds[0].is_some_and(|min| rounded < min)
@@ -642,7 +646,7 @@ async fn missing(
             {
                 continue;
             }
-            rows.push(json!({"name":name,"numPlayers":p,"score":best.0,"maxScore":max,"modifier":best.1,
+            rows.push(json!({"name":name,"numPlayers":p,"score":best.0,"maxScore":max,"modifierName":shown_modifier(best.1)?,
                 "efficiency":format!("{efficiency:.2}"),"efficiencyClass":if efficiency<1.33 {"normal"}else if efficiency<1.5 {"hard"}else{"very-hard"}}));
         }
     }

@@ -208,18 +208,11 @@
                     {% if best.score == row.maxScore %}<strong
                       >{{ best.score }} / {{ row.maxScore }}</strong
                     >
-                    {% if best.modifier == 0 %}<i
-                      class="fas fa-check score-modifier green"
-                    ></i
-                    >{% else %} {% set modifier = "allornothing" if
-                    best.modifier|bitand(16) else "oneextracard" if
-                    best.modifier|bitand(4) else "onelesscard" if
-                    best.modifier|bitand(8) else "emptyclues" if
-                    best.modifier|bitand(2) else "deckplays" %}
-                    <i
+                    {% if best.modifierName %}<i
                       class="fas fa-times score-modifier red tooltip"
-                      data-tooltip-content="#modifier-{{ modifier }}"
+                      data-tooltip-content="#modifier-{{ best.modifierName }}"
                     ></i
+                    >{% else %}<i class="fas fa-check score-modifier green"></i
                     >{% endif %} {% else %}{{ best.score }} / {{ row.maxScore
                     }}{% endif %}
                   </td>

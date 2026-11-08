@@ -488,6 +488,70 @@ pub(crate) fn small(value: usize) -> u8 {
     u8::try_from(value).unwrap_or(u8::MAX)
 }
 
+/// The options that keep a score from counting as a normal one. The database stores them in
+/// `user_stats` as one bit each.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ScoreModifier(i16);
+
+impl ScoreModifier {
+    const DECK_PLAYS: i16 = 1;
+    const EMPTY_CLUES: i16 = 2;
+    const ONE_EXTRA_CARD: i16 = 4;
+    const ONE_LESS_CARD: i16 = 8;
+    const ALL_OR_NOTHING: i16 = 16;
+
+    /// Each option, its key in the wire's best scores, and its name on the score pages. The pages
+    /// show only the first one that a score has, so the order ranks them.
+    const OPTIONS: [(i16, &str, &str); 5] = [
+        (Self::ALL_OR_NOTHING, "allOrNothing", "allornothing"),
+        (Self::ONE_EXTRA_CARD, "oneExtraCard", "oneextracard"),
+        (Self::ONE_LESS_CARD, "oneLessCard", "onelesscard"),
+        (Self::EMPTY_CLUES, "emptyClues", "emptyclues"),
+        (Self::DECK_PLAYS, "deckPlays", "deckplays"),
+    ];
+
+    pub fn of(options: &Options) -> Self {
+        let mut bits = 0;
+        for (flag, set) in [
+            (Self::DECK_PLAYS, options.deck_plays),
+            (Self::EMPTY_CLUES, options.empty_clues),
+            (Self::ONE_EXTRA_CARD, options.one_extra_card),
+            (Self::ONE_LESS_CARD, options.one_less_card),
+            (Self::ALL_OR_NOTHING, options.all_or_nothing),
+        ] {
+            if set {
+                bits |= flag;
+            }
+        }
+        Self(bits)
+    }
+
+    pub const fn from_bits(bits: i16) -> Self {
+        Self(bits)
+    }
+
+    pub const fn bits(self) -> i16 {
+        self.0
+    }
+
+    /// The name of the option that the score pages show for this score, or `None` when the score
+    /// is a normal one.
+    pub fn shown(self) -> Option<&'static str> {
+        Self::OPTIONS
+            .iter()
+            .find(|(flag, _, _)| self.0 & flag != 0)
+            .map(|(_, _, name)| *name)
+    }
+
+    /// Sets a best score's modifier and one flag per option, as the wire's best scores carry them.
+    pub fn write(self, best: &mut Value) {
+        best["modifier"] = Value::from(self.0);
+        for (flag, key, _) in Self::OPTIONS {
+            best[key] = Value::Bool(self.0 & flag != 0);
+        }
+    }
+}
+
 /// The most messages a table's chat keeps.
 pub const MAX_TABLE_CHAT: usize = 4096;
 /// The most moves a shared replay's hypothetical can hold.
@@ -587,6 +651,29 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn score_modifiers_keep_the_stored_bits_and_name_the_highest_ranked_option() {
+        let options = Options {
+            empty_clues: true,
+            one_less_card: true,
+            ..Options::default()
+        };
+        let modifier = ScoreModifier::of(&options);
+        assert_eq!(modifier.bits(), 2 + 8);
+        assert_eq!(modifier.shown(), Some("onelesscard"));
+        assert_eq!(ScoreModifier::from_bits(0).shown(), None);
+        assert_eq!(
+            ScoreModifier::from_bits(16 + 1).shown(),
+            Some("allornothing")
+        );
+        let mut best = serde_json::json!({});
+        modifier.write(&mut best);
+        assert_eq!(best["modifier"], 10);
+        assert_eq!(best["emptyClues"], true);
+        assert_eq!(best["oneLessCard"], true);
+        assert_eq!(best["deckPlays"], false);
+    }
 
     #[test]
     fn timestamps_are_utc_with_milliseconds() {

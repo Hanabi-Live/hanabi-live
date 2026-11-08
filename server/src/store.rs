@@ -835,17 +835,19 @@ impl Store {
         stats["numGames"] = json!(count);
         if let Some(row) = row {
             stats["variant"]["numGames"] = json!(row.num_games);
-            for (index, score) in [
-                row.best_score2,
-                row.best_score3,
-                row.best_score4,
-                row.best_score5,
-                row.best_score6,
+            for (index, (score, modifier)) in [
+                (row.best_score2, row.best_score2_mod),
+                (row.best_score3, row.best_score3_mod),
+                (row.best_score4, row.best_score4_mod),
+                (row.best_score5, row.best_score5_mod),
+                (row.best_score6, row.best_score6_mod),
             ]
             .into_iter()
             .enumerate()
             {
-                stats["variant"]["bestScores"][index]["score"] = json!(score);
+                let best = &mut stats["variant"]["bestScores"][index];
+                best["score"] = json!(score);
+                crate::model::ScoreModifier::from_bits(modifier).write(best);
             }
         }
         Ok(Player { id, name, stats })
@@ -910,11 +912,7 @@ impl Store {
         )
         .execute(&mut *tx)
         .await?;
-        let modifier = i16::from(s.game.options.deck_plays)
-            + 2 * i16::from(s.game.options.empty_clues)
-            + 4 * i16::from(s.game.options.one_extra_card)
-            + 8 * i16::from(s.game.options.one_less_card)
-            + 16 * i16::from(s.game.options.all_or_nothing);
+        let modifier = crate::model::ScoreModifier::of(&s.game.options).bits();
         for p in &s.players {
             sqlx::query!(
                 "INSERT INTO user_stats(user_id,variant_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
@@ -1540,6 +1538,46 @@ mod tests {
         tokio::time::timeout(Duration::from_secs(10), received).await???;
         Ok(())
     }
+    #[tokio::test]
+    async fn player_statistics_carry_each_best_scores_modifier() -> Result<()> {
+        let Some((admin, pool, name)) = database().await? else {
+            return Ok(());
+        };
+        let redis = RedisFixture::start(true).await?;
+        let state = RedisState::connect(&redis.url, "native-best-score-modifiers").await?;
+        let store = Store::fixture(pool, state);
+        let result = async {
+            #[allow(clippy::disallowed_methods)]
+            sqlx::raw_sql(
+                "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
+                 VALUES(9001,'Carol','carol','test','127.0.0.1');
+                 INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod,
+                 best_score3,best_score3_mod) VALUES(9001,0,2,25,4,20,0);",
+            )
+            .execute(&store.primary)
+            .await?;
+            let player = store.player(9001, "Carol".into()).await?;
+            let best = &player.stats["variant"]["bestScores"];
+            ensure!(
+                best[0]["score"] == 25
+                    && best[0]["modifier"] == 4
+                    && best[0]["oneExtraCard"] == true
+                    && best[0]["deckPlays"] == false,
+                "A modified best score lost its modifier: {}",
+                best[0]
+            );
+            ensure!(
+                best[1]["modifier"] == 0 && best[1]["oneExtraCard"] == false,
+                "An unmodified best score gained a modifier: {}",
+                best[1]
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        cleanup(admin, name).await?;
+        result
+    }
+
     #[tokio::test]
     async fn reserved_chat_ids_survive_failure_and_concurrent_retries_without_conflating_messages()
     -> Result<()> {

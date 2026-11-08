@@ -562,6 +562,21 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(status, StatusCode::OK, "{path}: {body}");
         assert!(body.contains("id=\"main\""), "{path}");
     }
+    // A max score shows the option that kept it from counting normally, or a check.
+    let (_, body) = request(app.clone(), "/scores/Alice").await;
+    assert!(body.contains("fa-check score-modifier green"), "{body}");
+    #[allow(clippy::disallowed_methods)]
+    sqlx::raw_sql("UPDATE user_stats SET best_score2_mod=4 WHERE user_id=1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, body) = request(app.clone(), "/scores/Alice").await;
+    assert!(body.contains("#modifier-oneextracard"), "{body}");
+    #[allow(clippy::disallowed_methods)]
+    sqlx::raw_sql("UPDATE user_stats SET best_score2_mod=0 WHERE user_id=1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
     // A player's time counts each game once rather than once per player.
     let (_, body) = request(app.clone(), "/scores/Alice").await;
     let values = stats_values(&body);
