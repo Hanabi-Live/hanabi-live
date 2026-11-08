@@ -666,19 +666,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert!(body.contains("data-authenticated=\"true\""));
-    let req = Request::builder()
-        .method("POST")
-        .uri("/password-reset")
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .extension(ConnectInfo("127.0.0.1:9999".parse::<SocketAddr>().unwrap()))
-        .body(Body::from("password=secret"))
-        .unwrap();
-    let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    use argon2::PasswordVerifier;
-    argon2::Argon2::default()
-        .verify_password(b"secret", &argon2::PasswordHash::new(&body).unwrap())
-        .unwrap();
     #[allow(clippy::disallowed_methods)]
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)

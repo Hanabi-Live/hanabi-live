@@ -1,8 +1,5 @@
 use super::*;
-use axum::{
-    Form,
-    response::{Html, Redirect},
-};
+use axum::response::{Html, Redirect};
 
 pub(super) fn templates() -> minijinja::Environment<'static> {
     let mut env = minijinja::Environment::new();
@@ -604,17 +601,4 @@ async fn missing(
         v["summary"] = score_summary(state, users[0].0).await?;
     }
     render(state, "missing-scores.html", v)
-}
-
-pub(super) async fn password_hash(
-    ConnectInfo(address): ConnectInfo<SocketAddr>,
-    Form(form): Form<HashMap<String, String>>,
-) -> Result<Response> {
-    let password = form
-        .get("password")
-        .filter(|s| !s.is_empty())
-        .ok_or_else(|| Error::bad("Error: You must specify a username."))?
-        .clone();
-    let hash = crate::accounts::hash_password(&address.ip().to_string(), password).await?;
-    Ok(hash.into_response())
 }

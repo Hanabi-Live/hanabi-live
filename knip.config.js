@@ -20,6 +20,7 @@ const config = {
       // Built with Grunt and esbuild from shell scripts; Knip finds the Vite entry point.
       entry: [
         "Gruntfile.js",
+        "src/standalone/password-reset.ts",
         "src/standalone/pips-reference.ts",
         "src/standalone/public-tables.ts",
         "src/**/*.test.ts",

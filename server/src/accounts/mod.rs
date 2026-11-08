@@ -30,7 +30,8 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use hanabi_protocol::{
-    ApiError, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest, LoginResponse,
+    ApiError, IdentityRequest, IdentityResponse, IdentityTokenResponse, LoginRequest,
+    LoginResponse, PasswordHashRequest, PasswordHashResponse,
 };
 use sqlx::PgPool;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -60,6 +61,7 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
             get(identity_token).post(identity_token),
         )
         .route("/api/v1/identity", post(identity))
+        .route("/password-reset", post(password_hash))
         .layer(DefaultBodyLimit::max(8192))
         .with_state(Arc::new(Accounts {
             pool,
@@ -493,4 +495,21 @@ async fn identity(
     }
     .await;
     result.unwrap_or_else(|error| account_failure("identity-lookup", error, true))
+}
+
+/// Hashes a new password, which a user gives to an administrator to reset their account.
+async fn password_hash(
+    ConnectInfo(address): ConnectInfo<SocketAddr>,
+    body: Result<Json<serde_json::Value>, axum::extract::rejection::JsonRejection>,
+) -> Response {
+    let Some(request) = body
+        .ok()
+        .and_then(|Json(value)| hanabi_protocol::decode::<PasswordHashRequest>(&value).ok())
+    else {
+        return api_error(StatusCode::BAD_REQUEST, "You must specify a password.");
+    };
+    match hash_password(&address.ip().to_string(), request.password).await {
+        Ok(hash) => Json(PasswordHashResponse { hash }).into_response(),
+        Err(error) => account_failure("password-hash", error, true),
+    }
 }

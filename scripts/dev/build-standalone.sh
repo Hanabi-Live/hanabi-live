@@ -10,6 +10,7 @@ REPO_ROOT="$DIR/../.."
 
 # Each standalone script is bundled separately, as "public/js/bundles/[name].min.js".
 bunx --bun --no-install esbuild \
+  "$REPO_ROOT/packages/client/src/standalone/password-reset.ts" \
   "$REPO_ROOT/packages/client/src/standalone/pips-reference.ts" \
   "$REPO_ROOT/packages/client/src/standalone/public-tables.ts" \
   --bundle \

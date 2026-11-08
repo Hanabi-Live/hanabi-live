@@ -389,6 +389,14 @@ export const noteRequestSchema = z.strictObject({
   order: z.number().int().min(0).max(9_007_199_254_740_991),
   tableID: tableIdSchema,
 });
+
+/** The `/password-reset` request: a new password for an administrator to set. */
+export const passwordHashRequestSchema = z.strictObject({
+  password: z.string().min(1),
+});
+
+/** The hash of a `/password-reset` request's password. */
+export const passwordHashResponseSchema = z.strictObject({ hash: z.string() });
 export const pauseSchema = z.strictObject({
   active: z.boolean(),
   /** The seat that paused, or -1. */

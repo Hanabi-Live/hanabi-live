@@ -94,41 +94,7 @@
             />
             <p id="password-reset-error" role="alert" hidden></p>
           </form>
-          <script>
-            document
-              .getElementById("password-reset-form")
-              .addEventListener("submit", async (event) => {
-                event.preventDefault();
-                const button = document.getElementById("generate-hash-button");
-                const output = document.getElementById("generated-hash");
-                const error = document.getElementById("password-reset-error");
-                button.disabled = true;
-                output.value = "";
-                error.hidden = true;
-                try {
-                  const response = await fetch("/password-reset", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                      password: document.getElementById("new-password").value,
-                    }),
-                  });
-                  if (!response.ok) throw new Error("Unable to generate hash");
-                  output.value = await response.text();
-                  output.focus();
-                  output.select();
-                } catch (failure) {
-                  error.textContent =
-                    "Unable to generate a hash. Please try again.";
-                  error.hidden = false;
-                } finally {
-                  button.disabled = false;
-                }
-              });
-            document.getElementById("new-password").focus();
-          </script>
+          <script src="/public/js/bundles/password-reset.min.js?{{ version }}"></script>
           {% else %} {% if page in ["scores","variant","stats"] %} {% if page ==
           "variant" and stats.numGamesTotal == 0 and stats.numGamesSpeedrun == 0
           %}

@@ -723,6 +723,8 @@ fn main() -> Result<()> {
             "LoginRequest",
             "LoginResponse",
             "ApiError",
+            "PasswordHashRequest",
+            "PasswordHashResponse",
             "PublicGamePage",
             "VariantNames",
             "ScoreFrequency",

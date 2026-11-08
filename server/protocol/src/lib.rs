@@ -1174,6 +1174,21 @@ pub struct IdentityTokenResponse {
     pub expires_at: String,
 }
 
+/// The `/password-reset` request: a new password for an administrator to set.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PasswordHashRequest {
+    #[schemars(length(min = 1))]
+    pub password: String,
+}
+
+/// The hash of a `/password-reset` request's password.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PasswordHashResponse {
+    pub hash: String,
+}
+
 /// A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -2224,6 +2239,8 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         IdentityRequest,
         IdentityResponse,
         IdentityTokenResponse,
+        PasswordHashRequest,
+        PasswordHashResponse,
         PublicGamePage,
         PublicGameRow,
         PublicVariant,

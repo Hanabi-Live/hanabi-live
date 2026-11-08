@@ -615,6 +615,46 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
 }
 
 #[tokio::test]
+async fn password_reset_hashes_only_a_password() {
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    let app = router(pool, config());
+    let (status, _, body) = request(
+        &app,
+        "POST",
+        "/password-reset",
+        r#"{"password":"secret"}"#,
+        None,
+        true,
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let response: PasswordHashResponse = serde_json::from_str(&body).unwrap();
+    use argon2::PasswordVerifier;
+    argon2::Argon2::default()
+        .verify_password(
+            b"secret",
+            &argon2::PasswordHash::new(&response.hash).unwrap(),
+        )
+        .unwrap();
+    for body in [
+        "",
+        "password=secret",
+        r#"{}"#,
+        r#"{"password":""}"#,
+        r#"{"password":null}"#,
+        r#"{"password":"secret","username":"Alice"}"#,
+    ] {
+        let (status, _, response) =
+            request(&app, "POST", "/password-reset", body, None, true).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+        let error: ApiError = serde_json::from_str(&response).unwrap();
+        assert_eq!(error.error, "You must specify a password.");
+    }
+}
+
+#[tokio::test]
 async fn too_much_password_work_is_rate_limited() {
     let error = TooMuchPasswordWork(std::time::Duration::from_secs(90));
     let response = account_failure("login", error.into(), false);
