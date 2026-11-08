@@ -1298,8 +1298,8 @@ fn validate_table_name(name: &str) -> Result<()> {
     );
     Ok(())
 }
-fn server_chat(id: u64, message: &str) -> Value {
-    json!(Chat {
+fn server_chat(id: u64, message: &str) -> Chat {
+    Chat {
         who: Some("Hanab Live".into()),
         room: Some(if id == 0 {
             "lobby".into()
@@ -1307,24 +1307,24 @@ fn server_chat(id: u64, message: &str) -> Value {
             format!("table{id}")
         }),
         ..Chat::new(message, ChatSource::Server, chat_time())
-    })
+    }
 }
-fn authored_chat(id: u64, name: &str, message: &str) -> Value {
-    json!(Chat {
+fn authored_chat(id: u64, name: &str, message: &str) -> Chat {
+    Chat {
         who: Some(name.into()),
         room: Some(format!("table{id}")),
         ..Chat::new(
             crate::accounts::escape_html(message),
             ChatSource::User,
-            chat_time()
+            chat_time(),
         )
-    })
+    }
 }
 fn chat_time() -> String {
     Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
 }
 
-fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> Vec<Value> {
+fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> Vec<Chat> {
     let Phase::Pregame {
         players, countdown, ..
     } = &mut table.phase
@@ -1361,7 +1361,7 @@ fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> 
         .collect()
 }
 
-fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
+fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     if table.chat.len() >= 4096 {
         eprintln!(
             "Table {} membership notice omitted: chat history is full.",
@@ -1373,7 +1373,7 @@ fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Value> {
     table.chat.push(TableChat {
         id: None,
         user: 0,
-        message: message.clone(),
+        message: json!(message),
     });
     Some(message)
 }
@@ -2013,13 +2013,8 @@ impl TableActor {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
-    /// Sends table chat, which the checkpoint stores as JSON, to everyone at the table.
-    fn add_chat(&self, e: &mut Effects, chat: &Value) -> Result<()> {
-        let message = stored_frame(hanabi_protocol::server::CHAT, chat)?;
-        for a in self.audience() {
-            e.messages.push((a.session.clone(), message.clone()));
-        }
-        Ok(())
+    fn add_chat(&self, e: &mut Effects, chat: &Chat) {
+        self.add_all(e, hanabi_protocol::server::CHAT, chat.clone());
     }
     fn typing_messages(&self, e: &mut Effects, author: i32, name: &str, typing: bool) {
         let message = frame(
@@ -2479,11 +2474,11 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: message.clone(),
+            message: json!(message),
         });
         self.persist(next).await?;
         let mut effects = self.effects();
-        self.add_chat(&mut effects, &message)?;
+        self.add_chat(&mut effects, &message);
         if let Some(variant) = selected
             && matches!(self.table.phase, Phase::Pregame { .. })
             && self.table.players().len() == query.participants.len()
@@ -2503,10 +2498,10 @@ impl TableActor {
                 self.table.id,
                 &options_suggestion(&options, &self.table.name, self.table.max_players)?,
             );
-            proposal["recipient"] = json!(owner.session.name);
+            proposal.recipient = Some(owner.session.name.clone());
             effects.messages.push((
                 owner.session.clone(),
-                stored_frame(hanabi_protocol::server::CHAT, &proposal)?,
+                frame(hanabi_protocol::server::CHAT, proposal),
             ));
         }
         self.publish(effects).await
@@ -2600,7 +2595,7 @@ impl TableActor {
         self.pregame_messages(&mut effects);
         self.spectator_messages(&mut effects);
         for message in notices {
-            self.add_chat(&mut effects, &message)?;
+            self.add_chat(&mut effects, &message);
         }
         self.publish(effects).await
     }
@@ -2981,20 +2976,20 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: message.clone(),
+                message: json!(message),
             });
             self.persist(next).await?;
             let mut e = self.effects();
-            self.add_chat(&mut e, &message)?;
+            self.add_chat(&mut e, &message);
             if let Some(owner) = self.attendees.get(&self.table.owner) {
                 let mut suggestion = server_chat(
                     self.table.id,
                     &options_suggestion(&options, &name, max_players)?,
                 );
-                suggestion["recipient"] = json!(owner.session.name);
+                suggestion.recipient = Some(owner.session.name.clone());
                 e.messages.push((
                     owner.session.clone(),
-                    stored_frame(hanabi_protocol::server::CHAT, &suggestion)?,
+                    frame(hanabi_protocol::server::CHAT, suggestion),
                 ));
             }
             return self.publish(e).await;
@@ -3048,7 +3043,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: message.clone(),
+            message: json!(message),
         });
         self.persist(next).await?;
         let mut e = self.effects();
@@ -3067,7 +3062,7 @@ impl TableActor {
             }
         }
         self.pregame_messages(&mut e);
-        self.add_chat(&mut e, &message)?;
+        self.add_chat(&mut e, &message);
         self.publish(e).await
     }
     async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
@@ -3121,7 +3116,7 @@ impl TableActor {
             for attendee in self.audience().filter(|a| a.session.user != session.user) {
                 e.messages.push((
                     attendee.session.clone(),
-                    stored_frame(hanabi_protocol::server::CHAT, &message)?,
+                    frame(hanabi_protocol::server::CHAT, message.clone()),
                 ));
             }
         }
@@ -3260,7 +3255,7 @@ impl TableActor {
             self.pregame_messages(&mut e);
         }
         for message in notices {
-            self.add_chat(&mut e, &message)?;
+            self.add_chat(&mut e, &message);
         }
         self.spectator_messages(&mut e);
         self.publish(e).await?;
@@ -3907,21 +3902,19 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: message.clone(),
+                message: json!(message),
             });
         } else {
-            message["room"] = json!(room);
-            message["recipient"] = json!(session.name);
+            message.room = Some(room.to_owned());
+            message.recipient = Some(session.name.clone());
         }
         self.persist(next).await?;
         let mut e = self.effects();
         if replay {
-            self.add_chat(&mut e, &message)?;
+            self.add_chat(&mut e, &message);
         } else {
-            e.messages.push((
-                session,
-                stored_frame(hanabi_protocol::server::CHAT, &message)?,
-            ));
+            e.messages
+                .push((session, frame(hanabi_protocol::server::CHAT, message)));
         }
         self.publish(e).await
     }
@@ -3976,11 +3969,11 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: message.clone(),
+            message: json!(message),
         });
         self.persist(next).await?;
         let mut e = self.effects();
-        self.add_chat(&mut e, &message)?;
+        self.add_chat(&mut e, &message);
         self.add_all(
             &mut e,
             hanabi_protocol::server::REPLAY_LEADER,
@@ -4174,11 +4167,9 @@ impl TableActor {
                 crate::lobby::GeneralResponse::Private(response) => {
                     let mut e = self.effects();
                     let mut message = server_chat(self.table.id, &response);
-                    message["recipient"] = json!(session.name);
-                    e.messages.push((
-                        session,
-                        stored_frame(hanabi_protocol::server::CHAT, &message)?,
-                    ));
+                    message.recipient = Some(session.name.clone());
+                    e.messages
+                        .push((session, frame(hanabi_protocol::server::CHAT, message)));
                     return self.publish(e).await;
                 }
                 crate::lobby::GeneralResponse::Public(response) => vec![response],
@@ -4201,13 +4192,13 @@ impl TableActor {
                 next.chat.push(TableChat {
                     id: None,
                     user: if index == 0 { session.user } else { 0 },
-                    message: message.clone(),
+                    message: json!(message),
                 });
             }
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
-                self.add_chat(&mut e, &message)?;
+                self.add_chat(&mut e, &message);
             }
             return self.publish(e).await;
         }
@@ -4224,7 +4215,7 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: session.user,
-            message: message.clone(),
+            message: json!(message),
         });
         self.persist(next).await?;
         let typing = self
@@ -4232,7 +4223,7 @@ impl TableActor {
             .get_mut(&session.user)
             .is_some_and(|a| a.typing_until.take().is_some());
         let mut e = self.effects();
-        self.add_chat(&mut e, &message)?;
+        self.add_chat(&mut e, &message);
         if typing {
             self.typing_messages(&mut e, session.user, &session.name, false);
         }
@@ -4284,11 +4275,11 @@ impl TableActor {
             next.chat.push(TableChat {
                 id: None,
                 user: 0,
-                message: message.clone(),
+                message: json!(message),
             });
             self.persist(next).await?;
             let mut e = self.effects();
-            self.add_chat(&mut e, &message)?;
+            self.add_chat(&mut e, &message);
             return self.publish(e).await;
         }
         if command == "tags" || command == "taglist" {
@@ -4327,13 +4318,13 @@ impl TableActor {
                 next.chat.push(TableChat {
                     id: None,
                     user: 0,
-                    message: message.clone(),
+                    message: json!(message),
                 });
             }
             self.persist(next).await?;
             let mut e = self.effects();
             for message in messages {
-                self.add_chat(&mut e, &message)?;
+                self.add_chat(&mut e, &message);
             }
             return self.publish(e).await;
         }
@@ -4430,10 +4421,10 @@ impl TableActor {
                                 "You are a CREWMATE."
                             },
                         );
-                        message["recipient"] = json!(a.session.name);
+                        message.recipient = Some(a.session.name.clone());
                         e.messages.push((
                             a.session.clone(),
-                            stored_frame(hanabi_protocol::server::CHAT, &message)?,
+                            frame(hanabi_protocol::server::CHAT, message),
                         ));
                     }
                 }
@@ -4446,12 +4437,12 @@ impl TableActor {
         next.chat.push(TableChat {
             id: None,
             user: session.user,
-            message: authored.clone(),
+            message: json!(authored),
         });
         next.chat.push(TableChat {
             id: None,
             user: 0,
-            message: notice.clone(),
+            message: json!(notice),
         });
         self.persist(next).await?;
         let mut e = self.effects();
@@ -4470,8 +4461,8 @@ impl TableActor {
             ));
         }
         self.pregame_messages(&mut e);
-        self.add_chat(&mut e, &authored)?;
-        self.add_chat(&mut e, &notice)?;
+        self.add_chat(&mut e, &authored);
+        self.add_chat(&mut e, &notice);
         self.publish(e).await
     }
     async fn allocation(&self) -> Result<Allocation> {

@@ -630,7 +630,7 @@ pub struct ReplayActionRequest {
     pub action_json: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ChatSource {
     User,
@@ -638,7 +638,7 @@ pub enum ChatSource {
     Discord,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct Chat {

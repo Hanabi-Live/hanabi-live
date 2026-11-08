@@ -410,11 +410,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     );
     sqlx::query!("INSERT INTO chat_log(user_id,source,message,room) VALUES($1,'user','/token legacy-secret','lobby'),($1,'user','/unknown secret','lobby')", a).execute(&db.pool).await.unwrap();
     let history = lobby_history(&db.pool, 100).await.unwrap();
-    assert!(
-        !history
-            .iter()
-            .any(|r| r["msg"].as_str().unwrap().contains("secret"))
-    );
+    assert!(!history.iter().any(|r| r.msg.contains("secret")));
     db.close().await;
 }
 

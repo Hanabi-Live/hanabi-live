@@ -5,7 +5,7 @@ use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, SecondsFormat, Utc};
 use hanabi_protocol::{Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::json;
 use sqlx::PgPool;
 use std::sync::LazyLock;
 
@@ -516,7 +516,7 @@ pub async fn lobby_chat(
     Ok(Some(effects))
 }
 
-pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
+pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
     ensure!(count >= 0, "Invalid history count");
     let rows = sqlx::query!(
         "SELECT c.id,c.user_id,c.source,c.message,c.discord_name,c.datetime_sent,
@@ -559,16 +559,16 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Value>> {
                 .clone()
                 .unwrap_or_else(|| format!("Deleted user #{}", row.user_id)),
         };
-        result.push(json!(Chat {
+        result.push(Chat {
             chat_id: Some(i64::from(row.id)),
             who: Some(who),
             room: Some("lobby".into()),
             ..Chat::new(
                 message,
                 serde_json::from_value(json!(source))?,
-                datetime(row.datetime_sent)
+                datetime(row.datetime_sent),
             )
-        }));
+        });
     }
     Ok(result)
 }
