@@ -1087,6 +1087,15 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Ensure that empathy is disabled prior to removing a card from a player's hand.
     this.setEmpathy(false);
 
+    // A held card can leave the hand, such as when it is played with a hotkey. Otherwise, it would
+    // keep the raised look of a held card in its new location.
+    if (this.dragging) {
+      this.dragging = false;
+      // Ending a drag fires "dragend", which would otherwise try to play or discard the card again.
+      this.layout.off("dragend");
+      this.layout.draggable(false);
+    }
+
     // Hide the card tooltip when the card moves to a different parent.
     if (globals.activeHover === this) {
       const tooltip = `#tooltip-${this.tooltipName}`;
