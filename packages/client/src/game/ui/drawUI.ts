@@ -38,7 +38,11 @@ import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
-import { CARD_ANIMATION_LENGTH_SECONDS, LABEL_COLOR } from "./constants";
+import {
+  CARD_ANIMATION_LENGTH_SECONDS,
+  LABEL_COLOR,
+  WARNING_COLOR,
+} from "./constants";
 import { Arrow } from "./controls/Arrow";
 import { Button } from "./controls/Button";
 import { CheckButton } from "./controls/CheckButton";
@@ -761,7 +765,7 @@ function drawScoreArea() {
     y: scoreAreaValues.y * winH,
     width: scoreAreaValues.w! * winW,
     height: scoreAreaValues.h! * winH,
-    stroke: "#df1c2d",
+    stroke: WARNING_COLOR,
     strokeWidth: 0.003 * winW,
     cornerRadius: 0.01 * winW,
     visible: false,
@@ -948,7 +952,7 @@ function drawScoreArea() {
     globals.elements.cluesNumberLabelPulse = new Konva.Tween({
       node: cluesNumberLabel,
       fontSize: 0.04 * winH,
-      fill: "#df1c2d",
+      fill: WARNING_COLOR,
       offsetX: 0.001 * winH,
       offsetY: 0.01 * winH,
       duration: CARD_ANIMATION_LENGTH_SECONDS,
@@ -1580,7 +1584,7 @@ function drawDiscardArea() {
     y: 0.63 * winH,
     width: 0.19 * winW,
     height: 0.36 * winH,
-    stroke: "#df1c2d",
+    stroke: WARNING_COLOR,
     strokeWidth: 0.005 * winW,
     cornerRadius: 0.01 * winW,
     visible: false,

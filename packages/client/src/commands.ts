@@ -23,7 +23,7 @@ commands.set("warning", (data) => {
       pregame.toggleStartGameButton();
       pregame.toggleJoinSpectateButtons();
     }
-  }, 100);
+  }, modals.MODAL_DELAY_MILLISECONDS);
 });
 
 commands.set("error", (data) => {

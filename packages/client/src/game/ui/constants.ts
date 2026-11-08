@@ -48,6 +48,13 @@ export const DISCARD_PERMISSION_COLOR = "#812020";
 
 export const OFF_BLACK = "#0d0d0d";
 
+/** Red, for the states that warn the team (such as being unable to discard at max clues). */
+export const WARNING_COLOR = "#df1c2d";
+
+export const BUTTON_HOVER_COLOR = "#888888";
+export const BUTTON_PRESSED_COLOR = "#cccccc";
+export const BUTTON_DISABLED_TEXT_COLOR = "#444444";
+
 // --------------
 // Time constants
 // --------------

@@ -3,6 +3,7 @@ import { isDualColor } from "@hanabi-live/game";
 import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import { globals } from "./UIGlobals";
+import { BUTTON_HOVER_COLOR, BUTTON_PRESSED_COLOR } from "./constants";
 import { drawPip } from "./drawPip";
 import { drawLayer } from "./konvaHelpers";
 
@@ -84,7 +85,7 @@ export class ColorButton extends Konva.Group {
     }
 
     this.background.on("mousedown", () => {
-      this.background.fill("#888888");
+      this.background.fill(BUTTON_HOVER_COLOR);
       drawLayer(this);
 
       this.background.on("mouseout", () => {
@@ -106,7 +107,7 @@ export class ColorButton extends Konva.Group {
 
   setPressed(pressed: boolean): void {
     this.pressed = pressed;
-    this.background.fill(pressed ? "#cccccc" : "black");
+    this.background.fill(pressed ? BUTTON_PRESSED_COLOR : "black");
     drawLayer(this);
   }
 }

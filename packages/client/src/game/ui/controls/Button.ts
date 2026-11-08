@@ -1,5 +1,10 @@
 import { assertNotNull } from "complete-common";
 import Konva from "konva";
+import {
+  BUTTON_DISABLED_TEXT_COLOR,
+  BUTTON_HOVER_COLOR,
+  BUTTON_PRESSED_COLOR,
+} from "../constants";
 import { drawLayer } from "../konvaHelpers";
 import { FitText } from "./FitText";
 
@@ -84,7 +89,7 @@ export class Button extends Konva.Group {
     }
 
     this.background.on("mousedown", () => {
-      this.background.fill("#888888");
+      this.background.fill(BUTTON_HOVER_COLOR);
       drawLayer(this);
 
       this.background.on("mouseout", () => {
@@ -111,7 +116,7 @@ export class Button extends Konva.Group {
     this.enabled = enabled;
 
     if (this.textElement !== null) {
-      this.textElement.fill(enabled ? "white" : "#444444");
+      this.textElement.fill(enabled ? "white" : BUTTON_DISABLED_TEXT_COLOR);
     }
 
     if (this.imageElement !== null && this.imageDisabledElement !== null) {
@@ -126,7 +131,7 @@ export class Button extends Konva.Group {
 
   setPressed(pressed: boolean): void {
     this.pressed = pressed;
-    this.background.fill(pressed ? "#cccccc" : "black");
+    this.background.fill(pressed ? BUTTON_PRESSED_COLOR : "black");
     drawLayer(this);
   }
 

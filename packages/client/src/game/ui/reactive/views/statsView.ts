@@ -2,7 +2,7 @@ import type { NumPlayers } from "@hanabi-live/game";
 import { PaceRisk, getEfficiency } from "@hanabi-live/game";
 import { assertNotNull } from "complete-common";
 import { globals } from "../../UIGlobals";
-import { LABEL_COLOR } from "../../constants";
+import { LABEL_COLOR, WARNING_COLOR } from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";
 
 /** Updates the labels on the right-hand side of the screen. */
@@ -188,7 +188,7 @@ function getPaceLabelColor(paceRisk: PaceRisk): string {
     }
 
     case PaceRisk.Zero: {
-      return "#df1c2d"; // Red
+      return WARNING_COLOR;
     }
   }
 }

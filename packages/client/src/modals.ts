@@ -10,6 +10,12 @@ import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
 import * as lobbyNav from "./lobby/nav";
 import { getHTMLElement, getHTMLInputElement } from "./utils";
 
+/**
+ * How long the modal code waits for the page cover to change before showing, focusing, or hiding
+ * what is behind it.
+ */
+export const MODAL_DELAY_MILLISECONDS = 100;
+
 /** Used by the morph dialog. */
 type DragAreaType = "playArea" | "discardArea" | null;
 
@@ -204,7 +210,7 @@ export function askForMorph(
   setTimeout(() => {
     morphModalTextbox.focus();
     morphModalTextbox.select();
-  }, 100);
+  }, MODAL_DELAY_MILLISECONDS);
 
   if (draggedTo === null) {
     // If action is null, the function was called from "HanabiCardClick.ts" during replay hypo.
@@ -465,7 +471,7 @@ export function initModal(
       } else {
         focus();
       }
-    }, 100);
+    }, MODAL_DELAY_MILLISECONDS);
   });
 }
 
@@ -503,7 +509,7 @@ export function showPrompt(
         focusElement.setSelectionRange(0, length);
         focusElement.type = oldType;
       }
-    }, 100);
+    }, MODAL_DELAY_MILLISECONDS);
   }
 }
 
@@ -529,7 +535,7 @@ export function closeModals(fast = false): void {
       if (currentModal === null) {
         pageCover.style.display = "none";
       }
-    }, 100);
+    }, MODAL_DELAY_MILLISECONDS);
   }
 
   if (globals.lastActiveElement !== null) {
@@ -585,7 +591,7 @@ function showModal(
     if (ready !== undefined) {
       ready();
     }
-  }, 100);
+  }, MODAL_DELAY_MILLISECONDS);
 }
 
 function fillMorphModalWithRadios(
@@ -637,7 +643,8 @@ function fillMorphModalWithRadios(
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = rank === START_CARD_RANK ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] =
+          rank === START_CARD_RANK ? "S" : rank.toString();
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -646,7 +653,8 @@ function fillMorphModalWithRadios(
 
         // Set textbox data attribute.
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] = rank === START_CARD_RANK ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] =
+          rank === START_CARD_RANK ? "S" : rank.toString();
       });
 
       row.append(cell);

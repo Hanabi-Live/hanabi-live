@@ -1,5 +1,6 @@
 import type { Clue } from "@hanabi-live/game";
 import Konva from "konva";
+import { BUTTON_HOVER_COLOR, BUTTON_PRESSED_COLOR } from "./constants";
 import { drawLayer } from "./konvaHelpers";
 
 export class RankButton extends Konva.Group {
@@ -43,7 +44,7 @@ export class RankButton extends Konva.Group {
     this.add(text);
 
     this.background.on("mousedown", () => {
-      this.background.fill("#888888");
+      this.background.fill(BUTTON_HOVER_COLOR);
       drawLayer(this);
 
       this.background.on("mouseout", () => {
@@ -65,7 +66,7 @@ export class RankButton extends Konva.Group {
 
   setPressed(pressed: boolean): void {
     this.pressed = pressed;
-    this.background.fill(pressed ? "#cccccc" : "black");
+    this.background.fill(pressed ? BUTTON_PRESSED_COLOR : "black");
     drawLayer(this);
   }
 }
