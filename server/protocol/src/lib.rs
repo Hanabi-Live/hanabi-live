@@ -48,6 +48,11 @@ pub const MAX_TIME_BASE_SECONDS: i32 = 7 * 24 * 60 * 60;
 pub const MAX_TIME_PER_TURN_SECONDS: i64 = 24 * 60 * 60;
 /// The loudest volume setting.
 pub const MAX_VOLUME: u8 = 100;
+/// A table's progress, as a percentage, once its game reaches the maximum score or its replay
+/// reaches the last turn.
+pub const MAX_PROGRESS: u8 = 100;
+/// The highest card order: stack bases follow the cards of the largest deck, one for each suit.
+const MAX_CARD_ORDER: usize = MAX_DECK_SIZE + MAX_SUITS - 1;
 
 /// Every seat index, for schemas that list them.
 fn seats() -> Vec<i64> {
@@ -59,6 +64,31 @@ fn seats() -> Vec<i64> {
 /// Every seat index after -1, which means no seat.
 fn seats_or_none() -> Vec<i64> {
     std::iter::once(-1).chain(seats()).collect()
+}
+
+/// Every normal rank, which are also the ranks that clues can name.
+fn ranks() -> Vec<i32> {
+    (1..=MAX_RANK).collect()
+}
+
+/// Every rank a card can have, after -1, which means an unknown rank.
+fn ranks_or_unknown() -> Vec<i32> {
+    std::iter::once(-1).chain(catalog_ranks()).collect()
+}
+
+/// Every rank a catalog can name: the normal ranks and the start card's.
+fn catalog_ranks() -> Vec<i32> {
+    ranks().into_iter().chain([START_CARD_RANK]).collect()
+}
+
+/// Every stack size that a variant can set, all smaller than the default of `MAX_RANK`.
+fn explicit_stack_sizes() -> Vec<i32> {
+    (1..MAX_RANK).collect()
+}
+
+/// Every strike number, from the first to the one that ends the game.
+fn strikes() -> Vec<i32> {
+    (1..=MAX_STRIKES).collect()
 }
 
 /// Whether a game can have this many players.
@@ -878,7 +908,7 @@ pub enum HypotheticalAction {
         ignore_negative: bool,
     },
     Strike {
-        #[schemars(range(min = 1, max = 3), extend("enum" = [1, 2, 3]))]
+        #[schemars(range(min = 1, max = MAX_STRIKES), extend("enum" = strikes()))]
         num: i64,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
@@ -1342,9 +1372,9 @@ pub struct ScoreFrequency {
 pub struct PublicVariant {
     pub name: String,
     pub suits: Vec<String>,
-    #[schemars(range(min = 1, max = 7))]
+    #[schemars(range(min = 1, max = MAX_RANK))]
     pub stack_size: u8,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub max_score: u32,
 }
 
@@ -1646,7 +1676,7 @@ pub struct Table {
     pub password_protected: bool,
     pub players: Vec<String>,
     /// The percentage of the maximum score reached, or of a replay watched.
-    #[schemars(range(min = 0, max = 100))]
+    #[schemars(range(min = 0, max = MAX_PROGRESS))]
     pub progress: u8,
     pub running: bool,
     pub shared_replay: bool,
@@ -1844,12 +1874,12 @@ pub struct PlayerIndexOrNone(
     #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
-/// A card's position in the initial deck, which identifies it. Stack bases follow the 60 cards of
-/// the largest deck.
+/// A card's position in the initial deck, which identifies it. Stack bases follow the cards of the
+/// largest deck.
 #[derive(JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "CardOrder"))]
-pub struct CardOrder(#[schemars(range(min = 0, max = 65))] pub i64);
+pub struct CardOrder(#[schemars(range(min = 0, max = MAX_CARD_ORDER))] pub i64);
 
 /// A card's suit, or -1 when the recipient may not see it.
 #[derive(JsonSchema)]
@@ -1862,8 +1892,7 @@ pub struct SuitIndexOrUnknown(
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct RankOrUnknown(
-    #[schemars(range(min = -1, max = START_CARD_RANK), extend("enum" = [-1, 1, 2, 3, 4, 5, START_CARD_RANK]))]
-    pub i64,
+    #[schemars(range(min = -1, max = START_CARD_RANK), extend("enum" = ranks_or_unknown()))] pub i64,
 );
 
 /// A clue's type and value, as the server relays them. `ReceivedClue` describes the values it holds.
@@ -1891,7 +1920,7 @@ pub enum ReceivedClue {
         #[serde(rename = "type")]
         #[schemars(extend("enum" = [ClueType::Rank as i32], "x-enum" = "ClueType"))]
         clue_type: i32,
-        #[schemars(range(min = 1, max = 5), extend("enum" = [1, 2, 3, 4, 5]))]
+        #[schemars(range(min = 1, max = MAX_RANK), extend("enum" = ranks()))]
         value: i32,
     },
     Hidden {
@@ -1967,7 +1996,7 @@ pub enum GameEvent {
         turn: i64,
     },
     Strike {
-        #[schemars(range(min = 1, max = 3), extend("enum" = [1, 2, 3]))]
+        #[schemars(range(min = 1, max = MAX_STRIKES), extend("enum" = strikes()))]
         num: i64,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         turn: i64,
@@ -2083,12 +2112,12 @@ fn is_false(value: &bool) -> bool {
 /// A rank that clues can name.
 #[derive(JsonSchema)]
 #[serde(transparent)]
-pub struct RankClueNumber(#[schemars(extend("enum" = [1, 2, 3, 4, 5]))] pub u8);
+pub struct RankClueNumber(#[schemars(extend("enum" = ranks()))] pub u8);
 
 /// A card rank. 7 is the rank of a stack's start card.
 #[derive(JsonSchema)]
 #[serde(transparent)]
-pub struct CatalogRank(#[schemars(extend("enum" = [1, 2, 3, 4, 5, START_CARD_RANK]))] pub u8);
+pub struct CatalogRank(#[schemars(extend("enum" = catalog_ranks()))] pub u8);
 
 /// An entry in `colors.json`.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -2218,7 +2247,7 @@ pub struct CatalogVariant {
     pub clue_ranks: Option<Vec<u8>>,
     /// The number of cards in each stack. When omitted, 5.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", extend("enum" = [1, 2, 3, 4]))]
+    #[schemars(with = "u8", extend("enum" = explicit_stack_sizes()))]
     pub stack_size: Option<u8>,
     // The following properties are listed in order of how they appear in "variants.md".
     #[serde(default, skip_serializing_if = "Option::is_none")]

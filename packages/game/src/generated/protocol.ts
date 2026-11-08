@@ -212,8 +212,8 @@ export const cardNoteSchema = z.strictObject({
 });
 
 /**
- * A card's position in the initial deck, which identifies it. Stack bases follow the 60 cards of
- * the largest deck.
+ * A card's position in the initial deck, which identifies it. Stack bases follow the cards of the
+ * largest deck.
  */
 export const cardOrderSchema = z
   .number()

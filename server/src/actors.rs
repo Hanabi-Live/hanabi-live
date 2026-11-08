@@ -61,6 +61,15 @@ const TYPING_TIMEOUT: Duration = Duration::from_secs(2);
 const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 /// The longest countdown `/startin` can set, in minutes.
 const MAX_START_IN_MINUTES: f64 = 10.0;
+/// Player clocks hold milliseconds; time options hold seconds.
+const CLOCK_UNITS_PER_SECOND: i32 = 1000;
+/// The time added to each clock of a timed game when a graceful restart drains its table, so that
+/// players do not lose time to the restart.
+const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
+/// The bits of an `f64` mantissa, including its implicit leading bit.
+const FLOAT_MANTISSA_BITS: i32 = f64::MANTISSA_DIGITS.cast_signed();
+/// The power of two of the smallest positive subnormal `f64`.
+const FLOAT_MIN_EXPONENT: i32 = f64::MIN_EXP - FLOAT_MANTISSA_BITS;
 
 /// Whether an untimed game, or a timed game within the clock limits.
 fn valid_timed_options(options: &Options) -> bool {
@@ -1436,7 +1445,7 @@ fn truncate(value: f64) -> i64 {
 }
 #[expect(
     clippy::cast_precision_loss,
-    reason = "the mantissa is rounded to 53 bits before it becomes a float"
+    reason = "the parsed mantissa is rounded to an `f64`'s precision before it becomes a float"
 )]
 fn parse_start_minutes(argument: &str) -> Option<f64> {
     let value = format!("0{argument}");
@@ -1476,13 +1485,16 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
     };
     let bits = &bits[first..];
     let size = i64::try_from(bits.len()).ok()?;
-    if exponent.saturating_add(size) < -1074 {
+    let min_exponent = i64::from(FLOAT_MIN_EXPONENT);
+    if exponent.saturating_add(size) < min_exponent {
         return Some(0.0);
     }
-    if exponent.saturating_add(size) > 1024 {
+    if exponent.saturating_add(size) > i64::from(f64::MAX_EXP) {
         return None;
     }
-    let shift = 0.max(size - 53).max(-1074 - exponent);
+    let shift = 0
+        .max(size - i64::from(FLOAT_MANTISSA_BITS))
+        .max(min_exponent - exponent);
     let kept = usize::try_from((size - shift).max(0)).ok()?;
     let mut rounded = bits[..kept]
         .iter()
@@ -2016,11 +2028,12 @@ impl TableActor {
     fn view(&self) -> TableView {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let running = !matches!(self.table.phase, Phase::Pregame { .. });
+        let max_progress = i32::from(hanabi_protocol::MAX_PROGRESS);
         let progress = if let Some(s) = self.table.game() {
             if let Phase::Replay { replay, .. } = &self.table.phase {
-                (replay.segment * 100 / s.game.turn.max(1)).clamp(0, 100)
+                (replay.segment * max_progress / s.game.turn.max(1)).clamp(0, max_progress)
             } else {
-                s.game.score * 100
+                s.game.score * max_progress
                     / hanabi_engine::get_variant(&self.table.options.variant_name)
                         .expect("variant")
                         .max_score
@@ -2060,7 +2073,7 @@ impl TableActor {
                     .iter()
                     .map(|p| p.name.clone())
                     .collect(),
-                progress: u8::try_from(progress.clamp(0, 100)).unwrap_or(0),
+                progress: u8::try_from(progress.clamp(0, max_progress)).unwrap_or(0),
                 running,
                 shared_replay: replay && self.table.visible,
                 spectators,
@@ -2492,7 +2505,7 @@ impl TableActor {
                                 self.store.check_state()?;ensure!(!self.frozen,"Cannot drain frozen table");
                                 let mut next=self.candidate();
                                 if let Some(s)=next.game_mut()&&s.game.end_condition==EndCondition::InProgress&&s.game.options.timed&&!s.maintenance_applied{
-                                    for clock in &mut s.clocks{*clock+=20_000;}s.maintenance_applied=true;
+                                    for clock in &mut s.clocks{*clock+=MAINTENANCE_CLOCK_ALLOWANCE_SECONDS*i64::from(CLOCK_UNITS_PER_SECOND);}s.maintenance_applied=true;
                                 }
                                 self.persist(next).await
                             }.await;
@@ -3567,7 +3580,7 @@ impl TableActor {
             game,
             clocks: vec![
                 if options.timed {
-                    truncate(options.time_base * 1000.0)
+                    truncate(options.time_base * f64::from(CLOCK_UNITS_PER_SECOND))
                 } else {
                     0
                 };
@@ -3640,7 +3653,7 @@ impl TableActor {
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
         if s.game.options.timed {
-            s.clocks[seat] += s.game.options.time_per_turn * 1000;
+            s.clocks[seat] += s.game.options.time_per_turn * i64::from(CLOCK_UNITS_PER_SECOND);
         }
         let timing = CompletionTiming {
             player_times: s.clocks.clone(),

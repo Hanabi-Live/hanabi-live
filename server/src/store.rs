@@ -6,7 +6,7 @@ use crate::{
     state::{RedisState, StateId},
 };
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SubsecRound, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use serde_json::{Value, json};
 
@@ -55,6 +55,8 @@ const ARCHIVE_CONNECTIONS: u32 = 2;
 const LOBBY_READ_CONNECTIONS: u32 = 2;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
+/// The fractional-second digits that a PostgreSQL timestamp keeps (microseconds).
+const DATABASE_TIMESTAMP_DIGITS: u16 = 6;
 
 /// The namespaces of the transaction advisory locks that serialize writes of the same record.
 #[derive(Clone, Copy)]
@@ -759,7 +761,7 @@ impl Store {
             )?
             .with_timezone(&Utc);
             ensure!(
-                datetime.timestamp_subsec_nanos() % 1000 == 0,
+                datetime.trunc_subsecs(DATABASE_TIMESTAMP_DIGITS) == datetime,
                 "Chat timestamp must use PostgreSQL precision before checkpointing"
             );
             sqlx::query!("INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING", id, entry.user, msg, room, source, datetime).execute(&mut *tx).await?;

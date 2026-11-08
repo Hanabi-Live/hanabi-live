@@ -104,6 +104,8 @@ const SEED_LIST_PARAMETERS: &[&str] = &[
 pub(super) const DEFAULT_PAGE_SIZE: i64 = 10;
 /// The most rows that a page of a public listing can have.
 pub(super) const MAX_PAGE_SIZE: i64 = 100;
+/// The page sizes that a public listing's pager offers.
+pub(super) const PAGER_SIZES: [i64; 4] = [DEFAULT_PAGE_SIZE, 20, 50, MAX_PAGE_SIZE];
 
 /// The page size and offset that a request asks for, or `None` when it names neither.
 fn pagination(q: &Query) -> Result<Option<(i64, i64)>> {

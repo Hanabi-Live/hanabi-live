@@ -62,6 +62,7 @@ fn render(state: &PublicState, template: &str, mut values: Value) -> Result<Resp
     values["domain"] = json!(&*state.config.domain);
     values["isDev"] = json!(state.config.is_dev);
     values["useTLS"] = json!(state.config.use_tls);
+    values["pagerSizes"] = json!(super::PAGER_SIZES);
     Ok(Html(
         state
             .templates

@@ -7,11 +7,9 @@
   <i class="fas fa-forward next"></i>
   <i class="fas fa-fast-forward last"></i>
   <select class="pagesize" title="Select page size">
-    <option value="10">10</option>
-    <option value="20">20</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-    {% if apiPath is undefined %}
+    {% for size in pagerSizes %}
+    <option value="{{ size }}">{{ size }}</option>
+    {% endfor %} {% if apiPath is undefined %}
     <option value="all">All Rows</option>
     {% endif %}
   </select>
