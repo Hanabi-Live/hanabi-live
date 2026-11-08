@@ -179,6 +179,12 @@ async function buildServer() {
     timeout: 300_000,
     maxBuffer: 2 * 1024 * 1024,
   });
+  // The catalog test compares the variants that the rules derive with the game library's.
+  await run("cargo", ["build", "--locked", "--example", "catalog"], {
+    cwd: path.join(ROOT, "server/engine"),
+    timeout: 300_000,
+    maxBuffer: 2 * 1024 * 1024,
+  });
   console.info(
     `Process server built in ${((performance.now() - started) / 1000).toFixed(1)}s`,
   );

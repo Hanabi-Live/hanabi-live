@@ -1927,6 +1927,226 @@ pub struct Init {
     pub pause_queued: bool,
 }
 
+// The game catalog: the checked-in files in `packages/game/src/json`, which the client bundles and
+// the server embeds. Each side derives its own variant model from these records.
+
+/// Catalog flags are either set to true or omitted; an explicit false is rejected.
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
+/// A rank that clues can name.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct RankClueNumber(#[schemars(extend("enum" = [1, 2, 3, 4, 5]))] pub u8);
+
+/// A card rank. 7 is the rank of a stack's start card.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct CatalogRank(#[schemars(extend("enum" = [1, 2, 3, 4, 5, 7]))] pub u8);
+
+/// An entry in `colors.json`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CatalogColor {
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// Defaults to the first letter of the name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1, max = 1))]
+    pub abbreviation: Option<String>,
+    #[schemars(length(min = 1))]
+    pub fill: String,
+    /// Defaults to the fill.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub fill_colorblind: Option<String>,
+}
+
+/// An entry in `suits.json`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CatalogSuit {
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// - Normal suits have a single capital letter, such as "R" for "Red".
+    /// - Special suits have a capital and a lowercase letter, such as "Bk" for "Black".
+    /// - Combination suits have four letters, such as "BrRa" for "Muddy Rainbow".
+    /// - Dark suits have a "D" prefix, such as "DRa" for "Dark Rainbow".
+    /// - Ambiguous suits have an "A" prefix and a number suffix, such as "AR1" for "Tomato".
+    /// - Very Ambiguous suits have a "V" prefix and a number suffix, such as "VR1" for "Tomato VA".
+    /// - Extremely Ambiguous suits have an "E" prefix and a number suffix, such as "EB1" for
+    ///   "Ice EA".
+    /// - Dual-Color suits have a "D" prefix, such as "DRY" for "Tangerine D".
+    #[schemars(length(min = 1))]
+    pub id: String,
+    /// A pip name, "auto", or "none".
+    #[schemars(length(min = 1))]
+    pub pip: String,
+    /// The letter for the suit in card notes. Defaults to the abbreviation of the color with the
+    /// same name, or else the first letter of the name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1, max = 1))]
+    pub abbreviation: Option<String>,
+    /// Whether to create variant combinations based on this suit.
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub create_variants: bool,
+    /// A simplified name to show to players. Defaults to the name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub display_name: Option<String>,
+    /// The background color of the suit's cards.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String", length(min = 1))]
+    pub fill: Option<String>,
+    /// A gradient of colors for the suit's cards.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<String>", length(min = 1), extend("x-readonly" = true))]
+    pub fill_colors: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub one_of_each: bool,
+    /// The colors that touch this suit. When omitted, the color with the suit's name does.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<String>", extend("x-readonly" = true))]
+    pub clue_colors: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub all_clue_colors: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub no_clue_colors: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub all_clue_ranks: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub no_clue_ranks: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub prism: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub inverted: bool,
+}
+
+/// An entry in `variants.json`.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CatalogVariant {
+    /// The legacy numeric ID: "No Variant" is 0, "6 Suits" is 1, and so on. Games store this.
+    #[schemars(range(min = 0, max = 4_294_967_295_u32))]
+    pub id: u32,
+    /// A descriptive ID built from the suit IDs and modifiers, such as "R+Y+G+B+P" for
+    /// "No Variant".
+    #[serde(rename = "newID")]
+    #[schemars(length(min = 1))]
+    pub new_id: String,
+    #[schemars(length(min = 1))]
+    pub name: String,
+    /// Suit names, which may end in " Reversed".
+    #[schemars(length(min = 1), extend("x-readonly" = true))]
+    pub suits: Vec<String>,
+    /// The colors that players can clue. When omitted, the suits' clue colors.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<String>", extend("x-readonly" = true))]
+    pub clue_colors: Option<Vec<String>>,
+    /// The ranks that players can clue. When omitted, 1 through 5.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "Vec<RankClueNumber>", extend("x-readonly" = true))]
+    pub clue_ranks: Option<Vec<u8>>,
+    /// The number of cards in each stack. When omitted, 5.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "u8", extend("enum" = [1, 2, 3, 4]))]
+    pub stack_size: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "CatalogRank")]
+    pub special_rank: Option<u8>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub special_rank_all_clue_colors: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub special_rank_all_clue_ranks: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub special_rank_no_clue_colors: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub special_rank_no_clue_ranks: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub special_rank_deceptive: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "CatalogRank")]
+    pub critical_rank: Option<u8>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub scarce_ones: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub clue_starved: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub color_clues_touch_nothing: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub rank_clues_touch_nothing: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub alternating_clues: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub cow_and_pig: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub duck: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub odds_and_evens: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub synesthesia: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub up_or_down: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub throw_it_in_a_hole: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub funnels: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub chimneys: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub sudoku: bool,
+}
+
+/// An entry in `characters.json`: a detrimental character.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CatalogCharacter {
+    #[schemars(length(min = 1))]
+    pub name: String,
+    #[schemars(range(min = 0, max = 4_294_967_295_u32))]
+    pub id: u32,
+    #[schemars(length(min = 1))]
+    pub description: String,
+    #[schemars(length(min = 1))]
+    pub emoji: String,
+    /// Whether the character's random color or rank is stored with the game.
+    #[serde(default, skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub write_metadata_to_database: bool,
+    /// Excluded from two-player games.
+    #[serde(default, rename = "not2P", skip_serializing_if = "is_false")]
+    #[schemars(extend("const" = true))]
+    pub not_two_player: bool,
+}
+
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
@@ -2039,6 +2259,10 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         GameActionList,
         Init,
         SafeInteger,
+        CatalogColor,
+        CatalogSuit,
+        CatalogVariant,
+        CatalogCharacter,
     );
     schemas
 }

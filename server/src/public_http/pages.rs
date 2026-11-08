@@ -214,10 +214,7 @@ pub(super) async fn page(
                 return Ok(Redirect::permanent(&api).into_response());
             }
             v["title"] = json!("Variant Stats");
-            v["namesTitle"] = json!(format!(
-                "Global Statistics for {}",
-                variant["name"].as_str().expect("name")
-            ));
+            v["namesTitle"] = json!(format!("Global Statistics for {}", variant.name));
             v["apiPath"] = json!(api);
             let mut stats = aggregate(&state, None, Some(id)).await?;
             let row = sqlx::query_as!(
@@ -239,7 +236,7 @@ pub(super) async fn page(
                     .map(|p| number(&row, &format!("best_score{p}")))
                     .collect::<Vec<_>>()
             );
-            stats["maxScore"] = json!(catalog::max_score(variant));
+            stats["maxScore"] = json!(variant.max_score);
             v["stats"] = stats;
         }
         "tag" => {
@@ -460,10 +457,10 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
     let mut rows = Vec::new();
     for variant in catalog::variants() {
         let row = stats
-            .get(&number(variant, "id"))
+            .get(&i64::from(variant.id))
             .cloned()
             .unwrap_or(json!({}));
-        let max = catalog::max_score(variant);
+        let max = i64::from(variant.max_score);
         let mut best = Vec::new();
         for p in 2..=6 {
             let score = number(&row, &format!("best_score{p}"));
@@ -474,7 +471,7 @@ async fn score_summary(state: &PublicState, id: i32) -> Result<Value> {
         }
         let games = number(&row, "num_games");
         rows.push(
-            json!({"id":variant["id"],"name":variant["name"],"maxScore":max,"numGames":games,
+            json!({"id":variant.id,"name":variant.name,"maxScore":max,"numGames":games,
             "bestScores":best}),
         );
     }
@@ -542,15 +539,15 @@ async fn missing(
     let mut rows = Vec::new();
     for p in counts {
         for variant in catalog::variants() {
-            let name = variant["name"].as_str().expect("catalog name");
+            let name = variant.name.as_str();
             if excluded_variants
                 .iter()
                 .any(|term| crate::accounts::normalize_string(name).contains(term))
             {
                 continue;
             }
-            let id = number(variant, "id");
-            let max = catalog::max_score(variant);
+            let id = i64::from(variant.id);
+            let max = i64::from(variant.max_score);
             let mut best = (0, 0);
             for (index, s) in stats.iter().enumerate() {
                 if let Some(row) = s.get(&id) {
@@ -572,12 +569,12 @@ async fn missing(
                 4 | 5 => 4,
                 _ => 3,
             };
-            let stacks = variant["suits"].as_array().expect("suits").len() as i64;
-            let multiplier = if variant["clueStarved"] == true { 2 } else { 1 };
-            let finished = if variant["throwItInAHole"] == true {
+            let stacks = variant.suits.len() as i64;
+            let multiplier = if variant.clue_starved { 2 } else { 1 };
+            let finished = if variant.throw_it_in_a_hole {
                 0
             } else {
-                stacks - p / catalog::stack(variant) - 1
+                stacks - p / i64::from(variant.stack_size) - 1
             };
             let clues = (8 * multiplier + finished + cards - (hand - 1) * p - max) / multiplier;
             let efficiency = max as f64 / clues as f64;

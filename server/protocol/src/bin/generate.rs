@@ -16,6 +16,10 @@ const TYPESCRIPT_ENUMS: &[(&str, bool, &str)] = &[
 /// they reference. The data package does not depend on the game library, so its protocol module
 /// has its own copy.
 const GAME_LIBRARY_SCHEMAS: &[&str] = &[
+    "CatalogCharacter",
+    "CatalogColor",
+    "CatalogSuit",
+    "CatalogVariant",
     "CardNote",
     "CardOrder",
     "GameEvent",
@@ -177,8 +181,8 @@ fn expression(schema: &Value) -> Result<String> {
         format!("z.union([{}])", variants.join(","))
     } else if let Some(value) = schema.get("const") {
         ensure!(
-            value.is_string() || value.is_i64(),
-            "Only string and integer constants are supported"
+            value.is_string() || value.is_i64() || value.is_boolean(),
+            "Only string, integer, and boolean constants are supported"
         );
         format!("z.literal({value})")
     } else if let Some(reference) = schema["$ref"].as_str() {
@@ -664,6 +668,14 @@ mod tests {
         assert!(expression(&json!({"type":"string","pattern":"^safe$"})).is_err());
         assert!(expression(&json!({"type":"integer","format":"int64"})).is_err());
         assert!(expression(&json!({"type":"string","format":"new-format"})).is_err());
+    }
+
+    #[test]
+    fn boolean_constants_become_literals() {
+        assert_eq!(
+            expression(&json!({"type":"boolean","const":true})).unwrap(),
+            "z.literal(true)"
+        );
     }
 
     #[test]

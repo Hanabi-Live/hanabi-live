@@ -1,66 +1,49 @@
+use hanabi_engine::Variant;
 use hanabi_protocol::PublicVariant;
-use serde_json::Value;
-use std::{collections::BTreeMap, sync::LazyLock};
+use std::collections::BTreeMap;
 
 // Metadata only: deck construction and card counts belong to the engine adapter.
-static VARIANTS: LazyLock<Vec<Value>> = LazyLock::new(|| {
-    serde_json::from_str(include_str!(
-        "../../../packages/game/src/json/variants.json"
-    ))
-    .expect("checked-in variant catalog")
-});
-static CHARACTERS: LazyLock<Vec<Value>> = LazyLock::new(|| {
-    serde_json::from_str(include_str!(
-        "../../../packages/game/src/json/characters.json"
-    ))
-    .expect("checked-in character catalog")
-});
-pub(super) fn variants() -> &'static [Value] {
-    &VARIANTS
+pub(super) fn variants() -> &'static [Variant] {
+    hanabi_engine::variants()
 }
-pub(super) fn variant(id: i64) -> Option<&'static Value> {
-    VARIANTS.iter().find(|v| v["id"].as_i64() == Some(id))
-}
-pub(super) fn stack(v: &Value) -> i64 {
-    v["stackSize"].as_i64().unwrap_or(5)
-}
-pub(super) fn max_score(v: &Value) -> i64 {
-    stack(v) * v["suits"].as_array().expect("catalog suits").len() as i64
+pub(super) fn variant(id: i64) -> Option<&'static Variant> {
+    let id = u32::try_from(id).ok()?;
+    hanabi_engine::get_variant_by_id(id).ok()
 }
 pub(super) fn character(id: i64) -> Option<&'static str> {
-    CHARACTERS
+    hanabi_engine::characters()
         .iter()
-        .find(|v| v["id"].as_i64() == Some(id))
-        .and_then(|v| v["name"].as_str())
+        .find(|character| i64::from(character.id) == id)
+        .map(|character| character.name.as_str())
 }
 pub(super) fn names() -> BTreeMap<String, String> {
-    VARIANTS
+    variants()
         .iter()
-        .map(|v| {
-            (
-                v["id"].to_string(),
-                v["name"].as_str().expect("variant name").into(),
-            )
-        })
+        .map(|v| (v.id.to_string(), v.name.clone()))
         .collect()
 }
 pub(super) fn metadata() -> BTreeMap<String, PublicVariant> {
-    let text = |value: &Value| value.as_str().expect("catalog text").to_owned();
-    VARIANTS
+    variants()
         .iter()
         .map(|v| {
             let variant = PublicVariant {
-                name: text(&v["name"]),
-                suits: v["suits"]
-                    .as_array()
-                    .expect("catalog suits")
+                name: v.name.clone(),
+                // The catalog names each reversed suit by its suit's name with this suffix.
+                suits: v
+                    .suits
                     .iter()
-                    .map(text)
+                    .map(|suit| {
+                        if suit.reversed {
+                            format!("{} Reversed", suit.name)
+                        } else {
+                            suit.name.clone()
+                        }
+                    })
                     .collect(),
-                stack_size: u8::try_from(stack(v)).expect("catalog stack size"),
-                max_score: u32::try_from(max_score(v)).expect("catalog max score"),
+                stack_size: u8::try_from(v.stack_size).expect("catalog stack size"),
+                max_score: u32::try_from(v.max_score).expect("catalog max score"),
             };
-            (v["id"].to_string(), variant)
+            (v.id.to_string(), variant)
         })
         .collect()
 }

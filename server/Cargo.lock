@@ -896,6 +896,7 @@ name = "hanabi_engine"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "hanabi_protocol",
  "serde",
  "serde_json",
 ]

@@ -1,14 +1,14 @@
 # Wire contracts
 
-This crate owns the migrated JSON payloads, not database records, actors, or
-game state. It has no dependencies on those implementations. WebSocket framing
+This crate owns every JSON payload exchanged between the server and its clients
+(WebSocket messages and HTTP API bodies) and the format of the game catalog in
+`packages/game/src/json`. It does not own database records, actors, or game
+state, and has no dependencies on those implementations. WebSocket framing
 remains `command JSON`; authorization, normalization, HTML escaping, and
 business rules remain in the server.
 
-The pilot covers chat and private history, relationship requests, table
-join/leave/leadership/variant selection, start/restart/spectating, gameplay
-table commands, and chat/table lifecycle notifications. Existing public
-TypeScript interfaces remain available through `@hanabi-live/data`.
+Clients use only the generated schemas and the types inferred from them. Do not
+write TypeScript interfaces for these payloads.
 
 ## Changing a contract
 
@@ -27,7 +27,7 @@ TypeScript interfaces remain available through `@hanabi-live/data`.
    `packages/game/src/generated/protocol.ts` with the source changes.
 
 Ordinary client builds use the committed output and do not need Rust. Generation
-builds only this small crate and formats one file. Full lint and CI's second
+builds only this small crate and formats its output. Full lint and CI's second
 lint shard run `generate-protocol.sh --check`. The crate shares the server's
 Cargo workspace, lockfile, and dependency cache, so generation and runtime use
 the same schema-library versions. Neither generation nor these contract tests
@@ -61,6 +61,14 @@ Unknown schema features fail generation rather than silently losing validation.
 The fixtures were checked against both handwritten parsers before adoption and
 are now consumed by Rust and Bun tests. Rust process and browser tests also
 exercise the generated client validators against actual server traffic.
+
+## Game catalog
+
+The `Catalog*` DTOs describe the catalog files. A flag is either `true` or
+omitted. The engine and the game library each derive their variant model from
+these entries. When you add a catalog property, update both derivations: the
+engine's `catalog.rs` and the game library's `variantsInit.ts` or
+`suitsInit.ts`. `bun run test` compares every variant that the two derive.
 
 ## Stored state
 

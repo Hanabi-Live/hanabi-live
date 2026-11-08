@@ -95,6 +95,7 @@
       "name": "@hanabi-live/testing",
       "devDependencies": {
         "@hanabi-live/data": "workspace:*",
+        "@hanabi-live/game": "workspace:*",
         "@types/bun": "catalog:",
         "@types/ws": "catalog:",
         "complete-common": "catalog:",

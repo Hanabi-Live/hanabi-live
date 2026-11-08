@@ -1,39 +1,9 @@
-import type { BasicRank, Rank } from "../types/Rank";
-import type { RankClueNumber } from "../types/RankClueNumber";
+import type { z } from "zod";
+import type { catalogVariantSchema } from "../generated/protocol";
 
-/**
- * This is a basic description of a variant that will turned into a `VariantJSON` object later on.
- */
-export interface VariantDescription {
-  readonly name: string;
-  readonly suits: readonly string[];
-
-  clueColors?: readonly string[];
-  clueRanks?: readonly RankClueNumber[];
-  stackSize?: BasicRank;
-
-  // The following properties are listed in order of how they appear in "variants.md".
-
-  specialRank?: Rank;
-  specialRankAllClueColors?: boolean;
-  specialRankAllClueRanks?: boolean;
-  specialRankNoClueColors?: boolean;
-  specialRankNoClueRanks?: boolean;
-  specialRankDeceptive?: boolean;
-  criticalRank?: Rank;
-  scarceOnes?: boolean;
-
-  clueStarved?: boolean;
-  colorCluesTouchNothing?: boolean;
-  rankCluesTouchNothing?: boolean;
-  alternatingClues?: boolean;
-  cowAndPig?: boolean;
-  duck?: boolean;
-  oddsAndEvens?: boolean;
-  synesthesia?: boolean;
-  upOrDown?: boolean;
-  throwItInAHole?: boolean;
-  funnels?: boolean;
-  chimneys?: boolean;
-  sudoku?: boolean;
-}
+/** A variant before it is assigned its IDs and written to "variants.json". */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface VariantDescription extends Omit<
+  z.infer<typeof catalogVariantSchema>,
+  "id" | "newID"
+> {}

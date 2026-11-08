@@ -20,6 +20,70 @@ const endConditionEnum: ServerEnum<
 
 export const clueTypeSchema = z.enum(clueTypeEnum);
 export const endConditionSchema = z.enum(endConditionEnum);
+export const catalogCharacterSchema = z.strictObject({
+  description: z.string().min(1),
+  emoji: z.string().min(1),
+  id: z.number().int().min(0).max(4_294_967_295),
+  name: z.string().min(1),
+  not2P: z.literal(true).optional(),
+  writeMetadataToDatabase: z.literal(true).optional(),
+});
+export const catalogColorSchema = z.strictObject({
+  abbreviation: z.string().min(1).max(1).optional(),
+  fill: z.string().min(1),
+  fillColorblind: z.string().min(1).optional(),
+  name: z.string().min(1),
+});
+export const catalogSuitSchema = z.strictObject({
+  abbreviation: z.string().min(1).max(1).optional(),
+  allClueColors: z.literal(true).optional(),
+  allClueRanks: z.literal(true).optional(),
+  clueColors: z.array(z.string()).readonly().optional(),
+  createVariants: z.literal(true).optional(),
+  displayName: z.string().min(1).optional(),
+  fill: z.string().min(1).optional(),
+  fillColors: z.array(z.string()).min(1).readonly().optional(),
+  id: z.string().min(1),
+  inverted: z.literal(true).optional(),
+  name: z.string().min(1),
+  noClueColors: z.literal(true).optional(),
+  noClueRanks: z.literal(true).optional(),
+  oneOfEach: z.literal(true).optional(),
+  pip: z.string().min(1),
+  prism: z.literal(true).optional(),
+});
+const catalogRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
+const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
+export const catalogVariantSchema = z.strictObject({
+  alternatingClues: z.literal(true).optional(),
+  chimneys: z.literal(true).optional(),
+  clueColors: z.array(z.string()).readonly().optional(),
+  clueRanks: z.array(rankClueNumberSchema).readonly().optional(),
+  clueStarved: z.literal(true).optional(),
+  colorCluesTouchNothing: z.literal(true).optional(),
+  cowAndPig: z.literal(true).optional(),
+  criticalRank: catalogRankSchema.optional(),
+  duck: z.literal(true).optional(),
+  funnels: z.literal(true).optional(),
+  id: z.number().int().min(0).max(4_294_967_295),
+  name: z.string().min(1),
+  newID: z.string().min(1),
+  oddsAndEvens: z.literal(true).optional(),
+  rankCluesTouchNothing: z.literal(true).optional(),
+  scarceOnes: z.literal(true).optional(),
+  specialRank: catalogRankSchema.optional(),
+  specialRankAllClueColors: z.literal(true).optional(),
+  specialRankAllClueRanks: z.literal(true).optional(),
+  specialRankDeceptive: z.literal(true).optional(),
+  specialRankNoClueColors: z.literal(true).optional(),
+  specialRankNoClueRanks: z.literal(true).optional(),
+  stackSize: z.literal([1, 2, 3, 4]).optional(),
+  sudoku: z.literal(true).optional(),
+  suits: z.array(z.string()).min(1).readonly(),
+  synesthesia: z.literal(true).optional(),
+  throwItInAHole: z.literal(true).optional(),
+  upOrDown: z.literal(true).optional(),
+});
 export const cardNoteSchema = z.strictObject({
   isSpectator: z.boolean(),
   name: z.string(),

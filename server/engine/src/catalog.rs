@@ -1,10 +1,15 @@
 use anyhow::{Result, anyhow};
-use serde::{Deserialize, Serialize};
+use hanabi_protocol::{CatalogColor, CatalogSuit, CatalogVariant};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::{collections::HashMap, sync::OnceLock};
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+pub use hanabi_protocol::CatalogCharacter as Character;
+
+/// A suit as the rules use it. The game library derives the same values in `suitsInit.ts`.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Suit {
     pub name: String,
     pub clue_colors: Vec<String>,
@@ -17,8 +22,11 @@ pub struct Suit {
     pub inverted: bool,
     pub reversed: bool,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+
+/// A variant as the rules use it. The game library derives the same values in `variantsInit.ts`;
+/// the `catalog` example prints these so that its tests can compare them.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Variant {
     pub id: u32,
     #[serde(rename = "newID")]
@@ -53,133 +61,150 @@ pub struct Variant {
     pub sudoku: bool,
     pub has_inverted: bool,
 }
-impl Default for Variant {
-    fn default() -> Self {
-        Self {
-            id: 0,
-            new_id: String::new(),
-            name: String::new(),
-            suits: vec![],
-            ranks: vec![1, 2, 3, 4, 5],
-            clue_colors: vec![],
-            clue_ranks: vec![1, 2, 3, 4, 5],
-            stack_size: 5,
-            max_score: 0,
-            special_rank: None,
-            special_rank_all_clue_colors: false,
-            special_rank_all_clue_ranks: false,
-            special_rank_no_clue_colors: false,
-            special_rank_no_clue_ranks: false,
-            special_rank_deceptive: false,
-            critical_rank: None,
-            scarce_ones: false,
-            clue_starved: false,
-            color_clues_touch_nothing: false,
-            rank_clues_touch_nothing: false,
-            alternating_clues: false,
-            cow_and_pig: false,
-            duck: false,
-            odds_and_evens: false,
-            synesthesia: false,
-            up_or_down: false,
-            throw_it_in_a_hole: false,
-            funnels: false,
-            chimneys: false,
-            sudoku: false,
-            has_inverted: false,
-        }
-    }
-}
 impl Variant {
     pub fn has_reversed_suits(&self) -> bool {
         self.up_or_down || self.suits.iter().any(|s| s.reversed)
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Character {
-    pub name: String,
-    pub id: u32,
-    #[serde(default, rename = "not2P")]
-    pub not_two_player: bool,
-    pub description: String,
+/// Decodes a checked-in catalog file, validating each entry against its wire contract.
+fn catalog<T: hanabi_protocol::JsonSchema + DeserializeOwned>(file: &str, json: &str) -> Vec<T> {
+    let entries: Vec<Value> = serde_json::from_str(json).expect("checked-in catalog JSON");
+    assert!(!entries.is_empty(), "{file} is empty");
+    entries
+        .iter()
+        .map(|entry| {
+            hanabi_protocol::decode(entry).unwrap_or_else(|error| panic!("{file}: {error:#}"))
+        })
+        .collect()
 }
 
 pub fn characters() -> &'static [Character] {
     static DATA: OnceLock<Vec<Character>> = OnceLock::new();
     DATA.get_or_init(|| {
-        serde_json::from_str(include_str!(
-            "../../../packages/game/src/json/characters.json"
-        ))
-        .expect("checked-in characters")
+        catalog(
+            "characters.json",
+            include_str!("../../../packages/game/src/json/characters.json"),
+        )
     })
+}
+
+fn suit(entry: CatalogSuit, colors: &[CatalogColor]) -> Suit {
+    let clue_colors = entry.clue_colors.unwrap_or_else(|| {
+        if entry.all_clue_colors || entry.no_clue_colors || entry.prism || entry.name == "Unknown" {
+            vec![]
+        } else {
+            assert!(
+                colors.iter().any(|color| color.name == entry.name),
+                "The {} suit has no clue colors and no color of the same name",
+                entry.name
+            );
+            vec![entry.name.clone()]
+        }
+    });
+    Suit {
+        name: entry.name,
+        clue_colors,
+        one_of_each: entry.one_of_each,
+        all_clue_colors: entry.all_clue_colors,
+        no_clue_colors: entry.no_clue_colors,
+        all_clue_ranks: entry.all_clue_ranks,
+        no_clue_ranks: entry.no_clue_ranks,
+        prism: entry.prism,
+        inverted: entry.inverted,
+        reversed: false,
+    }
+}
+
+fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
+    let variant_suits: Vec<Suit> = entry
+        .suits
+        .iter()
+        .map(|name| {
+            suits
+                .get(name)
+                .unwrap_or_else(|| panic!("The {} variant has an unknown suit: {name}", entry.name))
+                .clone()
+        })
+        .collect();
+    let clue_colors = entry.clue_colors.unwrap_or_else(|| {
+        let mut colors = Vec::new();
+        for suit in variant_suits.iter().filter(|suit| !suit.all_clue_colors) {
+            for color in &suit.clue_colors {
+                if !colors.contains(color) {
+                    colors.push(color.clone());
+                }
+            }
+        }
+        colors
+    });
+    let stack_size = entry.stack_size.map_or(5, i32::from);
+    let mut ranks: Vec<i32> = (1..=stack_size).collect();
+    if entry.up_or_down {
+        ranks.push(7);
+    }
+    Variant {
+        id: entry.id,
+        new_id: entry.new_id,
+        name: entry.name,
+        max_score: variant_suits.len() as i32 * stack_size,
+        has_inverted: variant_suits.iter().any(|suit| suit.inverted),
+        suits: variant_suits,
+        ranks,
+        clue_colors,
+        clue_ranks: entry.clue_ranks.map_or_else(
+            || vec![1, 2, 3, 4, 5],
+            |ranks| ranks.into_iter().map(i32::from).collect(),
+        ),
+        stack_size,
+        special_rank: entry.special_rank.map(i32::from),
+        special_rank_all_clue_colors: entry.special_rank_all_clue_colors,
+        special_rank_all_clue_ranks: entry.special_rank_all_clue_ranks,
+        special_rank_no_clue_colors: entry.special_rank_no_clue_colors,
+        special_rank_no_clue_ranks: entry.special_rank_no_clue_ranks,
+        special_rank_deceptive: entry.special_rank_deceptive,
+        critical_rank: entry.critical_rank.map(i32::from),
+        scarce_ones: entry.scarce_ones,
+        clue_starved: entry.clue_starved,
+        color_clues_touch_nothing: entry.color_clues_touch_nothing,
+        rank_clues_touch_nothing: entry.rank_clues_touch_nothing,
+        alternating_clues: entry.alternating_clues,
+        cow_and_pig: entry.cow_and_pig,
+        duck: entry.duck,
+        odds_and_evens: entry.odds_and_evens,
+        synesthesia: entry.synesthesia,
+        up_or_down: entry.up_or_down,
+        throw_it_in_a_hole: entry.throw_it_in_a_hole,
+        funnels: entry.funnels,
+        chimneys: entry.chimneys,
+        sudoku: entry.sudoku,
+    }
 }
 
 pub fn variants() -> &'static [Variant] {
     static DATA: OnceLock<Vec<Variant>> = OnceLock::new();
     DATA.get_or_init(|| {
-        let colors: Vec<Value> =
-            serde_json::from_str(include_str!("../../../packages/game/src/json/colors.json"))
-                .expect("checked-in colors");
-        let raw: Vec<Value> =
-            serde_json::from_str(include_str!("../../../packages/game/src/json/suits.json"))
-                .expect("checked-in suits");
+        let colors: Vec<CatalogColor> = catalog(
+            "colors.json",
+            include_str!("../../../packages/game/src/json/colors.json"),
+        );
         let mut suits = HashMap::new();
-        for value in raw {
-            let mut suit: Suit = serde_json::from_value(value.clone()).expect("checked-in suit");
-            if value.get("clueColors").is_none()
-                && !suit.all_clue_colors
-                && !suit.no_clue_colors
-                && !suit.prism
-                && suit.name != "Unknown"
-            {
-                assert!(colors.iter().any(|c| c["name"] == suit.name));
-                suit.clue_colors.push(suit.name.clone());
-            }
+        for entry in catalog::<CatalogSuit>(
+            "suits.json",
+            include_str!("../../../packages/game/src/json/suits.json"),
+        ) {
+            let mut suit = suit(entry, &colors);
             suits.insert(suit.name.clone(), suit.clone());
             suit.reversed = true;
             suits.insert(format!("{} Reversed", suit.name), suit);
         }
-        let raw: Vec<Value> = serde_json::from_str(include_str!(
-            "../../../packages/game/src/json/variants.json"
-        ))
-        .expect("checked-in variants");
-        raw.into_iter()
-            .map(|mut value| {
-                let suit_names = value
-                    .as_object_mut()
-                    .expect("variant")
-                    .remove("suits")
-                    .expect("variant suits");
-                let mut variant: Variant =
-                    serde_json::from_value(value.clone()).expect("checked-in variant");
-                variant.suits = suit_names
-                    .as_array()
-                    .expect("suits")
-                    .iter()
-                    .map(|name| suits[name.as_str().expect("suit name")].clone())
-                    .collect();
-                if value.get("clueColors").is_none() {
-                    for suit in &variant.suits {
-                        if !suit.all_clue_colors {
-                            for color in &suit.clue_colors {
-                                if !variant.clue_colors.contains(color) {
-                                    variant.clue_colors.push(color.clone());
-                                }
-                            }
-                        }
-                    }
-                }
-                variant.ranks = (1..=variant.stack_size).collect();
-                if variant.up_or_down {
-                    variant.ranks.push(7);
-                }
-                variant.max_score = variant.suits.len() as i32 * variant.stack_size;
-                variant.has_inverted = variant.suits.iter().any(|s| s.inverted);
-                variant
-            })
-            .collect()
+        catalog::<CatalogVariant>(
+            "variants.json",
+            include_str!("../../../packages/game/src/json/variants.json"),
+        )
+        .into_iter()
+        .map(|entry| variant(entry, &suits))
+        .collect()
     })
 }
 

@@ -1,5 +1,6 @@
 import type { Pip } from "../enums/Pip";
 import type { BasicRank, Rank } from "../types/Rank";
+import type { CatalogFlags } from "./CatalogFlags";
 import type { Color } from "./Color";
 import type { Suit } from "./Suit";
 import type { VariantJSON } from "./VariantJSON";
@@ -7,10 +8,12 @@ import type { VariantJSON } from "./VariantJSON";
 /**
  * - `suits` and `clueColors` are object arrays instead of string arrays.
  * - `specialRank` and `criticalRank` are allowed to be undefined.
+ * - `stackSize` can be the default of 5, which the catalog omits.
  */
-type VariantJSONModified = Readonly<
-  Required<
-    Omit<VariantJSON, "suits" | "clueColors" | "specialRank" | "criticalRank">
+type VariantJSONModified = CatalogFlags<
+  Omit<
+    VariantJSON,
+    "suits" | "clueColors" | "specialRank" | "criticalRank" | "stackSize"
   >
 >;
 

@@ -62,7 +62,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
         if cards.len() > (state.config.deck_size)(variant_id as i32)? {
             return Err(invalid());
         }
-        let suits = variant["suits"].as_array().expect("catalog suits").len();
+        let suits = variant.suits.len();
         if cards.iter().any(|card| card.suit_index >= suits) {
             return Err(invalid());
         }
@@ -79,11 +79,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     };
     let deck: Vec<hanabi_protocol::ReplayCard> = serde_json::from_value(deck)?;
     let deck_len = deck.len();
-    let mut notes =
-        vec![
-            vec![String::new(); deck_len + variant["suits"].as_array().expect("suits").len()];
-            players.len()
-        ];
+    let mut notes = vec![vec![String::new(); deck_len + variant.suits.len()]; players.len()];
     for note in archive.notes {
         if let (Ok(seat), Ok(order)) = (usize::try_from(note.seat), usize::try_from(note.order))
             && let Some(cell) = notes.get_mut(seat).and_then(|n| n.get_mut(order))
@@ -98,7 +94,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     }
     let flag = |enabled: bool| enabled.then_some(true);
     let options = hanabi_protocol::ReplayOptions {
-        variant: (variant_id != 0).then(|| variant["name"].as_str().unwrap_or_default().into()),
+        variant: (variant_id != 0).then(|| variant.name.clone()),
         starting_player: (row.starting_player != 0).then_some(i64::from(row.starting_player)),
         timed: flag(row.timed),
         time_base: row.timed.then_some(i64::from(row.time_base)),
