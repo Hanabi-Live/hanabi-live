@@ -1,5 +1,6 @@
 export * from "./chatSymbols";
 export * from "./constants";
+export * from "./enums/ActionType";
 export * from "./enums/SoundMove";
 export * from "./enums/Status";
 export * from "./functions/errors";

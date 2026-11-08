@@ -1,3 +1,4 @@
+import { ActionType } from "@hanabi-live/data";
 import { describe, expect, test } from "vitest";
 import { Connection } from "./Connection";
 
@@ -52,17 +53,29 @@ describe("WebSocket resume safety", () => {
       const initial = new Connection("ws://localhost/ws", false);
       initial.send("chat", { room: "lobby", msg: "allowed" });
       expect(sockets[1]?.sent).toHaveLength(1);
-      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      initial.send("action", {
+        tableID: 123,
+        type: ActionType.Play,
+        target: 1,
+      });
       expect(sockets[1]?.sent[1]).toBe(
         'action {"tableID":123,"type":0,"target":1}',
       );
       initial.setReady(false);
-      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      initial.send("action", {
+        tableID: 123,
+        type: ActionType.Play,
+        target: 1,
+      });
       expect(sockets[1]?.sent).toHaveLength(2);
       initial.send("getGameInfo2", { tableID: 123 });
       expect(sockets[1]?.sent).toHaveLength(3);
       initial.setReady(true);
-      initial.send("action", { tableID: 123, type: 0, target: 1 });
+      initial.send("action", {
+        tableID: 123,
+        type: ActionType.Play,
+        target: 1,
+      });
       expect(sockets[1]?.sent).toHaveLength(4);
     } finally {
       globalThis.WebSocket = originalWebSocket;

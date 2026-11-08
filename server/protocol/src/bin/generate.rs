@@ -5,6 +5,8 @@ use std::collections::{BTreeMap, BTreeSet};
 /// TypeScript enums that wire integers may name with `x-enum`, whether the game library owns them,
 /// and the module in that package that exports them.
 const TYPESCRIPT_ENUMS: &[(&str, bool, &str)] = &[
+    ("ActionType", false, "../enums/ActionType"),
+    ("ClueType", true, "../enums/ClueType"),
     ("EndCondition", true, "../enums/EndCondition"),
     ("SoundMove", false, "../enums/SoundMove"),
     ("Status", false, "../enums/Status"),

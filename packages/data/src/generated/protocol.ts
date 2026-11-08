@@ -1,5 +1,6 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
+import { ActionType } from "../enums/ActionType";
 import { SoundMove } from "../enums/SoundMove";
 import { Status } from "../enums/Status";
 
@@ -12,6 +13,7 @@ type ServerEnum<
     ? Enum
     : never
   : never;
+const actionTypeEnum: ServerEnum<typeof ActionType, 0 | 1 | 2 | 3> = ActionType;
 const soundMoveEnum: ServerEnum<typeof SoundMove, 0 | 1 | 2> = SoundMove;
 const statusEnum: ServerEnum<typeof Status, 0 | 1 | 2 | 3 | 4 | 5> = Status;
 
@@ -24,7 +26,7 @@ export const tableIdSchema = z
 export const actionRequestSchema = z.strictObject({
   tableID: tableIdSchema,
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  type: z.literal([0, 1, 2, 3]),
+  type: z.enum(actionTypeEnum),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
 export const apiErrorSchema = z.strictObject({

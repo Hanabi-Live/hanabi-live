@@ -1,9 +1,9 @@
+import { ActionType } from "@hanabi-live/data";
 import type { PlayerIndex } from "@hanabi-live/game";
 import { isAtMaxClueTokens } from "@hanabi-live/game";
 import Konva from "konva";
 import * as modals from "../../modals";
 import * as sounds from "../../sounds";
-import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";
 import type { CardLayout } from "./CardLayout";
 import type { HanabiCard } from "./HanabiCard";

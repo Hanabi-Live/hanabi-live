@@ -1,4 +1,4 @@
-import { ActionType } from "../../../types/ActionType";
+import { ActionType } from "@hanabi-live/data";
 import type { ClientAction } from "../../../types/ClientAction";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";

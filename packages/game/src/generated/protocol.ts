@@ -1,5 +1,6 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
+import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 
 /** A TypeScript enum, or `never` unless it has exactly the server's values. */
@@ -11,11 +12,13 @@ type ServerEnum<
     ? Enum
     : never
   : never;
+const clueTypeEnum: ServerEnum<typeof ClueType, 0 | 1> = ClueType;
 const endConditionEnum: ServerEnum<
   typeof EndCondition,
   0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 > = EndCondition;
 
+export const clueTypeSchema = z.enum(clueTypeEnum);
 export const endConditionSchema = z.enum(endConditionEnum);
 export const gameOptionsSchema = z
   .strictObject({

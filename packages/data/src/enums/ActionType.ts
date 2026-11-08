@@ -4,5 +4,4 @@ export enum ActionType {
   Discard,
   ColorClue,
   RankClue,
-  GameOver,
 }

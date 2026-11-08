@@ -1,5 +1,6 @@
 // Functions for handling all of the keyboard shortcuts.
 
+import { ActionType } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getAdjustedClueTokens,
@@ -16,7 +17,6 @@ import {
   getHTMLElement,
   getHTMLInputElement,
 } from "../../utils";
-import { ActionType } from "../types/ActionType";
 import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
