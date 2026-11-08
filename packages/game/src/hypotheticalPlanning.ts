@@ -66,6 +66,30 @@ export interface HypotheticalCardInput extends HypotheticalCardView {
 }
 
 /** Reproduces HanabiCard's identity and possibility semantics using only game data. */
+/**
+ * While playing, a player's note identifies a card in a hypothetical when the note and the clues
+ * leave only one possibility.
+ */
+export function getIdentityFromNote(
+  note: CardNote,
+  state: CardState,
+  playing: boolean,
+): CardIdentity | undefined {
+  if (!playing) {
+    return undefined;
+  }
+
+  const possibilities = possibleCardsFromNoteAndClues(note, state);
+  if (possibilities.length !== 1) {
+    return undefined;
+  }
+
+  const possibility = possibilities[0];
+  assertDefined(possibility, "Expected one note and clue possibility.");
+  const [suitIndex, rank] = possibility;
+  return { suitIndex, rank };
+}
+
 export function getHypotheticalCard(
   input: HypotheticalCardInput,
 ): HypotheticalCard {
@@ -80,24 +104,25 @@ export function getHypotheticalCard(
     visibleRank,
   } = input;
 
+  // A blank morph only hides the card (for example, a card drawn during the hypothetical), so the
+  // player's own note still identifies it.
+  const blankMorph =
+    morphedIdentity?.suitIndex === null && morphedIdentity.rank === null;
+  const noteIdentity = getIdentityFromNote(note, state, playing);
   let morphedCardIdentity: CardIdentity;
-  if (morphedIdentity === undefined) {
-    const noteAndCluePossibilities = possibleCardsFromNoteAndClues(note, state);
-    if (playing && noteAndCluePossibilities.length === 1) {
-      const possibility = noteAndCluePossibilities[0];
-      assertDefined(possibility, "Expected one note and clue possibility.");
-      const [suitIndex, rank] = possibility;
-      morphedCardIdentity = { suitIndex, rank };
-    } else if (isStackBase) {
-      morphedCardIdentity = {
-        suitIndex: state.suitIndex,
-        rank: state.rank,
-      };
-    } else {
-      morphedCardIdentity = identity;
-    }
-  } else {
+  if (morphedIdentity !== undefined && !blankMorph) {
     morphedCardIdentity = morphedIdentity;
+  } else if (noteIdentity !== undefined) {
+    morphedCardIdentity = noteIdentity;
+  } else if (morphedIdentity !== undefined) {
+    morphedCardIdentity = morphedIdentity;
+  } else if (isStackBase) {
+    morphedCardIdentity = {
+      suitIndex: state.suitIndex,
+      rank: state.rank,
+    };
+  } else {
+    morphedCardIdentity = identity;
   }
 
   if (

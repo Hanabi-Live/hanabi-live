@@ -781,3 +781,54 @@ describe("hypothetical plays on a morphed stack base", () => {
     ).toBe(false);
   });
 });
+
+function playWithNote(
+  morphedIdentity: CardIdentity | undefined,
+  playing: boolean,
+): readonly GameAction[] | null {
+  // Our unknown card 0 has a note saying it is a red 1.
+  const base = makeContext();
+  return planHypotheticalAction(
+    { type: "play", order: 0 as CardOrder },
+    {
+      ...base,
+      playing,
+      cardIdentities: [
+        { suitIndex: null, rank: null },
+        ...base.cardIdentities.slice(1),
+      ],
+      cardViews: [
+        view(base.gameState.deck[0]!, null, null),
+        ...base.cardViews.slice(1),
+      ],
+      notes: [
+        { ...emptyNote, possibilities: [[0, 1]] },
+        ...base.notes.slice(1),
+      ],
+      morphedIdentities: morphedIdentity === undefined ? [] : [morphedIdentity],
+    },
+  );
+}
+
+describe("hypothetical plays of hidden cards with a note", () => {
+  const hidden = { suitIndex: null, rank: null };
+
+  test("uses the note for a card hidden by a blank morph while playing", () => {
+    expect(playWithNote(hidden, true)?.[0]).toMatchObject({
+      type: "play",
+      order: 0,
+      suitIndex: 0,
+      rank: 1,
+    });
+  });
+
+  test("ignores notes outside of an ongoing game", () => {
+    expect(playWithNote(hidden, false)).toBeNull();
+  });
+
+  test("prefers a morph to a real identity over the note", () => {
+    expect(
+      playWithNote({ suitIndex: 1 as SuitIndex, rank: 3 }, true)?.[0],
+    ).toMatchObject({ suitIndex: 1, rank: 3 });
+  });
+});
