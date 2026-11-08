@@ -1,5 +1,5 @@
 import type { NumPlayers, PlayerIndex } from "@hanabi-live/game";
-import { getCardsPerHand, getCharacter } from "@hanabi-live/game";
+import { MAX_PLAYERS, getCardsPerHand, getCharacter } from "@hanabi-live/game";
 import { eRange } from "complete-common";
 import Konva from "konva";
 import { CardLayout } from "./CardLayout";
@@ -430,7 +430,7 @@ export function drawHands(winW: number, winH: number): void {
         offsetY: (handValues.h * paddingH) / 2,
       };
 
-      if (numPlayers === 6) {
+      if (numPlayers === MAX_PLAYERS) {
         // Extend only the bottom edge.
         turnRectValues.h += 0.005;
       }

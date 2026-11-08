@@ -24,6 +24,32 @@ const POSITIVE_PIP_HIGHLIGHT_COLOR = "rgba(238, 188, 29, 0.3)";
 /** The black pip is filled off-black so that its black border stays visible. */
 const BLACK_PIP_FILL = "#212121";
 
+/** The width of the black border around a pip, in the pip's own units. */
+const PIP_BORDER_WIDTH = {
+  PLAIN: 3,
+
+  /** Pips drawn with a shadow get a thicker border. */
+  SHADOWED: 5,
+
+  /** The gray pips on an unknown card get a thicker border still. */
+  SHADOWED_CUSTOM_FILL: 8,
+} as const;
+
+/** The radius of the glow behind a pip that a positive clue has confirmed, in the pip's units. */
+const POSITIVE_PIP_HIGHLIGHT_RADIUS = 100;
+
+/**
+ * A pip that repeats an earlier suit's pip shrinks by this factor and sits inside a ring, so that
+ * the two suits can be told apart.
+ */
+const DUPLICATE_PIP_SCALE = 0.8;
+
+/** The inner and outer radii of the ring around a duplicate pip, in the pip's units. */
+const DUPLICATE_PIP_RING_RADIUS = {
+  INNER: 80,
+  OUTER: 90,
+} as const;
+
 /**
  * Returns where a suit's pip sits in the ring of suit pips, relative to the middle of the card and
  * before scaling. The suits go counterclockwise from the top.
@@ -53,7 +79,7 @@ export function drawPip(
   if (highlight === true) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(3, 5, 100, 0, FULL_CIRCLE_RADIANS);
+    ctx.arc(3, 5, POSITIVE_PIP_HIGHLIGHT_RADIUS, 0, FULL_CIRCLE_RADIANS);
     ctx.fillStyle = POSITIVE_PIP_HIGHLIGHT_COLOR;
     ctx.fill();
     ctx.stroke();
@@ -84,13 +110,14 @@ export function drawPip(
   const previousPips = variant.pips.slice(0, suitIndex);
   const isDuplicatePip = previousPips.includes(pip);
   if (isDuplicatePip) {
-    ctx.scale(0.8, 0.8);
+    ctx.scale(DUPLICATE_PIP_SCALE, DUPLICATE_PIP_SCALE);
 
+    const { INNER, OUTER } = DUPLICATE_PIP_RING_RADIUS;
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(0, 0, 80, 80, 0, 0, FULL_CIRCLE_RADIANS);
-    ctx.moveTo(90, 0);
-    ctx.ellipse(0, 0, 90, 90, 0, 0, FULL_CIRCLE_RADIANS);
+    ctx.ellipse(0, 0, INNER, INNER, 0, 0, FULL_CIRCLE_RADIANS);
+    ctx.moveTo(OUTER, 0);
+    ctx.ellipse(0, 0, OUTER, OUTER, 0, 0, FULL_CIRCLE_RADIANS);
 
     if (hasCustomFill) {
       ctx.fillStyle = customFill!;
@@ -146,10 +173,14 @@ export function drawPip(
 
   // Draw a black border around the shape.
   if (shadow === true) {
-    ctx.lineWidth = lineWidth ?? (hasCustomFill ? 8 : 5);
+    ctx.lineWidth =
+      lineWidth
+      ?? (hasCustomFill
+        ? PIP_BORDER_WIDTH.SHADOWED_CUSTOM_FILL
+        : PIP_BORDER_WIDTH.SHADOWED);
     ctx.shadowColor = NO_SHADOW_COLOR;
   } else {
-    ctx.lineWidth = 3;
+    ctx.lineWidth = PIP_BORDER_WIDTH.PLAIN;
   }
   ctx.stroke();
 }

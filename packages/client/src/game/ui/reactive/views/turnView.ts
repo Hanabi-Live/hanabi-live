@@ -1,4 +1,4 @@
-import { ClueType, getAdjustedClueTokens } from "@hanabi-live/game";
+import { ClueType, getClueCost } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import { DISABLED_OPACITY } from "../../constants";
@@ -43,8 +43,7 @@ export function shouldShowTurnUIChanged(shouldShow: boolean): void {
 export function shouldIndicateNoClues(state: State): boolean {
   return (
     shouldShowTurnUI(state)
-    && state.visibleState!.clueTokens
-      < getAdjustedClueTokens(1, globals.variant)
+    && state.visibleState!.clueTokens < getClueCost(globals.variant)
   );
 }
 

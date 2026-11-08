@@ -63,6 +63,11 @@ export function getAdjustedClueTokens(
   return variant.clueStarved ? clueTokens * 2 : clueTokens;
 }
 
+/** The clue tokens that giving a clue costs. Clue-starved variants count each token twice. */
+export function getClueCost(variant: Variant): number {
+  return getAdjustedClueTokens(1, variant);
+}
+
 /** See the documentation for the `getAdjustedClueTokens` function. */
 export function getUnadjustedClueTokens(
   clueTokensAdjusted: number,

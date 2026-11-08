@@ -79,15 +79,9 @@ export function init(): void {
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked.
   $("#createTableTimed").on("change", () => {
     if ($("#createTableTimed").prop("checked") === true) {
-      $("#create-game-timed-option-1").show();
-      $("#create-game-timed-option-2").show();
-      $("#create-game-timed-option-3").show();
-      $("#create-game-timed-option-4").show();
+      $(".create-game-timed-option").show();
     } else {
-      $("#create-game-timed-option-1").hide();
-      $("#create-game-timed-option-2").hide();
-      $("#create-game-timed-option-3").hide();
-      $("#create-game-timed-option-4").hide();
+      $(".create-game-timed-option").hide();
     }
 
     // Remember the new setting.

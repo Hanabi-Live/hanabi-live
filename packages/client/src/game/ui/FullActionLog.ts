@@ -12,6 +12,9 @@ import { FitText } from "./controls/FitText";
 /** The opacity of the log's background, which mostly hides the board behind it. */
 const BACKGROUND_OPACITY = 0.9;
 
+/** The lines that the log shows. Its font size is set so that they fill its height. */
+const MAX_LINES = 38;
+
 export class FullActionLog extends Konva.Group {
   buffer: Array<{ turnNum: number; text: string }> = [];
   logText: MultiFitText | null = null;
@@ -21,7 +24,6 @@ export class FullActionLog extends Konva.Group {
   private playerLogNumbers: Tuple<MultiFitText | null, NumPlayers>;
   private needsRefresh = false;
   private readonly numbersOptions: ContainerConfig;
-  private readonly maxLines = 38;
   private readonly textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
@@ -59,7 +61,7 @@ export class FullActionLog extends Konva.Group {
     // and below.
     const margin = 0.01 * winH;
     const textHeight = height - 2 * margin;
-    const fontSize = 0.025 * winH;
+    const fontSize = textHeight / MAX_LINES;
     const numbersX = 0.01;
     const numbersWidth = 0.03;
 
@@ -179,22 +181,19 @@ export class FullActionLog extends Konva.Group {
   }
 
   private makeLog() {
-    this.logText = new MultiFitText(this.textOptions, this.maxLines);
+    this.logText = new MultiFitText(this.textOptions, MAX_LINES);
     this.add(this.logText as unknown as Konva.Group);
-    this.logNumbers = new MultiFitText(this.numbersOptions, this.maxLines);
+    this.logNumbers = new MultiFitText(this.numbersOptions, MAX_LINES);
     this.add(this.logNumbers as unknown as Konva.Group);
   }
 
   private makePlayerLog(i: number) {
-    const playerLog = new MultiFitText(this.textOptions, this.maxLines);
+    const playerLog = new MultiFitText(this.textOptions, MAX_LINES);
     playerLog.hide();
     this.playerLogs[i] = playerLog;
     this.add(playerLog as unknown as Konva.Group);
 
-    const playerLogNumber = new MultiFitText(
-      this.numbersOptions,
-      this.maxLines,
-    );
+    const playerLogNumber = new MultiFitText(this.numbersOptions, MAX_LINES);
     playerLogNumber.hide();
     this.playerLogNumbers[i] = playerLogNumber;
     this.add(playerLogNumber as unknown as Konva.Group);

@@ -6,8 +6,21 @@ import Konva from "konva";
 import type { ClueEntry } from "./ClueEntry";
 import { globals } from "./UIGlobals";
 
+/** The height of each clue entry, as a fraction of the stage height. */
+export const CLUE_ENTRY_HEIGHT = 0.017;
+
+/** The gap below each clue entry, as a fraction of the stage height. */
+const CLUE_ENTRY_GAP = 0.001;
+
 export class ClueLog extends Konva.Group {
-  readonly maxLength = 27; // Just enough to fill the parent rectangle
+  /** The most clue entries that fit in the log. */
+  get maxLength(): number {
+    const stageHeight = globals.stage.height();
+    const gap = CLUE_ENTRY_GAP * stageHeight;
+    return Math.floor(
+      (this.height() + gap) / (CLUE_ENTRY_HEIGHT * stageHeight + gap),
+    );
+  }
 
   addClue(clue: ClueEntry): void {
     this.add(clue as unknown as Konva.Group);
@@ -34,7 +47,7 @@ export class ClueLog extends Konva.Group {
     for (const i of eRange(this.children.length)) {
       const node = this.children[i]!;
       node.y(y);
-      y += node.height() + 0.001 * globals.stage.height();
+      y += node.height() + CLUE_ENTRY_GAP * globals.stage.height();
     }
   }
 

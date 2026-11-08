@@ -9,7 +9,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   START_CARD_RANK,
-  getAdjustedClueTokens,
+  getClueCost,
   getColorForPrismCard,
   isAtMaxClueTokens,
   isCardInPlayerHand,
@@ -206,10 +206,7 @@ function clickRight(card: HanabiCard, event: MouseEvent) {
 }
 
 function isClueTokenAvailable(): boolean {
-  return (
-    globals.state.ongoingGame.clueTokens
-    >= getAdjustedClueTokens(1, globals.variant)
-  );
+  return globals.state.ongoingGame.clueTokens >= getClueCost(globals.variant);
 }
 
 /** Buzz and flash the clue count when the clue tokens do not allow an action. */

@@ -2,6 +2,7 @@ import type { StateClue } from "@hanabi-live/game";
 import { msgClueToClue, NO_VALUE } from "@hanabi-live/game";
 import equal from "fast-deep-equal";
 import { ClueEntry } from "../../ClueEntry";
+import { CLUE_ENTRY_HEIGHT } from "../../ClueLog";
 import { globals } from "../../UIGlobals";
 import * as arrows from "../../arrows";
 import { getCardOrStackBase } from "../../getCardOrStackBase";
@@ -86,7 +87,7 @@ function updateLog(clues: readonly StateClue[]) {
 
     const entry = new ClueEntry(clue, {
       width: clueLog.width(),
-      height: 0.017 * globals.stage.height(),
+      height: CLUE_ENTRY_HEIGHT * globals.stage.height(),
       listening: false,
     });
     if (i < clueLog.children.length) {

@@ -5,10 +5,8 @@ use crate::{
     types::reject,
 };
 use anyhow::Result;
-use hanabi_protocol::{MAX_RANK, NO_VALUE};
+use hanabi_protocol::{MAX_RANK, NO_VALUE, PANICKY_MAX_CLUES};
 
-/// The clues at or below which a Panicky player must discard twice.
-const PANICKY_MAX_CLUES: i32 = 4;
 /// The clues that a Miser needs before giving one.
 const MISER_MIN_CLUES: i32 = 4;
 /// The clues that a Genius needs before giving one.

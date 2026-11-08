@@ -49,6 +49,9 @@ pub const EVEN_RANK_CLUE: i32 = 2;
 pub const MAX_CLUES: i32 = 8;
 /// The strikes that end a game.
 pub const MAX_STRIKES: i32 = 3;
+/// The clues at or below which a Panicky player must discard twice, before a clue-starved variant
+/// doubles their count.
+pub const PANICKY_MAX_CLUES: i32 = 4;
 /// The most cards a deck can have.
 pub const MAX_DECK_SIZE: usize = 60;
 /// The most actions a game can record.

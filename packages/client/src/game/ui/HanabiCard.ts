@@ -15,12 +15,14 @@ import {
   CardStatus,
   DEFAULT_CARD_RANKS,
   PipState,
+  START_CARD_RANK,
   StackDirection,
   UNKNOWN_SUIT_NAME,
   canCardPossiblyBeFromEmpathy,
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
+  getColorForPrismCard,
   getIdentityFromNote,
   getInitialCardState,
   getSuit,
@@ -69,6 +71,24 @@ const UNKNOWN_SUIT = getSuit(UNKNOWN_SUIT_NAME);
 
 /** How long a card takes to rise, fall, or move its shadow. */
 const RAISE_DURATION_SECONDS = 0.05;
+
+/** How far a card with positive clues on it is raised, as a fraction of the card's height. */
+const CLUED_CARD_RAISE = 0.1;
+
+/**
+ * How far a dragged card is lifted up and to the left, as a fraction of the card's width and
+ * height.
+ */
+const DRAGGED_CARD_LIFT = 0.02;
+
+/**
+ * Where the arrow of a reversed suit sits on a card, as a fraction of the card's height: beside the
+ * rank pips when they are shown, or near the bottom otherwise.
+ */
+const REVERSED_ARROW_Y = {
+  MIDDLE: 0.5,
+  BOTTOM: 0.79,
+} as const;
 
 /** Represents a single card. It has a `LayoutChild` parent. */
 export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
@@ -718,11 +738,11 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   private readonly setArrowMiddleRight = () => {
-    this.arrow!.y(0.5 * CARD_H);
+    this.arrow!.y(REVERSED_ARROW_Y.MIDDLE * CARD_H);
   };
 
   private readonly setArrowBottomRight = () => {
-    this.arrow!.y(0.79 * CARD_H);
+    this.arrow!.y(REVERSED_ARROW_Y.BOTTOM * CARD_H);
   };
 
   setStatus(): void {
@@ -852,9 +872,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // Cards are raised when:
     // - they have one or more positive clues on them
     // - they are being dragged
-    const baseOffsetY = (this.shouldBeRaisedFromClues() ? 0.6 : 0.5) * CARD_H;
-    const offsetX = (this.dragging ? 0.52 : 0.5) * CARD_W;
-    const offsetY = baseOffsetY + (this.dragging ? 0.02 * CARD_H : 0);
+    const raise = this.shouldBeRaisedFromClues() ? CLUED_CARD_RAISE : 0;
+    const lift = this.dragging ? DRAGGED_CARD_LIFT : 0;
+    const offsetX = (0.5 + lift) * CARD_W;
+    const offsetY = (0.5 + raise + lift) * CARD_H;
     if (globals.animateFast) {
       this.offsetX(offsetX);
       this.offsetY(offsetY);
@@ -1297,24 +1318,14 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     }
 
     if (suit.prism) {
-      const cards: string[] = [];
-
-      if (variant.upOrDown) {
-        const finalClueColor = variant.clueColors.at(-1);
-        if (finalClueColor !== undefined) {
-          const colorHTML = getColorHTML(finalClueColor);
-          cards.push(`START is ${colorHTML}`);
-        }
-      }
-
-      for (const rank of DEFAULT_CARD_RANKS) {
-        const prismClueColorIndex = (rank - 1) % variant.clueColors.length;
-        const prismClueColor = variant.clueColors[prismClueColorIndex];
-        if (prismClueColor !== undefined) {
-          const colorHTML = getColorHTML(prismClueColor);
-          cards.push(`${rank} is ${colorHTML}`);
-        }
-      }
+      const ranks = variant.upOrDown
+        ? [START_CARD_RANK, ...DEFAULT_CARD_RANKS]
+        : DEFAULT_CARD_RANKS;
+      const cards = ranks.map((rank) => {
+        const rankName = rank === START_CARD_RANK ? "START" : rank.toString();
+        const colorHTML = getColorHTML(getColorForPrismCard(variant, rank));
+        return `${rankName} is ${colorHTML}`;
+      });
 
       lines.push(`Colors: ${cards.join(", ")}`);
     }

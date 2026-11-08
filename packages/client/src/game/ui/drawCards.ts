@@ -7,6 +7,8 @@ import {
   OMNI_SUIT_NAME,
   START_CARD_RANK,
   UNKNOWN_SUIT_NAME,
+  getColorForPrismCard,
+  getColorForRank,
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
@@ -648,9 +650,7 @@ function getSuitStyle(
       if (rank === STACK_BASE_RANK || suit.noClueRanks) {
         return suit.fill;
       }
-      const prismColorIndex = (rank - 1) % variant.clueColors.length;
-
-      return variant.clueColors[prismColorIndex]!.fill;
+      return getColorForRank(variant, rank)!.fill;
     }
 
     if (rank === variant.specialRank) {
@@ -719,13 +719,7 @@ function getSuitStyle(
       return suit.fill;
     }
 
-    let prismColorIndex = (rank - 1) % variant.clueColors.length;
-    if (rank === START_CARD_RANK) {
-      // "START" cards count as rank 0, so they are touched by the final color.
-      prismColorIndex = variant.clueColors.length - 1;
-    }
-
-    const fillToMixHex = variant.clueColors[prismColorIndex]!.fill;
+    const fillToMixHex = getColorForPrismCard(variant, rank).fill;
     const fillToMixRGB = hexToRGB(fillToMixHex);
     if (fillToMixRGB === undefined) {
       return suit.fill;

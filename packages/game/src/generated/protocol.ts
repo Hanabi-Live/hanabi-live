@@ -7,11 +7,13 @@ export const NO_VALUE = -1;
 export const DEFAULT_VARIANT_NAME = "No Variant";
 export const MAX_SUITS = 6;
 export const MAX_DECK_SIZE = 60;
+export const MIN_RANK = 1;
 export const START_CARD_RANK = 7;
 export const ODD_RANK_CLUE = 1;
 export const EVEN_RANK_CLUE = 2;
 export const MAX_CLUES = 8;
 export const MAX_STRIKES = 3;
+export const PANICKY_MAX_CLUES = 4;
 
 /**
  * The kind of a clue in a game event. Actions name clues with `ActionType` instead.

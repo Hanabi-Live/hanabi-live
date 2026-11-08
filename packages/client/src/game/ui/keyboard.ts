@@ -3,7 +3,7 @@
 import { ActionType } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
-  getAdjustedClueTokens,
+  getClueCost,
   getTotalCardsInDeck,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
@@ -331,8 +331,8 @@ function getNormalGameplayHotkeyFunction(
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
 
-  const oneClueToken = getAdjustedClueTokens(1, globals.variant);
-  const isClueAvailable = ongoingGameState.clueTokens >= oneClueToken;
+  const isClueAvailable =
+    ongoingGameState.clueTokens >= getClueCost(globals.variant);
   if (isClueAvailable) {
     const hotkeyFunction = hotkeyClueMap.get(keyCode);
     if (hotkeyFunction !== undefined) {

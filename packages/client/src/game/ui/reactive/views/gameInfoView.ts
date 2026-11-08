@@ -1,7 +1,7 @@
 import type { PlayerIndex, StateStrike } from "@hanabi-live/game";
 import {
   MAX_STRIKES,
-  getAdjustedClueTokens,
+  getClueCost,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
@@ -173,10 +173,8 @@ export function onClueTokensChanged(clueTokens: number): void {
   globals.elements.cluesNumberLabel?.text(cluesTokensText);
 
   if (!globals.lobby.settings.realLifeMode) {
-    const noCluesAvailable =
-      clueTokens < getAdjustedClueTokens(1, globals.variant);
-    const oneClueAvailable =
-      clueTokens === getAdjustedClueTokens(1, globals.variant);
+    const noCluesAvailable = clueTokens < getClueCost(globals.variant);
+    const oneClueAvailable = clueTokens === getClueCost(globals.variant);
     const maxCluesAvailable = isAtMaxClueTokens(clueTokens, globals.variant);
 
     let fill: string;

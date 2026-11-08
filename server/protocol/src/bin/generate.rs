@@ -685,6 +685,7 @@ fn game_library_constants() -> String {
         ),
         ("MAX_SUITS", hanabi_protocol::MAX_SUITS.to_string()),
         ("MAX_DECK_SIZE", hanabi_protocol::MAX_DECK_SIZE.to_string()),
+        ("MIN_RANK", hanabi_protocol::MIN_RANK.to_string()),
         (
             "START_CARD_RANK",
             hanabi_protocol::START_CARD_RANK.to_string(),
@@ -696,6 +697,10 @@ fn game_library_constants() -> String {
         ),
         ("MAX_CLUES", hanabi_protocol::MAX_CLUES.to_string()),
         ("MAX_STRIKES", hanabi_protocol::MAX_STRIKES.to_string()),
+        (
+            "PANICKY_MAX_CLUES",
+            hanabi_protocol::PANICKY_MAX_CLUES.to_string(),
+        ),
     ])
 }
 

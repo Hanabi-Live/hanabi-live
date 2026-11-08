@@ -767,7 +767,7 @@ function fillDiscordEmotes(message: string) {
   return message.replaceAll(
     /&lt;:(\w+):(\d+)&gt;/gu,
     (_fullMatch, name: string, id: string) =>
-      `<img src="https://cdn.discordapp.com/emojis/${id}.png" title="${name}" height="28">`,
+      `<img class="chat-emote" src="https://cdn.discordapp.com/emojis/${id}.png" title="${name}" />`,
   );
 }
 

@@ -2,8 +2,8 @@ import { ActionType } from "@hanabi-live/data";
 import type { Clue } from "@hanabi-live/game";
 import {
   ClueType,
-  getAdjustedClueTokens,
   getCharacterNameForPlayer,
+  getClueCost,
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
@@ -190,7 +190,7 @@ function shouldGiveClue() {
     currentPlayerIndex === ourPlayerIndex
     || globals.state.replay.hypothetical !== null;
   const clueTokenAvailable =
-    ongoingGameState.clueTokens >= getAdjustedClueTokens(1, globals.variant);
+    ongoingGameState.clueTokens >= getClueCost(globals.variant);
   const recentlyClicked =
     Date.now() - globals.UIClickTime <= SECOND_IN_MILLISECONDS;
 

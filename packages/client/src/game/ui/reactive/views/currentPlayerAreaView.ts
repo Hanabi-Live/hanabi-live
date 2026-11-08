@@ -1,6 +1,6 @@
 import type { PlayerIndex } from "@hanabi-live/game";
 import {
-  getAdjustedClueTokens,
+  getClueCost,
   getUnadjustedClueTokens,
   isAtMaxClueTokens,
   isHandLocked,
@@ -94,7 +94,7 @@ export function onChanged(
     );
     const cluesTokensText = unadjustedClueTokens.toString();
 
-    if (clueTokens < getAdjustedClueTokens(1, globals.variant)) {
+    if (clueTokens < getClueCost(globals.variant)) {
       specialText = `(cannot clue; ${cluesTokensText} clues left)`;
       text3.fill(NO_CLUES_COLOR);
     } else if (isAtMaxClueTokens(clueTokens, globals.variant)) {

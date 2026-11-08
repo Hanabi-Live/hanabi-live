@@ -5,6 +5,7 @@ import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
 import {
   ClueType,
   EVEN_RANK_CLUE,
+  MIN_RANK,
   ODD_RANK_CLUE,
   START_CARD_RANK,
 } from "../generated/protocol";
@@ -132,8 +133,7 @@ export function isCardTouchedByClueColor(
   if (variant.synesthesia && !cardSuit.noClueRanks) {
     // A card matches if it would match a prism card, in addition to normal color matches. This
     // applies even to suits that color clues do not touch, such as White.
-    const prismColorIndex = (cardRank - 1) % variant.clueColors.length;
-    const color = variant.clueColors[prismColorIndex];
+    const color = getColorForRank(variant, cardRank);
     if (color !== undefined && clueColor.name === color.name) {
       return true;
     }
@@ -168,15 +168,24 @@ export function isCardTouchedByClueColor(
   return suitClueColorNames.includes(clueColor.name);
 }
 
-/** The color that touches a prism card is contingent upon the card's rank. */
-export function getColorForPrismCard(variant: Variant, rank: Rank): Color {
-  // "START" cards count as rank 0, so they are touched by the final color.
-  const prismColorIndex =
-    rank === START_CARD_RANK
-      ? variant.clueColors.length - 1
-      : (rank - 1) % variant.clueColors.length;
+/**
+ * The clue color that a rank contributes in Synesthesia variants and that touches a prism card of
+ * the rank: the ranks cycle through the variant's clue colors in order.
+ */
+export function getColorForRank(
+  variant: Variant,
+  rank: number,
+): Color | undefined {
+  return variant.clueColors[(rank - MIN_RANK) % variant.clueColors.length];
+}
 
-  const prismColor = variant.clueColors[prismColorIndex];
+/** The color that touches a prism card is contingent upon the card's rank. */
+export function getColorForPrismCard(variant: Variant, rank: number): Color {
+  // "START" cards count as rank 0, so they are touched by the final color.
+  const prismColor =
+    rank === START_CARD_RANK
+      ? variant.clueColors.at(-1)
+      : getColorForRank(variant, rank);
   assertDefined(
     prismColor,
     `Failed to get the color corresponding to a prism card of rank ${rank} for variant: ${variant.name}`,

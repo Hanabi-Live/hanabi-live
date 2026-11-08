@@ -1,5 +1,5 @@
 import { ActionType } from "@hanabi-live/data";
-import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi-live/game";
+import { getClueCost, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications";
 import type { ClientAction } from "../types/ClientAction";
 import { globals } from "./UIGlobals";
@@ -45,7 +45,7 @@ function handlePremove() {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
       // Prevent pre-cluing if there is not a clue available.
-      if (clueTokens < getAdjustedClueTokens(1, globals.variant)) {
+      if (clueTokens < getClueCost(globals.variant)) {
         return;
       }
 

@@ -19,10 +19,7 @@ import {
   isCardNeededForMaxScore,
 } from "../rules/card";
 import { isCardClued } from "../rules/cardState";
-import {
-  getAdjustedClueTokens,
-  getNewClueTokensAfterAction,
-} from "../rules/clueTokens";
+import { getClueCost, getNewClueTokensAfterAction } from "../rules/clueTokens";
 import { isInitialDealFinished } from "../rules/deck";
 import { getStackDirection, getStackStartRank } from "../rules/playStacks";
 import {
@@ -78,7 +75,7 @@ function gameReducerFunction(
      * ```
      */
     case "clue": {
-      gameState.clueTokens -= getAdjustedClueTokens(1, variant);
+      gameState.clueTokens -= getClueCost(variant);
 
       assertNotNull(
         gameState.turn.segment,
