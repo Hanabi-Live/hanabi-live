@@ -22,6 +22,10 @@ pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
 pub const MIN_PLAYERS: usize = 2;
 /// The most players a game can have, which also bounds every per-player list.
 pub const MAX_PLAYERS: usize = 6;
+/// The highest seat index, which also bounds a starting player.
+pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
+/// The player limit of a table whose creator did not choose one.
+pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
 /// The highest normal rank, which is also a suit's stack size unless the variant sets one.
@@ -38,6 +42,24 @@ pub const MAX_DECK_SIZE: usize = 60;
 pub const MAX_GAME_ACTIONS: usize = 512;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
+/// The longest starting clock a timed game can have, in seconds (one week).
+pub const MAX_TIME_BASE_SECONDS: i32 = 7 * 24 * 60 * 60;
+/// The most time a timed game can add each turn, in seconds (one day).
+pub const MAX_TIME_PER_TURN_SECONDS: i64 = 24 * 60 * 60;
+/// The loudest volume setting.
+pub const MAX_VOLUME: u8 = 100;
+
+/// Every seat index, for schemas that list them.
+fn seats() -> Vec<i64> {
+    (0..=MAX_SEAT)
+        .filter_map(|seat| i64::try_from(seat).ok())
+        .collect()
+}
+
+/// Every seat index after -1, which means no seat.
+fn seats_or_none() -> Vec<i64> {
+    std::iter::once(-1).chain(seats()).collect()
+}
 
 /// Whether a game can have this many players.
 pub fn is_player_count<T: TryInto<usize>>(count: T) -> bool {
@@ -323,8 +345,8 @@ pub struct TagSearchRequest {
     pub room: String,
 }
 
-fn five() -> i64 {
-    5
+fn default_max_players() -> i64 {
+    i64::from(DEFAULT_MAX_PLAYERS)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -337,7 +359,7 @@ pub struct TableCreateRequest {
     pub options: GameOptions,
     #[serde(default)]
     pub password: String,
-    #[serde(default = "five")]
+    #[serde(default = "default_max_players")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub max_players: i64,
     #[serde(default)]
@@ -359,7 +381,7 @@ pub struct TableUpdateRequest {
     pub options: GameOptions,
     #[serde(default)]
     pub password: String,
-    #[serde(default = "five")]
+    #[serde(default = "default_max_players")]
     #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
     pub max_players: i64,
     #[serde(default)]
@@ -537,7 +559,7 @@ pub struct ReplayOptions {
     #[schemars(with = "String")]
     pub variant: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = 0, max = 5))]
+    #[schemars(with = "i64", range(min = 0, max = MAX_SEAT))]
     pub starting_player: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
@@ -1420,7 +1442,7 @@ pub struct Settings {
     pub reverse_hands: bool,
     pub style_numbers: bool,
     pub show_timer_in_untimed: bool,
-    #[schemars(range(min = 0, max = 100))]
+    #[schemars(range(min = 0, max = MAX_VOLUME))]
     pub volume: u8,
     pub speedrun_preplay: bool,
     pub speedrun_mode: bool,
@@ -1428,9 +1450,9 @@ pub struct Settings {
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
-    #[schemars(range(min = 0, max = 86_400))]
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / 60))]
     pub create_table_time_base_minutes: f64,
-    #[schemars(range(min = 0, max = 604_800))]
+    #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub create_table_time_per_turn_seconds: i32,
     pub create_table_speedrun: bool,
     pub create_table_card_cycle: bool,
@@ -1472,7 +1494,7 @@ impl Default for Settings {
             create_table_one_less_card: false,
             create_table_all_or_nothing: false,
             create_table_detrimental_characters: false,
-            create_table_max_players: 5,
+            create_table_max_players: DEFAULT_MAX_PLAYERS,
         }
     }
 }
@@ -1515,7 +1537,7 @@ pub struct Welcome {
     pub discon_spectating_table: Option<TableId>,
     /// The seat the user was shadowing at that table, or -1 for none.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i8", range(min = -1, max = 5))]
+    #[schemars(with = "i8", range(min = -1, max = MAX_SEAT))]
     pub discon_shadowing_seat: Option<i8>,
 }
 
@@ -1527,7 +1549,7 @@ pub struct Welcome {
 pub struct GameOptions {
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
+    #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))]
     pub starting_player: u8,
     #[schemars(length(min = 1))]
     pub variant_name: String,
@@ -1586,7 +1608,7 @@ pub struct Spectator {
     #[schemars(length(min = 1))]
     pub name: String,
     /// The seat being shadowed, or -1 for none.
-    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))]
+    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))]
     pub shadowing_player_index: i8,
     /// Present only while shadowing a seat.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1730,7 +1752,7 @@ pub struct PregameStats {
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PregamePlayer {
-    #[schemars(range(min = 0, max = 5))]
+    #[schemars(range(min = 0, max = MAX_SEAT))]
     pub index: u8,
     pub name: String,
     /// Whether this player is the recipient.
@@ -1812,14 +1834,14 @@ pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct PlayerIndex(
-    #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))] pub i64,
+    #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))] pub i64,
 );
 
 /// A seat, or -1 for no player.
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct PlayerIndexOrNone(
-    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))] pub i64,
+    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
 /// A card's position in the initial deck, which identifies it. Stack bases follow the 60 cards of
@@ -1833,7 +1855,7 @@ pub struct CardOrder(#[schemars(range(min = 0, max = 65))] pub i64);
 #[derive(JsonSchema)]
 #[serde(transparent)]
 pub struct SuitIndexOrUnknown(
-    #[schemars(range(min = -1, max = 5), extend("enum" = [-1, 0, 1, 2, 3, 4, 5]))] pub i64,
+    #[schemars(range(min = -1, max = MAX_SEAT), extend("enum" = seats_or_none()))] pub i64,
 );
 
 /// A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
@@ -1862,7 +1884,7 @@ pub enum ReceivedClue {
         #[serde(rename = "type")]
         #[schemars(extend("enum" = [ClueType::Color as i32], "x-enum" = "ClueType"))]
         clue_type: i32,
-        #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
+        #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))]
         value: i32,
     },
     Rank {

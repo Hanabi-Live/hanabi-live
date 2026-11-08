@@ -10,6 +10,8 @@ pub fn account_name(id: i32) -> String {
     format!("{NAME}.{id}")
 }
 const MAX_AGE: i64 = 365 * 24 * 60 * 60;
+/// The longest encoded cookie we decode, in bytes.
+const MAX_ENCODED_LENGTH: usize = 4096;
 
 struct Reader<'a>(&'a [u8]);
 impl<'a> Reader<'a> {
@@ -87,7 +89,7 @@ fn decode64(input: &[u8]) -> Result<Vec<u8>> {
 }
 
 pub fn decode(encoded: &str, secret: &str, now: i64) -> Result<i32> {
-    ensure!(encoded.len() <= 4096, "Oversized cookie");
+    ensure!(encoded.len() <= MAX_ENCODED_LENGTH, "Oversized cookie");
     let envelope = decode64(encoded.as_bytes())?;
     let separators: Vec<_> = envelope
         .iter()

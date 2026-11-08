@@ -921,12 +921,12 @@ export const settingsSchema = z
     createTableOneExtraCard: z.boolean().default(false),
     createTableOneLessCard: z.boolean().default(false),
     createTableSpeedrun: z.boolean().default(false),
-    createTableTimeBaseMinutes: z.number().min(0).max(86_400).default(2),
+    createTableTimeBaseMinutes: z.number().min(0).max(10_080).default(2),
     createTableTimePerTurnSeconds: z
       .number()
       .int()
       .min(0)
-      .max(604_800)
+      .max(86_400)
       .default(20),
     createTableTimed: z.boolean().default(false),
     createTableVariant: z.string().min(1).default("No Variant"),

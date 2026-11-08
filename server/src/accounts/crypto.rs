@@ -19,6 +19,10 @@ const PASSWORD_PASSES: u32 = 3;
 const PASSWORD_LANES: u32 = 4;
 const PASSWORD_KEY_BYTES: usize = 32;
 const PASSWORD_SALT_BYTES: usize = 16;
+/// The random bytes in an identity token.
+const IDENTITY_TOKEN_BYTES: usize = 96;
+/// How long an identity token stays valid, in hours.
+const IDENTITY_TOKEN_LIFETIME_HOURS: i64 = 24;
 static HASH_ADMISSION: LazyLock<HashAdmission> = LazyLock::new(|| HashAdmission::new(4, 32));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -173,12 +177,12 @@ pub async fn regenerate_token(
     id: i32,
     ip: &str,
 ) -> Result<IdentityToken> {
-    let mut bytes = [0; 96];
+    let mut bytes = [0; IDENTITY_TOKEN_BYTES];
     rand::rngs::SysRng.try_fill_bytes(&mut bytes)?;
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(ip, token.clone()).await?;
-    let expires_at = Utc::now() + Duration::hours(24);
+    let expires_at = Utc::now() + Duration::hours(IDENTITY_TOKEN_LIFETIME_HOURS);
     sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)
          VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET

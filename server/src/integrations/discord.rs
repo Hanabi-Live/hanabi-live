@@ -42,6 +42,8 @@ const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 const RECONNECT_DELAY: Duration = Duration::from_secs(5);
 /// The gateway events queued before the gateway reader waits.
 const EVENT_QUEUE: usize = 1000;
+/// The gateway heartbeat intervals we accept, in milliseconds.
+const HEARTBEAT_INTERVAL_MS: RangeInclusive<u64> = 1000..=120_000;
 /// How long resolving Discord mentions in a message may take before the raw text is used.
 const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
 /// The gateway intents we identify with: guilds, guild messages, direct messages, and message
@@ -252,7 +254,10 @@ impl Transport for NativeTransport {
                     let interval = hello["d"]["heartbeat_interval"]
                         .as_u64()
                         .context("Missing heartbeat")?;
-                    ensure!((1000..=120_000).contains(&interval), "Invalid heartbeat");
+                    ensure!(
+                        HEARTBEAT_INTERVAL_MS.contains(&interval),
+                        "Invalid heartbeat"
+                    );
                     let identify = if session.is_empty() {
                         json!({"op":opcode::IDENTIFY,"d":{"token":self.token,"intents":INTENTS,
                             "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})

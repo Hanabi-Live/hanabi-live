@@ -6,8 +6,7 @@ use sqlx::PgPool;
 /// user changed; everything else comes from `Default`.
 pub use hanabi_protocol::Settings;
 
-/// The loudest volume setting.
-const MAX_VOLUME: i64 = 100;
+use hanabi_protocol::MAX_VOLUME;
 
 /// Every setting with its default value, keyed by its client-facing name.
 pub(super) fn defaults() -> serde_json::Map<String, Value> {
@@ -82,22 +81,16 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
             let Some(number) = value.parse::<f64>().ok().filter(|n| n.is_finite()) else {
                 bail!("The setting of \"{name}\" must be an float64.");
             };
-            ensure!(
-                number > 0.0 && number <= 86400.0,
-                "The setting of \"{name}\" is too large."
-            );
+            ensure!(number > 0.0, "The setting of \"{name}\" must be positive.");
             Value::from(number)
         }
         Value::Number(_) => {
             let Ok(number) = value.parse::<i64>() else {
                 bail!("The setting of \"{name}\" must be an integer.");
             };
+            ensure!(number >= 0, "The setting of \"{name}\" cannot be negative.");
             ensure!(
-                (0..=604_800).contains(&number),
-                "The setting of \"{name}\" is too large."
-            );
-            ensure!(
-                name != "volume" || number <= MAX_VOLUME,
+                name != "volume" || number <= i64::from(MAX_VOLUME),
                 "The setting of \"volume\" must be between 0 and {MAX_VOLUME}."
             );
             Value::from(number)
@@ -105,7 +98,8 @@ pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
         Value::String(_) => Value::String(value.to_owned()),
         _ => unreachable!("settings are booleans, numbers, or strings"),
     };
-    // The wire contract enforces the remaining limits, such as the allowed player counts.
+    // The wire contract enforces the remaining limits, such as the timed-game limits and the allowed
+    // player counts.
     ensure!(
         hanabi_protocol::validate::<Settings>(&serde_json::json!({ name: parsed })).is_ok(),
         "The setting of \"{name}\" is not an allowed value."

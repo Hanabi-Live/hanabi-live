@@ -57,6 +57,18 @@ const RESTART_CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 const TABLE_TICK: Duration = Duration::from_millis(250);
 /// How long a typing indicator lasts without another keystroke.
 const TYPING_TIMEOUT: Duration = Duration::from_secs(2);
+/// The longest table password, in bytes.
+const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
+/// The longest countdown `/startin` can set, in minutes.
+const MAX_START_IN_MINUTES: f64 = 10.0;
+
+/// Whether an untimed game, or a timed game within the clock limits.
+fn valid_timed_options(options: &Options) -> bool {
+    !options.timed
+        || (options.time_base > 0.0
+            && options.time_base <= f64::from(hanabi_protocol::MAX_TIME_BASE_SECONDS)
+            && (1..=hanabi_protocol::MAX_TIME_PER_TURN_SECONDS).contains(&options.time_per_turn))
+}
 
 use hanabi_protocol::SafeInteger;
 
@@ -1783,13 +1795,7 @@ async fn prepare_table(
             options.one_extra_card = false;
             options.one_less_card = false;
         }
-        ensure!(
-            !options.timed
-                || (options.time_base > 0.0
-                    && options.time_base <= 604_800.0
-                    && (1..=86400).contains(&options.time_per_turn)),
-            "Invalid timed options"
-        );
+        ensure!(valid_timed_options(&options), "Invalid timed options");
         let mut extra = ExtraOptions::default();
         if name.starts_with('!') {
             ensure!(
@@ -1880,13 +1886,20 @@ async fn prepare_table(
         let max_players = usize::try_from(r.max_players)
             .ok()
             .filter(|n| hanabi_protocol::is_player_count(*n))
-            .unwrap_or(5)
-            .max(extra.custom_num_players.unwrap_or(2));
+            .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
+            .max(
+                extra
+                    .custom_num_players
+                    .unwrap_or(hanabi_protocol::MIN_PLAYERS),
+            );
         let password = r.password;
         let password_hash = if password.is_empty() {
             None
         } else {
-            ensure!(password.len() <= 1024, "Password too long");
+            ensure!(
+                password.len() <= MAX_TABLE_PASSWORD_BYTES,
+                "Passwords cannot be longer than {MAX_TABLE_PASSWORD_BYTES} bytes"
+            );
             Some(crate::accounts::hash_password(&session.ip, password).await?)
         };
         ensure!(session.active(), "Creator disconnected during preparation");
@@ -2267,7 +2280,7 @@ impl TableActor {
         next.validate()?;
         self.store.prepare_chat(&mut next).await?;
         ensure!(
-            serde_json::to_vec(&next)?.len() <= 4 * 1024 * 1024,
+            serde_json::to_vec(&next)?.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Checkpoint exceeds the durable state limit"
         );
         let result = async {
@@ -2935,13 +2948,7 @@ impl TableActor {
             options.time_base = 0.0;
             options.time_per_turn = 0;
         }
-        ensure!(
-            !options.timed
-                || (options.time_base > 0.0
-                    && options.time_base <= 604_800.0
-                    && (1..=86400).contains(&options.time_per_turn)),
-            "Invalid timed options"
-        );
+        ensure!(valid_timed_options(&options), "Invalid timed options");
         if options.one_extra_card && options.one_less_card {
             options.one_extra_card = false;
             options.one_less_card = false;
@@ -2967,7 +2974,7 @@ impl TableActor {
                 .as_ref()
                 .and_then(|r| usize::try_from(r.max_players).ok())
                 .filter(|n| hanabi_protocol::is_player_count(*n))
-                .unwrap_or(5)
+                .unwrap_or(usize::from(hanabi_protocol::DEFAULT_MAX_PLAYERS))
         };
         let mut extra = if variant_only {
             self.table.extra.clone()
@@ -3063,7 +3070,11 @@ impl TableActor {
         }
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
-        max_players = max_players.max(extra.custom_num_players.unwrap_or(2));
+        max_players = max_players.max(
+            extra
+                .custom_num_players
+                .unwrap_or(hanabi_protocol::MIN_PLAYERS),
+        );
         if session.user != self.table.owner {
             let changes = option_changes(&self.table, &options, &name, max_players);
             ensure!(!changes.is_empty(), "There are no new options proposed.");
@@ -4564,8 +4575,8 @@ impl TableActor {
                 ensure!(args.len() == 1, "Expected /startin [minutes]");
                 let minutes = parse_start_minutes(args[0]).context("Invalid countdown number")?;
                 ensure!(
-                    minutes.is_finite() && minutes > 0.0 && minutes <= 10.0,
-                    "Minutes must be between zero and ten"
+                    minutes.is_finite() && minutes > 0.0 && minutes <= MAX_START_IN_MINUTES,
+                    "Minutes must be between zero and {MAX_START_IN_MINUTES}"
                 );
                 *countdown =
                     Some(Utc::now() + ChronoDuration::seconds(truncate((minutes * 60.0).ceil())));
