@@ -29,48 +29,62 @@ const WATCHDOG_INTERVAL: Duration = Duration::from_millis(10);
 /// The longest state namespace, in bytes.
 const MAX_NAMESPACE_LENGTH: usize = 1024;
 
+/// The status a write script returns when the checkpoint revision is not the expected one.
+const STALE_REVISION: i64 = -1;
+/// The status a write script returns when another process holds ownership.
+const LEASE_LOST: i64 = -2;
+/// The status a write script returns when the index is full or inconsistent.
+const INTEGRITY_FAILURE: i64 = -3;
+
+/// Prepares a write script, defining its status codes as Lua locals.
+fn status_script(body: &str) -> Script {
+    Script::new(&format!(
+        "local STALE_REVISION, LEASE_LOST, INTEGRITY_FAILURE = {STALE_REVISION}, {LEASE_LOST}, {INTEGRITY_FAILURE}\n{body}"
+    ))
+}
+
 const RESERVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
-if redis.call('EXISTS', KEYS[2]) ~= 0 then return -1 end
-if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[3]) then return -3 end
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
+if redis.call('EXISTS', KEYS[2]) ~= 0 then return STALE_REVISION end
+if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[3]) then return INTEGRITY_FAILURE end
 redis.call('HSET', KEYS[2], 'revision', 0, 'payload', '', 'creator', ARGV[1])
 redis.call('SADD', KEYS[3], ARGV[2])
 return 0
 ";
 
 const ALLOCATE_TABLE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
-if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[2]) then return -3 end
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
+if redis.call('SCARD', KEYS[3]) >= tonumber(ARGV[2]) then return INTEGRITY_FAILURE end
 local current = redis.call('GET', KEYS[4])
-if current and tonumber(current) >= tonumber(ARGV[3]) then return -3 end
+if current and tonumber(current) >= tonumber(ARGV[3]) then return INTEGRITY_FAILURE end
 local id = redis.call('INCR', KEYS[4])
 local member = 't:' .. redis.call('GET', KEYS[4])
 local key = KEYS[2] .. member
-if redis.call('EXISTS', key) ~= 0 then return -3 end
+if redis.call('EXISTS', key) ~= 0 then return INTEGRITY_FAILURE end
 redis.call('HSET', key, 'revision', 0, 'payload', '', 'creator', ARGV[1])
 redis.call('SADD', KEYS[3], member)
 return id
 ";
 
 const SAVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
 local current = redis.call('HGET', KEYS[2], 'revision')
 local expected = tonumber(ARGV[2])
-if current == false or tonumber(current) ~= expected then return -1 end
-if redis.call('SISMEMBER', KEYS[3], ARGV[4]) ~= 1 then return -3 end
+if current == false or tonumber(current) ~= expected then return STALE_REVISION end
+if redis.call('SISMEMBER', KEYS[3], ARGV[4]) ~= 1 then return INTEGRITY_FAILURE end
 local next = expected + 1
 redis.call('HSET', KEYS[2], 'revision', next, 'payload', ARGV[3])
 redis.call('SADD', KEYS[3], ARGV[4])
 return next
 ";
 const REMOVE: &str = r"
-if redis.call('GET', KEYS[1]) ~= ARGV[1] then return -2 end
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return LEASE_LOST end
 local current = redis.call('HGET', KEYS[2], 'revision')
 if current == false then
-  if redis.call('SISMEMBER', KEYS[3], ARGV[3]) ~= 0 then return -3 end
+  if redis.call('SISMEMBER', KEYS[3], ARGV[3]) ~= 0 then return INTEGRITY_FAILURE end
   return 0
 end
-if tonumber(current) ~= tonumber(ARGV[2]) then return -1 end
+if tonumber(current) ~= tonumber(ARGV[2]) then return STALE_REVISION end
 redis.call('DEL', KEYS[2])
 redis.call('SREM', KEYS[3], ARGV[3])
 return 1
@@ -373,12 +387,12 @@ impl RedisState {
 
     fn reply(&self, result: redis::RedisResult<i64>) -> Result<i64> {
         match result {
-            Ok(-2) => {
+            Ok(LEASE_LOST) => {
                 self.owner.lost.cancel();
                 bail!("Redis state ownership was lost");
             }
-            Ok(-1) => bail!("Stale Redis checkpoint revision"),
-            Ok(-3) => bail!("Redis state capacity or index integrity failure"),
+            Ok(STALE_REVISION) => bail!("Stale Redis checkpoint revision"),
+            Ok(INTEGRITY_FAILURE) => bail!("Redis state capacity or index integrity failure"),
             Ok(value) => Ok(value),
             Err(error) => {
                 self.owner.lost.cancel();
@@ -402,7 +416,7 @@ impl RedisState {
             "Invalid checkpoint size"
         );
         let mut connection = self.connection.clone();
-        let reply = Script::new(SAVE)
+        let reply = status_script(SAVE)
             .key(&self.owner.key)
             .key(self.key(id)?)
             .key(self.index())
@@ -421,7 +435,7 @@ impl RedisState {
     pub async fn reserve(&self, id: StateId) -> Result<()> {
         self.check()?;
         let mut connection = self.connection.clone();
-        let result = Script::new(RESERVE)
+        let result = status_script(RESERVE)
             .key(&self.owner.key)
             .key(self.key(id)?)
             .key(self.index())
@@ -437,7 +451,7 @@ impl RedisState {
     pub async fn allocate_table(&self) -> Result<u64> {
         self.check()?;
         let mut connection = self.connection.clone();
-        let result = Script::new(ALLOCATE_TABLE)
+        let result = status_script(ALLOCATE_TABLE)
             .key(&self.owner.key)
             .key(format!("{}:state:", self.prefix))
             .key(self.index())
@@ -457,7 +471,7 @@ impl RedisState {
         self.check()?;
         ensure!(expected >= 0, "Invalid removal revision");
         let mut connection = self.connection.clone();
-        let result = Script::new(REMOVE)
+        let result = status_script(REMOVE)
             .key(&self.owner.key)
             .key(self.key(id)?)
             .key(self.index())

@@ -110,7 +110,10 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     ensure!(
         deck.len() == hanabi_engine::create_deck(variant).len()
             && deck.iter().all(|c| c.suit_index < variant.suits.len()
-                && matches!(c.rank, 1..=5 | hanabi_protocol::START_CARD_RANK)),
+                && matches!(
+                    c.rank,
+                    1..=hanabi_protocol::MAX_RANK | hanabi_protocol::START_CARD_RANK
+                )),
         "The deck must have {} valid cards in it.",
         hanabi_engine::create_deck(variant).len()
     );
@@ -151,7 +154,7 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
                         && usize::try_from(a.value).is_ok_and(|v| v <= variant.clue_colors.len()),
                 RecordedActionType::RankClue =>
                     usize::try_from(a.target).is_ok_and(|t| t < players.len())
-                        && (1..=5).contains(&a.value),
+                        && (1..=hanabi_protocol::MAX_RANK).contains(&a.value),
                 RecordedActionType::GameOver =>
                     usize::try_from(a.target).is_ok_and(|t| t < players.len()),
                 RecordedActionType::GameOverByVote => a.target == -1,

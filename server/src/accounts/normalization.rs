@@ -42,6 +42,9 @@ pub fn has_username_emoji(input: &str) -> bool {
     regex!(&IDENTITY.username_emoji_pattern).is_match(input)
 }
 
+/// The most combining marks, such as diacritics, that text may stack on one character.
+pub const MAX_CONSECUTIVE_MARKS: usize = 3;
+
 pub fn max_consecutive_marks(input: &str) -> usize {
     let mut count = 0;
     let mut maximum = 0;
@@ -73,15 +76,17 @@ pub fn remove_disallowed_characters(input: &str) -> std::borrow::Cow<'_, str> {
 /// The longest chat message, in bytes; longer messages are truncated.
 const MAX_CHAT_LENGTH: usize = 300;
 
-pub fn normalize_chat(input: &str) -> Result<String, &'static str> {
+pub fn normalize_chat(input: &str) -> Result<String, String> {
     let truncated = truncate_to_max_bytes(input, MAX_CHAT_LENGTH);
     let cleaned = remove_disallowed_characters(truncated);
     let message = cleaned.trim();
     if message.is_empty() {
-        return Err("Chat messages cannot be blank.");
+        return Err("Chat messages cannot be blank.".into());
     }
-    if max_consecutive_marks(message) > 3 {
-        return Err("Chat messages cannot contain more than 3 consecutive diacritics.");
+    if max_consecutive_marks(message) > MAX_CONSECUTIVE_MARKS {
+        return Err(format!(
+            "Chat messages cannot contain more than {MAX_CONSECUTIVE_MARKS} consecutive diacritics."
+        ));
     }
     Ok(message.to_owned())
 }
@@ -123,8 +128,10 @@ pub fn validate_username(input: &str) -> Result<&str, String> {
     if has_username_emoji(name) {
         return Err("Usernames cannot contain any emojis.".into());
     }
-    if max_consecutive_marks(name) >= 4 {
-        return Err("Usernames cannot contain four or more consecutive diacritics.".into());
+    if max_consecutive_marks(name) > MAX_CONSECUTIVE_MARKS {
+        return Err(format!(
+            "Usernames cannot contain more than {MAX_CONSECUTIVE_MARKS} consecutive diacritics."
+        ));
     }
     if matches!(
         normalize_string(name).as_str(),

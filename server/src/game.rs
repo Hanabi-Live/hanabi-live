@@ -141,7 +141,10 @@ pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
     for c in deck {
         ensure!(
             c.suit_index < hanabi_protocol::MAX_SUITS
-                && matches!(c.rank, 1..=5 | hanabi_protocol::START_CARD_RANK),
+                && matches!(
+                    c.rank,
+                    1..=hanabi_protocol::MAX_RANK | hanabi_protocol::START_CARD_RANK
+                ),
             "Invalid card"
         );
         bytes.push(u8::try_from(c.suit_index)? * RANKS_PER_SUIT + u8::try_from(c.rank)?);

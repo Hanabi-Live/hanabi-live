@@ -46,6 +46,10 @@ const EVENT_QUEUE: usize = 1000;
 const HEARTBEAT_INTERVAL_MS: RangeInclusive<u64> = 1000..=120_000;
 /// How long resolving Discord mentions in a message may take before the raw text is used.
 const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
+/// Discord's channel type for a guild text channel.
+const GUILD_TEXT_CHANNEL: i64 = 0;
+/// Discord's channel type for a guild announcement channel.
+const GUILD_ANNOUNCEMENT_CHANNEL: i64 = 5;
 /// The gateway intents we identify with: guilds, guild messages, direct messages, and message
 /// content.
 const INTENTS: u64 = 1 << 0 | 1 << 9 | 1 << 12 | 1 << 15;
@@ -400,7 +404,12 @@ impl Bridge {
             let data = transport
                 .request(Method::GET, format!("/channels/{channel}"), None)
                 .await?;
-            if data["guild_id"] != config.guild || !matches!(data["type"].as_i64(), Some(0 | 5)) {
+            if data["guild_id"] != config.guild
+                || !matches!(
+                    data["type"].as_i64(),
+                    Some(GUILD_TEXT_CHANNEL | GUILD_ANNOUNCEMENT_CHANNEL)
+                )
+            {
                 return Err(crate::errors::Fault::new("discord_channel_invalid",
                     format!("The channel configured by {key} is not a text/announcement channel in the configured guild."),
                     axum::http::StatusCode::BAD_GATEWAY).into());

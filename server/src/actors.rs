@@ -3906,8 +3906,9 @@ impl TableActor {
             .trim()
             .to_owned();
         ensure!(
-            crate::accounts::max_consecutive_marks(&text) <= 3,
-            "Notes cannot contain more than 3 consecutive diacritics."
+            crate::accounts::max_consecutive_marks(&text) <= crate::accounts::MAX_CONSECUTIVE_MARKS,
+            "Notes cannot contain more than {} consecutive diacritics.",
+            crate::accounts::MAX_CONSECUTIVE_MARKS
         );
         let seat = self
             .table

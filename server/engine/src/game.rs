@@ -91,9 +91,8 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
     ensure!(
         !identities.is_empty()
             && identities.len() <= hanabi_protocol::MAX_DECK_SIZE
-            && identities
-                .iter()
-                .all(|c| c.suit_index < variant.suits.len() && matches!(c.rank, 1..=5 | 7)),
+            && identities.iter().all(|c| c.suit_index < variant.suits.len()
+                && matches!(c.rank, 1..=MAX_RANK | START_CARD_RANK)),
         "The prepared deck contains invalid card identities."
     );
     let assigned = if setup.options.detrimental_characters {

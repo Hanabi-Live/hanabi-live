@@ -371,7 +371,7 @@ pub(super) type SiteTotals = HashMap<Option<i64>, (std::time::Instant, Value)>;
 const SITE_TOTALS_LIFETIME: std::time::Duration = if cfg!(test) {
     std::time::Duration::ZERO
 } else {
-    std::time::Duration::from_secs(300)
+    std::time::Duration::from_mins(5)
 };
 /// How long a site-wide statistics scan may run, longer than the lobby pool's usual limit.
 const AGGREGATE_STATEMENT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(20);
@@ -500,6 +500,10 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
         .map(|row| Ok((i64::from(row.variant_id), serde_json::to_value(row)?)))
         .collect()
 }
+/// The clue efficiency from which a missing score is shown as hard.
+const HARD_EFFICIENCY: f64 = 1.33;
+/// The clue efficiency from which a missing score is shown as very hard.
+const VERY_HARD_EFFICIENCY: f64 = 1.5;
 /// The player counts that a variant has a best score for.
 const PLAYER_COUNTS: usize = hanabi_protocol::MAX_PLAYERS - hanabi_protocol::MIN_PLAYERS + 1;
 
@@ -637,7 +641,7 @@ async fn missing(
                 continue;
             }
             rows.push(json!({"name":name,"numPlayers":p,"score":best.0,"maxScore":max,"modifierName":shown_modifier(best.1)?,
-                "efficiency":format!("{efficiency:.2}"),"efficiencyClass":if efficiency<1.33 {"normal"}else if efficiency<1.5 {"hard"}else{"very-hard"}}));
+                "efficiency":format!("{efficiency:.2}"),"efficiencyClass":if efficiency<HARD_EFFICIENCY {"normal"}else if efficiency<VERY_HARD_EFFICIENCY {"hard"}else{"very-hard"}}));
         }
     }
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();

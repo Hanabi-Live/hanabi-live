@@ -406,7 +406,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
                 ensure!(
                     (0..=s.turn).contains(turn)
                         && *num == strikes
-                        && (1..=3).contains(num)
+                        && (1..=MAX_STRIKES).contains(num)
                         && order(*o),
                     "Invalid strike history."
                 );

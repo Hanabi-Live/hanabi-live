@@ -250,11 +250,11 @@ pub async fn private_message(
     }
     let message = match normalize_chat(message) {
         Ok(message) => message,
-        Err(error) => return Ok(vec![warning(error)]),
+        Err(error) => return Ok(vec![warning(&error)]),
     };
     let recipient = match normalize_chat(recipient) {
         Ok(recipient) => recipient,
-        Err(error) => return Ok(vec![warning(error)]),
+        Err(error) => return Ok(vec![warning(&error)]),
     };
     let normalized = normalize_string(&recipient);
     if normalized == caller.normalized_name {
@@ -398,7 +398,7 @@ pub async fn lobby_chat(
     }
     let message = match normalize_chat(message) {
         Ok(message) => message,
-        Err(error) => return Ok(Some(vec![warning(error)])),
+        Err(error) => return Ok(Some(vec![warning(&error)])),
     };
     if !valid_room(room) {
         return Ok(Some(vec![warning("That is not a valid room.")]));

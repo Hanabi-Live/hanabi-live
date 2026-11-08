@@ -156,7 +156,7 @@ fn variant(entry: CatalogVariant, suits: &HashMap<String, Suit>) -> Variant {
         ranks,
         clue_colors,
         clue_ranks: entry.clue_ranks.map_or_else(
-            || vec![1, 2, 3, 4, 5],
+            || (1..=MAX_RANK).collect(),
             |ranks| ranks.into_iter().map(i32::from).collect(),
         ),
         stack_size,
