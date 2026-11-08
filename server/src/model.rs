@@ -170,28 +170,13 @@ impl TableChat {
         Ok(message)
     }
 }
-/// Checkpoints saved before card cycling was removed list it as a disabled option.
-fn strip_card_cycle(value: &mut Value) -> Result<()> {
-    for pointer in ["/options", "/phase/snapshot/game/options"] {
-        if let Some(Value::Object(options)) = value.pointer_mut(pointer)
-            && let Some(enabled) = options.remove("cardCycle")
-        {
-            ensure!(
-                enabled == Value::Bool(false),
-                "Checkpoint enables the removed card cycling option"
-            );
-        }
-    }
-    Ok(())
-}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let mut value: Value = serde_json::from_str(payload)?;
-        strip_card_cycle(&mut value)?;
+        let value: Value = serde_json::from_str(payload)?;
         ensure!(
             value["chat"]
                 .as_array()

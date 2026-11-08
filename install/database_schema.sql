@@ -132,7 +132,6 @@ CREATE TABLE games (
     time_base               INTEGER      NOT NULL, /* in seconds */
     time_per_turn           INTEGER      NOT NULL, /* in seconds */
     speedrun                BOOLEAN      NOT NULL,
-    card_cycle              BOOLEAN      NOT NULL  DEFAULT FALSE, /* Unused; to be dropped. */
     deck_plays              BOOLEAN      NOT NULL,
     empty_clues             BOOLEAN      NOT NULL,
     one_extra_card          BOOLEAN      NOT NULL,

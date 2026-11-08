@@ -836,23 +836,6 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
 }
 
 #[test]
-fn checkpoints_from_before_card_cycling_was_removed_still_restore() -> Result<()> {
-    let mut value = serde_json::to_value(review(1, EndCondition::TerminatedByPlayer)?)?;
-    for pointer in ["/options", "/phase/snapshot/game/options"] {
-        value
-            .pointer_mut(pointer)
-            .and_then(Value::as_object_mut)
-            .context("Missing checkpoint options")?
-            .insert("cardCycle".into(), json!(false));
-    }
-    let restored = TableSnapshot::decode(&value.to_string())?;
-    ensure!(restored.game().is_some(), "Missing restored review");
-    value["options"]["cardCycle"] = json!(true);
-    ensure!(TableSnapshot::decode(&value.to_string()).is_err());
-    Ok(())
-}
-
-#[test]
 fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     const CHAT_BATCH: usize = 64;
     let mut table = review(1, EndCondition::TerminatedByPlayer)?;
