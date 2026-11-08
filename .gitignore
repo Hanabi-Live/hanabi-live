@@ -42,8 +42,6 @@ GitHub_private_key.pem
 # vim temporary files
 .*.swp
 
-# Grunt output
-
 # Client test coverage
 /packages/client/coverage
 
