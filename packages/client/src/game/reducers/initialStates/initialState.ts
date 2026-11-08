@@ -13,6 +13,8 @@ export function initialState(metadata: GameMetadata): State {
   const { options } = metadata;
   const variant = getVariant(options.variantName);
   const totalCardsInDeck = getTotalCardsInDeck(variant);
+  // Notes are indexed by card order. The stack bases use the orders after the deck's final card.
+  const numNoteOrders = totalCardsInDeck + variant.suits.length;
 
   return {
     visibleState: null,
@@ -35,10 +37,8 @@ export function initialState(metadata: GameMetadata): State {
     datetimeStarted: null,
     datetimeFinished: null,
 
-    // The array needs to be longer than just the total cards in the deck because we also need to
-    // account for notes on a stack base.
     notes: {
-      ourNotes: newArray(totalCardsInDeck + variant.suits.length + 1, {
+      ourNotes: newArray(numNoteOrders, {
         possibilities: [],
         chopMoved: false,
         needsFix: false,
@@ -53,7 +53,7 @@ export function initialState(metadata: GameMetadata): State {
         clued: false,
         text: "",
       }),
-      allNotes: newArray(totalCardsInDeck + variant.suits.length + 1, []),
+      allNotes: newArray(numNoteOrders, []),
       efficiencyModifier: 0,
     },
 

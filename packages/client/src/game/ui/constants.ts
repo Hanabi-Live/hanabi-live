@@ -102,6 +102,9 @@ export const BUTTON_DISABLED_TEXT_COLOR = "#444444";
 /** The font of all text drawn on the game board. */
 export const FONT_FAMILY = "Verdana";
 
+/** The font of the ranks drawn on cards and of the loading screen. */
+export const RANK_FONT_FAMILY = "Arial";
+
 /** The smallest font size that text shrinks to when it does not fit. */
 export const MIN_FONT_SIZE = 5;
 
@@ -176,6 +179,9 @@ export const PANEL_OPACITY = 0.2;
 /** The corner radius of each area of the game board, as a fraction of the stage width. */
 export const PANEL_CORNER_RADIUS = 0.01;
 
+/** The corner radius of a dialog drawn over the game board, as a fraction of the stage height. */
+export const DIALOG_CORNER_RADIUS = 0.01;
+
 /** The opacity of a control that cannot be used right now. */
 export const DISABLED_OPACITY = 0.2;
 
@@ -184,6 +190,19 @@ export const STAGE_FADE_OPACITY = 0.3;
 
 /** The opacity of the dark overlay while the game is paused. */
 export const PAUSED_STAGE_FADE_OPACITY = 0.8;
+
+/** The opacity of the black shape that marks whose turn it is or that a hypothetical is active. */
+export const INDICATOR_OPACITY = 0.5;
+
+/** The fill and outline of a translucent black ellipse that marks a state of the game. */
+export const INDICATOR_ELLIPSE_STYLE = {
+  fill: "black",
+  opacity: INDICATOR_OPACITY,
+  stroke: "black",
+} as const;
+
+/** The outline width of an indicator ellipse, as a fraction of the stage height. */
+export const INDICATOR_ELLIPSE_STROKE_WIDTH = 4 * STROKE_WIDTH_UNIT;
 
 // ----------
 // Statistics

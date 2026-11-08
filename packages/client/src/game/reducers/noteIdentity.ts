@@ -14,6 +14,7 @@ import {
   SUIT_GROUP_NAMES,
 } from "@hanabi-live/game";
 import { eRange, newArray } from "complete-common";
+import { START_CARD_RANK_LABEL } from "../../constants";
 
 /**
  * Represents the card identities that a card could possibly be.
@@ -55,8 +56,8 @@ function parseSuit(variant: Variant, suitText: string): SuitIndex | null {
 function parseRank(rankText: string): Rank | null {
   switch (rankText) {
     case "0":
-    case "s":
-    case "S": {
+    case START_CARD_RANK_LABEL.toLowerCase():
+    case START_CARD_RANK_LABEL: {
       return START_CARD_RANK;
     }
 

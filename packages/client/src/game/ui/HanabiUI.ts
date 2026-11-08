@@ -157,8 +157,10 @@ export class HanabiUI {
 
       this.applyLiveResizeScale();
 
-      // Wait for two full frames with no resize events before rebuilding.
-      if (this.resizeFrame - this.lastResizeEventFrame >= 2) {
+      if (
+        this.resizeFrame - this.lastResizeEventFrame
+        >= RESIZE_SETTLE_FRAMES
+      ) {
         this.finishResize();
         return;
       }
@@ -243,6 +245,9 @@ export class HanabiUI {
     this.globals.animateFast = false;
   }
 }
+
+/** The number of full frames with no resize events to wait for before rebuilding the stage. */
+const RESIZE_SETTLE_FRAMES = 2;
 
 const STAGE_ASPECT_RATIO = 16 / 9;
 

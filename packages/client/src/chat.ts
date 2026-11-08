@@ -567,9 +567,7 @@ function addInternal(data: ChatData, fast: boolean, updateLiveState: boolean) {
   // TypeScript has not implemented the required DateTimeFormat option (hourCycle: h23). So we
   // format the hours manually.
   const dateObj = new Date(data.datetime);
-  const datetime = `${`0${dateObj.getHours()}`.slice(
-    -2,
-  )}:${`0${dateObj.getMinutes()}`.slice(-2)}`;
+  const datetime = `${padTwoDigits(dateObj.getHours())}:${padTwoDigits(dateObj.getMinutes())}`;
 
   const chatIDAttribute = getLobbyChatIDAttribute(data.room, data.chatID);
   let line = `<span id="chat-line-${chatLineNum}"${chatIDAttribute}`;
@@ -905,4 +903,8 @@ function formatChatMessage(msg: string, type: SelfChatMessageType): string {
       return `<span class="red">${msg}</span>`;
     }
   }
+}
+
+function padTwoDigits(value: number): string {
+  return value.toString().padStart(2, "0");
 }

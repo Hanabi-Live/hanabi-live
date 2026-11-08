@@ -45,9 +45,12 @@ import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  DIALOG_CORNER_RADIUS,
   EFFICIENCY_DECIMAL_PLACES,
   FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
+  INDICATOR_ELLIPSE_STROKE_WIDTH,
+  INDICATOR_ELLIPSE_STYLE,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
   LINE_SHADOW,
@@ -278,8 +281,8 @@ function drawActionLog() {
     width: actionLogValues.w! * winW,
     height: actionLogValues.h! * winH,
     fill: "black",
-    opacity: 0.3,
-    cornerRadius: 0.01 * winH,
+    opacity: PANEL_OPACITY,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     listening: true,
   });
   actionLogGroup.add(actionLogRect);
@@ -630,7 +633,7 @@ function drawDeck() {
     height: deckValues.h! * winH,
     fill: "black",
     opacity: PANEL_OPACITY,
-    cornerRadius: 0.006 * winW,
+    cornerRadius: PANEL_CORNER_RADIUS * winW,
     listening: true,
   });
   globals.layers.UI.add(deckRect);
@@ -1293,10 +1296,8 @@ function drawYourTurn() {
   const circle = new Konva.Ellipse({
     radiusX: 0.039 * winW,
     radiusY: 0.05 * winH,
-    fill: "black",
-    opacity: 0.5,
-    stroke: "black",
-    strokeWidth: 4 * STROKE_WIDTH_UNIT * winH,
+    ...INDICATOR_ELLIPSE_STYLE,
+    strokeWidth: INDICATOR_ELLIPSE_STROKE_WIDTH * winH,
     offset: {
       x: -0.0175 * winW,
       y: -0.036 * winH,
@@ -2195,10 +2196,8 @@ function drawHypotheticalArea() {
     y: hypoValues.h * 0.5 * winW,
     radiusX: hypoValues.w! * 0.4 * winW,
     radiusY: hypoValues.h * winH,
-    fill: "black",
-    opacity: 0.5,
-    stroke: "black",
-    strokeWidth: 4 * STROKE_WIDTH_UNIT * winH,
+    ...INDICATOR_ELLIPSE_STYLE,
+    strokeWidth: INDICATOR_ELLIPSE_STROKE_WIDTH * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);
@@ -2359,7 +2358,7 @@ function drawPauseArea() {
     width: pauseAreaValues.w * winW,
     height: pauseAreaValues.h * winH,
     fill: getCanvasColors().surfaceArea,
-    cornerRadius: 0.01 * winH,
+    cornerRadius: DIALOG_CORNER_RADIUS * winH,
     listening: true,
   });
   globals.elements.pauseArea.add(pauseRect);
@@ -2456,7 +2455,7 @@ function drawRestartArea() {
     width: restartAreaValues.w * winW,
     height: restartAreaValues.h * winH,
     fill: getCanvasColors().surfaceArea,
-    cornerRadius: 0.01 * winH,
+    cornerRadius: DIALOG_CORNER_RADIUS * winH,
     listening: true,
   });
   globals.elements.restartArea.add(restartRect);

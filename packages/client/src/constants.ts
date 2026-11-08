@@ -25,3 +25,6 @@ export const HTTP_STATUS = {
   /** Statuses at or above this one are server errors. */
   INTERNAL_SERVER_ERROR: 500,
 } as const;
+
+/** How the start card's rank is written on cards, in notes, and in the morph dialog. */
+export const START_CARD_RANK_LABEL = "S";

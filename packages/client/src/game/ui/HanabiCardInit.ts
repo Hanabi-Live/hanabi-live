@@ -12,6 +12,7 @@ import type * as KonvaContext from "konva/types/Context";
 import type * as KonvaUtil from "konva/types/Util";
 import type { Arrow } from "konva/types/shapes/Arrow";
 import type { RectConfig } from "konva/types/shapes/Rect";
+import { START_CARD_RANK_LABEL } from "../../constants";
 import type { Pips } from "../types/Pips";
 import { globals } from "./UIGlobals";
 import {
@@ -28,6 +29,7 @@ import {
   FINESSE_COLOR,
   HALF_TURN_DEGREES,
   OFF_BLACK,
+  RANK_FONT_FAMILY,
   SMALL_ICON_SIZE,
   TOP_LEFT_X,
   TOP_LEFT_Y,
@@ -296,11 +298,14 @@ function makeCachedPips(variant: Variant) {
     const rankPip = new RankPip({
       x,
       y,
-      fontFamily: "Arial",
+      fontFamily: RANK_FONT_FAMILY,
       fontStyle: "bold",
       fontSize: 63,
       align: "center",
-      text: rank === START_CARD_RANK ? "s" : rank.toString(),
+      text:
+        rank === START_CARD_RANK
+          ? START_CARD_RANK_LABEL.toLowerCase()
+          : rank.toString(),
       // Konva draws nothing when a glyph is wider than its box, which happens with fonts wider than
       // Arial. Leave room for them, offset so that the digit stays centered on the same spot.
       width: RANK_PIP_SIZE * 2,

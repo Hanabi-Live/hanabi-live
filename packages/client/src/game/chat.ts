@@ -14,6 +14,12 @@ const DEFAULT_CHAT_MODAL_SIZE = {
   height: "50%",
 } as const;
 
+/** The smallest size that the player can resize the chat modal to, in pixels. */
+const MIN_CHAT_MODAL_SIZE = {
+  width: 200,
+  height: 200,
+} as const;
+
 export function init(): void {
   // Make the chat modal draggable (using the InteractJS library). The bundled "interactjs" package
   // references "@interactjs/interactjs" which is not installed as a separate package, so
@@ -66,10 +72,7 @@ export function init(): void {
 
         // Define a minimum size for the modal.
         interact.modifiers.restrictSize({
-          min: {
-            width: 200,
-            height: 200,
-          },
+          min: MIN_CHAT_MODAL_SIZE,
         }),
       ],
     })

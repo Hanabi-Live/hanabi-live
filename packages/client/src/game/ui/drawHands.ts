@@ -10,6 +10,7 @@ import {
   CARD_W,
   FONT_FAMILY,
   FULL_CARD_STAGE_SIZE,
+  INDICATOR_OPACITY,
   OFF_BLACK,
   TEXT_SHADOW,
 } from "./constants";
@@ -435,7 +436,7 @@ export function drawHands(winW: number, winH: number): void {
         fill: "black",
         cornerRadius: turnRectValues.h * 0.1 * winH,
         rotation: handValues.rot,
-        opacity: 0.5,
+        opacity: INDICATOR_OPACITY,
         visible: false,
         listening: false,
       });

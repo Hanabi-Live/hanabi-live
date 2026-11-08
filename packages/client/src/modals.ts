@@ -8,6 +8,7 @@ import {
   SECOND_IN_MILLISECONDS,
 } from "complete-common";
 import { globals } from "./Globals";
+import { START_CARD_RANK_LABEL } from "./constants";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
@@ -648,8 +649,7 @@ function fillMorphModalWithRadios(
       if (suit === startSuit && rank === startRank) {
         radio.setAttribute("checked", "checked");
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] =
-          rank === START_CARD_RANK ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] = getRankLabel(rank);
       }
       radio.addEventListener("change", () => {
         if (!radio.checked) {
@@ -658,8 +658,7 @@ function fillMorphModalWithRadios(
 
         // Set textbox data attribute.
         morphModalTextbox.dataset["suit"] = suit.displayName;
-        morphModalTextbox.dataset["rank"] =
-          rank === START_CARD_RANK ? "S" : rank.toString();
+        morphModalTextbox.dataset["rank"] = getRankLabel(rank);
       });
 
       row.append(cell);
@@ -669,4 +668,8 @@ function fillMorphModalWithRadios(
   }
 
   placeholder.append(table);
+}
+
+function getRankLabel(rank: Rank): string {
+  return rank === START_CARD_RANK ? START_CARD_RANK_LABEL : rank.toString();
 }

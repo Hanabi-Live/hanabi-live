@@ -3,7 +3,7 @@ import Konva from "konva";
 import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
 import { globals } from "./UIGlobals";
-import { LABEL_COLOR, STROKE_WIDTH_UNIT } from "./constants";
+import { LABEL_COLOR, RANK_FONT_FAMILY, STROKE_WIDTH_UNIT } from "./constants";
 import { drawCards } from "./drawCards";
 import * as drawCardsBrowser from "./drawCardsBrowser";
 import { drawUI } from "./drawUI";
@@ -65,7 +65,7 @@ export function uiInit(): void {
     x: 0,
     width: winW,
     height: labelHeight,
-    fontFamily: "Arial",
+    fontFamily: RANK_FONT_FAMILY,
     fontStyle: "bold",
     fontSize: labelHeight,
     listening: false,

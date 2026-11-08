@@ -7,12 +7,14 @@ import {
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
+import { START_CARD_RANK_LABEL } from "../../constants";
 import type { CardRendererBackend } from "./cardRendererBackend";
 import {
   CARD_H,
   CARD_IMAGE_SHADOW_COLOR,
   CARD_W,
   NO_SHADOW_COLOR,
+  RANK_FONT_FAMILY,
 } from "./constants";
 import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";
@@ -113,7 +115,7 @@ export function drawCards<Canvas, Image>(
         let textYPos: number;
         let rankLabel = rank.toString();
         if (rank === START_CARD_RANK) {
-          rankLabel = "S";
+          rankLabel = START_CARD_RANK_LABEL;
         }
         let fontSize: number;
         if (colorblindMode) {
@@ -125,7 +127,7 @@ export function drawCards<Canvas, Image>(
           textYPos = 110;
         }
 
-        ctx.font = `bold ${fontSize}pt Arial`;
+        ctx.font = `bold ${fontSize}pt ${RANK_FONT_FAMILY}`;
 
         // Draw the rank on the top left.
         ctx.save();
