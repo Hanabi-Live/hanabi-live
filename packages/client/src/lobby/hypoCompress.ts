@@ -1,4 +1,4 @@
-import type { Rank, SuitIndex } from "@hanabi-live/game";
+import { replayGameSchema } from "@hanabi-live/data";
 import {
   DEFAULT_PLAYER_NAMES,
   MAX_PLAYERS,
@@ -8,36 +8,16 @@ import {
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { isEqual } from "lodash";
+import type { z } from "zod";
 
-interface DeckCard {
-  suitIndex: SuitIndex;
-  rank: Rank;
-}
-
-interface Action {
-  type: number;
-  target: number;
-  value?: number;
-}
-
-interface Options {
-  variant: string | undefined;
-}
+/** A game in the replay format, generated from the server's contract. */
+export type GameJSON = z.input<typeof replayGameSchema>;
+type DeckCard = GameJSON["deck"][number];
+type Action = GameJSON["actions"][number];
 
 interface MinMax {
   min: number;
   max: number;
-}
-
-export interface GameJSON {
-  players: readonly string[];
-  deck: readonly DeckCard[];
-  actions: readonly Action[];
-  options: Options;
-  characters: readonly string[];
-  id: number;
-  notes: readonly string[];
-  seed: string;
 }
 
 const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -55,10 +35,8 @@ const BASE62 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  * appended verbatim so that meaningful seed hyphens are preserved.
  */
 export function shrink(JSONString: string): string | undefined {
-  let gameDataJSON: GameJSON;
-  try {
-    gameDataJSON = JSON.parse(JSONString) as GameJSON;
-  } catch {
+  const gameDataJSON = parseGameJSON(JSONString);
+  if (gameDataJSON === undefined) {
     return undefined;
   }
 
@@ -72,16 +50,20 @@ export function shrink(JSONString: string): string | undefined {
   if (decompressed === undefined) {
     return undefined;
   }
-  try {
-    const decompressedJSON = JSON.parse(decompressed) as GameJSON;
-    if (!isEqual(gameDataJSON, decompressedJSON)) {
-      return undefined;
-    }
-  } catch {
+  if (!isEqual(gameDataJSON, parseGameJSON(decompressed))) {
     return undefined;
   }
 
   return compressed;
+}
+
+function parseGameJSON(JSONString: string) {
+  try {
+    const result = replayGameSchema.safeParse(JSON.parse(JSONString));
+    return result.success ? result.data : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Decompresses a string into a `GameJSON` object. Returns undefined if decompression fails. */
@@ -138,9 +120,9 @@ export function expand(data: string): string | undefined {
   const variant = getVariantByID(variantID);
 
   const original: GameJSON = {
-    players,
-    deck,
-    actions,
+    players: [...players],
+    deck: [...deck],
+    actions: [...actions],
     options: {
       variant: variant.name,
     },
@@ -155,7 +137,8 @@ export function expand(data: string): string | undefined {
 
 /** Compresses a `GameJSON` object into a string. Returns undefined if decompression fails. */
 function gameJSONCompress(data: GameJSON): string | undefined {
-  if (typeof data.seed !== "string" || !/^[\d\-A-Za-z]*$/u.test(data.seed)) {
+  const seed = data.seed ?? "";
+  if (!/^[\d\-A-Za-z]*$/u.test(seed)) {
     return undefined;
   }
   let out = "";
@@ -179,12 +162,13 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   out += `${actions},`;
 
   // Variant ID
-  if (data.options.variant === undefined) {
+  const variantName = data.options?.variant;
+  if (variantName === undefined) {
     return undefined;
   }
 
   try {
-    const variant = getVariant(data.options.variant);
+    const variant = getVariant(variantName);
     out += variant.id.toString();
   } catch {
     return undefined;
@@ -193,7 +177,7 @@ function gameJSONCompress(data: GameJSON): string | undefined {
   // Add hyphens every 20 characters for URL posting (hyphens make the text wrap).
   out = out.match(/.{1,20}/gu)!.join("-");
 
-  return `${out},${data.seed}`;
+  return `${out},${seed}`;
 }
 
 /**
@@ -274,8 +258,8 @@ function stringToDeckCard(src: string, rankRange: MinMax): DeckCard {
   const suitIndex = Math.floor((index - rank + 1) / r);
 
   return {
-    suitIndex: suitIndex as SuitIndex,
-    rank: rank as Rank,
+    suitIndex,
+    rank,
   };
 }
 

@@ -77,10 +77,8 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
             )
         })?
     };
-    let deck_len = deck
-        .as_array()
-        .ok_or_else(|| anyhow::anyhow!("Engine returned invalid deck"))?
-        .len();
+    let deck: Vec<hanabi_protocol::ReplayCard> = serde_json::from_value(deck)?;
+    let deck_len = deck.len();
     let mut notes =
         vec![
             vec![String::new(); deck_len + variant["suits"].as_array().expect("suits").len()];
@@ -98,45 +96,23 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
             notes.pop();
         }
     }
-    let mut options = serde_json::Map::new();
-    let starting_player: i16 = row.starting_player;
-    if starting_player != 0 {
-        options.insert("startingPlayer".into(), json!(starting_player));
-    }
-    if variant_id != 0 {
-        options.insert("variant".into(), variant["name"].clone());
-    }
-    for (enabled, wire) in [
-        (row.timed, "timed"),
-        (row.speedrun, "speedrun"),
-        (row.card_cycle, "cardCycle"),
-        (row.deck_plays, "deckPlays"),
-        (row.empty_clues, "emptyClues"),
-        (row.one_extra_card, "oneExtraCard"),
-        (row.one_less_card, "oneLessCard"),
-        (row.all_or_nothing, "allOrNothing"),
-        (row.detrimental_characters, "detrimentalCharacters"),
-    ] {
-        if enabled {
-            options.insert(wire.into(), json!(true));
-        }
-    }
-    if row.timed {
-        options.insert("timeBase".into(), json!(row.time_base));
-        options.insert("timePerTurn".into(), json!(row.time_per_turn));
-    }
-    let mut result = json!({"id":id,"players":players.iter().map(|p| &p.name).collect::<Vec<_>>(),
-        "deck":deck,"actions":archive.actions});
-    if !options.is_empty() {
-        result["options"] = json!(options);
-    }
-    if notes.iter().any(|n| !n.is_empty()) {
-        result["notes"] = json!(notes);
-    }
-    if custom.is_none() {
-        result["seed"] = json!(seed);
-    }
-    if row.detrimental_characters {
+    let flag = |enabled: bool| enabled.then_some(true);
+    let options = hanabi_protocol::ReplayOptions {
+        variant: (variant_id != 0).then(|| variant["name"].as_str().unwrap_or_default().into()),
+        starting_player: (row.starting_player != 0).then_some(i64::from(row.starting_player)),
+        timed: flag(row.timed),
+        time_base: row.timed.then_some(i64::from(row.time_base)),
+        time_per_turn: row.timed.then_some(i64::from(row.time_per_turn)),
+        speedrun: flag(row.speedrun),
+        card_cycle: flag(row.card_cycle),
+        deck_plays: flag(row.deck_plays),
+        empty_clues: flag(row.empty_clues),
+        one_extra_card: flag(row.one_extra_card),
+        one_less_card: flag(row.one_less_card),
+        all_or_nothing: flag(row.all_or_nothing),
+        detrimental_characters: flag(row.detrimental_characters),
+    };
+    let characters = if row.detrimental_characters {
         let mut characters = Vec::new();
         for p in &players {
             let character = i64::from(p.character_assignment);
@@ -151,9 +127,32 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
                     )
                 })?
             };
-            characters.push(json!({"name":name,"metadata":i32::from(p.character_metadata) - 1}));
+            characters.push(hanabi_protocol::ReplayCharacter {
+                name: name.into(),
+                metadata: i32::from(p.character_metadata) - 1,
+            });
         }
-        result["characters"] = json!(characters);
-    }
-    Ok(result)
+        Some(characters)
+    } else {
+        None
+    };
+    let game = hanabi_protocol::ReplayGame {
+        id,
+        players: players.iter().map(|p| p.name.clone()).collect(),
+        deck,
+        actions: archive
+            .actions
+            .iter()
+            .map(|action| hanabi_protocol::ReplayAction {
+                kind: action.kind,
+                target: action.target,
+                value: action.value,
+            })
+            .collect(),
+        options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
+        notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
+        characters,
+        seed: custom.is_none().then_some(seed),
+    };
+    Ok(serde_json::to_value(game)?)
 }

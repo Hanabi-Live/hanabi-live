@@ -61,14 +61,7 @@ gameCommands.set("boot", () => {
 
 // Updates the clocks to show how much time people are taking or how much time people have left.
 gameCommands.set("clock", (data) => {
-  timer.update({
-    times: data.times,
-    activePlayerIndex:
-      data.activePlayerIndex === -1
-        ? -1
-        : toPlayerIndex(data.activePlayerIndex),
-    timeTaken: data.timeTaken,
-  });
+  timer.update(data);
 });
 
 gameCommands.set("connected", (data) => {

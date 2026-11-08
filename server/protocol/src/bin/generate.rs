@@ -387,6 +387,7 @@ fn main() -> Result<()> {
             "Settings",
             "Spectator",
             "GameHistory",
+            "ReplayGame",
         ])
         .collect();
     let mut definitions = BTreeMap::new();

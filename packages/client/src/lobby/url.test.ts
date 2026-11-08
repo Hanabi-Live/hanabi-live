@@ -1,7 +1,7 @@
 import type { ServerCommandWelcomeData } from "@hanabi-live/data";
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
-import type { GameJSON } from "./hypoCompress";
+import { replayGameSchema } from "@hanabi-live/data";
 
 await mock.module("./history", () => ({
   show: mock(),
@@ -62,7 +62,9 @@ describe("replay URL loading", () => {
 
     parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
 
-    const gameJSON = JSON.parse(expand(`${payload}${suffix}`)!) as GameJSON;
+    const gameJSON = replayGameSchema.parse(
+      JSON.parse(expand(`${payload}${suffix}`)!),
+    );
     expect(send).toHaveBeenCalledWith("replayCreate", {
       source: "json",
       gameJSON: { ...gameJSON, seed },

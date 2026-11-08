@@ -1,5 +1,5 @@
+import { replayGameSchema } from "@hanabi-live/data";
 import { describe, expect, test } from "bun:test";
-import type { GameJSON } from "./hypoCompress";
 import { expand, shrink } from "./hypoCompress";
 
 describe("replay URL seed metadata", () => {
@@ -19,7 +19,7 @@ describe("replay URL seed metadata", () => {
     "",
     "A-very-long-seed-with-hyphens-1234567890",
   ])("round-trips seed %s without changing the game", (seed) => {
-    const legacy = JSON.parse(expand(payload)!) as GameJSON;
+    const legacy = replayGameSchema.parse(JSON.parse(expand(payload)!));
     const game = { ...legacy, seed };
     const compressed = shrink(JSON.stringify(game));
     expect(compressed).toBeDefined();
@@ -30,7 +30,7 @@ describe("replay URL seed metadata", () => {
   test.each(["bad seed", "bad/seed", "bad,seed", "bad?seed"])(
     "rejects invalid seed %s",
     (seed) => {
-      const game = JSON.parse(expand(payload)!) as GameJSON;
+      const game = replayGameSchema.parse(JSON.parse(expand(payload)!));
       expect(shrink(JSON.stringify({ ...game, seed }))).toBeUndefined();
       expect(expand(`${payload},${seed}`)).toBeUndefined();
     },
