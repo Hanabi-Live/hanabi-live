@@ -1607,11 +1607,6 @@ fn replay_table(
         pending_tag: None,
     }
 }
-/// Converts wire options to the engine's, which use the same field names.
-fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<Options> {
-    Ok(serde_json::from_value(serde_json::to_value(options)?)?)
-}
-
 /// A pregame change to a table: only its variant, or every option.
 enum TableChange {
     Variant(String),
@@ -1734,7 +1729,7 @@ async fn prepare_table(
             name = format!("{}'s table", session.name);
         }
         validate_table_name(&name)?;
-        let mut options = engine_options(&r.options)?;
+        let mut options = engine_options(&r.options);
         options.starting_player = 0;
         if options.speedrun || !options.timed {
             options.timed = false;
@@ -2880,7 +2875,7 @@ impl TableActor {
         let mut options = if variant_only {
             self.table.options.clone()
         } else {
-            engine_options(&request.as_ref().context("Missing options")?.options)?
+            engine_options(&request.as_ref().context("Missing options")?.options)
         };
         if let Some(variant) = &variant {
             options.variant_name.clone_from(variant);

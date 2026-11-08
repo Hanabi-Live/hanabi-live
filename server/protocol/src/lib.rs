@@ -1354,6 +1354,7 @@ pub struct GameOptions {
     pub max_players: Option<u8>,
 }
 
+/// Must match `hanabi_engine::Options::default()`; a server test checks this.
 impl Default for GameOptions {
     fn default() -> Self {
         Self {

@@ -461,24 +461,100 @@ pub(crate) fn small(value: usize) -> u8 {
     u8::try_from(value).unwrap_or(u8::MAX)
 }
 
+/// Converts the engine's options to their wire form. Both destructure every field, so adding an
+/// option to either type fails to compile until the conversions are updated.
 pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
+    let Options {
+        num_players,
+        starting_player,
+        variant_name,
+        variant_id,
+        timed,
+        time_base,
+        time_per_turn,
+        speedrun,
+        card_cycle,
+        deck_plays,
+        empty_clues,
+        one_extra_card,
+        one_less_card,
+        all_or_nothing,
+        detrimental_characters,
+        table_name,
+        max_players,
+    } = options;
     hanabi_protocol::GameOptions {
-        num_players: small(options.num_players),
-        starting_player: small(options.starting_player),
-        variant_name: options.variant_name.clone(),
-        variant_id: options.variant_id,
-        timed: options.timed,
-        time_base: options.time_base,
-        time_per_turn: options.time_per_turn,
-        speedrun: options.speedrun,
-        card_cycle: options.card_cycle,
-        deck_plays: options.deck_plays,
-        empty_clues: options.empty_clues,
-        one_extra_card: options.one_extra_card,
-        one_less_card: options.one_less_card,
-        all_or_nothing: options.all_or_nothing,
-        detrimental_characters: options.detrimental_characters,
-        table_name: options.table_name.clone(),
-        max_players: options.max_players.map(small),
+        num_players: small(*num_players),
+        starting_player: small(*starting_player),
+        variant_name: variant_name.clone(),
+        variant_id: *variant_id,
+        timed: *timed,
+        time_base: *time_base,
+        time_per_turn: *time_per_turn,
+        speedrun: *speedrun,
+        card_cycle: *card_cycle,
+        deck_plays: *deck_plays,
+        empty_clues: *empty_clues,
+        one_extra_card: *one_extra_card,
+        one_less_card: *one_less_card,
+        all_or_nothing: *all_or_nothing,
+        detrimental_characters: *detrimental_characters,
+        table_name: table_name.clone(),
+        max_players: max_players.map(small),
+    }
+}
+
+/// Converts wire options to the engine's.
+pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options {
+    let hanabi_protocol::GameOptions {
+        num_players,
+        starting_player,
+        variant_name,
+        variant_id,
+        timed,
+        time_base,
+        time_per_turn,
+        speedrun,
+        card_cycle,
+        deck_plays,
+        empty_clues,
+        one_extra_card,
+        one_less_card,
+        all_or_nothing,
+        detrimental_characters,
+        table_name,
+        max_players,
+    } = options;
+    Options {
+        num_players: usize::from(*num_players),
+        starting_player: usize::from(*starting_player),
+        variant_name: variant_name.clone(),
+        variant_id: *variant_id,
+        timed: *timed,
+        time_base: *time_base,
+        time_per_turn: *time_per_turn,
+        speedrun: *speedrun,
+        card_cycle: *card_cycle,
+        deck_plays: *deck_plays,
+        empty_clues: *empty_clues,
+        one_extra_card: *one_extra_card,
+        one_less_card: *one_less_card,
+        all_or_nothing: *all_or_nothing,
+        detrimental_characters: *detrimental_characters,
+        table_name: table_name.clone(),
+        max_players: max_players.map(usize::from),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wire_and_engine_option_defaults_agree() {
+        let defaults = Options::default();
+        let wire = hanabi_protocol::GameOptions::default();
+        assert_eq!(wire_options(&defaults), wire);
+        assert_eq!(engine_options(&wire), defaults);
     }
 }
