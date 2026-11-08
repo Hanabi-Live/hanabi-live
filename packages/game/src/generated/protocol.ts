@@ -1,6 +1,22 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import { z } from "zod";
+import { EndCondition } from "../enums/EndCondition";
 
+/** A TypeScript enum, or `never` unless it has exactly the server's values. */
+type ServerEnum<
+  Enum extends Record<string, string | number>,
+  Values extends number,
+> = [Extract<Enum[keyof Enum], number>] extends [Values]
+  ? [Values] extends [Extract<Enum[keyof Enum], number>]
+    ? Enum
+    : never
+  : never;
+const endConditionEnum: ServerEnum<
+  typeof EndCondition,
+  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+> = EndCondition;
+
+export const endConditionSchema = z.enum(endConditionEnum);
 export const gameOptionsSchema = z
   .strictObject({
     allOrNothing: z.boolean().default(false),

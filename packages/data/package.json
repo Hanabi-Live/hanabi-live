@@ -6,7 +6,6 @@
     "lint": "bash ./lint.sh"
   },
   "dependencies": {
-    "@hanabi-live/game": "workspace:*",
     "zod": "catalog:"
   }
 }

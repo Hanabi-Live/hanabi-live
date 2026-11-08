@@ -9,7 +9,7 @@ fi
 temporary=$(mktemp)
 trap 'rm -f "$temporary"' EXIT
 status=0
-# The game library cannot depend on the data package, so it gets the schemas it owns separately.
+# The data package and the game library do not depend on each other, so each gets its own module.
 for target in "packages/data/src/generated/protocol.ts" "packages/game/src/generated/protocol.ts --game"; do
   read -r output flag <<< "$target"
   (

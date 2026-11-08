@@ -60,7 +60,6 @@
     "packages/data": {
       "name": "@hanabi-live/data",
       "dependencies": {
-        "@hanabi-live/game": "workspace:*",
         "zod": "catalog:",
       },
     },
