@@ -1,4 +1,5 @@
 import Konva from "konva";
+import type * as KonvaContext from "konva/types/Context";
 import { CLUED_COLOR } from "../constants";
 
 export class RankPip extends Konva.Text {
@@ -8,6 +9,23 @@ export class RankPip extends Konva.Text {
   constructor(config?: Konva.TextConfig) {
     super(config);
     this.fillValue = config?.fill;
+  }
+
+  /**
+   * Draws the outline before the fill. The fill then covers the inner half of the outline, so the
+   * whole outline lies outside the digit and still surrounds it when cards are drawn small.
+   */
+  override _sceneFunc(context: KonvaContext.Context): void {
+    // Shadow the prototype method on this context only while the text is drawn.
+    context.fillStrokeShape = (shape: Konva.Shape) => {
+      context.strokeShape(shape);
+      context.fillShape(shape);
+    };
+    try {
+      super._sceneFunc(context);
+    } finally {
+      Reflect.deleteProperty(context, "fillStrokeShape");
+    }
   }
 
   setFillValue(fill: string): void {
