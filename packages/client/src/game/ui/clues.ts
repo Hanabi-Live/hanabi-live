@@ -1,3 +1,4 @@
+import { ActionType } from "@hanabi-live/data";
 import type { Clue } from "@hanabi-live/game";
 import {
   ClueType,
@@ -6,7 +7,6 @@ import {
   isCardTouchedByClue,
 } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, eRange } from "complete-common";
-import { ActionType } from "../types/ActionType";
 import type {
   ClientActionColorClue,
   ClientActionRankClue,

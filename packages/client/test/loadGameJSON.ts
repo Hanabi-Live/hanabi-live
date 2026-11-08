@@ -35,7 +35,6 @@ import {
 } from "complete-common";
 import { initialState } from "../src/game/reducers/initialStates/initialState";
 import { shouldStoreSegment } from "../src/game/reducers/stateReducerHelpers";
-import { ActionType } from "../src/game/types/ActionType";
 import type { State } from "../src/game/types/State";
 import type testGame from "../test_data/up_or_down.json";
 
@@ -107,7 +106,7 @@ export function loadGameJSON(gameJSON: JSONGame): State {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  if (finalGameJSONAction.type !== ActionType.GameOver) {
+  if (finalGameJSONAction.type !== JSONActionType.ActionTypeGameOver) {
     actions.push({
       type: "gameOver",
       // Assume that the game ended normally; this is not necessarily the case and will break if a

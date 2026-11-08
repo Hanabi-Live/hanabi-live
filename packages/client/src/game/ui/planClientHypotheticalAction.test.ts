@@ -1,3 +1,4 @@
+import { ActionType } from "@hanabi-live/data";
 import type {
   CardOrder,
   GameAction,
@@ -19,7 +20,6 @@ import { describe, expect, test, vi } from "vitest";
 vi.mock("./UIGlobals", () => ({ globals: {} }));
 vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } = await import("../reducers/initialStates/initialState");
-const { ActionType } = await import("../types/ActionType");
 const { globals } = await import("./UIGlobals");
 const { getCardOrStackBase } = await import("./getCardOrStackBase");
 const { sendHypotheticalAction } = await import("./hypothetical");

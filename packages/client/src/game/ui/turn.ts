@@ -1,6 +1,6 @@
+import { ActionType } from "@hanabi-live/data";
 import { getAdjustedClueTokens, isAtMaxClueTokens } from "@hanabi-live/game";
 import * as notifications from "../../notifications";
-import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";

@@ -806,9 +806,9 @@ pub struct ReplayEfficiencyMod {
 pub struct ActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    /// 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
+    /// The `ActionType` enum: 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
     #[serde(rename = "type")]
-    #[schemars(extend("enum" = [0, 1, 2, 3]))]
+    #[schemars(extend("enum" = [0, 1, 2, 3], "x-enum" = "ActionType"))]
     pub kind: u8,
     /// The card order for a play or discard; the player index for a clue.
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
@@ -1594,9 +1594,9 @@ pub struct SafeInteger(#[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_
 #[serde(untagged, deny_unknown_fields)]
 pub enum ReceivedClue {
     Visible {
-        /// 0 for a color clue, 1 for a rank clue.
+        /// The `ClueType` enum: 0 for a color clue, 1 for a rank clue.
         #[serde(rename = "type")]
-        #[schemars(range(min = 0, max = 1), extend("enum" = [0, 1]))]
+        #[schemars(range(min = 0, max = 1), extend("enum" = [0, 1], "x-enum" = "ClueType"))]
         clue_type: i32,
         #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
         value: i32,

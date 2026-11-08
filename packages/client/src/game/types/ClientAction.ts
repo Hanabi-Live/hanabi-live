@@ -1,3 +1,4 @@
+import type { ActionType } from "@hanabi-live/data";
 import type {
   CardOrder,
   PlayerIndex,
@@ -5,7 +6,6 @@ import type {
   SuitIndex,
 } from "@hanabi-live/game";
 import type { CompositionTypeSatisfiesEnum } from "complete-common";
-import type { ActionType } from "./ActionType";
 
 /** A message sent to the server that represents the in-game action that we just took. */
 export type ClientAction =
@@ -14,10 +14,7 @@ export type ClientAction =
   | ClientActionColorClue
   | ClientActionRankClue;
 
-type _Test = CompositionTypeSatisfiesEnum<
-  ClientAction,
-  Exclude<ActionType, ActionType.GameOver>
->;
+type _Test = CompositionTypeSatisfiesEnum<ClientAction, ActionType>;
 
 interface ClientActionPlay {
   type: ActionType.Play;

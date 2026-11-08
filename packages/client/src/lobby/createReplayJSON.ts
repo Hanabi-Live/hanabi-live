@@ -1,4 +1,4 @@
-import { SITE_URL } from "@hanabi-live/data";
+import { ActionType, SITE_URL } from "@hanabi-live/data";
 import type {
   CardOrder,
   ColorIndex,
@@ -15,7 +15,6 @@ import {
 import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
 import { SelfChatMessageType, sendSelfPMFromServer } from "../chat";
-import { ActionType } from "../game/types/ActionType";
 import type {
   ClientAction,
   ClientActionClue,

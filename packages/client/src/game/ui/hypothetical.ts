@@ -1,13 +1,13 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen.
 
+import { ActionType } from "@hanabi-live/data";
 import type {
   HypotheticalActionIntent,
   HypotheticalCardView,
   PlayerIndex,
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
-import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
