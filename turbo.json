@@ -211,6 +211,41 @@
       ],
       "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
       "outputs": []
+    },
+    "//#test-critical-css": {
+      "inputs": [
+        "bun.lock",
+        "package.json",
+        "packages/scripts/src/buildCSS.mts",
+        "packages/testing/package.json",
+        "packages/testing/src/criticalCSS.ts",
+        "packages/testing/src/database.ts",
+        "packages/testing/src/mainProcessSupport.ts",
+        "packages/testing/src/redisFixture.ts",
+        "packages/testing/src/runTests.ts",
+        "public/css/**",
+        "!public/css/main.*.min.css",
+        "public/webfonts/**",
+        "server/templates/**"
+      ],
+      "env": [
+        "CARGO_BUILD_TARGET",
+        "CARGO_ENCODED_RUSTFLAGS",
+        "CI",
+        "HANABI_BUILD_REVISION",
+        "HANABI_TEST_DATABASE_URL",
+        "ImageOS",
+        "ImageVersion",
+        "LD_LIBRARY_PATH",
+        "NODE_ENV",
+        "RUNNER_ARCH",
+        "RUNNER_OS",
+        "RUSTFLAGS",
+        "RUSTUP_TOOLCHAIN",
+        "TZ"
+      ],
+      "passThroughEnv": ["CARGO_HOME", "RUSTUP_HOME"],
+      "outputs": []
     }
   }
 }

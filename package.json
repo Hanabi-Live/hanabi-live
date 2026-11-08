@@ -73,6 +73,7 @@
   },
   "scripts": {
     "build-client": "bash packages/client/build-client.sh",
+    "build-critical-css": "bun packages/testing/src/runTests.ts critical-css --write",
     "build-standalone": "bash scripts/dev/build-standalone.sh",
     "check-css": "bash scripts/lint/check-css.sh",
     "check-knip": "bunx --bun --no-install knip --treat-config-hints-as-errors",
@@ -85,9 +86,10 @@
     "lint-package-json": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/lintPackageJSON.mts",
     "lint-rust": "bash scripts/lint/check-rust.sh",
     "prepare": "husky",
-    "test": "bunx --bun --no-install turbo run test-client test-rust test-bun --cache=local:rw --output-logs=new-only --concurrency=1",
+    "test": "bunx --bun --no-install turbo run test-client test-rust test-bun test-critical-css --cache=local:rw --output-logs=new-only --concurrency=1",
     "test-bun": "bun packages/testing/src/runTests.ts bun",
     "test-client": "bun run --cwd packages/client test",
+    "test-critical-css": "bun packages/testing/src/runTests.ts critical-css",
     "test-rust": "bun packages/testing/src/runTests.ts rust",
     "update": "bun --tsconfig-override tsconfig.monorepo.json ./packages/scripts/src/update.mts"
   },

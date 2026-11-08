@@ -22,9 +22,6 @@ server/Cargo.lock
 # Images
 *.svg
 
-# Temporary files
-critical.css
-
 # Specially formatted JSON files
 example_game_with_comments.jsonc
 server/.sqlx

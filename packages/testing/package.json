@@ -11,6 +11,8 @@
     "@types/bun": "catalog:",
     "@types/ws": "catalog:",
     "complete-common": "catalog:",
+    "lightningcss": "catalog:",
+    "playwright": "catalog:",
     "postgres": "catalog:",
     "ws": "catalog:",
     "zod": "catalog:"

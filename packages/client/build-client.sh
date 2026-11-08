@@ -41,9 +41,6 @@ echo
 echo "Packing the CSS using Lightning CSS..."
 CSS_DIR="$REPO_ROOT/public/css"
 bun "$REPO_ROOT/packages/scripts/src/buildCSS.mts" "$CSS_DIR/main.$VERSION.min.css"
-if [[ ${1-} == "crit" ]]; then
-  bash "$DIR/build-critical-css.sh"
-fi
 echo
 
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"

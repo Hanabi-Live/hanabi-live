@@ -24,16 +24,17 @@ const config = {
     },
     "packages/scripts": {
       entry: [
-        // Run from shell scripts.
-        "src/buildCSS.mts",
-        "src/buildCriticalCSS.mts",
+        "src/buildCSS.mts", // Run from shell scripts.
       ],
     },
     "packages/game": {
       entry: ["src/**/*.test.ts"],
     },
     "packages/testing": {
-      entry: ["src/**/*.test.ts"],
+      entry: [
+        "src/**/*.test.ts",
+        "src/criticalCSS.ts", // Run by "runTests.ts".
+      ],
       // Bun reports "ws" as a built-in module, so Knip cannot see that it is used when running
       // under Bun.
       ignoreDependencies: "Bun" in globalThis ? ["@types/ws", "ws"] : [],

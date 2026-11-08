@@ -5,5 +5,17 @@
     "../../tsconfig.monorepo.json",
     "complete-tsconfig/tsconfig.node.json",
   ],
-  "compilerOptions": { "types": ["bun"] },
+  "compilerOptions": {
+    "types": ["bun"],
+    // The Node.js libraries, plus the DOM for the code that "criticalCSS.ts" runs in a page.
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Iterator",
+      "ESNext.Promise",
+      "DOM",
+      "DOM.Iterable",
+    ],
+  },
 }

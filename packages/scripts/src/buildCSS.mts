@@ -1,6 +1,5 @@
-// Minifies the stylesheets with Lightning CSS, failing on any CSS that it cannot parse. Usage:
-// - `bun buildCSS.mts <output>` bundles the stylesheets that production pages load.
-// - `bun buildCSS.mts --critical` minifies the critical CSS that "build-critical-css.sh" generates.
+// Bundles the stylesheets that production pages load and minifies them with Lightning CSS, failing
+// on any CSS that it cannot parse. Usage: `bun buildCSS.mts <output>`
 
 import { transform } from "lightningcss";
 import path from "node:path";
@@ -59,15 +58,7 @@ function location(error: unknown): string {
 async function main() {
   const [output, ...rest] = process.argv.slice(2);
   if (output === undefined || rest.length > 0) {
-    fail("Usage: bun buildCSS.mts <output> | --critical");
-  }
-
-  if (output === "--critical") {
-    await Bun.write(
-      path.join(CSS_DIR, "critical.min.css"),
-      await minify("critical.css"),
-    );
-    return;
+    fail("Usage: bun buildCSS.mts <output>");
   }
 
   const minified = await Promise.all(BUNDLE.map(minify));

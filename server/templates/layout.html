@@ -67,12 +67,23 @@
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
     <link rel="stylesheet" type="text/css" href="/public/css/dark.css" />
     {% else %}
-    <!-- Delay loading non-critical CSS. -->
+    <!-- Load the rest of the CSS without blocking the first render, which the critical CSS styles. -->
     <link
-      rel="stylesheet"
-      type="text/css"
+      rel="preload"
+      as="style"
       href="/public/css/main.{{ version }}.min.css"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        type="text/css"
+        href="/public/css/main.{{ version }}.min.css"
+      />
+    </noscript>
     {% endif %}
     <link
       rel="icon"

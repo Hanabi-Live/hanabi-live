@@ -10,7 +10,6 @@
     "complete-node": "catalog:",
     "lightningcss": "catalog:",
     "lodash": "catalog:",
-    "playwright": "catalog:",
     "prettier": "catalog:"
   },
   "devDependencies": {
