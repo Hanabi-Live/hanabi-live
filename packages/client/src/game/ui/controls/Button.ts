@@ -70,12 +70,14 @@ export class Button extends Konva.Group {
       });
       this.add(this.textElement);
     } else if (images !== undefined && images.length > 0) {
-      // The image fills the middle of the button, with a margin on every side.
+      // The image fills the middle of the button, with an equal margin on every side.
+      const imageScale = 0.6;
+      const imageMargin = (1 - imageScale) / 2;
       const imageBox = {
-        x: 0.2 * w,
-        y: 0.2 * h,
-        width: 0.6 * w,
-        height: 0.6 * h,
+        x: imageMargin * w,
+        y: imageMargin * h,
+        width: imageScale * w,
+        height: imageScale * h,
       };
       this.imageElement = new Konva.Image({
         ...imageBox,

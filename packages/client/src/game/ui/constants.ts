@@ -15,6 +15,12 @@ export const TOP_LEFT_Y = 0.05 * CARD_H;
 export const BOTTOM_LEFT_X = 0.06 * CARD_W;
 export const BOTTOM_LEFT_Y = 0.82 * CARD_H;
 
+/** How far a card's shadow falls down and to the right while it rests in place. */
+export const CARD_SHADOW_OFFSET = Math.floor(0.04 * CARD_W);
+
+/** A larger shadow offset that makes a dragged card look lifted off the table. */
+export const DRAGGED_CARD_SHADOW_OFFSET = Math.floor(0.12 * CARD_W);
+
 /**
  * How far the corner indicators move toward the middle of a card when it has triangles in its
  * corners that show the color composition, as a fraction of the card's width or height.

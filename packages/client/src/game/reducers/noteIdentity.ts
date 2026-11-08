@@ -7,6 +7,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   ALL_RESERVED_NOTES,
+  DEFAULT_CARD_RANKS,
   RANK_GROUP_NAMES,
   SQUISH_GROUP_NAME,
   START_CARD_RANK,
@@ -59,28 +60,10 @@ function parseRank(rankText: string): Rank | null {
       return START_CARD_RANK;
     }
 
-    case "1": {
-      return 1;
-    }
-
-    case "2": {
-      return 2;
-    }
-
-    case "3": {
-      return 3;
-    }
-
-    case "4": {
-      return 4;
-    }
-
-    case "5": {
-      return 5;
-    }
-
     default: {
-      return null;
+      return (
+        DEFAULT_CARD_RANKS.find((rank) => rank.toString() === rankText) ?? null
+      );
     }
   }
 }

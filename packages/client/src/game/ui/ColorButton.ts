@@ -76,15 +76,17 @@ export class ColorButton extends Konva.Group {
         });
         this.add(text);
       } else {
-        // Draw the suit pip that corresponds to this color.
+        // Draw the suit pip that corresponds to this color, centered on the button. The offset is
+        // in the shape's unscaled units.
+        const suitPipScale = 0.25;
         const suitPip = new Konva.Shape({
           scale: {
-            x: 0.25,
-            y: 0.25,
+            x: suitPipScale,
+            y: suitPipScale,
           },
           offset: {
-            x: w * -2,
-            y: h * -2,
+            x: -w / 2 / suitPipScale,
+            y: -h / 2 / suitPipScale,
           },
           sceneFunc: (ctx: KonvaContext.Context) => {
             drawPip(ctx as unknown as CanvasRenderingContext2D, suit, variant);

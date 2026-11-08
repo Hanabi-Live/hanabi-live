@@ -19,6 +19,7 @@ import {
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
   CARD_H,
+  CARD_SHADOW_OFFSET,
   CARD_W,
   CHOP_MOVE_COLOR,
   CLUED_COLOR,
@@ -63,8 +64,8 @@ export function image(getBareName: () => string): Konva.Image {
     shadowEnabled: false,
     shadowColor: "black",
     shadowOffset: {
-      x: Math.floor(0.04 * CARD_W),
-      y: Math.floor(0.04 * CARD_W),
+      x: CARD_SHADOW_OFFSET,
+      y: CARD_SHADOW_OFFSET,
     },
     shadowOpacity: CARD_SHADOW_OPACITY,
     listening: true, // As the main card element, this must be listening in order for events to fire

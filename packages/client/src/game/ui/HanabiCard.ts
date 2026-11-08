@@ -42,7 +42,9 @@ import {
   CARD_ANIMATION_LENGTH_SECONDS,
   CARD_FADE,
   CARD_H,
+  CARD_SHADOW_OFFSET,
   CARD_W,
+  DRAGGED_CARD_SHADOW_OFFSET,
 } from "./constants";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import type { NoteIndicator } from "./controls/NoteIndicator";
@@ -824,8 +826,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   setShadowOffset(duration = RAISE_DURATION_SECONDS): void {
     // Shadow special effects
     const shadowOffset = this.dragging
-      ? Math.floor(0.12 * CARD_W)
-      : Math.floor(0.04 * CARD_W);
+      ? DRAGGED_CARD_SHADOW_OFFSET
+      : CARD_SHADOW_OFFSET;
     if (globals.animateFast) {
       this.bare.shadowOffsetX(shadowOffset);
       this.bare.shadowOffsetY(shadowOffset);

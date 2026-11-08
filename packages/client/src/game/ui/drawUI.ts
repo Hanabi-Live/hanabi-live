@@ -1987,6 +1987,7 @@ function drawClueArea() {
     x: 0,
     y: rankY + buttonH + buttonYSpacing,
     w: 0.236,
+    h: 0.051,
   };
   giveClueValues.x = clueAreaValues.w! * 0.5 - giveClueValues.w! * 0.5;
 
@@ -1994,7 +1995,7 @@ function drawClueArea() {
     x: giveClueValues.x * winW,
     y: giveClueValues.y * winH,
     width: giveClueValues.w! * winW,
-    height: 0.051 * winH,
+    height: giveClueValues.h! * winH,
     text: "Give Clue",
   });
   globals.elements.giveClueButton.setEnabled(false);
@@ -2251,6 +2252,10 @@ function drawHypotheticalArea() {
 
   globals.layers.UI.add(globals.elements.hypoButtonsArea);
 
+  // The hypothetical buttons share the row of the give clue button.
+  const hypoButtonHeight = giveClueValues.h!;
+  const hypoButtonFontSize = 0.019;
+
   // The "Back 1 Turn" button (to the right of the give clue button).
   const hypoBackButtonValues = {
     x:
@@ -2261,7 +2266,7 @@ function drawHypotheticalArea() {
       - 0.05,
     y: clueAreaValues.y + lowerClueAreaValues.y + giveClueValues.y,
     w: 0.035,
-    h: 0.051,
+    h: hypoButtonHeight,
   };
 
   globals.elements.hypoBackButton = new Button({
@@ -2270,7 +2275,7 @@ function drawHypotheticalArea() {
     width: hypoBackButtonValues.w * winW,
     height: hypoBackButtonValues.h * winH,
     text: "Back",
-    fontSize: 0.019 * winH,
+    fontSize: hypoButtonFontSize * winH,
   });
 
   globals.elements.hypoBackButton.tooltipName = "hypo-back";
@@ -2287,7 +2292,6 @@ function drawHypotheticalArea() {
   );
 
   const hypoButtonWidth = 0.075;
-  const hypoButtonHeight = 0.051;
   const hypoButtonSpacing = 0.008;
 
   // The "End Hypothetical" button (to the right of the back button).
@@ -2302,7 +2306,7 @@ function drawHypotheticalArea() {
     width: hypoButtonWidth * winW,
     height: hypoButtonHeight * winH,
     text: "Exit Hypo",
-    fontSize: 0.019 * winH,
+    fontSize: hypoButtonFontSize * winH,
   });
   globals.elements.hypoButtonsArea.add(
     endHypotheticalButton as unknown as Konva.Group,
@@ -2323,7 +2327,7 @@ function drawHypotheticalArea() {
     width: hypoButtonWidth * winW,
     height: hypoButtonHeight * winH,
     text: "Edit Cards",
-    fontSize: 0.019 * winH,
+    fontSize: hypoButtonFontSize * winH,
   });
 
   globals.elements.editCardsButton.tooltipName = "hypo-edit-cards";

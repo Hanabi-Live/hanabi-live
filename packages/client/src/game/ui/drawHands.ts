@@ -402,20 +402,21 @@ export function drawHands(winW: number, winH: number): void {
       globals.elements.playerHandBlackLines.push(blackLine);
     } else {
       // In BGA mode, we show a black box around a player's hand to indicate that it is their turn.
+      // The box extends past the hand by these fractions of its size, split evenly between opposite
+      // sides. The black box should always be as wide as the name frame.
+      const paddingW = numPlayers === 5 ? 0.055 : 0.025;
+      const paddingH = 0.075;
       const turnRectValues = {
-        // The black box should always be as wide as the name frame.
         x: handValues.x,
         y: handValues.y,
-        w: handValues.w * 1.025,
-        h: handValues.h * 1.075,
-        offsetX: handValues.w * 0.0125,
-        offsetY: handValues.h * 0.0375,
+        w: handValues.w * (1 + paddingW),
+        h: handValues.h * (1 + paddingH),
+        offsetX: (handValues.w * paddingW) / 2,
+        offsetY: (handValues.h * paddingH) / 2,
       };
 
-      if (numPlayers === 5) {
-        turnRectValues.w += handValues.w * 0.03;
-        turnRectValues.offsetX += handValues.w * 0.015;
-      } else if (numPlayers === 6) {
+      if (numPlayers === 6) {
+        // Extend only the bottom edge.
         turnRectValues.h += 0.005;
       }
       const turnRect = new Konva.Rect({

@@ -22,11 +22,13 @@ export class FullActionLog extends Konva.Group {
   private readonly textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
+    // The log fills the height of the stage, with an equal margin above and below.
+    const marginY = 0.02;
     const width = 0.4 * winW;
-    const height = 0.96 * winH;
+    const height = (1 - 2 * marginY) * winH;
     super({
       x: 0.2 * winW,
-      y: 0.02 * winH,
+      y: marginY * winH,
       width,
       height,
       clipX: 0,
@@ -55,13 +57,15 @@ export class FullActionLog extends Konva.Group {
     const margin = 0.01 * winH;
     const textHeight = height - 2 * margin;
     const fontSize = 0.025 * winH;
+    const numbersX = 0.01;
+    const numbersWidth = 0.03;
 
     // The text for each action.
     this.textOptions = {
       fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
-      x: 0.04 * winW,
+      x: (numbersX + numbersWidth) * winW,
       y: margin,
       width: 0.35 * winW,
       height: textHeight,
@@ -73,9 +77,9 @@ export class FullActionLog extends Konva.Group {
       fontSize,
       fontFamily: FONT_FAMILY,
       fill: getCanvasColors().actionLogNumber,
-      x: 0.01 * winW,
+      x: numbersX * winW,
       y: margin,
-      width: 0.03 * winW,
+      width: numbersWidth * winW,
       height: textHeight,
       listening: false,
     };
