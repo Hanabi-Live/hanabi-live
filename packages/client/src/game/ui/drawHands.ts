@@ -9,6 +9,7 @@ import {
   CARD_H,
   CARD_W,
   FONT_FAMILY,
+  FULL_CARD_STAGE_SIZE,
   OFF_BLACK,
   TEXT_SHADOW,
 } from "./constants";
@@ -34,33 +35,36 @@ export function drawHands(winW: number, winH: number): void {
 
   // In Keldon mode, the hand positions are different depending on the amount of players, so they
   // have to be hard-coded.
-  const handPos6H = 0.165; // 5-player is 0.189
-  const handPos6Ratio = 0.34 / 0.189;
+  const keldonHandH = FULL_CARD_STAGE_SIZE.H;
+  /** The width of a hand that does not span the board, such as in 4-player games. */
+  const narrowHandW = 0.34;
+  const handPos6H = 0.165;
+  const handPos6Ratio = narrowHandW / keldonHandH;
   const handPos6W = handPos6H * handPos6Ratio * 0.75;
   handPos[2] = [
-    { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-    { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
+    { x: 0.19, y: 0.77, w: 0.42, h: keldonHandH, rot: 0 },
+    { x: 0.19, y: 0.01, w: 0.42, h: keldonHandH, rot: 0 },
   ];
   handPos[3] = [
-    { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-    { x: 0.011, y: 0.73, w: 0.41, h: 0.189, rot: -82 },
-    { x: 0.735, y: 0.024, w: 0.41, h: 0.189, rot: 82 },
+    { x: 0.19, y: 0.77, w: 0.42, h: keldonHandH, rot: 0 },
+    { x: 0.011, y: 0.73, w: 0.41, h: keldonHandH, rot: -82 },
+    { x: 0.735, y: 0.024, w: 0.41, h: keldonHandH, rot: 82 },
   ];
   handPos[4] = [
-    { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.015, y: 0.68, w: 0.34, h: 0.189, rot: -78 },
-    { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
+    { x: 0.23, y: 0.77, w: narrowHandW, h: keldonHandH, rot: 0 },
+    { x: 0.015, y: 0.68, w: narrowHandW, h: keldonHandH, rot: -78 },
+    { x: 0.23, y: 0.01, w: narrowHandW, h: keldonHandH, rot: 0 },
+    { x: 0.715, y: 0.095, w: narrowHandW, h: keldonHandH, rot: 78 },
   ];
   handPos[5] = [
-    { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
+    { x: 0.23, y: 0.77, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.03, y: 0.756, w: 0.301, h: 0.18, rot: -90 },
-    { x: 0.0205, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.44, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
+    { x: 0.0205, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
+    { x: 0.44, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.77, y: 0.238, w: 0.301, h: 0.18, rot: 90 },
   ];
   handPos[6] = [
-    { x: 0.273, y: 0.77, w: 0.34 * 0.75, h: 0.189, rot: 0 },
+    { x: 0.273, y: 0.77, w: narrowHandW * 0.75, h: keldonHandH, rot: 0 },
     { x: 0.03, y: 0.72, w: 0.301 * 0.8, h: 0.18, rot: -90 },
     { x: 0.0235, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
     { x: 0.289, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },

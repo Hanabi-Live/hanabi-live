@@ -1,3 +1,4 @@
+import { MIN_PLAYERS } from "@hanabi-live/game";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
 import * as clues from "../../clues";
@@ -48,10 +49,10 @@ export function onActiveChanged(data: {
   // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
   // changes in the middle of a hypothetical.
   globals.elements.clueTargetButtonGroup?.visible(
-    globals.options.numPlayers !== 2 && !data.hypotheticalActive,
+    globals.options.numPlayers !== MIN_PLAYERS && !data.hypotheticalActive,
   );
   globals.elements.clueTargetButtonGroup2?.visible(
-    globals.options.numPlayers !== 2 && data.hypotheticalActive,
+    globals.options.numPlayers !== MIN_PLAYERS && data.hypotheticalActive,
   );
 
   globals.layers.UI.batchDraw();
@@ -131,7 +132,7 @@ export function onStatesLengthChanged(): void {
     button.setEnabled(enabled);
 
     // In 2-player games, default the clue recipient button to the only other player available.
-    if (globals.options.numPlayers === 2 && enabled) {
+    if (globals.options.numPlayers === MIN_PLAYERS && enabled) {
       button.setPressed(true);
     }
   }

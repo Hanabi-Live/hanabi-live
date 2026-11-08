@@ -28,12 +28,33 @@ const BLIND_PLAY_SOUND_TYPES = [
   SoundType.Blind6,
 ] as const;
 
+/** The sound for each consecutive misplay, starting from the first. */
+const MISPLAY_SOUND_TYPES = [SoundType.Fail1, SoundType.Fail2] as const;
+
 export const SOUND_TYPE_ACTIONS = [
   "clue",
   "discard",
   "gameOver",
   "play",
 ] as const;
+
+/**
+ * Gets the sound for the latest of `count` consecutive events. Every event after the last one in
+ * the list repeats its sound.
+ */
+function getConsecutiveSoundType(
+  soundTypes: readonly SoundType[],
+  count: number,
+  eventName: string,
+): SoundType {
+  const soundType = soundTypes[Math.min(count, soundTypes.length) - 1];
+  if (soundType === undefined) {
+    throw new Error(
+      `Failed to get the sound effect for the ${eventName} count of: ${count}`,
+    );
+  }
+  return soundType;
+}
 
 export function getSoundType(
   previousGameState: GameState | undefined,
@@ -102,9 +123,11 @@ export function getSoundType(
 
     case "discard": {
       if (action.failed) {
-        return gameState.stats.numSubsequentMisplays === 2
-          ? SoundType.Fail2
-          : SoundType.Fail1;
+        return getConsecutiveSoundType(
+          MISPLAY_SOUND_TYPES,
+          gameState.stats.numSubsequentMisplays,
+          "misplay",
+        );
       }
 
       if (
@@ -175,18 +198,11 @@ export function getSoundType(
       const cardState = gameState.deck[action.order];
       const touched = cardState !== undefined && isCardClued(cardState);
       if (!touched) {
-        // Every blind play after the last one in the list repeats its sound.
-        const { numSubsequentBlindPlays } = gameState.stats;
-        const blindPlaySoundType =
-          BLIND_PLAY_SOUND_TYPES[
-            Math.min(numSubsequentBlindPlays, BLIND_PLAY_SOUND_TYPES.length) - 1
-          ];
-        if (blindPlaySoundType === undefined) {
-          throw new Error(
-            `Failed to get the sound effect for the blind play count of: ${numSubsequentBlindPlays}`,
-          );
-        }
-        return blindPlaySoundType;
+        return getConsecutiveSoundType(
+          BLIND_PLAY_SOUND_TYPES,
+          gameState.stats.numSubsequentBlindPlays,
+          "blind play",
+        );
       }
 
       if (isOrderChopMove(previousGameState, action, metadata)) {

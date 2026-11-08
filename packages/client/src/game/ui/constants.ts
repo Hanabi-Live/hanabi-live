@@ -11,6 +11,15 @@ export const CARD_H = 406;
 export const CARD_FADE = 0.6;
 export const STRIKE_FADE = 0.175;
 
+/**
+ * The size of a full-size card on the game board, as fractions of the stage width and height. A
+ * hand on the game board is one card tall.
+ */
+export const FULL_CARD_STAGE_SIZE = {
+  W: 0.075,
+  H: 0.189,
+} as const;
+
 /** Based on the card's width, but used for both the icon's width and height. */
 export const SMALL_ICON_SIZE = 0.2 * CARD_W;
 

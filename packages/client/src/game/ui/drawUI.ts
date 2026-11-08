@@ -11,6 +11,7 @@ import type {
 import {
   MAX_CARDS_PER_HAND,
   MAX_SUITS,
+  MIN_PLAYERS,
   ODD_RANK_CLUE,
   getTotalCardsInDeck,
   newColorClue,
@@ -46,6 +47,7 @@ import {
   CARD_ANIMATION_LENGTH_SECONDS,
   EFFICIENCY_DECIMAL_PLACES,
   FONT_FAMILY,
+  FULL_CARD_STAGE_SIZE,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
   LINE_SHADOW,
@@ -345,8 +347,8 @@ function drawPlayStacks() {
     cardHeight = 0.151;
     yOffset = 0.019;
   } else {
-    cardWidth = 0.075;
-    cardHeight = 0.189;
+    cardWidth = FULL_CARD_STAGE_SIZE.W;
+    cardHeight = FULL_CARD_STAGE_SIZE.H;
     yOffset = 0;
   }
   const playStackValues: PlayStackValues = {
@@ -615,8 +617,8 @@ function drawDeck() {
   deckValues = {
     x: bottomLeftButtonValues.x + bottomLeftButtonValues.w! + 0.01,
     y: bottomLeftButtonValues.y,
-    w: 0.075,
-    h: 0.189,
+    w: FULL_CARD_STAGE_SIZE.W,
+    h: FULL_CARD_STAGE_SIZE.H,
   };
 
   // This is the faded rectangle that is hidden until all of the deck has been depleted. (This has
@@ -1759,7 +1761,8 @@ function drawClueArea() {
 
   // If this is a two player game, we can slide the clue UI down by a bit (since the clue target
   // buttons won't be shown).
-  const playerButtonAdjustment = numPlayers === 2 ? playerButtonH / 2 : 0;
+  const playerButtonAdjustment =
+    numPlayers === MIN_PLAYERS ? playerButtonH / 2 : 0;
 
   // This is the normal button group, which does not include us.
   globals.elements.clueTargetButtonGroup = new ButtonGroup({
@@ -1793,7 +1796,7 @@ function drawClueArea() {
   globals.elements.clueArea.add(
     globals.elements.clueTargetButtonGroup as unknown as Konva.Group,
   );
-  if (numPlayers === 2) {
+  if (numPlayers === MIN_PLAYERS) {
     // The clue target buttons are pointless if we are playing a 2-player game (because we only have
     // the ability to clue one player).
     globals.elements.clueTargetButtonGroup.hide();

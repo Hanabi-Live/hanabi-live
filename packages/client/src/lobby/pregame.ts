@@ -392,7 +392,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
       </div>
     </div>
   `;
-  if (numPlayers > 1) {
+  if (numPlayers >= MIN_PLAYERS) {
     html += `
       <div class="row">
         <div class="col-10">
@@ -407,7 +407,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
   html += `
     <div class="row">
       <div class="col-10">
-        ${numPlayers === 1 ? "B" : "Other b"}est scores:
+        ${numPlayers < MIN_PLAYERS ? "B" : "Other b"}est scores:
       </div>
       <div class="col-2 align-right padding0">
         <i id="lobby-pregame-player-${
