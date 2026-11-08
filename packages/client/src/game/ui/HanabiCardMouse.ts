@@ -8,7 +8,7 @@ import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
-import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
+import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants";
 import * as cursor from "./cursor";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
@@ -84,7 +84,7 @@ function touchStart(
       tooltips.close(globals.editingNote);
       tooltips.close(`#tooltip-${this.tooltipName}`);
     }
-  }, DOUBLE_TAP_DELAY_SECONDS);
+  }, DOUBLE_TAP_DELAY_MILLISECONDS);
 
   // Do all of the same things that would occur if we hovered over the card.
   mouseEnter.call(this);

@@ -2,7 +2,7 @@
 
 import { isCardDiscarded, isCardPlayed } from "@hanabi-live/game";
 import type { HanabiCard } from "./HanabiCard";
-import { DOUBLE_TAP_DELAY_SECONDS } from "./constants";
+import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants";
 import * as notes from "./notes";
 import * as replay from "./replay";
 
@@ -25,7 +25,7 @@ export function HanabiCardTap(this: HanabiCard): void {
       HanabiCardTapAction.call(this);
     }
     this.wasRecentlyTapped = false;
-  }, DOUBLE_TAP_DELAY_SECONDS);
+  }, DOUBLE_TAP_DELAY_MILLISECONDS);
 }
 
 function HanabiCardTapAction(this: HanabiCard) {
