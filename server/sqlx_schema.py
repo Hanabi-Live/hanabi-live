@@ -96,10 +96,17 @@ if __name__ == "__main__":
     try:
         main()
     except (ValueError, OSError, subprocess.CalledProcessError) as error:
-        # Command arguments may contain a password-bearing connection URL.
-        print(
-            str(error) if isinstance(error, ValueError) else
-            "SQLx schema preparation failed; check the command output above.",
-            file=sys.stderr,
-        )
+        # Command arguments may contain a password-bearing connection URL, so name only the program.
+        if isinstance(error, subprocess.CalledProcessError):
+            message = (
+                f"SQLx schema preparation failed: {error.cmd[0]} exited with status "
+                f"{error.returncode}; check its output above."
+            )
+        elif isinstance(error, FileNotFoundError):
+            message = f"SQLx schema preparation failed: {error.filename} was not found."
+        elif isinstance(error, OSError):
+            message = f"SQLx schema preparation failed: {error.filename}: {error.strerror}"
+        else:
+            message = str(error)
+        print(message, file=sys.stderr)
         sys.exit(1)
