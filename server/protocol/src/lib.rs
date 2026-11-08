@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 mod registry;
 pub use registry::{
-    ClientMessage, ServerMessage, client_contracts, decode, decode_client, decode_server, server,
+    ClientMessage, ServerMessage, client_contracts, decode, decode_server, server,
     server_contracts, validate,
 };
 
@@ -243,72 +243,8 @@ pub struct TagSearchRequest {
     pub room: String,
 }
 
-fn two() -> u8 {
-    2
-}
-
-fn no_variant() -> String {
-    "No Variant".into()
-}
-
 fn five() -> i64 {
     5
-}
-
-/// Game options for a new or updated table. Unset values take their defaults.
-#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TableOptions {
-    #[serde(default = "two")]
-    #[schemars(range(min = 2, max = 6))]
-    pub num_players: u8,
-    /// Only games from before April 2020 used another starting seat.
-    #[serde(default)]
-    #[schemars(range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub starting_player: i64,
-    #[serde(default = "no_variant")]
-    pub variant_name: String,
-    #[serde(default, rename = "variantID", skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32", range(min = 0, max = u32::MAX))]
-    pub variant_id: Option<u32>,
-    #[serde(default)]
-    pub timed: bool,
-    /// Minutes.
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_base: i64,
-    /// Seconds.
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub time_per_turn: i64,
-    #[serde(default)]
-    pub speedrun: bool,
-    #[serde(default)]
-    pub card_cycle: bool,
-    #[serde(default)]
-    pub deck_plays: bool,
-    #[serde(default)]
-    pub empty_clues: bool,
-    #[serde(default)]
-    pub one_extra_card: bool,
-    #[serde(default)]
-    pub one_less_card: bool,
-    #[serde(default)]
-    pub all_or_nothing: bool,
-    #[serde(default)]
-    pub detrimental_characters: bool,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "String")]
-    pub table_name: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u8", range(min = 2, max = 6))]
-    pub max_players: Option<u8>,
-}
-
-impl Default for TableOptions {
-    fn default() -> Self {
-        serde_json::from_value(serde_json::json!({})).expect("every option has a default")
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -318,7 +254,7 @@ pub struct TableCreateRequest {
     #[serde(default)]
     pub name: String,
     #[serde(default)]
-    pub options: TableOptions,
+    pub options: GameOptions,
     #[serde(default)]
     pub password: String,
     #[serde(default = "five")]
@@ -340,7 +276,7 @@ pub struct TableUpdateRequest {
     #[serde(default)]
     pub name: String,
     #[serde(default)]
-    pub options: TableOptions,
+    pub options: GameOptions,
     #[serde(default)]
     pub password: String,
     #[serde(default = "five")]
@@ -1074,7 +1010,8 @@ pub struct Welcome {
     pub discon_shadowing_seat: Option<i8>,
 }
 
-/// A table's game options. Missing fields take the same defaults as the client's options.
+/// A table's game options, as clients request them and as the server reports them. Missing fields
+/// take their defaults.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
@@ -1574,7 +1511,6 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         HistoryRequest,
         HistorySeedRequest,
         TagSearchRequest,
-        TableOptions,
         TableCreateRequest,
         TableUpdateRequest,
         ReplayCreateRequest,
@@ -1664,7 +1600,8 @@ mod tests {
         for case in cases {
             let command = case["command"].as_str().unwrap();
             let result = if case["direction"] == "client" {
-                decode_client(command, &case["input"])
+                ClientMessage::decode(command, &case["input"])
+                    .map(|message| message.map(|message| message.data()))
             } else {
                 decode_server(command, &case["input"])
             };

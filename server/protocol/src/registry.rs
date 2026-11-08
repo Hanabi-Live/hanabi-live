@@ -7,53 +7,53 @@ use std::{collections::BTreeMap, marker::PhantomData, sync::LazyLock};
 macro_rules! client_contracts {
     ($apply:ident) => {
         $apply! {
-            LobbyLoad "lobbyLoad" => Empty, Empty;
-            Sync "sync" => Empty, Empty;
-            Chat "chat" => ChatRequest, ChatRequest;
-            ChatPM "chatPM" => ChatPmRequest, ChatPmRequest;
-            ChatPMHistoryGet "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
-            ChatFriend "chatFriend" => ChatUserRequest, ChatUserRequest;
-            ChatUnfriend "chatUnfriend" => ChatUserRequest, ChatUserRequest;
-            ChatLink "chatLink" => ChatUserRequest, ChatUserRequest;
-            ChatUnlink "chatUnlink" => ChatUserRequest, ChatUserRequest;
-            ChatPlayerInfo "chatPlayerInfo" => ChatUserRequest, ChatUserRequest;
-            ChatLinked "chatLinked" => ChatLinkedRequest, ChatLinkedRequest;
-            ChatBlock "chatBlock" => ChatUserRequest, ChatUserRequest;
-            ChatUnblock "chatUnblock" => ChatUserRequest, ChatUserRequest;
-            ChatBlocked "chatBlocked" => ChatLinkedRequest, ChatLinkedRequest;
-            ChatRead "chatRead" => TableRequest, TableRequest;
-            ChatTyping "chatTyping" => TableRequest, TableRequest;
-            TableJoin "tableJoin" => TableJoinRequest, TableJoinRequest;
-            TableLeave "tableLeave" => TableRequest, TableRequest;
-            TableReattend "tableReattend" => TableRequest, TableRequest;
-            TableSetLeader "tableSetLeader" => TableLeaderRequest, TableLeaderRequest;
-            TableSetVariant "tableSetVariant" => TableVariantRequest, TableVariantRequest;
-            TableStart "tableStart" => TableStartRequest, TableStartRequest;
-            TableRestart "tableRestart" => TableRestartRequest, TableRestartRequest;
-            TableSuggest "tableSuggest" => TableSuggestRequest, TableSuggestRequest;
-            TableSpectate "tableSpectate" => TableSpectateRequest, TableSpectateRequest;
-            TableUnattend "tableUnattend" => TableCommand, TableCommand;
-            TableTerminate "tableTerminate" => TableCommand, TableCommand;
-            TableVoteForTermination "tableVoteForTermination" => TableCommand, TableCommand;
-            GetGameInfo1 "getGameInfo1" => TableCommand, TableCommand;
-            GetGameInfo2 "getGameInfo2" => TableCommand, TableCommand;
-            Loaded "loaded" => TableCommand, TableCommand;
-            Setting "setting" => SettingRequest, SettingRequest;
-            Inactive "inactive" => InactiveRequest, InactiveRequest;
-            HistoryGet "historyGet" => HistoryRequest, HistoryRequest;
-            HistoryGetSeed "historyGetSeed" => HistorySeedRequest, HistorySeedRequest;
-            TagSearch "tagSearch" => TagSearchRequest, TagSearchRequest;
-            TableCreate "tableCreate" => TableCreateRequest, TableCreateRequest;
-            TableUpdate "tableUpdate" => TableUpdateRequest, TableUpdateRequest;
-            ReplayCreate "replayCreate" => ReplayCreateRequest, ReplayCreateRequest;
-            Action "action" => ActionRequest, ActionRequest;
-            Pause "pause" => PauseRequest, PauseRequest;
-            IdleReset "idleReset" => TableRequest, TableRequest;
-            Note "note" => NoteRequest, NoteRequest;
-            Tag "tag" => TagRequest, TagRequest;
-            TagDelete "tagDelete" => TagRequest, TagRequest;
-            TagsDeleteAll "tagsDeleteAll" => TagsDeleteAllRequest, TagsDeleteAllRequest;
-            ReplayAction "replayAction" => ReplayActionRequest, ReplayActionRequest;
+            LobbyLoad "lobbyLoad" => Empty;
+            Sync "sync" => Empty;
+            Chat "chat" => ChatRequest;
+            ChatPM "chatPM" => ChatPmRequest;
+            ChatPMHistoryGet "chatPMHistoryGet" => ChatHistoryRequest;
+            ChatFriend "chatFriend" => ChatUserRequest;
+            ChatUnfriend "chatUnfriend" => ChatUserRequest;
+            ChatLink "chatLink" => ChatUserRequest;
+            ChatUnlink "chatUnlink" => ChatUserRequest;
+            ChatPlayerInfo "chatPlayerInfo" => ChatUserRequest;
+            ChatLinked "chatLinked" => ChatLinkedRequest;
+            ChatBlock "chatBlock" => ChatUserRequest;
+            ChatUnblock "chatUnblock" => ChatUserRequest;
+            ChatBlocked "chatBlocked" => ChatLinkedRequest;
+            ChatRead "chatRead" => TableRequest;
+            ChatTyping "chatTyping" => TableRequest;
+            TableJoin "tableJoin" => TableJoinRequest;
+            TableLeave "tableLeave" => TableRequest;
+            TableReattend "tableReattend" => TableRequest;
+            TableSetLeader "tableSetLeader" => TableLeaderRequest;
+            TableSetVariant "tableSetVariant" => TableVariantRequest;
+            TableStart "tableStart" => TableStartRequest;
+            TableRestart "tableRestart" => TableRestartRequest;
+            TableSuggest "tableSuggest" => TableSuggestRequest;
+            TableSpectate "tableSpectate" => TableSpectateRequest;
+            TableUnattend "tableUnattend" => TableCommand;
+            TableTerminate "tableTerminate" => TableCommand;
+            TableVoteForTermination "tableVoteForTermination" => TableCommand;
+            GetGameInfo1 "getGameInfo1" => TableCommand;
+            GetGameInfo2 "getGameInfo2" => TableCommand;
+            Loaded "loaded" => TableCommand;
+            Setting "setting" => SettingRequest;
+            Inactive "inactive" => InactiveRequest;
+            HistoryGet "historyGet" => HistoryRequest;
+            HistoryGetSeed "historyGetSeed" => HistorySeedRequest;
+            TagSearch "tagSearch" => TagSearchRequest;
+            TableCreate "tableCreate" => TableCreateRequest;
+            TableUpdate "tableUpdate" => TableUpdateRequest;
+            ReplayCreate "replayCreate" => ReplayCreateRequest;
+            Action "action" => ActionRequest;
+            Pause "pause" => PauseRequest;
+            IdleReset "idleReset" => TableRequest;
+            Note "note" => NoteRequest;
+            Tag "tag" => TagRequest;
+            TagDelete "tagDelete" => TagRequest;
+            TagsDeleteAll "tagsDeleteAll" => TagsDeleteAllRequest;
+            ReplayAction "replayAction" => ReplayActionRequest;
         }
     };
 }
@@ -61,60 +61,60 @@ macro_rules! client_contracts {
 macro_rules! server_contracts {
     ($apply:ident) => {
         $apply! {
-            RESTART "restart" => Restart, Restart;
-            CLOCK "clock" => Clock, Clock;
-            CONNECTED "connected" => Connected, Connected;
-            PAUSE "pause" => Pause, Pause;
-            IDLE_WARNING "idleWarning" => IdleWarning, IdleWarning;
-            IDLE_RESET "idleReset" => TableRequest, TableRequest;
-            VOTE_CHANGE "voteChange" => VoteChange, VoteChange;
-            CARD_IDENTITIES "cardIdentities" => CardIdentities, CardIdentities;
-            FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame, FinishOngoingGame;
-            REPLAY_SEGMENT "replaySegment" => ReplaySegment, ReplaySegment;
-            REPLAY_INDICATOR "replayIndicator" => ReplayIndicator, ReplayIndicator;
-            REPLAY_SOUND "replaySound" => ReplaySound, ReplaySound;
-            REPLAY_LEADER "replayLeader" => ReplayLeader, ReplayLeader;
-            SUGGESTION "suggestion" => Suggestion, Suggestion;
-            HYPOTHETICAL "hypothetical" => Hypothetical, Hypothetical;
-            HYPO_START "hypoStart" => TableRequest, TableRequest;
-            HYPO_END "hypoEnd" => TableRequest, TableRequest;
-            HYPO_BACK "hypoBack" => TableRequest, TableRequest;
-            HYPO_ACTION "hypoAction" => HypoAction, HypoAction;
-            HYPO_SHOW_DRAWN_CARDS "hypoShowDrawnCards" => HypoShowDrawnCards, HypoShowDrawnCards;
-            NOTE "note" => Note, Note;
-            NOTE_LIST "noteList" => NoteList, NoteList;
-            NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer, NoteListPlayer;
-            GAME_ACTION "gameAction" => GameAction, GameAction;
-            GAME_ACTION_LIST "gameActionList" => GameActionList, GameActionList;
-            INIT "init" => Init, Init;
-            REPLAY_EFFICIENCY_MOD "replayEfficiencyMod" => ReplayEfficiencyMod, ReplayEfficiencyMod;
-            BOOT "boot" => TableRequest, TableRequest;
-            SYNCED "synced" => Empty, Empty;
-            LOBBY_STATUS "lobbyStatus" => LobbyStatus, LobbyStatus;
-            CHAT "chat" => Chat, Chat;
-            CHAT_DELETE "chatDelete" => ChatDelete, ChatDelete;
-            CHAT_LIST "chatList" => ChatList, ChatList;
-            CHAT_PM_HISTORY "chatPMHistory" => ChatHistory, ChatHistory;
-            CHAT_TYPING "chatTyping" => ChatTyping, ChatTyping;
-            JOINED "joined" => TableRequest, TableRequest;
-            LEFT "left" => TableRequest, TableRequest;
-            TABLE_GONE "tableGone" => TableRequest, TableRequest;
-            TABLE_START "tableStart" => TableStarted, TableStarted;
-            USER "user" => User, User;
-            USER_LIST "userList" => UserList, UserList;
-            USER_LEFT "userLeft" => UserLeft, UserLeft;
-            USER_INACTIVE "userInactive" => UserInactive, UserInactive;
-            FRIENDS "friends" => Friends, Friends;
-            ERROR "error" => ErrorNotice, ErrorNotice;
-            WARNING "warning" => Warning, Warning;
-            SOUND_LOBBY "soundLobby" => SoundLobby, SoundLobby;
-            WELCOME "welcome" => Welcome, Welcome;
-            SPECTATORS "spectators" => Spectators, Spectators;
-            TABLE "table" => Table, Table;
-            TABLE_LIST "tableList" => TableList, TableList;
-            GAME "game" => Pregame, Pregame;
-            GAME_HISTORY "gameHistory" => GameHistoryList, GameHistoryList;
-            GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores, GameHistoryOtherScores;
+            RESTART "restart" => Restart;
+            CLOCK "clock" => Clock;
+            CONNECTED "connected" => Connected;
+            PAUSE "pause" => Pause;
+            IDLE_WARNING "idleWarning" => IdleWarning;
+            IDLE_RESET "idleReset" => TableRequest;
+            VOTE_CHANGE "voteChange" => VoteChange;
+            CARD_IDENTITIES "cardIdentities" => CardIdentities;
+            FINISH_ONGOING_GAME "finishOngoingGame" => FinishOngoingGame;
+            REPLAY_SEGMENT "replaySegment" => ReplaySegment;
+            REPLAY_INDICATOR "replayIndicator" => ReplayIndicator;
+            REPLAY_SOUND "replaySound" => ReplaySound;
+            REPLAY_LEADER "replayLeader" => ReplayLeader;
+            SUGGESTION "suggestion" => Suggestion;
+            HYPOTHETICAL "hypothetical" => Hypothetical;
+            HYPO_START "hypoStart" => TableRequest;
+            HYPO_END "hypoEnd" => TableRequest;
+            HYPO_BACK "hypoBack" => TableRequest;
+            HYPO_ACTION "hypoAction" => HypoAction;
+            HYPO_SHOW_DRAWN_CARDS "hypoShowDrawnCards" => HypoShowDrawnCards;
+            NOTE "note" => Note;
+            NOTE_LIST "noteList" => NoteList;
+            NOTE_LIST_PLAYER "noteListPlayer" => NoteListPlayer;
+            GAME_ACTION "gameAction" => GameAction;
+            GAME_ACTION_LIST "gameActionList" => GameActionList;
+            INIT "init" => Init;
+            REPLAY_EFFICIENCY_MOD "replayEfficiencyMod" => ReplayEfficiencyMod;
+            BOOT "boot" => TableRequest;
+            SYNCED "synced" => Empty;
+            LOBBY_STATUS "lobbyStatus" => LobbyStatus;
+            CHAT "chat" => Chat;
+            CHAT_DELETE "chatDelete" => ChatDelete;
+            CHAT_LIST "chatList" => ChatList;
+            CHAT_PM_HISTORY "chatPMHistory" => ChatHistory;
+            CHAT_TYPING "chatTyping" => ChatTyping;
+            JOINED "joined" => TableRequest;
+            LEFT "left" => TableRequest;
+            TABLE_GONE "tableGone" => TableRequest;
+            TABLE_START "tableStart" => TableStarted;
+            USER "user" => User;
+            USER_LIST "userList" => UserList;
+            USER_LEFT "userLeft" => UserLeft;
+            USER_INACTIVE "userInactive" => UserInactive;
+            FRIENDS "friends" => Friends;
+            ERROR "error" => ErrorNotice;
+            WARNING "warning" => Warning;
+            SOUND_LOBBY "soundLobby" => SoundLobby;
+            WELCOME "welcome" => Welcome;
+            SPECTATORS "spectators" => Spectators;
+            TABLE "table" => Table;
+            TABLE_LIST "tableList" => TableList;
+            GAME "game" => Pregame;
+            GAME_HISTORY "gameHistory" => GameHistoryList;
+            GAME_HISTORY_OTHER_SCORES "gameHistoryOtherScores" => GameHistoryOtherScores;
         }
     };
 }
@@ -150,23 +150,11 @@ pub fn decode<T: JsonSchema + DeserializeOwned>(value: &Value) -> Result<T> {
     T::deserialize(value).with_context(|| format!("Invalid {} representation", T::schema_name()))
 }
 
-pub fn decode_client(name: &str, value: &Value) -> Result<Option<Value>> {
-    macro_rules! dispatch {
-        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
-            match name {
-                $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
-                _ => Ok(None),
-            }
-        };
-    }
-    client_contracts!(dispatch)
-}
-
 pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
     macro_rules! dispatch {
-        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
+        ($($name:ident $command:literal => $payload:ty;)+) => {
             match name {
-                $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
+                $($command => Ok(Some(serde_json::to_value(decode::<$payload>(value)?)?)),)+
                 _ => Ok(None),
             }
         };
@@ -176,8 +164,8 @@ pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
 
 pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
-        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
-            BTreeMap::from([$(( $command, stringify!($canonical) )),+])
+        ($($name:ident $command:literal => $payload:ty;)+) => {
+            BTreeMap::from([$(( $command, stringify!($payload) )),+])
         };
     }
     client_contracts!(names)
@@ -185,8 +173,8 @@ pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
 
 pub fn server_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
-        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
-            BTreeMap::from([$(( $command, stringify!($canonical) )),+])
+        ($($name:ident $command:literal => $payload:ty;)+) => {
+            BTreeMap::from([$(( $command, stringify!($payload) )),+])
         };
     }
     server_contracts!(names)
@@ -220,8 +208,8 @@ impl<T> Clone for ServerMessage<T> {
 impl<T> Copy for ServerMessage<T> {}
 
 macro_rules! server_messages {
-    ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
-        $(pub const $name: ServerMessage<$native> = ServerMessage::new($command);)+
+    ($($name:ident $command:literal => $payload:ty;)+) => {
+        $(pub const $name: ServerMessage<$payload> = ServerMessage::new($command);)+
     };
 }
 
@@ -232,19 +220,19 @@ pub mod server {
 }
 
 macro_rules! client_messages {
-    ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
+    ($($name:ident $command:literal => $payload:ty;)+) => {
         /// A client command, decoded once into its payload type. Matching on it, rather than on
         /// command names, lets the compiler check that every command is handled.
         #[derive(Clone, Debug)]
         pub enum ClientMessage {
-            $($name($native),)+
+            $($name($payload),)+
         }
 
         impl ClientMessage {
             /// Validates and decodes a command, or returns None for an unregistered name.
             pub fn decode(name: &str, value: &Value) -> Result<Option<Self>> {
                 match name {
-                    $($command => Ok(Some(Self::$name(decode::<$native>(value)?))),)+
+                    $($command => Ok(Some(Self::$name(decode::<$payload>(value)?))),)+
                     _ => Ok(None),
                 }
             }
