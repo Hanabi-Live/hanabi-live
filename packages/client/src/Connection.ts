@@ -5,7 +5,7 @@ import type {
   ServerCommandData,
 } from "@hanabi-live/data";
 import {
-  packWSMessageOnClient,
+  packWSMessage,
   SERVER_COMMAND_SCHEMAS,
   unpackWSMessage,
 } from "@hanabi-live/data";
@@ -154,7 +154,7 @@ export class Connection {
       return;
     }
 
-    const msg = packWSMessageOnClient(command, data);
+    const msg = packWSMessage(command, data);
     this.ws.send(msg);
 
     console.log(`%cSent ${command}:`, "color: green;");
