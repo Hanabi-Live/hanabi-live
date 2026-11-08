@@ -23,7 +23,8 @@ TypeScript interfaces remain available through `@hanabi-live/data`.
    bash scripts/dev/generate-protocol.sh
    ```
 
-1. Commit `packages/data/src/generated/protocol.ts` with the source changes.
+1. Commit the generated `packages/data/src/generated/protocol.ts` and
+   `packages/game/src/generated/protocol.ts` with the source changes.
 
 Ordinary client builds use the committed output and do not need Rust. Generation
 builds only this small crate and formats one file. Full lint and CI's second
