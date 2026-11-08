@@ -4,6 +4,11 @@ use hmac::{Hmac, KeyInit, Mac};
 use sha2::Sha256;
 
 pub const NAME: &str = "hanabi.sid";
+/// `NAME` holds the most recent sign-in, which new tabs use; this keeps each account available to
+/// the tabs that signed in to it.
+pub fn account_name(id: i32) -> String {
+    format!("{NAME}.{id}")
+}
 const MAX_AGE: i64 = 365 * 24 * 60 * 60;
 
 struct Reader<'a>(&'a [u8]);

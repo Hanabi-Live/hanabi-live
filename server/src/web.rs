@@ -486,7 +486,7 @@ async fn websocket(
             StatusCode::SERVICE_UNAVAILABLE).response(false);
     }
     let ip = address.ip();
-    let Some(id) = accounts::session_id(&headers, &app.secret) else {
+    let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
         eprintln!("Rejected websocket from {ip} without a valid session.");
         return (StatusCode::UNAUTHORIZED, "A valid session is required.\n").into_response();
     };

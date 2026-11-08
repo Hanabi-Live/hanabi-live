@@ -7,6 +7,7 @@ import {
   errorDetails,
   httpError,
   tableID as tableIDSchema,
+  withTabAccount,
 } from "@hanabi-live/data";
 import { commands } from "./commands";
 import { Connection } from "./Connection";
@@ -92,7 +93,7 @@ async function fetchCookieForReconnect(): Promise<Response> {
 
   try {
     return await Promise.race([
-      fetch("/test-cookie", {
+      fetch(withTabAccount("/test-cookie"), {
         cache: "no-store",
         signal: controller.signal,
       }),
@@ -198,7 +199,9 @@ function reconnectAfterTimeout(conn: Connection) {
 }
 
 function openConnection(isReconnect: boolean) {
-  const url = `${websocketURL}?version=${encodeURIComponent(VERSION)}`;
+  const url = withTabAccount(
+    `${websocketURL}?version=${encodeURIComponent(VERSION)}`,
+  );
   const conn = new Connection(url, true);
   conn.setReady(!isReconnect);
   clearConnectTimer();

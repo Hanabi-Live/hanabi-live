@@ -463,6 +463,91 @@ async fn native_accounts_http_and_identity_postgres() {
     db.close().await;
 }
 
+fn set_cookies(headers: &HeaderMap) -> Vec<String> {
+    headers
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .map(|value| {
+            value
+                .to_str()
+                .unwrap()
+                .split(';')
+                .next()
+                .unwrap()
+                .to_owned()
+        })
+        .collect()
+}
+
+#[test]
+fn tabs_choose_among_signed_in_accounts() {
+    let secret = &config().secret;
+    let now = Utc::now().timestamp();
+    let alice = crate::cookie::encode(1, secret, now).unwrap();
+    let bob = crate::cookie::encode(2, secret, now).unwrap();
+    let headers = HeaderMap::from_iter([(
+        header::COOKIE,
+        format!("hanabi.sid={bob}; hanabi.sid.1={alice}; hanabi.sid.3={bob}")
+            .parse()
+            .unwrap(),
+    )]);
+    assert_eq!(session_id(&headers, secret, None), Some(2));
+    assert_eq!(session_id(&headers, secret, Some("account=1")), Some(1));
+    // The latest sign-in also covers its own account, so older sessions keep working.
+    assert_eq!(session_id(&headers, secret, Some("account=2")), Some(2));
+    // A cookie must belong to the account named after it.
+    assert_eq!(session_id(&headers, secret, Some("account=3")), None);
+    for query in ["account=4", "account=0", "account=x", "account="] {
+        assert_eq!(session_id(&headers, secret, Some(query)), None, "{query}");
+    }
+}
+
+#[tokio::test]
+async fn tabs_sign_in_and_out_of_separate_accounts_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    let mut jar = Vec::new();
+    let mut ids = Vec::new();
+    for name in ["Alice", "Bob"] {
+        let body = format!("username={name}&password=secret&version=42");
+        let (status, headers, body) = request(&app, "POST", "/login", &body, None, false).await;
+        assert_eq!(status, StatusCode::OK);
+        let id = serde_json::from_str::<Value>(&body).unwrap()["userID"]
+            .as_i64()
+            .unwrap();
+        let cookies = set_cookies(&headers);
+        assert_eq!(cookies.len(), 2);
+        assert!(cookies[1].starts_with(&format!("hanabi.sid.{id}=")));
+        jar.retain(|cookie: &String| !cookie.starts_with("hanabi.sid="));
+        jar.extend(cookies);
+        ids.push(id);
+    }
+    let cookie = jar.join("; ");
+    for (id, expected) in [(ids[0], StatusCode::OK), (ids[1], StatusCode::OK)] {
+        let path = format!("/test-cookie?account={id}");
+        assert_eq!(
+            request(&app, "GET", &path, "", Some(&cookie), false)
+                .await
+                .0,
+            expected
+        );
+    }
+    // Signing out of an older account keeps the latest sign-in for new tabs.
+    let path = format!("/logout?account={}", ids[0]);
+    let (_, headers, _) = request(&app, "GET", &path, "", Some(&cookie), false).await;
+    assert_eq!(set_cookies(&headers), [format!("hanabi.sid.{}=", ids[0])]);
+    // Signing out of the latest account also clears it for new tabs.
+    let path = format!("/logout?account={}", ids[1]);
+    let (_, headers, _) = request(&app, "GET", &path, "", Some(&cookie), false).await;
+    assert_eq!(
+        set_cookies(&headers),
+        [format!("hanabi.sid.{}=", ids[1]), "hanabi.sid=".to_owned()]
+    );
+    db.close().await;
+}
+
 #[tokio::test]
 async fn seven_concurrent_account_registrations_and_logins_postgres() {
     let Some(db) = test_support::TestDb::create().await else {
@@ -512,6 +597,7 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
                             .unwrap(),
                     )]),
                     &config().secret,
+                    None,
                 )
                 .unwrap()
             })

@@ -2,11 +2,15 @@ import type { NewLobbyNavigation, Settings } from "@hanabi-live/data";
 import {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
+  clearTabAccount,
   errorDetails,
   httpError,
   packWSMessageOnClient,
+  setTabAccount,
+  setTabAccountFromLogin,
   settings,
   validationErrorDetails,
+  withTabAccount,
 } from "@hanabi-live/data";
 import { z } from "zod";
 import { decodeEvent } from "./protocol";
@@ -59,7 +63,7 @@ export class LobbyConnection {
     this.controller?.abort();
     this.controller = new AbortController();
     try {
-      const response = await fetch("/test-cookie", {
+      const response = await fetch(withTabAccount("/test-cookie"), {
         cache: "no-store",
         signal: AbortSignal.any([
           this.controller.signal,
@@ -114,6 +118,10 @@ export class LobbyConnection {
       }
       if (!response.ok) {
         throw await httpError(response, "Signing in");
+      }
+      setTabAccountFromLogin(await response.json());
+      if (!this.isCurrent(generation)) {
+        return;
       }
       this.connect();
     } catch (error) {
@@ -299,12 +307,13 @@ export class LobbyConnection {
   async logout(): Promise<void> {
     this.stop();
     try {
-      const response = await fetch("/logout", {
+      const response = await fetch(withTabAccount("/logout"), {
         signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) {
         throw await httpError(response, "Signing out");
       }
+      clearTabAccount();
       this.store.dispatch(actions.signedOut());
     } catch (error) {
       this.store.dispatch(actions.connectionChanged("stopped"));
@@ -347,7 +356,7 @@ export class LobbyConnection {
       ),
     );
     const socket = new WebSocket(
-      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}/ws?version=${encodeURIComponent(CLIENT_VERSION)}`,
+      `${globalThis.location.protocol === "https:" ? "wss:" : "ws:"}//${globalThis.location.host}${withTabAccount(`/ws?version=${encodeURIComponent(CLIENT_VERSION)}`)}`,
     );
     let welcomed = false;
     this.socket = socket;
@@ -406,6 +415,7 @@ export class LobbyConnection {
         switch (event.command) {
           case "welcome": {
             welcomed = true;
+            setTabAccount(event.data.userID);
             clearTimeout(this.timeout);
             this.attempts = 0;
             if (this.destination !== null) {

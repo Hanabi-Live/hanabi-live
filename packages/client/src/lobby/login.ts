@@ -1,7 +1,11 @@
 // The initial login page.
 
 import type { HTTPLoginData } from "@hanabi-live/data";
-import { VERSION, errorDetails } from "@hanabi-live/data";
+import {
+  VERSION,
+  errorDetails,
+  setTabAccountFromLogin,
+} from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
@@ -120,8 +124,9 @@ function send(
   console.log(`Sent a login request to: ${url}`);
 
   request
-    .done(() => {
+    .done((body: unknown) => {
       // We successfully got a cookie; attempt to establish a WebSocket connection.
+      setTabAccountFromLogin(body);
       websocketInit();
     })
     .fail((jqXHR) => {

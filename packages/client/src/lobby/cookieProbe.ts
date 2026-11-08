@@ -1,4 +1,4 @@
-import { httpError } from "@hanabi-live/data";
+import { httpError, withTabAccount } from "@hanabi-live/data";
 import { ReconnectBackoff } from "../reconnect";
 
 const MAX_ATTEMPTS = 3;
@@ -38,7 +38,7 @@ async function fetchCookieOnce(): Promise<Response> {
   }, REQUEST_TIMEOUT_MS);
 
   try {
-    return await fetch("/test-cookie", {
+    return await fetch(withTabAccount("/test-cookie"), {
       cache: "no-store",
       signal: controller.signal,
     });

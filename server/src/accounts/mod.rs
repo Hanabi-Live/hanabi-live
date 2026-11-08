@@ -24,7 +24,7 @@ use anyhow::Result;
 use axum::{
     Form, Json, Router,
     extract::{ConnectInfo, DefaultBodyLimit, Query, State},
-    http::{HeaderMap, StatusCode, header},
+    http::{HeaderMap, StatusCode, Uri, header},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
@@ -67,15 +67,42 @@ pub fn router(pool: PgPool, config: AccountConfig) -> Router {
         }))
 }
 
-pub fn session_id(headers: &HeaderMap, secret: &str) -> Option<i32> {
+/// Reads the signed-in account. A tab may choose any account this browser is signed in to with
+/// `?account=<user ID>`; otherwise the most recent sign-in is used.
+pub fn session_id(headers: &HeaderMap, secret: &str, query: Option<&str>) -> Option<i32> {
+    let requested = match url::form_urlencoded::parse(query.unwrap_or_default().as_bytes())
+        .find(|(key, _)| key == "account")
+    {
+        Some((_, value)) => Some(parse_account(&value)?),
+        None => None,
+    };
+    let account_name = requested.map(cookie::account_name);
+    let now = Utc::now().timestamp();
     headers.get_all(header::COOKIE).iter().find_map(|value| {
         value.to_str().ok()?.split(';').find_map(|pair| {
             let (name, value) = pair.trim().split_once('=')?;
-            (name == cookie::NAME)
-                .then(|| cookie::decode(value, secret, Utc::now().timestamp()).ok())
-                .flatten()
+            if name != cookie::NAME && Some(name) != account_name.as_deref() {
+                return None;
+            }
+            let id = cookie::decode(value, secret, now).ok()?;
+            requested
+                .is_none_or(|requested| requested == id)
+                .then_some(id)
         })
     })
+}
+
+fn parse_account(value: &str) -> Option<i32> {
+    value.parse().ok().filter(|id| *id > 0)
+}
+
+fn with_cookies(mut response: Response, cookies: impl IntoIterator<Item = String>) -> Response {
+    for cookie in cookies {
+        if let Ok(value) = header::HeaderValue::try_from(cookie) {
+            response.headers_mut().append(header::SET_COOKIE, value);
+        }
+    }
+    response
 }
 
 pub async fn is_banned(pool: &PgPool, ip: &str) -> Result<bool> {
@@ -96,10 +123,9 @@ pub async fn is_muted(pool: &PgPool, ip: &str) -> Result<bool> {
     .await?)
 }
 
-fn cookie_header(config: &AccountConfig, value: &str, clear: bool) -> String {
+fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -> String {
     let mut result = format!(
-        "{}={value}; Path=/; Max-Age={}",
-        cookie::NAME,
+        "{name}={value}; Path=/; Max-Age={}",
         if clear { 0 } else { 31536000 }
     );
     if !config.is_dev {
@@ -299,14 +325,13 @@ async fn login_inner(state: &Accounts, ip: &str, input: Login) -> Result<Respons
     }
     eprintln!("Successful login for account {id} from IP: {ip}");
     let signed = cookie::encode(id, &state.config.secret, Utc::now().timestamp())?;
-    Ok((
-        [(
-            header::SET_COOKIE,
-            cookie_header(&state.config, &signed, false),
-        )],
-        "OK\n",
-    )
-        .into_response())
+    Ok(with_cookies(
+        Json(json!({ "userID": id })).into_response(),
+        [
+            cookie_header(&state.config, cookie::NAME, &signed, false),
+            cookie_header(&state.config, &cookie::account_name(id), &signed, false),
+        ],
+    ))
 }
 
 async fn update_password_if_unchanged(
@@ -327,31 +352,48 @@ async fn update_password_if_unchanged(
         == 1)
 }
 
+/// Signs out of the requested account, or the most recent sign-in, without affecting other accounts.
 async fn logout(
     State(state): State<Arc<Accounts>>,
+    headers: HeaderMap,
     Query(query): Query<HashMap<String, String>>,
 ) -> Response {
-    (
-        StatusCode::MOVED_PERMANENTLY,
-        [
-            (header::SET_COOKIE, cookie_header(&state.config, "", true)),
-            (header::CACHE_CONTROL, "no-store".to_owned()),
-            (
-                header::LOCATION,
-                if query.contains_key("dev") {
-                    "/?dev"
-                } else {
-                    "/"
-                }
-                .to_owned(),
-            ),
-        ],
+    let latest = session_id(&headers, &state.config.secret, None);
+    let requested = query.get("account").and_then(|value| parse_account(value));
+    let mut cookies = Vec::new();
+    if let Some(id) = requested.or(latest) {
+        cookies.push(cookie_header(
+            &state.config,
+            &cookie::account_name(id),
+            "",
+            true,
+        ));
+    }
+    if requested.is_none() || requested == latest {
+        cookies.push(cookie_header(&state.config, cookie::NAME, "", true));
+    }
+    with_cookies(
+        (
+            StatusCode::MOVED_PERMANENTLY,
+            [
+                (header::CACHE_CONTROL, "no-store"),
+                (
+                    header::LOCATION,
+                    if query.contains_key("dev") {
+                        "/?dev"
+                    } else {
+                        "/"
+                    },
+                ),
+            ],
+        )
+            .into_response(),
+        cookies,
     )
-        .into_response()
 }
 
-async fn test_cookie(State(state): State<Arc<Accounts>>, headers: HeaderMap) -> Response {
-    if session_id(&headers, &state.config.secret).is_some() {
+async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: HeaderMap) -> Response {
+    if session_id(&headers, &state.config.secret, uri.query()).is_some() {
         "OK\n".into_response()
     } else {
         StatusCode::NO_CONTENT.into_response()
@@ -371,13 +413,14 @@ fn api_banned() -> Response {
 async fn identity_token(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
+    uri: Uri,
     headers: HeaderMap,
 ) -> Response {
     let result: Result<Response> = async {
         if is_banned(&state.pool, &address.ip().to_string()).await? {
             return Ok(api_banned());
         }
-        let Some(id) = session_id(&headers, &state.config.secret) else {
+        let Some(id) = session_id(&headers, &state.config.secret, uri.query()) else {
             return Ok(api_error(
                 StatusCode::UNAUTHORIZED,
                 "You must be logged in.",

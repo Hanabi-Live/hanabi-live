@@ -13,6 +13,7 @@ import type {
 import {
   NEW_LOBBY_NAVIGATION_KEY,
   newLobbyNavigation,
+  setTabAccount,
 } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
@@ -306,6 +307,7 @@ lobbyCommands.set("userInactive", (data: UserInactiveData) => {
 lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
   // Store some variables (mostly relating to our user account).
   globals.userID = data.userID;
+  setTabAccount(data.userID);
   globals.username = data.username; // We might have logged-in with a different stylization
   globals.totalGames = data.totalGames;
   globals.muted = data.muted;
