@@ -21,8 +21,8 @@ const PASSWORD_KEY_BYTES: usize = 32;
 const PASSWORD_SALT_BYTES: usize = 16;
 /// The random bytes in an identity token.
 const IDENTITY_TOKEN_BYTES: usize = 96;
-/// How long an identity token stays valid, in hours.
-const IDENTITY_TOKEN_LIFETIME_HOURS: i64 = 24;
+/// How long an identity token stays valid.
+const IDENTITY_TOKEN_LIFETIME: Duration = Duration::days(1);
 /// The password hashes that run at once.
 const HASH_WORKERS: usize = 4;
 /// The password hashes that can wait for a worker before new requests are refused.
@@ -187,7 +187,7 @@ pub async fn regenerate_token(
     let token = URL_SAFE_NO_PAD.encode(bytes);
     let lookup = token_lookup_hash(secret, &token)?;
     let hash = hash_password(ip, token.clone()).await?;
-    let expires_at = Utc::now() + Duration::hours(IDENTITY_TOKEN_LIFETIME_HOURS);
+    let expires_at = Utc::now() + IDENTITY_TOKEN_LIFETIME;
     sqlx::query!(
         "INSERT INTO user_identity_tokens (user_id, token_hash, token_lookup_hash, expires_at)
          VALUES ($1,$2,$3,$4) ON CONFLICT (user_id) DO UPDATE SET

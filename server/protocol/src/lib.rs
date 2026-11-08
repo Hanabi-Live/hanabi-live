@@ -63,8 +63,10 @@ pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
 pub const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
 /// How long a game can go without a move before it ends.
 pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+/// The number of minutes in an hour.
+pub const MINUTES_PER_HOUR: i32 = 60;
 /// The number of seconds in an hour.
-pub const SECONDS_PER_HOUR: i32 = 60 * SECONDS_PER_MINUTE;
+pub const SECONDS_PER_HOUR: i32 = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 /// The number of hours in a day.
 pub const HOURS_PER_DAY: i32 = 24;
 /// The number of seconds in a day.
