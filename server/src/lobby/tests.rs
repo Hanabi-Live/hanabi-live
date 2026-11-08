@@ -1,6 +1,6 @@
 use super::*;
 use crate::accounts::{normalize_username, test_support::TestDb};
-use serde_json::json;
+use serde_json::{Value, json};
 
 fn caller(id: i32, name: &str) -> Caller {
     Caller {
@@ -81,8 +81,7 @@ async fn run(
         "synthetic-lobby-secret",
         caller,
         online,
-        command,
-        data,
+        crate::actors::client_message(command, data).unwrap(),
     )
     .await
     .unwrap()
@@ -310,8 +309,8 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
-            "chat",
-            json!({"msg":"not lobby","room":"table42"})
+            crate::actors::client_message("chat", json!({"msg":"not lobby","room":"table42"}))
+                .unwrap()
         )
         .await
         .unwrap()
@@ -323,8 +322,8 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
             "synthetic-lobby-secret",
             &who,
             &[],
-            "chat",
-            json!({"msg":"/findvariant","room":"table42"})
+            crate::actors::client_message("chat", json!({"msg":"/findvariant","room":"table42"}))
+                .unwrap()
         )
         .await
         .unwrap()

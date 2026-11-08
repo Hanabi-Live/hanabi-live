@@ -112,8 +112,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Client {
                 session: self.users[index].clone(),
-                command: command.into(),
-                data,
+                message: crate::actors::client_message(command, data)?,
                 reply,
             })
             .await?;
@@ -1974,8 +1973,10 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.hub
             .send(HubCommand::Client {
                 session: old_alice,
-                command: "replayAction".into(),
-                data: json!({"tableID":replay,"type":0,"segment":9}),
+                message: crate::actors::client_message(
+                    "replayAction",
+                    json!({"tableID":replay,"type":0,"segment":9}),
+                )?,
                 reply,
             })
             .await?;

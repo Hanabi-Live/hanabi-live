@@ -29,6 +29,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
+use hanabi_protocol::ClientMessage;
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
@@ -793,7 +794,14 @@ async fn connection(
                     let report = crate::errors::Report::from_error(
                         operation,
                         &error,
-                        Some(if history_command(name) { 2 } else { 30 }),
+                        // History reads use the lobby pool's 2-second statement timeout.
+                        Some(
+                            if matches!(name, "historyGet" | "historyGetSeed" | "chatPlayerInfo") {
+                                2
+                            } else {
+                                30
+                            },
+                        ),
                     );
                     report.log();
                     app.alert(&report);
@@ -877,8 +885,13 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Resu
     Ok(())
 }
 
-fn history_command(command: &str) -> bool {
-    matches!(command, "historyGet" | "historyGetSeed" | "chatPlayerInfo")
+fn history_command(message: &ClientMessage) -> bool {
+    matches!(
+        message,
+        ClientMessage::HistoryGet(_)
+            | ClientMessage::HistoryGetSeed(_)
+            | ClientMessage::ChatPlayerInfo(_)
+    )
 }
 
 async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<()> {
@@ -900,7 +913,7 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         session.active(),
         "This session was replaced or disconnected. Reconnect before sending commands."
     );
-    let (command, mut data) = match protocol::parse(input) {
+    let message = match protocol::parse(input) {
         Ok(parsed) => parsed,
         Err(error) => {
             let detail = if let Some(json) = error.downcast_ref::<serde_json::Error>() {
@@ -922,8 +935,8 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
             return Ok(());
         }
     };
-    let mut measurement = crate::metrics::COMMAND_METRICS.start(&command);
-    if command == "lobbyLoad" {
+    let mut measurement = crate::metrics::COMMAND_METRICS.start(message.name());
+    if let ClientMessage::LobbyLoad(_) = message {
         session.emit(&frame(
             hanabi_protocol::server::LOBBY_STATUS,
             hanabi_protocol::LobbyStatus::Loading { total_games: () },
@@ -935,12 +948,12 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
     // Lobby commands write to the database before the hub publishes their effects, so confirm
     // that this session is still current first. The hub checks game commands itself when it
     // routes them. Only private messages need the list of online users.
-    let online = if command == "chat" || lobby::handles_command(&command) {
+    let online = if lobby::handles(&message) {
         let (reply, received) = oneshot::channel();
         app.hub
             .send(HubCommand::Directory {
                 session: session.clone(),
-                users: command == "chatPM",
+                users: matches!(message, ClientMessage::ChatPM(_)),
                 reply,
             })
             .await?;
@@ -955,68 +968,73 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<
         ip: session.ip.clone(),
         generation: session.generation,
     };
-    let effects = if command == "chat" {
-        let request = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
-        let text = request.msg.as_str();
-        let room = request.room.as_str();
-        let mut rendered = None;
-        if room == "lobby"
-            && let Ok(normalized) = accounts::normalize_chat(text)
-            && matches!(
-                lobby::classify_chat(&normalized),
-                lobby::Classification::Text | lobby::Classification::Public
-            )
-            && let Some(integrations) = app.integrations.get()
-        {
-            rendered = Some(integrations.render(&normalized).await);
-        }
-        lobby::dispatch_chat(
-            &app.store.primary,
-            &app.secret,
-            &caller,
-            text,
-            room,
-            rendered.as_deref(),
-        )
-        .await?
-    } else if lobby::handles_command(&command) {
-        let history = history_command(&command);
-        let work = lobby::dispatch(
-            if history {
-                &app.store.lobby_reads
-            } else {
-                &app.store.primary
-            },
-            &app.secret,
-            &caller,
-            &online,
-            &command,
-            std::mem::take(&mut data),
-        );
-        if history {
-            tokio::select! {
-                _ = app.read_shutdown.cancelled() => return Ok(()),
-                result = work => result?,
+    let effects = match message {
+        ClientMessage::Chat(request) => {
+            let text = request.msg.as_str();
+            let room = request.room.as_str();
+            let mut rendered = None;
+            if room == "lobby"
+                && let Ok(normalized) = accounts::normalize_chat(text)
+                && matches!(
+                    lobby::classify_chat(&normalized),
+                    lobby::Classification::Text | lobby::Classification::Public
+                )
+                && let Some(integrations) = app.integrations.get()
+            {
+                rendered = Some(integrations.render(&normalized).await);
             }
-        } else {
-            work.await?
+            let effects = lobby::dispatch_chat(
+                &app.store.primary,
+                &app.secret,
+                &caller,
+                text,
+                room,
+                rendered.as_deref(),
+            )
+            .await?;
+            // Table chat goes to its table.
+            effects.ok_or(ClientMessage::Chat(request))
         }
-    } else {
-        None
+        message if lobby::handles(&message) => {
+            let history = history_command(&message);
+            let work = lobby::dispatch(
+                if history {
+                    &app.store.lobby_reads
+                } else {
+                    &app.store.primary
+                },
+                &app.secret,
+                &caller,
+                &online,
+                message,
+            );
+            let effects = if history {
+                tokio::select! {
+                    _ = app.read_shutdown.cancelled() => return Ok(()),
+                    result = work => result?,
+                }
+            } else {
+                work.await?
+            };
+            Ok(effects.context("A lobby command had no lobby handler")?)
+        }
+        message => Err(message),
     };
-    if let Some(effects) = effects {
-        publish(app, session, effects).await?;
-        measurement.success();
-        return Ok(());
-    }
+    let message = match effects {
+        Ok(effects) => {
+            publish(app, session, effects).await?;
+            measurement.success();
+            return Ok(());
+        }
+        Err(message) => message,
+    };
     let (reply, received) = oneshot::channel();
-    let request = if command == "sync" {
+    let request = if let ClientMessage::Sync(_) = message {
         HubCommand::Sync { session, reply }
     } else {
         HubCommand::Client {
             session,
-            command,
-            data,
+            message,
             reply,
         }
     };

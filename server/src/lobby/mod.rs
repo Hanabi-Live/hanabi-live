@@ -18,7 +18,8 @@ pub use settings::{get_settings, set_setting};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::Outgoing;
 use anyhow::{Result, ensure};
-use serde_json::Value;
+use hanabi_protocol::ClientMessage;
+
 use sqlx::PgPool;
 
 #[derive(Clone, Debug)]
@@ -93,26 +94,55 @@ pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
     ))
 }
 
-const COMMANDS: &[&str] = &[
-    "setting",
-    "inactive",
-    "historyGet",
-    "historyGetSeed",
-    "chatPM",
-    "chatPMHistoryGet",
-    "chatFriend",
-    "chatUnfriend",
-    "chatLink",
-    "chatUnlink",
-    "chatLinked",
-    "chatPlayerInfo",
-    "tagSearch",
-    "chat",
-];
-
 /// Check ownership before transferring a parsed payload to this dispatcher.
-pub fn handles_command(command: &str) -> bool {
-    COMMANDS.contains(&command)
+/// Whether the lobby handles a command. Every command is listed, so a new one needs a decision.
+pub fn handles(message: &ClientMessage) -> bool {
+    use ClientMessage as M;
+    match message {
+        M::Setting(_)
+        | M::Inactive(_)
+        | M::HistoryGet(_)
+        | M::HistoryGetSeed(_)
+        | M::ChatPM(_)
+        | M::ChatPMHistoryGet(_)
+        | M::ChatFriend(_)
+        | M::ChatUnfriend(_)
+        | M::ChatLink(_)
+        | M::ChatUnlink(_)
+        | M::ChatLinked(_)
+        | M::ChatPlayerInfo(_)
+        | M::TagSearch(_)
+        | M::Chat(_) => true,
+        M::LobbyLoad(_)
+        | M::Sync(_)
+        | M::ChatRead(_)
+        | M::ChatTyping(_)
+        | M::TableJoin(_)
+        | M::TableLeave(_)
+        | M::TableReattend(_)
+        | M::TableSetLeader(_)
+        | M::TableSetVariant(_)
+        | M::TableStart(_)
+        | M::TableRestart(_)
+        | M::TableSuggest(_)
+        | M::TableSpectate(_)
+        | M::TableUnattend(_)
+        | M::TableTerminate(_)
+        | M::TableVoteForTermination(_)
+        | M::GetGameInfo1(_)
+        | M::GetGameInfo2(_)
+        | M::Loaded(_)
+        | M::TableCreate(_)
+        | M::TableUpdate(_)
+        | M::ReplayCreate(_)
+        | M::Action(_)
+        | M::Pause(_)
+        | M::Note(_)
+        | M::Tag(_)
+        | M::TagDelete(_)
+        | M::TagsDeleteAll(_)
+        | M::ReplayAction(_) => false,
+    }
 }
 
 /// The renderer is a trusted internal Discord renderer, never a client field.
@@ -132,16 +162,15 @@ pub async fn dispatch(
     secret: &str,
     caller: &Caller,
     online: &[OnlineUser],
-    command: &str,
-    data: Value,
+    message: ClientMessage,
 ) -> Result<Option<Vec<Effect>>> {
-    if !handles_command(command) {
+    if !handles(&message) {
         return Ok(None);
     }
     ensure!(caller.id > 0, "Invalid caller");
-    let effects = match command {
-        "setting" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::SettingRequest>(&data)?;
+    let command = message.name();
+    let effects = match message {
+        ClientMessage::Setting(request) => {
             let (name, value) = (request.name.as_str(), request.setting.as_str());
             if let Err(error) = settings::validate_setting(name, value) {
                 return Ok(Some(vec![warning(&error.to_string())]));
@@ -153,9 +182,8 @@ pub async fn dispatch(
                 vec![]
             }
         }
-        "inactive" => {
-            let inactive =
-                hanabi_protocol::decode::<hanabi_protocol::InactiveRequest>(&data)?.inactive;
+        ClientMessage::Inactive(request) => {
+            let inactive = request.inactive;
             vec![
                 Effect::Inactive(inactive),
                 Effect::Broadcast(Outgoing::new(
@@ -167,33 +195,27 @@ pub async fn dispatch(
                 )),
             ]
         }
-        "chat" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
+        ClientMessage::Chat(request) => {
             return chat::lobby_chat(pool, secret, caller, &request.msg, &request.room, None).await;
         }
 
-        "chatPM" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::ChatPmRequest>(&data)?;
+        ClientMessage::ChatPM(request) => {
             chat::private_message(pool, caller, online, &request.msg, &request.recipient).await?
         }
-        "chatPMHistoryGet" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::ChatHistoryRequest>(&data)?;
+        ClientMessage::ChatPMHistoryGet(request) => {
             chat::private_history(pool, caller, &request).await?
         }
-        "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatLinked"
-        | "chatPlayerInfo" => {
-            let (name, room) = if command == "chatLinked" {
-                let request = hanabi_protocol::decode::<hanabi_protocol::ChatLinkedRequest>(&data)?;
-                (String::new(), request.room)
-            } else {
-                let request = hanabi_protocol::decode::<hanabi_protocol::ChatUserRequest>(&data)?;
-                (request.name, request.room)
-            };
-            relationships::relationship(pool, caller, command, &name, &room).await?
+        ClientMessage::ChatLinked(request) => {
+            relationships::relationship(pool, caller, command, "", &request.room).await?
         }
-        "historyGet" => {
-            let hanabi_protocol::HistoryRequest { offset, amount } =
-                hanabi_protocol::decode(&data)?;
+        ClientMessage::ChatFriend(request)
+        | ClientMessage::ChatUnfriend(request)
+        | ClientMessage::ChatLink(request)
+        | ClientMessage::ChatUnlink(request)
+        | ClientMessage::ChatPlayerInfo(request) => {
+            relationships::relationship(pool, caller, command, &request.name, &request.room).await?
+        }
+        ClientMessage::HistoryGet(hanabi_protocol::HistoryRequest { offset, amount }) => {
             if offset < 0 {
                 return Ok(Some(vec![warning("That is not a valid start value.")]));
             }
@@ -206,8 +228,7 @@ pub async fn dispatch(
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),
             ))]
         }
-        "historyGetSeed" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::HistorySeedRequest>(&data)?;
+        ClientMessage::HistoryGetSeed(request) => {
             let seed = request.seed.as_str();
             let error = if seed.is_empty() {
                 Some("You must provide a seed.")
@@ -237,8 +258,7 @@ pub async fn dispatch(
                 },
             ))]
         }
-        "tagSearch" => {
-            let request = hanabi_protocol::decode::<hanabi_protocol::TagSearchRequest>(&data)?;
+        ClientMessage::TagSearch(request) => {
             let raw = request.msg.as_str();
             if raw.len() > 100 {
                 return Ok(Some(vec![warning(
@@ -271,7 +291,7 @@ pub async fn dispatch(
                 &request.room,
             )]
         }
-        _ => unreachable!(),
+        _ => unreachable!("handles() admits only lobby commands"),
     };
     Ok(Some(effects))
 }

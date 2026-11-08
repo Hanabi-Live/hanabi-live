@@ -7,49 +7,49 @@ use std::{collections::BTreeMap, marker::PhantomData, sync::LazyLock};
 macro_rules! client_contracts {
     ($apply:ident) => {
         $apply! {
-            "lobbyLoad" => Empty, Empty;
-            "sync" => Empty, Empty;
-            "chat" => ChatRequest, ChatRequest;
-            "chatPM" => ChatPmRequest, ChatPmRequest;
-            "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
-            "chatFriend" => ChatUserRequest, ChatUserRequest;
-            "chatUnfriend" => ChatUserRequest, ChatUserRequest;
-            "chatLink" => ChatUserRequest, ChatUserRequest;
-            "chatUnlink" => ChatUserRequest, ChatUserRequest;
-            "chatPlayerInfo" => ChatUserRequest, ChatUserRequest;
-            "chatLinked" => ChatLinkedRequest, ChatLinkedRequest;
-            "chatRead" => TableRequest, TableRequest;
-            "chatTyping" => TableRequest, TableRequest;
-            "tableJoin" => TableJoinRequest, TableJoinRequest;
-            "tableLeave" => TableRequest, TableRequest;
-            "tableReattend" => TableRequest, TableRequest;
-            "tableSetLeader" => TableLeaderRequest, TableLeaderRequest;
-            "tableSetVariant" => TableVariantRequest, TableVariantRequest;
-            "tableStart" => TableStartRequest, TableStartRequest;
-            "tableRestart" => TableRestartRequest, TableRestartRequest;
-            "tableSuggest" => TableSuggestRequest, TableSuggestRequest;
-            "tableSpectate" => TableSpectateRequest, TableSpectateRequest;
-            "tableUnattend" => TableCommand, TableCommand;
-            "tableTerminate" => TableCommand, TableCommand;
-            "tableVoteForTermination" => TableCommand, TableCommand;
-            "getGameInfo1" => TableCommand, TableCommand;
-            "getGameInfo2" => TableCommand, TableCommand;
-            "loaded" => TableCommand, TableCommand;
-            "setting" => SettingRequest, SettingRequest;
-            "inactive" => InactiveRequest, InactiveRequest;
-            "historyGet" => HistoryRequest, HistoryRequest;
-            "historyGetSeed" => HistorySeedRequest, HistorySeedRequest;
-            "tagSearch" => TagSearchRequest, TagSearchRequest;
-            "tableCreate" => TableCreateRequest, TableCreateRequest;
-            "tableUpdate" => TableUpdateRequest, TableUpdateRequest;
-            "replayCreate" => ReplayCreateRequest, ReplayCreateRequest;
-            "action" => ActionRequest, ActionRequest;
-            "pause" => PauseRequest, PauseRequest;
-            "note" => NoteRequest, NoteRequest;
-            "tag" => TagRequest, TagRequest;
-            "tagDelete" => TagRequest, TagRequest;
-            "tagsDeleteAll" => TagsDeleteAllRequest, TagsDeleteAllRequest;
-            "replayAction" => ReplayActionRequest, ReplayActionRequest;
+            LobbyLoad "lobbyLoad" => Empty, Empty;
+            Sync "sync" => Empty, Empty;
+            Chat "chat" => ChatRequest, ChatRequest;
+            ChatPM "chatPM" => ChatPmRequest, ChatPmRequest;
+            ChatPMHistoryGet "chatPMHistoryGet" => ChatHistoryRequest, ChatHistoryRequest;
+            ChatFriend "chatFriend" => ChatUserRequest, ChatUserRequest;
+            ChatUnfriend "chatUnfriend" => ChatUserRequest, ChatUserRequest;
+            ChatLink "chatLink" => ChatUserRequest, ChatUserRequest;
+            ChatUnlink "chatUnlink" => ChatUserRequest, ChatUserRequest;
+            ChatPlayerInfo "chatPlayerInfo" => ChatUserRequest, ChatUserRequest;
+            ChatLinked "chatLinked" => ChatLinkedRequest, ChatLinkedRequest;
+            ChatRead "chatRead" => TableRequest, TableRequest;
+            ChatTyping "chatTyping" => TableRequest, TableRequest;
+            TableJoin "tableJoin" => TableJoinRequest, TableJoinRequest;
+            TableLeave "tableLeave" => TableRequest, TableRequest;
+            TableReattend "tableReattend" => TableRequest, TableRequest;
+            TableSetLeader "tableSetLeader" => TableLeaderRequest, TableLeaderRequest;
+            TableSetVariant "tableSetVariant" => TableVariantRequest, TableVariantRequest;
+            TableStart "tableStart" => TableStartRequest, TableStartRequest;
+            TableRestart "tableRestart" => TableRestartRequest, TableRestartRequest;
+            TableSuggest "tableSuggest" => TableSuggestRequest, TableSuggestRequest;
+            TableSpectate "tableSpectate" => TableSpectateRequest, TableSpectateRequest;
+            TableUnattend "tableUnattend" => TableCommand, TableCommand;
+            TableTerminate "tableTerminate" => TableCommand, TableCommand;
+            TableVoteForTermination "tableVoteForTermination" => TableCommand, TableCommand;
+            GetGameInfo1 "getGameInfo1" => TableCommand, TableCommand;
+            GetGameInfo2 "getGameInfo2" => TableCommand, TableCommand;
+            Loaded "loaded" => TableCommand, TableCommand;
+            Setting "setting" => SettingRequest, SettingRequest;
+            Inactive "inactive" => InactiveRequest, InactiveRequest;
+            HistoryGet "historyGet" => HistoryRequest, HistoryRequest;
+            HistoryGetSeed "historyGetSeed" => HistorySeedRequest, HistorySeedRequest;
+            TagSearch "tagSearch" => TagSearchRequest, TagSearchRequest;
+            TableCreate "tableCreate" => TableCreateRequest, TableCreateRequest;
+            TableUpdate "tableUpdate" => TableUpdateRequest, TableUpdateRequest;
+            ReplayCreate "replayCreate" => ReplayCreateRequest, ReplayCreateRequest;
+            Action "action" => ActionRequest, ActionRequest;
+            Pause "pause" => PauseRequest, PauseRequest;
+            Note "note" => NoteRequest, NoteRequest;
+            Tag "tag" => TagRequest, TagRequest;
+            TagDelete "tagDelete" => TagRequest, TagRequest;
+            TagsDeleteAll "tagsDeleteAll" => TagsDeleteAllRequest, TagsDeleteAllRequest;
+            ReplayAction "replayAction" => ReplayActionRequest, ReplayActionRequest;
         }
     };
 }
@@ -146,7 +146,7 @@ pub fn decode<T: JsonSchema + DeserializeOwned>(value: &Value) -> Result<T> {
 
 pub fn decode_client(name: &str, value: &Value) -> Result<Option<Value>> {
     macro_rules! dispatch {
-        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
             match name {
                 $($command => Ok(Some(serde_json::to_value(decode::<$native>(value)?)?)),)+
                 _ => Ok(None),
@@ -170,7 +170,7 @@ pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
 
 pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
-        ($($command:literal => $canonical:ty, $native:ty;)+) => {
+        ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
             BTreeMap::from([$(( $command, stringify!($canonical) )),+])
         };
     }
@@ -224,3 +224,41 @@ pub mod server {
     use super::{ServerMessage, *};
     server_contracts!(server_messages);
 }
+
+macro_rules! client_messages {
+    ($($name:ident $command:literal => $canonical:ty, $native:ty;)+) => {
+        /// A client command, decoded once into its payload type. Matching on it, rather than on
+        /// command names, lets the compiler check that every command is handled.
+        #[derive(Clone, Debug)]
+        pub enum ClientMessage {
+            $($name($native),)+
+        }
+
+        impl ClientMessage {
+            /// Validates and decodes a command, or returns None for an unregistered name.
+            pub fn decode(name: &str, value: &Value) -> Result<Option<Self>> {
+                match name {
+                    $($command => Ok(Some(Self::$name(decode::<$native>(value)?))),)+
+                    _ => Ok(None),
+                }
+            }
+
+            pub const fn name(&self) -> &'static str {
+                match self {
+                    $(Self::$name(_) => $command,)+
+                }
+            }
+
+            /// The payload as JSON, as the server normalizes it.
+            pub fn data(&self) -> Value {
+                match self {
+                    $(Self::$name(data) => {
+                        serde_json::to_value(data).expect("JSON-serializable client payload")
+                    })+
+                }
+            }
+        }
+    };
+}
+
+client_contracts!(client_messages);
