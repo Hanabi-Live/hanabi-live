@@ -40,7 +40,6 @@ function friend(room: string, args: readonly string[]) {
   });
 }
 chatCommands.set("friend", friend);
-chatCommands.set("addfriend", friend);
 
 // /friends
 function friends(room: string) {
@@ -50,10 +49,7 @@ function friends(room: string) {
       : `Current friends: ${globals.friends.join(", ")}`;
   sendSelfPMFromServer(msg, room);
 }
-chatCommands.set("f", friends);
 chatCommands.set("friends", friends);
-chatCommands.set("friendlist", friends);
-chatCommands.set("friendslist", friends);
 
 // /link <user>
 function link(room: string, args: readonly string[]) {
@@ -183,7 +179,6 @@ chatCommands.set("w", pm);
 chatCommands.set("whisper", pm);
 chatCommands.set("msg", pm);
 chatCommands.set("tell", pm);
-chatCommands.set("t", pm);
 
 /** The amount of private messages that "/pmhistory" requests when none is given. */
 const DEFAULT_PM_HISTORY_AMOUNT = 5;
@@ -268,11 +263,6 @@ function setLeader(room: string, args: readonly string[]) {
   });
 }
 chatCommands.set("setleader", setLeader);
-chatCommands.set("setlead", setLeader);
-chatCommands.set("setowner", setLeader);
-chatCommands.set("changeleader", setLeader);
-chatCommands.set("changelead", setLeader);
-chatCommands.set("changeowner", setLeader);
 
 // /setvariant [variant]
 function setVariant(room: string, args: readonly string[]) {
@@ -310,8 +300,6 @@ function setVariant(room: string, args: readonly string[]) {
 }
 chatCommands.set("sv", setVariant);
 chatCommands.set("setvariant", setVariant);
-chatCommands.set("changevariant", setVariant);
-chatCommands.set("cv", setVariant);
 
 // /suggest [turn]
 chatCommands.set("suggest", (room: string, args: readonly string[]) => {
