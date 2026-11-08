@@ -1796,9 +1796,7 @@ table.history {
 }
 
 .history th.center,
-.history td.center,
-.history th.center .tablesorter-header-inner,
-.history td.center .tablesorter-header-inner {
+.history td.center {
   text-align: center;
 }
 
@@ -1837,38 +1835,18 @@ table.history {
   font-weight: 400;
 }
 
-.tablesorter .filtered {
-  display: none;
-}
-
-.tablesorter .tablesorter-errorRow td {
-  text-align: center;
-  cursor: pointer;
-  background-color: #e6bf99;
-}
-
-.tablesorter thead .disabled {
-  display: none;
-}
-
-.tablesorter thead select {
+.history .table-filters select {
   width: auto;
   max-width: 150px;
   height: auto;
   padding: 0 2.5em 0 0.5em;
 }
 
-.tablesorter thead input {
-  width: auto;
+.history .table-filters input {
+  width: 5em;
   height: auto;
   border: 1px solid lightgray;
   border-radius: 6px;
-}
-
-.tablesorter thead input[aria-label='Filter "ID" column by...'],
-.tablesorter thead input[aria-label='Filter "Score" column by...'],
-.tablesorter thead input[aria-label='Filter "Other Scores" column by...'] {
-  max-width: 50px;
 }
 
 .history-bullets {
@@ -1884,38 +1862,30 @@ table.history {
 }
 
 @media screen and (max-width: 640px) {
-  .history.variant.tablesorter th:nth-child(5),
-  .history.variant.tablesorter td:nth-child(5) {
+  .history.variant th:nth-child(5),
+  .history.variant td:nth-child(5) {
     display: none !important;
   }
-  .history.personal-history.tablesorter th:nth-child(6),
-  .history.personal-history.tablesorter td:nth-child(6) {
+  .history.personal-history th:nth-child(6),
+  .history.personal-history td:nth-child(6) {
     display: none !important;
   }
 }
 
-.tablesorter-header {
+.history th[data-sortable] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
   background-position: center right;
   background-repeat: no-repeat;
   cursor: pointer;
   white-space: normal;
 }
-.tablesorter-header:hover {
-  background-color: unset;
-}
-.tablesorter-headerAsc {
+.history th[aria-sort="ascending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
   background-color: lightblue !important;
 }
-.tablesorter-headerDesc {
+.history th[aria-sort="descending"] {
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
   background-color: lightblue !important;
-}
-.tablesorter .sorter-false {
-  background-image: none;
-  cursor: default;
-  padding: 4px;
 }
 
 /* Spinner during ajax */

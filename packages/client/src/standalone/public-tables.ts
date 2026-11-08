@@ -1,5 +1,5 @@
 // The tables and the score chart on the server's public pages, such as a player's history or a
-// seed. The pages load jQuery, its table plugins, Tooltipster, and Chart.js as globals.
+// seed. The pages load Chart.js as a global.
 
 import {
   errorDetails,
@@ -8,45 +8,11 @@ import {
   scoreFrequencySchema,
   variantNamesSchema,
 } from "@hanabi-live/data";
+import jquery from "jquery";
+import "tooltipster"; // eslint-disable-line import-x/no-unassigned-import
 import * as z from "zod";
-
-interface TablesorterParser {
-  readonly id: string;
-  readonly is: () => boolean;
-  readonly type: "numeric";
-  readonly format: (value: string) => number;
-}
-
-interface TablesorterPager {
-  container: JQuery;
-  output: string;
-  fixedHeight: boolean;
-  removeRows: boolean;
-  cssGoto: string;
-}
-
-/** The state that tablesorter keeps on a table element. */
-interface TablesorterTable extends HTMLTableElement {
-  readonly config?: {
-    /** Each sorted column and its direction: 0 ascending, 1 descending. */
-    readonly sortList: ReadonlyArray<readonly [number, number]>;
-  };
-}
-
-declare global {
-  interface JQuery {
-    tablesorter: (options: object) => JQuery;
-    tablesorterPager: (options: TablesorterPager) => JQuery;
-  }
-
-  interface JQueryStatic {
-    tablesorter: {
-      addParser: (parser: TablesorterParser) => void;
-      /** Each column's filter text, by column index. */
-      getFilters: (table: JQuery) => ReadonlyArray<string | undefined>;
-    };
-  }
-}
+import type { Choice, Column, Sort } from "./data-table";
+import { addTableControls, Pagers } from "./data-table";
 
 declare const Chart: {
   register: (plugin: unknown) => void;
@@ -59,14 +25,17 @@ type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 
 const scoreFrequencies = z.array(scoreFrequencySchema);
 
-$(document).ready(() => {
-  init().catch((error: unknown) => {
-    showError(errorDetails(error, "Loading the page"));
-  });
+const collator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+init().catch((error: unknown) => {
+  showError(errorDetails(error, "Loading the page"));
 });
 
 async function init() {
-  $(".tooltip").tooltipster({
+  jquery(".tooltip").tooltipster({
     animation: "grow",
     contentAsHTML: true,
     delay: 0,
@@ -87,47 +56,18 @@ async function init() {
     );
   }
 
-  const table = $("table.history:not(.plain)");
-  if (table.length === 0) {
+  if (mode === "missing-scores") {
+    initMissingScoresFilters();
+  }
+
+  const table = document.querySelector("table.history:not(.plain)");
+  if (!(table instanceof HTMLTableElement)) {
     return;
   }
 
-  $.tablesorter.addParser({
-    id: "current-max-score",
-    is: () => false,
-    type: "numeric",
-    format: (value) => {
-      const [score = 0, max = 0] = value.split(" / ").map(Number.parseFloat);
-      return max === 0 || Number.isNaN(max) ? 0 : score / max;
-    },
-  });
-  $.tablesorter.addParser({
-    id: "date-and-time",
-    is: () => false,
-    type: "numeric",
-    format: (value) => {
-      const time = Date.parse(
-        value.replace(" \u{2014} ", "T").replace(" UTC", "Z"),
-      );
-      return Number.isNaN(time) ? 0 : time;
-    },
-  });
-
   const { apiPath } = main.dataset;
   if (apiPath === undefined || apiPath === "") {
-    // Every row is already in the page, so the pager plugin pages them itself.
-    table
-      .tablesorter({
-        widgets: ["zebra", "filter"],
-        sortList: mode === "scores" ? [[0, 0]] : [[0, 1]],
-      })
-      .tablesorterPager({
-        container: $(".pager"),
-        output: "{startRow} - {endRow} / {filteredRows} ({totalRows})",
-        fixedHeight: true,
-        removeRows: false,
-        cssGoto: ".gotoPage",
-      });
+    initLocalTable(table, localSort(mode));
     return;
   }
 
@@ -139,67 +79,176 @@ async function init() {
   initServerTable(table, apiPath, mode, variants);
 }
 
+function localSort(mode: string | undefined): Sort | undefined {
+  switch (mode) {
+    case "missing-scores": {
+      return undefined;
+    }
+
+    case "scores": {
+      return { column: 0, descending: false };
+    }
+
+    default: {
+      return { column: 0, descending: true };
+    }
+  }
+}
+
 /**
- * A table of games that the server sorts, filters, and pages. Tablesorter draws the sort and filter
- * controls, and the pager controls are driven here; each change requests the matching page.
+ * A table whose rows are all in the page. Each header's `data-sort="none"` turns off its sorting,
+ * `data-sort="ratio"` sorts "score / max" cells by their ratio, and `data-filter` is "none",
+ * "select" (a choice of the column's values), or a text filter by default.
  */
+function initLocalTable(
+  table: HTMLTableElement,
+  initialSort: Sort | undefined,
+) {
+  const body = table.tBodies[0];
+  if (body === undefined) {
+    return;
+  }
+  const rows = [...body.rows];
+  const headers = [...(table.tHead?.rows[0]?.cells ?? [])];
+  const columns: Column[] = headers.map((header, index) => ({
+    sortable: header.dataset["sort"] !== "none",
+    filter: localFilter(header.dataset["filter"], () => [
+      ...new Set(rows.map((row) => cellText(row, index))),
+    ]),
+  }));
+  const ratios = new Set(
+    headers.flatMap((header, index) =>
+      header.dataset["sort"] === "ratio" ? [index] : [],
+    ),
+  );
+
+  function compare(
+    a: HTMLTableRowElement,
+    b: HTMLTableRowElement,
+    column: number,
+  ) {
+    const [first, second] = [cellText(a, column), cellText(b, column)];
+    return ratios.has(column)
+      ? ratio(first) - ratio(second)
+      : collator.compare(first, second);
+  }
+
+  function draw() {
+    const filters = [...controls.filters()];
+    let shown = rows.filter((row) =>
+      filters.every(([column, value]) => {
+        const cell = cellText(row, column);
+        return columns[column]?.filter === "text"
+          ? cell.toLowerCase().includes(value.toLowerCase())
+          : collator.compare(cell, value) === 0;
+      }),
+    );
+    const sort = controls.sort();
+    if (sort !== undefined) {
+      const direction = sort.descending ? -1 : 1;
+      shown = shown.toSorted((a, b) => direction * compare(a, b, sort.column));
+    }
+    const start = pagers.start(shown.length);
+    body?.replaceChildren(...shown.slice(start, start + pagers.size));
+    pagers.draw(shown.length, `${shown.length} (${rows.length})`);
+  }
+
+  const pagers = new Pagers(draw);
+  const controls = addTableControls(table, columns, initialSort, () => {
+    pagers.page = 0;
+    draw();
+  });
+  draw();
+}
+
+function localFilter(
+  filter: string | undefined,
+  values: () => readonly string[],
+): Column["filter"] {
+  switch (filter) {
+    case "none": {
+      return "none";
+    }
+
+    case "select": {
+      return values()
+        .toSorted((a, b) => collator.compare(a, b))
+        .map((value) => ({ value, text: value }));
+    }
+
+    default: {
+      return "text";
+    }
+  }
+}
+
+function cellText(row: HTMLTableRowElement, column: number): string {
+  return row.cells[column]?.textContent.trim() ?? "";
+}
+
+/** The ratio of a "score / max" cell, or 0 if it has no maximum. */
+function ratio(value: string): number {
+  const [score = 0, max = 0] = value.split(" / ").map(Number.parseFloat);
+  return max === 0 || Number.isNaN(max) || Number.isNaN(score)
+    ? 0
+    : score / max;
+}
+
+/** A table of games that the server sorts, filters, and pages. Each change requests that page. */
 function initServerTable(
-  table: JQuery,
+  table: HTMLTableElement,
   apiPath: string,
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
 ) {
-  const headers: Record<number, { filter: boolean; sorter: boolean }> = {};
-  table.find("th").each((index) => {
-    headers[index] = { filter: false, sorter: false };
-  });
-  headers[0] = { filter: false, sorter: true };
-  headers[1] = { filter: mode !== "seed", sorter: mode === "history" };
-  headers[2] = { filter: true, sorter: true };
+  const playerCounts: Choice[] = [2, 3, 4, 5, 6].map((value) => ({
+    value: String(value),
+    text: String(value),
+  }));
+  const variantChoices: Choice[] = Object.entries(variants).map(
+    ([value, text]) => ({ value, text }),
+  );
+  const columns: Column[] = [...(table.tHead?.rows[0]?.cells ?? [])].map(
+    () => ({ sortable: false, filter: "none" }),
+  );
+  columns[0] = { sortable: true, filter: "none" };
+  columns[1] = {
+    sortable: mode === "history",
+    filter: mode === "seed" ? "none" : playerCounts,
+  };
+  columns[2] = { sortable: true, filter: "text" };
   if (mode === "history") {
-    headers[3] = { filter: true, sorter: false };
+    columns[3] = { sortable: false, filter: variantChoices };
   }
 
-  const pagers = $(".pager");
-  const spinner = $("div.tableSpinner");
-  let page = 0;
-  let size = Number(pagers.find(".pagesize").first().val() ?? 10);
+  const spinner = document.querySelector<HTMLElement>("div.tableSpinner");
   let totalRows = 0;
-  let lastQuery: string | undefined;
   let latestRequest = 0;
 
   function query(): string {
     const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
+      page: String(pagers.page),
+      size: String(pagers.size),
     });
-    // The server sorts by one column, the first that the table is sorted by.
-    const sort = (table.get(0) as TablesorterTable | undefined)?.config
-      ?.sortList[0];
+    const sort = controls.sort();
     if (sort !== undefined) {
-      const [column, direction] = sort;
-      params.append(`col[${column}]`, String(direction));
+      params.append(`col[${sort.column}]`, sort.descending ? "1" : "0");
     }
-    for (const [column, text] of $.tablesorter.getFilters(table).entries()) {
-      if (text !== undefined && text !== "") {
-        params.append(`fcol[${column}]`, text);
-      }
+    for (const [column, value] of controls.filters()) {
+      params.append(`fcol[${column}]`, value);
     }
     return params.toString();
   }
 
   async function load() {
-    const current = query();
-    // Tablesorter reports sort and filter events again after the rows are replaced.
-    if (current === lastQuery) {
-      return;
-    }
-    lastQuery = current;
+    pagers.start(totalRows);
     latestRequest++;
     const request = latestRequest;
-    spinner.css("display", "flex");
+    if (spinner !== null) {
+      spinner.style.display = "flex";
+    }
     try {
-      const response = await fetch(`${apiPath}?${current}`);
+      const response = await fetch(`${apiPath}?${query()}`);
       if (!response.ok) {
         throw await httpError(response, "Loading games");
       }
@@ -209,13 +258,16 @@ function initServerTable(
       }
       ({ totalRows } = result);
       showRows(table, gameRows(result, mode, variants));
-      drawPagers();
-      $("#history-error").prop("hidden", true);
-      spinner.hide();
+      pagers.draw(totalRows, String(totalRows));
+      const error = document.querySelector<HTMLElement>("#history-error");
+      if (error !== null) {
+        error.hidden = true;
+      }
+      if (spinner !== null) {
+        spinner.style.display = "none";
+      }
     } catch (error: unknown) {
       if (request === latestRequest) {
-        // Retrying the same query must request it again.
-        lastQuery = undefined;
         showError(errorDetails(error, "Loading games"));
       }
     }
@@ -227,98 +279,127 @@ function initServerTable(
     });
   }
 
-  function lastPage(): number {
-    return Math.max(0, Math.ceil(totalRows / size) - 1);
-  }
-
-  function drawPagers() {
-    const start = totalRows === 0 ? 0 : page * size + 1;
-    const end = Math.min(totalRows, (page + 1) * size);
-    pagers.find(".pagedisplay").text(`${start} - ${end} / ${totalRows}`);
-    const pages = pagers.find(".gotoPage").empty();
-    for (let index = 0; index <= lastPage(); index++) {
-      pages.append(
-        $("<option>")
-          .val(index)
-          .text(index + 1),
-      );
-    }
-    pages.val(page);
-    pagers.find(".pagesize").val(size);
-  }
-
-  function goTo(target: number) {
-    page = Math.min(Math.max(0, target), lastPage());
-    reload();
-  }
-
-  pagers.find(".first").on("click", () => {
-    goTo(0);
-  });
-  pagers.find(".prev").on("click", () => {
-    goTo(page - 1);
-  });
-  pagers.find(".next").on("click", () => {
-    goTo(page + 1);
-  });
-  pagers.find(".last").on("click", () => {
-    goTo(lastPage());
-  });
-  pagers.find(".gotoPage").on("change", function onChange(this: HTMLElement) {
-    goTo(Number($(this).val()));
-  });
-  pagers.find(".pagesize").on("change", function onChange(this: HTMLElement) {
-    size = Number($(this).val());
-    page = 0;
-    reload();
-  });
-
-  table
-    .tablesorter({
-      headers,
-      serverSideSorting: true,
-      sortList: [[mode === "history" ? 0 : 2, 1]],
-      widgets: ["zebra", "filter"],
-      widgetOptions: {
-        filter_serversideFiltering: true,
-        filter_selectSource: {
-          1: [2, 3, 4, 5, 6].map((value) => ({
-            text: String(value),
-            value: String(value),
-          })),
-          3: Object.entries(variants).map(([value, text]) => ({
-            value,
-            text,
-          })),
-        },
-      },
-    })
-    .on("sortEnd filterEnd", () => {
+  const pagers = new Pagers(reload);
+  const controls = addTableControls(
+    table,
+    columns,
+    { column: mode === "history" ? 0 : 2, descending: true },
+    () => {
       // A new sort or filter starts again from the first page.
-      if (query() !== lastQuery) {
-        page = 0;
-      }
+      pagers.page = 0;
       reload();
-    });
+    },
+  );
   reload();
 }
 
-function showRows(table: JQuery, rows: ReadonlyArray<readonly string[]>) {
-  const body = table.find("tbody").empty();
-  for (const cells of rows) {
-    const row = $("<tr>");
-    for (const cell of cells) {
-      row.append($("<td>").html(cell));
-    }
-    body.append(row);
-  }
-  // Tablesorter stripes the new rows; the server has already sorted them.
-  table.trigger("update", [false]);
+function showRows(
+  table: HTMLTableElement,
+  rows: ReadonlyArray<ReadonlyArray<Node | string>>,
+) {
+  table.tBodies[0]?.replaceChildren(
+    ...rows.map((cells) => {
+      const row = document.createElement("tr");
+      for (const cell of cells) {
+        const td = document.createElement("td");
+        td.append(cell);
+        row.append(td);
+      }
+      return row;
+    }),
+  );
 }
 
 function showError(message: string) {
-  $("div.tableSpinner").hide();
-  $("#history-error").text(message).prop("hidden", false);
+  const spinner = document.querySelector<HTMLElement>("div.tableSpinner");
+  if (spinner !== null) {
+    spinner.style.display = "none";
+  }
+  const error = document.querySelector<HTMLElement>("#history-error");
+  if (error !== null) {
+    error.textContent = message;
+    error.hidden = false;
+  }
+}
+
+/** The filters on the missing scores pages, which reload the page with them in its URL. */
+function initMissingScoresFilters() {
+  const players = document.querySelector("#filter-by-players");
+  if (players instanceof HTMLSelectElement) {
+    players.addEventListener("change", () => {
+      const path = players.dataset["profilePath"] ?? "";
+      globalThis.location.assign(
+        players.value === "0" ? path : `${path}/${players.value}`,
+      );
+    });
+  }
+
+  const form = document.querySelector("#advanced-filters");
+  const toggle = document.querySelector("#advanced-filters-toggle");
+  const error = document.querySelector<HTMLElement>("#advanced-filters-error");
+  if (!(form instanceof HTMLFormElement) || toggle === null || error === null) {
+    return;
+  }
+  toggle.addEventListener("click", () => {
+    const hidden = form.toggleAttribute("hidden");
+    toggle.setAttribute("aria-expanded", String(!hidden));
+  });
+  document
+    .querySelector("#advanced-filters-reset")
+    ?.addEventListener("click", () => {
+      globalThis.location.assign(globalThis.location.pathname);
+    });
+
+  // The filters are query parameters, which keeps the URL shareable, such as
+  // "/shared-missing-scores/3/Alice/Bob/Cathy?excludePlayers=Cathy&maxEfficiency=1.5".
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    function value(id: string): string {
+      return (
+        document.querySelector<HTMLInputElement>(`#${id}`)?.value.trim() ?? ""
+      );
+    }
+    const checkboxes = [
+      ...form.querySelectorAll<HTMLInputElement>(".include-player"),
+    ];
+    const excludedPlayers = checkboxes
+      .filter((checkbox) => !checkbox.checked)
+      .map((checkbox) => checkbox.value);
+    const minEfficiency = value("min-efficiency");
+    const maxEfficiency = value("max-efficiency");
+    let problem: string | undefined;
+    if (excludedPlayers.length === checkboxes.length) {
+      problem = "At least one player must be included.";
+    } else if (
+      minEfficiency !== ""
+      && maxEfficiency !== ""
+      && Number(minEfficiency) > Number(maxEfficiency)
+    ) {
+      problem =
+        "The min efficiency can not be greater than the max efficiency.";
+    }
+    if (problem !== undefined) {
+      error.textContent = problem;
+      error.hidden = false;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    for (const [name, text] of [
+      ["excludePlayers", excludedPlayers.join(",")],
+      ["excludeVariants", value("exclude-variants")],
+      ["minEfficiency", minEfficiency],
+      ["maxEfficiency", maxEfficiency],
+    ] as const) {
+      if (text !== "") {
+        params.set(name, text);
+      }
+    }
+    const search = params.toString();
+    globalThis.location.assign(
+      globalThis.location.pathname + (search === "" ? "" : `?${search}`),
+    );
+  });
 }
 
 function drawScoreChart(
@@ -369,18 +450,18 @@ function barColor(row: ScoreFrequency, best: boolean, index: number): string {
   return ["#99bbff", "#3366ff", "#6699ff"][index % 3] ?? "#99bbff";
 }
 
-/** Each game's table cells, as HTML. */
+/** Each game's table cells. */
 function gameRows(
   page: PublicGamePage,
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
-): ReadonlyArray<readonly string[]> {
+): ReadonlyArray<ReadonlyArray<Node | string>> {
   return page.rows.map((game) => {
     const names = game.users.split(", ");
-    const row = [
+    const row: Array<Node | string> = [
       link(`/replay/${game.id}`, game.id),
-      escaped(game.numPlayers),
-      escaped(game.score),
+      String(game.numPlayers),
+      String(game.score),
     ];
     if (mode !== "variant") {
       const variant = String(game.variant);
@@ -393,7 +474,7 @@ function gameRows(
     }
     row.push(
       link(`/history/${names.map(encodeURIComponent).join("/")}`, game.users),
-      escaped(displayTime(game.datetime)),
+      displayTime(game.datetime),
     );
     if (mode !== "seed") {
       row.push(
@@ -412,12 +493,9 @@ function displayTime(timestamp: string): string {
   return `${timestamp.slice(0, 10)} \u{2014} ${timestamp.slice(11, 19)} UTC`;
 }
 
-function escaped(value: string | number): string {
-  return $("<span>").text(String(value)).html();
-}
-
-function link(href: string, value: string | number): string {
-  return (
-    $("<a>").attr("href", href).text(String(value)).get(0)?.outerHTML ?? ""
-  );
+function link(href: string, value: string | number): HTMLAnchorElement {
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.textContent = String(value);
+  return anchor;
 }
