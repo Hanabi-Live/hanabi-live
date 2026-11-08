@@ -1778,7 +1778,7 @@ async fn prepare_table(
                     let imported =
                         replay_helpers::parse(r.game_json.as_ref().context("Missing game JSON")?)?;
                     warnings.clone_from(&imported.warnings);
-                    custom_seed = Some(imported.extra.custom_seed.clone());
+                    custom_seed = Some(imported.custom_seed.clone());
                     replay_helpers::snapshot(imported, id, session.user)
                 } else {
                     store
@@ -1824,10 +1824,6 @@ async fn prepare_table(
         ensure!(valid_timed_options(&options), "Invalid timed options");
         let mut extra = ExtraOptions::default();
         if name.starts_with('!') {
-            ensure!(
-                r.game_json.is_none(),
-                "Special prefixes cannot be combined with JSON"
-            );
             let parts = name.split_whitespace().collect::<Vec<_>>();
             if parts.first() == Some(&"!seed") {
                 ensure!(
@@ -1860,8 +1856,6 @@ async fn prepare_table(
                 );
                 options = historical.game.options.clone();
                 extra.custom_seed = Some(historical.seed);
-                extra.custom_deck = Some(historical.game.identities());
-                extra.custom_deck_is_shuffled = true;
                 extra.custom_characters = Some(
                     historical
                         .game
@@ -1899,10 +1893,6 @@ async fn prepare_table(
             } else {
                 bail!("Unknown special game prefix");
             }
-        } else if let Some(input) = &r.game_json {
-            let imported = replay_helpers::parse(input)?;
-            options = imported.game.options.clone();
-            extra = imported.extra;
         }
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
@@ -3011,91 +3001,78 @@ impl TableActor {
         } else {
             ExtraOptions::default()
         };
-        if !variant_only && session.user == self.table.owner {
-            if name.starts_with('!') {
-                ensure!(
-                    request.as_ref().is_none_or(|r| r.game_json.is_none()),
-                    "Special prefixes cannot be combined with JSON"
-                );
-                let parts = name.split_whitespace().collect::<Vec<_>>();
-                match parts.first().copied() {
-                    Some("!seed") => {
-                        ensure!(
-                            parts.len() == 2
-                                && parts[1]
-                                    .bytes()
-                                    .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
-                            "Expected !seed [seed name]"
-                        );
-                        extra.set_seed_suffix = parts[1].into();
-                    }
-                    Some("!replay") => {
-                        ensure!(
-                            (2..=3).contains(&parts.len()),
-                            "Expected !replay [game ID] [turn]"
-                        );
-                        let historical = self
-                            .store
-                            .historical(parts[1].parse()?, self.table.id, session.user)
-                            .await?;
-                        let turn = if parts.len() == 3 {
-                            parts[2]
-                                .parse::<usize>()?
-                                .checked_sub(1)
-                                .context("Turn must be positive")?
-                        } else {
-                            0
-                        };
-                        ensure!(
-                            usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
-                            "Replay turn exceeds game"
-                        );
-                        options = historical.game.options.clone();
-                        extra.custom_seed = Some(historical.seed);
-                        extra.custom_deck = Some(historical.game.identities());
-                        extra.custom_deck_is_shuffled = true;
-                        extra.custom_num_players = Some(options.num_players);
-                        extra.set_replay = true;
-                        extra.set_replay_turn = turn;
-                        extra.custom_characters = Some(
-                            historical
-                                .game
-                                .players
-                                .iter()
-                                .map(|p| hanabi_engine::AssignedCharacter {
-                                    name: if p.character.is_empty() {
-                                        "n/a".into()
-                                    } else {
-                                        p.character.clone()
-                                    },
-                                    metadata: if hanabi_engine::Character::from_name(&p.character)
-                                        .is_some_and(
-                                            hanabi_engine::Character::has_assigned_metadata,
-                                        ) {
-                                        p.character_metadata
-                                    } else {
-                                        -1
-                                    },
-                                })
-                                .collect(),
-                        );
-                        extra.custom_actions = historical
-                            .game
-                            .actions
-                            .iter()
-                            .map(|a| ReplayAction {
-                                kind: a.action_type,
-                                target: a.target,
-                                value: a.value,
-                            })
-                            .collect();
-                    }
-                    _ => bail!("Unknown special game prefix"),
+        if !variant_only && session.user == self.table.owner && name.starts_with('!') {
+            let parts = name.split_whitespace().collect::<Vec<_>>();
+            match parts.first().copied() {
+                Some("!seed") => {
+                    ensure!(
+                        parts.len() == 2
+                            && parts[1]
+                                .bytes()
+                                .all(|b| b.is_ascii_alphanumeric() || b == b'-'),
+                        "Expected !seed [seed name]"
+                    );
+                    extra.set_seed_suffix = parts[1].into();
                 }
-            } else if let Some(input) = request.as_ref().and_then(|r| r.game_json.as_ref()) {
-                let imported = replay_helpers::parse(input)?;
-                options = imported.game.options.clone();
-                extra = imported.extra;
+                Some("!replay") => {
+                    ensure!(
+                        (2..=3).contains(&parts.len()),
+                        "Expected !replay [game ID] [turn]"
+                    );
+                    let historical = self
+                        .store
+                        .historical(parts[1].parse()?, self.table.id, session.user)
+                        .await?;
+                    let turn = if parts.len() == 3 {
+                        parts[2]
+                            .parse::<usize>()?
+                            .checked_sub(1)
+                            .context("Turn must be positive")?
+                    } else {
+                        0
+                    };
+                    ensure!(
+                        usize::try_from(historical.game.turn).is_ok_and(|limit| turn < limit),
+                        "Replay turn exceeds game"
+                    );
+                    options = historical.game.options.clone();
+                    extra.custom_seed = Some(historical.seed);
+                    extra.custom_num_players = Some(options.num_players);
+                    extra.set_replay = true;
+                    extra.set_replay_turn = turn;
+                    extra.custom_characters = Some(
+                        historical
+                            .game
+                            .players
+                            .iter()
+                            .map(|p| hanabi_engine::AssignedCharacter {
+                                name: if p.character.is_empty() {
+                                    "n/a".into()
+                                } else {
+                                    p.character.clone()
+                                },
+                                metadata: if hanabi_engine::Character::from_name(&p.character)
+                                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
+                                {
+                                    p.character_metadata
+                                } else {
+                                    -1
+                                },
+                            })
+                            .collect(),
+                    );
+                    extra.custom_actions = historical
+                        .game
+                        .actions
+                        .iter()
+                        .map(|a| ReplayAction {
+                            kind: a.action_type,
+                            target: a.target,
+                            value: a.value,
+                        })
+                        .collect();
+                }
+                _ => bail!("Unknown special game prefix"),
             }
         }
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
@@ -3511,25 +3488,13 @@ impl TableActor {
         };
         let game_id = self.store.reserve().await?;
         let extra = &self.table.extra;
-        let mut deck = if let Some(custom) = &extra.custom_deck {
-            custom.clone()
-        } else {
-            hanabi_engine::create_deck(variant)
-        };
-        if extra.custom_seed.is_some() && !extra.custom_deck_is_shuffled {
-            deck = hanabi_engine::create_shuffled_deck(variant, &seed)?;
-        }
-        let mut rng =
-            hanabi_engine::random::GoRandom::new(hanabi_engine::random::seed_hash(&seed)?);
-        for i in 0..deck.len() {
-            let other = rng.index(i + 1);
-            if extra.custom_seed.is_none() && !extra.custom_deck_is_shuffled {
-                deck.swap(i, other);
-            }
-        }
-        if extra.custom_seed.is_none() {
-            rng.shuffle(&mut players);
-        }
+        // A replayed game keeps its seats; a new game shuffles them after the deck.
+        let deck = hanabi_engine::prepare_deck_and_players(
+            variant,
+            &seed,
+            &mut players,
+            extra.custom_seed.is_none(),
+        )?;
         ensure!(session.active(), "Owner disconnected during start");
         let mut options = self.table.options.clone();
         options.num_players = players.len();

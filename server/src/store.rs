@@ -1,5 +1,5 @@
 use crate::{
-    game::{Game, Options, decode_deck, encode_deck},
+    game::{Game, Options},
     model::{
         FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag,
     },
@@ -502,18 +502,10 @@ impl Store {
                     "Conflicting action"
                 );
             }
-            let deck: Option<Vec<u8>> = sqlx::query_scalar!(
-                "SELECT deck FROM game_custom_decks WHERE game_id=$1",
-                s.game_id
-            )
-            .fetch_optional(&mut *tx)
-            .await?;
-            let actual = if let Some(bytes) = deck {
-                decode_deck(&bytes)?
-            } else {
-                hanabi_engine::create_shuffled_deck(variant, &s.seed)?
-            };
-            ensure!(actual == s.game.identities(), "Conflicting deck");
+            ensure!(
+                hanabi_engine::create_shuffled_deck(variant, &s.seed)? == s.game.identities(),
+                "Conflicting deck"
+            );
             let times = (row.datetime_started, row.datetime_finished);
             ensure!(
                 times.0.timestamp_micros() == s.started.timestamp_micros()
@@ -565,15 +557,6 @@ impl Store {
             .map(|a| i16::try_from(a.value))
             .collect::<Result<_, _>>()?;
         sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut *tx).await?;
-        if s.game.identities() != hanabi_engine::create_shuffled_deck(variant, &s.seed)? {
-            sqlx::query!(
-                "INSERT INTO game_custom_decks(game_id,deck) VALUES($1,$2)",
-                s.game_id,
-                encode_deck(&s.game.identities())?
-            )
-            .execute(&mut *tx)
-            .await?;
-        }
         for tag in &s.tags {
             sqlx::query!(
                 "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
@@ -596,11 +579,7 @@ impl Store {
         let options = options_from_record(&row)?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         let seed: String = row.seed.clone();
-        let deck = if let Some(bytes) = archive.deck {
-            decode_deck(&bytes)?
-        } else {
-            hanabi_engine::create_shuffled_deck(variant, &seed)?
-        };
+        let deck = hanabi_engine::create_shuffled_deck(variant, &seed)?;
         ensure!(
             deck.len() <= hanabi_engine::create_deck(variant).len()
                 && deck.iter().all(|c| c.suit_index < variant.suits.len()),

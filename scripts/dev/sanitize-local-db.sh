@@ -12,7 +12,6 @@ source "$DIR/../lib/env.sh"
 # Tables not cleared (users and games are anonymized instead):
 # - users
 # - games
-# - game_custom_decks
 # - game_participants
 # - game_actions
 # - seeds

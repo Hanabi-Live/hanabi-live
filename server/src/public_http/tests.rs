@@ -281,7 +281,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         INSERT INTO seeds(seed,num_games) VALUES('same',2),('custom-seed',1);
         INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'mine'),(1,2,'other'),(3,1,'mine');
         INSERT INTO game_actions(game_id,turn,type,target,value) VALUES(3,0,0,4,0),(3,1,4,0,1);
-        INSERT INTO game_custom_decks(game_id,deck) VALUES(3,decode('82090a','hex'));
         INSERT INTO game_participant_notes(game_participant_id,card_order,note)
           SELECT id,0,'<note>' FROM game_participants WHERE game_id=3 AND user_id=1;
         INSERT INTO user_stats(user_id,variant_id,num_games,best_score2,best_score2_mod) VALUES(1,0,2,25,0);
@@ -466,10 +465,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (status, body) = request(app.clone(), "/export/3").await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let export: Value = serde_json::from_str(&body).unwrap();
-    assert!(export.get("seed").is_none());
+    assert_eq!(export["seed"], "custom-seed");
     assert_eq!(
         export["deck"],
-        json!([{"suitIndex":1,"rank":1},{"suitIndex":1,"rank":2}])
+        json!([{"suitIndex":0,"rank":1},{"suitIndex":1,"rank":2}])
     );
     assert_eq!(export["actions"].as_array().unwrap().len(), 2);
     assert_eq!(export["notes"], json!([["<note>"], []]));
@@ -709,43 +708,6 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     .await;
     assert_eq!(status, StatusCode::OK, "{body}");
     assert!(body.contains("missing-scores-row-players-6"));
-    let variant = hanabi_engine::get_variant("Up or Down (5 Suits)").unwrap();
-    let mut deck = hanabi_engine::create_deck(variant);
-    deck.truncate(11);
-    assert!(deck.iter().any(|card| card.rank == 7));
-    sqlx::query!(
-        "UPDATE games SET variant_id=$1 WHERE id=3",
-        i16::try_from(variant.id).unwrap()
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    sqlx::query!(
-        "UPDATE game_custom_decks SET deck=$1 WHERE game_id=3",
-        crate::game::encode_deck(&deck).unwrap()
-    )
-    .execute(&db.pool)
-    .await
-    .unwrap();
-    let (status, body) = request(app.clone(), "/export/3").await;
-    assert_eq!(status, StatusCode::OK, "{body}");
-    assert_eq!(
-        serde_json::from_str::<Value>(&body).unwrap()["deck"],
-        json!(deck)
-    );
-    for encoded in ["813f", "8106"] {
-        sqlx::query!(
-            "UPDATE game_custom_decks SET deck=decode($1,'hex') WHERE game_id=3",
-            encoded
-        )
-        .execute(&db.pool)
-        .await
-        .unwrap();
-        let (status, body) = request(app.clone(), "/export/3").await;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{body}");
-        // The failed check and the game are named, so the failure can be traced later.
-        assert!(body.contains("custom deck is invalid: 3"), "{body}");
-    }
     sqlx::query!("UPDATE game_participants SET seat=3 WHERE game_id=1 AND user_id=2")
         .execute(&db.pool)
         .await

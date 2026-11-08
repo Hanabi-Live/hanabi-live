@@ -52,7 +52,6 @@ pub struct GameRecord {
 
 pub(crate) struct Archive {
     pub game: GameRecord,
-    pub deck: Option<Vec<u8>>,
     pub players: Vec<ArchivePlayer>,
     pub actions: Vec<ReplayAction>,
     pub notes: Vec<ArchiveNote>,
@@ -62,7 +61,7 @@ pub(crate) struct Archive {
 pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
     // One statement preserves a consistent snapshot without per-player note queries.
     let Some(row) = sqlx::query!(
-        "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\", d.deck AS \"archive_deck?\",
+        "SELECT to_jsonb(g) AS \"game!: Json<GameRecord>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
           'user_id',p.user_id,'name',u.username,'seat',p.seat,
           'character_assignment',p.character_assignment,'character_metadata',p.character_metadata)
@@ -78,7 +77,7 @@ pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
         COALESCE((SELECT jsonb_agg(jsonb_build_object('user',t.user_id,'tag',t.tag)
           ORDER BY t.user_id,t.tag) FROM game_tags t
           WHERE t.game_id=g.id),'[]'::jsonb) AS \"archive_tags!: Json<Vec<Tag>>\"
-        FROM games g LEFT JOIN game_custom_decks d ON d.game_id=g.id WHERE g.id=$1",
+        FROM games g WHERE g.id=$1",
         id
     )
     .fetch_optional(pool)
@@ -87,7 +86,6 @@ pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
         return Ok(None);
     };
     Ok(Some(Archive {
-        deck: row.archive_deck,
         players: row.archive_players.0,
         actions: row.archive_actions.0,
         notes: row.archive_notes.0,

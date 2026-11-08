@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop -- Each lane follows the actual client protocol in order. */
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
-import { createHash } from "node:crypto";
 import { once } from "node:events";
 import {
   appendFile,
@@ -15,7 +14,6 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
 import { evaluationDatabase } from "./database";
-import { dealt as desired, input } from "./fixtures/normalGame.json";
 import {
   ROOT,
   bounded,
@@ -32,6 +30,14 @@ import {
 } from "./mainProcessSupport";
 import { redisFixture } from "./redisFixture";
 import { expectedSchemaVersion } from "./schemaVersion";
+
+/** The deal of this two-player seed lets the players alternate 25 plays. */
+const SEED_SUFFIX = "77621";
+/** The card order that each turn plays. */
+const PLAYS = [
+  0, 8, 3, 11, 12, 13, 14, 15, 4, 17, 16, 19, 20, 9, 2, 21, 24, 6, 10, 25, 28,
+  27, 22, 31, 18,
+] as const;
 
 databaseDescribe("normal-server protocol workload", () => {
   test("executes matched gameplay, live reconnects, and cold historical replays", async () => {
@@ -144,10 +150,7 @@ databaseDescribe("normal-server protocol workload", () => {
             const bobCookie = await login(address, `Bench${lane}${game}Bob`);
             let alice = await connect(aliceCookie);
             const bob = await connect(bobCookie);
-            alice.send("tableCreate", {
-              name: "Comparison",
-              gameJSON: { players: ["Preset1", "Preset2"], deck: input },
-            });
+            alice.send("tableCreate", { name: `!seed ${SEED_SUFFIX}` });
             const { tableID } = await alice.receive(
               "joined",
               SERVER_COMMAND_SCHEMAS.joined,
@@ -169,13 +172,8 @@ databaseDescribe("normal-server protocol workload", () => {
                 (left, right) => left - right,
               ),
             ).toEqual([0, 1]);
-            for (let turn = 0; turn < 25; turn++) {
+            for (const [turn, order] of PLAYS.entries()) {
               const peer = turn % 2 === a.init.ourPlayerIndex ? alice : bob;
-              const order = desired.findIndex(
-                (card) =>
-                  card.suitIndex === Math.floor(turn / 5)
-                  && card.rank === (turn % 5) + 1,
-              );
               const start = performance.now();
               peer.send("action", {
                 tableID,
@@ -251,31 +249,17 @@ databaseDescribe("normal-server protocol workload", () => {
         await sql`SELECT count(*)::int AS count FROM game_participants`,
       ).toEqual<unknown>([{ count: 16 }]);
       expect(
-        await sql`SELECT count(*)::int AS count FROM game_custom_decks`,
-      ).toEqual<unknown>([{ count: 8 }]);
-      const archives = await sql<Array<{ deck: Uint8Array; actions: unknown }>>`
-        SELECT d.deck, (SELECT jsonb_agg(jsonb_build_object(
-          'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
-          FROM game_actions a WHERE a.game_id=g.id) AS actions
-        FROM games g JOIN game_custom_decks d ON d.game_id=g.id
-      `;
-      for (const archive of archives) {
-        expect([...archive.deck]).toEqual([
-          0x80 + desired.length,
-          ...desired.map((card) => card.suitIndex * 8 + card.rank),
-        ]);
-        expect(archive.actions).toEqual(
-          Array.from({ length: 25 }, (_, turn) => ({
-            type: 0,
-            target: desired.findIndex(
-              (card) =>
-                card.suitIndex === Math.floor(turn / 5)
-                && card.rank === (turn % 5) + 1,
-            ),
-            value: 0,
-          })),
-        );
-      }
+        await sql`
+          SELECT g.seed, (SELECT jsonb_agg(a.target ORDER BY a.turn)
+            FROM game_actions a WHERE a.game_id=g.id AND a.type=0) AS plays
+          FROM games g
+        `,
+      ).toEqual<unknown>(
+        Array.from({ length: 8 }, () => ({
+          seed: `p2v0s${SEED_SUFFIX}`,
+          plays: PLAYS,
+        })),
+      );
       const statsDeadline = performance.now() + 5000;
       for (;;) {
         const [stats] = await sql<Array<{ users: number; games: number }>>`
@@ -353,9 +337,6 @@ databaseDescribe("normal-server protocol workload", () => {
         }),
       );
       await sample();
-      const deckSHA256 = createHash("sha256")
-        .update(JSON.stringify(desired))
-        .digest("hex");
       const latency = Object.fromEntries(
         Object.entries(samples).map(([name, values]) => [
           name,
@@ -369,7 +350,7 @@ databaseDescribe("normal-server protocol workload", () => {
           driverBun: process.versions.bun,
           scope:
             "Release-mode server with real login, cookies, client protocol, Redis AOF/WAITAOF state and disposable PostgreSQL history. Not a capacity benchmark.",
-          deckSHA256,
+          seed: `p2v0s${SEED_SUFFIX}`,
           games: completed.length,
           lanes: 4,
           peakRSSKiB,

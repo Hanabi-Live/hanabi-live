@@ -154,15 +154,6 @@ CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_seed        ON games (seed);
 CREATE INDEX games_index_variant_id_score_id ON games (variant_id, score DESC, id DESC);
 
-DROP TABLE IF EXISTS game_custom_decks CASCADE;
-CREATE TABLE game_custom_decks (
-    game_id INTEGER PRIMARY KEY REFERENCES games (id) ON DELETE CASCADE,
-    deck BYTEA NOT NULL CHECK (
-        octet_length(deck) BETWEEN 2 AND 61
-        AND get_byte(deck, 0) = 128 + octet_length(deck) - 1
-    )
-);
-
 DROP TABLE IF EXISTS game_participants CASCADE;
 CREATE TABLE game_participants (
     id                    SERIAL    PRIMARY KEY,
