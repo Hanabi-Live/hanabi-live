@@ -39,6 +39,14 @@ run_repository_check() {
   fi
 }
 
+lint_rust() {
+  if [[ ${CI:-} == true ]]; then
+    bunx --bun --no-install turbo run "//#lint-rust" --cache=local:rw
+  else
+    bash "$DIR/scripts/lint/check-rust.sh"
+  fi
+}
+
 # Run each linting task as a background job so that we can use parallel processing to get everything
 # done fast.
 process_ids=()
@@ -65,20 +73,12 @@ run_parallel 1 run_repository_check check-shellcheck
 run_parallel 1 run_repository_check check-templates
 run_parallel 2 run_repository_check check-variant-files
 run_parallel 1 run_repository_check lint-package-json
+run_parallel 2 lint_rust
 
 status=0
 for pid in "${process_ids[@]}"; do
   wait "$pid" || status=1
 done
-
-# Keep native compiler checks out of the parallel JavaScript batch to limit peak memory in CI.
-if [[ $shard != 1 ]]; then
-  if [[ ${CI:-} == true ]]; then
-    bunx --bun --no-install turbo run "//#lint-rust" --cache=local:rw || status=1
-  else
-    bash "$DIR/scripts/lint/check-rust.sh" || status=1
-  fi
-fi
 
 if ((status != 0)); then
   echo "Linting failed." >&2
