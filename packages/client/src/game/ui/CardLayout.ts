@@ -5,6 +5,12 @@ import { globals } from "./UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS, FULL_TURN_DEGREES } from "./constants";
 import { animate, degreesToRadians } from "./konvaHelpers";
 
+/** The largest gap between adjacent cards in a hand, as a fraction of the total card width. */
+const MAX_CARD_SPACING = 0.04;
+
+/** The largest gap between adjacent cards in Keldon mode, as a fraction of the total card width. */
+const MAX_CARD_SPACING_KELDON = 0.025;
+
 /** Represents a player's hand (or a discard pile). It is composed of `LayoutChild` objects. */
 export class CardLayout extends Konva.Group {
   private readonly align: string;
@@ -80,10 +86,10 @@ export class CardLayout extends Konva.Group {
     if (numCards > 1) {
       spacingBetweenCards = (handWidth - uw) / (numCards - 1);
     }
-    let maxSpacingBetweenCards = 0.04 * uw;
-    if (globals.lobby.settings.keldonMode) {
-      maxSpacingBetweenCards = 0.025 * uw;
-    }
+    const maxSpacingBetweenCards =
+      (globals.lobby.settings.keldonMode
+        ? MAX_CARD_SPACING_KELDON
+        : MAX_CARD_SPACING) * uw;
     if (spacingBetweenCards > maxSpacingBetweenCards) {
       spacingBetweenCards = maxSpacingBetweenCards;
     }

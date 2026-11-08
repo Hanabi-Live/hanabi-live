@@ -44,6 +44,12 @@ const SIDE_NAME_FRAME_W = 0.12;
  */
 const RIGHT_SIDE_NAME_FRAME_OFFSET_X = 0.111;
 
+/** The top of our own hand at the bottom of the board in Keldon mode. */
+const KELDON_BOTTOM_HAND_Y = 0.77;
+
+/** The top of the name frame below our own hand in Keldon mode, when it is not derived from it. */
+const KELDON_BOTTOM_NAME_FRAME_Y = 0.97;
+
 const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
@@ -68,29 +74,47 @@ export function drawHands(winW: number, winH: number): void {
   /** The size of a hand that runs down the left or right side of the board. */
   const sideHand = { w: 0.301, h: 0.18 } as const;
   handPos[2] = [
-    { x: 0.19, y: 0.77, w: 0.42, h: keldonHandH, rot: 0 },
+    { x: 0.19, y: KELDON_BOTTOM_HAND_Y, w: 0.42, h: keldonHandH, rot: 0 },
     { x: 0.19, y: 0.01, w: 0.42, h: keldonHandH, rot: 0 },
   ];
   handPos[3] = [
-    { x: 0.19, y: 0.77, w: 0.42, h: keldonHandH, rot: 0 },
+    { x: 0.19, y: KELDON_BOTTOM_HAND_Y, w: 0.42, h: keldonHandH, rot: 0 },
     { x: 0.011, y: 0.73, w: 0.41, h: keldonHandH, rot: -82 },
     { x: 0.735, y: 0.024, w: 0.41, h: keldonHandH, rot: 82 },
   ];
   handPos[4] = [
-    { x: 0.23, y: 0.77, w: narrowHandW, h: keldonHandH, rot: 0 },
+    {
+      x: 0.23,
+      y: KELDON_BOTTOM_HAND_Y,
+      w: narrowHandW,
+      h: keldonHandH,
+      rot: 0,
+    },
     { x: 0.015, y: 0.68, w: narrowHandW, h: keldonHandH, rot: -78 },
     { x: 0.23, y: 0.01, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.715, y: 0.095, w: narrowHandW, h: keldonHandH, rot: 78 },
   ];
   handPos[5] = [
-    { x: 0.23, y: 0.77, w: narrowHandW, h: keldonHandH, rot: 0 },
+    {
+      x: 0.23,
+      y: KELDON_BOTTOM_HAND_Y,
+      w: narrowHandW,
+      h: keldonHandH,
+      rot: 0,
+    },
     { x: 0.03, y: 0.756, w: sideHand.w, h: sideHand.h, rot: -90 },
     { x: 0.0205, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.44, y: 0.009, w: narrowHandW, h: keldonHandH, rot: 0 },
     { x: 0.77, y: 0.238, w: sideHand.w, h: sideHand.h, rot: 90 },
   ];
   handPos[6] = [
-    { x: 0.273, y: 0.77, w: narrowHandW * 0.75, h: keldonHandH, rot: 0 },
+    {
+      x: 0.273,
+      y: KELDON_BOTTOM_HAND_Y,
+      w: narrowHandW * 0.75,
+      h: keldonHandH,
+      rot: 0,
+    },
     { x: 0.03, y: 0.72, w: sideHand.w * 0.8, h: sideHand.h, rot: -90 },
     { x: 0.0235, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
     { x: 0.289, y: 0.009, w: handPos6W, h: reducedHandH, rot: 0 },
@@ -213,16 +237,16 @@ export function drawHands(winW: number, winH: number): void {
     h: 0.02,
   };
   namePos[2] = [
-    { x: 0.175, y: 0.97, w: 0.45, h: namePosValues.h },
+    { x: 0.175, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.45, h: namePosValues.h },
     { x: 0.175, y: 0.21, w: 0.45, h: namePosValues.h },
   ];
   namePos[3] = [
-    { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
+    { x: 0.18, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.44, h: namePosValues.h },
     { x: 0.0075, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
     { x: 0.675, y: 0.775, w: SIDE_NAME_FRAME_W, h: namePosValues.h },
   ];
   namePos[4] = [
-    { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
+    { x: 0.22, y: KELDON_BOTTOM_NAME_FRAME_Y, w: 0.36, h: namePosValues.h },
     { x: 0.01, y: 0.74, w: 0.13, h: namePosValues.h },
     { x: 0.22, y: 0.21, w: 0.36, h: namePosValues.h },
     { x: 0.66, y: 0.74, w: 0.13, h: namePosValues.h },

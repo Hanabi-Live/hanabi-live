@@ -22,6 +22,12 @@ import * as konvaTooltips from "./konvaTooltips";
 const NAME_SHADOW_OPACITY = 0.9;
 const ACTIVE_SHADOW_OPACITY = 0.6;
 
+/** The widest a player name can be before it shrinks, as a fraction of the name frame width. */
+const MAX_NAME_WIDTH_FRACTION = 0.65;
+
+/** The gap between the frame lines on either side of a name, as a multiple of the name width. */
+const NAME_LINE_GAP_FACTOR = 1.4;
+
 export class NameFrame extends Konva.Group {
   playerIndex: PlayerIndex;
   tooltipName: string;
@@ -62,7 +68,7 @@ export class NameFrame extends Konva.Group {
 
     let w = this.playerName.width();
     while (
-      w > 0.65 * config.width
+      w > MAX_NAME_WIDTH_FRACTION * config.width
       && this.playerName.fontSize() > MIN_FONT_SIZE
     ) {
       this.playerName.fontSize(this.playerName.fontSize() * TEXT_SHRINK_FACTOR);
@@ -84,7 +90,7 @@ export class NameFrame extends Konva.Group {
     );
     this.add(this.playerName);
 
-    w *= 1.4;
+    w *= NAME_LINE_GAP_FACTOR;
 
     this.defaultStrokeWidth = STROKE_WIDTH_UNIT * globals.stage.height();
 

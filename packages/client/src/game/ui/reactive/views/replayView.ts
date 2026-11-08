@@ -8,6 +8,9 @@ import * as timer from "../../timer";
 import { toggleZen } from "../../zen";
 import * as cluesView from "./cluesView";
 
+/** How long the shared replay forward and backward indicators take to fade out. */
+const SHARED_REPLAY_INDICATOR_FADE_SECONDS = 1;
+
 export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
   if (replayArea === null) {
@@ -166,7 +169,6 @@ function playSharedReplayTween(
   sharedSegment: number,
   previousSharedSegment: number,
 ) {
-  const duration = 1;
   const opacity = 0;
   if (sharedSegment < previousSharedSegment) {
     globals.elements.sharedReplayBackward?.show();
@@ -177,7 +179,7 @@ function playSharedReplayTween(
     }
     globals.elements.sharedReplayBackwardTween = new Konva.Tween({
       node: globals.elements.sharedReplayBackward,
-      duration,
+      duration: SHARED_REPLAY_INDICATOR_FADE_SECONDS,
       opacity,
     }).play();
   } else if (sharedSegment > previousSharedSegment) {
@@ -189,7 +191,7 @@ function playSharedReplayTween(
     }
     globals.elements.sharedReplayForwardTween = new Konva.Tween({
       node: globals.elements.sharedReplayForward,
-      duration,
+      duration: SHARED_REPLAY_INDICATOR_FADE_SECONDS,
       opacity,
     }).play();
   }
