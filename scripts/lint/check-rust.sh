@@ -18,4 +18,8 @@ echo "Checking Rust formatting and static analysis."
 cargo fmt --all --check || status=1
 cargo clippy --locked --workspace --all-targets -- -D warnings || status=1
 
+echo "Checking Rust dependencies."
+cargo deny --locked --workspace check || status=1
+cargo machete || status=1
+
 exit "$status"

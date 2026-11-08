@@ -1,0 +1,46 @@
+# This is the configuration file for cargo-deny, which checks the workspace's dependencies:
+# https://embarkstudios.github.io/cargo-deny/checks/cfg.html
+# Every check that defaults to a warning is set to an error or turned off: a warning that does not
+# fail the build is not acted on.
+
+[advisories]
+# Default: warn. A yanked version was withdrawn by its author, usually for a defect.
+yanked = "deny"
+
+[licenses]
+# Default: empty, which rejects every license. These are the licenses that the dependencies need,
+# all of which are compatible with the GPL-3.0 license of this project.
+allow = [
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "BSL-1.0",
+  "CDLA-Permissive-2.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "Unicode-3.0",
+  "Unlicense",
+  "Zlib",
+]
+# Default: warn. Keeps the list above limited to licenses that are in use.
+unused-allowed-license = "deny"
+
+[licenses.private]
+# Default: false. The workspace crates are not published, so their own license needs no approval.
+ignore = true
+
+[bans]
+# Default: warn. Duplicate versions come from the dependencies' own version requirements, so
+# removing them usually needs an upstream release rather than a change here.
+multiple-versions = "allow"
+# Default: allow. A `*` version requirement accepts any future release, including breaking ones.
+wildcards = "deny"
+# Default: false. Path dependencies between the workspace crates have no version requirement.
+allow-wildcard-paths = true
+
+[sources]
+# Default: warn. Dependencies come only from crates.io.
+unknown-registry = "deny"
+# Default: warn. Dependencies come only from crates.io, never from a Git repository.
+unknown-git = "deny"
