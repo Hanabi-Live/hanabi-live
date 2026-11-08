@@ -16,8 +16,6 @@ bash scripts/dev/generate-protocol.sh --check || status=1
 cd server
 echo "Checking Rust formatting and static analysis."
 cargo fmt --all --check || status=1
-cargo clippy --locked --all-targets -- -D warnings || status=1
-cargo clippy --locked --manifest-path engine/Cargo.toml --all-targets -- -D warnings || status=1
-cargo clippy --locked --manifest-path protocol/Cargo.toml --all-targets -- -D warnings || status=1
+cargo clippy --locked --workspace --all-targets -- -D warnings || status=1
 
 exit "$status"

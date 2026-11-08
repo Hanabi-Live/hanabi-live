@@ -5,9 +5,7 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: cargo
-    directories:
-      - /server
-      - /server/engine
+    directory: /server
     schedule:
       interval: weekly
   - package-ecosystem: rust-toolchain
