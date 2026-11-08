@@ -3,7 +3,7 @@ use axum::{
     body::{Body, to_bytes},
     http::Request,
 };
-use serde_json::Value;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 pub(super) fn config() -> AccountConfig {

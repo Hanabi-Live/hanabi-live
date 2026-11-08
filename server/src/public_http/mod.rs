@@ -210,7 +210,11 @@ async fn ban_check(
         .fetch_one(&state.pool)
         .await?;
         if banned {
-            return Ok((StatusCode::BAD_REQUEST, Json("Your IP address has been banned. Please contact an administrator if you think this is a mistake.")).into_response());
+            return Ok((
+                StatusCode::BAD_REQUEST,
+                Json(hanabi_protocol::ApiError::new(crate::accounts::BANNED)),
+            )
+                .into_response());
         }
     }
     Ok(next.run(request).await)
@@ -224,54 +228,51 @@ async fn api_handler(
 ) -> Result<Response> {
     let q = query(raw);
     let mode = uri.path().split('/').nth(3).unwrap_or("");
-    let value =
-        match mode {
-            "variants" if !params.contains_key("id") => catalog::metadata(false),
-            "variants-full" => catalog::metadata(true),
-            "history" | "seed" | "variants" => {
-                let selection = match data::selection(&state, &params, mode).await {
-                    Ok(s) => s,
-                    Err(e) if e.0 == StatusCode::BAD_REQUEST => {
-                        return Ok((e.0, Json(json!({"total_rows":0,"info":e.1,"rows":null})))
-                            .into_response());
-                    }
-                    Err(e) => return Err(e),
-                };
-                match data::list(&state, selection, &q, mode).await {
-                    Ok(v) => v,
-                    Err(e) if e.0 == StatusCode::BAD_REQUEST => {
-                        return Ok((e.0, Json(json!({"total_rows":0,"info":e.1,"rows":null})))
-                            .into_response());
-                    }
-                    Err(e) => return Err(e),
+    let value = match mode {
+        "variants" if !params.contains_key("id") => json!(catalog::names()),
+        "variants-full" => json!(catalog::metadata()),
+        "history" | "seed" | "variants" => {
+            let selection = match data::selection(&state, &params, mode).await {
+                Ok(s) => s,
+                Err(e) if e.0 == StatusCode::BAD_REQUEST => {
+                    return Ok((e.0, Json(data::rejected(e.1))).into_response());
                 }
-            }
-            "history-full" | "full-history" | "seed-full" | "full-seed" => {
-                let seed = mode.contains("seed");
-                let mut s =
-                    data::selection(&state, &params, if seed { "seed" } else { "history" }).await?;
-                if !seed {
-                    s.start = first(&q, "start").and_then(integer);
-                    s.end = first(&q, "end").and_then(integer);
-                } else if first(&q, "size").is_some() || first(&q, "page").is_some() {
-                    let size = first(&q, "size").unwrap_or("10");
-                    let size = integer(size)
-                        .filter(|n| (1..=100).contains(n))
-                        .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?;
-                    let page = integer(first(&q, "page").unwrap_or("0"))
-                        .filter(|n| *n >= 0)
-                        .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?;
-                    let offset = page
-                        .checked_mul(size)
-                        .filter(|n| *n <= 9_007_199_254_740_991)
-                        .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
-                    s.page = Some((size, offset));
+                Err(e) => return Err(e),
+            };
+            match data::list(&state, selection, &q, mode).await {
+                Ok(page) => json!(page),
+                Err(e) if e.0 == StatusCode::BAD_REQUEST => {
+                    return Ok((e.0, Json(data::rejected(e.1))).into_response());
                 }
-                data::history(&state, s, seed).await?
+                Err(e) => return Err(e),
             }
-            "tags" => data::tagged(&state, &params, false).await?,
-            "tag" => data::tagged(&state, &params, true).await?,
-            _ => return Err(Error::not_found("404 not found")),
-        };
+        }
+        "history-full" | "full-history" | "seed-full" | "full-seed" => {
+            let seed = mode.contains("seed");
+            let mut s =
+                data::selection(&state, &params, if seed { "seed" } else { "history" }).await?;
+            if !seed {
+                s.start = first(&q, "start").and_then(integer);
+                s.end = first(&q, "end").and_then(integer);
+            } else if first(&q, "size").is_some() || first(&q, "page").is_some() {
+                let size = first(&q, "size").unwrap_or("10");
+                let size = integer(size)
+                    .filter(|n| (1..=100).contains(n))
+                    .ok_or_else(|| Error::bad("Page size must be between 1 and 100."))?;
+                let page = integer(first(&q, "page").unwrap_or("0"))
+                    .filter(|n| *n >= 0)
+                    .ok_or_else(|| Error::bad("Page must be a nonnegative integer."))?;
+                let offset = page
+                    .checked_mul(size)
+                    .filter(|n| *n <= 9_007_199_254_740_991)
+                    .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
+                s.page = Some((size, offset));
+            }
+            data::history(&state, s, seed).await?
+        }
+        "tags" => data::tagged(&state, &params, false).await?,
+        "tag" => data::tagged(&state, &params, true).await?,
+        _ => return Err(Error::not_found("404 not found")),
+    };
     Ok(Json(value).into_response())
 }
