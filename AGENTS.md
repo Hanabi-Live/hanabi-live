@@ -61,6 +61,10 @@ rebase the commits not yet pushed, then rerun the required checks before
 pushing. Preserve unrelated working-tree changes. Do not force-push `main` or
 rewrite published history to apply this rule.
 
+When a pull request is merged, clean up after yourself: in a linked worktree,
+run `git fetch` and `git switch --detach origin/main`, then delete the merged
+local branch.
+
 Use Conventional Commits for commit messages:
 `type(optional-scope): description`, for example
 `fix(client): clear stale spectators` or `docs: update setup instructions`.
