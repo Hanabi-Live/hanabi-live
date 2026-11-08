@@ -25,7 +25,6 @@ import {
   FINESSE_COLOR,
   OFF_BLACK,
   SMALL_ICON_SIZE,
-  TEXT_SHADOW,
   TOP_LEFT_X,
   TOP_LEFT_Y,
 } from "./constants";
@@ -33,7 +32,7 @@ import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { drawPip } from "./drawPip";
 
-/** The opacity of the shadow under a card and under the pips drawn on it. */
+/** The opacity of the shadow under a card. */
 const CARD_SHADOW_OPACITY = 0.4;
 
 /** The center of the radial gradient that fills a pip of a suit with several colors. */
@@ -294,12 +293,6 @@ function makeCachedPips(variant: Variant) {
       stroke: "black",
       // The outline is drawn outside the digit, so this is twice its visible width.
       strokeWidth: 6,
-      shadowEnabled: !globals.options.speedrun,
-      shadowColor: "black",
-      shadowOffsetX: 5,
-      shadowOffsetY: 5,
-      shadowOpacity: CARD_SHADOW_OPACITY,
-      shadowForStrokeEnabled: true,
       listening: false,
     });
     rankPipsMap.set(rank, rankPip);
@@ -421,8 +414,6 @@ export function note(
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: 180,
-    shadowEnabled: !globals.options.speedrun,
-    ...TEXT_SHADOW,
     visible: shouldShowIndicator(),
     listening: false,
   });
@@ -446,8 +437,6 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
     rotation: 180,
-    shadowEnabled: !globals.options.speedrun,
-    ...TEXT_SHADOW,
     visible: false,
     listening: false,
   });
@@ -704,12 +693,6 @@ function getNewColorPip(
     fill,
     stroke: "black",
     strokeWidth: 5,
-    shadowEnabled: !globals.options.speedrun,
-    shadowColor: "black",
-    shadowOffsetX: 15,
-    shadowOffsetY: 15,
-    shadowOpacity: CARD_SHADOW_OPACITY,
-    shadowForStrokeEnabled: true,
     sceneFunc: (ctx: KonvaContext.Context) => {
       drawPip(
         ctx as unknown as CanvasRenderingContext2D,
