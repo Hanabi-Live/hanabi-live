@@ -11,7 +11,10 @@ fn export_failure(code: &'static str, problem: &str, id: i64) -> Error {
     .into()
 }
 
-pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value> {
+pub(super) async fn export(
+    state: &PublicState,
+    params: &Params,
+) -> Result<hanabi_protocol::ReplayGame> {
     let raw = params
         .get("databaseID")
         .filter(|v| !v.is_empty())
@@ -132,7 +135,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
     } else {
         None
     };
-    let game = hanabi_protocol::ReplayGame {
+    Ok(hanabi_protocol::ReplayGame {
         id,
         players: players.iter().map(|p| p.name.clone()).collect(),
         deck,
@@ -141,6 +144,5 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
         notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,
         seed: custom.is_none().then_some(seed),
-    };
-    Ok(serde_json::to_value(game)?)
+    })
 }

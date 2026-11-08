@@ -1,8 +1,5 @@
 import type { z } from "zod";
-import { cardOrderSchema } from "../generated/protocol";
-
-/** The server's wire contracts define the valid card orders. */
-export const cardOrder = cardOrderSchema;
+import type { cardOrderSchema } from "../generated/protocol";
 
 /**
  * A number from 0 to 65, representing the order of the card in the initial deck. (65 is the maximum
@@ -15,4 +12,4 @@ export const cardOrder = cardOrderSchema;
  * This type it is branded for extra type safety.
  */
 // Adding `& number` makes the type opaque, which makes for cleaner mouseover tooltips.
-export type CardOrder = z.infer<typeof cardOrder> & number;
+export type CardOrder = z.infer<typeof cardOrderSchema> & number;

@@ -1,7 +1,6 @@
-interface CompletedGame {
-  id: number;
-  datetimeFinished: Date | string;
-}
+import type { GameHistory } from "../interfaces/GameHistory";
+
+type CompletedGame = Pick<GameHistory, "id" | "datetimeFinished">;
 
 export function compareGameHistory(
   left: CompletedGame,
