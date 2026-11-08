@@ -269,11 +269,26 @@ fn expression(schema: &Value) -> Result<String> {
 
 /// Writes a field's default as TypeScript: whole floats without a zero fraction, and values of a
 /// named enum checked against that enum, which also gives them its type.
+/// Writes whole floats, including those nested in object defaults, as JavaScript integers.
+fn whole_floats_as_integers(value: &Value) -> Value {
+    match value {
+        Value::Number(number) if number.is_f64() => number
+            .as_f64()
+            .filter(|number| number % 1.0 == 0.0 && number.abs() <= MAX_SAFE_INTEGER_F64)
+            .map_or_else(|| value.clone(), |number| Value::from(number as i64)),
+        Value::Array(values) => values.iter().map(whole_floats_as_integers).collect(),
+        Value::Object(object) => object
+            .iter()
+            .map(|(key, value)| (key.clone(), whole_floats_as_integers(value)))
+            .collect(),
+        _ => value.clone(),
+    }
+}
+
+const MAX_SAFE_INTEGER_F64: f64 = 9_007_199_254_740_991.0;
+
 fn default_literal(property: &Value, default: &Value) -> String {
-    let value = match default.as_f64() {
-        Some(number) if default.is_f64() && number % 1.0 == 0.0 => format!("{number:.0}"),
-        _ => default.to_string(),
-    };
+    let value = whole_floats_as_integers(default).to_string();
     match property.get("x-enum").and_then(Value::as_str) {
         Some(name) => format!("z.enum({name}).parse({value})"),
         None => value,

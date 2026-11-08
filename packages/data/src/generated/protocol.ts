@@ -771,35 +771,6 @@ export const tableSchema = z
   })
   .readonly();
 export const tableCommandSchema = z.strictObject({ tableID: tableIdSchema });
-const tableOptionsSchema = z.strictObject({
-  allOrNothing: z.boolean().default(false),
-  cardCycle: z.boolean().default(false),
-  deckPlays: z.boolean().default(false),
-  detrimentalCharacters: z.boolean().default(false),
-  emptyClues: z.boolean().default(false),
-  maxPlayers: z.number().int().min(2).max(6).optional(),
-  numPlayers: z.number().int().min(2).max(6).default(2),
-  oneExtraCard: z.boolean().default(false),
-  oneLessCard: z.boolean().default(false),
-  speedrun: z.boolean().default(false),
-  startingPlayer: z.number().int().min(0).max(9_007_199_254_740_991).default(0),
-  tableName: z.string().optional(),
-  timeBase: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(0),
-  timePerTurn: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(0),
-  timed: z.boolean().default(false),
-  variantID: z.number().int().min(0).max(4_294_967_295).optional(),
-  variantName: z.string().default("No Variant"),
-});
 export const tableCreateRequestSchema = z.strictObject({
   gameJSON: z.unknown().optional(),
   hidePregame: z.boolean().default(false),
@@ -810,7 +781,7 @@ export const tableCreateRequestSchema = z.strictObject({
     .max(9_007_199_254_740_991)
     .default(5),
   name: z.string().default(""),
-  options: tableOptionsSchema.default({
+  options: gameOptionsSchema.default({
     allOrNothing: false,
     cardCycle: false,
     deckPlays: false,
@@ -879,7 +850,7 @@ export const tableUpdateRequestSchema = z.strictObject({
     .max(9_007_199_254_740_991)
     .default(5),
   name: z.string().default(""),
-  options: tableOptionsSchema.default({
+  options: gameOptionsSchema.default({
     allOrNothing: false,
     cardCycle: false,
     deckPlays: false,

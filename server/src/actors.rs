@@ -1600,7 +1600,7 @@ fn replay_table(
     }
 }
 /// Converts wire options to the engine's, which use the same field names.
-fn engine_options(options: &hanabi_protocol::TableOptions) -> Result<Options> {
+fn engine_options(options: &hanabi_protocol::GameOptions) -> Result<Options> {
     Ok(serde_json::from_value(serde_json::to_value(options)?)?)
 }
 
