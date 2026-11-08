@@ -11,7 +11,6 @@ vi.mock("./UIGlobals", () => ({ globals: {} }));
 vi.mock("./HanabiCardMouse", () => ({ setEmpathyOnHand: vi.fn() }));
 const { initialState } = await import("../reducers/initialStates/initialState");
 const { stateReducer } = await import("../reducers/stateReducer");
-const { ReplayActionType } = await import("../types/ReplayActionType");
 const mouse = await import("./HanabiCardMouse");
 const { changeStartingHandVisibility, endHypothetical, finishHypothetical } =
   await import("./hypothetical");
@@ -61,7 +60,7 @@ describe("hypothetical exit", () => {
 
     expect(send).toHaveBeenCalledWith("replayAction", {
       tableID: 42,
-      type: ReplayActionType.HypoEnd,
+      type: "hypoEnd",
     });
     expect(store.getState().replay.hypothetical).not.toBeNull();
 

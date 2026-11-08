@@ -1,3 +1,4 @@
+import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { EndCondition } from "@hanabi-live/game";
 import { describe, expect, test } from "vitest";
 import { toGameAction, toPlayerIndex, toSoundType } from "./wire";
@@ -50,5 +51,14 @@ describe("server game events", () => {
       toGameAction({ type: "strike", num: 4, turn: 3, order: 0 }),
     ).toThrow();
     expect(toSoundType("not-a-sound")).toBeUndefined();
+  });
+});
+
+describe("shared replay sounds", () => {
+  test("every sound a leader can send can be played", () => {
+    for (const sound of SERVER_COMMAND_SCHEMAS.replaySound.shape.sound
+      .options) {
+      expect(toSoundType(sound)).toBe(sound);
+    }
   });
 });

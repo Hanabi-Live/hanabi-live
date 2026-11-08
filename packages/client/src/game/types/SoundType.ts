@@ -100,6 +100,15 @@ export enum SoundType {
   /** Used when the timer is running low. */
   Tone = "tone",
 
+  // ---------------------------
+  // Shared Replay Sound Effects
+  // ---------------------------
+
+  Buzz = "buzz",
+  Clap = "clap",
+  Holy = "holy",
+  Nooo = "nooo",
+
   GamePaused = "game-paused",
   GameUnpaused = "game-unpaused",
 

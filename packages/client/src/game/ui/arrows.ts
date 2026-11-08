@@ -20,7 +20,6 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
-import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
@@ -432,7 +431,7 @@ export function toggle(
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.Arrow,
+      type: "arrow",
       order: show ? order : ReplayArrowOrder.Nothing,
     });
   }

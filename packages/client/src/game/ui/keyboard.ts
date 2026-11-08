@@ -17,7 +17,6 @@ import {
   getHTMLInputElement,
 } from "../../utils";
 import { ActionType } from "../types/ActionType";
-import { ReplayActionType } from "../types/ReplayActionType";
 import { SoundType } from "../types/SoundType";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
@@ -370,7 +369,7 @@ function keyup(event: JQuery.KeyUpEvent) {
   }
 }
 
-function sharedReplaySendSound(sound: string) {
+function sharedReplaySendSound(sound: "buzz" | "clap" | "holy" | "nooo") {
   if (
     // Only send sound effects in shared replays.
     globals.state.replay.shared === null
@@ -383,7 +382,7 @@ function sharedReplaySendSound(sound: string) {
   // Send it
   globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
-    type: ReplayActionType.Sound,
+    type: "sound",
     sound,
   });
 }

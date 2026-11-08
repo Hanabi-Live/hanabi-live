@@ -1749,7 +1749,7 @@ function timerClick() {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
 
-  let setting: string;
+  let setting: "pause" | "pause-queue" | "pause-unqueue";
   if (currentPlayerIndex === ourPlayerIndex) {
     setting = "pause";
   } else if (globals.state.pause.queued) {

@@ -636,19 +636,24 @@
     "command": "replayAction",
     "input": {
       "tableID": 4,
-      "type": 5,
+      "type": "hypoAction",
       "action": { "type": "morph", "order": 3, "suitIndex": -1, "rank": 2 }
     },
-    "valid": true,
-    "normalized": {
-      "tableID": 4,
-      "type": 5,
-      "action": { "type": "morph", "order": 3, "suitIndex": -1, "rank": 2 },
-      "order": 0,
-      "segment": 0,
-      "sound": "",
-      "value": 0
-    }
+    "valid": true
+  },
+  {
+    "name": "replay actions take only their own fields",
+    "direction": "client",
+    "command": "replayAction",
+    "input": { "tableID": 4, "type": "segment", "segment": 2, "order": 0 },
+    "valid": false
+  },
+  {
+    "name": "replay actions require their fields",
+    "direction": "client",
+    "command": "replayAction",
+    "input": { "tableID": 4, "type": "segment" },
+    "valid": false
   },
   {
     "name": "hypothetical actions are objects, not JSON text",

@@ -2,7 +2,6 @@ import type { Spectator } from "@hanabi-live/data";
 import Konva from "konva";
 import * as tooltips from "../../../../tooltips";
 import { escapeHtml } from "../../../../utils";
-import { ReplayActionType } from "../../../types/ReplayActionType";
 import { globals } from "../../UIGlobals";
 import * as ourHand from "../../ourHand";
 import * as replay from "../../replay";
@@ -112,7 +111,7 @@ export function onSharedSegmentChanged(
       // Tell the rest of the spectators to go to the turn that we are now on.
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,
-        type: ReplayActionType.Segment,
+        type: "segment",
         segment: data.sharedSegment,
       });
     } else {
