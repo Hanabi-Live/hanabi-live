@@ -55,8 +55,9 @@ const CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 const RECONNECT_DELAY: Duration = Duration::from_secs(5);
 /// The gateway events queued before the gateway reader waits.
 const EVENT_QUEUE: usize = 1000;
-/// The gateway heartbeat intervals we accept, in milliseconds.
-const HEARTBEAT_INTERVAL_MS: RangeInclusive<u64> = 1000..=120_000;
+/// The gateway heartbeat intervals we accept.
+const HEARTBEAT_INTERVAL: RangeInclusive<Duration> =
+    Duration::from_secs(1)..=Duration::from_mins(2);
 /// How long resolving Discord mentions in a message may take before the raw text is used.
 const RENDER_TIMEOUT: Duration = Duration::from_secs(5);
 /// Discord's channel type for a guild text channel.
@@ -271,13 +272,12 @@ impl Transport for NativeTransport {
                         .context("Missing Discord greeting")??;
                     let hello: Value = serde_json::from_str(first.to_text()?)?;
                     ensure!(hello["op"] == opcode::HELLO, "Invalid Discord greeting");
-                    let interval = hello["d"]["heartbeat_interval"]
-                        .as_u64()
-                        .context("Missing heartbeat")?;
-                    ensure!(
-                        HEARTBEAT_INTERVAL_MS.contains(&interval),
-                        "Invalid heartbeat"
+                    let interval = Duration::from_millis(
+                        hello["d"]["heartbeat_interval"]
+                            .as_u64()
+                            .context("Missing heartbeat")?,
                     );
+                    ensure!(HEARTBEAT_INTERVAL.contains(&interval), "Invalid heartbeat");
                     let identify = if session.is_empty() {
                         json!({"op":opcode::IDENTIFY,"d":{"token":self.token,"intents":INTENTS,
                             "properties":{"os":"linux","browser":"hanab-live","device":"hanab-live"}}})
@@ -287,7 +287,7 @@ impl Transport for NativeTransport {
                     socket
                         .send(Message::Text(identify.to_string().into()))
                         .await?;
-                    let mut heartbeat = tokio::time::interval(Duration::from_millis(interval));
+                    let mut heartbeat = tokio::time::interval(interval);
                     heartbeat.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
                     let mut acknowledged = true;
                     loop {

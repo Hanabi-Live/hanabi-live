@@ -4550,13 +4550,11 @@ impl TableActor {
         let mut boot = None;
         let notice;
         match command.as_str() {
-            "s" | "s2" | "s3" | "s4" | "s5" | "s6" => {
+            name if name == "s" || crate::lobby::start_player_count(name).is_some() => {
                 let n = if let Some(arg) = args.first() {
                     arg.parse::<usize>()?
-                } else if command == "s" {
-                    players.len() + 1
                 } else {
-                    command[1..].parse()?
+                    crate::lobby::start_player_count(name).unwrap_or(players.len() + 1)
                 };
                 ensure!(
                     hanabi_protocol::is_player_count(n),

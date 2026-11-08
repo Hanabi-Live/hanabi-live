@@ -4,8 +4,8 @@ use crate::transport::Outgoing;
 use anyhow::{Context, Result, ensure};
 use chrono::SecondsFormat;
 use hanabi_protocol::{
-    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource,
-    MAX_PRIVATE_HISTORY_MESSAGES,
+    Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource, MAX_PLAYERS,
+    MAX_PRIVATE_HISTORY_MESSAGES, MIN_PLAYERS,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -70,15 +70,22 @@ const DELEGATED: &[&str] = &[
     "splitauto",
     "kick",
     "s",
-    "s2",
-    "s3",
-    "s4",
-    "s5",
-    "s6",
     "si",
     "startin",
     "impostor",
 ];
+
+/// The player count that a pregame command such as `/s4` starts the game at, from `/s{MIN_PLAYERS}`
+/// to `/s{MAX_PLAYERS}`.
+pub fn start_player_count(command: &str) -> Option<usize> {
+    let count = command.strip_prefix('s')?;
+    (MIN_PLAYERS..=MAX_PLAYERS).find(|n| count == n.to_string())
+}
+
+/// Whether a command runs at a table rather than in the lobby.
+fn delegated(command: &str) -> bool {
+    DELEGATED.contains(&command) || start_player_count(command).is_some()
+}
 
 pub fn valid_room(room: &str) -> bool {
     room == "lobby"
@@ -165,7 +172,7 @@ pub fn classify_chat(message: &str) -> Classification {
     }
     if simple(&command).is_some()
         || WEBSITE.contains(&command.as_str())
-        || DELEGATED.contains(&command.as_str())
+        || delegated(&command)
         || ["random", "replay"].contains(&command.as_str())
     {
         Classification::Public
@@ -206,6 +213,7 @@ fn help() -> String {
         .chain(["random", "replay", "uptime", "token"].iter())
         .map(|s| format!("/{s}"))
         .collect();
+    names.extend((MIN_PLAYERS..=MAX_PLAYERS).map(|n| format!("/s{n}")));
     names.extend(RESPONSES.iter().map(|r| format!("/{}", r.command)));
     names.sort();
     names.dedup();
@@ -436,7 +444,7 @@ pub async fn lobby_chat(
     let mut public_response = None;
     let mut runtime = None;
     if let Some((command, args)) = &command {
-        if DELEGATED.contains(&command.as_str()) {
+        if delegated(command) {
             public_response = Some("You can only perform this command while in a game.".into());
         } else if let Some(response) = simple(command) {
             let content = if response.is_help {
@@ -555,7 +563,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
 
             let known = simple(&command).is_some()
                 || WEBSITE.contains(&command.as_str())
-                || DELEGATED.contains(&command.as_str())
+                || delegated(&command)
                 || ["random", "replay"].contains(&command.as_str())
                 || (source == "discord"
                     && ["subscribe", "unsubscribe"].contains(&command.as_str()));

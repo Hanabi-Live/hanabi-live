@@ -330,16 +330,21 @@ fn number(v: &Value, key: &str) -> i64 {
 fn float(n: i64) -> f64 {
     n as f64
 }
+/// The decimal places that a percentage is shown with.
+const PERCENTAGE_DECIMALS: usize = 1;
 fn percentage(n: i64, total: i64) -> String {
     let s = format!(
-        "{:.1}",
+        "{:.PERCENTAGE_DECIMALS$}",
         if total == 0 {
             0.0
         } else {
             float(n) * 100.0 / float(total)
         }
     );
-    s.strip_suffix(".0").unwrap_or(&s).to_owned()
+    match s.split_once('.') {
+        Some((whole, fraction)) if fraction.bytes().all(|b| b == b'0') => whole.to_owned(),
+        _ => s,
+    }
 }
 fn duration(seconds: i64) -> String {
     match u64::try_from(seconds) {

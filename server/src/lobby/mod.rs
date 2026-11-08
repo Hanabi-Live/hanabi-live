@@ -9,7 +9,7 @@ mod tests;
 
 pub use chat::{
     Classification, GeneralResponse, classify_chat, external_command, general_response,
-    lobby_history, server_chat, valid_room,
+    lobby_history, server_chat, start_player_count, valid_room,
 };
 pub use history::{blocked_seeds, get_history, history_ids};
 pub use relationships::{block_relations, blocked_between, change_friend, friend_ids, friends};
