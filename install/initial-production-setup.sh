@@ -141,7 +141,9 @@ EOF
   sudo --user "$APP_USER" ./install/install-database-schema.sh
   sudo --user "$APP_USER" ./hanabi-live --check-startup
   systemctl enable --now hanabi-live
-  curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:8081/metrics
+  # shellcheck source=/dev/null
+  localhost_port=$(source .env && printf "%s" "${LOCALHOST_PORT:-8081}")
+  curl --silent --show-error --fail --output /dev/null --retry 10 --retry-connrefused --retry-delay 1 "http://127.0.0.1:$localhost_port/metrics"
 
   # Renew certificates automatically, restarting gracefully as the app user.
   certbot reconfigure --cert-name "$DOMAIN" --webroot --webroot-path "$APP_DIR/letsencrypt" --deploy-hook "sudo --user $APP_USER $APP_DIR/scripts/localhost/gracefulRestart.sh"
