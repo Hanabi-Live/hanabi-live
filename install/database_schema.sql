@@ -118,7 +118,6 @@ CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
-    starting_player         SMALLINT     NOT NULL  DEFAULT 0, /* Unused; to be dropped. */
 
     /* The ID for a particular variant can be found in the "variants.json" file. */
     variant_id              SMALLINT     NOT NULL,

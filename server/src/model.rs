@@ -5,7 +5,7 @@ use hanabi_engine::EndCondition;
 use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, NO_VALUE, ReplayAction};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
@@ -170,28 +170,13 @@ impl TableChat {
         Ok(message)
     }
 }
-/// Checkpoints saved before the starting player was removed list it as the first seat.
-fn strip_starting_player(value: &mut Value) -> Result<()> {
-    for pointer in ["/options", "/phase/snapshot/game/options"] {
-        if let Some(Value::Object(options)) = value.pointer_mut(pointer)
-            && let Some(seat) = options.remove("startingPlayer")
-        {
-            ensure!(
-                seat == json!(0),
-                "Checkpoint starts with seat {seat} instead of the first seat"
-            );
-        }
-    }
-    Ok(())
-}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let mut value: Value = serde_json::from_str(payload)?;
-        strip_starting_player(&mut value)?;
+        let value: Value = serde_json::from_str(payload)?;
         ensure!(
             value["chat"]
                 .as_array()
@@ -703,7 +688,7 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let mut best = json!({});
+        let mut best = serde_json::json!({});
         modifier.write(&mut best);
         assert_eq!(best["modifier"], 10);
         assert_eq!(best["emptyClues"], true);
