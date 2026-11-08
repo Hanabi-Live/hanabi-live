@@ -2,7 +2,7 @@
 // and the state reducers to fire.) All of the sub-actions from the "gameAction" command are listed
 // here.
 
-import type { Spectator } from "@hanabi-live/data";
+import type { ServerCommandData, Spectator } from "@hanabi-live/data";
 import type {
   ActionIncludingHypothetical,
   CardIdentity,
@@ -47,22 +47,30 @@ type HypotheticalAction =
 // Initialization actions
 // ----------------------
 
-export interface ActionInit {
+/**
+ * The parts of the "init" message that the state uses. `replay` is true for both dedicated solo
+ * replays and shared replays.
+ */
+export interface ActionInit extends Readonly<
+  Pick<
+    ServerCommandData["init"],
+    | "datetimeStarted"
+    | "datetimeFinished"
+    | "spectating"
+    | "shadowing"
+    | "replay"
+    | "sharedReplay"
+    | "databaseID"
+    | "sharedReplaySegment"
+    | "sharedReplayLeader"
+    | "sharedReplayEffMod"
+    | "spoilerFree"
+    | "paused"
+  >
+> {
   readonly type: "init";
-  readonly datetimeStarted: string;
-  readonly datetimeFinished: string;
-  readonly spectating: boolean;
-  readonly shadowing: boolean;
 
-  /** True if either a dedicated solo replay or a shared replay. */
-  readonly replay: boolean;
-
-  readonly sharedReplay: boolean;
-  readonly databaseID: number;
-  readonly sharedReplaySegment: number;
-  readonly sharedReplayLeader: string;
-  readonly spoilerFree: boolean;
-  readonly paused: boolean;
+  /** The server sends -1 when nobody is pausing; the state keeps a seat. */
   readonly pausePlayerIndex: PlayerIndex;
 }
 
@@ -85,9 +93,12 @@ interface ActionPremove {
   readonly premove: ClientAction | null;
 }
 
-interface ActionPause {
+interface ActionPause extends Readonly<
+  Pick<ServerCommandData["pause"], "active">
+> {
   readonly type: "pause";
-  readonly active: boolean;
+
+  /** The server sends -1 when nobody is pausing; the state keeps a seat. */
   readonly playerIndex: PlayerIndex;
 }
 
@@ -101,10 +112,15 @@ interface ActionSpectators {
   readonly spectators: readonly Spectator[];
 }
 
-interface ActionFinishOngoingGame {
+interface ActionFinishOngoingGame extends Readonly<
+  Pick<
+    ServerCommandData["finishOngoingGame"],
+    "databaseID" | "sharedReplayLeader"
+  >
+> {
   readonly type: "finishOngoingGame";
-  readonly databaseID: number;
-  readonly sharedReplayLeader: string;
+
+  /** The server does not send this; the client records when it received the message. */
   readonly datetimeFinished: string;
 }
 
@@ -136,9 +152,10 @@ interface ActionReplayUseSharedSegments {
   readonly useSharedSegments: boolean;
 }
 
-interface ActionReplayLeader {
+interface ActionReplayLeader extends Readonly<
+  Pick<ServerCommandData["replayLeader"], "name">
+> {
   readonly type: "replayLeader";
-  readonly name: string;
 }
 
 // --------------------

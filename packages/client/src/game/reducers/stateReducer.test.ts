@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 vi.mock("./uiReducer", () => ({
   uiReducer: vi.fn(),
 }));
-const { replayEnter } = await import("../../../test/testActions");
+const { init, replayEnter } = await import("../../../test/testActions");
 const { initialState } = await import("./initialStates/initialState");
 const { stateReducer } = await import("./stateReducer");
 
@@ -32,5 +32,12 @@ describe("stateReducer", () => {
 
     state = stateReducer(state, { type: "gameActionList", actions: [] });
     expect(state.visibleState).not.toBeNull();
+  });
+  test("joining a shared replay applies its efficiency modifier", () => {
+    const state = stateReducer(initialState(defaultMetadata), {
+      ...init(),
+      sharedReplayEffMod: 3,
+    });
+    expect(state.notes.efficiencyModifier).toBe(3);
   });
 });

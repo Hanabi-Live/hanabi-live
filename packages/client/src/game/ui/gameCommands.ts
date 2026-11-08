@@ -551,7 +551,7 @@ function initStateStore(data: InitData) {
     // The server sends -1 when nobody is pausing, and the pauser is only shown while paused.
     pausePlayerIndex:
       data.paused && data.pausePlayerIndex !== -1 ? data.pausePlayerIndex : 0,
-    efficiencyModifier: data.sharedReplayEffMod,
+    sharedReplayEffMod: data.sharedReplayEffMod,
   });
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here. We

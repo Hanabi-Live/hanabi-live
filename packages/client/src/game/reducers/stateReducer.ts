@@ -156,6 +156,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
             spoilerFree: action.spoilerFree,
           };
+          state.notes.efficiencyModifier = action.sharedReplayEffMod;
         }
       }
 
