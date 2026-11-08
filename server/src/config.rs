@@ -28,6 +28,12 @@ pub struct Config {
 pub const HTTP_PORT: u16 = 80;
 /// The HTTPS port that the default HTTP port becomes when TLS is configured.
 pub const HTTPS_PORT: u16 = 443;
+/// The port of the operations HTTP server when `LOCALHOST_PORT` is unset.
+const DEFAULT_LOCALHOST_PORT: u16 = 8081;
+/// The PostgreSQL port when `DB_PORT` is unset.
+const DEFAULT_DATABASE_PORT: u16 = 5432;
+/// The Redis endpoint when `REDIS_URL` is unset.
+const DEFAULT_REDIS_URL: &str = "redis://127.0.0.1:6379";
 /// The shortest session signing key, in bytes.
 const MIN_SESSION_SECRET_LENGTH: usize = 128;
 /// The longest label in a domain name.
@@ -102,7 +108,7 @@ impl Config {
             secret.len() >= MIN_SESSION_SECRET_LENGTH,
             "SESSION_SECRET must be at least {MIN_SESSION_SECRET_LENGTH} bytes"
         );
-        let redis_url = field("REDIS_URL", "redis://127.0.0.1:6379");
+        let redis_url = field("REDIS_URL", DEFAULT_REDIS_URL);
         let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
         ensure!(
             matches!(redis.scheme(), "redis" | "rediss" | "unix" | "redis+unix"),
@@ -140,7 +146,7 @@ impl Config {
             port: field("PORT", &HTTP_PORT.to_string())
                 .parse()
                 .context("Invalid PORT")?,
-            localhost_port: field("LOCALHOST_PORT", "8081")
+            localhost_port: field("LOCALHOST_PORT", &DEFAULT_LOCALHOST_PORT.to_string())
                 .parse()
                 .context("Invalid LOCALHOST_PORT")?,
             domain,
@@ -151,7 +157,7 @@ impl Config {
             redis_url,
             database: field("DB_NAME", "hanabi"),
             database_host: field("DB_HOST", "localhost"),
-            database_port: field("DB_PORT", "5432")
+            database_port: field("DB_PORT", &DEFAULT_DATABASE_PORT.to_string())
                 .parse()
                 .context("Invalid DB_PORT")?,
             database_user: field("DB_USER", "hanabiuser"),
@@ -168,8 +174,8 @@ mod tests {
     fn redis_defaults_when_missing_or_blank_and_preserves_explicit_endpoint() {
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         for (configured, expected) in [
-            (None, "redis://127.0.0.1:6379"),
-            (Some(""), "redis://127.0.0.1:6379"),
+            (None, DEFAULT_REDIS_URL),
+            (Some(""), DEFAULT_REDIS_URL),
             (
                 Some("redis+unix:///run/hanabi-redis/redis.sock"),
                 "redis+unix:///run/hanabi-redis/redis.sock",

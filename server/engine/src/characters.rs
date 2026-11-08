@@ -5,11 +5,20 @@ use crate::{
     types::reject,
 };
 use anyhow::Result;
+use hanabi_protocol::MAX_RANK;
 
 /// The clues at or below which a Panicky player must discard twice.
 const PANICKY_MAX_CLUES: i32 = 4;
 /// The clues that a Miser needs before giving one.
 const MISER_MIN_CLUES: i32 = 4;
+/// The clues that a Genius needs before giving one.
+const GENIUS_MIN_CLUES: i32 = 2;
+/// The clues at or above which a Wasteful player cannot discard.
+const WASTEFUL_MAX_CLUES: i32 = 2;
+/// The fewest cards that a Greedy player's clue must touch.
+const GREEDY_MIN_TOUCHED: usize = 2;
+/// The ranks that a Vulnerable player cannot be clued.
+const VULNERABLE_RANKS: [i32; 2] = [2, MAX_RANK];
 
 fn reject_character<T>(player: &EnginePlayer, reason: &str) -> Result<T> {
     reject(format!("You are {}, {reason}", player.character))
@@ -103,8 +112,13 @@ pub(crate) fn validate_character_discard(state: &EngineState, actor: usize) -> R
         Some(Character::Traumatized) if state.clue_tokens % 2 == 1 => {
             Some("so you cannot discard when there is an odd number of clues available.")
         }
-        Some(Character::Wasteful) if state.clue_tokens >= 2 * clue_cost(state) => {
-            Some("so you cannot discard if there are 2 or more clues available.")
+        Some(Character::Wasteful) if state.clue_tokens >= WASTEFUL_MAX_CLUES * clue_cost(state) => {
+            return reject_character(
+                p,
+                &format!(
+                    "so you cannot discard if there are {WASTEFUL_MAX_CLUES} or more clues available."
+                ),
+            );
         }
         _ => None,
     };
@@ -145,8 +159,11 @@ pub(crate) fn validate_character_clue(
         Some(Character::Conservative) if touched.len() != 1 => {
             Some("so you can only give clues that touch a single card.")
         }
-        Some(Character::Greedy) if touched.len() < 2 => {
-            Some("so you can only give clues that touch 2+ cards.")
+        Some(Character::Greedy) if touched.len() < GREEDY_MIN_TOUCHED => {
+            return reject_character(
+                p,
+                &format!("so you can only give clues that touch {GREEDY_MIN_TOUCHED}+ cards."),
+            );
         }
         Some(Character::Picky)
             if (action.value + i32::from(clue == Some(ClueType::Color))) % 2 == 0 =>
@@ -190,8 +207,15 @@ pub(crate) fn validate_character_clue(
         {
             Some("so you must continue to clue a card until it is played or discarded.")
         }
-        Some(Character::Genius) if m == -1 && state.clue_tokens < 2 * clue_cost(state) => {
-            Some("so there needs to be at least two clues available for you to give a clue.")
+        Some(Character::Genius)
+            if m == -1 && state.clue_tokens < GENIUS_MIN_CLUES * clue_cost(state) =>
+        {
+            return reject_character(
+                p,
+                &format!(
+                    "so there needs to be at least {GENIUS_MIN_CLUES} clues available for you to give a clue."
+                ),
+            );
         }
         Some(Character::Genius) if m == -1 && clue != Some(ClueType::Color) => {
             Some("so you must give a color clue first.")
@@ -203,9 +227,12 @@ pub(crate) fn validate_character_clue(
     }
     if target.character() == Some(Character::Vulnerable)
         && clue == Some(ClueType::Rank)
-        && (action.value == 2 || action.value == 5)
+        && VULNERABLE_RANKS.contains(&action.value)
     {
-        return reject("You cannot give a number 2 or number 5 clue to a Vulnerable character.");
+        let [low, high] = VULNERABLE_RANKS;
+        return reject(format!(
+            "You cannot give a number {low} or number {high} clue to a Vulnerable character."
+        ));
     }
     if target.character() == Some(Character::ColorBlind) && clue == Some(ClueType::Color) {
         return reject("You cannot give that color clue to a Color-Blind character.");

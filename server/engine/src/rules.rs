@@ -7,6 +7,8 @@ use std::collections::HashSet;
 
 /// The turns left after the last card is drawn when a Contrarian plays.
 const CONTRARIAN_FINAL_TURNS: i32 = 2;
+/// The fewest stacks that must reach a card's rank before a Follower can play it.
+const FOLLOWER_MIN_STACKS: usize = 2;
 
 pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
     get_variant(&state.options.variant_name).expect("validated engine variant")
@@ -233,7 +235,7 @@ pub(crate) fn follower_misplays(state: &EngineState, player: usize, card: &Engin
             }
         })
         .count();
-    reached < 2
+    reached < FOLLOWER_MIN_STACKS
 }
 
 fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {

@@ -56,8 +56,12 @@ pub const CLOCK_UNITS_PER_SECOND: i32 = 1000;
 pub const CLOCK_UNITS_PER_MINUTE: i64 = (SECONDS_PER_MINUTE * CLOCK_UNITS_PER_SECOND) as i64;
 /// How long a game can go without a move before it ends.
 pub const IDLE_TIMEOUT_MS: i64 = 30 * CLOCK_UNITS_PER_MINUTE;
+/// The number of seconds in an hour.
+pub const SECONDS_PER_HOUR: i32 = 60 * SECONDS_PER_MINUTE;
+/// The number of hours in a day.
+pub const HOURS_PER_DAY: i32 = 24;
 /// The number of seconds in a day.
-pub const SECONDS_PER_DAY: i32 = 24 * 60 * SECONDS_PER_MINUTE;
+pub const SECONDS_PER_DAY: i32 = HOURS_PER_DAY * SECONDS_PER_HOUR;
 /// The longest starting clock a timed game can have, in seconds (one week).
 pub const MAX_TIME_BASE_SECONDS: i32 = 7 * SECONDS_PER_DAY;
 /// The most time a timed game can add each turn, in seconds (one day).

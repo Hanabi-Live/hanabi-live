@@ -435,7 +435,11 @@ fn whole_floats_as_integers(value: &Value) -> Value {
     }
 }
 
-const MAX_SAFE_INTEGER_F64: f64 = 9_007_199_254_740_991.0;
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "a float represents MAX_SAFE_INTEGER exactly"
+)]
+const MAX_SAFE_INTEGER_F64: f64 = hanabi_protocol::MAX_SAFE_INTEGER as f64;
 
 /// Writes a field's default as TypeScript: whole floats without a zero fraction, and a wire enum's
 /// value as its member, which also gives the default the enum's type.
