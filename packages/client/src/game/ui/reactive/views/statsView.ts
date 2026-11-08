@@ -10,6 +10,15 @@ import {
 } from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";
 
+/** Cyan, for an efficiency that has a custom modification. */
+const MODIFIED_EFFICIENCY_COLOR = "#00ffff";
+
+/** Yellow, for a medium pace risk. */
+const PACE_MEDIUM_RISK_COLOR = "#efef1d";
+
+/** Orange, for a high pace risk. */
+const PACE_HIGH_RISK_COLOR = "#ef8c1d";
+
 /** Updates the labels on the right-hand side of the screen. */
 export function onEfficiencyChanged(data: {
   cardsGotten: number;
@@ -97,7 +106,9 @@ export function onEfficiencyChanged(data: {
   effMinLabel.x(minEffX);
 
   // Change the color of the efficiency label if there is a custom modification.
-  const effLabelColor = cardsGottenModified ? "#00ffff" : LABEL_COLOR;
+  const effLabelColor = cardsGottenModified
+    ? MODIFIED_EFFICIENCY_COLOR
+    : LABEL_COLOR;
   effLabel.fill(effLabelColor);
 
   // Update the tooltip
@@ -189,11 +200,11 @@ function getPaceLabelColor(paceRisk: PaceRisk): string {
     }
 
     case PaceRisk.Medium: {
-      return "#efef1d"; // Yellow
+      return PACE_MEDIUM_RISK_COLOR;
     }
 
     case PaceRisk.High: {
-      return "#ef8c1d"; // Orange
+      return PACE_HIGH_RISK_COLOR;
     }
 
     case PaceRisk.Zero: {

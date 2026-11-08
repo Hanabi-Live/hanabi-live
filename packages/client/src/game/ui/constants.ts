@@ -88,8 +88,14 @@ export const DISCARD_PERMISSION_COLOR = "#812020";
 
 export const OFF_BLACK = "#0d0d0d";
 
-/** Red, for the states that warn the team (such as being unable to discard at max clues). */
+/**
+ * Red, for the states that warn the team (such as being unable to discard at max clues) and for
+ * disconnected players.
+ */
 export const WARNING_COLOR = "#df1c2d";
+
+/** Yellow, for the circles that show that the replay leader or a queued pause is active. */
+export const ACTIVE_INDICATOR_COLOR = "#ffe03b";
 
 export const BUTTON_HOVER_COLOR = "#888888";
 export const BUTTON_PRESSED_COLOR = "#cccccc";

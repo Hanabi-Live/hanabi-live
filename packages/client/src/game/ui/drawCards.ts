@@ -2,8 +2,11 @@
 
 import type { Color, Rank, Suit, Variant } from "@hanabi-live/game";
 import {
+  DARK_OMNI_SUIT_NAME,
   DEFAULT_CARD_RANKS,
+  OMNI_SUIT_NAME,
   START_CARD_RANK,
+  UNKNOWN_SUIT_NAME,
   getSuit,
   getSuitAbbreviationForVariant,
 } from "@hanabi-live/game";
@@ -51,6 +54,9 @@ const UNKNOWN_CARD_FILL_ALPHA = 0.5;
 /** The opacity of the dark outline of an unknown card or the deck. */
 const UNKNOWN_CARD_BORDER_ALPHA = 0.6;
 
+/** The opacity of the faint suit pip in the middle of an unknown card. */
+const UNKNOWN_CARD_LARGE_PIP_ALPHA = { normal: 0.1, colorblind: 0.4 } as const;
+
 /** The color of the pips on an unknown card or the deck. */
 const UNKNOWN_CARD_PIP_COLOR = "#444444";
 
@@ -85,7 +91,7 @@ export function drawCards<Canvas, Image>(
 
   // Add the "Unknown" suit to the list of suits for this variant. The unknown suit has blank white
   // cards, representing cards of known rank but unknown suit.
-  const unknownSuit = getSuit("Unknown");
+  const unknownSuit = getSuit(UNKNOWN_SUIT_NAME);
   const suits = [...variant.suits, unknownSuit];
 
   let suitIndex = -1;
@@ -100,7 +106,7 @@ export function drawCards<Canvas, Image>(
     ] as const) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card.
       if (
-        suit.name === "Unknown"
+        suit.name === UNKNOWN_SUIT_NAME
         && (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
       ) {
         continue;
@@ -158,7 +164,7 @@ export function drawCards<Canvas, Image>(
         if (
           variant.specialRankDeceptive
           && rank === variant.specialRank
-          && suit.name !== "Unknown"
+          && suit.name !== UNKNOWN_SUIT_NAME
           && !suit.noClueRanks
         ) {
           const deceptiveRank =
@@ -203,7 +209,7 @@ export function drawCards<Canvas, Image>(
 
       // The "Unknown" suit does not have pips. (It is a white suit that is used for cards that are
       // clued with rank.)
-      if (suit.name !== "Unknown") {
+      if (suit.name !== UNKNOWN_SUIT_NAME) {
         drawSuitPips(ctx, rank, suit, variant, colorblindMode, enableShadows);
       }
 
@@ -355,7 +361,9 @@ function drawSuitPips(
       lineWidth = 2;
     } else {
       // Make the pip faint.
-      ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
+      ctx.globalAlpha = colorblindMode
+        ? UNKNOWN_CARD_LARGE_PIP_ALPHA.colorblind
+        : UNKNOWN_CARD_LARGE_PIP_ALPHA.normal;
     }
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
@@ -658,7 +666,7 @@ function getSuitStyle(
 
       if (allClueColors) {
         if (allClueRanks) {
-          const rainbow = getSuit(dark ? "Dark Omni" : "Omni");
+          const rainbow = getSuit(dark ? DARK_OMNI_SUIT_NAME : OMNI_SUIT_NAME);
           return evenLinearGradient(
             ctx,
             rainbow.fillColors,
@@ -741,7 +749,7 @@ function getSuitStyle(
     }
 
     case CardArea.Background: {
-      if (suit.name === "Omni" || suit.name === "Dark Omni") {
+      if (suit.name === OMNI_SUIT_NAME || suit.name === DARK_OMNI_SUIT_NAME) {
         return evenLinearGradient(ctx, suit.fillColors, [
           0,
           -30,

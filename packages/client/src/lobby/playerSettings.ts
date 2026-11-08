@@ -1,6 +1,6 @@
 // The "Settings" nav button.
 
-import { MAX_VOLUME, SoundMove } from "@hanabi-live/data";
+import { MAX_VOLUME, SoundMove, defaultSettings } from "@hanabi-live/data";
 import {
   assertDefined,
   assertEnumValue,
@@ -13,6 +13,9 @@ import * as notifications from "../notifications";
 import { SOUNDS_PATH } from "../sounds";
 
 export function init(): void {
+  $("#settings-volume-slider")
+    .attr("max", MAX_VOLUME)
+    .val(defaultSettings.volume);
   $("#settings-volume-slider").change(function settingsVolumeSliderChange(
     this: HTMLElement,
   ) {

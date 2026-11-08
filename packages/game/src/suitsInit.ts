@@ -1,6 +1,6 @@
 import { assertDefined, assertEnumValue } from "complete-common";
 import { ALL_RESERVED_NOTES } from "./abbreviations";
-import { SUIT_REVERSED_SUFFIX } from "./constants";
+import { SUIT_REVERSED_SUFFIX, UNKNOWN_SUIT_NAME } from "./constants";
 import { Pip } from "./enums/Pip";
 import type { Color } from "./interfaces/Color";
 import type { Suit } from "./interfaces/Suit";
@@ -134,7 +134,7 @@ function getSuitClueColors(
   // The "Unknown" suit is not supposed to have clue colors, and some special suits do not have clue
   // colors explicitly assigned to them.
   if (
-    suitJSON.name === "Unknown"
+    suitJSON.name === UNKNOWN_SUIT_NAME
     || suitJSON.allClueColors === true
     || suitJSON.noClueColors === true
     || suitJSON.prism === true

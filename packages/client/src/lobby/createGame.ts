@@ -40,6 +40,12 @@ export function init(): void {
   dropdown1 = $("#create-game-variant-dropdown1");
   dropdown2 = $("#create-game-variant-dropdown2");
 
+  $("#createTableMaxPlayers").attr({
+    min: MIN_PLAYERS,
+    max: MAX_PLAYERS,
+    placeholder: defaultSettings.createTableMaxPlayers,
+  });
+
   firstVariantDropdownInit();
   secondVariantDropdownInit();
 

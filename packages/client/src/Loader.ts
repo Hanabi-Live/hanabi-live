@@ -1,4 +1,4 @@
-import { assertDefined } from "complete-common";
+import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
 
 type ProgressCallback = (numLoaded: number, size: number) => void;
 type FinishedCallback = () => void;
@@ -8,7 +8,7 @@ type FailedCallback = (filePath: string) => void;
 const MAX_IMAGE_RETRIES = 2;
 
 /** The delay before the first retry, which doubles with each retry after it. */
-const IMAGE_RETRY_BASE_DELAY_MILLISECONDS = 1000;
+const IMAGE_RETRY_BASE_DELAY_MILLISECONDS = SECOND_IN_MILLISECONDS;
 
 /**
  * The list of all game-related images to preload. All of these files should have a ".png"

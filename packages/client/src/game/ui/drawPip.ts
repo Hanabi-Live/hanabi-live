@@ -1,4 +1,5 @@
 import type { Suit, Variant } from "@hanabi-live/game";
+import { BLACK_SUIT_NAME } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
 import {
   CARD_IMAGE_SHADOW_COLOR,
@@ -16,6 +17,12 @@ const SUIT_PIP_RING_RADIUS = 0.7 * CARD_W;
 
 /** The ring starts at the top of the card, a quarter turn from the positive x axis. */
 const SUIT_PIP_RING_START_TURNS = 0.25;
+
+/** The translucent yellow glow behind a color pip that a positive clue has confirmed. */
+const POSITIVE_PIP_HIGHLIGHT_COLOR = "rgba(238, 188, 29, 0.3)";
+
+/** The black pip is filled off-black so that its black border stays visible. */
+const BLACK_PIP_FILL = "#212121";
 
 /**
  * Returns where a suit's pip sits in the ring of suit pips, relative to the middle of the card and
@@ -47,7 +54,7 @@ export function drawPip(
     ctx.save();
     ctx.beginPath();
     ctx.arc(3, 5, 100, 0, FULL_CIRCLE_RADIANS);
-    ctx.fillStyle = "rgba(238, 188, 29, 0.3)";
+    ctx.fillStyle = POSITIVE_PIP_HIGHLIGHT_COLOR;
     ctx.fill();
     ctx.stroke();
     ctx.restore();
@@ -130,9 +137,8 @@ export function drawPip(
     // function; the drawing function will handle the filling.
     drawPipFunction(ctx, suit.fillColors);
   } else {
-    // All other suits have a solid fill. (We want the black pip to have an off-black custom fill so
-    // that the border is visible on the pip.)
-    const fill = suit.name === "Black" ? "#212121" : suit.fill;
+    // All other suits have a solid fill.
+    const fill = suit.name === BLACK_SUIT_NAME ? BLACK_PIP_FILL : suit.fill;
     ctx.fillStyle = fill;
     drawPipFunction(ctx);
     ctx.fill();

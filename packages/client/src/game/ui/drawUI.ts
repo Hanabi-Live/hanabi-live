@@ -45,6 +45,7 @@ import * as arrows from "./arrows";
 import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import {
+  ACTIVE_INDICATOR_COLOR,
   CARD_ANIMATION_LENGTH_SECONDS,
   DIALOG_CORNER_RADIUS,
   EFFICIENCY_DECIMAL_PLACES,
@@ -121,6 +122,9 @@ const ACTION_LOG_LINES = 8;
 
 /** The number of recent actions shown in the smaller action log of the Keldon layout. */
 const KELDON_ACTION_LOG_LINES = 3;
+
+/** Pink, for the minimum efficiency of a "Hard" variant when hyphenated conventions are enabled. */
+const HARD_VARIANT_EFFICIENCY_COLOR = "#ffb2b2";
 
 /** The opacity of the trash can icon over the discard pile. */
 const TRASH_CAN_OPACITY = 0.2;
@@ -1195,7 +1199,7 @@ function drawSharedReplay() {
     x: (sharedReplayLeaderLabelValues.x + 0.015) * winW,
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
-    stroke: "#ffe03b", // Yellow
+    stroke: ACTIVE_INDICATOR_COLOR,
     strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
     visible: false,
     listening: false,
@@ -1515,7 +1519,7 @@ function drawStatistics() {
     fill:
       globals.metadata.hardVariant
       && globals.lobby.settings.hyphenatedConventions
-        ? "#ffb2b2"
+        ? HARD_VARIANT_EFFICIENCY_COLOR
         : LABEL_COLOR,
     // If colorblindMode is activated, indicate make font bold if "Hard".
     fontStyle:
@@ -1654,7 +1658,7 @@ function drawTimers() {
     y: (timerValues.y1 + 0.034) * winH,
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
-    stroke: "#ffe03b", // Yellow
+    stroke: ACTIVE_INDICATOR_COLOR,
     strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
     visible: false,
     listening: false,

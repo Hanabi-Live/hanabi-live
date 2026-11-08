@@ -91,11 +91,11 @@ export function image(getBareName: () => string): Konva.Image {
   return bare;
 }
 
-const borderCornerRadius = 6;
-const borderStrokeWidth = 20;
-const borderStrokeWidthInside = borderStrokeWidth * 0.6;
-const borderOffset = 2;
-const borderOutsideColor = OFF_BLACK;
+const BORDER_CORNER_RADIUS = 6;
+const BORDER_STROKE_WIDTH = 20;
+const BORDER_STROKE_WIDTH_INSIDE = BORDER_STROKE_WIDTH * 0.6;
+const BORDER_OFFSET = 2;
+const BORDER_OUTSIDE_COLOR = OFF_BLACK;
 
 /** The width and height of the box that each rank pip is centered in. */
 const RANK_PIP_SIZE = Math.floor(CARD_H * 0.1);
@@ -107,10 +107,10 @@ function makeBorder(color: string) {
   });
 
   const borderOutside = new Konva.Rect(
-    getBorderConfig(borderStrokeWidth, borderOutsideColor),
+    getBorderConfig(BORDER_STROKE_WIDTH, BORDER_OUTSIDE_COLOR),
   );
   const borderInside = new Konva.Rect(
-    getBorderConfig(borderStrokeWidthInside, color),
+    getBorderConfig(BORDER_STROKE_WIDTH_INSIDE, color),
   );
 
   border.add(borderOutside);
@@ -121,9 +121,9 @@ function makeBorder(color: string) {
 
 function getBorderConfig(strokeWidth: number, stroke: string): RectConfig {
   return {
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
+    width: CARD_W - BORDER_OFFSET,
+    height: CARD_H - BORDER_OFFSET,
+    cornerRadius: BORDER_CORNER_RADIUS,
     strokeWidth,
     stroke,
     listening: false,

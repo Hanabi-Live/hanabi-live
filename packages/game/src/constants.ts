@@ -1,6 +1,13 @@
 import { ReadonlySet } from "complete-common";
 import { START_CARD_RANK } from "./generated/protocol";
 
+/** The suit used to draw cards whose suit is not known. */
+export const UNKNOWN_SUIT_NAME = "Unknown";
+
+export const BLACK_SUIT_NAME = "Black";
+export const OMNI_SUIT_NAME = "Omni";
+export const DARK_OMNI_SUIT_NAME = "Dark Omni";
+
 export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const ALL_CARD_RANKS = [...DEFAULT_CARD_RANKS, START_CARD_RANK] as const;
 export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;

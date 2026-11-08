@@ -15,6 +15,9 @@ const BACKGROUND_OPACITY = 0.1;
 /** The opacity of an entry under the mouse or related to the card under the mouse. */
 const HIGHLIGHT_OPACITY = 0.4;
 
+/** Light red, for an entry whose clue did not touch the card under the mouse. */
+const NEGATIVE_HIGHLIGHT_COLOR = "#ff7777";
+
 export class ClueEntry extends Konva.Group {
   clue: StateClue;
 
@@ -156,7 +159,7 @@ export class ClueEntry extends Konva.Group {
     for (const cardOrder of this.clue.negativeList) {
       if (cardOrder === targetCardOrder) {
         this.background.opacity(HIGHLIGHT_OPACITY);
-        this.background.fill("#ff7777");
+        this.background.fill(NEGATIVE_HIGHLIGHT_COLOR);
         if (globals.lobby.settings.colorblindMode) {
           this.negativeMarker.show();
         }

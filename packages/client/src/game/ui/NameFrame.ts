@@ -15,6 +15,7 @@ import {
   RIGHT_MOUSE_BUTTON,
   STROKE_WIDTH_UNIT,
   TEXT_SHRINK_FACTOR,
+  WARNING_COLOR,
 } from "./constants";
 import * as konvaTooltips from "./konvaTooltips";
 
@@ -161,7 +162,7 @@ export class NameFrame extends Konva.Group {
   }
 
   setConnected(connected: boolean): void {
-    const color = connected ? LABEL_COLOR : "#e8233d"; // Red for disconnected players.
+    const color = connected ? LABEL_COLOR : WARNING_COLOR;
 
     this.leftLine.stroke(color);
     this.rightLine.stroke(color);

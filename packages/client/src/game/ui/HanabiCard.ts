@@ -16,6 +16,7 @@ import {
   DEFAULT_CARD_RANKS,
   PipState,
   StackDirection,
+  UNKNOWN_SUIT_NAME,
   canCardPossiblyBeFromEmpathy,
   getCardBorderPresentation,
   getCardIdentityToShow,
@@ -64,7 +65,7 @@ import {
 import * as notes from "./notes";
 
 const DECK_BACK_IMAGE = "deck-back";
-const UNKNOWN_SUIT = getSuit("Unknown");
+const UNKNOWN_SUIT = getSuit(UNKNOWN_SUIT_NAME);
 
 /** How long a card takes to rise, fall, or move its shadow. */
 const RAISE_DURATION_SECONDS = 0.05;
