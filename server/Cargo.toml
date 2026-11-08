@@ -27,7 +27,6 @@ too_many_lines = "allow"
 # The structs with many bools are wire payloads, whose JSON shape the clients rely on, and game
 # options and catalog entries, whose flags are independent settings that an enum would not model.
 struct_excessive_bools = "allow"
-await_holding_lock = "deny"
 
 [dependencies]
 anyhow = "1"
