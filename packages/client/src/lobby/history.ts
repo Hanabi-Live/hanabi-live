@@ -1,5 +1,6 @@
 // The screens that show past games and other scores.
 
+import type { GameHistory } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import { getVariant } from "@hanabi-live/game";
@@ -13,7 +14,6 @@ import {
 } from "../utils";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
-import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 

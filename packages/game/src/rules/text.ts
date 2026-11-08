@@ -127,7 +127,7 @@ function getClueActionName(
 
 export function getGameOverText(
   endCondition: EndCondition,
-  playerIndex: PlayerIndex,
+  playerIndex: PlayerIndex | -1,
   score: number,
   metadata: GameMetadata,
   votes: readonly PlayerIndex[] | null,
@@ -287,10 +287,12 @@ function getDiscardTextSuffix(touched: boolean, critical: boolean): string {
 }
 
 export function getPlayerName(
-  playerIndex: PlayerIndex,
+  playerIndex: PlayerIndex | -1,
   metadata: GameMetadata,
 ): string {
-  return metadata.playerNames[playerIndex] ?? "[unknown]";
+  return playerIndex === -1
+    ? "[unknown]"
+    : (metadata.playerNames[playerIndex] ?? "[unknown]");
 }
 
 export function millisecondsToClockString(milliseconds: number): string {

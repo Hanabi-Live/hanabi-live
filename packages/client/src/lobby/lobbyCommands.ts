@@ -1,15 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type {
-  NewLobbyNavigation,
-  ServerCommandData,
-  ServerCommandTableData,
-  ServerCommandUserData,
-  ServerCommandUserLeftData,
-  ServerCommandUserListData,
-  ServerCommandWelcomeData,
-  UserID,
-} from "@hanabi-live/data";
+import type { NewLobbyNavigation } from "@hanabi-live/data";
 import {
   NEW_LOBBY_NAVIGATION_KEY,
   newLobbyNavigation,
@@ -17,28 +8,25 @@ import {
 } from "@hanabi-live/data";
 import { globals } from "../Globals";
 import * as gameMain from "../game/main";
-import type { SoundType } from "../game/types/SoundType";
 import { finishReturningToNewLobby } from "../game/ui/backToLobby";
 import * as spectatorsView from "../game/ui/reactive/views/spectatorsView";
 import * as modals from "../modals";
+import { ServerHandlers } from "../serverHandlers";
 import * as sounds from "../sounds";
+import { toSoundType } from "../wire";
 import * as history from "./history";
 import * as lobbyLogin from "./login";
 import * as playerSettings from "./playerSettings";
 import * as pregame from "./pregame";
 import { tablesDraw } from "./tablesDraw";
-import type { Game } from "./types/Game";
-import type { GameHistory } from "./types/GameHistory";
 import { Screen } from "./types/Screen";
 import * as url from "./url";
 import * as usersDraw from "./usersDraw";
 
 // Define a command handler map.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type CommandCallback = (data: any) => void;
-export const lobbyCommands = new Map<string, CommandCallback>();
+export const lobbyCommands = new ServerHandlers();
 
-lobbyCommands.set("lobbyStatus", (data: ServerCommandData["lobbyStatus"]) => {
+lobbyCommands.set("lobbyStatus", (data) => {
   const total = $("#nav-buttons-history-total-games");
   total.off("click.lobbyRetry").removeAttr("title");
   if (data.state === "ready") {
@@ -67,12 +55,9 @@ lobbyCommands.set("lobbyStatus", (data: ServerCommandData["lobbyStatus"]) => {
   }
 });
 
-interface FriendsData {
-  friends: string[];
-}
-lobbyCommands.set("friends", (data: FriendsData) => {
+lobbyCommands.set("friends", (data) => {
   // The server has sent us a new list of our friends; store this locally.
-  globals.friends = data.friends;
+  globals.friends = [...data.friends];
 
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
   // happen to be our friend will be shown in the correct color.
@@ -96,7 +81,7 @@ lobbyCommands.set("friends", (data: FriendsData) => {
   }
 });
 
-lobbyCommands.set("game", (data: Game) => {
+lobbyCommands.set("game", (data) => {
   const previousPlayers = globals.game?.players;
   globals.game = data;
   globals.tableID = data.tableID;
@@ -116,7 +101,7 @@ lobbyCommands.set("game", (data: Game) => {
   pregame.drawSpectators(globals.tableID);
 });
 
-lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
+lobbyCommands.set("gameHistory", (dataArray) => {
   // `data` will be an array of all of the games that we have previously played.
   for (const data of dataArray) {
     globals.history.set(data.id, data);
@@ -144,22 +129,11 @@ lobbyCommands.set("gameHistory", (dataArray: readonly GameHistory[]) => {
   }
 });
 
-interface GameHistoryOtherScoresData {
-  games: GameHistory[];
-  variantName: string;
-  seed: string;
-}
-lobbyCommands.set(
-  "gameHistoryOtherScores",
-  (data: GameHistoryOtherScoresData) => {
-    history.drawOtherScores(data.games, data.variantName, data.seed);
-  },
-);
+lobbyCommands.set("gameHistoryOtherScores", (data) => {
+  history.drawOtherScores(data.games, data.variantName, data.seed);
+});
 
-interface JoinedData {
-  tableID: number;
-}
-lobbyCommands.set("joined", (data: JoinedData) => {
+lobbyCommands.set("joined", (data) => {
   globals.tableID = data.tableID;
 
   // We joined a new game, so transition between screens.
@@ -167,7 +141,7 @@ lobbyCommands.set("joined", (data: JoinedData) => {
   pregame.drawSpectators(data.tableID);
 });
 
-lobbyCommands.set("left", (data: { tableID: number }) => {
+lobbyCommands.set("left", (data) => {
   if (finishReturningToNewLobby(data.tableID)) {
     return;
   }
@@ -175,15 +149,15 @@ lobbyCommands.set("left", (data: { tableID: number }) => {
   pregame.hide();
 });
 
-interface SoundLobbyData {
-  file: SoundType;
-}
-lobbyCommands.set("soundLobby", (data: SoundLobbyData) => {
-  sounds.play(data.file);
+lobbyCommands.set("soundLobby", (data) => {
+  const sound = toSoundType(data.file);
+  if (sound !== undefined) {
+    sounds.play(sound);
+  }
 });
 
 // Received by the client when a table is created or modified.
-lobbyCommands.set("table", (data: ServerCommandTableData) => {
+lobbyCommands.set("table", (data) => {
   globals.tableMap.set(data.id, data);
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
@@ -196,10 +170,7 @@ lobbyCommands.set("table", (data: ServerCommandTableData) => {
 });
 
 // Received by the client when a table no longer has any members present.
-interface TableGoneData {
-  tableID: number;
-}
-lobbyCommands.set("tableGone", (data: TableGoneData) => {
+lobbyCommands.set("tableGone", (data) => {
   globals.tableMap.delete(data.tableID);
 
   if (globals.currentScreen === Screen.Lobby) {
@@ -217,23 +188,16 @@ lobbyCommands.set("tableGone", (data: TableGoneData) => {
 });
 
 // Received by the client upon initial connection.
-lobbyCommands.set(
-  "tableList",
-  (dataList: readonly ServerCommandTableData[]) => {
-    for (const data of dataList) {
-      globals.tableMap.set(data.id, data);
-    }
-    if (globals.currentScreen === Screen.Lobby) {
-      tablesDraw();
-    }
-  },
-);
+lobbyCommands.set("tableList", (dataList) => {
+  for (const data of dataList) {
+    globals.tableMap.set(data.id, data);
+  }
+  if (globals.currentScreen === Screen.Lobby) {
+    tablesDraw();
+  }
+});
 
-interface TableStartData {
-  tableID: number;
-  replay: boolean;
-}
-lobbyCommands.set("tableStart", (data: TableStartData) => {
+lobbyCommands.set("tableStart", (data) => {
   // Record the table ID for later.
   globals.tableID = data.tableID;
 
@@ -244,7 +208,7 @@ lobbyCommands.set("tableStart", (data: TableStartData) => {
 });
 
 // Received by the client when a user connects or has a new status.
-lobbyCommands.set("user", (data: ServerCommandUserData) => {
+lobbyCommands.set("user", (data) => {
   globals.userMap.set(data.userID, data);
   if (
     globals.currentScreen === Screen.Lobby
@@ -254,7 +218,7 @@ lobbyCommands.set("user", (data: ServerCommandUserData) => {
   }
 });
 
-lobbyCommands.set("userList", (dataList: ServerCommandUserListData) => {
+lobbyCommands.set("userList", (dataList) => {
   for (const data of dataList) {
     globals.userMap.set(data.userID, data);
   }
@@ -266,7 +230,7 @@ lobbyCommands.set("userList", (dataList: ServerCommandUserListData) => {
   }
 });
 
-lobbyCommands.set("userLeft", (data: ServerCommandUserLeftData) => {
+lobbyCommands.set("userLeft", (data) => {
   globals.userMap.delete(data.userID);
 
   if (
@@ -277,11 +241,7 @@ lobbyCommands.set("userLeft", (data: ServerCommandUserLeftData) => {
   }
 });
 
-interface UserInactiveData {
-  userID: UserID;
-  inactive: boolean;
-}
-lobbyCommands.set("userInactive", (data: UserInactiveData) => {
+lobbyCommands.set("userInactive", (data) => {
   const { userID, inactive } = data;
 
   const user = globals.userMap.get(userID);
@@ -304,7 +264,7 @@ lobbyCommands.set("userInactive", (data: UserInactiveData) => {
 });
 
 // Received by the client upon first connecting.
-lobbyCommands.set("welcome", (data: ServerCommandWelcomeData) => {
+lobbyCommands.set("welcome", (data) => {
   // Store some variables (mostly relating to our user account).
   globals.userID = data.userID;
   setTabAccount(data.userID);

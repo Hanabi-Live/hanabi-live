@@ -1,25 +1,17 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things.
 
-import type {
-  ServerCommandChatData,
-  ServerCommandChatDeleteData,
-  ServerCommandChatPMHistoryData,
-  ServerCommandErrorData,
-  ServerCommandWarningData,
-} from "@hanabi-live/data";
 import { globals } from "./Globals";
 import * as chat from "./chat";
 import * as gameChat from "./game/chat";
 import * as pregame from "./lobby/pregame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
+import { ServerHandlers } from "./serverHandlers";
 
 // Define a command handler map.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type CommandCallback = (data: any) => void;
-export const commands = new Map<string, CommandCallback>();
+export const commands = new ServerHandlers();
 
-commands.set("warning", (data: ServerCommandWarningData) => {
+commands.set("warning", (data) => {
   console.warn(data.warning);
   globals.ui?.cancelPendingRestart();
   modals.closeModals(true);
@@ -34,7 +26,7 @@ commands.set("warning", (data: ServerCommandWarningData) => {
   }, 100);
 });
 
-commands.set("error", (data: ServerCommandErrorData) => {
+commands.set("error", (data) => {
   console.error(data.error);
   modals.showError(data.error);
 
@@ -46,16 +38,16 @@ commands.set("error", (data: ServerCommandErrorData) => {
 });
 
 // Received by the client when a new chat message arrives.
-commands.set("chat", (data: ServerCommandChatData) => {
+commands.set("chat", (data) => {
   chat.add(data, false); // The second argument is "fast".
   acknowledgeChatRead(data.room, data.recipient);
 });
 
-commands.set("chatDelete", (data: ServerCommandChatDeleteData) => {
+commands.set("chatDelete", (data) => {
   chat.removeDeletedLobbyMessage(data.chatID);
 });
 
-commands.set("chatPMHistory", (data: ServerCommandChatPMHistoryData) => {
+commands.set("chatPMHistory", (data) => {
   const room = data.room ?? "lobby";
 
   if (data.list.length === 0) {
@@ -119,11 +111,7 @@ function acknowledgeChatRead(
 }
 
 // Received by the client when someone either starts or stops typing.
-interface ChatTypingMessage {
-  name: string;
-  typing: boolean;
-}
-commands.set("chatTyping", (data: ChatTypingMessage) => {
+commands.set("chatTyping", (data) => {
   if (data.typing) {
     if (!globals.peopleTyping.includes(data.name)) {
       globals.peopleTyping.push(data.name);
@@ -140,11 +128,7 @@ commands.set("chatTyping", (data: ChatTypingMessage) => {
 // The "chatList" command is sent upon initial connection to give the client a list of past lobby
 // chat messages. It is also sent upon connecting to a game to give a list of past in-game chat
 // messages.
-interface ChatListData {
-  list: ServerCommandChatData[];
-  unread: number;
-}
-commands.set("chatList", (data: ChatListData) => {
+commands.set("chatList", (data) => {
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
