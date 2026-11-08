@@ -169,10 +169,9 @@ Native checks, from this directory:
 
 ```sh
 cargo fmt --all --check
-cargo clippy --locked --all-targets -- -D warnings
+cargo clippy --locked --workspace --all-targets -- -D warnings
 HANABI_TEST_DATABASE_URL='postgres://postgres@127.0.0.1:5432/postgres?sslmode=disable' \
-  cargo test --locked
-cargo test --locked --manifest-path engine/Cargo.toml
+  cargo test --locked --workspace
 ```
 
 Database tests require a disposable PostgreSQL connection URI. Process checks

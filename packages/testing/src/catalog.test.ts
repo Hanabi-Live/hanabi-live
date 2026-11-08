@@ -7,7 +7,7 @@ import { z } from "zod";
 import { ROOT } from "./mainProcessSupport";
 
 /** Prints the server's variants as JSON. "runTests.ts" builds it. */
-const CATALOG = path.join(ROOT, "server/engine/target/debug/examples/catalog");
+const CATALOG = path.join(ROOT, "server/target/debug/examples/catalog");
 
 /**
  * Reads a game library value in the shape of the server's value: only the server's properties,
