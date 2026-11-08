@@ -10,7 +10,6 @@ import type {
 } from "@hanabi-live/game";
 import {
   MAX_CARDS_PER_HAND,
-  MAX_STRIKES,
   MAX_SUITS,
   ODD_RANK_CLUE,
   getTotalCardsInDeck,
@@ -22,6 +21,7 @@ import {
   assertDefined,
   eRange,
   repeat,
+  tupleKeys,
 } from "complete-common";
 import Konva from "konva";
 import * as modals from "../../modals";
@@ -990,12 +990,7 @@ function drawScoreArea() {
 
       case RIGHT_MOUSE_BUTTON: {
         // Right-clicking a strike X or a strike square shows an arrow over the strike square.
-        const order = STRIKE_ARROW_ORDERS[this.num];
-        if (order === undefined) {
-          return;
-        }
-
-        arrows.click(event, order);
+        arrows.click(event, STRIKE_ARROW_ORDERS[this.num]);
 
         break;
       }
@@ -1006,7 +1001,7 @@ function drawScoreArea() {
     }
   }
 
-  for (const i of eRange(MAX_STRIKES)) {
+  for (const i of tupleKeys(STRIKE_ARROW_ORDERS)) {
     // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {

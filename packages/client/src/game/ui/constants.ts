@@ -1,4 +1,6 @@
 import { ReplayArrowOrder } from "@hanabi-live/data";
+import type { MAX_STRIKES } from "@hanabi-live/game";
+import type { Tuple } from "complete-common";
 
 // ---------------------------
 // Default qualities of a card
@@ -217,9 +219,15 @@ export const LEFT_MOUSE_BUTTON_HELD = 1;
 // Strikes
 // -------
 
+/** The index of a strike square, from 0 to `MAX_STRIKES - 1`. */
+export type StrikeIndex = Exclude<
+  Partial<Tuple<unknown, typeof MAX_STRIKES>>["length"],
+  typeof MAX_STRIKES
+>;
+
 /** The shared-replay arrow targets for each strike square, in strike order. */
 export const STRIKE_ARROW_ORDERS = [
   ReplayArrowOrder.Strike1,
   ReplayArrowOrder.Strike2,
   ReplayArrowOrder.Strike3,
-] as const;
+] as const satisfies Tuple<ReplayArrowOrder, typeof MAX_STRIKES>;

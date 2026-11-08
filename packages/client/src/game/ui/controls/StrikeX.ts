@@ -1,13 +1,14 @@
 import Konva from "konva";
+import type { StrikeIndex } from "../constants";
 
 export class StrikeX extends Konva.Image {
-  num: number;
+  readonly num: StrikeIndex;
   tween: Konva.Tween | null = null;
 
   tooltipName = "";
   tooltipContent = "";
 
-  constructor(config: Konva.ImageConfig, num: number) {
+  constructor(config: Konva.ImageConfig, num: StrikeIndex) {
     super(config);
     this.num = num;
   }
