@@ -5,5 +5,5 @@ main().catch((error: unknown) => {
 });
 
 async function main() {
-  await createVariantsJSON(false);
+  await createVariantsJSON();
 }

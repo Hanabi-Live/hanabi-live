@@ -12,7 +12,28 @@ import { getNewVariantID, validateNewVariantIDs } from "./newID";
 const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
 
-export async function createVariantsJSON(quiet: boolean): Promise<void> {
+/** The generated variant files: each one's path and the contents that belong there. */
+interface VariantFiles {
+  readonly variantsPath: string;
+  readonly variantsJSON: string;
+  readonly textPath: string;
+  readonly variantsText: string;
+}
+
+/** Writes the variant files that the suits and the existing variant IDs produce. */
+export async function createVariantsJSON(): Promise<void> {
+  const files = await generateVariantFiles();
+  fs.writeFileSync(files.variantsPath, files.variantsJSON);
+  console.log(`Created: ${files.variantsPath}`);
+  fs.writeFileSync(files.textPath, files.variantsText);
+  console.log(`Created: ${files.textPath}`);
+}
+
+/**
+ * Generates the variant files without writing them, so that checking them does not touch files that
+ * other checks may be reading.
+ */
+export async function generateVariantFiles(): Promise<VariantFiles> {
   const { suitsPath, variantsPath, textPath } = getPaths();
 
   const suits = getJSONAndParse(suitsPath) as SuitJSON[];
@@ -41,8 +62,12 @@ export async function createVariantsJSON(quiet: boolean): Promise<void> {
     );
   }
 
-  await createVariantJSONFile(variants, variantsPath, quiet);
-  createVariantsTextFile(variants, textPath, quiet);
+  return {
+    variantsPath,
+    variantsJSON: await formatVariantsJSON(variants),
+    textPath,
+    variantsText: formatVariantsText(variants),
+  };
 }
 
 function getPaths(): {
@@ -235,37 +260,16 @@ function hasMissingVariants(
   return oneOrMoreVariantsIsMissing;
 }
 
-async function createVariantJSONFile(
+async function formatVariantsJSON(
   variants: readonly VariantJSON[],
-  jsonPath: string,
-  quiet: boolean,
-) {
-  const jsonString = JSON.stringify(variants);
-  const formattedJSONString = await prettier.format(jsonString, {
-    parser: "json",
-  });
-
-  fs.writeFileSync(jsonPath, formattedJSONString);
-
-  if (!quiet) {
-    console.log(`Created: ${jsonPath}`);
-  }
+): Promise<string> {
+  return await prettier.format(JSON.stringify(variants), { parser: "json" });
 }
 
-function createVariantsTextFile(
-  variants: readonly VariantJSON[],
-  textPath: string,
-  quiet: boolean,
-) {
+function formatVariantsText(variants: readonly VariantJSON[]): string {
   const lines: string[] = Array.from(
     variants,
     (variant) => `${variant.name} (#${variant.id})`,
   );
-
-  const fileContents = lines.join("\n").concat("\n");
-  fs.writeFileSync(textPath, fileContents);
-
-  if (!quiet) {
-    console.log(`Created: ${textPath}`);
-  }
+  return lines.join("\n").concat("\n");
 }

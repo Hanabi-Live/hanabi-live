@@ -1,18 +1,5 @@
-import path from "node:path";
 import { isFile, readFile } from "./completeNode";
-import { createVariantsJSON } from "./createVariantsJSON.js";
-
-const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
-const REPO_ROOT = path.resolve(PACKAGE_ROOT, "..", "..");
-const VARIANTS_JSON_PATH = path.join(
-  REPO_ROOT,
-  "packages",
-  "game",
-  "src",
-  "json",
-  "variants.json",
-);
-const VARIANTS_TXT_PATH = path.join(REPO_ROOT, "misc", "variants.txt");
+import { generateVariantFiles } from "./createVariantsJSON.js";
 
 main().catch((error: unknown) => {
   throw new Error(String(error));
@@ -23,29 +10,23 @@ async function main() {
 }
 
 async function checkVariantFiles() {
-  const exists = await isFile(VARIANTS_JSON_PATH);
+  const files = await generateVariantFiles();
+
+  const exists = await isFile(files.variantsPath);
   if (!exists) {
     throw new Error(
-      `Failed to find the "variants.json" file at: ${VARIANTS_JSON_PATH}`,
+      `Failed to find the "variants.json" file at: ${files.variantsPath}`,
     );
   }
 
-  const oldVariantsJSON = await readFile(VARIANTS_JSON_PATH);
-  const oldVariantsTXT = await readFile(VARIANTS_TXT_PATH);
-
-  await createVariantsJSON(true);
-
-  const newVariantsJSON = await readFile(VARIANTS_JSON_PATH);
-  const newVariantsTXT = await readFile(VARIANTS_TXT_PATH);
-
   // Compare the text file first since the diff will be cleaner.
-  if (oldVariantsTXT !== newVariantsTXT) {
+  if ((await readFile(files.textPath)) !== files.variantsText) {
     throw new Error(
       'The "variants.txt" file is not up to date. Run: bun run create-variants-json',
     );
   }
 
-  if (oldVariantsJSON !== newVariantsJSON) {
+  if ((await readFile(files.variantsPath)) !== files.variantsJSON) {
     throw new Error(
       'The "variants.json" file is not up to date. Run: bun run create-variants-json',
     );
