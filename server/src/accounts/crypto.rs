@@ -14,9 +14,7 @@ use std::{
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 const HASH_WAIT: WaitDuration = WaitDuration::from_secs(10);
-/// The memory that each password hash uses, in the KiB that Argon2 counts.
-#[expect(clippy::cast_possible_truncation, reason = "64 MiB in KiB fits in u32")]
-const PASSWORD_MEMORY: u32 = (64 * crate::MIB / crate::KIB) as u32;
+const PASSWORD_MEMORY: u32 = 65536;
 const PASSWORD_PASSES: u32 = 3;
 const PASSWORD_LANES: u32 = 4;
 const PASSWORD_KEY_BYTES: usize = 32;
