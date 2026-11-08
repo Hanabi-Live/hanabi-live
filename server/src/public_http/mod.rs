@@ -187,7 +187,7 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         .route("/videos", get(pages::page))
         .route("/password-reset", get(pages::page));
     let mut api = Router::new();
-    for root in ["history", "history-full", "full-history"] {
+    for root in ["history", "history-full"] {
         let mut path = format!("/api/v1/{root}");
         api = api.route(&path, get(api_handler));
         for i in 1..=hanabi_protocol::MAX_PLAYERS {
@@ -198,7 +198,6 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
     for (root, param) in [
         ("seed", "seed"),
         ("seed-full", "seed"),
-        ("full-seed", "seed"),
         ("tags", "player1"),
         ("tag", "tag"),
     ] {
@@ -273,8 +272,8 @@ async fn api_response(
     };
     let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
     let accepted: &[&str] = match mode {
-        "history-full" | "full-history" => &["start", "end"],
-        "seed-full" | "full-seed" => &["page", "size"],
+        "history-full" => &["start", "end"],
+        "seed-full" => &["page", "size"],
         _ => &list_parameters,
     };
     let q = strict_query(raw.as_deref(), accepted)?;
@@ -285,7 +284,7 @@ async fn api_response(
             let selection = data::selection(state, params, mode).await?;
             Json(data::list(state, selection, &q, mode).await?).into_response()
         }
-        "history-full" | "full-history" | "seed-full" | "full-seed" => {
+        "history-full" | "seed-full" => {
             let seed = mode.contains("seed");
             let mut s =
                 data::selection(state, params, if seed { "seed" } else { "history" }).await?;
