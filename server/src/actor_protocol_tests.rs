@@ -88,7 +88,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Register {
                 session,
-                welcome: crate::actors::test_welcome(),
+                welcome: test_welcome(),
                 initial: vec![],
                 reply,
             })
@@ -113,7 +113,7 @@ impl Harness {
         self.hub
             .send(HubCommand::Client {
                 session: self.users[index].clone(),
-                message: crate::actors::client_message(command, &data)?,
+                message: client_message(command, &data)?,
                 reply,
             })
             .await?;
@@ -612,7 +612,7 @@ async fn abandoned_shared_reviews_expire_without_a_new_visitor() -> Result<()> {
     let outcome = async {
         for recovered in [false, true] {
             let id = h.store.allocate_table().await?;
-            let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+            let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
             let revision = h.store.save(&table, 0).await?;
             let (hub, mut notifications) = mpsc::channel(32);
             let capacity = Arc::new(Semaphore::new(1));
@@ -666,7 +666,7 @@ async fn rejoining_a_shared_review_cancels_its_empty_room_deadline() -> Result<(
     };
     let outcome = async {
         let id = h.store.allocate_table().await?;
-        let mut table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        let mut table = tests::review(id, EndCondition::TerminatedByPlayer)?;
         table.game_mut().unwrap().idle_remaining = 1;
         let revision = h.store.save(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
@@ -709,7 +709,7 @@ async fn shared_review_chat_refreshes_idle_and_inactive_reviews_expire() -> Resu
     };
     let outcome = Box::pin(async {
         let id = h.store.allocate_table().await?;
-        let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
         let revision = h.store.save(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
@@ -765,7 +765,7 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
     };
     let outcome = async {
         let id = h.store.allocate_table().await?;
-        let table = super::tests::review(id, EndCondition::TerminatedByPlayer)?;
+        let table = tests::review(id, EndCondition::TerminatedByPlayer)?;
         let revision = h.store.save(&table, 0).await?;
         let (hub, _notifications) = mpsc::channel(32);
         let capacity = Arc::new(Semaphore::new(1));
@@ -1009,7 +1009,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                 "secret",
                 &caller,
                 &[],
-                crate::actors::client_message(command, &json!({"name":name,"room":"lobby"}))?,
+                client_message(command, &json!({"name":name,"room":"lobby"}))?,
             )
             .await?
             .context("Missing lobby effects")?;
@@ -1180,7 +1180,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
     };
     let outcome = async {
         let id = h.store.allocate_table().await?;
-        let mut table = super::tests::pregame(id);
+        let mut table = tests::pregame(id);
         if let Phase::Pregame {
             players,
             countdown,
@@ -2186,7 +2186,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.hub
             .send(HubCommand::Client {
                 session: old_alice,
-                message: crate::actors::client_message(
+                message: client_message(
                     "replayAction",
                     &json!({"tableID":replay_id,"type":"segment","segment":9}),
                 )?,

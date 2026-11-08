@@ -55,7 +55,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         ),
     ] {
         let list = hanabi_engine::events_for_recipient(&game.0, recipient, None)?;
-        let encoded = test_frame("gameActionList", crate::actors::game_action_list(42, &list));
+        let encoded = test_frame("gameActionList", game_action_list(42, &list));
         let (command, body) = encoded
             .split_once(' ')
             .context("Missing protocol separator")?;
@@ -63,7 +63,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
         let body: Value = serde_json::from_str(body)?;
         assert_eq!(body, json!({"tableID":42,"list":list}));
         for (event, expected) in list.iter().zip(body["list"].as_array().unwrap()) {
-            let encoded = test_frame("gameAction", crate::actors::game_action(42, event));
+            let encoded = test_frame("gameAction", game_action(42, event));
             let (command, body) = encoded
                 .split_once(' ')
                 .context("Missing action separator")?;
@@ -728,7 +728,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         replay: false,
         replay_game: None,
         visible: false,
-        data: crate::actors::test_table(),
+        data: test_table(),
         inspection: json!({}),
         reconnects: BTreeMap::new(),
     };
@@ -748,7 +748,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         1,
         Presence {
             session: old.clone(),
-            status: hanabi_protocol::Status::Playing,
+            status: Status::Playing,
             table: Some(42),
         },
     );
@@ -769,7 +769,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Route {
             session: old.clone(),
             table: 42,
-            command: Command::Client(Box::new(crate::actors::client_message(
+            command: Command::Client(Box::new(client_message(
                 "getGameInfo1",
                 &json!({"tableID":42}),
             )?)),
@@ -796,7 +796,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     sender
         .send(HubCommand::Register {
             session: new.clone(),
-            welcome: crate::actors::test_welcome(),
+            welcome: test_welcome(),
             initial: vec![],
             reply,
         })
@@ -807,7 +807,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Effects(Effects {
             table: 42,
             view,
-            statuses: vec![(old.clone(), hanabi_protocol::Status::Playing, Some(42))],
+            statuses: vec![(old.clone(), Status::Playing, Some(42))],
             messages: vec![(old.clone(), "secret private frame".into())],
         }))
         .await?;

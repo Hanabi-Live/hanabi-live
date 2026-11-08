@@ -1463,8 +1463,8 @@ fn options_suggestion(
         recipient: Some(owner.into()),
         suggested_options: Some(hanabi_protocol::GameOptions {
             table_name: Some(name.into()),
-            max_players: Some(crate::model::small(max_players)),
-            ..crate::model::wire_options(options)
+            max_players: Some(small(max_players)),
+            ..wire_options(options)
         }),
         ..server_chat(
             id,
@@ -1570,7 +1570,7 @@ fn is_variant_discovery(command: &Command) -> bool {
 struct VariantDiscovery {
     requester: Arc<Session>,
     participants: Vec<(i32, String)>,
-    query: std::pin::Pin<Box<dyn std::future::Future<Output = Result<Option<String>>> + Send>>,
+    query: std::pin::Pin<Box<dyn Future<Output = Result<Option<String>>> + Send>>,
 }
 fn replay_table(
     mut snapshot: Snapshot,
@@ -4782,10 +4782,7 @@ impl TableActor {
             !selected.is_empty() && selected.len() <= self.table.max_players,
             "Invalid split size"
         );
-        let selected_ids = selected
-            .iter()
-            .map(|p| p.id)
-            .collect::<std::collections::HashSet<_>>();
+        let selected_ids = selected.iter().map(|p| p.id).collect::<HashSet<_>>();
         let allocation = self.allocation().await?;
         ensure!(session.active(), "Owner changed while splitting");
         let mut source = self.candidate();

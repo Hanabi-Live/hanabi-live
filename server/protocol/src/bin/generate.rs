@@ -185,7 +185,7 @@ fn expression(schema: &Value) -> Result<String> {
             })
             .map(|(name, _)| name.clone())
             .context("Only tagged disjoint unions are supported")?;
-        let mut tags = std::collections::BTreeSet::new();
+        let mut tags = BTreeSet::new();
         for variant in variants {
             ensure!(
                 tags.insert(variant["properties"][&discriminator]["const"].to_string()),
@@ -253,7 +253,7 @@ fn expression(schema: &Value) -> Result<String> {
         ensure!(!values.is_empty(), "Empty enum");
         if values.len() == 1 {
             format!("z.literal({})", values[0])
-        } else if values.iter().all(serde_json::Value::is_i64) {
+        } else if values.iter().all(Value::is_i64) {
             // The listed integers already bound the value, so no range is appended below.
             format!("z.literal({})", serde_json::to_string(values)?)
         } else {

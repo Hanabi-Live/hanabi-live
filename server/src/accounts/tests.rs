@@ -279,7 +279,7 @@ async fn native_accounts_http_and_identity_postgres() {
         .await
         .unwrap();
     assert_eq!(
-        crate::cookie::decode(
+        cookie::decode(
             cookie.split_once('=').unwrap().1,
             &config().secret,
             Utc::now().timestamp()
@@ -489,8 +489,8 @@ fn set_cookies(headers: &HeaderMap) -> Vec<String> {
 fn tabs_choose_among_signed_in_accounts() {
     let secret = &config().secret;
     let now = Utc::now().timestamp();
-    let alice = crate::cookie::encode(1, secret, now).unwrap();
-    let bob = crate::cookie::encode(2, secret, now).unwrap();
+    let alice = cookie::encode(1, secret, now).unwrap();
+    let bob = cookie::encode(2, secret, now).unwrap();
     let headers = HeaderMap::from_iter([(
         header::COOKIE,
         format!("hanabi.sid={bob}; hanabi.sid.1={alice}; hanabi.sid.3={bob}")

@@ -418,7 +418,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let Some(fixture) = test_support::Fixture::start().await else {
         return;
     };
-    crate::accounts::test_support::legacy_column_order(&fixture.db.pool)
+    accounts::test_support::legacy_column_order(&fixture.db.pool)
         .await
         .unwrap();
     // Intentionally use Unicode to verify the username survives login, storage, and WebSocket messages.
@@ -587,7 +587,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .app
         .hub
         .send(HubCommand::Directory {
-            session: crate::transport::Session::new(999, "stale".into(), 999, false).0,
+            session: Session::new(999, "stale".into(), 999, false).0,
             users: true,
             reply,
         })

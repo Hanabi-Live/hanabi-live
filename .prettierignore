@@ -13,6 +13,9 @@ bun.lock
 
 # @template-customization-start
 
+# Cargo lock file
+server/Cargo.lock
+
 # Auto-generated Husky files
 .husky/_
 

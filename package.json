@@ -51,6 +51,7 @@
       "postgres": "3.4.9",
       "prettier": "3.9.10",
       "prettier-plugin-sh": "0.20.2",
+      "prettier-plugin-toml": "4.1.0",
       "redux": "5.0.1",
       "tooltipster": "4.2.8",
       "tslib": "2.8.1",
@@ -90,6 +91,7 @@
     "git-pull-run": "catalog:",
     "husky": "catalog:",
     "prettier-plugin-sh": "catalog:",
+    "prettier-plugin-toml": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },

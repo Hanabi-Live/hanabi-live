@@ -46,7 +46,7 @@ fn duck_projection_hides_both_clue_fields_from_every_player_and_shadow() -> Resu
             let authoritative = state.clone();
             for events in [None, Some(transition.events.as_slice())] {
                 let original = clues(events.unwrap_or(&state.events));
-                assert_ne!(original, [] as [hanabi_engine::EngineEvent; 0]);
+                assert_ne!(original, [] as [EngineEvent; 0]);
                 for index in 0..3 {
                     for recipient in [
                         Recipient::Player {
