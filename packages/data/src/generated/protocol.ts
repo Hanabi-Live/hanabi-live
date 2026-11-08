@@ -410,13 +410,157 @@ export const historyRequestSchema = z.strictObject({
     .default(0),
 });
 export const historySeedRequestSchema = z.strictObject({ seed: z.string() });
-export const hypoActionSchema = z.string();
 export const hypoShowDrawnCardsSchema = z.strictObject({
   showDrawnCards: z.boolean(),
   tableID: tableIdSchema,
 });
+export const hypotheticalActionSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("draw"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("play"),
+  }),
+  z.strictObject({
+    failed: z.boolean(),
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    playerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("discard"),
+  }),
+  z.strictObject({
+    clue: receivedClueSchema,
+    giver: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    ignoreNegative: z.boolean(),
+    list: z.array(safeIntegerSchema).readonly(),
+    target: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("clue"),
+  }),
+  z.strictObject({
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    turn: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("strike"),
+  }),
+  z.strictObject({
+    currentPlayerIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    num: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("turn"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    rank: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    suitIndex: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("morph"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    type: z.literal("unmorph"),
+  }),
+]);
 export const hypotheticalSchema = z.strictObject({
-  actions: z.array(z.string()),
+  actions: z.array(hypotheticalActionSchema),
   showDrawnCards: z.boolean(),
 });
 export const idleWarningSchema = z.strictObject({
@@ -565,7 +709,7 @@ export const pregameSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const replayActionRequestSchema = z.strictObject({
-  actionJSON: z.string().max(65_536).default(""),
+  action: hypotheticalActionSchema.optional(),
   order: z
     .number()
     .int()
@@ -983,7 +1127,7 @@ export const SERVER_COMMAND_SCHEMAS = {
   gameActionList: gameActionListSchema,
   gameHistory: gameHistoryListSchema,
   gameHistoryOtherScores: gameHistoryOtherScoresSchema,
-  hypoAction: hypoActionSchema,
+  hypoAction: hypotheticalActionSchema,
   hypoBack: tableRequestSchema,
   hypoEnd: tableRequestSchema,
   hypoShowDrawnCards: hypoShowDrawnCardsSchema,

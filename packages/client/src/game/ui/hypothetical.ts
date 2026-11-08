@@ -168,7 +168,7 @@ export function sendHypotheticalActionToServer(
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoAction,
-      actionJSON: JSON.stringify(hypoAction),
+      action: hypoAction,
     });
   }
 }

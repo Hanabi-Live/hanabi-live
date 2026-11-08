@@ -1,6 +1,6 @@
 import type {
-  GameAction,
   HypotheticalActionIntent,
+  HypotheticalGameAction,
   PlanHypotheticalActionContext,
 } from "@hanabi-live/game";
 import { getInitialCardState, planHypotheticalAction } from "@hanabi-live/game";
@@ -9,7 +9,7 @@ import { getInitialCardState, planHypotheticalAction } from "@hanabi-live/game";
 export function planClientHypotheticalAction(
   intent: HypotheticalActionIntent,
   context: PlanHypotheticalActionContext,
-): readonly GameAction[] | null {
+): readonly HypotheticalGameAction[] | null {
   const { gameState, metadata, variant, cardIdentities, cardViews } = context;
   if (
     (intent.type === "play" || intent.type === "discard")

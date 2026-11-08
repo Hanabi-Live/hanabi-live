@@ -4,6 +4,7 @@
 
 import type { ServerCommandData } from "@hanabi-live/data";
 import type {
+  ActionIncludingHypothetical,
   CardIdentity,
   CardOrder,
   GameAction,
@@ -31,6 +32,7 @@ import { ReplayArrowOrder } from "./game/types/ReplayArrowOrder";
 import { SoundType } from "./game/types/SoundType";
 
 type WireEvent = ServerCommandData["gameAction"]["action"];
+type WireHypotheticalAction = ServerCommandData["hypoAction"];
 
 export function toPlayerIndex(value: number): PlayerIndex {
   return playerIndex.parse(value);
@@ -192,6 +194,79 @@ export function toGameAction(event: WireEvent): GameAction | undefined {
         type: "playerTimes",
         playerTimes: toPlayerTuple(event.playerTimes, "player times"),
         duration: event.duration,
+      };
+    }
+  }
+}
+
+/** Converts a relayed hypothetical action into the action the game state applies. */
+export function toHypotheticalAction(
+  action: WireHypotheticalAction,
+): ActionIncludingHypothetical {
+  switch (action.type) {
+    case "draw":
+    case "play": {
+      return {
+        type: action.type,
+        playerIndex: toPlayerIndex(action.playerIndex),
+        order: toCardOrder(action.order),
+        suitIndex: toSuitIndex(action.suitIndex),
+        rank: toRank(action.rank),
+      };
+    }
+
+    case "discard": {
+      return {
+        type: "discard",
+        playerIndex: toPlayerIndex(action.playerIndex),
+        order: toCardOrder(action.order),
+        suitIndex: toSuitIndex(action.suitIndex),
+        rank: toRank(action.rank),
+        failed: action.failed,
+      };
+    }
+
+    case "clue": {
+      return {
+        type: "clue",
+        clue: toClue(action.clue),
+        giver: toPlayerIndex(action.giver),
+        target: toPlayerIndex(action.target),
+        list: action.list.map(toCardOrder),
+        ignoreNegative: action.ignoreNegative,
+      };
+    }
+
+    case "strike": {
+      return {
+        type: "strike",
+        num: toStrikeNumber(action.num),
+        order: toCardOrder(action.order),
+        turn: action.turn,
+      };
+    }
+
+    case "turn": {
+      return {
+        type: "turn",
+        num: action.num,
+        currentPlayerIndex: toOptionalPlayerIndex(action.currentPlayerIndex),
+      };
+    }
+
+    case "morph": {
+      return {
+        type: "morph",
+        order: toCardOrder(action.order),
+        suitIndex: toSuitIndex(action.suitIndex),
+        rank: toRank(action.rank),
+      };
+    }
+
+    case "unmorph": {
+      return {
+        type: "unmorph",
+        order: toCardOrder(action.order),
       };
     }
   }

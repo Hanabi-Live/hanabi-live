@@ -79,7 +79,7 @@ macro_rules! server_contracts {
             HYPO_START "hypoStart" => TableRequest;
             HYPO_END "hypoEnd" => TableRequest;
             HYPO_BACK "hypoBack" => TableRequest;
-            HYPO_ACTION "hypoAction" => HypoAction;
+            HYPO_ACTION "hypoAction" => HypotheticalAction;
             HYPO_SHOW_DRAWN_CARDS "hypoShowDrawnCards" => HypoShowDrawnCards;
             NOTE "note" => Note;
             NOTE_LIST "noteList" => NoteList;

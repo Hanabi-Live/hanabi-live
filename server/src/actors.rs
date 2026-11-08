@@ -4197,10 +4197,9 @@ impl TableActor {
                 )
             }
             5 => {
-                let raw = r.action_json.as_str();
-                // Clients measure this limit in UTF-16 code units.
-                ensure!(raw.encode_utf16().count() <= 65_536, "Invalid actionJSON");
-                let _: Value = serde_json::from_str(raw)?;
+                let action = r.action.context("Missing hypothetical action")?;
+                // Stored as JSON text, the format table checkpoints have always used.
+                let raw = serde_json::to_string(&action)?;
                 ensure!(
                     replay.hypothetical_actions.len() < 4096
                         && replay
@@ -4212,11 +4211,8 @@ impl TableActor {
                             <= 4_194_304,
                     "Too many hypothetical actions"
                 );
-                replay.hypothetical_actions.push(raw.into());
-                Outgoing::new(
-                    hanabi_protocol::server::HYPO_ACTION,
-                    hanabi_protocol::HypoAction(raw.into()),
-                )
+                replay.hypothetical_actions.push(raw);
+                Outgoing::new(hanabi_protocol::server::HYPO_ACTION, action)
             }
             6 => {
                 replay.hypothetical_actions.pop();
@@ -5057,7 +5053,12 @@ impl TableActor {
                         hanabi_protocol::server::HYPOTHETICAL,
                         hanabi_protocol::Hypothetical {
                             show_drawn_cards: replay.show_drawn_cards,
-                            actions: replay.hypothetical_actions.clone(),
+                            actions: replay
+                                .hypothetical_actions
+                                .iter()
+                                .map(|raw| hanabi_protocol::decode(&serde_json::from_str(raw)?))
+                                .collect::<Result<_>>()
+                                .context("Invalid stored hypothetical action")?,
                         },
                     ),
                 ));

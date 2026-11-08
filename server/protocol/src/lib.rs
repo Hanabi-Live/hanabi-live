@@ -576,14 +576,91 @@ pub struct Suggestion {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Hypothetical {
     pub show_drawn_cards: bool,
-    /// Client game actions, as JSON text, in order.
-    pub actions: Vec<String>,
+    /// The hypothetical's actions so far, in order.
+    pub actions: Vec<HypotheticalAction>,
 }
 
-/// One client game action in a hypothetical, as JSON text.
+/// One action in a hypothetical. The server relays these; each client applies them to its own copy
+/// of the game. Unknown card identities are -1.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(transparent)]
-pub struct HypoAction(pub String);
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum HypotheticalAction {
+    Draw {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    Play {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    Discard {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        player_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+        failed: bool,
+    },
+    Clue {
+        clue: ReceivedClue,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        giver: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        target: i64,
+        /// The orders of the cards the clue touched.
+        #[schemars(extend("x-readonly" = true))]
+        list: Vec<SafeInteger>,
+        ignore_negative: bool,
+    },
+    Strike {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        num: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        turn: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+    },
+    Turn {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        num: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        current_player_index: i64,
+    },
+    /// Shows a card as another identity.
+    Morph {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        suit_index: i64,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        rank: i64,
+    },
+    /// Shows a morphed card as its original identity again.
+    Unmorph {
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+    },
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -682,10 +759,10 @@ pub struct ReplayActionRequest {
     #[serde(default)]
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
     pub value: i32,
-    /// A client game action, as JSON text, for a hypothetical action.
-    #[serde(default, rename = "actionJSON")]
-    #[schemars(length(max = 65_536))]
-    pub action_json: String,
+    /// The action, for a hypothetical action.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "HypotheticalAction")]
+    pub action: Option<HypotheticalAction>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -1559,7 +1636,7 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         ReplayLeader,
         Suggestion,
         Hypothetical,
-        HypoAction,
+        HypotheticalAction,
         HypoShowDrawnCards,
         ReplayEfficiencyMod,
         ActionRequest,

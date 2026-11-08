@@ -11,7 +11,14 @@ import type { CardOrder } from "./types/CardOrder";
 import type { PlayerIndex } from "./types/PlayerIndex";
 import type { Rank } from "./types/Rank";
 import type { SuitIndex } from "./types/SuitIndex";
-import type { GameAction } from "./types/gameActions";
+import type {
+  ActionClue,
+  ActionDiscard,
+  ActionDraw,
+  ActionPlay,
+  ActionStrike,
+  ActionTurn,
+} from "./types/gameActions";
 
 export interface HypotheticalState {
   readonly ongoing: GameState;
@@ -53,8 +60,18 @@ export interface ActionHypotheticalUnmorph {
   readonly order: CardOrder;
 }
 
+/** A game action that a hypothetical move can produce. */
+export type HypotheticalGameAction =
+  | ActionClue
+  | ActionDiscard
+  | ActionDraw
+  | ActionPlay
+  | ActionStrike
+  | ActionTurn;
+
+/** An action that a hypothetical can contain: a move's game actions, or a changed identity. */
 export type ActionIncludingHypothetical =
-  GameAction | ActionHypotheticalMorph | ActionHypotheticalUnmorph;
+  HypotheticalGameAction | ActionHypotheticalMorph | ActionHypotheticalUnmorph;
 
 export type HypotheticalStateAction =
   | ActionIncludingHypothetical

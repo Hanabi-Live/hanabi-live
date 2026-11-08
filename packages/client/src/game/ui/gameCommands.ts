@@ -22,6 +22,7 @@ import {
   toCardIdentity,
   toCardOrder,
   toGameAction,
+  toHypotheticalAction,
   toPlayerIndex,
   toPlayerTuple,
   toReplayArrowOrder,
@@ -32,7 +33,6 @@ import { stateReducer } from "../reducers/stateReducer";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";
 import type { State } from "../types/State";
-import type { ActionIncludingHypothetical } from "../types/actions";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { setSkullEnabled, setSkullNormal } from "./drawUI";
@@ -119,24 +119,15 @@ gameCommands.set("hypothetical", (data) => {
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
   // have taken place.
 
-  // First, parse all of the actions.
-  const actions: ActionIncludingHypothetical[] = [];
-  for (const action of data.actions) {
-    const actionIncludingHypothetical = JSON.parse(
-      action,
-    ) as ActionIncludingHypothetical;
-    actions.push(actionIncludingHypothetical);
-  }
-
   globals.store!.dispatch({
     type: "hypoStart",
     showDrawnCards: data.showDrawnCards,
-    actions,
+    actions: data.actions.map(toHypotheticalAction),
   });
 });
 
 gameCommands.set("hypoAction", (data) => {
-  const action = JSON.parse(data) as ActionIncludingHypothetical;
+  const action = toHypotheticalAction(data);
   globals.store!.dispatch({
     type: "hypoAction",
     action,
