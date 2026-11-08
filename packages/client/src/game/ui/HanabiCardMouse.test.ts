@@ -102,3 +102,77 @@ describe("hypothetical empathy mouse handling", () => {
     expect(setEmpathy).not.toHaveBeenCalled();
   });
 });
+
+function pressCard() {
+  // Stand in for the browser window, which receives the pointer release.
+  const window = new EventTarget();
+  vi.stubGlobal("addEventListener", window.addEventListener.bind(window));
+  const handlers = new Map<string, (event: unknown) => void>();
+  let rotation = 0;
+  const position = { x: 10, y: 20 };
+  const hand = {
+    rotation: () => -90,
+    children: { toArray: () => [] },
+    moveToTop: vi.fn(),
+  };
+  const card = {
+    state: { location: 1, order: 0 },
+    layout: {
+      parent: hand,
+      draggable: () => true,
+      isListening: () => true,
+      rotation: (value?: number) => {
+        if (value !== undefined) {
+          rotation = value;
+        }
+        return rotation;
+      },
+      position: () => ({ ...position }),
+    },
+    setRaiseAndShadowOffset: vi.fn(),
+    setCursor: vi.fn(),
+    on: vi.fn((event: string, handler: (event: unknown) => void) => {
+      handlers.set(event, handler);
+    }),
+  } as unknown as HanabiCard;
+  Object.assign(globals, {
+    state: { replay: { hypothetical: { startingPlayerIndex: null } } },
+    options: { speedrun: false },
+    lobby: { settings: { speedrunMode: false, keldonMode: true } },
+    elements: { editCardsButton: null, playerHands: [], arrows: [] },
+    layers: { card: { batchDraw: vi.fn() } },
+    store: { dispatch: vi.fn() },
+  });
+
+  registerMouseHandlers.call(card);
+  // Shift disables empathy, which this test does not cover.
+  handlers
+    .get("mousedown")
+    ?.call(card, { evt: { buttons: 1, shiftKey: true } });
+  vi.unstubAllGlobals();
+  return {
+    getRotation: () => rotation,
+    position,
+    release: () => window.dispatchEvent(new Event("pointerup")),
+  };
+}
+
+describe("hypothetical card rotation in Keldon mode", () => {
+  test("restores the hand rotation when the card is released without moving", () => {
+    const { getRotation, release } = pressCard();
+    expect(getRotation()).toBe(90);
+
+    release();
+
+    expect(getRotation()).toBe(0);
+  });
+
+  test("leaves a dragged card to the drag handling", () => {
+    const { getRotation, position, release } = pressCard();
+    position.x += 50;
+
+    release();
+
+    expect(getRotation()).toBe(90);
+  });
+});
