@@ -10,3 +10,6 @@ export enum OptionIcons {
   AllOrNothing = "fas fa-layer-group",
   DetrimentalCharacters = "fas fa-flushed",
 }
+
+/** The deck plays icon sits too far left, so it is nudged right wherever it is shown. */
+export const DECK_PLAYS_ICON_STYLE = "position: relative; left: 0.2em;";

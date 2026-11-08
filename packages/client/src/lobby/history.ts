@@ -4,7 +4,7 @@ import type { GameHistory } from "@hanabi-live/data";
 import { compareGameHistory } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import { getVariant, NO_VALUE, secondsToClockString } from "@hanabi-live/game";
-import { OptionIcons } from "../enums/OptionIcons";
+import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import { globals } from "../Globals";
 import * as tooltips from "../tooltips";
 import { dateTimeFormatter, setBrowserAddressBarPath } from "../utils";
@@ -322,7 +322,7 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
 
   if (options.deckPlays) {
     icons.push(OptionIcons.DeckPlays);
-    tooltipHTML += `<li><i class="${OptionIcons.DeckPlays}" style="position: relative; left: 0.2em;"></i>&nbsp; `;
+    tooltipHTML += `<li><i class="${OptionIcons.DeckPlays}" style="${DECK_PLAYS_ICON_STYLE}"></i>&nbsp; `;
     tooltipHTML += "Bottom-Deck Blind-Plays</li>";
   }
 

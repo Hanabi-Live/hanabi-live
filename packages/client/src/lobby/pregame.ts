@@ -12,7 +12,7 @@ import {
 import { assertNotNull, eRange, iRange } from "complete-common";
 import { globals } from "../Globals";
 import * as chat from "../chat";
-import { OptionIcons } from "../enums/OptionIcons";
+import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
 import * as nav from "./nav";
@@ -219,7 +219,7 @@ export function getOptionIcons(
 
   if (options.deckPlays) {
     html += `<li><i id="${idPrefix}-options-deck-plays-${rowId}" class="${OptionIcons.DeckPlays}" `;
-    html += 'style="position: relative; left: 0.2em;" ';
+    html += `style="${DECK_PLAYS_ICON_STYLE}" `;
     html += `data-tooltip-content="#${idPrefix}-tooltip-deck-plays-${rowId}"></i></li>`;
     html += `
       <div class="hidden">

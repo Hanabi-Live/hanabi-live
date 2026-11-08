@@ -10,6 +10,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   MAX_CARDS_PER_HAND,
+  MAX_STRIKES,
   MAX_SUITS,
   MIN_PLAYERS,
   ODD_RANK_CLUE,
@@ -123,6 +124,21 @@ const KELDON_ACTION_LOG_LINES = 3;
 
 /** The opacity of the trash can icon over the discard pile. */
 const TRASH_CAN_OPACITY = 0.2;
+
+/** The strike squares in the score area, in fractions of the stage. */
+const STRIKE_SQUARE = {
+  x: 0.01,
+  y: 0.115,
+  w: 0.03,
+  h: 0.053,
+  /** The horizontal distance from one strike square to the next. */
+  spacing: 0.04,
+} as const;
+
+/** The left edge of a strike square, in fractions of the stage width. */
+function strikeSquareX(strikeIndex: number): number {
+  return STRIKE_SQUARE.x + STRIKE_SQUARE.spacing * strikeIndex;
+}
 
 export function drawUI(): void {
   globals.elements.restartWaitingOnServerAnimation?.stop();
@@ -1014,10 +1030,10 @@ function drawScoreArea() {
     // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {
-        x: (0.01 + 0.04 * i) * winW,
-        y: 0.115 * winH,
-        width: 0.03 * winW,
-        height: 0.053 * winH,
+        x: strikeSquareX(i) * winW,
+        y: STRIKE_SQUARE.y * winH,
+        width: STRIKE_SQUARE.w * winW,
+        height: STRIKE_SQUARE.h * winH,
         stroke: "black",
         strokeWidth: 2 * STROKE_WIDTH_UNIT * winH,
         cornerRadius: 0.005 * winW,
@@ -1031,7 +1047,7 @@ function drawScoreArea() {
     // Draw the red X that indicates the strike.
     const strikeX = new StrikeX(
       {
-        x: (0.015 + 0.04 * i) * winW,
+        x: (strikeSquareX(i) + 0.005) * winW,
         y: 0.125 * winH,
         width: 0.02 * winW,
         height: 0.036 * winH,
@@ -1052,7 +1068,7 @@ function drawScoreArea() {
       const questionMarkLabel = basicTextLabel.clone({
         text: "?",
         fontSize: 0.032 * winH,
-        x: (0.0205 + 0.04 * i) * winW,
+        x: (strikeSquareX(i) + 0.0105) * winW,
         y: 0.128 * winH,
         listening: false,
       }) as Konva.Text;
@@ -1084,10 +1100,10 @@ function drawScoreArea() {
 
     const terminateButton = new Button(
       {
-        x: (0.01 + 0.04 * 2) * winW,
-        y: 0.115 * winH,
-        width: 0.03 * winW,
-        height: 0.053 * winH,
+        x: strikeSquareX(MAX_STRIKES - 1) * winW,
+        y: STRIKE_SQUARE.y * winH,
+        width: STRIKE_SQUARE.w * winW,
+        height: STRIKE_SQUARE.h * winH,
         visible: globals.state.playing,
       },
       [globals.imageLoader!.get("skull")],

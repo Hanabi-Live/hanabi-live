@@ -6,7 +6,7 @@ import {
   secondsToClockString,
 } from "@hanabi-live/game";
 import Konva from "konva";
-import { OptionIcons } from "../../enums/OptionIcons";
+import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, escapeHtml } from "../../utils";
@@ -332,7 +332,7 @@ function getTooltipContent(): string {
     content += tooltipItem(
       OptionIcons.DeckPlays,
       "Bottom-Deck Blind Plays",
-      "position: relative; left: 0.2em;",
+      DECK_PLAYS_ICON_STYLE,
     );
   }
 

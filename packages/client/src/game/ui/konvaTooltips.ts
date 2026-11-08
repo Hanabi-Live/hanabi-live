@@ -42,7 +42,7 @@ export function initKonvaTooltips(
 
   let content = element.tooltipContent;
   if (!customContent) {
-    content = '<span style="font-size: 0.75em;">';
+    content = `<span style="${tooltips.SMALL_TOOLTIP_TEXT_STYLE}">`;
     content += '<i class="fas fa-info-circle fa-sm"></i>';
     content += ` &nbsp;${element.tooltipContent}</span>`;
   }

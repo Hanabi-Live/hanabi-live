@@ -9,8 +9,10 @@ import { getHTMLElement } from "./utils";
 
 export const TOOLTIP_DELAY_IN_MILLISECONDS = 500;
 
-const CLIPBOARD_CONTENT =
-  '<span style="font-size: 0.75em;">URL copied to clipboard!</span>';
+/** The style of tooltip text that is smaller than the default. */
+export const SMALL_TOOLTIP_TEXT_STYLE = "font-size: 0.75em;";
+
+const CLIPBOARD_CONTENT = `<span style="${SMALL_TOOLTIP_TEXT_STYLE}">URL copied to clipboard!</span>`;
 
 /** The tooltips of the page, by their anchor element. */
 const tooltips = new WeakMap<HTMLElement, Tooltip>();

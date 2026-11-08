@@ -8,10 +8,21 @@ import { getHTMLElement } from "../utils";
 
 const gameChatText = getHTMLElement("#game-chat-text");
 
-/** The size of the chat modal before the player has moved or resized it, in CSS units. */
+/** The size of the chat modal before the player has moved or resized it, in percent of the page. */
+const DEFAULT_CHAT_MODAL_WIDTH_PERCENT = 20;
+const DEFAULT_CHAT_MODAL_HEIGHT_PERCENT = 50;
+
+/** The gap between the default chat modal and the top and right edges, in percent of the page. */
+const DEFAULT_CHAT_MODAL_MARGIN_PERCENT = 1;
+
 const DEFAULT_CHAT_MODAL_SIZE = {
-  width: "20%",
-  height: "50%",
+  width: `${DEFAULT_CHAT_MODAL_WIDTH_PERCENT}%`,
+  height: `${DEFAULT_CHAT_MODAL_HEIGHT_PERCENT}%`,
+} as const;
+
+const DEFAULT_CHAT_MODAL_POSITION = {
+  top: `${DEFAULT_CHAT_MODAL_MARGIN_PERCENT}%`,
+  left: `${100 - DEFAULT_CHAT_MODAL_WIDTH_PERCENT - DEFAULT_CHAT_MODAL_MARGIN_PERCENT}%`,
 } as const;
 
 /** The smallest size that the player can resize the chat modal to, in pixels. */
@@ -149,8 +160,7 @@ export function show(focusInput = true): void {
 
   // Set the modal to the default position.
   modal.css(DEFAULT_CHAT_MODAL_SIZE);
-  modal.css("top", "1%");
-  modal.css("left", "79%");
+  modal.css(DEFAULT_CHAT_MODAL_POSITION);
 
   // If there is a stored size + position for the chat box, set that.
   let resetPosition = true;
