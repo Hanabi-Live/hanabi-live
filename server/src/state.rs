@@ -334,7 +334,6 @@ impl RedisState {
     pub fn check(&self) -> Result<()> {
         self.owner.check()
     }
-    #[must_use]
     pub fn lost(&self) -> CancellationToken {
         self.owner.lost.clone()
     }

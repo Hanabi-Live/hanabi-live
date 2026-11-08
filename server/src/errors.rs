@@ -238,7 +238,6 @@ impl Report {
         Self::known(operation, code, description, status)
     }
 
-    #[must_use]
     pub fn text(&self) -> String {
         format!(
             "{} failed: {} [Reference: {}]",
@@ -264,7 +263,6 @@ impl Report {
         );
     }
 
-    #[must_use]
     pub fn response(&self, json_response: bool) -> Response {
         self.log();
         let mut response = if json_response {

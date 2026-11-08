@@ -62,7 +62,6 @@ pub struct Measurement {
     failed: bool,
 }
 impl Metrics {
-    #[must_use]
     pub fn start(&self, name: &str) -> Measurement {
         let mut metrics = self
             .0
@@ -80,7 +79,6 @@ impl Metrics {
             failed: true,
         }
     }
-    #[must_use]
     pub fn snapshot(&self) -> Value {
         json!(
             *self

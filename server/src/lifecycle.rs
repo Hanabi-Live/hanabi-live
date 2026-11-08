@@ -62,7 +62,6 @@ pub struct Control {
     application: OnceLock<Weak<App>>,
 }
 impl Control {
-    #[must_use]
     pub fn new(
         hub: mpsc::Sender<HubCommand>,
         pool: PgPool,
@@ -151,7 +150,6 @@ impl Control {
     }
 }
 
-#[must_use]
 pub fn duration(seconds: u64) -> String {
     let unit = |n, label| format!("{n} {label}{}", if n == 1 { "" } else { "s" });
     if seconds < 60 {

@@ -975,7 +975,6 @@ impl Store {
         result
     }
 }
-#[must_use]
 pub fn zero_stats() -> Value {
     json!({"numGames":0,"variant":{"numGames":0,"bestScores":(2..=6).map(|n|json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,"oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})).collect::<Vec<_>>()}})
 }

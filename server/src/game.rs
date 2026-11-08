@@ -71,7 +71,6 @@ impl Game {
         .state;
         Ok(())
     }
-    #[must_use]
     pub fn projected(&self, seat: Option<usize>, from: usize) -> Vec<Event> {
         let recipient = seat.map_or(
             Recipient::Spectator {
@@ -87,7 +86,6 @@ impl Game {
     pub fn validate_recovery(&self) -> Result<()> {
         hanabi_engine::validate_engine_state(&self.0)
     }
-    #[must_use]
     pub fn identities(&self) -> Vec<Card> {
         self.deck
             .iter()
@@ -121,7 +119,6 @@ impl Game {
         Ok(game)
     }
 }
-#[must_use]
 pub fn unshuffled_deck() -> Vec<Card> {
     hanabi_engine::create_deck(hanabi_engine::get_variant("No Variant").expect("catalog"))
 }
@@ -158,7 +155,6 @@ pub fn decode_deck(bytes: &[u8]) -> Result<Vec<Card>> {
     encode_deck(&cards)?;
     Ok(cards)
 }
-#[must_use]
 pub fn options() -> Value {
     serde_json::to_value(Options {
         variant_id: Some(0),

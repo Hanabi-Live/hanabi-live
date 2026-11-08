@@ -4,7 +4,6 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 
-#[must_use]
 pub fn create_deck(variant: &Variant) -> Vec<DeckCard> {
     let mut deck = Vec::new();
     for (suit_index, suit) in variant.suits.iter().enumerate() {

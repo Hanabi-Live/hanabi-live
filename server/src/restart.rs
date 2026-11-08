@@ -66,7 +66,6 @@ fn executable(root: &Path) -> Result<PathBuf> {
     );
     Ok(current)
 }
-#[must_use]
 pub fn version() -> &'static str {
     env!("HANABI_BUILD_COMMIT")
 }

@@ -7,7 +7,6 @@ use std::collections::HashSet;
 pub(crate) fn variant_for(state: &EngineState) -> &'static Variant {
     get_variant(&state.options.variant_name).expect("validated engine variant")
 }
-#[must_use]
 pub fn clue_cost(state: &EngineState) -> i32 {
     if variant_for(state).clue_starved {
         2
@@ -16,7 +15,6 @@ pub fn clue_cost(state: &EngineState) -> i32 {
     }
 }
 
-#[must_use]
 pub fn touched_orders(state: &EngineState, action: &PlayerAction) -> Vec<usize> {
     let Some(player) = usize::try_from(action.target)
         .ok()
@@ -274,7 +272,6 @@ fn best_assignment(scores: &[Vec<i32>], free: &[i32], index: usize) -> i32 {
         .max()
         .unwrap_or(0)
 }
-#[must_use]
 pub fn calculate_max_score(state: &EngineState) -> i32 {
     let v = variant_for(state);
     if v.sudoku && !v.has_reversed_suits() {
@@ -322,7 +319,6 @@ pub fn calculate_max_score(state: &EngineState) -> i32 {
     }
     score
 }
-#[must_use]
 pub fn has_remaining_play(state: &EngineState) -> bool {
     state.stacks.iter().enumerate().any(|(suit, _)| {
         let ranks = needed_ranks(state, suit);

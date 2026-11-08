@@ -77,7 +77,6 @@ const DELEGATED: &[&str] = &[
     "impostor",
 ];
 
-#[must_use]
 pub fn valid_room(room: &str) -> bool {
     room == "lobby"
         || room.strip_prefix("table").is_some_and(|id| {
@@ -118,7 +117,6 @@ pub enum GeneralResponse {
     Runtime { command: String, args: Vec<String> },
 }
 
-#[must_use]
 pub fn general_response(message: &str) -> Option<GeneralResponse> {
     let (command, args) = parsed(message)?;
     if let Some(response) = simple(&command) {
@@ -154,7 +152,6 @@ pub fn general_response(message: &str) -> Option<GeneralResponse> {
     None
 }
 
-#[must_use]
 pub fn classify_chat(message: &str) -> Classification {
     let Some((command, _)) = parsed(message) else {
         return Classification::Text;

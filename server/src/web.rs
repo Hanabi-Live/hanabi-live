@@ -95,7 +95,6 @@ impl App {
         }
     }
 
-    #[must_use]
     pub fn new(
         store: Store,
         hub: mpsc::Sender<HubCommand>,

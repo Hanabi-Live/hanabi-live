@@ -208,14 +208,12 @@ impl TableSnapshot {
         );
         Ok(table)
     }
-    #[must_use]
     pub fn players(&self) -> &[Player] {
         match &self.phase {
             Phase::Pregame { players, .. } => players,
             Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => &snapshot.players,
         }
     }
-    #[must_use]
     pub fn game(&self) -> Option<&Snapshot> {
         match &self.phase {
             Phase::Pregame { .. } => None,
@@ -446,7 +444,6 @@ impl Snapshot {
         );
         Ok(())
     }
-    #[must_use]
     pub fn history(&self, count: i64, increment: bool) -> hanabi_protocol::GameHistory {
         let mut names = self
             .players

@@ -63,7 +63,6 @@ pub struct Variant {
     pub has_inverted: bool,
 }
 impl Variant {
-    #[must_use]
     pub fn has_reversed_suits(&self) -> bool {
         self.up_or_down || self.suits.iter().any(|s| s.reversed)
     }
@@ -234,7 +233,6 @@ pub fn variant_names() -> impl Iterator<Item = &'static str> {
     variants().iter().map(|v| v.name.as_str())
 }
 
-#[must_use]
 pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
     if suit.one_of_each || variant.critical_rank == Some(rank) {
         return 1;
@@ -254,7 +252,6 @@ pub fn num_copies_of_card(variant: &Variant, suit: &Suit, rank: i32) -> usize {
     }
 }
 
-#[must_use]
 pub fn is_card_touched(
     variant: &Variant,
     clue_type: ClueType,

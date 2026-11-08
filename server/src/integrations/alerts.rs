@@ -57,7 +57,6 @@ impl Throttle {
 }
 
 impl Alerts {
-    #[must_use]
     pub fn start(
         bridge: Option<Arc<Bridge>>,
         development: bool,

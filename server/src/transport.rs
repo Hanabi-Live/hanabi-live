@@ -104,7 +104,6 @@ pub struct SessionMetadata {
 }
 
 impl Session {
-    #[must_use]
     pub fn new(
         user: i32,
         name: String,
@@ -341,15 +340,12 @@ impl Outgoing {
             data: serde_json::to_value(data).expect("JSON-serializable protocol payload"),
         }
     }
-    #[must_use]
     pub fn command(&self) -> &'static str {
         self.command
     }
-    #[must_use]
     pub fn data(&self) -> &serde_json::Value {
         &self.data
     }
-    #[must_use]
     pub fn frame(&self) -> String {
         raw_frame(self.command, &self.data)
     }

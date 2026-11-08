@@ -6,7 +6,6 @@ use sha2::Sha256;
 pub const NAME: &str = "hanabi.sid";
 /// `NAME` holds the most recent sign-in, which new tabs use; this keeps each account available to
 /// the tabs that signed in to it.
-#[must_use]
 pub fn account_name(id: i32) -> String {
     format!("{NAME}.{id}")
 }

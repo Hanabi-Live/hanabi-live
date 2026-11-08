@@ -166,7 +166,6 @@ pub fn decode_server(name: &str, value: &Value) -> Result<Option<Value>> {
     server_contracts!(dispatch)
 }
 
-#[must_use]
 pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
         ($($name:ident $command:literal => $payload:ty;)+) => {
@@ -176,7 +175,6 @@ pub fn client_contracts() -> BTreeMap<&'static str, &'static str> {
     client_contracts!(names)
 }
 
-#[must_use]
 pub fn server_contracts() -> BTreeMap<&'static str, &'static str> {
     macro_rules! names {
         ($($name:ident $command:literal => $payload:ty;)+) => {
@@ -200,7 +198,6 @@ impl<T> ServerMessage<T> {
         }
     }
 
-    #[must_use]
     pub const fn name(&self) -> &'static str {
         self.name
     }

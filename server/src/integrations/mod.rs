@@ -52,7 +52,6 @@ impl Integrations {
         self.alerts.report(report);
     }
 
-    #[must_use]
     pub fn status(&self) -> serde_json::Value {
         serde_json::json!({"discord":self.discord.as_ref().map_or(if self.discord_failed {"degraded"} else {"disabled"}, |bridge|bridge.status())})
     }

@@ -102,7 +102,6 @@ pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
 
 /// Check ownership before transferring a parsed payload to this dispatcher.
 /// Whether the lobby handles a command. Every command is listed, so a new one needs a decision.
-#[must_use]
 pub fn handles(message: &ClientMessage) -> bool {
     use ClientMessage as M;
     match message {

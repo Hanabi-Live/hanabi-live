@@ -25,11 +25,9 @@ pub struct Config {
 }
 
 impl Config {
-    #[must_use]
     pub fn secret(&self) -> &str {
         &self.secret
     }
-    #[must_use]
     pub fn port(&self) -> u16 {
         if self.use_tls() && self.port == 80 {
             443
@@ -37,17 +35,14 @@ impl Config {
             self.port
         }
     }
-    #[must_use]
     pub fn use_tls(&self) -> bool {
         self.tls_cert_file.is_some()
     }
-    #[must_use]
     pub fn is_dev(&self) -> bool {
         matches!(self.domain.as_str(), "localhost" | "127.0.0.1" | "::1")
             || self.domain.starts_with("192.168.")
             || self.domain.starts_with("10.")
     }
-    #[must_use]
     pub fn listen_host(&self) -> &str {
         &self.listen_host
     }

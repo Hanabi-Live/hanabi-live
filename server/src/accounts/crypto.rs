@@ -29,7 +29,6 @@ pub enum HashOverload {
 }
 
 impl HashOverload {
-    #[must_use]
     pub fn diagnostic(self) -> &'static str {
         match self {
             Self::QueueFull => "password-worker admission queue is full",
@@ -53,7 +52,6 @@ pub enum HashFailure {
     StoredHash,
 }
 impl HashFailure {
-    #[must_use]
     pub fn diagnostic(&self) -> &'static str {
         match self {
             Self::Parameters => "password-worker parameters are invalid",

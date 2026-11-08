@@ -976,7 +976,6 @@ pub enum ReplayActionRequest {
 }
 
 impl ReplayActionRequest {
-    #[must_use]
     pub const fn table_id(&self) -> TableId {
         match self {
             Self::Segment { table_id, .. }
@@ -2236,7 +2235,6 @@ pub struct CatalogCharacter {
     pub not_two_player: bool,
 }
 
-#[must_use]
 pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
     let mut schemas = std::collections::BTreeMap::new();
     macro_rules! register {
