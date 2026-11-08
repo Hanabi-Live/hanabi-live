@@ -136,8 +136,11 @@ lobbyCommands.set("joined", (data) => {
 });
 
 lobbyCommands.set("left", () => {
-  // We left a table, so transition between screens.
-  pregame.hide();
+  // We left a table, so transition between screens. (The server also sends this after we leave a
+  // game or replay, by which point we have already returned to the lobby or a history screen.)
+  if (globals.currentScreen === Screen.PreGame) {
+    pregame.hide();
+  }
 });
 
 lobbyCommands.set("soundLobby", (data) => {
