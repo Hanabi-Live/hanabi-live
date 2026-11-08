@@ -13,31 +13,55 @@ import {
   suitIndexOrUnknownSchema,
 } from "@hanabi-live/game";
 import * as z from "zod";
-import { ActionType } from "../enums/ActionType";
-import { ReplayArrowOrder } from "../enums/ReplayArrowOrder";
-import { SoundMove } from "../enums/SoundMove";
-import { Status } from "../enums/Status";
 
-/** A TypeScript enum, or `never` unless it has exactly the server's values. */
-type ServerEnum<
-  Enum extends Record<string, string | number>,
-  Values extends number,
-> = [Extract<Enum[keyof Enum], number>] extends [Values]
-  ? [Values] extends [Extract<Enum[keyof Enum], number>]
-    ? Enum
-    : never
-  : never;
-const actionTypeEnum: ServerEnum<typeof ActionType, 0 | 1 | 2 | 3> = ActionType;
-const endConditionEnum: ServerEnum<
-  typeof EndCondition,
-  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
-> = EndCondition;
-const replayArrowOrderEnum: ServerEnum<
-  typeof ReplayArrowOrder,
-  -1 | -2 | -3 | -4 | -5 | -6 | -7 | -8 | -9 | -10 | -11 | -12
-> = ReplayArrowOrder;
-const soundMoveEnum: ServerEnum<typeof SoundMove, 0 | 1 | 2> = SoundMove;
-const statusEnum: ServerEnum<typeof Status, 0 | 1 | 2 | 3 | 4 | 5> = Status;
+/**
+ * The kind of a turn that a player takes, in the `action` command.
+ */
+export enum ActionType {
+  Play = 0,
+  Discard = 1,
+  ColorClue = 2,
+  RankClue = 3,
+}
+
+/**
+ * The parts of the board that a shared-replay arrow can point at, besides cards.
+ */
+export enum ReplayArrowOrder {
+  Nothing = -1,
+  Deck = -2,
+  Turn = -3,
+  Score = -4,
+  MaxScore = -5,
+  Clues = -6,
+  Strike1 = -7,
+  Strike2 = -8,
+  Strike3 = -9,
+  Pace = -10,
+  Efficiency = -11,
+  MinEfficiency = -12,
+}
+
+/**
+ * Which moves play a sound: every move, only the player's own, or none.
+ */
+export enum SoundMove {
+  All = 0,
+  OnlyOwn = 1,
+  None = 2,
+}
+
+/**
+ * The activity that a user is currently performing.
+ */
+export enum Status {
+  Lobby = 0,
+  PreGame = 1,
+  Playing = 2,
+  Spectating = 3,
+  Replay = 4,
+  SharedReplay = 5,
+}
 
 export const tableIdSchema = z
   .number()
@@ -55,10 +79,7 @@ export const actionRequestSchema = z.strictObject({
    * The card order for a play or discard; the player index for a clue.
    */
   target: z.number().int().min(-2_147_483_648).max(2_147_483_647),
-  /**
-   * The `ActionType` enum: 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
-   */
-  type: z.enum(actionTypeEnum),
+  type: z.enum(ActionType),
   /**
    * The clue's color index or rank.
    */
@@ -246,10 +267,7 @@ export const gameHistorySchema = z
     datetimeStarted: z
       .string()
       .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
-    /**
-     * The `EndCondition` enum.
-     */
-    endCondition: z.enum(endConditionEnum),
+    endCondition: z.enum(EndCondition),
     id: gameIdSchema,
     /**
      * Whether this game should be added to the recipient's total.
@@ -583,16 +601,11 @@ export const publicGamePageSchema = z.strictObject({
 });
 
 /**
- * The `ReplayArrowOrder` enum: -1 clears the arrow, and the rest name a part of the board.
- */
-const replayArrowIndicatorSchema = z.enum(replayArrowOrderEnum);
-
-/**
  * What a shared-replay arrow points at: a card, or a part of the board.
  */
 const replayArrowTargetSchema = z.union([
   cardOrderSchema,
-  replayArrowIndicatorSchema,
+  z.enum(ReplayArrowOrder),
 ]);
 
 /**
@@ -905,10 +918,7 @@ export const settingsSchema = z
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
     showTimerInUntimed: z.boolean().default(false),
-    /**
-     * The `SoundMove` enum: all moves, only your own, or none.
-     */
-    soundMove: z.enum(soundMoveEnum).default(z.enum(soundMoveEnum).parse(0)),
+    soundMove: z.enum(SoundMove).default(SoundMove.All),
     soundTimer: z.boolean().default(true),
     speedrunMode: z.boolean().default(false),
     speedrunPreplay: z.boolean().default(false),
@@ -1132,10 +1142,7 @@ export const userSchema = z
     hyphenated: z.boolean(),
     inactive: z.boolean(),
     name: z.string().min(1),
-    /**
-     * The `Status` enum: lobby, pregame, playing, spectating, replay, or shared replay.
-     */
-    status: z.enum(statusEnum),
+    status: z.enum(Status),
     tableID: tableIdSchema.optional(),
     userID: userIdSchema,
   })

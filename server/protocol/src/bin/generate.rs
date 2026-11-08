@@ -2,16 +2,8 @@ use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
-/// TypeScript enums that wire integers may name with `x-enum`, and whether the game library owns them.
-/// Each is exported by the `enums` module of its name in the package that owns it.
-const TYPESCRIPT_ENUMS: &[(&str, bool)] = &[
-    ("ActionType", false),
-    ("ClueType", true),
-    ("EndCondition", true),
-    ("ReplayArrowOrder", false),
-    ("SoundMove", false),
-    ("Status", false),
-];
+/// The wire enums that the game library declares. The data package declares the rest.
+const GAME_LIBRARY_ENUMS: &[&str] = &["ClueType", "EndCondition"];
 
 /// The game library's package, which the data package imports the game library's schemas from.
 const GAME_LIBRARY: &str = "@hanabi-live/game";
@@ -31,37 +23,59 @@ const GAME_LIBRARY_SCHEMAS: &[&str] = &[
 ];
 
 fn game_owned(name: &str) -> bool {
-    TYPESCRIPT_ENUMS
-        .iter()
-        .any(|(known, game)| *known == name && *game)
+    GAME_LIBRARY_ENUMS.contains(&name)
 }
 
-/// Imports the TypeScript enums that the written schemas use: a package's own enums from its `enums`
-/// modules, and the game library's enums from the game library when the data package uses them.
-fn enum_imports(used: &BTreeMap<String, EnumValues>, game: bool) -> Result<String> {
+fn wire_enum(name: &str) -> Result<&'static hanabi_protocol::WireEnum> {
+    hanabi_protocol::WIRE_ENUMS
+        .iter()
+        .find(|wire| wire.name == name)
+        .with_context(|| format!("Unknown wire enum: {name}"))
+}
+
+/// Declares the package's wire enums as TypeScript enums, with their members' values and docs.
+fn enum_declarations(game: bool) -> String {
     let mut output = String::new();
-    let mut from_game = Vec::new();
-    for (name, owned) in TYPESCRIPT_ENUMS {
-        if !used.contains_key(*name) {
+    for wire in hanabi_protocol::WIRE_ENUMS {
+        if game_owned(wire.name) != game {
             continue;
         }
-        if *owned == game {
-            output.push_str(&format!("import {{ {name} }} from \"../enums/{name}\";\n"));
-        } else {
-            ensure!(
-                !game,
-                "The game library cannot use the data package's enum {name}"
-            );
-            from_game.push(*name);
-        }
-    }
-    if !from_game.is_empty() {
+        let members = wire
+            .members
+            .iter()
+            .map(|member| {
+                format!(
+                    "{}{} = {},",
+                    jsdoc(member.description),
+                    member.name,
+                    member.value
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
         output.push_str(&format!(
-            "import {{ {} }} from \"{GAME_LIBRARY}\";\n",
-            from_game.join(", ")
+            "{}export enum {} {{\n{members}\n}}\n",
+            jsdoc(wire.description),
+            wire.name
         ));
     }
-    Ok(output)
+    output
+}
+
+/// Imports the game library's enums that the data package's schemas use.
+fn enum_imports(used: &BTreeSet<String>) -> String {
+    let from_game = used
+        .iter()
+        .filter(|name| game_owned(name))
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    if from_game.is_empty() {
+        return String::new();
+    }
+    format!(
+        "import {{ {} }} from \"{GAME_LIBRARY}\";\n",
+        from_game.join(", ")
+    )
 }
 
 fn literal(value: &Value) -> String {
@@ -203,23 +217,36 @@ fn expression(schema: &Value) -> Result<String> {
             .context("Only local schema references are supported")?;
         variable(name)
     } else if let Some(name) = schema.get("x-enum") {
-        let name = name.as_str().context("Invalid TypeScript enum name")?;
-        ensure!(
-            TYPESCRIPT_ENUMS.iter().any(|(known, _)| *known == name),
-            "Unknown TypeScript enum: {name}"
-        );
-        // The server validates the listed values; the client validates against its enum, which
-        // `enum_checks` requires to have exactly those values.
-        ensure!(
-            schema["enum"]
-                .as_array()
-                .is_some_and(|values| !values.is_empty() && values.iter().all(Value::is_i64)),
-            "TypeScript enums need the integer values listed for the server"
-        );
-        match schema["enum"].as_array().map(Vec::as_slice) {
+        let wire = wire_enum(name.as_str().context("Invalid wire enum name")?)?;
+        let members = wire
+            .members
+            .iter()
+            .map(|member| i64::from(member.value))
+            .collect::<Vec<_>>();
+        let values = schema["enum"]
+            .as_array()
+            .context("Wire enums list their integer values")?
+            .iter()
+            .map(|value| value.as_i64().context("Wire enum values must be integers"))
+            .collect::<Result<Vec<_>>>()?;
+        match values.as_slice() {
             // One member of the enum: its value is assignable to that member's type.
-            Some([member]) => format!("z.literal({member})"),
-            _ => format!("z.enum({})", enum_variable(name)),
+            [member] => {
+                ensure!(
+                    members.contains(member),
+                    "{} has no member with the value {member}",
+                    wire.name
+                );
+                format!("z.literal({member})")
+            }
+            _ => {
+                ensure!(
+                    values == members,
+                    "A field lists other values than {} has",
+                    wire.name
+                );
+                format!("z.enum({})", wire.name)
+            }
         }
     } else if let Some(values) = schema["enum"].as_array() {
         ensure!(!values.is_empty(), "Empty enum");
@@ -290,8 +317,10 @@ fn expression(schema: &Value) -> Result<String> {
                             !required.iter().any(|value| value == name),
                             "Required fields cannot acquire client-only defaults"
                         );
-                        field
-                            .push_str(&format!(".default({})", default_literal(property, default)));
+                        field.push_str(&format!(
+                            ".default({})",
+                            default_literal(property, default)?
+                        ));
                     } else if !required.iter().any(|value| value == name) {
                         field.push_str(".optional()");
                     }
@@ -347,12 +376,22 @@ fn expression(schema: &Value) -> Result<String> {
 /// The schema's description, which comes from the Rust doc comment, as JSDoc with the same line
 /// breaks.
 fn doc_comment(schema: &Value) -> String {
-    let Some(description) = schema.get("description").and_then(Value::as_str) else {
+    schema
+        .get("description")
+        .and_then(Value::as_str)
+        .map_or_else(String::new, jsdoc)
+}
+
+/// Text as a JSDoc comment, with the same line breaks. Rust's doc attributes start each line with
+/// the space after `///`, which is removed.
+fn jsdoc(text: &str) -> String {
+    if text.trim().is_empty() {
         return String::new();
-    };
-    let lines = description
+    }
+    let lines = text
         .replace("*/", "*\\/")
         .lines()
+        .map(|line| line.strip_prefix(' ').unwrap_or(line))
         .map(|line| {
             if line.is_empty() {
                 " *".to_owned()
@@ -365,8 +404,6 @@ fn doc_comment(schema: &Value) -> String {
     format!("\n/**\n{lines}\n */\n")
 }
 
-/// Writes a field's default as TypeScript: whole floats without a zero fraction, and values of a
-/// named enum checked against that enum, which also gives them its type.
 /// Writes whole floats, including those nested in object defaults, as JavaScript integers.
 fn whole_floats_as_integers(value: &Value) -> Value {
     match value {
@@ -385,12 +422,19 @@ fn whole_floats_as_integers(value: &Value) -> Value {
 
 const MAX_SAFE_INTEGER_F64: f64 = 9_007_199_254_740_991.0;
 
-fn default_literal(property: &Value, default: &Value) -> String {
-    let value = whole_floats_as_integers(default).to_string();
-    match property.get("x-enum").and_then(Value::as_str) {
-        Some(name) => format!("z.enum({}).parse({value})", enum_variable(name)),
-        None => value,
-    }
+/// Writes a field's default as TypeScript: whole floats without a zero fraction, and a wire enum's
+/// value as its member, which also gives the default the enum's type.
+fn default_literal(property: &Value, default: &Value) -> Result<String> {
+    let Some(name) = property.get("x-enum").and_then(Value::as_str) else {
+        return Ok(whole_floats_as_integers(default).to_string());
+    };
+    let wire = wire_enum(name)?;
+    let member = wire
+        .members
+        .iter()
+        .find(|member| default.as_i64() == Some(i64::from(member.value)))
+        .with_context(|| format!("{name} has no member for the default {default}"))?;
+    Ok(format!("{name}.{}", member.name))
 }
 
 fn variable(name: &str) -> String {
@@ -494,13 +538,13 @@ impl<'a> Module<'a> {
         Ok(())
     }
 
-    /// The named TypeScript enums that the written schemas use.
-    fn enums(&self) -> Result<BTreeMap<String, EnumValues>> {
-        let mut used = BTreeMap::new();
+    /// The wire enums that the written schemas use.
+    fn enums(&self) -> BTreeSet<String> {
+        let mut used = BTreeSet::new();
         for name in &self.emitted {
-            enums(&self.definitions[name], &mut used)?;
+            enums(&self.definitions[name], &mut used);
         }
-        Ok(used)
+        used
     }
 
     /// Imports the schemas that another package defines.
@@ -518,107 +562,24 @@ impl<'a> Module<'a> {
     }
 }
 
-/// The integer values the server lists for a TypeScript enum. A field lists either every value, or
-/// one member when each variant of a union names its own.
-#[derive(Default)]
-struct EnumValues {
-    all: Option<Value>,
-    members: BTreeSet<i64>,
-}
-
-impl EnumValues {
-    fn listed(&self) -> Result<Vec<i64>> {
-        let Some(all) = &self.all else {
-            return Ok(self.members.iter().copied().collect());
-        };
-        let all = all
-            .as_array()
-            .context("TypeScript enums need the integer values listed for the server")?
-            .iter()
-            .map(|value| {
-                value
-                    .as_i64()
-                    .context("TypeScript enum values must be integers")
-            })
-            .collect::<Result<Vec<_>>>()?;
-        ensure!(
-            self.members.iter().all(|member| all.contains(member)),
-            "A field names an enum member that the enum's full listing lacks"
-        );
-        Ok(all)
-    }
-}
-
-/// Each named TypeScript enum, with the integer values the server lists for it.
-fn enums(schema: &Value, output: &mut BTreeMap<String, EnumValues>) -> Result<()> {
+/// The names of the wire enums that a schema uses.
+fn enums(schema: &Value, output: &mut BTreeSet<String>) {
     match schema {
         Value::Object(object) => {
             if let Some(name) = object.get("x-enum").and_then(Value::as_str) {
-                let values = object.get("enum").cloned().unwrap_or_default();
-                let entry = output.entry(name.into()).or_default();
-                match values.as_array().map(Vec::as_slice) {
-                    Some([member]) => {
-                        entry.members.insert(
-                            member
-                                .as_i64()
-                                .context("TypeScript enum values must be integers")?,
-                        );
-                    }
-                    _ => {
-                        if let Some(existing) = &entry.all {
-                            ensure!(
-                                *existing == values,
-                                "{name} lists different values in different contracts"
-                            );
-                        }
-                        entry.all = Some(values);
-                    }
-                }
-                entry.listed()?;
+                output.insert(name.into());
             }
             for value in object.values() {
-                enums(value, output)?;
+                enums(value, output);
             }
         }
         Value::Array(values) => {
             for value in values {
-                enums(value, output)?;
+                enums(value, output);
             }
         }
         _ => {}
     }
-    Ok(())
-}
-
-fn enum_variable(name: &str) -> String {
-    format!("{}{}Enum", name[..1].to_lowercase(), &name[1..])
-}
-
-/// Declares each TypeScript enum's schema input, which fails type checking unless the enum has
-/// exactly the values the server lists for it.
-fn enum_checks(used: &BTreeMap<String, EnumValues>) -> Result<String> {
-    if used.is_empty() {
-        return Ok(String::new());
-    }
-    let mut output = String::from(
-        "/** A TypeScript enum, or `never` unless it has exactly the server's values. */\n\
-         type ServerEnum<Enum extends Record<string, string | number>, Values extends number> = \
-         [Extract<Enum[keyof Enum], number>] extends [Values] \
-         ? [Values] extends [Extract<Enum[keyof Enum], number>] ? Enum : never : never;\n",
-    );
-    for (name, values) in used {
-        let values = values
-            .listed()?
-            .iter()
-            .map(i64::to_string)
-            .collect::<Vec<_>>()
-            .join(" | ");
-        output.push_str(&format!(
-            "const {}: ServerEnum<typeof {name}, {values}> = {name};\n",
-            enum_variable(name)
-        ));
-    }
-    Ok(output)
 }
 
 /// The schemas the game library writes and exports: those it needs, and the schemas they reference.
@@ -630,8 +591,8 @@ fn game_library_schemas(definitions: &BTreeMap<String, Value>) -> Result<BTreeSe
     Ok(module.emitted)
 }
 
-/// Writes the schemas the game library needs, and a schema for each of its enums that the server
-/// sends, which fails type checking unless the enum has exactly the server's values.
+/// Writes the game library's enums, a schema for each of them, and the schemas the game library
+/// needs.
 fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
     let mut module = Module::new(
         definitions,
@@ -642,23 +603,13 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
         module.emit(name)?;
     }
     // The game library cannot import the data package's enums.
-    if let Some(other) = module.enums()?.keys().find(|known| !game_owned(known)) {
-        bail!("The game library's schemas use {other}, which the game does not own");
+    if let Some(other) = module.enums().iter().find(|known| !game_owned(known)) {
+        bail!("The game library's schemas use {other}, which the game does not declare");
     }
-    let mut used = BTreeMap::new();
-    for schema in definitions.values() {
-        enums(schema, &mut used)?;
-    }
-    used.retain(|name, _| game_owned(name));
-    print!("{}", enum_imports(&used, true)?);
     println!("import * as z from \"zod\";\n");
-    println!("{}", enum_checks(&used)?);
-    for name in used.keys() {
-        println!(
-            "export const {} = z.enum({});",
-            variable(name),
-            enum_variable(name)
-        );
+    println!("{}", enum_declarations(true));
+    for name in GAME_LIBRARY_ENUMS {
+        println!("export const {} = z.enum({name});", variable(name));
     }
     print!("{}", module.output);
     Ok(())
@@ -728,11 +679,10 @@ fn main() -> Result<()> {
     for name in &exported {
         module.emit(name)?;
     }
-    let used = module.enums()?;
-    print!("{}", enum_imports(&used, false)?);
+    print!("{}", enum_imports(&module.enums()));
     print!("{}", module.schema_imports(GAME_LIBRARY));
     println!("import * as z from \"zod\";\n");
-    println!("{}", enum_checks(&used)?);
+    println!("{}", enum_declarations(false));
     print!("{}", module.output);
     for (name, contracts) in [
         ("CLIENT_COMMAND_SCHEMAS", client),
@@ -854,53 +804,47 @@ mod tests {
 
     #[test]
     fn defaults_are_written_as_typescript() {
-        assert_eq!(default_literal(&json!({"type":"number"}), &json!(2.0)), "2");
         assert_eq!(
-            default_literal(&json!({"type":"number"}), &json!(2.5)),
+            default_literal(&json!({"type":"number"}), &json!(2.0)).unwrap(),
+            "2"
+        );
+        assert_eq!(
+            default_literal(&json!({"type":"number"}), &json!(2.5)).unwrap(),
             "2.5"
         );
         assert_eq!(
-            default_literal(&json!({"x-enum":"SoundMove"}), &json!(0)),
-            "z.enum(soundMoveEnum).parse(0)"
+            default_literal(&json!({"x-enum":"SoundMove"}), &json!(0)).unwrap(),
+            "SoundMove.All"
         );
+        assert!(default_literal(&json!({"x-enum":"SoundMove"}), &json!(7)).is_err());
     }
 
     #[test]
-    fn named_enums_use_the_typescript_enum() {
-        assert_eq!(
-            expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).unwrap(),
-            "z.enum(statusEnum)"
-        );
+    fn wire_enums_use_the_generated_typescript_enum() {
+        let status = json!({"type":"integer","enum":[0,1,2,3,4,5],"x-enum":"Status"});
+        assert_eq!(expression(&status).unwrap(), "z.enum(Status)");
+        // A field cannot list other values than the enum has.
+        assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).is_err());
         assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
         assert!(expression(&json!({"type":"integer","x-enum":"Status"})).is_err());
     }
 
     #[test]
-    fn enums_are_checked_against_the_server_values() {
-        let mut used = BTreeMap::new();
-        enums(&json!({"x-enum":"Status","enum":[0,1]}), &mut used).unwrap();
-        assert_eq!(
-            enum_checks(&used).unwrap().lines().last().unwrap(),
-            "const statusEnum: ServerEnum<typeof Status, 0 | 1> = Status;"
-        );
-        assert!(enums(&json!({"x-enum":"Status","enum":[0,1,2]}), &mut used).is_err());
-    }
-
-    #[test]
-    fn enum_members_named_by_union_variants_make_up_the_enum() {
-        let mut used = BTreeMap::new();
-        for member in [0, 1] {
-            enums(&json!({"x-enum":"ClueType","enum":[member]}), &mut used).unwrap();
-        }
-        assert_eq!(
-            enum_checks(&used).unwrap().lines().last().unwrap(),
-            "const clueTypeEnum: ServerEnum<typeof ClueType, 0 | 1> = ClueType;"
-        );
+    fn union_variants_name_one_enum_member() {
         assert_eq!(
             expression(&json!({"type":"integer","enum":[1],"x-enum":"ClueType"})).unwrap(),
             "z.literal(1)"
         );
-        assert!(enums(&json!({"x-enum":"ClueType","enum":[0,1]}), &mut used).is_ok());
-        assert!(enums(&json!({"x-enum":"ClueType","enum":[2]}), &mut used).is_err());
+        assert!(expression(&json!({"type":"integer","enum":[2],"x-enum":"ClueType"})).is_err());
+    }
+
+    #[test]
+    fn each_package_declares_its_own_enums() {
+        let game = enum_declarations(true);
+        assert!(game.contains("export enum ClueType {\nColor = 0,\nRank = 1,\n}"));
+        assert!(!game.contains("enum Status"));
+        let data = enum_declarations(false);
+        assert!(data.contains("export enum SoundMove {\nAll = 0,\nOnlyOwn = 1,\nNone = 2,\n}"));
+        assert!(!data.contains("enum ClueType"));
     }
 }

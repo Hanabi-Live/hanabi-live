@@ -1,5 +1,5 @@
 import type { CompositionTypeSatisfiesEnum } from "complete-common";
-import type { ClueType } from "../enums/ClueType";
+import type { ClueType } from "../generated/protocol";
 import type { ColorIndex } from "./ColorIndex";
 import type { WireClue } from "./HiddenClue";
 import type { RankClueNumber } from "./RankClueNumber";

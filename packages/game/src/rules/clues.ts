@@ -2,7 +2,7 @@
 
 import { assertDefined } from "complete-common";
 import { START_CARD_RANK } from "../constants";
-import { ClueType } from "../enums/ClueType";
+import { ClueType } from "../generated/protocol";
 import type { Color } from "../interfaces/Color";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Suit } from "../interfaces/Suit";

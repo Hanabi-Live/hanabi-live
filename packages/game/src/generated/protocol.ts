@@ -1,25 +1,34 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
 import * as z from "zod";
-import { ClueType } from "../enums/ClueType";
-import { EndCondition } from "../enums/EndCondition";
 
-/** A TypeScript enum, or `never` unless it has exactly the server's values. */
-type ServerEnum<
-  Enum extends Record<string, string | number>,
-  Values extends number,
-> = [Extract<Enum[keyof Enum], number>] extends [Values]
-  ? [Values] extends [Extract<Enum[keyof Enum], number>]
-    ? Enum
-    : never
-  : never;
-const clueTypeEnum: ServerEnum<typeof ClueType, 0 | 1> = ClueType;
-const endConditionEnum: ServerEnum<
-  typeof EndCondition,
-  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
-> = EndCondition;
+/**
+ * The kind of a clue in a game event. Actions name clues with `ActionType` instead.
+ */
+export enum ClueType {
+  Color = 0,
+  Rank = 1,
+}
 
-export const clueTypeSchema = z.enum(clueTypeEnum);
-export const endConditionSchema = z.enum(endConditionEnum);
+/**
+ * How a game ended. These values are stored in the database, so changing one requires a
+ * migration.
+ */
+export enum EndCondition {
+  InProgress = 0,
+  Normal = 1,
+  Strikeout = 2,
+  Timeout = 3,
+  TerminatedByPlayer = 4,
+  SpeedrunFail = 5,
+  IdleTimeout = 6,
+  CharacterSoftlock = 7,
+  AllOrNothingFail = 8,
+  AllOrNothingSoftlock = 9,
+  TerminatedByVote = 10,
+}
+
+export const clueTypeSchema = z.enum(ClueType);
+export const endConditionSchema = z.enum(EndCondition);
 
 /**
  * An entry in `characters.json`: a detrimental character.
@@ -100,9 +109,9 @@ export const catalogSuitSchema = z.strictObject({
    * - Dark suits have a capital D prefix. (e.g. "DRa" for "Dark Rainbow")
    * - Ambiguous suits have a capital A prefix and a number suffix. (e.g. AR1 for "Tomato")
    * - Very Ambiguous suits have a capital V prefix and a number suffix. (e.g. "VR1" for "Tomato
-   *   VA")
+   *  VA")
    * - Extremely Ambiguous suits have a capital E prefix and a number suffix. (e.g. "EB1" for "Ice
-   *   EA")
+   *  EA")
    * - Dual-Color suits have a capital D prefix. (e.g. "DRY" for "Tangerine D")
    */
   id: z.string().min(1),
@@ -330,10 +339,7 @@ export const gameEventSchema = z.discriminatedUnion("type", [
     type: z.literal("turn"),
   }),
   z.strictObject({
-    /**
-     * The `EndCondition` enum.
-     */
-    endCondition: z.enum(endConditionEnum),
+    endCondition: z.enum(EndCondition),
     playerIndex: playerIndexOrNoneSchema,
     type: z.literal("gameOver"),
     /**

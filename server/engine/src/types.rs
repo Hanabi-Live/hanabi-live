@@ -1,3 +1,4 @@
+pub use hanabi_protocol::EndCondition;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -56,47 +57,6 @@ pub enum Interpretation {
     #[default]
     Live,
     LegacyReplay,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(try_from = "i32", into = "i32")]
-#[repr(i32)]
-pub enum EndCondition {
-    InProgress = 0,
-    Normal = 1,
-    Strikeout = 2,
-    Timeout = 3,
-    TerminatedByPlayer = 4,
-    SpeedrunFail = 5,
-    IdleTimeout = 6,
-    CharacterSoftlock = 7,
-    AllOrNothingFail = 8,
-    AllOrNothingSoftlock = 9,
-    TerminatedByVote = 10,
-}
-impl TryFrom<i32> for EndCondition {
-    type Error = &'static str;
-    fn try_from(value: i32) -> Result<Self, Self::Error> {
-        Ok(match value {
-            0 => Self::InProgress,
-            1 => Self::Normal,
-            2 => Self::Strikeout,
-            3 => Self::Timeout,
-            4 => Self::TerminatedByPlayer,
-            5 => Self::SpeedrunFail,
-            6 => Self::IdleTimeout,
-            7 => Self::CharacterSoftlock,
-            8 => Self::AllOrNothingFail,
-            9 => Self::AllOrNothingSoftlock,
-            10 => Self::TerminatedByVote,
-            _ => return Err("Invalid end condition"),
-        })
-    }
-}
-impl From<EndCondition> for i32 {
-    fn from(value: EndCondition) -> Self {
-        value as i32
-    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

@@ -1,8 +1,7 @@
 import type { Tuple } from "complete-common";
 import { SECOND_IN_MILLISECONDS, assertDefined } from "complete-common";
-import { ClueType } from "../enums/ClueType";
-import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
+import { ClueType, EndCondition } from "../generated/protocol";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Variant } from "../interfaces/Variant";
 import { getCharacterNameForPlayer } from "../reducers/reducerHelpers";

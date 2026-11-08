@@ -3,8 +3,8 @@
 import { assertNotNull } from "complete-common";
 import type { Draft } from "immer";
 import { produce } from "immer";
-import { EndCondition } from "../enums/EndCondition";
 import { getVariant } from "../gameData";
+import { EndCondition } from "../generated/protocol";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { GameState } from "../interfaces/GameState";
 import type { TurnState } from "../interfaces/TurnState";

@@ -4,8 +4,8 @@
 
 import { newArray } from "complete-common";
 import { MAX_PLAYERS } from "../constants";
-import { ClueType } from "../enums/ClueType";
 import { getVariant } from "../gameData";
+import { ClueType } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import { isCardTouchedByClue } from "../rules/clues";

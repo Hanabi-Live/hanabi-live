@@ -4,6 +4,11 @@
 pub use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+mod enums;
+pub use enums::{
+    ActionType, ClueType, EndCondition, ReplayArrowOrder, SoundMove, Status, WIRE_ENUMS, WireEnum,
+    WireEnumMember,
+};
 mod registry;
 pub use registry::{
     ClientMessage, ServerMessage, client_contracts, decode, decode_server, server,
@@ -675,22 +680,8 @@ pub struct ReplayIndicator {
 #[serde(untagged)]
 pub enum ReplayArrowTarget {
     Card(CardOrder),
-    Board(ReplayArrowIndicator),
+    Board(ReplayArrowOrder),
 }
-
-/// The `ReplayArrowOrder` enum: -1 clears the arrow, and the rest name a part of the board.
-#[derive(JsonSchema)]
-#[serde(transparent)]
-pub struct ReplayArrowIndicator(
-    #[schemars(
-        range(min = -12, max = -1),
-        extend(
-            "enum" = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12],
-            "x-enum" = "ReplayArrowOrder"
-        )
-    )]
-    pub i64,
-);
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -844,9 +835,8 @@ pub struct ReplayEfficiencyMod {
 pub struct ActionRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    /// The `ActionType` enum: 0 plays, 1 discards, 2 gives a color clue, and 3 gives a rank clue.
     #[serde(rename = "type")]
-    #[schemars(extend("enum" = [0, 1, 2, 3], "x-enum" = "ActionType"))]
+    #[schemars(with = "ActionType")]
     pub kind: u8,
     /// The card order for a play or discard; the player index for a clue.
     #[schemars(range(min = i32::MIN, max = i32::MAX))]
@@ -1272,11 +1262,7 @@ pub struct User {
     pub user_id: UserId,
     #[schemars(length(min = 1))]
     pub name: String,
-    /// The `Status` enum: lobby, pregame, playing, spectating, replay, or shared replay.
-    #[schemars(
-        range(min = 0, max = 5),
-        extend("enum" = [0, 1, 2, 3, 4, 5], "x-enum" = "Status")
-    )]
+    #[schemars(with = "Status")]
     pub status: u8,
     #[serde(default, rename = "tableID", skip_serializing_if = "Option::is_none")]
     #[schemars(with = "TableId")]
@@ -1354,8 +1340,7 @@ pub enum LobbySound {
 #[schemars(extend("x-readonly" = true))]
 pub struct Settings {
     pub desktop_notification: bool,
-    /// The `SoundMove` enum: all moves, only your own, or none.
-    #[schemars(range(min = 0, max = 2), extend("enum" = [0, 1, 2], "x-enum" = "SoundMove"))]
+    #[schemars(with = "SoundMove")]
     pub sound_move: u8,
     pub sound_timer: bool,
     pub keldon_mode: bool,
@@ -1604,11 +1589,7 @@ pub struct GameHistory {
     pub score: i32,
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub num_turns: i32,
-    /// The `EndCondition` enum.
-    #[schemars(
-        range(min = 0, max = 10),
-        extend("enum" = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "x-enum" = "EndCondition")
-    )]
+    #[schemars(with = "EndCondition")]
     pub end_condition: u8,
     #[schemars(extend("x-date" = true))]
     pub datetime_started: String,
@@ -1808,14 +1789,14 @@ pub struct Clue {
 pub enum ReceivedClue {
     Color {
         #[serde(rename = "type")]
-        #[schemars(range(min = 0, max = 0), extend("enum" = [0], "x-enum" = "ClueType"))]
+        #[schemars(extend("enum" = [ClueType::Color as i32], "x-enum" = "ClueType"))]
         clue_type: i32,
         #[schemars(range(min = 0, max = 5), extend("enum" = [0, 1, 2, 3, 4, 5]))]
         value: i32,
     },
     Rank {
         #[serde(rename = "type")]
-        #[schemars(range(min = 1, max = 1), extend("enum" = [1], "x-enum" = "ClueType"))]
+        #[schemars(extend("enum" = [ClueType::Rank as i32], "x-enum" = "ClueType"))]
         clue_type: i32,
         #[schemars(range(min = 1, max = 5), extend("enum" = [1, 2, 3, 4, 5]))]
         value: i32,
@@ -1915,11 +1896,7 @@ pub enum GameEvent {
         current_player_index: i64,
     },
     GameOver {
-        /// The `EndCondition` enum.
-        #[schemars(
-            range(min = 0, max = 10),
-            extend("enum" = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "x-enum" = "EndCondition")
-        )]
+        #[schemars(with = "EndCondition")]
         end_condition: i64,
         #[schemars(with = "PlayerIndexOrNone")]
         player_index: i64,

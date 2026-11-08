@@ -1,4 +1,4 @@
-import { ClueType } from "./enums/ClueType";
+import { ClueType } from "./generated/protocol";
 import type { CardOrder } from "./types/CardOrder";
 import type { ColorIndex } from "./types/ColorIndex";
 import type { PlayerIndex } from "./types/PlayerIndex";

@@ -2,8 +2,6 @@ export * from "./abbreviations";
 export * from "./cardPresentation";
 export * from "./constants";
 export * from "./enums/CardStatus";
-export * from "./enums/ClueType";
-export * from "./enums/EndCondition";
 export * from "./enums/PaceRisk";
 export * from "./enums/Pip";
 export * from "./enums/StackDirection";

@@ -3,9 +3,9 @@
 
 import { describe, expect, test } from "bun:test";
 import { START_CARD_RANK } from "./constants";
-import { ClueType } from "./enums/ClueType";
 import { StackDirection } from "./enums/StackDirection";
 import { getDefaultVariant, getVariant, VARIANT_NAMES } from "./gameData";
+import { ClueType } from "./generated/protocol";
 import type {
   HypotheticalCardInput,
   HypotheticalCardView,

@@ -1,9 +1,5 @@
 export * from "./chatSymbols";
 export * from "./constants";
-export * from "./enums/ActionType";
-export * from "./enums/ReplayArrowOrder";
-export * from "./enums/SoundMove";
-export * from "./enums/Status";
 export * from "./functions/errors";
 export * from "./functions/golem";
 export * from "./functions/history";
@@ -13,6 +9,7 @@ export * from "./generated/protocol";
 export type * from "./interfaces/GameHistory";
 export * from "./interfaces/Settings";
 export type * from "./interfaces/Spectator";
+export * from "./statusText";
 export type * from "./types/GameID";
 export type * from "./types/TableID";
 export type * from "./types/UserID";

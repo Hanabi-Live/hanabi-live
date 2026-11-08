@@ -1,4 +1,4 @@
-import { ClueType } from "../enums/ClueType";
+import { ClueType } from "../generated/protocol";
 import type { Color } from "../interfaces/Color";
 import type { RankClueNumber } from "./RankClueNumber";
 
