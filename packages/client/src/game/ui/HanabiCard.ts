@@ -495,11 +495,29 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
 
   isMorphedBlank(): boolean {
     if (!this.isMorphed()) {
-      return false;
+      return this.isUnknownHypotheticalDraw();
     }
 
     const morphedIdentity = this.getMorph()!;
     return morphedIdentity.rank === null && morphedIdentity.suitIndex === null;
+  }
+
+  /**
+   * A card that a hypothetical draws from beyond the real game's deck has no identity to reveal, so
+   * it stays blank even when drawn cards are shown.
+   */
+  private isUnknownHypotheticalDraw(): boolean {
+    if (globals.state.replay.hypothetical === null || this.isStackBase) {
+      return false;
+    }
+
+    const { order } = this.state;
+    const cardIdentity = globals.state.cardIdentities[order];
+    return (
+      order >= globals.state.ongoingGame.deck.length
+      && cardIdentity?.suitIndex === null
+      && cardIdentity.rank === null
+    );
   }
 
   /**
