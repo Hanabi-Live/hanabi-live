@@ -1503,8 +1503,7 @@ mod tests {
         let (reply, received) = oneshot::channel();
         hub.send(HubCommand::Client {
             session,
-            command: command.into(),
-            data,
+            message: crate::actors::client_message(command, data)?,
             reply,
         })
         .await?;

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 mod registry;
 pub use registry::{
-    ServerMessage, client_contracts, decode, decode_client, decode_server, server,
+    ClientMessage, ServerMessage, client_contracts, decode, decode_client, decode_server, server,
     server_contracts, validate,
 };
 

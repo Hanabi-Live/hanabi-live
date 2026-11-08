@@ -9,16 +9,15 @@ pub fn command_name(input: &str) -> Option<&'static str> {
         .find(|candidate| *candidate == name)
 }
 
-pub fn parse(input: &str) -> Result<(String, Value)> {
+pub fn parse(input: &str) -> Result<hanabi_protocol::ClientMessage> {
     ensure!(
         input.len() <= crate::transport::MAX_MESSAGE_BYTES,
         "Oversized command"
     );
     let (name, body) = input.split_once(' ').unwrap_or((input, "{}"));
     let data: Value = serde_json::from_str(body)?;
-    let parsed = hanabi_protocol::decode_client(name, &data)?
-        .ok_or_else(|| anyhow::anyhow!("Unknown client command"))?;
-    Ok((name.into(), parsed))
+    hanabi_protocol::ClientMessage::decode(name, &data)?
+        .ok_or_else(|| anyhow::anyhow!("Unknown client command"))
 }
 
 #[cfg(test)]
@@ -40,7 +39,8 @@ mod tests {
                 .as_bool()
                 .unwrap_or(case["valid"].as_bool().unwrap());
             assert_eq!(result.is_ok(), valid, "{}", case["name"]);
-            if let Ok((_, data)) = result {
+            if let Ok(message) = result {
+                let data = message.data();
                 assert_eq!(
                     data,
                     case.get("normalized").unwrap_or(&case["input"]).clone(),
@@ -98,7 +98,7 @@ mod tests {
         ] {
             assert!(parse(input).is_err(), "{input}");
         }
-        let (_, create) = parse("tableCreate {}").unwrap();
+        let create = parse("tableCreate {}").unwrap().data();
         assert_eq!(create["options"]["numPlayers"], 2);
         assert_eq!(create["options"]["variantName"], "No Variant");
     }
@@ -113,7 +113,7 @@ mod tests {
             }})
         );
         assert!(input.len() > 8192);
-        let (_, parsed) = parse(&input).unwrap();
+        let parsed = parse(&input).unwrap().data();
         assert_eq!(
             parsed["gameJSON"]["notes"][0][0].as_str().unwrap().len(),
             65536

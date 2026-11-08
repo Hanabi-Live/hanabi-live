@@ -11,8 +11,8 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
-    Chat, ChatSource, ChatTyping, ErrorNotice, SoundLobby, TableId, TableRequest, TableStarted,
-    User, UserId, UserLeft, UserList, Warning,
+    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, SoundLobby, TableId, TableRequest,
+    TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -300,8 +300,7 @@ pub enum HubCommand {
     },
     Client {
         session: Arc<Session>,
-        command: String,
-        data: Value,
+        message: ClientMessage,
         reply: Reply,
     },
     /// Fails for a stale session. The online users are listed only when `users` is set.
@@ -364,8 +363,8 @@ pub enum HubCommand {
     Stop(oneshot::Sender<()>),
 }
 pub enum Command {
-    /// A client command, already validated against its wire contract.
-    Wire { name: String, data: Value },
+    /// A client command, decoded once into its payload type.
+    Client(Box<ClientMessage>),
     /// Restores a reconnecting user's attendance and view.
     Reattend {
         spectate: bool,
@@ -380,6 +379,12 @@ pub enum TableCommand {
     },
     Drain(oneshot::Sender<Result<()>>),
 }
+/// Decodes a command the way the WebSocket parser does, for tests that build commands by name.
+#[cfg(test)]
+pub(crate) fn client_message(name: &str, data: Value) -> Result<ClientMessage> {
+    ClientMessage::decode(name, &data)?.with_context(|| format!("Unregistered command {name}"))
+}
+
 #[cfg(test)]
 pub(crate) fn test_table() -> hanabi_protocol::Table {
     hanabi_protocol::Table {
@@ -539,7 +544,7 @@ impl Hub {
             let _ = reply.send(Err(anyhow::anyhow!("Stale session or draining server")));
             return;
         }
-        let joining = matches!(&command, Command::Wire { name, .. } if name == "tableJoin");
+        let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
         if joining && !s.name.starts_with("Bot-") && self.playing_elsewhere(s.user, Some(id)) {
             let _ = reply.send(Err(anyhow::anyhow!(
                 "You cannot join more than one table at a time. Terminate your other game before joining a new one."
@@ -998,53 +1003,37 @@ impl Hub {
                 HubCommand::Operations { command, reply } => self.operations(command, reply),
                 HubCommand::Client {
                     session,
-                    command,
-                    data,
+                    message,
                     reply,
-                } => {
-                    if command == "tableCreate" || command == "replayCreate" {
-                        match Creation::decode(&command, &data) {
-                            Ok(Creation::Replay(r)) if let Some(id) = self.existing_replay(&r) => {
-                                self.route(
-                                    session,
-                                    id,
-                                    Command::Wire {
-                                        name: "tableSpectate".into(),
-                                        data: json!({
-                                            "tableID": id,
-                                            "shadowingPlayerIndex": r.shadowing_player_index,
-                                        }),
-                                    },
-                                    reply,
-                                );
-                            }
-                            Ok(creation) => self.create(session, creation, reply),
-                            Err(error) => {
-                                let _ = reply.send(Err(error));
-                            }
-                        }
-                    } else {
-                        let table = data["tableID"].as_u64().or_else(|| {
-                            data["room"]
-                                .as_str()
-                                .and_then(|r| r.strip_prefix("table"))
-                                .and_then(|r| r.parse().ok())
-                        });
-                        if let Some(table) = table {
+                } => match message {
+                    ClientMessage::TableCreate(r) => {
+                        self.create(session, Creation::Table(r), reply);
+                    }
+                    ClientMessage::ReplayCreate(r) => {
+                        if let Some(id) = self.existing_replay(&r) {
                             self.route(
                                 session,
-                                table,
-                                Command::Wire {
-                                    name: command,
-                                    data,
-                                },
+                                id,
+                                Command::Client(Box::new(ClientMessage::TableSpectate(
+                                    hanabi_protocol::TableSpectateRequest {
+                                        table_id: TableId(id),
+                                        shadowing_player_index: r.shadowing_player_index,
+                                    },
+                                ))),
                                 reply,
                             );
+                        } else {
+                            self.create(session, Creation::Replay(r), reply);
+                        }
+                    }
+                    message => {
+                        if let Some(table) = table_target(&message) {
+                            self.route(session, table, Command::Client(Box::new(message)), reply);
                         } else {
                             let _ = reply.send(Err(anyhow::anyhow!("Missing tableID")));
                         }
                     }
-                }
+                },
                 HubCommand::Allocate(reply) => {
                     let permit = self.capacity.clone().try_acquire_owned();
                     let store = self.store.clone();
@@ -1515,23 +1504,24 @@ fn option_changes(
     changes
 }
 fn is_variant_discovery(command: &Command) -> bool {
-    let Command::Wire { name, data } = command else {
+    let Command::Client(message) = command else {
         return false;
     };
-    name == "chat"
-        && data["msg"]
-            .as_str()
-            .and_then(|text| crate::accounts::normalize_chat(text).ok())
-            .is_some_and(|text| {
-                matches!(
-                    text.split_whitespace()
-                        .next()
-                        .unwrap_or("")
-                        .to_ascii_lowercase()
-                        .as_str(),
-                    "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
-                )
-            })
+    let ClientMessage::Chat(request) = &**message else {
+        return false;
+    };
+    crate::accounts::normalize_chat(&request.msg)
+        .ok()
+        .is_some_and(|text| {
+            matches!(
+                text.split_whitespace()
+                    .next()
+                    .unwrap_or("")
+                    .to_ascii_lowercase()
+                    .as_str(),
+                "/findvariant" | "/find-variant" | "/fv" | "/randomvariant" | "/random-variant"
+            )
+        })
 }
 struct VariantDiscovery {
     requester: Arc<Session>,
@@ -1611,14 +1601,51 @@ enum Creation {
     Table(hanabi_protocol::TableCreateRequest),
     Replay(hanabi_protocol::ReplayCreateRequest),
 }
-impl Creation {
-    fn decode(command: &str, data: &Value) -> Result<Self> {
-        Ok(if command == "replayCreate" {
-            Self::Replay(hanabi_protocol::decode(data)?)
-        } else {
-            Self::Table(hanabi_protocol::decode(data)?)
-        })
-    }
+/// The table a command is for: its table ID, or for chat, its "table{id}" room.
+fn table_target(message: &ClientMessage) -> Option<u64> {
+    use ClientMessage as M;
+    let id = match message {
+        M::Chat(r) => return r.room.strip_prefix("table")?.parse().ok(),
+        M::ChatRead(r) | M::ChatTyping(r) | M::TableLeave(r) | M::TableReattend(r) => r.table_id,
+        M::TableUnattend(r)
+        | M::TableTerminate(r)
+        | M::TableVoteForTermination(r)
+        | M::GetGameInfo1(r)
+        | M::GetGameInfo2(r)
+        | M::Loaded(r) => r.table_id,
+        M::TableJoin(r) => r.table_id,
+        M::TableSetLeader(r) => r.table_id,
+        M::TableSetVariant(r) => r.table_id,
+        M::TableStart(r) => r.table_id,
+        M::TableRestart(r) => r.table_id,
+        M::TableSuggest(r) => r.table_id,
+        M::TableSpectate(r) => r.table_id,
+        M::TableUpdate(r) => r.table_id,
+        M::Action(r) => r.table_id,
+        M::Pause(r) => r.table_id,
+        M::Note(r) => r.table_id,
+        M::Tag(r) | M::TagDelete(r) => r.table_id,
+        M::TagsDeleteAll(r) => r.table_id,
+        M::ReplayAction(r) => r.table_id,
+        M::LobbyLoad(_)
+        | M::Sync(_)
+        | M::ChatPM(_)
+        | M::ChatPMHistoryGet(_)
+        | M::ChatFriend(_)
+        | M::ChatUnfriend(_)
+        | M::ChatLink(_)
+        | M::ChatUnlink(_)
+        | M::ChatPlayerInfo(_)
+        | M::ChatLinked(_)
+        | M::Setting(_)
+        | M::Inactive(_)
+        | M::HistoryGet(_)
+        | M::HistoryGetSeed(_)
+        | M::TagSearch(_)
+        | M::TableCreate(_)
+        | M::ReplayCreate(_) => return None,
+    };
+    Some(id.0)
 }
 
 async fn prepare_table(
@@ -2665,32 +2692,27 @@ impl TableActor {
                 self.tick().await?;
             }
         }
-        let (name, data) = match command {
-            Command::Wire { name, data } => (name, data),
+        let message = match command {
+            Command::Client(message) => *message,
             Command::Reattend { spectate, shadow } => {
                 return self
                     .reattend(session, spectate, Some(shadow.map_or(-1, |s| s as i64)))
                     .await;
             }
         };
-        match name.as_str() {
-            "tableJoin" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableJoinRequest>(&data)?;
-                self.join(session, r.password).await
-            }
-            "tableReattend" => self.reattend(session, false, None).await,
-            "tableSpectate" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableSpectateRequest>(&data)?;
+        let name = message.name();
+        match message {
+            ClientMessage::TableJoin(r) => self.join(session, r.password).await,
+            ClientMessage::TableReattend(_) => self.reattend(session, false, None).await,
+            ClientMessage::TableSpectate(r) => {
                 self.reattend(session, true, Some(r.shadowing_player_index))
                     .await
             }
-            "tableUnattend" | "tableLeave" => self.leave(session, name == "tableLeave").await,
-            "getGameInfo1" | "getGameInfo2" => {
-                self.info(session, if name == "getGameInfo1" { 1 } else { 2 })
-                    .await
-            }
-            "tableStart" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableStartRequest>(&data)?;
+            ClientMessage::TableUnattend(_) => self.leave(session, false).await,
+            ClientMessage::TableLeave(_) => self.leave(session, true).await,
+            ClientMessage::GetGameInfo1(_) => self.info(session, 1).await,
+            ClientMessage::GetGameInfo2(_) => self.info(session, 2).await,
+            ClientMessage::TableStart(r) => {
                 let players = self.table.players();
                 // A start based on a stale view of the table does nothing.
                 if r.intended_variant
@@ -2705,7 +2727,7 @@ impl TableActor {
                 }
                 self.start(session).await
             }
-            "loaded" => {
+            ClientMessage::Loaded(_) => {
                 ensure!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
                 let mut starts_clock = false;
@@ -2733,8 +2755,7 @@ impl TableActor {
                 }
                 self.publish(e).await
             }
-            "action" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::ActionRequest>(&data)?;
+            ClientMessage::Action(r) => {
                 let action = Action {
                     kind: r.kind,
                     target: r.target,
@@ -2742,65 +2763,56 @@ impl TableActor {
                 };
                 self.action(session, action).await
             }
-            "tableTerminate" if matches!(self.table.phase, Phase::Pregame { .. }) => {
+            ClientMessage::TableTerminate(_)
+                if matches!(self.table.phase, Phase::Pregame { .. }) =>
+            {
                 ensure!(
                     self.attending(&session) && session.user == self.table.owner,
                     "Only owner can terminate"
                 );
                 self.retire().await
             }
-            "tableTerminate" | "tableVoteForTermination" => {
-                self.terminate(session, name == "tableVoteForTermination")
-                    .await
+            ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
+            ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
+            ClientMessage::Pause(r) => self.pause(session, &r.setting).await,
+            ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
+            ClientMessage::Tag(r) | ClientMessage::TagDelete(r) => {
+                self.tag(session, &r.msg, &r.room, name).await
             }
-            "pause" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::PauseRequest>(&data)?;
-                self.pause(session, &r.setting).await
-            }
-            "note" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::NoteRequest>(&data)?;
-                self.note(session, r.order, &r.note).await
-            }
-            "tag" | "tagDelete" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TagRequest>(&data)?;
-                self.tag(session, &r.msg, &r.room, &name).await
-            }
-            "tagsDeleteAll" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TagsDeleteAllRequest>(&data)?;
-                self.tag(session, "", &r.room, &name).await
-            }
-            "chat" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::ChatRequest>(&data)?;
-                self.chat(session, &r.msg).await
-            }
-            "chatRead" | "chatTyping" => self.chat_presence(session, name == "chatTyping").await,
-            "tableSetLeader" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableLeaderRequest>(&data)?;
-                self.leader(session, &r.name).await
-            }
-            "tableSuggest" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableSuggestRequest>(&data)?;
-                self.suggest(session, r.segment).await
-            }
-            "tableSetVariant" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableVariantRequest>(&data)?;
+            ClientMessage::TagsDeleteAll(r) => self.tag(session, "", &r.room, name).await,
+            ClientMessage::Chat(r) => self.chat(session, &r.msg).await,
+            ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
+            ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
+            ClientMessage::TableSetLeader(r) => self.leader(session, &r.name).await,
+            ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
+            ClientMessage::TableSetVariant(r) => {
                 self.update(session, TableChange::Variant(r.options.variant_name))
                     .await
             }
-            "tableUpdate" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableUpdateRequest>(&data)?;
+            ClientMessage::TableUpdate(r) => {
                 self.update(session, TableChange::Options(Box::new(r)))
                     .await
             }
-            "tableRestart" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::TableRestartRequest>(&data)?;
-                self.restart(session, r.hide_pregame).await
-            }
-            "replayAction" => {
-                let r = hanabi_protocol::decode::<hanabi_protocol::ReplayActionRequest>(&data)?;
-                self.replay_action(session, r).await
-            }
-            _ => bail!("Unsupported table command: {name}"),
+            ClientMessage::TableRestart(r) => self.restart(session, r.hide_pregame).await,
+            ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
+            // Handled before reaching a table.
+            ClientMessage::LobbyLoad(_)
+            | ClientMessage::Sync(_)
+            | ClientMessage::ChatPM(_)
+            | ClientMessage::ChatPMHistoryGet(_)
+            | ClientMessage::ChatFriend(_)
+            | ClientMessage::ChatUnfriend(_)
+            | ClientMessage::ChatLink(_)
+            | ClientMessage::ChatUnlink(_)
+            | ClientMessage::ChatPlayerInfo(_)
+            | ClientMessage::ChatLinked(_)
+            | ClientMessage::Setting(_)
+            | ClientMessage::Inactive(_)
+            | ClientMessage::HistoryGet(_)
+            | ClientMessage::HistoryGetSeed(_)
+            | ClientMessage::TagSearch(_)
+            | ClientMessage::TableCreate(_)
+            | ClientMessage::ReplayCreate(_) => bail!("Unsupported table command: {name}"),
         }
     }
     async fn update(&mut self, session: Arc<Session>, change: TableChange) -> Result<()> {

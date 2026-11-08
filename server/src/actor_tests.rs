@@ -667,10 +667,10 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .send(HubCommand::Route {
             session: old.clone(),
             table: 42,
-            command: Command::Wire {
-                name: "getGameInfo1".into(),
-                data: json!({"tableID":42}),
-            },
+            command: Command::Client(Box::new(crate::actors::client_message(
+                "getGameInfo1",
+                json!({"tableID":42}),
+            )?)),
             reply,
         })
         .await?;
