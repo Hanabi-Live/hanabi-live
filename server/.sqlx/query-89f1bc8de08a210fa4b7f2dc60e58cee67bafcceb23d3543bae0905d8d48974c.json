@@ -1,0 +1,277 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT g.id,g.num_players,g.variant_id,g.timed,g.time_base,g.time_per_turn,g.speedrun,\n            g.card_cycle,g.deck_plays,g.empty_clues,g.one_extra_card,g.one_less_card,\n            g.all_or_nothing,g.detrimental_characters,g.seed,g.score,g.num_turns,g.end_condition,\n            g.datetime_started,g.datetime_finished,\n            COALESCE((SELECT array_agg(u.username ORDER BY LOWER(u.username) COLLATE \"C\")\n                FROM game_participants p JOIN users u ON u.id=p.user_id WHERE p.game_id=g.id),\n                '{}') AS \"player_names!\",\n            COALESCE((SELECT STRING_AGG(DISTINCT tag, ', ' ORDER BY tag) FROM game_tags\n                WHERE game_id=g.id),'') AS \"tags!\",\n            COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0) AS \"num_games_on_this_seed!\"\n         FROM games g WHERE id=ANY($1) ORDER BY g.score DESC, g.datetime_finished, g.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "num_players",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "num_players"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "variant_id",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "variant_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "timed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "timed"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "time_base",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "time_base"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "time_per_turn",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "time_per_turn"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "speedrun",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "speedrun"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "card_cycle",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "card_cycle"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "deck_plays",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "deck_plays"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "empty_clues",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "empty_clues"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "one_extra_card",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "one_extra_card"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "one_less_card",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "one_less_card"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "all_or_nothing",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "all_or_nothing"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
+        "name": "detrimental_characters",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "detrimental_characters"
+          }
+        }
+      },
+      {
+        "ordinal": 14,
+        "name": "seed",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "seed"
+          }
+        }
+      },
+      {
+        "ordinal": 15,
+        "name": "score",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "score"
+          }
+        }
+      },
+      {
+        "ordinal": 16,
+        "name": "num_turns",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "num_turns"
+          }
+        }
+      },
+      {
+        "ordinal": 17,
+        "name": "end_condition",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "end_condition"
+          }
+        }
+      },
+      {
+        "ordinal": 18,
+        "name": "datetime_started",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "datetime_started"
+          }
+        }
+      },
+      {
+        "ordinal": 19,
+        "name": "datetime_finished",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "games",
+            "name": "datetime_finished"
+          }
+        }
+      },
+      {
+        "ordinal": 20,
+        "name": "player_names!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 21,
+        "name": "tags!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 22,
+        "name": "num_games_on_this_seed!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "89f1bc8de08a210fa4b7f2dc60e58cee67bafcceb23d3543bae0905d8d48974c"
+}

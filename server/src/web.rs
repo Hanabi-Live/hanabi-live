@@ -378,10 +378,13 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
     let mut initial = vec![];
     if !reconnect {
         let chat = lobby::lobby_history(pool, 50).await?;
-        initial.push(crate::transport::stored_frame(
+        initial.push(frame(
             hanabi_protocol::server::CHAT_LIST,
-            &json!({"list":chat,"unread":0}),
-        )?);
+            hanabi_protocol::ChatList {
+                list: chat,
+                unread: 0,
+            },
+        ));
         initial.push(frame(hanabi_protocol::server::CHAT, hanabi_protocol::Chat {
             room: Some("lobby".into()),
             ..hanabi_protocol::Chat::new(
