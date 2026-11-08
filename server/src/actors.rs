@@ -1,5 +1,5 @@
 use crate::{
-    game::{Action, Game, Options},
+    game::{Game, Options},
     lobby::{Effect, OnlineUser},
     model::{Phase, *},
     operations::Operation,
@@ -11,8 +11,8 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
-    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, SoundLobby, TableId,
-    TableRequest, TableStarted, User, UserId, UserLeft, UserList, Warning,
+    Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, ReplayAction,
+    SoundLobby, TableId, TableRequest, TableStarted, User, UserId, UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -1806,7 +1806,7 @@ async fn prepare_table(
                     .game
                     .actions
                     .iter()
-                    .map(|a| Action {
+                    .map(|a| ReplayAction {
                         kind: a.action_type as u8,
                         target: a.target,
                         value: a.value,
@@ -2786,7 +2786,7 @@ impl TableActor {
                 self.publish(e).await
             }
             ClientMessage::Action(r) => {
-                let action = Action {
+                let action = ReplayAction {
                     kind: r.kind,
                     target: r.target,
                     value: r.value,
@@ -2990,7 +2990,7 @@ impl TableActor {
                             .game
                             .actions
                             .iter()
-                            .map(|a| Action {
+                            .map(|a| ReplayAction {
                                 kind: a.action_type as u8,
                                 target: a.target,
                                 value: a.value,
@@ -3458,7 +3458,7 @@ impl TableActor {
                     None,
                 )?;
             } else {
-                game.apply(actor, a.clone())?;
+                game.apply(actor, *a)?;
             }
         }
         let now = Utc::now();
@@ -3542,7 +3542,7 @@ impl TableActor {
         );
         Ok(snapshot)
     }
-    async fn action(&mut self, session: Arc<Session>, a: Action) -> Result<()> {
+    async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> Result<()> {
         ensure!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live()?;

@@ -438,7 +438,7 @@ pub struct ReplayCard {
     pub rank: i64,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ReplayAction {
     #[serde(rename = "type")]

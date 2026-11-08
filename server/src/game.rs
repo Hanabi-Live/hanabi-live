@@ -4,28 +4,10 @@ use hanabi_engine::{
     CompletionTiming, EndCondition, EngineState, GameSetup, Interpretation, PlayerAction,
     Recipient, Termination,
 };
+use hanabi_protocol::ReplayAction;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Deref, DerefMut};
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Action {
-    #[serde(rename = "type")]
-    pub kind: u8,
-    pub target: i32,
-    #[serde(default)]
-    pub value: i32,
-}
-impl From<&Action> for PlayerAction {
-    fn from(a: &Action) -> Self {
-        Self {
-            action_type: i32::from(a.kind),
-            target: a.target,
-            value: a.value,
-        }
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -55,13 +37,13 @@ impl Game {
             interpretation: Interpretation::Live,
         })
     }
-    pub fn apply(&mut self, actor: usize, action: Action) -> Result<()> {
+    pub fn apply(&mut self, actor: usize, action: ReplayAction) -> Result<()> {
         self.apply_timed(actor, &action, None)
     }
     pub fn apply_timed(
         &mut self,
         actor: usize,
-        action: &Action,
+        action: &ReplayAction,
         timing: Option<CompletionTiming>,
     ) -> Result<()> {
         self.0 =
@@ -113,7 +95,7 @@ impl Game {
             })
             .collect()
     }
-    pub fn replay(setup: GameSetup, actions: Vec<Action>) -> Result<Self> {
+    pub fn replay(setup: GameSetup, actions: Vec<ReplayAction>) -> Result<Self> {
         ensure!(actions.len() <= 512, "Oversized replay");
         let mut game = Self::create(setup)?;
         for action in actions {

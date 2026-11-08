@@ -134,6 +134,15 @@ pub struct PlayerAction {
     pub value: i32,
 }
 pub type RecordedAction = PlayerAction;
+impl From<&hanabi_protocol::ReplayAction> for PlayerAction {
+    fn from(a: &hanabi_protocol::ReplayAction) -> Self {
+        Self {
+            action_type: i32::from(a.kind),
+            target: a.target,
+            value: a.value,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

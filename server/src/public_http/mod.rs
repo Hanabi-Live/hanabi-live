@@ -228,9 +228,9 @@ async fn api_handler(
 ) -> Result<Response> {
     let q = query(raw);
     let mode = uri.path().split('/').nth(3).unwrap_or("");
-    let value = match mode {
-        "variants" if !params.contains_key("id") => json!(catalog::names()),
-        "variants-full" => json!(catalog::metadata()),
+    Ok(match mode {
+        "variants" if !params.contains_key("id") => Json(catalog::names()).into_response(),
+        "variants-full" => Json(catalog::metadata()).into_response(),
         "history" | "seed" | "variants" => {
             let selection = match data::selection(&state, &params, mode).await {
                 Ok(s) => s,
@@ -240,7 +240,7 @@ async fn api_handler(
                 Err(e) => return Err(e),
             };
             match data::list(&state, selection, &q, mode).await {
-                Ok(page) => json!(page),
+                Ok(page) => Json(page).into_response(),
                 Err(e) if e.0 == StatusCode::BAD_REQUEST => {
                     return Ok((e.0, Json(data::rejected(e.1))).into_response());
                 }
@@ -268,11 +268,10 @@ async fn api_handler(
                     .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
                 s.page = Some((size, offset));
             }
-            data::history(&state, s, seed).await?
+            Json(data::history(&state, s, seed).await?).into_response()
         }
-        "tags" => data::tagged(&state, &params, false).await?,
-        "tag" => data::tagged(&state, &params, true).await?,
+        "tags" => Json(data::tagged(&state, &params, false).await?).into_response(),
+        "tag" => Json(data::tagged(&state, &params, true).await?).into_response(),
         _ => return Err(Error::not_found("404 not found")),
-    };
-    Ok(Json(value).into_response())
+    })
 }

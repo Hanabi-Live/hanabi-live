@@ -272,7 +272,11 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory>
     })
 }
 
-pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) -> Result<Value> {
+pub(super) async fn history(
+    state: &PublicState,
+    s: Selection,
+    seed_sort: bool,
+) -> Result<Vec<hanabi_protocol::GameHistory>> {
     let tag_user = s.tag_user;
     let page = s.page;
     let mut qb = selected(s);
@@ -294,14 +298,13 @@ pub(super) async fn history(state: &PublicState, s: Selection, seed_sort: bool) 
             .push(" OFFSET ")
             .push_bind(offset);
     }
-    let result = qb
+    Ok(qb
         .build_query_as::<HistoryRow>()
         .fetch_all(&state.pool)
         .await?
         .into_iter()
         .map(game_history)
-        .collect::<anyhow::Result<Vec<_>>>()?;
-    Ok(json!(result))
+        .collect::<anyhow::Result<Vec<_>>>()?)
 }
 
 pub(super) fn sanitize_tag(value: &str) -> Result<String> {
@@ -321,7 +324,11 @@ pub(super) fn sanitize_tag(value: &str) -> Result<String> {
     Ok(crate::accounts::normalize_string(value))
 }
 
-pub(super) async fn tagged(state: &PublicState, params: &Params, search: bool) -> Result<Value> {
+pub(super) async fn tagged(
+    state: &PublicState,
+    params: &Params,
+    search: bool,
+) -> Result<Vec<hanabi_protocol::GameHistory>> {
     let mut s = Selection::default();
     if search {
         let value = params

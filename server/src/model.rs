@@ -1,7 +1,8 @@
-use crate::game::{Action, AssignedCharacter, Card, Game, Options};
+use crate::game::{AssignedCharacter, Card, Game, Options};
 use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
+use hanabi_protocol::ReplayAction;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
@@ -24,7 +25,7 @@ pub struct ExtraOptions {
     pub custom_seed: Option<String>,
     pub custom_deck: Option<Vec<Card>>,
     pub custom_deck_is_shuffled: bool,
-    pub custom_actions: Vec<Action>,
+    pub custom_actions: Vec<ReplayAction>,
     pub custom_characters: Option<Vec<AssignedCharacter>>,
     pub custom_num_players: Option<usize>,
     pub no_write_to_database: bool,

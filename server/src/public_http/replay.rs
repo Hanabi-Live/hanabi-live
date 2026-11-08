@@ -136,15 +136,7 @@ pub(super) async fn export(state: &PublicState, params: &Params) -> Result<Value
         id,
         players: players.iter().map(|p| p.name.clone()).collect(),
         deck,
-        actions: archive
-            .actions
-            .iter()
-            .map(|action| hanabi_protocol::ReplayAction {
-                kind: action.kind,
-                target: action.target,
-                value: action.value,
-            })
-            .collect(),
+        actions: archive.actions,
         options: (options != hanabi_protocol::ReplayOptions::default()).then_some(options),
         notes: notes.iter().any(|n| !n.is_empty()).then_some(notes),
         characters,

@@ -22,7 +22,7 @@ fn typed_game_frames_preserve_wire_schema_and_projected_identities() -> Result<(
     let rank = game.deck[game.players[1].hand[0]].rank;
     game.apply(
         0,
-        Action {
+        ReplayAction {
             kind: 3,
             target: 1,
             value: rank,

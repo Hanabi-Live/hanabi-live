@@ -1,6 +1,7 @@
-use crate::{game::Action, model::Tag};
+use crate::model::Tag;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
+use hanabi_protocol::ReplayAction;
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
 #[cfg(test)]
@@ -53,7 +54,7 @@ pub(crate) struct Archive {
     pub game: GameRecord,
     pub deck: Option<Vec<u8>>,
     pub players: Vec<ArchivePlayer>,
-    pub actions: Vec<Action>,
+    pub actions: Vec<ReplayAction>,
     pub notes: Vec<ArchiveNote>,
     pub tags: Vec<Tag>,
 }
@@ -69,7 +70,7 @@ pub(crate) async fn load(pool: &PgPool, id: i32) -> Result<Option<Archive>> {
           WHERE p.game_id=g.id),'[]'::jsonb) AS \"archive_players!: Json<Vec<ArchivePlayer>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object(
           'type',a.type,'target',a.target,'value',a.value) ORDER BY a.turn)
-          FROM game_actions a WHERE a.game_id=g.id),'[]'::jsonb) AS \"archive_actions!: Json<Vec<Action>>\",
+          FROM game_actions a WHERE a.game_id=g.id),'[]'::jsonb) AS \"archive_actions!: Json<Vec<ReplayAction>>\",
         COALESCE((SELECT jsonb_agg(jsonb_build_object('seat',p.seat,'order',n.card_order,'note',n.note)
           ORDER BY p.seat,n.card_order) FROM game_participant_notes n
           JOIN game_participants p ON p.id=n.game_participant_id

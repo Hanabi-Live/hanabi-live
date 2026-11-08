@@ -1,12 +1,12 @@
 use crate::{
-    game::{Action, Card, Game, Options},
+    game::{Card, Game, Options},
     model::{ExtraOptions, FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
     store::zero_stats,
 };
 use anyhow::{Context, Result, ensure};
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::ReplayImport;
+use hanabi_protocol::{ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
 pub struct Imported {
@@ -122,11 +122,11 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         !has_characters || characters.len() == players.len(),
         "The amount of characters must match the number of players"
     );
-    let actions: Vec<Action> = input
+    let actions: Vec<ReplayAction> = input
         .actions
         .iter()
         .flatten()
-        .map(|action| Action {
+        .map(|action| ReplayAction {
             kind: action.kind.unwrap_or(0),
             target: action.target.unwrap_or(0),
             value: action.value.unwrap_or(0),

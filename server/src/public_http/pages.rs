@@ -177,7 +177,7 @@ pub(super) async fn page(
                     }
                     v["title"] = json!("Tagged Games");
                     v["page"] = json!("tagged");
-                    v["games"] = data::tagged(&state, &params, false).await?;
+                    v["games"] = json!(data::tagged(&state, &params, false).await?);
                 }
                 _ => {
                     return missing(&state, users, shared, n.filter(|n| (2..=6).contains(n)), &q)
@@ -257,7 +257,7 @@ pub(super) async fn page(
             }
             v["page"] = json!("tagged");
             v["namesTitle"] = json!(format!("Games With a Tag of: {tag}"));
-            v["games"] = data::tagged(&state, &params, true).await?;
+            v["games"] = json!(data::tagged(&state, &params, true).await?);
         }
         _ => return Err(Error::not_found("404 not found")),
     }
