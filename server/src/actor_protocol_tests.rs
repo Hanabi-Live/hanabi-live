@@ -1698,20 +1698,10 @@ fn browser_json(value: Value) -> Value {
 }
 
 fn suggestion(value: &Value) -> Result<Value> {
-    let text = value["msg"].as_str().context("Missing suggestion")?;
-    let encoded = text
-        .split("data-new-options=\"")
-        .nth(1)
-        .and_then(|s| s.split('"').next())
-        .context("Missing actionable options button")?;
-    let decoded = encoded
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&amp;", "&")
-        .replace('\'', "\"");
-    Ok(serde_json::from_str(&decoded)?)
+    value
+        .get("suggestedOptions")
+        .cloned()
+        .context("Missing actionable options")
 }
 async fn mark_complete(h: &Harness, user: i32, except: Option<&str>) -> Result<()> {
     let variants = hanabi_engine::variants()

@@ -1431,18 +1431,26 @@ fn parse_start_minutes(argument: &str) -> Option<f64> {
     let result = rounded as f64 * 2_f64.powi(i32::try_from(exponent + shift).ok()?);
     result.is_finite().then_some(result)
 }
-fn options_suggestion(options: &Options, name: &str, max_players: usize) -> Result<String> {
-    let mut value = serde_json::to_value(options)?;
-    value["tableName"] = json!(name);
-    value["maxPlayers"] = json!(max_players);
-    let encoded = crate::accounts::escape_html(
-        &serde_json::to_string(&value)?
-            .replace('\'', "\\u0027")
-            .replace('"', "'"),
-    );
-    Ok(format!(
-        "<span class=\"cp\"><button class=\"new-options\" data-new-options=\"{encoded}\">click to apply the suggestion</button></span>"
-    ))
+/// A private message to a table's owner, with a button that applies the suggested options.
+fn options_suggestion(
+    id: u64,
+    owner: &str,
+    options: &Options,
+    name: &str,
+    max_players: usize,
+) -> Chat {
+    Chat {
+        recipient: Some(owner.into()),
+        suggested_options: Some(hanabi_protocol::GameOptions {
+            table_name: Some(name.into()),
+            max_players: Some(crate::model::small(max_players)),
+            ..crate::model::wire_options(options)
+        }),
+        ..server_chat(
+            id,
+            "<span class=\"cp\"><button class=\"new-options\">click to apply the suggestion</button></span>",
+        )
+    }
 }
 fn option_changes(
     table: &TableSnapshot,
@@ -2553,11 +2561,13 @@ impl TableActor {
         {
             let mut options = self.table.options.clone();
             options.variant_name = variant;
-            let mut proposal = server_chat(
+            let proposal = options_suggestion(
                 self.table.id,
-                &options_suggestion(&options, &self.table.name, self.table.max_players)?,
+                &owner.session.name,
+                &options,
+                &self.table.name,
+                self.table.max_players,
             );
-            proposal.recipient = Some(owner.session.name.clone());
             effects.messages.push((
                 owner.session.clone(),
                 frame(hanabi_protocol::server::CHAT, proposal),
@@ -3030,11 +3040,13 @@ impl TableActor {
             let mut e = self.effects();
             self.add_chat(&mut e, &message);
             if let Some(owner) = self.attendees.get(&self.table.owner) {
-                let mut suggestion = server_chat(
+                let suggestion = options_suggestion(
                     self.table.id,
-                    &options_suggestion(&options, &name, max_players)?,
+                    &owner.session.name,
+                    &options,
+                    &name,
+                    max_players,
                 );
-                suggestion.recipient = Some(owner.session.name.clone());
                 e.messages.push((
                     owner.session.clone(),
                     frame(hanabi_protocol::server::CHAT, suggestion),

@@ -184,16 +184,6 @@ export function init(): void {
   });
 
   $("#create-game-submit").on("click", submit);
-
-  // Add delegate handler for new options buttons.
-  $("#lobby-chat-pregame").on("click", "button.new-options", (e) => {
-    const data = String($(e.target).data("new-options"));
-    const regExp = /'/gu;
-    const textWithDoubleQuotes = data.replaceAll(regExp, '"');
-    const options = JSON.parse(textWithDoubleQuotes) as Options;
-    acceptOptionsFromGuest(options);
-    $(e.target).text("sent").prop("disabled", true);
-  });
 }
 
 /**
@@ -410,7 +400,7 @@ function submit() {
   $("#createTableTimePerTurnSeconds").removeClass("wrongInput");
 }
 
-function acceptOptionsFromGuest(options: Options) {
+export function acceptOptionsFromGuest(options: Options): void {
   const name = options.tableName;
   const { maxPlayers } = options;
 

@@ -798,6 +798,10 @@ pub struct Chat {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub recipient: Option<String>,
+    /// Options that the message's button applies to the table, in a suggestion to its owner.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "GameOptions")]
+    pub suggested_options: Option<GameOptions>,
 }
 
 impl Chat {
@@ -811,6 +815,7 @@ impl Chat {
             pm_id: None,
             room: None,
             recipient: None,
+            suggested_options: None,
         }
     }
 }
