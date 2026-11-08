@@ -2,6 +2,8 @@
 // seed. The pages load jQuery, its table plugins, Tooltipster, and Chart.js as globals.
 
 import {
+  errorDetails,
+  httpError,
   publicGamePageSchema,
   scoreFrequencySchema,
   variantNamesSchema,
@@ -21,12 +23,14 @@ interface TablesorterPager {
   fixedHeight: boolean;
   removeRows: boolean;
   cssGoto: string;
-  ajaxUrl?: string;
-  customAjaxUrl?: (table: unknown, url: string) => string;
-  ajaxObject?: { dataType: "json"; error: () => void };
-  ajaxProcessing?: (
-    data: unknown,
-  ) => readonly [number, ReadonlyArray<readonly string[]>];
+}
+
+/** The state that tablesorter keeps on a table element. */
+interface TablesorterTable extends HTMLTableElement {
+  readonly config?: {
+    /** Each sorted column and its direction: 0 ascending, 1 descending. */
+    readonly sortList: ReadonlyArray<readonly [number, number]>;
+  };
 }
 
 declare global {
@@ -36,7 +40,11 @@ declare global {
   }
 
   interface JQueryStatic {
-    tablesorter: { addParser: (parser: TablesorterParser) => void };
+    tablesorter: {
+      addParser: (parser: TablesorterParser) => void;
+      /** Each column's filter text, by column index. */
+      getFilters: (table: JQuery) => ReadonlyArray<string | undefined>;
+    };
   }
 }
 
@@ -51,11 +59,10 @@ type ScoreFrequency = z.infer<typeof scoreFrequencySchema>;
 
 const scoreFrequencies = z.array(scoreFrequencySchema);
 
-/** The query that the pager fills in to request a page of games. */
-const PAGE_QUERY = "?page={page}&size={size}&{sortList:col}&{filterList:fcol}";
-
 $(document).ready(() => {
-  init().catch(showError);
+  init().catch((error: unknown) => {
+    showError(errorDetails(error, "Loading the page"));
+  });
 });
 
 async function init() {
@@ -106,90 +113,211 @@ async function init() {
     },
   });
 
-  const pager: TablesorterPager = {
-    container: $(".pager"),
-    output: "{startRow} - {endRow} / {filteredRows} ({totalRows})",
-    fixedHeight: true,
-    removeRows: false,
-    cssGoto: ".gotoPage",
-  };
-
   const { apiPath } = main.dataset;
   if (apiPath === undefined || apiPath === "") {
+    // Every row is already in the page, so the pager plugin pages them itself.
     table
       .tablesorter({
         widgets: ["zebra", "filter"],
         sortList: mode === "scores" ? [[0, 0]] : [[0, 1]],
       })
-      .tablesorterPager(pager);
+      .tablesorterPager({
+        container: $(".pager"),
+        output: "{startRow} - {endRow} / {filteredRows} ({totalRows})",
+        fixedHeight: true,
+        removeRows: false,
+        cssGoto: ".gotoPage",
+      });
     return;
   }
 
-  const spinner = $("div.tableSpinner");
-  try {
-    const response = await fetch("/api/v1/variants");
-    if (!response.ok) {
-      throw new Error("Unable to load variants.");
-    }
-    const variants = variantNamesSchema.parse(await response.json());
-
-    const headers: Record<number, { filter: boolean; sorter: boolean }> = {};
-    table.find("th").each((index) => {
-      headers[index] = { filter: false, sorter: false };
-    });
-    headers[0] = { filter: false, sorter: true };
-    headers[1] = { filter: mode !== "seed", sorter: mode === "history" };
-    headers[2] = { filter: true, sorter: true };
-    if (mode === "history") {
-      headers[3] = { filter: true, sorter: false };
-    }
-
-    pager.ajaxUrl = `${apiPath}${PAGE_QUERY}`;
-    pager.customAjaxUrl = (_table, url) => {
-      spinner.css("display", "flex");
-      return url;
-    };
-    pager.ajaxObject = { dataType: "json", error: showError };
-    pager.ajaxProcessing = (data) => {
-      const result = publicGamePageSchema.safeParse(data);
-      if (!result.success) {
-        showError();
-        return [0, []];
-      }
-      spinner.hide();
-      $("#history-error").prop("hidden", true);
-      return [result.data.total_rows, gameRows(result.data, mode, variants)];
-    };
-
-    table
-      .tablesorter({
-        headers,
-        sortList: [[mode === "history" ? 0 : 2, 1]],
-        widgets: ["zebra", "filter"],
-        widgetOptions: {
-          filter_selectSource: {
-            1: [2, 3, 4, 5, 6].map((value) => ({
-              text: String(value),
-              value: String(value),
-            })),
-            3: Object.entries(variants).map(([value, text]) => ({
-              value,
-              text,
-            })),
-          },
-        },
-      })
-      .tablesorterPager(pager);
-  } catch {
-    showError();
+  const response = await fetch("/api/v1/variants");
+  if (!response.ok) {
+    throw await httpError(response, "Loading the variants");
   }
+  const variants = variantNamesSchema.parse(await response.json());
+  initServerTable(table, apiPath, mode, variants);
 }
 
-function showError() {
+/**
+ * A table of games that the server sorts, filters, and pages. Tablesorter draws the sort and filter
+ * controls, and the pager controls are driven here; each change requests the matching page.
+ */
+function initServerTable(
+  table: JQuery,
+  apiPath: string,
+  mode: string | undefined,
+  variants: Readonly<Record<string, string>>,
+) {
+  const headers: Record<number, { filter: boolean; sorter: boolean }> = {};
+  table.find("th").each((index) => {
+    headers[index] = { filter: false, sorter: false };
+  });
+  headers[0] = { filter: false, sorter: true };
+  headers[1] = { filter: mode !== "seed", sorter: mode === "history" };
+  headers[2] = { filter: true, sorter: true };
+  if (mode === "history") {
+    headers[3] = { filter: true, sorter: false };
+  }
+
+  const pagers = $(".pager");
+  const spinner = $("div.tableSpinner");
+  let page = 0;
+  let size = Number(pagers.find(".pagesize").first().val() ?? 10);
+  let totalRows = 0;
+  let lastQuery: string | undefined;
+  let latestRequest = 0;
+
+  function query(): string {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+    });
+    const config = (table.get(0) as TablesorterTable | undefined)?.config;
+    if (config !== undefined) {
+      for (const [column, direction] of config.sortList) {
+        params.append(`col[${column}]`, String(direction));
+      }
+    }
+    for (const [column, text] of $.tablesorter.getFilters(table).entries()) {
+      if (text !== undefined && text !== "") {
+        params.append(`fcol[${column}]`, text);
+      }
+    }
+    return params.toString();
+  }
+
+  async function load() {
+    const current = query();
+    // Tablesorter reports sort and filter events again after the rows are replaced.
+    if (current === lastQuery) {
+      return;
+    }
+    lastQuery = current;
+    latestRequest++;
+    const request = latestRequest;
+    spinner.css("display", "flex");
+    try {
+      const response = await fetch(`${apiPath}?${current}`);
+      if (!response.ok) {
+        throw await httpError(response, "Loading games");
+      }
+      const result = publicGamePageSchema.parse(await response.json());
+      if (request !== latestRequest) {
+        return;
+      }
+      totalRows = result.total_rows;
+      showRows(table, gameRows(result, mode, variants));
+      drawPagers();
+      $("#history-error").prop("hidden", true);
+      spinner.hide();
+    } catch (error: unknown) {
+      if (request === latestRequest) {
+        // Retrying the same query must request it again.
+        lastQuery = undefined;
+        showError(errorDetails(error, "Loading games"));
+      }
+    }
+  }
+
+  function reload() {
+    load().catch((error: unknown) => {
+      showError(errorDetails(error, "Loading games"));
+    });
+  }
+
+  function lastPage(): number {
+    return Math.max(0, Math.ceil(totalRows / size) - 1);
+  }
+
+  function drawPagers() {
+    const start = totalRows === 0 ? 0 : page * size + 1;
+    const end = Math.min(totalRows, (page + 1) * size);
+    pagers.find(".pagedisplay").text(`${start} - ${end} / ${totalRows}`);
+    const pages = pagers.find(".gotoPage").empty();
+    for (let index = 0; index <= lastPage(); index++) {
+      pages.append(
+        $("<option>")
+          .val(index)
+          .text(index + 1),
+      );
+    }
+    pages.val(page);
+    pagers.find(".pagesize").val(size);
+  }
+
+  function goTo(target: number) {
+    page = Math.min(Math.max(0, target), lastPage());
+    reload();
+  }
+
+  pagers.find(".first").on("click", () => {
+    goTo(0);
+  });
+  pagers.find(".prev").on("click", () => {
+    goTo(page - 1);
+  });
+  pagers.find(".next").on("click", () => {
+    goTo(page + 1);
+  });
+  pagers.find(".last").on("click", () => {
+    goTo(lastPage());
+  });
+  pagers.find(".gotoPage").on("change", function onChange(this: HTMLElement) {
+    goTo(Number($(this).val()));
+  });
+  pagers.find(".pagesize").on("change", function onChange(this: HTMLElement) {
+    size = Number($(this).val());
+    page = 0;
+    reload();
+  });
+
+  table
+    .tablesorter({
+      headers,
+      serverSideSorting: true,
+      sortList: [[mode === "history" ? 0 : 2, 1]],
+      widgets: ["zebra", "filter"],
+      widgetOptions: {
+        filter_serversideFiltering: true,
+        filter_selectSource: {
+          1: [2, 3, 4, 5, 6].map((value) => ({
+            text: String(value),
+            value: String(value),
+          })),
+          3: Object.entries(variants).map(([value, text]) => ({
+            value,
+            text,
+          })),
+        },
+      },
+    })
+    .on("sortEnd filterEnd", () => {
+      // A new sort or filter starts again from the first page.
+      if (query() !== lastQuery) {
+        page = 0;
+      }
+      reload();
+    });
+  reload();
+}
+
+function showRows(table: JQuery, rows: ReadonlyArray<readonly string[]>) {
+  const body = table.find("tbody").empty();
+  for (const cells of rows) {
+    const row = $("<tr>");
+    for (const cell of cells) {
+      row.append($("<td>").html(cell));
+    }
+    body.append(row);
+  }
+  // Tablesorter stripes the new rows; the server has already sorted them.
+  table.trigger("update", [false]);
+}
+
+function showError(message: string) {
   $("div.tableSpinner").hide();
-  $("#history-error")
-    .text("Unable to load games. Please reload to try again.")
-    .prop("hidden", false);
+  $("#history-error").text(message).prop("hidden", false);
 }
 
 function drawScoreChart(
