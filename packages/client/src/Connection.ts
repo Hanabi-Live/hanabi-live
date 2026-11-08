@@ -2,6 +2,7 @@ import type {
   CLIENT_COMMAND_SCHEMAS,
   ClientCommand,
   ServerCommand,
+  ServerCommandData,
 } from "@hanabi-live/data";
 import {
   packWSMessageOnClient,
@@ -10,13 +11,8 @@ import {
 } from "@hanabi-live/data";
 import type { z } from "zod";
 
-type WebSocketCallbackCommands = Record<string, (data: unknown) => void>;
-
-type WebSocketCallbacks = WebSocketCallbackCommands & {
-  open?: (event: Event) => void;
-  close?: (event: Event) => void;
-  socketError?: (event: Event) => void;
-};
+/** Events from the WebSocket itself, rather than messages from the server. */
+type LifecycleEvent = "open" | "close" | "socketError";
 
 const serverSchemas: Readonly<
   Partial<Record<string, (typeof SERVER_COMMAND_SCHEMAS)[ServerCommand]>>
@@ -32,7 +28,11 @@ const serverSchemas: Readonly<
  */
 export class Connection {
   ws: WebSocket;
-  callbacks: WebSocketCallbacks = {};
+  /**
+   * Callbacks by server command or lifecycle event. `on` pairs each name with its callback type, so
+   * reading one back requires that name's type.
+   */
+  readonly callbacks = new Map<string, (data: never) => void>();
   debug: boolean;
   /** Called instead of the command's callback when a message does not match its schema. */
   invalidMessage?: (command: string, error: Error) => void;
@@ -55,15 +55,11 @@ export class Connection {
   }
 
   onOpen(event: Event): void {
-    if (this.callbacks.open !== undefined) {
-      this.callbacks.open(event);
-    }
+    this.lifecycleCallback("open")?.(event);
   }
 
   onClose(event: CloseEvent): void {
-    if (this.callbacks.close !== undefined) {
-      this.callbacks.close(event);
-    }
+    this.lifecycleCallback("close")?.(event);
   }
 
   onMessage(event: MessageEvent): void {
@@ -78,7 +74,10 @@ export class Connection {
 
     const [command, data] = msg;
 
-    const callback = this.callbacks[command];
+    // `on` registered this command's callback for its payload type, which the schema check below
+    // establishes.
+    const callback = this.callbacks.get(command) as
+      ((data: unknown) => void) | undefined;
     if (callback === undefined) {
       if (!this.allowApplicationCommands) {
         // Older servers send normal bootstrap messages during reconnect.
@@ -116,13 +115,23 @@ export class Connection {
   }
 
   onError(event: Event): void {
-    if (this.callbacks.socketError !== undefined) {
-      this.callbacks.socketError(event);
-    }
+    this.lifecycleCallback("socketError")?.(event);
   }
 
-  on(name: string, callback: (data: unknown) => void): void {
-    this.callbacks[name] = callback;
+  on(name: LifecycleEvent, callback: (event: Event) => void): void;
+  on<Command extends ServerCommand>(
+    name: Command,
+    callback: (data: ServerCommandData[Command]) => void,
+  ): void;
+  on(name: string, callback: (data: never) => void): void {
+    this.callbacks.set(name, callback);
+  }
+
+  private lifecycleCallback(
+    name: LifecycleEvent,
+  ): ((event: Event) => void) | undefined {
+    // `on` only registers lifecycle names with event callbacks.
+    return this.callbacks.get(name) as ((event: Event) => void) | undefined;
   }
 
   send<Command extends ClientCommand>(

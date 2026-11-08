@@ -1,8 +1,8 @@
 // Communication with the server is done through the WebSocket protocol. The client uses a slightly
 // modified version of the Golem WebSocket library.
 
+import type { ServerCommand, ServerCommandData } from "@hanabi-live/data";
 import {
-  SERVER_COMMAND_SCHEMAS,
   VERSION,
   errorDetails,
   httpError,
@@ -252,12 +252,11 @@ function openConnection(isReconnect: boolean) {
       ),
     );
   };
-  conn.on("restart", (payload) => {
+  conn.on("restart", ({ message }) => {
     if (activeConnection === conn) {
       conn.setReady(false);
       reconnectBackoff.reset();
       // An administrator's reason for the downtime stays open through the reconnect.
-      const { message } = SERVER_COMMAND_SCHEMAS.restart.parse(payload);
       if (message !== undefined) {
         modals.showDowntime(message);
       }
@@ -266,7 +265,7 @@ function openConnection(isReconnect: boolean) {
 
   if (isReconnect) {
     initCommands(conn);
-    conn.on("welcome", (welcomePayload) => {
+    conn.on("welcome", (data) => {
       if (activeConnection !== conn || stopped) {
         return;
       }
@@ -274,7 +273,6 @@ function openConnection(isReconnect: boolean) {
       reconnectBackoff.reset();
       recovering = false;
       globals.conn = conn;
-      const data = SERVER_COMMAND_SCHEMAS.welcome.parse(welcomePayload);
       globals.userMap.clear();
       globals.tableMap.clear();
       if (
@@ -286,8 +284,7 @@ function openConnection(isReconnect: boolean) {
         globals.settings = data.settings;
         globals.friends = data.friends;
         const retained = tableIdSchema.parse(globals.tableID);
-        conn.on("tableStart", (payload) => {
-          const table = SERVER_COMMAND_SCHEMAS.tableStart.parse(payload);
+        conn.on("tableStart", (table) => {
           if (!isCurrentConnection(conn)) {
             return;
           }
@@ -305,14 +302,12 @@ function openConnection(isReconnect: boolean) {
             lobbyCommands.get("tableStart")?.(table);
           }
         });
-        conn.on("gameActionList", (payload) => {
+        conn.on("gameActionList", (actionList) => {
           if (!isCurrentConnection(conn) || globals.ui === null) {
             return;
           }
           const rebuilding = globals.ui.globals.loading;
-          gameCommands.get("gameActionList")?.(
-            SERVER_COMMAND_SCHEMAS.gameActionList.parse(payload),
-          );
+          gameCommands.get("gameActionList")?.(actionList);
           conn.setReady(true);
           if (!rebuilding) {
             conn.send("loaded", { tableID: globals.tableID });
@@ -343,12 +338,12 @@ function openConnection(isReconnect: boolean) {
         lobbyCommands.get("welcome")?.(data);
       }
     });
-    conn.on("error", (data: unknown) => {
+    conn.on("error", (data) => {
       if (activeConnection !== conn || stopped) {
         return;
       }
       stopRecovery();
-      commands.get("error")?.(SERVER_COMMAND_SCHEMAS.error.parse(data));
+      commands.get("error")?.(data);
     });
     return;
   }
@@ -398,12 +393,12 @@ function isCurrentConnection(conn: Connection) {
   return activeConnection === conn && !stopped;
 }
 
-function commonCallback(
+function commonCallback<Command extends ServerCommand>(
   conn: Connection,
-  commandName: string,
-  commandFunction: (data: unknown) => void,
+  commandName: Command,
+  commandFunction: (data: ServerCommandData[Command]) => void,
 ) {
-  return (data: unknown) => {
+  return (data: ServerCommandData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
@@ -415,12 +410,12 @@ function commonCallback(
   };
 }
 
-function lobbyCallback(
+function lobbyCallback<Command extends ServerCommand>(
   conn: Connection,
-  commandName: string,
-  commandFunction: (data: unknown) => void,
+  commandName: Command,
+  commandFunction: (data: ServerCommandData[Command]) => void,
 ) {
-  return (data: unknown) => {
+  return (data: ServerCommandData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
@@ -432,12 +427,12 @@ function lobbyCallback(
   };
 }
 
-function gameCallback(
+function gameCallback<Command extends ServerCommand>(
   conn: Connection,
-  commandName: string,
-  commandFunction: (data: unknown) => void,
+  commandName: Command,
+  commandFunction: (data: ServerCommandData[Command]) => void,
 ) {
-  return (data: unknown) => {
+  return (data: ServerCommandData[Command]) => {
     if (!isCurrentConnection(conn)) {
       return;
     }
