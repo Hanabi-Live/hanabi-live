@@ -764,9 +764,9 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
         actor.initialize(h.users[0].clone(), vec![]).await?;
         let action = json!({"type":"turn","num":1,"currentPlayerIndex":1});
         for request in [
-            json!({"tableID":id,"type":3}),
-            json!({"tableID":id,"type":5,"action":action}),
-            json!({"tableID":id,"type":6}),
+            json!({"tableID":id,"type":"hypoStart"}),
+            json!({"tableID":id,"type":"hypoAction","action":action}),
+            json!({"tableID":id,"type":"hypoBack"}),
         ] {
             let mut next = actor.candidate();
             next.game_mut().unwrap().idle_remaining = 1000;
@@ -1647,7 +1647,7 @@ async fn replay_loading_keeps_names_neutral_and_never_starts_a_game_clock() -> R
         h.send(
             0,
             "replayAction",
-            json!({"tableID":id,"type":0,"segment":0}),
+            json!({"tableID":id,"type":"segment","segment":0}),
         )
         .await?;
         let snapshot = h.snapshot(id).await?.0;
@@ -2122,7 +2122,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
         h.send(
             0,
             "replayAction",
-            json!({"tableID":replay,"type":0,"segment":1}),
+            json!({"tableID":replay,"type":"segment","segment":1}),
         )
         .await?;
         h.send(0, "tableUnattend", json!({"tableID":pregame}))
@@ -2166,7 +2166,7 @@ async fn playing_membership_is_separate_from_replay_attendance_and_bots_can_play
                 session: old_alice,
                 message: crate::actors::client_message(
                     "replayAction",
-                    json!({"tableID":replay,"type":0,"segment":9}),
+                    json!({"tableID":replay,"type":"segment","segment":9}),
                 )?,
                 reply,
             })
@@ -2429,7 +2429,10 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         let id = h.replay(0).await?;
         let (_, revision) = h.snapshot(id).await?;
         h.send(0, "loaded", json!({"tableID":id})).await?;
-        for (kind, extra) in [(1, json!({"order":0})), (2, json!({"sound":"turn"}))] {
+        for (kind, extra) in [
+            ("arrow", json!({"order":0})),
+            ("sound", json!({"sound":"clap"})),
+        ] {
             let mut data = json!({"tableID":id,"type":kind});
             data.as_object_mut()
                 .context("object")?
@@ -2445,7 +2448,7 @@ async fn replay_arrows_sounds_and_loads_skip_durable_checkpoints() -> Result<()>
         h.send(
             0,
             "replayAction",
-            json!({"tableID":id,"type":0,"segment":1}),
+            json!({"tableID":id,"type":"segment","segment":1}),
         )
         .await?;
         let (table, saved) = h.snapshot(id).await?;

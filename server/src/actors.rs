@@ -1649,7 +1649,7 @@ fn table_target(message: &ClientMessage) -> Option<u64> {
         M::Note(r) => r.table_id,
         M::Tag(r) | M::TagDelete(r) => r.table_id,
         M::TagsDeleteAll(r) => r.table_id,
-        M::ReplayAction(r) => r.table_id,
+        M::ReplayAction(r) => r.table_id(),
         M::LobbyLoad(_)
         | M::Sync(_)
         | M::ChatPM(_)
@@ -2816,7 +2816,7 @@ impl TableActor {
             }
             ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
             ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
-            ClientMessage::Pause(r) => self.pause(session, &r.setting).await,
+            ClientMessage::Pause(r) => self.pause(session, r.setting).await,
             ClientMessage::IdleReset(_) => self.idle_reset(session).await,
             ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
             ClientMessage::Tag(r) | ClientMessage::TagDelete(r) => {
@@ -3778,30 +3778,34 @@ impl TableActor {
         );
         self.publish(e).await
     }
-    async fn pause(&mut self, session: Arc<Session>, mut setting: &str) -> Result<()> {
+    async fn pause(
+        &mut self,
+        session: Arc<Session>,
+        mut setting: hanabi_protocol::PauseSetting,
+    ) -> Result<()> {
+        use hanabi_protocol::PauseSetting as P;
         ensure!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
         let old = self.live()?;
         ensure!(old.game.options.timed, "This is not a timed game");
-        if setting == "pause-queue" && seat == old.game.active_player_index {
-            setting = "pause";
+        if setting == P::PauseQueue && seat == old.game.active_player_index {
+            setting = P::Pause;
         }
         ensure!(
             match setting {
-                "pause" => !old.game.paused,
-                "unpause" => old.game.paused,
-                "pause-queue" => !old.queued_pauses[seat],
-                "pause-unqueue" => old.queued_pauses[seat],
-                _ => false,
+                P::Pause => !old.game.paused,
+                P::Unpause => old.game.paused,
+                P::PauseQueue => !old.queued_pauses[seat],
+                P::PauseUnqueue => old.queued_pauses[seat],
             },
-            "Invalid or already applied pause setting"
+            "Pause setting already applied"
         );
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
         match setting {
-            "pause-queue" | "pause-unqueue" => s.queued_pauses[seat] = setting == "pause-queue",
-            _ => {
-                s.game.paused = setting == "pause";
+            P::PauseQueue | P::PauseUnqueue => s.queued_pauses[seat] = setting == P::PauseQueue,
+            P::Pause | P::Unpause => {
+                s.game.paused = setting == P::Pause;
                 s.pause_player_index = if s.game.paused { seat as i32 } else { -1 };
                 if !s.game.paused {
                     s.turn_elapsed = 0;
@@ -3811,7 +3815,7 @@ impl TableActor {
         self.persist(next).await?;
         let s = self.table.game().expect("game");
         let mut e = self.effects();
-        if setting == "pause" || setting == "unpause" {
+        if matches!(setting, P::Pause | P::Unpause) {
             self.add_all(
                 &mut e,
                 hanabi_protocol::server::PAUSE,
@@ -4160,33 +4164,35 @@ impl TableActor {
         let Phase::Replay { snapshot, replay } = &mut next.phase else {
             bail!("Not a replay");
         };
-        let kind = r.kind;
-        let message = match kind {
-            0 => {
-                replay.segment = r.segment;
+        use hanabi_protocol::ReplayActionRequest as R;
+        // Arrows and sounds only reset the idle timer, so they skip the durable write.
+        let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
+        let message = match r {
+            R::Segment { segment, .. } => {
+                replay.segment = segment;
                 Outgoing::new(
                     hanabi_protocol::server::REPLAY_SEGMENT,
                     hanabi_protocol::ReplaySegment {
                         table_id: TableId(self.table.id),
-                        segment: i64::from(r.segment),
+                        segment: i64::from(segment),
                     },
                 )
             }
-            1 => Outgoing::new(
+            R::Arrow { order, .. } => Outgoing::new(
                 hanabi_protocol::server::REPLAY_INDICATOR,
                 hanabi_protocol::ReplayIndicator {
                     table_id: TableId(self.table.id),
-                    order: r.order,
+                    order,
                 },
             ),
-            2 => Outgoing::new(
+            R::Sound { sound, .. } => Outgoing::new(
                 hanabi_protocol::server::REPLAY_SOUND,
                 hanabi_protocol::ReplaySound {
                     table_id: TableId(self.table.id),
-                    sound: r.sound.clone(),
+                    sound,
                 },
             ),
-            3 => {
+            R::HypoStart { .. } => {
                 ensure!(!replay.hypothetical, "Already hypothetical");
                 replay.hypothetical = true;
                 replay.show_drawn_cards = false;
@@ -4197,7 +4203,7 @@ impl TableActor {
                     },
                 )
             }
-            4 => {
+            R::HypoEnd { .. } => {
                 ensure!(replay.hypothetical, "Not hypothetical");
                 replay.hypothetical = false;
                 replay.hypothetical_actions.clear();
@@ -4208,8 +4214,7 @@ impl TableActor {
                     },
                 )
             }
-            5 => {
-                let action = r.action.context("Missing hypothetical action")?;
+            R::HypoAction { action, .. } => {
                 // Stored as JSON text, the format table checkpoints have always used.
                 let raw = serde_json::to_string(&action)?;
                 ensure!(
@@ -4226,7 +4231,7 @@ impl TableActor {
                 replay.hypothetical_actions.push(raw);
                 Outgoing::new(hanabi_protocol::server::HYPO_ACTION, action)
             }
-            6 => {
+            R::HypoBack { .. } => {
                 replay.hypothetical_actions.pop();
                 while replay.hypothetical_actions.last().is_some_and(|v| {
                     serde_json::from_str::<Value>(v).is_ok_and(|v| v["type"] != "turn")
@@ -4240,7 +4245,7 @@ impl TableActor {
                     },
                 )
             }
-            7 => {
+            R::HypoToggleRevealed { .. } => {
                 replay.show_drawn_cards = !replay.show_drawn_cards;
                 Outgoing::new(
                     hanabi_protocol::server::HYPO_SHOW_DRAWN_CARDS,
@@ -4250,8 +4255,8 @@ impl TableActor {
                     },
                 )
             }
-            8 => {
-                replay.efficiency_modifier = r.value;
+            R::EfficiencyMod { r#mod, .. } => {
+                replay.efficiency_modifier = r#mod;
                 Outgoing::new(
                     hanabi_protocol::server::REPLAY_EFFICIENCY_MOD,
                     hanabi_protocol::ReplayEfficiencyMod {
@@ -4260,14 +4265,12 @@ impl TableActor {
                     },
                 )
             }
-            _ => bail!("Invalid replay action"),
         };
         snapshot.idle_remaining = IDLE_TIMEOUT_MS;
-        // Arrows and sounds only reset the idle timer, so they skip the durable write.
-        if matches!(kind, 1 | 2) {
-            self.apply_without_checkpoint(next)?;
-        } else {
+        if checkpoint {
             self.persist(next).await?;
+        } else {
+            self.apply_without_checkpoint(next)?;
         }
         let mut e = self.effects();
         self.add_outgoing(&mut e, &message);

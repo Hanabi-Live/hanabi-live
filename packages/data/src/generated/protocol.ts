@@ -692,8 +692,14 @@ export const pauseSchema = z.strictObject({
   playerIndex: z.number().int().min(-1).max(5),
   tableID: tableIdSchema,
 });
+const pauseSettingSchema = z.enum([
+  "pause",
+  "unpause",
+  "pause-queue",
+  "pause-unqueue",
+]);
 export const pauseRequestSchema = z.strictObject({
-  setting: z.string(),
+  setting: pauseSettingSchema,
   tableID: tableIdSchema,
 });
 const pregameBestScoreSchema = z.strictObject({
@@ -730,20 +736,45 @@ export const pregameSchema = z.strictObject({
   players: z.array(pregamePlayerSchema),
   tableID: tableIdSchema,
 });
-export const replayActionRequestSchema = z.strictObject({
-  action: hypotheticalActionSchema.optional(),
-  order: z
-    .number()
-    .int()
-    .min(-9_007_199_254_740_991)
-    .max(9_007_199_254_740_991)
-    .default(0),
-  segment: z.number().int().min(0).max(2_147_483_647).default(0),
-  sound: z.string().default(""),
-  tableID: tableIdSchema,
-  type: z.number().int().min(0).max(8),
-  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
-});
+const replaySoundEffectSchema = z.enum(["buzz", "clap", "holy", "nooo"]);
+export const replayActionRequestSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    segment: z.number().int().min(0).max(2_147_483_647),
+    tableID: tableIdSchema,
+    type: z.literal("segment"),
+  }),
+  z.strictObject({
+    order: z
+      .number()
+      .int()
+      .min(-9_007_199_254_740_991)
+      .max(9_007_199_254_740_991),
+    tableID: tableIdSchema,
+    type: z.literal("arrow"),
+  }),
+  z.strictObject({
+    sound: replaySoundEffectSchema,
+    tableID: tableIdSchema,
+    type: z.literal("sound"),
+  }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoStart") }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoEnd") }),
+  z.strictObject({
+    action: hypotheticalActionSchema,
+    tableID: tableIdSchema,
+    type: z.literal("hypoAction"),
+  }),
+  z.strictObject({ tableID: tableIdSchema, type: z.literal("hypoBack") }),
+  z.strictObject({
+    tableID: tableIdSchema,
+    type: z.literal("hypoToggleRevealed"),
+  }),
+  z.strictObject({
+    mod: z.number().int().min(-2_147_483_648).max(2_147_483_647),
+    tableID: tableIdSchema,
+    type: z.literal("efficiencyMod"),
+  }),
+]);
 const replaySourceSchema = z.enum(["id", "json"]);
 const replayVisibilitySchema = z.enum(["solo", "shared"]);
 export const replayCreateRequestSchema = z.strictObject({
@@ -831,7 +862,7 @@ export const replaySegmentSchema = z.strictObject({
   tableID: tableIdSchema,
 });
 export const replaySoundSchema = z.strictObject({
-  sound: z.string(),
+  sound: replaySoundEffectSchema,
   tableID: tableIdSchema,
 });
 export const restartSchema = z.strictObject({

@@ -549,7 +549,17 @@ pub struct ReplayIndicator {
 pub struct ReplaySound {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    pub sound: String,
+    pub sound: ReplaySoundEffect,
+}
+
+/// A sound effect that a shared-replay leader plays for everyone watching.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum ReplaySoundEffect {
+    Buzz,
+    Clap,
+    Holy,
+    Nooo,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -703,8 +713,17 @@ pub struct ActionRequest {
 pub struct PauseRequest {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    /// "pause", "unpause", or "pause-queue".
-    pub setting: String,
+    pub setting: PauseSetting,
+}
+
+/// `pause-queue` pauses when the player's turn comes, or immediately if it is already their turn.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum PauseSetting {
+    Pause,
+    Unpause,
+    PauseQueue,
+    PauseUnqueue,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -737,32 +756,79 @@ pub struct TagsDeleteAllRequest {
     pub room: String,
 }
 
-/// A shared-replay leader's action. Which fields matter depends on `type`.
+/// A shared-replay leader's action, which the server applies and relays to everyone watching.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct ReplayActionRequest {
-    #[serde(rename = "tableID")]
-    pub table_id: TableId,
-    /// 0 segment, 1 arrow, 2 sound, 3 start hypothetical, 4 end hypothetical,
-    /// 5 hypothetical action, 6 hypothetical back, 7 toggle drawn cards, 8 efficiency modifier.
-    #[serde(rename = "type")]
-    #[schemars(range(min = 0, max = 8))]
-    pub kind: u8,
-    #[serde(default)]
-    #[schemars(range(min = 0, max = i32::MAX))]
-    pub segment: i32,
-    #[serde(default)]
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
-    pub order: i64,
-    #[serde(default)]
-    pub sound: String,
-    #[serde(default)]
-    #[schemars(range(min = i32::MIN, max = i32::MAX))]
-    pub value: i32,
-    /// The action, for a hypothetical action.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "HypotheticalAction")]
-    pub action: Option<HypotheticalAction>,
+#[serde(
+    tag = "type",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum ReplayActionRequest {
+    /// Moves everyone to a segment.
+    Segment {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        #[schemars(range(min = 0, max = i32::MAX))]
+        segment: i32,
+    },
+    /// Points at a card, or at a part of the board that a negative order names.
+    Arrow {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        order: i64,
+    },
+    Sound {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        sound: ReplaySoundEffect,
+    },
+    HypoStart {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+    },
+    HypoEnd {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+    },
+    HypoAction {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        action: HypotheticalAction,
+    },
+    /// Undoes the hypothetical's last turn.
+    HypoBack {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+    },
+    /// Shows or hides the identities of cards drawn during the hypothetical.
+    HypoToggleRevealed {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+    },
+    EfficiencyMod {
+        #[serde(rename = "tableID")]
+        table_id: TableId,
+        #[schemars(range(min = i32::MIN, max = i32::MAX))]
+        r#mod: i32,
+    },
+}
+
+impl ReplayActionRequest {
+    pub const fn table_id(&self) -> TableId {
+        match self {
+            Self::Segment { table_id, .. }
+            | Self::Arrow { table_id, .. }
+            | Self::Sound { table_id, .. }
+            | Self::HypoStart { table_id }
+            | Self::HypoEnd { table_id }
+            | Self::HypoAction { table_id, .. }
+            | Self::HypoBack { table_id }
+            | Self::HypoToggleRevealed { table_id }
+            | Self::EfficiencyMod { table_id, .. } => *table_id,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]

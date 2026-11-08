@@ -2,7 +2,6 @@ import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
-import { ReplayActionType } from "../types/ReplayActionType";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
@@ -28,8 +27,8 @@ export function setEfficiencyMod(mod: number): void {
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.EfficiencyMod,
-      value: mod,
+      type: "efficiencyMod",
+      mod,
     });
   }
 }

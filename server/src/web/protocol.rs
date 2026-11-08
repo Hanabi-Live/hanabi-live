@@ -61,10 +61,10 @@ mod tests {
                 "chatPM" => json!({"msg":"hello","recipient":"Alice"}),
                 "replayCreate" => json!({"source":"id","visibility":"shared","databaseID":1}),
                 "action" => json!({"tableID":1,"type":3,"target":0}),
-                "pause" => json!({"tableID":1,"setting":"true"}),
+                "pause" => json!({"tableID":1,"setting":"pause"}),
                 "note" => json!({"tableID":1,"order":0,"note":"test"}),
                 "tag" | "tagDelete" => json!({"tableID":1,"msg":"test"}),
-                "replayAction" => json!({"tableID":1,"type":0}),
+                "replayAction" => json!({"tableID":1,"type":"hypoStart"}),
                 "sync" | "lobbyLoad" | "tableCreate" | "historyGet" | "chatLinked"
                 | "chatFriend" | "chatUnfriend" | "chatLink" | "chatUnlink" | "chatPlayerInfo"
                 | "chatBlock" | "chatUnblock" | "chatBlocked" | "chatPMHistoryGet"
@@ -122,7 +122,7 @@ mod tests {
         assert!(
             parse(&format!(
                 "replayAction {}",
-                json!({"tableID":1,"type":5,"action":"{\"type\":\"turn\"}"})
+                json!({"tableID":1,"type":"hypoAction","action":"{\"type\":\"turn\"}"})
             ))
             .is_err()
         );

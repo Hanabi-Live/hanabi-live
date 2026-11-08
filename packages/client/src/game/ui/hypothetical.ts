@@ -9,7 +9,6 @@ import type {
 import { eRange } from "complete-common";
 import { ActionType } from "../types/ActionType";
 import type { ClientAction } from "../types/ClientAction";
-import { ReplayActionType } from "../types/ReplayActionType";
 import type { ActionIncludingHypothetical } from "../types/actions";
 import { setEmpathyOnHand } from "./HanabiCardMouse";
 import type { LayoutChild } from "./LayoutChild";
@@ -28,7 +27,7 @@ export function startHypothetical(): void {
   ) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoStart,
+      type: "hypoStart",
     });
   }
 
@@ -50,7 +49,7 @@ export function endHypothetical(): void {
     if (globals.state.replay.shared.amLeader) {
       globals.lobby.conn!.send("replayAction", {
         tableID: globals.lobby.tableID,
-        type: ReplayActionType.HypoEnd,
+        type: "hypoEnd",
       });
     }
 
@@ -167,7 +166,7 @@ export function sendHypotheticalActionToServer(
   } else {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoAction,
+      type: "hypoAction",
       action: hypoAction,
     });
   }
@@ -188,7 +187,7 @@ export function sendHypotheticalBack(): void {
   } else if (globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoBack,
+      type: "hypoBack",
     });
   }
 }
@@ -206,7 +205,7 @@ export function toggleRevealed(): void {
   } else if (globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send("replayAction", {
       tableID: globals.lobby.tableID,
-      type: ReplayActionType.HypoToggleRevealed,
+      type: "hypoToggleRevealed",
     });
   }
 }

@@ -456,7 +456,11 @@ databaseDescribe("compiled application entry point (rust)", () => {
               (row) => row.id === finished.databaseID && row.incrementNumGames,
             ),
         );
-        replacement.send("replayAction", { tableID, type: 0, segment: 1 });
+        replacement.send("replayAction", {
+          tableID,
+          type: "segment",
+          segment: 1,
+        });
         const replayPosition = await replacement.receive(
           "replaySegment",
           SERVER_COMMAND_SCHEMAS.replaySegment,
