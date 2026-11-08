@@ -14,6 +14,8 @@ use std::{
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
 const HASH_WAIT: WaitDuration = WaitDuration::from_secs(10);
+/// 64 MiB, in the KiB that Argon2 counts. Together with the passes, lanes, key, and salt
+/// sizes below, this is the second recommended Argon2id option in RFC 9106, section 4.
 const PASSWORD_MEMORY: u32 = 65536;
 const PASSWORD_PASSES: u32 = 3;
 const PASSWORD_LANES: u32 = 4;
