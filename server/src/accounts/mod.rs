@@ -395,13 +395,7 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
 }
 
 fn api_error(status: StatusCode, message: &str) -> Response {
-    (
-        status,
-        Json(ApiError {
-            error: message.into(),
-        }),
-    )
-        .into_response()
+    (status, Json(ApiError::new(message))).into_response()
 }
 
 fn api_banned() -> Response {

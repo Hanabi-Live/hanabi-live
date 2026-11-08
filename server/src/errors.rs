@@ -268,9 +268,11 @@ impl Report {
         let mut response = if json_response {
             (
                 self.status,
-                Json(json!({
-                    "error": self.text(), "code": self.code, "diagnosticID": self.diagnostic_id
-                })),
+                Json(hanabi_protocol::ApiError {
+                    error: self.text(),
+                    code: Some(self.code.into()),
+                    diagnostic_id: Some(self.diagnostic_id.clone()),
+                }),
             )
                 .into_response()
         } else {

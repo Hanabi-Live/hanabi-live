@@ -27,7 +27,11 @@ export const actionRequestSchema = z.strictObject({
   type: z.literal([0, 1, 2, 3]),
   value: z.number().int().min(-2_147_483_648).max(2_147_483_647).default(0),
 });
-export const apiErrorSchema = z.strictObject({ error: z.string() });
+export const apiErrorSchema = z.strictObject({
+  code: z.string().optional(),
+  diagnosticID: z.string().optional(),
+  error: z.string(),
+});
 const cardIdentitySchema = z.strictObject({
   rank: z.number().int().min(-1).max(9_007_199_254_740_991),
   suitIndex: z.number().int().min(-1).max(9_007_199_254_740_991),
