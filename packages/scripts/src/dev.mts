@@ -2,8 +2,8 @@
 // - PostgreSQL and Redis in containers (see "compose.yml"), with the schema loaded on first use.
 // - The server, rebuilt and restarted whenever its sources change.
 // - The client from Vite's development server, which reloads the page when the client changes.
-// - A watch build of the standalone pips reference. "bun run dev down" stops the containers; their
-//   data is kept.
+// - A watch build of the scripts of the standalone pages. "bun run dev down" stops the containers;
+//   their data is kept.
 
 import type { Subprocess } from "bun";
 import {
@@ -367,17 +367,8 @@ async function main() {
     path.join(ROOT, "packages/client"),
   );
   standalone = start("standalone", [
-    "bunx",
-    "--bun",
-    "--no-install",
-    "esbuild",
-    "packages/client/src/standalone/pips-reference.ts",
-    "packages/client/src/standalone/public-tables.ts",
-    "--bundle",
-    "--outdir=public/js/bundles",
-    "--entry-names=[name].min",
-    "--minify",
-    "--sourcemap=linked",
+    "bash",
+    "scripts/dev/build-standalone.sh",
     "--watch=forever",
   ]);
   startServer();

@@ -17,12 +17,7 @@ const config = {
     },
     "packages/client": {
       // Built with esbuild from shell scripts; Knip finds the Vite entry point.
-      entry: [
-        "src/standalone/password-reset.ts",
-        "src/standalone/pips-reference.ts",
-        "src/standalone/public-tables.ts",
-        "src/**/*.test.ts",
-      ],
+      entry: ["src/standalone/*.ts", "src/**/*.test.ts"],
       ignore: [
         "test_data/hanabLiveStateToCurrentRepoState.js", // Pasted into the browser console.
       ],

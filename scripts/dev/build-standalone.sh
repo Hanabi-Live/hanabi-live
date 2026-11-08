@@ -8,17 +8,16 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 REPO_ROOT="$DIR/../.."
 
-# Each standalone script is bundled separately, as "public/js/bundles/[name].min.js".
-bunx --bun --no-install esbuild \
-  "$REPO_ROOT/packages/client/src/standalone/password-reset.ts" \
-  "$REPO_ROOT/packages/client/src/standalone/pips-reference.ts" \
-  "$REPO_ROOT/packages/client/src/standalone/public-tables.ts" \
+# Each file directly in "packages/client/src/standalone" is the script of one public page, bundled
+# separately as "public/js/bundles/[name].min.js". Arguments go to esbuild, such as
+# "--watch=forever".
+exec bunx --bun --no-install esbuild \
+  "$REPO_ROOT"/packages/client/src/standalone/*.ts \
   --bundle \
   --outdir="$REPO_ROOT/public/js/bundles" \
   --entry-names="[name].min" \
   --minify \
   --sourcemap=linked \
   --format=iife \
-  --platform=browser
-
-echo "Build complete! Open \"public/standalone/pips-reference.html\" in a browser to see the pips reference."
+  --platform=browser \
+  "$@"

@@ -50,14 +50,19 @@ echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 echo "$VERSION" > "$JS_BUNDLES_DIR/git_revision.txt"
 date > "$JS_BUNDLES_DIR/date_compiled.txt"
 
-# Clean up old files in the "bundles" directory. (We do not use an environment variable to store the
-# results of `ls` because it will cause the script to stop execution in the case where there are no
-# results.)
+# Clean up the bundles of older versions and of removed standalone pages.
 cd "$JS_BUNDLES_DIR"
-# shellcheck disable=SC2010,SC2143
-if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "password-reset.min.js" | grep -v "pips-reference.min.js" | grep -v "public-tables.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v "password-reset.min.js" | grep -v "pips-reference.min.js" | grep -v "public-tables.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
-fi
+for file in *; do
+  case $file in
+    "main.$VERSION".* | version.txt | git_revision.txt | date_compiled.txt) continue ;;
+    *) ;;
+  esac
+  page=${file%%.*}
+  if [[ $file == "$page.min.js"* && -f "$DIR/src/standalone/$page.ts" ]]; then
+    continue
+  fi
+  rm "$file"
+done
 
 # Clean up the files in the CSS directory.
 cd "$CSS_DIR"
