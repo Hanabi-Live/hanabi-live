@@ -42,7 +42,7 @@ echo "Packing the TypeScript using Vite..."
 echo
 JS_BUNDLES_DIR="$REPO_ROOT/public/js/bundles"
 bunx --bun --no-install vite build
-bash "$REPO_ROOT/scripts/dev/build-pips-reference.sh"
+bash "$REPO_ROOT/scripts/dev/build-standalone.sh"
 echo
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
@@ -76,8 +76,8 @@ rm -rf "$GRUNT_OUTPUT_DIR"
 # results.)
 cd "$JS_BUNDLES_DIR"
 # shellcheck disable=SC2010,SC2143
-if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
+if [[ -n $(ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v "public-tables.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v "pips-reference.min.js" | grep -v "public-tables.min.js" | grep -v version.txt | grep -v git_revision.txt | grep -v date_compiled.txt | xargs rm
 fi
 
 # Clean up the files in the CSS directory.

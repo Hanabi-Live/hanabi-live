@@ -1,5 +1,6 @@
 // This function draws the UI when going into a game for the first time.
 
+import { ReplayArrowOrder } from "@hanabi-live/data";
 import type {
   CardOrder,
   PlayerIndex,
@@ -22,7 +23,6 @@ import Konva from "konva";
 import * as modals from "../../modals";
 import { getCanvasColors } from "../../theme";
 import { getHTMLElement } from "../../utils";
-import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { ButtonGroup } from "./ButtonGroup";
 import { CardLayout } from "./CardLayout";
 import { ClueLog } from "./ClueLog";

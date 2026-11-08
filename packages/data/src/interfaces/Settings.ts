@@ -1,8 +1,6 @@
 import type { z } from "zod";
 import { settingsSchema } from "../generated/protocol";
 
-export const DEFAULT_CREATE_TABLE_MAX_PLAYERS = 5;
-
 /** Generated from the server's wire contract; missing fields take their defaults. */
 export const settings = settingsSchema;
 

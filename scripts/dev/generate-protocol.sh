@@ -17,8 +17,8 @@ formatted=$(mktemp)
 trap 'rm -f "$temporary" "$formatted"' EXIT
 status=0
 
-# The data package and the game library do not depend on each other, so each gets its own module.
-for target in "packages/data/src/generated/protocol.ts" "packages/game/src/generated/protocol.ts --game"; do
+# The data package imports the game library's schemas, so the game library's module comes first.
+for target in "packages/game/src/generated/protocol.ts --game" "packages/data/src/generated/protocol.ts"; do
   read -r output flag <<< "$target"
   (
     cd "$REPO_ROOT/server/protocol"

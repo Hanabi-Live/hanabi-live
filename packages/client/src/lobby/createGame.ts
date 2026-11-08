@@ -1,7 +1,7 @@
 // The "Create Game" nav button.
 
 import type { Settings } from "@hanabi-live/data";
-import { DEFAULT_CREATE_TABLE_MAX_PLAYERS } from "@hanabi-live/data";
+import { defaultSettings } from "@hanabi-live/data";
 import type { Options } from "@hanabi-live/game";
 import {
   DEFAULT_VARIANT_NAME,
@@ -61,7 +61,7 @@ export function init(): void {
       || maxPlayers < MIN_PLAYERS
       || maxPlayers > MAX_PLAYERS
     ) {
-      element.val(DEFAULT_CREATE_TABLE_MAX_PLAYERS);
+      element.val(defaultSettings.createTableMaxPlayers);
     }
   });
 
@@ -332,7 +332,7 @@ function submit() {
   const maxPlayersInt = parseIntSafe(maxPlayersString);
   const maxPlayers = isValidNumPlayers(maxPlayersInt)
     ? maxPlayersInt
-    : DEFAULT_CREATE_TABLE_MAX_PLAYERS;
+    : defaultSettings.createTableMaxPlayers;
   checkSettingChanged("createTableMaxPlayers", maxPlayers);
 
   // Game JSON is not saved.
@@ -546,7 +546,7 @@ export function ready(): boolean {
 
   let maxPlayers = globals.settings.createTableMaxPlayers;
   if (maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
-    maxPlayers = DEFAULT_CREATE_TABLE_MAX_PLAYERS;
+    maxPlayers = defaultSettings.createTableMaxPlayers;
   }
   $("#createTableMaxPlayers").val(maxPlayers);
 

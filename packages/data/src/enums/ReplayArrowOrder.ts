@@ -1,8 +1,4 @@
-/**
- * Note that there is no corresponding server-side enum because the server does not care about which
- * orders map to which UI elements; it just blindly transfers the order to the rest of the
- * spectators.
- */
+/** The parts of the board that a shared-replay arrow can point at, besides cards. */
 export enum ReplayArrowOrder {
   Nothing = -1,
   Deck = -2,

@@ -31,7 +31,7 @@ const SERVER_SOURCES = [
 ] as const;
 const DEV_PORT = "1212";
 
-type Label = "build" | "client" | "dev" | "pips" | "server" | "services";
+type Label = "build" | "client" | "dev" | "standalone" | "server" | "services";
 
 function log(label: Label, line: string) {
   console.log(`[${label}] ${line}`);
@@ -282,7 +282,7 @@ type Child = Subprocess<"ignore", "pipe", "pipe">;
 
 let server: Child | undefined;
 let client: Child | undefined;
-let pipsReference: Child | undefined;
+let standalone: Child | undefined;
 let revision: string | undefined;
 let stopping = false;
 let building = false;
@@ -362,7 +362,7 @@ async function shutDown(code: number) {
   stopping = true;
   log("dev", "Stopping...");
   client?.kill();
-  pipsReference?.kill();
+  standalone?.kill();
   await stopServer();
   process.exit(code);
 }
@@ -403,14 +403,16 @@ async function main() {
     ["bunx", "--bun", "--no-install", "vite"],
     path.join(ROOT, "packages/client"),
   );
-  pipsReference = start("pips", [
+  standalone = start("standalone", [
     "bunx",
     "--bun",
     "--no-install",
     "esbuild",
     "packages/client/src/standalone/pips-reference.ts",
+    "packages/client/src/standalone/public-tables.ts",
     "--bundle",
-    "--outfile=public/js/bundles/pips-reference.min.js",
+    "--outdir=public/js/bundles",
+    "--entry-names=[name].min",
     "--minify",
     "--sourcemap=linked",
     "--watch=forever",
@@ -421,7 +423,7 @@ async function main() {
 
   // A client watcher that stops is unexpected, so stop everything rather than serve stale code.
   stopWhenExited("client", client);
-  stopWhenExited("pips", pipsReference);
+  stopWhenExited("standalone", standalone);
 }
 
 await main();

@@ -22,7 +22,7 @@ describe("server game events", () => {
     expect(
       toGameAction({
         type: "gameOver",
-        endCondition: 1,
+        endCondition: EndCondition.Normal,
         playerIndex: -1,
         votes: null,
       }),
@@ -82,7 +82,6 @@ describe("server game events", () => {
     expect(() =>
       event({ type: "draw", playerIndex: 0, order: 0, suitIndex: 0, rank: 6 }),
     ).toThrow();
-    expect(toSoundType("not-a-sound")).toBeUndefined();
   });
 });
 
@@ -96,11 +95,21 @@ describe("card identities", () => {
   });
 });
 
-describe("shared replay sounds", () => {
+describe("sounds", () => {
   test("every sound a leader can send can be played", () => {
     for (const sound of SERVER_COMMAND_SCHEMAS.replaySound.shape.sound
       .options) {
       expect(toSoundType(sound)).toBe(sound);
     }
+  });
+
+  test("the lobby plays the shutdown sound", () => {
+    const { file } = SERVER_COMMAND_SCHEMAS.soundLobby.parse({
+      file: "shutdown",
+    });
+    expect(toSoundType(file)).toBe("shutdown");
+    expect(() =>
+      SERVER_COMMAND_SCHEMAS.soundLobby.parse({ file: "not-a-sound" }),
+    ).toThrow();
   });
 });

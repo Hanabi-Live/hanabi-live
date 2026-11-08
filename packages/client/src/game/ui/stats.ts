@@ -1,8 +1,8 @@
+import { ReplayArrowOrder } from "@hanabi-live/data";
 import { parseIntSafe } from "complete-common";
 import type Konva from "konva";
 import * as modals from "../../modals";
 import { getHTMLElement, getHTMLInputElement } from "../../utils";
-import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import type { TextWithTooltip } from "./controls/TextWithTooltip";

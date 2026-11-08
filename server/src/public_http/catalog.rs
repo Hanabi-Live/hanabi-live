@@ -1,5 +1,5 @@
 use hanabi_engine::Variant;
-use hanabi_protocol::PublicVariant;
+use hanabi_protocol::{PublicVariant, VariantNames};
 use std::collections::BTreeMap;
 
 // Metadata only: deck construction and card counts belong to the engine adapter.
@@ -16,11 +16,13 @@ pub(super) fn character(id: i64) -> Option<&'static str> {
         .find(|character| i64::from(character.id) == id)
         .map(|character| character.name.as_str())
 }
-pub(super) fn names() -> BTreeMap<String, String> {
-    variants()
-        .iter()
-        .map(|v| (v.id.to_string(), v.name.clone()))
-        .collect()
+pub(super) fn names() -> VariantNames {
+    VariantNames(
+        variants()
+            .iter()
+            .map(|v| (v.id.to_string(), v.name.clone()))
+            .collect(),
+    )
 }
 pub(super) fn metadata() -> BTreeMap<String, PublicVariant> {
     variants()

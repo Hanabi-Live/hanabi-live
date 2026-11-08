@@ -646,15 +646,37 @@ pub struct ReplaySegment {
     pub segment: i64,
 }
 
-/// The card the leader points at; negative values clear the arrow.
+/// What the leader points at.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayIndicator {
     #[serde(rename = "tableID")]
     pub table_id: TableId,
-    #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+    #[schemars(with = "ReplayArrowTarget")]
     pub order: i64,
 }
+
+/// What a shared-replay arrow points at: a card, or a part of the board.
+#[derive(JsonSchema)]
+#[serde(untagged)]
+pub enum ReplayArrowTarget {
+    Card(CardOrder),
+    Board(ReplayArrowIndicator),
+}
+
+/// The `ReplayArrowOrder` enum: -1 clears the arrow, and the rest name a part of the board.
+#[derive(JsonSchema)]
+#[serde(transparent)]
+pub struct ReplayArrowIndicator(
+    #[schemars(
+        range(min = -12, max = -1),
+        extend(
+            "enum" = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12],
+            "x-enum" = "ReplayArrowOrder"
+        )
+    )]
+    pub i64,
+);
 
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -885,11 +907,11 @@ pub enum ReplayActionRequest {
         #[schemars(range(min = 0, max = i32::MAX))]
         segment: i32,
     },
-    /// Points at a card, or at a part of the board that a negative order names.
+    /// Points at a card or a part of the board, or clears the arrow.
     Arrow {
         #[serde(rename = "tableID")]
         table_id: TableId,
-        #[schemars(range(min = -MAX_SAFE_INTEGER, max = MAX_SAFE_INTEGER))]
+        #[schemars(with = "ReplayArrowTarget")]
         order: i64,
     },
     Sound {
@@ -1175,17 +1197,32 @@ pub struct PublicGameRow {
     pub score: i32,
     /// The variant ID. Variant lists omit it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32")]
+    #[schemars(with = "u32", range(max = u32::MAX))]
     pub variant: Option<u32>,
     /// How many games used this seed. Variant lists omit it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "u32")]
+    #[schemars(with = "u32", range(max = u32::MAX))]
     pub other_scores: Option<u32>,
     /// The players' names, separated by commas.
     pub users: String,
     /// When the game finished, such as "2026-01-01 - 01:00:00 UTC".
     pub datetime: String,
     pub seed: String,
+}
+
+/// The variant names in `/api/v1/variants`, keyed by variant ID.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct VariantNames(pub std::collections::BTreeMap<String, String>);
+
+/// How many games with a seed reached a score, as the seed page's chart shows them.
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScoreFrequency {
+    #[schemars(range(min = 0, max = 2_147_483_647))]
+    pub score: i32,
+    #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
+    pub num_times: i64,
 }
 
 /// A variant in `/api/v1/variants-full`, keyed by its ID.
@@ -1274,8 +1311,14 @@ pub struct Warning {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[schemars(extend("x-readonly" = true))]
 pub struct SoundLobby {
-    #[schemars(length(min = 1))]
-    pub file: String,
+    pub file: LobbySound,
+}
+
+/// A sound that everyone in the lobby hears. The server plays "shutdown" when it is going down.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum LobbySound {
+    Shutdown,
 }
 
 /// A user's preferences. Missing fields take their default, so stored settings only need the values
@@ -2184,6 +2227,8 @@ pub fn schemas() -> std::collections::BTreeMap<String, serde_json::Value> {
         PublicGamePage,
         PublicGameRow,
         PublicVariant,
+        VariantNames,
+        ScoreFrequency,
         ChatRequest,
         ChatPmRequest,
         ChatHistoryRequest,

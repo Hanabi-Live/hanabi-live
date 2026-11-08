@@ -3,6 +3,7 @@
 // e.g. in-game replays.
 
 import type { ServerCommandData } from "@hanabi-live/data";
+import { ReplayArrowOrder } from "@hanabi-live/data";
 import type { CardOrder, GameMetadata, NumPlayers } from "@hanabi-live/game";
 import {
   getCardsPerHand,
@@ -22,12 +23,10 @@ import {
   toCardIdentity,
   toGameAction,
   toPlayerTuple,
-  toReplayArrowOrder,
   toSoundType,
 } from "../../wire";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
-import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";
 import type { State } from "../types/State";
 import { globals } from "./UIGlobals";
@@ -323,9 +322,8 @@ gameCommands.set("replayIndicator", (data) => {
   }
 
   arrows.hideAll();
-  const order = toReplayArrowOrder(data.order);
-  if (order !== ReplayArrowOrder.Nothing) {
-    arrows.toggle(order);
+  if (data.order !== ReplayArrowOrder.Nothing) {
+    arrows.toggle(data.order);
   }
 });
 
@@ -374,10 +372,7 @@ gameCommands.set("replaySegment", (data) => {
 
 // This is used in shared replays to make fun sounds.
 gameCommands.set("replaySound", (data) => {
-  const sound = toSoundType(data.sound);
-  if (sound !== undefined) {
-    globals.game!.sounds.play(sound);
-  }
+  globals.game!.sounds.play(toSoundType(data.sound));
 });
 
 // This is used to update the names of the people currently spectating the game.

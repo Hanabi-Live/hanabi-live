@@ -141,10 +141,7 @@ lobbyCommands.set("left", () => {
 });
 
 lobbyCommands.set("soundLobby", (data) => {
-  const sound = toSoundType(data.file);
-  if (sound !== undefined) {
-    sounds.play(sound);
-  }
+  sounds.play(toSoundType(data.file));
 });
 
 // Received by the client when a table is created or modified.

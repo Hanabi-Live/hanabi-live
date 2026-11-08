@@ -13,6 +13,7 @@
   },
   "license": "GPL-3.0",
   "author": "Zamiell",
+  "sideEffects": false,
   "type": "commonjs",
   "exports": {
     ".": {

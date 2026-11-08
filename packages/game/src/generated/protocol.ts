@@ -95,10 +95,10 @@ export const catalogSuitSchema = z.strictObject({
 });
 
 /** A card rank. 7 is the rank of a stack's start card. */
-const catalogRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
+export const catalogRankSchema = z.literal([1, 2, 3, 4, 5, 7]);
 
 /** A rank that clues can name. */
-const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
+export const rankClueNumberSchema = z.literal([1, 2, 3, 4, 5]);
 
 /** An entry in `variants.json`. This is similar to `Variant`, but it only has primitive types. */
 export const catalogVariantSchema = z.strictObject({
@@ -162,35 +162,35 @@ export const cardOrderSchema = z
   .brand<"CardOrder">();
 
 /** A seat in a game. The game library's `PlayerIndex` type. */
-const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
+export const playerIndexSchema = z.literal([0, 1, 2, 3, 4, 5]);
 
 /** A seat, or -1 for no player. */
-const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
+export const playerIndexOrNoneSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 
 /**
  * A card's rank, or -1 when the recipient may not see it. 7 is the rank of a stack's start card.
  */
-const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
+export const rankOrUnknownSchema = z.literal([-1, 1, 2, 3, 4, 5, 7]);
 
 /**
  * A clue as its recipient sees it: a color clue names a suit's color, a rank clue names a rank, and
  * a clue the recipient may not see hides both its type and value.
  */
-const receivedClueSchema = z.union([
+export const receivedClueSchema = z.union([
   z.strictObject({ type: z.literal(0), value: z.literal([0, 1, 2, 3, 4, 5]) }),
   z.strictObject({ type: z.literal(1), value: z.literal([1, 2, 3, 4, 5]) }),
   z.strictObject({ type: z.literal(-1), value: z.literal(-1) }),
 ]);
 
 /** An integer that JavaScript represents exactly. */
-const safeIntegerSchema = z
+export const safeIntegerSchema = z
   .number()
   .int()
   .min(-9_007_199_254_740_991)
   .max(9_007_199_254_740_991);
 
 /** A card's suit, or -1 when the recipient may not see it. */
-const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
+export const suitIndexOrUnknownSchema = z.literal([-1, 0, 1, 2, 3, 4, 5]);
 
 /** One game event as a particular recipient sees it. Unknown card identities are -1. */
 export const gameEventSchema = z.discriminatedUnion("type", [

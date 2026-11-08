@@ -771,7 +771,7 @@ impl Hub {
                 frame(
                     hanabi_protocol::server::SOUND_LOBBY,
                     SoundLobby {
-                        file: "shutdown".into(),
+                        file: hanabi_protocol::LobbySound::Shutdown,
                     },
                 ),
                 if reconnect {

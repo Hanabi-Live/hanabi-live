@@ -1103,5 +1103,55 @@
       }
     },
     "valid": false
+  },
+  {
+    "name": "replay arrows point at a card or a named part of the board",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": "arrow",
+      "order": -12
+    },
+    "valid": true
+  },
+  {
+    "name": "replay arrows cannot point at an unnamed part of the board",
+    "direction": "client",
+    "command": "replayAction",
+    "input": {
+      "tableID": 4,
+      "type": "arrow",
+      "order": -13
+    },
+    "valid": false
+  },
+  {
+    "name": "replay indicators point past the cards only at named parts of the board",
+    "direction": "server",
+    "command": "replayIndicator",
+    "input": {
+      "tableID": 4,
+      "order": 66
+    },
+    "valid": false
+  },
+  {
+    "name": "lobby sounds are named",
+    "direction": "server",
+    "command": "soundLobby",
+    "input": {
+      "file": "shutdown"
+    },
+    "valid": true
+  },
+  {
+    "name": "lobby sounds the client cannot play are rejected",
+    "direction": "server",
+    "command": "soundLobby",
+    "input": {
+      "file": "not-a-sound"
+    },
+    "valid": false
   }
 ]

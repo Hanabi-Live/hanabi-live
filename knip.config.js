@@ -21,6 +21,7 @@ const config = {
       entry: [
         "Gruntfile.js",
         "src/standalone/pips-reference.ts",
+        "src/standalone/public-tables.ts",
         "src/**/*.test.ts",
       ],
       ignore: [

@@ -1,4 +1,4 @@
-import { ActionType } from "@hanabi-live/data";
+import { ActionType, ReplayArrowOrder } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
   getTotalCardsInDeck,
@@ -9,7 +9,6 @@ import { OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, escapeHtml, timerFormatter } from "../../utils";
-import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import * as arrows from "./arrows";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import * as cursor from "./cursor";

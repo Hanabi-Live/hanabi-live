@@ -2,19 +2,22 @@ use anyhow::{Context, Result, bail, ensure};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
-/// TypeScript enums that wire integers may name with `x-enum`, whether the game library owns them,
-/// and the module in that package that exports them.
-const TYPESCRIPT_ENUMS: &[(&str, bool, &str)] = &[
-    ("ActionType", false, "../enums/ActionType"),
-    ("ClueType", true, "../enums/ClueType"),
-    ("EndCondition", true, "../enums/EndCondition"),
-    ("SoundMove", false, "../enums/SoundMove"),
-    ("Status", false, "../enums/Status"),
+/// TypeScript enums that wire integers may name with `x-enum`, and whether the game library owns them.
+/// Each is exported by the `enums` module of its name in the package that owns it.
+const TYPESCRIPT_ENUMS: &[(&str, bool)] = &[
+    ("ActionType", false),
+    ("ClueType", true),
+    ("EndCondition", true),
+    ("ReplayArrowOrder", false),
+    ("SoundMove", false),
+    ("Status", false),
 ];
 
-/// Schemas the game library also needs. `--game` writes these to its package, with the schemas
-/// they reference. The data package does not depend on the game library, so its protocol module
-/// has its own copy.
+/// The game library's package, which the data package imports the game library's schemas from.
+const GAME_LIBRARY: &str = "@hanabi-live/game";
+
+/// Schemas the game library also needs. `--game` writes and exports these, with the schemas they
+/// reference. The data package imports them rather than writing its own copies.
 const GAME_LIBRARY_SCHEMAS: &[&str] = &[
     "CatalogCharacter",
     "CatalogColor",
@@ -30,25 +33,35 @@ const GAME_LIBRARY_SCHEMAS: &[&str] = &[
 fn game_owned(name: &str) -> bool {
     TYPESCRIPT_ENUMS
         .iter()
-        .any(|(known, game, _)| *known == name && *game)
+        .any(|(known, game)| *known == name && *game)
 }
 
-/// Removes the names of the game library's enums, leaving their values as plain integer literals.
-fn without_game_enums(schema: &mut Value) {
-    match schema {
-        Value::Object(object) => {
-            if object
-                .get("x-enum")
-                .and_then(Value::as_str)
-                .is_some_and(game_owned)
-            {
-                object.remove("x-enum");
-            }
-            object.values_mut().for_each(without_game_enums);
+/// Imports the TypeScript enums that the written schemas use: a package's own enums from its `enums`
+/// modules, and the game library's enums from the game library when the data package uses them.
+fn enum_imports(used: &BTreeMap<String, EnumValues>, game: bool) -> Result<String> {
+    let mut output = String::new();
+    let mut from_game = Vec::new();
+    for (name, owned) in TYPESCRIPT_ENUMS {
+        if !used.contains_key(*name) {
+            continue;
         }
-        Value::Array(values) => values.iter_mut().for_each(without_game_enums),
-        _ => {}
+        if *owned == game {
+            output.push_str(&format!("import {{ {name} }} from \"../enums/{name}\";\n"));
+        } else {
+            ensure!(
+                !game,
+                "The game library cannot use the data package's enum {name}"
+            );
+            from_game.push(*name);
+        }
     }
+    if !from_game.is_empty() {
+        output.push_str(&format!(
+            "import {{ {} }} from \"{GAME_LIBRARY}\";\n",
+            from_game.join(", ")
+        ));
+    }
+    Ok(output)
 }
 
 fn literal(value: &Value) -> String {
@@ -193,7 +206,7 @@ fn expression(schema: &Value) -> Result<String> {
     } else if let Some(name) = schema.get("x-enum") {
         let name = name.as_str().context("Invalid TypeScript enum name")?;
         ensure!(
-            TYPESCRIPT_ENUMS.iter().any(|(known, _, _)| *known == name),
+            TYPESCRIPT_ENUMS.iter().any(|(known, _)| *known == name),
             "Unknown TypeScript enum: {name}"
         );
         // The server validates the listed values; the client validates against its enum, which
@@ -247,6 +260,17 @@ fn expression(schema: &Value) -> Result<String> {
             }
             "boolean" => "z.boolean()".into(),
             "null" => "z.null()".into(),
+            // A map, such as variant names keyed by ID: string keys, each with a value of one schema.
+            "object" if schema["additionalProperties"].is_object() => {
+                ensure!(
+                    schema.get("properties").is_none() && schema.get("required").is_none(),
+                    "Maps cannot also have named fields"
+                );
+                format!(
+                    "z.record(z.string(), {})",
+                    expression(&schema["additionalProperties"])?
+                )
+            }
             "array" => format!("z.array({})", expression(&schema["items"])?),
             "object" => {
                 // Only an explicitly loose object, such as an imported file, ignores unknown fields.
@@ -415,40 +439,94 @@ fn references(schema: &Value, output: &mut BTreeSet<String>) -> Result<()> {
     Ok(())
 }
 
-fn emit(
-    name: &str,
-    definitions: &BTreeMap<String, Value>,
-    exported: &BTreeSet<&str>,
-    active: &mut BTreeSet<String>,
-    emitted: &mut BTreeSet<String>,
-) -> Result<()> {
-    if emitted.contains(name) {
-        return Ok(());
+/// Writes the schemas a module defines, each after the schemas it references. Schemas that another
+/// package defines are recorded as imports instead.
+struct Module<'a> {
+    definitions: &'a BTreeMap<String, Value>,
+    exported: BTreeSet<String>,
+    external: BTreeSet<String>,
+    imported: BTreeSet<String>,
+    active: BTreeSet<String>,
+    emitted: BTreeSet<String>,
+    output: String,
+}
+
+impl<'a> Module<'a> {
+    fn new(
+        definitions: &'a BTreeMap<String, Value>,
+        exported: BTreeSet<String>,
+        external: BTreeSet<String>,
+    ) -> Self {
+        Self {
+            definitions,
+            exported,
+            external,
+            imported: BTreeSet::new(),
+            active: BTreeSet::new(),
+            emitted: BTreeSet::new(),
+            output: String::new(),
+        }
     }
-    ensure!(
-        active.insert(name.into()),
-        "Recursive wire schemas require an explicit generator implementation"
-    );
-    let schema = definitions.get(name).context("Missing schema definition")?;
-    let mut dependencies = BTreeSet::new();
-    references(schema, &mut dependencies)?;
-    for dependency in dependencies {
-        emit(&dependency, definitions, exported, active, emitted)?;
+
+    fn emit(&mut self, name: &str) -> Result<()> {
+        if self.external.contains(name) {
+            self.imported.insert(name.into());
+            return Ok(());
+        }
+        if self.emitted.contains(name) {
+            return Ok(());
+        }
+        ensure!(
+            self.active.insert(name.into()),
+            "Recursive wire schemas require an explicit generator implementation"
+        );
+        let schema = self
+            .definitions
+            .get(name)
+            .context("Missing schema definition")?;
+        let mut dependencies = BTreeSet::new();
+        references(schema, &mut dependencies)?;
+        for dependency in dependencies {
+            self.emit(&dependency)?;
+        }
+        self.output.push_str(&format!(
+            "{}{}const {} = {};\n",
+            doc_comment(schema),
+            if self.exported.contains(name) {
+                "export "
+            } else {
+                ""
+            },
+            variable(name),
+            expression(schema).with_context(|| format!("Cannot translate the {name} schema"))?
+        ));
+        self.active.remove(name);
+        self.emitted.insert(name.into());
+        Ok(())
     }
-    println!(
-        "{}{}const {} = {};",
-        doc_comment(schema),
-        if exported.contains(name) {
-            "export "
-        } else {
-            ""
-        },
-        variable(name),
-        expression(schema)?
-    );
-    active.remove(name);
-    emitted.insert(name.into());
-    Ok(())
+
+    /// The named TypeScript enums that the written schemas use.
+    fn enums(&self) -> Result<BTreeMap<String, EnumValues>> {
+        let mut used = BTreeMap::new();
+        for name in &self.emitted {
+            enums(&self.definitions[name], &mut used)?;
+        }
+        Ok(used)
+    }
+
+    /// Imports the schemas that another package defines.
+    fn schema_imports(&self, package: &str) -> String {
+        if self.imported.is_empty() {
+            return String::new();
+        }
+        let names = self
+            .imported
+            .iter()
+            .map(|name| variable(name))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!("import {{ {names} }} from \"{package}\";\n")
+    }
 }
 
 /// The integer values the server lists for a TypeScript enum. A field lists either every value, or
@@ -554,19 +632,36 @@ fn enum_checks(used: &BTreeMap<String, EnumValues>) -> Result<String> {
     Ok(output)
 }
 
+/// The schemas the game library writes and exports: those it needs, and the schemas they reference.
+fn game_library_schemas(definitions: &BTreeMap<String, Value>) -> Result<BTreeSet<String>> {
+    let mut module = Module::new(definitions, BTreeSet::new(), BTreeSet::new());
+    for name in GAME_LIBRARY_SCHEMAS {
+        module.emit(name)?;
+    }
+    Ok(module.emitted)
+}
+
 /// Writes the schemas the game library needs, and a schema for each of its enums that the server
 /// sends, which fails type checking unless the enum has exactly the server's values.
 fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
+    let mut module = Module::new(
+        definitions,
+        game_library_schemas(definitions)?,
+        BTreeSet::new(),
+    );
+    for name in GAME_LIBRARY_SCHEMAS {
+        module.emit(name)?;
+    }
+    // The game library cannot import the data package's enums.
+    if let Some(other) = module.enums()?.keys().find(|known| !game_owned(known)) {
+        bail!("The game library's schemas use {other}, which the game does not own");
+    }
     let mut used = BTreeMap::new();
     for schema in definitions.values() {
         enums(schema, &mut used)?;
     }
     used.retain(|name, _| game_owned(name));
-    for (name, _, module) in TYPESCRIPT_ENUMS {
-        if used.contains_key(*name) {
-            println!("import {{ {name} }} from \"{module}\";");
-        }
-    }
+    print!("{}", enum_imports(&used, true)?);
     println!("import {{ z }} from \"zod\";\n");
     println!("{}", enum_checks(&used)?);
     for name in used.keys() {
@@ -576,20 +671,7 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
             enum_variable(name)
         );
     }
-    let exported = GAME_LIBRARY_SCHEMAS.iter().copied().collect();
-    let mut active = BTreeSet::new();
-    let mut emitted = BTreeSet::new();
-    for name in GAME_LIBRARY_SCHEMAS {
-        emit(name, definitions, &exported, &mut active, &mut emitted)?;
-    }
-    // The game library cannot import the client's enums.
-    for name in &emitted {
-        let mut named = BTreeMap::new();
-        enums(&definitions[name], &mut named)?;
-        if let Some(other) = named.keys().find(|known| !game_owned(known)) {
-            bail!("The game library schema {name} uses {other}, which the game does not own");
-        }
-    }
+    print!("{}", module.output);
     Ok(())
 }
 
@@ -622,22 +704,9 @@ fn main() -> Result<()> {
     if game {
         return game_library(&definitions);
     }
-    // The data package does not depend on the game library; clients convert these values.
-    definitions.values_mut().for_each(without_game_enums);
-    let mut used = BTreeMap::new();
-    for schema in definitions.values() {
-        enums(schema, &mut used)?;
-    }
-    for (name, _, module) in TYPESCRIPT_ENUMS {
-        if used.contains_key(*name) {
-            println!("import {{ {name} }} from \"{module}\";");
-        }
-    }
-    println!("import {{ z }} from \"zod\";\n");
-    println!("{}", enum_checks(&used)?);
     let client = hanabi_protocol::client_contracts();
     let server = hanabi_protocol::server_contracts();
-    let exported: BTreeSet<_> = client
+    let exported: BTreeSet<String> = client
         .values()
         .chain(server.values())
         .copied()
@@ -654,13 +723,26 @@ fn main() -> Result<()> {
             "LoginRequest",
             "LoginResponse",
             "ApiError",
+            "PublicGamePage",
+            "VariantNames",
+            "ScoreFrequency",
         ])
+        .map(String::from)
         .collect();
-    let mut active = BTreeSet::new();
-    let mut emitted = BTreeSet::new();
+    let mut module = Module::new(
+        &definitions,
+        exported.clone(),
+        game_library_schemas(&definitions)?,
+    );
     for name in &exported {
-        emit(name, &definitions, &exported, &mut active, &mut emitted)?;
+        module.emit(name)?;
     }
+    let used = module.enums()?;
+    print!("{}", enum_imports(&used, false)?);
+    print!("{}", module.schema_imports(GAME_LIBRARY));
+    println!("import {{ z }} from \"zod\";\n");
+    println!("{}", enum_checks(&used)?);
+    print!("{}", module.output);
     for (name, contracts) in [
         ("CLIENT_COMMAND_SCHEMAS", client),
         ("SERVER_COMMAND_SCHEMAS", server),
@@ -703,6 +785,21 @@ mod tests {
             "\n/**\n * First line.\n * - An item ending *\\/\n */\n"
         );
         assert_eq!(doc_comment(&json!({"type":"string"})), "");
+    }
+
+    #[test]
+    fn maps_become_records() {
+        assert_eq!(
+            expression(&json!({"type":"object","additionalProperties":{"type":"string"}})).unwrap(),
+            "z.record(z.string(), z.string())"
+        );
+        assert!(
+            expression(
+                &json!({"type":"object","additionalProperties":{"type":"string"},
+                "properties":{"id":{"type":"string"}}})
+            )
+            .is_err()
+        );
     }
 
     #[test]

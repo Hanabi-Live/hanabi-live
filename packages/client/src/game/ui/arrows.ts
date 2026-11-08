@@ -1,6 +1,7 @@
 // Arrows are used to show which cards are touched by a clue (and to highlight things in shared
 // replays).
 
+import { ReplayArrowOrder } from "@hanabi-live/data";
 import type {
   CardOrder,
   Clue,
@@ -20,7 +21,6 @@ import Konva from "konva";
 import type * as KonvaContext from "konva/types/Context";
 import type { KonvaEventObject } from "konva/types/Node";
 import * as tooltips from "../../tooltips";
-import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";

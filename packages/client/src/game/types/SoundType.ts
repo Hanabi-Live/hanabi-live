@@ -114,4 +114,7 @@ export enum SoundType {
 
   /** Used when dragging a card to an invalid area. */
   Error = "error",
+
+  /** Used when the server is shutting down. */
+  Shutdown = "shutdown",
 }

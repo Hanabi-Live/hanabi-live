@@ -196,7 +196,12 @@ pub(super) async fn page(
             }
             v["namesTitle"] = json!(format!("seed: {seed}"));
             v["apiPath"] = json!(api);
-            let rows: Vec<Value> = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numTimes',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed).fetch_all(&state.pool).await?;
+            let rows = sqlx::query_scalar!("SELECT jsonb_build_object('score',score,'numTimes',count(*)) AS \"value!\" FROM games WHERE seed=$1 GROUP BY score ORDER BY score", seed)
+                .fetch_all(&state.pool)
+                .await?
+                .into_iter()
+                .map(serde_json::from_value)
+                .collect::<serde_json::Result<Vec<hanabi_protocol::ScoreFrequency>>>()?;
             v["scoreFreqsJSON"] = json!(serde_json::to_string(&rows)?);
             v["frequencies"] = json!(rows);
         }
