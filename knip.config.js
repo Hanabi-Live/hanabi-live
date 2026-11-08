@@ -21,6 +21,7 @@ const config = {
         "Gruntfile.js",
         "src/main.ts",
         "src/standalone/pips-reference.ts",
+        "src/**/*.test.ts",
       ],
       ignore: [
         "test_data/hanabLiveStateToCurrentRepoState.js", // Pasted into the browser console.
@@ -34,22 +35,12 @@ const config = {
       ],
     },
     "packages/game": {
+      entry: ["src/**/*.test.ts"],
       // Required by the compiled library because of "importHelpers".
       ignoreDependencies: ["tslib"],
     },
-    "packages/scripts": {
-      // Run from the root "package.json" scripts.
-      entry: [
-        "src/createVariantsJSON/checkVariantFiles.ts",
-        "src/createVariantsJSON/createVariantsJSONScript.ts",
-        "src/dev.mts",
-        "src/lintPackageJSON.mts",
-        "src/update.mts",
-      ],
-    },
     "packages/testing": {
-      // Run from the root "package.json" test script.
-      entry: ["src/runTests.ts"],
+      entry: ["src/**/*.test.ts"],
       // Bun reports "ws" as a built-in module, so Knip cannot see that it is used when running
       // under Bun.
       ignoreDependencies: "Bun" in globalThis ? ["@types/ws", "ws"] : [],

@@ -47,9 +47,6 @@ GitHub_private_key.pem
 
 # Client test coverage
 /packages/client/coverage
-/public/client-new
-/packages/client-new/test-results
-/packages/client-new/playwright-report
 
 # Dependency graph output
 /packages/client/graph.html

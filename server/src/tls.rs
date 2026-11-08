@@ -237,7 +237,7 @@ mod tests {
             "HANABI.LIVE",
         ] {
             for http2 in [false, true] {
-                let path = "/new/table/12?name=a%2Fb&return=%2F12";
+                let path = "/lobby/table/12?name=a%2Fb&return=%2F12";
                 let request = if http2 {
                     Request::builder()
                         .version(axum::http::Version::HTTP_2)
@@ -288,7 +288,7 @@ mod tests {
                 .uri("/public/main.js")
                 .header("sec-fetch-mode", "no-cors"),
             Request::builder()
-                .uri("/new")
+                .uri("/lobby")
                 .header("sec-fetch-mode", "cors"),
             Request::builder()
                 .uri("/")
@@ -321,7 +321,7 @@ mod tests {
             let response = canonical_router(domain, 443)
                 .oneshot(
                     Request::builder()
-                        .uri("/new")
+                        .uri("/lobby")
                         .header(header::HOST, host)
                         .body(Body::empty())?,
                 )

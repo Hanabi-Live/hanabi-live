@@ -28,8 +28,6 @@
 - The core game logic is located in the [`packages/game`](packages/game)
   directory for TypeScript consumers and [`server/engine`](server/engine) for
   the native server.
-- The React lobby is located in [`packages/client-new`](packages/client-new) and
-  is served at `/new`; the classic lobby remains available at `/lobby`.
 
 <br>
 

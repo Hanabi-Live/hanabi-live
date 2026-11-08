@@ -1,5 +1,4 @@
 export * from "./chatSymbols";
-export * from "./clientNavigation";
 export * from "./constants";
 export * from "./enums/SoundMove";
 export * from "./enums/Status";
