@@ -190,6 +190,9 @@ dist
 # Firebase cache directory
 .firebase/
 
+# TernJS port file
+.tern-port
+
 # Stores Visual Studio Code versions used for testing Visual Studio Code extensions
 .vscode-test
 
