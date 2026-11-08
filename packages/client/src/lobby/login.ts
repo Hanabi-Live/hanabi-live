@@ -258,8 +258,10 @@ export function hide(firstTimeUser: boolean): void {
   // the screen. So we can set "overflow" to explicitly prevent this from occurring. We do not want
   // to set this in "hanabi.css" because there should be scrolling enabled on the login screen. We
   // need to scroll to the top of the screen before disabling the scroll bars or else the lobby can
-  // become misaligned when logging in from a scroll-down state.
-  window.scrollTo(0, 0);
+  // become misaligned when logging in from a scroll-down state. The login screen can scroll the
+  // body element itself rather than the window, so reset both.
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   $("body").css("overflow", "hidden");
 
   // Show the lobby
