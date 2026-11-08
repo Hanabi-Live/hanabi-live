@@ -92,7 +92,31 @@
       "outputs": []
     },
     "//#lint-rust": {
-      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "inputs": [
+        "server/**",
+        "!server/target/**",
+        "!**/*.md",
+        ".cargo/config.toml",
+        "rust-toolchain.toml",
+        "install/database_schema.sql",
+        "install/migration-files.sh",
+        "install/migrations/**",
+        "packages/data/src/json/goRandom.json",
+        "packages/game/src/json/**",
+        "packages/data/src/generated/**",
+        "packages/game/src/generated/**",
+        "packages/data/tsconfig*.json",
+        "packages/game/tsconfig*.json",
+        "scripts/dev/eslint-output.ts",
+        "scripts/dev/generate-protocol.sh",
+        "scripts/dev/generated-protocol.eslint.config.mjs",
+        "scripts/lint/check-rust.sh",
+        ".editorconfig",
+        ".prettierignore",
+        "prettier.config.mjs",
+        "package.json",
+        "bun.lock"
+      ],
       "env": [
         "CARGO_BUILD_TARGET",
         "CARGO_ENCODED_RUSTFLAGS",
