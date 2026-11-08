@@ -4,6 +4,22 @@ import { z } from "zod";
 import { SoundMove } from "../enums/SoundMove";
 import { Status } from "../enums/Status";
 
+/** A TypeScript enum, or `never` unless it has exactly the server's values. */
+type ServerEnum<
+  Enum extends Record<string, string | number>,
+  Values extends number,
+> = [Extract<Enum[keyof Enum], number>] extends [Values]
+  ? [Values] extends [Extract<Enum[keyof Enum], number>]
+    ? Enum
+    : never
+  : never;
+const endConditionEnum: ServerEnum<
+  typeof EndCondition,
+  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+> = EndCondition;
+const soundMoveEnum: ServerEnum<typeof SoundMove, 0 | 1 | 2> = SoundMove;
+const statusEnum: ServerEnum<typeof Status, 0 | 1 | 2 | 3 | 4 | 5> = Status;
+
 export const tableIdSchema = z
   .number()
   .int()
@@ -384,7 +400,7 @@ export const gameHistorySchema = z
     datetimeStarted: z
       .string()
       .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
-    endCondition: z.enum(EndCondition),
+    endCondition: z.enum(endConditionEnum),
     id: gameIdSchema,
     incrementNumGames: z.boolean(),
     numGamesOnThisSeed: z.number().int().min(0).max(2_147_483_647),
@@ -704,7 +720,7 @@ export const settingsSchema = z
     realLifeMode: z.boolean().default(false),
     reverseHands: z.boolean().default(false),
     showTimerInUntimed: z.boolean().default(false),
-    soundMove: z.enum(SoundMove).default(z.enum(SoundMove).parse(0)),
+    soundMove: z.enum(soundMoveEnum).default(z.enum(soundMoveEnum).parse(0)),
     soundTimer: z.boolean().default(true),
     speedrunMode: z.boolean().default(false),
     speedrunPreplay: z.boolean().default(false),
@@ -915,7 +931,7 @@ export const userSchema = z
     hyphenated: z.boolean(),
     inactive: z.boolean(),
     name: z.string().min(1),
-    status: z.enum(Status),
+    status: z.enum(statusEnum),
     tableID: tableIdSchema.optional(),
     userID: userIdSchema,
   })
