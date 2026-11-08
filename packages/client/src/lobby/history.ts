@@ -394,23 +394,15 @@ function makeOptions(i: number, options: Options, otherScores: boolean) {
   return html;
 }
 
+/** Games with more options than this show an ellipsis, with the options listed in the tooltip. */
+const MAX_OPTION_ICONS = 3;
+
 function iconsFromOptions(icons: readonly string[]): string {
-  let answer = "";
-  switch (icons.length) {
-    case 1:
-    case 2:
-    case 3: {
-      for (const icon of icons) {
-        answer += `<i class="${icon}"></i> `;
-      }
-
-      return answer.trim();
-    }
-
-    default: {
-      return '<i class="fas fa-ellipsis-h"></i>';
-    }
+  if (icons.length === 0 || icons.length > MAX_OPTION_ICONS) {
+    return '<i class="fas fa-ellipsis-h"></i>';
   }
+
+  return icons.map((icon) => `<i class="${icon}"></i>`).join(" ");
 }
 
 function makeReplayButton(databaseID: number, visibility: "solo" | "shared") {

@@ -1,6 +1,7 @@
 use super::{Error, Params, PublicState, Query, Result, catalog, integer, pagination};
 use crate::archive::GameRecord;
 use anyhow::Context;
+use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
 
 const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.variant_id,
@@ -8,53 +9,47 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.varian
     g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
-/// A column of the game lists, which clients sort by `col[index]` and filter by `fcol[index]`.
-#[derive(Clone, Copy)]
-enum Column {
-    Id,
-    NumPlayers,
-    Score,
-    Variant,
+const ALL_COLUMNS: [Column; 4] = [
+    Column::Id,
+    Column::NumPlayers,
+    Column::Score,
+    Column::Variant,
+];
+const SORTABLE_COLUMNS: &[Column] = &[Column::Id, Column::NumPlayers, Column::Score];
+
+const fn column_field(column: Column) -> &'static str {
+    match column {
+        Column::Id => "id",
+        Column::NumPlayers => "num_players",
+        Column::Score => "score",
+        Column::Variant => "variant_id",
+    }
 }
 
-impl Column {
-    const ALL: [Self; 4] = [Self::Id, Self::NumPlayers, Self::Score, Self::Variant];
-    const SORTABLE: &[Self] = &[Self::Id, Self::NumPlayers, Self::Score];
-
-    const fn field(self) -> &'static str {
-        match self {
-            Self::Id => "id",
-            Self::NumPlayers => "num_players",
-            Self::Score => "score",
-            Self::Variant => "variant_id",
-        }
+const fn column_name(column: Column) -> &'static str {
+    match column {
+        Column::Id => "id",
+        Column::NumPlayers => "numPlayers",
+        Column::Score => "score",
+        Column::Variant => "variant",
     }
+}
 
-    const fn name(self) -> &'static str {
-        match self {
-            Self::Id => "id",
-            Self::NumPlayers => "numPlayers",
-            Self::Score => "score",
-            Self::Variant => "variant",
-        }
+/// The columns that a game list filters by.
+const fn filterable_columns(mode: &str) -> &'static [Column] {
+    match mode.as_bytes() {
+        b"history" => &ALL_COLUMNS,
+        b"variants" => SORTABLE_COLUMNS,
+        _ => &[Column::Id, Column::Score],
     }
+}
 
-    /// The columns that a game list filters by.
-    const fn filterable(mode: &str) -> &'static [Self] {
-        match mode.as_bytes() {
-            b"history" => &Self::ALL,
-            b"variants" => Self::SORTABLE,
-            _ => &[Self::Id, Self::Score],
-        }
-    }
-
-    fn describe(columns: &[Self]) -> String {
-        columns
-            .iter()
-            .map(|&c| format!("{} {}", c as usize, c.name()))
-            .collect::<Vec<_>>()
-            .join(", ")
-    }
+fn describe_columns(columns: &[Column]) -> String {
+    columns
+        .iter()
+        .map(|&c| format!("{} {}", c as usize, column_name(c)))
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 /// The query parameters that a game list takes.
@@ -62,12 +57,12 @@ pub(super) fn list_parameters(mode: &str) -> Vec<String> {
     ["page".to_owned(), "size".to_owned()]
         .into_iter()
         .chain(
-            Column::SORTABLE
+            SORTABLE_COLUMNS
                 .iter()
                 .map(|&c| format!("col[{}]", c as usize)),
         )
         .chain(
-            Column::filterable(mode)
+            filterable_columns(mode)
                 .iter()
                 .map(|&c| format!("fcol[{}]", c as usize)),
         )
@@ -259,8 +254,8 @@ pub(super) async fn list(
     let parse_column = |key: &str, prefix: &str| {
         key.strip_prefix(prefix)
             .and_then(|k| k.strip_suffix(']'))
-            .and_then(|k| k.parse::<usize>().ok())
-            .and_then(|k| Column::ALL.get(k).copied())
+            .and_then(|k| k.parse::<i32>().ok())
+            .and_then(|k| Column::try_from(k).ok())
     };
     for (key, value) in q.iter() {
         if let Some(column) = parse_column(key, "col[") {
@@ -280,12 +275,15 @@ pub(super) async fn list(
             sorted = true;
         } else if let Some(column) = parse_column(key, "fcol[") {
             let value = integer(value).ok_or_else(|| {
-                Error::bad(format!("Invalid numeric filter for: {}", column.name()))
+                Error::bad(format!(
+                    "Invalid numeric filter for: {}",
+                    column_name(column)
+                ))
             })?;
-            push_compare(&mut qb, column.field(), "=", value);
+            push_compare(&mut qb, column_field(column), "=", value);
         }
     }
-    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order.field())
+    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(column_field(order))
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
         .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'numPlayers',g.num_players,'score',g.score,");
@@ -293,7 +291,7 @@ pub(super) async fn list(
         qb.push("'variant',g.variant_id,'otherScores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
     qb.push("'users',COALESCE((SELECT string_agg(u.username, ', ' ORDER BY lower(u.username), u.username) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),''),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
-        .push(order.field()).push(if ascending { " ASC" } else { " DESC" })
+        .push(column_field(order)).push(if ascending { " ASC" } else { " DESC" })
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
@@ -301,8 +299,8 @@ pub(super) async fn list(
         info: format!(
             "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: {}), fcol[x]=integer (filter by {})",
             super::MAX_PAGE_SIZE,
-            Column::describe(Column::SORTABLE),
-            Column::describe(Column::filterable(mode)),
+            describe_columns(SORTABLE_COLUMNS),
+            describe_columns(filterable_columns(mode)),
         ),
         rows: page.rows.0,
     })

@@ -30,6 +30,17 @@ export enum ActionType {
 }
 
 /**
+ * A column of the public game lists, which clients sort by `col[index]` and filter by
+ * `fcol[index]`.
+ */
+export enum GameListColumn {
+  Id = 0,
+  NumPlayers = 1,
+  Score = 2,
+  Variant = 3,
+}
+
+/**
  * The type of an action in a game's record: a turn, or the end of the game. The database
  * stores these values in `game_actions`.
  */

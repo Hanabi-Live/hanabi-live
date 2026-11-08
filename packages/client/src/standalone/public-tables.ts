@@ -3,6 +3,7 @@
 
 import {
   errorDetails,
+  GameListColumn,
   httpError,
   publicGamePageSchema,
   scoreFrequencySchema,
@@ -216,14 +217,17 @@ function initServerTable(
   const columns: Column[] = [...(table.tHead?.rows[0]?.cells ?? [])].map(
     () => ({ sortable: false, filter: "none" }),
   );
-  columns[0] = { sortable: true, filter: "none" };
-  columns[1] = {
+  columns[GameListColumn.Id] = { sortable: true, filter: "none" };
+  columns[GameListColumn.NumPlayers] = {
     sortable: mode === "history",
     filter: mode === "seed" ? "none" : playerCounts,
   };
-  columns[2] = { sortable: true, filter: "text" };
+  columns[GameListColumn.Score] = { sortable: true, filter: "text" };
   if (mode === "history") {
-    columns[3] = { sortable: false, filter: variantChoices };
+    columns[GameListColumn.Variant] = {
+      sortable: false,
+      filter: variantChoices,
+    };
   }
 
   const spinner = document.querySelector<HTMLElement>("div.tableSpinner");
@@ -288,7 +292,10 @@ function initServerTable(
   const controls = addTableControls(
     table,
     columns,
-    { column: mode === "history" ? 0 : 2, descending: true },
+    {
+      column: mode === "history" ? GameListColumn.Id : GameListColumn.Score,
+      descending: true,
+    },
     () => {
       // A new sort or filter starts again from the first page.
       pagers.page = 0;
@@ -498,7 +505,13 @@ function gameRows(
 
 /** A timestamp as the server's pages show it: the date, an em dash, and the time in UTC. */
 function displayTime(timestamp: string): string {
-  return `${timestamp.slice(0, 10)} \u{2014} ${timestamp.slice(11, 19)} UTC`;
+  // Drop the fractional seconds and the time zone from the ISO 8601 timestamp.
+  const match = /^([^T]+)T([^.Z]+)/u.exec(timestamp);
+  if (match === null) {
+    return timestamp;
+  }
+  const [, date, time] = match;
+  return `${date} \u{2014} ${time} UTC`;
 }
 
 function link(href: string, value: string | number): HTMLAnchorElement {

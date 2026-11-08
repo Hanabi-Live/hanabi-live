@@ -159,6 +159,17 @@ wire_enum! {
 }
 
 wire_enum! {
+    /// A column of the public game lists, which clients sort by `col[index]` and filter by
+    /// `fcol[index]`.
+    pub enum GameListColumn {
+        Id = 0,
+        NumPlayers = 1,
+        Score = 2,
+        Variant = 3,
+    }
+}
+
+wire_enum! {
     /// The parts of the board that a shared-replay arrow can point at, besides cards.
     pub enum ReplayArrowOrder {
         Nothing = -1,
@@ -202,6 +213,7 @@ pub const WIRE_ENUMS: &[WireEnum] = &[
     ActionType::WIRE,
     ClueType::WIRE,
     EndCondition::WIRE,
+    GameListColumn::WIRE,
     RecordedActionType::WIRE,
     ReplayArrowOrder::WIRE,
     SoundMove::WIRE,
