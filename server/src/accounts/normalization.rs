@@ -120,8 +120,8 @@ pub fn validate_username(input: &str) -> Result<&str, String> {
     if has_username_emoji(name) {
         return Err("Usernames cannot contain any emojis.".into());
     }
-    if max_consecutive_marks(name) > 3 {
-        return Err("Usernames cannot contain two or more consecutive diacritics.".into());
+    if max_consecutive_marks(name) >= 4 {
+        return Err("Usernames cannot contain four or more consecutive diacritics.".into());
     }
     if matches!(
         normalize_string(name).as_str(),
