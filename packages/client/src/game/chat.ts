@@ -3,7 +3,7 @@
 import { assertNotNull, parseFloatSafe } from "complete-common";
 import interact from "interactjs";
 import { globals } from "../Globals";
-import { FADE_TIME_MS } from "../constants";
+import { FADE_TIME_MS, LOCAL_STORAGE_KEY } from "../constants";
 import { getHTMLElement } from "../utils";
 
 const gameChatText = getHTMLElement("#game-chat-text");
@@ -117,13 +117,22 @@ export function init(): void {
       // edges of the window so that it will persist between refreshes. Anchoring to the right edge
       // keeps the modal in the same place relative to the edge when the window size changes.
       const rect = event.target.getBoundingClientRect();
-      localStorage.setItem("chatWindowWidth", event.target.style.width);
-      localStorage.setItem("chatWindowHeight", event.target.style.height);
       localStorage.setItem(
-        "chatWindowRight",
+        LOCAL_STORAGE_KEY.CHAT_WINDOW_WIDTH,
+        event.target.style.width,
+      );
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY.CHAT_WINDOW_HEIGHT,
+        event.target.style.height,
+      );
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY.CHAT_WINDOW_RIGHT,
         (window.innerWidth - rect.right).toString(),
       );
-      localStorage.setItem("chatWindowTop", rect.top.toString());
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY.CHAT_WINDOW_TOP,
+        rect.top.toString(),
+      );
     });
 
   $("#game-chat-modal-header-close").click(() => {
@@ -169,10 +178,15 @@ export function show(focusInput = true): void {
   moveElement(modal, 0, 0);
 
   // If there is a stored size + position for the chat box, set that.
-  const width = localStorage.getItem("chatWindowWidth") ?? "";
-  const height = localStorage.getItem("chatWindowHeight") ?? "";
-  const right = parseFloatSafe(localStorage.getItem("chatWindowRight") ?? "");
-  const top = parseFloatSafe(localStorage.getItem("chatWindowTop") ?? "");
+  const width = localStorage.getItem(LOCAL_STORAGE_KEY.CHAT_WINDOW_WIDTH) ?? "";
+  const height =
+    localStorage.getItem(LOCAL_STORAGE_KEY.CHAT_WINDOW_HEIGHT) ?? "";
+  const right = parseFloatSafe(
+    localStorage.getItem(LOCAL_STORAGE_KEY.CHAT_WINDOW_RIGHT) ?? "",
+  );
+  const top = parseFloatSafe(
+    localStorage.getItem(LOCAL_STORAGE_KEY.CHAT_WINDOW_TOP) ?? "",
+  );
 
   if (
     width !== ""

@@ -16,6 +16,7 @@ import { Connection } from "./Connection";
 import { HTTP_STATUS } from "./constants";
 import { gameCommands } from "./game/ui/gameCommands";
 import { globals } from "./Globals";
+import { fetchCookieOnce } from "./lobby/cookieProbe";
 import { lobbyCommands } from "./lobby/lobbyCommands";
 import { Screen } from "./lobby/types/Screen";
 import { usersCleared } from "./lobby/users/usersSlice";
@@ -27,7 +28,6 @@ import { escapeHtml } from "./utils";
 const reconnectBackoff = new ReconnectBackoff();
 const CONNECT_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
 const WELCOME_TIMEOUT_MS = 15 * SECOND_IN_MILLISECONDS;
-const COOKIE_CHECK_TIMEOUT_MS = 10 * SECOND_IN_MILLISECONDS;
 let activeConnection: Connection | undefined;
 let websocketURL = "";
 let recovering = false;
@@ -92,30 +92,6 @@ function scheduleReconnect(immediate = false) {
   }, delay);
 }
 
-async function fetchCookieForReconnect(): Promise<Response> {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-
-  try {
-    return await Promise.race([
-      fetch(withTabAccount("/test-cookie"), {
-        cache: "no-store",
-        signal: controller.signal,
-      }),
-      new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => {
-          controller.abort();
-          reject(new Error("WebSocket session check timed out."));
-        }, COOKIE_CHECK_TIMEOUT_MS);
-      }),
-    ]);
-  } finally {
-    if (timer !== undefined) {
-      clearTimeout(timer);
-    }
-  }
-}
-
 async function attemptReconnect() {
   if (!recovering || stopped || !canRetryNow() || cookieProbeInFlight) {
     return;
@@ -124,7 +100,7 @@ async function attemptReconnect() {
   const oldConnection = activeConnection;
   let shouldRetry = false;
   try {
-    const response = await fetchCookieForReconnect();
+    const response = await fetchCookieOnce();
     if (!isRecoveryCurrent(oldConnection)) {
       return;
     }

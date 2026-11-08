@@ -1,9 +1,13 @@
 import { httpError, withTabAccount } from "@hanabi-live/data";
+import { SECOND_IN_MILLISECONDS } from "complete-common";
 import { HTTP_STATUS } from "../constants";
 import { ReconnectBackoff } from "../reconnect";
 
+/** The endpoint that reports whether the session cookie is still valid. */
+export const TEST_COOKIE_PATH = "/test-cookie";
+
 const MAX_ATTEMPTS = 3;
-const REQUEST_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 10 * SECOND_IN_MILLISECONDS;
 
 export async function checkCookieWithRetry(): Promise<Response> {
   return await checkCookieAttempt(new ReconnectBackoff(), MAX_ATTEMPTS);
@@ -35,18 +39,30 @@ async function checkCookieAttempt(
   }
 }
 
-async function fetchCookieOnce(): Promise<Response> {
+/**
+ * Fetches the session check once. It gives up after a timeout even if the request ignores the abort
+ * signal.
+ */
+export async function fetchCookieOnce(): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => {
-    controller.abort();
-  }, REQUEST_TIMEOUT_MS);
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   try {
-    return await fetch(withTabAccount("/test-cookie"), {
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    return await Promise.race([
+      fetch(withTabAccount(TEST_COOKIE_PATH), {
+        cache: "no-store",
+        signal: controller.signal,
+      }),
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error("The session check timed out."));
+        }, REQUEST_TIMEOUT_MS);
+      }),
+    ]);
   } finally {
-    clearTimeout(timer);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
   }
 }

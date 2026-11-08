@@ -8,7 +8,7 @@ import {
   SECOND_IN_MILLISECONDS,
 } from "complete-common";
 import { globals } from "./Globals";
-import { START_CARD_RANK_LABEL } from "./constants";
+import { LOCAL_STORAGE_KEY, START_CARD_RANK_LABEL } from "./constants";
 import * as noteIdentity from "./game/reducers/noteIdentity";
 import type { HanabiCard } from "./game/ui/HanabiCard";
 import { morphReplayFromModal } from "./game/ui/HanabiCardClick";
@@ -155,7 +155,7 @@ function passwordSubmit() {
   });
 
   // Record the password in local storage (cookie).
-  localStorage.setItem("joinTablePassword", password);
+  localStorage.setItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD, password);
 
   closeModals();
 }
@@ -166,7 +166,7 @@ export function askForPassword(tableID: number): void {
   passwordModalID.setAttribute("value", tableID.toString());
 
   // We want to fill in the text field with the player's last typed-in password.
-  const password = localStorage.getItem("joinTablePassword");
+  const password = localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD);
   if (password !== null && password !== "") {
     passwordModalPassword.value = password;
   }

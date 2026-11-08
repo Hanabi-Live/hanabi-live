@@ -125,6 +125,12 @@ export const MAX_CLUES_COLOR = "lime";
 /** For the discard pile border and the text that warn of a "Double Discard" situation. */
 export const DOUBLE_DISCARD_COLOR = "yellow";
 
+/**
+ * For the border around the deck when the last card can be blind-played (with the "Bottom-Deck
+ * Blind-Plays" option).
+ */
+export const DECK_PLAY_AVAILABLE_COLOR = "yellow";
+
 /** For the "Your Turn" text and the line under the current player's hand in the Keldon layout. */
 export const CURRENT_TURN_COLOR = "yellow";
 

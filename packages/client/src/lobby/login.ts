@@ -14,7 +14,7 @@ import { globals } from "../Globals";
 import { FADE_TIME_MS, HTTP_STATUS } from "../constants";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
 import { websocketInit } from "../websocketInit";
-import { checkCookieWithRetry } from "./cookieProbe";
+import { TEST_COOKIE_PATH, checkCookieWithRetry } from "./cookieProbe";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
@@ -161,11 +161,10 @@ export function automaticLogin(): void {
 
   // If we have logged in previously and our cookie is still good, automatically login.
   console.log("Testing to see if we have a cached WebSocket cookie.");
-  const testCookiePath = "/test-cookie";
   checkCookieWithRetry()
     .catch((error: unknown) => {
       // Handle only failures of the cookie check; a later WebSocket error is separate.
-      console.error(`Failed to fetch "${testCookiePath}":`, error);
+      console.error(`Failed to fetch "${TEST_COOKIE_PATH}":`, error);
       const alert = $("#login-alert");
       alert.text(errorDetails(error, "Checking your saved session"));
       const retryButton = $("<button>", { type: "button" }).text("Retry");

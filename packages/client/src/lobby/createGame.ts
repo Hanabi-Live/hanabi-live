@@ -19,7 +19,7 @@ import {
 } from "complete-common";
 import * as KeyCode from "keycode-js";
 import { globals } from "../Globals";
-import { DIMMED_OPACITY } from "../constants";
+import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
 import * as modals from "../modals";
 import { getHTMLInputElement } from "../utils";
 import { Screen } from "./types/Screen";
@@ -310,7 +310,7 @@ function submit() {
     );
   }
   if (isNew) {
-    localStorage.setItem("createTablePassword", password);
+    localStorage.setItem(LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD, password);
   }
 
   // Max players must be a valid number.
@@ -508,7 +508,9 @@ export function ready(): boolean {
 
   // Fill in the "Password" box. (This is not stored on the server so we have to retrieve the last
   // password from a cookie.)
-  const password = localStorage.getItem("createTablePassword");
+  const password = localStorage.getItem(
+    LOCAL_STORAGE_KEY.CREATE_TABLE_PASSWORD,
+  );
   if (password !== null && password !== "") {
     $("#createTablePassword").val(password);
   }

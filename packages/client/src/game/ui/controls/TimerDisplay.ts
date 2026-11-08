@@ -4,35 +4,37 @@ import {
   LABEL_COLOR,
   PANEL_OPACITY,
   TEXT_SHADOW,
+  TIMER_WARNING_OPACITY,
+  WARNING_COLOR,
 } from "../constants";
 import { FitText } from "./FitText";
+
+/** The background of a timer that is not flashing a warning. */
+const PANEL_COLOR = "black";
 
 export class TimerDisplay extends Konva.Group {
   timerText: FitText;
   labelText: FitText;
-  private readonly _oval: Konva.Rect;
+  private readonly oval: Konva.Rect;
+  private warningFlashOn = false;
 
   tooltipName = "";
   tooltipContent = "";
 
-  get oval(): Konva.Rect {
-    return this._oval;
-  }
-
   constructor(config: Konva.ContainerConfig) {
     super(config);
 
-    this._oval = new Konva.Rect({
+    this.oval = new Konva.Rect({
       x: 0,
       y: 0,
       width: config.width,
       height: config.height,
-      fill: "black",
+      fill: PANEL_COLOR,
       cornerRadius: config["cornerRadius"] as number | number[] | undefined,
       opacity: PANEL_OPACITY,
       listening: true,
     });
-    this.add(this._oval);
+    this.add(this.oval);
 
     this.timerText = new FitText({
       x: 0,
@@ -73,5 +75,22 @@ export class TimerDisplay extends Konva.Group {
 
   setLabelText(text: string): void {
     this.labelText.fitText(text);
+  }
+
+  /** Switches the background between the normal panel and the red that warns of low time. */
+  toggleWarningFlash(): void {
+    this.setWarningFlash(!this.warningFlashOn);
+  }
+
+  /** Restores the normal background. */
+  clearWarningFlash(): void {
+    this.setWarningFlash(false);
+  }
+
+  private setWarningFlash(on: boolean): void {
+    this.warningFlashOn = on;
+    this.oval
+      .fill(on ? WARNING_COLOR : PANEL_COLOR)
+      .opacity(on ? TIMER_WARNING_OPACITY : PANEL_OPACITY);
   }
 }

@@ -3,6 +3,7 @@
 import { NO_VALUE } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import * as KeyCode from "keycode-js";
+import { LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
 import { closeModals } from "../modals";
 import { escapeHtml } from "../utils";
@@ -75,7 +76,7 @@ function submit() {
     }
   }
 
-  localStorage.setItem("watchReplaySource", source);
+  localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SOURCE, source);
 
   // Error
   $("#replay-error-row").hide();
@@ -98,7 +99,7 @@ function submit() {
       showReplayError("Error: The database ID must be a positive number.");
       return;
     }
-    localStorage.setItem("watchReplayID", databaseIDString);
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID, databaseIDString);
   }
 
   // JSON
@@ -116,7 +117,7 @@ function submit() {
       return;
     }
     ({ gameJSON } = parsed);
-    localStorage.setItem("watchReplayJSON", gameJSONString);
+    localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJSONString);
   }
 
   // Visibility
@@ -146,11 +147,14 @@ function submit() {
     }
   }
 
-  localStorage.setItem("watchReplayVisibility", visibility);
+  localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY, visibility);
 
   // Spoiler-Free Review
   const spoilerFreeChecked = $("#replay-spoiler-free").prop("checked") === true;
-  localStorage.setItem("watchReplaySpoilerFree", spoilerFreeChecked.toString());
+  localStorage.setItem(
+    LOCAL_STORAGE_KEY.WATCH_REPLAY_SPOILER_FREE,
+    spoilerFreeChecked.toString(),
+  );
   const spoilerFree = visibility === "shared" && spoilerFreeChecked;
 
   if (source === "id") {
@@ -183,7 +187,7 @@ function showReplayError(text: string) {
 // tooltip is added to the DOM).
 export function ready(): boolean {
   // Set the "Source" radio button.
-  const source = localStorage.getItem("watchReplaySource");
+  const source = localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SOURCE);
   let sourceBox: string;
   if (source === "id") {
     sourceBox = "#replay-source-id";
@@ -197,14 +201,14 @@ export function ready(): boolean {
   $(sourceBox).change();
 
   // Set the "ID" field.
-  let databaseID = localStorage.getItem("watchReplayID");
+  let databaseID = localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_ID);
   if (typeof databaseID !== "string") {
     databaseID = "";
   }
   $("#replay-id").val(databaseID);
 
   // Set the "JSON" field.
-  let json = localStorage.getItem("watchReplayJSON");
+  let json = localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON);
   if (typeof json !== "string") {
     json = "";
   }
@@ -214,7 +218,9 @@ export function ready(): boolean {
   $("#replay-error-row").hide();
 
   // Set the "Visibility" radio button.
-  const visibility = localStorage.getItem("watchReplayVisibility");
+  const visibility = localStorage.getItem(
+    LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY,
+  );
   let visibilityBox: string;
   if (visibility === "solo") {
     visibilityBox = "#replay-visibility-solo";
@@ -230,7 +236,8 @@ export function ready(): boolean {
   // Set the "Spoiler-Free Review" checkbox.
   $("#replay-spoiler-free").prop(
     "checked",
-    localStorage.getItem("watchReplaySpoilerFree") === "true",
+    localStorage.getItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_SPOILER_FREE)
+      === "true",
   );
 
   return true;

@@ -22,7 +22,11 @@ import {
   getLobbyChatIDAttribute,
   LobbyChatDeletionState,
 } from "./chatDeletion";
-import { FADE_TIME_MS, TYPED_HISTORY_MAX_LENGTH } from "./constants";
+import {
+  FADE_TIME_MS,
+  LOCAL_STORAGE_KEY,
+  TYPED_HISTORY_MAX_LENGTH,
+} from "./constants";
 import { acceptOptionsFromGuest } from "./lobby/createGame";
 import { Screen } from "./lobby/types/Screen";
 import * as modals from "./modals";
@@ -117,7 +121,9 @@ export function init(): void {
   }
 
   // Retrieve the contents of the typed chat list from local storage (cookie).
-  const typedChatHistoryString = localStorage.getItem("typedChatHistory");
+  const typedChatHistoryString = localStorage.getItem(
+    LOCAL_STORAGE_KEY.TYPED_CHAT_HISTORY,
+  );
   if (
     typedChatHistoryString !== null
     && typedChatHistoryString !== ""
@@ -276,7 +282,10 @@ function sendText(room: string, msgRaw: string) {
   }
 
   // Save the typed chat history to local storage (cookie).
-  localStorage.setItem("typedChatHistory", JSON.stringify(typedChatHistory));
+  localStorage.setItem(
+    LOCAL_STORAGE_KEY.TYPED_CHAT_HISTORY,
+    JSON.stringify(typedChatHistory),
+  );
 
   // Reset the typed history index.
   typedChatHistoryPrefix = "";

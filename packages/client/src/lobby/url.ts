@@ -6,6 +6,7 @@ import {
 } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME, NO_VALUE } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
+import { LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
 import { setBrowserAddressBarPath } from "../utils";
 import { parseGameJSON } from "./gameJSON";
@@ -118,7 +119,8 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
       if (tableID !== undefined && tableID > 0) {
         // Here we unconditionally send password from cookies. If the game has no password, the
         // server will ignore it.
-        const password = localStorage.getItem("joinTablePassword") ?? "";
+        const password =
+          localStorage.getItem(LOCAL_STORAGE_KEY.JOIN_TABLE_PASSWORD) ?? "";
         globals.conn!.send("tableJoin", {
           tableID,
           password,
@@ -220,8 +222,11 @@ function gotoPath(data: ServerCommandData["welcome"]): boolean {
         : "solo";
 
       const source = "json";
-      localStorage.setItem("watchReplayJSON", gameJSONString);
-      localStorage.setItem("watchReplayVisibility", visibility);
+      localStorage.setItem(LOCAL_STORAGE_KEY.WATCH_REPLAY_JSON, gameJSONString);
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY.WATCH_REPLAY_VISIBILITY,
+        visibility,
+      );
 
       globals.conn!.send("replayCreate", {
         source,

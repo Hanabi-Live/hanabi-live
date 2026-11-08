@@ -7,7 +7,6 @@ import { SECOND_IN_MILLISECONDS } from "complete-common";
 import * as tooltips from "../../tooltips";
 import { SoundType } from "../types/SoundType";
 import { globals } from "./UIGlobals";
-import { PANEL_OPACITY, TIMER_WARNING_OPACITY } from "./constants";
 import type { TimerDisplay } from "./controls/TimerDisplay";
 import { drawLayer } from "./konvaHelpers";
 
@@ -119,9 +118,9 @@ export function update(
     return;
   }
 
-  // Reset both timers to black background, if player was running out of time.
-  globals.elements.timer1.oval.fill("black").opacity(PANEL_OPACITY);
-  globals.elements.timer2.oval.fill("black").opacity(PANEL_OPACITY);
+  // Clear the low-time warning from both timers.
+  globals.elements.timer1.clearWarningFlash();
+  globals.elements.timer2.clearWarningFlash();
 
   // Start the local timer for the active player.
   const activeTimer = ourTurn
@@ -204,10 +203,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     && !globals.state.pause.active
     && !globals.lobby.errorOccurred
   ) {
-    timer.oval.opacity(
-      timer.oval.fill() === "black" ? TIMER_WARNING_OPACITY : PANEL_OPACITY,
-    );
-    timer.oval.fill(timer.oval.fill() === "black" ? "red" : "black");
+    timer.toggleWarningFlash();
     globals.game!.sounds.play(SoundType.Tone);
   }
 }

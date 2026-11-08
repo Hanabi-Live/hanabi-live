@@ -88,6 +88,12 @@ const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
 /** The distance of the rank label from the left edge of a card. */
 const RANK_LABEL_X = 19;
 
+/** How far the shadows under the rank labels and pips on a card spread. */
+const CARD_FACE_SHADOW_BLUR = 10;
+
+/** The black outline of the rank labels, which is thicker without shadows to keep them readable. */
+const RANK_LABEL_OUTLINE_WIDTH = { withShadows: 2, withoutShadows: 8 } as const;
+
 /** How much further apart the suit pips are spread on the deck than on an unknown card. */
 const DECK_SUIT_PIP_RING_SPREAD = 1.05;
 
@@ -141,7 +147,7 @@ export function drawCards<Canvas, Image>(
       // Draw the background and the borders around the card.
       drawCardBase(ctx, suit, rank, variant, colorblindMode, enableShadows);
 
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = CARD_FACE_SHADOW_BLUR;
       ctx.fillStyle = getSuitStyle(
         suit,
         rank,
@@ -151,7 +157,9 @@ export function drawCards<Canvas, Image>(
         colorblindMode,
       );
       ctx.strokeStyle = "black";
-      ctx.lineWidth = enableShadows ? 2 : 8;
+      ctx.lineWidth = enableShadows
+        ? RANK_LABEL_OUTLINE_WIDTH.withShadows
+        : RANK_LABEL_OUTLINE_WIDTH.withoutShadows;
       ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
