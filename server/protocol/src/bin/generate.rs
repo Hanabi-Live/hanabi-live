@@ -81,13 +81,17 @@ fn enum_imports(used: &BTreeSet<String>) -> String {
     )
 }
 
+/// Integer literals with at least this many digits get separators, in groups of `DIGIT_GROUP`.
+const MIN_SEPARATED_DIGITS: usize = 5;
+const DIGIT_GROUP: usize = 3;
+
 fn literal(value: &Value) -> String {
     let Some(number) = value.as_i64() else {
         return value.to_string();
     };
     let raw = number.to_string();
     let digits = raw.trim_start_matches('-');
-    if digits.len() < 5 {
+    if digits.len() < MIN_SEPARATED_DIGITS {
         return raw;
     }
     let mut result = if number < 0 {
@@ -96,7 +100,7 @@ fn literal(value: &Value) -> String {
         String::new()
     };
     for (index, digit) in digits.chars().enumerate() {
-        if index > 0 && (digits.len() - index).is_multiple_of(3) {
+        if index > 0 && (digits.len() - index).is_multiple_of(DIGIT_GROUP) {
             result.push('_');
         }
         result.push(digit);

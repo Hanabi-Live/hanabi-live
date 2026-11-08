@@ -27,6 +27,8 @@ pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 /// The value that marks a missing number, such as no seat or turn, or a suit or rank that the
 /// recipient may not see.
 pub const NO_VALUE: i32 = -1;
+/// The finish time of a game that has not finished: the start of year 1.
+pub const UNFINISHED_DATETIME: &str = "0001-01-01T00:00:00.000Z";
 /// The player limit of a table whose creator did not choose one.
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The variant of a game or table that does not choose one.

@@ -91,7 +91,7 @@ pub fn assign_characters(
         }
         let character = loop {
             let candidate = &catalog[rng.index(catalog.len())];
-            if (players.len() != 2 || !candidate.not_two_player)
+            if (players.len() != MIN_PLAYERS || !candidate.not_two_player)
                 && assigned.iter().all(|c| c.name != candidate.name)
             {
                 break candidate;

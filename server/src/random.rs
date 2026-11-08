@@ -44,6 +44,12 @@ const SEED_R: i64 = 3399;
 const ZERO_SEED: i64 = 89_482_311;
 /// The seeding steps that Go discards before filling the state.
 const DISCARDED_SEED_STEPS: usize = 20;
+/// The offsets at which Go combines three seeding steps into each state word.
+const SEED_HIGH_SHIFT: u32 = 40;
+const SEED_MIDDLE_SHIFT: u32 = 20;
+/// The bits in Go's non-negative `Int63` and `Int31` results.
+const INT63_BITS: u32 = i64::BITS - 1;
+const INT31_BITS: u32 = i32::BITS - 1;
 
 pub struct GoRandom {
     state: [u64; RNG_LEN],
@@ -82,9 +88,9 @@ impl GoRandom {
         }
         for (slot, cooked) in state.iter_mut().zip(cooked) {
             x = step(x);
-            let mut value = x.cast_unsigned() << 40;
+            let mut value = x.cast_unsigned() << SEED_HIGH_SHIFT;
             x = step(x);
-            value ^= x.cast_unsigned() << 20;
+            value ^= x.cast_unsigned() << SEED_MIDDLE_SHIFT;
             x = step(x);
             *slot = value ^ x.cast_unsigned() ^ cooked.cast_unsigned();
         }
@@ -106,11 +112,11 @@ impl GoRandom {
     pub fn intn(&mut self, bound: u64) -> u64 {
         assert!(bound > 0 && i64::try_from(bound).is_ok());
         let small = i32::try_from(bound).is_ok();
-        let range = 1_u64 << if small { 31 } else { 63 };
+        let range = 1_u64 << if small { INT31_BITS } else { INT63_BITS };
         let maximum = range - 1 - range % bound;
         loop {
             let value = if small {
-                self.int63() >> 32
+                self.int63() >> (INT63_BITS - INT31_BITS)
             } else {
                 self.int63()
             };

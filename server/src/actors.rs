@@ -4969,9 +4969,8 @@ impl TableActor {
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
                 datetime_started: crate::model::timestamp(s.started),
-                // An unfinished game has no finish time; this is the start of year 1.
                 datetime_finished: s.finished.map_or_else(
-                    || "0001-01-01T00:00:00.000Z".into(),
+                    || hanabi_protocol::UNFINISHED_DATETIME.into(),
                     crate::model::timestamp,
                 ),
                 options: wire_options(&s.game.options),
