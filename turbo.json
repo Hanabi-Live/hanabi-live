@@ -19,10 +19,10 @@
     "//#check-knip": {
       "inputs": [
         "$TURBO_DEFAULT$",
-        "packages/**",
         "!**/*.md",
+        "!**/dist/**",
         "!**/node_modules/**",
-        "!**/dist/**"
+        "packages/**"
       ],
       "env": [
         "CI",
@@ -37,11 +37,11 @@
     "//#check-shellcheck": {
       "inputs": [
         "$TURBO_DEFAULT$",
-        "**/*.sh",
-        "**/.shellcheckrc",
         "!**/*.md",
-        "!**/node_modules/**",
+        "**/*.sh",
         "!**/.husky/**",
+        "**/.shellcheckrc",
+        "!**/node_modules/**",
         "!dist/**"
       ],
       "env": [
@@ -67,7 +67,7 @@
     },
     "//#check-variant-files": {
       "dependsOn": ["@hanabi-live/scripts#transit"],
-      "inputs": ["package.json", "bun.lock", "misc/variants.txt"],
+      "inputs": ["bun.lock", "misc/variants.txt", "package.json"],
       "env": [
         "CI",
         "ImageOS",
@@ -80,7 +80,7 @@
     },
     "//#lint-package-json": {
       "dependsOn": ["@hanabi-live/scripts#transit"],
-      "inputs": ["package.json", "bun.lock", "packages/*/package.json"],
+      "inputs": ["bun.lock", "package.json", "packages/*/package.json"],
       "env": [
         "CI",
         "ImageOS",
@@ -93,29 +93,29 @@
     },
     "//#lint-rust": {
       "inputs": [
-        "server/**",
-        "!server/**/target/**",
         "!**/*.md",
         ".cargo/config.toml",
-        "rust-toolchain.toml",
+        ".editorconfig",
+        ".prettierignore",
+        "bun.lock",
         "install/database_schema.sql",
         "install/migration-files.sh",
         "install/migrations/**",
-        "packages/data/src/json/goRandom.json",
-        "packages/game/src/json/**",
+        "package.json",
         "packages/data/src/generated/**",
-        "packages/game/src/generated/**",
+        "packages/data/src/json/goRandom.json",
         "packages/data/tsconfig*.json",
+        "packages/game/src/generated/**",
+        "packages/game/src/json/**",
         "packages/game/tsconfig*.json",
+        "prettier.config.mjs",
+        "rust-toolchain.toml",
         "scripts/dev/eslint-output.ts",
         "scripts/dev/generate-protocol.sh",
         "scripts/dev/generated-protocol.eslint.config.mjs",
         "scripts/lint/check-rust.sh",
-        ".editorconfig",
-        ".prettierignore",
-        "prettier.config.mjs",
-        "package.json",
-        "bun.lock"
+        "server/**",
+        "!server/**/target/**"
       ],
       "env": [
         "CARGO_BUILD_TARGET",
