@@ -1,6 +1,8 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
 import type {
+  GameHistory,
+  ServerCommandData,
   ServerCommandTableData,
   ServerCommandUserData,
   UserID,
@@ -9,9 +11,9 @@ import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
 import type { HanabiUI } from "./game/ui/HanabiUI";
-import type { Game } from "./lobby/types/Game";
-import type { GameHistory } from "./lobby/types/GameHistory";
 import { Screen } from "./lobby/types/Screen";
+
+type Game = ServerCommandData["game"];
 
 export class Globals {
   /** The WebSocket connection (set in "websocketInit.ts"). */

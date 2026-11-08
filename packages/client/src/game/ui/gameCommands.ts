@@ -2,16 +2,8 @@
 // client also sends these messages to itself in order to emulate actions coming from the server for
 // e.g. in-game replays.
 
-import type { Spectator } from "@hanabi-live/data";
-import type {
-  CardIdentity,
-  CardOrder,
-  GameAction,
-  GameMetadata,
-  NumPlayers,
-  PlayerIndex,
-  SpectatorNote,
-} from "@hanabi-live/game";
+import type { ServerCommandData } from "@hanabi-live/data";
+import type { CardOrder, GameMetadata, NumPlayers } from "@hanabi-live/game";
 import {
   getCardsPerHand,
   getEndGameLength,
@@ -24,10 +16,19 @@ import { iRange, newArray } from "complete-common";
 import { createStore } from "redux";
 import { sendSelfPMFromServer } from "../../chat";
 import * as modals from "../../modals";
+import { ServerHandlers } from "../../serverHandlers";
 import { setBrowserAddressBarPath } from "../../utils";
+import {
+  toCardIdentity,
+  toCardOrder,
+  toGameAction,
+  toPlayerIndex,
+  toPlayerTuple,
+  toReplayArrowOrder,
+  toSoundType,
+} from "../../wire";
 import { initialState } from "../reducers/initialStates/initialState";
 import { stateReducer } from "../reducers/stateReducer";
-import type { InitData } from "../types/InitData";
 import { ReplayArrowOrder } from "../types/ReplayArrowOrder";
 import { SoundType } from "../types/SoundType";
 import type { State } from "../types/State";
@@ -45,9 +46,7 @@ import * as timer from "./timer";
 import { uiInit } from "./uiInit";
 
 // Define a command handler map.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type CommandCallback = (data: any) => void;
-export const gameCommands = new Map<string, CommandCallback>();
+export const gameCommands = new ServerHandlers();
 
 // ----------------
 // Command handlers
@@ -61,14 +60,18 @@ gameCommands.set("boot", () => {
 });
 
 // Updates the clocks to show how much time people are taking or how much time people have left.
-gameCommands.set("clock", (data: timer.ClockData) => {
-  timer.update(data);
+gameCommands.set("clock", (data) => {
+  timer.update({
+    times: data.times,
+    activePlayerIndex:
+      data.activePlayerIndex === -1
+        ? -1
+        : toPlayerIndex(data.activePlayerIndex),
+    timeTaken: data.timeTaken,
+  });
 });
 
-interface ConnectedData {
-  list: boolean[];
-}
-gameCommands.set("connected", (data: ConnectedData) => {
+gameCommands.set("connected", (data) => {
   for (const [i, connected] of data.list.entries()) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
@@ -79,22 +82,14 @@ gameCommands.set("connected", (data: ConnectedData) => {
   globals.layers.UI.batchDraw();
 });
 
-interface CardIdentitiesData {
-  tableID: number;
-  cardIdentities: CardIdentity[];
-}
-gameCommands.set("cardIdentities", (data: CardIdentitiesData) => {
+gameCommands.set("cardIdentities", (data) => {
   globals.store!.dispatch({
     type: "cardIdentities",
-    cardIdentities: data.cardIdentities,
+    cardIdentities: data.cardIdentities.map(toCardIdentity),
   });
 });
 
-interface FinishOngoingGameData {
-  databaseID: number;
-  sharedReplayLeader: string;
-}
-gameCommands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
+gameCommands.set("finishOngoingGame", (data) => {
   modals.closeIdleWarning();
 
   // Zero out the user-created efficiency modifier, if any. In a shared replay, this must be synced
@@ -126,11 +121,7 @@ gameCommands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
   }
 });
 
-interface HypotheticalData {
-  showDrawnCards: boolean;
-  actions: string[];
-}
-gameCommands.set("hypothetical", (data: HypotheticalData) => {
+gameCommands.set("hypothetical", (data) => {
   // We are joining an ongoing shared replay that is currently playing through a hypothetical line.
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
   // have taken place.
@@ -151,7 +142,7 @@ gameCommands.set("hypothetical", (data: HypotheticalData) => {
   });
 });
 
-gameCommands.set("hypoAction", (data: string) => {
+gameCommands.set("hypoAction", (data) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
   globals.store!.dispatch({
     type: "hypoAction",
@@ -170,10 +161,7 @@ gameCommands.set("hypoEnd", () => {
   hypothetical.finishHypothetical();
 });
 
-interface HypoShowDrawnCardsData {
-  showDrawnCards: boolean;
-}
-gameCommands.set("hypoShowDrawnCards", (data: HypoShowDrawnCardsData) => {
+gameCommands.set("hypoShowDrawnCards", (data) => {
   globals.store!.dispatch({
     type: "hypoShowDrawnCards",
     showDrawnCards: data.showDrawnCards,
@@ -184,7 +172,7 @@ gameCommands.set("hypoStart", () => {
   hypothetical.startHypothetical();
 });
 
-gameCommands.set("init", (metadata: InitData) => {
+gameCommands.set("init", (metadata) => {
   setURL(metadata);
   initStateStore(metadata);
 
@@ -193,24 +181,21 @@ gameCommands.set("init", (metadata: InitData) => {
 });
 
 // Received when spectating a game.
-interface NoteData {
-  order: CardOrder;
-  notes: SpectatorNote[];
-}
-gameCommands.set("note", (data: NoteData) => {
+gameCommands.set("note", (data) => {
   // If we are an active player and we got this message, something has gone wrong.
   if (globals.state.playing) {
     return;
   }
 
+  const order = toCardOrder(data.order);
   globals.store!.dispatch({
     type: "receiveNote",
-    order: data.order,
+    order,
     notes: data.notes,
   });
 
   // Set the note indicator.
-  const card = getCardOrStackBase(data.order);
+  const card = getCardOrStackBase(order);
   if (card) {
     card.setNoteIndicator();
   }
@@ -224,15 +209,7 @@ gameCommands.set("note", (data: NoteData) => {
  *
  * (It gives the notes of all the players & spectators.)
  */
-interface NoteListData {
-  notes: NoteList[];
-}
-interface NoteList {
-  name: string;
-  notes: string[];
-  isSpectator: boolean;
-}
-gameCommands.set("noteList", (data: NoteListData) => {
+gameCommands.set("noteList", (data) => {
   const names = [] as string[];
   const noteTextLists = [] as string[][];
   const isSpectators = [] as boolean[];
@@ -253,10 +230,7 @@ gameCommands.set("noteList", (data: NoteListData) => {
 
 // Received when reconnecting to an existing game as a player. (It only gets the notes of one
 // specific player).
-interface NoteListPlayerData {
-  notes: string[];
-}
-gameCommands.set("noteListPlayer", (data: NoteListPlayerData) => {
+gameCommands.set("noteListPlayer", (data) => {
   // Store our notes
   globals.store!.dispatch({
     type: "noteListPlayer",
@@ -267,23 +241,18 @@ gameCommands.set("noteListPlayer", (data: NoteListPlayerData) => {
 });
 
 // Used when the game state changes.
-interface GameActionData {
-  tableID: number;
-  action: GameAction;
-}
-gameCommands.set("gameAction", (data: GameActionData) => {
+gameCommands.set("gameAction", (data) => {
   // A turn restarts the server's idle timer.
   modals.closeIdleWarning();
 
   // Update the game state.
-  globals.store!.dispatch(data.action);
+  const action = toGameAction(data.action);
+  if (action !== undefined) {
+    globals.store!.dispatch(action);
+  }
 });
 
-interface GameActionListData {
-  tableID: number;
-  list: GameAction[];
-}
-gameCommands.set("gameActionList", (data: GameActionListData) => {
+gameCommands.set("gameActionList", (data) => {
   // Users can load a specific turn in a replay by using a URL hash
   // (e.g. "/replay/123#5"). Record the hash before we load the UI (which will overwrite the hash
   // with "#1", corresponding to the first turn).
@@ -296,7 +265,9 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
   // response to the "getGameInfo2" command). Send this list to the reducers.
   globals.store!.dispatch({
     type: "gameActionList",
-    actions: data.list,
+    actions: data.list
+      .map(toGameAction)
+      .filter((action) => action !== undefined),
   });
 
   // We might need to go to a specific turn if we loaded a URL of e.g.:
@@ -306,15 +277,7 @@ gameCommands.set("gameActionList", (data: GameActionListData) => {
   }
 });
 
-interface PauseData {
-  active: boolean;
-  playerIndex: PlayerIndex;
-}
-interface IdleWarningData {
-  tableID: number;
-  remainingMs: number;
-}
-gameCommands.set("idleWarning", (data: IdleWarningData) => {
+gameCommands.set("idleWarning", (data) => {
   modals.showIdleWarning(
     data.remainingMs,
     globals.state.playing
@@ -332,22 +295,21 @@ gameCommands.set("idleReset", () => {
   modals.closeIdleWarning();
 });
 
-gameCommands.set("pause", (data: PauseData) => {
+gameCommands.set("pause", (data) => {
   const soundType = data.active ? SoundType.GamePaused : SoundType.GameUnpaused;
   globals.game!.sounds.play(soundType);
 
   globals.store!.dispatch({
     type: "pause",
     active: data.active,
-    playerIndex: data.playerIndex,
+    // The server sends -1 once nobody is pausing, and the pauser is only shown while paused.
+    playerIndex: data.active
+      ? toPlayerIndex(data.playerIndex)
+      : globals.state.pause.playerIndex,
   });
 });
 
-interface ReplayEfficiencyModData {
-  tableID: number;
-  mod: number;
-}
-gameCommands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
+gameCommands.set("replayEfficiencyMod", (data) => {
   if (
     globals.state.replay.shared === null
     // Shared replay leaders already set the efficiency after sending the "replayAction" message.
@@ -359,10 +321,7 @@ gameCommands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
   stats.setEfficiencyMod(data.mod);
 });
 
-interface VoteData {
-  vote: boolean;
-}
-gameCommands.set("voteChange", (data: VoteData) => {
+gameCommands.set("voteChange", (data) => {
   if (data.vote) {
     setSkullEnabled();
   } else {
@@ -371,10 +330,7 @@ gameCommands.set("voteChange", (data: VoteData) => {
 });
 
 // This is used in shared replays to highlight a specific card (or UI element).
-interface ReplayIndicatorData {
-  order: ReplayArrowOrder;
-}
-gameCommands.set("replayIndicator", (data: ReplayIndicatorData) => {
+gameCommands.set("replayIndicator", (data) => {
   if (
     globals.state.replay.shared === null
     // Shared replay leaders already drew the arrow after sending the "replayAction" message.
@@ -387,16 +343,14 @@ gameCommands.set("replayIndicator", (data: ReplayIndicatorData) => {
   }
 
   arrows.hideAll();
-  if (data.order !== ReplayArrowOrder.Nothing) {
-    arrows.toggle(data.order);
+  const order = toReplayArrowOrder(data.order);
+  if (order !== ReplayArrowOrder.Nothing) {
+    arrows.toggle(order);
   }
 });
 
 // This is used in shared replays to specify who the leader is.
-interface ReplayLeaderData {
-  name: string;
-}
-gameCommands.set("replayLeader", (data: ReplayLeaderData) => {
+gameCommands.set("replayLeader", (data) => {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -408,24 +362,16 @@ gameCommands.set("replayLeader", (data: ReplayLeaderData) => {
 });
 
 // This is used in shared replays to specify who the leader is.
-interface SuggestData {
-  userName: string;
-  segment: number;
-  tableID: string;
-}
-gameCommands.set("suggestion", (data: SuggestData) => {
+gameCommands.set("suggestion", (data) => {
   if (globals.state.replay.shared === null) {
     return;
   }
 
-  suggestTurn(data.userName, data.tableID, data.segment);
+  suggestTurn(data.userName, `table${data.tableID}`, data.segment);
 });
 
 // This is used in shared replays to change the segment (e.g. turn)
-interface ReplaySegmentData {
-  segment: number;
-}
-gameCommands.set("replaySegment", (data: ReplaySegmentData) => {
+gameCommands.set("replaySegment", (data) => {
   // If we are the replay leader, we will already have the shared segment set to be equal to what
   // the server is broadcasting.
   if (
@@ -447,19 +393,15 @@ gameCommands.set("replaySegment", (data: ReplaySegmentData) => {
 });
 
 // This is used in shared replays to make fun sounds.
-interface ReplaySoundData {
-  sound: SoundType;
-}
-gameCommands.set("replaySound", (data: ReplaySoundData) => {
-  globals.game!.sounds.play(data.sound);
+gameCommands.set("replaySound", (data) => {
+  const sound = toSoundType(data.sound);
+  if (sound !== undefined) {
+    globals.game!.sounds.play(sound);
+  }
 });
 
 // This is used to update the names of the people currently spectating the game.
-interface SpectatorsData {
-  tableID: number;
-  spectators: Spectator[];
-}
-gameCommands.set("spectators", (data: SpectatorsData) => {
+gameCommands.set("spectators", (data) => {
   globals.store!.dispatch({
     type: "spectators",
     spectators: data.spectators,
@@ -519,6 +461,8 @@ function suggestTurn(who: string, room: string, segment: number) {
   }
 }
 
+type InitData = ServerCommandData["init"];
+
 function setURL(data: InitData) {
   let path: string;
   if (data.sharedReplay) {
@@ -571,10 +515,16 @@ function initStateStore(data: InitData) {
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
     options: data.options,
-    playerNames: data.playerNames,
-    ourPlayerIndex: data.ourPlayerIndex,
+    playerNames: toPlayerTuple(data.playerNames, "player names"),
+    ourPlayerIndex: toPlayerIndex(data.ourPlayerIndex),
     characterAssignments,
-    characterMetadata: data.characterMetadata,
+    // Like the assignments, the metadata is empty unless detrimental characters are on.
+    characterMetadata: toPlayerTuple(
+      data.characterMetadata.length === 0
+        ? newArray(data.options.numPlayers, -1)
+        : data.characterMetadata,
+      "character metadata entries",
+    ),
 
     minEfficiency,
     hardVariant,
@@ -605,7 +555,8 @@ function initStateStore(data: InitData) {
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,
     paused: data.paused,
-    pausePlayerIndex: data.pausePlayerIndex,
+    // The server sends -1 when nobody is pausing, and the pauser is only shown while paused.
+    pausePlayerIndex: data.paused ? toPlayerIndex(data.pausePlayerIndex) : 0,
     efficiencyModifier: data.sharedReplayEffMod,
   });
 

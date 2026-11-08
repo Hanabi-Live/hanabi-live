@@ -302,7 +302,7 @@ function openConnection(isReconnect: boolean) {
           } else {
             globals.ui?.destroy();
             globals.ui = null;
-            lobbyCommands.get("tableStart")?.(payload);
+            lobbyCommands.get("tableStart")?.(table);
           }
         });
         conn.on("gameActionList", (payload) => {
@@ -310,7 +310,9 @@ function openConnection(isReconnect: boolean) {
             return;
           }
           const rebuilding = globals.ui.globals.loading;
-          gameCommands.get("gameActionList")?.(payload);
+          gameCommands.get("gameActionList")?.(
+            SERVER_COMMAND_SCHEMAS.gameActionList.parse(payload),
+          );
           conn.setReady(true);
           if (!rebuilding) {
             conn.send("loaded", { tableID: globals.tableID });
@@ -338,7 +340,7 @@ function openConnection(isReconnect: boolean) {
           globals.ui = null;
         }
         conn.setReady(true);
-        lobbyCommands.get("welcome")?.(welcomePayload);
+        lobbyCommands.get("welcome")?.(data);
       }
     });
     conn.on("error", (data: unknown) => {
@@ -346,7 +348,7 @@ function openConnection(isReconnect: boolean) {
         return;
       }
       stopRecovery();
-      commands.get("error")?.(data);
+      commands.get("error")?.(SERVER_COMMAND_SCHEMAS.error.parse(data));
     });
     return;
   }
@@ -456,13 +458,13 @@ function gameCallback(
 
 // Install the ordinary initial-connection protocol handlers.
 function initCommands(conn: Connection) {
-  for (const [commandName, commandFunction] of commands) {
+  for (const [commandName, commandFunction] of commands.entries()) {
     conn.on(commandName, commonCallback(conn, commandName, commandFunction));
   }
-  for (const [commandName, commandFunction] of lobbyCommands) {
+  for (const [commandName, commandFunction] of lobbyCommands.entries()) {
     conn.on(commandName, lobbyCallback(conn, commandName, commandFunction));
   }
-  for (const [commandName, commandFunction] of gameCommands) {
+  for (const [commandName, commandFunction] of gameCommands.entries()) {
     conn.on(commandName, gameCallback(conn, commandName, commandFunction));
   }
 }

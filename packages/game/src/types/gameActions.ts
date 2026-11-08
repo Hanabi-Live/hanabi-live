@@ -101,7 +101,8 @@ export interface ActionDraw {
 export interface ActionGameOver {
   readonly type: "gameOver";
   readonly endCondition: EndCondition;
-  readonly playerIndex: PlayerIndex;
+  /** -1 when no player caused the end of the game. */
+  readonly playerIndex: PlayerIndex | -1;
 
   /**
    * In a normal game, the `votes` array will be filled with the indices of the players who voted to
@@ -148,7 +149,8 @@ export interface ActionStrike {
 export interface ActionTurn {
   readonly type: "turn";
   readonly num: number;
-  readonly currentPlayerIndex: PlayerIndex;
+  /** -1 once the game has ended. */
+  readonly currentPlayerIndex: PlayerIndex | -1;
 }
 
 // ------------
