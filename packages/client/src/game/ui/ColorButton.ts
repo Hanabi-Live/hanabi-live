@@ -8,6 +8,8 @@ import {
   BUTTON_HOVER_COLOR,
   BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
+  BUTTON_TEXT_MIDDLE,
+  BUTTON_TEXT_SIZE,
   FONT_FAMILY,
 } from "./constants";
 import { drawPip } from "./drawPip";
@@ -40,12 +42,15 @@ export class ColorButton extends Konva.Group {
     });
     this.add(this.background);
 
+    // The color fills the middle of the button, with an equal margin on every side.
+    const colorScale = 0.8;
+    const colorMargin = (1 - colorScale) / 2;
     const backgroundColor = new Konva.Rect({
-      x: 0.1 * w,
-      y: 0.1 * h,
-      width: 0.8 * w,
-      height: 0.8 * h,
-      cornerRadius: BUTTON_CORNER_RADIUS * 0.8 * h,
+      x: colorMargin * w,
+      y: colorMargin * h,
+      width: colorScale * w,
+      height: colorScale * h,
+      cornerRadius: BUTTON_CORNER_RADIUS * colorScale * h,
       fill: config["color"] as string | undefined,
       opacity: 0.9,
       listening: false,
@@ -57,10 +62,10 @@ export class ColorButton extends Konva.Group {
         // For Dual-Color variants, draw the color abbreviation (as text).
         const text = new Konva.Text({
           x: 0,
-          y: 0.275 * h,
+          y: (BUTTON_TEXT_MIDDLE - BUTTON_TEXT_SIZE / 2) * h,
           width: w,
           height: 0.6 * h,
-          fontSize: 0.5 * h,
+          fontSize: BUTTON_TEXT_SIZE * h,
           fontFamily: FONT_FAMILY,
           fill: "white",
           stroke: "black",

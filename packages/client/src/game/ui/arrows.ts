@@ -11,6 +11,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   ClueType,
+  EVEN_RANK_CLUE,
   getCharacterNameForPlayer,
   isCardDiscarded,
   isCardInPlayerHand,
@@ -216,10 +217,7 @@ export function set(
             text = "#";
           }
           if (globals.variant.oddsAndEvens) {
-            text = "O";
-            if (clue.value === 2) {
-              text = "E";
-            }
+            text = clue.value === EVEN_RANK_CLUE ? "E" : "O";
           }
           arrow.text.text(text);
           arrow.text.show();

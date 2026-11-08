@@ -2,6 +2,7 @@
 
 import type { Color, Rank, Suit, Variant } from "@hanabi-live/game";
 import {
+  DEFAULT_CARD_RANKS,
   START_CARD_RANK,
   getSuit,
   getSuitAbbreviationForVariant,
@@ -13,7 +14,7 @@ import {
   CARD_W,
   NO_SHADOW_COLOR,
 } from "./constants";
-import { drawPip } from "./drawPip";
+import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 import { drawStylizedRank } from "./drawStylizedRank";
 
 enum CardArea {
@@ -42,6 +43,9 @@ const RANK_LABEL_GRADIENT = [0, 14, 0, 110] as const;
 /** The distance of the rank label from the left edge of a card. */
 const RANK_LABEL_X = 19;
 
+/** How much further apart the suit pips are spread on the deck than on an unknown card. */
+const DECK_SUIT_PIP_RING_SPREAD = 1.05;
+
 export const CARD_IMAGE_STACK_BASE_RANK_NAME = "StackBase";
 export const CARD_IMAGE_UNKNOWN_CARD_RANK_NAME = "UnknownRank";
 
@@ -67,11 +71,7 @@ export function drawCards<Canvas, Image>(
 
     for (const rank of [
       STACK_BASE_RANK,
-      1,
-      2,
-      3,
-      4,
-      5,
+      ...DEFAULT_CARD_RANKS,
       UNKNOWN_CARD_RANK,
       START_CARD_RANK,
     ] as const) {
@@ -388,30 +388,21 @@ function makeDeckBack<Canvas>(
 } {
   const { cvs, ctx } = makeUnknownCard(initCanvas, enableShadows);
 
-  const sf = 0.4; // Scale factor
-  const nSuits = variant.suits.length;
-  ctx.scale(sf, sf);
+  ctx.scale(SUIT_PIP_SCALE, SUIT_PIP_SCALE);
 
   for (const [suitIndex, suit] of variant.suits.entries()) {
-    // Transform polar to cartesian coordinates.
-    const x =
-      -1.05
-      * Math.floor(
-        CARD_W * 0.7 * Math.cos((-suitIndex / nSuits + 0.25) * Math.PI * 2),
-      );
-    const y =
-      -1.05
-      * Math.floor(
-        CARD_W * 0.7 * Math.sin((-suitIndex / nSuits + 0.25) * Math.PI * 2),
-      );
+    const position = getSuitPipRingPosition(suitIndex, variant.suits.length);
 
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(
+      DECK_SUIT_PIP_RING_SPREAD * position.x,
+      DECK_SUIT_PIP_RING_SPREAD * position.y,
+    );
     drawPip(ctx, suit, variant, true, "#444444"); // Pips on the back of the deck should be gray.
     ctx.restore();
   }
 
-  ctx.scale(1 / sf, 1 / sf);
+  ctx.scale(1 / SUIT_PIP_SCALE, 1 / SUIT_PIP_SCALE);
 
   return {
     cvs,

@@ -8,6 +8,7 @@ import {
   BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
   BUTTON_TEXT_MIDDLE,
+  BUTTON_TEXT_SIZE,
   FONT_FAMILY,
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
@@ -32,7 +33,8 @@ export class CheckButton extends Konva.Group {
 
     const w = this.width();
     const h = this.height();
-    const textSize = (config["fontSize"] as number | undefined) ?? 0.5 * h;
+    const textSize =
+      (config["fontSize"] as number | undefined) ?? BUTTON_TEXT_SIZE * h;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -103,7 +105,7 @@ export class CheckButton extends Konva.Group {
         x: checkW + checkX * 1.5,
         y: (BUTTON_TEXT_MIDDLE - textSize / 2 / h) * h,
         width: w,
-        height: 0.5 * h,
+        height: BUTTON_TEXT_SIZE * h,
         fontSize: textSize,
         fontFamily: FONT_FAMILY,
         fill: "white",

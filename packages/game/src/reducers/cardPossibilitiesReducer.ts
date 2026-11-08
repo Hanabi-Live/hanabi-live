@@ -3,8 +3,9 @@
 /* eslint-disable unicorn/no-null */
 
 import { newArray } from "complete-common";
+import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
 import { getVariant } from "../gameData";
-import { ClueType, MAX_PLAYERS } from "../generated/protocol";
+import { ClueType, MAX_PLAYERS, ODD_RANK_CLUE } from "../generated/protocol";
 import type { CardState } from "../interfaces/CardState";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import { isCardTouchedByClue } from "../rules/clues";
@@ -54,10 +55,10 @@ export function cardPossibilitiesReducer(
     && !positiveRankClues.includes(clue.value)
   ) {
     if (variant.oddsAndEvens) {
-      positiveRankClues =
-        clue.value === 1
-          ? [...positiveRankClues, 1, 3, 5]
-          : [...positiveRankClues, 2, 4];
+      positiveRankClues = [
+        ...positiveRankClues,
+        ...(clue.value === ODD_RANK_CLUE ? ODD_CARD_RANKS : EVEN_CARD_RANKS),
+      ];
     } else {
       positiveRankClues = [...positiveRankClues, clue.value];
     }

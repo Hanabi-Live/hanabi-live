@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { FONT_FAMILY } from "../constants";
+import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants";
 
 // These are arrows used to show which cards that are touched by a clue (and for pointing to various
 // things in a shared replay).
@@ -32,16 +32,20 @@ export class Arrow extends Konva.Group {
     this.tween = null;
 
     const pointerLength = 0.006 * winW;
+    const length = 0.8 * y;
+
+    /** The middle of the circle that shows the clue, along the body of the arrow. */
+    const circleY = 0.3 * y;
 
     // We want there to be a black outline around the arrow, so we draw a second arrow that is
     // slightly bigger than the first.
     const border = new Konva.Arrow({
-      points: [x, 0, x, y * 0.8],
+      points: [x, 0, x, length],
       pointerLength,
       pointerWidth: pointerLength,
       fill: "black",
       stroke: "black",
-      strokeWidth: pointerLength * 2,
+      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
       shadowBlur: pointerLength * 4,
       shadowOpacity: 1,
       listening: false,
@@ -54,19 +58,19 @@ export class Arrow extends Konva.Group {
       points: [x - pointerLength, 0, x + pointerLength, 0],
       fill: "black",
       stroke: "black",
-      strokeWidth: pointerLength * 0.75,
+      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.EDGE,
       listening: false,
     });
     this.add(edge);
 
     // The main (inside) arrow is exported so that we can change the color later.
     this.base = new Konva.Arrow({
-      points: [x, 0, x, y * 0.8],
+      points: [x, 0, x, length],
       pointerLength,
       pointerWidth: pointerLength,
       fill: "white",
       stroke: "white",
-      strokeWidth: pointerLength * 1.25,
+      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
       listening: false,
     });
     this.add(this.base);
@@ -74,7 +78,7 @@ export class Arrow extends Konva.Group {
     // A circle will appear on the body of the arrow to indicate the type of clue given.
     this.circle = new Konva.Circle({
       x,
-      y: y * 0.3,
+      y: circleY,
       radius: pointerLength * 2.25,
       fill: "black",
       stroke: "white",
@@ -87,7 +91,7 @@ export class Arrow extends Konva.Group {
     // The circle will have text inside of it to indicate the number of the clue given.
     this.text = new Konva.Text({
       x,
-      y: y * 0.3,
+      y: circleY,
       offset: {
         x: this.circle.width() / 2,
         y: this.circle.height() / 2,
@@ -110,7 +114,7 @@ export class Arrow extends Konva.Group {
     if (colorblindMode) {
       this.suitPip = new Konva.Shape({
         x,
-        y: y * 0.3,
+        y: circleY,
         scale: {
           x: 0.2,
           y: 0.2,

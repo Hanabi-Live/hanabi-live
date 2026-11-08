@@ -15,12 +15,14 @@ import type { RectConfig } from "konva/types/shapes/Rect";
 import type { Pips } from "../types/Pips";
 import { globals } from "./UIGlobals";
 import {
+  ARROW_STROKE_WIDTH,
   BOTTOM_LEFT_X,
   BOTTOM_LEFT_Y,
   CARD_H,
   CARD_W,
   CHOP_MOVE_COLOR,
   CLUED_COLOR,
+  CORNER_ELEMENT_OFFSET,
   DISCARD_PERMISSION_COLOR,
   FINESSE_COLOR,
   OFF_BLACK,
@@ -30,10 +32,22 @@ import {
 } from "./constants";
 import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
-import { drawPip } from "./drawPip";
+import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 
 /** The opacity of the shadow under a card. */
 const CARD_SHADOW_OPACITY = 0.4;
+
+/**
+ * The size of the large icons drawn over the middle of a card, such as a question mark. Based on
+ * the card's width, but used for both the icon's width and height.
+ */
+const LARGE_ICON_SIZE = 0.8 * CARD_W;
+
+/** The left edge of most of the large icons drawn over the middle of a card. */
+const LARGE_ICON_X = 0.15 * CARD_W;
+
+/** The top edge of the large icons drawn over the middle of a card. */
+const LARGE_ICON_Y = 0.2 * CARD_H;
 
 /** The center of the radial gradient that fills a pip of a suit with several colors. */
 const MULTI_FILL_PIP_GRADIENT_CENTER = { x: 75, y: 140 } as const;
@@ -148,7 +162,7 @@ export function directionArrow(
     pointerWidth: pointerLength * 1.5,
     fill: "black",
     stroke: "black",
-    strokeWidth: pointerLength * 2,
+    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
     listening: false,
   });
   arrow.add(border);
@@ -157,7 +171,7 @@ export function directionArrow(
     points: [-pointerLength, 0, pointerLength, 0],
     fill: "black",
     stroke: "black",
-    strokeWidth: pointerLength * 0.75,
+    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.EDGE,
     listening: false,
   });
   arrow.add(edge);
@@ -168,7 +182,7 @@ export function directionArrow(
     pointerWidth: pointerLength * 1.5,
     fill: "white",
     stroke: "white", // This should match the color of the suit; it will be manually set later on
-    strokeWidth: pointerLength * 1.25,
+    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
     listening: false,
   });
   arrow.add(arrowBase);
@@ -201,18 +215,16 @@ function makeCachedPips(variant: Variant) {
     const x = Math.floor(CARD_W * 0.5);
     const y = Math.floor(CARD_H * 0.5);
 
-    /** The scale numbers are magic. */
     const scale = {
-      x: 0.4,
-      y: 0.4,
+      x: SUIT_PIP_SCALE,
+      y: SUIT_PIP_SCALE,
     };
 
-    // Transform polar to Cartesian coordinates.
-    const offsetBase = CARD_W * 0.7;
-    const offsetTrig = (-suitIndex / variant.suits.length + 0.25) * Math.PI * 2;
+    // A Konva offset moves the shape in the opposite direction.
+    const position = getSuitPipRingPosition(suitIndex, variant.suits.length);
     const offset = {
-      x: Math.floor(offsetBase * Math.cos(offsetTrig)),
-      y: Math.floor(offsetBase * Math.sin(offsetTrig)),
+      x: -position.x,
+      y: -position.y,
     };
     let { fill } = suit;
     if (suit.fill === "multi") {
@@ -397,6 +409,22 @@ export function pips(variant: Variant): Pips {
   };
 }
 
+/**
+ * Returns where an indicator in the bottom-left corner of a card goes. If the card has triangles on
+ * its corners that show the color composition, the images would overlap, so the indicator moves
+ * upwards and inwards.
+ */
+function bottomLeftPosition(offsetCornerElements: boolean): {
+  x: number;
+  y: number;
+} {
+  const offset = offsetCornerElements ? CORNER_ELEMENT_OFFSET : 0;
+  return {
+    x: BOTTOM_LEFT_X + offset * CARD_W,
+    y: BOTTOM_LEFT_Y - offset * CARD_H,
+  };
+}
+
 export function note(
   offsetCornerElements: boolean,
   shouldShowIndicator: () => boolean,
@@ -407,8 +435,8 @@ export function note(
   const noteIndicator = new NoteIndicator({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it downwards if this is the case.
-    x: (offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
-    y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
+    x: (offsetCornerElements ? noteX - CORNER_ELEMENT_OFFSET : noteX) * CARD_W,
+    y: (offsetCornerElements ? noteY + CORNER_ELEMENT_OFFSET : noteY) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("note"),
     width: SMALL_ICON_SIZE,
@@ -428,10 +456,7 @@ export function note(
 export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
   // Define the critical indicator image.
   const indicator = new Konva.Image({
-    // If the cards have triangles on the corners that show the color composition, the images will
-    // overlap. Thus, we move it upwards if this is the case.
-    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
-    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
+    ...bottomLeftPosition(offsetCornerElements),
     align: "center",
     image: globals.imageLoader!.get("critical"),
     width: SMALL_ICON_SIZE,
@@ -449,10 +474,10 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
 
 export function questionMark(): Konva.Image {
   return new Konva.Image({
-    x: 0.15 * CARD_W,
-    y: 0.2 * CARD_H,
-    width: 0.8 * CARD_W,
-    height: 0.8 * CARD_W,
+    x: LARGE_ICON_X,
+    y: LARGE_ICON_Y,
+    width: LARGE_ICON_SIZE,
+    height: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("question-mark2"),
     visible: false,
   });
@@ -460,10 +485,10 @@ export function questionMark(): Konva.Image {
 
 export function exclamationMark(): Konva.Image {
   return new Konva.Image({
-    x: 0.15 * CARD_W,
-    y: 0.2 * CARD_H,
-    width: 0.8 * CARD_W,
-    height: 0.8 * CARD_W,
+    x: LARGE_ICON_X,
+    y: LARGE_ICON_Y,
+    width: LARGE_ICON_SIZE,
+    height: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("exclamation-mark"),
     visible: false,
   });
@@ -472,9 +497,9 @@ export function exclamationMark(): Konva.Image {
 export function ghost(): Konva.Image {
   return new Konva.Image({
     x: 0.1 * CARD_W,
-    y: 0.2 * CARD_H,
-    width: 0.8 * CARD_W,
-    height: 0.8 * CARD_W,
+    y: LARGE_ICON_Y,
+    width: LARGE_ICON_SIZE,
+    height: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("ghost"),
     visible: false,
   });
@@ -482,8 +507,8 @@ export function ghost(): Konva.Image {
 
 export function trashcan(): Konva.Image {
   return new Konva.Image({
-    x: 0.15 * CARD_W,
-    y: 0.2 * CARD_H,
+    x: LARGE_ICON_X,
+    y: LARGE_ICON_Y,
     width: 0.7 * CARD_W,
     height: 0.6 * CARD_H,
     image: globals.imageLoader!.get("trashcan2"),
@@ -495,7 +520,7 @@ export function wrench(): Konva.Image {
   return new Konva.Image({
     x: 0.1 * CARD_W,
     y: 0.33 * CARD_H,
-    width: 0.8 * CARD_W,
+    width: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("wrench"),
     visible: false,
     listening: false,
@@ -516,10 +541,7 @@ export function ddaIndicatorTop(): Konva.Image {
 
 export function ddaIndicatorBottom(offsetCornerElements: boolean): Konva.Image {
   const indicator = new Konva.Image({
-    // If the cards have triangles on the corners that show the color composition, the images will
-    // overlap. Thus, we move it upwards if this is the case.
-    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
-    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
+    ...bottomLeftPosition(offsetCornerElements),
     align: "center",
     image: globals.imageLoader!.get("dda"),
     width: SMALL_ICON_SIZE,
@@ -546,10 +568,7 @@ export function trashMiniIndicatorBottom(
   offsetCornerElements: boolean,
 ): Konva.Image {
   const indicator = new Konva.Image({
-    // If the cards have triangles on the corners that show the color composition, the images will
-    // overlap. Thus, we move it upwards if this is the case.
-    x: BOTTOM_LEFT_X + (offsetCornerElements ? 0.05 : 0) * CARD_W,
-    y: BOTTOM_LEFT_Y - (offsetCornerElements ? 0.05 : 0) * CARD_H,
+    ...bottomLeftPosition(offsetCornerElements),
     align: "center",
     image: globals.imageLoader!.get("wastebasket"),
     width: SMALL_ICON_SIZE,

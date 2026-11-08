@@ -5,6 +5,16 @@ export const DEFAULT_CARD_RANKS = [1, 2, 3, 4, 5] as const;
 export const ALL_CARD_RANKS = [...DEFAULT_CARD_RANKS, START_CARD_RANK] as const;
 export const DEFAULT_CLUE_RANKS = [1, 2, 3, 4, 5] as const;
 
+/** The odd ranks, which the odd rank clue touches in an Odds and Evens variant. */
+export const ODD_CARD_RANKS: ReadonlyArray<
+  (typeof DEFAULT_CARD_RANKS)[number]
+> = DEFAULT_CARD_RANKS.filter((rank) => rank % 2 === 1);
+
+/** The even ranks, which the even rank clue touches in an Odds and Evens variant. */
+export const EVEN_CARD_RANKS: ReadonlyArray<
+  (typeof DEFAULT_CARD_RANKS)[number]
+> = DEFAULT_CARD_RANKS.filter((rank) => rank % 2 === 0);
+
 /**
  * The amount of cards that need to be played on a play stack in order for it to be considered
  * finished. In a no variant game, this is 5 because we need to play 1, 2, 3, 4, and 5.

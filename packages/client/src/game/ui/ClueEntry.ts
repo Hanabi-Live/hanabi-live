@@ -32,6 +32,11 @@ export class ClueEntry extends Konva.Group {
     const h = config.height;
     assertDefined(h, 'ClueEntry was not provided with a "height" value.');
 
+    // Every column of the entry uses the same text size.
+    const fontSize = 0.9 * h;
+    const playerNameWidth = 0.3 * w;
+    const clueNameWidth = 0.2 * w;
+
     this.background = new Konva.Rect({
       x: 0,
       y: 0,
@@ -46,9 +51,9 @@ export class ClueEntry extends Konva.Group {
     const giver = new FitText({
       x: 0.05 * w,
       y: 0,
-      width: 0.3 * w,
+      width: playerNameWidth,
       height: h,
-      fontSize: 0.9 * h,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
       text: globals.metadata.playerNames[clue.giver],
@@ -60,9 +65,9 @@ export class ClueEntry extends Konva.Group {
     const target = new FitText({
       x: 0.4 * w,
       y: 0,
-      width: 0.3 * w,
+      width: playerNameWidth,
       height: h,
-      fontSize: 0.9 * h,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
       text: globals.metadata.playerNames[clue.target],
@@ -84,10 +89,10 @@ export class ClueEntry extends Konva.Group {
     const name = new Konva.Text({
       x: 0.75 * w,
       y: 0,
-      width: 0.2 * w,
+      width: clueNameWidth,
       height: h,
       align: "center",
-      fontSize: 0.9 * h,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
       text: clueName,
@@ -99,10 +104,10 @@ export class ClueEntry extends Konva.Group {
     this.negativeMarker = new Konva.Text({
       x: 0.88 * w,
       y: 0,
-      width: 0.2 * w,
+      width: clueNameWidth,
       height: h,
       align: "center",
-      fontSize: 0.9 * h,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
       text: "✘", // eslint-disable-line complete/require-ascii

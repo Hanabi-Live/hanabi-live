@@ -47,8 +47,10 @@ export class CurrentPlayerArea extends Konva.Group {
 
     this.values = values;
 
-    // The left-most box that contains the name of the current player.
-    let box1Width = values.w * 0.75;
+    // The left-most box that contains the name of the current player takes most of the area, and
+    // the box with the arrow takes the rest.
+    const nameBoxShare = 0.75;
+    let box1Width = values.w * nameBoxShare;
     box1Width -= values.spacing;
     this.rect1 = new Konva.Rect({
       width: box1Width * winW,
@@ -69,11 +71,13 @@ export class CurrentPlayerArea extends Konva.Group {
     textValues.x = box1Width / 2 - textValues.w / 2;
     textValues.x2 = box1Width / 2 - textValues.w2 / 2;
 
+    const fontSize = 0.08 * winH;
+
     this.text1 = new FitText({
       x: textValues.x * winW,
       width: textValues.w * winW,
       fontFamily: FONT_FAMILY,
-      fontSize: 0.08 * winH,
+      fontSize,
       text: "Current player:",
       align: "center",
       fill: LABEL_COLOR,
@@ -86,7 +90,7 @@ export class CurrentPlayerArea extends Konva.Group {
       x: textValues.x * winW,
       width: textValues.w * winW,
       fontFamily: FONT_FAMILY,
-      fontSize: 0.08 * winH,
+      fontSize,
       text: "",
       align: "center",
       fill: getCanvasColors().currentPlayerText,
@@ -99,7 +103,7 @@ export class CurrentPlayerArea extends Konva.Group {
       x: textValues.x2 * winW,
       width: textValues.w2 * winW,
       fontFamily: FONT_FAMILY,
-      fontSize: 0.08 * winH,
+      fontSize,
       text: "",
       align: "center",
       fill: "red",
@@ -110,8 +114,8 @@ export class CurrentPlayerArea extends Konva.Group {
 
     // The right-most box that contains the arrow.
     const arrowValues = {
-      x: values.w * 0.75 + values.spacing,
-      w: values.w * 0.25 - values.spacing,
+      x: values.w * nameBoxShare + values.spacing,
+      w: values.w * (1 - nameBoxShare) - values.spacing,
       h: values.h,
       spacing: 0.01,
     };
@@ -158,12 +162,13 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.arrow.add(arrowBorder);
 
+    const edgeHalfLength = 0.005;
     const arrowBorderEdge = new Konva.Line({
       points: [
         arrowValues.spacing * winW,
-        (arrowValues.h / 2 - 0.005) * winH,
+        (arrowValues.h / 2 - edgeHalfLength) * winH,
         arrowValues.spacing * winW,
-        (arrowValues.h / 2 + 0.005) * winH,
+        (arrowValues.h / 2 + edgeHalfLength) * winH,
       ],
       fill: "black",
       stroke: "black",

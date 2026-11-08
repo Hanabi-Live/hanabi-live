@@ -11,6 +11,7 @@ import type {
 import {
   MAX_CARDS_PER_HAND,
   MAX_SUITS,
+  ODD_RANK_CLUE,
   getTotalCardsInDeck,
   newColorClue,
   newRankClue,
@@ -42,6 +43,7 @@ import { backToLobby } from "./backToLobby";
 import * as clues from "./clues";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  EFFICIENCY_DECIMAL_PLACES,
   FONT_FAMILY,
   LABEL_COLOR,
   LEFT_MOUSE_BUTTON,
@@ -1379,6 +1381,13 @@ function drawClueLog() {
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log).
 function drawStatistics() {
+  // The statistics are a grid of labels with their numbers beside them.
+  const labelX = 0.825 * winW;
+  const numberX = 0.9 * winW;
+  const paceY = 0.57 * winH;
+  const efficiencyY = 0.59 * winH;
+  const fontSize = 0.02 * winH;
+
   const statsRect = new Konva.Rect({
     x: clueLogValues.x * winW,
     y: 0.53 * winH,
@@ -1393,11 +1402,11 @@ function drawStatistics() {
 
   const variantLabel = new FitText({
     text: globals.variant.name.replace(/(?<!\s)\s*\(\d Suits\)/u, ""),
-    x: 0.825 * winW,
+    x: labelX,
     y: 0.54 * winH,
     width: 0.15 * winW,
     height: 0.03 * winH,
-    fontSize: 0.02 * winH,
+    fontSize,
     fontFamily: FONT_FAMILY,
     fill: LABEL_COLOR,
     ...TEXT_SHADOW,
@@ -1408,7 +1417,7 @@ function drawStatistics() {
   globals.elements.variantLabel = variantLabel;
 
   const variantUnderline = new Konva.Line({
-    points: [0.825 * winW, 0.56 * winH, 0.965 * winW, 0.56 * winH],
+    points: [labelX, 0.56 * winH, 0.965 * winW, 0.56 * winH],
     stroke: LABEL_COLOR,
     strokeWidth: 1,
     lineJoin: "round",
@@ -1421,9 +1430,9 @@ function drawStatistics() {
 
   const paceTextLabel = basicTextLabel.clone({
     text: "Pace",
-    x: 0.825 * winW,
-    y: 0.57 * winH,
-    fontSize: 0.02 * winH,
+    x: labelX,
+    y: paceY,
+    fontSize,
     listening: true,
   }) as TextWithTooltip;
   globals.layers.UI.add(paceTextLabel);
@@ -1441,9 +1450,9 @@ function drawStatistics() {
 
   const paceNumberLabel = basicNumberLabel.clone({
     text: "-",
-    x: 0.9 * winW,
-    y: 0.57 * winH,
-    fontSize: 0.02 * winH,
+    x: numberX,
+    y: paceY,
+    fontSize,
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(paceNumberLabel);
@@ -1461,9 +1470,9 @@ function drawStatistics() {
 
   const efficiencyTextLabel = basicTextLabel.clone({
     text: "Efficiency",
-    x: 0.825 * winW,
-    y: 0.59 * winH,
-    fontSize: 0.02 * winH,
+    x: labelX,
+    y: efficiencyY,
+    fontSize,
     listening: true,
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyTextLabel);
@@ -1491,9 +1500,9 @@ function drawStatistics() {
 
   const efficiencyNumberLabel = basicNumberLabel.clone({
     text: "-",
-    x: 0.9 * winW,
-    y: 0.59 * winH,
-    fontSize: 0.02 * winH,
+    x: numberX,
+    y: efficiencyY,
+    fontSize,
     listening: true,
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyNumberLabel);
@@ -1506,18 +1515,18 @@ function drawStatistics() {
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
     x: 0.905 * winW,
-    y: 0.59 * winH,
-    fontSize: 0.02 * winH,
+    y: efficiencyY,
+    fontSize,
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyPipeLabel);
   globals.elements.efficiencyPipeLabel = efficiencyPipeLabel;
 
   const efficiencyMinNeededLabel = basicNumberLabel.clone({
-    text: globals.metadata.minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
+    text: globals.metadata.minEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES),
     x: 0.918 * winW,
-    y: 0.59 * winH,
-    fontSize: 0.02 * winH,
+    y: efficiencyY,
+    fontSize,
     // - "Easy" variants use the default color (off-white).
     // - "Hard" variants use pink.
     fill:
@@ -2005,7 +2014,7 @@ function drawClueArea() {
 
 function rankTextFromVariant(rank: RankClueNumber): string {
   if (globals.variant.oddsAndEvens) {
-    return rank === 1 ? "O" : "E";
+    return rank === ODD_RANK_CLUE ? "O" : "E";
   }
 
   return rank.toString();

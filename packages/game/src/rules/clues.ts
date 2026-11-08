@@ -1,7 +1,13 @@
 // Functions related to the clue objects themselves: converting, getting names, etc.
 
 import { assertDefined } from "complete-common";
-import { ClueType, START_CARD_RANK } from "../generated/protocol";
+import { EVEN_CARD_RANKS, ODD_CARD_RANKS } from "../constants";
+import {
+  ClueType,
+  EVEN_RANK_CLUE,
+  ODD_RANK_CLUE,
+  START_CARD_RANK,
+} from "../generated/protocol";
 import type { Color } from "../interfaces/Color";
 import type { GameMetadata } from "../interfaces/GameMetadata";
 import type { Suit } from "../interfaces/Suit";
@@ -41,11 +47,11 @@ export function getClueName(
   }
 
   if (variant.oddsAndEvens && clueType === ClueType.Rank) {
-    if (clueValue === 1) {
+    if (clueValue === ODD_RANK_CLUE) {
       return "Odd";
     }
 
-    if (clueValue === 2) {
+    if (clueValue === EVEN_RANK_CLUE) {
       return "Even";
     }
   }
@@ -208,13 +214,11 @@ export function isCardTouchedByClueRank(
     return cardRank >= clueRank;
   }
 
-  // Clue ranks in Odds And Evens can only be 1 or 2.
+  // Clue ranks in Odds And Evens can only be odd or even.
   if (variant.oddsAndEvens) {
-    if (clueRank === 1) {
-      return [1, 3, 5].includes(cardRank);
-    }
-
-    return [2, 4].includes(cardRank);
+    const touchedRanks: readonly number[] =
+      clueRank === ODD_RANK_CLUE ? ODD_CARD_RANKS : EVEN_CARD_RANKS;
+    return touchedRanks.includes(cardRank);
   }
 
   if (cardRank === variant.specialRank) {

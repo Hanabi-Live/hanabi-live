@@ -1,7 +1,37 @@
 import type { Suit, Variant } from "@hanabi-live/game";
 import { assertDefined } from "complete-common";
-import { CARD_IMAGE_SHADOW_COLOR, NO_SHADOW_COLOR } from "./constants";
+import {
+  CARD_IMAGE_SHADOW_COLOR,
+  CARD_W,
+  FULL_CIRCLE_RADIANS,
+  NO_SHADOW_COLOR,
+} from "./constants";
 import { DRAW_PIP_FUNCTIONS } from "./drawPipFunctions";
+
+/** The scale of the suit pips arranged in a ring on an unknown card and on the deck. */
+export const SUIT_PIP_SCALE = 0.4;
+
+/** The distance of each pip in the ring from the middle of the card, before scaling. */
+const SUIT_PIP_RING_RADIUS = 0.7 * CARD_W;
+
+/** The ring starts at the top of the card, a quarter turn from the positive x axis. */
+const SUIT_PIP_RING_START_TURNS = 0.25;
+
+/**
+ * Returns where a suit's pip sits in the ring of suit pips, relative to the middle of the card and
+ * before scaling. The suits go counterclockwise from the top.
+ */
+export function getSuitPipRingPosition(
+  suitIndex: number,
+  numSuits: number,
+): { x: number; y: number } {
+  const angle =
+    (SUIT_PIP_RING_START_TURNS - suitIndex / numSuits) * FULL_CIRCLE_RADIANS;
+  return {
+    x: -Math.floor(SUIT_PIP_RING_RADIUS * Math.cos(angle)),
+    y: -Math.floor(SUIT_PIP_RING_RADIUS * Math.sin(angle)),
+  };
+}
 
 export function drawPip(
   ctx: CanvasRenderingContext2D,
@@ -16,7 +46,7 @@ export function drawPip(
   if (highlight === true) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(3, 5, 100, 0, 360);
+    ctx.arc(3, 5, 100, 0, FULL_CIRCLE_RADIANS);
     ctx.fillStyle = "rgba(238, 188, 29, 0.3)";
     ctx.fill();
     ctx.stroke();
@@ -51,9 +81,9 @@ export function drawPip(
 
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(0, 0, 80, 80, 0, 0, 2 * Math.PI);
+    ctx.ellipse(0, 0, 80, 80, 0, 0, FULL_CIRCLE_RADIANS);
     ctx.moveTo(90, 0);
-    ctx.ellipse(0, 0, 90, 90, 0, 0, 2 * Math.PI);
+    ctx.ellipse(0, 0, 90, 90, 0, 0, FULL_CIRCLE_RADIANS);
 
     if (hasCustomFill) {
       ctx.fillStyle = customFill!;

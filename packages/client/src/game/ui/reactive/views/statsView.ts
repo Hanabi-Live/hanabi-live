@@ -2,7 +2,11 @@ import type { NumPlayers } from "@hanabi-live/game";
 import { PaceRisk, getEfficiency } from "@hanabi-live/game";
 import { assertNotNull } from "complete-common";
 import { globals } from "../../UIGlobals";
-import { LABEL_COLOR, WARNING_COLOR } from "../../constants";
+import {
+  EFFICIENCY_DECIMAL_PLACES,
+  LABEL_COLOR,
+  WARNING_COLOR,
+} from "../../constants";
 import { initKonvaTooltips } from "../../konvaTooltips";
 
 /** Updates the labels on the right-hand side of the screen. */
@@ -62,7 +66,7 @@ export function onEfficiencyChanged(data: {
 
   if (shouldShowFutureEfficiency) {
     // Show the efficiency and round it to 2 decimal places.
-    effLabel.text(futureEfficiency.toFixed(2));
+    effLabel.text(futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES));
   } else {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
     effLabel.text("-");
@@ -109,7 +113,9 @@ export function onEfficiencyChanged(data: {
     ${formatLine("Potential clues lost", data.potentialCluesLost)}
     ${formatLine(
       "Current efficiency",
-      shouldShowEfficiency ? efficiency.toFixed(2) : "-",
+      shouldShowEfficiency
+        ? efficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)
+        : "-",
     )}
     <br />
     ${formatLine("Cards remaining to get", cardsNotGotten)}
@@ -119,7 +125,9 @@ export function onEfficiencyChanged(data: {
     )}
     ${formatLine(
       "Future required efficiency",
-      shouldShowFutureEfficiency ? futureEfficiency.toFixed(2) : "-",
+      shouldShowFutureEfficiency
+        ? futureEfficiency.toFixed(EFFICIENCY_DECIMAL_PLACES)
+        : "-",
     )}
     ${formatLine(
       "Number finesses required",

@@ -15,6 +15,15 @@ export const TOP_LEFT_Y = 0.05 * CARD_H;
 export const BOTTOM_LEFT_X = 0.06 * CARD_W;
 export const BOTTOM_LEFT_Y = 0.82 * CARD_H;
 
+/**
+ * How far the corner indicators move toward the middle of a card when it has triangles in its
+ * corners that show the color composition, as a fraction of the card's width or height.
+ */
+export const CORNER_ELEMENT_OFFSET = 0.05;
+
+/** A full circle, for the canvas functions that take an angle. */
+export const FULL_CIRCLE_RADIANS = 2 * Math.PI;
+
 /** The shadow that the card images cast under their pips and rank labels. */
 export const CARD_IMAGE_SHADOW_COLOR = "rgba(0, 0, 0, 0.9)";
 
@@ -98,6 +107,21 @@ export const TEXT_SHADOW = {
   shadowOpacity: 0.9,
 } as const;
 
+// ------
+// Arrows
+// ------
+
+/**
+ * The stroke widths of the parts of an arrow with a black outline, as multiples of its pointer
+ * length. The outline is a bigger black arrow behind the body, and the edge closes the outline
+ * across the arrow's tail.
+ */
+export const ARROW_STROKE_WIDTH = {
+  OUTLINE: 2,
+  EDGE: 0.75,
+  BODY: 1.25,
+} as const;
+
 // -------
 // Buttons
 // -------
@@ -113,6 +137,9 @@ export const BUTTON_CORNER_RADIUS = 0.12;
  * off the exact middle, which looks better.
  */
 export const BUTTON_TEXT_MIDDLE = 0.525;
+
+/** The default size of a button's text, as a fraction of the button's height. */
+export const BUTTON_TEXT_SIZE = 0.5;
 
 // ------
 // Panels
@@ -132,6 +159,13 @@ export const STAGE_FADE_OPACITY = 0.3;
 
 /** The opacity of the dark overlay while the game is paused. */
 export const PAUSED_STAGE_FADE_OPACITY = 0.8;
+
+// ----------
+// Statistics
+// ----------
+
+/** The number of decimal places shown for each efficiency figure. */
+export const EFFICIENCY_DECIMAL_PLACES = 2;
 
 // ------
 // Timers

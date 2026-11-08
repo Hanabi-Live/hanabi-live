@@ -39,6 +39,10 @@ pub const MIN_RANK: i32 = 1;
 pub const MAX_RANK: i32 = 5;
 /// The rank of a stack's start card, which Up or Down variants add to each suit.
 pub const START_CARD_RANK: i32 = 7;
+/// The rank clue that touches the odd ranks in an Odds and Evens variant.
+pub const ODD_RANK_CLUE: i32 = 1;
+/// The rank clue that touches the even ranks in an Odds and Evens variant.
+pub const EVEN_RANK_CLUE: i32 = 2;
 /// Clue tokens in play at most, before a clue-starved variant doubles their count.
 pub const MAX_CLUES: i32 = 8;
 /// The strikes that end a game.

@@ -5,6 +5,8 @@ import {
   BUTTON_HOVER_COLOR,
   BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
+  BUTTON_TEXT_MIDDLE,
+  BUTTON_TEXT_SIZE,
   FONT_FAMILY,
 } from "./constants";
 import { drawLayer } from "./konvaHelpers";
@@ -37,10 +39,10 @@ export class RankButton extends Konva.Group {
 
     const text = new Konva.Text({
       x: 0,
-      y: 0.275 * h, // 0.25 is too high for some reason
+      y: (BUTTON_TEXT_MIDDLE - BUTTON_TEXT_SIZE / 2) * h,
       width: w,
-      height: 0.5 * h,
-      fontSize: 0.5 * h,
+      height: BUTTON_TEXT_SIZE * h,
+      fontSize: BUTTON_TEXT_SIZE * h,
       fontFamily: FONT_FAMILY,
       fill: "white",
       align: "center",

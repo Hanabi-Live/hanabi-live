@@ -7,6 +7,7 @@ import {
   BUTTON_OPACITY,
   BUTTON_PRESSED_COLOR,
   BUTTON_TEXT_MIDDLE,
+  BUTTON_TEXT_SIZE,
   FONT_FAMILY,
 } from "../constants";
 import { drawLayer } from "../konvaHelpers";
@@ -34,7 +35,8 @@ export class Button extends Konva.Group {
 
     const w = this.width();
     const h = this.height();
-    const textSize = (config["fontSize"] as number | undefined) ?? 0.5 * h;
+    const textSize =
+      (config["fontSize"] as number | undefined) ?? BUTTON_TEXT_SIZE * h;
     if (config["fontSize"] !== undefined) {
       this.assignedTextSize = true;
     }
@@ -58,7 +60,7 @@ export class Button extends Konva.Group {
         x: 0,
         y: (BUTTON_TEXT_MIDDLE - textSize / 2 / h) * h,
         width: w,
-        height: 0.5 * h,
+        height: BUTTON_TEXT_SIZE * h,
         fontSize: textSize,
         fontFamily: FONT_FAMILY,
         fill: "white",
@@ -68,11 +70,15 @@ export class Button extends Konva.Group {
       });
       this.add(this.textElement);
     } else if (images !== undefined && images.length > 0) {
-      this.imageElement = new Konva.Image({
+      // The image fills the middle of the button, with a margin on every side.
+      const imageBox = {
         x: 0.2 * w,
         y: 0.2 * h,
         width: 0.6 * w,
         height: 0.6 * h,
+      };
+      this.imageElement = new Konva.Image({
+        ...imageBox,
         image: images[0]!,
         listening: false,
       });
@@ -80,10 +86,7 @@ export class Button extends Konva.Group {
 
       if (images.length >= 2) {
         this.imageDisabledElement = new Konva.Image({
-          x: 0.2 * w,
-          y: 0.2 * h,
-          width: 0.6 * w,
-          height: 0.6 * h,
+          ...imageBox,
           image: images[1]!,
           visible: false,
           listening: false,

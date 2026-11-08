@@ -22,15 +22,17 @@ export class FullActionLog extends Konva.Group {
   private readonly textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
+    const width = 0.4 * winW;
+    const height = 0.96 * winH;
     super({
       x: 0.2 * winW,
       y: 0.02 * winH,
-      width: 0.4 * winW,
-      height: 0.96 * winH,
+      width,
+      height,
       clipX: 0,
       clipY: 0,
-      clipWidth: 0.4 * winW,
-      clipHeight: 0.96 * winH,
+      clipWidth: width,
+      clipHeight: height,
       visible: false,
       listening: false,
     });
@@ -39,8 +41,8 @@ export class FullActionLog extends Konva.Group {
     const rect = new Konva.Rect({
       x: 0,
       y: 0,
-      width: 0.4 * winW,
-      height: 0.96 * winH,
+      width,
+      height,
       fill: "black",
       opacity: 0.9,
       cornerRadius: PANEL_CORNER_RADIUS * winW,
@@ -48,42 +50,38 @@ export class FullActionLog extends Konva.Group {
     });
     Konva.Group.prototype.add.call(this, rect);
 
+    // The turn numbers sit in a narrow column to the left of the text, with the same margin above
+    // and below.
+    const margin = 0.01 * winH;
+    const textHeight = height - 2 * margin;
+    const fontSize = 0.025 * winH;
+
     // The text for each action.
     this.textOptions = {
-      fontSize: 0.025 * winH,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: "white",
       x: 0.04 * winW,
-      y: 0.01 * winH,
+      y: margin,
       width: 0.35 * winW,
-      height: 0.94 * winH,
+      height: textHeight,
       listening: false,
     };
 
     // The turn numbers for each action.
     this.numbersOptions = {
-      fontSize: 0.025 * winH,
+      fontSize,
       fontFamily: FONT_FAMILY,
       fill: getCanvasColors().actionLogNumber,
       x: 0.01 * winW,
-      y: 0.01 * winH,
+      y: margin,
       width: 0.03 * winW,
-      height: 0.94 * winH,
+      height: textHeight,
       listening: false,
     };
 
     // The text displayed when the selected player hasn't taken any actions.
-    const emptyMessageOptions = {
-      fontSize: 0.025 * winH,
-      fontFamily: FONT_FAMILY,
-      fill: "white",
-      x: 0.04 * winW,
-      y: 0.01 * winH,
-      width: 0.35 * winW,
-      height: 0.94 * winH,
-      listening: false,
-    };
-    this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
+    this.playerLogEmptyMessage = new FitText(this.textOptions);
     this.playerLogEmptyMessage.fitText(
       "This player has not taken any actions yet.",
     );

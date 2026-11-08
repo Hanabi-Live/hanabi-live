@@ -17,6 +17,18 @@ import * as konvaTooltips from "./konvaTooltips";
 import * as turn from "./turn";
 import { globals } from "./UIGlobals";
 
+/** The size of the count of cards left in the deck, as a fraction of the deck's height. */
+const NUM_LEFT_SIZE = 0.4;
+
+/** The top of the count of cards left, as a fraction of the deck's height. */
+const NUM_LEFT_Y = 0.3;
+
+/**
+ * The top of the count of cards left once the deck is empty, as a fraction of the deck's height. It
+ * moves up to make room for the labels that show the turns remaining.
+ */
+const EMPTY_DECK_NUM_LEFT_Y = 0.15;
+
 export class Deck extends Konva.Group {
   cardBack: Konva.Image;
   numLeft: number;
@@ -48,10 +60,10 @@ export class Deck extends Konva.Group {
       strokeWidth: 0.0168 * this.height(),
       align: "center",
       x: 0,
-      y: 0.3 * this.height(),
+      y: NUM_LEFT_Y * this.height(),
       width: this.width(),
-      height: 0.4 * this.height(),
-      fontSize: 0.4 * this.height(),
+      height: NUM_LEFT_SIZE * this.height(),
+      fontSize: NUM_LEFT_SIZE * this.height(),
       fontFamily: FONT_FAMILY,
       fontStyle: "bold",
       text: this.numLeft.toString(),
@@ -178,11 +190,8 @@ export class Deck extends Konva.Group {
     // When there are no cards left in the deck, remove the card-back and show a label that
     // indicates how many turns are left before the game ends.
     this.cardBack.visible(count > 0);
-    let h = 0.3;
-    if (count === 0) {
-      h = 0.15;
-    }
-    this.numLeftText.y(h * this.height());
+    const numLeftY = count === 0 ? EMPTY_DECK_NUM_LEFT_Y : NUM_LEFT_Y;
+    this.numLeftText.y(numLeftY * this.height());
     globals.elements.deckTurnsRemainingLabel1!.visible(
       count === 0 && !globals.options.allOrNothing,
     );

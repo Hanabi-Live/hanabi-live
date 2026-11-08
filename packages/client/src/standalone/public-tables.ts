@@ -445,6 +445,9 @@ function drawScoreChart(
 }
 
 /** Zero scores are red, the best score is green, and the rest alternate shades of blue. */
+/** The colors that the bars of ordinary scores cycle through. */
+const BAR_COLORS = ["#99bbff", "#3366ff", "#6699ff"] as const;
+
 function barColor(row: ScoreFrequency, best: boolean, index: number): string {
   if (row.score === 0) {
     return "#aa5555";
@@ -452,7 +455,7 @@ function barColor(row: ScoreFrequency, best: boolean, index: number): string {
   if (best) {
     return "#00aa00";
   }
-  return ["#99bbff", "#3366ff", "#6699ff"][index % 3] ?? "#99bbff";
+  return BAR_COLORS[index % BAR_COLORS.length] ?? BAR_COLORS[0];
 }
 
 /** Each game's table cells. */

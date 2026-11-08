@@ -56,37 +56,32 @@ export function uiInit(): void {
     listening: false,
   });
 
-  const loadingLabel = new Konva.Text({
+  const labelHeight = 0.05 * winH;
+  const labelConfig = {
     fill: LABEL_COLOR,
     stroke: getCanvasColors().loadingLabelStroke,
     strokeWidth: STROKE_WIDTH_UNIT * winH,
-    text: "Loading...",
     align: "center",
     x: 0,
-    y: 0.7 * winH,
     width: winW,
-    height: 0.05 * winH,
+    height: labelHeight,
     fontFamily: "Arial",
     fontStyle: "bold",
-    fontSize: 0.05 * winH,
+    fontSize: labelHeight,
     listening: false,
+  } as const;
+
+  const loadingLabel = new Konva.Text({
+    ...labelConfig,
+    text: "Loading...",
+    y: 0.7 * winH,
   });
   loadingLayer.add(loadingLabel);
 
   const progressLabel = new Konva.Text({
-    fill: LABEL_COLOR,
-    stroke: getCanvasColors().loadingLabelStroke,
-    strokeWidth: STROKE_WIDTH_UNIT * winH,
+    ...labelConfig,
     text: "0 / 0",
-    align: "center",
-    x: 0,
     y: 0.8 * winH,
-    width: winW,
-    height: 0.05 * winH,
-    fontFamily: "Arial",
-    fontStyle: "bold",
-    fontSize: 0.05 * winH,
-    listening: false,
   });
   loadingLayer.add(progressLabel);
 

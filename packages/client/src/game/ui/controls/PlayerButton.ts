@@ -2,6 +2,9 @@ import type { PlayerIndex } from "@hanabi-live/game";
 import Konva from "konva";
 import { Button } from "./Button";
 
+/** The opacity of the radio button that shows which player is selected. */
+const RADIO_OPACITY = 0.8;
+
 export class PlayerButton extends Button {
   targetPlayerIndex: PlayerIndex;
   radioBackground: Konva.Circle;
@@ -18,7 +21,7 @@ export class PlayerButton extends Button {
       radius: x / 1.5,
       stroke: "gray",
       fill: "white",
-      opacity: 0.8,
+      opacity: RADIO_OPACITY,
     });
     this.add(this.radioBackground);
 
@@ -27,7 +30,7 @@ export class PlayerButton extends Button {
       y: x,
       radius: x / 3,
       fill: "black",
-      opacity: 0.8,
+      opacity: RADIO_OPACITY,
       visible: false,
     });
     this.add(this.radioDot);

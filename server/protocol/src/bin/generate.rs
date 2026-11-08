@@ -685,6 +685,11 @@ fn game_library_constants() -> String {
             "START_CARD_RANK",
             hanabi_protocol::START_CARD_RANK.to_string(),
         ),
+        ("ODD_RANK_CLUE", hanabi_protocol::ODD_RANK_CLUE.to_string()),
+        (
+            "EVEN_RANK_CLUE",
+            hanabi_protocol::EVEN_RANK_CLUE.to_string(),
+        ),
         ("MAX_CLUES", hanabi_protocol::MAX_CLUES.to_string()),
         ("MAX_STRIKES", hanabi_protocol::MAX_STRIKES.to_string()),
     ])
