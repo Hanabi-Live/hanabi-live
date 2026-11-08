@@ -61,7 +61,7 @@ async fn guard(State(control): State<Arc<Control>>, request: Request, next: Next
             .get("sec-fetch-site")
             .is_some_and(|s| s.as_bytes().eq_ignore_ascii_case(b"cross-site"));
     let response = if browser || !peer.is_some_and(|p| p.0.ip().is_loopback()) {
-        (StatusCode::FORBIDDEN,Json(hanabi_protocol::ApiError::new("Browser or non-loopback requests are not allowed on the localhost operations interface."))).into_response()
+        (StatusCode::FORBIDDEN,"Browser or non-loopback requests are not allowed on the localhost operations interface.\n").into_response()
     } else {
         let admission = if mutating(request.uri().path()) {
             Some(control.admission.clone().read_owned().await)

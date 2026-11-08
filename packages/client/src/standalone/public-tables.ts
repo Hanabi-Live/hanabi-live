@@ -246,7 +246,7 @@ function gameRows(
   mode: string | undefined,
   variants: Readonly<Record<string, string>>,
 ): ReadonlyArray<readonly string[]> {
-  return (page.rows ?? []).map((game) => {
+  return page.rows.map((game) => {
     const names = game.users.split(", ");
     const row = [
       link(`/replay/${game.id}`, game.id),

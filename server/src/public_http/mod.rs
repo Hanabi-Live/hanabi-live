@@ -62,6 +62,15 @@ impl<E: Into<anyhow::Error>> From<E> for Error {
         Self(report.status, report.text(), Some(Box::new(report)))
     }
 }
+impl Error {
+    /// The response for a route that returns JSON, rather than an HTML page.
+    fn json(self) -> Response {
+        match self.2 {
+            Some(report) => report.response(true),
+            None => crate::accounts::api_error(self.0, self.1),
+        }
+    }
+}
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
         match self.2 {
@@ -207,11 +216,7 @@ async fn ban_check(
         .fetch_one(&state.pool)
         .await?;
         if banned {
-            return Ok((
-                StatusCode::BAD_REQUEST,
-                Json(hanabi_protocol::ApiError::new(crate::accounts::BANNED)),
-            )
-                .into_response());
+            return Ok(crate::accounts::banned());
         }
     }
     Ok(next.run(request).await)
@@ -222,6 +227,17 @@ async fn api_handler(
     axum::extract::OriginalUri(uri): axum::extract::OriginalUri,
     Path(params): Path<Params>,
     RawQuery(raw): RawQuery,
+) -> Response {
+    api_response(&state, &uri, &params, raw)
+        .await
+        .unwrap_or_else(Error::json)
+}
+
+async fn api_response(
+    state: &PublicState,
+    uri: &axum::http::Uri,
+    params: &Params,
+    raw: Option<String>,
 ) -> Result<Response> {
     let q = query(raw);
     let mode = uri.path().split('/').nth(3).unwrap_or("");
@@ -229,25 +245,13 @@ async fn api_handler(
         "variants" if !params.contains_key("id") => Json(catalog::names()).into_response(),
         "variants-full" => Json(catalog::metadata()).into_response(),
         "history" | "seed" | "variants" => {
-            let selection = match data::selection(&state, &params, mode).await {
-                Ok(s) => s,
-                Err(e) if e.0 == StatusCode::BAD_REQUEST => {
-                    return Ok((e.0, Json(data::rejected(e.1))).into_response());
-                }
-                Err(e) => return Err(e),
-            };
-            match data::list(&state, selection, &q, mode).await {
-                Ok(page) => Json(page).into_response(),
-                Err(e) if e.0 == StatusCode::BAD_REQUEST => {
-                    return Ok((e.0, Json(data::rejected(e.1))).into_response());
-                }
-                Err(e) => return Err(e),
-            }
+            let selection = data::selection(state, params, mode).await?;
+            Json(data::list(state, selection, &q, mode).await?).into_response()
         }
         "history-full" | "full-history" | "seed-full" | "full-seed" => {
             let seed = mode.contains("seed");
             let mut s =
-                data::selection(&state, &params, if seed { "seed" } else { "history" }).await?;
+                data::selection(state, params, if seed { "seed" } else { "history" }).await?;
             if !seed {
                 s.start = first(&q, "start").and_then(integer);
                 s.end = first(&q, "end").and_then(integer);
@@ -265,10 +269,10 @@ async fn api_handler(
                     .ok_or_else(|| Error::bad("Pagination offset is too large."))?;
                 s.page = Some((size, offset));
             }
-            Json(data::history(&state, s, seed).await?).into_response()
+            Json(data::history(state, s, seed).await?).into_response()
         }
-        "tags" => Json(data::tagged(&state, &params, false).await?).into_response(),
-        "tag" => Json(data::tagged(&state, &params, true).await?).into_response(),
+        "tags" => Json(data::tagged(state, params, false).await?).into_response(),
+        "tag" => Json(data::tagged(state, params, true).await?).into_response(),
         _ => return Err(Error::not_found("404 not found")),
     })
 }

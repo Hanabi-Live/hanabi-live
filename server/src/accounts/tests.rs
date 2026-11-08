@@ -191,8 +191,9 @@ async fn accounts_without_password_hash_require_reset_before_login_postgres() {
         .await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         assert!(!headers.contains_key(header::SET_COOKIE));
-        assert!(body.contains("requires a password reset"));
-        assert!(body.contains("href=\"/password-reset\""));
+        let error: ApiError = serde_json::from_str(&body).unwrap();
+        assert!(error.error.contains("requires a password reset"));
+        assert!(error.error.contains("href=\"/password-reset\""));
     }
     let stored: Option<String> =
         sqlx::query_scalar!("SELECT password_hash FROM users WHERE id=$1", id)
@@ -414,12 +415,17 @@ async fn native_accounts_http_and_identity_postgres() {
         .0,
         StatusCode::NOT_FOUND
     );
-    assert_eq!(
-        request(&app, "POST", "/api/v1/identity", "broken", None, true)
-            .await
-            .0,
-        StatusCode::BAD_REQUEST
-    );
+    for body in [
+        "broken".to_owned(),
+        json!({"token":null}).to_string(),
+        json!({"token":""}).to_string(),
+        json!({"token":replacement["token"],"username":"Alice"}).to_string(),
+    ] {
+        let (status, _, response) =
+            request(&app, "POST", "/api/v1/identity", &body, None, true).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+        serde_json::from_str::<ApiError>(&response).unwrap();
+    }
     sqlx::query!("INSERT INTO banned_ips(ip) VALUES('127.0.0.1')")
         .execute(&db.pool)
         .await
@@ -435,7 +441,7 @@ async fn native_accounts_http_and_identity_postgres() {
         )
         .await
         .0,
-        StatusCode::UNAUTHORIZED
+        StatusCode::FORBIDDEN
     );
     assert_eq!(
         request(
@@ -448,7 +454,7 @@ async fn native_accounts_http_and_identity_postgres() {
         )
         .await
         .0,
-        StatusCode::BAD_REQUEST
+        StatusCode::FORBIDDEN
     );
     let (status, headers, _) = request(&app, "GET", "/logout?dev", "", Some(cookie), false).await;
     assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
@@ -615,6 +621,26 @@ async fn seven_concurrent_account_registrations_and_logins_postgres() {
 }
 
 #[tokio::test]
+async fn login_rejects_unknown_form_fields() {
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .connect_lazy("postgres://unused@127.0.0.1/unused")
+        .unwrap();
+    let app = router(pool, config());
+    let (status, _, body) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=Alice&password=secret&version=42&remember=1",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+    let error: ApiError = serde_json::from_str(&body).unwrap();
+    assert!(error.error.contains("only a username"));
+}
+
+#[tokio::test]
 async fn password_reset_hashes_only_a_password() {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .connect_lazy("postgres://unused@127.0.0.1/unused")
@@ -657,11 +683,12 @@ async fn password_reset_hashes_only_a_password() {
 #[tokio::test]
 async fn too_much_password_work_is_rate_limited() {
     let error = TooMuchPasswordWork(std::time::Duration::from_secs(90));
-    let response = account_failure("login", error.into(), false);
+    let response = account_failure("login", error.into());
     assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
     assert_eq!(response.headers()[header::RETRY_AFTER], "90");
     let body = to_bytes(response.into_body(), 1024).await.unwrap();
-    assert!(String::from_utf8_lossy(&body).contains("try again in 2 minutes"));
+    let error: ApiError = serde_json::from_slice(&body).unwrap();
+    assert!(error.error.contains("try again in 2 minutes"));
 }
 
 #[tokio::test]
@@ -671,22 +698,16 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
         HashOverload::WaitExpired,
         HashOverload::Unavailable,
     ] {
-        for json_response in [false, true] {
-            let response = account_failure("test", reason.into(), json_response);
-            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
-            assert_eq!(response.headers()[header::RETRY_AFTER], "1");
-            let body =
-                String::from_utf8(to_bytes(response.into_body(), 1024).await.unwrap().to_vec())
-                    .unwrap();
-            assert!(body.contains("temporarily busy"));
-            if json_response {
-                assert!(serde_json::from_str::<Value>(&body).unwrap()["error"].is_string());
-            }
-        }
+        let response = account_failure("test", reason.into());
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(response.headers()[header::RETRY_AFTER], "1");
+        let body = to_bytes(response.into_body(), 1024).await.unwrap();
+        let error: ApiError = serde_json::from_slice(&body).unwrap();
+        assert!(error.error.contains("temporarily busy"));
     }
     let error = anyhow::anyhow!("synthetic-sensitive-password-token-and-query");
     assert!(!failure_diagnostic(&error).contains("synthetic-sensitive"));
-    let response = account_failure("test", error, false);
+    let response = account_failure("test", error);
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     let body =
         String::from_utf8(to_bytes(response.into_body(), 1024).await.unwrap().to_vec()).unwrap();

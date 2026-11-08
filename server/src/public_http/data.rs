@@ -240,17 +240,8 @@ pub(super) async fn list(
             "Params: size=0...100, page=0..., col[0]=0|1 (sort by id ASC|DESC), fcol[x]=value (filter by 0: id, 2: score)"
         }
         .into(),
-        rows: Some(page.rows.0),
+        rows: page.rows.0,
     })
-}
-
-/// The list response for a rejected request, with the reason in place of the parameters.
-pub(super) fn rejected(reason: String) -> hanabi_protocol::PublicGamePage {
-    hanabi_protocol::PublicGamePage {
-        total_rows: 0,
-        info: reason,
-        rows: None,
-    }
 }
 
 /// The public history lists the lobby's `GameHistory` contract.

@@ -3,11 +3,13 @@
 import {
   VERSION,
   errorDetails,
+  httpError,
   loginRequestSchema,
   setTabAccountFromLogin,
 } from "@hanabi-live/data";
 import { assertDefined } from "complete-common";
 import * as KeyCode from "keycode-js";
+import type { z } from "zod";
 import { globals } from "../Globals";
 import { FADE_TIME_MS } from "../constants";
 import { getHTMLElement, getHTMLInputElement, getURLFromPath } from "../utils";
@@ -115,37 +117,30 @@ function send(
     version: VERSION,
   });
 
-  // eslint-disable-next-line complete/no-object-any
-  const request = $.ajax({
-    url,
-    type: "POST",
-    data,
-  });
-  console.log(`Sent a login request to: ${url}`);
-
-  request
-    .done((body: unknown) => {
+  console.log(`Sending a login request to: ${url}`);
+  requestLogin(url, data)
+    .then((body) => {
       // We successfully got a cookie; attempt to establish a WebSocket connection.
       setTabAccountFromLogin(body);
       websocketInit();
     })
-    .fail((jqXHR) => {
-      formError(`Login failed: ${getAjaxError(jqXHR)}`);
-    })
-    // eslint-disable-next-line @typescript-eslint/use-unknown-in-catch-callback-variable
-    .catch((error) => {
-      formError(`Login failed: ${getAjaxError(error)}`);
+    .catch((error: unknown) => {
+      formError(errorDetails(error, "Logging in"));
     });
 }
 
-function getAjaxError(jqXHR: JQuery.jqXHR) {
-  if (jqXHR.readyState === 0) {
-    return "The browser could not complete the network request. Check your connection and browser network diagnostics.";
+async function requestLogin(
+  url: string,
+  data: z.output<typeof loginRequestSchema>,
+): Promise<unknown> {
+  const response = await fetch(url, {
+    method: "POST",
+    body: new URLSearchParams(data),
+  });
+  if (!response.ok) {
+    throw await httpError(response, "Logging in");
   }
-  if (jqXHR.responseText === "") {
-    return `HTTP ${jqXHR.status}${jqXHR.statusText === "" ? "" : ` ${jqXHR.statusText}`}; the server returned no explanation.`;
-  }
-  return `HTTP ${jqXHR.status}: ${jqXHR.responseText}`;
+  return await response.json();
 }
 
 export function automaticLogin(): void {

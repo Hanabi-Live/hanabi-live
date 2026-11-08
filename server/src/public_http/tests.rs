@@ -642,8 +642,9 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     req.extensions_mut()
         .insert(ConnectInfo("127.0.0.5:9999".parse::<SocketAddr>().unwrap()));
     let (status, body) = response(app.clone().oneshot(req).await.unwrap()).await;
-    assert_eq!(status, StatusCode::BAD_REQUEST);
-    assert!(body.contains("banned"));
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    let error: hanabi_protocol::ApiError = serde_json::from_str(&body).unwrap();
+    assert!(error.error.contains("banned"));
     let redirect = app
         .clone()
         .oneshot(

@@ -108,7 +108,11 @@ pub(super) async fn page(
     let mode = uri.path().split('/').nth(1).unwrap_or("");
     let mut v = json!({"title":"History","page":mode,"stats":{},"games":[],"frequencies":[]});
     match mode {
-        "export" => return Ok(Json(replay::export(&state, &params).await?).into_response()),
+        "export" => {
+            return Ok(replay::export(&state, &params)
+                .await
+                .map_or_else(Error::json, |game| Json(game).into_response()));
+        }
         "videos" => v["title"] = json!("Videos"),
         "password-reset" => v["title"] = json!("Password Reset"),
         "stats" => {

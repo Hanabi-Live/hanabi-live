@@ -1,4 +1,8 @@
-import { SERVER_COMMAND_SCHEMAS, VERSION } from "@hanabi-live/data";
+import {
+  SERVER_COMMAND_SCHEMAS,
+  VERSION,
+  apiErrorSchema,
+} from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
@@ -508,8 +512,10 @@ databaseDescribe("compiled application entry point (rust)", () => {
               version: VERSION,
             }),
           });
-          expect(denied.status).toBe(401);
-          await denied.text();
+          expect(denied.status).toBe(403);
+          expect(apiErrorSchema.parse(await denied.json()).error).toContain(
+            "banned",
+          );
           const stopped = once(processState.child, "close");
           const stop = await fetch(`${operationsAddress}/gracefulStop`);
           expect(stop.status).toBe(200);

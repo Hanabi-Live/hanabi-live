@@ -142,7 +142,6 @@ fn expression(schema: &Value) -> Result<String> {
                 "default",
                 "x-brand",
                 "x-readonly",
-                "x-loose",
                 "x-undefined-default",
                 "x-enum",
                 "x-date",
@@ -273,15 +272,9 @@ fn expression(schema: &Value) -> Result<String> {
             }
             "array" => format!("z.array({})", expression(&schema["items"])?),
             "object" => {
-                // Only an explicitly loose object, such as an imported file, ignores unknown fields.
-                let loose = schema["x-loose"] == true;
                 ensure!(
-                    if loose {
-                        schema.get("additionalProperties").is_none()
-                    } else {
-                        schema["additionalProperties"] == false
-                    },
-                    "Wire objects must be strict unless marked loose"
+                    schema["additionalProperties"] == false,
+                    "Wire objects must reject unknown fields"
                 );
                 let required = schema["required"].as_array().cloned().unwrap_or_default();
                 let mut fields = Vec::new();
@@ -308,11 +301,7 @@ fn expression(schema: &Value) -> Result<String> {
                         serde_json::to_string(name)?
                     ));
                 }
-                format!(
-                    "{}({{{}}})",
-                    if loose { "z.object" } else { "z.strictObject" },
-                    fields.join(",")
-                )
+                format!("z.strictObject({{{}}})", fields.join(","))
             }
             other => bail!("Unsupported schema type: {other}"),
         }

@@ -146,19 +146,22 @@ fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -
 
 fn too_many_attempts(wait: std::time::Duration) -> Response {
     let minutes = wait.as_secs().div_ceil(60).max(1);
-    (
+    let mut response = api_error(
         StatusCode::TOO_MANY_REQUESTS,
-        [(header::RETRY_AFTER, wait.as_secs().max(1).to_string())],
         format!(
-            "Too many login attempts. Please try again in {minutes} minute{}.\n",
+            "Too many login attempts. Please try again in {minutes} minute{}.",
             if minutes == 1 { "" } else { "s" }
         ),
-    )
-        .into_response()
+    );
+    response.headers_mut().insert(
+        header::RETRY_AFTER,
+        axum::http::HeaderValue::from(wait.as_secs().max(1)),
+    );
+    response
 }
 
 fn unauthorized(message: impl Into<String>) -> Response {
-    (StatusCode::UNAUTHORIZED, format!("{}\n", message.into())).into_response()
+    api_error(StatusCode::UNAUTHORIZED, message)
 }
 
 pub fn validate_client_version(version: &str, current: &str) -> Result<(), String> {
@@ -181,10 +184,10 @@ fn failure_diagnostic(error: &anyhow::Error) -> String {
     crate::errors::Report::from_error("Account operation", error, Some(30)).description
 }
 
-fn account_failure(operation: &'static str, error: anyhow::Error, json_response: bool) -> Response {
+fn account_failure(operation: &'static str, error: anyhow::Error) -> Response {
     let report =
         crate::errors::Report::from_error(format!("Account {operation}"), &error, Some(30));
-    let mut response = report.response(json_response);
+    let mut response = report.response(true);
     if let Some(TooMuchPasswordWork(wait)) = error.downcast_ref() {
         response.headers_mut().insert(
             header::RETRY_AFTER,
@@ -203,19 +206,23 @@ fn account_failure(operation: &'static str, error: anyhow::Error, json_response:
 async fn login(
     State(state): State<Arc<Accounts>>,
     ConnectInfo(address): ConnectInfo<SocketAddr>,
-    Form(input): Form<LoginRequest>,
+    input: Result<Form<LoginRequest>, axum::extract::rejection::FormRejection>,
 ) -> Response {
+    let Ok(Form(input)) = input else {
+        return api_error(
+            StatusCode::BAD_REQUEST,
+            "The login form must contain only a username, password, newPassword, and version.",
+        );
+    };
     match login_inner(&state, &address.ip().to_string(), input).await {
         Ok(response) => response,
-        Err(error) => account_failure("login", error, false),
+        Err(error) => account_failure("login", error),
     }
 }
 
 async fn login_inner(state: &Accounts, ip: &str, input: LoginRequest) -> Result<Response> {
     if is_banned(&state.pool, ip).await? {
-        return Ok(unauthorized(
-            "Your IP address has been banned. Please contact an administrator if you think this is a mistake.",
-        ));
+        return Ok(banned());
     }
     for (name, value) in [
         ("username", &input.username),
@@ -397,14 +404,15 @@ async fn test_cookie(State(state): State<Arc<Accounts>>, uri: Uri, headers: Head
     }
 }
 
-fn api_error(status: StatusCode, message: &str) -> Response {
+/// An error response for a client that reads JSON: every route other than an HTML page.
+pub(crate) fn api_error(status: StatusCode, message: impl Into<String>) -> Response {
     (status, Json(ApiError::new(message))).into_response()
 }
 
 pub(crate) const BANNED: &str = "Your IP address has been banned. Please contact an administrator if you think this is a mistake.";
 
-fn api_banned() -> Response {
-    api_error(StatusCode::BAD_REQUEST, BANNED)
+pub(crate) fn banned() -> Response {
+    api_error(StatusCode::FORBIDDEN, BANNED)
 }
 
 async fn identity_token(
@@ -415,7 +423,7 @@ async fn identity_token(
 ) -> Response {
     let result: Result<Response> = async {
         if is_banned(&state.pool, &address.ip().to_string()).await? {
-            return Ok(api_banned());
+            return Ok(banned());
         }
         let Some(id) = session_id(&headers, &state.config.secret, uri.query()) else {
             return Ok(api_error(
@@ -447,7 +455,7 @@ async fn identity_token(
         .into_response())
     }
     .await;
-    result.unwrap_or_else(|error| account_failure("identity-token", error, true))
+    result.unwrap_or_else(|error| account_failure("identity-token", error))
 }
 
 async fn identity(
@@ -457,16 +465,16 @@ async fn identity(
 ) -> Response {
     let result: Result<Response> = async {
         if is_banned(&state.pool, &address.ip().to_string()).await? {
-            return Ok(api_banned());
+            return Ok(banned());
         }
         let token = body
             .ok()
-            .and_then(|Json(value)| serde_json::from_value::<IdentityRequest>(value).ok())
+            .and_then(|Json(value)| hanabi_protocol::decode::<IdentityRequest>(&value).ok())
             .map(|request| request.token);
-        let Some(token) = token.filter(|token| !token.is_empty()) else {
+        let Some(token) = token else {
             return Ok(api_error(
                 StatusCode::BAD_REQUEST,
-                "Missing identity token.",
+                "The request must be a JSON object with only a non-empty token.",
             ));
         };
         let lookup = token_lookup_hash(&state.config.secret, &token)?;
@@ -494,7 +502,7 @@ async fn identity(
         ))
     }
     .await;
-    result.unwrap_or_else(|error| account_failure("identity-lookup", error, true))
+    result.unwrap_or_else(|error| account_failure("identity-lookup", error))
 }
 
 /// Hashes a new password, which a user gives to an administrator to reset their account.
@@ -510,6 +518,6 @@ async fn password_hash(
     };
     match hash_password(&address.ip().to_string(), request.password).await {
         Ok(hash) => Json(PasswordHashResponse { hash }).into_response(),
-        Err(error) => account_failure("password-hash", error, true),
+        Err(error) => account_failure("password-hash", error),
     }
 }

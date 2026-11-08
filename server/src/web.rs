@@ -24,7 +24,7 @@ use axum::{
     },
     http::{HeaderMap, StatusCode, Uri, header},
     middleware::{self, Next},
-    response::{IntoResponse, Response},
+    response::Response,
     routing::get,
 };
 use chrono::{DateTime, Utc};
@@ -296,16 +296,15 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
         app.public.use_tls,
     ) {
         log_rejection(&request, "an invalid origin");
-        return (StatusCode::FORBIDDEN, "Invalid request origin.\n").into_response();
+        return accounts::api_error(StatusCode::FORBIDDEN, "Invalid request origin.");
     }
     let _admission = app.admission.clone().read_owned().await;
     if !app.healthy() || !app.accepting.load(Ordering::Acquire) {
         log_rejection(&request, "the server draining");
-        return (
+        return accounts::api_error(
             StatusCode::SERVICE_UNAVAILABLE,
-            "The server is draining for maintenance.\n",
-        )
-            .into_response();
+            "The server is draining for maintenance.",
+        );
     }
     next.run(request).await
 }
@@ -486,22 +485,18 @@ async fn websocket(
         return crate::errors::Report::known("Opening a live connection", "server_unavailable",
             if !app.healthy() { "Live-state recovery or ownership is unavailable. Wait for recovery before reconnecting." }
             else { "The server is not accepting connections while it starts or drains for maintenance." },
-            StatusCode::SERVICE_UNAVAILABLE).response(false);
+            StatusCode::SERVICE_UNAVAILABLE).response(true);
     }
     let ip = address.ip();
     let Some(id) = accounts::session_id(&headers, &app.secret, uri.query()) else {
         eprintln!("Rejected websocket from {ip} without a valid session.");
-        return (StatusCode::UNAUTHORIZED, "A valid session is required.\n").into_response();
+        return accounts::api_error(StatusCode::UNAUTHORIZED, "A valid session is required.");
     };
     match accounts::is_banned(&app.store.primary, &address.ip().to_string()).await {
         Ok(false) => {}
         Ok(true) => {
             eprintln!("Rejected websocket for account {id} from banned IP: {ip}");
-            return (
-                StatusCode::UNAUTHORIZED,
-                "Your IP address has been banned.\n",
-            )
-                .into_response();
+            return accounts::banned();
         }
         Err(error) => {
             return crate::errors::Report::from_error(
@@ -509,7 +504,7 @@ async fn websocket(
                 &error,
                 Some(30),
             )
-            .response(false);
+            .response(true);
         }
     }
     match sqlx::query_scalar!(
@@ -522,11 +517,10 @@ async fn websocket(
         Ok(true) => {}
         Ok(false) => {
             eprintln!("Rejected websocket for deleted account {id} from IP: {ip}");
-            return (
+            return accounts::api_error(
                 StatusCode::UNAUTHORIZED,
                 "The account for this session no longer exists. Please sign in again.",
-            )
-                .into_response();
+            );
         }
         Err(error) => {
             return crate::errors::Report::from_error(
@@ -534,7 +528,7 @@ async fn websocket(
                 &error.into(),
                 Some(30),
             )
-            .response(false);
+            .response(true);
         }
     }
     let Ok(slot) = app.sockets.clone().try_acquire_owned() else {
@@ -544,7 +538,7 @@ async fn websocket(
             "The server has reached its live-connection limit. Please retry shortly.",
             StatusCode::SERVICE_UNAVAILABLE,
         )
-        .response(false);
+        .response(true);
     };
     let Ok(generation) = app
         .generation
@@ -552,7 +546,7 @@ async fn websocket(
     else {
         return crate::errors::Report::known("Opening a live connection", "session_generation_exhausted",
             "The server's session identifier space is exhausted. An administrator must restart the server.",
-            StatusCode::SERVICE_UNAVAILABLE).response(false);
+            StatusCode::SERVICE_UNAVAILABLE).response(true);
     };
     let reconnect = url::form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
         .any(|(key, value)| key == "reconnect" && value == "1");

@@ -338,10 +338,7 @@ export const lobbyStatusSchema = z.discriminatedUnion("state", [
   }),
 ]);
 
-/**
- * The `/login` form. The server ignores unknown fields so that older bots can still sign in, but
- * clients send only these.
- */
+/** The `/login` form. */
 export const loginRequestSchema = z.strictObject({
   /** Sets a new password after the current one is verified. */
   newPassword: z.string().default(""),
@@ -477,10 +474,9 @@ const publicGameRowSchema = z.strictObject({
 
 /** A page of games from the public `/api/v1/history`, `/seed`, and `/variants/{id}` lists. */
 export const publicGamePageSchema = z.strictObject({
-  /** The accepted parameters, or why the request was rejected. */
+  /** The accepted parameters. */
   info: z.string(),
-  /** Null when the request was rejected. */
-  rows: z.array(publicGameRowSchema).nullable().optional(),
+  rows: z.array(publicGameRowSchema),
   total_rows: z.number().int().min(0).max(9_007_199_254_740_991),
 });
 
@@ -533,108 +529,72 @@ export const replayActionRequestSchema = z.discriminatedUnion("type", [
 ]);
 
 /** An action in an imported game. Missing fields are 0. */
-const importActionSchema = z.object({
-  target: z
-    .number()
-    .int()
-    .min(-2_147_483_648)
-    .max(2_147_483_647)
-    .nullable()
-    .optional(),
-  type: z.number().int().min(0).max(255).nullable().optional(),
-  value: z
-    .number()
-    .int()
-    .min(-2_147_483_648)
-    .max(2_147_483_647)
-    .nullable()
-    .optional(),
+const importActionSchema = z.strictObject({
+  target: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
+  type: z.number().int().min(0).max(255).optional(),
+  value: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
 });
 
 /** A card in an imported deck. A missing identity is 0. */
-const importCardSchema = z.object({
-  rank: z
-    .number()
-    .int()
-    .min(-2_147_483_648)
-    .max(2_147_483_647)
-    .nullable()
-    .optional(),
-  suitIndex: z
-    .number()
-    .int()
-    .min(0)
-    .max(9_007_199_254_740_991)
-    .nullable()
-    .optional(),
+const importCardSchema = z.strictObject({
+  rank: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
+  suitIndex: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
 });
 
 /** A player's character in an imported game. A missing name is no character. */
-const importCharacterSchema = z.object({
-  metadata: z
-    .number()
-    .int()
-    .min(-2_147_483_648)
-    .max(2_147_483_647)
-    .nullable()
-    .optional(),
-  name: z.string().nullable().optional(),
+const importCharacterSchema = z.strictObject({
+  metadata: z.number().int().min(-2_147_483_648).max(2_147_483_647).optional(),
+  name: z.string().optional(),
 });
 
-/** One player's imported notes, indexed by card order. A missing note is empty. */
-const importNoteRowSchema = z.array(z.string().nullable());
+/** One player's imported notes, indexed by card order. */
+const importNoteRowSchema = z.array(z.string());
 
 /** The options of an imported game. Missing options take their defaults. */
-const importOptionsSchema = z.object({
-  allOrNothing: z.boolean().nullable().optional(),
-  cardCycle: z.boolean().nullable().optional(),
-  deckPlays: z.boolean().nullable().optional(),
+const importOptionsSchema = z.strictObject({
+  allOrNothing: z.boolean().optional(),
+  cardCycle: z.boolean().optional(),
+  deckPlays: z.boolean().optional(),
   /** When present, even as false, the game must assign every player a character. */
-  detrimentalCharacters: z.boolean().nullable().optional(),
-  emptyClues: z.boolean().nullable().optional(),
-  oneExtraCard: z.boolean().nullable().optional(),
-  oneLessCard: z.boolean().nullable().optional(),
-  speedrun: z.boolean().nullable().optional(),
-  startingPlayer: z
-    .number()
-    .int()
-    .min(0)
-    .max(9_007_199_254_740_991)
-    .nullable()
-    .optional(),
+  detrimentalCharacters: z.boolean().optional(),
+  emptyClues: z.boolean().optional(),
+  oneExtraCard: z.boolean().optional(),
+  oneLessCard: z.boolean().optional(),
+  speedrun: z.boolean().optional(),
+  startingPlayer: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
   timeBase: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991)
-    .nullable()
     .optional(),
   timePerTurn: z
     .number()
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991)
-    .nullable()
     .optional(),
-  timed: z.boolean().nullable().optional(),
-  variant: z.string().nullable().optional(),
+  timed: z.boolean().optional(),
+  variant: z.string().optional(),
 });
 
 /**
- * A game to import. It accepts what `ReplayGame` exports and what other Hanabi tools write, so
- * unlike other contracts, its objects ignore unknown fields and null means absent. The server
- * checks the game itself, such as whether the deck matches the seed.
+ * A game to import, in the format that `ReplayGame` exports. Every field is optional: a seed alone
+ * determines the deck, and missing options take their defaults. The server checks the game itself,
+ * such as whether the deck matches the seed.
  */
-export const replayImportSchema = z.object({
-  actions: z.array(importActionSchema).max(512).nullable().optional(),
-  characters: z.array(importCharacterSchema).max(6).nullable().optional(),
-  /** The deck, by card order. A seed alone determines it. */
-  deck: z.array(importCardSchema).max(60).nullable().optional(),
+export const replayImportSchema = z.strictObject({
+  actions: z.array(importActionSchema).max(512).optional(),
+  characters: z.array(importCharacterSchema).max(6).optional(),
+  /** The deck, by card order. */
+  deck: z.array(importCardSchema).max(60).optional(),
+  /** The exported game's database ID. Importing does not use it. */
+  id: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
   /** Each player's notes, indexed by card order. */
-  notes: z.array(importNoteRowSchema).max(6).nullable().optional(),
-  options: z.union([importOptionsSchema, z.null()]).optional(),
-  players: z.array(z.string()).max(6).nullable().optional(),
-  seed: z.string().nullable().optional(),
+  notes: z.array(importNoteRowSchema).max(6).optional(),
+  options: importOptionsSchema.optional(),
+  players: z.array(z.string()).max(6).optional(),
+  seed: z.string().optional(),
 });
 
 /** `id` replays a finished game from the database; `json` imports a game in the replay format. */
@@ -714,8 +674,8 @@ const replayOptionsSchema = z.strictObject({
 });
 
 /**
- * A game in the replay format: exported by the server and copied by the client. Importing accepts
- * older and looser JSON too, so the `gameJSON` request fields stay untyped.
+ * A game in the replay format: exported by the server and copied by the client. `ReplayImport`
+ * reads it back.
  */
 export const replayGameSchema = z.strictObject({
   actions: z.array(replayActionSchema),

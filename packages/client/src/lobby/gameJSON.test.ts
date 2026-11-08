@@ -2,16 +2,24 @@ import { describe, expect, test } from "vitest";
 import { parseGameJSON } from "./gameJSON";
 
 describe("pasted game JSON", () => {
-  test("files from other tools are accepted", () => {
+  test("exported games are accepted", () => {
     const parsed = parseGameJSON(
       JSON.stringify({
         id: 7,
         seed: "p2v0s1",
-        players: null,
-        options: { variant: "No Variant", tableName: "ignored" },
+        options: { variant: "No Variant" },
       }),
     );
     expect(parsed).toHaveProperty("gameJSON.seed", "p2v0s1");
+  });
+
+  test("unknown fields and nulls are rejected", () => {
+    for (const game of [
+      { seed: "p2v0s1", options: { tableName: "x" } },
+      { seed: "p2v0s1", players: null },
+    ]) {
+      expect(parseGameJSON(JSON.stringify(game))).toHaveProperty("error");
+    }
   });
 
   test("invalid files explain which field is wrong", () => {

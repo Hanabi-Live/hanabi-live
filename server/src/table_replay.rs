@@ -162,7 +162,6 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     for (i, row) in raw_notes.iter().enumerate() {
         ensure!(row.0.len() <= size, "Too many notes");
         for (j, text) in row.0.iter().enumerate() {
-            let text = text.as_deref().unwrap_or("");
             ensure!(text.len() <= 65536, "Note too long");
             notes[i][j] = text.to_owned();
         }
@@ -265,23 +264,27 @@ mod tests {
     }
 
     #[test]
-    fn files_from_other_tools_keep_importing() {
-        // Null means absent, and unknown fields at any level are ignored.
+    fn imports_accept_only_the_replay_format() {
         let imported = import(&json!({
             "id": 7,
             "seed": "p2v0s1",
-            "players": null,
-            "deck": null,
-            "actions": [{"type": 5, "target": -1, "value": 4, "turn": 1}],
-            "options": {"variant": null, "speedrun": null, "tableName": "x", "numPlayers": "two"},
-            "notes": [[null, "a"], []],
-            "characters": null,
-            "source": "another tool"
+            "actions": [{"type": 5, "target": -1, "value": 4}],
+            "notes": [["", "a"], []]
         }))
         .unwrap();
         assert_eq!(imported.game.players.len(), 2);
         assert_eq!(imported.notes[0][1], "a");
-        assert!(import(&json!({"seed":"p2v0s1","options":{"timeBase":1.5}})).is_err());
+        for input in [
+            json!({"seed":"p2v0s1","options":{"timeBase":1.5}}),
+            json!({"seed":"p2v0s1","source":"another tool"}),
+            json!({"seed":"p2v0s1","actions":[{"type":5,"target":-1,"turn":1}]}),
+            json!({"seed":"p2v0s1","options":{"tableName":"x"}}),
+            json!({"seed":"p2v0s1","players":null}),
+            json!({"seed":"p2v0s1","options":{"speedrun":null}}),
+            json!({"seed":"p2v0s1","notes":[[null,"a"],[]]}),
+        ] {
+            assert!(import(&input).is_err(), "{input}");
+        }
     }
 
     #[test]
