@@ -29,9 +29,12 @@ const config = {
       ],
       ignoreDependencies: [
         "grunt", // Used in shell scripts.
-        "grunt-contrib-concat", // Loaded by "Gruntfile.js".
-        "grunt-contrib-cssmin", // Loaded by "Gruntfile.js".
         "grunt-criticalcss", // Loaded by "Gruntfile.js".
+      ],
+    },
+    "packages/scripts": {
+      entry: [
+        "src/buildCSS.mts", // Run from shell scripts.
       ],
     },
     "packages/game": {

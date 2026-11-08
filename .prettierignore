@@ -24,7 +24,6 @@ server/Cargo.lock
 
 # Temporary files
 critical.css
-grunt_output
 
 # Specially formatted JSON files
 example_game_with_comments.jsonc

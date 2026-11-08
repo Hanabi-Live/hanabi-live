@@ -1,3 +1,6 @@
+// Generates the critical CSS from the CSS bundle. Run "build-critical-css.sh" instead of running
+// this directly.
+
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -10,66 +13,17 @@ if (VERSION === undefined) {
   throw new Error(`Failed to parse the client version from: ${versionPath}`);
 }
 
-// Define the name of the final CSS file. We want to include the version inside of the filename (as
-// opposed to other solutions like using a version query string). This will:
-// 1) Allow proxies to cache the file properly.
-// 2) Properly force a download of a new version in a reliable way.
-// https://www.alainschlesser.com/bust-cache-content-hash/
-const bundleFilename = `main.${VERSION}.min.css`;
-
-// Constants
-const repoRoot = path.resolve(__dirname, "..", "..");
-const packageJSON = path.join(repoRoot, "package.json");
-const cssDir = path.join(repoRoot, "public", "css");
-const cssLibDir = path.join(cssDir, "lib");
-const gruntOutputDir = path.join(__dirname, "grunt_output");
+const cssDir = path.resolve(__dirname, "..", "..", "public", "css");
 
 module.exports = function Gruntfile(grunt) {
   grunt.initConfig({
-    pkg: grunt.file.readJSON(packageJSON),
-
-    // Concatenate all of the CSS files together into the "main.css" file.
-    concat: {
-      css: {
-        src: [
-          path.join(cssLibDir, "fontawesome.min.css"),
-          path.join(cssLibDir, "solid.min.css"),
-          path.join(cssLibDir, "alpha.css"),
-          path.join(cssDir, "hanabi.css"),
-          path.join(cssDir, "dark.css"),
-        ],
-        dest: path.join(gruntOutputDir, "main.css"),
-      },
-    },
-
-    // Minify the CSS.
-    cssmin: {
-      options: {
-        // "clean-css" only does level 1 optimizations by default:
-        // https://github.com/jakubpawlowicz/clean-css#optimization-levels
-        level: 2,
-      },
-      main: {
-        src: path.join(gruntOutputDir, "main.css"),
-        dest: path.join(gruntOutputDir, bundleFilename),
-      },
-      critical: {
-        src: path.join(cssDir, "critical.css"),
-        // We do not bother baking the version into the critical CSS filename like we do for the
-        // normal CSS bundle because we do not typically re-create the critical CSS after every
-        // single client change.
-        dest: path.join(cssDir, "critical.min.css"),
-      },
-    },
-
-    // Generate critical CSS.
     criticalcss: {
       custom: {
         options: {
           url: grunt.option("url"), // Pass the URL when running the task.
           width: 1200,
           height: 900,
-          filename: path.join(gruntOutputDir, bundleFilename),
+          filename: path.join(cssDir, `main.${VERSION}.min.css`),
           outputfile: path.join(cssDir, "critical.css"),
           buffer: 800 * 1024,
           ignoreConsole: false,
@@ -78,30 +32,7 @@ module.exports = function Gruntfile(grunt) {
     },
   });
 
-  grunt.loadNpmTasks("grunt-contrib-concat");
-  grunt.loadNpmTasks("grunt-contrib-cssmin");
   grunt.loadNpmTasks("grunt-criticalcss");
 
-  // "cssmin" logs clean-css parser warnings with "grunt.log.error" but still succeeds. Fail before
-  // the build can publish CSS that the minifier could not parse correctly.
-  grunt.registerTask("check-cssmin", () => {
-    if (grunt.fail.errorcount > 0) {
-      grunt.fail.fatal("CSS minification produced errors or warnings.");
-    }
-  });
-
-  grunt.registerTask("default", ["concat", "cssmin:main", "check-cssmin"]);
-
-  // Generating critical CSS is slow and infrequent. Run manually when the CSS changes with "bunx
-  // --no-install Grunt critical
-  // --url=http://localhost"
-  // and commit the resulting file (critical.min.css).
-  grunt.registerTask("critical", [
-    "concat",
-    "cssmin:main",
-    "check-cssmin",
-    "criticalcss",
-    "cssmin:critical",
-    "check-cssmin",
-  ]);
+  grunt.registerTask("critical", ["criticalcss"]);
 };

@@ -20,7 +20,7 @@
       "inputs": [
         "bun.lock",
         "package.json",
-        "packages/client/Gruntfile.js",
+        "packages/scripts/src/buildCSS.mts",
         "public/css/**",
         "!public/css/main.*.min.css",
         "scripts/lint/check-css.sh"

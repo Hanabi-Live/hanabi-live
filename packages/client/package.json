@@ -41,8 +41,6 @@
     "@vitejs/plugin-react": "catalog:",
     "esbuild": "catalog:",
     "grunt": "catalog:",
-    "grunt-contrib-concat": "catalog:",
-    "grunt-contrib-cssmin": "catalog:",
     "grunt-criticalcss": "catalog:",
     "jsdom": "catalog:",
     "tailwindcss": "catalog:",

@@ -10,15 +10,6 @@ SECONDS=0
 
 REPO_ROOT="$DIR/../.."
 
-# Import the port.
-if [[ -z ${CI-} ]]; then
-  # shellcheck source=../../scripts/lib/env.sh
-  source "$REPO_ROOT/scripts/lib/env.sh"
-  if [[ -z ${PORT-} ]]; then
-    PORT="80"
-  fi
-fi
-
 # Get the "VERSION" environment variable.
 # shellcheck disable=SC1091
 source "$DIR/get-version.sh"
@@ -47,29 +38,17 @@ echo
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
-if [[ ${1-} == "crit" ]]; then
-  echo "Packing the CSS and generating critical CSS using Grunt..."
-  echo
-  bunx --bun --no-install grunt critical --url="http://localhost:$PORT"
-  echo
-  echo "Remember to commit the \"critical.min.css\" file if it had any changes."
-  echo
-else
-  echo "Packing the CSS using Grunt..."
-  echo
-  bunx --bun --no-install grunt
-  echo
-fi
-GRUNT_OUTPUT_DIR="$DIR/grunt_output"
+echo "Packing the CSS using Lightning CSS..."
 CSS_DIR="$REPO_ROOT/public/css"
-cp "$GRUNT_OUTPUT_DIR/main.$VERSION.min.css" "$CSS_DIR/"
+bun "$REPO_ROOT/packages/scripts/src/buildCSS.mts" "$CSS_DIR/main.$VERSION.min.css"
+if [[ ${1-} == "crit" ]]; then
+  bash "$DIR/build-critical-css.sh"
+fi
+echo
 
 echo "$VERSION" > "$JS_BUNDLES_DIR/version.txt"
 echo "$VERSION" > "$JS_BUNDLES_DIR/git_revision.txt"
 date > "$JS_BUNDLES_DIR/date_compiled.txt"
-
-# Clean up the output directories.
-rm -rf "$GRUNT_OUTPUT_DIR"
 
 # Clean up old files in the "bundles" directory. (We do not use an environment variable to store the
 # results of `ls` because it will cause the script to stop execution in the case where there are no

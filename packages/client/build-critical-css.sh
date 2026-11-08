@@ -28,6 +28,15 @@ if ! curl --silent --fail --show-error --location "$URL" > /dev/null; then
   exit 1
 fi
 
-# Rebuild the critical CSS
+# Get the "VERSION" environment variable.
+# shellcheck disable=SC1091
+source "$DIR/get-version.sh"
+
+# Rebuild the critical CSS from the CSS bundle.
+BUILD_CSS="$DIR/../scripts/src/buildCSS.mts"
 cd "$DIR"
-bunx --bun --no-install grunt critical --url="$URL"
+bun "$BUILD_CSS" "$DIR/../../public/css/main.$VERSION.min.css"
+# PhantomJS cannot read the OpenSSL configuration of current systems, so it gets none.
+OPENSSL_CONF=/dev/null bunx --bun --no-install grunt critical --url="$URL"
+bun "$BUILD_CSS" --critical
+echo "Remember to commit the \"critical.min.css\" file if it had any changes."
