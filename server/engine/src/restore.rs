@@ -75,7 +75,6 @@ pub fn parse_engine_state(value: Value) -> Result<EngineState> {
     }
     for required in [
         "numPlayers",
-        "startingPlayer",
         "variantName",
         "timed",
         "timeBase",

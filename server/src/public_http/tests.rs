@@ -671,10 +671,10 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     sqlx::raw_sql(
         "INSERT INTO users(id,username,normalized_username,password_hash,last_ip)
         SELECT id,'Player'||id,'player'||id,'test','127.0.0.1' FROM generate_series(4,8) id;
-        INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
+        INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,
         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished)
-        SELECT 4,name,6,starting_player,variant_id,timed,time_base,time_per_turn,
+        SELECT 4,name,6,variant_id,timed,time_base,time_per_turn,
         speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
         detrimental_characters,'six-player',score,num_turns,end_condition,datetime_started,datetime_finished
         FROM games WHERE id=1;

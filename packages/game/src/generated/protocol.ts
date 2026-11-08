@@ -388,7 +388,6 @@ export const gameOptionsSchema = z
     oneExtraCard: z.boolean().default(false),
     oneLessCard: z.boolean().default(false),
     speedrun: z.boolean().default(false),
-    startingPlayer: z.literal([0, 1, 2, 3, 4, 5]).default(0),
     tableName: z.string().min(1).optional(),
     timeBase: z.number().default(0),
     timePerTurn: z

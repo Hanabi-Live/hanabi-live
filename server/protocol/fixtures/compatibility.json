@@ -525,7 +525,6 @@
       "name": "",
       "options": {
         "numPlayers": 2,
-        "startingPlayer": 0,
         "variantName": "No Variant",
         "timed": false,
         "timeBase": 0.0,
@@ -653,7 +652,6 @@
       "numPlayers": 1,
       "options": {
         "numPlayers": 2,
-        "startingPlayer": 0,
         "variantName": "No Variant",
         "timed": false,
         "timeBase": 0.0,
@@ -710,7 +708,6 @@
         "id": 12,
         "options": {
           "numPlayers": 2,
-          "startingPlayer": 0,
           "variantName": "No Variant",
           "timed": false,
           "timeBase": 0.0,
@@ -746,7 +743,6 @@
         "id": 12,
         "options": {
           "numPlayers": 2,
-          "startingPlayer": 0,
           "variantName": "No Variant",
           "timed": false,
           "timeBase": 0.0,
@@ -782,7 +778,6 @@
         "id": 12,
         "options": {
           "numPlayers": 2,
-          "startingPlayer": 0,
           "variantName": "No Variant",
           "timed": false,
           "timeBase": 0.0,
@@ -818,7 +813,6 @@
         "id": 12,
         "options": {
           "numPlayers": 2,
-          "startingPlayer": 0,
           "variantName": "No Variant",
           "timed": false,
           "timeBase": 0.0,
@@ -854,7 +848,6 @@
         "id": 12,
         "options": {
           "numPlayers": 2,
-          "startingPlayer": 0,
           "variantName": "No Variant",
           "timed": false,
           "timeBase": 0.0,

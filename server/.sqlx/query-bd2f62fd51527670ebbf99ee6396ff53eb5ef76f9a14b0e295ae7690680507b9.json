@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,\n             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,\n             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished\n             FROM games WHERE id=$1",
+  "query": "SELECT id,name,num_players,variant_id,timed,time_base,time_per_turn,\n             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,\n             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished\n             FROM games WHERE id=$1",
   "describe": {
     "columns": [
       {
@@ -38,17 +38,6 @@
       },
       {
         "ordinal": 3,
-        "name": "starting_player",
-        "type_info": "Int2",
-        "origin": {
-          "Table": {
-            "table": "games",
-            "name": "starting_player"
-          }
-        }
-      },
-      {
-        "ordinal": 4,
         "name": "variant_id",
         "type_info": "Int2",
         "origin": {
@@ -59,7 +48,7 @@
         }
       },
       {
-        "ordinal": 5,
+        "ordinal": 4,
         "name": "timed",
         "type_info": "Bool",
         "origin": {
@@ -70,7 +59,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "time_base",
         "type_info": "Int4",
         "origin": {
@@ -81,7 +70,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "time_per_turn",
         "type_info": "Int4",
         "origin": {
@@ -92,7 +81,7 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 7,
         "name": "speedrun",
         "type_info": "Bool",
         "origin": {
@@ -103,7 +92,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 8,
         "name": "deck_plays",
         "type_info": "Bool",
         "origin": {
@@ -114,7 +103,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "empty_clues",
         "type_info": "Bool",
         "origin": {
@@ -125,7 +114,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "one_extra_card",
         "type_info": "Bool",
         "origin": {
@@ -136,7 +125,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "one_less_card",
         "type_info": "Bool",
         "origin": {
@@ -147,7 +136,7 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 12,
         "name": "all_or_nothing",
         "type_info": "Bool",
         "origin": {
@@ -158,7 +147,7 @@
         }
       },
       {
-        "ordinal": 14,
+        "ordinal": 13,
         "name": "detrimental_characters",
         "type_info": "Bool",
         "origin": {
@@ -169,7 +158,7 @@
         }
       },
       {
-        "ordinal": 15,
+        "ordinal": 14,
         "name": "seed",
         "type_info": "Text",
         "origin": {
@@ -180,7 +169,7 @@
         }
       },
       {
-        "ordinal": 16,
+        "ordinal": 15,
         "name": "score",
         "type_info": "Int2",
         "origin": {
@@ -191,7 +180,7 @@
         }
       },
       {
-        "ordinal": 17,
+        "ordinal": 16,
         "name": "num_turns",
         "type_info": "Int2",
         "origin": {
@@ -202,7 +191,7 @@
         }
       },
       {
-        "ordinal": 18,
+        "ordinal": 17,
         "name": "end_condition",
         "type_info": "Int2",
         "origin": {
@@ -213,7 +202,7 @@
         }
       },
       {
-        "ordinal": 19,
+        "ordinal": 18,
         "name": "datetime_started",
         "type_info": "Timestamptz",
         "origin": {
@@ -224,7 +213,7 @@
         }
       },
       {
-        "ordinal": 20,
+        "ordinal": 19,
         "name": "datetime_finished",
         "type_info": "Timestamptz",
         "origin": {
@@ -260,9 +249,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "7b16e7ae4b380de60f8201b5cd8ea99a58cc8796080238bd3d9e9b8f976a8dc7"
+  "hash": "bd2f62fd51527670ebbf99ee6396ff53eb5ef76f9a14b0e295ae7690680507b9"
 }

@@ -162,7 +162,6 @@ fn checkpoint_decoder_rejects_corruption_without_defaults_or_panics() {
         ("/options", json!({"numPlayers":2})),
         ("/options/numPlayers", json!(3)),
         ("/options/variantName", json!("missing")),
-        ("/options/startingPlayer", json!(-1)),
         ("/activePlayerIndex", json!(2)),
         ("/endCondition", json!(99)),
         ("/endPlayer", json!(2)),

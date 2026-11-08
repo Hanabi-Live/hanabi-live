@@ -76,7 +76,6 @@ pub(super) async fn export(
     let flag = |enabled: bool| enabled.then_some(true);
     let options = hanabi_protocol::ReplayOptions {
         variant: (variant_id != 0).then(|| variant.name.clone()),
-        starting_player: (row.starting_player != 0).then_some(i64::from(row.starting_player)),
         timed: flag(row.timed),
         time_base: row.timed.then_some(i64::from(row.time_base)),
         time_per_turn: row.timed.then_some(i64::from(row.time_per_turn)),

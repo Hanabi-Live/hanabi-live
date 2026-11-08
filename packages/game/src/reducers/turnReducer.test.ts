@@ -76,30 +76,6 @@ describe("turnReducer", () => {
       state = playRed1AndDraw(state, 2);
       expect(state.currentPlayerIndex).toBe(0);
     });
-
-    test("is properly incremented for a legacy game with a custom starting player", () => {
-      let state: TurnState = {
-        ...getInitialTurnState(1),
-        segment: 0,
-      };
-
-      // Draw a red 1.
-      const drawAction = draw(0, 0, 0, 1);
-      state = turnReducer(
-        state,
-        drawAction,
-        DEFAULT_GAME_STATE,
-        DEFAULT_METADATA,
-      );
-
-      expect(state.currentPlayerIndex).toBe(1);
-      state = playRed1AndDraw(state, 0);
-      expect(state.currentPlayerIndex).toBe(2);
-      state = playRed1AndDraw(state, 1);
-      expect(state.currentPlayerIndex).toBe(0);
-      state = playRed1AndDraw(state, 2);
-      expect(state.currentPlayerIndex).toBe(1);
-    });
   });
 });
 

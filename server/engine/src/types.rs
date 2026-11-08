@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct Options {
     pub num_players: usize,
-    pub starting_player: usize,
     pub variant_name: String,
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
     pub variant_id: Option<u32>,
@@ -31,7 +30,6 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             num_players: MIN_PLAYERS,
-            starting_player: 0,
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,

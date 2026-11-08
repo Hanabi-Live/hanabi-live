@@ -22,7 +22,7 @@ pub const MAX_SAFE_INTEGER: i64 = (1 << 53) - 1;
 pub const MIN_PLAYERS: usize = 2;
 /// The most players a game can have, which also bounds every per-player list.
 pub const MAX_PLAYERS: usize = 6;
-/// The highest seat index, which also bounds a starting player.
+/// The highest seat index.
 pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 /// The value that marks a missing number, such as no seat or turn, or a suit or rank that the
 /// recipient may not see.
@@ -626,9 +626,6 @@ pub struct ReplayOptions {
     #[schemars(with = "String")]
     pub variant: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = 0, max = MAX_SEAT))]
-    pub starting_player: Option<i64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub timed: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -755,9 +752,6 @@ pub struct ImportOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
     pub variant: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[schemars(with = "i64", range(min = 0, max = MAX_SAFE_INTEGER))]
-    pub starting_player: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "bool")]
     pub timed: Option<bool>,
@@ -1608,8 +1602,6 @@ pub struct Welcome {
 pub struct GameOptions {
     #[schemars(with = "NumPlayers")]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = MAX_SEAT), extend("enum" = seats()))]
-    pub starting_player: u8,
     #[schemars(length(min = 1))]
     pub variant_name: String,
     #[serde(rename = "variantID", skip_serializing_if = "Option::is_none")]
@@ -1639,7 +1631,6 @@ impl Default for GameOptions {
     fn default() -> Self {
         Self {
             num_players: u8::try_from(MIN_PLAYERS).expect("the player limits fit in a byte"),
-            starting_player: 0,
             variant_name: DEFAULT_VARIANT_NAME.into(),
             variant_id: None,
             timed: false,

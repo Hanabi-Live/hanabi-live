@@ -1914,7 +1914,6 @@ async fn prepare_table(
         }
         validate_table_name(&name)?;
         let mut options = engine_options(&r.options);
-        options.starting_player = 0;
         if options.speedrun || !options.timed {
             options.timed = false;
             options.time_base = 0.0;
@@ -2995,7 +2994,6 @@ impl TableActor {
         if let Some(variant) = &variant {
             options.variant_name.clone_from(variant);
         }
-        options.starting_player = 0;
         if options.speedrun || !options.timed {
             options.timed = false;
             options.time_base = 0.0;

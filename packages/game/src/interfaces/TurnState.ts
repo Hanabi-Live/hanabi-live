@@ -17,8 +17,8 @@ export interface TurnState {
   readonly turnNum: number;
 
   /**
-   * Initialized to the starting player index. If this is null, it signifies that the game is over
-   * and will prevent any name frames from being highlighted on subsequent segments.
+   * Initialized to the first seat. If this is null, it signifies that the game is over and will
+   * prevent any name frames from being highlighted on subsequent segments.
    */
   readonly currentPlayerIndex: PlayerIndex | null;
 

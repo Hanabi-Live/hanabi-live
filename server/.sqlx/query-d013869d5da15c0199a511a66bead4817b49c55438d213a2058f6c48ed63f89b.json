@@ -1,13 +1,12 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)",
+  "query": "INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)",
   "describe": {
     "columns": [],
     "parameters": {
       "Left": [
         "Int4",
         "Text",
-        "Int2",
         "Int2",
         "Int2",
         "Bool",
@@ -30,5 +29,5 @@
     },
     "nullable": []
   },
-  "hash": "0a1a8cbaef2aca1803d60538867b6e24226a1af94403f77d83ae5ca800e329f7"
+  "hash": "d013869d5da15c0199a511a66bead4817b49c55438d213a2058f6c48ed63f89b"
 }

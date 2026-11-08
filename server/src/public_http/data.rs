@@ -4,7 +4,7 @@ use anyhow::Context;
 use hanabi_protocol::GameListColumn as Column;
 use sqlx::{Postgres, QueryBuilder};
 
-const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.variant_id,
+const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.variant_id,
     g.timed,g.time_base,g.time_per_turn,g.speedrun,g.deck_plays,g.empty_clues,
     g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";

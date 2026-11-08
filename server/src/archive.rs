@@ -29,7 +29,6 @@ pub struct GameRecord {
     pub id: i32,
     pub name: String,
     pub num_players: i16,
-    pub starting_player: i16,
     pub variant_id: i16,
     pub timed: bool,
     pub time_base: i32,

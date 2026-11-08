@@ -118,12 +118,7 @@ CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
-
-    /**
-     * By default, the starting player is always at index (seat) 0. This field is only needed for
-     * legacy games before April 2020.
-     */
-    starting_player         SMALLINT     NOT NULL  DEFAULT 0,
+    starting_player         SMALLINT     NOT NULL  DEFAULT 0, /* Unused; to be dropped. */
 
     /* The ID for a particular variant can be found in the "variants.json" file. */
     variant_id              SMALLINT     NOT NULL,

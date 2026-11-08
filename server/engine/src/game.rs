@@ -39,10 +39,6 @@ pub(crate) fn validate_options(options: &Options) -> Result<()> {
         "Games require {MIN_PLAYERS} to {MAX_PLAYERS} players."
     );
     ensure!(
-        options.starting_player < options.num_players,
-        "Invalid starting seat."
-    );
-    ensure!(
         options.time_base.is_finite()
             && options.time_base.abs() <= MAX_SAFE_FLOAT
             && (-MAX_SAFE_INTEGER..=MAX_SAFE_INTEGER).contains(&options.time_per_turn),
@@ -134,7 +130,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
         })
         .collect();
     let mut state = EngineState {
-        active_player_index: setup.options.starting_player,
+        active_player_index: 0,
         options: setup.options,
         seed: setup.seed,
         interpretation: setup.interpretation,

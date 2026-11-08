@@ -5,7 +5,7 @@ use hanabi_engine::EndCondition;
 use hanabi_protocol::{CLOCK_UNITS_PER_MINUTE, NO_VALUE, ReplayAction};
 pub use hanabi_protocol::{CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
@@ -170,13 +170,28 @@ impl TableChat {
         Ok(message)
     }
 }
+/// Checkpoints saved before the starting player was removed list it as the first seat.
+fn strip_starting_player(value: &mut Value) -> Result<()> {
+    for pointer in ["/options", "/phase/snapshot/game/options"] {
+        if let Some(Value::Object(options)) = value.pointer_mut(pointer)
+            && let Some(seat) = options.remove("startingPlayer")
+        {
+            ensure!(
+                seat == json!(0),
+                "Checkpoint starts with seat {seat} instead of the first seat"
+            );
+        }
+    }
+    Ok(())
+}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let value: Value = serde_json::from_str(payload)?;
+        let mut value: Value = serde_json::from_str(payload)?;
+        strip_starting_player(&mut value)?;
         ensure!(
             value["chat"]
                 .as_array()
@@ -188,7 +203,6 @@ impl TableSnapshot {
             .ok_or_else(|| anyhow::anyhow!("Missing checkpoint options"))?;
         for key in [
             "numPlayers",
-            "startingPlayer",
             "variantName",
             "timed",
             "timeBase",
@@ -279,7 +293,6 @@ impl TableSnapshot {
         ensure!(
             self.owner > 0
                 && hanabi_protocol::is_player_count(self.options.num_players)
-                && self.options.starting_player < self.options.num_players
                 && self.options.time_base.is_finite(),
             "Invalid table options"
         );
@@ -599,7 +612,6 @@ pub fn timestamp(time: DateTime<Utc>) -> String {
 pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     let Options {
         num_players,
-        starting_player,
         variant_name,
         variant_id,
         timed,
@@ -617,7 +629,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
     } = options;
     hanabi_protocol::GameOptions {
         num_players: small(*num_players),
-        starting_player: small(*starting_player),
         variant_name: variant_name.clone(),
         variant_id: *variant_id,
         timed: *timed,
@@ -639,7 +650,6 @@ pub(crate) fn wire_options(options: &Options) -> hanabi_protocol::GameOptions {
 pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options {
     let hanabi_protocol::GameOptions {
         num_players,
-        starting_player,
         variant_name,
         variant_id,
         timed,
@@ -657,7 +667,6 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
     } = options;
     Options {
         num_players: usize::from(*num_players),
-        starting_player: usize::from(*starting_player),
         variant_name: variant_name.clone(),
         variant_id: *variant_id,
         timed: *timed,
@@ -694,7 +703,7 @@ mod tests {
             ScoreModifier::from_bits(16 + 1).shown(),
             Some("allornothing")
         );
-        let mut best = serde_json::json!({});
+        let mut best = json!({});
         modifier.write(&mut best);
         assert_eq!(best["modifier"], 10);
         assert_eq!(best["emptyClues"], true);

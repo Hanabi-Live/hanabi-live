@@ -405,7 +405,7 @@ impl Store {
         self.check_state()?;
         let existing = sqlx::query_as!(
             crate::archive::GameRecord,
-            "SELECT id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,
+            "SELECT id,name,num_players,variant_id,timed,time_base,time_per_turn,
              speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
              detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished
              FROM games WHERE id=$1",
@@ -510,7 +510,7 @@ impl Store {
             tx.commit().await?;
             return Ok(times);
         }
-        sqlx::query!("INSERT INTO games(id,name,num_players,starting_player,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(o.starting_player)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
+        sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
         for (seat, p) in s.players.iter().enumerate() {
             let character = &s.game.players[seat];
             let assignment = hanabi_engine::characters()
@@ -1003,7 +1003,6 @@ pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> 
     let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
     Ok(Options {
         num_players: usize::try_from(row.num_players)?,
-        starting_player: usize::try_from(row.starting_player)?,
         variant_name: variant.name.clone(),
         variant_id: Some(variant.id),
         timed: row.timed,

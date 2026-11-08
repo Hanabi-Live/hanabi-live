@@ -52,7 +52,7 @@ export function getInitialGameState(metadata: GameMetadata): GameState {
   >;
 
   // Game state properties
-  const turn = getInitialTurnState(options.startingPlayer);
+  const turn = getInitialTurnState();
   const cardsRemainingInTheDeck = getTotalCardsInDeck(variant);
   const cardStatus = getInitialCardStatusMap(
     variant,

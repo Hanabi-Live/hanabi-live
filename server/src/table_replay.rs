@@ -45,10 +45,6 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     let defaults = Options::default();
     let mut options = Options {
         variant_name,
-        starting_player: match raw.starting_player {
-            Some(index) => usize::try_from(index)?,
-            None => defaults.starting_player,
-        },
         timed: raw.timed.unwrap_or(defaults.timed),
         time_base: raw.time_base.map_or(defaults.time_base, seconds),
         time_per_turn: raw.time_per_turn.unwrap_or(defaults.time_per_turn),
@@ -89,10 +85,6 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     );
     options.num_players = players.len();
     options.variant_id = Some(variant.id);
-    ensure!(
-        options.starting_player < players.len(),
-        "Invalid starting player"
-    );
     let mut deck: Vec<Card> = input
         .deck
         .iter()

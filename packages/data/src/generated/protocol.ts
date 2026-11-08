@@ -733,7 +733,6 @@ const importOptionsSchema = z.strictObject({
   oneExtraCard: z.boolean().optional(),
   oneLessCard: z.boolean().optional(),
   speedrun: z.boolean().optional(),
-  startingPlayer: z.number().int().min(0).max(9_007_199_254_740_991).optional(),
   timeBase: z
     .number()
     .int()
@@ -843,7 +842,6 @@ const replayOptionsSchema = z.strictObject({
   oneExtraCard: z.boolean().optional(),
   oneLessCard: z.boolean().optional(),
   speedrun: z.boolean().optional(),
-  startingPlayer: z.number().int().min(0).max(5).optional(),
   timeBase: z
     .number()
     .int()
@@ -1065,7 +1063,6 @@ export const tableCreateRequestSchema = z.strictObject({
     oneExtraCard: false,
     oneLessCard: false,
     speedrun: false,
-    startingPlayer: 0,
     timeBase: 0,
     timePerTurn: 0,
     timed: false,
@@ -1132,7 +1129,6 @@ export const tableUpdateRequestSchema = z.strictObject({
     oneExtraCard: false,
     oneLessCard: false,
     speedrun: false,
-    startingPlayer: 0,
     timeBase: 0,
     timePerTurn: 0,
     timed: false,
