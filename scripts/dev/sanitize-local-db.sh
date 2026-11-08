@@ -9,28 +9,35 @@ DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # shellcheck source=../lib/env.sh
 source "$DIR/../lib/env.sh"
 
-# Tables not deleted:
+# Tables not cleared (users and games are anonymized instead):
 # - users
 # - games
+# - game_custom_decks
 # - game_participants
 # - game_actions
 # - seeds
 
-PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" << EOF
-UPDATE users SET last_ip='0.0.0.0';
-UPDATE users SET settings = '{}';
-DELETE FROM user_stats;
-DELETE FROM user_friends;
-DELETE FROM game_participant_notes;
-DELETE FROM game_tags;
-DELETE FROM variant_stats;
-DELETE FROM chat_log;
-DELETE FROM chat_log_pm;
-DELETE FROM banned_ips;
-DELETE FROM muted_ips;
-UPDATE users SET username = CONCAT('anon_user_', id);
-UPDATE users SET password_hash = NULL;
-UPDATE users SET last_ip = '';
-UPDATE users SET datetime_created = NOW();
-UPDATE users SET datetime_last_login = NOW();
+PGPASSWORD="$DB_PASSWORD" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" --set=ON_ERROR_STOP=1 --single-transaction << EOF
+TRUNCATE
+  user_stats,
+  user_friends,
+  user_linkages,
+  user_blocks,
+  user_identity_tokens,
+  game_participant_notes,
+  game_tags,
+  variant_stats,
+  chat_log,
+  chat_log_pm,
+  banned_ips,
+  muted_ips;
+UPDATE users SET
+  username = CONCAT('anon_user_', id),
+  normalized_username = CONCAT('anon_user_', id),
+  password_hash = NULL,
+  last_ip = '',
+  datetime_created = NOW(),
+  datetime_last_login = NOW(),
+  settings = '{}';
+UPDATE games SET name = CONCAT('Game ', id);
 EOF
