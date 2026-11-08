@@ -651,7 +651,7 @@ fn game_library(definitions: &BTreeMap<String, Value>) -> Result<()> {
     }
     used.retain(|name, _| game_owned(name));
     print!("{}", enum_imports(&used, true)?);
-    println!("import {{ z }} from \"zod\";\n");
+    println!("import * as z from \"zod\";\n");
     println!("{}", enum_checks(&used)?);
     for name in used.keys() {
         println!(
@@ -731,7 +731,7 @@ fn main() -> Result<()> {
     let used = module.enums()?;
     print!("{}", enum_imports(&used, false)?);
     print!("{}", module.schema_imports(GAME_LIBRARY));
-    println!("import {{ z }} from \"zod\";\n");
+    println!("import * as z from \"zod\";\n");
     println!("{}", enum_checks(&used)?);
     print!("{}", module.output);
     for (name, contracts) in [

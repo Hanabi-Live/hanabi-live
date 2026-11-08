@@ -1,5 +1,14 @@
+const fs = require("node:fs");
 const path = require("node:path");
-const { VERSION } = require("../data/src/version");
+
+// "set-version.sh" writes the version as an ES module, which Grunt cannot require.
+const versionPath = path.join(__dirname, "../data/src/version.js");
+const VERSION = /VERSION = "([^"]+)"/u.exec(
+  fs.readFileSync(versionPath, "utf8"),
+)?.[1];
+if (VERSION === undefined) {
+  throw new Error(`Failed to parse the client version from: ${versionPath}`);
+}
 
 // Define the name of the final CSS file. We want to include the version inside of the filename (as
 // opposed to other solutions like using a version query string). This will:

@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
@@ -10,33 +9,14 @@ const VERSION_PATH = path.join(REPO_ROOT, "packages/data/src/version.js");
 const DEV_SERVER_PORT = 5173;
 
 function readVersion(code: string): string {
-  const match = /VERSION: "([^"]+)"/u.exec(code);
+  const match = /VERSION = "([^"]+)"/u.exec(code);
   if (match?.[1] === undefined) {
     throw new Error(`Failed to parse the client version from: ${VERSION_PATH}`);
   }
   return match[1];
 }
 
-/**
- * "set-version.sh" writes the version as CommonJS for Grunt. Vite serves workspace sources as
- * native ES modules, so expose the same value as an ES module.
- */
-function versionModule(): Plugin {
-  return {
-    name: "hanabi-client-version",
-    enforce: "pre",
-    transform: (code, id) =>
-      id === VERSION_PATH
-        ? {
-            code: `export const VERSION = ${JSON.stringify(readVersion(code))};`,
-            map: { mappings: "" },
-          }
-        : undefined,
-  };
-}
-
 export default defineConfig(({ command }) => ({
-  plugins: [versionModule()],
   publicDir: false,
   resolve: {
     alias: {

@@ -254,7 +254,7 @@ function writeVersion(revision: string) {
   writeFileSync(path.join(bundles, "version.txt"), `${revision}\n`);
   writeFileSync(
     path.join(ROOT, "packages/data/src/version.js"),
-    `// @ts-nocheck\n\nmodule.exports = { VERSION: "${revision}" };\n`,
+    `// @ts-nocheck\n\nexport const VERSION = "${revision}";\n`,
   );
 }
 

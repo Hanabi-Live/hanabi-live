@@ -1,6 +1,7 @@
 {
   "name": "@hanabi-live/data",
   "private": true,
+  "sideEffects": false,
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "bash ./lint.sh"

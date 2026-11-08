@@ -6,7 +6,7 @@ import {
   scoreFrequencySchema,
   variantNamesSchema,
 } from "@hanabi-live/data";
-import { z } from "zod";
+import * as z from "zod";
 
 interface TablesorterParser {
   readonly id: string;

@@ -12,7 +12,7 @@ import {
   safeIntegerSchema,
   suitIndexOrUnknownSchema,
 } from "@hanabi-live/game";
-import { z } from "zod";
+import * as z from "zod";
 import { ActionType } from "../enums/ActionType";
 import { ReplayArrowOrder } from "../enums/ReplayArrowOrder";
 import { SoundMove } from "../enums/SoundMove";

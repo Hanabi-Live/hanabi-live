@@ -1,5 +1,5 @@
 // Generated from server/protocol. Run bash scripts/dev/generate-protocol.sh.
-import { z } from "zod";
+import * as z from "zod";
 import { ClueType } from "../enums/ClueType";
 import { EndCondition } from "../enums/EndCondition";
 
