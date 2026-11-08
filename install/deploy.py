@@ -265,19 +265,6 @@ def prune(backups):
         print(f"Warning: could not remove old deployment files: {error}", file=sys.stderr)
 
 
-def schema_version(root):
-    value = command(root, "bash", "-c", """
-set -o errexit -o nounset -o pipefail
-source .env
-export PGPASSWORD="$DB_PASSWORD"
-psql -X --host="${DB_HOST:-localhost}" --port="${DB_PORT:-5432}" \
-  --username="$DB_USER" --dbname="$DB_NAME" -v ON_ERROR_STOP=1 -At \
-  -c 'SELECT version FROM public.schema_version'
-""")
-    require(re.fullmatch(r"[0-9]+", value), "Missing or invalid database schema version.")
-    return int(value)
-
-
 def prepare(root, staged):
     shared = staged.parent.parent / "shared"
     (shared / ".env").symlink_to(root / ".env")
@@ -285,11 +272,11 @@ def prepare(root, staged):
         (shared / "letsencrypt").rmdir()
         (shared / "letsencrypt").symlink_to(root / "letsencrypt", target_is_directory=True)
     subprocess.run([str(staged / "hanabi-live"), "--check-startup"], cwd=staged, check=True)
-    subprocess.run(["bash", str(staged / "install/migrate.sh"), "status"], check=True)
-    target = release.migration_version(staged)
-    current = schema_version(root)
-    require(current <= target, "Database is newer than this release; refusing a schema downgrade.")
-    return current != target
+    # The status command refuses a database newer than the release.
+    status = subprocess.run([str(staged / "hanabi-live"), "migrate", "status"],
+                            check=True, capture_output=True, text=True).stdout
+    print(status, end="", flush=True)
+    return any(line.startswith("Pending: ") for line in status.splitlines())
 
 
 def await_restart(port, revision, timeout=180):
@@ -374,7 +361,7 @@ def deploy(root, check, apply_migrations):
             phase("backed-up")
             if pending:
                 phase("migrating")
-                subprocess.run(["bash", str(staged / "install/migrate.sh"), "apply"], check=True)
+                subprocess.run([str(staged / "hanabi-live"), "migrate", "apply"], check=True)
             phase("publishing")
             # CI supplied built artifacts; post-merge dependency/build hooks must not run on production.
             subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "merge", "--ff-only", revision],

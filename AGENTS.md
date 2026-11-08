@@ -141,9 +141,7 @@ replace them with generic errors. Never expose raw SQL, credentials, private
 payloads, or arbitrary exception strings through public errors or telemetry.
 
 The production server is Rust in `server/`; its binary is `hanabi-live`.
-`server/engine` owns native game rules. The Go toolchain is used only to build
-the pinned third-party Tern migration tool for source installations and release
-bundles.
+`server/engine` owns native game rules.
 
 `server/protocol` owns every JSON payload exchanged between the server and its
 clients, and the format of the game catalog in `packages/game/src/json`. It has
@@ -186,10 +184,14 @@ new PID, running revision, restored tables, client assets, and logs.
 
 ## Database migrations
 
-Use `./install/migrate.sh status` to inspect migration state and
-`./install/migrate.sh apply` to apply pending migrations before restarting. We
-use the Tern tool to handle migrations. The runner reuses existing `.env`
-database settings. Migrations never run automatically during server startup.
+Use `./hanabi-live migrate status` to inspect migration state and
+`./hanabi-live migrate apply` to apply pending migrations before restarting.
+From a source checkout, run
+`cargo run --manifest-path server/Cargo.toml -- migrate status` from the
+repository root. The server embeds `install/migrations` and applies them with
+SQLx, recording them in `_sqlx_migrations`, using the existing `.env` database
+settings. Applying to an empty database installs `install/database_schema.sql`.
+Migrations never run automatically during server startup.
 
 The supported migration baseline is recorded in
 `install/migrations/baseline.txt`. Do not edit applied SQL; retire it only with
@@ -205,8 +207,8 @@ remove code and tests that only support the older schema. The schema version
 stays the same.
 
 Migrations normally run in transactions. Operations such as concurrent index
-creation require `---- tern: disable-tx ----` and safe recovery after partial
-failure.
+creation require `-- no-transaction` as the file's first line and safe recovery
+after partial failure.
 
 Some tables (such as `chat_log`) are very large:
 

@@ -293,13 +293,6 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
         return Ok(());
     };
     let result:anyhow::Result<()>=async{
-    #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-    sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
-        "CREATE TABLE schema_version(version INTEGER NOT NULL); INSERT INTO schema_version VALUES({});",
-        crate::store::SCHEMA_VERSION
-    )))
-    .execute(&db.pool)
-    .await?;
     let redis = crate::test_redis::RedisFixture::start(true).await?;
     let options = db.pool.connect_options();
     let test_url = url::Url::parse(&std::env::var("HANABI_TEST_DATABASE_URL")?)?;

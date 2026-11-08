@@ -1,10 +1,10 @@
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use hanabi_live::{
     actors::Hub,
     config::Config,
     game,
     lifecycle::{Control, StopReason, drain_game_runtime},
-    operations,
+    migrations, operations,
     public_http::PublicConfig,
     release, restart,
     server_info::ServerInfo,
@@ -27,16 +27,25 @@ fn main() -> Result<()> {
         println!("{}", restart::version());
         return Ok(());
     }
-    if arguments == ["--check-migration-target"] {
+    if arguments
+        .first()
+        .is_some_and(|argument| argument == "migrate")
+    {
+        let apply = match &arguments[1..] {
+            [action] if action == "status" => false,
+            [action] if action == "apply" => true,
+            _ => bail!("Usage: hanabi-live migrate status|apply"),
+        };
         let _lock = release::enter(release::Mode::Inspect)?;
+        let config = Config::load(Path::new(".env"))?;
         return tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?
-            .block_on(release::check_migration_target());
+            .block_on(migrations::run(&config, apply));
     }
     ensure!(
         arguments.is_empty() || arguments == ["--check-startup"],
-        "Only --check-startup and --version are supported"
+        "Only --check-startup, --version, and migrate status|apply are supported"
     );
     let _release_lock = release::enter(if arguments.is_empty() {
         release::Mode::Run

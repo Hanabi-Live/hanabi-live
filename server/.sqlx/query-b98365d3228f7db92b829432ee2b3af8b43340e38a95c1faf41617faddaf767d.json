@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT to_regclass('public.schema_version') IS NOT NULL AS \"value!\"",
+  "query": "SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public') AS \"empty!\"",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "value!",
+        "name": "empty!",
         "type_info": "Bool",
         "origin": "Expression"
       }
@@ -17,5 +17,5 @@
       null
     ]
   },
-  "hash": "7ae17243df9f89561feafdfc6a7ee51386df7e3b1ef62409361affffe8c780b7"
+  "hash": "b98365d3228f7db92b829432ee2b3af8b43340e38a95c1faf41617faddaf767d"
 }

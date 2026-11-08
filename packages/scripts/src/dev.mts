@@ -97,20 +97,15 @@ async function run(
   command: readonly string[],
   options: {
     readonly cwd?: string;
-    readonly input?: string;
     readonly quiet?: boolean;
   } = {},
 ): Promise<{ ok: boolean; output: string }> {
   const child = Bun.spawn([...command], {
     cwd: options.cwd ?? ROOT,
-    stdin: options.input === undefined ? "ignore" : "pipe",
+    stdin: "ignore",
     stdout: "pipe",
     stderr: "pipe",
   });
-  if (options.input !== undefined && child.stdin !== undefined) {
-    background(Promise.resolve(child.stdin.write(options.input)));
-    background(Promise.resolve(child.stdin.end()));
-  }
   const [output, errors, code] = await Promise.all([
     new Response(child.stdout).text(),
     new Response(child.stderr).text(),
@@ -204,47 +199,7 @@ async function startServices(env: ReadonlyMap<string, string>) {
     // eslint-disable-next-line no-await-in-loop -- Each check waits for the previous one.
     await Bun.sleep(1000);
   }
-  const schema = await run("services", [
-    ...psql,
-    "--tuples-only",
-    "--no-align",
-    "--command=SELECT to_regclass('public.users') IS NOT NULL",
-  ]);
-  if (schema.output !== "t") {
-    log("services", "Loading the database schema...");
-    if (!(await loadSchema(psql))) {
-      fail("Could not load the database schema.");
-    }
-  }
   log("services", "PostgreSQL and Redis are ready.");
-}
-
-async function loadSchema(psql: readonly string[]): Promise<boolean> {
-  const version = await run("services", [
-    "bash",
-    "-c",
-    "source install/migration-files.sh && get_migration_version install/migrations",
-  ]);
-  if (!version.ok) {
-    return false;
-  }
-  const schema = await run("services", psql, {
-    input: readFileSync(path.join(ROOT, "install/database_schema.sql"), "utf8"),
-  });
-  if (!schema.ok) {
-    return false;
-  }
-  const schemaVersion = await run(
-    "services",
-    [...psql, `--set=migration_version=${version.output}`],
-    {
-      input: readFileSync(
-        path.join(ROOT, "install/schema_version.sql"),
-        "utf8",
-      ),
-    },
-  );
-  return schemaVersion.ok;
 }
 
 /** The server refuses client assets from another revision, so both clients follow the server. */
@@ -397,6 +352,14 @@ async function main() {
     fail("Fix the build error, then run this again.");
   }
   writeVersion(revision);
+  // This installs the schema into a new database and applies pending migrations.
+  const migrated = await run("services", [SERVER_BINARY, "migrate", "apply"]);
+  if (!migrated.ok) {
+    fail("Could not migrate the database.");
+  }
+  for (const line of migrated.output.trim().split("\n")) {
+    log("services", line);
+  }
 
   client = start(
     "client",

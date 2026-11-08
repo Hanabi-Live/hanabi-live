@@ -1,16 +1,12 @@
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
-use sqlx::{
-    Connection,
-    postgres::{PgConnectOptions, PgConnection, PgSslMode},
-};
 use std::os::unix::fs::OpenOptionsExt;
 use std::{
     collections::BTreeMap,
     fs::{File, OpenOptions},
     io::Read,
-    path::{Component, Path, PathBuf},
+    path::{Component, Path},
 };
 
 /// The release manifest format that `install/release.py` writes.
@@ -126,9 +122,6 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     for required in [
         "hanabi-live",
-        "install/tern",
-        "install/migrate.sh",
-        "install/migration-files.sh",
         "public/js/bundles/version.txt",
         "public/js/bundles/git_revision.txt",
     ] {
@@ -200,53 +193,6 @@ pub fn enter(mode: Mode) -> Result<Option<File>> {
     Ok(Some(file))
 }
 
-pub async fn check_migration_target() -> Result<()> {
-    let root: PathBuf = std::env::current_exe()?
-        .parent()
-        .context("Missing executable directory")?
-        .into();
-    let output = std::process::Command::new("bash")
-        .arg(root.join("install/migration-files.sh"))
-        .arg(root.join("install/migrations"))
-        .output()?;
-    ensure!(output.status.success(), "Invalid release migration files");
-    let target: i32 = std::str::from_utf8(&output.stdout)?.trim().parse()?;
-    let baseline: i32 = std::fs::read_to_string(root.join("install/migrations/baseline.txt"))?
-        .trim()
-        .parse()?;
-    let field =
-        |name| std::env::var(name).with_context(|| format!("Migration runner must supply {name}"));
-    let options = PgConnectOptions::new()
-        .host(&field("PGHOST")?)
-        .port(field("PGPORT")?.parse()?)
-        .username(&field("PGUSER")?)
-        .password(&field("PGPASSWORD")?)
-        .database(&field("PGDATABASE")?)
-        .ssl_mode(PgSslMode::Disable);
-    let mut connection = PgConnection::connect_with(&options).await?;
-    let exists: bool = sqlx::query_scalar!(
-        "SELECT to_regclass('public.schema_version') IS NOT NULL AS \"value!\""
-    )
-    .fetch_one(&mut connection)
-    .await?;
-    if exists {
-        let row =
-            sqlx::query!("SELECT COALESCE(MIN(version),-1) AS \"version!\",count(*) AS \"count!\" FROM schema_version")
-                .fetch_one(&mut connection)
-                .await?;
-        ensure!(
-            row.count == 1 && row.version >= baseline && row.version <= target,
-            "Database schema is outside the supported migration range"
-        );
-    } else {
-        bail!(
-            "Missing schema version; initialize a fresh database or upgrade with an earlier release"
-        );
-    }
-    connection.close().await?;
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,9 +207,6 @@ mod tests {
         let revision = crate::restart::version();
         for (name, value) in [
             ("hanabi-live".into(), "binary"),
-            ("install/tern".into(), "migration tool"),
-            ("install/migrate.sh".into(), "migration runner"),
-            ("install/migration-files.sh".into(), "migration helper"),
             ("public/js/bundles/version.txt".into(), revision),
             ("public/js/bundles/git_revision.txt".into(), revision),
             (format!("public/js/bundles/main.{revision}.min.js"), "js"),

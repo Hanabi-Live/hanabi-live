@@ -73,12 +73,7 @@ impl TestDb {
             .connect_with(options.database(&name))
             .await
             .unwrap();
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "the schema file has many statements, which the query macros cannot run"
-        )]
-        sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
-            .execute(&pool)
+        crate::migrations::apply(&mut pool.acquire().await.unwrap())
             .await
             .unwrap();
         Some(Self { pool, admin, name })

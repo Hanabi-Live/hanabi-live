@@ -146,32 +146,88 @@ fn main() {
     write_schema_version(&root);
 }
 
-/// The server requires the schema version that the migrations directory produces, so adding a
-/// migration updates it without a hand-kept constant.
+/// Largest number of digits in a migration version.
+const MAX_VERSION_DIGITS: usize = 9;
+/// Fewest digits in a migration file's version prefix, so that files sort by name.
+const MIN_FILE_VERSION_DIGITS: usize = 3;
+
+/// Parses a version of at most `MAX_VERSION_DIGITS` digits without leading zeros.
+fn parse_baseline(text: &str) -> Option<i64> {
+    let digits = !text.is_empty()
+        && text.len() <= MAX_VERSION_DIGITS
+        && text.bytes().all(|byte| byte.is_ascii_digit());
+    let canonical = text == "0" || !text.starts_with('0');
+    if !(digits && canonical) {
+        return None;
+    }
+    text.parse().ok()
+}
+
+/// Returns the version of a file named like `017_add_column.sql`.
+fn migration_number(name: &str) -> Option<i64> {
+    let (number, description) = name.split_once('_')?;
+    let description = description.strip_suffix(".sql")?;
+    let valid = (MIN_FILE_VERSION_DIGITS..=MAX_VERSION_DIGITS).contains(&number.len())
+        && number.bytes().all(|byte| byte.is_ascii_digit())
+        && !description.is_empty()
+        && description
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_');
+    if !valid {
+        return None;
+    }
+    number.parse().ok()
+}
+
+/// Validates `install/migrations` and records its baseline and resulting schema version, so that
+/// adding a migration updates the version the server requires without a hand-kept constant.
 fn write_schema_version(root: &Path) {
-    let install = root.join("../install");
-    let script = install.join("migration-files.sh");
-    let migrations = install.join("migrations");
-    println!("cargo:rerun-if-changed={}", script.display());
+    let migrations = root.join("../install/migrations");
     println!("cargo:rerun-if-changed={}", migrations.display());
-    let output = Command::new("bash")
-        .arg(&script)
-        .arg(&migrations)
-        .output()
-        .expect("Unable to run install/migration-files.sh");
-    assert!(
-        output.status.success(),
-        "Invalid database migrations: {}",
-        String::from_utf8_lossy(&output.stderr).trim()
-    );
-    let version: i32 = String::from_utf8_lossy(&output.stdout)
-        .trim()
-        .parse()
-        .expect("install/migration-files.sh printed an invalid schema version");
+    let baseline_text = std::fs::read_to_string(migrations.join("baseline.txt"))
+        .expect("Unable to read install/migrations/baseline.txt");
+    let baseline = parse_baseline(baseline_text.trim()).expect("Invalid migration baseline");
+    let mut versions = Vec::new();
+    for entry in std::fs::read_dir(&migrations).expect("Unable to read install/migrations") {
+        let entry = entry.expect("Unable to read install/migrations");
+        let name = entry
+            .file_name()
+            .into_string()
+            .expect("Invalid migration file name");
+        // SQLx ignores other files, such as `baseline.txt`.
+        if entry
+            .path()
+            .extension()
+            .is_none_or(|extension| extension != "sql")
+        {
+            continue;
+        }
+        let file = entry
+            .file_type()
+            .expect("Unable to read install/migrations");
+        let version = migration_number(&name)
+            .filter(|_| file.is_file())
+            .unwrap_or_else(|| panic!("Invalid migration file: {name}"));
+        versions.push((version, name));
+    }
+    versions.sort();
+    let mut version = baseline;
+    for (number, name) in versions {
+        assert!(
+            number == version + 1,
+            "Migration numbers must be unique and consecutive after the baseline: {name}"
+        );
+        version = number;
+    }
     let out = PathBuf::from(env::var_os("OUT_DIR").expect("Cargo output directory"));
     std::fs::write(
         out.join("schema_version.rs"),
-        format!("pub const SCHEMA_VERSION: i32 = {version};\n"),
+        format!(
+            "/// The version that `install/migrations/baseline.txt` records.\n\
+             pub const BASELINE: i64 = {baseline};\n\
+             /// The version that the migrations in `install/migrations` produce.\n\
+             pub const SCHEMA_VERSION: i64 = {version};\n"
+        ),
     )
     .expect("Unable to write the schema version");
 }

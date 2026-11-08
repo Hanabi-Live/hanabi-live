@@ -28,9 +28,7 @@ cp -a public "$release/"
 cp -a packages/game/src/json "$release/packages/game/src/"
 mkdir -p "$release/packages/data/src/json"
 cp packages/data/src/json/chatReplyCommands.json "$release/packages/data/src/json/"
-cp -a install/migrations "$release/install/"
-cp install/migrate.sh install/migration-files.sh install/release.py "$release/install/"
-cp install/database_schema.sql "$release/install/"
+cp install/release.py "$release/install/"
 cp LICENSE "$release/"
 
 (
@@ -46,10 +44,6 @@ if readelf -l "$release/hanabi-live" | grep -q INTERP; then
   echo "Rust releases must not depend on the build host's dynamic loader." >&2
   exit 1
 fi
-# shellcheck source=migration-files.sh
-source install/migration-files.sh
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOBIN="$release/install" \
-  go install -trimpath "github.com/jackc/tern/v2@$TERN_VERSION"
 python3 install/release.py manifest "$release"
 python3 install/release.py verify "$release"
 archive="hanabi-live-$revision-linux-amd64.tar.gz"

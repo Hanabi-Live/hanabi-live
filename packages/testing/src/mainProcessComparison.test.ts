@@ -2,14 +2,7 @@
 import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { once } from "node:events";
-import {
-  appendFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-} from "node:fs/promises";
+import { appendFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
@@ -19,6 +12,7 @@ import {
   bounded,
   buildRust,
   databaseDescribe,
+  installSchema,
   login,
   prepareRoot,
   settleLanes,
@@ -29,7 +23,6 @@ import {
   wireHistorySchema,
 } from "./mainProcessSupport";
 import { redisFixture } from "./redisFixture";
-import { expectedSchemaVersion } from "./schemaVersion";
 
 /** The deal of this two-player seed lets the players alternate 25 plays. */
 const SEED_SUFFIX = "77621";
@@ -63,14 +56,6 @@ databaseDescribe("normal-server protocol workload", () => {
       bobCookie: string;
     }> = [];
     try {
-      await sql.unsafe(
-        await readFile(path.join(ROOT, "install/database_schema.sql"), "utf8"),
-      );
-      const version = expectedSchemaVersion(
-        await readdir(path.join(ROOT, "install/migrations")),
-      );
-      await sql`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
-      await sql`INSERT INTO public.schema_version (version) VALUES (${version})`;
       await prepareRoot(directory, database, "localhost");
       redis = await redisFixture();
       await appendFile(
@@ -78,6 +63,7 @@ databaseDescribe("normal-server protocol workload", () => {
         `REDIS_URL=${redis.url}\n`,
       );
       await buildRust(directory);
+      await installSchema(directory);
       processState = startProcess(directory);
       let address = await bounded(processState.ready, "Server readiness");
       const page = await fetch(address, {

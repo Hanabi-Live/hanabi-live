@@ -111,6 +111,7 @@ sqlx = { version = "0.9", default-features = false, features = [
   "chrono",
   "json",
   "macros",
+  "migrate",
   "derive"
 ] }
 tokio = { version = "1", features = ["full"] }

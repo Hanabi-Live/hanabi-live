@@ -116,13 +116,7 @@ export async function prepareRoot(
 ): Promise<void> {
   await mkdir(path.join(directory, "public/js/bundles"), { recursive: true });
   await mkdir(path.join(directory, "public/img"), { recursive: true });
-  await mkdir(path.join(directory, "install"), { recursive: true });
   await Promise.all([
-    symlink(
-      path.join(ROOT, "install/migrations"),
-      path.join(directory, "install/migrations"),
-      "dir",
-    ),
     symlink(
       path.join(ROOT, "public/img/favicon.ico"),
       path.join(directory, "public/img/favicon.ico"),
@@ -264,6 +258,21 @@ export async function buildRust(directory: string): Promise<void> {
     path.join(ROOT, "server/target/release/hanabi-live"),
     path.join(directory, "hanabi-live"),
   );
+}
+
+/** Installs the schema into the empty test database, as a new installation does. */
+export async function installSchema(directory: string): Promise<void> {
+  const child = spawn(
+    path.join(directory, "hanabi-live"),
+    ["migrate", "apply"],
+    {
+      cwd: directory,
+      env: { PATH: process.env["PATH"], HOME: directory, TMPDIR: directory },
+      stdio: ["ignore", "ignore", "inherit"],
+    },
+  );
+  await once(child, "exit");
+  expect(child.exitCode).toBe(0);
 }
 
 export async function login(

@@ -24,6 +24,7 @@ pub mod integrations;
 pub mod lifecycle;
 pub mod lobby;
 pub mod metrics;
+pub mod migrations;
 pub mod model;
 pub mod operations;
 #[cfg(test)]

@@ -6,14 +6,7 @@ import {
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
-import {
-  appendFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-} from "node:fs/promises";
+import { appendFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
@@ -25,6 +18,7 @@ import {
   bounded,
   buildRust,
   databaseDescribe,
+  installSchema,
   login,
   prepareRoot,
   rustProgressTableSchema,
@@ -33,7 +27,6 @@ import {
   stopChild,
 } from "./mainProcessSupport";
 import { redisFixture } from "./redisFixture";
-import { expectedSchemaVersion } from "./schemaVersion";
 
 databaseDescribe("compiled application entry point (rust)", () => {
   test.each([
@@ -101,16 +94,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
       try {
         await mkdir(path.join(ROOT, "dist"), { recursive: true });
         directory = await mkdtemp(path.join(ROOT, "dist/server-process-"));
-        const schema = await readFile(
-          path.join(ROOT, "install/database_schema.sql"),
-          "utf8",
-        );
-        await client.unsafe(schema);
-        const version = expectedSchemaVersion(
-          await readdir(path.join(ROOT, "install/migrations")),
-        );
-        await client`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
-        await client`INSERT INTO public.schema_version (version) VALUES (${version})`;
         await prepareRoot(directory, database, domain);
         redis = await redisFixture();
         await appendFile(
@@ -118,6 +101,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
           `REDIS_URL=${redis.url}\n`,
         );
         await buildRust(directory);
+        await installSchema(directory);
         processState = startProcess(directory);
         let address = await bounded(
           processState.ready,
@@ -572,14 +556,6 @@ databaseDescribe("compiled application entry point (rust)", () => {
     let redis: Awaited<ReturnType<typeof redisFixture>> | undefined;
     const sockets: WebSocket[] = [];
     try {
-      await sql.unsafe(
-        await readFile(path.join(ROOT, "install/database_schema.sql"), "utf8"),
-      );
-      const version = expectedSchemaVersion(
-        await readdir(path.join(ROOT, "install/migrations")),
-      );
-      await sql`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
-      await sql`INSERT INTO public.schema_version VALUES (${version})`;
       await prepareRoot(directory, database, "localhost");
       redis = await redisFixture();
       await appendFile(
@@ -587,6 +563,7 @@ databaseDescribe("compiled application entry point (rust)", () => {
         `REDIS_URL=${redis.url}\n`,
       );
       await buildRust(directory);
+      await installSchema(directory);
       state = startProcess(directory);
       let address = await bounded(state.ready, "six-player parity readiness");
       const peers = await Promise.all(

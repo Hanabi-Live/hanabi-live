@@ -7,9 +7,9 @@ recoverable live state.
 ## Running
 
 Use a separate development checkout/configuration and disposable storage before
-considering a deployment. Build the existing client assets and apply the normal
-PostgreSQL migrations. Rust uses the existing `.env` settings plus `REDIS_URL`.
-For a local Redis instance:
+considering a deployment. Build the existing client assets and apply PostgreSQL
+migrations with `hanabi-live migrate apply`. Rust uses the existing `.env`
+settings plus `REDIS_URL`. For a local Redis instance:
 
 ```dotenv
 REDIS_URL=redis://127.0.0.1:6379
@@ -77,20 +77,19 @@ python3 server/sqlx_schema.py --write
 python3 server/sqlx_schema.py
 ```
 
-The script creates a unique database, loads the canonical schema and migration
-version, prepares all Rust targets, and drops that database afterward. It
-refuses remote database hosts and does not read the application's `.env`. Commit
-the regenerated `.sqlx` files. CI runs the check-only command to reject missing
-or stale metadata. A NULL password hash means the account requires a password
-reset. Explicitly mark nullable outer-join columns.
+The script creates a unique database, loads the canonical schema, prepares all
+Rust targets, and drops that database afterward. It refuses remote database
+hosts and does not read the application's `.env`. Commit the regenerated `.sqlx`
+files. CI runs the check-only command to reject missing or stale metadata. A
+NULL password hash means the account requires a password reset. Explicitly mark
+nullable outer-join columns.
 
 ## Immutable releases
 
 CI publishes `hanabi-live-<revision>-linux-amd64`. It contains the statically
-linked Rust binary named `hanabi-live`, paired client assets, the word list,
-schema/migrations, and the bundled migration tool. No Go, Node, Cargo, or
-compiler is needed on the deployment host; installation uses Python, Bash,
-PostgreSQL, and Redis.
+linked Rust binary named `hanabi-live` (which embeds the schema and migrations),
+paired client assets, and the word list. No Node, Cargo, or compiler is needed
+on the deployment host; installation uses Python, Bash, PostgreSQL, and Redis.
 
 To build locally on Linux amd64, install `musl-tools`, add Rust's
 `x86_64-unknown-linux-musl` target, and run:

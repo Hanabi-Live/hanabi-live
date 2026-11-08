@@ -32,13 +32,6 @@ REPOSITORY = "Hanabi-Live/hanabi-live"
 API = f"https://api.github.com/repos/{REPOSITORY}"
 
 
-def migration_version(root):
-    return int(subprocess.check_output(
-        ["bash", str(root / "install/migration-files.sh"), str(root / "install/migrations")],
-        text=True,
-    ).strip())
-
-
 class ReleaseStateUncertainError(RuntimeError):
     """A rename succeeded, but its directory durability could not be confirmed."""
 
@@ -193,18 +186,12 @@ def verify(directory):
     require(files_in(directory) == expected, "Release file checksums or file set differ")
     for name in (
         "hanabi-live",
-        "install/tern",
-        "install/migrate.sh",
         "public/js/bundles/version.txt",
         "public/js/bundles/git_revision.txt",
         f"public/js/bundles/main.{metadata['clientVersion']}.min.js",
         f"public/css/main.{metadata['clientVersion']}.min.css",
     ):
         require(name in expected, f"Missing required file: {name}")
-    require(
-        "install/migration-files.sh" in expected or "install/migration_files.sh" in expected,
-        "Missing required file: install/migration-files.sh",
-    )
     # Previously published immutable releases retain the old asset layout.
     require(
         "packages/data/src/json/chatReplyCommands.json" in expected
@@ -352,7 +339,7 @@ def activate(root, revision):
         require(not pending.exists() and not pending.is_symlink(), "Pending activation already exists")
         # Migration failure may leave forward-only schema changes, but never changes
         # current or checkpoints. Do not automatically start an older binary afterward.
-        subprocess.run(["bash", str(release / "install/migrate.sh"), "apply"], check=True)
+        subprocess.run([str(release / "hanabi-live"), "migrate", "apply"], check=True)
         subprocess.run([str(release / "hanabi-live"), "--check-startup"], check=True)
         pending.symlink_to(Path("releases") / revision)
         os.replace(pending, current)

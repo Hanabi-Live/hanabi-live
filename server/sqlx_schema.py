@@ -59,16 +59,11 @@ def main():
         ["createdb", "--maintenance-db", admin, name], env=env, check=True
     )
     try:
-        version = int(subprocess.check_output(
-            ["bash", str(ROOT / "install/migration-files.sh"), str(ROOT / "install/migrations")],
-            text=True,
-        ).strip())
         subprocess.run(
             [
                 "psql", "--no-psqlrc", "--quiet", "--dbname", database,
-                "--set", "ON_ERROR_STOP=1", "--set", f"migration_version={version}",
+                "--set", "ON_ERROR_STOP=1",
                 "--file", str(ROOT / "install/database_schema.sql"),
-                "--file", str(ROOT / "install/schema_version.sql"),
             ],
             env=env,
             check=True,

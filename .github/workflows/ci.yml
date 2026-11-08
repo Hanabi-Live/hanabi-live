@@ -198,9 +198,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/workflows/setup-bun
-      - uses: ./.github/workflows/setup-go
-        with:
-          cache-key: migration-tool
       - uses: ./.github/workflows/setup-rust
       - name: Prepare static Rust release toolchain
         run: |

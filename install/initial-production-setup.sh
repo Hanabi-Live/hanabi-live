@@ -138,7 +138,7 @@ EOF
   # Initialize the database and start the server as the app user.
   mkdir --parents logs letsencrypt
   chown --recursive "$APP_USER:$APP_USER" "/home/$APP_USER"
-  sudo --user "$APP_USER" ./install/install-database-schema.sh
+  sudo --user "$APP_USER" ./hanabi-live migrate apply
   sudo --user "$APP_USER" ./hanabi-live --check-startup
   systemctl enable --now hanabi-live
   # shellcheck source=/dev/null

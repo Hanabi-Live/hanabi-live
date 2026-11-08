@@ -3,14 +3,7 @@ import { SERVER_COMMAND_SCHEMAS } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { assertDefined } from "complete-common";
 import { once } from "node:events";
-import {
-  appendFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-} from "node:fs/promises";
+import { appendFile, mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import type { WebSocket } from "ws";
@@ -20,6 +13,7 @@ import {
   bounded,
   buildRust,
   databaseDescribe,
+  installSchema,
   login,
   prepareRoot,
   socketClient,
@@ -27,7 +21,6 @@ import {
   stopChild,
 } from "./mainProcessSupport";
 import { redisFixture } from "./redisFixture";
-import { expectedSchemaVersion } from "./schemaVersion";
 
 databaseDescribe("Rust actor durability and ownership", () => {
   test.each(["crash", "failed write"] as const)(
@@ -46,17 +39,6 @@ databaseDescribe("Rust actor durability and ownership", () => {
       ]);
       const sockets: WebSocket[] = [];
       try {
-        await sql.unsafe(
-          await readFile(
-            path.join(ROOT, "install/database_schema.sql"),
-            "utf8",
-          ),
-        );
-        const version = expectedSchemaVersion(
-          await readdir(path.join(ROOT, "install/migrations")),
-        );
-        await sql`CREATE TABLE public.schema_version (version integer PRIMARY KEY)`;
-        await sql`INSERT INTO public.schema_version VALUES (${version})`;
         await prepareRoot(directory, database, "localhost");
         redis = await redisFixture();
         await appendFile(
@@ -64,6 +46,7 @@ databaseDescribe("Rust actor durability and ownership", () => {
           `REDIS_URL=${redis.url}\n`,
         );
         await buildRust(directory);
+        await installSchema(directory);
         state = startProcess(directory);
         let address = await bounded(state.ready, "Rust recovery readiness");
         const aliceCookie = await login(address, "RecoveryAlice");
