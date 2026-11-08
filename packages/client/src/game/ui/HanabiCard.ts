@@ -19,6 +19,7 @@ import {
   getCardBorderPresentation,
   getCardIdentityToShow,
   getCardPipPresentation,
+  getIdentityFromNote,
   getInitialCardState,
   getSuit,
   getSuitAbbreviationForVariant,
@@ -317,9 +318,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     const suitToShow = this.getSuitToShow(cardIdentity);
     const rankToShow = this.getRankToShow(cardIdentity);
 
-    // Cards that are morphed to be blank should not be draggable
+    // Cards that are morphed to be blank should not be draggable, unless the player's own note
+    // identifies them (e.g. a card drawn during an in-game hypothetical).
     const morphedBlank = this.isMorphedBlank();
-    this.layout.blank = morphedBlank; // Also let the LayoutChild know about it
+    this.layout.blank = // Also let the LayoutChild know about it
+      morphedBlank
+      && getIdentityFromNote(this.note, this.state, globals.state.playing)
+        === undefined;
     this.layout.checkSetDraggable();
 
     // Set the visible state. (This must be after the morphed blank check.)
@@ -412,21 +417,26 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 
   getMorphedIdentity(): CardIdentity {
-    if (this.isMorphed()) {
-      return this.getMorph()!;
+    // A blank morph only hides the card (for example, a card drawn during the hypothetical), so the
+    // player's own note still identifies it.
+    const morph = this.getMorph();
+    if (this.isMorphed() && !this.isMorphedBlank()) {
+      return morph!;
     }
 
-    if (globals.state.replay.hypothetical !== null && globals.state.playing) {
-      const possibilities = possibleCardsFromNoteAndClues(
+    if (globals.state.replay.hypothetical !== null) {
+      const noteIdentity = getIdentityFromNote(
         this.note,
         this.state,
+        globals.state.playing,
       );
-
-      if (possibilities.length === 1) {
-        const possibility = possibilities[0]!;
-        const [suitIndex, rank] = possibility;
-        return { suitIndex, rank };
+      if (noteIdentity !== undefined) {
+        return noteIdentity;
       }
+    }
+
+    if (this.isMorphed()) {
+      return morph!;
     }
 
     // We do not track the card identities for the stack bases. (For stack bases, the suit and rank
