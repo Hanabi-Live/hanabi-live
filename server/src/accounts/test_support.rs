@@ -5,6 +5,7 @@ use std::{
 };
 
 static DATABASE_ID: AtomicU64 = AtomicU64::new(0);
+const DEFAULT_MAX_CONNECTIONS: u32 = 6;
 
 pub(crate) async fn legacy_column_order(pool: &PgPool) -> anyhow::Result<()> {
     for (table, column, definition) in [
@@ -37,6 +38,10 @@ pub struct TestDb {
 
 impl TestDb {
     pub async fn create() -> Option<Self> {
+        Self::with_max_connections(DEFAULT_MAX_CONNECTIONS).await
+    }
+
+    pub async fn with_max_connections(max_connections: u32) -> Option<Self> {
         let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
             eprintln!("Skipping disposable PostgreSQL test; set HANABI_TEST_DATABASE_URL.");
             return None;
@@ -49,7 +54,7 @@ impl TestDb {
         );
         let mut admin = PgConnection::connect_with(&options).await.unwrap();
         let name = format!(
-            "ts_slice_rust_accounts_{}_{}",
+            "hanabi_test_{}_{}",
             std::process::id(),
             DATABASE_ID.fetch_add(1, Ordering::Relaxed)
         );
@@ -64,7 +69,7 @@ impl TestDb {
             .await
             .unwrap();
         let pool = sqlx::postgres::PgPoolOptions::new()
-            .max_connections(6)
+            .max_connections(max_connections)
             .connect_with(options.database(&name))
             .await
             .unwrap();

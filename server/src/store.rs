@@ -1047,12 +1047,13 @@ pub fn validate_standard_record(row: &crate::archive::GameRecord) -> Result<()> 
 mod tests {
     use super::*;
     use crate::{
+        accounts::test_support::TestDb,
         actors::{Hub, HubCommand, TableCommand},
         model::ExtraOptions,
         test_redis::RedisFixture,
         transport::Session,
     };
-    use std::{str::FromStr, sync::Arc};
+    use std::sync::Arc;
     use tokio::sync::oneshot;
 
     fn pregame(id: u64) -> TableSnapshot {
@@ -1171,59 +1172,17 @@ mod tests {
         ensure!(TableSnapshot::decode(&invalid.to_string()).is_err());
         Ok(())
     }
-    async fn database() -> Result<Option<(PgPool, PgPool, String)>> {
-        let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
-            eprintln!("PostgreSQL integration requires HANABI_TEST_DATABASE_URL");
+    async fn database() -> Result<Option<(TestDb, PgPool)>> {
+        let Some(db) = TestDb::create().await else {
             return Ok(None);
         };
-        let options = PgConnectOptions::from_str(&url)?;
-        ensure!(
-            matches!(options.get_host(), "localhost" | "127.0.0.1")
-                || options.get_host().starts_with('/'),
-            "Disposable local PostgreSQL required"
-        );
-        let admin = PgPoolOptions::new()
-            .max_connections(1)
-            .connect_with(options.clone())
-            .await?;
-        let name = format!("ts_slice_{:032x}", rand::random::<u128>());
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {name}")))
-            .execute(&admin)
-            .await?;
-        let pool = PgPoolOptions::new()
-            .max_connections(6)
-            .connect_with(options.database(&name))
-            .await?;
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "the schema file has many statements, which the query macros cannot run"
-        )]
-        sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
-            .execute(&pool)
-            .await?;
-        sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&pool).await?;
-        Ok(Some((admin, pool, name)))
-    }
-    async fn cleanup(admin: PgPool, name: String) -> Result<()> {
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        sqlx::query(sqlx::AssertSqlSafe(format!(
-            "DROP DATABASE {name} WITH (FORCE)"
-        )))
-        .execute(&admin)
-        .await?;
-        admin.close().await;
-        Ok(())
+        sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES(1,'Alice','alice','test','127.0.0.1'),(2,'Bob','bob','test','127.0.0.1'),(3,'Cathy','cathy','test','127.0.0.1')").execute(&db.pool).await?;
+        let pool = db.pool.clone();
+        Ok(Some((db, pool)))
     }
     #[tokio::test]
     async fn recovery_refreshes_only_pregame_totals_and_persists_them_once() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1321,12 +1280,12 @@ mod tests {
         }
         .await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
     #[tokio::test]
     async fn derived_stats_update_only_the_columns_for_each_player_count() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1394,12 +1353,12 @@ mod tests {
         }
         .await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
     #[tokio::test]
     async fn redis_is_sole_authority_and_terminal_archive_is_atomic_and_retryable() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         crate::accounts::test_support::legacy_column_order(&pool).await?;
@@ -1512,14 +1471,14 @@ mod tests {
         }
         .await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 
     #[tokio::test]
     async fn interrupted_split_recovers_reserved_destination_without_duplicate_membership()
     -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1565,7 +1524,7 @@ mod tests {
         }
         .await;
         restored.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
     async fn send(
@@ -1586,7 +1545,7 @@ mod tests {
     }
     #[tokio::test]
     async fn player_statistics_carry_each_best_scores_modifier() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1623,14 +1582,14 @@ mod tests {
             Ok::<(), anyhow::Error>(())
         }
         .await;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 
     #[tokio::test]
     async fn reserved_chat_ids_survive_failure_and_concurrent_retries_without_conflating_messages()
     -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1668,14 +1627,14 @@ mod tests {
             Ok::<(),anyhow::Error>(())
         }.await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 
     #[tokio::test]
     async fn expired_owner_waiting_on_pg_locks_cannot_reapply_chat_or_tag_mutations() -> Result<()>
     {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1752,13 +1711,13 @@ mod tests {
         ensure!(rows == 1, "Replacement did not archive exactly once");
         current.remove(id, revision).await?;
         current.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         Ok(())
     }
 
     #[tokio::test]
     async fn auto_start_archives_chat_and_last_replay_departure_retires_table() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1823,13 +1782,13 @@ mod tests {
         tasks.close();
         tasks.wait().await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 
     #[tokio::test]
     async fn actual_actor_split_replay_hypothetical_and_restart_are_durable() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -1979,13 +1938,13 @@ mod tests {
         tasks.close();
         tasks.wait().await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 
     #[tokio::test]
     async fn actors_run_multiplayer_variants_and_recover_all_runtime_mutations() -> Result<()> {
-        let Some((admin, pool, name)) = database().await? else {
+        let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let redis = RedisFixture::start(true).await?;
@@ -2038,7 +1997,7 @@ mod tests {
         tasks.close();
         tasks.wait().await;
         store.close().await?;
-        cleanup(admin, name).await?;
+        db.close().await;
         result
     }
 }

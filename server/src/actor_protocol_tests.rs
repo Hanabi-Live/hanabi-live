@@ -1,18 +1,16 @@
 use super::*;
 use crate::{
+    accounts::test_support::TestDb,
     state::{RedisState, StateId},
     test_redis::RedisFixture,
     transport::Outbound,
 };
-use sqlx::{
-    PgPool,
-    postgres::{PgConnectOptions, PgPoolOptions},
-};
-use std::str::FromStr;
+
+/// Each harness runs a hub and several sessions against one database.
+const MAX_CONNECTIONS: u32 = 8;
 
 struct Harness {
-    admin: PgPool,
-    database: String,
+    db: TestDb,
     store: Store,
     state: RedisState,
     hub: mpsc::Sender<HubCommand>,
@@ -23,39 +21,10 @@ struct Harness {
 }
 impl Harness {
     async fn new(names: &[&str]) -> Result<Option<Self>> {
-        let Ok(url) = std::env::var("HANABI_TEST_DATABASE_URL") else {
-            eprintln!("Actor protocol tests require HANABI_TEST_DATABASE_URL");
+        let Some(db) = TestDb::with_max_connections(MAX_CONNECTIONS).await else {
             return Ok(None);
         };
-        let options = PgConnectOptions::from_str(&url)?;
-        ensure!(
-            options.get_host().starts_with('/')
-                || matches!(options.get_host(), "localhost" | "127.0.0.1"),
-            "Disposable local PostgreSQL required"
-        );
-        let admin = PgPoolOptions::new()
-            .max_connections(1)
-            .connect_with(options.clone())
-            .await?;
-        let database = format!("ts_slice_{:032x}", rand::random::<u128>());
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE {database}")))
-            .execute(&admin)
-            .await?;
-        let pool = PgPoolOptions::new()
-            .max_connections(8)
-            .connect_with(options.database(&database))
-            .await?;
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "the schema file has many statements, which the query macros cannot run"
-        )]
-        sqlx::raw_sql(include_str!("../../install/database_schema.sql"))
-            .execute(&pool)
-            .await?;
+        let pool = db.pool.clone();
         for (index, name) in names.iter().enumerate() {
             sqlx::query!("INSERT INTO users(id,username,normalized_username,password_hash,last_ip) VALUES($1,$2,$3,'fixture','127.0.0.1')", hanabi_engine::int(index)+1, name, crate::accounts::normalize_username(name)).execute(&pool).await?;
         }
@@ -70,8 +39,7 @@ impl Harness {
         )
         .await?;
         let mut h = Self {
-            admin,
-            database,
+            db,
             store,
             state,
             hub,
@@ -241,17 +209,7 @@ impl Harness {
     async fn close(self) -> Result<()> {
         self.stop_hub().await?;
         self.store.close().await?;
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        sqlx::query(sqlx::AssertSqlSafe(format!(
-            "DROP DATABASE {} WITH (FORCE)",
-            self.database
-        )))
-        .execute(&self.admin)
-        .await?;
-        self.admin.close().await;
+        self.db.close().await;
         Ok(())
     }
 }

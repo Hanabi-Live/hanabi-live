@@ -3,11 +3,7 @@ use axum::{
     body::{Body, to_bytes},
     http::Request,
 };
-use sqlx::{
-    Connection, Executor,
-    postgres::{PgConnectOptions, PgConnection, PgPoolOptions},
-};
-use std::str::FromStr;
+use sqlx::postgres::PgPoolOptions;
 use tower::ServiceExt;
 
 fn config() -> PublicConfig {
@@ -246,77 +242,9 @@ fn formatted_templates_preserve_conditional_links_and_selected_options() {
     assert!(selected[0].contains(r#"value="3""#));
 }
 
-struct Database {
-    admin: PgConnection,
-    pool: PgPool,
-    name: String,
-}
-impl Database {
-    async fn create() -> Option<Self> {
-        let Ok(uri) = std::env::var("HANABI_TEST_DATABASE_URL") else {
-            eprintln!("Skipping public HTTP database tests; set local HANABI_TEST_DATABASE_URL.");
-            return None;
-        };
-        let parsed = url::Url::parse(&uri).expect("test database URI");
-        assert!(
-            matches!(parsed.host_str(), Some("localhost" | "127.0.0.1" | "[::1]")),
-            "Test database must be local"
-        );
-        for (key, value) in parsed.query_pairs() {
-            if key == "host" {
-                assert!(
-                    value.starts_with('/') || matches!(&*value, "localhost" | "127.0.0.1" | "::1"),
-                    "Test database host must be local"
-                );
-            }
-        }
-        let options = PgConnectOptions::from_str(&uri).unwrap();
-        let mut admin = PgConnection::connect_with(&options).await.unwrap();
-        let name = format!("ts_slice_rust_public_{:016x}", rand::random::<u64>());
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        admin
-            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
-                "CREATE DATABASE {name}"
-            ))))
-            .await
-            .unwrap();
-        let pool = PgPoolOptions::new()
-            .max_connections(3)
-            .connect_with(options.database(&name))
-            .await
-            .unwrap();
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "the schema file has many statements, which the query macros cannot run"
-        )]
-        sqlx::raw_sql(include_str!("../../../install/database_schema.sql"))
-            .execute(&pool)
-            .await
-            .unwrap();
-        Some(Self { admin, pool, name })
-    }
-    async fn close(mut self) {
-        self.pool.close().await;
-        #[expect(
-            clippy::disallowed_methods,
-            reason = "a database name cannot be a bound parameter"
-        )]
-        self.admin
-            .execute(sqlx::raw_sql(sqlx::AssertSqlSafe(format!(
-                "DROP DATABASE {} WITH (FORCE)",
-                self.name
-            ))))
-            .await
-            .unwrap();
-    }
-}
-
 #[tokio::test]
 async fn public_database_routes_filters_privacy_exports_and_html() {
-    let Some(db) = Database::create().await else {
+    let Some(db) = crate::accounts::test_support::TestDb::create().await else {
         return;
     };
     let app = router(db.pool.clone(), &config());
