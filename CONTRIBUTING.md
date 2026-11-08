@@ -6,31 +6,11 @@ With issues:
 
 With pull requests:
 
+- First, read the [installation instructions](docs/install.md).
+- Your pull requests need to pass the linter. Run the "lint.sh" script before
+  you submit your pull request.
 - We hang out in [the Discord server](https://discord.gg/FADvkJp) in the
   `#website-development` channel. Come say hi.
-- Your pull requests need to pass the linter. To set up the linter, read and
-  follow the [installation instructions](docs/install.md).
-- Help me fix all these bugs and issues!
-
-## Server Code
-
-The [native Rust server](server/README.md) runs in production. Preserve shared
-rules, client protocol behavior, and replay compatibility. Process tests and
-disposable database/Redis fixtures live in `packages/testing`.
-
-Before submitting server changes, run:
-
-```sh
-cargo test --locked --manifest-path server/Cargo.toml
-cargo test --locked --manifest-path server/engine/Cargo.toml
-bash lint.sh
-```
-
-Database integration tests require `HANABI_TEST_DATABASE_URL` pointing to a
-disposable local PostgreSQL instance. Native and process/browser tests start
-private Redis instances using `redis-server` and `redis-cli` on `PATH`. Never
-point integration tests at production. Follow the server runbook for SQLx
-metadata regeneration after query or schema changes.
 
 ## Creating a New Variant
 
