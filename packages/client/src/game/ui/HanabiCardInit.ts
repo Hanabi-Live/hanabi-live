@@ -114,7 +114,7 @@ const PIP_OUTLINE_WIDTH = 6;
  * visible width. At hand size, a thinner outline is narrower than a screen pixel and fades in and
  * out depending on where the digit lands on the pixel grid.
  */
-const RANK_PIP_OUTLINE_WIDTH = 10;
+const RANK_PIP_OUTLINE_WIDTH = 8;
 
 /** The outline around a suit pip. */
 const SUIT_PIP_STROKE_WIDTH = 5;
