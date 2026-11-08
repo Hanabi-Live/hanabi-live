@@ -505,6 +505,8 @@ async fn user_stats(state: &PublicState, id: i32) -> Result<HashMap<i64, Value>>
         .map(|row| Ok((i64::from(row.variant_id), serde_json::to_value(row)?)))
         .collect()
 }
+/// The decimal places that a missing score's clue efficiency is shown and filtered with.
+const EFFICIENCY_DECIMALS: usize = 2;
 /// The clue efficiency from which a missing score is shown as hard.
 const HARD_EFFICIENCY: f64 = 1.33;
 /// The clue efficiency from which a missing score is shown as very hard.
@@ -642,14 +644,16 @@ async fn missing(
                 - max)
                 / multiplier;
             let efficiency = float(max) / float(clues);
-            let rounded = (efficiency * 100.0).round() / 100.0;
+            // Filter on the value that is shown, so the bounds match what the user reads.
+            let shown = format!("{efficiency:.EFFICIENCY_DECIMALS$}");
+            let rounded: f64 = shown.parse()?;
             if bounds[0].is_some_and(|min| rounded < min)
                 || bounds[1].is_some_and(|max| rounded > max)
             {
                 continue;
             }
             rows.push(json!({"name":name,"numPlayers":p,"score":best.0,"maxScore":max,"modifierName":shown_modifier(best.1)?,
-                "efficiency":format!("{efficiency:.2}"),"efficiencyClass":if efficiency<HARD_EFFICIENCY {"normal"}else if efficiency<VERY_HARD_EFFICIENCY {"hard"}else{"very-hard"}}));
+                "efficiency":shown,"efficiencyClass":if efficiency<HARD_EFFICIENCY {"normal"}else if efficiency<VERY_HARD_EFFICIENCY {"hard"}else{"very-hard"}}));
         }
     }
     let names: Vec<_> = users.iter().map(|u| u.1.clone()).collect();

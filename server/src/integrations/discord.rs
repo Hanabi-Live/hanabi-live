@@ -89,14 +89,13 @@ pub struct Configuration {
 
 impl Configuration {
     pub fn read(values: &HashMap<String, String>) -> Result<Option<Self>> {
-        const KEYS: [&str; 6] = [
-            "DISCORD_TOKEN",
-            "DISCORD_GUILD_ID",
-            "DISCORD_CHANNEL_SYNC_WITH_LOBBY",
-            "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT",
-            "DISCORD_PING_CREW_ROLE_NAME",
-            "DISCORD_TRUSTED_TEACHER_ROLE_NAME",
-        ];
+        const TOKEN: &str = "DISCORD_TOKEN";
+        const GUILD: &str = "DISCORD_GUILD_ID";
+        const LOBBY: &str = "DISCORD_CHANNEL_SYNC_WITH_LOBBY";
+        const DEVELOPMENT: &str = "DISCORD_CHANNEL_WEBSITE_DEVELOPMENT";
+        const PING_ROLE: &str = "DISCORD_PING_CREW_ROLE_NAME";
+        const TEACHER_ROLE: &str = "DISCORD_TRUSTED_TEACHER_ROLE_NAME";
+        const KEYS: [&str; 6] = [TOKEN, GUILD, LOBBY, DEVELOPMENT, PING_ROLE, TEACHER_ROLE];
         if KEYS
             .iter()
             .all(|key| values.get(*key).is_none_or(|v| v.trim().is_empty()))
@@ -117,17 +116,17 @@ impl Configuration {
                 })
         };
         let config = Self {
-            token: value(KEYS[0])?,
-            guild: value(KEYS[1])?,
-            lobby: value(KEYS[2])?,
-            development: value(KEYS[3])?,
-            ping_role: value(KEYS[4])?,
-            teacher_role: value(KEYS[5])?,
+            token: value(TOKEN)?,
+            guild: value(GUILD)?,
+            lobby: value(LOBBY)?,
+            development: value(DEVELOPMENT)?,
+            ping_role: value(PING_ROLE)?,
+            teacher_role: value(TEACHER_ROLE)?,
         };
         for (key, id) in [
-            (KEYS[1], &config.guild),
-            (KEYS[2], &config.lobby),
-            (KEYS[3], &config.development),
+            (GUILD, &config.guild),
+            (LOBBY, &config.lobby),
+            (DEVELOPMENT, &config.development),
         ] {
             if !is_snowflake(id) {
                 return Err(crate::errors::Fault::new(

@@ -56,7 +56,7 @@ pub fn max_consecutive_marks(input: &str) -> usize {
     let mut count = 0;
     let mut maximum = 0;
     for ch in input.nfd() {
-        let mut bytes = [0; 4];
+        let mut bytes = [0; char::MAX_LEN_UTF8];
         count = if regex!(r"^\p{Mn}$").is_match(ch.encode_utf8(&mut bytes)) {
             count + 1
         } else {
