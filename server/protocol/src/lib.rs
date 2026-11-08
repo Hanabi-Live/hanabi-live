@@ -28,6 +28,8 @@ pub const MAX_SEAT: usize = MAX_PLAYERS - 1;
 pub const DEFAULT_MAX_PLAYERS: u8 = 5;
 /// The most suits a variant can have.
 pub const MAX_SUITS: usize = 6;
+/// The lowest rank.
+pub const MIN_RANK: i32 = 1;
 /// The highest normal rank, which is also a suit's stack size unless the variant sets one.
 pub const MAX_RANK: i32 = 5;
 /// The rank of a stack's start card, which Up or Down variants add to each suit.
@@ -42,6 +44,8 @@ pub const MAX_DECK_SIZE: usize = 60;
 pub const MAX_GAME_ACTIONS: usize = 512;
 /// The longest note, in bytes, that an imported game can give a card.
 pub const MAX_IMPORTED_NOTE_LENGTH: usize = 65536;
+/// The number of seconds in a minute.
+pub const SECONDS_PER_MINUTE: i32 = 60;
 /// The longest starting clock a timed game can have, in seconds (one week).
 pub const MAX_TIME_BASE_SECONDS: i32 = 7 * 24 * 60 * 60;
 /// The most time a timed game can add each turn, in seconds (one day).
@@ -68,7 +72,7 @@ fn seats_or_none() -> Vec<i64> {
 
 /// Every normal rank, which are also the ranks that clues can name.
 fn ranks() -> Vec<i32> {
-    (1..=MAX_RANK).collect()
+    (MIN_RANK..=MAX_RANK).collect()
 }
 
 /// Every rank a card can have, after -1, which means an unknown rank.
@@ -125,6 +129,9 @@ impl JsonSchema for NumPlayers {
 /// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
 pub struct Timestamp;
 
+/// The digits of a wire timestamp's fractional second (milliseconds).
+pub const TIMESTAMP_FRACTION_DIGITS: usize = 3;
+
 impl JsonSchema for Timestamp {
     fn inline_schema() -> bool {
         true
@@ -137,7 +144,9 @@ impl JsonSchema for Timestamp {
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schemars::json_schema!({
             "type": "string",
-            "pattern": r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$",
+            "pattern": format!(
+                r"^\d{{4}}-\d{{2}}-\d{{2}}T\d{{2}}:\d{{2}}:\d{{2}}\.\d{{{TIMESTAMP_FRACTION_DIGITS}}}Z$"
+            ),
             "x-date": true,
         })
     }
@@ -1225,7 +1234,7 @@ pub struct TableStarted {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "UserID"))]
-pub struct UserId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
+pub struct UserId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
 
 /// The `/login` form.
 #[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema)]
@@ -1333,7 +1342,7 @@ pub struct PublicGameRow {
     pub id: GameId,
     #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
     /// The variant ID. Variant lists omit it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1360,7 +1369,7 @@ pub struct VariantNames(pub std::collections::BTreeMap<String, String>);
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ScoreFrequency {
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
     #[schemars(range(min = 1, max = MAX_SAFE_INTEGER))]
     pub num_times: i64,
@@ -1480,7 +1489,7 @@ pub struct Settings {
     #[schemars(length(min = 1))]
     pub create_table_variant: String,
     pub create_table_timed: bool,
-    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / 60))]
+    #[schemars(range(min = 0, max = MAX_TIME_BASE_SECONDS / SECONDS_PER_MINUTE))]
     pub create_table_time_base_minutes: f64,
     #[schemars(range(min = 0, max = MAX_TIME_PER_TURN_SECONDS))]
     pub create_table_time_per_turn_seconds: i32,
@@ -1698,7 +1707,7 @@ pub struct TableList(pub Vec<Table>);
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 #[schemars(extend("x-brand" = "GameID"))]
-pub struct GameId(#[schemars(range(min = 0, max = 2_147_483_647))] pub i32);
+pub struct GameId(#[schemars(range(min = 0, max = i32::MAX))] pub i32);
 
 /// A completed game in a player's history.
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -1708,16 +1717,16 @@ pub struct GameHistory {
     pub id: GameId,
     pub options: GameOptions,
     pub seed: String,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub num_turns: i32,
     pub end_condition: EndCondition,
     #[schemars(with = "Timestamp")]
     pub datetime_started: String,
     #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub num_games_on_this_seed: i64,
     #[schemars(extend("x-readonly" = true))]
     pub player_names: Vec<String>,
@@ -1750,9 +1759,9 @@ pub struct GameHistoryOtherScores {
 pub struct PregameBestScore {
     #[schemars(range(min = MIN_PLAYERS, max = MAX_PLAYERS))]
     pub num_players: u8,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub score: i32,
-    #[schemars(range(min = 0, max = 2_147_483_647))]
+    #[schemars(range(min = 0, max = i32::MAX))]
     pub modifier: i32,
     pub deck_plays: bool,
     pub empty_clues: bool,
@@ -1920,7 +1929,7 @@ pub enum ReceivedClue {
         #[serde(rename = "type")]
         #[schemars(extend("enum" = [ClueType::Rank as i32], "x-enum" = "ClueType"))]
         clue_type: i32,
-        #[schemars(range(min = 1, max = MAX_RANK), extend("enum" = ranks()))]
+        #[schemars(range(min = MIN_RANK, max = MAX_RANK), extend("enum" = ranks()))]
         value: i32,
     },
     Hidden {

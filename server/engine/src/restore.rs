@@ -8,7 +8,9 @@ use crate::{
     get_variant, int,
 };
 use anyhow::{Context, Result, bail, ensure};
-use hanabi_protocol::{MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MAX_SUITS, START_CARD_RANK};
+use hanabi_protocol::{
+    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MAX_SUITS, MIN_RANK, START_CARD_RANK,
+};
 use serde_json::Value;
 use std::collections::HashSet;
 
@@ -258,7 +260,7 @@ pub fn validate_engine_state(s: &EngineState) -> Result<()> {
         ensure!(
             c.order == i
                 && c.suit_index < v.suits.len()
-                && ((1..=MAX_RANK).contains(&c.rank) || c.rank == START_CARD_RANK)
+                && ((MIN_RANK..=MAX_RANK).contains(&c.rank) || c.rank == START_CARD_RANK)
                 && (-1..=int(MAX_HAND_SIZE)).contains(&c.slot),
             "Invalid card identity or slot."
         );

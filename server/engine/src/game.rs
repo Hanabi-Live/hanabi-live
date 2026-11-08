@@ -17,7 +17,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 use hanabi_protocol::{
-    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, START_CARD_RANK,
+    MAX_CLUES, MAX_PLAYERS, MAX_RANK, MAX_STRIKES, MIN_PLAYERS, MIN_RANK, START_CARD_RANK,
 };
 
 pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
@@ -92,7 +92,7 @@ pub fn create_game(setup: GameSetup) -> Result<Transition> {
         !identities.is_empty()
             && identities.len() <= hanabi_protocol::MAX_DECK_SIZE
             && identities.iter().all(|c| c.suit_index < variant.suits.len()
-                && matches!(c.rank, 1..=MAX_RANK | START_CARD_RANK)),
+                && matches!(c.rank, MIN_RANK..=MAX_RANK | START_CARD_RANK)),
         "The prepared deck contains invalid card identities."
     );
     let assigned = if setup.options.detrimental_characters {
@@ -366,7 +366,7 @@ fn play(state: &mut EngineState, player: usize, order: usize) {
         rank: card.rank,
     });
     let finished = if v.has_reversed_suits() {
-        (card.rank == 1 || card.rank == MAX_RANK)
+        (card.rank == MIN_RANK || card.rank == MAX_RANK)
             && state.play_stack_directions[card.suit_index] == StackDirection::Finished
     } else if v.sudoku {
         state.play_stack_directions[card.suit_index] == StackDirection::Finished

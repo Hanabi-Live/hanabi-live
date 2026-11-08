@@ -8,6 +8,23 @@ use axum::{
 use serde_json::json;
 use std::{fmt, io};
 
+/// The PostgreSQL SQLSTATE codes that public errors distinguish.
+mod sqlstate {
+    /// The length of every SQLSTATE code.
+    pub const LENGTH: usize = 5;
+    pub const UNIQUE_VIOLATION: &str = "23505";
+    pub const FOREIGN_KEY_VIOLATION: &str = "23503";
+    pub const CHECK_VIOLATION: &str = "23514";
+    pub const SERIALIZATION_FAILURE: &str = "40001";
+    pub const DEADLOCK_DETECTED: &str = "40P01";
+    pub const TOO_MANY_CONNECTIONS: &str = "53300";
+    pub const LOCK_NOT_AVAILABLE: &str = "55P03";
+    pub const QUERY_CANCELED: &str = "57014";
+    pub const ADMIN_SHUTDOWN: &str = "57P01";
+    pub const CRASH_SHUTDOWN: &str = "57P02";
+    pub const CANNOT_CONNECT_NOW: &str = "57P03";
+}
+
 tokio::task_local! {
     static HTTP_OPERATION: String;
 }
@@ -93,17 +110,17 @@ impl Report {
                 sqlx::Error::PoolClosed => ("database_unavailable", "The database connection pool is closed. Please try again after the server recovers.".into(), StatusCode::SERVICE_UNAVAILABLE),
                 sqlx::Error::Database(database) => {
                     match database.code().as_deref() {
-                        Some("57014") if database.message().contains("statement timeout") =>
+                        Some(sqlstate::QUERY_CANCELED) if database.message().contains("statement timeout") =>
                             ("database_query_timeout", format!("The database query timed out{limit}. Please try again."), StatusCode::GATEWAY_TIMEOUT),
-                        Some("57014") => ("database_query_cancelled", "The database query was cancelled before it finished.".into(), StatusCode::SERVICE_UNAVAILABLE),
-                        Some("55P03") => ("database_lock_timeout", "The database could not acquire the required lock in time.".into(), StatusCode::SERVICE_UNAVAILABLE),
-                        Some("23505") => ("database_duplicate", "An existing record already uses a value that must be unique.".into(), StatusCode::CONFLICT),
-                        Some("23503") => ("database_reference_conflict", "A related database record is missing or is still in use.".into(), StatusCode::CONFLICT),
-                        Some("23514") => ("database_constraint_failed", "The requested change violates a database validation rule.".into(), StatusCode::CONFLICT),
-                        Some("40001" | "40P01") => ("database_transaction_conflict", "The database transaction was rolled back because another operation conflicted with it. Please try again.".into(), StatusCode::CONFLICT),
-                        Some("53300" | "57P01" | "57P02" | "57P03") => ("database_unavailable", "The database is restarting or cannot accept connections.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                        Some(sqlstate::QUERY_CANCELED) => ("database_query_cancelled", "The database query was cancelled before it finished.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                        Some(sqlstate::LOCK_NOT_AVAILABLE) => ("database_lock_timeout", "The database could not acquire the required lock in time.".into(), StatusCode::SERVICE_UNAVAILABLE),
+                        Some(sqlstate::UNIQUE_VIOLATION) => ("database_duplicate", "An existing record already uses a value that must be unique.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::FOREIGN_KEY_VIOLATION) => ("database_reference_conflict", "A related database record is missing or is still in use.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::CHECK_VIOLATION) => ("database_constraint_failed", "The requested change violates a database validation rule.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::SERIALIZATION_FAILURE | sqlstate::DEADLOCK_DETECTED) => ("database_transaction_conflict", "The database transaction was rolled back because another operation conflicted with it. Please try again.".into(), StatusCode::CONFLICT),
+                        Some(sqlstate::TOO_MANY_CONNECTIONS | sqlstate::ADMIN_SHUTDOWN | sqlstate::CRASH_SHUTDOWN | sqlstate::CANNOT_CONNECT_NOW) => ("database_unavailable", "The database is restarting or cannot accept connections.".into(), StatusCode::SERVICE_UNAVAILABLE),
                         _ => {
-                            let state = database.code().filter(|code| code.len() == 5 && code.bytes().all(|c| c.is_ascii_alphanumeric()));
+                            let state = database.code().filter(|code| code.len() == sqlstate::LENGTH && code.bytes().all(|c| c.is_ascii_alphanumeric()));
                             ("database_error", format!("The database rejected the operation (SQLSTATE {}).", state.as_deref().unwrap_or("unavailable")), StatusCode::INTERNAL_SERVER_ERROR)
                         }
                     }

@@ -2,7 +2,7 @@ use crate::{
     Character, EngineCard, EngineEvent, EngineState, PlayerAction, StackDirection, Variant,
     clue_type, get_variant, int, is_card_touched,
 };
-use hanabi_protocol::{MAX_RANK, START_CARD_RANK};
+use hanabi_protocol::{MAX_RANK, MIN_RANK, START_CARD_RANK};
 use std::collections::HashSet;
 
 /// The turns left after the last card is drawn when a Contrarian plays.
@@ -134,9 +134,9 @@ fn needed_ranks(state: &EngineState, suit: usize) -> Vec<i32> {
         return match direction {
             StackDirection::Undecided => {
                 if stack == 0 {
-                    vec![1, MAX_RANK, START_CARD_RANK]
+                    vec![MIN_RANK, MAX_RANK, START_CARD_RANK]
                 } else {
-                    vec![2, MAX_RANK - 1]
+                    vec![MIN_RANK + 1, MAX_RANK - 1]
                 }
             }
             StackDirection::Up => vec![stack + 1],
@@ -197,7 +197,7 @@ pub(crate) fn try_play(state: &mut EngineState, order: usize) -> bool {
     }
     if v.has_reversed_suits() {
         if direction == StackDirection::Undecided {
-            if rank == 1 || rank == 2 {
+            if rank == MIN_RANK || rank == MIN_RANK + 1 {
                 state.play_stack_directions[suit] = StackDirection::Up;
             } else if rank == MAX_RANK - 1 || rank == MAX_RANK {
                 state.play_stack_directions[suit] = StackDirection::Down;
@@ -245,14 +245,14 @@ fn available_ranks(state: &EngineState, suit: usize) -> HashSet<i32> {
         .collect()
 }
 fn reversible_walk(available: &HashSet<i32>, up_or_down: bool, down: bool) -> i32 {
-    if !(available.contains(&if down { MAX_RANK } else { 1 })
+    if !(available.contains(&if down { MAX_RANK } else { MIN_RANK })
         || (up_or_down && available.contains(&START_CARD_RANK)))
     {
         return 0;
     }
     let mut score = 1;
-    let mut rank = if down { MAX_RANK - 1 } else { 2 };
-    while (1..=MAX_RANK).contains(&rank) {
+    let mut rank = if down { MAX_RANK - 1 } else { MIN_RANK + 1 };
+    while (MIN_RANK..=MAX_RANK).contains(&rank) {
         if !available.contains(&rank) {
             break;
         }
@@ -332,7 +332,7 @@ pub fn calculate_max_score(state: &EngineState) -> i32 {
                 StackDirection::Finished => v.stack_size,
             };
         } else {
-            for rank in 1..=MAX_RANK {
+            for rank in MIN_RANK..=MAX_RANK {
                 if !available.contains(&rank) {
                     break;
                 }

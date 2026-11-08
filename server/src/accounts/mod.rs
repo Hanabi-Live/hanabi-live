@@ -144,7 +144,7 @@ pub async fn is_muted(pool: &PgPool, ip: &str) -> Result<bool> {
 fn cookie_header(config: &AccountConfig, name: &str, value: &str, clear: bool) -> String {
     let mut result = format!(
         "{name}={value}; Path=/; Max-Age={}",
-        if clear { 0 } else { 31_536_000 }
+        if clear { 0 } else { cookie::MAX_AGE }
     );
     if !config.is_dev {
         if !config.domain.is_empty() {

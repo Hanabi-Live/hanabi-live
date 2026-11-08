@@ -362,7 +362,10 @@ fn expression(schema: &Value) -> Result<String> {
             result == "z.string()",
             "Dates are strings without other constraints"
         );
-        result = "z.iso.datetime({ precision: 3 })".into();
+        result = format!(
+            "z.iso.datetime({{ precision: {} }})",
+            hanabi_protocol::TIMESTAMP_FRACTION_DIGITS
+        );
     } else {
         ensure!(
             schema.get("pattern").is_none(),

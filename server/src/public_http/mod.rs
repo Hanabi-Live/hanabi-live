@@ -88,18 +88,6 @@ fn strict_query(raw: Option<&str>, accepted: &[&str]) -> Result<Query> {
     Query::parse(raw, accepted).map_err(Error::bad)
 }
 
-/// The parameters of the game lists, which sort by one column and filter by others. The column
-/// indexes are the table's: 0 is the ID, 1 the number of players, 2 the score, and 3 the variant.
-const HISTORY_LIST_PARAMETERS: &[&str] = &[
-    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[1]", "fcol[2]", "fcol[3]",
-];
-const VARIANT_LIST_PARAMETERS: &[&str] = &[
-    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[1]", "fcol[2]",
-];
-const SEED_LIST_PARAMETERS: &[&str] = &[
-    "page", "size", "col[0]", "col[1]", "col[2]", "fcol[0]", "fcol[2]",
-];
-
 /// The rows on a page of a public listing when the request does not name a size.
 pub(super) const DEFAULT_PAGE_SIZE: i64 = 10;
 /// The most rows that a page of a public listing can have.
@@ -279,13 +267,16 @@ async fn api_response(
     raw: Option<String>,
 ) -> Result<Response> {
     let mode = uri.path().split('/').nth(3).unwrap_or("");
+    let list_parameters = match mode {
+        "history" | "seed" => data::list_parameters(mode),
+        "variants" if params.contains_key("id") => data::list_parameters(mode),
+        _ => Vec::new(),
+    };
+    let list_parameters: Vec<&str> = list_parameters.iter().map(String::as_str).collect();
     let accepted: &[&str] = match mode {
-        "history" => HISTORY_LIST_PARAMETERS,
-        "seed" => SEED_LIST_PARAMETERS,
-        "variants" if params.contains_key("id") => VARIANT_LIST_PARAMETERS,
         "history-full" | "full-history" => &["start", "end"],
         "seed-full" | "full-seed" => &["page", "size"],
-        _ => &[],
+        _ => &list_parameters,
     };
     let q = strict_query(raw.as_deref(), accepted)?;
     Ok(match mode {

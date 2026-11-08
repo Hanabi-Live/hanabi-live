@@ -16,8 +16,8 @@ use chrono::{Duration as ChronoDuration, Utc};
 use hanabi_engine::{CompletionTiming, EndCondition, GameSetup, Interpretation, Recipient};
 use hanabi_protocol::{
     Chat, ChatSource, ChatTyping, ClientMessage, ErrorNotice, IdleWarning, ReplayAction,
-    SoundLobby, Status, TableId, TableRequest, TableStarted, User, UserId, UserLeft, UserList,
-    Warning,
+    SECONDS_PER_MINUTE, SoundLobby, Status, TableId, TableRequest, TableStarted, User, UserId,
+    UserLeft, UserList, Warning,
 };
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -4620,10 +4620,9 @@ impl TableActor {
                     minutes.is_finite() && minutes > 0.0 && minutes <= MAX_START_IN_MINUTES,
                     "Minutes must be between zero and {MAX_START_IN_MINUTES}"
                 );
-                *countdown =
-                    Some(Utc::now() + ChronoDuration::seconds(truncate((minutes * 60.0).ceil())));
-                let seconds = truncate((minutes * 60.0).ceil());
-                let wait = match seconds.cmp(&60) {
+                let seconds = truncate((minutes * f64::from(SECONDS_PER_MINUTE)).ceil());
+                *countdown = Some(Utc::now() + ChronoDuration::seconds(seconds));
+                let wait = match seconds.cmp(&i64::from(SECONDS_PER_MINUTE)) {
                     Ordering::Less => format!("{seconds} seconds"),
                     Ordering::Equal => "1 minute".into(),
                     Ordering::Greater => {

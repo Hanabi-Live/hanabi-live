@@ -143,7 +143,8 @@ pub fn encode_deck(deck: &[Card]) -> Result<Vec<u8>> {
             c.suit_index < hanabi_protocol::MAX_SUITS
                 && matches!(
                     c.rank,
-                    1..=hanabi_protocol::MAX_RANK | hanabi_protocol::START_CARD_RANK
+                    hanabi_protocol::MIN_RANK
+                        ..=hanabi_protocol::MAX_RANK | hanabi_protocol::START_CARD_RANK
                 ),
             "Invalid card"
         );

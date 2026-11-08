@@ -23,6 +23,8 @@ const MAX_TRACKED_KEYS: usize = 10_000;
 /// one budget per address. A visit needs one or two.
 const WORK_LIMIT: usize = 30;
 const WORK_WINDOW: Duration = Duration::from_mins(5);
+/// The IPv6 prefix length, in bits, that one customer usually controls.
+const IPV6_SUBNET_PREFIX_BITS: u32 = 64;
 static WORK: LazyLock<Mutex<Counter<IpAddr>>> =
     LazyLock::new(|| Mutex::new(Counter::new(WORK_LIMIT, WORK_WINDOW)));
 
@@ -140,7 +142,7 @@ impl<K: Copy + Eq + Hash + Ord> Counter<K> {
     }
 }
 
-/// One customer can control an entire IPv6 /64, so individual addresses are not a useful limit.
+/// One customer can control an entire IPv6 subnet, so individual addresses are not a useful limit.
 fn ip_key(ip: &str) -> Option<IpAddr> {
     let ip = ip.parse::<IpAddr>().ok()?.to_canonical();
     // Nothing remote can arrive from loopback, which local tools and tests use.
@@ -149,7 +151,9 @@ fn ip_key(ip: &str) -> Option<IpAddr> {
     }
     Some(match ip {
         IpAddr::V4(_) => ip,
-        IpAddr::V6(address) => IpAddr::V6(Ipv6Addr::from(u128::from(address) & (u128::MAX << 64))),
+        IpAddr::V6(address) => IpAddr::V6(Ipv6Addr::from(
+            u128::from(address) & (u128::MAX << (u128::BITS - IPV6_SUBNET_PREFIX_BITS)),
+        )),
     })
 }
 

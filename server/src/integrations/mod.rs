@@ -8,6 +8,9 @@ use crate::web::App;
 use anyhow::Result;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
+/// How long a restart or stop waits for its Discord announcement.
+const ANNOUNCEMENT_TIMEOUT: Duration = Duration::from_secs(5);
+
 pub struct Integrations {
     discord: Option<Arc<discord::Bridge>>,
     discord_failed: bool,
@@ -90,7 +93,7 @@ impl Integrations {
                 }
             };
             // An optional notification must not prevent a safely checkpointed stop.
-            match tokio::time::timeout(Duration::from_secs(5), announcement).await {
+            match tokio::time::timeout(ANNOUNCEMENT_TIMEOUT, announcement).await {
                 Ok(Ok(())) => {}
                 result => {
                     bridge.degrade();

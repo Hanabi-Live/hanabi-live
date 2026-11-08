@@ -1054,28 +1054,37 @@ fn outbound_text(name: &str, text: &str) -> String {
     }
 }
 
+/// Discord's delimiter on each side of a spoiler.
+const SPOILER: &str = "||";
+
 fn spoilers(text: &str) -> String {
+    let width = SPOILER.len();
     let mut result = String::new();
     let mut offset = 0;
-    while let Some(start) = text[offset..].find("||").map(|i| i + offset) {
+    while let Some(start) = text[offset..].find(SPOILER).map(|i| i + offset) {
         if start > 0 && text.as_bytes()[start - 1] != b' ' {
-            result.push_str(&text[offset..start + 2]);
-            offset = start + 2;
+            result.push_str(&text[offset..start + width]);
+            offset = start + width;
             continue;
         }
-        let Some(end) = text[start + 2..].find("||").map(|i| i + start + 2) else {
+        let Some(end) = text[start + width..]
+            .find(SPOILER)
+            .map(|i| i + start + width)
+        else {
             break;
         };
-        if end == start + 2 || (end + 2 < text.len() && text.as_bytes()[end + 2] != b' ') {
-            result.push_str(&text[offset..end + 2]);
-            offset = end + 2;
+        if end == start + width
+            || (end + width < text.len() && text.as_bytes()[end + width] != b' ')
+        {
+            result.push_str(&text[offset..end + width]);
+            offset = end + width;
             continue;
         }
         result.push_str(&text[offset..start]);
         result.push_str("<span class=\"spoiler\">");
-        result.push_str(&text[start + 2..end]);
+        result.push_str(&text[start + width..end]);
         result.push_str("</span>");
-        offset = end + 2;
+        offset = end + width;
     }
     result.push_str(&text[offset..]);
     result

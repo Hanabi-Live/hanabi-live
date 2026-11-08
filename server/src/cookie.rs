@@ -9,7 +9,8 @@ pub const NAME: &str = "hanabi.sid";
 pub fn account_name(id: i32) -> String {
     format!("{NAME}.{id}")
 }
-const MAX_AGE: i64 = 365 * 24 * 60 * 60;
+/// How long a session cookie stays valid, in seconds (one year).
+pub const MAX_AGE: i64 = 365 * 24 * 60 * 60;
 /// The longest encoded cookie we decode, in bytes.
 const MAX_ENCODED_LENGTH: usize = 4096;
 

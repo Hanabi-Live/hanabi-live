@@ -8,6 +8,72 @@ const GAME_COLUMNS: &str = "g.id,g.name,g.num_players,g.starting_player,g.varian
     g.one_extra_card,g.one_less_card,g.all_or_nothing,g.detrimental_characters,
     g.seed,g.score,g.num_turns,g.end_condition,g.datetime_started,g.datetime_finished";
 
+/// A column of the game lists, which clients sort by `col[index]` and filter by `fcol[index]`.
+#[derive(Clone, Copy)]
+enum Column {
+    Id,
+    NumPlayers,
+    Score,
+    Variant,
+}
+
+impl Column {
+    const ALL: [Self; 4] = [Self::Id, Self::NumPlayers, Self::Score, Self::Variant];
+    const SORTABLE: &[Self] = &[Self::Id, Self::NumPlayers, Self::Score];
+
+    const fn field(self) -> &'static str {
+        match self {
+            Self::Id => "id",
+            Self::NumPlayers => "num_players",
+            Self::Score => "score",
+            Self::Variant => "variant_id",
+        }
+    }
+
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Id => "id",
+            Self::NumPlayers => "numPlayers",
+            Self::Score => "score",
+            Self::Variant => "variant",
+        }
+    }
+
+    /// The columns that a game list filters by.
+    const fn filterable(mode: &str) -> &'static [Self] {
+        match mode.as_bytes() {
+            b"history" => &Self::ALL,
+            b"variants" => Self::SORTABLE,
+            _ => &[Self::Id, Self::Score],
+        }
+    }
+
+    fn describe(columns: &[Self]) -> String {
+        columns
+            .iter()
+            .map(|&c| format!("{} {}", c as usize, c.name()))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+}
+
+/// The query parameters that a game list takes.
+pub(super) fn list_parameters(mode: &str) -> Vec<String> {
+    ["page".to_owned(), "size".to_owned()]
+        .into_iter()
+        .chain(
+            Column::SORTABLE
+                .iter()
+                .map(|&c| format!("col[{}]", c as usize)),
+        )
+        .chain(
+            Column::filterable(mode)
+                .iter()
+                .map(|&c| format!("fcol[{}]", c as usize)),
+        )
+        .collect()
+}
+
 #[derive(sqlx::FromRow)]
 struct HistoryRow {
     #[sqlx(flatten)]
@@ -181,20 +247,23 @@ pub(super) async fn list(
     mode: &str,
 ) -> Result<hanabi_protocol::PublicGamePage> {
     let (size, offset) = pagination(q)?.unwrap_or((super::DEFAULT_PAGE_SIZE, 0));
-    let fields = ["id", "num_players", "score", "variant_id"];
-    let display = ["id", "numPlayers", "score", "variantID"];
-    let mut order = if mode == "history" { "id" } else { "score" };
+    let mut order = if mode == "history" {
+        Column::Id
+    } else {
+        Column::Score
+    };
     let mut ascending = false;
     let mut sorted = false;
     let mut qb = selected(s);
     // The URL's accepted parameters limit the indexes to the columns that it sorts and filters by.
-    let index = |key: &str, prefix: &str| {
+    let parse_column = |key: &str, prefix: &str| {
         key.strip_prefix(prefix)
             .and_then(|k| k.strip_suffix(']'))
             .and_then(|k| k.parse::<usize>().ok())
+            .and_then(|k| Column::ALL.get(k).copied())
     };
     for (key, value) in q.iter() {
-        if let Some(index) = index(key, "col[") {
+        if let Some(column) = parse_column(key, "col[") {
             if sorted {
                 return Err(Error::bad("Sort by one column at a time."));
             }
@@ -207,16 +276,16 @@ pub(super) async fn list(
                     ));
                 }
             };
-            order = fields[index];
+            order = column;
             sorted = true;
-        } else if let Some(index) = index(key, "fcol[") {
+        } else if let Some(column) = parse_column(key, "fcol[") {
             let value = integer(value).ok_or_else(|| {
-                Error::bad(format!("Invalid numeric filter for: {}", display[index]))
+                Error::bad(format!("Invalid numeric filter for: {}", column.name()))
             })?;
-            push_compare(&mut qb, fields[index], "=", value);
+            push_compare(&mut qb, column.field(), "=", value);
         }
     }
-    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order)
+    qb.push("), paged AS (SELECT id,num_players,score,variant_id,seed,datetime_finished FROM selected ORDER BY ").push(order.field())
         .push(if ascending { " ASC" } else { " DESC" }).push(", id DESC LIMIT ")
         .push_bind(size).push(" OFFSET ").push_bind(offset)
         .push(") SELECT (SELECT count(*) FROM selected) AS total_rows,COALESCE((SELECT jsonb_agg(jsonb_build_object('id',g.id,'numPlayers',g.num_players,'score',g.score,");
@@ -224,19 +293,16 @@ pub(super) async fn list(
         qb.push("'variant',g.variant_id,'otherScores',COALESCE((SELECT num_games FROM seeds WHERE seed=g.seed),0),");
     }
     qb.push("'users',COALESCE((SELECT string_agg(u.username, ', ' ORDER BY lower(u.username), u.username) FROM game_participants gp JOIN users u ON u.id=gp.user_id WHERE gp.game_id=g.id),''),'datetime',to_char(g.datetime_finished AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),'seed',g.seed) ORDER BY g.")
-        .push(order).push(if ascending { " ASC" } else { " DESC" })
+        .push(order.field()).push(if ascending { " ASC" } else { " DESC" })
         .push(",g.id DESC) FROM paged g),'[]'::jsonb) AS rows");
     let page: PageRow = qb.build_query_as().fetch_one(&state.pool).await?;
     Ok(hanabi_protocol::PublicGamePage {
         total_rows: page.total_rows,
         info: format!(
-            "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: 0 id, 1 numPlayers, 2 score), fcol[x]=integer (filter by {})",
+            "Params: size=1...{}, page=0..., col[x]=0|1 (sort ascending or descending by one column: {}), fcol[x]=integer (filter by {})",
             super::MAX_PAGE_SIZE,
-            match mode {
-                "history" => "0 id, 1 numPlayers, 2 score, 3 variant",
-                "variants" => "0 id, 1 numPlayers, 2 score",
-                _ => "0 id, 2 score",
-            }
+            Column::describe(Column::SORTABLE),
+            Column::describe(Column::filterable(mode)),
         ),
         rows: page.rows.0,
     })
