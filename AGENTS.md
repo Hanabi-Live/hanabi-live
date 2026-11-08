@@ -4,9 +4,11 @@
 
 When you receive a prompt:
 
-- If you are not in a worktree and on the "main" branch, run `git pull`.
-- If HEAD is detached, first fast-forward it to the latest remote `main`: run
-  `git fetch` and `git merge --ff-only origin/main`.
+- If you are not in a worktree, switch to the "main" branch and run `git pull`.
+- If you are in a a worktree, switch to detached HEAD and then run `git fetch`
+  and `git merge --ff-only origin/main`.
+
+Then, delete any local branches that do not exist on the remote.
 
 ## Configuration and customization
 
@@ -64,22 +66,8 @@ are debugging sound.
 ## Delivering changes
 
 After making changes, complete the required checks, commit, and push
-automatically. In the primary checkout on `main`, push directly to `main`. In a
-linked worktree, on any other branch, or with detached HEAD, push a feature
-branch and open a pull request against `main` instead. Create a feature branch
-first if detached or on `main` in a linked worktree. Update an existing pull
-request for that branch rather than opening a duplicate. Include only changes
-for the task; do not commit unrelated work.
-
-Always rebase local commits onto upstream changes instead of creating merge
-commits. If a push is rejected because the remote branch advanced, fetch and
-rebase the commits not yet pushed, then rerun the required checks before
-pushing. Preserve unrelated working-tree changes. Do not force-push `main` or
-rewrite published history to apply this rule.
-
-When a pull request is merged, clean up after yourself: in a linked worktree,
-run `git fetch` and `git switch --detach origin/main`, then delete the merged
-local branch.
+automatically to the "main" branch. Always rebase local commits onto upstream
+changes instead of creating merge commits.
 
 Use Conventional Commits for commit messages:
 `type(optional-scope): description`, for example
