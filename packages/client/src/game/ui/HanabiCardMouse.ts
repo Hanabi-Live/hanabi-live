@@ -306,8 +306,8 @@ export function setEmpathyOnHand(card: HanabiCard, enabled: boolean): void {
 
 // Handle things relating to dragging a card. We cannot use the "dragstart" mouse event since that
 // will only fire after the element has moved at least one pixel. Ideally, we would have a check to
-// only make a card draggable with a left click. However, checking for `LEFT_MOUSE_BUTTON_HELD`
-// will break iPads.
+// only make a card draggable with a left click. However, checking for `LEFT_MOUSE_BUTTON_HELD` will
+// break iPads.
 function dragStart(card: HanabiCard) {
   if (!card.layout.draggable() || card.layout.isListening() === false) {
     return;
