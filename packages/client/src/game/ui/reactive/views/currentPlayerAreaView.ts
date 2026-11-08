@@ -9,11 +9,19 @@ import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { State } from "../../../types/State";
 import { globals } from "../../UIGlobals";
-import { LABEL_COLOR, TEXT_SHRINK_FACTOR } from "../../constants";
+import {
+  FULL_TURN_DEGREES,
+  HALF_TURN_DEGREES,
+  LABEL_COLOR,
+  TEXT_SHRINK_FACTOR,
+} from "../../constants";
 import { degreesToRadians, radiansToDegrees } from "../../konvaHelpers";
 
 /** The most times the player name shrinks before it is drawn as it is. */
 const MAX_SHRINK_STEPS = 100;
+
+/** How long the current player arrow takes to turn toward the next player. */
+const ARROW_ROTATION_SECONDS = 0.75;
 
 /**
  * In Keldon mode, how far behind each hand the arrow aims, as a fraction of the stage height (600
@@ -188,12 +196,12 @@ export function onChanged(
     // We want the arrow to always be moving clockwise.
     const unmodifiedRotation = rotation;
     if (previousRotation > rotation) {
-      rotation += 360;
+      rotation += FULL_TURN_DEGREES;
     }
 
     currentPlayerArea.tween = new Konva.Tween({
       node: currentPlayerArea.arrow,
-      duration: 0.75,
+      duration: ARROW_ROTATION_SECONDS,
       rotation,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
@@ -227,7 +235,9 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = IMAGINARY_PLAYER_DISTANCE * winH;
     const handRotation =
-      globals.metadata.ourPlayerIndex === playerIndex ? 180 : hand.origRotation;
+      globals.metadata.ourPlayerIndex === playerIndex
+        ? HALF_TURN_DEGREES
+        : hand.origRotation;
     const rot = degreesToRadians(-handRotation);
     centerPos.x += distanceToImaginaryPlayer * -Math.sin(rot); // -sin(x) = cos(x + PI / 2)
     centerPos.y -= distanceToImaginaryPlayer * Math.cos(rot); // cos(x) = sin(x + PI / 2)
@@ -240,7 +250,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: PlayerIndex) {
   const radians = Math.atan(y / x);
   let rotation = radiansToDegrees(radians);
   if (x < 0) {
-    rotation += 180;
+    rotation += HALF_TURN_DEGREES;
   }
 
   return rotation;

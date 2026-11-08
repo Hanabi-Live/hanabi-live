@@ -8,6 +8,11 @@ import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
 import { clickRightCheckAddNote, preOpenNoteEditTooltip } from "./clickNotes";
+import {
+  LEFT_MOUSE_BUTTON,
+  MIDDLE_MOUSE_BUTTON,
+  RIGHT_MOUSE_BUTTON,
+} from "./constants";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
 
@@ -32,20 +37,17 @@ export function HanabiCardClick(
   const mouseEvent = event.evt;
 
   switch (mouseEvent.button) {
-    // Left-click
-    case 0: {
+    case LEFT_MOUSE_BUTTON: {
       clickLeft(this, mouseEvent);
       break;
     }
 
-    // Middle-click
-    case 1: {
+    case MIDDLE_MOUSE_BUTTON: {
       clickMiddle(this, mouseEvent);
       break;
     }
 
-    // Right-click
-    case 2: {
+    case RIGHT_MOUSE_BUTTON: {
       clickRight(this, mouseEvent);
       break;
     }

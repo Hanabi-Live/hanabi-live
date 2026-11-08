@@ -399,7 +399,7 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
           ${numPlayers}-player best score:
         </div>
         <div class="col-2 align-right padding0">
-          ${variantStats.bestScores[numPlayers - 2]!.score}
+          ${variantStats.bestScores[numPlayers - MIN_PLAYERS]!.score}
         </div>
       </div>
     `;
@@ -425,7 +425,8 @@ function drawPlayerBox(playerIndex: PlayerIndex) {
   const variant = getVariant(globals.game.options.variantName);
   const { maxScore } = variant;
   for (const bestScorePlayer of iRange(MIN_PLAYERS, MAX_PLAYERS)) {
-    const bestScoreObject = variantStats.bestScores[bestScorePlayer - 2];
+    const bestScoreObject =
+      variantStats.bestScores[bestScorePlayer - MIN_PLAYERS];
     if (bestScoreObject === undefined) {
       continue;
     }

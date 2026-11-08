@@ -2,7 +2,7 @@ import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
-import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
+import { CARD_ANIMATION_LENGTH_SECONDS, FULL_TURN_DEGREES } from "./constants";
 import { animate, degreesToRadians } from "./konvaHelpers";
 
 /** Represents a player's hand (or a discard pile). It is composed of `LayoutChild` objects. */
@@ -169,7 +169,7 @@ export class CardLayout extends Konva.Group {
             // eslint-disable-next-line @typescript-eslint/unbound-method
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              layoutChild.rotation(360);
+              layoutChild.rotation(FULL_TURN_DEGREES);
               animateToLayout();
             },
           },

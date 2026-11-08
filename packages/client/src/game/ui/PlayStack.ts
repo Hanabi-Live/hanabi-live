@@ -4,6 +4,9 @@ import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import { animate } from "./konvaHelpers";
 
+/** How long a card takes to move between a hand and a play stack. */
+const PLAY_ANIMATION_SECONDS = 0.8;
+
 /**
  * Represents the stack in the middle of the table for each suit. It is composed of `LayoutChild`
  * objects.
@@ -46,7 +49,7 @@ export class PlayStack extends Konva.Group {
     animate(
       layoutChild,
       {
-        duration: 0.8,
+        duration: PLAY_ANIMATION_SECONDS,
         x: 0,
         y: 0,
         scale,

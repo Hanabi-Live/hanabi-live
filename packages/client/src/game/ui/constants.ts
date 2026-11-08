@@ -1,3 +1,5 @@
+import { ReplayArrowOrder } from "@hanabi-live/data";
+
 // ---------------------------
 // Default qualities of a card
 // ---------------------------
@@ -29,6 +31,12 @@ export const CORNER_ELEMENT_OFFSET = 0.05;
 
 /** A full circle, for the canvas functions that take an angle. */
 export const FULL_CIRCLE_RADIANS = 2 * Math.PI;
+
+/** A half turn, for the Konva functions that take a rotation. */
+export const HALF_TURN_DEGREES = 180;
+
+/** A full turn, for the Konva functions that take a rotation. */
+export const FULL_TURN_DEGREES = 2 * HALF_TURN_DEGREES;
 
 /** The shadow that the card images cast under their pips and rank labels. */
 export const CARD_IMAGE_SHADOW_COLOR = "rgba(0, 0, 0, 0.9)";
@@ -196,5 +204,22 @@ export const DOUBLE_TAP_DELAY_MILLISECONDS = 500;
 /** The `MouseEvent.button` value of the primary (usually left) button. */
 export const LEFT_MOUSE_BUTTON = 0;
 
+/** The `MouseEvent.button` value of the auxiliary (usually middle) button. */
+export const MIDDLE_MOUSE_BUTTON = 1;
+
 /** The `MouseEvent.button` value of the secondary (usually right) button. */
 export const RIGHT_MOUSE_BUTTON = 2;
+
+/** The `MouseEvent.buttons` value while only the primary (usually left) button is held down. */
+export const LEFT_MOUSE_BUTTON_HELD = 1;
+
+// -------
+// Strikes
+// -------
+
+/** The shared-replay arrow targets for each strike square, in strike order. */
+export const STRIKE_ARROW_ORDERS = [
+  ReplayArrowOrder.Strike1,
+  ReplayArrowOrder.Strike2,
+  ReplayArrowOrder.Strike3,
+] as const;

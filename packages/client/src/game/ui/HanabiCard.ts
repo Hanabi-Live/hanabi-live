@@ -45,6 +45,7 @@ import {
   CARD_SHADOW_OFFSET,
   CARD_W,
   DRAGGED_CARD_SHADOW_OFFSET,
+  HALF_TURN_DEGREES,
 } from "./constants";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
 import type { NoteIndicator } from "./controls/NoteIndicator";
@@ -698,7 +699,9 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
       return;
     }
 
-    this.arrow!.rotation(direction === StackDirection.Up ? 180 : 0);
+    this.arrow!.rotation(
+      direction === StackDirection.Up ? HALF_TURN_DEGREES : 0,
+    );
     this.arrowBase!.stroke(suit.fill);
     if (suit.fill === "multi") {
       // We can't use a fill gradient because the "fill" is actually a big stroke. (The Konva arrow

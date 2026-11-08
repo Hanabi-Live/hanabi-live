@@ -2,6 +2,7 @@ import type { PlayerIndex, StateStrike } from "@hanabi-live/game";
 import {
   MAX_STRIKES,
   getAdjustedClueTokens,
+  getUnadjustedClueTokens,
   isAtMaxClueTokens,
 } from "@hanabi-live/game";
 import { eRange } from "complete-common";
@@ -11,6 +12,12 @@ import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
 import { animate } from "../../konvaHelpers";
 import * as replay from "../../replay";
 import * as turn from "../../turn";
+
+/** The H-Group's "Low Score Phase" lasts until the score reaches this many cards for each suit. */
+const LOW_SCORE_PHASE_CARDS_PER_SUIT = 2;
+
+/** How long a strike takes to fade in or out. */
+const STRIKE_ANIMATION_SECONDS = 0.5;
 
 export function onTurnChanged(data: {
   turn: number;
@@ -99,7 +106,8 @@ export function onScoreOrMaxScoreChanged(data: {
 
   // Make the score label a separate color if it is the "Low Score Phase" (but only for members of
   // the H-Group).
-  const lowScorePhaseThreshold = globals.variant.suits.length * 2;
+  const lowScorePhaseThreshold =
+    globals.variant.suits.length * LOW_SCORE_PHASE_CARDS_PER_SUIT;
   const lowScorePhase = data.score < lowScorePhaseThreshold;
   const scoreLabelColor =
     lowScorePhase && globals.lobby.settings.hyphenatedConventions
@@ -150,12 +158,10 @@ export function onNumAttemptedCardsPlayedChanged(
 }
 
 export function onClueTokensChanged(clueTokens: number): void {
-  let cluesTokensText = clueTokens.toString();
-  if (globals.variant.clueStarved) {
-    // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the
-    // user.
-    cluesTokensText = (clueTokens / 2).toString();
-  }
+  const cluesTokensText = getUnadjustedClueTokens(
+    clueTokens,
+    globals.variant,
+  ).toString();
   globals.elements.cluesNumberLabel?.text(cluesTokensText);
 
   if (!globals.lobby.settings.realLifeMode) {
@@ -238,7 +244,6 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       continue;
     }
 
-    const duration = 0.5; // The duration for the strike animation
     if (data.visibleStrikes[i] === undefined) {
       // Either this strike has never happened, or we are moving backwards in a replay. If this
       // strike never happened, it should be invisible. If this strike happened in the future, then
@@ -255,7 +260,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       animate(
         strikeX,
         {
-          duration,
+          duration: STRIKE_ANIMATION_SECONDS,
           opacity,
         },
         true,
@@ -265,7 +270,7 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       animate(
         strikeX,
         {
-          duration,
+          duration: STRIKE_ANIMATION_SECONDS,
           opacity: 1,
         },
         true,

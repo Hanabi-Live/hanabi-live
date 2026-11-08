@@ -10,8 +10,10 @@ import type {
 import {
   ClueType,
   DEFAULT_PLAYER_NAMES,
+  EVEN_RANK_CLUE,
   getCardsPerHand,
   NO_VALUE,
+  ODD_RANK_CLUE,
 } from "@hanabi-live/game";
 import { assertDefined, parseIntSafe } from "complete-common";
 import { includes } from "lodash";
@@ -339,9 +341,9 @@ function getActionFromHypoClue(
 
   // "Odds and Evens" give "Odd" or "Even" as rank clues.
   if (clueWord === "Odd") {
-    clueNumber = 1;
+    clueNumber = ODD_RANK_CLUE;
   } else if (clueWord === "Even") {
-    clueNumber = 2;
+    clueNumber = EVEN_RANK_CLUE;
   }
 
   if (clueNumber === undefined) {

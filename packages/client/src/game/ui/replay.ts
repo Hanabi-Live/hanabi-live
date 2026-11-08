@@ -11,6 +11,9 @@ import type { Shuttle } from "./controls/Shuttle";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 import { animate } from "./konvaHelpers";
 
+/** How long a replay shuttle takes to slide to a new segment. */
+const SHUTTLE_ANIMATION_SECONDS = 0.25;
+
 const setTurnButton = getHTMLElement("#set-turn-button");
 const setTurnInput = getHTMLInputElement("#set-turn-input");
 
@@ -283,7 +286,7 @@ function positionReplayShuttle(
   animate(
     shuttle,
     {
-      duration: 0.25,
+      duration: SHUTTLE_ANIMATION_SECONDS,
       x,
       y,
       scale,

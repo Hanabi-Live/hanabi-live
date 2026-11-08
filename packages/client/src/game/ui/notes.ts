@@ -9,6 +9,12 @@ import type { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
 import { getCardOrStackBase } from "./getCardOrStackBase";
 
+/**
+ * A card nearer than this to the top of the screen shows its note below it. The value is arbitrary;
+ * 100 is not big enough for the BGA layout.
+ */
+const TOOLTIP_FLIP_THRESHOLD_PX = 200;
+
 const REMOVE_PIPE_KEYS = new ReadonlySet([
   "ArrowDown",
   "ArrowLeft",
@@ -124,8 +130,7 @@ export function show(card: HanabiCard): void {
   tooltips.setInstanceOption(tooltip, "side", "top");
 
   // Flip the tooltip if it is too close to the top of the screen.
-  if (posY < 200) {
-    // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout.
+  if (posY < TOOLTIP_FLIP_THRESHOLD_PX) {
     posY = rect.y + rect.height;
     tooltips.setInstanceOption(tooltip, "side", "bottom");
   }

@@ -1,5 +1,5 @@
 import type { CardState } from "@hanabi-live/game";
-import { isCardPotentiallyPlayable } from "@hanabi-live/game";
+import { MAX_STRIKES, isCardPotentiallyPlayable } from "@hanabi-live/game";
 import { askForConfirmation } from "../../modals";
 import { globals } from "./UIGlobals";
 
@@ -23,9 +23,9 @@ export function confirmPlay(
     globals.state.replay.hypothetical === null
     && !globals.options.speedrun
     && !globals.variant.throwItInAHole
-    // Do not use warnings for preplays unless we are at 2 strikes.
+    // Do not use warnings for preplays unless the next strike would end the game.
     && (currentPlayerIndex === ourPlayerIndex
-      || ongoingGame.strikes.length === 2)
+      || ongoingGame.strikes.length === MAX_STRIKES - 1)
     && !isCardPotentiallyPlayable(
       cardState,
       ongoingGame.deck,

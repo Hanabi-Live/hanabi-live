@@ -10,7 +10,11 @@ import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, escapeHtml, timerFormatter } from "../../utils";
 import * as arrows from "./arrows";
-import { CARD_ANIMATION_LENGTH_SECONDS, FONT_FAMILY } from "./constants";
+import {
+  CARD_ANIMATION_LENGTH_SECONDS,
+  FONT_FAMILY,
+  LEFT_MOUSE_BUTTON_HELD,
+} from "./constants";
 import * as cursor from "./cursor";
 import { isOurTurn } from "./isOurTurn";
 import * as konvaTooltips from "./konvaTooltips";
@@ -168,7 +172,7 @@ export class Deck extends Konva.Group {
       }
     });
     this.on("mousedown", (event: Konva.KonvaEventObject<MouseEvent>) => {
-      if (this.canDragDeck() && event.evt.buttons === 1) {
+      if (this.canDragDeck() && event.evt.buttons === LEFT_MOUSE_BUTTON_HELD) {
         // Left-click is being held down.
         cursor.set("dragging");
       }

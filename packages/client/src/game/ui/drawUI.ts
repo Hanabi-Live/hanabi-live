@@ -10,6 +10,7 @@ import type {
 } from "@hanabi-live/game";
 import {
   MAX_CARDS_PER_HAND,
+  MAX_STRIKES,
   MAX_SUITS,
   ODD_RANK_CLUE,
   getTotalCardsInDeck,
@@ -52,6 +53,7 @@ import {
   PANEL_OPACITY,
   RIGHT_MOUSE_BUTTON,
   STAGE_FADE_OPACITY,
+  STRIKE_ARROW_ORDERS,
   STROKE_WIDTH_UNIT,
   TEXT_SHADOW,
   WARNING_COLOR,
@@ -953,7 +955,7 @@ function drawScoreArea() {
     globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
   }
 
-  // Draw the 3 strike (bomb) black squares / X's.
+  // Draw the strike (bomb) black squares / X's.
   function strikeClick(
     this: StrikeSquare | StrikeX,
     event: Konva.KonvaEventObject<MouseEvent>,
@@ -963,8 +965,7 @@ function drawScoreArea() {
     }
 
     switch (event.evt.button) {
-      // Left-click
-      case 0: {
+      case LEFT_MOUSE_BUTTON: {
         // Left-clicking a strike X or a strike square takes us to the turn that the strike
         // happened. Spoiler-free reviews only reveal strikes that have already happened.
         const { strikes } = replay.isSpoilerFree()
@@ -987,25 +988,11 @@ function drawScoreArea() {
         break;
       }
 
-      // Right-click
-      case 2: {
+      case RIGHT_MOUSE_BUTTON: {
         // Right-clicking a strike X or a strike square shows an arrow over the strike square.
-        let order: ReplayArrowOrder;
-        switch (this.num) {
-          case 0: {
-            order = ReplayArrowOrder.Strike1;
-            break;
-          }
-
-          case 1: {
-            order = ReplayArrowOrder.Strike2;
-            break;
-          }
-
-          case 2: {
-            order = ReplayArrowOrder.Strike3;
-            break;
-          }
+        const order = STRIKE_ARROW_ORDERS[this.num];
+        if (order === undefined) {
+          return;
         }
 
         arrows.click(event, order);
@@ -1019,7 +1006,7 @@ function drawScoreArea() {
     }
   }
 
-  for (const i of [0, 1, 2] as const) {
+  for (const i of eRange(MAX_STRIKES)) {
     // Draw the background square.
     const strikeSquare = new StrikeSquare(
       {
@@ -1085,14 +1072,11 @@ function drawScoreArea() {
   }
 
   // The terminate button (which immediately ends the current game). This is placed on top of the
-  // 3rd strike.
+  // last strike.
   if (globals.state.playing) {
-    globals.elements.strikeSquares[2]!.hide();
-    globals.elements.strikeXs[2]!.hide();
-    const questionMarkLabel = globals.elements.questionMarkLabels[2];
-    if (questionMarkLabel !== undefined) {
-      questionMarkLabel.hide();
-    }
+    globals.elements.strikeSquares.at(-1)!.hide();
+    globals.elements.strikeXs.at(-1)!.hide();
+    globals.elements.questionMarkLabels.at(-1)?.hide();
 
     const terminateButton = new Button(
       {

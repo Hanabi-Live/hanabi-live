@@ -1,6 +1,7 @@
 import Konva from "konva";
 import type * as KonvaBaseLayer from "konva/types/BaseLayer";
 import { globals } from "./UIGlobals";
+import { HALF_TURN_DEGREES } from "./constants";
 
 export function drawLayer(node: Konva.Node): void {
   const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
@@ -152,9 +153,9 @@ export function animate(
 
 /** Konva rotations are in degrees, but `Math` works in radians. */
 export function degreesToRadians(degrees: number): number {
-  return (degrees / 180) * Math.PI;
+  return (degrees / HALF_TURN_DEGREES) * Math.PI;
 }
 
 export function radiansToDegrees(radians: number): number {
-  return (radians / Math.PI) * 180;
+  return (radians / Math.PI) * HALF_TURN_DEGREES;
 }

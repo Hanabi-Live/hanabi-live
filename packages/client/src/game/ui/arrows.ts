@@ -30,7 +30,10 @@ import {
   ARROW_COLOR,
   CARD_ANIMATION_DELAY_SECONDS,
   CARD_ANIMATION_LENGTH_SECONDS,
+  FULL_TURN_DEGREES,
+  HALF_TURN_DEGREES,
   RIGHT_MOUSE_BUTTON,
+  STRIKE_ARROW_ORDERS,
 } from "./constants";
 import type { Arrow } from "./controls/Arrow";
 import type { NodeWithTooltip } from "./controls/NodeWithTooltip";
@@ -124,13 +127,13 @@ export function set(
     ) {
       // In BGA mode, invert the arrows on our hand (so that it doesn't get cut off by the top of
       // the screen). In Keldon mode, invert the arrows for all other players.
-      rot += 180;
+      rot += HALF_TURN_DEGREES;
     }
   }
   arrow.rotation(rot);
 
   // We want the text to always be right-side up (e.g. have a rotation of 0)
-  arrow.text.rotation(360 - rot);
+  arrow.text.rotation(FULL_TURN_DEGREES - rot);
 
   // Set the arrow features.
   if (clue === null) {
@@ -482,16 +485,12 @@ function getElementFromNegativeOrder(
       return globals.elements.cluesNumberLabel!;
     }
 
-    case ReplayArrowOrder.Strike1: {
-      return globals.elements.strikeSquares[0]!;
-    }
-
-    case ReplayArrowOrder.Strike2: {
-      return globals.elements.strikeSquares[1]!;
-    }
-
+    case ReplayArrowOrder.Strike1:
+    case ReplayArrowOrder.Strike2:
     case ReplayArrowOrder.Strike3: {
-      return globals.elements.strikeSquares[2]!;
+      return globals.elements.strikeSquares[
+        STRIKE_ARROW_ORDERS.indexOf(order)
+      ]!;
     }
 
     case ReplayArrowOrder.Pace: {

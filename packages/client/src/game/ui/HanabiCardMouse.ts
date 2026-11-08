@@ -8,7 +8,10 @@ import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
-import { DOUBLE_TAP_DELAY_MILLISECONDS } from "./constants";
+import {
+  DOUBLE_TAP_DELAY_MILLISECONDS,
+  LEFT_MOUSE_BUTTON_HELD,
+} from "./constants";
 import * as cursor from "./cursor";
 import * as konvaTooltips from "./konvaTooltips";
 import * as notes from "./notes";
@@ -116,7 +119,7 @@ function mouseDown(
     && globals.state.replay.hypothetical !== null;
   // Empathy
   if (
-    event.evt.buttons === 1 // Only enable Empathy for left-clicks
+    event.evt.buttons === LEFT_MOUSE_BUTTON_HELD // Only enable Empathy for left-clicks
     && shouldShowEmpathy(this, event)
     && !editMode
     && !checkForHypoEmpathy(this)
@@ -125,7 +128,7 @@ function mouseDown(
   }
 
   // Dragging
-  if (event.evt.buttons === 1) {
+  if (event.evt.buttons === LEFT_MOUSE_BUTTON_HELD) {
     // Only enable dragging for left-clicks.
     dragStart(this);
   }
@@ -303,7 +306,7 @@ export function setEmpathyOnHand(card: HanabiCard, enabled: boolean): void {
 
 // Handle things relating to dragging a card. We cannot use the "dragstart" mouse event since that
 // will only fire after the element has moved at least one pixel. Ideally, we would have a check to
-// only make a card draggable with a left click. However, checking for "event.evt.buttons !== 1"
+// only make a card draggable with a left click. However, checking for `LEFT_MOUSE_BUTTON_HELD`
 // will break iPads.
 function dragStart(card: HanabiCard) {
   if (!card.layout.draggable() || card.layout.isListening() === false) {

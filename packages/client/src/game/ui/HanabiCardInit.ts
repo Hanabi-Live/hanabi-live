@@ -26,6 +26,7 @@ import {
   CORNER_ELEMENT_OFFSET,
   DISCARD_PERMISSION_COLOR,
   FINESSE_COLOR,
+  HALF_TURN_DEGREES,
   OFF_BLACK,
   SMALL_ICON_SIZE,
   TOP_LEFT_X,
@@ -442,7 +443,7 @@ export function note(
     image: globals.imageLoader!.get("note"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    rotation: 180,
+    rotation: HALF_TURN_DEGREES,
     visible: shouldShowIndicator(),
     listening: false,
   });
@@ -462,7 +463,7 @@ export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
     image: globals.imageLoader!.get("critical"),
     width: SMALL_ICON_SIZE,
     height: SMALL_ICON_SIZE,
-    rotation: 180,
+    rotation: HALF_TURN_DEGREES,
     visible: false,
     listening: false,
   });
