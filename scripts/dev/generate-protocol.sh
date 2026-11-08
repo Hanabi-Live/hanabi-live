@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
+
 set -o errexit -o nounset -o pipefail
+
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." &> /dev/null && pwd)
 cd "$ROOT"
 if (($# > 1)) || [[ ${1:-} != "" && ${1:-} != --check ]]; then
