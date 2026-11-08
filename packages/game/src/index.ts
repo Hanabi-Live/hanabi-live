@@ -9,6 +9,7 @@ export * from "./enums/Pip";
 export * from "./enums/StackDirection";
 export * from "./enums/VariantModifier";
 export * from "./gameData";
+export * from "./generated/protocol";
 export * from "./hypotheticalPlanning";
 export * from "./hypotheticalState";
 export * from "./interfaces/CardIdentity";
