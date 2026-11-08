@@ -66,7 +66,7 @@ pub(super) fn charge_password_work(ip: &str) -> Result<(), TooMuchPasswordWork> 
         })
 }
 
-struct Counter<K> {
+pub(crate) struct Counter<K> {
     limit: usize,
     window: Duration,
     attempts: HashMap<K, VecDeque<Instant>>,
@@ -76,7 +76,7 @@ struct Counter<K> {
 }
 
 impl<K: Copy + Eq + Hash + Ord> Counter<K> {
-    fn new(limit: usize, window: Duration) -> Self {
+    pub(crate) fn new(limit: usize, window: Duration) -> Self {
         Self {
             limit,
             window,
@@ -86,7 +86,7 @@ impl<K: Copy + Eq + Hash + Ord> Counter<K> {
     }
 
     /// Records an attempt, or returns how long to wait if the limit has been reached.
-    fn charge(&mut self, key: K, now: Instant) -> Result<(), Duration> {
+    pub(crate) fn charge(&mut self, key: K, now: Instant) -> Result<(), Duration> {
         self.forget_expired(now);
         // Keeps memory bounded when many addresses are involved.
         if !self.attempts.contains_key(&key)

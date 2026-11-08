@@ -2418,3 +2418,41 @@ async fn table_chat_commands_link_to_the_server_url() -> Result<()> {
     h.close().await?;
     outcome
 }
+
+#[tokio::test]
+async fn table_chat_is_rate_limited_per_player() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Chatty", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let room = format!("table{id}");
+        for index in 0..TABLE_CHAT_LIMIT {
+            h.send(
+                0,
+                "chat",
+                json!({"room":room,"msg":format!("Message {index}")}),
+            )
+            .await?;
+        }
+        let refused = h
+            .send(0, "chat", json!({"room":room,"msg":"One too many"}))
+            .await
+            .expect_err("Chat past the limit was accepted");
+        ensure!(
+            refused.to_string().contains("too quickly"),
+            "Unexpected refusal: {refused:#}"
+        );
+        h.send(
+            1,
+            "chat",
+            json!({"room":room,"msg":"Players have separate limits"}),
+        )
+        .await?;
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}

@@ -1395,6 +1395,20 @@ fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> 
         .collect()
 }
 
+/// The most table chat messages one player can send per `TABLE_CHAT_WINDOW`.
+const TABLE_CHAT_LIMIT: usize = 30;
+const TABLE_CHAT_WINDOW: Duration = Duration::from_mins(1);
+/// Players can fill only part of a table's chat, so server notices and the game still fit in its
+/// checkpoint.
+const MAX_PLAYER_CHAT_MESSAGES: usize = crate::model::MAX_TABLE_CHAT / 2;
+const MAX_PLAYER_CHAT_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 2;
+
+/// Whether players can add to a table's chat. One message or command can go past the budget.
+fn player_chat_has_room(chat: &[TableChat]) -> Result<bool> {
+    Ok(chat.len() < MAX_PLAYER_CHAT_MESSAGES
+        && serde_json::to_vec(chat)?.len() < MAX_PLAYER_CHAT_BYTES)
+}
+
 fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option<Chat> {
     if table.chat.len() >= crate::model::MAX_TABLE_CHAT {
         eprintln!(
@@ -1963,6 +1977,8 @@ struct TableActor {
     /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
     /// the table can be told again.
     full_join_notices: HashSet<i32>,
+    /// Each player's recent table chat. Kept in memory: a restart forgives it.
+    chat_limit: crate::accounts::Counter<i32>,
     _permit: OwnedSemaphorePermit,
     playing_claims: Arc<Mutex<HashSet<i32>>>,
     info: Arc<ServerInfo>,
@@ -1991,6 +2007,7 @@ impl TableActor {
             anchor: Instant::now(),
             idle_warned: false,
             full_join_notices: HashSet::new(),
+            chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             _permit: permit,
             playing_claims: Arc::new(Mutex::new(HashSet::new())),
             info,
@@ -4362,6 +4379,17 @@ impl TableActor {
     async fn chat(&mut self, session: Arc<Session>, msg: &str) -> Result<()> {
         ensure!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
+        // Every message rewrites the table's checkpoint, so its cost grows with the chat.
+        if let Err(wait) = self.chat_limit.charge(session.user, Instant::now()) {
+            bail!(
+                "You are sending messages too quickly. Please wait {} seconds.",
+                wait.as_secs().max(1)
+            );
+        }
+        ensure!(
+            player_chat_has_room(&self.table.chat)?,
+            "Chat history is full"
+        );
         if let Some(response) = crate::lobby::general_response(&text) {
             let responses = match response {
                 crate::lobby::GeneralResponse::Private(response) => {

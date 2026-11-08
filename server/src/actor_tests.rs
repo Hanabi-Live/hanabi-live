@@ -836,3 +836,38 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
     store.close().await?;
     Ok(())
 }
+
+#[test]
+fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
+    const CHAT_BATCH: usize = 64;
+    let mut table = review(1, EndCondition::TerminatedByPlayer)?;
+    let name = "x".repeat(crate::accounts::MAX_USERNAME_LENGTH);
+    // Quotes are the characters that grow the most when escaped as HTML.
+    let text = crate::accounts::normalize_chat(&"\"".repeat(1000)).map_err(anyhow::Error::msg)?;
+    // Checking after each batch instead of each message overshoots the budget, which only makes
+    // the table larger.
+    while player_chat_has_room(&table.chat)? {
+        for _ in 0..CHAT_BATCH {
+            table.chat.push(TableChat {
+                id: None,
+                user: 1,
+                message: json!(authored_chat(u64::MAX, &name, &text)),
+            });
+        }
+    }
+    let notice = format!("{name} left the game.");
+    while table.chat.len() < crate::model::MAX_TABLE_CHAT {
+        table.chat.push(TableChat {
+            id: None,
+            user: 0,
+            message: json!(server_chat(u64::MAX, &notice)),
+        });
+    }
+    let size = serde_json::to_vec(&table)?.len();
+    ensure!(
+        size <= crate::state::MAX_CHECKPOINT_BYTES,
+        "A full table chat takes {size} bytes, more than a checkpoint's {} bytes",
+        crate::state::MAX_CHECKPOINT_BYTES
+    );
+    Ok(())
+}

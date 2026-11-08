@@ -18,6 +18,7 @@ pub use normalization::{
     has_username_emoji, max_consecutive_marks, normalize_chat, normalize_string,
     normalize_username, remove_disallowed_characters, truncate_to_max_bytes, validate_username,
 };
+pub(crate) use rate_limit::Counter;
 pub use rate_limit::TooMuchPasswordWork;
 
 use crate::{cookie, query::Query};
