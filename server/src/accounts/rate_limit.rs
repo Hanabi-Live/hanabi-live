@@ -5,7 +5,7 @@
 //! and a restart only forgives recent failures.
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{BTreeSet, HashMap, VecDeque},
     fmt,
     hash::Hash,
     net::{IpAddr, Ipv6Addr},
@@ -70,22 +70,31 @@ struct Counter<K> {
     limit: usize,
     window: Duration,
     attempts: HashMap<K, VecDeque<Instant>>,
-    last_sweep: Option<Instant>,
+    /// Each tracked key by its latest attempt, so expired and least recently used keys are found
+    /// without scanning every key.
+    latest: BTreeSet<(Instant, K)>,
 }
 
-impl<K: Copy + Eq + Hash> Counter<K> {
+impl<K: Copy + Eq + Hash + Ord> Counter<K> {
     fn new(limit: usize, window: Duration) -> Self {
         Self {
             limit,
             window,
             attempts: HashMap::new(),
-            last_sweep: None,
+            latest: BTreeSet::new(),
         }
     }
 
     /// Records an attempt, or returns how long to wait if the limit has been reached.
     fn charge(&mut self, key: K, now: Instant) -> Result<(), Duration> {
-        self.make_room(now);
+        self.forget_expired(now);
+        // Keeps memory bounded when many addresses are involved.
+        if !self.attempts.contains_key(&key)
+            && self.attempts.len() >= MAX_TRACKED_KEYS
+            && let Some((_, stalest)) = self.latest.pop_first()
+        {
+            self.attempts.remove(&stalest);
+        }
         let window = self.window;
         let attempts = self.attempts.entry(key).or_default();
         while attempts
@@ -98,43 +107,35 @@ impl<K: Copy + Eq + Hash> Counter<K> {
             let oldest = attempts.front().copied().unwrap_or(now);
             return Err(window.saturating_sub(now.duration_since(oldest)));
         }
+        if let Some(&previous) = attempts.back() {
+            self.latest.remove(&(previous, key));
+        }
         attempts.push_back(now);
+        self.latest.insert((now, key));
         Ok(())
     }
 
     fn refund(&mut self, key: K) {
-        if let Some(attempts) = self.attempts.get_mut(&key) {
-            attempts.pop_back();
-            if attempts.is_empty() {
-                self.attempts.remove(&key);
-            }
+        let Some(attempts) = self.attempts.get_mut(&key) else {
+            return;
+        };
+        if let Some(refunded) = attempts.pop_back() {
+            self.latest.remove(&(refunded, key));
+        }
+        if let Some(&previous) = attempts.back() {
+            self.latest.insert((previous, key));
+        } else {
+            self.attempts.remove(&key);
         }
     }
 
-    /// Keeps memory bounded when many addresses are involved.
-    fn make_room(&mut self, now: Instant) {
-        let swept_recently = self
-            .last_sweep
-            .is_some_and(|sweep| now.duration_since(sweep) < self.window);
-        if swept_recently && self.attempts.len() < MAX_TRACKED_KEYS {
-            return;
-        }
-        self.last_sweep = Some(now);
-        let window = self.window;
-        self.attempts.retain(|_, attempts| {
-            attempts
-                .back()
-                .is_some_and(|attempt| now.duration_since(*attempt) < window)
-        });
-        if self.attempts.len() >= MAX_TRACKED_KEYS {
-            let stalest = self
-                .attempts
-                .iter()
-                .min_by_key(|(_, attempts)| attempts.back().copied())
-                .map(|(key, _)| *key);
-            if let Some(key) = stalest {
-                self.attempts.remove(&key);
-            }
+    /// Stops tracking keys whose latest attempt is outside the window.
+    fn forget_expired(&mut self, now: Instant) {
+        while let Some(&(latest, key)) = self.latest.first()
+            && now.duration_since(latest) >= self.window
+        {
+            self.latest.pop_first();
+            self.attempts.remove(&key);
         }
     }
 }
@@ -270,6 +271,7 @@ mod tests {
             counter.charge(key, now).unwrap();
         }
         assert!(counter.attempts.len() <= MAX_TRACKED_KEYS);
+        assert_eq!(counter.latest.len(), counter.attempts.len());
         counter.charge(0, now + WINDOW).unwrap();
         assert_eq!(counter.attempts.len(), 1, "expired entries are swept");
     }
