@@ -17,6 +17,28 @@ pub use registry::{
 
 pub const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 
+/// A timestamp on the wire: RFC 3339 in UTC, with milliseconds, such as
+/// "2026-01-01T12:00:00.000Z". Both the server's and the clients' schemas accept only this form.
+pub struct Timestamp;
+
+impl JsonSchema for Timestamp {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "Timestamp".into()
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "pattern": r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$",
+            "x-date": true,
+        })
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Empty {}
@@ -985,7 +1007,7 @@ pub struct Chat {
     #[schemars(length(min = 1))]
     pub msg: String,
     pub source: ChatSource,
-    #[schemars(length(min = 1))]
+    #[schemars(with = "Timestamp")]
     pub datetime: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[schemars(with = "String")]
@@ -1063,7 +1085,7 @@ pub struct ChatHistoryMessage {
     pub who: String,
     #[schemars(length(min = 1))]
     pub recipient: String,
-    #[schemars(length(min = 1))]
+    #[schemars(with = "Timestamp")]
     pub datetime: String,
 }
 
@@ -1171,7 +1193,7 @@ pub struct IdentityResponse {
 pub struct IdentityTokenResponse {
     pub username: String,
     pub token: String,
-    /// An HTTP date, such as "Fri, 01 Jan 2027 00:00:00 GMT".
+    #[schemars(with = "Timestamp")]
     pub expires_at: String,
 }
 
@@ -1220,7 +1242,8 @@ pub struct PublicGameRow {
     pub other_scores: Option<u32>,
     /// The players' names, separated by commas.
     pub users: String,
-    /// When the game finished, such as "2026-01-01 - 01:00:00 UTC".
+    /// When the game finished.
+    #[schemars(with = "Timestamp")]
     pub datetime: String,
     pub seed: String,
 }
@@ -1587,9 +1610,9 @@ pub struct GameHistory {
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub num_turns: i32,
     pub end_condition: EndCondition,
-    #[schemars(extend("x-date" = true))]
+    #[schemars(with = "Timestamp")]
     pub datetime_started: String,
-    #[schemars(extend("x-date" = true))]
+    #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
     #[schemars(range(min = 0, max = 2_147_483_647))]
     pub num_games_on_this_seed: i64,
@@ -1948,7 +1971,9 @@ pub struct Init {
     pub database_id: i64,
     pub has_custom_seed: bool,
     pub seed: String,
+    #[schemars(with = "Timestamp")]
     pub datetime_started: String,
+    #[schemars(with = "Timestamp")]
     pub datetime_finished: String,
     pub options: GameOptions,
     /// Each player's character ID, when detrimental characters are on.

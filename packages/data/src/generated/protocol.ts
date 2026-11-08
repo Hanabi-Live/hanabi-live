@@ -111,7 +111,7 @@ const chatSourceSchema = z.enum(["user", "server", "discord"]);
 export const chatSchema = z
   .strictObject({
     chatID: z.number().int().min(1).max(9_007_199_254_740_991).optional(),
-    datetime: z.string().min(1),
+    datetime: z.iso.datetime({ precision: 3 }),
     /**
      * Pre-escaped HTML, not an instruction to escape or normalize again.
      */
@@ -136,7 +136,7 @@ export const chatDeleteSchema = z
   .readonly();
 export const chatHistoryMessageSchema = z
   .strictObject({
-    datetime: z.string().min(1),
+    datetime: z.iso.datetime({ precision: 3 }),
     msg: z.string().min(1),
     pmID: z.number().int().min(1).max(9_007_199_254_740_991),
     recipient: z.string().min(1),
@@ -261,12 +261,8 @@ export const gameIdSchema = z
  */
 export const gameHistorySchema = z
   .strictObject({
-    datetimeFinished: z
-      .string()
-      .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
-    datetimeStarted: z
-      .string()
-      .refine((value) => Number.isFinite(Date.parse(value)), "Invalid date"),
+    datetimeFinished: z.iso.datetime({ precision: 3 }),
+    datetimeStarted: z.iso.datetime({ precision: 3 }),
     endCondition: z.enum(EndCondition),
     id: gameIdSchema,
     /**
@@ -364,8 +360,8 @@ export const initSchema = z.strictObject({
     .int()
     .min(-9_007_199_254_740_991)
     .max(9_007_199_254_740_991),
-  datetimeFinished: z.string(),
-  datetimeStarted: z.string(),
+  datetimeFinished: z.iso.datetime({ precision: 3 }),
+  datetimeStarted: z.iso.datetime({ precision: 3 }),
   hasCustomSeed: z.boolean(),
   options: gameOptionsSchema,
   /**
@@ -567,9 +563,9 @@ export const pregameSchema = z.strictObject({
  */
 const publicGameRowSchema = z.strictObject({
   /**
-   * When the game finished, such as "2026-01-01 - 01:00:00 UTC".
+   * When the game finished.
    */
-  datetime: z.string(),
+  datetime: z.iso.datetime({ precision: 3 }),
   id: gameIdSchema,
   num_players: z.number().int().min(2).max(6),
   /**

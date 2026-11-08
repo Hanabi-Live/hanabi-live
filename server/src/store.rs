@@ -656,8 +656,7 @@ impl Store {
                     .context("Invalid chat timestamp")?,
             )?
             .with_timezone(&Utc);
-            chat.message["datetime"] =
-                json!(datetime.to_rfc3339_opts(chrono::SecondsFormat::Micros, true));
+            chat.message["datetime"] = json!(crate::model::timestamp(datetime));
             chat.id = Some(i32::try_from(id)?);
         }
         Ok(())
@@ -1534,7 +1533,7 @@ mod tests {
             store.prepare_chat(&mut table).await?;
             let ids=table.chat.iter().map(|chat|chat.id.unwrap()).collect::<Vec<_>>();
             ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
-            ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123456Z","Timestamp was not canonicalized before durability");
+            ensure!(table.chat[0].message["datetime"]=="2026-11-02T20:00:00.123Z","Timestamp was not canonicalized before durability");
             store.save(&table,0).await?;
             #[allow(clippy::disallowed_methods)]
             sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;

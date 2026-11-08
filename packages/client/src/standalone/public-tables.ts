@@ -393,7 +393,7 @@ function gameRows(
     }
     row.push(
       link(`/history/${names.map(encodeURIComponent).join("/")}`, game.users),
-      escaped(game.datetime),
+      escaped(displayTime(game.datetime)),
     );
     if (mode !== "seed") {
       row.push(
@@ -405,6 +405,11 @@ function gameRows(
     }
     return row;
   });
+}
+
+/** A timestamp as the server's pages show it: the date, an em dash, and the time in UTC. */
+function displayTime(timestamp: string): string {
+  return `${timestamp.slice(0, 10)} \u{2014} ${timestamp.slice(11, 19)} UTC`;
 }
 
 function escaped(value: string | number): string {

@@ -313,7 +313,10 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
         .await
         .unwrap();
     assert_eq!(message["pmID"], stored.id);
-    assert_eq!(message["datetime"], chat::datetime(stored.datetime_sent));
+    assert_eq!(
+        message["datetime"],
+        crate::model::timestamp(stored.datetime_sent)
+    );
     sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,'not Alice')",
         b,

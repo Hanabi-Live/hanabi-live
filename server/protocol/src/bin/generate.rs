@@ -159,6 +159,7 @@ fn expression(schema: &Value) -> Result<String> {
                 "x-undefined-default",
                 "x-enum",
                 "x-date",
+                "pattern",
             ]
             .contains(&key.as_str()),
             "Unsupported schema keyword: {key}"
@@ -358,8 +359,18 @@ fn expression(schema: &Value) -> Result<String> {
         }
     }
     if schema.get("x-date").is_some() {
-        ensure!(schema["type"] == "string", "Only strings can hold dates");
-        result.push_str(".refine((value) => Number.isFinite(Date.parse(value)), \"Invalid date\")");
+        // Timestamps have exactly the form that the server writes: RFC 3339 in UTC, with
+        // milliseconds.
+        ensure!(
+            result == "z.string()",
+            "Dates are strings without other constraints"
+        );
+        result = "z.iso.datetime({ precision: 3 })".into();
+    } else {
+        ensure!(
+            schema.get("pattern").is_none(),
+            "Only timestamps can have a pattern"
+        );
     }
     if let Some(brand) = schema.get("x-brand") {
         result.push_str(&format!(".brand<{brand}>()"));
@@ -827,6 +838,16 @@ mod tests {
         assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Status"})).is_err());
         assert!(expression(&json!({"type":"integer","enum":[0,1],"x-enum":"Other"})).is_err());
         assert!(expression(&json!({"type":"integer","x-enum":"Status"})).is_err());
+    }
+
+    #[test]
+    fn timestamps_have_exactly_the_servers_form() {
+        assert_eq!(
+            expression(&json!({"type":"string","x-date":true})).unwrap(),
+            "z.iso.datetime({ precision: 3 })"
+        );
+        assert!(expression(&json!({"type":"string","pattern":"^a$"})).is_err());
+        assert!(expression(&json!({"type":"integer","x-date":true})).is_err());
     }
 
     #[test]

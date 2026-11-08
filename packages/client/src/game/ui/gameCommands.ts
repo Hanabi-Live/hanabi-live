@@ -96,7 +96,7 @@ gameCommands.set("finishOngoingGame", (data) => {
     type: "finishOngoingGame",
     databaseID: data.databaseID,
     sharedReplayLeader: data.sharedReplayLeader,
-    datetimeFinished: new Date().toString(),
+    datetimeFinished: new Date().toISOString(),
   });
   if (
     globals.state.replay.actions.some(

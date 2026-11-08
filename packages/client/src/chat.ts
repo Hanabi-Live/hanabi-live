@@ -883,7 +883,7 @@ export function sendSelfPMFromServer(
       msg: message,
       who: PROJECT_NAME,
       source: "server",
-      datetime: new Date().toString(),
+      datetime: new Date().toISOString(),
       room,
       recipient: globals.username,
     },

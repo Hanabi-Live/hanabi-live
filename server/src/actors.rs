@@ -1317,7 +1317,7 @@ fn authored_chat(id: u64, name: &str, message: &str) -> Chat {
     }
 }
 fn chat_time() -> String {
-    Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true)
+    crate::model::timestamp(Utc::now())
 }
 
 fn remove_pregame_players(table: &mut TableSnapshot, removed: &HashSet<i32>) -> Vec<Chat> {
@@ -2144,7 +2144,7 @@ impl TableActor {
             stored_frame(
                 hanabi_protocol::server::CHAT_LIST,
                 &json!({
-                    "list":self.table.chat.iter().map(|chat| &chat.message).collect::<Vec<_>>(),
+                    "list":self.table.chat.iter().map(TableChat::wire_message).collect::<Result<Vec<_>>>()?,
                     "unread":self.table.chat.len().saturating_sub(read)
                 }),
             )?,
@@ -4923,13 +4923,12 @@ impl TableActor {
                 database_id: if replay { s.game_id.into() } else { -1 },
                 has_custom_seed: self.table.extra.custom_seed.is_some(),
                 seed: s.seed.clone(),
-                datetime_started: s
-                    .started
-                    .to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
-                datetime_finished: s
-                    .finished
-                    .map(|d| d.to_rfc3339())
-                    .unwrap_or_else(|| "0001-01-01T00:00:00Z".into()),
+                datetime_started: crate::model::timestamp(s.started),
+                // An unfinished game has no finish time; this is the start of year 1.
+                datetime_finished: s.finished.map_or_else(
+                    || "0001-01-01T00:00:00.000Z".into(),
+                    crate::model::timestamp,
+                ),
                 options: wire_options(&s.game.options),
                 character_assignments: if s.game.options.detrimental_characters {
                     s.game

@@ -436,7 +436,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
             ..hanabi_protocol::Chat::new(
                 "Find teammates and discuss strategy in the <a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">Discord chat</a>.",
                 hanabi_protocol::ChatSource::Server,
-                Utc::now().to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                crate::model::timestamp(Utc::now()),
             )
         }));
         let motd = app.public.root.join("motd.txt");
@@ -449,7 +449,7 @@ async fn lobby_initial(app: &App, id: i32, reconnect: bool) -> Result<(Vec<Strin
                     ..hanabi_protocol::Chat::new(
                         format!("[Server Notice] {}", text.trim()),
                         hanabi_protocol::ChatSource::Server,
-                        Utc::now().to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                        crate::model::timestamp(Utc::now()),
                     )
                 },
             )),

@@ -426,6 +426,18 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
         assert_eq!(value["total_rows"], total, "{path}");
         assert_eq!(value["rows"][0]["id"].as_i64(), first, "{path}");
     }
+    // Responses match their wire contracts, timestamps included.
+    let (_, body) = request(app.clone(), "/api/v1/history/Alice").await;
+    hanabi_protocol::validate::<hanabi_protocol::PublicGamePage>(
+        &serde_json::from_str(&body).unwrap(),
+    )
+    .unwrap();
+    let (_, body) = request(app.clone(), "/api/v1/history-full/Alice").await;
+    let games: Vec<Value> = serde_json::from_str(&body).unwrap();
+    assert!(!games.is_empty());
+    for game in &games {
+        hanabi_protocol::validate::<hanabi_protocol::GameHistory>(game).unwrap();
+    }
     for (path, ids) in [
         ("/api/v1/history-full/Alice?start=2", vec![3, 2]),
         ("/api/v1/history-full/Alice?end=1", vec![1]),
@@ -457,11 +469,8 @@ async fn public_database_routes_filters_privacy_exports_and_html() {
     let (_, body) = request(app.clone(), "/api/v1/history-full/Alice?start=3&end=3").await;
     let full: Value = serde_json::from_str(&body).unwrap();
     assert_eq!(full.as_array().unwrap().len(), 1);
-    assert_eq!(
-        full[0]["datetimeStarted"],
-        "2026-01-01T00:00:00.12345+00:00"
-    );
-    assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00+00:00");
+    assert_eq!(full[0]["datetimeStarted"], "2026-01-01T00:00:00.123Z");
+    assert_eq!(full[0]["datetimeFinished"], "2026-01-01T01:00:00.000Z");
     for (page, expected) in [(0, vec![1]), (1, vec![2]), (2, vec![])] {
         let (status, body) = request(
             app.clone(),

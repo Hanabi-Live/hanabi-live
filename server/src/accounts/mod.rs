@@ -483,10 +483,7 @@ async fn identity_token(
         Ok(Json(IdentityTokenResponse {
             username,
             token: result.token,
-            expires_at: result
-                .expires_at
-                .format("%a, %d %b %Y %H:%M:%S GMT")
-                .to_string(),
+            expires_at: crate::model::timestamp(result.expires_at),
         })
         .into_response())
     }

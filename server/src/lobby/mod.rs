@@ -94,7 +94,7 @@ pub(crate) fn notice(recipient: &str, message: &str, room: &str) -> Effect {
             ..hanabi_protocol::Chat::new(
                 message,
                 hanabi_protocol::ChatSource::Server,
-                chat::datetime(chrono::Utc::now()),
+                crate::model::timestamp(chrono::Utc::now()),
             )
         },
     ))

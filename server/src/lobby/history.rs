@@ -49,10 +49,7 @@ pub async fn get_history(
     } else {
         rows!("g.datetime_finished DESC, g.id DESC")
     };
-    // Dates keep the offset form PostgreSQL's JSON used, such as "2023-12-29T18:21:43.81+00:00".
-    let time = |time: chrono::DateTime<chrono::Utc>| {
-        time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false)
-    };
+    let time = crate::model::timestamp;
     let mut result = Vec::new();
     for row in rows {
         let game = row.game.0;

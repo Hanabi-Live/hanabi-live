@@ -736,7 +736,7 @@ impl Bridge {
                             ..hanabi_protocol::Chat::new(
                                 rendered,
                                 hanabi_protocol::ChatSource::Discord,
-                                time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                                crate::model::timestamp(time),
                             )
                         },
                     ))])
@@ -827,7 +827,7 @@ impl Bridge {
                     ..hanabi_protocol::Chat::new(
                         rendered,
                         hanabi_protocol::ChatSource::Discord,
-                        time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true),
+                        crate::model::timestamp(time),
                     )
                 },
             ))])

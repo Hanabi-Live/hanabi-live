@@ -153,6 +153,19 @@ pub struct TableChat {
     pub user: i32,
     pub message: Value,
 }
+impl TableChat {
+    /// The message as the wire carries it. Checkpoints keep each message's timestamp as it was
+    /// archived, which messages from before timestamps had one form may write with microseconds.
+    pub fn wire_message(&self) -> Result<Value> {
+        let mut message = self.message.clone();
+        let time = message["datetime"]
+            .as_str()
+            .and_then(|text| DateTime::parse_from_rfc3339(text).ok())
+            .ok_or_else(|| anyhow::anyhow!("Invalid checkpoint chat timestamp"))?;
+        message["datetime"] = Value::String(timestamp(time.with_timezone(&Utc)));
+        Ok(message)
+    }
+}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(payload.len() <= 4 * 1024 * 1024, "Oversized checkpoint");
@@ -434,7 +447,7 @@ impl Snapshot {
             .map(|p| p.name.clone())
             .collect::<Vec<_>>();
         names.sort_by_key(|s| s.to_lowercase());
-        let time = |time: DateTime<Utc>| time.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, true);
+        let time = timestamp;
         hanabi_protocol::GameHistory {
             id: hanabi_protocol::GameId(self.game_id),
             options: wire_options(&self.game.options),
@@ -460,6 +473,12 @@ impl Snapshot {
 /// Table sizes and seats are validated to be at most six, so they fit in a byte.
 pub(crate) fn small(value: usize) -> u8 {
     u8::try_from(value).unwrap_or(u8::MAX)
+}
+
+/// A time as the wire carries it: RFC 3339 in UTC, with milliseconds, such as
+/// "2026-01-01T12:00:00.000Z". The clients' schemas accept only this form.
+pub fn timestamp(time: DateTime<Utc>) -> String {
+    time.to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
 }
 
 /// Converts the engine's options to their wire form. Both destructure every field, so adding an
@@ -550,6 +569,28 @@ pub(crate) fn engine_options(options: &hanabi_protocol::GameOptions) -> Options 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn timestamps_are_utc_with_milliseconds() {
+        let time = DateTime::<Utc>::from_timestamp(1_767_268_800, 123_456_789).unwrap();
+        assert_eq!(timestamp(time), "2026-01-01T12:00:00.123Z");
+        let whole = DateTime::<Utc>::from_timestamp(1_767_268_800, 0).unwrap();
+        assert_eq!(timestamp(whole), "2026-01-01T12:00:00.000Z");
+    }
+
+    #[test]
+    fn checkpoint_chat_keeps_its_archived_timestamp_but_sends_the_wire_form() {
+        let chat = TableChat {
+            id: Some(1),
+            user: 1,
+            message: serde_json::json!({"msg": "hi", "datetime": "2026-11-02T20:00:00.123456Z"}),
+        };
+        assert_eq!(
+            chat.wire_message().unwrap()["datetime"],
+            "2026-11-02T20:00:00.123Z"
+        );
+        assert_eq!(chat.message["datetime"], "2026-11-02T20:00:00.123456Z");
+    }
 
     #[test]
     fn wire_and_engine_option_defaults_agree() {

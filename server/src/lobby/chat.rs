@@ -2,7 +2,7 @@ use super::{Caller, Effect, OnlineUser, notice, warning};
 use crate::accounts::{escape_html, is_muted, normalize_chat, normalize_string, regenerate_token};
 use crate::transport::Outgoing;
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, SecondsFormat, Utc};
+use chrono::SecondsFormat;
 use hanabi_protocol::{Chat, ChatHistory, ChatHistoryMessage, ChatHistoryRequest, ChatSource};
 use serde::Deserialize;
 use serde_json::json;
@@ -76,10 +76,6 @@ const DELEGATED: &[&str] = &[
     "startin",
     "impostor",
 ];
-
-pub fn datetime(value: DateTime<Utc>) -> String {
-    value.to_rfc3339_opts(SecondsFormat::Millis, true)
-}
 
 pub fn valid_room(room: &str) -> bool {
     room == "lobby"
@@ -292,7 +288,11 @@ pub async fn private_message(
         who: Some(caller.name.clone()),
         recipient: Some(target.name.clone()),
         pm_id: Some(i64::from(row.id)),
-        ..Chat::new(message, ChatSource::User, datetime(row.datetime_sent))
+        ..Chat::new(
+            message,
+            ChatSource::User,
+            crate::model::timestamp(row.datetime_sent),
+        )
     };
     Ok(vec![
         Effect::ToSelf(Outgoing::new(hanabi_protocol::server::CHAT, data.clone())),
@@ -363,7 +363,7 @@ pub async fn private_history(
                 .recipient
                 .clone()
                 .context("Missing private message recipient")?,
-            datetime: datetime(row.datetime_sent),
+            datetime: crate::model::timestamp(row.datetime_sent),
         });
     }
     let response = ChatHistory {
@@ -508,7 +508,7 @@ pub async fn lobby_chat(
                 ..Chat::new(
                     content,
                     serde_json::from_value(json!(source))?,
-                    datetime(row.datetime_sent),
+                    crate::model::timestamp(row.datetime_sent),
                 )
             },
         )));
@@ -575,7 +575,7 @@ pub async fn lobby_history(pool: &PgPool, count: i64) -> Result<Vec<Chat>> {
             ..Chat::new(
                 message,
                 serde_json::from_value(json!(source))?,
-                datetime(row.datetime_sent),
+                crate::model::timestamp(row.datetime_sent),
             )
         });
     }
@@ -599,7 +599,11 @@ pub async fn server_chat(pool: &PgPool, message: &str) -> Result<Vec<Effect>> {
                 who: Some("Hanab Live".into()),
                 room: Some("lobby".into()),
                 chat_id: Some(i64::from(chat_id)),
-                ..Chat::new(message, ChatSource::Server, datetime(row.datetime_sent))
+                ..Chat::new(
+                    message,
+                    ChatSource::Server,
+                    crate::model::timestamp(row.datetime_sent),
+                )
             },
         )),
         Effect::DiscordMirror {
