@@ -1,7 +1,10 @@
-import type { NewLobbyNavigation, Settings } from "@hanabi-live/data";
+import type {
+  ClientCommand,
+  NewLobbyNavigation,
+  Settings,
+} from "@hanabi-live/data";
 import {
   CLIENT_COMMAND_SCHEMAS,
-  ClientCommand,
   clearTabAccount,
   errorDetails,
   httpError,
@@ -12,12 +15,13 @@ import {
   validationErrorDetails,
   withTabAccount,
 } from "@hanabi-live/data";
-import { z } from "zod";
 import { decodeEvent } from "./protocol";
 import type { LobbyStore } from "./store";
 import { actions } from "./store";
 
-const commandName = z.enum(ClientCommand);
+function isClientCommand(command: string): command is ClientCommand {
+  return Object.hasOwn(CLIENT_COMMAND_SCHEMAS, command);
+}
 const unconfirmedRequest =
   "The request may have succeeded. Check the table after reconnecting before trying again.";
 
@@ -166,13 +170,12 @@ export class LobbyConnection {
         "Wait for the current request to be confirmed. Nothing else was sent.",
       );
     }
-    const name = commandName.safeParse(command);
-    if (!name.success) {
+    if (!isClientCommand(command)) {
       return fail(
         `Unrecognized client command: ${command.slice(0, 80)}. Nothing was sent.`,
       );
     }
-    const validated = CLIENT_COMMAND_SCHEMAS[name.data].safeParse(data);
+    const validated = CLIENT_COMMAND_SCHEMAS[command].safeParse(data);
     if (!validated.success) {
       return fail(
         `Cannot send ${command}: ${validationErrorDetails(validated.error)}`,

@@ -1,7 +1,6 @@
 import {
   CLIENT_COMMAND_SCHEMAS,
   SERVER_COMMAND_SCHEMAS,
-  SERVER_WIRE_SCHEMAS,
 } from "@hanabi-live/data";
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
@@ -68,12 +67,4 @@ test("hidden clue frames require both identity fields to be concealed", () => {
       action: { ...action, clue: { type: -1, value: 3 } },
     }).success,
   ).toBe(false);
-});
-
-test("every server message uses a schema generated from server/protocol", () => {
-  const generated: Readonly<Record<string, unknown>> = SERVER_WIRE_SCHEMAS;
-  const handWritten = Object.entries(SERVER_COMMAND_SCHEMAS)
-    .filter(([command, schema]) => generated[command] !== schema)
-    .map(([command]) => command);
-  expect(handWritten).toEqual([]);
 });

@@ -1,12 +1,6 @@
 // These are exported global variables to be shared between all of the TypeScript code.
 
-import type {
-  GameHistory,
-  ServerCommandData,
-  ServerCommandTableData,
-  ServerCommandUserData,
-  UserID,
-} from "@hanabi-live/data";
+import type { GameHistory, ServerCommandData, UserID } from "@hanabi-live/data";
 import { defaultSettings } from "@hanabi-live/data";
 import type { Connection } from "./Connection";
 import type { Loader } from "./Loader";
@@ -38,10 +32,10 @@ export class Globals {
   // -----------------------
 
   /** Keys are IDs. */
-  userMap = new Map<UserID, ServerCommandUserData>();
+  userMap = new Map<UserID, ServerCommandData["user"]>();
 
   /** Keys are IDs. */
-  tableMap = new Map<number, ServerCommandTableData>();
+  tableMap = new Map<number, ServerCommandData["table"]>();
 
   /** Keys are IDs. */
   history = new Map<number, GameHistory>();

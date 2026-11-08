@@ -1,4 +1,4 @@
-import type { ServerCommandWelcomeData } from "@hanabi-live/data";
+import type { ServerCommandData } from "@hanabi-live/data";
 import { DEFAULT_VARIANT_NAME } from "@hanabi-live/game";
 import { parseIntSafe } from "complete-common";
 import { globals } from "../Globals";
@@ -7,7 +7,7 @@ import * as history from "./history";
 import type { GameJSON } from "./hypoCompress";
 import { expand } from "./hypoCompress";
 
-export function parseAndGoto(data: ServerCommandWelcomeData): void {
+export function parseAndGoto(data: ServerCommandData["welcome"]): void {
   // Disable custom path functionality for first time users.
   if (data.firstTimeUser) {
     return;
@@ -68,7 +68,7 @@ export function parseAndGoto(data: ServerCommandWelcomeData): void {
       if (tableID !== undefined && tableID > 0) {
         // Here we unconditionally send password from cookies. If the game has no password, the
         // server will ignore it.
-        const password = localStorage.getItem("joinTablePassword");
+        const password = localStorage.getItem("joinTablePassword") ?? "";
         globals.conn!.send("tableJoin", {
           tableID,
           password,

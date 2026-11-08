@@ -1,6 +1,6 @@
 // The lobby area that shows all of the current tables.
 
-import type { ServerCommandTableData } from "@hanabi-live/data";
+import type { ServerCommandData } from "@hanabi-live/data";
 import { MAX_PLAYERS } from "@hanabi-live/game";
 import { SECOND_IN_MILLISECONDS, assertDefined, iRange } from "complete-common";
 import { globals } from "../Globals";
@@ -260,7 +260,7 @@ export function tablesDraw(): void {
 }
 
 export function tableSpectate(
-  table: ServerCommandTableData,
+  table: ServerCommandData["table"],
   shadowingPlayerIndex = -1,
 ): void {
   if (
@@ -277,7 +277,7 @@ export function tableSpectate(
   // (We will get a "tableStart" response back from the server.)
 }
 
-export function tableJoin(table: ServerCommandTableData): void {
+export function tableJoin(table: ServerCommandData["table"]): void {
   if (
     globals.currentScreen !== Screen.Lobby
     && globals.currentScreen !== Screen.PreGame
@@ -298,7 +298,7 @@ export function tableJoin(table: ServerCommandTableData): void {
   }
 }
 
-function tableReattend(table: ServerCommandTableData) {
+function tableReattend(table: ServerCommandData["table"]) {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -310,7 +310,7 @@ function tableReattend(table: ServerCommandTableData) {
   // the game has started or not.)
 }
 
-function tableHasFriends(table: ServerCommandTableData) {
+function tableHasFriends(table: ServerCommandData["table"]) {
   if (!table.sharedReplay) {
     for (const player of table.players) {
       if (globals.friends.includes(player)) {

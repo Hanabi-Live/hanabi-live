@@ -414,8 +414,8 @@ fn main() -> Result<()> {
         emit(name, &definitions, &exported, &mut active, &mut emitted)?;
     }
     for (name, contracts) in [
-        ("CLIENT_WIRE_SCHEMAS", client),
-        ("SERVER_WIRE_SCHEMAS", server),
+        ("CLIENT_COMMAND_SCHEMAS", client),
+        ("SERVER_COMMAND_SCHEMAS", server),
     ] {
         println!("export const {name} = {{");
         for (command, contract) in contracts {
@@ -427,12 +427,12 @@ fn main() -> Result<()> {
         }
         println!("}} as const;");
     }
-    println!(
-        "export type ClientWireData = {{ [Command in keyof typeof CLIENT_WIRE_SCHEMAS]: z.infer<(typeof CLIENT_WIRE_SCHEMAS)[Command]> }};"
-    );
-    println!(
-        "export type ServerWireData = {{ [Command in keyof typeof SERVER_WIRE_SCHEMAS]: z.infer<(typeof SERVER_WIRE_SCHEMAS)[Command]> }};"
-    );
+    for (side, registry) in [("Client", "CLIENT"), ("Server", "SERVER")] {
+        println!("export type {side}Command = keyof typeof {registry}_COMMAND_SCHEMAS;");
+        println!(
+            "export type {side}CommandData = {{ [Command in {side}Command]: z.infer<(typeof {registry}_COMMAND_SCHEMAS)[Command]> }};"
+        );
+    }
     Ok(())
 }
 

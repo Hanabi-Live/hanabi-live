@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GAME_CLIENT_COMMAND_SCHEMAS } from "./gameCommands";
+import { CLIENT_COMMAND_SCHEMAS } from "./generated/protocol";
 import { tableID } from "./types/TableID";
 
 export const NEW_LOBBY_NAVIGATION_KEY = "hanabi-new-lobby-navigation";
@@ -11,7 +11,7 @@ export const newLobbyNavigation = z.discriminatedUnion("kind", [
   }),
   z.strictObject({
     kind: z.literal("replay"),
-    request: GAME_CLIENT_COMMAND_SCHEMAS.replayCreate,
+    request: CLIENT_COMMAND_SCHEMAS.replayCreate,
   }),
 ]);
 export type NewLobbyNavigation = z.infer<typeof newLobbyNavigation>;

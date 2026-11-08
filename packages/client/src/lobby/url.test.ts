@@ -1,4 +1,4 @@
-import type { ServerCommandWelcomeData } from "@hanabi-live/data";
+import type { ServerCommandData } from "@hanabi-live/data";
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
 import type { GameJSON } from "./hypoCompress";
@@ -60,7 +60,7 @@ describe("replay URL loading", () => {
       },
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
 
     const gameJSON = JSON.parse(expand(`${payload}${suffix}`)!) as GameJSON;
     expect(send).toHaveBeenCalledWith("replayCreate", {
@@ -83,7 +83,7 @@ describe("replay URL loading", () => {
       value: new URL("https://hanab.live/lobby#history"),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(show).toHaveBeenCalledWith();
@@ -98,7 +98,7 @@ describe("replay URL loading", () => {
       value: new URL(url),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
 
     expect(show).toHaveBeenCalledTimes(1);
     expect(showOtherScores).toHaveBeenCalledWith("p4v0s1");
@@ -116,7 +116,7 @@ describe("replay URL loading", () => {
       value: new URL(`https://hanab.live${pathname}`),
     });
 
-    parseAndGoto({ firstTimeUser: false } as ServerCommandWelcomeData);
+    parseAndGoto({ firstTimeUser: false } as ServerCommandData["welcome"]);
 
     expect(send).toHaveBeenCalledWith("tableSpectate", {
       tableID: 123,

@@ -316,6 +316,11 @@ function submit() {
 
   // Table names are not saved.
   const name = $("#createTableName").val();
+  if (typeof name !== "string") {
+    throw new TypeError(
+      'The value of the "createTableName" element was not a string.',
+    );
+  }
 
   // Passwords are not stored on the server; instead, they are stored locally as cookies.
   const password = $("#createTablePassword").val();

@@ -138,7 +138,7 @@ function submit() {
   );
   const visibilityID = visibilityIDElement.id;
 
-  let visibility: string;
+  let visibility: "solo" | "shared";
   switch (visibilityID) {
     case "replay-visibility-solo": {
       visibility = "solo";

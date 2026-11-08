@@ -248,7 +248,7 @@ export class NameFrame extends Konva.Group {
           backToLobby();
           globals.lobby.conn!.send("replayCreate", {
             source: "id",
-            databaseID: globals.state.replay.databaseID,
+            databaseID: globals.state.replay.databaseID ?? undefined,
             visibility:
               globals.state.replay.shared === null ? "solo" : "shared",
             shadowingPlayerIndex,
