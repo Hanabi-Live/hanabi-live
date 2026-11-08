@@ -49,7 +49,7 @@ const config = {
     },
     "packages/testing": {
       // Run from the root "package.json" test script.
-      entry: ["src/mainProcessSetup.ts"],
+      entry: ["src/runTests.ts"],
       // Bun reports "ws" as a built-in module, so Knip cannot see that it is used when running
       // under Bun.
       ignoreDependencies: "Bun" in globalThis ? ["@types/ws", "ws"] : [],

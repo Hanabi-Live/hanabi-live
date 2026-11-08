@@ -136,4 +136,35 @@ fn main() {
         println!("cargo:rerun-if-changed={}", path.display());
     }
     println!("cargo:rustc-env=HANABI_BUILD_COMMIT={}", version.commit);
+    write_schema_version(&root);
+}
+
+/// The server requires the schema version that the migrations directory produces, so adding a
+/// migration updates it without a hand-kept constant.
+fn write_schema_version(root: &Path) {
+    let install = root.join("../install");
+    let script = install.join("migration-files.sh");
+    let migrations = install.join("migrations");
+    println!("cargo:rerun-if-changed={}", script.display());
+    println!("cargo:rerun-if-changed={}", migrations.display());
+    let output = Command::new("bash")
+        .arg(&script)
+        .arg(&migrations)
+        .output()
+        .expect("Unable to run install/migration-files.sh");
+    assert!(
+        output.status.success(),
+        "Invalid database migrations: {}",
+        String::from_utf8_lossy(&output.stderr).trim()
+    );
+    let version: i32 = String::from_utf8_lossy(&output.stdout)
+        .trim()
+        .parse()
+        .expect("install/migration-files.sh printed an invalid schema version");
+    let out = PathBuf::from(env::var_os("OUT_DIR").expect("Cargo output directory"));
+    std::fs::write(
+        out.join("schema_version.rs"),
+        format!("pub const SCHEMA_VERSION: i32 = {version};\n"),
+    )
+    .expect("Unable to write the schema version");
 }

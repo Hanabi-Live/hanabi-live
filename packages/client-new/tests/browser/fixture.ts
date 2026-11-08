@@ -5,7 +5,7 @@ import {
 } from "@hanabi-live/testing";
 import type { BrowserContext, Locator, Page } from "@playwright/test";
 import { test as base, expect } from "@playwright/test";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import {
   cp,
@@ -21,6 +21,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
+
+/** The server requires the schema version that the migrations produce. */
+const SCHEMA_VERSION = Number(
+  execFileSync(
+    "bash",
+    [
+      path.join(ROOT, "install/migration-files.sh"),
+      path.join(ROOT, "install/migrations"),
+    ],
+    { encoding: "utf8" },
+  ).trim(),
+);
 
 async function port(): Promise<number> {
   const listener = createServer();
@@ -146,7 +158,7 @@ export const test = base.extend<
           ),
         );
         await sql`CREATE TABLE schema_version(version integer NOT NULL PRIMARY KEY)`;
-        await sql`INSERT INTO schema_version VALUES(15)`;
+        await sql`INSERT INTO schema_version VALUES(${SCHEMA_VERSION})`;
         await Promise.all(
           [
             "packages/game/src/json",

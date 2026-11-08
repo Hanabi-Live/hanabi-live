@@ -76,8 +76,11 @@ Use Bun for JavaScript dependency management; its version is pinned in the root
 `bunx --bun --no-install <tool>`. Bun is also the JavaScript runtime. Commit
 `bun.lock`, not an npm lockfile. `bun run test` prepares native integration
 backends and runs the migrated suites with Bun's native test runner and per-file
-isolation. Keep automatic `.env` loading disabled in `bunfig.toml`; applications
-and build scripts manage their own configuration.
+isolation. It starts a disposable PostgreSQL server, which needs `initdb` and
+`postgres` on `PATH` (or set `HANABI_TEST_DATABASE_URL` to one), and the
+integration suites need `redis-server` on `PATH`. Keep automatic `.env` loading
+disabled in `bunfig.toml`; applications and build scripts manage their own
+configuration.
 
 External dependency versions belong in the root `package.json`
 `workspaces.catalog`. Reference them with `catalog:` in package manifests; use
