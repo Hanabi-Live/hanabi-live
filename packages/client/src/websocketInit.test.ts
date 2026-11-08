@@ -205,7 +205,7 @@ describe("initial WebSocket handshake watchdog", () => {
     websocketInit();
 
     sockets[0]?.emit("open");
-    globals.conn?.callbacks["welcome"]?.({});
+    globals.conn?.callbacks.get("welcome")?.({} as never);
 
     await clock.tickAsync(30_000);
     expect(sockets).toHaveLength(1);
@@ -217,7 +217,7 @@ describe("initial WebSocket handshake watchdog", () => {
     websocketInit();
     sockets[0]?.emit("open");
     const error = { error: "Outdated client. Please hard-refresh." };
-    globals.conn?.callbacks["error"]?.(error);
+    globals.conn?.callbacks.get("error")?.(error as never);
     sockets[0]?.emit("close");
 
     await clock.tickAsync(30_000);
