@@ -25,6 +25,9 @@ RUNTIME_LINKS = {
     "letsencrypt": "letsencrypt",
     ".lifecycle.lock": ".lifecycle.lock",
 }
+# The manifest format and platform that the server's release verification accepts.
+RELEASE_FORMAT = 2
+RELEASE_PLATFORM = "linux-amd64"
 REPOSITORY = "Hanabi-Live/hanabi-live"
 API = f"https://api.github.com/repos/{REPOSITORY}"
 
@@ -141,8 +144,8 @@ def manifest(directory):
         dirty = None
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid build revision")
     metadata = {
-        "format": 2,
-        "platform": "linux-amd64",
+        "format": RELEASE_FORMAT,
+        "platform": RELEASE_PLATFORM,
         "revision": revision,
         "clientVersion": (directory / "public/js/bundles/version.txt").read_text().strip(),
         "dirty": dirty,
@@ -174,8 +177,8 @@ def verify(directory):
     metadata = json.loads(metadata_path.read_text())
     require(isinstance(metadata, dict), "Invalid release metadata")
     revision = metadata.get("revision", "")
-    require(metadata.get("format") == 2, "Unsupported release format")
-    require(metadata.get("platform") == "linux-amd64", "Unsupported platform")
+    require(metadata.get("format") == RELEASE_FORMAT, "Unsupported release format")
+    require(metadata.get("platform") == RELEASE_PLATFORM, "Unsupported platform")
     require(re.fullmatch(r"[a-f0-9]{40}", revision), "Invalid revision")
     require(metadata.get("clientVersion") == revision, "Invalid client cache version")
     expected = metadata["files"]

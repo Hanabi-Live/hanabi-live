@@ -63,15 +63,20 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
     };
     let mut players = input.players.clone().unwrap_or_default();
     if players.is_empty() {
-        let pattern = regex!(r"^(?:legacy-\d+-)?p([2-6])v\d+s[-0-9A-Za-z]+$");
+        let pattern = regex!(r"^(?:legacy-\d+-)?p(\d+)v\d+s[-0-9A-Za-z]+$");
         let count: usize = pattern
             .captures(seed)
             .context("Provide players when the seed has no player count")?[1]
             .parse()?;
-        players = ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"][..count]
-            .iter()
-            .map(|n| (*n).into())
-            .collect();
+        ensure!(
+            hanabi_protocol::is_player_count(count),
+            "The seed's player count must be between {} and {}",
+            hanabi_protocol::MIN_PLAYERS,
+            hanabi_protocol::MAX_PLAYERS
+        );
+        let names: [&str; hanabi_protocol::MAX_PLAYERS] =
+            ["Alice", "Bob", "Cathy", "Donald", "Emily", "Frank"];
+        players = names[..count].iter().map(|n| (*n).into()).collect();
     }
     ensure!(
         hanabi_protocol::is_player_count(players.len())

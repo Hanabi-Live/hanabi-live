@@ -3,6 +3,7 @@ use super::{
     Response, Result, State, Value, catalog, data, encoded, integer, json, replay, strict_query,
 };
 use axum::response::{Html, Redirect};
+use hanabi_engine::EndCondition;
 
 /// The option that a score page names for a best score's stored modifier, if any.
 fn shown_modifier(bits: i64) -> Result<Option<&'static str>> {
@@ -403,6 +404,7 @@ async fn compute_aggregate(
     )
     .fetch_one(&mut *transaction)
     .await?;
+    let normal_end = EndCondition::Normal as i16;
     // Each case has its own query: a shared `$1 IS NULL OR ...` query gets a generic plan that
     // cannot use an index. The variant is compared as the column's own SMALLINT, because a cast
     // column cannot use its index either. A player's totals start from their own games.
@@ -410,14 +412,15 @@ async fn compute_aggregate(
     macro_rules! game_totals {
         ($filter:literal $(, $argument:expr)*) => {{
             let row = sqlx::query!(
-                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=1) AS \"normal!\",
-                count(*) FILTER(WHERE NOT speedrun AND end_condition<>1) AS \"other!\",
+                "SELECT count(*) FILTER(WHERE NOT speedrun AND end_condition=$1) AS \"normal!\",
+                count(*) FILTER(WHERE NOT speedrun AND end_condition<>$1) AS \"other!\",
                 count(*) FILTER(WHERE speedrun) AS \"speed!\",
                 COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
                   FILTER(WHERE NOT speedrun),0)::bigint AS \"duration!\",
                 COALESCE(sum(extract(epoch FROM datetime_finished-datetime_started) * num_players)
                   FILTER(WHERE speedrun),0)::bigint AS \"speed_duration!\"
-                FROM games" + $filter $(, $argument)*
+                FROM games" + $filter,
+                normal_end $(, $argument)*
             )
             .fetch_one(&mut *transaction)
             .await?;
@@ -427,14 +430,15 @@ async fn compute_aggregate(
     let (normal, other, speed, played, speed_played) = match (user, variant) {
         (Some(user), None) => {
             let row = sqlx::query!(
-                "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=1) AS \"normal!\",
-                count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>1) AS \"other!\",
+                "SELECT count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition=$1) AS \"normal!\",
+                count(*) FILTER(WHERE NOT g.speedrun AND g.end_condition<>$1) AS \"other!\",
                 count(*) FILTER(WHERE g.speedrun) AS \"speed!\",
                 COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
                   FILTER(WHERE NOT g.speedrun),0)::bigint AS \"duration!\",
                 COALESCE(sum(extract(epoch FROM g.datetime_finished-g.datetime_started))
                   FILTER(WHERE g.speedrun),0)::bigint AS \"speed_duration!\"
-                FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$1",
+                FROM game_participants p JOIN games g ON g.id=p.game_id WHERE p.user_id=$2",
+                normal_end,
                 user
             )
             .fetch_one(&mut *transaction)
@@ -450,7 +454,7 @@ async fn compute_aggregate(
         (None, Some(variant)) => {
             let variant = i16::try_from(variant)
                 .map_err(|_| anyhow::anyhow!("Variant ID {variant} is outside the stored range"))?;
-            game_totals!(" WHERE variant_id=$1", variant)
+            game_totals!(" WHERE variant_id=$2", variant)
         }
         (None, None) => game_totals!(""),
         (Some(_), Some(_)) => {

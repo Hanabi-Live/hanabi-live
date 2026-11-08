@@ -13,6 +13,10 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
+/// The release manifest format that `install/release.py` writes.
+const RELEASE_FORMAT: u32 = 2;
+/// The platform that native releases are built for.
+const RELEASE_PLATFORM: &str = "linux-amd64";
 const RUNTIME_FILES: &[&str] = &[".env", "logs", "motd.txt", "letsencrypt", ".lifecycle.lock"];
 
 #[derive(Clone, Copy)]
@@ -101,7 +105,7 @@ pub fn verify(root: &Path) -> Result<()> {
     );
     let manifest: Manifest = serde_json::from_slice(&std::fs::read(path)?)?;
     ensure!(
-        manifest.format == 2 && manifest.platform == "linux-amd64",
+        manifest.format == RELEASE_FORMAT && manifest.platform == RELEASE_PLATFORM,
         "Unsupported native release"
     );
     ensure!(
@@ -269,8 +273,8 @@ mod tests {
         let mut files = BTreeMap::new();
         inventory(&root, &root, &mut files).unwrap();
         let mut manifest = json!({
-            "format": 2,
-            "platform": "linux-amd64",
+            "format": RELEASE_FORMAT,
+            "platform": RELEASE_PLATFORM,
             "revision": revision,
             "clientVersion": revision,
             "files": files,
