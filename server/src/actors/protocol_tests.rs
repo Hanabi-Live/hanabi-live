@@ -1057,6 +1057,36 @@ async fn shared_replays_of_older_games_start_when_their_table_is_created() -> Re
 }
 
 #[tokio::test]
+async fn joining_a_table_plays_a_sound_for_its_other_players_once_per_burst() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Join sound", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID":id})).await?;
+        let sound = h.receive(0, "soundLobby").await?;
+        ensure!(
+            sound == json!({"file":"someone-joined"}),
+            "Unexpected sound: {sound}"
+        );
+        h.send(2, "tableJoin", json!({"tableID":id})).await?;
+        for index in 0..3 {
+            h.barrier(index).await?;
+            let sounds = h
+                .frames(index)?
+                .into_iter()
+                .filter(|(command, _)| command == "soundLobby")
+                .count();
+            ensure!(sounds == 0, "User {index} heard {sounds} more join sounds");
+        }
+        Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
 async fn trying_to_join_a_full_table_tells_its_players_once() -> Result<()> {
     let Some(mut h) = Harness::new(&["Alice", "Bob", "Carol"]).await? else {
         return Ok(());

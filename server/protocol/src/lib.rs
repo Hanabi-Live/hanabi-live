@@ -1498,11 +1498,13 @@ pub struct SoundLobby {
     pub file: LobbySound,
 }
 
-/// A sound that everyone in the lobby hears. The server plays "shutdown" when it is going down.
+/// A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
+/// and "someone-joined" to the players at a pre-game table when another player joins it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "kebab-case")]
 pub enum LobbySound {
     Shutdown,
+    SomeoneJoined,
 }
 
 /// A user's preferences. Missing fields take their default, so stored settings only need the values

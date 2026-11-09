@@ -67,6 +67,7 @@ const WIRE_SOUNDS = {
   holy: SoundType.Holy,
   nooo: SoundType.Nooo,
   shutdown: SoundType.Shutdown,
+  "someone-joined": SoundType.SomeoneJoined,
 } as const satisfies Record<WireSound, SoundType>;
 
 export function toSoundType(value: WireSound): SoundType {

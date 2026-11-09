@@ -974,9 +974,10 @@ export const settingsSchema = z
   .readonly();
 
 /**
- * A sound that everyone in the lobby hears. The server plays "shutdown" when it is going down.
+ * A sound played outside of a game. The server plays "shutdown" to everyone when it is going down,
+ * and "someone-joined" to the players at a pre-game table when another player joins it.
  */
-const lobbySoundSchema = z.literal("shutdown");
+const lobbySoundSchema = z.enum(["shutdown", "someone-joined"]);
 export const soundLobbySchema = z
   .strictObject({ file: lobbySoundSchema })
   .readonly();

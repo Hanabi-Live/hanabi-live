@@ -105,6 +105,7 @@ impl TableActor {
             idle_warned: false,
             timer_retry: None,
             full_join_notices: HashSet::new(),
+            last_join: None,
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             _permit: permit,
             info,

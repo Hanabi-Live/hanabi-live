@@ -368,6 +368,9 @@ struct TableActor {
     /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
     /// the table can be told again.
     full_join_notices: HashSet<UserId>,
+    /// When a player last joined the table, so that a burst of joins plays the join sound once.
+    /// Kept in memory: after a restart, the next join plays it.
+    last_join: Option<Instant>,
     /// Each player's recent table chat. Kept in memory: a restart forgives it.
     chat_limit: crate::accounts::Counter<i32>,
     _permit: OwnedSemaphorePermit,

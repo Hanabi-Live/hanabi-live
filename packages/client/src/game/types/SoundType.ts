@@ -115,6 +115,9 @@ export enum SoundType {
   /** Used when dragging a card to an invalid area. */
   Error = "error",
 
+  /** Used when another player joins a pre-game table. */
+  SomeoneJoined = "someone-joined",
+
   /** Used when the server is shutting down. */
   Shutdown = "shutdown",
 }
