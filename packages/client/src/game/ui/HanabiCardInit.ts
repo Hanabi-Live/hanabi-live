@@ -42,9 +42,6 @@ import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 /** The opacity of the shadow under a card. */
 const CARD_SHADOW_OPACITY = 0.4;
 
-/** The fill of an unclued rank pip, gray so that the pips do not stand out from the card. */
-const RANK_PIP_COLOR = "#ebebeb";
-
 /**
  * The size of the large icons drawn over the middle of a card, such as a question mark. Based on
  * the card's width, but used for both the icon's width and height.
@@ -133,12 +130,17 @@ const RANK_PIP_FONT_SIZE = 63;
  */
 const PIP_OUTLINE_WIDTH = 6;
 
-/**
- * The outline around a rank pip's digit. The fill covers its inner half, so this is twice its
- * visible width. At hand size, a thinner outline is narrower than a screen pixel and fades in and
- * out depending on where the digit lands on the pixel grid.
- */
-const RANK_PIP_OUTLINE_WIDTH = 8;
+/** The outline around a rank pip's digit. */
+const RANK_PIP_OUTLINE_WIDTH = 3;
+
+/** The drop shadow under a rank pip, which is omitted in speedrun games. */
+const RANK_PIP_SHADOW = {
+  shadowColor: "black",
+  shadowOffsetX: 5,
+  shadowOffsetY: 5,
+  shadowOpacity: 0.4,
+  shadowForStrokeEnabled: true,
+} as const;
 
 /** The outline around a suit pip. */
 const SUIT_PIP_STROKE_WIDTH = 5;
@@ -151,9 +153,10 @@ const RANK_PIP_X_SIZE = 13;
 
 /**
  * The center of the X over a rank pip that has been ruled out, relative to the top-left corner of
- * the pip's box. The digit is larger than its box, so its middle is below the middle of the box.
+ * the pip's box. The digit is larger than its box, so its middle is below the middle of the box. It
+ * has always been drawn half a pixel right of the middle of the box.
  */
-const RANK_PIP_X_CENTER = { x: RANK_PIP_SIZE / 2, y: 27 } as const;
+const RANK_PIP_X_CENTER = { x: (RANK_PIP_SIZE + 1) / 2, y: 27 } as const;
 
 /** The row of rank pips along the bottom of a card, as fractions of the card height. */
 const RANK_PIP_ROW = { y: 0.81, h: 0.15 } as const;
@@ -381,9 +384,11 @@ function makeCachedPips(variant: Variant) {
       width: RANK_PIP_SIZE * 2,
       offsetX: RANK_PIP_SIZE / 2,
       height: RANK_PIP_SIZE,
-      fill: RANK_PIP_COLOR,
+      fill: "white",
       stroke: "black",
       strokeWidth: RANK_PIP_OUTLINE_WIDTH,
+      shadowEnabled: !globals.options.speedrun,
+      ...RANK_PIP_SHADOW,
       listening: false,
     });
     rankPipsMap.set(rank, rankPip);

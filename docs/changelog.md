@@ -7,6 +7,7 @@ listed here.
 
 ## November 9th, 2026
 
+- The numbers along the bottom of cards look as they did before November 8th.
 - "Settings" now opens a full page instead of a pop-up, with each setting on its
   own row.
 - Checkboxes and radio buttons now match the dark theme.
