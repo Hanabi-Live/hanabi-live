@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- Going to `/test` (such as https://hanab.live/test) logs you in as the shared
+  "test" account.
 - In "Throw It in a Hole" games, the number of cards in the hole is now shown in
   the middle of the play stacks.
 - The server keeps live games in PostgreSQL and no longer needs Redis.

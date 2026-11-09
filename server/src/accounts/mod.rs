@@ -56,6 +56,7 @@ struct Accounts {
 pub fn router(pool: PgPool, config: AccountConfig) -> Router {
     Router::new()
         .route("/login", post(login))
+        .route(&format!("/{TEST_ACCOUNT}"), get(test_login))
         .route("/logout", get(logout))
         .route("/test-cookie", get(test_cookie))
         .route(
@@ -426,6 +427,41 @@ async fn update_password_if_unchanged(
     .await?
     .rows_affected()
         == 1)
+}
+
+/// The shared test account, whose password is its username. Visiting `/test` signs in to it.
+pub const TEST_ACCOUNT: &str = "test";
+
+/// Signs in to the test account (creating it if needed), then goes to the lobby.
+async fn test_login(
+    State(state): State<Arc<Accounts>>,
+    ConnectInfo(address): ConnectInfo<SocketAddr>,
+) -> Response {
+    let input = LoginRequest {
+        username: TEST_ACCOUNT.into(),
+        password: TEST_ACCOUNT.into(),
+        version: state.config.version.clone(),
+        ..LoginRequest::default()
+    };
+    let response = match login_inner(&state, &address.ip().to_string(), input).await {
+        Ok(response) => response,
+        Err(error) => return account_failure("login", &error),
+    };
+    if !response.status().is_success() {
+        return response;
+    }
+    with_cookies(
+        (
+            StatusCode::SEE_OTHER,
+            [(header::CACHE_CONTROL, "no-store"), (header::LOCATION, "/")],
+        )
+            .into_response(),
+        response
+            .headers()
+            .get_all(header::SET_COOKIE)
+            .iter()
+            .filter_map(|value| value.to_str().ok().map(str::to_owned)),
+    )
 }
 
 /// Signs out of the requested account, or the most recent sign-in, without affecting other accounts.

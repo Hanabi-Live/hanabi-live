@@ -789,3 +789,38 @@ async fn password_overload_is_retryable_and_diagnostics_are_redacted() {
         String::from_utf8(to_bytes(response.into_body(), 1024).await.unwrap().to_vec()).unwrap();
     assert!(!body.contains("synthetic-sensitive"));
 }
+
+#[tokio::test]
+async fn test_path_signs_in_to_the_test_account_postgres() {
+    let Some(db) = test_support::TestDb::create().await else {
+        return;
+    };
+    let app = router(db.pool.clone(), config());
+    let path = format!("/{TEST_ACCOUNT}");
+    let (status, headers, _) = request(&app, "GET", &path, "", None, false).await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(headers[header::LOCATION], "/");
+    let cookie = headers
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .map(|value| value.to_str().unwrap().split(';').next().unwrap())
+        .collect::<Vec<_>>()
+        .join("; ");
+    let (status, _, _) = request(&app, "GET", "/test-cookie", "", Some(&cookie), false).await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, _, _) = request(
+        &app,
+        "POST",
+        "/login",
+        "username=test&password=test&version=42",
+        None,
+        false,
+    )
+    .await;
+    assert_eq!(
+        status,
+        StatusCode::OK,
+        "the test account uses its name as the password"
+    );
+    db.close().await;
+}
