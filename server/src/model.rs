@@ -254,12 +254,6 @@ impl TableSnapshot {
         }
         let table: Self = serde_json::from_value(value)?;
         table.validate()?;
-        ensure!(
-            table.chat[table.chat_archived..]
-                .iter()
-                .all(|chat| chat.id.is_some()),
-            "Legacy pending chat archive lacks reserved numeric identities; explicit migration is required."
-        );
         Ok(table)
     }
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
