@@ -4,16 +4,11 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## November 8th, 2026
 
-- Breaking changes:
-  - Removed the card cycling option (used in about 0.03% of games) and the games
-    that used it.
-  - Removed the legacy starting player option and the pre-April 2020 games that
-    did not start with the first seat.
-  - Removed legacy seeds (those beginning with `legacy-`), which only those
-    games used.
-  - Public pages and API endpoints now reject unknown or invalid query
-    parameters with an error that names the problem, instead of silently using
-    defaults.
+- Removed the card cycling option and the games that used it.
+- Removed the legacy starting player option and the pre-April 2020 games that
+  did not start with the first player.
+- Removed legacy seeds (those beginning with `legacy-`), which only those games
+  used.
 - Removed the following chat commands:
   - `/playerinfo`
   - `/vote` (tap the skull button instead, which also works on touch devices)
@@ -22,14 +17,12 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 - Removed the full-history and full-seed API aliases.
 - Removed the videos page.
 - Added a link to the changelog in the resources dialog.
-- Added a confirmation when playing a card whose note says it is unplayable.
+- Added a confirmation modal when playing a card whose note says it is
+  unplayable.
 - The note icon glows when the note determines the suit or rank shown on the
   card.
 - The deck tooltip in a shared replay shows how long the replay has been
   running.
-- The CSS bundle loads without blocking page rendering.
-- Database migrations are now run with `hanabi-live migrate` (SQLx), and a
-  migration is cancelled if it blocks live queries for too long.
 
 ## November 7th, 2026
 
@@ -38,64 +31,38 @@ This page lists the changes to Hanab Live, excluding bug fixes.
   - `/unblock`
   - `/blocked`
 - Players with a block between them cannot join or spectate each other's tables
-  or send each other private messages.
-- Added spoiler-free shared replay reviews, which only reveal what has already
-  happened.
+  or send each other private messages. (They can still the blocked person's
+  public messages though.)
+- Added a "Spoiler-Free Review" mode for reviews, which only reveals what has
+  already happened.
 - Opening a link to a shared replay now joins the existing shared replay of that
   game instead of creating a separate copy.
 - Added a warning before an idle game ends.
 - Players at a full table are now told when someone else tries to join.
 - Cards with a "spook" note now show a ghost.
-- In speedrun mode, clicking to give a clue with no clue tokens now buzzes.
+- In speedrun mode, clicking to give a clue with no clue tokens now plays a buzz
+  sound effect.
 - Each browser tab now keeps its own signed-in account, so reloading one tab no
   longer switches it to the account most recently used in another tab.
-- Average scores and strikeout rates are no longer calculated or shown, so that
-  the site feels less competitive.
-- Chat messages older than one year are deleted daily.
-- Security:
-  - Login attempts are rate limited per address and per account.
-  - Password hashing is limited per address.
-  - Credential checks and rejected connections are logged.
-- Graceful restarts and stops are explained to players, and the startup
-  announcement reports how long the server was down.
-- Server and HTTP errors are posted to Discord instead of Sentry.
-- The classic client validates every message from the server.
-- Many database queries and server code paths were optimized.
-- Installation and development:
-  - Added a production setup script.
-  - PostgreSQL and Redis memory are sized from the server's RAM.
-  - Failed database backups are reported to Discord.
-  - Local development runs with one command, using Podman or Docker for
-    PostgreSQL and Redis.
-  - The client is bundled with Vite and tested with Vitest.
+- Average scores and strikeout rates are no longer calculated or shown.
 
 ## November 6th, 2026
 
 - The server was rewritten in Rust, replacing the Go server. Live game state is
-  now stored durably in Redis, so games survive restarts.
-- Added a game-preserving graceful stop for maintenance, which is announced on
-  Discord.
+  now stored durably in Redis, so games survive restarts without having to do
+  anything special on the server.
 - Errors shown to players now include an actionable cause and a diagnostic ID.
 - Table names are now based on the table owner instead of being randomly
   generated.
-- Removed friends history.
-- Personal history now loads only when its screen is opened.
-- Removed support for legacy SHA-256 password hashes.
-- Installation and development:
-  - Added anonymous release downloads and `deploy.sh`, which deploys a release
-    that has passed CI.
-  - `bash lint.sh` runs every check, with Turborepo caching.
+- Removed the friends history feature.
+- Removed support for legacy SHA-256 password hashes. Users who have not logged
+  in since May 1st, 2020 will need to request a password reset.
 
 ## November 5th, 2026
 
 - Disconnected players are removed from a pregame table after a short grace
   period, and abandoned pregame tables are closed.
 - Simplified the global statistics page.
-- JavaScript tooling moved to Bun.
-
-## November 3rd, 2026
-
-- Database backups no longer risk filling the disk.
 
 ## November 1st, 2026
 
@@ -103,14 +70,14 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## October 20th, 2026
 
-- Added the missing Double Dark variants, such as "Black & Dark Orange".
+- Added some missing double dark variants, such as "Black & Dark Orange".
 
 ## October 16th, 2026
 
 - Deleting a lobby message in Discord now also deletes it on the site.
 - Added the following note shorthands for unclued finesses (call to play):
-  - `[xf]`
   - `[ctp]`
+  - `[xf]`
 
 ## October 7th, 2026
 
@@ -126,14 +93,6 @@ This page lists the changes to Hanab Live, excluding bug fixes.
   - `/api/v1/tags/[username]`
   - `/api/v1/tag/[tag]`
 
-## September 18th, 2026
-
-- Replay JSON now includes the seed.
-
-## August 24th, 2026
-
-- Placing a local arrow on a card prints the card's order in the chat.
-
 ## June 18th, 2026
 
 - The time in `/si` can omit the 0 before the decimal point.
@@ -144,11 +103,15 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## May 20th, 2026
 
-- Added the `/split`, `/splitauto`, and `/sa` chat commands.
+- Added the `/split` chat command, which lets a pregame table's owner move the
+  listed players to a new table with the same settings. The first listed player
+  owns the new table. `/splitauto` (or `/sa`) splits the table into two tables
+  by number of games played, putting the more experienced half at one table and
+  the less experienced half at the other.
 
 ## April 11th, 2026
 
-- Note hotkeys keep only the parts of a note that affect the card, removing
+- Note hotkeys now keep only the parts of a note that affect the card, removing
   prose.
 
 ## April 3rd, 2026
@@ -165,10 +128,6 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 - Added the "Scarce Ones" variants, which have one fewer 1 in each suit.
 
-## March 2nd, 2026
-
-- Added a Nix development environment.
-
 ## February 1st, 2026
 
 - Cards with a discard permission note ("ptd", "ctd", or "discard") get a maroon
@@ -177,11 +136,11 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## January 11th, 2026
 
-- Spectators keep spectating when a table is restarted.
+- Spectators now keep spectating when a table is restarted.
 
 ## January 5th, 2026
 
-- The deck tooltip shows the table owner.
+- The deck tooltip now shows the table owner.
 
 ## January 2nd, 2026
 
@@ -189,29 +148,26 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## December 28th, 2025
 
-- The "Inverted" suit was renamed to "Orange", with an orange color and a
-  reverse-arrows pip.
+- The orange suit now has a reverse-arrows pip.
 - Added the "Dark Orange" suit and variants combining Orange and Dark Orange
   with other suits.
-- Added a pips reference page.
+- Added a
+  [pips reference page](https://hanab.live/public/standalone/pips-reference.html).
 - Updated the black pip.
-
-## December 22nd, 2025
-
-- Incrementing a seed number keeps its leading zeros.
 
 ## November 11th, 2025
 
-- Sound options are chosen from a dropdown.
+- Added the "Play a sound when its my turn" option.
+- Sound options are now chosen from a dropdown.
 
 ## November 3rd, 2025
 
-- Cards of the "Inverted" suit have a tooltip explaining it.
+- The orange suit now has a better stack tooltip.
 
 ## October 20th, 2025
 
-- Added the "Inverted" suit (now "Orange"), where playing a card discards it and
-  discarding a card plays it.
+- Added the "Orange" suit, where playing a card discards it and discarding a
+  card plays it.
 
 ## September 16th, 2025
 
@@ -228,12 +184,12 @@ This page lists the changes to Hanab Live, excluding bug fixes.
 
 ## July 26th, 2025
 
-- Added a button to apply the variant found by `/findvariant`.
 - Added the "White Reversed & Rainbow" variants.
+- Added a button to apply the variant found by `/findvariant`.
 
 ## July 22nd, 2025
 
-- Added an emote and emoji picker.
+- Added an emote and emoji picker next to the chat input.
 
 ## June 9th, 2025
 
