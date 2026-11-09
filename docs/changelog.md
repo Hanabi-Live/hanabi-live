@@ -67,9 +67,6 @@ of the repository.
   ranks can still be in it.
 - The direction arrow on Rainbow and Omni cards (including their dark, muddy,
   and cocoa versions) now shows all of their colors.
-- The server uses one database pool of 14 connections for writes, and the
-  localhost `/metrics` report shows the lobby read pool as `lobbyDatabase`
-  instead of the archive pool.
 - Hover over "Give Clue" to see the target's hand as they would see it after the
   clue.
 - Server log lines now start with their level, and lines about a table or a
