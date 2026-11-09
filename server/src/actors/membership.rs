@@ -1,15 +1,16 @@
 use super::{Attendance, TableActor, chat::membership_notice, pregame::remove_pregame_players};
+use crate::errors::CommandResult;
 use crate::{
     model::{IDLE_TIMEOUT_MS, Phase},
     transport::{Session, frame},
 };
-use anyhow::{Context, Result};
+use anyhow::Context;
 use hanabi_protocol::{Status, TableId, TableRequest, TableStarted};
 use std::{collections::HashSet, sync::Arc};
 
 impl TableActor {
     /// Rejects a user who has blocked, or was blocked by, a player at this table or its owner.
-    pub(super) fn ensure_not_blocked(&self, session: &Session, message: &str) -> Result<()> {
+    pub(super) fn ensure_not_blocked(&self, session: &Session, message: &str) -> CommandResult<()> {
         let others = self
             .table
             .players()
@@ -19,7 +20,11 @@ impl TableActor {
         ensure_or_reject!(!session.blocks_any(others), "{message}");
         Ok(())
     }
-    pub(super) async fn join(&mut self, session: Arc<Session>, password: String) -> Result<()> {
+    pub(super) async fn join(
+        &mut self,
+        session: Arc<Session>,
+        password: String,
+    ) -> CommandResult<()> {
         let Phase::Pregame {
             players, kicked, ..
         } = &self.table.phase
@@ -86,7 +91,7 @@ impl TableActor {
     }
     /// Tells a full table, once per person, that someone else wants to play, so that the players
     /// can consider splitting into two tables.
-    pub(super) async fn join_full(&mut self, session: &Arc<Session>) -> Result<()> {
+    pub(super) async fn join_full(&mut self, session: &Arc<Session>) -> CommandResult<()> {
         if self.table.password_hash.is_some() || !self.full_join_notices.insert(session.user) {
             reject!("This table is full.");
         }
@@ -116,7 +121,7 @@ impl TableActor {
         session: Arc<Session>,
         spectating: bool,
         requested_shadow: Option<i64>,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let seat = self
             .table
@@ -241,7 +246,7 @@ impl TableActor {
         self.spectator_messages(&mut e);
         self.publish(e).await
     }
-    pub(super) async fn leave(&mut self, session: Arc<Session>, remove: bool) -> Result<()> {
+    pub(super) async fn leave(&mut self, session: Arc<Session>, remove: bool) -> CommandResult<()> {
         // Players can leave a pregame that they returned to the lobby from, such as to join another.
         let attending = self.attending(&session);
         ensure_or_reject!(

@@ -1,5 +1,6 @@
 use super::chat::TABLE_CHAT_LIMIT;
 use super::*;
+use crate::errors::{CommandError, CommandResult};
 use crate::{accounts::test_support::TestDb, state::LiveState, transport::Outbound};
 use crate::{
     model::{IDLE_TIMEOUT_MS, Phase, Player, TableSnapshot},
@@ -99,7 +100,7 @@ impl Harness {
                 reply,
             })
             .await?;
-        replied.await?
+        Ok(replied.await??)
     }
     async fn replace(&mut self, index: usize) -> Result<(Arc<Session>, mpsc::Receiver<Outbound>)> {
         let old = self.users[index].clone();
@@ -113,7 +114,7 @@ impl Harness {
         index: usize,
         command: &str,
         data: Value,
-    ) -> Result<oneshot::Receiver<Result<()>>> {
+    ) -> Result<oneshot::Receiver<CommandResult>> {
         let (reply, replied) = oneshot::channel();
         self.hub
             .send(HubCommand::Client {
@@ -129,7 +130,8 @@ impl Harness {
             Duration::from_secs(10),
             self.begin(index, command, data).await?,
         )
-        .await??
+        .await???;
+        Ok(())
     }
     async fn barrier(&self, index: usize) -> Result<()> {
         let (reply, replied) = oneshot::channel();
@@ -1119,7 +1121,7 @@ async fn blocked_players_cannot_join_or_spectate_each_others_tables() -> Result<
                     reply,
                 })
                 .await?;
-            replied.await?
+            Ok(replied.await??)
         };
 
         // Alice blocks Bob: Bob can neither join nor spectate Alice's table.
@@ -2676,7 +2678,10 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
         h.send(1, "tableJoin", json!({"tableID": id})).await?;
         let refusal = |error: anyhow::Error| {
             ensure!(
-                crate::errors::is_rejection(&error),
+                matches!(
+                    error.downcast_ref::<CommandError>(),
+                    Some(CommandError::Rejected { .. })
+                ),
                 "Not a rejection: {error:#}"
             );
             Ok(error.to_string())

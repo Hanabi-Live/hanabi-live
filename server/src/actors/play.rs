@@ -3,6 +3,7 @@ use super::{
     Attendance, GameInfo, TableActor,
     wire::{game_action, game_action_list, int},
 };
+use crate::errors::CommandResult;
 use crate::model::Snapshot;
 use crate::{
     model::{
@@ -10,7 +11,7 @@ use crate::{
     },
     transport::{Session, frame},
 };
-use anyhow::{Context, Result};
+use anyhow::Context;
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
@@ -24,7 +25,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         message: ClientMessage,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         match message {
             ClientMessage::Action(r) => {
                 let action = ReplayAction {
@@ -49,7 +50,7 @@ impl TableActor {
     fn live(&self) -> &Snapshot {
         self.table.game().expect("live commands run in a live game")
     }
-    async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> Result<()> {
+    async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
         let old = self.live();
@@ -82,7 +83,7 @@ impl TableActor {
         self.persist(next).await?;
         self.transitions(from).await
     }
-    pub(super) async fn transitions(&self, from: usize) -> Result<()> {
+    pub(super) async fn transitions(&self, from: usize) -> CommandResult<()> {
         let s = self.table.game().context("Missing game")?;
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         let mut e = self.effects();
@@ -203,7 +204,7 @@ impl TableActor {
             })
             .unwrap_or_default()
     }
-    async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> Result<()> {
+    async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
         let from = self.live().game.events.len();
@@ -268,7 +269,7 @@ impl TableActor {
         Ok(())
     }
     /// A player keeps an idle game going, restarting its idle timer.
-    async fn idle_reset(&mut self, session: Arc<Session>) -> Result<()> {
+    async fn idle_reset(&mut self, session: Arc<Session>) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.seat(&session)?;
         self.live();
@@ -292,7 +293,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         mut setting: hanabi_protocol::PauseSetting,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         use hanabi_protocol::PauseSetting as P;
         ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
@@ -343,7 +344,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> Result<()> {
+    async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.live();
         let order = usize::try_from(order)?;
@@ -441,7 +442,7 @@ impl TableActor {
         }
         notes
     }
-    pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> Result<()> {
+    pub(super) async fn info(&self, session: Arc<Session>, part: GameInfo) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session),
             "Reattend before requesting private game data"

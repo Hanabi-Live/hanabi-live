@@ -1,5 +1,6 @@
 use super::table::wrong_phase;
 use super::{TableActor, chat::server_chat, setup::next_requested_seed};
+use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     model::{
@@ -8,7 +9,7 @@ use crate::{
     },
     transport::{Outgoing, Session, frame},
 };
-use anyhow::{Context, Result};
+use anyhow::Context;
 use chrono::Utc;
 use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableId, TableRequest};
@@ -43,7 +44,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         message: ClientMessage,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         match message {
             ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
             ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
@@ -62,7 +63,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         message: ClientMessage,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         match message {
             ClientMessage::Tag(r) => self.tag(session, &r.msg, &r.room, TagOperation::Tag).await,
             ClientMessage::TagDelete(r) => {
@@ -82,7 +83,7 @@ impl TableActor {
         raw: &str,
         room: &str,
         operation: TagOperation,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         ensure_or_reject!(raw.len() <= MAX_TAG_LENGTH, "{}", tag_too_long());
         let tag = crate::accounts::normalize_string(
@@ -214,7 +215,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn leader(&mut self, session: Arc<Session>, name: &str) -> Result<()> {
+    pub(super) async fn leader(&mut self, session: Arc<Session>, name: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let target = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
@@ -283,7 +284,7 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn suggest(&self, session: Arc<Session>, segment: i64) -> Result<()> {
+    pub(super) async fn suggest(&self, session: Arc<Session>, segment: i64) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && self.table.visible,
             "Not a shared replay"
@@ -311,7 +312,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         r: hanabi_protocol::ReplayActionRequest,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         use hanabi_protocol::ReplayActionRequest as R;
 
         ensure_or_reject!(
@@ -422,7 +423,7 @@ impl TableActor {
         self.add_outgoing(&mut e, &message);
         self.publish(e).await
     }
-    async fn restart(&mut self, session: Arc<Session>, hide: bool) -> Result<()> {
+    async fn restart(&mut self, session: Arc<Session>, hide: bool) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner && self.table.visible,
             "Only the shared replay leader can restart"
@@ -513,7 +514,11 @@ impl TableActor {
         self.transfer(self.candidate(), destination, allocation, moving, true)
             .await
     }
-    async fn decline_restart(&mut self, session: Arc<Session>, declined: bool) -> Result<()> {
+    async fn decline_restart(
+        &mut self,
+        session: Arc<Session>,
+        declined: bool,
+    ) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && self.table.visible,
             "Not a shared replay"

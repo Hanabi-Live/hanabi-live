@@ -12,21 +12,45 @@ macro_rules! regex {
     }};
 }
 
-/// A `Rejection` of a player's request, built like `anyhow!`.
+/// A rejection of a player's request (`CommandError::Rejected`), built like `anyhow!`.
 macro_rules! rejection {
     ($($message:tt)+) => {
-        anyhow::Error::new($crate::errors::Rejection(format!($($message)+)))
+        $crate::errors::CommandError::rejected(format!($($message)+))
     };
 }
 
-/// Returns a `Rejection` of a player's request, like `bail!`.
+/// An unexpected failure of a player's request (`CommandError::Internal`), built like `anyhow!`.
+macro_rules! internal {
+    ($($message:tt)+) => {
+        $crate::errors::CommandError::Internal(anyhow::anyhow!($($message)+))
+    };
+}
+
+/// Returns an unexpected failure of a player's request, like `bail!`.
+macro_rules! bail_internal {
+    ($($message:tt)+) => {
+        return Err(internal!($($message)+))
+    };
+}
+
+/// Returns an unexpected failure of a player's request unless a condition holds, like `ensure!`.
+macro_rules! ensure_internal {
+    ($condition:expr, $($message:tt)+) => {
+        if $condition {
+        } else {
+            bail_internal!($($message)+);
+        }
+    };
+}
+
+/// Returns a rejection of a player's request, like `bail!`.
 macro_rules! reject {
     ($($message:tt)+) => {
         return Err(rejection!($($message)+))
     };
 }
 
-/// Returns a `Rejection` of a player's request unless a condition holds, like `ensure!`.
+/// Returns a rejection of a player's request unless a condition holds, like `ensure!`.
 macro_rules! ensure_or_reject {
     ($condition:expr, $($message:tt)+) => {
         if $condition {

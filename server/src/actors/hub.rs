@@ -3,6 +3,7 @@ use super::{
     TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table, replay_table},
 };
+use crate::errors::CommandResult;
 use crate::{
     lobby::{Effect, OnlineUser},
     operations::Operation,
@@ -11,7 +12,7 @@ use crate::{
     store::Store,
     transport::{Session, frame},
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result};
 use hanabi_protocol::{
     ClientMessage, ErrorNotice, SoundLobby, Status, TableId, TableRequest, User, UserId, UserLeft,
     UserList,
@@ -157,7 +158,7 @@ impl Hub {
         users: Vec<i32>,
         except: Option<u64>,
         playing_elsewhere: &str,
-    ) -> Result<SeatReservation> {
+    ) -> CommandResult<SeatReservation> {
         ensure_or_reject!(
             users
                 .iter()
@@ -232,7 +233,7 @@ impl Hub {
                     })
                     .is_err()
                 {
-                    let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
+                    let _ = reply.send(Err(internal!("Table queue unavailable")));
                     return;
                 }
                 let hub = self.sender.clone();
@@ -249,7 +250,7 @@ impl Hub {
                         .await
                         && let HubCommand::JoinFinished { reply, .. } = error.0
                     {
-                        let _ = reply.send(Err(anyhow::anyhow!("Coordinator stopped")));
+                        let _ = reply.send(Err(internal!("Coordinator stopped")));
                     }
                 });
                 return;
@@ -260,7 +261,7 @@ impl Hub {
                 reply,
             }) && let TableCommand::Client { reply, .. } = e.into_inner()
             {
-                let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
+                let _ = reply.send(Err(internal!("Table queue unavailable")));
             }
         }
     }
@@ -344,7 +345,7 @@ impl Hub {
         &mut self,
         session: Option<&Arc<Session>>,
         effects: Vec<Effect>,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         self.store.check_state()?;
         if let Some(s) = session {
             ensure_or_reject!(self.current(s), "Stale session");
@@ -361,7 +362,7 @@ impl Hub {
                     generation,
                     message,
                 } => {
-                    ensure!(session.is_some(), "External private effect rejected");
+                    ensure_internal!(session.is_some(), "External private effect rejected");
                     if let Some(p) = self
                         .sessions
                         .get(&id)
@@ -392,21 +393,21 @@ impl Hub {
                     }
                 }
                 Effect::RelationshipChanged { .. } => {
-                    ensure!(session.is_some(), "External relationship effect rejected");
+                    ensure_internal!(session.is_some(), "External relationship effect rejected");
                 }
                 Effect::BlocksChanged {
                     user_id,
                     target_id,
                     blocked,
                 } => {
-                    ensure!(session.is_some(), "External block effect rejected");
+                    ensure_internal!(session.is_some(), "External block effect rejected");
                     for (user, other) in [(user_id, target_id), (target_id, user_id)] {
                         if let Some(p) = self.sessions.get(&user) {
                             p.session.set_blocked(other, blocked);
                         }
                     }
                 }
-                _ => bail!("Runtime effects must be resolved before hub publication"),
+                _ => bail_internal!("Runtime effects must be resolved before hub publication"),
             }
         }
         Ok(())
@@ -639,7 +640,7 @@ impl Hub {
                     {
                         self.apply_effects(None, effects)
                     } else {
-                        Err(anyhow::anyhow!("External effects must be public"))
+                        Err(internal!("External effects must be public"))
                     };
                     let _ = reply.send(result);
                 }
@@ -695,7 +696,7 @@ impl Hub {
                             self.route(session, table, Command::Client(Box::new(message)), reply);
                         }
                         other => {
-                            let _ = reply.send(Err(anyhow::anyhow!(
+                            let _ = reply.send(Err(internal!(
                                 "Command {} runs at {other:?}, not at a table",
                                 message.name()
                             )));
@@ -742,7 +743,7 @@ impl Hub {
                                 send_install(&hub, installed).await;
                             }
                             Err(e) => {
-                                let _ = reply.send(Err(e));
+                                let _ = reply.send(Err(e.into()));
                             }
                         }
                     });
@@ -766,7 +767,7 @@ impl Hub {
                         continue;
                     }
                     if self.tables.contains_key(&table.id) || allocation.id != table.id {
-                        let _ = reply.send(Err(anyhow::anyhow!("Duplicate table installation")));
+                        let _ = reply.send(Err(internal!("Duplicate table installation")));
                         continue;
                     }
                     let mut allocation = allocation;
@@ -950,8 +951,6 @@ async fn send_install(hub: &mpsc::Sender<HubCommand>, install: HubCommand) {
     if let Err(error) = hub.send(install).await
         && let HubCommand::Install { reply, .. } = error.0
     {
-        let _ = reply.send(Err(anyhow::anyhow!(
-            "Coordinator stopped; table is recoverable"
-        )));
+        let _ = reply.send(Err(internal!("Coordinator stopped; table is recoverable")));
     }
 }

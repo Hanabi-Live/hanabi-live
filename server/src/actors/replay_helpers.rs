@@ -1,10 +1,10 @@
+use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::{Card, Game, Options},
     model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
     stats::zero_stats,
 };
-use anyhow::Result;
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
@@ -31,7 +31,7 @@ fn seconds(value: i64) -> f64 {
     value as f64
 }
 
-pub fn parse(input: &ReplayImport) -> Result<Imported> {
+pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
     let seed = input.seed.as_deref().unwrap_or("");
     ensure_or_reject!(
         seed.len() <= MAX_IMPORTED_SEED_LENGTH
@@ -92,13 +92,13 @@ pub fn parse(input: &ReplayImport) -> Result<Imported> {
         .deck
         .iter()
         .flatten()
-        .map(|card| -> Result<Card> {
+        .map(|card| -> CommandResult<Card> {
             Ok(Card {
                 suit_index: usize::try_from(card.suit_index.unwrap_or(0))?,
                 rank: card.rank.unwrap_or(0),
             })
         })
-        .collect::<Result<_>>()?;
+        .collect::<CommandResult<_>>()?;
     let seeded = if seed.is_empty() {
         None
     } else {
@@ -267,8 +267,8 @@ mod tests {
     use super::*;
     use serde_json::{Value, json};
 
-    fn import(input: &Value) -> Result<Imported> {
-        parse(&hanabi_protocol::decode(input)?)
+    fn import(input: &Value) -> anyhow::Result<Imported> {
+        Ok(parse(&hanabi_protocol::decode(input)?)?)
     }
 
     #[test]

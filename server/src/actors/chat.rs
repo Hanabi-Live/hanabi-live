@@ -1,4 +1,5 @@
 use super::{Command, TableActor, setup::options_suggestion};
+use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     lobby::TableChatCommand,
@@ -60,7 +61,7 @@ pub(super) const MAX_PLAYER_CHAT_MESSAGES: usize = crate::model::MAX_TABLE_CHAT 
 pub(super) const MAX_PLAYER_CHAT_BYTES: usize = crate::state::MAX_CHECKPOINT_BYTES / 2;
 
 /// Whether players can add to a table's chat. One message or command can go past the budget.
-pub(super) fn player_chat_has_room(chat: &[TableChat]) -> Result<bool> {
+pub(super) fn player_chat_has_room(chat: &[TableChat]) -> CommandResult<bool> {
     Ok(chat.len() < MAX_PLAYER_CHAT_MESSAGES
         && serde_json::to_vec(chat)?.len() < MAX_PLAYER_CHAT_BYTES)
 }
@@ -114,7 +115,7 @@ pub(super) struct VariantDiscovery {
 impl TableActor {
     /// The users whose scores the score commands compare: everyone watching a replay, or the
     /// table's players.
-    fn score_participants(&self) -> Result<Vec<(i32, String)>> {
+    fn score_participants(&self) -> CommandResult<Vec<(i32, String)>> {
         let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .map(|a| (a.session.user, a.session.name.clone()))
@@ -132,7 +133,10 @@ impl TableActor {
         );
         Ok(participants)
     }
-    pub(super) fn prepare_discovery(&self, requester: Arc<Session>) -> Result<VariantDiscovery> {
+    pub(super) fn prepare_discovery(
+        &self,
+        requester: Arc<Session>,
+    ) -> CommandResult<VariantDiscovery> {
         ensure_or_reject!(
             !self.frozen && self.attending(&requester),
             "You are not at an available table."
@@ -178,7 +182,7 @@ impl TableActor {
         &mut self,
         query: VariantDiscovery,
         selected: Result<Option<String>>,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         ensure_or_reject!(
             !self.frozen && self.attending(&query.requester),
             "Variant requester is no longer at this table."
@@ -230,7 +234,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         typing: bool,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let a = self.attendees.get_mut(&session.user).expect("attendee");
         let notify = typing && a.typing_until.is_none();
@@ -246,7 +250,7 @@ impl TableActor {
         }
         Ok(())
     }
-    pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> Result<()> {
+    pub(super) async fn chat(&mut self, session: Arc<Session>, msg: &str) -> CommandResult<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
         // Every message rewrites the table's checkpoint, so its cost grows with the chat.
@@ -330,7 +334,11 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn chat_command(&mut self, session: Arc<Session>, text: &str) -> Result<()> {
+    pub(super) async fn chat_command(
+        &mut self,
+        session: Arc<Session>,
+        text: &str,
+    ) -> CommandResult<()> {
         let mut words = text[1..].split_whitespace();
         let command = words.next().unwrap_or("").to_ascii_lowercase();
         let args = words.collect::<Vec<_>>();

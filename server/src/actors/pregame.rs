@@ -7,6 +7,7 @@ use super::{
         validate_table_name,
     },
 };
+use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::Game,
@@ -16,7 +17,7 @@ use crate::{
     },
     transport::{Session, frame},
 };
-use anyhow::{Context, Result};
+use anyhow::Context;
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
@@ -79,7 +80,7 @@ impl TableActor {
         &mut self,
         session: Arc<Session>,
         message: ClientMessage,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         match message {
             ClientMessage::TableStart(r) => {
                 let players = self.table.players();
@@ -109,7 +110,7 @@ impl TableActor {
             message => Err(wrong_phase(&message)),
         }
     }
-    async fn update(&mut self, session: Arc<Session>, change: TableChange) -> Result<()> {
+    async fn update(&mut self, session: Arc<Session>, change: TableChange) -> CommandResult<()> {
         let (variant, request) = match change {
             TableChange::Variant(name) => (Some(name), None),
             TableChange::Options(request) => (None, Some(*request)),
@@ -276,7 +277,7 @@ impl TableActor {
         self.add_chat(&mut e, &message);
         self.publish(e).await
     }
-    pub(super) async fn start(&mut self, session: Arc<Session>) -> Result<()> {
+    pub(super) async fn start(&mut self, session: Arc<Session>) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner,
             "Only the attended owner can start"
@@ -433,7 +434,7 @@ impl TableActor {
         mut allocation: Allocation,
         moving: Vec<(Arc<Session>, bool, Option<usize>)>,
         retire: bool,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         let players = destination
             .players()
             .iter()
@@ -514,7 +515,7 @@ impl TableActor {
         session: Arc<Session>,
         args: &[&str],
         automatic: bool,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         ensure_or_reject!(
             self.attending(&session) && session.user == self.table.owner,
             "Only owner can split"

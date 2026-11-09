@@ -54,40 +54,123 @@ pub fn http_operation(fallback: &str) -> String {
         .unwrap_or_else(|_| fallback.to_owned())
 }
 
-/// A refusal of a player's request, such as a command they may not use. The server is working as
-/// intended, so the message is shown to the player as it is, and it is not logged as a failure.
+/// Why a player's command did not complete. Handlers decide which kind of failure they report, so
+/// the connection knows what to tell the player without inspecting the error.
 #[derive(Debug)]
-pub struct Rejection(pub String);
+pub enum CommandError {
+    /// The server refused the request as intended, such as a move that the rules do not allow.
+    /// The player sees the message as it is, unless it is silent. It is not logged.
+    Rejected { message: String, silent: bool },
+    /// The server cannot serve the command now, such as while it drains or after it lost
+    /// ownership of the live tables. The player sees the fault's description.
+    Unavailable(Fault),
+    /// Anything else: a failure of storage or another service, or a bug. It is logged, and the
+    /// player sees a diagnostic reference.
+    Internal(anyhow::Error),
+}
 
-impl fmt::Display for Rejection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
+pub type CommandResult<T = ()> = Result<T, CommandError>;
+
+impl CommandError {
+    pub fn rejected(message: impl Into<String>) -> Self {
+        Self::Rejected {
+            message: message.into(),
+            silent: false,
+        }
     }
 }
-impl std::error::Error for Rejection {}
 
-/// Turns a missing value or a failed parse of a player's input into a `Rejection`.
+impl fmt::Display for CommandError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Rejected { message, .. } => f.write_str(message),
+            Self::Unavailable(fault) => fault.fmt(f),
+            Self::Internal(error) => write!(f, "{error:#}"),
+        }
+    }
+}
+
+impl std::error::Error for CommandError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Rejected { .. } => None,
+            Self::Unavailable(fault) => Some(fault),
+            Self::Internal(error) => Some(error.as_ref()),
+        }
+    }
+}
+
+/// Converts the errors of code outside the command handlers, such as the store and the engine.
+/// Those report a refusal or a fault as the error itself, so only the outermost error is checked.
+impl From<anyhow::Error> for CommandError {
+    fn from(error: anyhow::Error) -> Self {
+        let error = match error.downcast::<Self>() {
+            Ok(error) => return error,
+            Err(error) => error,
+        };
+        let error = match error.downcast::<hanabi_engine::ActionRejected>() {
+            Ok(rejected) => {
+                return Self::Rejected {
+                    message: rejected.message,
+                    silent: rejected.silent,
+                };
+            }
+            Err(error) => error,
+        };
+        match error.downcast::<Fault>() {
+            Ok(fault) => Self::Unavailable(fault),
+            Err(error) => Self::Internal(error),
+        }
+    }
+}
+
+impl From<Fault> for CommandError {
+    fn from(fault: Fault) -> Self {
+        Self::Unavailable(fault)
+    }
+}
+
+/// Errors that command handlers pass on with `?`, which are always unexpected.
+macro_rules! internal_errors {
+    ($($error:ty),+ $(,)?) => {
+        $(impl From<$error> for CommandError {
+            fn from(error: $error) -> Self {
+                Self::Internal(error.into())
+            }
+        })+
+    };
+}
+internal_errors!(
+    sqlx::Error,
+    serde_json::Error,
+    std::num::TryFromIntError,
+    std::num::ParseIntError,
+    tokio::sync::oneshot::error::RecvError,
+    tokio::sync::TryAcquireError,
+);
+impl<T: Send + Sync + 'static> From<tokio::sync::mpsc::error::SendError<T>> for CommandError {
+    fn from(error: tokio::sync::mpsc::error::SendError<T>) -> Self {
+        Self::Internal(anyhow::anyhow!("{error}"))
+    }
+}
+
+/// Turns a missing value or a failed parse of a player's input into a rejection.
 pub trait OrReject<T> {
-    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T>;
+    fn or_reject(self, message: impl Into<String>) -> CommandResult<T>;
 }
 impl<T> OrReject<T> for Option<T> {
-    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T> {
-        self.ok_or_else(|| Rejection(message.into()).into())
+    fn or_reject(self, message: impl Into<String>) -> CommandResult<T> {
+        self.ok_or_else(|| CommandError::rejected(message))
     }
 }
 impl<T, E> OrReject<T> for Result<T, E> {
-    fn or_reject(self, message: impl Into<String>) -> anyhow::Result<T> {
-        self.map_err(|_| Rejection(message.into()).into())
+    fn or_reject(self, message: impl Into<String>) -> CommandResult<T> {
+        self.map_err(|_| CommandError::rejected(message))
     }
 }
 
-/// Whether an error refuses a player's request rather than reporting a failure.
-pub fn is_rejection(error: &anyhow::Error) -> bool {
-    error.downcast_ref::<Rejection>().is_some()
-        || error
-            .downcast_ref::<hanabi_engine::ActionRejected>()
-            .is_some()
-}
+/// The code of a failure that the report does not recognize.
+pub const INTERNAL_OPERATION_FAILED: &str = "internal_operation_failed";
 
 /// The code of a command that failed for a reason the server did not anticipate. Its report keeps
 /// the server's own description, so the player can pass it on with the reference.
@@ -298,7 +381,7 @@ impl Report {
                 StatusCode::INTERNAL_SERVER_ERROR,
             )
         } else {
-            ("internal_operation_failed", "An unexpected server failure prevented completion. Report the diagnostic ID to an administrator.".into(), StatusCode::INTERNAL_SERVER_ERROR)
+            (INTERNAL_OPERATION_FAILED, "An unexpected server failure prevented completion. Report the diagnostic ID to an administrator.".into(), StatusCode::INTERNAL_SERVER_ERROR)
         };
         Self::known(operation, code, description, status)
     }

@@ -1,4 +1,5 @@
 use crate::{
+    errors::CommandResult,
     lobby::{Effect, OnlineUser},
     model::{Snapshot, TableSnapshot},
     operations::Operation,
@@ -40,7 +41,7 @@ mod table;
 mod wire;
 
 pub use hub::Hub;
-type Reply = oneshot::Sender<Result<()>>;
+type Reply = oneshot::Sender<CommandResult>;
 
 const PREGAME_RECONNECT_GRACE: Duration = Duration::from_secs(60);
 const REPLAY_RECONNECT_GRACE: Duration = Duration::from_secs(60);
@@ -174,7 +175,7 @@ pub enum HubCommand {
         reply: Reply,
     },
     Logout(Arc<Session>),
-    Allocate(oneshot::Sender<Result<Allocation>>),
+    Allocate(oneshot::Sender<CommandResult<Allocation>>),
     Replay {
         session: Arc<Session>,
         snapshot: Box<Snapshot>,
@@ -190,7 +191,7 @@ pub enum HubCommand {
     Directory {
         session: Arc<Session>,
         users: bool,
-        reply: oneshot::Sender<Result<Vec<OnlineUser>>>,
+        reply: oneshot::Sender<CommandResult<Vec<OnlineUser>>>,
     },
     LobbyEffects {
         session: Arc<Session>,
@@ -203,7 +204,7 @@ pub enum HubCommand {
     },
     /// A join to a table finished; the hub ends its seat reservation and answers the request.
     JoinFinished {
-        result: Result<()>,
+        result: CommandResult,
         reply: Reply,
         reservation: SeatReservation,
     },
@@ -211,7 +212,7 @@ pub enum HubCommand {
     ReserveSeats {
         users: Vec<i32>,
         from: u64,
-        reply: oneshot::Sender<Result<SeatReservation>>,
+        reply: oneshot::Sender<CommandResult<SeatReservation>>,
     },
     /// Ends a seat reservation that was dropped before its request finished.
     EndReservation {

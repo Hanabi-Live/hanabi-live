@@ -8,6 +8,7 @@ use super::{
     wire::int,
 };
 use crate::errors::OrReject;
+use crate::errors::{CommandError, CommandResult};
 use crate::routing::{Route, route};
 use crate::store::{Commit, Committed};
 use crate::{
@@ -19,7 +20,7 @@ use crate::{
     store::Store,
     transport::{Outgoing, Session, frame, stored_frame},
 };
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
@@ -39,7 +40,7 @@ use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
 const TIMER_RETRY: Duration = Duration::from_millis(250);
 
 /// The refusal of a command that the table's phase does not accept.
-pub(super) fn wrong_phase(message: &ClientMessage) -> anyhow::Error {
+pub(super) fn wrong_phase(message: &ClientMessage) -> CommandError {
     use ClientMessage as M;
     let reason = match message {
         M::TableStart(_) => "Already started",
@@ -210,12 +211,13 @@ impl TableActor {
             messages: vec![],
         }
     }
-    pub(super) async fn publish(&self, effects: Effects) -> Result<()> {
+    pub(super) async fn publish(&self, effects: Effects) -> CommandResult<()> {
         self.store.check_state()?;
-        self.hub
+        Ok(self
+            .hub
             .send(HubCommand::Effects(effects))
             .await
-            .context("Coordinator stopped")
+            .context("Coordinator stopped")?)
     }
     pub(super) fn attending(&self, s: &Session) -> bool {
         s.active()
@@ -224,7 +226,7 @@ impl TableActor {
                 .get(&s.user)
                 .is_some_and(|a| a.session.generation == s.generation)
     }
-    pub(super) fn seat(&self, s: &Session) -> Result<usize> {
+    pub(super) fn seat(&self, s: &Session) -> CommandResult<usize> {
         self.table
             .players()
             .iter()
@@ -303,7 +305,11 @@ impl TableActor {
             ));
         }
     }
-    pub(super) fn chat_history(&self, e: &mut Effects, session: &Arc<Session>) -> Result<()> {
+    pub(super) fn chat_history(
+        &self,
+        e: &mut Effects,
+        session: &Arc<Session>,
+    ) -> CommandResult<()> {
         let read = self.chat_read.get(&session.user).copied().unwrap_or(0);
         e.messages.push((
             session.clone(),
@@ -434,14 +440,14 @@ impl TableActor {
     /// Keeps a change that is not worth a durable write, such as an idle-timer reset, in memory.
     /// The next checkpoint saves it, including the one written when the server drains; a crash
     /// before then only loses this change.
-    pub(super) fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> Result<()> {
+    pub(super) fn apply_without_checkpoint(&mut self, next: TableSnapshot) -> CommandResult<()> {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         self.table = next;
         self.anchor = Instant::now();
         Ok(())
     }
-    pub(super) async fn persist(&mut self, next: TableSnapshot) -> Result<()> {
+    pub(super) async fn persist(&mut self, next: TableSnapshot) -> CommandResult<()> {
         self.persist_with(next, Commit::default()).await.map(|_| ())
     }
     /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
@@ -451,7 +457,7 @@ impl TableActor {
         &mut self,
         mut next: TableSnapshot,
         mut work: Commit<'_>,
-    ) -> Result<Committed> {
+    ) -> CommandResult<Committed> {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
@@ -520,7 +526,7 @@ impl TableActor {
         &mut self,
         s: Arc<Session>,
         warnings: Vec<String>,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         self.pregame_absent_until.remove(&s.user);
         let replay = matches!(self.table.phase, Phase::Replay { .. });
         if replay {
@@ -635,7 +641,7 @@ impl TableActor {
                 command = receiver.recv() => match command {
                     None => break,
                     Some(TableCommand::Drain(reply)) => {
-                        let _ = reply.send(self.drain().await);
+                        let _ = reply.send(self.drain().await.map_err(anyhow::Error::from));
                         break;
                     }
                     Some(TableCommand::Client { session, command, reply }) => {
@@ -693,7 +699,7 @@ impl TableActor {
     async fn apply_game_counts(
         &mut self,
         result: Result<(Vec<i32>, BTreeMap<i32, i64>)>,
-    ) -> Result<()> {
+    ) -> CommandResult<()> {
         let (users, counts) = result?;
         let mut next = self.candidate();
         if next.set_game_counts(&users, &counts) {
@@ -705,8 +711,8 @@ impl TableActor {
         Ok(())
     }
     /// Saves the table for a graceful stop, giving timed games their maintenance allowance once.
-    async fn drain(&mut self) -> Result<()> {
-        ensure!(!self.frozen, "Cannot drain frozen table");
+    async fn drain(&mut self) -> CommandResult<()> {
+        ensure_internal!(!self.frozen, "Cannot drain frozen table");
         let mut next = self.candidate();
         if let Some(s) = next.game_mut()
             && s.game.end_condition == EndCondition::InProgress
@@ -720,9 +726,9 @@ impl TableActor {
         }
         self.persist(next).await
     }
-    pub(super) async fn cleanup(&mut self, now: Instant) -> Result<()> {
+    pub(super) async fn cleanup(&mut self, now: Instant) -> CommandResult<()> {
         self.store.check_state()?;
-        ensure!(!self.frozen, "Frozen table cannot be cleaned up");
+        ensure_internal!(!self.frozen, "Frozen table cannot be cleaned up");
         let before = self.attendees.len();
         let expired = self
             .attendees
@@ -765,7 +771,7 @@ impl TableActor {
         }
         self.cleanup_pregame(now).await
     }
-    pub(super) async fn cleanup_pregame(&mut self, now: Instant) -> Result<()> {
+    pub(super) async fn cleanup_pregame(&mut self, now: Instant) -> CommandResult<()> {
         let Phase::Pregame { players, .. } = &self.table.phase else {
             self.pregame_absent_until.clear();
             return Ok(());
@@ -867,7 +873,11 @@ impl TableActor {
             },
         }
     }
-    pub(super) async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
+    pub(super) async fn command(
+        &mut self,
+        session: Arc<Session>,
+        command: Command,
+    ) -> CommandResult<()> {
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if matches!(self.table.phase, Phase::Live { .. })
             && self
@@ -888,7 +898,7 @@ impl TableActor {
                     .await;
             }
         };
-        ensure!(
+        ensure_internal!(
             matches!(route(&message), Route::Table(_)),
             "Unsupported table command: {}",
             message.name()
@@ -944,12 +954,12 @@ impl TableActor {
             },
         }
     }
-    pub(super) async fn allocation(&self) -> Result<Allocation> {
+    pub(super) async fn allocation(&self) -> CommandResult<Allocation> {
         let (reply, received) = oneshot::channel();
         self.hub.send(HubCommand::Allocate(reply)).await?;
         received.await?
     }
-    pub(super) async fn tick(&mut self) -> Result<()> {
+    pub(super) async fn tick(&mut self) -> CommandResult<()> {
         self.cleanup(Instant::now()).await?;
         if self.retired {
             return Ok(());
@@ -1053,11 +1063,11 @@ impl TableActor {
         }
         Ok(())
     }
-    pub(super) async fn retire(&mut self) -> Result<()> {
-        ensure!(!self.frozen, "Frozen table cannot be removed");
+    pub(super) async fn retire(&mut self) -> CommandResult<()> {
+        ensure_internal!(!self.frozen, "Frozen table cannot be removed");
         if let Err(e) = self.store.remove(self.table.id, self.revision).await {
             self.frozen = true;
-            return Err(e);
+            return Err(e.into());
         }
         let mut e = self.effects();
         for a in self.audience() {

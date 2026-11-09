@@ -54,7 +54,7 @@ fn from_stored(stored: Value) -> Settings {
 }
 
 pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Result<()> {
-    let value = validate_setting(name, value)?;
+    let value = validate_setting(name, value).map_err(anyhow::Error::from)?;
     // A value equal to the default is removed, so changing a default later reaches everyone who
     // never chose it.
     let changed = (defaults().get(name) != Some(&value)).then_some(value);
@@ -73,7 +73,7 @@ pub async fn set_setting(pool: &PgPool, id: i32, name: &str, value: &str) -> Res
 }
 
 /// Parses a setting sent by a client into the JSON value that is stored.
-pub fn validate_setting(name: &str, value: &str) -> Result<Value> {
+pub fn validate_setting(name: &str, value: &str) -> crate::errors::CommandResult<Value> {
     ensure_or_reject!(!name.is_empty(), "The settings name cannot be blank.");
     let defaults = defaults();
     let Some(default) = defaults.get(name) else {

@@ -9,6 +9,7 @@ pub(crate) mod test_support;
 use crate::{
     accounts::{self, AccountConfig},
     actors::HubCommand,
+    errors::{CommandError, CommandResult},
     integrations::{IntegrationSlot, Integrations},
     lifecycle::{Lifecycle, Refusal},
     lobby::{self, Caller, Effect},
@@ -848,7 +849,7 @@ async fn connection(
                 reply,
             })
             .await?;
-        received.await??;
+        received.await?.map_err(anyhow::Error::from)?;
         drop(admission);
         load_lobby(app.clone(), session.clone());
         loop {
@@ -863,13 +864,9 @@ async fn connection(
             // Once admitted, finish persistence rather than dropping a transaction
             // future on socket cancellation. Publication still checks generation.
             if let Err(error) = dispatch(&app, session.clone(), &command.text).await {
-                if error
-                    .downcast_ref::<hanabi_engine::ActionRejected>()
-                    .is_some_and(|rejected| rejected.silent)
-                {
+                let Some(failure) = command_failure(error, &command.text) else {
                     continue;
-                }
-                let failure = command_failure(&error, &command.text);
+                };
                 if let Some(report) = &failure.report {
                     report.log();
                     if failure.alert {
@@ -900,26 +897,12 @@ struct CommandFailure {
     /// Absent for a rejection, which is the server working as intended.
     report: Option<crate::errors::Report>,
     /// Whether the failure is posted to the error alerts. For now, only failures of storage,
-    /// services, and the runtime are.
+    /// services, and the runtime are, which the report recognizes.
     alert: bool,
 }
 
-fn command_failure(error: &anyhow::Error, command: &str) -> CommandFailure {
-    if crate::errors::is_rejection(error) {
-        return CommandFailure {
-            warning: accounts::escape_html(&error.to_string()),
-            report: None,
-            alert: false,
-        };
-    }
-    let internal = error.chain().any(|cause| {
-        cause.is::<sqlx::Error>()
-            || cause.is::<reqwest::Error>()
-            || cause.is::<crate::errors::Fault>()
-            || cause.is::<std::io::Error>()
-            || cause.is::<tokio::time::error::Elapsed>()
-            || cause.is::<tokio::task::JoinError>()
-    });
+/// What to tell a player about a failed command, or nothing for a silent rejection.
+fn command_failure(error: CommandError, command: &str) -> Option<CommandFailure> {
     let name = protocol::command_name(command).unwrap_or("unknown command");
     let operation = match name {
         "historyGet" => "Loading game history".to_owned(),
@@ -927,31 +910,51 @@ fn command_failure(error: &anyhow::Error, command: &str) -> CommandFailure {
         "setting" => "Saving preferences".to_owned(),
         _ => format!("Command {name}"),
     };
-    let report = if internal {
-        crate::errors::Report::from_error(
-            operation,
-            error,
-            // History reads use the lobby read pool.
-            Some(if matches!(name, "historyGet" | "historyGetSeed") {
-                crate::store::LOBBY_READ_TIMEOUT
+    let (report, alert) = match error {
+        CommandError::Rejected { silent: true, .. } => return None,
+        CommandError::Rejected { message, .. } => {
+            return Some(CommandFailure {
+                warning: accounts::escape_html(&message),
+                report: None,
+                alert: false,
+            });
+        }
+        CommandError::Unavailable(fault) => (
+            crate::errors::Report::known(operation, fault.code, fault.description, fault.status),
+            true,
+        ),
+        CommandError::Internal(error) => {
+            let report = crate::errors::Report::from_error(
+                operation.clone(),
+                &error,
+                // History reads use the lobby read pool.
+                Some(if matches!(name, "historyGet" | "historyGetSeed") {
+                    crate::store::LOBBY_READ_TIMEOUT
+                } else {
+                    crate::store::DATABASE_TIMEOUT
+                }),
+            );
+            if report.code == crate::errors::INTERNAL_OPERATION_FAILED {
+                // The server wrote this description, so the player sees all of it.
+                (
+                    crate::errors::Report::known(
+                        operation,
+                        crate::errors::COMMAND_FAILED,
+                        format!("{error:#}"),
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                    ),
+                    false,
+                )
             } else {
-                crate::store::DATABASE_TIMEOUT
-            }),
-        )
-    } else {
-        // The server wrote this description, so the player sees all of it.
-        crate::errors::Report::known(
-            operation,
-            crate::errors::COMMAND_FAILED,
-            format!("{error:#}"),
-            StatusCode::INTERNAL_SERVER_ERROR,
-        )
+                (report, true)
+            }
+        }
     };
-    CommandFailure {
+    Some(CommandFailure {
         warning: accounts::escape_html(&report.text()),
         report: Some(report),
-        alert: internal,
-    }
+        alert,
+    })
 }
 
 pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
@@ -960,10 +963,10 @@ pub async fn publish_external(app: &App, effects: Vec<Effect>) -> Result<()> {
     app.hub
         .send(HubCommand::ExternalEffects { effects, reply })
         .await?;
-    received.await?
+    received.await?.map_err(anyhow::Error::from)
 }
 
-async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Result<()> {
+async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> CommandResult {
     let mut ordinary = vec![];
     let mut mirrors = vec![];
     for effect in effects {
@@ -1020,7 +1023,7 @@ fn history_command(message: &ClientMessage) -> bool {
     )
 }
 
-async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Result<()> {
+async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> CommandResult {
     let _admission = match app.lifecycle.admit().await {
         Ok(admission) => admission,
         Err(Refusal::Unavailable) => {
@@ -1178,14 +1181,22 @@ mod tests {
     #[test]
     fn command_failures_show_rejections_as_they_are_and_report_everything_else() {
         let command = r#"tableJoin {"tableID":1}"#;
-        let rejected = command_failure(&rejection!("This table is full."), command);
+        let rejected = command_failure(rejection!("This table is full."), command).unwrap();
         assert_eq!(rejected.warning, "This table is full.");
         assert!(rejected.report.is_none() && !rejected.alert);
+        let silent = CommandError::Rejected {
+            message: "Not your turn.".into(),
+            silent: true,
+        };
+        assert!(command_failure(silent, command).is_none());
 
         let unexpected = command_failure(
-            &anyhow::anyhow!("Duplicate table installation").context("Installing the table"),
+            anyhow::anyhow!("Duplicate table installation")
+                .context("Installing the table")
+                .into(),
             command,
-        );
+        )
+        .unwrap();
         let report = unexpected.report.expect("reported failure");
         assert_eq!(report.code, crate::errors::COMMAND_FAILED);
         assert!(!unexpected.alert);
@@ -1198,7 +1209,22 @@ mod tests {
             )
         );
 
-        let storage = command_failure(&sqlx::Error::PoolClosed.into(), command);
+        let storage = command_failure(sqlx::Error::PoolClosed.into(), command).unwrap();
+        assert!(storage.alert && storage.report.is_some());
+        assert!(!storage.warning.contains("PoolClosed"));
+
+        // Storage reports a fault as the error's context, which the conversion keeps.
+        let fault =
+            anyhow::Error::from(sqlx::Error::PoolClosed).context(crate::errors::Fault::new(
+                "persistence_uncertain",
+                "The write may have been saved.",
+                StatusCode::SERVICE_UNAVAILABLE,
+            ));
+        let CommandError::Unavailable(fault) = CommandError::from(fault) else {
+            panic!("A fault was not unavailable");
+        };
+        assert_eq!(fault.code, "persistence_uncertain");
+        let storage = command_failure(sqlx::Error::PoolClosed.into(), command).unwrap();
         assert!(storage.alert && storage.report.is_some());
         assert!(!storage.warning.contains("PoolClosed"));
     }

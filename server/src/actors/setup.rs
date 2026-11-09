@@ -1,4 +1,5 @@
 use super::chat::server_chat;
+use crate::errors::CommandResult;
 use crate::errors::OrReject;
 use crate::{
     game::Options,
@@ -9,7 +10,6 @@ use crate::{
     store::Store,
     transport::Session,
 };
-use anyhow::Result;
 use chrono::Utc;
 use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, NO_VALUE, ReplayAction};
 use std::{collections::BTreeMap, fmt::Write as _};
@@ -20,7 +20,7 @@ const MAX_TABLE_PASSWORD_BYTES: usize = 1024;
 /// Whether an untimed game, or a timed game within the clock limits.
 /// Clears the clock of an untimed or speedrun game and the hand-size options when both are set,
 /// then checks that a timed game is within the clock limits.
-pub(super) fn normalize_options(options: &mut Options) -> Result<()> {
+pub(super) fn normalize_options(options: &mut Options) -> CommandResult<()> {
     if options.speedrun || !options.timed {
         options.timed = false;
         options.time_base = 0.0;
@@ -41,7 +41,7 @@ pub(super) fn normalize_options(options: &mut Options) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn validate_table_name(name: &str) -> Result<()> {
+pub(super) fn validate_table_name(name: &str) -> CommandResult<()> {
     ensure_or_reject!(
         name.chars().all(|c| c.is_alphanumeric()
             || unicode_normalization::char::is_combining_mark(c)
@@ -52,7 +52,7 @@ pub(super) fn validate_table_name(name: &str) -> Result<()> {
 }
 
 /// Reads a requested seed: blank deals the next seed that none of the players have played.
-pub(super) fn requested_seed(seed: Option<&str>) -> Result<String> {
+pub(super) fn requested_seed(seed: Option<&str>) -> CommandResult<String> {
     let seed = seed.unwrap_or_default().trim();
     ensure_or_reject!(
         seed.len() <= MAX_SEED_LENGTH,
@@ -67,7 +67,7 @@ pub(super) fn requested_seed(seed: Option<&str>) -> Result<String> {
 
 /// The seed after a requested one, counting up its trailing number: "game-9" becomes "game-10",
 /// "007" becomes "008", and "game" becomes "game1". Blank stays blank.
-pub(super) fn next_requested_seed(seed: &str) -> Result<String> {
+pub(super) fn next_requested_seed(seed: &str) -> CommandResult<String> {
     if seed.is_empty() {
         return Ok(String::new());
     }
@@ -92,7 +92,9 @@ pub(super) fn next_requested_seed(seed: &str) -> Result<String> {
 }
 
 /// Reads the custom seed and the replayed game that a table requests, without loading the game.
-pub(super) fn requested_extra(request: &hanabi_protocol::GameOptions) -> Result<ExtraOptions> {
+pub(super) fn requested_extra(
+    request: &hanabi_protocol::GameOptions,
+) -> CommandResult<ExtraOptions> {
     let mut extra = ExtraOptions {
         set_seed_suffix: requested_seed(request.seed.as_deref())?,
         ..ExtraOptions::default()
@@ -127,7 +129,7 @@ pub(super) async fn load_replay(
     table_id: u64,
     user: i32,
     options: &mut Options,
-) -> Result<()> {
+) -> CommandResult<()> {
     let Some(game_id) = extra.replay_game_id else {
         return Ok(());
     };
@@ -367,7 +369,7 @@ pub(super) async fn prepare_table(
     store: &Store,
     session: &Session,
     creation: Creation,
-) -> Result<(TableSnapshot, i64, Vec<String>)> {
+) -> CommandResult<(TableSnapshot, i64, Vec<String>)> {
     ensure_or_reject!(session.active(), "Stale session");
     let id = store.allocate_table().await?;
     let result = async {
