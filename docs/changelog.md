@@ -9,89 +9,97 @@ of the repository.
 
 ## November 9th, 2026
 
+- Added the current global BetterTTV emotes that were missing, including `:tf:`.
+- "New Game", "Watch Replay", "Resources", and "Settings" now open a full page
+  instead of a pop-up. Also, their design has been updated.
+- Added the current global Twitch emotes, and removed the Twitch and BetterTTV
+  emotes that are no longer global.
+- The emoji and emote pickers are now in alphabetical order.
+- Removed the Twitch Turbo emotes `KappaHD` and `MiniK`.
+- Removed the stats page.
+- Added the current global FrankerFaceZ emotes, and removed the ones that are no
+  longer global.
+- Checkboxes and radio buttons now match the dark theme.
+- In "Throw It in a Hole" variants, played cards now spin into the hole instead
+  of fading out.
+- Misplayed cards now launch like a dud firework, explode on the strike tracker,
+  and fall into the discard pile.
+- The "New Game" screen now has a "Custom Seed" option for playing a specific
+  deal, replacing the `!seed` table name.
+- After the site updates, the page now reloads automatically instead of asking
+  for a hard refresh.
+- The pregame chat now says when a spectator joins or leaves the game.
+- The "New Game" screen now has a "Replay Game" option for replaying part of an
+  existing game, replacing the `!replay` table name.
+- Unexpected errors now include a reference to pass on to an administrator.
+- Bots now have a robot icon in the "Online Users" list.
+- Dark mode is now saved to your account instead of each browser. New accounts
+  start with the system's theme.
+- Hypotheticals now have a "Pass" button (or the right arrow key), which spends
+  a clue to pass the turn to the next player.
+- The efficiency tooltip now shows "Spare clues" (remaining possible clues minus
+  cards remaining to get) instead of "Number finesses required".
+- The server keeps live games in PostgreSQL and no longer needs Redis.
+- In "Throw It in a Hole" games, the number of cards in the hole is now shown in
+  the middle of the play stacks.
+- Going to `/test` (such as https://hanab.live/test) logs you in as the shared
+  "test" account.
+- Replay JSON links made before September 18th, 2026 no longer open.
+- Everyone must sign in again once, because the session cookie format changed.
+- Selecting a clue now previews the target's hand as they would see it after the
+  clue. Click the selected color or number again to deselect it.
+- Completing a play stack now sets off a firework. When the team gets a clue
+  back, a spark flies to the clue count.
+- After a game, players can click "Ready" to tell the leader that they will not
+  play another game.
+- A perfect score now sets off a fireworks finale over the play stacks.
+- If you enable the H-Group features, you can now also set your highest H-Group
+  level. Pre-game tables show it beside your name, with a link to that level's
+  page.
 - Losing the last copy of a card now flashes the card and the maximum score in
   red.
 - The strike that ends the game now flashes all of the strike squares in red.
 - When the deck runs out, it now pulses, and its count of 0 turns amber.
-- If you enable the H-Group features, you can now also set your highest H-Group
-  level. Pre-game tables show it beside your name, with a link to that level's
-  page.
-- A perfect score now sets off a fireworks finale over the play stacks.
-- Completing a play stack now sets off a firework. When the team gets a clue
-  back, a spark flies to the clue count.
-- Selecting a clue now previews the target's hand as they would see it after the
-  clue. Click the selected color or number again to deselect it.
-- Everyone must sign in again once, because the session cookie format changed.
-- Replay JSON links made before September 18th, 2026 no longer open.
-- Going to `/test` (such as https://hanab.live/test) logs you in as the shared
-  "test" account.
-- In "Throw It in a Hole" games, the number of cards in the hole is now shown in
-  the middle of the play stacks.
-- The server keeps live games in PostgreSQL and no longer needs Redis.
-- The efficiency tooltip now shows "Spare clues" (remaining possible clues minus
-  cards remaining to get) instead of "Number finesses required".
-- Hypotheticals now have a "Pass" button (or the right arrow key), which spends
-  a clue to pass the turn to the next player.
-- Dark mode is now saved to your account instead of each browser. New accounts
-  start with the system's theme.
-- Bots now have a robot icon in the "Online Users" list.
-- The "New Game" screen now has a "Replay Game" option for replaying part of an
-  existing game, replacing the `!replay` table name.
-- The pregame chat now says when a spectator joins or leaves the game.
-- Unexpected errors now include a reference to pass on to an administrator.
-- After the site updates, the page now reloads automatically instead of asking
-  for a hard refresh.
-- The "New Game" screen now has a "Custom Seed" option for playing a specific
-  deal, replacing the `!seed` table name.
-- Misplayed cards now launch like a dud firework, explode on the strike tracker,
-  and fall into the discard pile.
-- After a game, players can click "Ready" to tell the leader that they will not
-  play another game.
-- In "Throw It in a Hole" variants, played cards now spin into the hole instead
-  of fading out.
-- "New Game", "Watch Replay", "Resources", and "Settings" now open a full page
-  instead of a pop-up. Also, their design has been updated.
-- Checkboxes and radio buttons now match the dark theme.
-- Added the current global FrankerFaceZ emotes, and removed the ones that are no
-  longer global.
-- The emoji and emote pickers are now in alphabetical order.
-- Added the current global BetterTTV emotes that were missing, including `:tf:`.
-- Added the current global Twitch emotes, and removed the Twitch and BetterTTV
-  emotes that are no longer global.
-- Removed the Twitch Turbo emotes `KappaHD` and `MiniK`.
-- Removed the stats page.
 - When a note determines the suit or rank shown on a card, the note icon now
   shows a large pencil instead of glowing.
 
 ## November 8th, 2026
 
-- The lobby and history pages are now a bit wider on wide monitors.
-- The lobby user list now refers to the Hyphenated group by its new name, the
-  H-Group.
-- Removed the card cycling option and the games that used it.
-- Removed the legacy starting player option and the pre-April 2020 games that
-  did not start with the first player.
-- Removed legacy seeds (those beginning with `legacy-`), which only those games
-  used.
+- Removed the full-history and full-seed API aliases.
+- Removed the videos page.
 - Removed the following chat commands:
   - `/playerinfo`
   - `/vote` (tap the skull button instead, which also works on touch devices)
   - `/tagdelete` (use `/untag` instead)
   - `/linked` (use `/links` instead)
-- Removed the full-history and full-seed API aliases.
-- Removed the videos page.
-- Added a link to the changelog in the resources dialog.
-- Added a confirmation modal when playing a card whose note says it is
-  unplayable.
-- The note icon glows when the note determines the suit or rank shown on the
-  card.
 - The deck tooltip in a shared replay shows how long the replay has been
   running.
 - Slightly changed the appearance of number pips to try and make them less
   visually buggy.
+- Removed the card cycling option and the games that used it.
+- Removed the legacy starting player option and the pre-April 2020 games that
+  did not start with the first player.
+- Added a confirmation modal when playing a card whose note says it is
+  unplayable.
+- Removed legacy seeds (those beginning with `legacy-`), which only those games
+  used.
+- The note icon glows when the note determines the suit or rank shown on the
+  card.
+- Added a link to the changelog in the resources dialog.
+- The lobby user list now refers to the Hyphenated group by its new name, the
+  H-Group.
+- The lobby and history pages are now a bit wider on wide monitors.
 
 ## November 7th, 2026
 
+- Average scores and strikeout rates are no longer calculated or shown.
+- In speedrun mode, clicking to give a clue with no clue tokens now plays a buzz
+  sound effect.
+- Cards with a "spook" note now show a ghost.
+- Opening a link to a shared replay now joins the existing shared replay of that
+  game instead of creating a separate copy.
+- Each browser tab now keeps its own signed-in account, so reloading one tab no
+  longer switches it to the account most recently used in another tab.
 - Added the following chat commands:
   - `/block`
   - `/unblock`
@@ -99,18 +107,10 @@ of the repository.
 - Players with a block between them cannot join or spectate each other's tables
   or send each other private messages. (They can still the blocked person's
   public messages though.)
+- Added a warning before an idle game ends.
 - Added a "Spoiler-Free Review" mode for reviews, which only reveals what has
   already happened.
-- Opening a link to a shared replay now joins the existing shared replay of that
-  game instead of creating a separate copy.
-- Added a warning before an idle game ends.
 - Players at a full table are now told when someone else tries to join.
-- Cards with a "spook" note now show a ghost.
-- In speedrun mode, clicking to give a clue with no clue tokens now plays a buzz
-  sound effect.
-- Each browser tab now keeps its own signed-in account, so reloading one tab no
-  longer switches it to the account most recently used in another tab.
-- Average scores and strikeout rates are no longer calculated or shown.
 
 ## November 6th, 2026
 
