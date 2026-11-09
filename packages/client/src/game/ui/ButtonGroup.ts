@@ -8,11 +8,15 @@ type ClueButton = PlayerButton | ColorButton | RankButton;
 export class ButtonGroup extends Konva.Group {
   list: ClueButton[] = [];
 
-  constructor(config: Konva.ContainerConfig) {
+  /** Whether clicking the pressed button releases it, leaving no button pressed. */
+  readonly canDeselect: boolean;
+
+  constructor(config: Konva.ContainerConfig, canDeselect = false) {
     super(config);
 
     // Class variables
     this.list = [];
+    this.canDeselect = canDeselect;
   }
 
   addList(button: ClueButton): void {
@@ -23,7 +27,8 @@ export class ButtonGroup extends Konva.Group {
     (button as Konva.Node).on(
       "click tap",
       function buttonClick(this: Konva.Node) {
-        (this as ClueButton).setPressed(true);
+        const clickedButton = this as ClueButton;
+        clickedButton.setPressed(!(that.canDeselect && clickedButton.pressed));
 
         for (const clueButton of that.list) {
           if (clueButton !== this && clueButton.pressed) {

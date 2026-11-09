@@ -1,5 +1,5 @@
 import { ActionType } from "@hanabi-live/data";
-import type { Clue } from "@hanabi-live/game";
+import type { CardOrder, Clue, PlayerIndex } from "@hanabi-live/game";
 import {
   ClueType,
   getCharacterNameForPlayer,
@@ -17,8 +17,10 @@ import type { LayoutChild } from "./LayoutChild";
 import type { RankButton } from "./RankButton";
 import { globals } from "./UIGlobals";
 import * as arrows from "./arrows";
+import * as cluePreview from "./cluePreview";
 import type { PlayerButton } from "./controls/PlayerButton";
 import { colorToColorIndex } from "./convert";
+import * as cluesView from "./reactive/views/cluesView";
 import * as turn from "./turn";
 
 /**
@@ -47,6 +49,7 @@ export function checkLegal(): void {
   ) {
     // They have not selected a player or a clue type.
     globals.elements.giveClueButton!.setEnabled(false);
+    hideClueMatch();
     return;
   }
 
@@ -58,6 +61,7 @@ export function checkLegal(): void {
   if (who === currentPlayerIndex) {
     // They are in a hypothetical and trying to give a clue to the current player.
     globals.elements.giveClueButton!.setEnabled(false);
+    hideClueMatch();
     return;
   }
 
@@ -92,7 +96,7 @@ export function checkLegal(): void {
   globals.elements.giveClueButton!.setEnabled(enabled);
 }
 
-function showClueMatch(target: number, clue: Clue): boolean {
+function showClueMatch(target: PlayerIndex, clue: Clue): boolean {
   arrows.hideAll();
 
   const cardLayout = globals.elements.playerHands[target];
@@ -101,7 +105,7 @@ function showClueMatch(target: number, clue: Clue): boolean {
   }
 
   const hand = cardLayout.children;
-  let touchedAtLeastOneCard = false;
+  const touchedCards: CardOrder[] = [];
   for (const i of eRange(hand.length)) {
     const child = hand[i];
     if (child === undefined) {
@@ -110,12 +114,25 @@ function showClueMatch(target: number, clue: Clue): boolean {
 
     const { card } = child as unknown as LayoutChild;
     if (isTouched(card, clue)) {
-      touchedAtLeastOneCard = true;
+      touchedCards.push(card.state.order);
       arrows.set(i, card, null, clue, true);
     }
   }
 
-  return touchedAtLeastOneCard;
+  // The arrows are set first, since their color depends on the clues that the cards already have.
+  cluePreview.show(target, clue, touchedCards);
+
+  return touchedCards.length > 0;
+}
+
+/** Restores the normal view after the player deselects a potential clue. */
+function hideClueMatch() {
+  if (!cluePreview.isShown()) {
+    return;
+  }
+
+  // Hiding the arrows also hides the preview.
+  cluesView.refreshArrows(false);
 }
 
 function isTouched(card: HanabiCard, clue: Clue): boolean {

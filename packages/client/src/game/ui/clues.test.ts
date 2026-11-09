@@ -8,6 +8,8 @@ import { describe, expect, test, vi } from "vitest";
 vi.mock("./UIGlobals", () => ({ globals: {} }));
 vi.mock("./arrows", () => ({ hideAll: vi.fn(), set: vi.fn() }));
 vi.mock("./turn", () => ({}));
+vi.mock("./cluePreview", () => ({ show: vi.fn(), isShown: vi.fn() }));
+vi.mock("./reactive/views/cluesView", () => ({}));
 const { globals } = await import("./UIGlobals");
 const arrows = await import("./arrows");
 const { checkLegal } = await import("./clues");
@@ -18,6 +20,7 @@ describe("hypothetical clue matching", () => {
     const variant = getDefaultVariant();
     const clue = { type: ClueType.Rank, value: 1 } as const;
     const card = {
+      state: { order: 0 },
       getMorphedPossibilities: () => [[0, 1]],
       visibleRank: 1,
       visibleSuitIndex: 0,

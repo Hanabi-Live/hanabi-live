@@ -26,6 +26,7 @@ import * as tooltips from "../../tooltips";
 import { CardLayout } from "./CardLayout";
 import { HanabiCard } from "./HanabiCard";
 import { globals } from "./UIGlobals";
+import * as cluePreview from "./cluePreview";
 import {
   ARROW_COLOR,
   CARD_ANIMATION_DELAY_SECONDS,
@@ -90,6 +91,9 @@ function getClueArrowColor(
 }
 
 export function hideAll(): void {
+  // A potential clue's preview lasts only as long as its arrows.
+  cluePreview.hide();
+
   let changed = false;
   for (const arrow of globals.elements.arrows) {
     if (arrow.pointingTo !== null) {

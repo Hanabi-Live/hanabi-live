@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- Selecting a clue now previews the target's hand as they would see it after the
+  clue. Click the selected color or number again to deselect it.
 - Everyone must sign in again once, because the session cookie format changed.
 - Replay JSON links made before September 18th, 2026 no longer open.
 - Going to `/test` (such as https://hanab.live/test) logs you in as the shared
