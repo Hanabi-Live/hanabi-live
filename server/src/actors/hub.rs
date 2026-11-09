@@ -1,5 +1,5 @@
 use super::{
-    Allocation, Blocks, Command, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply,
+    Allocation, Blocks, Command, Effects, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply,
     SeatReservation, TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table},
 };
@@ -8,10 +8,11 @@ use crate::{
     accounts,
     integrations::IntegrationSlot,
     lobby::{OnlineUser, Publication},
+    model::TableSnapshot,
     operations::Operation,
     routing::{Route, route},
     server_info::ServerInfo,
-    store::Store,
+    store::{Saved, Store},
     transport::{Session, frame},
 };
 use anyhow::{Context, Result};
@@ -23,7 +24,12 @@ use hanabi_protocol::{
     UserList,
 };
 use serde_json::{Value, json};
-use std::{collections::HashMap, panic::AssertUnwindSafe, sync::Arc, time::Duration};
+use std::{
+    collections::{BTreeSet, HashMap},
+    panic::AssertUnwindSafe,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
@@ -579,120 +585,27 @@ impl Hub {
                 HubCommand::Register {
                     session,
                     blocks,
-                    mut welcome,
+                    welcome,
                     initial,
                     reply,
                 } => {
-                    if self.closing
-                        || self.store.check_state().is_err()
-                        || !session.active()
-                        || self
-                            .sessions
-                            .get(&session.user)
-                            .is_some_and(|p| p.session.generation > session.generation)
-                    {
-                        session.cancel.cancel();
-                        let _ = reply.send(Err(rejection!("Stale or draining session")));
-                        continue;
-                    }
-                    if let Some(old) = self.sessions.remove(&session.user) {
-                        old.session.supersede();
-                    }
-                    for entry in self.tables.values() {
-                        entry.handle.cleanup.notify_one();
-                    }
-                    welcome.playing_at_tables = self
-                        .tables
-                        .iter()
-                        .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
-                        .map(|(id, _)| *id)
-                        .collect();
-                    if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
-                        e.view
-                            .reconnects
-                            .get(&session.user)
-                            .map(|shadow| (*id, *shadow))
-                    }) {
-                        welcome.discon_spectating_table = Some(id);
-                        welcome.discon_shadowing_seat = Some(
-                            shadow
-                                .and_then(|seat| i8::try_from(seat).ok())
-                                .unwrap_or(NO_SHADOWED_SEAT),
-                        );
-                    }
-                    self.sessions.insert(
-                        session.user,
-                        Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),
-                    );
-                    session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
-                    session.emit(&frame(
-                        hanabi_protocol::server::USER_LIST,
-                        UserList(self.sessions.values().map(Self::user).collect()),
-                    ));
-                    session.emit(&frame(
-                        hanabi_protocol::server::TABLE_LIST,
-                        hanabi_protocol::TableList(
-                            self.tables
-                                .values()
-                                .filter(|e| e.view.visible)
-                                .map(|e| Self::table_for(&e.view, session.user))
-                                .collect(),
-                        ),
-                    ));
-                    for message in initial {
-                        session.emit(&message);
-                    }
-                    if let Some(p) = self.sessions.get(&session.user) {
-                        self.broadcast(&frame(hanabi_protocol::server::USER, Self::user(p)));
-                    }
-                    let _ = reply.send(Ok(()));
+                    let result = self.register(&session, blocks, welcome, initial);
+                    let _ = reply.send(result);
                 }
-                HubCommand::Logout(s) => {
-                    s.cancel.cancel();
-                    if self
-                        .sessions
-                        .get(&s.user)
-                        .is_some_and(|p| p.session.generation == s.generation)
-                    {
-                        self.sessions.remove(&s.user);
-                        self.broadcast(&frame(
-                            hanabi_protocol::server::USER_LEFT,
-                            UserLeft { user_id: s.user },
-                        ));
-                    }
-                    for e in self.tables.values() {
-                        e.handle.cleanup.notify_one();
-                    }
-                }
+                HubCommand::Logout(session) => self.logout(&session),
                 HubCommand::Directory {
                     session,
                     users,
                     reply,
                 } => {
-                    let result = if !self.current(&session) {
-                        Err(rejection!("Stale session"))
-                    } else if !users {
-                        Ok(Vec::new())
-                    } else {
-                        Ok(self
-                            .sessions
-                            .values()
-                            .filter(|p| p.session.active())
-                            .map(|p| OnlineUser {
-                                identity: p.session.identity.clone(),
-                                generation: p.session.generation,
-                            })
-                            .collect())
-                    };
-                    let _ = reply.send(result);
+                    let _ = reply.send(self.directory(&session, users));
                 }
                 HubCommand::LobbyEffects {
                     session,
                     effects,
                     reply,
                 } => {
-                    let result = self.apply_effects(&session, effects);
-                    let _ = reply.send(result);
+                    let _ = reply.send(self.apply_effects(&session, effects));
                 }
                 HubCommand::Broadcast { messages, reply } => {
                     let result = self.store.check_state().map_err(CommandError::from);
@@ -729,55 +642,8 @@ impl Hub {
                     session,
                     message,
                     reply,
-                } => match message {
-                    ClientMessage::TableCreate(r) => {
-                        self.create(session, Creation::Table(r), reply);
-                    }
-                    ClientMessage::ReplayCreate(r) => {
-                        if let Some(id) = self.existing_replay(&r) {
-                            self.route(
-                                session,
-                                id,
-                                Command::Client(Box::new(ClientMessage::TableSpectate(
-                                    hanabi_protocol::TableSpectateRequest {
-                                        table_id: id,
-                                        shadowing_player_index: r.shadowing_player_index,
-                                    },
-                                ))),
-                                reply,
-                            );
-                        } else {
-                            self.create(session, Creation::Replay(r), reply);
-                        }
-                    }
-                    message => match route(&message) {
-                        Route::Table(table) => {
-                            self.route(session, table, Command::Client(Box::new(message)), reply);
-                        }
-                        other => {
-                            let _ = reply.send(Err(internal!(
-                                "Command {} runs at {other:?}, not at a table",
-                                message.name()
-                            )));
-                        }
-                    },
-                },
-                HubCommand::Allocate(reply) => {
-                    let permit = self.capacity.clone().try_acquire_owned();
-                    let store = self.store.clone();
-                    let tasks = self.tasks.clone();
-                    let closing = self.closing;
-                    self.tasks.spawn(async move {
-                        let result = async {
-                            ensure_or_reject!(!closing, "Draining");
-                            let permit = permit?;
-                            let id = store.allocate_table().await?;
-                            Ok(Allocation::new(id, permit, store, tasks, 0))
-                        }
-                        .await;
-                        let _ = reply.send(result);
-                    });
-                }
+                } => self.client(session, message, reply),
+                HubCommand::Allocate(reply) => self.allocate(reply),
                 HubCommand::Install {
                     table,
                     saved,
@@ -790,39 +656,19 @@ impl Hub {
                         let _ = reply.send(Err(rejection!(
                             "Server draining; the prepared table will recover"
                         )));
-                        continue;
-                    }
-                    if !self.current(&session) {
+                    } else if !self.current(&session) {
                         let _ = reply.send(Err(rejection!("Session changed during preparation")));
-                        continue;
-                    }
-                    if self.tables.contains_key(&table.id) || allocation.id != table.id {
+                    } else if self.tables.contains_key(&table.id) || allocation.id != table.id {
                         let _ = reply.send(Err(internal!("Duplicate table installation")));
-                        continue;
+                    } else {
+                        self.install(
+                            *table,
+                            saved,
+                            allocation,
+                            HashMap::new(),
+                            Some((session, warnings, reply)),
+                        );
                     }
-                    let mut allocation = allocation;
-                    if let Some(reservation) = allocation.reservation.take() {
-                        self.end_reservation(reservation);
-                    }
-                    let actor = TableActor::new(
-                        *table,
-                        saved,
-                        self.store.clone(),
-                        self.sender.clone(),
-                        allocation.into_permit(),
-                        self.info.clone(),
-                    );
-                    let id = actor.table.id;
-                    let view = actor.view();
-                    let handle = self.spawn(actor, Some((session, warnings, reply)));
-                    self.tables.insert(
-                        id,
-                        Entry {
-                            handle,
-                            view,
-                            published: false,
-                        },
-                    );
                 }
                 HubCommand::Spawn {
                     table,
@@ -830,49 +676,7 @@ impl Hub {
                     allocation,
                     attendees,
                     chat_read,
-                } => {
-                    if self.closing {
-                        continue;
-                    }
-                    let mut allocation = allocation;
-                    if let Some(reservation) = allocation.reservation.take() {
-                        self.end_reservation(reservation);
-                    }
-                    let mut actor = TableActor::new(
-                        *table,
-                        saved,
-                        self.store.clone(),
-                        self.sender.clone(),
-                        allocation.into_permit(),
-                        self.info.clone(),
-                    );
-                    actor.chat_read = chat_read;
-                    let id = actor.table.id;
-                    let view = actor.view();
-                    let handle = self.spawn(actor, None);
-                    self.tables.insert(
-                        id,
-                        Entry {
-                            handle: handle.clone(),
-                            view,
-                            published: false,
-                        },
-                    );
-                    for (session, spectator, shadow) in attendees {
-                        if self.current(&session) {
-                            let (reply, _) = oneshot::channel();
-                            let _ = handle.sender.try_send(TableCommand::Client {
-                                blocks: self.blocks(session.user),
-                                session,
-                                command: Command::Reattend {
-                                    spectate: spectator,
-                                    shadow,
-                                },
-                                reply,
-                            });
-                        }
-                    }
-                }
+                } => self.spawn_split(*table, saved, allocation, attendees, chat_read),
                 HubCommand::Sync { session, reply } => {
                     let result = if self.current(&session) && !self.closing {
                         session.emit(&frame(
@@ -885,65 +689,7 @@ impl Hub {
                     };
                     let _ = reply.send(result);
                 }
-                HubCommand::Effects(effects) => {
-                    if self.store.check_state().is_err() {
-                        continue;
-                    }
-                    let Some(entry) = self.tables.get_mut(&effects.table) else {
-                        continue;
-                    };
-                    let hidden = entry.view.visible && !effects.view.visible;
-                    let changed = !entry.published || entry.view != effects.view;
-                    entry.view = effects.view;
-                    entry.published = true;
-                    if hidden {
-                        self.broadcast(&frame(
-                            hanabi_protocol::server::TABLE_GONE,
-                            TableRequest {
-                                table_id: effects.table,
-                            },
-                        ));
-                    }
-                    for (session, status, table) in effects.statuses {
-                        if self.current(&session) {
-                            if let Some(p) = self.sessions.get_mut(&session.user) {
-                                p.status = status;
-                                p.table = table;
-                            }
-                            if let Some(p) = self.sessions.get(&session.user) {
-                                self.broadcast(&frame(
-                                    hanabi_protocol::server::USER,
-                                    Self::user(p),
-                                ));
-                            }
-                        }
-                    }
-                    if changed
-                        && let Some(entry) = self.tables.get(&effects.table)
-                        && entry.view.visible
-                    {
-                        // The hub handles one message at a time, so serialize the table once for
-                        // its players and once for everyone else rather than once per user.
-                        let [other, joined] = [false, true].map(|joined| {
-                            let mut data = entry.view.data.clone();
-                            data.joined = joined;
-                            frame(hanabi_protocol::server::TABLE, data)
-                        });
-                        for p in self.sessions.values() {
-                            p.session
-                                .emit(if entry.view.players.contains(&p.session.user) {
-                                    &joined
-                                } else {
-                                    &other
-                                });
-                        }
-                    }
-                    for (session, message) in effects.messages {
-                        if self.current(&session) {
-                            session.emit(&message);
-                        }
-                    }
-                }
+                HubCommand::Effects(effects) => self.publish_table(effects),
                 HubCommand::TableFailed(id) => self.table_failed(id),
                 HubCommand::Retire(id) => {
                     if self.tables.remove(&id).is_some_and(|e| e.view.visible) {
@@ -964,6 +710,280 @@ impl Hub {
                     let _ = reply.send(());
                     break;
                 }
+            }
+        }
+    }
+    /// Admits a new connection, replacing the user's earlier one, and sends it the lobby.
+    fn register(
+        &mut self,
+        session: &Arc<Session>,
+        blocks: BTreeSet<UserId>,
+        mut welcome: hanabi_protocol::Welcome,
+        initial: Vec<String>,
+    ) -> CommandResult<()> {
+        if self.closing
+            || self.store.check_state().is_err()
+            || !session.active()
+            || self
+                .sessions
+                .get(&session.user)
+                .is_some_and(|p| p.session.generation > session.generation)
+        {
+            session.cancel.cancel();
+            reject!("Stale or draining session");
+        }
+        if let Some(old) = self.sessions.remove(&session.user) {
+            old.session.supersede();
+        }
+        for entry in self.tables.values() {
+            entry.handle.cleanup.notify_one();
+        }
+        welcome.playing_at_tables = self
+            .tables
+            .iter()
+            .filter(|(_, e)| !e.view.replay && e.view.players.contains(&session.user))
+            .map(|(id, _)| *id)
+            .collect();
+        if let Some((id, shadow)) = self.tables.iter().find_map(|(id, e)| {
+            e.view
+                .reconnects
+                .get(&session.user)
+                .map(|shadow| (*id, *shadow))
+        }) {
+            welcome.discon_spectating_table = Some(id);
+            welcome.discon_shadowing_seat = Some(
+                shadow
+                    .and_then(|seat| i8::try_from(seat).ok())
+                    .unwrap_or(NO_SHADOWED_SEAT),
+            );
+        }
+        self.sessions.insert(
+            session.user,
+            Presence::new(session.clone(), &welcome.settings, Arc::new(blocks)),
+        );
+        session.emit(&frame(hanabi_protocol::server::WELCOME, welcome));
+        session.emit(&frame(
+            hanabi_protocol::server::USER_LIST,
+            UserList(self.sessions.values().map(Self::user).collect()),
+        ));
+        session.emit(&frame(
+            hanabi_protocol::server::TABLE_LIST,
+            hanabi_protocol::TableList(
+                self.tables
+                    .values()
+                    .filter(|e| e.view.visible)
+                    .map(|e| Self::table_for(&e.view, session.user))
+                    .collect(),
+            ),
+        ));
+        for message in initial {
+            session.emit(&message);
+        }
+        self.broadcast_user(session.user);
+        Ok(())
+    }
+    /// Ends a connection. Tells everyone the user left, unless a newer connection replaced it.
+    fn logout(&mut self, session: &Session) {
+        session.cancel.cancel();
+        if self
+            .sessions
+            .get(&session.user)
+            .is_some_and(|p| p.session.generation == session.generation)
+        {
+            self.sessions.remove(&session.user);
+            self.broadcast(&frame(
+                hanabi_protocol::server::USER_LEFT,
+                UserLeft {
+                    user_id: session.user,
+                },
+            ));
+        }
+        for e in self.tables.values() {
+            e.handle.cleanup.notify_one();
+        }
+    }
+    /// Checks that a session is current, and lists the online users when `users` is set.
+    fn directory(&self, session: &Session, users: bool) -> CommandResult<Vec<OnlineUser>> {
+        ensure_or_reject!(self.current(session), "Stale session");
+        if !users {
+            return Ok(Vec::new());
+        }
+        Ok(self
+            .sessions
+            .values()
+            .filter(|p| p.session.active())
+            .map(|p| OnlineUser {
+                identity: p.session.identity.clone(),
+                generation: p.session.generation,
+            })
+            .collect())
+    }
+    /// Runs a client command that the hub handles: a table or replay creation, or a command that
+    /// it routes to a table.
+    fn client(&mut self, session: Arc<Session>, message: ClientMessage, reply: Reply) {
+        match message {
+            ClientMessage::TableCreate(r) => self.create(session, Creation::Table(r), reply),
+            ClientMessage::ReplayCreate(r) => {
+                if let Some(id) = self.existing_replay(&r) {
+                    let spectate =
+                        ClientMessage::TableSpectate(hanabi_protocol::TableSpectateRequest {
+                            table_id: id,
+                            shadowing_player_index: r.shadowing_player_index,
+                        });
+                    self.route(session, id, Command::Client(Box::new(spectate)), reply);
+                } else {
+                    self.create(session, Creation::Replay(r), reply);
+                }
+            }
+            message => match route(&message) {
+                Route::Table(table) => {
+                    self.route(session, table, Command::Client(Box::new(message)), reply);
+                }
+                other => {
+                    let _ = reply.send(Err(internal!(
+                        "Command {} runs at {other:?}, not at a table",
+                        message.name()
+                    )));
+                }
+            },
+        }
+    }
+    /// Reserves capacity and an ID for a new table, such as one that a split or restart creates.
+    fn allocate(&self, reply: oneshot::Sender<CommandResult<Allocation>>) {
+        let permit = self.capacity.clone().try_acquire_owned();
+        let store = self.store.clone();
+        let tasks = self.tasks.clone();
+        let closing = self.closing;
+        self.tasks.spawn(async move {
+            let result = async {
+                ensure_or_reject!(!closing, "Draining");
+                let permit = permit?;
+                let id = store.allocate_table().await?;
+                Ok(Allocation::new(id, permit, store, tasks, 0))
+            }
+            .await;
+            let _ = reply.send(result);
+        });
+    }
+    /// Starts the actor of a saved table and lists the table. `chat_read` holds how much of the
+    /// table's chat each user has read. Returns the table's handle.
+    fn install(
+        &mut self,
+        table: TableSnapshot,
+        saved: Saved,
+        mut allocation: Allocation,
+        chat_read: HashMap<UserId, usize>,
+        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+    ) -> TableHandle {
+        if let Some(reservation) = allocation.reservation.take() {
+            self.end_reservation(reservation);
+        }
+        let mut actor = TableActor::new(
+            table,
+            saved,
+            self.store.clone(),
+            self.sender.clone(),
+            allocation.into_permit(),
+            self.info.clone(),
+        );
+        actor.chat_read = chat_read;
+        self.add_table(actor, initial)
+    }
+    /// Starts an actor and lists its table. Returns the table's handle.
+    fn add_table(
+        &mut self,
+        actor: TableActor,
+        initial: Option<(Arc<Session>, Vec<String>, Reply)>,
+    ) -> TableHandle {
+        let id = actor.table.id;
+        let view = actor.view();
+        let handle = self.spawn(actor, initial);
+        self.tables.insert(
+            id,
+            Entry {
+                handle: handle.clone(),
+                view,
+                published: false,
+            },
+        );
+        handle
+    }
+    /// Starts the table that a split or restart created, and moves its attendees to it.
+    fn spawn_split(
+        &mut self,
+        table: TableSnapshot,
+        saved: Saved,
+        allocation: Allocation,
+        attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
+        chat_read: HashMap<UserId, usize>,
+    ) {
+        if self.closing {
+            return;
+        }
+        let handle = self.install(table, saved, allocation, chat_read, None);
+        for (session, spectate, shadow) in attendees {
+            if self.current(&session) {
+                let (reply, _) = oneshot::channel();
+                let _ = handle.sender.try_send(TableCommand::Client {
+                    blocks: self.blocks(session.user),
+                    session,
+                    command: Command::Reattend { spectate, shadow },
+                    reply,
+                });
+            }
+        }
+    }
+    /// Records a table's new view, updates its users' statuses, and sends its messages.
+    fn publish_table(&mut self, effects: Effects) {
+        if self.store.check_state().is_err() {
+            return;
+        }
+        let Some(entry) = self.tables.get_mut(&effects.table) else {
+            return;
+        };
+        let hidden = entry.view.visible && !effects.view.visible;
+        let changed = !entry.published || entry.view != effects.view;
+        entry.view = effects.view;
+        entry.published = true;
+        if hidden {
+            self.broadcast(&frame(
+                hanabi_protocol::server::TABLE_GONE,
+                TableRequest {
+                    table_id: effects.table,
+                },
+            ));
+        }
+        for (session, status, table) in effects.statuses {
+            if self.current(&session) {
+                self.update_user(session.user, |p| {
+                    p.status = status;
+                    p.table = table;
+                });
+            }
+        }
+        if changed
+            && let Some(entry) = self.tables.get(&effects.table)
+            && entry.view.visible
+        {
+            // The hub handles one message at a time, so serialize the table once for its players
+            // and once for everyone else rather than once per user.
+            let [other, joined] = [false, true].map(|joined| {
+                let mut data = entry.view.data.clone();
+                data.joined = joined;
+                frame(hanabi_protocol::server::TABLE, data)
+            });
+            for p in self.sessions.values() {
+                p.session
+                    .emit(if entry.view.players.contains(&p.session.user) {
+                        &joined
+                    } else {
+                        &other
+                    });
+            }
+        }
+        for (session, message) in effects.messages {
+            if self.current(&session) {
+                session.emit(&message);
             }
         }
     }
