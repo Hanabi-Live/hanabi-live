@@ -1,5 +1,6 @@
 import Konva from "konva";
 import { ARROW_STROKE_WIDTH, FONT_FAMILY } from "../constants";
+import { outlinedArrow } from "./outlinedArrow";
 
 /**
  * The point that the arrow is positioned and rotated around, relative to the end of its tail, as a
@@ -19,7 +20,7 @@ const LENGTH = 0.8;
  */
 const CIRCLE_Y = 0.3;
 
-/** How far the shadow around the arrow's outline spreads, as a multiple of its pointer length. */
+/** How far the shadow around the arrow spreads, as a multiple of its pointer length. */
 const SHADOW_BLUR_LENGTHS = 4;
 
 /** The outline of the circle that shows the clue, as a multiple of the arrow's pointer length. */
@@ -48,7 +49,7 @@ export class Arrow extends Konva.Group {
   pointingTo: Konva.Node | null;
   tween: Konva.Tween | null;
 
-  base: Konva.Arrow;
+  base: Konva.Shape;
   circle: Konva.Circle;
   text: Konva.Text;
   suitPip: Konva.Shape | null;
@@ -76,40 +77,16 @@ export class Arrow extends Konva.Group {
     const length = LENGTH * y;
     const circleY = CIRCLE_Y * y;
 
-    // We want there to be a black outline around the arrow, so we draw a second arrow that is
-    // slightly bigger than the first.
-    const border = new Konva.Arrow({
+    // The arrow is exported so that we can change its color later.
+    this.base = outlinedArrow({
       points: [x, 0, x, length],
       pointerLength,
       pointerWidth: pointerLength,
-      fill: "black",
-      stroke: "black",
-      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
+      bodyWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
+      outlineWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
+      fill: "white",
       shadowBlur: pointerLength * SHADOW_BLUR_LENGTHS,
       shadowOpacity: 1,
-      listening: false,
-    });
-    this.add(border);
-
-    // The border arrow will be missing a bottom edge, so draw that manually at the bottom of the
-    // arrow.
-    const edge = new Konva.Line({
-      points: [x - pointerLength, 0, x + pointerLength, 0],
-      fill: "black",
-      stroke: "black",
-      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.EDGE,
-      listening: false,
-    });
-    this.add(edge);
-
-    // The main (inside) arrow is exported so that we can change the color later.
-    this.base = new Konva.Arrow({
-      points: [x, 0, x, length],
-      pointerLength,
-      pointerWidth: pointerLength,
-      fill: "white",
-      stroke: "white",
-      strokeWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
       listening: false,
     });
     this.add(this.base);

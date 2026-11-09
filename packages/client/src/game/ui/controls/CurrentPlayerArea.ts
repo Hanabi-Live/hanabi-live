@@ -11,8 +11,9 @@ import {
   TEXT_SHADOW,
 } from "../constants";
 import { FitText } from "./FitText";
+import { outlinedArrow } from "./outlinedArrow";
 
-/** How far the shadow around the outline of the current player arrow spreads. */
+/** How far the shadow around the current player arrow spreads. */
 const ARROW_SHADOW_BLUR = 75;
 
 /** The size of the text in the name box, as a fraction of the stage height. */
@@ -35,11 +36,11 @@ const ARROW_INSET = 0.01;
 /** The width of the arrow's body, as a fraction of the stage height. */
 const ARROW_BODY_WIDTH = 5 * STROKE_WIDTH_UNIT;
 
-/**
- * The size of the arrow's pointer and the width of its black outline, as multiples of the width of
- * its body.
- */
-const ARROW_POINTER_AND_OUTLINE_STROKES = 2;
+/** The size of the arrow's pointer, as a multiple of the width of its body. */
+const ARROW_POINTER_SIZE = 2;
+
+/** The width of the arrow's black outline, as a multiple of the width of its body. */
+const ARROW_OUTLINE_WIDTH = 0.5;
 
 interface ElementValues {
   x: number;
@@ -61,11 +62,6 @@ interface TextElementValues {
  * arrow takes the rest.
  */
 const NAME_BOX_SHARE = 0.75;
-
-/**
- * Half the length of the short line across the base of the arrow, in fractions of the stage height.
- */
-const ARROW_EDGE_HALF_LENGTH = 0.005;
 
 export class CurrentPlayerArea extends Konva.Group {
   values: ElementValues;
@@ -173,9 +169,8 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.add(rect2);
 
-    const baseArrowLength = ARROW_BODY_WIDTH * winH;
-    const arrowPointerSize =
-      baseArrowLength * ARROW_POINTER_AND_OUTLINE_STROKES;
+    const arrowBodyWidth = ARROW_BODY_WIDTH * winH;
+    const arrowPointerSize = arrowBodyWidth * ARROW_POINTER_SIZE;
 
     this.arrow = new Konva.Group({
       x: (arrowValues.x + arrowValues.w / 2) * winW,
@@ -188,7 +183,7 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.add(this.arrow);
 
-    const arrowBorder = new Konva.Arrow({
+    const arrowShape = outlinedArrow({
       points: [
         arrowValues.spacing * winW,
         (arrowValues.h / 2) * winH,
@@ -197,45 +192,14 @@ export class CurrentPlayerArea extends Konva.Group {
       ],
       pointerLength: arrowPointerSize,
       pointerWidth: arrowPointerSize,
-      fill: "black",
-      stroke: "black",
-      strokeWidth: baseArrowLength * ARROW_POINTER_AND_OUTLINE_STROKES,
+      bodyWidth: arrowBodyWidth,
+      outlineWidth: arrowBodyWidth * ARROW_OUTLINE_WIDTH,
+      fill: LABEL_COLOR,
       shadowBlur: ARROW_SHADOW_BLUR,
       shadowOpacity: 1,
       listening: false,
     });
-    this.arrow.add(arrowBorder);
-
-    const edgeHalfLength = ARROW_EDGE_HALF_LENGTH;
-    const arrowBorderEdge = new Konva.Line({
-      points: [
-        arrowValues.spacing * winW,
-        (arrowValues.h / 2 - edgeHalfLength) * winH,
-        arrowValues.spacing * winW,
-        (arrowValues.h / 2 + edgeHalfLength) * winH,
-      ],
-      fill: "black",
-      stroke: "black",
-      strokeWidth: baseArrowLength,
-      listening: false,
-    });
-    this.arrow.add(arrowBorderEdge);
-
-    const arrowMain = new Konva.Arrow({
-      points: [
-        arrowValues.spacing * winW,
-        (arrowValues.h / 2) * winH,
-        (arrowValues.w - arrowValues.spacing) * winW,
-        (arrowValues.h / 2) * winH,
-      ],
-      pointerLength: arrowPointerSize,
-      pointerWidth: arrowPointerSize,
-      fill: LABEL_COLOR,
-      stroke: LABEL_COLOR,
-      strokeWidth: baseArrowLength,
-      listening: false,
-    });
-    this.arrow.add(arrowMain);
+    this.arrow.add(arrowShape);
 
     this.textValues = textValues;
   }

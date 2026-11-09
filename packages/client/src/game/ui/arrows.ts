@@ -164,7 +164,6 @@ export function set(
   if (clue === null) {
     // This is a highlight arrow.
     const color = ARROW_COLOR.HIGHLIGHT;
-    arrow.base.stroke(color);
     arrow.base.fill(color);
 
     // Do not draw the circle.
@@ -174,7 +173,6 @@ export function set(
     // This is a clue arrow. Compute color using a small helper for clarity.
     const color = getClueArrowColor(element, preview);
 
-    arrow.base.stroke(color);
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given.

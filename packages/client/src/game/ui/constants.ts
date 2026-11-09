@@ -210,15 +210,10 @@ export const TEXT_SHADOW = {
 // Arrows
 // ------
 
-/**
- * The stroke widths of the parts of an arrow with a black outline, as multiples of its pointer
- * length. The outline is a bigger black arrow behind the body, and the edge closes the outline
- * across the arrow's tail.
- */
+/** The widths of the parts of an arrow with a black outline, as multiples of its pointer length. */
 export const ARROW_STROKE_WIDTH = {
-  OUTLINE: 2,
-  EDGE: 0.75,
   BODY: 1.25,
+  OUTLINE: 0.375,
 } as const;
 
 // -------

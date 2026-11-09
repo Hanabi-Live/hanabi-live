@@ -142,7 +142,7 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   private readonly rankPipsXMap: Map<number, Konva.Shape>;
   private readonly criticalIndicator: Konva.Image;
   private readonly arrow: Konva.Group | null = null;
-  private readonly arrowBase: Konva.Arrow | null = null;
+  private readonly arrowBase: Konva.Shape | null = null;
 
   noteIndicator: NoteIndicator;
   private readonly trashcan: Konva.Image;
@@ -788,13 +788,10 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.arrow!.rotation(
       direction === StackDirection.Up ? HALF_TURN_DEGREES : 0,
     );
-    this.arrowBase!.stroke(suit.fill);
-    if (suit.fill === "multi") {
-      // We can't use a fill gradient because the "fill" is actually a big stroke. (The Konva arrow
-      // object is not a shape, but instead a very thick line.) Instead, just use the the first
-      // gradient color.
-      this.arrowBase!.stroke(suit.fillColors[0]);
-    }
+    // Use the first color of a suit with a gradient.
+    this.arrowBase!.fill(
+      suit.fill === "multi" ? suit.fillColors[0] : suit.fill,
+    );
     if (this.rankPips.isVisible() === true) {
       this.setArrowMiddleRight();
     } else {

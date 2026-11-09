@@ -10,7 +10,6 @@ import { assertDefined } from "complete-common";
 import Konva from "konva";
 import type * as KonvaContext from "konva/lib/Context";
 import type * as KonvaUtil from "konva/lib/Util";
-import type { Arrow } from "konva/lib/shapes/Arrow";
 import type { RectConfig } from "konva/lib/shapes/Rect";
 import { START_CARD_RANK_LABEL } from "../../constants";
 import type { Pips } from "../types/Pips";
@@ -39,6 +38,7 @@ import {
 import { NoteIndicator } from "./controls/NoteIndicator";
 import { RankPip } from "./controls/RankPip";
 import { drawWithKonva3Shadow } from "./controls/konva3Shadow";
+import { outlinedArrow } from "./controls/outlinedArrow";
 import { SUIT_PIP_SCALE, drawPip, getSuitPipRingPosition } from "./drawPip";
 
 /** The opacity of the shadow under a card and under the pips drawn on it. */
@@ -233,7 +233,7 @@ export function discardPermissionBorder(): Konva.Group {
 
 export function directionArrow(
   variant: Variant,
-): { arrow: Konva.Group; arrowBase: Arrow } | null {
+): { arrow: Konva.Group; arrowBase: Konva.Shape } | null {
   if (!hasReversedSuits(variant)) {
     return null;
   }
@@ -251,33 +251,13 @@ export function directionArrow(
   const { pointerLength } = DIRECTION_ARROW;
   const pointerWidth = pointerLength * DIRECTION_ARROW.pointerWidthRatio;
 
-  const border = new Konva.Arrow({
+  const arrowBase = outlinedArrow({
     points: [0, 0, 0, DIRECTION_ARROW.h],
     pointerLength,
     pointerWidth,
-    fill: "black",
-    stroke: "black",
-    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
-    listening: false,
-  });
-  arrow.add(border);
-
-  const edge = new Konva.Line({
-    points: [-pointerLength, 0, pointerLength, 0],
-    fill: "black",
-    stroke: "black",
-    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.EDGE,
-    listening: false,
-  });
-  arrow.add(edge);
-
-  const arrowBase = new Konva.Arrow({
-    points: [0, 0, 0, DIRECTION_ARROW.h],
-    pointerLength,
-    pointerWidth,
-    fill: "white",
-    stroke: "white", // This should match the color of the suit; it will be manually set later on
-    strokeWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
+    bodyWidth: pointerLength * ARROW_STROKE_WIDTH.BODY,
+    outlineWidth: pointerLength * ARROW_STROKE_WIDTH.OUTLINE,
+    fill: "white", // This should match the color of the suit; it will be manually set later on
     listening: false,
   });
   arrow.add(arrowBase);
