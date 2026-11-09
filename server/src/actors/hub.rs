@@ -595,12 +595,8 @@ impl Hub {
                     let _ = reply.send(result);
                 }
                 HubCommand::Logout(session) => self.logout(&session),
-                HubCommand::Directory {
-                    session,
-                    users,
-                    reply,
-                } => {
-                    let _ = reply.send(self.directory(&session, users));
+                HubCommand::Directory { session, reply } => {
+                    let _ = reply.send(self.directory(&session));
                 }
                 HubCommand::LobbyEffects {
                     session,
@@ -800,12 +796,9 @@ impl Hub {
             e.handle.cleanup.notify_one();
         }
     }
-    /// Checks that a session is current, and lists the online users when `users` is set.
-    fn directory(&self, session: &Session, users: bool) -> CommandResult<Vec<OnlineUser>> {
+    /// Lists the online users, for a session that is current.
+    fn directory(&self, session: &Session) -> CommandResult<Vec<OnlineUser>> {
         ensure_or_reject!(self.current(session), "Stale session");
-        if !users {
-            return Ok(Vec::new());
-        }
         Ok(self
             .sessions
             .values()

@@ -139,7 +139,6 @@ impl Harness {
         self.hub
             .send(HubCommand::Directory {
                 session: self.users[index].clone(),
-                users: true,
                 reply,
             })
             .await?;

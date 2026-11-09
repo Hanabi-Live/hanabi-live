@@ -5,6 +5,7 @@ mod integration_tests;
 mod protocol;
 #[cfg(test)]
 pub(crate) mod test_support;
+mod user;
 
 use crate::errors::HttpError;
 use crate::{
@@ -87,6 +88,8 @@ pub struct App {
     pub info: Arc<crate::server_info::ServerInfo>,
     pub integrations: IntegrationSlot,
     integration_started: AtomicBool,
+    /// Each connected user's lobby task.
+    users: user::Users,
 }
 
 impl App {
@@ -134,6 +137,7 @@ impl App {
             info,
             integrations,
             integration_started: AtomicBool::new(false),
+            users: user::Users::default(),
         })
     }
 
@@ -845,6 +849,9 @@ async fn connection(
             })
             .await?;
         received.await?.map_err(anyhow::Error::from)?;
+        let user = app.users.task(&app, session.user);
+        user.send(user::UserCommand::Current(session.generation))
+            .await?;
         drop(admission);
         load_lobby(app.clone(), session.clone());
         loop {
@@ -858,7 +865,7 @@ async fn connection(
             };
             // Once admitted, finish persistence rather than dropping a transaction
             // future on socket cancellation. Publication still checks generation.
-            if let Err(error) = dispatch(&app, session.clone(), &command.text).await {
+            if let Err(error) = dispatch(&app, &user, session.clone(), &command.text).await {
                 let Some(failure) = command_failure(error, &command.text) else {
                     continue;
                 };
@@ -1000,6 +1007,84 @@ async fn publish(app: &App, session: Arc<Session>, effects: Vec<Effect>) -> Comm
     Ok(())
 }
 
+/// Runs a lobby command for its user's task and publishes its effects. Returns a table's chat,
+/// which continues to its table after the lobby checks it.
+async fn lobby_command(
+    app: &App,
+    session: Arc<Session>,
+    message: ClientMessage,
+) -> CommandResult<Option<ClientMessage>> {
+    // Only private messages need the list of online users.
+    let online = if matches!(message, ClientMessage::ChatPM(_)) {
+        let (reply, received) = oneshot::channel();
+        app.hub
+            .send(HubCommand::Directory {
+                session: session.clone(),
+                reply,
+            })
+            .await?;
+        received.await??
+    } else {
+        Vec::new()
+    };
+    let caller = session.identity.clone();
+    let effects = match message {
+        ClientMessage::Chat(request) => {
+            let text = request.msg.as_str();
+            let room = request.room.as_str();
+            let mut rendered = None;
+            if room == "lobby"
+                && let Ok(normalized) = accounts::normalize_chat(text)
+                && matches!(
+                    lobby::classify_chat(&normalized),
+                    lobby::Classification::Text | lobby::Classification::Public
+                )
+                && let Some(integrations) = app.integrations.get()
+            {
+                rendered = Some(integrations.render(&normalized).await);
+            }
+            let effects = lobby::dispatch_chat(
+                &app.store.primary,
+                &app.secret,
+                &caller,
+                text,
+                room,
+                rendered.as_deref(),
+            )
+            .await?;
+            let Some(effects) = effects else {
+                return Ok(Some(ClientMessage::Chat(request)));
+            };
+            effects
+        }
+        message => {
+            let history = history_command(&message);
+            let work = lobby::dispatch(
+                if history {
+                    &app.store.lobby_reads
+                } else {
+                    &app.store.primary
+                },
+                &app.secret,
+                &caller,
+                &online,
+                message,
+            );
+            let effects = if history {
+                tokio::select! {
+                    () = app.lifecycle.read_shutdown.cancelled() => return Ok(None),
+                    result = work => result.context(crate::errors::LobbyRead)?,
+                }
+            } else {
+                work.await?
+            };
+            effects.context("A lobby command had no lobby handler")?
+        }
+    };
+    publish(app, session, effects).await?;
+    Ok(None)
+}
+
 fn history_command(message: &ClientMessage) -> bool {
     matches!(
         message,
@@ -1007,7 +1092,12 @@ fn history_command(message: &ClientMessage) -> bool {
     )
 }
 
-async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> CommandResult {
+async fn dispatch(
+    app: &Arc<App>,
+    user: &mpsc::Sender<user::UserCommand>,
+    session: Arc<Session>,
+    input: &str,
+) -> CommandResult {
     let _admission = match app.lifecycle.admit().await {
         Ok(admission) => admission,
         Err(Refusal::Unavailable) => {
@@ -1060,82 +1150,22 @@ async fn dispatch(app: &Arc<App>, session: Arc<Session>, input: &str) -> Command
         measurement.success();
         return Ok(());
     }
-    // Lobby commands write to the database before the hub publishes their effects, so confirm
-    // that this session is still current first. The hub checks game commands itself when it
-    // routes them. Only private messages need the list of online users.
-    let online = if lobby::handles(&message) {
+    let message = if lobby::handles(&message) {
         let (reply, received) = oneshot::channel();
-        app.hub
-            .send(HubCommand::Directory {
-                session: session.clone(),
-                users: matches!(message, ClientMessage::ChatPM(_)),
-                reply,
-            })
-            .await?;
-        received.await??
-    } else {
-        Vec::new()
-    };
-    let caller = session.identity.clone();
-    let effects = match message {
-        ClientMessage::Chat(request) => {
-            let text = request.msg.as_str();
-            let room = request.room.as_str();
-            let mut rendered = None;
-            if room == "lobby"
-                && let Ok(normalized) = accounts::normalize_chat(text)
-                && matches!(
-                    lobby::classify_chat(&normalized),
-                    lobby::Classification::Text | lobby::Classification::Public
-                )
-                && let Some(integrations) = app.integrations.get()
-            {
-                rendered = Some(integrations.render(&normalized).await);
-            }
-            let effects = lobby::dispatch_chat(
-                &app.store.primary,
-                &app.secret,
-                &caller,
-                text,
-                room,
-                rendered.as_deref(),
-            )
-            .await?;
-            // Table chat goes to its table.
-            effects.ok_or(ClientMessage::Chat(request))
-        }
-        message if lobby::handles(&message) => {
-            let history = history_command(&message);
-            let work = lobby::dispatch(
-                if history {
-                    &app.store.lobby_reads
-                } else {
-                    &app.store.primary
-                },
-                &app.secret,
-                &caller,
-                &online,
-                message,
-            );
-            let effects = if history {
-                tokio::select! {
-                    () = app.lifecycle.read_shutdown.cancelled() => return Ok(()),
-                    result = work => result.context(crate::errors::LobbyRead)?,
-                }
-            } else {
-                work.await?
-            };
-            Ok(effects.context("A lobby command had no lobby handler")?)
-        }
-        message => Err(message),
-    };
-    let message = match effects {
-        Ok(effects) => {
-            publish(app, session, effects).await?;
+        user.send(user::UserCommand::Lobby {
+            session: session.clone(),
+            message: Box::new(message),
+            reply,
+        })
+        .await?;
+        // Table chat continues to its table.
+        let Some(message) = received.await?? else {
             measurement.success();
             return Ok(());
-        }
-        Err(message) => message,
+        };
+        message
+    } else {
+        message
     };
     let (reply, received) = oneshot::channel();
     let request = if let ClientMessage::Sync(_) = message {

@@ -575,7 +575,6 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .hub
         .send(HubCommand::Directory {
             session: Session::new(UserId(999), "stale".into(), 999).0,
-            users: true,
             reply,
         })
         .await
@@ -889,5 +888,55 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
     }
     assert_eq!(actual, expected);
     assert!(session.active());
+    fixture.close().await;
+}
+
+#[tokio::test]
+async fn a_lobby_command_from_a_replaced_connection_writes_nothing_postgres() {
+    let Some(fixture) = test_support::Fixture::start().await else {
+        return;
+    };
+    login(&fixture, "Replaced").await;
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "test SQL that reads the fixture account"
+    )]
+    let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'Replaced'")
+        .fetch_one(&fixture.app.store.primary)
+        .await
+        .unwrap();
+    let before = lobby::get_settings(&fixture.app.store.primary, id)
+        .await
+        .unwrap()
+        .volume;
+    // A newer connection registered, but the older one has not noticed yet and is still active.
+    let task = fixture.app.users.task(&fixture.app, UserId(id));
+    task.send(user::UserCommand::Current(2)).await.unwrap();
+    let (older, _frames) = Session::new(UserId(id), "Replaced".into(), 1);
+    let volume = before / 2;
+    let (reply, replied) = oneshot::channel();
+    task.send(user::UserCommand::Lobby {
+        session: older,
+        message: Box::new(
+            crate::actors::client_message(
+                "setting",
+                &json!({"name": "volume", "setting": volume.to_string()}),
+            )
+            .unwrap(),
+        ),
+        reply,
+    })
+    .await
+    .unwrap();
+    assert!(matches!(
+        replied.await.unwrap(),
+        Err(CommandError::Rejected { .. })
+    ));
+    let after = lobby::get_settings(&fixture.app.store.primary, id)
+        .await
+        .unwrap()
+        .volume;
+    assert_eq!(after, before, "A replaced connection changed a setting");
+    drop(task);
     fixture.close().await;
 }

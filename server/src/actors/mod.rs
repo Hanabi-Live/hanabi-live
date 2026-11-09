@@ -200,10 +200,9 @@ pub enum HubCommand {
         message: ClientMessage,
         reply: Reply,
     },
-    /// Fails for a stale session. The online users are listed only when `users` is set.
+    /// Lists the online users, for a private message. Fails for a stale session.
     Directory {
         session: Arc<Session>,
-        users: bool,
         reply: oneshot::Sender<CommandResult<Vec<OnlineUser>>>,
     },
     LobbyEffects {
