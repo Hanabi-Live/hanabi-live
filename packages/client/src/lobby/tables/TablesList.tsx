@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables.
 
 import { MAX_PLAYERS } from "@hanabi-live/game";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
 import { PATH } from "../../constants";
 import { DECK_PLAYS_ICON_CSS, OptionIcons } from "../../enums/OptionIcons";
 import { useAppSelector } from "../../store";
@@ -12,6 +12,13 @@ import { getOptionDescriptions } from "../optionDescriptions";
 import { tableJoin, tableReattend, tableSpectate } from "./tableActions";
 import type { Table, TableRow } from "./tablesSlice";
 import { selectTableRows } from "./tablesSlice";
+
+/**
+ * How long a row ignores clicks after it appears or moves. Tables come, go, and re-sort as the
+ * server reports changes, so a player who aims at one row could otherwise click on another table
+ * that has just moved under the pointer. This is about the time that a person needs to react.
+ */
+const MOVED_ROW_CLICK_DELAY_MS = 500;
 
 /** Narrow screens hide some of these columns by their position. */
 const COLUMNS = [
@@ -64,6 +71,7 @@ function TableRowView({
   const ref = useRef<HTMLTableRowElement>(null);
   const username = useAppSelector((state) => state.session.username);
   const friends = useAppSelector((state) => state.session.friends);
+  const movedTime = useMovedTime(ref);
 
   const classNames = [`lobby-games-table-${getKind(table)}`];
   if (
@@ -107,6 +115,12 @@ function TableRowView({
             tableReattend(table);
             break;
           }
+        }
+      }}
+      onClickCapture={(event) => {
+        // This blocks the clicks on the cells that spectate as well as the click on the row.
+        if (performance.now() - movedTime.current < MOVED_ROW_CLICK_DELAY_MS) {
+          event.stopPropagation();
         }
       }}
       ref={ref}
@@ -191,6 +205,39 @@ function TableRowView({
       </td>
     </tr>
   );
+}
+
+/**
+ * Records when the row last appeared, moved, or changed its height. A change in height can move the
+ * edge of the row under the pointer.
+ */
+function useMovedTime(ref: React.RefObject<HTMLTableRowElement | null>) {
+  const movedTime = useRef(performance.now());
+  const position = useRef<{ top: number; height: number } | undefined>(
+    undefined,
+  );
+
+  useLayoutEffect(() => {
+    const { offsetTop: top, offsetHeight: height } = ref.current!;
+
+    // A hidden row has no position, such as when we are in a game. When the lobby is shown again,
+    // the row has not moved under the pointer.
+    if (height === 0) {
+      position.current = undefined;
+      return;
+    }
+
+    const previous = position.current;
+    if (
+      previous !== undefined
+      && (previous.top !== top || previous.height !== height)
+    ) {
+      movedTime.current = performance.now();
+    }
+    position.current = { top, height };
+  });
+
+  return movedTime;
 }
 
 function OptionIcon({
