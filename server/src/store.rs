@@ -209,22 +209,20 @@ impl Store {
         Ok(json!({"primary":primary,"recovery":recovery}))
     }
     pub async fn save(&self, table: &TableSnapshot, revision: i64) -> Result<i64> {
-        let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
-        let result = async {
-            table.validate()?;
-            ensure!(
-                table.chat[table.chat_archived..]
-                    .iter()
-                    .all(|chat| chat.id.is_some()),
-                "Pending chat must reserve numeric archive identities before checkpointing"
-            );
-            let payload = serde_json::to_string(table)?;
-            let revision = self.state.save(table.id, revision, &payload).await?;
-            crate::metrics::record_checkpoint(payload.len());
-            Ok(revision)
+        match encode(table) {
+            Ok(payload) => self.save_encoded(table.id, revision, &payload).await,
+            Err(error) => {
+                crate::metrics::record_checkpoint_failure();
+                Err(error)
+            }
         }
-        .await;
+    }
+    /// Writes a checkpoint that `encode` produced.
+    pub async fn save_encoded(&self, id: u64, revision: i64, payload: &str) -> Result<i64> {
+        let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
+        let result = self.state.save(id, revision, payload).await;
         if result.is_ok() {
+            crate::metrics::record_checkpoint(payload.len());
             metric.success();
         } else {
             crate::metrics::record_checkpoint_failure();
@@ -882,6 +880,22 @@ impl Store {
         self.primary.close().await;
         result
     }
+}
+/// Validates a table checkpoint and serializes it for storage.
+pub fn encode(table: &TableSnapshot) -> Result<String> {
+    table.validate()?;
+    ensure!(
+        table.chat[table.chat_archived..]
+            .iter()
+            .all(|chat| chat.id.is_some()),
+        "Pending chat must reserve numeric archive identities before checkpointing"
+    );
+    let payload = serde_json::to_string(table)?;
+    ensure!(
+        payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
+        "Checkpoint exceeds the durable state limit"
+    );
+    Ok(payload)
 }
 /// The character assignment and metadata that `game_participants` stores for a player.
 fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> {

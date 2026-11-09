@@ -32,8 +32,26 @@ use std::{
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
 
-/// How often a table checks its timers.
-const TABLE_TICK: Duration = Duration::from_millis(250);
+/// How long a table waits before retrying timed work that failed.
+const TIMER_RETRY: Duration = Duration::from_millis(250);
+
+/// A running game's timers as they stand now.
+struct Timers {
+    idle_remaining: i64,
+    /// The active player's clock.
+    active_clock: i64,
+    /// How long the active player has taken this turn.
+    turn_elapsed: i64,
+    /// Whether the active player's clock is counting down.
+    counting: bool,
+    timed: bool,
+}
+
+impl Timers {
+    fn timed_out(&self) -> bool {
+        self.timed && self.counting && self.active_clock <= 0
+    }
+}
 /// The time added to each clock of a timed game when a graceful restart drains its table, so that
 /// players do not lose time to the restart.
 const MAINTENANCE_CLOCK_ALLOWANCE_SECONDS: i64 = 20;
@@ -61,6 +79,7 @@ impl TableActor {
             hub,
             anchor: Instant::now(),
             idle_warned: false,
+            timer_retry: None,
             full_join_notices: HashSet::new(),
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             _permit: permit,
@@ -275,12 +294,107 @@ impl TableActor {
         ));
         Ok(())
     }
+    /// The milliseconds since the stored timers were last brought up to date.
+    fn elapsed_ms(&self) -> i64 {
+        i64::try_from(self.anchor.elapsed().as_millis())
+            .unwrap_or(i64::MAX)
+            .min(hanabi_protocol::MAX_SAFE_INTEGER)
+    }
+    /// The game's timers as they stand now, read without copying the table.
+    fn timers(&self) -> Option<Timers> {
+        let s = self.table.game()?;
+        let elapsed = self.elapsed_ms();
+        let counting = matches!(self.table.phase, Phase::Live { .. })
+            && s.game.end_condition == EndCondition::InProgress
+            && s.timer_started
+            && !s.game.paused;
+        let running = if counting { elapsed } else { 0 };
+        Some(Timers {
+            idle_remaining: (s.idle_remaining - elapsed).max(0),
+            active_clock: s.clocks[s.game.active_player_index] - running,
+            turn_elapsed: s.turn_elapsed + running,
+            counting,
+            timed: s.game.options.timed,
+        })
+    }
+    /// When the table next has timed work: an expiring typing indicator or reconnection grace, a
+    /// pregame start, an idle warning or ending, or a player running out of time. Once a turn or
+    /// an idle reset restarts the idle timer, this also lets the idle warning be sent again.
+    pub(super) fn next_timer(&mut self) -> Option<Instant> {
+        if self.frozen || self.store.check_state().is_err() {
+            return None;
+        }
+        if self
+            .timers()
+            .is_some_and(|t| t.idle_remaining > IDLE_WARNING_MS)
+        {
+            self.idle_warned = false;
+        }
+        let now = Instant::now();
+        let anchor = self.anchor;
+        let after = |ms: i64| anchor + Duration::from_millis(u64::try_from(ms).unwrap_or(0));
+        let mut deadlines = self
+            .attendees
+            .values()
+            .filter_map(|a| a.typing_until)
+            .collect::<Vec<_>>();
+        deadlines.extend(self.pregame_absent_until.values().copied());
+        deadlines.extend(self.replay_absent_until);
+        deadlines.extend(self.timer_retry);
+        match &self.table.phase {
+            Phase::Pregame {
+                players,
+                automatic_start,
+                countdown,
+                ..
+            } => {
+                // A start waits for the owner, whose return reschedules the timers.
+                if self
+                    .attendees
+                    .get(&self.table.owner)
+                    .is_some_and(|a| a.session.active())
+                {
+                    if automatic_start.is_some_and(|n| n == players.len()) {
+                        deadlines.push(now);
+                    }
+                    if let Some(at) = countdown {
+                        deadlines.push(now + (*at - Utc::now()).to_std().unwrap_or_default());
+                    }
+                }
+            }
+            Phase::Live { snapshot: s } => {
+                if s.game.end_condition == EndCondition::InProgress {
+                    deadlines.push(after(s.idle_remaining));
+                    if !self.idle_warned {
+                        deadlines.push(after(s.idle_remaining - IDLE_WARNING_MS));
+                    }
+                    if s.game.options.timed && s.timer_started && !s.game.paused {
+                        deadlines.push(after(s.clocks[s.game.active_player_index]));
+                    }
+                }
+            }
+            Phase::Replay { snapshot: s, .. } => deadlines.push(after(s.idle_remaining)),
+        }
+        let earliest = deadlines.iter().min().copied()?;
+        Some(
+            self.timer_retry
+                .map_or(earliest, |retry| earliest.max(retry)),
+        )
+    }
+    /// Runs the table's timed work, retrying after `TIMER_RETRY` if it fails.
+    async fn run_timers(&mut self) {
+        match self.tick().await {
+            Ok(()) => self.timer_retry = None,
+            Err(error) => {
+                eprintln!("Table timer: {error}");
+                self.timer_retry = Some(Instant::now() + TIMER_RETRY);
+            }
+        }
+    }
     pub(super) fn candidate(&self) -> TableSnapshot {
         let mut next = self.table.clone();
         let live = matches!(next.phase, Phase::Live { .. });
-        let delta = i64::try_from(self.anchor.elapsed().as_millis())
-            .unwrap_or(i64::MAX)
-            .min(hanabi_protocol::MAX_SAFE_INTEGER);
+        let delta = self.elapsed_ms();
         if let Some(s) = next.game_mut() {
             s.idle_remaining = (s.idle_remaining - delta).max(0);
             if live && s.game.end_condition == EndCondition::InProgress {
@@ -339,16 +453,15 @@ impl TableActor {
         {
             s.finished = Some(Utc::now());
         }
-        // `save` repeats these checks, but a failure inside it freezes the table. Checking here
-        // first rejects an invalid or oversized change while the table keeps running.
-        next.validate()?;
         self.store.prepare_chat(&mut next).await?;
-        ensure!(
-            serde_json::to_vec(&next)?.len() <= crate::state::MAX_CHECKPOINT_BYTES,
-            "Checkpoint exceeds the durable state limit"
-        );
+        // A failure while saving freezes the table, so encoding first rejects an invalid or
+        // oversized change while the table keeps running.
+        let payload = crate::store::encode(&next)?;
         let result = async {
-            let mut revision = self.store.save(&next, self.revision).await?;
+            let mut revision = self
+                .store
+                .save_encoded(next.id, self.revision, &payload)
+                .await?;
             if let Some(edit) = next.pending_tag.take() {
                 let tags = self.store.apply_tag(&edit).await?;
                 next.game_mut().context("Missing tagged replay")?.tags = tags;
@@ -496,14 +609,17 @@ impl TableActor {
             let result = self.initialize(session, warnings).await;
             let _ = reply.send(result);
         }
-        let mut tick = tokio::time::interval(TABLE_TICK);
-        tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        // Recovered tables start their reconnection grace and catch up on missed deadlines.
+        if !self.frozen && self.store.check_state().is_ok() {
+            self.run_timers().await;
+        }
         let mut discovery: Option<(VariantDiscovery, Reply)> = None;
         loop {
             if self.retired {
                 break;
             }
             let discovering = discovery.is_some();
+            let timer = self.next_timer();
             tokio::select! {
                 result = async { pregame_refresh.as_mut().expect("enabled statistics refresh").await }, if pregame_refresh.is_some() => {
                     pregame_refresh = None;
@@ -549,10 +665,8 @@ impl TableActor {
                         eprintln!("Table cleanup: {e}");
                     }
                 }
-                _ = tick.tick() => {
-                    if !self.frozen && self.store.check_state().is_ok() && let Err(e) = self.tick().await {
-                        eprintln!("Table timer: {e}");
-                    }
+                () = async { tokio::time::sleep_until(timer.expect("scheduled timer").into()).await }, if timer.is_some() => {
+                    self.run_timers().await;
                 }
             }
         }
@@ -734,13 +848,15 @@ impl TableActor {
         }
     }
     pub(super) fn clock(&self) -> hanabi_protocol::Clock {
-        let next = self.candidate();
-        let s = next.game().expect("game clock");
-        let live = matches!(next.phase, Phase::Live { .. })
+        let s = self.table.game().expect("game clock");
+        let now = self.timers().expect("game timers");
+        let live = matches!(self.table.phase, Phase::Live { .. })
             && s.game.end_condition == EndCondition::InProgress;
+        let mut times = s.clocks.clone();
+        times[s.game.active_player_index] = now.active_clock;
         hanabi_protocol::Clock {
             table_id: TableId(self.table.id),
-            times: s.clocks.clone(),
+            times,
             active_player_index: if live {
                 int(s.game.active_player_index)
             } else {
@@ -749,23 +865,18 @@ impl TableActor {
             time_taken: if !live || s.game.paused {
                 0
             } else {
-                s.turn_elapsed
+                now.turn_elapsed
             },
         }
     }
     pub(super) async fn command(&mut self, session: Arc<Session>, command: Command) -> Result<()> {
         ensure!(!self.frozen, "Table is frozen until recovery");
-        if matches!(self.table.phase, Phase::Live { .. }) {
-            let candidate = self.candidate();
-            if candidate.game().is_some_and(|s| {
-                s.idle_remaining == 0
-                    || (s.game.options.timed
-                        && s.timer_started
-                        && !s.game.paused
-                        && s.clocks[s.game.active_player_index] <= 0)
-            }) {
-                self.tick().await?;
-            }
+        if matches!(self.table.phase, Phase::Live { .. })
+            && self
+                .timers()
+                .is_some_and(|t| t.idle_remaining == 0 || t.timed_out())
+        {
+            self.tick().await?;
         }
         let message = match command {
             Command::Client(message) => *message,
@@ -954,27 +1065,28 @@ impl TableActor {
             }
             return Ok(());
         }
-        let mut next = self.candidate();
-        let replay = matches!(next.phase, Phase::Replay { .. });
-        let s = next.game_mut().expect("game");
-        if replay {
-            if s.idle_remaining == 0 {
+        let timers = self.timers().expect("game timers");
+        if matches!(self.table.phase, Phase::Replay { .. }) {
+            if timers.idle_remaining == 0 {
                 return self.retire().await;
             }
             return Ok(());
         }
-        if s.game.end_condition != EndCondition::InProgress {
+        if self
+            .table
+            .game()
+            .is_some_and(|s| s.game.end_condition != EndCondition::InProgress)
+        {
             return Ok(());
         }
-        let active = s.game.active_player_index;
-        let idle = s.idle_remaining == 0;
+        let idle = timers.idle_remaining == 0;
         // Warn the table once before the game ends for inactivity. The warning is sent again after
         // a turn or an idle reset restarts the timer.
-        if s.idle_remaining > IDLE_WARNING_MS {
+        if timers.idle_remaining > IDLE_WARNING_MS {
             self.idle_warned = false;
         } else if !idle && !self.idle_warned {
             self.idle_warned = true;
-            let remaining_ms = s.idle_remaining;
+            let remaining_ms = timers.idle_remaining;
             let mut e = self.effects();
             self.add_all(
                 &mut e,
@@ -986,9 +1098,11 @@ impl TableActor {
             );
             self.publish(e).await?;
         }
-        let timeout =
-            s.game.options.timed && s.timer_started && !s.game.paused && s.clocks[active] <= 0;
+        let timeout = timers.timed_out();
         if idle || timeout {
+            let mut next = self.candidate();
+            let s = next.game_mut().expect("game");
+            let active = s.game.active_player_index;
             let from = s.game.events.len();
             if timeout {
                 s.clocks[active] = 0;

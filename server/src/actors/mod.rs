@@ -338,6 +338,8 @@ struct TableActor {
     /// Whether the table was warned that the game is about to end for inactivity. Kept in memory:
     /// after a restart, the warning is sent again.
     idle_warned: bool,
+    /// When the table may retry timed work that failed.
+    timer_retry: Option<Instant>,
     /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
     /// the table can be told again.
     full_join_notices: HashSet<i32>,

@@ -451,6 +451,53 @@ fn published(notifications: &mut mpsc::Receiver<HubCommand>, command: &str) -> u
 }
 
 #[tokio::test]
+async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
+    let (_redis, store, _state) = fixture_store("live-timer-deadlines").await?;
+    let id = store.allocate_table().await?;
+    let imported = replay_helpers::parse(&hanabi_protocol::decode(
+        &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
+    )?)?;
+    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    let lead = 1000;
+    snapshot.idle_remaining = IDLE_WARNING_MS + lead;
+    let mut table = pregame(id);
+    table.options = snapshot.game.options.clone();
+    table.phase = Phase::Live {
+        snapshot: Box::new(snapshot),
+    };
+    let (hub, _notifications) = mpsc::channel(64);
+    let capacity = Arc::new(Semaphore::new(1));
+    let mut actor = TableActor::new(
+        table,
+        0,
+        store.clone(),
+        hub,
+        capacity.try_acquire_owned()?,
+        crate::server_info::test_info(),
+    );
+    let anchor = actor.anchor;
+    let at = |ms: i64| anchor + Duration::from_millis(u64::try_from(ms).unwrap());
+
+    // The idle warning comes first, and a restarted idle timer lets it be sent again.
+    let warning = at(lead);
+    actor.idle_warned = true;
+    ensure!(actor.next_timer() == Some(warning) && !actor.idle_warned);
+
+    // Once warned, the table wakes when the game would end for inactivity.
+    actor.table.game_mut().unwrap().idle_remaining = IDLE_WARNING_MS - lead;
+    actor.idle_warned = true;
+    let ending = at(IDLE_WARNING_MS - lead);
+    ensure!(actor.next_timer() == Some(ending));
+
+    // Timed work that failed waits before it is retried.
+    let retry = ending + Duration::from_secs(1);
+    actor.timer_retry = Some(retry);
+    ensure!(actor.next_timer() == Some(retry));
+    store.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<()> {
     let (_redis, store, _state) = fixture_store("live-idle-warning").await?;
     let id = store.allocate_table().await?;
