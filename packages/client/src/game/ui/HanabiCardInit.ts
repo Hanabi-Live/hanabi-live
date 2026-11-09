@@ -59,6 +59,12 @@ const LARGE_ICON_CENTERED_X = (CARD_W - LARGE_ICON_SIZE) / 2;
 /** The top edge of the large icons drawn over the middle of a card. */
 const LARGE_ICON_Y = 0.2 * CARD_H;
 
+/**
+ * The opacity of the ghost drawn over a card, so that the pips under it stay visible. It matches
+ * the trash can, whose image is half transparent.
+ */
+const GHOST_OPACITY = 0.5;
+
 /** The size of the trash can drawn over a card that can no longer be played. */
 const TRASHCAN_SIZE = { w: 0.7 * CARD_W, h: 0.6 * CARD_H } as const;
 
@@ -589,6 +595,7 @@ export function ghost(): Konva.Image {
     width: LARGE_ICON_SIZE,
     height: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("ghost"),
+    opacity: GHOST_OPACITY,
     visible: false,
   });
 }
