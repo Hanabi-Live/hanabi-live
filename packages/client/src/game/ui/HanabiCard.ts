@@ -1459,13 +1459,13 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
   }
 }
 
-function updatePip(
+export function updatePip(
   pipState: PipState,
   hasPositiveClues: boolean,
   pip: Konva.Shape | RankPip,
   x: Konva.Shape,
   pipPositive?: Konva.Shape,
-) {
+): void {
   if (pipState === PipState.Hidden) {
     pip.hide();
     x.hide();

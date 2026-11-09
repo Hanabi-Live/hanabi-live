@@ -235,6 +235,7 @@ const visibleStateObservers: Subscriptions = [
 
   // Deck
   subVS((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
+  subVS((s) => s.deck, deckView.onDeckChanged),
 ];
 
 const ongoingGameObservers: Subscriptions = [

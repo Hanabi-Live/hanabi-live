@@ -1,8 +1,16 @@
 import { describe, expect, test } from "bun:test";
+import { getVariant } from "../gameData";
+import type { CardState } from "../interfaces/CardState";
+import { getDefaultMetadata } from "../metadata";
+import type { CardOrder } from "../types/CardOrder";
 import type { Rank } from "../types/Rank";
 import type { SuitIndex } from "../types/SuitIndex";
 import type { SuitRankTuple } from "../types/SuitRankTuple";
-import { filterCardPossibilities } from "./cardDeductionReducer";
+import {
+  filterCardPossibilities,
+  getDeckPossibilities,
+} from "./cardDeductionReducer";
+import { getInitialCardState } from "./initialStates/initialCardState";
 
 const TEAL = 0 as SuitIndex;
 const RANKS = [1, 2, 3, 4, 5] as const satisfies readonly Rank[];
@@ -48,5 +56,51 @@ describe("filterCardPossibilities", () => {
       filterCardPossibilities([[TEAL, 1]], deckPossibilities, counts),
     ).toEqual([]);
     expect(performance.now() - start).toBeLessThan(1000);
+  });
+});
+
+describe("getDeckPossibilities", () => {
+  test("rules out identities whose copies are all seen or deduced", () => {
+    const metadata = getDefaultMetadata(2);
+    const variant = getVariant(metadata.options.variantName);
+    const red = 0 as SuitIndex;
+    function card(order: number): CardState {
+      return getInitialCardState(order as CardOrder, variant, 2);
+    }
+
+    const discardedFive: CardState = {
+      ...card(0),
+      location: "discard",
+      suitIndex: red,
+      rank: 5,
+      revealedToPlayer: [true, true],
+    };
+    const discardedFour: CardState = {
+      ...card(1),
+      location: "discard",
+      suitIndex: red,
+      rank: 4,
+      revealedToPlayer: [true, true],
+    };
+
+    // The only other red 4 is a clued card in our own hand that only we have deduced.
+    const ourRedFour: CardState = {
+      ...card(2),
+      location: 0,
+      hasClueApplied: true,
+      possibleCardsForEmpathy: [[red, 4]],
+    };
+    const deckCard = card(3);
+
+    const possibilities = getDeckPossibilities(
+      [discardedFive, discardedFour, ourRedFour, deckCard],
+      metadata,
+    );
+    function isPossible(rank: Rank): boolean {
+      return possibilities.some(([s, r]) => s === red && r === rank);
+    }
+    expect(isPossible(5)).toBe(false);
+    expect(isPossible(4)).toBe(false);
+    expect(isPossible(3)).toBe(true);
   });
 });

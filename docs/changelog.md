@@ -63,6 +63,8 @@ of the repository.
 - When a note determines the suit or rank shown on a card, the note icon now
   shows a large pencil instead of glowing.
 - The text in the action log now slides up and down when it changes.
+- Hold the left mouse button on the deck (or hold Space) to show which suits and
+  ranks can still be in it.
 
 ## November 8th, 2026
 

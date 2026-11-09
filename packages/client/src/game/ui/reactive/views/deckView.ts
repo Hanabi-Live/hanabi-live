@@ -10,13 +10,9 @@ export function onCardsRemainingChanged(
   previousCardsRemaining: number | undefined,
 ): void {
   stopEmptyDeckAnimation();
-  // Update the deck label.
+  // Update the deck label. This also hides the question mark icon on the deck if there are 0 cards
+  // left in the deck (because it interferes with the "Turns left" text).
   globals.elements.deck?.setCount(cardsRemainingInTheDeck);
-
-  // Hide the question mark icon on the deck if there are 0 cards left in the deck (because it
-  // interferes with the "Turns left" text).
-  globals.elements.gameInfoImage?.visible(cardsRemainingInTheDeck > 0);
-  globals.layers.arrow.batchDraw();
 
   // If we dragged the deck to the play stacks, then it will remain there until it is explicitly
   // reset.
@@ -30,4 +26,9 @@ export function onCardsRemainingChanged(
   ) {
     startEmptyDeckAnimation(CARD_ANIMATION_LENGTH_SECONDS);
   }
+}
+
+/** Cards that leave the deck or gain clues can change which cards can still be in the deck. */
+export function onDeckChanged(): void {
+  globals.elements.deck?.updateEmpathy();
 }

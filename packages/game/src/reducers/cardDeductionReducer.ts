@@ -191,6 +191,38 @@ export function recalculateDeductions(
   return newDeck.every((card, order) => card === deck[order]) ? deck : newDeck;
 }
 
+/**
+ * Returns the identities that a card in the deck can have, as far as the player at
+ * `metadata.ourPlayerIndex` knows. One list covers every card in the deck, since no clue can touch
+ * them.
+ */
+export function getDeckPossibilities(
+  deck: readonly CardState[],
+  metadata: GameMetadata,
+): readonly SuitRankTuple[] {
+  const variant = getVariant(metadata.options.variantName);
+  const cardCountMap = getCardCountMap(variant);
+  const allIdentities = variant.suits.flatMap((_suit, suitIndex) =>
+    variant.ranks
+      .filter((rank) => (cardCountMap[suitIndex]?.[rank] ?? 0) > 0)
+      .map((rank): SuitRankTuple => [suitIndex as SuitIndex, rank]),
+  );
+  const { ourPlayerIndex } = metadata;
+  const deckPossibilities = generateDeckPossibilities(
+    undefined,
+    deck,
+    ourPlayerIndex,
+    ourPlayerIndex,
+    metadata,
+  );
+
+  return filterCardPossibilities(
+    allIdentities,
+    deckPossibilities,
+    cardCountMap,
+  );
+}
+
 function getFullIdentity(
   identity: CardIdentity | undefined,
 ): SuitRankTuple | undefined {
@@ -396,7 +428,7 @@ function getCardPossibilitiesForPlayer(
 }
 
 function generateDeckPossibilities(
-  excludeCardOrder: CardOrder,
+  excludeCardOrder: CardOrder | undefined,
   deck: readonly CardState[],
   playerIndex: PlayerIndex,
   ourPlayerIndex: PlayerIndex,
@@ -486,7 +518,7 @@ function isPossibleCard(
 
 function canBeUsedToDisprovePossibility(
   card: CardState | undefined,
-  excludeCardOrder: CardOrder,
+  excludeCardOrder: CardOrder | undefined,
   playerIndex: PlayerIndex,
 ): boolean {
   return (

@@ -1,24 +1,32 @@
 import { ActionType, ReplayArrowOrder } from "@hanabi-live/data";
 import type { CardOrder } from "@hanabi-live/game";
 import {
+  getDeckPossibilities,
   getTotalCardsInDeck,
   millisecondsToClockString,
+  PipState,
   secondsToClockString,
+  UNKNOWN_SUIT_NAME,
 } from "@hanabi-live/game";
 import Konva from "konva";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../../enums/OptionIcons";
 import { globals as globals2 } from "../../Globals";
 import * as tooltips from "../../tooltips";
 import { dateTimeFormatter, escapeHtml } from "../../utils";
+import type { Pips } from "../types/Pips";
 import * as arrows from "./arrows";
 import {
   CARD_ANIMATION_LENGTH_SECONDS,
+  CARD_W,
   EMPTY_DECK_COLOR,
   FONT_FAMILY,
   LEFT_MOUSE_BUTTON_HELD,
   STROKE_WIDTH_UNIT,
 } from "./constants";
 import * as cursor from "./cursor";
+import { CARD_IMAGE_UNKNOWN_CARD_RANK_NAME } from "./drawCards";
+import { updatePip } from "./HanabiCard";
+import * as HanabiCardInit from "./HanabiCardInit";
 import { isOurTurn } from "./isOurTurn";
 import * as konvaTooltips from "./konvaTooltips";
 import * as turn from "./turn";
@@ -51,9 +59,14 @@ const EMPTY_DECK_NUM_LEFT_Y = 0.15;
  */
 const GAME_ID_NUM_LEFT_NUDGE = 0.07;
 
+/** The image of a card with no pips, which the deck shows with its own pips during empathy. */
+const UNKNOWN_CARD_IMAGE = `card-${UNKNOWN_SUIT_NAME}-${CARD_IMAGE_UNKNOWN_CARD_RANK_NAME}`;
+
 export class Deck extends Konva.Group {
   cardBack: Konva.Image;
+  empathy = false;
   numLeft: number;
+  pips: Pips;
   numLeftText: Konva.Text;
   tooltipName = "deck";
   tooltipContent = "";
@@ -93,6 +106,17 @@ export class Deck extends Konva.Group {
     });
     this.add(this.numLeftText);
 
+    // The pips that show which cards can still be in the deck. The pips are drawn at the size of a
+    // card image, so they scale with the deck.
+    this.pips = HanabiCardInit.pips(globals.variant);
+    const pipsScale = this.width() / CARD_W;
+    const pipsGroup = new Konva.Group({
+      scale: { x: pipsScale, y: pipsScale },
+      listening: false,
+    });
+    pipsGroup.add(this.pips.suitPips, this.pips.rankPips);
+    this.add(pipsGroup);
+
     // Right-click on the deck to highlight it with an arrow.
     this.on("click tap", (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.Deck);
@@ -100,6 +124,7 @@ export class Deck extends Konva.Group {
 
     this.initDeckTooltip();
     this.initCursors();
+    this.initEmpathy();
   }
 
   // Most of this function is copy-pasted from "LayoutChild.dragEnd()". It contains a subset of the
@@ -202,6 +227,81 @@ export class Deck extends Konva.Group {
     });
   }
 
+  // Click and hold the left mouse button on the deck to show which cards can still be in it.
+  initEmpathy(): void {
+    this.on("mousedown", (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (
+        event.evt.buttons === LEFT_MOUSE_BUTTON_HELD
+        && !event.evt.shiftKey
+        && !event.evt.altKey
+        && !event.evt.metaKey
+        && !this.canDragDeck()
+      ) {
+        // The game info tooltip would cover the pips.
+        konvaTooltips.resetActiveHover(this);
+        tooltips.close("#tooltip-deck");
+        this.setEmpathy(true);
+      }
+    });
+    const stopEmpathy = () => {
+      if (!globals.globalEmpathyEnabled) {
+        this.setEmpathy(false);
+      }
+    };
+    this.on("mouseup mouseleave", stopEmpathy);
+  }
+
+  setEmpathy(enabled: boolean): void {
+    if (enabled === this.empathy) {
+      return;
+    }
+
+    this.empathy = enabled;
+    this.updateEmpathy();
+  }
+
+  /** Redraws the deck for the current empathy setting and game state. */
+  updateEmpathy(): void {
+    const showEmpathy = this.empathy && this.numLeft > 0;
+    this.cardBack.image(
+      globals.cardImages.get(showEmpathy ? UNKNOWN_CARD_IMAGE : "deck-back"),
+    );
+    this.numLeftText.visible(!showEmpathy);
+    this.pips.suitPips.visible(showEmpathy);
+    this.pips.rankPips.visible(showEmpathy);
+    // The game info icon would cover the rank pips.
+    globals.elements.gameInfoImage?.visible(!showEmpathy && this.numLeft > 0);
+    globals.layers.arrow.batchDraw();
+
+    if (showEmpathy && globals.state.visibleState !== null) {
+      const possibilities = getDeckPossibilities(
+        globals.state.visibleState.deck,
+        globals.metadata,
+      );
+      for (const [suitIndex, pip] of this.pips.suitPipsMap) {
+        const possible = possibilities.some(([s]) => s === suitIndex);
+        updatePip(
+          possible ? PipState.Visible : PipState.Eliminated,
+          false,
+          pip,
+          this.pips.suitPipsXMap.get(suitIndex)!,
+          this.pips.suitPipsPositiveMap.get(suitIndex),
+        );
+      }
+      for (const [rank, pip] of this.pips.rankPipsMap) {
+        const possible = possibilities.some(([, r]) => r === rank);
+        updatePip(
+          possible ? PipState.Visible : PipState.Eliminated,
+          false,
+          pip,
+          this.pips.rankPipsXMap.get(rank)!,
+        );
+      }
+    }
+
+    globals.layers.card.batchDraw();
+  }
+
   canDragDeck(): boolean {
     return globals.options.deckPlays && this.numLeft === 1 && isOurTurn();
   }
@@ -227,6 +327,8 @@ export class Deck extends Konva.Group {
     if (count === 0 && globals.elements.gameIDLabel!.isVisible() === true) {
       this.nudgeCountDownwards();
     }
+
+    this.updateEmpathy();
   }
 
   nudgeCountDownwards(): void {
