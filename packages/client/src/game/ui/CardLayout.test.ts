@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import type { LayoutChild } from "./LayoutChild";
 
 vi.mock("./UIGlobals", () => ({ globals: {} }));
+vi.mock("./misplayAnimation", () => ({}));
 const { CardLayout } = await import("./CardLayout");
 
 describe("CardLayout.setEmpathy", () => {

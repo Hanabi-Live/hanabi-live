@@ -114,7 +114,7 @@ const START_CARD_PIP_BORDER_WIDTH = 2;
  * How round a card's corners are, as a fraction of the card width. The corners are tighter when the
  * card has a shadow.
  */
-const CARD_CORNER_ROUNDNESS = {
+export const CARD_CORNER_ROUNDNESS = {
   withShadow: 0.08,
   withoutShadow: 0.12,
 } as const;

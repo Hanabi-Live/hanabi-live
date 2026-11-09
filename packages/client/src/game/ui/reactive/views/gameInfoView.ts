@@ -228,15 +228,19 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   globals.layers.UI.batchDraw();
 }
 
+/** Strikes are hidden from the players in "Throw It in a Hole" variants. */
+export function areStrikesHidden(): boolean {
+  return (
+    globals.variant.throwItInAHole
+    && (globals.state.playing || globals.state.shadowing)
+  );
+}
+
 export function onOngoingOrVisibleStrikesChanged(data: {
   ongoingStrikes: readonly StateStrike[];
   visibleStrikes: readonly StateStrike[];
 }): void {
-  // Strikes are hidden from the players in "Throw It in a Hole" variants.
-  if (
-    globals.variant.throwItInAHole
-    && (globals.state.playing || globals.state.shadowing)
-  ) {
+  if (areStrikesHidden()) {
     return;
   }
 
@@ -250,7 +254,8 @@ export function onOngoingOrVisibleStrikesChanged(data: {
       continue;
     }
 
-    if (data.visibleStrikes[i] === undefined) {
+    const visibleStrike = data.visibleStrikes[i];
+    if (visibleStrike === undefined) {
       // Either this strike has never happened, or we are moving backwards in a replay. If this
       // strike never happened, it should be invisible. If this strike happened in the future, then
       // it should be slightly faded.
@@ -271,6 +276,16 @@ export function onOngoingOrVisibleStrikesChanged(data: {
         },
         true,
       );
+    } else if (
+      globals.deck[visibleStrike.order]?.layout.misplayAnimation?.exploded
+      === false
+    ) {
+      // The misplay animation reveals the strike when the card explodes on it.
+      if (strikeX.tween !== null) {
+        strikeX.tween.destroy();
+        strikeX.tween = null;
+      }
+      strikeX.opacity(0);
     } else {
       // There is a strike on the visible state. Animate the strike X fading in.
       animate(

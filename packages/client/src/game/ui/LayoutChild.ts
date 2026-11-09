@@ -11,6 +11,7 @@ import type { PlayStack } from "./PlayStack";
 import { globals } from "./UIGlobals";
 import { confirmPlay } from "./confirmPlay";
 import * as cursor from "./cursor";
+import type { MisplayAnimation } from "./misplayAnimation";
 import { draggablePlayerIndex } from "./reactive/views/draggableView";
 import * as turn from "./turn";
 
@@ -18,6 +19,7 @@ import * as turn from "./turn";
 export class LayoutChild extends Konva.Group {
   tween: Konva.Tween | null = null;
   doMisplayAnimation = false;
+  misplayAnimation: MisplayAnimation | null = null;
   blank = false;
 
   private readonly _card: HanabiCard;
@@ -50,6 +52,13 @@ export class LayoutChild extends Konva.Group {
 
     child.on("widthChange", change);
     child.on("heightChange", change);
+  }
+
+  stopMisplayAnimation(): void {
+    if (this.misplayAnimation !== null) {
+      this.misplayAnimation.stop();
+      this.misplayAnimation = null;
+    }
   }
 
   // Note that this method cannot be named "setDraggable()", since that would overlap with the Konva

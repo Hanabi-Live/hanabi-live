@@ -46,6 +46,7 @@ export class PlayStack extends Konva.Group {
       layoutChild.tween.destroy();
       layoutChild.tween = null;
     }
+    layoutChild.stopMisplayAnimation();
 
     // Animate the card leaving the hand to the play stacks (or vice versa). (Tweening from the hand
     // to the discard pile is handled in the "CardLayout" object.)

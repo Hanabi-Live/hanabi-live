@@ -2,8 +2,9 @@ import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
-import { CARD_ANIMATION_LENGTH_SECONDS, FULL_TURN_DEGREES } from "./constants";
+import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
 import { animate, degreesToRadians } from "./konvaHelpers";
+import { startMisplayAnimation } from "./misplayAnimation";
 
 /** The largest gap between adjacent cards in a hand, as a fraction of the total card width. */
 const MAX_CARD_SPACING = 0.04;
@@ -123,6 +124,7 @@ export class CardLayout extends Konva.Group {
         layoutChild.tween.destroy();
         layoutChild.tween = null;
       }
+      layoutChild.stopMisplayAnimation();
 
       // Animate the card going:
       // - from the deck to a player's hand (or vice versa)
@@ -157,29 +159,14 @@ export class CardLayout extends Konva.Group {
       if (layoutChild.doMisplayAnimation) {
         // If this card just misplayed, do a special animation.
         layoutChild.doMisplayAnimation = false;
-
-        const suit = globals.variant.suits[layoutChild.card.state.suitIndex!]!;
-        const playStack = globals.elements.playStacks.get(suit)!;
-        const pos = this.getAbsolutePosition();
-        const playStackPos = playStack.getAbsolutePosition();
-
-        animate(
+        layoutChild.misplayAnimation = startMisplayAnimation(
           layoutChild,
-          {
-            duration: CARD_ANIMATION_LENGTH_SECONDS,
-            x: playStackPos.x - pos.x,
-            y: playStackPos.y - pos.y,
-            scale: (playStack.height() * scale) / handHeight,
-            rotation: 0,
-            opacity: 1,
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            easing: Konva.Easings.EaseOut,
-            onFinish: () => {
-              layoutChild.rotation(FULL_TURN_DEGREES);
-              animateToLayout();
-            },
+          { x: newX, y: 0, scale },
+          () => {
+            layoutChild.misplayAnimation = null;
+            layoutChild.card.finishedTweening();
+            layoutChild.checkSetDraggable();
           },
-          !globals.options.speedrun,
         );
       } else {
         animateToLayout();

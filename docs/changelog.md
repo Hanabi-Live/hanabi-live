@@ -9,6 +9,8 @@ of the repository.
 
 ## November 9th, 2026
 
+- Misplayed cards now launch like a dud firework, explode on the strike tracker,
+  and fall into the discard pile.
 - After a game, players can uncheck "Ready" to tell the leader that they will
   not play another game.
 - In "Throw It in a Hole" variants, played cards now spin into the hole instead
