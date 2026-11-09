@@ -153,13 +153,13 @@
           </a>
         </li>
       </ul>
-      <ul id="nav-buttons-form" class="hidden">
+      <ul id="nav-buttons-page" class="hidden">
         <li>
-          <a id="nav-buttons-form-return" class="button">
+          <a id="nav-buttons-page-return" class="button">
             <i class="fas fa-arrow-left nav-icon"></i>
             <span class="hidden-sm">
               <span class="nav-hotkey-indicator">R</span>eturn to
-              <span id="nav-buttons-form-return-target">Lobby</span>
+              <span id="nav-buttons-page-return-target">Lobby</span>
             </span>
           </a>
         </li>
@@ -890,7 +890,7 @@
         </section>
 
         <!-- The form to create a new game or change the options of the current one -->
-        <section id="lobby-create-game" class="box lobby-form-screen hidden">
+        <section id="lobby-create-game" class="box lobby-page hidden">
           <div id="create-game-form">
             <h2 id="create-game-title">Create a New Game</h2>
 
@@ -1143,7 +1143,7 @@
         </section>
 
         <!-- The form to watch the replay of a specific game -->
-        <section id="lobby-replay" class="box lobby-form-screen hidden">
+        <section id="lobby-replay" class="box lobby-page hidden">
           <h2>Watch a Specific Replay</h2>
 
           <div class="lobby-form-field">
@@ -1239,6 +1239,208 @@
           <button id="replay-submit" class="button fit" type="submit">
             Watch
           </button>
+        </section>
+
+        <!-- Links to documentation, the community, and the project -->
+        <section id="lobby-resources" class="box lobby-page hidden">
+          <h2>Resources</h2>
+          <div class="resources">
+            <section class="resource-group">
+              <h3>Learn the Game</h3>
+              <ul class="resource-list">
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-play-circle"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://www.youtube.com/watch?v=VrFCekQb4nY"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >The Rules / How to Play</a
+                    >
+                    <p>
+                      This website does not have a tutorial on how to play, so
+                      watch this video instead.
+                    </p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"><i class="fas fa-book"></i></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >The Hanab Live Manual & List of Features</a
+                    >
+                    <p>Get answers to the most common questions.</p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-chess"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://hanabi.github.io/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Strategies and Conventions</a
+                    >
+                    <p>
+                      This is a document that lists the strategies and
+                      conventions used by the H-Group. (You don't have to use
+                      them if you don't want to.)
+                    </p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-globe"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://hanabi.wiki/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Hanabi Central Wiki</a
+                    >
+                    <p>This wiki contains even more convention systems.</p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="resource-group">
+              <h3>Community</h3>
+              <ul class="resource-list">
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-comments"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://discord.gg/FADvkJp"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >The H-Group Discord Server</a
+                    >
+                    <p>A place to find teammates and discuss strategy.</p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-stopwatch"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://www.speedrun.com/hanabi"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Speedrun.com Leaderboards</a
+                    >
+                    <p>The fastest times in the world are tracked here.</p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="resource-group">
+              <h3>This Website</h3>
+              <ul class="resource-list">
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-clipboard-list"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/changelog.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Changelog</a
+                    >
+                    <p>See what has changed on the website over time.</p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"><i class="fas fa-code"></i></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://github.com/Hanabi-Live/hanabi-live"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >The Code Repository</a
+                    >
+                    <p>
+                      This client and server are open-source, hosted on GitHub.
+                    </p>
+                  </div>
+                </li>
+                <li class="resource">
+                  <span class="resource-icon"><i class="fas fa-bug"></i></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://github.com/Hanabi-Live/hanabi-live/issues"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >File a Bug Report</a
+                    >
+                    <p>
+                      Report bugs by opening a new issue on GitHub. (You will
+                      need to create a free GitHub account.) Make sure that
+                      someone else has not already opened the same issue.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="resource-group">
+              <h3>Give Back</h3>
+              <ul class="resource-list">
+                <li class="resource">
+                  <span class="resource-icon"
+                    ><i class="fas fa-hand-holding-heart"></i
+                  ></span>
+                  <div class="resource-body">
+                    <a
+                      class="resource-title"
+                      href="https://www.givewell.org/charities/top-charities"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Make the World a Better Place</a
+                    >
+                    <p>
+                      {{ projectName }} is hosted free of charge and does not
+                      have any advertisements. If you enjoy the website and want
+                      to help out, consider donating a
+                      <a
+                        href="https://www.givingwhatwecan.org/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >portion of your income</a
+                      >
+                      to the top-rated charities in the world. (<a
+                        href="https://en.wikipedia.org/wiki/GiveWell"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >GiveWell</a
+                      >
+                      is widely regarded as a pretty good organization for
+                      assessing which charities are good.)
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+          </div>
         </section>
 
         <!-- The other scores table (all games on a specific seed) -->
@@ -1352,130 +1554,6 @@
         </li>
       </ul>
     </section>
-  </div>
-
-  <!-- Resources modal -->
-  <div id="resources-modal">
-    <h2>Resources</h2>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/features.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          The Hanab Live Manual & List of Features </a
-        ><br />
-        Get answers to the most common questions.
-      </li>
-      <li>
-        <a
-          href="https://github.com/Hanabi-Live/hanabi-live/blob/main/docs/changelog.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Changelog </a
-        ><br />
-        See what has changed on the website over time.
-      </li>
-      <li>
-        <a
-          href="https://www.youtube.com/watch?v=VrFCekQb4nY"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          The Rules / How to Play </a
-        ><br />
-        This website does not have a tutorial on how to play, so watch this
-        video instead.
-      </li>
-      <li>
-        <a
-          href="https://discord.gg/FADvkJp"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          The H-Group Discord Server </a
-        ><br />
-        A place to find teammates and discuss strategy.
-      </li>
-      <li>
-        <a
-          href="https://hanabi.github.io/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Strategies and Conventions </a
-        ><br />
-        This is a document that lists the strategies and conventions used by the
-        H-Group.<br />
-        (You don't have to use them if you don't want to.)
-      </li>
-      <li>
-        <a
-          href="https://hanabi.wiki/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Hanabi Central Wiki </a
-        ><br />
-        This wiki contains even more convention systems.
-      </li>
-      <li>
-        <a
-          href="https://github.com/Hanabi-Live/hanabi-live"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          The Code Repository </a
-        ><br />
-        This client and server are open-source, hosted on GitHub.
-      </li>
-      <li>
-        <a
-          href="https://github.com/Hanabi-Live/hanabi-live/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          File a Bug Report </a
-        ><br />
-        Report bugs by opening a new issue on GitHub.<br />
-        (You will need to create a free GitHub account.)<br />
-        Make sure that someone else has not already opened the same issue.
-      </li>
-      <li>
-        <a
-          href="https://www.speedrun.com/hanabi"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Speedrun.com Leaderboards </a
-        ><br />
-        The fastest times in the world are tracked here.
-      </li>
-      <li>
-        <a
-          href="https://www.givewell.org/charities/top-charities"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Make the World a Better Place </a
-        ><br />
-        {{ projectName }} is hosted free of charge and does not have any
-        advertisements.<br />
-        If you enjoy the website and want to help out, consider donating a
-        <a href="https://www.givingwhatwecan.org/">portion of your income</a>
-        to the<br />
-        top-rated charities in the world. (<a
-          href="https://en.wikipedia.org/wiki/GiveWell"
-          target="_blank"
-          rel="noopener noreferrer"
-          >GiveWell</a
-        >
-        is widely regarded as a pretty good organization<br />
-        for assessing which charities are good.)
-      </li>
-    </ul>
   </div>
 
   <!-- Settings modal -->

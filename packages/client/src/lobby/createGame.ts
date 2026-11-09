@@ -24,7 +24,7 @@ import {
 import { globals } from "../Globals";
 import { DIMMED_OPACITY, LOCAL_STORAGE_KEY } from "../constants";
 import { getHTMLInputElement } from "../utils";
-import * as formScreen from "./formScreen";
+import * as lobbyPage from "./lobbyPage";
 import { Screen } from "./types/Screen";
 
 const BASIC_VARIANT_NAMES = [
@@ -341,7 +341,7 @@ function submit() {
     detrimentalCharacters: getCheckbox("createTableDetrimentalCharacters"),
   };
 
-  formScreen.hide();
+  lobbyPage.hide();
 
   if (isNew) {
     globals.conn!.send("tableCreate", {
@@ -455,7 +455,7 @@ export function checkSettingChanged<T extends keyof Settings>(
  */
 export function show(): void {
   ready();
-  formScreen.show("#lobby-create-game", "#create-game-submit");
+  lobbyPage.show("#lobby-create-game", "#create-game-submit");
   $("#create-game-variant-dropdown1").trigger("focus");
 }
 

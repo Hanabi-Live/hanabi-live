@@ -7,6 +7,8 @@ listed here.
 
 ## November 9th, 2026
 
+- "Resources" now opens a full page instead of a pop-up, with its links grouped
+  by topic.
 - The emoji and emote pickers are now in alphabetical order.
 - "Watch Replay" now opens a full page instead of a pop-up.
 - "New Game" and "Change Options" now open a full page instead of a pop-up.

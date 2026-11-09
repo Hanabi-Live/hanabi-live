@@ -16,7 +16,7 @@ import { PATH } from "../constants";
 import { DECK_PLAYS_ICON_STYLE, OptionIcons } from "../enums/OptionIcons";
 import * as tooltips from "../tooltips";
 import { escapeHtml, getHTMLElement, setBrowserAddressBarPath } from "../utils";
-import * as formScreen from "./formScreen";
+import * as lobbyPage from "./lobbyPage";
 import * as nav from "./nav";
 import { tablesDraw } from "./tablesDraw";
 import { Screen } from "./types/Screen";
@@ -25,7 +25,7 @@ const lobbyChatText = getHTMLElement("#lobby-chat-text");
 const lobbyChatPregameText = getHTMLElement("#lobby-chat-pregame-text");
 
 export function show(): void {
-  formScreen.hide();
+  lobbyPage.hide();
   globals.currentScreen = Screen.PreGame;
 
   // Replace the list of current games with a list of the current players.
@@ -77,7 +77,7 @@ export function show(): void {
 }
 
 export function hide(updateURL = true): void {
-  formScreen.hide();
+  lobbyPage.hide();
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
 

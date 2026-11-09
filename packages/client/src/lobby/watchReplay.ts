@@ -5,9 +5,9 @@ import { assertDefined, parseIntSafe } from "complete-common";
 import { LOCAL_STORAGE_KEY } from "../constants";
 import { globals } from "../Globals";
 import { escapeHtml } from "../utils";
-import * as formScreen from "./formScreen";
 import type { GameJSON } from "./gameJSON";
 import { parseGameJSON } from "./gameJSON";
+import * as lobbyPage from "./lobbyPage";
 
 export function init(): void {
   // Make the text box appear and disappear depending on which source is selected.
@@ -167,7 +167,7 @@ function submit() {
     });
   }
 
-  formScreen.hide();
+  lobbyPage.hide();
 }
 
 function showReplayError(text: string) {
@@ -177,7 +177,7 @@ function showReplayError(text: string) {
 
 export function show(): void {
   ready();
-  formScreen.show("#lobby-replay", "#replay-submit");
+  lobbyPage.show("#lobby-replay", "#replay-submit");
   $(
     $("#replay-source-json").prop("checked") === true
       ? "#replay-json"

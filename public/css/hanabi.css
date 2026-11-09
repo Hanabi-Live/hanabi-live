@@ -731,10 +731,10 @@ table td {
 }
 
 /*
-  Lobby form screens ("Create Game" and "Watch Specific Replay")
+  Lobby pages ("Create Game", "Watch Specific Replay", and "Resources")
 */
 /* The lobby stretches its sections to full height; these fit their content instead. */
-#lobby .lobby-form-screen {
+#lobby .lobby-page {
   height: auto;
   margin: 0 auto;
   max-width: 46em;
@@ -742,11 +742,11 @@ table td {
   overflow-y: auto;
 }
 
-.lobby-form-screen h2 {
+.lobby-page h2 {
   margin-bottom: 1em;
 }
 
-.lobby-form-screen .fa-fw {
+.lobby-page .fa-fw {
   margin-right: 0.6em;
 }
 
@@ -894,7 +894,7 @@ table td {
   }
 }
 
-.lobby-form-screen button[type="submit"],
+.lobby-page button[type="submit"],
 #change-variant-submit {
   font-size: 1em;
 }
@@ -958,6 +958,104 @@ input::-webkit-calendar-picker-indicator /* Chrome */ {
 
 #replay-submit {
   margin-top: 1em;
+}
+
+/*
+  Resources screen
+*/
+#lobby #lobby-resources {
+  max-width: 64em;
+}
+
+.resources ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resource-group + .resource-group {
+  margin-top: 1.5em;
+}
+
+.resource-group h3 {
+  color: #8a8a8a;
+  font-size: 1em;
+  margin: 0 0 0.6em;
+}
+
+.resource-list {
+  display: grid;
+  gap: 0.75em;
+  grid-template-columns: repeat(auto-fill, minmax(22em, 1fr));
+}
+
+/* Each resource is one link; the title's link covers the whole element. */
+.resource {
+  align-items: flex-start;
+  background-color: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  display: flex;
+  gap: 1em;
+  margin: 0;
+  padding: 0.9em 1em;
+  position: relative;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.resource:hover,
+.resource:focus-within {
+  background-color: white;
+  border-color: #308943;
+}
+
+.resource-body {
+  min-width: 0;
+}
+
+.resource-title {
+  border-bottom: 0;
+  color: #646464;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.resource-title::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.resource:hover .resource-title,
+.resource:focus-within .resource-title {
+  color: #308943;
+}
+
+.resource p {
+  font-size: 0.9em;
+  line-height: 1.5em;
+  margin: 0.2em 0 0;
+}
+
+/* Links inside a description stay clickable on their own. */
+.resource p a {
+  position: relative;
+  z-index: 1;
+}
+
+.resource-icon {
+  align-items: center;
+  background-color: #e6f2e8;
+  border-radius: 50%;
+  color: #308943;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.2em;
+  height: 2.3em;
+  justify-content: center;
+  width: 2.3em;
 }
 
 /*
@@ -1116,10 +1214,6 @@ html:not([data-theme="dark"]) .modal :is(input, select, textarea) {
     right: 0;
     max-width: unset;
   }
-}
-
-#resources-modal ul {
-  margin: 0;
 }
 
 #set-modifier-current {

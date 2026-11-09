@@ -5,8 +5,8 @@ import { NO_TABLE_ID } from "../constants";
 import { globals } from "../Globals";
 import { initModal, showWarning } from "../modals";
 import * as createGame from "./createGame";
-import * as formScreen from "./formScreen";
 import * as history from "./history";
+import * as lobbyPage from "./lobbyPage";
 import * as pregame from "./pregame";
 import * as tablesDraw from "./tablesDraw";
 import * as watchReplay from "./watchReplay";
@@ -20,9 +20,9 @@ export function init(): void {
     },
   );
 
-  // The "Return to Lobby" or "Return to Game" button (from a form screen).
-  $("#nav-buttons-form-return").on("click", () => {
-    formScreen.hide();
+  // The "Return to Lobby" or "Return to Game" button (from a lobby page).
+  $("#nav-buttons-page-return").on("click", () => {
+    lobbyPage.hide();
   });
 
   // The "Show History" button.
@@ -38,7 +38,9 @@ export function init(): void {
   // The "Help" button. (This is just a simple link, so it does not need any code.)
 
   // The "Resources" button
-  initModal("#nav-buttons-lobby-resources", "#resources-modal");
+  $("#nav-buttons-lobby-resources").on("click", () => {
+    lobbyPage.show("#lobby-resources");
+  });
 
   // The "Settings" button
   initModal("#nav-buttons-lobby-settings", "#settings-modal");
@@ -237,7 +239,7 @@ export function show(target: string): void {
   const navTypes = [
     "lobby",
     "pregame",
-    "form",
+    "page",
     "history",
     "history-other-scores",
   ];

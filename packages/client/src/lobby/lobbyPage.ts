@@ -1,28 +1,31 @@
-// Full-page forms in the lobby (such as "Create Game"), which replace the lobby until the user
-// submits them or returns.
+// Full pages in the lobby (such as "Create Game" and "Resources"), which replace the lobby until
+// the user submits them or returns.
 
 import { globals } from "../Globals";
 import * as nav from "./nav";
 import { Screen } from "./types/Screen";
 
-interface FormScreen {
+interface LobbyPage {
   readonly section: string;
-  readonly submitButton: string;
+  readonly submitButton: string | undefined;
 }
 
-let current: FormScreen | null = null;
+let current: LobbyPage | null = null;
 
-/** Shows a form screen from the lobby or from the pre-game screen, which it returns to. */
-export function show(section: string, submitButton: string): void {
+/**
+ * Shows a page from the lobby or from the pre-game screen, which it returns to. Pages with a form
+ * pass the button that submits it, so that pressing enter submits the form.
+ */
+export function show(section: string, submitButton?: string): void {
   hide();
   current = { section, submitButton };
 
   $(section).show();
   nav.showLobbyHalves(false);
-  $("#nav-buttons-form-return-target").text(
+  $("#nav-buttons-page-return-target").text(
     globals.currentScreen === Screen.PreGame ? "Game" : "Lobby",
   );
-  nav.show("form");
+  nav.show("page");
 }
 
 export function hide(): void {
@@ -40,7 +43,7 @@ export function isShown(): boolean {
   return current !== null;
 }
 
-/** The button that submits the form screen being shown, if any. */
+/** The button that submits the form on the page being shown, if any. */
 export function getSubmitButton(): string | undefined {
   return current?.submitButton;
 }

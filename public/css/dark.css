@@ -129,6 +129,36 @@ html[data-theme="dark"] .dialog {
   border-color: var(--dm-border);
 }
 
+/* Lobby: the cards on the "Resources" screen */
+html[data-theme="dark"] .resource {
+  background-color: var(--dm-surface-2);
+  border-color: var(--dm-border);
+}
+
+html[data-theme="dark"] .resource:hover,
+html[data-theme="dark"] .resource:focus-within {
+  background-color: var(--dm-surface);
+  border-color: var(--dm-accent-green);
+}
+
+html[data-theme="dark"] .resource-title {
+  color: var(--dm-text);
+}
+
+html[data-theme="dark"] .resource:hover .resource-title,
+html[data-theme="dark"] .resource:focus-within .resource-title {
+  color: #6fcf7a;
+}
+
+html[data-theme="dark"] .resource-icon {
+  background-color: #1f3524;
+  color: #6fcf7a;
+}
+
+html[data-theme="dark"] .resource-group h3 {
+  color: var(--dm-text-muted);
+}
+
 /* Alpha template: tables */
 html[data-theme="dark"] table tbody tr {
   border-bottom: 1px solid var(--dm-border);
