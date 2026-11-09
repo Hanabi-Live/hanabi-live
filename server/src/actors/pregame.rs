@@ -1,6 +1,6 @@
 use super::table::wrong_phase;
 use super::{
-    Allocation, HubCommand, PlayingClaim, TableActor, TableChange,
+    Allocation, HubCommand, TableActor, TableChange,
     chat::{membership_notice, server_chat, truncate},
     setup::{
         load_replay, normalize_options, option_changes, options_suggestion, requested_extra,
@@ -444,20 +444,15 @@ impl TableActor {
             .into_iter()
             .filter(|id| !bots.contains(id))
             .collect::<Vec<_>>();
-        for user in &humans {
-            allocation
-                .playing_claims
-                .push(PlayingClaim::acquire(&self.playing_claims, *user)?);
-        }
         let (reply, received) = oneshot::channel();
         self.hub
-            .send(HubCommand::CheckPlaying {
+            .send(HubCommand::ReserveSeats {
                 users: humans,
-                except: self.table.id,
+                from: self.table.id,
                 reply,
             })
             .await?;
-        received.await??;
+        allocation.reservation = Some(received.await??);
         // The source and its new table change in one commit.
         let committed = self
             .persist_with(

@@ -1,5 +1,5 @@
 use super::{
-    Allocation, Command, Entry, HubCommand, NO_SHADOWED_SEAT, PlayingClaim, Presence, Reply,
+    Allocation, Command, Entry, HubCommand, NO_SHADOWED_SEAT, Presence, Reply, SeatReservation,
     TableActor, TableCommand, TableHandle, TableView,
     setup::{Creation, prepare_table, replay_table},
 };
@@ -17,11 +17,7 @@ use hanabi_protocol::{
     UserList,
 };
 use serde_json::{Value, json};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::{Semaphore, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
 
@@ -43,7 +39,11 @@ pub struct Hub {
     pub(super) store: Store,
     pub(super) tasks: TaskTracker,
     pub(super) capacity: Arc<Semaphore>,
-    pub(super) playing_claims: Arc<Mutex<HashSet<i32>>>,
+    /// The users with a pending request to play at a table, and the ID of the reservation that
+    /// holds each one's seat. The hub alone decides who plays where: from the tables' published
+    /// views, and from these reservations for requests that no view shows yet.
+    pub(super) reservations: HashMap<i32, u64>,
+    pub(super) next_reservation: u64,
     pub(super) info: Arc<ServerInfo>,
 }
 impl Hub {
@@ -63,7 +63,8 @@ impl Hub {
             store,
             tasks: tasks.clone(),
             capacity: Arc::new(Semaphore::new(MAX_TABLES)),
-            playing_claims: Arc::new(Mutex::new(HashSet::new())),
+            reservations: HashMap::new(),
+            next_reservation: 0,
             info,
         };
         for (table, revision) in restored {
@@ -97,11 +98,10 @@ impl Hub {
     }
     fn spawn(
         &self,
-        mut actor: TableActor,
+        actor: TableActor,
         initial: Option<(Arc<Session>, Vec<String>, Reply)>,
     ) -> TableHandle {
         let (sender, receiver) = mpsc::channel(TABLE_QUEUE);
-        actor.playing_claims = self.playing_claims.clone();
         let handle = TableHandle {
             sender,
             cleanup: actor.cleanup.clone(),
@@ -150,27 +150,77 @@ impl Hub {
             Some(*id) != except && !entry.view.replay && entry.view.players.contains(&user)
         })
     }
-    fn route(&self, s: Arc<Session>, id: u64, command: Command, reply: Reply) {
+    /// Reserves the seats of `users` for a request to play at a table. Fails if any of them plays
+    /// at a table other than `except` or has another such request pending.
+    fn reserve(
+        &mut self,
+        users: Vec<i32>,
+        except: Option<u64>,
+        playing_elsewhere: &str,
+    ) -> Result<SeatReservation> {
+        ensure_or_reject!(
+            users
+                .iter()
+                .all(|user| !self.reservations.contains_key(user)),
+            "Another playing-table request is already pending."
+        );
+        ensure_or_reject!(
+            users
+                .iter()
+                .all(|user| !self.playing_elsewhere(*user, except)),
+            "{playing_elsewhere}"
+        );
+        self.next_reservation += 1;
+        let id = self.next_reservation;
+        for user in &users {
+            self.reservations.insert(*user, id);
+        }
+        Ok(SeatReservation {
+            id,
+            users,
+            hub: Some(self.sender.clone()),
+        })
+    }
+    /// Ends a seat reservation once its request has finished. A table that the request changed
+    /// publishes its view before it answers, so the view already shows the seats.
+    fn end_reservation(&mut self, reservation: SeatReservation) {
+        let (id, users) = reservation.take();
+        self.end_reservation_of(id, &users);
+    }
+    fn end_reservation_of(&mut self, id: u64, users: &[i32]) {
+        for user in users {
+            if self.reservations.get(user) == Some(&id) {
+                self.reservations.remove(user);
+            }
+        }
+    }
+    fn route(&mut self, s: Arc<Session>, id: u64, command: Command, reply: Reply) {
         if self.closing || !self.current(&s) {
             let _ = reply.send(Err(rejection!("Stale session or draining server")));
             return;
         }
         let joining = matches!(&command, Command::Client(message) if matches!(**message, ClientMessage::TableJoin(_)));
-        if joining && !s.bot && self.playing_elsewhere(s.user, Some(id)) {
-            let _ = reply.send(Err(rejection!(
-                "You cannot join more than one table at a time. Terminate your other game before joining a new one."
-            )));
+        if !self.tables.contains_key(&id) {
+            let _ = reply.send(Err(rejection!("Unknown table")));
             return;
         }
+        let reservation = if joining && !s.bot {
+            match self.reserve(
+                vec![s.user],
+                Some(id),
+                "You cannot join more than one table at a time. Terminate your other game before joining a new one.",
+            ) {
+                Ok(reservation) => Some(reservation),
+                Err(error) => {
+                    let _ = reply.send(Err(error));
+                    return;
+                }
+            }
+        } else {
+            None
+        };
         if let Some(entry) = self.tables.get(&id) {
-            if joining && !s.bot {
-                let claim = match PlayingClaim::acquire(&self.playing_claims, s.user) {
-                    Ok(claim) => claim,
-                    Err(error) => {
-                        let _ = reply.send(Err(error));
-                        return;
-                    }
-                };
+            if let Some(reservation) = reservation {
                 let (completed, received) = oneshot::channel();
                 if entry
                     .handle
@@ -191,13 +241,13 @@ impl Hub {
                         .await
                         .unwrap_or_else(|_| Err(rejection!("Table closed")));
                     if let Err(error) = hub
-                        .send(HubCommand::PlayingFinished {
+                        .send(HubCommand::JoinFinished {
                             result,
                             reply,
-                            claim,
+                            reservation,
                         })
                         .await
-                        && let HubCommand::PlayingFinished { reply, .. } = error.0
+                        && let HubCommand::JoinFinished { reply, .. } = error.0
                     {
                         let _ = reply.send(Err(anyhow::anyhow!("Coordinator stopped")));
                     }
@@ -212,8 +262,6 @@ impl Hub {
             {
                 let _ = reply.send(Err(anyhow::anyhow!("Table queue unavailable")));
             }
-        } else {
-            let _ = reply.send(Err(rejection!("Unknown table")));
         }
     }
     /// A shared replay of the same database game that a link to it should join.
@@ -231,7 +279,7 @@ impl Hub {
             .map(|(id, _)| *id)
             .min()
     }
-    fn create(&self, s: Arc<Session>, creation: Creation, reply: Reply) {
+    fn create(&mut self, s: Arc<Session>, creation: Creation, reply: Reply) {
         if self.closing || !self.current(&s) {
             let message = if self.closing {
                 "The server is shutting down."
@@ -242,13 +290,13 @@ impl Hub {
             return;
         }
         let playing = matches!(creation, Creation::Table(_)) && !s.bot;
-        if playing && self.playing_elsewhere(s.user, None) {
-            let _ = reply.send(Err(rejection!("You cannot join more than one table at a time. Terminate your other game before creating a new one.")));
-            return;
-        }
-        let playing_claim = if playing {
-            match PlayingClaim::acquire(&self.playing_claims, s.user) {
-                Ok(claim) => Some(claim),
+        let reservation = if playing {
+            match self.reserve(
+                vec![s.user],
+                None,
+                "You cannot join more than one table at a time. Terminate your other game before creating a new one.",
+            ) {
+                Ok(reservation) => Some(reservation),
                 Err(error) => {
                     let _ = reply.send(Err(error));
                     return;
@@ -273,9 +321,7 @@ impl Hub {
                     let id = table.id;
                     let mut allocation =
                         Allocation::new(id, permit, store.clone(), tasks, revision);
-                    if let Some(claim) = playing_claim {
-                        allocation.playing_claims.push(claim);
-                    }
+                    allocation.reservation = reservation;
                     let installed = HubCommand::Install {
                         table: Box::new(table),
                         revision,
@@ -287,6 +333,8 @@ impl Hub {
                     send_install(&hub, installed).await;
                 }
                 Err(error) => {
+                    // End the reservation before answering, so a retry does not find it.
+                    drop(reservation);
                     let _ = reply.send(Err(error));
                 }
             }
@@ -595,33 +643,27 @@ impl Hub {
                     };
                     let _ = reply.send(result);
                 }
-                HubCommand::PlayingFinished {
+                HubCommand::JoinFinished {
                     result,
                     reply,
-                    claim,
+                    reservation,
                 } => {
-                    drop(claim);
+                    self.end_reservation(reservation);
                     let _ = reply.send(result);
                 }
-                HubCommand::CheckPlaying {
-                    users,
-                    except,
-                    reply,
-                } => {
+                HubCommand::ReserveSeats { users, from, reply } => {
                     let result = if self.closing {
                         Err(rejection!("The server is shutting down."))
-                    } else if users
-                        .iter()
-                        .any(|user| self.playing_elsewhere(*user, Some(except)))
-                    {
-                        Err(rejection!(
-                            "An original player is already playing at another table."
-                        ))
                     } else {
-                        Ok(())
+                        self.reserve(
+                            users,
+                            Some(from),
+                            "An original player is already playing at another table.",
+                        )
                     };
                     let _ = reply.send(result);
                 }
+                HubCommand::EndReservation { id, users } => self.end_reservation_of(id, &users),
                 HubCommand::Operations { command, reply } => self.operations(command, reply),
                 HubCommand::Client {
                     session,
@@ -727,6 +769,10 @@ impl Hub {
                         let _ = reply.send(Err(anyhow::anyhow!("Duplicate table installation")));
                         continue;
                     }
+                    let mut allocation = allocation;
+                    if let Some(reservation) = allocation.reservation.take() {
+                        self.end_reservation(reservation);
+                    }
                     let actor = TableActor::new(
                         *table,
                         revision,
@@ -756,6 +802,10 @@ impl Hub {
                 } => {
                     if self.closing {
                         continue;
+                    }
+                    let mut allocation = allocation;
+                    if let Some(reservation) = allocation.reservation.take() {
+                        self.end_reservation(reservation);
                     }
                     let mut actor = TableActor::new(
                         *table,

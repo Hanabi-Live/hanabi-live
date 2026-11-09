@@ -12,7 +12,7 @@ use serde::Serialize;
 use serde_json::Value;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
-    sync::{Arc, Mutex},
+    sync::Arc,
     time::{Duration, Instant},
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
@@ -53,33 +53,37 @@ pub struct Allocation {
     permit: Option<OwnedSemaphorePermit>,
     cleanup: Option<(Store, TaskTracker)>,
     revision: i64,
-    playing_claims: Vec<PlayingClaim>,
+    reservation: Option<SeatReservation>,
 }
-pub struct PlayingClaim {
-    users: Arc<Mutex<HashSet<i32>>>,
-    user: i32,
+/// The hub's hold on the seats of users with a pending request to play at a table, such as a join
+/// or a table creation. While it lasts, those users cannot start another such request. The hub ends
+/// it when the request finishes; a reservation dropped earlier asks the hub to end it.
+pub struct SeatReservation {
+    id: u64,
+    users: Vec<i32>,
+    hub: Option<mpsc::Sender<HubCommand>>,
 }
-impl PlayingClaim {
-    fn acquire(users: &Arc<Mutex<HashSet<i32>>>, user: i32) -> Result<Self> {
-        ensure_or_reject!(
-            users
-                .lock()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .insert(user),
-            "Another playing-table request is already pending."
-        );
-        Ok(Self {
-            users: users.clone(),
-            user,
-        })
+impl SeatReservation {
+    /// The reservation's ID and users, for the hub to end it. Dropping it afterward does nothing.
+    fn take(mut self) -> (u64, Vec<i32>) {
+        self.hub = None;
+        (self.id, std::mem::take(&mut self.users))
     }
 }
-impl Drop for PlayingClaim {
+impl Drop for SeatReservation {
     fn drop(&mut self) {
-        self.users
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .remove(&self.user);
+        let Some(hub) = self.hub.take() else {
+            return;
+        };
+        let end = HubCommand::EndReservation {
+            id: self.id,
+            users: std::mem::take(&mut self.users),
+        };
+        if let Err(mpsc::error::TrySendError::Full(end)) = hub.try_send(end) {
+            tokio::spawn(async move {
+                let _ = hub.send(end).await;
+            });
+        }
     }
 }
 impl Allocation {
@@ -95,7 +99,7 @@ impl Allocation {
             permit: Some(permit),
             cleanup: Some((store, tasks)),
             revision,
-            playing_claims: vec![],
+            reservation: None,
         }
     }
     fn into_permit(mut self) -> OwnedSemaphorePermit {
@@ -112,13 +116,13 @@ impl Drop for Allocation {
             let id = self.id;
             let revision = self.revision;
             let permit = self.permit.take();
-            let playing_claims = std::mem::take(&mut self.playing_claims);
+            let reservation = self.reservation.take();
             tasks.spawn(async move {
                 if let Err(error) = store.remove(id, revision).await {
                     eprintln!("Uninstalled table {id} cleanup failed: {error}");
                 }
                 drop(permit);
-                drop(playing_claims);
+                drop(reservation);
             });
         }
     }
@@ -197,15 +201,22 @@ pub enum HubCommand {
         effects: Vec<Effect>,
         reply: Reply,
     },
-    PlayingFinished {
+    /// A join to a table finished; the hub ends its seat reservation and answers the request.
+    JoinFinished {
         result: Result<()>,
         reply: Reply,
-        claim: PlayingClaim,
+        reservation: SeatReservation,
     },
-    CheckPlaying {
+    /// Reserves seats for users who move from table `from` to a new table, such as in a split.
+    ReserveSeats {
         users: Vec<i32>,
-        except: u64,
-        reply: Reply,
+        from: u64,
+        reply: oneshot::Sender<Result<SeatReservation>>,
+    },
+    /// Ends a seat reservation that was dropped before its request finished.
+    EndReservation {
+        id: u64,
+        users: Vec<i32>,
     },
     Operations {
         command: Operation,
@@ -346,6 +357,5 @@ struct TableActor {
     /// Each player's recent table chat. Kept in memory: a restart forgives it.
     chat_limit: crate::accounts::Counter<i32>,
     _permit: OwnedSemaphorePermit,
-    playing_claims: Arc<Mutex<HashSet<i32>>>,
     info: Arc<ServerInfo>,
 }

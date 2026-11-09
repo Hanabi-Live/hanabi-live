@@ -30,7 +30,7 @@ use serde::Serialize;
 use serde_json::json;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
-    sync::{Arc, Mutex},
+    sync::Arc,
     time::{Duration, Instant},
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
@@ -107,7 +107,6 @@ impl TableActor {
             full_join_notices: HashSet::new(),
             chat_limit: crate::accounts::Counter::new(TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW),
             _permit: permit,
-            playing_claims: Arc::new(Mutex::new(HashSet::new())),
             info,
         }
     }

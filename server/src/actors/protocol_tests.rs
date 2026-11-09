@@ -2712,3 +2712,27 @@ async fn commands_for_another_phase_are_rejected() -> Result<()> {
     h.close().await?;
     outcome
 }
+
+#[tokio::test]
+async fn a_failed_table_creation_ends_its_seat_reservation() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        ensure!(
+            h.send(
+                0,
+                "tableCreate",
+                json!({"name":"Broken","options":{"variantName":"No Such Variant"},"maxPlayers":5}),
+            )
+            .await
+            .is_err(),
+            "A table with an unknown variant was created"
+        );
+        h.create(0, "Working", json!({})).await?;
+        Ok::<(), anyhow::Error>(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}

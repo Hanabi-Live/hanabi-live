@@ -22,8 +22,8 @@ use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
 use hanabi_protocol::{MAX_SEED_LENGTH, ReplayAction, Status};
 use serde_json::{Value, json};
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    sync::{Arc, Mutex},
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
     time::{Duration, Instant},
 };
 use tokio::sync::{Notify, Semaphore, mpsc, oneshot};
@@ -894,7 +894,8 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         store: store.clone(),
         tasks: TaskTracker::new(),
         capacity: Arc::new(Semaphore::new(1)),
-        playing_claims: Arc::new(Mutex::new(HashSet::new())),
+        reservations: HashMap::new(),
+        next_reservation: 0,
         info: crate::server_info::test_info(),
     };
     hub.sessions.insert(
