@@ -361,7 +361,9 @@ export function startMisplayAnimation(
     }
     smoke(explosionStart, at, 4);
 
-    // Shake the whole table.
+    // Shake the whole table. Every layer moves, so every layer must be redrawn, including the ones
+    // that the animation does not redraw on each frame. Otherwise, a layer can stay drawn at a
+    // shaken position after the shake ends.
     const layers = Object.values(globals.layers) as Konva.Layer[];
     add(
       explosionStart,
@@ -373,11 +375,13 @@ export function startMisplayAnimation(
             x: randomBetween(-amplitude, amplitude),
             y: randomBetween(-amplitude, amplitude),
           });
+          layer.batchDraw();
         }
       },
       () => {
         for (const layer of layers) {
           layer.position({ x: 0, y: 0 });
+          layer.batchDraw();
         }
       },
     );
