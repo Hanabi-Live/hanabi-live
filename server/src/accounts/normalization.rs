@@ -1,52 +1,17 @@
-use serde::Deserialize;
-use std::{collections::HashMap, sync::LazyLock};
 use unicode_normalization::UnicodeNormalization;
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct IdentityData {
-    pages: HashMap<String, Vec<String>>,
-    username_emoji_pattern: String,
-}
-
-// Use the pinned Go unidecode tables, not a superficially similar transliterator.
-// The accompanying license is packages/data/src/json/goUnidecode.LICENSE.
-static IDENTITY: LazyLock<IdentityData> = LazyLock::new(|| {
-    serde_json::from_str(include_str!(
-        "../../../packages/data/src/json/goIdentity.json"
-    ))
-    .expect("checked-in Go identity data")
-});
-
-/// Code points below this, ASCII without DEL, are kept as they are.
-const PASSTHROUGH_LIMIT: u32 = 0x7f;
-/// The highest code point that the identity tables transliterate.
-const MAX_TRANSLITERATED: u32 = 0xe_ffff;
-/// The code points in each page of the identity tables.
-const IDENTITY_PAGE_SIZE: u32 = 256;
-
+/// Transliterates to lower-case ASCII, dropping characters that have no transliteration.
 pub fn normalize_string(input: &str) -> String {
-    let mut result = String::new();
-    for ch in input.chars() {
-        let cp = ch as u32;
-        if cp < PASSTHROUGH_LIMIT {
-            result.push(ch);
-        } else if cp <= MAX_TRANSLITERATED
-            && let Some(page) = IDENTITY.pages.get(&(cp / IDENTITY_PAGE_SIZE).to_string())
-            && let Some(text) = page.get((cp % IDENTITY_PAGE_SIZE) as usize)
-        {
-            result.push_str(text);
-        }
-    }
-    result.to_lowercase()
+    deunicode::deunicode_with_tofu(input, "").to_lowercase()
 }
 
 pub fn normalize_username(input: &str) -> String {
     normalize_string(input.trim())
 }
 
+/// Matches pictographs, regional indicators (flags), and keycaps.
 pub fn has_username_emoji(input: &str) -> bool {
-    regex!(&IDENTITY.username_emoji_pattern).is_match(input)
+    regex!(r"[\p{Extended_Pictographic}\p{Regional_Indicator}\x{20E3}]").is_match(input)
 }
 
 /// The most combining marks, such as diacritics, that text may stack on one character.
@@ -170,5 +135,16 @@ mod tests {
             Ok("HelloWorld".into())
         );
         assert_eq!(truncate_to_max_bytes("éé", 3), "é");
+    }
+
+    #[test]
+    fn lookalike_usernames_share_a_normalization() {
+        assert_eq!(normalize_username(" \u{c5}lice "), "alice");
+        assert_eq!(normalize_string("\u{391}lice"), "alice");
+        assert_eq!(normalize_string("\u{10ffff}"), "");
+        for emoji in ["🦄", "🇺🇸", "#\u{20e3}", "©"] {
+            assert!(has_username_emoji(emoji), "{emoji}");
+        }
+        assert!(!has_username_emoji("Alice_1.-é"));
     }
 }

@@ -76,6 +76,7 @@ axum-server = { version = "0.8", default-features = false, features = [
 ] }
 base64 = "0.23"
 chrono = { version = "0.4", features = ["serde"] }
+deunicode = "1"
 dotenvy = "0.15"
 futures-util = "0.3"
 hmac = "0.13"
