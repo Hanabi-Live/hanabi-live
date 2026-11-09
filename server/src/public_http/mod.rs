@@ -21,6 +21,9 @@ use std::{collections::HashMap, net::SocketAddr, path::PathBuf, sync::Arc};
 /// The path that every versioned HTTP API route begins with.
 pub(crate) const API_PREFIX: &str = "/api/v1";
 
+/// How long browsers keep a release's versioned assets, which never change under the same URL.
+const VERSIONED_ASSET_MAX_AGE_SECONDS: i32 = 365 * hanabi_protocol::SECONDS_PER_DAY;
+
 pub type DeckFactory = fn(i32, &str) -> anyhow::Result<Value>;
 pub type DeckSize = fn(i32) -> anyhow::Result<usize>;
 
@@ -220,7 +223,14 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         .merge(api)
         .nest_service(
             "/public",
-            tower_http::services::ServeDir::new(config.root.join("public")),
+            Router::new()
+                .fallback_service(tower_http::services::ServeDir::new(
+                    config.root.join("public"),
+                ))
+                .layer(axum::middleware::from_fn_with_state(
+                    state.clone(),
+                    cache_versioned_assets,
+                )),
         )
         .route_service(
             "/favicon.ico",
@@ -228,6 +238,31 @@ pub fn router(pool: PgPool, config: &PublicConfig) -> Router {
         )
         .with_state(state)
         .layer(axum::middleware::from_fn(crate::errors::http_context))
+}
+
+/// Lets browsers cache the current release's assets for good. Their URLs carry the client version,
+/// either in the file name or as the query string. Development builds reuse the version of the
+/// checked-out commit, so their assets are left to revalidate.
+async fn cache_versioned_assets(
+    State(state): State<PublicState>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    let version = &*state.config.client_version;
+    let uri = request.uri();
+    let versioned = !state.config.is_dev
+        && (uri.path().contains(&format!(".{version}.")) || uri.query() == Some(version));
+    let mut response = next.run(request).await;
+    if versioned && response.status() == StatusCode::OK {
+        response.headers_mut().insert(
+            axum::http::header::CACHE_CONTROL,
+            axum::http::HeaderValue::from_str(&format!(
+                "public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable"
+            ))
+            .expect("a valid header value"),
+        );
+    }
+    response
 }
 
 async fn ban_check(

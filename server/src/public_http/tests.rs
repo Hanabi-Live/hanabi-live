@@ -110,7 +110,7 @@ async fn shell_routes_metadata_and_static_files() {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused:unused@localhost/unused")
         .unwrap();
-    let app = router(pool, &config());
+    let app = router(pool.clone(), &config());
     for path in [
         "/",
         "/lobby",
@@ -148,6 +148,36 @@ async fn shell_routes_metadata_and_static_files() {
     let (status, body) = request(app.clone(), "/public/html/theme-init.html").await;
     assert_eq!(status, StatusCode::OK);
     assert!(body.contains("localStorage"));
+    let immutable = format!("public, max-age={VERSIONED_ASSET_MAX_AGE_SECONDS}, immutable");
+    let mut dev_config = config();
+    dev_config.is_dev = true;
+    for (app, path, expected) in [
+        (
+            &app,
+            "/public/html/theme-init.html?test-version",
+            Some(immutable.as_str()),
+        ),
+        (&app, "/public/html/theme-init.html", None),
+        (&app, "/public/html/theme-init.html?other-version", None),
+        (&app, "/public/missing.test-version.min.js", None),
+        (
+            &router(pool.clone(), &dev_config),
+            "/public/html/theme-init.html?test-version",
+            None,
+        ),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let cache_control = response.headers().get(axum::http::header::CACHE_CONTROL);
+        assert_eq!(
+            cache_control.map(|value| value.to_str().unwrap()),
+            expected,
+            "{path}"
+        );
+    }
     assert_eq!(
         request(app.clone(), "/public/%2e%2e/install/database_schema.sql")
             .await
