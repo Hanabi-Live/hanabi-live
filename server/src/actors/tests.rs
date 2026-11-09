@@ -538,11 +538,15 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     );
 
     // Only players can keep the game going.
+    let idle_reset = || client_message("idleReset", &json!({"tableID":id}));
     ensure!(
-        actor.idle_reset(viewer.clone()).await.is_err(),
+        actor
+            .live_command(viewer.clone(), idle_reset()?)
+            .await
+            .is_err(),
         "A spectator kept an idle game going"
     );
-    actor.idle_reset(alice.clone()).await?;
+    actor.live_command(alice.clone(), idle_reset()?).await?;
     ensure!(
         actor.table.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
         "Keeping the game going did not restart the idle timer"

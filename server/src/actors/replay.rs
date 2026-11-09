@@ -1,3 +1,4 @@
+use super::table::wrong_phase;
 use super::{TableActor, chat::server_chat, setup::next_requested_seed};
 use crate::errors::OrReject;
 use crate::{
@@ -9,6 +10,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use chrono::Utc;
+use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{HypotheticalAction, MIN_PLAYERS, TableId, TableRequest};
 use std::sync::Arc;
 
@@ -36,7 +38,45 @@ pub(super) fn undo_hypothetical_turn(actions: &mut Vec<HypotheticalAction>) {
 }
 
 impl TableActor {
-    pub(super) async fn tag(
+    /// Runs a command that only a replay accepts.
+    pub(super) async fn replay_command(
+        &mut self,
+        session: Arc<Session>,
+        message: ClientMessage,
+    ) -> Result<()> {
+        match message {
+            ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
+            ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
+            ClientMessage::TableRestart(r) => self.restart(session, r.hide_pregame).await,
+            ClientMessage::TableRestartDecline(r) => {
+                self.decline_restart(session, r.declined).await
+            }
+            message @ (ClientMessage::Tag(_)
+            | ClientMessage::TagDelete(_)
+            | ClientMessage::TagsDeleteAll(_)) => self.tag_message(session, message).await,
+            message => Err(wrong_phase(&message)),
+        }
+    }
+    /// Runs a tag command, which games in progress and replays accept.
+    pub(super) async fn tag_message(
+        &mut self,
+        session: Arc<Session>,
+        message: ClientMessage,
+    ) -> Result<()> {
+        match message {
+            ClientMessage::Tag(r) => self.tag(session, &r.msg, &r.room, TagOperation::Tag).await,
+            ClientMessage::TagDelete(r) => {
+                self.tag(session, &r.msg, &r.room, TagOperation::TagDelete)
+                    .await
+            }
+            ClientMessage::TagsDeleteAll(r) => {
+                self.tag(session, "", &r.room, TagOperation::TagsDeleteAll)
+                    .await
+            }
+            message => Err(wrong_phase(&message)),
+        }
+    }
+    async fn tag(
         &mut self,
         session: Arc<Session>,
         raw: &str,
@@ -238,9 +278,7 @@ impl TableActor {
     }
     pub(super) async fn suggest(&self, session: Arc<Session>, segment: i64) -> Result<()> {
         ensure_or_reject!(
-            self.attending(&session)
-                && matches!(self.table.phase, Phase::Replay { .. })
-                && self.table.visible,
+            self.attending(&session) && self.table.visible,
             "Not a shared replay"
         );
         let leader = self
@@ -262,7 +300,7 @@ impl TableActor {
         ));
         self.publish(e).await
     }
-    pub(super) async fn replay_action(
+    async fn replay_action(
         &mut self,
         session: Arc<Session>,
         r: hanabi_protocol::ReplayActionRequest,
@@ -275,7 +313,7 @@ impl TableActor {
         );
         let mut next = self.candidate();
         let Phase::Replay { snapshot, replay } = &mut next.phase else {
-            reject!("Not a replay");
+            unreachable!("replay commands run in replays");
         };
         // Arrows and sounds only reset the idle timer, so they skip the durable write.
         let checkpoint = !matches!(r, R::Arrow { .. } | R::Sound { .. });
@@ -377,12 +415,9 @@ impl TableActor {
         self.add_outgoing(&mut e, &message);
         self.publish(e).await
     }
-    pub(super) async fn restart(&mut self, session: Arc<Session>, hide: bool) -> Result<()> {
+    async fn restart(&mut self, session: Arc<Session>, hide: bool) -> Result<()> {
         ensure_or_reject!(
-            self.attending(&session)
-                && session.user == self.table.owner
-                && self.table.visible
-                && matches!(self.table.phase, Phase::Replay { .. }),
+            self.attending(&session) && session.user == self.table.owner && self.table.visible,
             "Only the shared replay leader can restart"
         );
         self.seat(&session)?;
@@ -468,21 +503,15 @@ impl TableActor {
         self.transfer(self.candidate(), destination, allocation, moving, true)
             .await
     }
-    pub(super) async fn decline_restart(
-        &mut self,
-        session: Arc<Session>,
-        declined: bool,
-    ) -> Result<()> {
+    async fn decline_restart(&mut self, session: Arc<Session>, declined: bool) -> Result<()> {
         ensure_or_reject!(
-            self.attending(&session)
-                && self.table.visible
-                && matches!(self.table.phase, Phase::Replay { .. }),
+            self.attending(&session) && self.table.visible,
             "Not a shared replay"
         );
         self.seat(&session)?;
         let mut next = self.candidate();
         let Phase::Replay { replay, .. } = &mut next.phase else {
-            unreachable!("checked above");
+            unreachable!("replay commands run in replays");
         };
         if replay.restart_declined.contains(&session.user) == declined {
             return Ok(());

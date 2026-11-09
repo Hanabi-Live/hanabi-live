@@ -767,7 +767,10 @@ async fn shared_review_hypothetical_actions_refresh_idle() -> Result<()> {
                 .checked_sub(Duration::from_millis(900))
                 .unwrap();
             actor
-                .replay_action(h.users[0].clone(), serde_json::from_value(request)?)
+                .replay_command(
+                    h.users[0].clone(),
+                    client_message("replayAction", &request)?,
+                )
                 .await?;
             let (saved, _) = h.snapshot(id).await?;
             ensure!(
@@ -2644,6 +2647,52 @@ async fn table_chat_is_rate_limited_per_player() -> Result<()> {
         )
         .await?;
         Ok(())
+    }
+    .await;
+    h.close().await?;
+    outcome
+}
+
+#[tokio::test]
+async fn commands_for_another_phase_are_rejected() -> Result<()> {
+    let Some(mut h) = Harness::new(&["Alice", "Bob"]).await? else {
+        return Ok(());
+    };
+    let outcome = async {
+        let id = h.create(0, "Phases", json!({})).await?;
+        h.send(1, "tableJoin", json!({"tableID": id})).await?;
+        let refusal = |error: anyhow::Error| {
+            ensure!(
+                crate::errors::is_rejection(&error),
+                "Not a rejection: {error:#}"
+            );
+            Ok(error.to_string())
+        };
+        let error = h
+            .send(0, "action", json!({"tableID": id, "type": 1, "target": 0}))
+            .await
+            .expect_err("A pregame accepted a game action");
+        ensure!(refusal(error)? == "Not an ongoing game");
+        let error = h
+            .send(
+                0,
+                "replayAction",
+                json!({"tableID": id, "type": "segment", "segment": 1}),
+            )
+            .await
+            .expect_err("A pregame accepted a replay action");
+        ensure!(refusal(error)? == "Not a replay");
+        h.send(0, "tableStart", json!({"tableID": id})).await?;
+        let error = h
+            .send(
+                0,
+                "tableUpdate",
+                json!({"tableID": id, "name": "Later", "maxPlayers": 5, "options": {}}),
+            )
+            .await
+            .expect_err("A live game accepted new options");
+        ensure!(refusal(error)? == "Game already started");
+        Ok::<(), anyhow::Error>(())
     }
     .await;
     h.close().await?;

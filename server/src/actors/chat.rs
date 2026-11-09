@@ -408,6 +408,10 @@ impl TableActor {
             return self.publish(e).await;
         }
         if parsed == Some(TableChatCommand::Suggest) {
+            ensure_or_reject!(
+                matches!(self.table.phase, Phase::Replay { .. }),
+                "Not a shared replay"
+            );
             ensure_or_reject!(args.len() == 1, "Expected /suggest [turn]");
             return self
                 .suggest(

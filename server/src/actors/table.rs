@@ -1,6 +1,6 @@
 use super::{
     Allocation, Attendance, Command, Effects, GameInfo, HubCommand, NO_SHADOWED_SEAT,
-    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableChange, TableCommand,
+    PREGAME_RECONNECT_GRACE, REPLAY_RECONNECT_GRACE, Reply, TableActor, TableCommand,
     TableInspection, TableView,
     chat::{TABLE_CHAT_LIMIT, TABLE_CHAT_WINDOW, VariantDiscovery, is_variant_discovery},
     pregame::remove_pregame_players,
@@ -11,7 +11,7 @@ use crate::errors::OrReject;
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
-        TableSnapshot, TagOperation, small,
+        TableSnapshot, small,
     },
     server_info::ServerInfo,
     store::Store,
@@ -21,8 +21,8 @@ use anyhow::{Context, Result, bail, ensure};
 use chrono::Utc;
 use hanabi_engine::{CompletionTiming, EndCondition};
 use hanabi_protocol::{
-    Chat, ChatTyping, ClientMessage, GameId, IdleWarning, NO_VALUE, ReplayAction, Status, TableId,
-    TableRequest, TableStarted, UserId, Warning,
+    Chat, ChatTyping, ClientMessage, GameId, IdleWarning, NO_VALUE, Status, TableId, TableRequest,
+    TableStarted, UserId, Warning,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -35,6 +35,27 @@ use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
 
 /// How long a table waits before retrying timed work that failed.
 const TIMER_RETRY: Duration = Duration::from_millis(250);
+
+/// The refusal of a command that the table's phase does not accept.
+pub(super) fn wrong_phase(message: &ClientMessage) -> anyhow::Error {
+    use ClientMessage as M;
+    let reason = match message {
+        M::TableStart(_) => "Already started",
+        M::TableSetVariant(_) | M::TableUpdate(_) => "Game already started",
+        M::Action(_)
+        | M::Pause(_)
+        | M::IdleReset(_)
+        | M::Note(_)
+        | M::TableTerminate(_)
+        | M::TableVoteForTermination(_) => "Not an ongoing game",
+        M::ReplayAction(_) => "Not a replay",
+        M::TableSuggest(_) | M::TableRestartDecline(_) => "Not a shared replay",
+        M::TableRestart(_) => "Only the shared replay leader can restart",
+        M::Tag(_) | M::TagDelete(_) | M::TagsDeleteAll(_) => "No game",
+        _ => "This table does not accept that command now",
+    };
+    rejection!("{reason}")
+}
 
 /// A running game's timers as they stand now.
 struct Timers {
@@ -901,16 +922,6 @@ impl TableActor {
             ClientMessage::TableLeave(_) => self.leave(session, true).await,
             ClientMessage::GetGameInfo1(_) => self.info(session, GameInfo::Init).await,
             ClientMessage::GetGameInfo2(_) => self.info(session, GameInfo::State).await,
-            ClientMessage::TableStart(r) => {
-                let players = self.table.players();
-                // A start based on a stale view of the table does nothing.
-                if r.intended_players.as_ref().is_some_and(|names| {
-                    names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
-                }) {
-                    return Ok(());
-                }
-                self.start(session).await
-            }
             ClientMessage::Loaded(_) => {
                 ensure_or_reject!(self.attending(&session), "Reattend before loading");
                 let mut next = self.candidate();
@@ -939,55 +950,10 @@ impl TableActor {
                 }
                 self.publish(e).await
             }
-            ClientMessage::Action(r) => {
-                let action = ReplayAction {
-                    kind: r.kind.into(),
-                    target: r.target,
-                    value: r.value,
-                };
-                self.action(session, action).await
-            }
-            ClientMessage::TableTerminate(_)
-                if matches!(self.table.phase, Phase::Pregame { .. }) =>
-            {
-                ensure_or_reject!(
-                    self.attending(&session) && session.user == self.table.owner,
-                    "Only owner can terminate"
-                );
-                self.retire().await
-            }
-            ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
-            ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
-            ClientMessage::Pause(r) => self.pause(session, r.setting).await,
-            ClientMessage::IdleReset(_) => self.idle_reset(session).await,
-            ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
-            ClientMessage::Tag(r) => self.tag(session, &r.msg, &r.room, TagOperation::Tag).await,
-            ClientMessage::TagDelete(r) => {
-                self.tag(session, &r.msg, &r.room, TagOperation::TagDelete)
-                    .await
-            }
-            ClientMessage::TagsDeleteAll(r) => {
-                self.tag(session, "", &r.room, TagOperation::TagsDeleteAll)
-                    .await
-            }
             ClientMessage::Chat(r) => self.chat(session, &r.msg).await,
             ClientMessage::ChatRead(_) => self.chat_presence(session, false).await,
             ClientMessage::ChatTyping(_) => self.chat_presence(session, true).await,
             ClientMessage::TableSetLeader(r) => self.leader(session, &r.name).await,
-            ClientMessage::TableSuggest(r) => self.suggest(session, r.segment).await,
-            ClientMessage::TableSetVariant(r) => {
-                self.update(session, TableChange::Variant(r.options.variant_name))
-                    .await
-            }
-            ClientMessage::TableUpdate(r) => {
-                self.update(session, TableChange::Options(Box::new(r)))
-                    .await
-            }
-            ClientMessage::TableRestart(r) => self.restart(session, r.hide_pregame).await,
-            ClientMessage::TableRestartDecline(r) => {
-                self.decline_restart(session, r.declined).await
-            }
-            ClientMessage::ReplayAction(r) => self.replay_action(session, r).await,
             // Handled before reaching a table.
             ClientMessage::LobbyLoad(_)
             | ClientMessage::Sync(_)
@@ -1008,17 +974,13 @@ impl TableActor {
             | ClientMessage::TagSearch(_)
             | ClientMessage::TableCreate(_)
             | ClientMessage::ReplayCreate(_) => bail!("Unsupported table command: {name}"),
+            // The rest depend on the table's phase.
+            message => match self.table.phase {
+                Phase::Pregame { .. } => self.pregame_command(session, message).await,
+                Phase::Live { .. } => self.live_command(session, message).await,
+                Phase::Replay { .. } => self.replay_command(session, message).await,
+            },
         }
-    }
-    pub(super) fn live(&self) -> Result<&Snapshot> {
-        let Phase::Live { snapshot } = &self.table.phase else {
-            reject!("Not an ongoing game");
-        };
-        ensure_or_reject!(
-            snapshot.game.end_condition == EndCondition::InProgress,
-            "Game already ended"
-        );
-        Ok(snapshot)
     }
     pub(super) async fn allocation(&self) -> Result<Allocation> {
         let (reply, received) = oneshot::channel();

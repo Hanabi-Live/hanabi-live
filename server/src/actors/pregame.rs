@@ -1,3 +1,4 @@
+use super::table::wrong_phase;
 use super::{
     Allocation, HubCommand, PlayingClaim, TableActor, TableChange,
     chat::{membership_notice, server_chat, truncate},
@@ -18,6 +19,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
+use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableId, TableRequest, TableStarted};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -72,11 +74,42 @@ pub(super) fn remove_pregame_players(
 }
 
 impl TableActor {
-    pub(super) async fn update(
+    /// Runs a command that only a pregame accepts.
+    pub(super) async fn pregame_command(
         &mut self,
         session: Arc<Session>,
-        change: TableChange,
+        message: ClientMessage,
     ) -> Result<()> {
+        match message {
+            ClientMessage::TableStart(r) => {
+                let players = self.table.players();
+                // A start based on a stale view of the table does nothing.
+                if r.intended_players.as_ref().is_some_and(|names| {
+                    names.len() != players.len() || players.iter().any(|p| !names.contains(&p.name))
+                }) {
+                    return Ok(());
+                }
+                self.start(session).await
+            }
+            ClientMessage::TableSetVariant(r) => {
+                self.update(session, TableChange::Variant(r.options.variant_name))
+                    .await
+            }
+            ClientMessage::TableUpdate(r) => {
+                self.update(session, TableChange::Options(Box::new(r)))
+                    .await
+            }
+            ClientMessage::TableTerminate(_) => {
+                ensure_or_reject!(
+                    self.attending(&session) && session.user == self.table.owner,
+                    "Only owner can terminate"
+                );
+                self.retire().await
+            }
+            message => Err(wrong_phase(&message)),
+        }
+    }
+    async fn update(&mut self, session: Arc<Session>, change: TableChange) -> Result<()> {
         let (variant, request) = match change {
             TableChange::Variant(name) => (Some(name), None),
             TableChange::Options(request) => (None, Some(*request)),
@@ -84,10 +117,6 @@ impl TableActor {
         let variant_only = variant.is_some();
         ensure_or_reject!(self.attending(&session), "You must attend this table");
         self.seat(&session)?;
-        ensure_or_reject!(
-            matches!(self.table.phase, Phase::Pregame { .. }),
-            "Game already started"
-        );
         ensure_or_reject!(
             !variant_only || session.user == self.table.owner,
             "Only owner can change variant"
@@ -249,9 +278,7 @@ impl TableActor {
             self.attending(&session) && session.user == self.table.owner,
             "Only the attended owner can start"
         );
-        let Phase::Pregame { players, .. } = &self.table.phase else {
-            reject!("Already started");
-        };
+        let players = self.table.players();
         ensure_or_reject!(
             hanabi_protocol::is_player_count(players.len()),
             "You need at least {MIN_PLAYERS} players"
@@ -272,7 +299,7 @@ impl TableActor {
                 "Custom games require all players present"
             );
         }
-        let mut players = players.clone();
+        let mut players = players.to_vec();
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         let seed = if let Some(seed) = &self.table.extra.custom_seed {
             seed.clone()

@@ -1,7 +1,9 @@
+use super::table::wrong_phase;
 use super::{
     Attendance, GameInfo, TableActor,
     wire::{game_action, game_action_list, int},
 };
+use crate::model::Snapshot;
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, MAX_NOTE_LENGTH, NoteOwner, Phase, wire_options,
@@ -10,16 +12,47 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use hanabi_engine::{CompletionTiming, EndCondition, Recipient};
+use hanabi_protocol::ClientMessage;
 use hanabi_protocol::{
     ChatTyping, MIN_PLAYERS, NO_VALUE, ReplayAction, SafeInteger, Status, TableId, TableRequest,
 };
 use std::sync::Arc;
 
 impl TableActor {
-    pub(super) async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> Result<()> {
+    /// Runs a command that only a game in progress accepts.
+    pub(super) async fn live_command(
+        &mut self,
+        session: Arc<Session>,
+        message: ClientMessage,
+    ) -> Result<()> {
+        match message {
+            ClientMessage::Action(r) => {
+                let action = ReplayAction {
+                    kind: r.kind.into(),
+                    target: r.target,
+                    value: r.value,
+                };
+                self.action(session, action).await
+            }
+            ClientMessage::TableTerminate(_) => self.terminate(session, false).await,
+            ClientMessage::TableVoteForTermination(_) => self.terminate(session, true).await,
+            ClientMessage::Pause(r) => self.pause(session, r.setting).await,
+            ClientMessage::IdleReset(_) => self.idle_reset(session).await,
+            ClientMessage::Note(r) => self.note(session, r.order, &r.note).await,
+            message @ (ClientMessage::Tag(_)
+            | ClientMessage::TagDelete(_)
+            | ClientMessage::TagsDeleteAll(_)) => self.tag_message(session, message).await,
+            message => Err(wrong_phase(&message)),
+        }
+    }
+    /// The game in progress. Commands that use it run only while a game is live.
+    fn live(&self) -> &Snapshot {
+        self.table.game().expect("live commands run in a live game")
+    }
+    async fn action(&mut self, session: Arc<Session>, a: ReplayAction) -> Result<()> {
         ensure_or_reject!(self.attending(&session), "Reattend before acting");
         let seat = self.seat(&session)?;
-        let old = self.live()?;
+        let old = self.live();
         hanabi_engine::validate_action(&old.game.0, seat, &hanabi_engine::PlayerAction::from(&a))?;
         let from = old.game.events.len();
         let mut next = self.candidate();
@@ -164,10 +197,10 @@ impl TableActor {
             })
             .unwrap_or_default()
     }
-    pub(super) async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> Result<()> {
+    async fn terminate(&mut self, session: Arc<Session>, vote: bool) -> Result<()> {
         ensure_or_reject!(self.attending(&session), "You are not attending");
         let seat = self.seat(&session)?;
-        let from = self.live()?.game.events.len();
+        let from = self.live().game.events.len();
         let mut next = self.candidate();
         let s = next.game_mut().expect("game");
         let mut votes = None;
@@ -229,10 +262,10 @@ impl TableActor {
         Ok(())
     }
     /// A player keeps an idle game going, restarting its idle timer.
-    pub(super) async fn idle_reset(&mut self, session: Arc<Session>) -> Result<()> {
+    async fn idle_reset(&mut self, session: Arc<Session>) -> Result<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
         self.seat(&session)?;
-        self.live()?;
+        self.live();
         let mut next = self.candidate();
         next.game_mut().context("Missing game")?.idle_remaining = IDLE_TIMEOUT_MS;
         // Like arrows and sounds, an idle reset only restarts the idle timer, so it skips the durable
@@ -249,7 +282,7 @@ impl TableActor {
         );
         self.publish(e).await
     }
-    pub(super) async fn pause(
+    async fn pause(
         &mut self,
         session: Arc<Session>,
         mut setting: hanabi_protocol::PauseSetting,
@@ -257,7 +290,7 @@ impl TableActor {
         use hanabi_protocol::PauseSetting as P;
         ensure_or_reject!(self.attending(&session), "Not attending");
         let seat = self.seat(&session)?;
-        let old = self.live()?;
+        let old = self.live();
         ensure_or_reject!(old.game.options.timed, "This is not a timed game");
         if setting == P::PauseQueue && seat == old.game.active_player_index {
             setting = P::Pause;
@@ -304,14 +337,9 @@ impl TableActor {
         }
         self.publish(e).await
     }
-    pub(super) async fn note(
-        &mut self,
-        session: Arc<Session>,
-        order: u64,
-        note: &str,
-    ) -> Result<()> {
+    async fn note(&mut self, session: Arc<Session>, order: u64, note: &str) -> Result<()> {
         ensure_or_reject!(self.attending(&session), "Not attending");
-        self.live()?;
+        self.live();
         let order = usize::try_from(order)?;
         let text = crate::accounts::truncate_to_max_bytes(note, MAX_NOTE_LENGTH);
         let text = crate::accounts::remove_disallowed_characters(text)
