@@ -1,5 +1,6 @@
 import { assertDefined, eRange } from "complete-common";
 import Konva from "konva";
+import type { HitCanvas, SceneCanvas } from "konva/lib/Canvas";
 import type { LayoutChild } from "./LayoutChild";
 import { globals } from "./UIGlobals";
 import { CARD_ANIMATION_LENGTH_SECONDS } from "./constants";
@@ -64,6 +65,29 @@ export class CardLayout extends Konva.Group {
   override _setChildrenIndices(): void {
     Konva.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
+  }
+
+  // A held card must be drawn above the other cards in the hand. It cannot be moved to the top of
+  // the children, because the order of the children is the order of the cards in the hand. Thus,
+  // draw it last instead. (Hit detection uses this method too, so the held card also gets clicks.)
+  override _drawChildNodes(
+    drawMethod: "drawScene" | "drawHit",
+    canvas: SceneCanvas,
+    top?: Konva.Node,
+  ): void {
+    const children = this.children as unknown as readonly LayoutChild[];
+    const held = children.filter((layoutChild) => layoutChild.card.dragging);
+    const resting = children.filter(
+      (layoutChild) => !held.includes(layoutChild),
+    );
+    for (const layoutChild of [...resting, ...held]) {
+      if (drawMethod === "drawScene") {
+        layoutChild.drawScene(canvas, top);
+      } else {
+        // Konva declares a scene canvas here, but it passes a hit canvas for hit detection.
+        layoutChild.drawHit(canvas as unknown as HitCanvas, top);
+      }
+    }
   }
 
   doLayout(): void {
