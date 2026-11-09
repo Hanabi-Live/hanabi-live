@@ -2586,6 +2586,11 @@ function drawPauseArea() {
   /** The top of the row of buttons, in fractions of the stage height. */
   const buttonY = 0.33;
   const spacing = pauseAreaValues.w * DIALOG.BUTTON_SPACING;
+  // The row has the same margin on both sides, with equal gaps between the buttons.
+  const buttonGap =
+    (pauseAreaValues.w - spacing * 2 - button1W - button2W * 2) / 2;
+  const chatButtonX = spacing + button1W + buttonGap;
+  const pauseLobbyButtonX = chatButtonX + button2W + buttonGap;
 
   globals.elements.pauseButton = new Button({
     x: spacing * winW,
@@ -2605,7 +2610,7 @@ function drawPauseArea() {
   );
 
   const chatButton = new Button({
-    x: (pauseAreaValues.w - button2W * 2 - spacing * 2) * winW,
+    x: chatButtonX * winW,
     y: buttonY * winH,
     width: button2W * winW,
     height: DIALOG.BUTTON_H * winH,
@@ -2619,7 +2624,7 @@ function drawPauseArea() {
 
   const pauseLobbyButton = new Button(
     {
-      x: (pauseAreaValues.w - button2W - spacing * 1.5) * winW,
+      x: pauseLobbyButtonX * winW,
       y: buttonY * winH,
       width: button2W * winW,
       height: DIALOG.BUTTON_H * winH,
