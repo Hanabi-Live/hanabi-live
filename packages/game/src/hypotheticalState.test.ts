@@ -71,7 +71,7 @@ describe("hypothetical state", () => {
   );
 
   test("applies initial actions sequentially while retaining the starting player", () => {
-    const action = rankClue(3, 1, [], 0);
+    const action = { ...rankClue(3, 1, [], 0), ignoreNegative: true };
     const state = initializeHypotheticalState(
       startingState,
       false,
@@ -351,29 +351,6 @@ describe("hypothetical state", () => {
     expect(initial.drawnCardsInHypothetical).toEqual([]);
   });
 
-  test.each([
-    { showDrawnCards: false, target: 0, ignoreNegative: true },
-    { showDrawnCards: true, target: 0, ignoreNegative: false },
-    { showDrawnCards: false, target: 1, ignoreNegative: false },
-  ] as const)(
-    "clue negatives with $showDrawnCards shown and target $target",
-    ({ showDrawnCards, target, ignoreNegative }) => {
-      const initial = initializeHypotheticalState(
-        startingState,
-        showDrawnCards,
-        [],
-        false,
-        metadata,
-      );
-      const action = rankClue(3, target === 0 ? 1 : 0, [], target);
-      const state = hypotheticalStateReducer(initial, action, false, metadata);
-      expect(state.ongoing.clues.at(-1)?.negativeList).toEqual<unknown>(
-        ignoreNegative ? [] : startingState.hands[target],
-      );
-      expect(action.ignoreNegative).toBe(false);
-    },
-  );
-
   describe.each(["play", "discard"] as const)("a received %s", (type) => {
     function cardAction(order: number) {
       return type === "play"
@@ -438,17 +415,20 @@ describe("hypothetical state", () => {
     });
   });
 
-  test("preserves an explicit ignoreNegative on other clues", () => {
+  test("applies a clue's ignoreNegative as sent", () => {
     const initial = initializeHypotheticalState(
       startingState,
-      true,
+      false,
       [],
       false,
       metadata,
     );
-    const action = { ...rankClue(3, 0, [], 1), ignoreNegative: true };
+    const action = rankClue(3, 1, [], 0);
+    expect(action.ignoreNegative).toBe(false);
     const state = hypotheticalStateReducer(initial, action, false, metadata);
-    expect(state.ongoing.clues.at(-1)?.negativeList).toEqual([]);
+    expect(state.ongoing.clues.at(-1)?.negativeList).toEqual<unknown>(
+      startingState.hands[0],
+    );
   });
 
   test("saves segment changes and Back restores the previous saved state", () => {

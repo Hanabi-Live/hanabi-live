@@ -60,6 +60,8 @@ function makeContext(rank: Rank = 1): PlanHypotheticalActionContext {
       { suitIndex: 0, rank },
     ],
     morphedIdentities: [],
+    showDrawnCards: true,
+    startingPlayerIndex: 0,
     notes: state.notes.ourNotes,
     playing: false,
     // Only drawn cards have UI views. The bottom card is absent from both collections.

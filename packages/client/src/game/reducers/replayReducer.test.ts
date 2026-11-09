@@ -66,7 +66,7 @@ describe("replayReducer", () => {
     });
 
     test("replays initial actions sequentially and retains the starting player", () => {
-      const action = rankClue(3, 1, [], 0);
+      const action = { ...rankClue(3, 1, [], 0), ignoreNegative: true };
       const state = replayReducer(
         testState.replay,
         {
@@ -225,28 +225,6 @@ describe("replayReducer", () => {
         order + 2,
       ]);
     });
-
-    test.each([
-      { showDrawnCards: false, target: 0, ignoreNegative: true },
-      { showDrawnCards: true, target: 0, ignoreNegative: false },
-      { showDrawnCards: false, target: 1, ignoreNegative: false },
-    ] as const)(
-      "clue negatives with $showDrawnCards shown and target $target",
-      ({ showDrawnCards, target, ignoreNegative }) => {
-        let state = replayReducer(
-          testState.replay,
-          { ...hypoStart(), showDrawnCards },
-          false,
-          metadata,
-        );
-        const action = rankClue(3, target === 0 ? 1 : 0, [], target);
-        state = replayReducer(state, hypoAction(action), false, metadata);
-        expect(state.hypothetical?.ongoing.clues.at(-1)?.negativeList).toEqual(
-          ignoreNegative ? [] : startingState.hands[target],
-        );
-        expect(action.ignoreNegative).toBe(false);
-      },
-    );
 
     test("saves segment changes and Back restores the previous saved state", () => {
       let state = replayReducer(testState.replay, hypoStart(), false, metadata);

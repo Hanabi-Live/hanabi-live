@@ -12,9 +12,6 @@
 - refactor START_CARD_RANK from 7 --> 0 (might affect database?)
 - delete UIGlobals.activePlayerIndex
 
-short term:
-- refactor `ignoreNegative`, I don't think it should be created inside of the reducer (?)
-
 long term once the server is rewritten in TypeScript:
 - linking to lobby table that doesn't exist shouldn't throw warning and should instead just redirect to /
 - make Connection.send on client type-safe

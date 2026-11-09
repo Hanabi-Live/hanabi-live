@@ -85,6 +85,8 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
             variant,
             cardIdentities,
             morphedIdentities: [],
+            showDrawnCards: true,
+            startingPlayerIndex: null,
             notes,
             playing: false,
             cardViews: [
@@ -165,6 +167,8 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
         variant,
         cardIdentities,
         morphedIdentities: hypothetical.morphedIdentities,
+        showDrawnCards: hypothetical.showDrawnCards,
+        startingPlayerIndex: hypothetical.startingPlayerIndex,
         notes,
         playing: false,
         cardViews,
@@ -200,6 +204,8 @@ describe("Sudoku hypothetical from public game 1663033 (issue #3040)", () => {
         variant,
         cardIdentities,
         morphedIdentities,
+        showDrawnCards: true,
+        startingPlayerIndex: null,
         notes,
         playing: false,
         cardViews: [

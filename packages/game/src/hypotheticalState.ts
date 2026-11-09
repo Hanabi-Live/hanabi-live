@@ -233,18 +233,10 @@ function hypotheticalStateReducerFunction(
     }
   }
 
-  const isClueActionThatShouldIgnoreNegative =
-    action.type === "clue"
-    && !state.showDrawnCards
-    && state.startingPlayerIndex === action.target;
-  const newAction = isClueActionThatShouldIgnoreNegative
-    ? { ...action, ignoreNegative: true }
-    : action;
-
   const oldSegment = state.ongoing.turn.segment;
   const newState = gameReducer(
     state.ongoing,
-    newAction,
+    action,
     true,
     false,
     finished,

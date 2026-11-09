@@ -129,7 +129,8 @@ export function canPassTurnInHypothetical(state: State): boolean {
 }
 
 function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
-  const gameState = globals.state.replay.hypothetical!.ongoing;
+  const hypothetical = globals.state.replay.hypothetical!;
+  const gameState = hypothetical.ongoing;
   const cardViews: HypotheticalCardView[] = [];
   if (gameState.turn.currentPlayerIndex !== null) {
     switch (intent.type) {
@@ -173,7 +174,9 @@ function planAndSendHypotheticalAction(intent: HypotheticalActionIntent) {
     metadata: globals.metadata,
     variant: globals.variant,
     cardIdentities: globals.state.cardIdentities,
-    morphedIdentities: globals.state.replay.hypothetical!.morphedIdentities,
+    morphedIdentities: hypothetical.morphedIdentities,
+    showDrawnCards: hypothetical.showDrawnCards,
+    startingPlayerIndex: hypothetical.startingPlayerIndex,
     notes: globals.state.notes.ourNotes,
     playing: globals.state.playing,
     cardViews,

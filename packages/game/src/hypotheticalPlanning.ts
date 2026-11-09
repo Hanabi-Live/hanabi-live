@@ -199,6 +199,8 @@ export interface PlanHypotheticalActionContext {
   readonly variant: Variant;
   readonly cardIdentities: readonly CardIdentity[];
   readonly morphedIdentities: ReadonlyArray<CardIdentity | undefined>;
+  readonly showDrawnCards: boolean;
+  readonly startingPlayerIndex: PlayerIndex | null;
   readonly notes: readonly CardNote[];
   readonly playing: boolean;
   readonly cardViews: readonly HypotheticalCardView[];
@@ -407,7 +409,11 @@ export function planHypotheticalAction(
       giver: playerIndex,
       list: getHypotheticalTouchedCards(targetCards, clue, variant),
       target: intent.target,
-      ignoreNegative: false,
+      // While drawn cards are hidden, negative information could reveal the starting player's
+      // hidden cards.
+      ignoreNegative:
+        !context.showDrawnCards
+        && intent.target === context.startingPlayerIndex,
     });
   }
 

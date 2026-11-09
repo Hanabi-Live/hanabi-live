@@ -76,6 +76,8 @@ function makeContext(
       { suitIndex: null, rank: null },
     ],
     morphedIdentities: [],
+    showDrawnCards: true,
+    startingPlayerIndex: 0,
     notes: [emptyNote, emptyNote],
     playing: true,
     cardViews: [view(card0, 1, 1), view(card1, null, null)],
@@ -544,6 +546,37 @@ describe("hypothetical planning", () => {
       clue: { type: ClueType.Rank, value: 1 },
     });
   });
+
+  test.each([
+    { showDrawnCards: false, target: 0, ignoreNegative: true },
+    { showDrawnCards: true, target: 0, ignoreNegative: false },
+    { showDrawnCards: false, target: 1, ignoreNegative: false },
+  ] as const)(
+    "clue negatives with $showDrawnCards shown and target $target",
+    ({ showDrawnCards, target, ignoreNegative }) => {
+      const base = makeContext();
+      const context: PlanHypotheticalActionContext = {
+        ...base,
+        showDrawnCards,
+        gameState: {
+          ...base.gameState,
+          turn: {
+            ...base.gameState.turn,
+            currentPlayerIndex: (1 - target) as PlayerIndex,
+          },
+        },
+      };
+      const actions = planHypotheticalAction(
+        {
+          type: "rankClue",
+          target: target as PlayerIndex,
+          value: 3 as RankClueNumber,
+        },
+        context,
+      );
+      expect(actions?.[0]).toMatchObject({ type: "clue", ignoreNegative });
+    },
+  );
 
   test("passing the turn spends a clue without touching or logging a clue", () => {
     const context = makeContext();
