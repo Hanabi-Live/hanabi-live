@@ -650,15 +650,20 @@ export function drawUI(): void {
   winW = globals.stage.width();
   winH = globals.stage.height();
 
-  const layersBeforeDestroy = [...globals.stage.getLayers()];
-
-  // Just in case, destroy all existing layers on the stage.
-  for (const layer of layersBeforeDestroy) {
-    layer.destroy();
+  // Remove all existing layers from the stage. Destroy only the ones that are not reused, since
+  // Konva releases the canvases of a destroyed layer, which would leave a reused layer without hit
+  // detection.
+  const reusedLayers = new Set<Konva.Layer>(Object.values(globals.layers));
+  for (const layer of globals.stage.getLayers()) {
+    if (reusedLayers.has(layer)) {
+      layer.remove();
+    } else {
+      layer.destroy();
+    }
   }
 
-  // Clear children from the cached layers.
-  for (const layer of Object.values(globals.layers) as Konva.Layer[]) {
+  // Clear children from the reused layers.
+  for (const layer of reusedLayers) {
     layer.destroyChildren();
   }
 
