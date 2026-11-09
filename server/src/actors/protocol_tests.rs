@@ -1256,7 +1256,7 @@ async fn expired_pregame_owner_is_removed_but_remaining_players_and_live_games_s
                 players.push(Player {
                     id: user.user,
                     name: user.name.clone(),
-                    stats: crate::store::zero_stats(),
+                    stats: crate::stats::zero_stats(),
                 });
             }
             *countdown = Some(Utc::now() + ChronoDuration::minutes(5));

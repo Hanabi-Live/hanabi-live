@@ -51,10 +51,13 @@ impl TableActor {
             }
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
-        let player = self
-            .store
-            .player_for_variant(session.user, session.name.clone(), variant.id)
-            .await?;
+        let player = crate::stats::player(
+            &self.store.primary,
+            session.user,
+            session.name.clone(),
+            variant.id,
+        )
+        .await?;
         ensure_or_reject!(session.active(), "Session changed during join");
         let mut next = self.candidate();
         if let Phase::Pregame { players, .. } = &mut next.phase {

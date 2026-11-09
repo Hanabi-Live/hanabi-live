@@ -223,11 +223,14 @@ impl TableActor {
         *countdown = None;
         *automatic_start = None;
         for player in players.iter_mut() {
-            player.stats = self
-                .store
-                .player_for_variant(player.id, player.name.clone(), variant.id)
-                .await?
-                .stats;
+            player.stats = crate::stats::player(
+                &self.store.primary,
+                player.id,
+                player.name.clone(),
+                variant.id,
+            )
+            .await?
+            .stats;
         }
         ensure_or_reject!(
             session.active(),

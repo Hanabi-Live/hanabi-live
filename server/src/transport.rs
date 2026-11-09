@@ -261,7 +261,9 @@ impl Session {
             return false;
         };
         let Ok(global_permit) = GLOBAL_OUTPUT_BYTES.clone().try_acquire_many_owned(length) else {
-            eprintln!("Closing a connection because the aggregate output byte budget is exhausted.");
+            eprintln!(
+                "Closing a connection because the aggregate output byte budget is exhausted."
+            );
             self.cancel.cancel();
             return false;
         };

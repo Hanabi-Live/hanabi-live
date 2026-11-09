@@ -5,8 +5,8 @@ use super::{
 };
 use crate::{
     lobby::{Effect, OnlineUser},
-    routing::{Route, route},
     operations::Operation,
+    routing::{Route, route},
     server_info::ServerInfo,
     store::Store,
     transport::{Session, frame},

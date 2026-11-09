@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,\n             best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod\n             FROM user_stats WHERE user_id=$1 AND variant_id=$2",
+  "query": "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,\n         best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod\n         FROM user_stats WHERE user_id=$1 AND variant_id=$2",
   "describe": {
     "columns": [
       {
@@ -169,5 +169,5 @@
       false
     ]
   },
-  "hash": "9b3e9ef09566233c0e634fe0a3197af82ad8109d6038cb80b3ea03fc6d9c9cf8"
+  "hash": "f61363d07e0d3a16964e039816e5a9a56abf39fe2df8698a475f29ba16af753b"
 }

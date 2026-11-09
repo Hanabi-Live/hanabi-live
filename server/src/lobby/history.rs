@@ -55,7 +55,7 @@ pub async fn get_history(
         let game = row.game.0;
         result.push(hanabi_protocol::GameHistory {
             id: hanabi_protocol::GameId(game.id),
-            options: crate::model::wire_options(&crate::store::options_from_record(&game)?),
+            options: crate::model::wire_options(&crate::archive::options(&game)?),
             score: i32::from(game.score),
             num_turns: i32::from(game.num_turns),
             end_condition: hanabi_protocol::EndCondition::try_from(i32::from(game.end_condition))

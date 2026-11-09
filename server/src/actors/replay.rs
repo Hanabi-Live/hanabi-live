@@ -104,9 +104,7 @@ impl TableActor {
                 s.game_id > 0,
                 "JSON replays do not have a database game to tag."
             );
-            s.tags = self
-                .store
-                .tags_for_game(s.game_id)
+            s.tags = crate::archive::tags(&self.store.primary, s.game_id)
                 .await?
                 .or_reject("That game no longer exists in the database.")?;
             ensure_or_reject!(
@@ -459,15 +457,18 @@ impl TableActor {
         let snapshot = self.table.game().context("Missing completed game")?;
         if snapshot.game_id > 0 && !self.table.extra.no_write_to_database {
             // The replay may be visible before its background statistics finish.
-            self.store.refresh(snapshot).await?;
+            crate::stats::refresh(&self.store.archive, snapshot).await?;
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         for player in &mut players {
-            player.stats = self
-                .store
-                .player_for_variant(player.id, player.name.clone(), variant.id)
-                .await?
-                .stats;
+            player.stats = crate::stats::player(
+                &self.store.primary,
+                player.id,
+                player.name.clone(),
+                variant.id,
+            )
+            .await?
+            .stats;
         }
         ensure_or_reject!(
             session.active(),

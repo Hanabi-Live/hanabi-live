@@ -131,7 +131,7 @@ pub(super) async fn load_replay(
     let Some(game_id) = extra.replay_game_id else {
         return Ok(());
     };
-    let historical = store.historical(game_id, table_id, user).await?;
+    let historical = crate::archive::replay(&store.primary, game_id, table_id, user).await?;
     ensure_or_reject!(
         usize::try_from(historical.game.turn).is_ok_and(|limit| extra.set_replay_turn < limit),
         "Replay turn exceeds game"
@@ -393,13 +393,13 @@ pub(super) async fn prepare_table(
                     custom_seed = Some(imported.custom_seed.clone());
                     super::replay_helpers::snapshot(imported, id, session.user)
                 } else {
-                    store
-                        .historical(
-                            r.database_id.or_reject("Missing databaseID")?,
-                            id,
-                            session.user,
-                        )
-                        .await?
+                    crate::archive::replay(
+                        &store.primary,
+                        r.database_id.or_reject("Missing databaseID")?,
+                        id,
+                        session.user,
+                    )
+                    .await?
                 };
                 let mut table = replay_table(
                     snapshot,
@@ -432,9 +432,13 @@ pub(super) async fn prepare_table(
         load_replay(store, &mut extra, id, session.user, &mut options).await?;
         let variant = hanabi_engine::get_variant(&options.variant_name)?;
         options.variant_id = Some(variant.id);
-        let player = store
-            .player_for_variant(session.user, session.name.clone(), variant.id)
-            .await?;
+        let player = crate::stats::player(
+            &store.primary,
+            session.user,
+            session.name.clone(),
+            variant.id,
+        )
+        .await?;
         let max_players = usize::try_from(r.max_players)
             .ok()
             .filter(|n| hanabi_protocol::is_player_count(*n))

@@ -2,7 +2,7 @@ use crate::errors::OrReject;
 use crate::{
     game::{Card, Game, Options},
     model::{FORMAT, IDLE_TIMEOUT_MS, Player, Snapshot},
-    store::zero_stats,
+    stats::zero_stats,
 };
 use anyhow::Result;
 use chrono::Utc;

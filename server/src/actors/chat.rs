@@ -364,9 +364,7 @@ impl TableActor {
         if parsed == Some(TableChatCommand::Tags) {
             let messages = if matches!(self.table.phase, Phase::Replay { .. }) {
                 let id = self.table.game().expect("replay game").game_id;
-                let tags = self
-                    .store
-                    .tags_for_game(id)
+                let tags = crate::archive::tags(&self.store.primary, id)
                     .await?
                     .unwrap_or_default()
                     .into_iter()

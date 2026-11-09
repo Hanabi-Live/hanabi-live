@@ -311,7 +311,7 @@ fn game_history(row: HistoryRow) -> anyhow::Result<hanabi_protocol::GameHistory>
     let g = row.game;
     Ok(hanabi_protocol::GameHistory {
         id: hanabi_protocol::GameId(g.id),
-        options: crate::model::wire_options(&crate::store::options_from_record(&g)?),
+        options: crate::model::wire_options(&crate::archive::options(&g)?),
         seed: g.seed,
         score: i32::from(g.score),
         num_turns: i32::from(g.num_turns),

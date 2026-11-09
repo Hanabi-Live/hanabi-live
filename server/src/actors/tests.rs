@@ -273,7 +273,7 @@ pub(super) fn pregame(id: u64) -> TableSnapshot {
             players: vec![Player {
                 id: 1,
                 name: "Alice".into(),
-                stats: crate::store::zero_stats(),
+                stats: crate::stats::zero_stats(),
             }],
             automatic_start: None,
             countdown: None,

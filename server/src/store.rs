@@ -1,22 +1,16 @@
 use crate::{
-    game::{Game, Options},
-    model::{
-        FORMAT, IDLE_TIMEOUT_MS, PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot,
-        Tag, TagOperation,
-    },
+    model::{PendingTag, Phase, Player, Snapshot, TableChat, TableSnapshot, Tag, TagOperation},
     state::LiveState,
 };
 use anyhow::{Context, Result, bail, ensure};
-use chrono::Utc;
-use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
-use hanabi_protocol::{ChatSource, NO_VALUE};
+use hanabi_protocol::ChatSource;
 use serde_json::{Value, json};
 
 use sqlx::{
     PgPool, Postgres, Transaction,
     postgres::{PgConnectOptions, PgPoolOptions},
 };
-use std::{collections::BTreeMap, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 use tokio::sync::Semaphore;
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
@@ -32,15 +26,6 @@ pub struct Store {
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
 }
-/// The whole seconds that the database stores for a time base, which option validation bounds.
-#[expect(
-    clippy::cast_possible_truncation,
-    reason = "option validation bounds the time base"
-)]
-fn stored_seconds(time_base: f64) -> i32 {
-    time_base as i32
-}
-
 /// How long the primary and archive pools wait for a connection, a statement, or an idle
 /// transaction.
 pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -57,8 +42,6 @@ const LIVE_CONNECTIONS: u32 = 4;
 const LOBBY_READ_CONNECTIONS: u32 = 2;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
-/// The stored character assignment of a player without a character.
-pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 
 /// The namespaces of the transaction advisory locks that serialize writes of the same record.
 #[derive(Clone, Copy)]
@@ -251,7 +234,7 @@ impl Store {
             .into_iter()
             .collect::<Vec<_>>();
         if refresh_stats && !users.is_empty() {
-            let counts = self.completed_game_counts(&users).await?;
+            let counts = crate::database::normal_game_counts(&self.primary, &users, false).await?;
             for (table, revision) in &mut output {
                 if table.set_game_counts(&users, &counts) {
                     *revision = self.save(table, *revision).await?;
@@ -284,7 +267,7 @@ impl Store {
             )
             .await?;
             if work.archive {
-                archive_game(
+                crate::archive::insert(
                     &mut transaction,
                     table.game().context("Missing finished game")?,
                 )
@@ -317,154 +300,6 @@ impl Store {
         }
         result
     }
-    pub async fn historical(&self, id: i32, table_id: u64, owner: i32) -> Result<Snapshot> {
-        let archive = crate::archive::load(&self.primary, id)
-            .await?
-            .context("Unknown replay")?;
-        let row = archive.game;
-        let options = options_from_record(&row)?;
-        let variant = hanabi_engine::get_variant(&options.variant_name)?;
-        let seed: String = row.seed.clone();
-        let deck = hanabi_engine::create_shuffled_deck(variant, &seed);
-        ensure!(
-            deck.len() <= hanabi_engine::create_deck(variant).len()
-                && deck.iter().all(|c| c.suit_index < variant.suits.len()),
-            "Malformed stored deck"
-        );
-        let rows = archive.players;
-        ensure!(rows.len() == options.num_players, "Invalid replay roster");
-        let mut players = vec![];
-        let mut characters = vec![];
-        let mut notes = vec![vec![String::new(); deck.len() + variant.suits.len()]; rows.len()];
-        for (seat, r) in rows.iter().enumerate() {
-            ensure!(
-                i16::try_from(seat).ok() == Some(r.seat),
-                "Invalid replay seat"
-            );
-            players.push(Player {
-                id: r.user_id,
-                name: r.name.clone(),
-                stats: zero_stats(),
-            });
-            let assignment = r.character_assignment;
-            let character = hanabi_engine::characters()
-                .iter()
-                .find(|c| i16::try_from(c.id).ok() == Some(assignment));
-            ensure!(
-                assignment == NO_CHARACTER_ASSIGNMENT || character.is_some(),
-                "Unknown stored character"
-            );
-            let name = character.map_or("", |c| c.name.as_str());
-            characters.push(AssignedCharacter {
-                name: name.into(),
-                metadata: if hanabi_engine::Character::from_name(name)
-                    .is_some_and(hanabi_engine::Character::has_assigned_metadata)
-                {
-                    i32::from(r.character_metadata)
-                } else {
-                    NO_VALUE
-                },
-            });
-        }
-        for note in archive.notes {
-            let cell = notes
-                .get_mut(usize::try_from(note.seat)?)
-                .and_then(|notes| {
-                    usize::try_from(note.order)
-                        .ok()
-                        .and_then(|order| notes.get_mut(order))
-                })
-                .context("Invalid stored note")?;
-            *cell = note.note;
-        }
-        let game = Game::replay(
-            GameSetup {
-                options,
-                player_names: players.iter().map(|p| p.name.clone()).collect(),
-                seed: seed.clone(),
-                deck: Some(deck),
-                characters: Some(characters),
-                interpretation: Interpretation::Recorded,
-            },
-            archive.actions,
-        )?;
-        ensure!(
-            game.score == i32::from(row.score)
-                && game.end_condition as i32 == i32::from(row.end_condition),
-            "Historical replay result mismatch"
-        );
-        let n = players.len();
-        Ok(Snapshot {
-            format: FORMAT.into(),
-            table_id,
-            game_id: row.id,
-            owner,
-            name: row.name.clone(),
-            players,
-            seed,
-            created: Utc::now(),
-            started: row.datetime_started,
-            finished: Some(row.datetime_finished),
-            game,
-            clocks: vec![0; n],
-            duration: 0,
-            turn_elapsed: 0,
-            timer_started: false,
-            idle_remaining: IDLE_TIMEOUT_MS,
-            pause_player_index: NO_VALUE,
-            queued_pauses: vec![false; n],
-            notes,
-            spectator_notes: BTreeMap::new(),
-            tags: archive.tags,
-            votes: vec![false; n],
-            maintenance_applied: false,
-        })
-    }
-    pub async fn tags_for_game(&self, id: i32) -> Result<Option<Vec<Tag>>> {
-        let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id).fetch_all(&self.primary).await?;
-        if rows.is_empty() {
-            return Ok(None);
-        }
-        let mut tags = vec![];
-        for row in rows {
-            if let Some(tag) = row.tag.clone() {
-                tags.push(Tag {
-                    user: row.user_id.context("Missing tag author")?,
-                    tag,
-                });
-            }
-        }
-        Ok(Some(tags))
-    }
-    pub async fn player(&self, id: i32, name: String) -> Result<Player> {
-        self.player_for_variant(id, name, 0).await
-    }
-    async fn completed_game_counts(&self, ids: &[i32]) -> Result<BTreeMap<i32, i64>> {
-        crate::database::normal_game_counts(&self.primary, ids, false).await
-    }
-    pub async fn player_for_variant(&self, id: i32, name: String, variant: u32) -> Result<Player> {
-        let count = self
-            .completed_game_counts(&[id])
-            .await?
-            .get(&id)
-            .copied()
-            .unwrap_or(0);
-        let row = sqlx::query_as!(
-            crate::database::UserStats,
-            "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
-             best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
-             FROM user_stats WHERE user_id=$1 AND variant_id=$2",
-            id,
-            i16::try_from(variant)?
-        )
-        .fetch_optional(&self.primary)
-        .await?;
-        Ok(Player {
-            id,
-            name,
-            stats: player_stats(count, row.as_ref()),
-        })
-    }
     pub async fn seed_count(&self, seed: &str) -> Result<i64> {
         Ok(sqlx::query_scalar!(
             "SELECT count(*) AS \"value!\" FROM games WHERE seed=$1",
@@ -496,73 +331,10 @@ impl Store {
         let store = self.clone();
         self.stats.spawn(async move {
             let _permit = permit;
-            if let Err(e) = store.refresh(&snapshot).await {
+            if let Err(e) = crate::stats::refresh(&store.archive, &snapshot).await {
                 eprintln!("Derived statistics failed: {e}");
             }
         });
-    }
-    pub(crate) async fn refresh(&self, s: &Snapshot) -> Result<()> {
-        let variant = hanabi_engine::get_variant(&s.game.options.variant_name)?;
-        let v = i16::try_from(variant.id)?;
-        let players = i32::try_from(s.players.len())?;
-        let mut tx = self.archive.begin().await?;
-        advisory_lock(&mut tx, LockSpace::VariantStats, i32::from(v)).await?;
-        sqlx::query!("INSERT INTO seeds(seed,num_games) VALUES($1,(SELECT count(*) FROM games WHERE seed=$1)) ON CONFLICT(seed) DO UPDATE SET num_games=excluded.num_games", &s.seed).execute(&mut *tx).await?;
-        sqlx::query!(
-            "INSERT INTO variant_stats(variant_id) VALUES($1) ON CONFLICT DO NOTHING",
-            v
-        )
-        .execute(&mut *tx)
-        .await?;
-        let modifier = crate::model::ScoreModifier::of(&s.game.options);
-        for p in &s.players {
-            sqlx::query!(
-                "INSERT INTO user_stats(user_id,variant_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-                p.id,
-                v
-            )
-            .execute(&mut *tx)
-            .await?;
-            sqlx::query!(
-                "UPDATE user_stats SET best_score2=CASE WHEN $5=2 THEN GREATEST(best_score2,$3) ELSE best_score2 END,best_score2_mod=CASE WHEN $5=2 AND ($3>best_score2 OR ($3=best_score2 AND $4<best_score2_mod)) THEN $4 ELSE best_score2_mod END,
-                 best_score3=CASE WHEN $5=3 THEN GREATEST(best_score3,$3) ELSE best_score3 END,best_score3_mod=CASE WHEN $5=3 AND ($3>best_score3 OR ($3=best_score3 AND $4<best_score3_mod)) THEN $4 ELSE best_score3_mod END,
-                 best_score4=CASE WHEN $5=4 THEN GREATEST(best_score4,$3) ELSE best_score4 END,best_score4_mod=CASE WHEN $5=4 AND ($3>best_score4 OR ($3=best_score4 AND $4<best_score4_mod)) THEN $4 ELSE best_score4_mod END,
-                 best_score5=CASE WHEN $5=5 THEN GREATEST(best_score5,$3) ELSE best_score5 END,best_score5_mod=CASE WHEN $5=5 AND ($3>best_score5 OR ($3=best_score5 AND $4<best_score5_mod)) THEN $4 ELSE best_score5_mod END,
-                 best_score6=CASE WHEN $5=6 THEN GREATEST(best_score6,$3) ELSE best_score6 END,best_score6_mod=CASE WHEN $5=6 AND ($3>best_score6 OR ($3=best_score6 AND $4<best_score6_mod)) THEN $4 ELSE best_score6_mod END,
-                 num_games=s.n
-                 FROM (SELECT count(*)::integer n FROM games g
-                 JOIN game_participants p ON p.game_id=g.id
-                 WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s
-                 WHERE user_id=$1 AND variant_id=$2",
-                p.id,
-                v,
-                i16::try_from(s.game.score)?,
-                modifier.bits(),
-                players,
-            )
-            .execute(&mut *tx)
-            .await?;
-        }
-        sqlx::query!(
-            "UPDATE variant_stats SET best_score2=CASE WHEN $5=2 AND $4 THEN GREATEST(best_score2,$2) ELSE best_score2 END,
-             best_score3=CASE WHEN $5=3 AND $4 THEN GREATEST(best_score3,$2) ELSE best_score3 END,
-             best_score4=CASE WHEN $5=4 AND $4 THEN GREATEST(best_score4,$2) ELSE best_score4 END,
-             best_score5=CASE WHEN $5=5 AND $4 THEN GREATEST(best_score5,$2) ELSE best_score5 END,
-             best_score6=CASE WHEN $5=6 AND $4 THEN GREATEST(best_score6,$2) ELSE best_score6 END,
-             num_games=s.n,num_max_scores=s.maximum
-             FROM (SELECT count(*)::integer n,(count(*) FILTER(WHERE score=$3))::integer maximum
-             FROM games WHERE variant_id=$1 AND NOT speedrun) s
-             WHERE variant_id=$1",
-            v,
-            i16::try_from(s.game.score)?,
-            i16::try_from(variant.max_score)?,
-            modifier == crate::model::ScoreModifier::default(),
-            players,
-        )
-        .execute(&mut *tx)
-        .await?;
-        tx.commit().await?;
-        Ok(())
     }
     pub async fn close(&self) -> Result<()> {
         self.stats.close();
@@ -727,176 +499,22 @@ async fn apply_tag(
     .collect())
 }
 
-/// Adds a finished game to the database.
-async fn archive_game(
-    transaction: &mut Transaction<'static, Postgres>,
-    s: &Snapshot,
-) -> Result<()> {
-    ensure!(
-        s.game_id > 0 && s.game.end_condition != EndCondition::InProgress,
-        "Cannot archive an ongoing/JSON game"
-    );
-    let finished = s.finished.context("Missing completion time")?;
-    let o = &s.game.options;
-    let variant = hanabi_engine::get_variant(&o.variant_name)?;
-    let tx = transaction;
-    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
-    let mut users = vec![];
-    let mut seats = vec![];
-    let mut assignments = vec![];
-    let mut metadata = vec![];
-    for (seat, p) in s.players.iter().enumerate() {
-        let (assignment, value) = stored_character(&s.game.players[seat])?;
-        users.push(p.id);
-        seats.push(i16::try_from(seat)?);
-        assignments.push(assignment);
-        metadata.push(value);
-    }
-    let participants = sqlx::query!(
-        "INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata)
-         SELECT $1,* FROM UNNEST($2::integer[],$3::smallint[],$4::smallint[],$5::smallint[])
-         RETURNING id,seat",
-        s.game_id,
-        &users,
-        &seats,
-        &assignments,
-        &metadata
-    )
-    .fetch_all(&mut **tx)
-    .await?;
-    let (mut note_participants, mut note_orders, mut notes) = (vec![], vec![], vec![]);
-    for participant in participants {
-        let seat_notes = s
-            .notes
-            .get(usize::try_from(participant.seat)?)
-            .context("Missing participant notes")?;
-        for (order, note) in seat_notes.iter().enumerate().filter(|(_, n)| !n.is_empty()) {
-            note_participants.push(participant.id);
-            note_orders.push(i16::try_from(order)?);
-            notes.push(note.as_str());
-        }
-    }
-    sqlx::query!(
-        "INSERT INTO game_participant_notes(game_participant_id,card_order,note)
-         SELECT * FROM UNNEST($1::integer[],$2::smallint[],$3::text[])",
-        &note_participants,
-        &note_orders,
-        &notes as &[&str]
-    )
-    .execute(&mut **tx)
-    .await?;
-    let kinds: Vec<i16> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| i16::try_from(i32::from(a.action_type)))
-        .collect::<Result<_, _>>()?;
-    let targets: Vec<i16> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| i16::try_from(a.target))
-        .collect::<Result<_, _>>()?;
-    let values: Vec<i16> = s
-        .game
-        .actions
-        .iter()
-        .map(|a| i16::try_from(a.value))
-        .collect::<Result<_, _>>()?;
-    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut **tx).await?;
-    let tag_users = s.tags.iter().map(|tag| tag.user).collect::<Vec<_>>();
-    let tags = s.tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>();
-    sqlx::query!(
-        "INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,* FROM UNNEST($2::integer[],$3::text[])",
-        s.game_id,
-        &tag_users,
-        &tags as &[&str]
-    )
-    .execute(&mut **tx)
-    .await?;
-    Ok(())
-}
-
-/// The character assignment and metadata that `game_participants` stores for a player.
-fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> {
-    let assignment = hanabi_engine::characters()
-        .iter()
-        .find(|c| c.name == player.character)
-        .map_or(Ok(NO_CHARACTER_ASSIGNMENT), |c| i16::try_from(c.id))?;
-    let metadata = player.assigned_metadata().map_or(Ok(0), i16::try_from)?;
-    Ok((assignment, metadata))
-}
-/// A pregame player's statistics as their table's checkpoint stores them: all of their games, and
-/// their games and best scores on the table's variant, from `user_stats` if they have played it.
-fn player_stats(
-    num_games: i64,
-    row: Option<&crate::database::UserStats>,
-) -> hanabi_protocol::PregameStats {
-    let (variant_games, best_scores) =
-        row.map_or((0, [(0, 0); crate::database::PLAYER_COUNTS]), |row| {
-            (
-                i64::from(row.num_games),
-                [
-                    (row.best_score2, row.best_score2_mod),
-                    (row.best_score3, row.best_score3_mod),
-                    (row.best_score4, row.best_score4_mod),
-                    (row.best_score5, row.best_score5_mod),
-                    (row.best_score6, row.best_score6_mod),
-                ],
-            )
-        });
-    hanabi_protocol::PregameStats {
-        num_games,
-        variant: hanabi_protocol::PregameVariantStats {
-            num_games: variant_games,
-            best_scores: (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-                .zip(best_scores)
-                .map(|(num_players, (score, modifier))| {
-                    crate::model::ScoreModifier::from_bits(modifier)
-                        .best_score(crate::model::small(num_players), i32::from(score))
-                })
-                .collect(),
-        },
-    }
-}
-pub fn zero_stats() -> hanabi_protocol::PregameStats {
-    player_stats(0, None)
-}
-pub fn options_from_record(row: &crate::archive::GameRecord) -> Result<Options> {
-    let variant = hanabi_engine::get_variant_by_id(u32::try_from(row.variant_id)?)?;
-    Ok(Options {
-        num_players: usize::try_from(row.num_players)?,
-        variant_name: variant.name.clone(),
-        variant_id: Some(variant.id),
-        timed: row.timed,
-        time_base: f64::from(row.time_base),
-        time_per_turn: i64::from(row.time_per_turn),
-        speedrun: row.speedrun,
-        deck_plays: row.deck_plays,
-        empty_clues: row.empty_clues,
-        one_extra_card: row.one_extra_card,
-        one_less_card: row.one_less_card,
-        all_or_nothing: row.all_or_nothing,
-        detrimental_characters: row.detrimental_characters,
-        table_name: None,
-        max_players: None,
-    })
-}
-pub fn validate_standard_record(row: &crate::archive::GameRecord) -> Result<()> {
-    options_from_record(row)?;
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         accounts::test_support::TestDb,
         actors::{Hub, HubCommand, TableCommand},
+        game::{Game, Options},
         model::ExtraOptions,
+        model::{FORMAT, IDLE_TIMEOUT_MS},
+        stats::zero_stats,
         transport::Session,
     };
-    use std::sync::Arc;
+    use chrono::Utc;
+    use hanabi_engine::{EndCondition, GameSetup, Interpretation};
+    use hanabi_protocol::NO_VALUE;
+    use std::{collections::BTreeMap, sync::Arc};
     use tokio::sync::oneshot;
 
     fn pregame(id: u64) -> TableSnapshot {
@@ -988,50 +606,6 @@ mod tests {
         };
         Ok(())
     }
-    #[test]
-    fn pregame_statistics_keep_their_stored_format() {
-        let unplayed = |n: usize| {
-            json!({"numPlayers":n,"score":0,"modifier":0,"deckPlays":false,"emptyClues":false,
-                "oneExtraCard":false,"oneLessCard":false,"allOrNothing":false})
-        };
-        let best_scores: Vec<Value> = (hanabi_protocol::MIN_PLAYERS..=hanabi_protocol::MAX_PLAYERS)
-            .map(unplayed)
-            .collect();
-        assert_eq!(
-            serde_json::to_value(zero_stats()).unwrap(),
-            json!({"numGames":0,"variant":{"numGames":0,"bestScores":best_scores}})
-        );
-
-        let row = crate::database::UserStats {
-            user_id: 1,
-            variant_id: 0,
-            num_games: 7,
-            best_score2: 25,
-            best_score2_mod: 0,
-            best_score3: 24,
-            best_score3_mod: 2 + 8,
-            best_score4: 0,
-            best_score4_mod: 0,
-            best_score5: 0,
-            best_score5_mod: 0,
-            best_score6: 30,
-            best_score6_mod: 16,
-        };
-        let stats = serde_json::to_value(player_stats(12, Some(&row))).unwrap();
-        hanabi_protocol::validate::<hanabi_protocol::PregameStats>(&stats).unwrap();
-        assert_eq!(stats["numGames"], 12);
-        assert_eq!(stats["variant"]["numGames"], 7);
-        let best = &stats["variant"]["bestScores"];
-        assert_eq!(best[0]["score"], 25);
-        assert_eq!(
-            best[1],
-            json!({"numPlayers":3,"score":24,"modifier":10,"deckPlays":false,"emptyClues":true,
-                "oneExtraCard":false,"oneLessCard":true,"allOrNothing":false})
-        );
-        assert_eq!(best[4]["numPlayers"], 6);
-        assert_eq!(best[4]["allOrNothing"], true);
-    }
-
     #[test]
     fn spectator_note_owners_round_trip_and_reject_invalid_keys() -> Result<()> {
         let mut table = pregame(1);
@@ -1196,7 +770,7 @@ mod tests {
                     .collect();
                 snapshot.game.state_mut().score = hanabi_engine::int(count) + 10;
                 expected[count - 2] = i16::try_from(count)? + 10;
-                store.refresh(&snapshot).await?;
+                crate::stats::refresh(&store.archive, &snapshot).await?;
                 let user = sqlx::query!(
                     "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
                      FROM user_stats WHERE user_id=1 AND variant_id=0"
@@ -1259,7 +833,7 @@ mod tests {
             )
             .execute(&store.primary)
             .await?;
-            let player = store.player(9001, "Carol".into()).await?;
+            let player = crate::stats::player(&store.primary, 9001, "Carol".into(), 0).await?;
             let best = serde_json::to_value(&player.stats.variant.best_scores)?;
             ensure!(
                 best[0]["score"] == 25
@@ -1393,7 +967,7 @@ mod tests {
                 "The finished game did not become a fresh review"
             );
             ensure!(count(&pool, "game_actions").await? == 1);
-            let replay = store.historical(1, 99, 1).await?;
+            let replay = crate::archive::replay(&store.primary, 1, 99, 1).await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
                     && replay.notes == finished.game().unwrap().notes
