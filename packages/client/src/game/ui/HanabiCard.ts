@@ -788,10 +788,22 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     this.arrow!.rotation(
       direction === StackDirection.Up ? HALF_TURN_DEGREES : 0,
     );
-    // Use the first color of a suit with a gradient.
-    this.arrowBase!.fill(
-      suit.fill === "multi" ? suit.fillColors[0] : suit.fill,
-    );
+    if (suit.fill === "multi") {
+      // Show the colors in the same order as on the card, from top to bottom, in either direction.
+      const { y, height } = this.arrowBase!.getSelfRect();
+      const top = direction === StackDirection.Up ? y + height : y;
+      const bottom = direction === StackDirection.Up ? y : y + height;
+      const lastColorIndex = suit.fillColors.length - 1;
+      this.arrowBase!.fillLinearGradientStartPoint({ x: 0, y: top });
+      this.arrowBase!.fillLinearGradientEndPoint({ x: 0, y: bottom });
+      this.arrowBase!.fillLinearGradientColorStops(
+        suit.fillColors.flatMap((color, i) => [i / lastColorIndex, color]),
+      );
+      this.arrowBase!.fillPriority("linear-gradient");
+    } else {
+      this.arrowBase!.fill(suit.fill);
+      this.arrowBase!.fillPriority("color");
+    }
     if (this.rankPips.isVisible() === true) {
       this.setArrowMiddleRight();
     } else {

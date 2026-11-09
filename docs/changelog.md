@@ -65,6 +65,8 @@ of the repository.
 - The text in the action log now slides up and down when it changes.
 - Hold the left mouse button on the deck (or hold Space) to show which suits and
   ranks can still be in it.
+- The arrow on the cards of a reversed suit with several colors now shows all of
+  its colors.
 
 ## November 8th, 2026
 
