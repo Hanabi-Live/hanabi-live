@@ -33,8 +33,14 @@ code change is not, by itself, a reason to add documentation.
 
 Before adding documentation, identify the concrete reader action it enables. If
 there is none, put the explanation in the commit or pull request instead. Do not
-use documentation as a changelog or a place to narrate implementation details,
-internal data flow, CI behavior, or build metadata.
+use documentation other than `docs/changelog.md` as a changelog, or as a place
+to narrate implementation details, internal data flow, CI behavior, or build
+metadata.
+
+When a change adds, removes, or changes something that players or server
+operators notice, add a one-line entry for it to the matching section of
+`docs/changelog.md`, in the same commit. Do not add entries for bug fixes,
+refactors, tests, CI, or other internal changes.
 
 Keep installation instructions limited to the steps and configuration needed to
 install and run the server. When a command changes, update that command rather

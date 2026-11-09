@@ -1,6 +1,6 @@
 # Changelog
 
-Changes from September 8, 2026 to November 8, 2026, excluding bug fixes.
+Changes since September 8, 2026, excluding bug fixes.
 
 ## Gameplay and interface
 
