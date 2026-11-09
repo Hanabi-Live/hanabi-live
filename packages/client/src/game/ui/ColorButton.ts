@@ -19,6 +19,12 @@ import { drawLayer } from "./konvaHelpers";
 /** The opacity of the color swatch that fills the button. */
 const COLOR_SWATCH_OPACITY = 0.9;
 
+/** How much of the button's width and height its color fills, centered with an equal margin. */
+const COLOR_SWATCH_SCALE = 0.8;
+
+/** The scale of the suit pip drawn on the button in colorblind mode. */
+const SUIT_PIP_SCALE = 0.25;
+
 export class ColorButton extends Konva.Group {
   pressed = false;
   clue: Clue;
@@ -47,7 +53,7 @@ export class ColorButton extends Konva.Group {
     this.add(this.background);
 
     // The color fills the middle of the button, with an equal margin on every side.
-    const colorScale = 0.8;
+    const colorScale = COLOR_SWATCH_SCALE;
     const colorMargin = (1 - colorScale) / 2;
     const backgroundColor = new Konva.Rect({
       x: colorMargin * w,
@@ -82,7 +88,7 @@ export class ColorButton extends Konva.Group {
       } else {
         // Draw the suit pip that corresponds to this color, centered on the button. The offset is
         // in the shape's unscaled units.
-        const suitPipScale = 0.25;
+        const suitPipScale = SUIT_PIP_SCALE;
         const suitPip = new Konva.Shape({
           scale: {
             x: suitPipScale,

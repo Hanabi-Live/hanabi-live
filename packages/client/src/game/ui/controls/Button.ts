@@ -13,6 +13,9 @@ import {
 import { drawLayer } from "../konvaHelpers";
 import { FitText } from "./FitText";
 
+/** How much of the button's width and height its image fills, centered with an equal margin. */
+const BUTTON_IMAGE_SCALE = 0.6;
+
 export class Button extends Konva.Group {
   enabled = true;
   pressed = false;
@@ -71,7 +74,7 @@ export class Button extends Konva.Group {
       this.add(this.textElement);
     } else if (images !== undefined && images.length > 0) {
       // The image fills the middle of the button, with an equal margin on every side.
-      const imageScale = 0.6;
+      const imageScale = BUTTON_IMAGE_SCALE;
       const imageMargin = (1 - imageScale) / 2;
       const imageBox = {
         x: imageMargin * w,

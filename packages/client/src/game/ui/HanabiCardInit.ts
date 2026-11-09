@@ -63,6 +63,29 @@ const LARGE_ICON_Y = 0.2 * CARD_H;
 /** The size of the trash can drawn over a card that can no longer be played. */
 const TRASHCAN_SIZE = { w: 0.7 * CARD_W, h: 0.6 * CARD_H } as const;
 
+/** The top edge of the wrench drawn over a card, which sits lower than the other large icons. */
+const WRENCH_Y = 0.33 * CARD_H;
+
+/** The top-left corner of the note indicator, as fractions of the card size. */
+const NOTE_INDICATOR_POSITION = { x: 0.78, y: 0.03 } as const;
+
+/**
+ * The arrow on a card of a reversed suit, which points up or down to show the direction that the
+ * suit is played in.
+ */
+const DIRECTION_ARROW = {
+  /** The horizontal position of the arrow's shaft, near the right edge of the card. */
+  x: 0.815 * CARD_W,
+  /** How far above its group's origin the arrow starts. */
+  offsetY: 0.14 * CARD_H,
+  /** The length of the arrow. */
+  h: 0.25 * CARD_H,
+  /** The length of the arrowhead, which also sets the thickness of its strokes. */
+  pointerLength: 0.05 * CARD_W,
+  /** How much wider the arrowhead is than it is long. */
+  pointerWidthRatio: 1.5,
+} as const;
+
 export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic. If the card is not revealed, it
   // will just be a gray rounded rectangle. The pips and other elements of a card are drawn on top
@@ -202,21 +225,20 @@ export function directionArrow(
   }
 
   const arrow = new Konva.Group({
-    x: 0.815 * CARD_W,
+    x: DIRECTION_ARROW.x,
     visible: false,
     offset: {
       x: 0,
-      y: 0.14 * CARD_H,
+      y: DIRECTION_ARROW.offsetY,
     },
     listening: false,
   });
 
-  const arrowHeight = 0.25;
-  const pointerLength = 0.05 * CARD_W;
-  const pointerWidth = pointerLength * 1.5;
+  const { pointerLength } = DIRECTION_ARROW;
+  const pointerWidth = pointerLength * DIRECTION_ARROW.pointerWidthRatio;
 
   const border = new Konva.Arrow({
-    points: [0, 0, 0, arrowHeight * CARD_H],
+    points: [0, 0, 0, DIRECTION_ARROW.h],
     pointerLength,
     pointerWidth,
     fill: "black",
@@ -236,7 +258,7 @@ export function directionArrow(
   arrow.add(edge);
 
   const arrowBase = new Konva.Arrow({
-    points: [0, 0, 0, arrowHeight * CARD_H],
+    points: [0, 0, 0, DIRECTION_ARROW.h],
     pointerLength,
     pointerWidth,
     fill: "white",
@@ -491,13 +513,17 @@ export function note(
   shouldShowIndicator: () => boolean,
 ): NoteIndicator {
   // Define the note indicator image.
-  const noteX = 0.78;
-  const noteY = 0.03;
   const noteIndicator = new NoteIndicator({
     // If the cards have triangles on the corners that show the color composition, the images will
     // overlap. Thus, we move it downwards if this is the case.
-    x: (offsetCornerElements ? noteX - CORNER_ELEMENT_OFFSET : noteX) * CARD_W,
-    y: (offsetCornerElements ? noteY + CORNER_ELEMENT_OFFSET : noteY) * CARD_H,
+    x:
+      (offsetCornerElements
+        ? NOTE_INDICATOR_POSITION.x - CORNER_ELEMENT_OFFSET
+        : NOTE_INDICATOR_POSITION.x) * CARD_W,
+    y:
+      (offsetCornerElements
+        ? NOTE_INDICATOR_POSITION.y + CORNER_ELEMENT_OFFSET
+        : NOTE_INDICATOR_POSITION.y) * CARD_H,
     align: "center",
     image: globals.imageLoader!.get("note"),
     width: SMALL_ICON_SIZE,
@@ -580,7 +606,7 @@ export function trashcan(): Konva.Image {
 export function wrench(): Konva.Image {
   return new Konva.Image({
     x: LARGE_ICON_CENTERED_X,
-    y: 0.33 * CARD_H,
+    y: WRENCH_Y,
     width: LARGE_ICON_SIZE,
     image: globals.imageLoader!.get("wrench"),
     visible: false,

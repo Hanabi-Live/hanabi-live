@@ -18,38 +18,78 @@ const REPLAY_SHUTTLE_COLOR = "#0000cc";
 /** The row of replay buttons: back to the start, back, forward, and forward to the end. */
 const NUM_REPLAY_BUTTONS = 4;
 
+/** The replay area, in fractions of the stage. */
+const REPLAY_AREA = {
+  keldon: { x: 0.15, y: 0.51, w: 0.5 },
+  /** In the BGA layout, the replay area lines up with the action log above it. */
+  bga: { x: BGA_ACTION_LOG.x, y: 0.49, w: BGA_ACTION_LOG.w },
+  h: 0.27,
+} as const;
+
+/** The thin black bar that the replay shuttles slide on, in fractions of the stage. */
+const REPLAY_BAR = {
+  /** In the Keldon layout, the bar is inset by this much from both sides of the replay area. */
+  keldonInsetX: 0.01,
+  y: 0.0425,
+  h: 0.01,
+  /** In fractions of the stage height. */
+  cornerRadius: 0.005,
+  /**
+   * The height of the invisible rectangle over the bar, which is taller than the bar so that it is
+   * easier to click on.
+   */
+  clickH: 0.07,
+} as const;
+
+/** The replay shuttles, in fractions of the stage. */
+const REPLAY_SHUTTLE = {
+  w: 0.03,
+  h: 0.03,
+  /** In fractions of the stage width. */
+  cornerRadius: 0.01,
+} as const;
+
+/** The row of replay buttons, in fractions of the stage. */
+const REPLAY_BUTTON = {
+  keldonX: 0.1,
+  bgaX: 0.05,
+  y: 0.07,
+  w: 0.06,
+  h: 0.08,
+  spacing: 0.02,
+} as const;
+
+/** The row of wider buttons below the replay buttons, in fractions of the stage. */
+const REPLAY_BOTTOM_BUTTON = {
+  y: 0.17,
+  h: 0.06,
+  /**
+   * How much wider each button is than two replay buttons and the gap between them. The left-hand
+   * position sticks out by this much past the left-most replay button.
+   */
+  extraW: 0.04,
+} as const;
+
 export function drawReplayArea(winW: number, winH: number): void {
-  const replayAreaValues = {
-    x: 0.15,
-    y: 0.51,
-    w: 0.5,
-  };
-  if (!globals.lobby.settings.keldonMode) {
-    // The replay area lines up with the action log above it.
-    replayAreaValues.x = BGA_ACTION_LOG.x;
-    replayAreaValues.y = 0.49;
-    replayAreaValues.w = BGA_ACTION_LOG.w;
-  }
+  const { keldonMode } = globals.lobby.settings;
+  const replayAreaValues = keldonMode ? REPLAY_AREA.keldon : REPLAY_AREA.bga;
 
   globals.elements.replayArea = new Konva.Group({
     x: replayAreaValues.x * winW,
     y: replayAreaValues.y * winH,
     width: replayAreaValues.w * winW,
-    height: 0.27 * winH,
+    height: REPLAY_AREA.h * winH,
     visible: false,
     listening: false,
   });
 
   // The thin black rectangle that the replay slider slides on. In the Keldon layout, it is inset
   // from both sides of the replay area.
-  const replayBarInset = globals.lobby.settings.keldonMode ? 0.01 : 0;
+  const replayBarInset = keldonMode ? REPLAY_BAR.keldonInsetX : 0;
   const replayBarValues = {
+    ...REPLAY_BAR,
     x: replayBarInset,
-    y: 0.0425,
     w: replayAreaValues.w - 2 * replayBarInset,
-    h: 0.01,
-    /** In fractions of the stage height. */
-    cornerRadius: 0.005,
   };
   globals.elements.replayBar = new Konva.Rect({
     x: replayBarValues.x * winW,
@@ -68,7 +108,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     x: replayBarValues.x * winW,
     y: 0,
     width: replayBarValues.w * winW,
-    height: 0.07 * winH,
+    height: REPLAY_BAR.clickH * winH,
     listening: true,
   });
   replayBarClickRect.on("click tap", replay.barClick);
@@ -76,9 +116,7 @@ export function drawReplayArea(winW: number, winH: number): void {
   globals.elements.replayArea.add(replayBarClickRect);
 
   const shuttleValues = {
-    w: 0.03,
-    h: 0.03,
-    cornerRadius: 0.01,
+    ...REPLAY_SHUTTLE,
     stroke: "black",
     strokeWidth: THIN_STROKE_WIDTH,
   };
@@ -127,15 +165,9 @@ export function drawReplayArea(winW: number, winH: number): void {
   globals.elements.replayArea.add(globals.elements.replayShuttle);
 
   const replayButtonValues = {
-    x: 0.05,
-    y: 0.07,
-    w: 0.06,
-    h: 0.08,
-    spacing: 0.02,
+    ...REPLAY_BUTTON,
+    x: keldonMode ? REPLAY_BUTTON.keldonX : REPLAY_BUTTON.bgaX,
   };
-  if (globals.lobby.settings.keldonMode) {
-    replayButtonValues.x = 0.1;
-  }
 
   {
     let { x } = replayButtonValues;
@@ -242,14 +274,14 @@ export function drawReplayArea(winW: number, winH: number): void {
     );
   }
 
-  const extra = 0.04;
+  const extra = REPLAY_BOTTOM_BUTTON.extraW;
   const totalWidth =
     replayButtonValues.w * NUM_REPLAY_BUTTONS
     + replayButtonValues.spacing * (NUM_REPLAY_BUTTONS - 1);
   const bottomButtonValues = {
-    y: 0.17,
+    y: REPLAY_BOTTOM_BUTTON.y,
     w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
-    h: 0.06,
+    h: REPLAY_BOTTOM_BUTTON.h,
   };
   const bottomLeftReplayButtonX = replayButtonValues.x - extra;
   const bottomCenterReplayButtonX =
@@ -263,7 +295,7 @@ export function drawReplayArea(winW: number, winH: number): void {
     x: bottomRightReplayButtonX * winW,
     y: bottomButtonValues.y * winH,
     width: bottomButtonValues.w * winW,
-    height: replayButtonValues.w * winH,
+    height: bottomButtonValues.h * winH,
     text: "Exit Replay",
     visible: !globals.state.finished,
   });

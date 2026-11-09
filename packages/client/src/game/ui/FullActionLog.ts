@@ -15,6 +15,21 @@ const BACKGROUND_OPACITY = 0.9;
 /** The lines that the log shows. Its font size is set so that they fill its height. */
 const MAX_LINES = 38;
 
+/** The log's position and size, in fractions of the stage. It spans the full stage height. */
+const FULL_ACTION_LOG = {
+  x: 0.2,
+  w: 0.4,
+  marginY: 0.02,
+} as const;
+
+/** The log's text, in fractions of the stage. */
+const FULL_ACTION_LOG_TEXT = {
+  /** The margin between the edges of the log and its text and turn numbers. */
+  margin: 0.01,
+  /** The width of the turn number column, to the left of the text. */
+  numbersW: 0.03,
+} as const;
+
 export class FullActionLog extends Konva.Group {
   buffer: Array<{ turnNum: number; text: string }> = [];
   logText: MultiFitText | null = null;
@@ -28,12 +43,11 @@ export class FullActionLog extends Konva.Group {
 
   constructor(winW: number, winH: number) {
     // The log fills the height of the stage, with an equal margin above and below.
-    const marginY = 0.02;
-    const width = 0.4 * winW;
-    const height = (1 - 2 * marginY) * winH;
+    const width = FULL_ACTION_LOG.w * winW;
+    const height = (1 - 2 * FULL_ACTION_LOG.marginY) * winH;
     super({
-      x: 0.2 * winW,
-      y: marginY * winH,
+      x: FULL_ACTION_LOG.x * winW,
+      y: FULL_ACTION_LOG.marginY * winH,
       width,
       height,
       clipX: 0,
@@ -59,12 +73,11 @@ export class FullActionLog extends Konva.Group {
 
     // The turn numbers sit in a narrow column to the left of the text. The text and the numbers
     // keep the same margin from the edges of the log.
-    const margin = 0.01;
+    const { margin } = FULL_ACTION_LOG_TEXT;
     const textHeight = height - 2 * margin * winH;
     const fontSize = textHeight / MAX_LINES;
     const numbersX = margin;
-    const numbersWidth = 0.03;
-    const textX = numbersX + numbersWidth;
+    const textX = numbersX + FULL_ACTION_LOG_TEXT.numbersW;
 
     // The text for each action.
     this.textOptions = {
@@ -85,7 +98,7 @@ export class FullActionLog extends Konva.Group {
       fill: getCanvasColors().actionLogNumber,
       x: numbersX * winW,
       y: margin * winH,
-      width: numbersWidth * winW,
+      width: FULL_ACTION_LOG_TEXT.numbersW * winW,
       height: textHeight,
       listening: false,
     };

@@ -101,6 +101,21 @@ const FACE_PIP_SCALE_MULTIPLIER = {
   large: 3,
 } as const;
 
+/**
+ * The width of the border around the large suit pip on a start card, in the pip's own units. It is
+ * thinner than a pip's usual border because the pip is scaled up.
+ */
+const START_CARD_PIP_BORDER_WIDTH = 2;
+
+/**
+ * How round a card's corners are, as a fraction of the card width. The corners are tighter when the
+ * card has a shadow.
+ */
+const CARD_CORNER_ROUNDNESS = {
+  withShadow: 0.08,
+  withoutShadow: 0.12,
+} as const;
+
 /** How far left and right of the card's center the side suit pips on a 4 or a 5 are drawn. */
 const FACE_PIP_OFFSET_X = 90;
 
@@ -445,7 +460,7 @@ function drawSuitPips(
     ctx.save();
     let lineWidth: number | undefined;
     if (rank === START_CARD_RANK) {
-      lineWidth = 2;
+      lineWidth = START_CARD_PIP_BORDER_WIDTH;
     } else {
       // Make the pip faint.
       ctx.globalAlpha = colorblindMode
@@ -570,7 +585,9 @@ function drawCardBase(
 
 function cardBorderPath(ctx: CanvasRenderingContext2D, enableShadows: boolean) {
   const padding = CARD_BORDER_PADDING;
-  const roundedCornerSeverity = enableShadows ? 0.08 : 0.12;
+  const roundedCornerSeverity = enableShadows
+    ? CARD_CORNER_ROUNDNESS.withShadow
+    : CARD_CORNER_ROUNDNESS.withoutShadow;
   const xRadians = CARD_W * roundedCornerSeverity;
   const yRadians = CARD_W * roundedCornerSeverity;
   // (We want them to both have the same value so that the curve has a 45 degree angle.)

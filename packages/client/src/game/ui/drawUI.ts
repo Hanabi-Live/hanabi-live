@@ -149,6 +149,15 @@ const SUIT_LABEL = {
   fontSize: 0.02,
 } as const;
 
+/**
+ * How far the invisible area that cards are dragged to in order to play them extends past each side
+ * of the play stacks, in fractions of the stage.
+ */
+const PLAY_AREA_OVERHANG = 0.03;
+
+/** How far the clue log's text is inset from each edge of its panel, in fractions of the stage. */
+const CLUE_LOG_TEXT_INSET = 0.01;
+
 /** The number of recent actions shown in the action log. */
 const ACTION_LOG_LINES = 8;
 
@@ -278,6 +287,8 @@ const SPECTATORS_COLUMN = {
   /** The top of the number, below the top of the eyes. */
   NUMBER_Y: 0.04,
   NUMBER_FONT_SIZE: 0.03,
+  /** The width and height of the eyes, centered over the number. */
+  EYES_SIZE: 0.02,
 } as const;
 
 /** The top of the crown of a shared replay, relative to the top of the spectators' eyes. */
@@ -403,6 +414,21 @@ const SCORE_AREA = {
 } as const;
 
 /**
+ * The labels in the score area, in fractions of the stage, relative to the score area. Each row has
+ * a text label on the left and a number to its right.
+ */
+const SCORE_AREA_LABELS = {
+  x: 0.02,
+  /** How far right of its text label each number sits. */
+  numberOffsetX: 0.06,
+  rowY: {
+    turn: 0.01,
+    score: 0.045,
+    clues: 0.08,
+  },
+} as const;
+
+/**
  * The maximum score beside the score, in fractions of the stage height. It is smaller, so it sits
  * lower to share a baseline.
  */
@@ -494,6 +520,14 @@ const CLUE_TARGET_BUTTON = {
   keldonH: 0.025,
   bgaH: 0.035,
   spacing: 0.0075,
+} as const;
+
+/** The color and rank buttons used to give a clue, in fractions of the stage. */
+const CLUE_TYPE_BUTTON = {
+  w: 0.04,
+  h: 0.071,
+  spacingX: 0.009,
+  spacingY: 0.002,
 } as const;
 
 /** The "Give Clue" button, in fractions of the stage. */
@@ -965,7 +999,7 @@ function drawPlayStacks() {
 
   // This is the invisible rectangle that players drag cards to in order to play them. Make it a
   // little big bigger than the stacks.
-  const overlap = 0.03;
+  const overlap = PLAY_AREA_OVERHANG;
   playAreaValues = {
     x: playStackValues.x,
     y: playStackValues.y,
@@ -1267,15 +1301,9 @@ function drawScoreArea() {
   });
   globals.elements.scoreArea.add(scoreAreaRect);
 
-  const labelX = 0.02;
-  const labelSpacing = 0.06;
-
-  /** The heights of the rows of labels, as fractions of the stage height. */
-  const labelRowY = {
-    turn: 0.01,
-    score: 0.045,
-    clues: 0.08,
-  } as const;
+  const labelX = SCORE_AREA_LABELS.x;
+  const labelSpacing = SCORE_AREA_LABELS.numberOffsetX;
+  const labelRowY = SCORE_AREA_LABELS.rowY;
 
   const turnTextLabel = basicTextLabel.clone({
     text: "Turn",
@@ -1622,7 +1650,7 @@ function drawSpectators() {
     spectatorsLabelValues.x =
       scoreAreaValues.x + scoreAreaValues.w! + BOTTOM_LEFT_GAP;
   }
-  const imageSize = 0.02;
+  const imageSize = SPECTATORS_COLUMN.EYES_SIZE;
   const spectatorsLabel = new ImageWithTooltip({
     // Center the eyes over the number of spectators.
     x: (spectatorsLabelValues.x + (SPECTATORS_COLUMN.W - imageSize) / 2) * winW,
@@ -1825,7 +1853,7 @@ function drawClueLog() {
   });
   globals.layers.UI.add(clueLogRect);
 
-  const spacing = 0.01;
+  const spacing = CLUE_LOG_TEXT_INSET;
   globals.elements.clueLog = new ClueLog({
     x: (clueLogValues.x + spacing) * winW,
     y: (clueLogValues.y + spacing) * winH,
@@ -2328,10 +2356,12 @@ function drawClueArea() {
   globals.elements.clueTargetButtonGroup2.hide();
 
   // Clue type buttons
-  const buttonW = 0.04;
-  const buttonH = 0.071;
-  const buttonXSpacing = 0.009;
-  const buttonYSpacing = 0.002;
+  const {
+    w: buttonW,
+    h: buttonH,
+    spacingX: buttonXSpacing,
+    spacingY: buttonYSpacing,
+  } = CLUE_TYPE_BUTTON;
   globals.elements.clueTypeButtonGroup = new ButtonGroup({
     listening: false,
   });

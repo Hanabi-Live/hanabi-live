@@ -56,6 +56,17 @@ interface TextElementValues {
   x2: number;
 }
 
+/**
+ * The share of the area's width taken by the box with the current player's name. The box with the
+ * arrow takes the rest.
+ */
+const NAME_BOX_SHARE = 0.75;
+
+/**
+ * Half the length of the short line across the base of the arrow, in fractions of the stage height.
+ */
+const ARROW_EDGE_HALF_LENGTH = 0.005;
+
 export class CurrentPlayerArea extends Konva.Group {
   values: ElementValues;
   textValues: TextElementValues;
@@ -80,7 +91,7 @@ export class CurrentPlayerArea extends Konva.Group {
 
     // The left-most box that contains the name of the current player takes most of the area, and
     // the box with the arrow takes the rest.
-    const nameBoxShare = 0.75;
+    const nameBoxShare = NAME_BOX_SHARE;
     let box1Width = values.w * nameBoxShare;
     box1Width -= values.spacing;
     this.rect1 = new Konva.Rect({
@@ -195,7 +206,7 @@ export class CurrentPlayerArea extends Konva.Group {
     });
     this.arrow.add(arrowBorder);
 
-    const edgeHalfLength = 0.005;
+    const edgeHalfLength = ARROW_EDGE_HALF_LENGTH;
     const arrowBorderEdge = new Konva.Line({
       points: [
         arrowValues.spacing * winW,

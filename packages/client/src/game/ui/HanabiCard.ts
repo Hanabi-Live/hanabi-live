@@ -900,8 +900,8 @@ export class HanabiCard extends Konva.Group implements NodeWithTooltip, UICard {
     // - they are being dragged
     const raise = this.shouldBeRaisedFromClues() ? CLUED_CARD_RAISE : 0;
     const lift = this.dragging ? DRAGGED_CARD_LIFT : 0;
-    const offsetX = (0.5 + lift) * CARD_W;
-    const offsetY = (0.5 + raise + lift) * CARD_H;
+    const offsetX = CARD_CENTER.x + lift * CARD_W;
+    const offsetY = CARD_CENTER.y + (raise + lift) * CARD_H;
     if (globals.animateFast) {
       this.offsetX(offsetX);
       this.offsetY(offsetY);
