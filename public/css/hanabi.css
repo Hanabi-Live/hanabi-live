@@ -692,6 +692,8 @@ table td {
 .lobby-games-table-options {
   list-style-type: none;
   margin: 0;
+  /* Keep the icons on one line when the table is narrow. */
+  white-space: nowrap;
 }
 
 .lobby-games-table-tooltip,
