@@ -27,8 +27,6 @@ pub(crate) use hanabi_protocol::MAX_SAFE_INTEGER;
     reason = "a float represents MAX_SAFE_INTEGER exactly"
 )]
 const MAX_SAFE_FLOAT: f64 = MAX_SAFE_INTEGER as f64;
-/// The most events a game can record.
-pub(crate) const MAX_EVENTS: usize = 4096;
 /// The longest seed, and the longest player, variant, or character name, in bytes.
 pub(crate) const MAX_SEED_LENGTH: usize = 4096;
 pub(crate) const MAX_NAME_LENGTH: usize = 4096;
@@ -200,9 +198,6 @@ pub(crate) fn hand_size(options: &Options) -> usize {
     normal_hand_size(options.num_players) + usize::from(options.one_extra_card)
         - usize::from(options.one_less_card)
 }
-
-/// The largest hand: the fewest players, with one extra card.
-pub(crate) const MAX_HAND_SIZE: usize = normal_hand_size(MIN_PLAYERS) + 1;
 
 /// Each player's hand size without the options that change it.
 pub const fn normal_hand_size(num_players: usize) -> usize {

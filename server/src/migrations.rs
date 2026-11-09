@@ -217,7 +217,7 @@ pub(crate) async fn require_current(connection: &mut PgConnection) -> Result<()>
     Ok(())
 }
 
-pub async fn connect(config: &Config) -> Result<PgConnection> {
+async fn connect(config: &Config) -> Result<PgConnection> {
     let options = config.database_options().options([
         (
             "statement_timeout",

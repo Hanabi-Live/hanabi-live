@@ -87,10 +87,6 @@ hanabi_protocol = { path = "protocol" }
 minijinja = { version = "3", features = ["serde", "json", "urlencode"] }
 percent-encoding = "2"
 rand = "0.10"
-redis = { version = "1", default-features = false, features = [
-  "tokio-rustls-comp",
-  "tls-rustls-webpki-roots"
-] }
 regex = "1"
 reqwest = { version = "0.13", default-features = false, features = [
   "form",

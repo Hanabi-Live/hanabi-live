@@ -356,19 +356,6 @@ async function main() {
   for (const line of migrated.output.trim().split("\n")) {
     log("services", line);
   }
-  // A database from before live games moved to PostgreSQL waits for an import from Redis.
-  // Development has no live games worth keeping, so skip it.
-  const imported = await run(
-    "services",
-    [
-      ...psqlCommand(env),
-      "--command=UPDATE live_state_owner SET imported = TRUE",
-    ],
-    { quiet: true },
-  );
-  if (!imported.ok) {
-    fail("Could not prepare the live tables.");
-  }
 
   client = start(
     "client",

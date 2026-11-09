@@ -1,5 +1,5 @@
 use hanabi_engine::*;
-use serde_json::{Value, json};
+use serde_json::json;
 
 fn setup(options: Options, characters: Option<Vec<AssignedCharacter>>) -> GameSetup {
     GameSetup {
@@ -34,40 +34,6 @@ fn assignments(first: &str, second: &str) -> Vec<AssignedCharacter> {
         })
         .collect()
 }
-fn restore(state: &EngineState) -> EngineState {
-    parse_engine_state(serde_json::to_value(state).expect("a state serializes"))
-        .expect("a serialized state restores")
-}
-
-#[test]
-fn typed_validation_preserves_collection_limits_and_rejects_nonfinite_options() {
-    let original = standard();
-    validate_engine_state(&original).unwrap();
-
-    let mut oversized_history = original.clone();
-    oversized_history.events.resize(
-        4097,
-        EngineEvent::Status {
-            clues: 8,
-            score: 0,
-            max_score: 25,
-        },
-    );
-    let mut oversized_deck = original.clone();
-    while oversized_deck.deck.len() < 61 {
-        let mut card = original.deck[10].clone();
-        card.order = oversized_deck.deck.len();
-        oversized_deck.deck.push(card);
-    }
-    let mut nonfinite = original.clone();
-    nonfinite.options.time_base = f64::NAN;
-    for state in [oversized_history, oversized_deck, nonfinite] {
-        assert!(validate_engine_state(&state).is_err());
-        assert!(parse_engine_state(serde_json::to_value(&state).unwrap()).is_err());
-    }
-    assert_eq!(restore(&original), original);
-}
-
 #[test]
 fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     let state = standard();
@@ -132,7 +98,6 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
             .to_string()
             .contains("paused")
     );
-    assert!(restore(&paused).paused);
     let result =
         apply_action(&state, 0, &action(RecordedActionType::RankClue, 1, 1), None).unwrap();
     assert_eq!(serde_json::to_value(&state).unwrap(), before);
@@ -147,138 +112,6 @@ fn rejected_actions_are_atomic_and_client_terminations_are_not_actions() {
     ] {
         assert!(serde_json::from_value::<PlayerAction>(malformed).is_err());
     }
-}
-
-#[test]
-fn checkpoint_decoder_rejects_corruption_without_defaults_or_panics() {
-    let base = serde_json::to_value(standard()).unwrap();
-    let mut changes = vec![
-        ("/endTurn", json!(9_007_199_254_740_991_i64)),
-        ("/turn", json!(9_007_199_254_740_991_i64)),
-        ("/stackStarts", json!([1, 0, 0, 0, 0])),
-        ("/stackStarts", json!([0])),
-        ("/playStackDirections", json!([4, 0, 0, 0, 0])),
-        ("/maxScore", json!(26)),
-        ("/options", json!({"numPlayers":2})),
-        ("/options/numPlayers", json!(3)),
-        ("/options/variantName", json!("missing")),
-        ("/activePlayerIndex", json!(2)),
-        ("/endCondition", json!(99)),
-        ("/endPlayer", json!(2)),
-        ("/deckIndex", json!(51)),
-        ("/players/0/characterMetadata", json!(0.5)),
-        ("/players/1/index", json!(0)),
-        ("/deck/0/suitIndex", json!(5)),
-        ("/deck/0/discarded", json!(true)),
-        ("/deck/10/touched", json!(true)),
-        ("/players/1/hand", json!([0, 1, 2, 3, 4])),
-        ("/players/0/hand", json!([10])),
-        ("/events/0/rank", json!(-1)),
-        ("/events/0/suitIndex", json!(4)),
-        ("/events/0/playerIndex", json!(2)),
-        ("/actions", json!([{"type":0,"target":50,"value":0}])),
-        ("/actions", json!([{"type":2,"target":1,"value":5}])),
-        ("/actions", json!([{"type":4,"target":0,"value":2}])),
-        (
-            "/events",
-            json!([{"type":"clue","giver":0,"target":1,"clue":{"type":0,"value":"red"},"list":[],"turn":0}]),
-        ),
-        ("/events", json!(vec![Value::Null; 4097])),
-        ("/actions", json!(vec![Value::Null; 513])),
-        ("/deck", json!(vec![Value::Null; 61])),
-    ];
-    let mut swapped = base["players"].clone();
-    swapped[0]["hand"] = base["players"][1]["hand"].clone();
-    swapped[1]["hand"] = base["players"][0]["hand"].clone();
-    changes.push(("/players", swapped));
-    let mut reversed = base["deck"].as_array().unwrap().clone();
-    reversed.reverse();
-    changes.push(("/deck", json!(reversed)));
-    let mut no_location = base["players"].clone();
-    no_location[0]["hand"] = json!([]);
-    no_location[1]["hand"] = json!([]);
-    changes.push(("/players", no_location));
-    let missing_draw = base["events"].as_array().unwrap()[1..].to_vec();
-    changes.push(("/events", json!(missing_draw)));
-    for (pointer, value) in changes {
-        let mut malformed = base.clone();
-        *malformed.pointer_mut(pointer).unwrap() = value;
-        assert!(
-            parse_engine_state(malformed).is_err(),
-            "accepted corruption at {pointer}"
-        );
-    }
-    for pointer in ["", "/options", "/players/0", "/deck/0", "/events/0"] {
-        let mut malformed = base.clone();
-        malformed
-            .pointer_mut(pointer)
-            .unwrap()
-            .as_object_mut()
-            .unwrap()
-            .insert("privateToken".into(), json!("unknown"));
-        assert!(
-            parse_engine_state(malformed).is_err(),
-            "accepted unknown field at {pointer}"
-        );
-    }
-    for missing in ["startedTimer", "paused", "events", "interpretation"] {
-        let mut malformed = base.clone();
-        malformed.as_object_mut().unwrap().remove(missing);
-        assert!(parse_engine_state(malformed).is_err());
-    }
-    for key in ["variantID", "tableName", "maxPlayers"] {
-        let mut malformed = base.clone();
-        malformed["options"][key] = Value::Null;
-        assert!(parse_engine_state(malformed).is_err());
-    }
-    for appended in [
-        json!({"type":"gameOver","endCondition":3,"playerIndex":0,"votes":[]}),
-        json!({"type":"playerTimes","playerTimes":[0],"duration":0}),
-    ] {
-        let mut malformed = base.clone();
-        malformed["events"].as_array_mut().unwrap().push(appended);
-        assert!(parse_engine_state(malformed).is_err());
-    }
-}
-
-#[test]
-fn restores_multi_action_turn_and_continues_identically() {
-    let initial = create_game(setup(
-        Options {
-            detrimental_characters: true,
-            ..Options::default()
-        },
-        Some(assignments("Genius", "Slow-Witted")),
-    ))
-    .unwrap()
-    .state;
-    let midway = apply_action(
-        &initial,
-        0,
-        &action(RecordedActionType::ColorClue, 1, 3),
-        None,
-    )
-    .unwrap()
-    .state;
-    assert_eq!(midway.turn, 0);
-    assert_eq!(midway.players[0].character_metadata, 1);
-    let restored = restore(&midway);
-    assert_eq!(
-        apply_action(
-            &midway,
-            0,
-            &action(RecordedActionType::RankClue, 1, 1),
-            None
-        )
-        .unwrap(),
-        apply_action(
-            &restored,
-            0,
-            &action(RecordedActionType::RankClue, 1, 1),
-            None
-        )
-        .unwrap()
-    );
 }
 
 #[test]
@@ -315,7 +148,6 @@ fn termination_uses_requesting_character_and_explicit_timing() {
     assert!(ended.state.turns_inverted);
     assert_eq!(ended.state.active_player_index, 2);
     assert_eq!(ended.state.players[2].character_metadata, 4);
-    assert_eq!(restore(&ended.state), ended.state);
     assert!(
         apply_action(
             &ended.state,
@@ -348,8 +180,7 @@ fn termination_uses_requesting_character_and_explicit_timing() {
             duration: 5678
         })
     );
-    assert_eq!(restore(&timeout.state), timeout.state);
-    let voted = terminate_game(
+    terminate_game(
         &state,
         Termination {
             actor_index: 1,
@@ -360,16 +191,6 @@ fn termination_uses_requesting_character_and_explicit_timing() {
         timing,
     )
     .unwrap();
-    assert_eq!(restore(&voted.state), voted.state);
-    let mut malformed = serde_json::to_value(&voted.state).unwrap();
-    let event = malformed["events"]
-        .as_array_mut()
-        .unwrap()
-        .iter_mut()
-        .find(|e| e["type"] == "gameOver")
-        .unwrap();
-    event.as_object_mut().unwrap().remove("votes");
-    assert!(parse_engine_state(malformed).is_err());
     assert!(
         terminate_game(
             &state,
@@ -493,9 +314,6 @@ fn privacy_is_historical_and_invalid_shadow_seats_are_omniscient() {
             .is_err()
         );
     }
-    let mut sanitized = serde_json::to_value(&state).unwrap();
-    sanitized["events"] = serde_json::to_value(visible).unwrap();
-    assert!(parse_engine_state(sanitized).is_err());
 }
 
 #[test]
@@ -536,7 +354,6 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
             .collect::<Vec<_>>(),
         deck
     );
-    assert_eq!(restore(&state), state);
     let next = apply_action(
         &state,
         0,
@@ -554,7 +371,6 @@ fn custom_shortened_decks_are_preserved_without_reshuffling() {
             .iter()
             .any(|e| matches!(e, EngineEvent::PlayerTimes { .. }))
     );
-    assert_eq!(restore(&next.state), next.state);
     for deck in [
         vec![],
         vec![DeckCard {
@@ -628,7 +444,7 @@ fn first_accepted(
 }
 
 #[test]
-fn long_character_histories_are_bounded_and_restorable() {
+fn long_character_histories_are_bounded() {
     for (variant_name, partner) in [
         ("6 Suits", "Panicky"),
         ("Up or Down (6 Suits)", "Slow-Witted"),
@@ -675,7 +491,7 @@ fn long_character_histories_are_bounded_and_restorable() {
                 [clues, discards].concat()
             };
             let before = potential(&state);
-            state = restore(&first_accepted(&state, candidates, false));
+            state = first_accepted(&state, candidates, false);
             assert!(potential(&state) <= before - 1.0, "{variant_name}");
             assert_eq!(state.score, 0);
         }
@@ -716,7 +532,7 @@ fn all_or_nothing_eventually_exhausts_resources_without_final_round() {
             candidates.extend(p.hand.iter().map(|o| action(t, int(*o), 0)));
         }
         let before = potential(&state);
-        state = restore(&first_accepted(&state, candidates, true));
+        state = first_accepted(&state, candidates, true);
         assert!(potential(&state) <= before - 1.0);
     }
     assert_eq!(state.end_condition, EndCondition::AllOrNothingFail);

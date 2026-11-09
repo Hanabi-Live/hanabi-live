@@ -216,41 +216,13 @@ mod json_text {
             .map_err(serde::de::Error::custom)
     }
 }
-/// Removes the journal fields that checkpoints from earlier releases hold. Those releases saved a
-/// table's related work in separate steps; a checkpoint loads only when all of it finished.
-fn strip_legacy_journal(value: &mut Value) -> Result<()> {
-    let Some(table) = value.as_object_mut() else {
-        return Ok(());
-    };
-    let chat = table
-        .get("chat")
-        .and_then(Value::as_array)
-        .map_or(0, Vec::len);
-    let tag = table.remove("pending_tag").unwrap_or(Value::Null);
-    let spawn = table.remove("pending_spawn").unwrap_or(Value::Null);
-    let retire = table
-        .remove("retire_after_spawn")
-        .unwrap_or(Value::Bool(false));
-    let archived = table.remove("chat_archived");
-    ensure!(
-        tag.is_null()
-            && spawn.is_null()
-            && retire == Value::Bool(false)
-            && archived.is_none_or(|archived| {
-                archived.as_u64().and_then(|n| usize::try_from(n).ok()) == Some(chat)
-            }),
-        "The checkpoint has unfinished work from an earlier release. Run that release until it recovers, then stop it with /gracefulStop."
-    );
-    Ok(())
-}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let mut value: Value = serde_json::from_str(payload)?;
-        strip_legacy_journal(&mut value)?;
+        let value: Value = serde_json::from_str(payload)?;
         ensure!(
             value["chat"]
                 .as_array()
@@ -454,7 +426,6 @@ impl Snapshot {
             self.format == FORMAT && self.table_id > 0 && self.game_id >= 0,
             "Incompatible game checkpoint"
         );
-        self.game.validate_recovery()?;
         let n = self.players.len();
         ensure!(
             n == self.game.players.len()

@@ -404,8 +404,6 @@ DROP TABLE IF EXISTS live_state_owner CASCADE;
 CREATE TABLE live_state_owner (
     singleton  BOOLEAN  PRIMARY KEY  DEFAULT TRUE  CHECK (singleton),
     /* Each server that takes ownership increments this. Writes from older owners fail. */
-    epoch      BIGINT   NOT NULL,
-    /* False until the live tables that an installation kept in Redis are imported. */
-    imported   BOOLEAN  NOT NULL
+    epoch      BIGINT   NOT NULL
 );
-INSERT INTO live_state_owner (epoch, imported) VALUES (0, TRUE);
+INSERT INTO live_state_owner (epoch) VALUES (0);

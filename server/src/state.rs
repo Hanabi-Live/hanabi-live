@@ -20,8 +20,6 @@ const ACQUISITION_RETRY: Duration = Duration::from_millis(100);
 const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
 /// How long the watchdog's check may take before ownership counts as lost.
 const WATCHDOG_TIMEOUT: Duration = Duration::from_secs(5);
-/// The command that moves the live tables of an installation that kept them in Redis.
-pub const IMPORT_COMMAND: &str = "hanabi-live migrate import-redis";
 
 pub struct StoredState {
     pub id: u64,
@@ -120,19 +118,6 @@ pub struct LiveState {
     _lease_guard: Arc<LeaseGuard>,
 }
 
-/// Whether the live tables are in PostgreSQL. An installation that kept them in Redis must import
-/// them first.
-pub async fn require_imported(connection: &mut PgConnection) -> Result<()> {
-    let imported = sqlx::query_scalar!("SELECT imported FROM live_state_owner")
-        .fetch_one(connection)
-        .await?;
-    ensure!(
-        imported,
-        "The live tables are still in Redis. Stop the previous release with /gracefulStop, then run `{IMPORT_COMMAND}`"
-    );
-    Ok(())
-}
-
 impl LiveState {
     /// Takes ownership of the live tables. A dedicated connection holds a session advisory lock
     /// while the server runs, and the ownership epoch fences writes from any earlier owner.
@@ -163,7 +148,6 @@ impl LiveState {
             );
             tokio::time::sleep(ACQUISITION_RETRY).await;
         }
-        require_imported(&mut lock).await?;
         // This waits for any write that an earlier owner has in progress.
         let epoch =
             sqlx::query_scalar!("UPDATE live_state_owner SET epoch = epoch + 1 RETURNING epoch")
@@ -479,23 +463,6 @@ mod tests {
             "The current owner lost its reservation"
         );
         second.close().await?;
-        db.close().await;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn servers_wait_for_live_tables_to_be_imported_from_redis() -> Result<()> {
-        let Some(db) = TestDb::create().await else {
-            return Ok(());
-        };
-        sqlx::query!("UPDATE live_state_owner SET imported = FALSE")
-            .execute(&db.pool)
-            .await?;
-        let error = LiveState::for_test(&db.pool)
-            .await
-            .err()
-            .context("A server started before the import")?;
-        ensure!(format!("{error:#}").contains(IMPORT_COMMAND));
         db.close().await;
         Ok(())
     }

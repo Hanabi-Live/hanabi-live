@@ -61,7 +61,6 @@ pub mod operations;
 mod operations_tests;
 pub mod public_http;
 mod query;
-pub mod redis_import;
 pub mod release;
 pub mod restart;
 pub mod server_info;

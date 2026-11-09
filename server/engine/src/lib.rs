@@ -6,8 +6,8 @@
 //! RNG stream; character assignment intentionally starts an independent stream.
 //! `apply_action` and `terminate_game` return owned immutable transitions.
 //! Transitions are deterministic, so a game can be stored as its setup and the
-//! actions and terminations applied to it, and rebuilt by replaying them;
-//! `parse_engine_state` reads a complete stored state. Send only
+//! actions and terminations applied to it, and rebuilt by replaying them. Send
+//! only
 //! recipient-projected events. Pausing and timing accounting belong to the
 //! caller; optional completion timing becomes a final event, not wall-clock
 //! effects inside the engine.
@@ -20,7 +20,6 @@ mod catalog;
 mod character;
 mod characters;
 mod game;
-mod restore;
 mod rules;
 mod setup;
 mod types;
@@ -32,7 +31,6 @@ pub use anyhow::Result;
 pub use catalog::*;
 pub use character::{Character, NO_CHARACTER};
 pub use game::*;
-pub use restore::{parse_engine_state, validate_engine_state};
 pub use rules::{
     calculate_max_score, clue_cost, clue_cost_for, has_remaining_play, touched_orders,
 };

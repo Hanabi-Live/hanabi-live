@@ -6,7 +6,7 @@ use hanabi_live::{
     lifecycle::{Control, StopReason, drain_game_runtime},
     migrations, operations,
     public_http::PublicConfig,
-    redis_import, release, restart,
+    release, restart,
     server_info::ServerInfo,
     store::Store,
     tls,
@@ -31,32 +31,21 @@ fn main() -> Result<()> {
         .first()
         .is_some_and(|argument| argument == "migrate")
     {
-        let action = match &arguments[1..] {
-            [action] if ["status", "apply", "import-redis"].contains(&action.as_str()) => {
-                action.as_str()
-            }
-            _ => bail!("Usage: hanabi-live migrate status|apply|import-redis"),
+        let apply = match &arguments[1..] {
+            [action] if action == "status" => false,
+            [action] if action == "apply" => true,
+            _ => bail!("Usage: hanabi-live migrate status|apply"),
         };
-        // Importing changes the live tables, so no server may run from this release meanwhile.
-        let _lock = release::enter(if action == "import-redis" {
-            release::Mode::Run
-        } else {
-            release::Mode::Inspect
-        })?;
+        let _lock = release::enter(release::Mode::Inspect)?;
         let config = Config::load(Path::new(".env"))?;
-        let runtime = tokio::runtime::Builder::new_current_thread()
+        return tokio::runtime::Builder::new_current_thread()
             .enable_all()
-            .build()?;
-        return runtime.block_on(async {
-            match action {
-                "import-redis" => redis_import::run(&config).await,
-                _ => migrations::run(&config, action == "apply").await,
-            }
-        });
+            .build()?
+            .block_on(migrations::run(&config, apply));
     }
     ensure!(
         arguments.is_empty() || arguments == ["--check-startup"],
-        "Only --check-startup, --version, and migrate status|apply|import-redis are supported"
+        "Only --check-startup, --version, and migrate status|apply are supported"
     );
     let _release_lock = release::enter(if arguments.is_empty() {
         release::Mode::Run
@@ -73,11 +62,7 @@ fn main() -> Result<()> {
     let replace = if arguments.is_empty() {
         runtime.block_on(run(config, version))?
     } else {
-        runtime.block_on(async {
-            tls::configuration(&config).await?;
-            // A server cannot start until an earlier installation's live tables are imported.
-            hanabi_live::state::require_imported(&mut migrations::connect(&config).await?).await
-        })?;
+        runtime.block_on(tls::configuration(&config))?;
         false
     };
     drop(runtime);

@@ -96,11 +96,6 @@ PostgreSQL stores the live tables: pregames, live games, and replays. It also
 stores accounts, completed games, notes, tags, chat, and statistics. Its backups
 cover all of them.
 
-Installations that kept the live tables in Redis must move them once. Stop the
-previous release with `/gracefulStop`. Then run `hanabi-live migrate apply` and
-`hanabi-live migrate import-redis` with the new release, which reads
-`REDIS_URL`. The server does not start until the import is done.
-
 Pregame players have a 60-second reconnect grace period, including after server
 recovery. Disconnected players are then removed, ownership passes to a remaining
 player, and empty pregames are durably deleted. Connected-but-AFK players keep

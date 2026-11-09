@@ -14,9 +14,7 @@ use std::ops::Deref;
 #[derive(Clone, Debug)]
 pub struct Game {
     state: EngineState,
-    /// Absent for a game from a checkpoint written before games were stored as logs. Such a game
-    /// keeps storing its state until its table ends.
-    log: Option<GameLog>,
+    log: GameLog,
 }
 
 /// What a game started from and what happened in it.
@@ -69,30 +67,20 @@ struct StoredGame {
 
 impl Serialize for Game {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match &self.log {
-            Some(log) => StoredGameRef {
-                setup: &log.setup,
-                steps: &log.steps,
-                started_timer: self.state.started_timer,
-                paused: self.state.paused,
-            }
-            .serialize(serializer),
-            None => self.state.serialize(serializer),
+        StoredGameRef {
+            setup: &self.log.setup,
+            steps: &self.log.steps,
+            started_timer: self.state.started_timer,
+            paused: self.state.paused,
         }
+        .serialize(serializer)
     }
 }
 
 impl<'de> Deserialize<'de> for Game {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let value = Value::deserialize(deserializer)?;
-        let game = if value.get("setup").is_some() {
-            serde_json::from_value::<StoredGame>(value)
-                .map_err(anyhow::Error::from)
-                .and_then(Self::rebuild)
-        } else {
-            hanabi_engine::parse_engine_state(value).map(|state| Self { state, log: None })
-        };
-        game.map_err(|error| serde::de::Error::custom(format!("{error:#}")))
+        Self::rebuild(StoredGame::deserialize(deserializer)?)
+            .map_err(|error| serde::de::Error::custom(format!("{error:#}")))
     }
 }
 
@@ -106,10 +94,10 @@ impl Game {
     pub fn create(setup: GameSetup) -> Result<Self> {
         Ok(Self {
             state: hanabi_engine::create_game(setup.clone())?.state,
-            log: Some(GameLog {
+            log: GameLog {
                 setup,
                 steps: vec![],
-            }),
+            },
         })
     }
     /// Replays a stored game through the engine.
@@ -139,9 +127,7 @@ impl Game {
             } => hanabi_engine::terminate_game(&self.state, termination.clone(), timing.clone())?,
         }
         .state;
-        if let Some(log) = &mut self.log {
-            log.steps.push(step);
-        }
+        self.log.steps.push(step);
         Ok(())
     }
     /// The engine's state, for engine functions that read it.
@@ -214,13 +200,6 @@ impl Game {
         );
         hanabi_engine::events_for_recipient(&self.state, recipient, Some(&self.events[from..]))
             .expect("validated actor recipient")
-    }
-    /// Checks a stored state that the engine did not rebuild from a log.
-    pub fn validate_recovery(&self) -> Result<()> {
-        if self.log.is_some() {
-            return Ok(());
-        }
-        hanabi_engine::validate_engine_state(&self.state)
     }
     pub fn identities(&self) -> Vec<Card> {
         self.deck
@@ -306,7 +285,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn games_store_their_steps_and_older_checkpoints_keep_their_state() {
+    fn games_store_their_steps() {
         let mut game = Game::new(standard_deck("p2v0s1").unwrap()).unwrap();
         let active = game.active_player_index;
         let card = game.players[active].hand[0];
@@ -324,11 +303,6 @@ mod tests {
         let restored: Game = serde_json::from_value(stored.clone()).unwrap();
         assert_eq!(restored.state(), game.state());
         assert_eq!(serde_json::to_value(&restored).unwrap(), stored);
-
-        let legacy = serde_json::to_value(game.state()).unwrap();
-        let restored: Game = serde_json::from_value(legacy.clone()).unwrap();
-        assert_eq!(restored.state(), game.state());
-        assert_eq!(serde_json::to_value(&restored).unwrap(), legacy);
     }
 
     #[test]

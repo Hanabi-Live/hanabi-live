@@ -190,9 +190,7 @@ commands. If needed, you can inspect that file for more information.
 (A new client version requires a graceful restart even if only TypeScript
 changed.)
 
-Live tables are in PostgreSQL, so `database-backup.sh` covers them. Earlier
-releases kept them in `hanabi-redis.service`. Until production runs
-`hanabi-live migrate import-redis`, do not delete that Redis data. A binary
+Live tables are in PostgreSQL, so `database-backup.sh` covers them. A binary
 rollback cannot convert live state to another format.
 
 **Never use `systemctl restart` or `systemctl stop` on a running game server.**

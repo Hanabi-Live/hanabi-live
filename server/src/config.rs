@@ -16,7 +16,6 @@ pub struct Config {
     pub tls_cert_file: Option<PathBuf>,
     pub tls_key_file: Option<PathBuf>,
     pub integrations: HashMap<String, String>,
-    pub(crate) redis_url: String,
     pub(crate) database: String,
     pub(crate) database_host: String,
     pub(crate) database_port: u16,
@@ -36,9 +35,6 @@ const LOOPBACK_IPV6: &str = "::1";
 const DEFAULT_LOCALHOST_PORT: u16 = 8081;
 /// The PostgreSQL port when `DB_PORT` is unset.
 const DEFAULT_DATABASE_PORT: u16 = 5432;
-/// The Redis endpoint, from which `migrate import-redis` reads live tables, when `REDIS_URL` is
-/// unset.
-const DEFAULT_REDIS_URL: &str = "redis://127.0.0.1:6379";
 /// The shortest session signing key, in bytes.
 const MIN_SESSION_SECRET_LENGTH: usize = 128;
 /// The longest label in a domain name.
@@ -125,12 +121,6 @@ impl Config {
             secret.len() >= MIN_SESSION_SECRET_LENGTH,
             "SESSION_SECRET must be at least {MIN_SESSION_SECRET_LENGTH} bytes"
         );
-        let redis_url = field("REDIS_URL", DEFAULT_REDIS_URL);
-        let redis = url::Url::parse(&redis_url).context("Invalid REDIS_URL")?;
-        ensure!(
-            matches!(redis.scheme(), "redis" | "rediss" | "unix" | "redis+unix"),
-            "REDIS_URL must use redis, rediss, or redis+unix"
-        );
         let cert = field("TLS_CERT_FILE", "");
         let key = field("TLS_KEY_FILE", "");
         ensure!(
@@ -171,7 +161,6 @@ impl Config {
             tls_cert_file: resolve(&cert),
             tls_key_file: resolve(&key),
             integrations,
-            redis_url,
             database: field("DB_NAME", "hanabi"),
             database_host: field("DB_HOST", "localhost"),
             database_port: field("DB_PORT", &DEFAULT_DATABASE_PORT.to_string())
@@ -188,31 +177,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn redis_defaults_when_missing_or_blank_and_preserves_explicit_endpoint() {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        for (configured, expected) in [
-            (None, DEFAULT_REDIS_URL),
-            (Some(""), DEFAULT_REDIS_URL),
-            (
-                Some("redis+unix:///run/hanabi-redis/redis.sock"),
-                "redis+unix:///run/hanabi-redis/redis.sock",
-            ),
-        ] {
-            let mut values = HashMap::from([("SESSION_SECRET".into(), "synthetic".repeat(32))]);
-            if let Some(value) = configured {
-                values.insert("REDIS_URL".into(), value.into());
-            }
-            let config = Config::from_values(&root, &values).unwrap();
-            assert_eq!(config.redis_url, expected);
-        }
-    }
-
-    #[test]
     fn validates_runtime_configuration_without_mutating_environment() {
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let values: HashMap<String, String> = [
             ("SESSION_SECRET", "synthetic".repeat(32)),
-            ("REDIS_URL", "redis://127.0.0.1:6379".into()),
             ("DOMAIN", "example.invalid".into()),
             ("DB_HOST", "database.example.invalid".into()),
         ]
@@ -230,7 +198,6 @@ mod tests {
             ("PORT", "65536"),
             ("LOCALHOST_PORT", "-1"),
             ("SESSION_SECRET", "short"),
-            ("REDIS_URL", "http://localhost"),
             ("TLS_CERT_FILE", "cert.pem"),
         ] {
             let mut values = values.clone();
