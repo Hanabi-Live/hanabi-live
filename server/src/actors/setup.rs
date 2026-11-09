@@ -355,11 +355,7 @@ pub(super) fn replay_table(
             },
         },
         chat: vec![],
-        chat_archived: 0,
         shadows: BTreeMap::new(),
-        pending_spawn: None,
-        retire_after_spawn: false,
-        pending_tag: None,
     }
 }
 /// A request to create a table or a replay, decoded from its wire contract.
@@ -473,11 +469,7 @@ pub(super) async fn prepare_table(
                 kicked: vec![],
             },
             chat: vec![],
-            chat_archived: 0,
             shadows: BTreeMap::new(),
-            pending_spawn: None,
-            retire_after_spawn: false,
-            pending_tag: None,
         };
         let revision = store.save(&table, 0).await?;
         Ok((table, revision, vec![]))

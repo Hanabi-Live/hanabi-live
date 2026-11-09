@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)",
+  "query": "SELECT count(*) AS \"v!\" FROM pg_stat_activity\n                 WHERE datname = current_database() AND wait_event_type = 'Lock'",
   "describe": {
     "columns": [
       {
@@ -11,13 +11,11 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Int4Array"
-      ]
+      "Left": []
     },
     "nullable": [
       null
     ]
   },
-  "hash": "a9f6e6b546c9a458913c978b0596f91981aedc961d05e6fba91663a5c7880cb0"
+  "hash": "5a6f42fed55a0d3e0ea800517b791546f682915d0eaf68bd0f4e56b6bbe5e4d8"
 }

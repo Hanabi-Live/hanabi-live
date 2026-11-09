@@ -1645,7 +1645,7 @@ async fn pregame_history_survives_join_return_and_actor_recovery() -> Result<()>
             "Table chat leaked to an outsider"
         );
         let snapshot = h.snapshot(id).await?.0;
-        ensure!(snapshot.chat.len() == 6 && snapshot.chat_archived == 6);
+        ensure!(snapshot.chat.len() == 6 && snapshot.chat.iter().all(|chat| chat.id.is_some()));
         let count: i64 = sqlx::query_scalar!(
             "SELECT count(*) AS \"v!\" FROM chat_log WHERE room=$1",
             &room

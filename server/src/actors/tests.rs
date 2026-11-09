@@ -280,11 +280,7 @@ pub(super) fn pregame(id: u64) -> TableSnapshot {
             kicked: vec![],
         },
         chat: vec![],
-        chat_archived: 0,
         shadows: BTreeMap::new(),
-        pending_spawn: None,
-        retire_after_spawn: false,
-        pending_tag: None,
     }
 }
 
@@ -404,7 +400,8 @@ async fn completion_starts_a_fresh_review_without_reviving_idle_ended_games() ->
         table.phase = Phase::Live { snapshot };
         table.extra.no_write_to_database = true;
         table.game_mut().unwrap().idle_remaining = 0;
-        let revision = store.save(&table, 0).await?;
+        // The game ended in memory; its table still stores the state before.
+        let revision = store.save(&pregame(id), 0).await?;
         let (hub, _notifications) = mpsc::channel(16);
         let capacity = Arc::new(Semaphore::new(1));
         let mut actor = TableActor::new(

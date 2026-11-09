@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)",
+  "query": "SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\"\n         FROM generate_series(1,$1::integer)",
   "describe": {
     "columns": [
       {
@@ -19,5 +19,5 @@
       null
     ]
   },
-  "hash": "fe709ce85955b35054a3cd1cae02bc71742a1e75408114b67707627c0e329ff3"
+  "hash": "f90bc70e515e65ec609b7b3d312f7b17b71ac2bb679a1bd093517d093135d9b2"
 }

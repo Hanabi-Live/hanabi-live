@@ -145,18 +145,20 @@ impl TableActor {
                 }
             });
         }
-        if replay {
+        let edit = if replay {
             ensure_or_reject!(
                 s.game_id > 0,
                 "JSON replays cannot be tagged in the database"
             );
-            next.pending_tag = Some(PendingTag {
+            Some(PendingTag {
                 game_id: s.game_id,
                 user_id: session.user,
                 operation,
                 tag: tag.clone(),
-            });
-        }
+            })
+        } else {
+            None
+        };
         let verb = if operation == TagOperation::Tag {
             "added"
         } else {
@@ -197,7 +199,14 @@ impl TableActor {
             message.room = Some(room.to_owned());
             message.recipient = Some(session.name.clone());
         }
-        self.persist(next).await?;
+        self.persist_with(
+            next,
+            crate::store::Commit {
+                tag: edit.as_ref(),
+                ..crate::store::Commit::default()
+            },
+        )
+        .await?;
         let mut e = self.effects();
         if replay {
             self.add_chat(&mut e, &message);

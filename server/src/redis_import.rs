@@ -1,11 +1,7 @@
 //! Moves the live tables of an installation that kept them in Redis into PostgreSQL.
 
-use crate::{
-    config::Config,
-    model::{Phase, TableSnapshot},
-};
+use crate::{config::Config, model::TableSnapshot};
 use anyhow::{Context, Result, bail, ensure};
-use hanabi_engine::EndCondition;
 use redis::aio::MultiplexedConnection;
 use sqlx::Connection;
 
@@ -20,15 +16,6 @@ async fn query<T: redis::FromRedisValue>(
         command.arg(*argument);
     }
     Ok(command.query_async(redis).await?)
-}
-
-/// Whether a checkpoint has work left that only a recovering server finishes.
-fn unfinished(table: &TableSnapshot) -> bool {
-    table.pending_tag.is_some()
-        || table.pending_spawn.is_some()
-        || table.chat_archived < table.chat.len()
-        || matches!(&table.phase, Phase::Live { snapshot }
-            if snapshot.game.end_condition != EndCondition::InProgress)
 }
 
 pub async fn run(config: &Config) -> Result<()> {
@@ -89,21 +76,18 @@ pub async fn run(config: &Config) -> Result<()> {
         if revision == 0 {
             continue;
         }
+        // Reading a checkpoint checks that it has no unfinished work.
         let table = TableSnapshot::decode(&payload)
             .with_context(|| format!("Cannot read the checkpoint of table {id}"))?;
         ensure!(
             i64::try_from(table.id).ok() == Some(id),
             "The checkpoint of table {id} names another table"
         );
-        ensure!(
-            !unfinished(&table),
-            "Table {id} has unfinished recovery work. Start the previous release to finish it, stop it with /gracefulStop, and import again."
-        );
         sqlx::query!(
             "INSERT INTO live_tables (id, revision, payload, epoch) VALUES ($1, $2, $3, 0)",
             id,
             revision,
-            payload
+            crate::store::encode(&table)?
         )
         .execute(&mut *transaction)
         .await?;

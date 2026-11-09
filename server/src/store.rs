@@ -6,14 +6,14 @@ use crate::{
     },
     state::LiveState,
 };
-use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, SubsecRound, Utc};
+use anyhow::{Context, Result, bail, ensure};
+use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::{ChatSource, NO_VALUE};
 use serde_json::{Value, json};
 
 use sqlx::{
-    PgPool,
+    PgPool, Postgres, Transaction,
     postgres::{PgConnectOptions, PgPoolOptions},
 };
 use std::{collections::BTreeMap, sync::Arc, time::Duration};
@@ -57,8 +57,6 @@ const LIVE_CONNECTIONS: u32 = 4;
 const LOBBY_READ_CONNECTIONS: u32 = 2;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
-/// The fractional-second digits that a PostgreSQL timestamp keeps (microseconds).
-const DATABASE_TIMESTAMP_DIGITS: u16 = 6;
 /// The stored character assignment of a player without a character.
 pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 
@@ -66,12 +64,8 @@ pub const NO_CHARACTER_ASSIGNMENT: i16 = -1;
 #[derive(Clone, Copy)]
 #[repr(i32)]
 pub(crate) enum LockSpace {
-    /// A game being archived, by game ID.
-    Game = 17482,
     /// A variant's statistics, by variant ID.
     VariantStats = 17483,
-    /// A durable chat message, by chat ID.
-    Chat = 17484,
     /// Ownership of the live tables, held for as long as a server runs.
     LiveState = 17485,
 }
@@ -240,70 +234,10 @@ impl Store {
     }
     async fn restore(&self, refresh_stats: bool) -> Result<Vec<(TableSnapshot, i64)>> {
         let mut output = vec![];
-        let stored = self.state.load().await?;
-        let mut queue = std::collections::VecDeque::from(stored);
-        let mut seen = std::collections::HashSet::new();
-        while let Some(stored) = queue.pop_front() {
-            let id = stored.id;
-            if !seen.insert(id) {
-                continue;
-            }
-            let mut table = TableSnapshot::decode(&stored.payload)?;
-            ensure!(table.id == id, "Live-table identity mismatch");
-            let mut revision = stored.revision;
-            if let Some(edit) = table.pending_tag.take() {
-                let tags = self.apply_tag(&edit).await?;
-                table.game_mut().context("Missing tagged replay")?.tags = tags;
-                revision = self.save(&table, revision).await?;
-            }
-            if table.chat_archived < table.chat.len() {
-                self.archive_chat(&table.chat[table.chat_archived..])
-                    .await?;
-                table.chat_archived = table.chat.len();
-                revision = self.save(&table, revision).await?;
-            }
-            if let Some(destination) = table.pending_spawn.take() {
-                let destination_id = destination.id;
-                let existing = self.state.get(destination_id).await?;
-                match existing {
-                    Some(ref record) if record.revision > 0 => {
-                        ensure!(
-                            serde_json::to_value(TableSnapshot::decode(&record.payload)?)?
-                                == serde_json::to_value(&destination)?,
-                            "Conflicting table transfer destination"
-                        );
-                    }
-                    _ => {
-                        if existing.is_none() {
-                            self.state.reserve(destination_id).await?;
-                        }
-                        self.save(&destination, 0).await?;
-                    }
-                }
-                queue.push_back(
-                    self.state
-                        .get(destination_id)
-                        .await?
-                        .context("Lost transfer destination")?,
-                );
-                if table.retire_after_spawn {
-                    self.remove(id, revision).await?;
-                    continue;
-                }
-                table.retire_after_spawn = false;
-                revision = self.save(&table, revision).await?;
-            }
-            if let Phase::Live { snapshot } = &table.phase
-                && snapshot.game.end_condition != EndCondition::InProgress
-            {
-                if !table.extra.no_write_to_database {
-                    self.complete(snapshot, revision).await?;
-                    self.refresh_background((**snapshot).clone());
-                }
-                table.convert_to_replay()?;
-                revision = self.save(&table, revision).await?;
-            }
-            output.push((table, revision));
+        for stored in self.state.load().await? {
+            let table = TableSnapshot::decode(&stored.payload)?;
+            ensure!(table.id == stored.id, "Live-table identity mismatch");
+            output.push((table, stored.revision));
         }
         let users = output
             .iter()
@@ -326,178 +260,62 @@ impl Store {
         }
         Ok(output)
     }
-    /// Redis terminal state is fsynced first. PostgreSQL commits all archive rows
-    /// atomically; the caller subsequently CAS-finalizes Redis to replay state.
-    pub async fn complete(
+    /// Saves a table and the work that goes with it in one transaction. New chat messages and a
+    /// finished game are archived, a tag edit is applied, and a table that a split creates is
+    /// saved. A failure before the commit changes nothing.
+    pub async fn commit(
         &self,
-        s: &Snapshot,
+        table: &mut TableSnapshot,
         revision: i64,
-    ) -> Result<(DateTime<Utc>, DateTime<Utc>)> {
-        ensure!(
-            s.game_id > 0 && s.game.end_condition != EndCondition::InProgress,
-            "Cannot archive an ongoing/JSON game"
-        );
-        let stored = self
-            .state
-            .get(s.table_id)
-            .await?
-            .context("Missing terminal checkpoint")?;
-        ensure!(
-            stored.revision == revision,
-            "Completion requires the current checkpoint"
-        );
-        let durable = TableSnapshot::decode(&stored.payload)?;
-        let saved = durable.game().context("Missing terminal game")?;
-        ensure!(
-            serde_json::to_value(saved)? == serde_json::to_value(s)?,
-            "Completion differs from durable terminal state"
-        );
-        let finished = s.finished.context("Missing completion time")?;
-        let o = &s.game.options;
-        let variant = hanabi_engine::get_variant(&o.variant_name)?;
-        let mut tx = self.archive.begin().await?;
-        advisory_lock(&mut tx, LockSpace::Game, s.game_id).await?;
-        self.check_state()?;
-        let existing = sqlx::query_as!(
-            crate::archive::GameRecord,
-            "SELECT id,name,num_players,variant_id,timed,time_base,time_per_turn,
-             speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,
-             detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished
-             FROM games WHERE id=$1",
-            s.game_id
-        )
-        .fetch_optional(&mut *tx)
-        .await?;
-        if let Some(row) = existing {
-            let existing_options = options_from_record(&row)?;
-            let mut expected = o.clone();
-            expected.variant_id = Some(variant.id);
-            expected.time_base = f64::from(stored_seconds(o.time_base));
-            expected.table_name = None;
-            expected.max_players = None;
-            ensure!(
-                existing_options == expected
-                    && row.seed.clone() == s.seed
-                    && row.name.clone() == s.name
-                    && i32::from(row.score) == s.game.score
-                    && i32::from(row.end_condition) == s.game.end_condition as i32
-                    && i32::from(row.num_turns) == s.game.turn,
-                "Conflicting completed game"
-            );
-            let players = sqlx::query!("SELECT user_id,seat,character_assignment,character_metadata FROM game_participants WHERE game_id=$1 ORDER BY seat", s.game_id)
-            .fetch_all(&mut *tx)
-            .await?;
-            ensure!(players.len() == s.players.len(), "Conflicting participants");
-            for (seat, (row, player)) in players.iter().zip(&s.players).enumerate() {
-                let (assignment, metadata) = stored_character(&s.game.players[seat])?;
-                ensure!(
-                    row.user_id == player.id
-                        && i16::try_from(seat).ok() == Some(row.seat)
-                        && row.character_assignment == assignment
-                        && row.character_metadata == metadata,
-                    "Conflicting participant identity"
-                );
+        work: Commit<'_>,
+    ) -> Result<Committed> {
+        let mut metric = crate::metrics::STORAGE_METRICS.start("checkpoint");
+        let result = async {
+            let mut transaction = self.state.begin().await?;
+            let new_chat = reserve_chat(&mut transaction, table).await?;
+            if let Some(edit) = work.tag {
+                table.game_mut().context("Missing tagged replay")?.tags =
+                    apply_tag(&mut transaction, edit).await?;
             }
-            let notes=sqlx::query!("SELECT p.seat,n.card_order,n.note FROM game_participant_notes n JOIN game_participants p ON p.id=n.game_participant_id WHERE p.game_id=$1 ORDER BY p.seat,n.card_order", s.game_id).fetch_all(&mut *tx).await?;
-            let expected_notes = s
-                .notes
-                .iter()
-                .enumerate()
-                .flat_map(|(seat, notes)| {
-                    notes
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, note)| !note.is_empty())
-                        .map(move |(order, note)| (seat, order, note))
-                })
-                .collect::<Vec<_>>();
-            ensure!(
-                notes.len() == expected_notes.len(),
-                "Conflicting note count"
-            );
-            for (row, (seat, order, note)) in notes.iter().zip(expected_notes) {
-                ensure!(
-                    i16::try_from(seat).ok() == Some(row.seat)
-                        && i16::try_from(order).ok() == Some(row.card_order)
-                        && row.note.clone() == *note,
-                    "Conflicting authored note"
-                );
-            }
-            let rows = sqlx::query!(
-                "SELECT type,target,value FROM game_actions WHERE game_id=$1 ORDER BY turn",
-                s.game_id
+            let payload = encode(table)?;
+            archive_chat(
+                &mut transaction,
+                new_chat.iter().map(|&index| &table.chat[index]),
             )
-            .fetch_all(&mut *tx)
             .await?;
-            ensure!(
-                rows.len() == s.game.actions.len(),
-                "Conflicting action count"
-            );
-            for (row, a) in rows.iter().zip(&s.game.actions) {
-                ensure!(
-                    i32::from(row.r#type) == i32::from(a.action_type)
-                        && i32::from(row.target) == a.target
-                        && i32::from(row.value) == a.value,
-                    "Conflicting action"
-                );
+            if work.archive {
+                archive_game(
+                    &mut transaction,
+                    table.game().context("Missing finished game")?,
+                )
+                .await?;
             }
-            ensure!(
-                hanabi_engine::create_shuffled_deck(variant, &s.seed) == s.game.identities(),
-                "Conflicting deck"
-            );
-            let times = (row.datetime_started, row.datetime_finished);
-            ensure!(
-                times.0.timestamp_micros() == s.started.timestamp_micros()
-                    && times.1.timestamp_micros() == finished.timestamp_micros(),
-                "Conflicting completion timestamps"
-            );
-            tx.commit().await?;
-            return Ok(times);
+            let revision = if work.retire {
+                crate::state::remove_in(&mut transaction, table.id, revision).await?;
+                revision
+            } else {
+                crate::state::save_in(&mut transaction, table.id, revision, &payload).await?
+            };
+            let spawn_revision = match work.spawn {
+                Some(spawn) => Some(
+                    crate::state::save_in(&mut transaction, spawn.id, 0, &encode(spawn)?).await?,
+                ),
+                None => None,
+            };
+            self.state.commit(transaction).await?;
+            crate::metrics::record_checkpoint(payload.len());
+            Ok(Committed {
+                revision,
+                spawn_revision,
+            })
         }
-        sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut *tx).await?;
-        for (seat, p) in s.players.iter().enumerate() {
-            let (assignment, metadata) = stored_character(&s.game.players[seat])?;
-            let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, i16::try_from(seat)?, assignment, metadata).fetch_one(&mut *tx).await?;
-            for (order, note) in s.notes[seat]
-                .iter()
-                .enumerate()
-                .filter(|(_, n)| !n.is_empty())
-            {
-                sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, i16::try_from(order)?, note).execute(&mut *tx).await?;
-            }
+        .await;
+        if result.is_ok() {
+            metric.success();
+        } else {
+            crate::metrics::record_checkpoint_failure();
         }
-        let kinds: Vec<i16> = s
-            .game
-            .actions
-            .iter()
-            .map(|a| i16::try_from(i32::from(a.action_type)))
-            .collect::<Result<_, _>>()?;
-        let targets: Vec<i16> = s
-            .game
-            .actions
-            .iter()
-            .map(|a| i16::try_from(a.target))
-            .collect::<Result<_, _>>()?;
-        let values: Vec<i16> = s
-            .game
-            .actions
-            .iter()
-            .map(|a| i16::try_from(a.value))
-            .collect::<Result<_, _>>()?;
-        sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut *tx).await?;
-        for tag in &s.tags {
-            sqlx::query!(
-                "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
-                s.game_id,
-                tag.user,
-                &tag.tag
-            )
-            .execute(&mut *tx)
-            .await?;
-        }
-        tx.commit().await?;
-        self.check_state()?;
-        Ok((s.started, finished))
+        result
     }
     pub async fn historical(&self, id: i32, table_id: u64, owner: i32) -> Result<Snapshot> {
         let archive = crate::archive::load(&self.primary, id)
@@ -601,130 +419,6 @@ impl Store {
             votes: vec![false; n],
             maintenance_applied: false,
         })
-    }
-    pub async fn prepare_chat(&self, table: &mut TableSnapshot) -> Result<()> {
-        self.check_state()?;
-        let pending = table
-            .chat
-            .iter()
-            .enumerate()
-            .skip(table.chat_archived)
-            .filter(|(_, chat)| chat.id.is_none())
-            .map(|(index, _)| index)
-            .collect::<Vec<_>>();
-        if pending.is_empty() {
-            return Ok(());
-        }
-        ensure!(
-            pending.len() <= crate::model::MAX_TABLE_CHAT,
-            "Oversized chat reservation"
-        );
-        let ids:Vec<i64>=sqlx::query_scalar!("SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\" FROM generate_series(1,$1::integer)", i32::try_from(pending.len())?).fetch_all(&self.archive).await?;
-        self.check_state()?;
-        ensure!(
-            ids.len() == pending.len(),
-            "Incomplete chat identity reservation"
-        );
-        for (index, id) in pending.into_iter().zip(ids) {
-            let chat = &mut table.chat[index];
-            chat.message.datetime = crate::model::timestamp(chat.sent()?);
-            chat.id = Some(i32::try_from(id)?);
-        }
-        Ok(())
-    }
-    pub async fn archive_chat(&self, entries: &[TableChat]) -> Result<()> {
-        self.check_state()?;
-        let mut tx = self.archive.begin().await?;
-        let mut entries = entries.iter().collect::<Vec<_>>();
-        entries.sort_by_key(|chat| chat.id);
-        for entry in entries {
-            let id = entry.id.context("Missing durable chat identity")?;
-            ensure!(id > 0, "Invalid durable chat identity");
-            advisory_lock(&mut tx, LockSpace::Chat, id).await?;
-            self.check_state()?;
-            let msg = &entry.message.msg;
-            let room = entry
-                .message
-                .room
-                .as_deref()
-                .context("Invalid archived chat room")?;
-            let source = match entry.message.source {
-                ChatSource::User => "user",
-                ChatSource::Server => "server",
-                ChatSource::Discord => anyhow::bail!("Invalid table chat source"),
-            };
-            let datetime = entry.sent()?;
-            ensure!(
-                datetime.trunc_subsecs(DATABASE_TIMESTAMP_DIGITS) == datetime,
-                "Chat timestamp must use PostgreSQL precision before checkpointing"
-            );
-            sqlx::query!("INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO NOTHING", id, entry.user, msg, room, source, datetime).execute(&mut *tx).await?;
-            let existing = sqlx::query!(
-                "SELECT user_id,message,room,source,datetime_sent FROM chat_log WHERE id=$1",
-                id
-            )
-            .fetch_one(&mut *tx)
-            .await?;
-            ensure!(
-                existing.user_id == entry.user
-                    && existing.message == *msg
-                    && existing.room.clone() == room
-                    && existing.source.clone() == source
-                    && existing.datetime_sent == datetime,
-                "Conflicting archived chat identity"
-            );
-        }
-        tx.commit().await?;
-        self.check_state()?;
-        Ok(())
-    }
-    pub async fn apply_tag(&self, edit: &PendingTag) -> Result<Vec<Tag>> {
-        self.check_state()?;
-        let mut tx = self.archive.begin().await?;
-        sqlx::query!("SELECT id FROM games WHERE id=$1 FOR UPDATE", edit.game_id)
-            .fetch_one(&mut *tx)
-            .await?;
-        self.check_state()?;
-        match edit.operation {
-            TagOperation::Tag => {
-                sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id, &edit.tag).execute(&mut *tx).await?;
-            }
-            TagOperation::TagDelete => {
-                sqlx::query!(
-                    "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
-                    edit.game_id,
-                    edit.user_id,
-                    &edit.tag
-                )
-                .execute(&mut *tx)
-                .await?;
-            }
-            TagOperation::TagsDeleteAll => {
-                sqlx::query!(
-                    "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
-                    edit.game_id,
-                    edit.user_id
-                )
-                .execute(&mut *tx)
-                .await?;
-            }
-        }
-        let mut tags = vec![];
-        for row in sqlx::query!(
-            "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",
-            edit.game_id
-        )
-        .fetch_all(&mut *tx)
-        .await?
-        {
-            tags.push(Tag {
-                user: row.user_id,
-                tag: row.tag.clone(),
-            });
-        }
-        tx.commit().await?;
-        self.check_state()?;
-        Ok(tags)
     }
     pub async fn tags_for_game(&self, id: i32) -> Result<Option<Vec<Tag>>> {
         let rows=sqlx::query!("SELECT t.user_id AS \"user_id?\",t.tag AS \"tag?\" FROM games g LEFT JOIN game_tags t ON t.game_id=g.id WHERE g.id=$1 ORDER BY t.user_id,t.tag", id).fetch_all(&self.primary).await?;
@@ -883,12 +577,6 @@ impl Store {
 /// Validates a table checkpoint and serializes it for storage.
 pub fn encode(table: &TableSnapshot) -> Result<String> {
     table.validate()?;
-    ensure!(
-        table.chat[table.chat_archived..]
-            .iter()
-            .all(|chat| chat.id.is_some()),
-        "Pending chat must reserve numeric archive identities before checkpointing"
-    );
     let payload = serde_json::to_string(table)?;
     ensure!(
         payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
@@ -896,6 +584,194 @@ pub fn encode(table: &TableSnapshot) -> Result<String> {
     );
     Ok(payload)
 }
+/// The work that `Store::commit` does along with saving a table.
+#[derive(Default)]
+pub struct Commit<'a> {
+    /// A tag edit for the replay's database game.
+    pub tag: Option<&'a PendingTag>,
+    /// Whether to archive the table's finished game.
+    pub archive: bool,
+    /// Whether to remove the table instead of saving it.
+    pub retire: bool,
+    /// A reserved table to save, such as one that a split creates.
+    pub spawn: Option<&'a TableSnapshot>,
+}
+
+pub struct Committed {
+    /// The table's new revision, or its last one if it was removed.
+    pub revision: i64,
+    /// The revision of the table in `Commit::spawn`.
+    pub spawn_revision: Option<i64>,
+}
+
+/// Gives new chat messages their archive IDs and stored timestamps. Returns their positions.
+async fn reserve_chat(
+    transaction: &mut Transaction<'static, Postgres>,
+    table: &mut TableSnapshot,
+) -> Result<Vec<usize>> {
+    let pending = table
+        .chat
+        .iter()
+        .enumerate()
+        .filter(|(_, chat)| chat.id.is_none())
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    if pending.is_empty() {
+        return Ok(pending);
+    }
+    let ids = sqlx::query_scalar!(
+        "SELECT nextval(pg_get_serial_sequence('chat_log','id')) AS \"value!\"
+         FROM generate_series(1,$1::integer)",
+        i32::try_from(pending.len())?
+    )
+    .fetch_all(&mut **transaction)
+    .await?;
+    ensure!(
+        ids.len() == pending.len(),
+        "Incomplete chat identity reservation"
+    );
+    for (&index, id) in pending.iter().zip(ids) {
+        let chat = &mut table.chat[index];
+        chat.message.datetime = crate::model::timestamp(chat.sent()?);
+        chat.id = Some(i32::try_from(id)?);
+    }
+    Ok(pending)
+}
+
+async fn archive_chat(
+    transaction: &mut Transaction<'static, Postgres>,
+    entries: impl Iterator<Item = &TableChat>,
+) -> Result<()> {
+    for entry in entries {
+        let id = entry.id.context("Missing chat identity")?;
+        let room = entry
+            .message
+            .room
+            .as_deref()
+            .context("Invalid archived chat room")?;
+        let source = match entry.message.source {
+            ChatSource::User => "user",
+            ChatSource::Server => "server",
+            ChatSource::Discord => bail!("Invalid table chat source"),
+        };
+        sqlx::query!(
+            "INSERT INTO chat_log(id,user_id,message,room,source,datetime_sent) VALUES($1,$2,$3,$4,$5,$6)",
+            id,
+            entry.user,
+            &entry.message.msg,
+            room,
+            source,
+            entry.sent()?
+        )
+        .execute(&mut **transaction)
+        .await?;
+    }
+    Ok(())
+}
+
+async fn apply_tag(
+    transaction: &mut Transaction<'static, Postgres>,
+    edit: &PendingTag,
+) -> Result<Vec<Tag>> {
+    // Serializes tag edits of the same game from different tables.
+    sqlx::query!("SELECT id FROM games WHERE id=$1 FOR UPDATE", edit.game_id)
+        .fetch_one(&mut **transaction)
+        .await?;
+    match edit.operation {
+        TagOperation::Tag => {
+            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id, &edit.tag).execute(&mut **transaction).await?;
+        }
+        TagOperation::TagDelete => {
+            sqlx::query!(
+                "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
+                edit.game_id,
+                edit.user_id,
+                &edit.tag
+            )
+            .execute(&mut **transaction)
+            .await?;
+        }
+        TagOperation::TagsDeleteAll => {
+            sqlx::query!(
+                "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
+                edit.game_id,
+                edit.user_id
+            )
+            .execute(&mut **transaction)
+            .await?;
+        }
+    }
+    Ok(sqlx::query!(
+        "SELECT user_id,tag FROM game_tags WHERE game_id=$1 ORDER BY user_id,tag",
+        edit.game_id
+    )
+    .fetch_all(&mut **transaction)
+    .await?
+    .into_iter()
+    .map(|row| Tag {
+        user: row.user_id,
+        tag: row.tag,
+    })
+    .collect())
+}
+
+/// Adds a finished game to the database.
+async fn archive_game(
+    transaction: &mut Transaction<'static, Postgres>,
+    s: &Snapshot,
+) -> Result<()> {
+    ensure!(
+        s.game_id > 0 && s.game.end_condition != EndCondition::InProgress,
+        "Cannot archive an ongoing/JSON game"
+    );
+    let finished = s.finished.context("Missing completion time")?;
+    let o = &s.game.options;
+    let variant = hanabi_engine::get_variant(&o.variant_name)?;
+    let tx = transaction;
+    sqlx::query!("INSERT INTO games(id,name,num_players,variant_id,timed,time_base,time_per_turn,speedrun,deck_plays,empty_clues,one_extra_card,one_less_card,all_or_nothing,detrimental_characters,seed,score,num_turns,end_condition,datetime_started,datetime_finished) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)", s.game_id, &s.name, i16::try_from(o.num_players)?, i16::try_from(variant.id)?, o.timed, stored_seconds(o.time_base), i32::try_from(o.time_per_turn)?, o.speedrun, o.deck_plays, o.empty_clues, o.one_extra_card, o.one_less_card, o.all_or_nothing, o.detrimental_characters, &s.seed, i16::try_from(s.game.score)?, i16::try_from(s.game.turn)?, s.game.end_condition as i16, s.started, finished).execute(&mut **tx).await?;
+    for (seat, p) in s.players.iter().enumerate() {
+        let (assignment, metadata) = stored_character(&s.game.players[seat])?;
+        let participant:i32=sqlx::query_scalar!("INSERT INTO game_participants(game_id,user_id,seat,character_assignment,character_metadata) VALUES($1,$2,$3,$4,$5) RETURNING id", s.game_id, p.id, i16::try_from(seat)?, assignment, metadata).fetch_one(&mut **tx).await?;
+        for (order, note) in s.notes[seat]
+            .iter()
+            .enumerate()
+            .filter(|(_, n)| !n.is_empty())
+        {
+            sqlx::query!("INSERT INTO game_participant_notes(game_participant_id,card_order,note) VALUES($1,$2,$3)", participant, i16::try_from(order)?, note).execute(&mut **tx).await?;
+        }
+    }
+    let kinds: Vec<i16> = s
+        .game
+        .actions
+        .iter()
+        .map(|a| i16::try_from(i32::from(a.action_type)))
+        .collect::<Result<_, _>>()?;
+    let targets: Vec<i16> = s
+        .game
+        .actions
+        .iter()
+        .map(|a| i16::try_from(a.target))
+        .collect::<Result<_, _>>()?;
+    let values: Vec<i16> = s
+        .game
+        .actions
+        .iter()
+        .map(|a| i16::try_from(a.value))
+        .collect::<Result<_, _>>()?;
+    sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut **tx).await?;
+    for tag in &s.tags {
+        sqlx::query!(
+            "INSERT INTO game_tags(game_id,user_id,tag) VALUES($1,$2,$3)",
+            s.game_id,
+            tag.user,
+            &tag.tag
+        )
+        .execute(&mut **tx)
+        .await?;
+    }
+    Ok(())
+}
+
 /// The character assignment and metadata that `game_participants` stores for a player.
 fn stored_character(player: &hanabi_engine::EnginePlayer) -> Result<(i16, i16)> {
     let assignment = hanabi_engine::characters()
@@ -1001,11 +877,7 @@ mod tests {
                 kicked: vec![],
             },
             chat: vec![],
-            chat_archived: 0,
             shadows: BTreeMap::new(),
-            pending_spawn: None,
-            retire_after_spawn: false,
-            pending_tag: None,
         }
     }
     fn terminal(table: &mut TableSnapshot) -> Result<()> {
@@ -1119,6 +991,7 @@ mod tests {
     fn spectator_note_owners_round_trip_and_reject_invalid_keys() -> Result<()> {
         let mut table = pregame(1);
         terminal(&mut table)?;
+        table.convert_to_replay()?;
         let owner = crate::model::NoteOwner {
             name: "Spectator".into(),
             notes: vec![String::new(); 55],
@@ -1322,191 +1195,6 @@ mod tests {
         result
     }
     #[tokio::test]
-    async fn redis_is_sole_authority_and_terminal_archive_is_atomic_and_retryable() -> Result<()> {
-        let Some((db, pool)) = database().await? else {
-            return Ok(());
-        };
-        crate::accounts::test_support::legacy_column_order(&pool).await?;
-        let state = LiveState::for_test(&pool).await?;
-        let store = Store::fixture(pool, state);
-        let result = async {
-            let id = store.allocate_table().await?;
-            let mut table = pregame(id);
-            ensure!(store.save(&table, 0).await? == 1, "First revision");
-            let (a, b) = tokio::join!(store.save(&table, 1), store.save(&table, 1));
-            ensure!(a.is_ok() != b.is_ok(), "Two CAS writers committed");
-            let restored = store.load().await?;
-            ensure!(
-                restored.len() == 1
-                    && restored[0].1 == 2
-                    && matches!(restored[0].0.phase, Phase::Pregame { .. }),
-                "Pregame not durable"
-            );
-            terminal(&mut table)?;
-            table.game_mut().unwrap().idle_remaining = 0;
-            table.game_mut().unwrap().players[0].stats.variant.num_games = 3;
-            table.game_mut().unwrap().spectator_notes.insert(
-                3,
-                crate::model::NoteOwner {
-                    name: "Spectator".into(),
-                    notes: vec![String::new(); 55],
-                },
-            );
-            let revision = store.save(&table, 2).await?;
-            let mut changed = table.game().unwrap().clone();
-            changed.players[0].stats.variant.num_games = 4;
-            ensure!(
-                store.complete(&changed, revision).await.is_err(),
-                "Completion accepted statistics that differ from the durable checkpoint"
-            );
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("ALTER TABLE game_actions ADD CONSTRAINT reject_native_test CHECK(type<0)")
-                .execute(&store.primary)
-                .await?;
-            ensure!(
-                store
-                    .complete(table.game().unwrap(), revision)
-                    .await
-                    .is_err(),
-                "Broken archive committed"
-            );
-            let games: i64 = sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM games")
-                .fetch_one(&store.primary)
-                .await?;
-            ensure!(games == 0, "Partial PG transaction escaped");
-            ensure!(
-                store
-                    .state
-                    .get(id)
-                    .await?
-                    .unwrap()
-                    .revision
-                    == revision,
-                "Terminal Redis state lost"
-            );
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("ALTER TABLE game_actions DROP CONSTRAINT reject_native_test")
-                .execute(&store.primary)
-                .await?;
-            store.complete(table.game().unwrap(), revision).await?;
-            store.complete(table.game().unwrap(), revision).await?;
-            let recovered = store.load().await?;
-            ensure!(
-                recovered.len() == 1 && matches!(recovered[0].0.phase, Phase::Replay { .. }),
-                "Cross-store terminal retry failed"
-            );
-            ensure!(recovered[0].0.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
-                "Recovered completion inherited an expired live-game idle budget");
-            store.stats.close();
-            store.stats.wait().await;
-            let games: Option<i32> = sqlx::query_scalar!("SELECT num_games FROM user_stats WHERE user_id=1 AND variant_id=0")
-            .fetch_optional(&store.primary)
-            .await?;
-            ensure!(games == Some(1), "Recovered completion did not refresh statistics");
-            let actions: i64 = sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM game_actions")
-                .fetch_one(&store.primary)
-                .await?;
-            ensure!(actions == 1, "Idempotent archive duplicated actions");
-            let replay = store.historical(1, 99, 1).await?;
-            ensure!(
-                replay.game.actions == table.game().unwrap().game.actions && replay.tags.len() == 1,
-                "Archive replay differs"
-            );
-            let mut pending=recovered[0].0.clone();
-            pending.pending_tag=Some(PendingTag{game_id:1,user_id:1,operation:TagOperation::Tag,tag:"recovered-tag".into()});
-            store.save(&pending,recovered[0].1).await?;
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("ALTER TABLE game_tags ADD CONSTRAINT reject_native_tag CHECK(tag <> 'recovered-tag')").execute(&store.primary).await?;
-            ensure!(store.load().await.is_err(),"Rejected replay tag was not surfaced");
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("ALTER TABLE game_tags DROP CONSTRAINT reject_native_tag").execute(&store.primary).await?;
-            let recovered=store.load().await?;
-            ensure!(recovered[0].0.pending_tag.is_none()&&recovered[0].0.game().unwrap().tags.iter().any(|t|t.tag=="recovered-tag"),"Replay tag intent was not recovered");
-            store.load().await?;
-            let tags:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM game_tags WHERE tag='recovered-tag'").fetch_one(&store.primary).await?;
-            ensure!(tags==1,"Recovered tag was duplicated");
-            let latest = recovered[0].1;
-            store.remove(id, latest).await?;
-            ensure!(
-                store.save(&table, 0).await.is_err(),
-                "Removed table resurrected"
-            );
-            Ok::<(), anyhow::Error>(())
-        }
-        .await;
-        store.close().await?;
-        db.close().await;
-        result
-    }
-
-    #[tokio::test]
-    async fn interrupted_split_recovers_reserved_destination_without_duplicate_membership()
-    -> Result<()> {
-        let Some((db, pool)) = database().await? else {
-            return Ok(());
-        };
-        let state = LiveState::for_test(&pool).await?;
-        let store = Store::fixture(pool, state);
-        let source_id = store.allocate_table().await?;
-        let destination_id = store.allocate_table().await?;
-        let mut source = pregame(source_id);
-        let mut destination = source.clone();
-        destination.id = destination_id;
-        if let Phase::Pregame { players, .. } = &mut source.phase {
-            *players = vec![Player {
-                id: 2,
-                name: "Bob".into(),
-                stats: zero_stats(),
-            }];
-        }
-        source.owner = 2;
-        source.pending_spawn = Some(Box::new(destination));
-        store.save(&source, 0).await?;
-        store.state.close().await?;
-        let state = LiveState::for_test(&store.primary).await?;
-        let restored = Store::fixture(store.primary.clone(), state);
-        let result = async {
-            let tables = restored.load().await?;
-            ensure!(tables.len() == 2, "Interrupted split lost destination");
-            let members = tables
-                .iter()
-                .flat_map(|(t, _)| t.players().iter().map(|p| p.id))
-                .collect::<Vec<_>>();
-            ensure!(
-                members.len() == 2 && members.contains(&1) && members.contains(&2),
-                "Split duplicated/lost members"
-            );
-            ensure!(
-                tables.iter().all(|(t, _)| t.pending_spawn.is_none()),
-                "Transfer was not finalized"
-            );
-            for (table, revision) in tables {
-                restored.remove(table.id, revision).await?;
-            }
-            Ok::<(), anyhow::Error>(())
-        }
-        .await;
-        restored.close().await?;
-        db.close().await;
-        result
-    }
-    async fn send(
-        hub: &tokio::sync::mpsc::Sender<HubCommand>,
-        session: Arc<Session>,
-        command: &str,
-        data: Value,
-    ) -> Result<()> {
-        let (reply, received) = oneshot::channel();
-        hub.send(HubCommand::Client {
-            session,
-            message: crate::actors::client_message(command, &data)?,
-            reply,
-        })
-        .await?;
-        tokio::time::timeout(Duration::from_secs(10), received).await???;
-        Ok(())
-    }
-    #[tokio::test]
     async fn player_statistics_carry_each_best_scores_modifier() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
@@ -1548,128 +1236,400 @@ mod tests {
         result
     }
 
+    async fn send(
+        hub: &tokio::sync::mpsc::Sender<HubCommand>,
+        session: Arc<Session>,
+        command: &str,
+        data: Value,
+    ) -> Result<()> {
+        let (reply, received) = oneshot::channel();
+        hub.send(HubCommand::Client {
+            session,
+            message: crate::actors::client_message(command, &data)?,
+            reply,
+        })
+        .await?;
+        tokio::time::timeout(Duration::from_secs(10), received).await???;
+        Ok(())
+    }
+    /// A table chat message as players send it.
+    fn chat(id: u64, text: &str) -> Result<TableChat> {
+        Ok(TableChat {
+            id: None,
+            user: 1,
+            message: serde_json::from_value(json!({
+                "msg": text, "who": "Alice", "source": "user",
+                "room": format!("table{id}"), "datetime": "2026-11-02T20:00:00.123456Z"
+            }))?,
+        })
+    }
+
+    async fn count(pool: &PgPool, table: &str) -> Result<i64> {
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "test SQL that counts the rows of a fixed table"
+        )]
+        Ok(
+            sqlx::query_scalar(sqlx::AssertSqlSafe(format!("SELECT count(*) FROM {table}")))
+                .fetch_one(pool)
+                .await?,
+        )
+    }
+
     #[tokio::test]
-    async fn reserved_chat_ids_survive_failure_and_concurrent_retries_without_conflating_messages()
-    -> Result<()> {
+    async fn finishing_a_game_archives_it_and_saves_its_replay_in_one_commit() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
+        crate::accounts::test_support::legacy_column_order(&pool).await?;
         let state = LiveState::for_test(&pool).await?;
-        let store = Store::fixture(pool, state);
-        let result=async{
-            let id=store.allocate_table().await?;let mut table=pregame(id);
-            let message:hanabi_protocol::Chat=serde_json::from_value(json!({"msg":"identical legitimate entry","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456789Z"}))?;
-            table.chat=vec![
-                TableChat{id:None,user:1,message:message.clone()},
-                TableChat{id:None,user:1,message:message.clone()},
-                TableChat{id:None,user:1,message},
-            ];
-            store.prepare_chat(&mut table).await?;
-            let ids=table.chat.iter().map(|chat|chat.id.unwrap()).collect::<Vec<_>>();
-            ensure!(ids.iter().collect::<std::collections::HashSet<_>>().len()==3,"Distinct messages shared an identity");
-            ensure!(table.chat[0].message.datetime=="2026-11-02T20:00:00.123Z","Timestamp was not canonicalized before durability");
-            store.save(&table,0).await?;
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query(sqlx::AssertSqlSafe(format!("ALTER TABLE chat_log ADD CONSTRAINT reject_reserved_chat CHECK(id <> {})",ids[2]))).execute(&store.primary).await?;
-            ensure!(store.archive_chat(&table.chat).await.is_err(),"Partial archive failure was not surfaced");
-            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
-            ensure!(rows==0,"Failed chat batch escaped rollback");
-            #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
-            sqlx::query("ALTER TABLE chat_log DROP CONSTRAINT reject_reserved_chat").execute(&store.primary).await?;
-            let (left,right)=tokio::join!(store.archive_chat(&table.chat),store.archive_chat(&table.chat));
-            left?;right?;
-            let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE id=ANY($1)", &ids).fetch_one(&store.primary).await?;
-            ensure!(rows==3,"Concurrent retries duplicated or conflated legitimate chat");
-            let mut conflicting=table.chat[0].clone();conflicting.message.msg="conflicting payload".into();
-            ensure!(store.archive_chat(&[conflicting]).await.is_err(),"Conflicting content reused a durable chat identity");
-            let recovered=store.load().await?;
-            ensure!(recovered[0].0.chat_archived==3&&recovered[0].0.chat.iter().map(|c|c.id.unwrap()).collect::<Vec<_>>()==ids,"Recovery changed reserved chat identities");
-            store.remove(id,recovered[0].1).await?;
-            Ok::<(),anyhow::Error>(())
-        }.await;
+        let store = Store::fixture(pool.clone(), state);
+        let result = async {
+            let id = store.allocate_table().await?;
+            let table = pregame(id);
+            ensure!(store.save(&table, 0).await? == 1, "First revision");
+            let (a, b) = tokio::join!(store.save(&table, 1), store.save(&table, 1));
+            ensure!(
+                a.is_ok() != b.is_ok(),
+                "Two writers committed the same revision"
+            );
+            let mut finished = table.clone();
+            terminal(&mut finished)?;
+            finished.game_mut().unwrap().idle_remaining = 0;
+            ensure!(
+                store.save(&finished, 2).await.is_err(),
+                "A finished live game was saved"
+            );
+            finished.convert_to_replay()?;
+            let archive = || Commit {
+                archive: true,
+                ..Commit::default()
+            };
+
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query("ALTER TABLE game_actions ADD CONSTRAINT reject_test CHECK(type<0)")
+                .execute(&pool)
+                .await?;
+            ensure!(
+                store
+                    .commit(&mut finished.clone(), 2, archive())
+                    .await
+                    .is_err(),
+                "A broken archive committed"
+            );
+            ensure!(
+                count(&pool, "games").await? == 0,
+                "A partial archive escaped"
+            );
+            let restored = store.load().await?;
+            ensure!(
+                restored[0].1 == 2 && matches!(restored[0].0.phase, Phase::Pregame { .. }),
+                "A failed commit changed the table"
+            );
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query("ALTER TABLE game_actions DROP CONSTRAINT reject_test")
+                .execute(&pool)
+                .await?;
+
+            let committed = store.commit(&mut finished.clone(), 2, archive()).await?;
+            ensure!(committed.revision == 3);
+            let restored = store.load().await?;
+            ensure!(
+                matches!(restored[0].0.phase, Phase::Replay { .. })
+                    && restored[0].0.game().unwrap().idle_remaining == IDLE_TIMEOUT_MS,
+                "The finished game did not become a fresh review"
+            );
+            ensure!(count(&pool, "game_actions").await? == 1);
+            let replay = store.historical(1, 99, 1).await?;
+            ensure!(
+                replay.game.actions == finished.game().unwrap().game.actions
+                    && replay.tags.len() == 1,
+                "The archived game differs"
+            );
+
+            let edit = PendingTag {
+                game_id: 1,
+                user_id: 1,
+                operation: TagOperation::Tag,
+                tag: "added".into(),
+            };
+            let tagging = || Commit {
+                tag: Some(&edit),
+                ..Commit::default()
+            };
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query("ALTER TABLE game_tags ADD CONSTRAINT reject_test CHECK(tag <> 'added')")
+                .execute(&pool)
+                .await?;
+            let mut replay_table = restored[0].0.clone();
+            ensure!(
+                store
+                    .commit(&mut replay_table.clone(), 3, tagging())
+                    .await
+                    .is_err(),
+                "A rejected tag committed"
+            );
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query("ALTER TABLE game_tags DROP CONSTRAINT reject_test")
+                .execute(&pool)
+                .await?;
+            store.commit(&mut replay_table, 3, tagging()).await?;
+            ensure!(
+                replay_table
+                    .game()
+                    .unwrap()
+                    .tags
+                    .iter()
+                    .any(|t| t.tag == "added")
+                    && store.load().await?[0].0.game().unwrap().tags.len() == 2,
+                "The tag was not saved with the table"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
         store.close().await?;
         db.close().await;
         result
     }
 
     #[tokio::test]
-    async fn expired_owner_waiting_on_pg_locks_cannot_reapply_chat_or_tag_mutations() -> Result<()>
-    {
+    async fn new_chat_is_archived_once_in_the_commit_that_saves_it() -> Result<()> {
         let Some((db, pool)) = database().await? else {
             return Ok(());
         };
         let state = LiveState::for_test(&pool).await?;
-        let store = Store::fixture(pool, state.clone());
+        let store = Store::fixture(pool.clone(), state);
+        let result = async {
+            let id = store.allocate_table().await?;
+            let mut table = pregame(id);
+            store.save(&table, 0).await?;
+            // The schema starts the chat log with one message.
+            let initial = count(&pool, "chat_log").await?;
+            table.chat = vec![chat(id, "first")?, chat(id, "second")?];
+
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query(
+                "ALTER TABLE chat_log ADD CONSTRAINT reject_test CHECK(message <> 'second')",
+            )
+            .execute(&pool)
+            .await?;
+            ensure!(
+                store
+                    .commit(&mut table.clone(), 1, Commit::default())
+                    .await
+                    .is_err(),
+                "A rejected message committed"
+            );
+            ensure!(
+                count(&pool, "chat_log").await? == initial,
+                "A partial archive escaped"
+            );
+            #[expect(
+                clippy::disallowed_methods,
+                reason = "test SQL that sets up a database failure"
+            )]
+            sqlx::query("ALTER TABLE chat_log DROP CONSTRAINT reject_test")
+                .execute(&pool)
+                .await?;
+
+            let revision = store
+                .commit(&mut table, 1, Commit::default())
+                .await?
+                .revision;
+            ensure!(
+                table.chat.iter().all(|chat| chat.id.is_some())
+                    && table.chat[0].message.datetime == "2026-11-02T20:00:00.123Z",
+                "Archived messages lack their identities or stored timestamps"
+            );
+            store
+                .commit(&mut table, revision, Commit::default())
+                .await?;
+            ensure!(
+                count(&pool, "chat_log").await? == initial + 2,
+                "Messages were not archived once"
+            );
+            let restored = store.load().await?;
+            ensure!(
+                restored[0]
+                    .0
+                    .chat
+                    .iter()
+                    .map(|chat| chat.id)
+                    .collect::<Vec<_>>()
+                    == table.chat.iter().map(|chat| chat.id).collect::<Vec<_>>(),
+                "The checkpoint lost its archive identities"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        db.close().await;
+        result
+    }
+
+    #[tokio::test]
+    async fn a_split_saves_both_tables_in_one_commit() -> Result<()> {
+        let Some((db, pool)) = database().await? else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&pool).await?;
+        let store = Store::fixture(pool, state);
+        let result = async {
+            let source_id = store.allocate_table().await?;
+            let source = pregame(source_id);
+            store.save(&source, 0).await?;
+            let mut destination = pregame(store.allocate_table().await?);
+            destination.owner = 2;
+            if let Phase::Pregame { players, .. } = &mut destination.phase {
+                players[0] = Player {
+                    id: 2,
+                    name: "Bob".into(),
+                    stats: zero_stats(),
+                };
+            }
+            let split = |retire| Commit {
+                retire,
+                spawn: Some(&destination),
+                ..Commit::default()
+            };
+            ensure!(
+                store
+                    .commit(&mut source.clone(), 5, split(true))
+                    .await
+                    .is_err(),
+                "A stale split committed"
+            );
+            let restored = store.load().await?;
+            ensure!(
+                restored.len() == 1 && restored[0].0.id == source_id,
+                "A failed split changed the tables"
+            );
+            let committed = store.commit(&mut source.clone(), 1, split(true)).await?;
+            ensure!(committed.spawn_revision == Some(1));
+            let restored = store.load().await?;
+            ensure!(
+                restored.len() == 1 && restored[0].0.id == destination.id,
+                "The split did not move the table"
+            );
+            Ok::<(), anyhow::Error>(())
+        }
+        .await;
+        store.close().await?;
+        db.close().await;
+        result
+    }
+
+    #[tokio::test]
+    async fn a_new_owner_waits_for_a_commit_in_progress_and_then_sees_it() -> Result<()> {
+        let Some((db, pool)) = database().await? else {
+            return Ok(());
+        };
+        let state = LiveState::for_test(&pool).await?;
+        let store = Store::fixture(pool.clone(), state);
         let id = store.allocate_table().await?;
         let mut table = pregame(id);
+        store.save(&table, 0).await?;
         terminal(&mut table)?;
-        table.chat.push(TableChat{id:None,user:1,message:serde_json::from_value(json!({"msg":"fenced chat","who":"Alice","source":"user","room":format!("table{id}"),"datetime":"2026-11-02T20:00:00.123456Z"}))?});
-        store.prepare_chat(&mut table).await?;
-        let chat_id = table.chat[0].id.unwrap();
-        let revision = store.save(&table, 0).await?;
-        store.complete(table.game().unwrap(), revision).await?;
-        let mut blocker = store.primary.begin().await?;
+        table.convert_to_replay()?;
+        let archive = Commit {
+            archive: true,
+            ..Commit::default()
+        };
+        store.commit(&mut table, 1, archive).await?;
+        // Hold the game so that the old owner's tag edit waits inside its commit.
+        let mut blocker = pool.begin().await?;
         sqlx::query!("SELECT id FROM games WHERE id=1 FOR UPDATE")
             .fetch_one(&mut *blocker)
             .await?;
-        advisory_lock(&mut blocker, LockSpace::Chat, chat_id).await?;
         let old = store.clone();
-        let old_tag = tokio::spawn(async move {
-            old.apply_tag(&PendingTag {
+        let mut tagged = table.clone();
+        let old_commit = tokio::spawn(async move {
+            let edit = PendingTag {
                 game_id: 1,
                 user_id: 1,
-                operation: TagOperation::TagsDeleteAll,
-                tag: String::new(),
-            })
+                operation: TagOperation::Tag,
+                tag: "old-owner".into(),
+            };
+            old.commit(
+                &mut tagged,
+                2,
+                Commit {
+                    tag: Some(&edit),
+                    ..Commit::default()
+                },
+            )
             .await
         });
-        let old = store.clone();
-        let entries = table.chat.clone();
-        let old_chat = tokio::spawn(async move { old.archive_chat(&entries).await });
-        tokio::time::timeout(Duration::from_secs(3),async{
-            loop{
-                let waiting:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'").fetch_one(&store.primary).await?;
-                if waiting>=2{return Ok::<(),anyhow::Error>(());}
+        let waiting = || async {
+            sqlx::query_scalar!(
+                "SELECT count(*) AS \"v!\" FROM pg_stat_activity
+                 WHERE datname = current_database() AND wait_event_type = 'Lock'"
+            )
+            .fetch_one(&pool)
+            .await
+        };
+        tokio::time::timeout(Duration::from_secs(3), async {
+            while waiting().await? < 1 {
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
-        }).await??;
-        state.close().await?;
-        let replacement = LiveState::for_test(&store.primary).await?;
-        let current = Store::fixture(store.primary.clone(), replacement);
-        sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) VALUES(1,1,'new-owner')")
-            .execute(&mut *blocker)
-            .await?;
-        blocker.commit().await?;
-        ensure!(
-            old_tag.await?.is_err(),
-            "Expired owner reapplied stale mutable tags after acquiring the lock"
-        );
-        ensure!(
-            old_chat.await?.is_err(),
-            "Expired owner archived after acquiring the serialization lock"
-        );
-        let tags: Vec<String> =
-            sqlx::query_scalar!("SELECT tag FROM game_tags WHERE game_id=1 ORDER BY tag")
-                .fetch_all(&current.primary)
-                .await?;
-        ensure!(
-            tags == vec!["native", "new-owner"],
-            "Old owner overwrote newer data"
-        );
-        let (one, two) = tokio::join!(
-            current.archive_chat(&table.chat),
-            current.archive_chat(&table.chat)
-        );
-        one?;
-        two?;
-        let rows: i64 = sqlx::query_scalar!(
-            "SELECT count(*) AS \"v!\" FROM chat_log WHERE id=$1",
-            chat_id
+            Ok::<(), anyhow::Error>(())
+        })
+        .await??;
+        // The old owner's ownership connection fails, and a new owner starts.
+        sqlx::query_scalar!(
+            "SELECT pg_terminate_backend(pid) AS \"ended!\" FROM pg_locks
+             WHERE locktype = 'advisory' AND classid = $1 AND granted
+             AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
+            LockSpace::LiveState as i32
         )
-        .fetch_one(&current.primary)
+        .fetch_all(&pool)
         .await?;
-        ensure!(rows == 1, "Replacement did not archive exactly once");
-        current.remove(id, revision).await?;
+        let new_pool = pool.clone();
+        let new_owner = tokio::spawn(async move { LiveState::for_test(&new_pool).await });
+        tokio::time::timeout(Duration::from_secs(3), async {
+            while waiting().await? < 2 {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            Ok::<(), anyhow::Error>(())
+        })
+        .await??;
+        blocker.commit().await?;
+        let committed = old_commit.await??;
+        let current = Store::fixture(pool.clone(), new_owner.await??);
+        let restored = current.load().await?;
+        ensure!(
+            restored[0].1 == committed.revision
+                && restored[0]
+                    .0
+                    .game()
+                    .unwrap()
+                    .tags
+                    .iter()
+                    .any(|t| t.tag == "old-owner"),
+            "The new owner did not see the commit that it waited for"
+        );
+        ensure!(
+            store
+                .save(&restored[0].0, committed.revision)
+                .await
+                .is_err(),
+            "The old owner wrote after the new owner started"
+        );
         current.close().await?;
         db.close().await;
         Ok(())
@@ -1725,7 +1685,7 @@ mod tests {
             let rows:i64=sqlx::query_scalar!("SELECT count(*) AS \"v!\" FROM chat_log WHERE user_id=1 AND source='user' AND room=$1 AND message='retained authored chat'", format!("table{id}")).fetch_one(&store.primary).await?;
             ensure!(rows==1,"Accepted authored chat was omitted or duplicated in PostgreSQL");
             let restored=store.load().await?;
-            ensure!(restored[0].0.chat_archived==restored[0].0.chat.len(),"Chat archival cursor not durable");
+            ensure!(restored[0].0.chat.iter().all(|chat|chat.id.is_some()),"Chat was not archived with its checkpoint");
             for user in &users{send(&hub,user.clone(),"tableUnattend",json!({"tableID":id})).await?;}
             tokio::time::timeout(Duration::from_secs(3),async{
                 while let Some(frame)=outgoing[2].recv().await{

@@ -120,11 +120,11 @@ owns its mutable state. The coordinator never waits for table processing or
 socket writes. Queues, byte budgets, and capacity permits are bounded. Session
 generation and monotonic ownership checks guard admission and publication.
 
-Mutations follow candidate -> durable checkpoint -> publication. Terminal
-checkpoints precede idempotent PostgreSQL completion. Uncertain table writes
-freeze the table. Loss of ownership, or a write that the database cannot
-confirm, closes admission for the whole instance. Recovery validates snapshots
-and completes pending archive operations.
+Mutations follow candidate -> durable checkpoint -> publication. One transaction
+saves a table's checkpoint with its new chat, tag edits, a finished game, and a
+table that a split creates. A failed save changes nothing, and the table keeps
+running. Loss of ownership, or a commit that the database cannot confirm, closes
+admission for the whole instance. Recovery validates the saved checkpoints.
 
 One server owns the live tables at a time. A dedicated connection holds a
 session advisory lock for as long as the server runs. Each new owner increments

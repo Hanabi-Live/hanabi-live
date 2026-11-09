@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE live_tables SET revision = revision + 1, payload = $3\n             WHERE id = $1 AND revision = $2 RETURNING revision",
+  "query": "UPDATE live_tables SET revision = revision + 1, payload = $3\n         WHERE id = $1 AND revision = $2 RETURNING revision",
   "describe": {
     "columns": [
       {
@@ -26,5 +26,5 @@
       false
     ]
   },
-  "hash": "def44b73ed084953c8a2591dfb70b54823376a85d0526554f915a71101c9befb"
+  "hash": "73903418fc6858428b126b9c1561a80247351923a5733f3789213cb2e7f82563"
 }

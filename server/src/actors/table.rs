@@ -8,6 +8,7 @@ use super::{
     wire::int,
 };
 use crate::errors::OrReject;
+use crate::store::{Commit, Committed};
 use crate::{
     model::{
         CLOCK_UNITS_PER_SECOND, IDLE_TIMEOUT_MS, IDLE_WARNING_MS, Phase, Snapshot, TableChat,
@@ -440,7 +441,17 @@ impl TableActor {
         self.anchor = Instant::now();
         Ok(())
     }
-    pub(super) async fn persist(&mut self, mut next: TableSnapshot) -> Result<()> {
+    pub(super) async fn persist(&mut self, next: TableSnapshot) -> Result<()> {
+        self.persist_with(next, Commit::default()).await.map(|_| ())
+    }
+    /// Saves a change to the table, with the work that goes with it, in one transaction. A finished
+    /// game becomes a replay and is archived in the same commit. When saving fails, the table keeps
+    /// its earlier state.
+    pub(super) async fn persist_with(
+        &mut self,
+        mut next: TableSnapshot,
+        mut work: Commit<'_>,
+    ) -> Result<Committed> {
         self.store.check_state()?;
         ensure_or_reject!(!self.frozen, "Table is frozen until recovery");
         if next.visible
@@ -475,68 +486,35 @@ impl TableActor {
         {
             s.finished = Some(Utc::now());
         }
-        self.store.prepare_chat(&mut next).await?;
-        // A failure while saving freezes the table, so encoding first rejects an invalid or
-        // oversized change while the table keeps running.
-        let payload = crate::store::encode(&next)?;
-        let result = async {
-            let mut revision = self
-                .store
-                .save_encoded(next.id, self.revision, &payload)
-                .await?;
-            if let Some(edit) = next.pending_tag.take() {
-                let tags = self.store.apply_tag(&edit).await?;
-                next.game_mut().context("Missing tagged replay")?.tags = tags;
-                revision = self.store.save(&next, revision).await?;
-            }
-            if next.chat_archived < next.chat.len() {
-                self.store
-                    .archive_chat(&next.chat[next.chat_archived..])
-                    .await?;
-                next.chat_archived = next.chat.len();
-                revision = self.store.save(&next, revision).await?;
-            }
-            if let Phase::Live { snapshot } = &next.phase
-                && snapshot.game.end_condition != EndCondition::InProgress
-            {
-                if !next.extra.no_write_to_database {
-                    self.store.complete(snapshot, revision).await?;
-                    self.store.refresh_background((**snapshot).clone());
-                }
-                next.convert_to_replay()?;
-                for a in self.audience() {
-                    next.shadows.insert(a.session.user, None);
-                }
-                revision = self.store.save(&next, revision).await?;
-            }
-            Ok::<i64, anyhow::Error>(revision)
-        }
-        .await;
-        match result {
-            Ok(revision) => {
-                self.revision = revision;
-                let became_replay = matches!(self.table.phase, Phase::Live { .. })
-                    && matches!(next.phase, Phase::Replay { .. });
-                self.table = next;
-                for a in self.attendees.values_mut() {
-                    if became_replay {
-                        a.spectator = true;
-                        a.shadow = None;
-                    }
-                    if let Some(shadow) = self.table.shadows.get(&a.session.user) {
-                        a.shadow = shadow.and_then(|s| usize::try_from(s).ok());
-                    }
-                }
-                self.anchor = Instant::now();
-                Ok(())
-            }
-            Err(error) => {
-                self.frozen = true;
-                let _ = self.hub.try_send(HubCommand::Effects(self.effects()));
-                eprintln!("Table {} storage uncertain: {error}", self.table.id);
-                bail!("Storage result is uncertain; table frozen until recovery")
+        let finished = matches!(&next.phase, Phase::Live { snapshot }
+            if snapshot.game.end_condition != EndCondition::InProgress);
+        if finished {
+            next.convert_to_replay()?;
+            for a in self.audience() {
+                next.shadows.insert(a.session.user, None);
             }
         }
+        work.archive = finished && !next.extra.no_write_to_database;
+        let archived = work.archive;
+        let committed = self.store.commit(&mut next, self.revision, work).await?;
+        if archived && let Some(s) = next.game() {
+            self.store.refresh_background(s.clone());
+        }
+        self.revision = committed.revision;
+        let became_replay = matches!(self.table.phase, Phase::Live { .. })
+            && matches!(next.phase, Phase::Replay { .. });
+        self.table = next;
+        for a in self.attendees.values_mut() {
+            if became_replay {
+                a.spectator = true;
+                a.shadow = None;
+            }
+            if let Some(shadow) = self.table.shadows.get(&a.session.user) {
+                a.shadow = shadow.and_then(|s| usize::try_from(s).ok());
+            }
+        }
+        self.anchor = Instant::now();
+        Ok(committed)
     }
     pub(super) async fn initialize(
         &mut self,

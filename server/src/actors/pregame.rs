@@ -425,7 +425,7 @@ impl TableActor {
     }
     pub(super) async fn transfer(
         &mut self,
-        mut source: TableSnapshot,
+        source: TableSnapshot,
         destination: TableSnapshot,
         mut allocation: Allocation,
         moving: Vec<(Arc<Session>, bool, Option<usize>)>,
@@ -451,30 +451,21 @@ impl TableActor {
             })
             .await?;
         received.await??;
-        source.pending_spawn = Some(Box::new(destination.clone()));
-        source.retire_after_spawn = retire;
-        // The source is the durable transfer journal. Recovery can finish a
-        // destination reservation that had no payload when the process stopped.
-        self.persist(source).await?;
-        let destination_revision = match self.store.save(&destination, 0).await {
-            Ok(r) => r,
-            Err(e) => {
-                self.frozen = true;
-                return Err(e);
-            }
-        };
+        // The source and its new table change in one commit.
+        let committed = self
+            .persist_with(
+                source,
+                crate::store::Commit {
+                    retire,
+                    spawn: Some(&destination),
+                    ..crate::store::Commit::default()
+                },
+            )
+            .await?;
+        let destination_revision = committed
+            .spawn_revision
+            .context("Missing the split table's revision")?;
         allocation.revision = destination_revision;
-        if retire {
-            if let Err(e) = self.store.remove(self.table.id, self.revision).await {
-                self.frozen = true;
-                return Err(e);
-            }
-        } else {
-            let mut final_source = self.table.clone();
-            final_source.pending_spawn = None;
-            final_source.retire_after_spawn = false;
-            self.persist(final_source).await?;
-        }
         allocation.preserve();
         let mut effects = self.effects();
         for (session, _, _) in &moving {
@@ -605,7 +596,6 @@ impl TableActor {
             kicked: vec![],
         };
         destination.chat.clear();
-        destination.chat_archived = 0;
         destination.shadows.clear();
         let moving = self
             .audience()

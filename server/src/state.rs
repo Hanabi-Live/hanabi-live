@@ -37,6 +37,60 @@ fn table_id(id: u64) -> Result<i64> {
         .context("Invalid table identity")
 }
 
+/// Saves a table's checkpoint in a transaction from `LiveState::begin`, if its revision is still
+/// `expected`. Returns the new revision.
+pub async fn save_in(
+    transaction: &mut Transaction<'static, Postgres>,
+    id: u64,
+    expected: i64,
+    payload: &str,
+) -> Result<i64> {
+    ensure!(
+        (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
+        "Invalid checkpoint revision"
+    );
+    ensure!(
+        !payload.is_empty() && payload.len() <= MAX_CHECKPOINT_BYTES,
+        "Invalid checkpoint size"
+    );
+    sqlx::query_scalar!(
+        "UPDATE live_tables SET revision = revision + 1, payload = $3
+         WHERE id = $1 AND revision = $2 RETURNING revision",
+        table_id(id)?,
+        expected,
+        payload
+    )
+    .fetch_optional(&mut **transaction)
+    .await?
+    .context("Stale live-table checkpoint revision")
+}
+
+/// Removes a table in a transaction from `LiveState::begin`, if its revision is still `expected`.
+/// A table that is already gone counts as removed.
+pub async fn remove_in(
+    transaction: &mut Transaction<'static, Postgres>,
+    id: u64,
+    expected: i64,
+) -> Result<()> {
+    ensure!(expected >= 0, "Invalid removal revision");
+    let id = table_id(id)?;
+    let removed = sqlx::query!(
+        "DELETE FROM live_tables WHERE id = $1 AND revision = $2",
+        id,
+        expected
+    )
+    .execute(&mut **transaction)
+    .await?
+    .rows_affected();
+    if removed == 0 {
+        let exists = sqlx::query_scalar!("SELECT revision FROM live_tables WHERE id = $1", id)
+            .fetch_optional(&mut **transaction)
+            .await?;
+        ensure!(exists.is_none(), "Stale live-table checkpoint revision");
+    }
+    Ok(())
+}
+
 struct Ownership {
     /// This server's ownership epoch. Writes commit only while it is current.
     epoch: i64,
@@ -183,26 +237,8 @@ impl LiveState {
     }
 
     pub async fn save(&self, id: u64, expected: i64, payload: &str) -> Result<i64> {
-        ensure!(
-            (0..hanabi_protocol::MAX_SAFE_INTEGER).contains(&expected),
-            "Invalid checkpoint revision"
-        );
-        ensure!(
-            !payload.is_empty() && payload.len() <= MAX_CHECKPOINT_BYTES,
-            "Invalid checkpoint size"
-        );
-        let id = table_id(id)?;
         let mut transaction = self.begin().await?;
-        let revision = sqlx::query_scalar!(
-            "UPDATE live_tables SET revision = revision + 1, payload = $3
-             WHERE id = $1 AND revision = $2 RETURNING revision",
-            id,
-            expected,
-            payload
-        )
-        .fetch_optional(&mut *transaction)
-        .await?
-        .context("Stale live-table checkpoint revision")?;
+        let revision = save_in(&mut transaction, id, expected, payload).await?;
         self.commit(transaction).await?;
         Ok(revision)
     }
@@ -238,23 +274,8 @@ impl LiveState {
     }
 
     pub async fn remove(&self, id: u64, expected: i64) -> Result<()> {
-        ensure!(expected >= 0, "Invalid removal revision");
-        let id = table_id(id)?;
         let mut transaction = self.begin().await?;
-        let removed = sqlx::query!(
-            "DELETE FROM live_tables WHERE id = $1 AND revision = $2",
-            id,
-            expected
-        )
-        .execute(&mut *transaction)
-        .await?
-        .rows_affected();
-        if removed == 0 {
-            let exists = sqlx::query_scalar!("SELECT revision FROM live_tables WHERE id = $1", id)
-                .fetch_optional(&mut *transaction)
-                .await?;
-            ensure!(exists.is_none(), "Stale live-table checkpoint revision");
-        }
+        remove_in(&mut transaction, id, expected).await?;
         self.commit(transaction).await
     }
 

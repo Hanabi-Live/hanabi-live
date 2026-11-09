@@ -156,13 +156,9 @@ pub struct TableSnapshot {
     pub extra: ExtraOptions,
     pub created: DateTime<Utc>,
     pub phase: Phase,
+    /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
-    #[serde(default)]
-    pub chat_archived: usize,
     pub shadows: BTreeMap<i32, Option<i32>>,
-    pub pending_spawn: Option<Box<TableSnapshot>>,
-    pub retire_after_spawn: bool,
-    pub pending_tag: Option<PendingTag>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -220,13 +216,41 @@ mod json_text {
             .map_err(serde::de::Error::custom)
     }
 }
+/// Removes the journal fields that checkpoints from earlier releases hold. Those releases saved a
+/// table's related work in separate steps; a checkpoint loads only when all of it finished.
+fn strip_legacy_journal(value: &mut Value) -> Result<()> {
+    let Some(table) = value.as_object_mut() else {
+        return Ok(());
+    };
+    let chat = table
+        .get("chat")
+        .and_then(Value::as_array)
+        .map_or(0, Vec::len);
+    let tag = table.remove("pending_tag").unwrap_or(Value::Null);
+    let spawn = table.remove("pending_spawn").unwrap_or(Value::Null);
+    let retire = table
+        .remove("retire_after_spawn")
+        .unwrap_or(Value::Bool(false));
+    let archived = table.remove("chat_archived");
+    ensure!(
+        tag.is_null()
+            && spawn.is_null()
+            && retire == Value::Bool(false)
+            && archived.is_none_or(|archived| {
+                archived.as_u64().and_then(|n| usize::try_from(n).ok()) == Some(chat)
+            }),
+        "The checkpoint has unfinished work from an earlier release. Run that release until it recovers, then stop it with /gracefulStop."
+    );
+    Ok(())
+}
 impl TableSnapshot {
     pub fn decode(payload: &str) -> Result<Self> {
         ensure!(
             payload.len() <= crate::state::MAX_CHECKPOINT_BYTES,
             "Oversized checkpoint"
         );
-        let value: Value = serde_json::from_str(payload)?;
+        let mut value: Value = serde_json::from_str(payload)?;
+        strip_legacy_journal(&mut value)?;
         ensure!(
             value["chat"]
                 .as_array()
@@ -372,10 +396,6 @@ impl TableSnapshot {
             "Duplicate players"
         );
         ensure!(self.chat.len() <= MAX_TABLE_CHAT, "Oversized table history");
-        ensure!(
-            self.chat_archived <= self.chat.len(),
-            "Invalid archived chat cursor"
-        );
         let ids = self
             .chat
             .iter()
@@ -394,8 +414,7 @@ impl TableSnapshot {
                 ..
             } => {
                 ensure!(
-                    (!players.is_empty() && players.iter().any(|p| p.id == self.owner))
-                        || (self.retire_after_spawn && self.pending_spawn.is_some()),
+                    !players.is_empty() && players.iter().any(|p| p.id == self.owner),
                     "Invalid pregame owner"
                 );
                 ensure!(
@@ -406,6 +425,12 @@ impl TableSnapshot {
             }
             Phase::Live { snapshot } | Phase::Replay { snapshot, .. } => {
                 snapshot.validate()?;
+                // A game becomes a replay in the same commit that ends it.
+                ensure!(
+                    matches!(self.phase, Phase::Replay { .. })
+                        || snapshot.game.end_condition == EndCondition::InProgress,
+                    "A finished game is stored as a live game"
+                );
                 ensure!(
                     snapshot.table_id == self.id && snapshot.game.options == self.options,
                     "Checkpoint envelope mismatch"
@@ -418,26 +443,6 @@ impl TableSnapshot {
                     && replay.hypothetical_actions.len() <= MAX_HYPOTHETICAL_ACTIONS
                     && hypothetical_bytes(&replay.hypothetical_actions)? <= MAX_HYPOTHETICAL_BYTES,
                 "Invalid replay controls"
-            );
-        }
-        if let Some(spawn) = &self.pending_spawn {
-            ensure!(
-                spawn.id != self.id && spawn.pending_spawn.is_none() && !spawn.retire_after_spawn,
-                "Invalid table transfer"
-            );
-            spawn.validate()?;
-        } else {
-            ensure!(!self.retire_after_spawn, "Missing table transfer");
-        }
-        if let Some(edit) = &self.pending_tag {
-            ensure!(
-                edit.game_id > 0 && edit.user_id > 0 && edit.tag.len() <= MAX_TAG_LENGTH,
-                "Invalid durable tag edit"
-            );
-            ensure!(
-                matches!(self.phase, Phase::Replay { .. })
-                    && self.game().is_some_and(|s| s.game_id == edit.game_id),
-                "Tag edit does not match replay"
             );
         }
         Ok(())
