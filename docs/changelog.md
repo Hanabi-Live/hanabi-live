@@ -3,24 +3,16 @@
 This page lists the changes to Hanab Live.
 
 Note that minor changes, bug fixes, and internal changes are intentionally not
-listed here.
+listed here. You can see those from [the commit history](<>) of the repository.
 
 ## November 9th, 2026
 
-- "Watch Replay" now groups its options like "Settings", with toggle buttons for
-  the source and visibility.
-- "New Game" now groups its options like "Settings", with checkboxes on the
-  right.
-- "Settings" now opens a full page instead of a pop-up, with each setting on its
-  own row.
+- "New Game", "Watch Replay", "Resources", and "Settings" now open a full page
+  instead of a pop-up. Also, their design has been updated.
 - Checkboxes and radio buttons now match the dark theme.
 - Added the current global FrankerFaceZ emotes, and removed the ones that are no
   longer global.
-- "Resources" now opens a full page instead of a pop-up, with its links grouped
-  by topic.
 - The emoji and emote pickers are now in alphabetical order.
-- "Watch Replay" now opens a full page instead of a pop-up.
-- "New Game" and "Change Options" now open a full page instead of a pop-up.
 - Added the current global BetterTTV emotes that were missing, including `:tf:`.
 - Added the current global Twitch emotes, and removed the Twitch and BetterTTV
   emotes that are no longer global.
