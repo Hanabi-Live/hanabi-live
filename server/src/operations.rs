@@ -270,14 +270,14 @@ async fn metrics_report(control: &Control) -> Result<Response> {
                 "maxConnections":control.pool.options().get_max_connections(),
                 "totalConnections":control.pool.size(),
                 "idleConnections":control.pool.num_idle()
-            },"recovery":null})),
+            },"lobbyReads":null})),
             Err(error) => Err(error.into()),
         }
     };
     match database {
         Ok(database) => {
             report["database"] = database["primary"].clone();
-            report["recovery"]["database"] = database["recovery"].clone();
+            report["lobbyDatabase"] = database["lobbyReads"].clone();
             Ok((
                 if control.storage_healthy() {
                     StatusCode::OK

@@ -67,6 +67,9 @@ of the repository.
   ranks can still be in it.
 - The direction arrow on Rainbow and Omni cards (including their dark, muddy,
   and cocoa versions) now shows all of their colors.
+- The server uses one database pool of 14 connections for writes, and the
+  localhost `/metrics` report shows the lobby read pool as `lobbyDatabase`
+  instead of the archive pool.
 
 ## November 8th, 2026
 

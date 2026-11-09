@@ -20,32 +20,32 @@ use tokio_util::{sync::CancellationToken, task::TaskTracker};
 
 #[derive(Clone)]
 pub struct Store {
+    /// The pool for writes, and for reads that must see them: gameplay, live tables, archived
+    /// games, and statistics.
     pub primary: PgPool,
-    pub archive: PgPool,
+    /// The read-only pool for the lobby's statistics and history and the public pages.
     pub lobby_reads: PgPool,
     primary_name: String,
-    archive_name: String,
     lobby_name: String,
     state: LiveState,
     stats: TaskTracker,
     stats_slots: Arc<Semaphore>,
+    /// Bounds the statistics refreshes that run at once, so they cannot take every connection.
+    stats_running: Arc<Semaphore>,
 }
-/// How long the primary and archive pools wait for a connection, a statement, or an idle
-/// transaction.
+/// How long the primary pool waits for a connection, a statement, or an idle transaction.
 pub const DATABASE_TIMEOUT: Duration = Duration::from_secs(30);
 /// How long the lobby read pool, which also serves the public pages, waits for a connection or a
 /// statement.
 pub const LOBBY_READ_TIMEOUT: Duration = Duration::from_secs(2);
-/// Connections in the pool that serves gameplay and other writes.
-const PRIMARY_CONNECTIONS: u32 = 8;
-/// Connections in the pool that archives finished games.
-const ARCHIVE_CONNECTIONS: u32 = 2;
-/// Connections in the pool that saves live tables, besides the one that holds their ownership.
-const LIVE_CONNECTIONS: u32 = 4;
+/// Connections in the primary pool, besides the one that holds live-table ownership.
+pub const PRIMARY_CONNECTIONS: u32 = 14;
 /// Connections in the pool that serves lobby reads and the public pages.
-const LOBBY_READ_CONNECTIONS: u32 = 2;
+pub const LOBBY_READ_CONNECTIONS: u32 = 2;
 /// The most derived-statistics refreshes that can run or wait at once.
 const STATS_SLOTS: usize = 32;
+/// The most derived-statistics refreshes that run at once.
+const STATS_RUNNING: usize = 2;
 
 /// The namespaces of the transaction advisory locks that serialize writes of the same record.
 #[derive(Clone, Copy)]
@@ -86,37 +86,25 @@ impl Store {
     #[cfg(test)]
     pub(crate) fn fixture(primary: PgPool, state: LiveState) -> Self {
         Self {
-            archive: primary.clone(),
             lobby_reads: primary.clone(),
             primary,
             primary_name: String::new(),
-            archive_name: String::new(),
             lobby_name: String::new(),
             state,
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
+            stats_running: Arc::new(Semaphore::new(STATS_RUNNING)),
         }
     }
     pub async fn connect(config: &crate::config::Config) -> Result<Self> {
         let options = config.database_options();
         let instance = rand::random::<u64>();
         let primary_name = format!("hanabi-live-{instance:016x}-primary");
-        let archive_name = format!("hanabi-live-{instance:016x}-archive");
         let lobby_name = format!("hanabi-live-{instance:016x}-lobby");
-        let live_name = format!("hanabi-live-{instance:016x}-live");
+        let ownership_name = format!("hanabi-live-{instance:016x}-ownership");
         let primary = pool(
             options.clone().application_name(&primary_name),
             PRIMARY_CONNECTIONS,
-        )
-        .await?;
-        let archive = pool(
-            options.clone().application_name(&archive_name),
-            ARCHIVE_CONNECTIONS,
-        )
-        .await?;
-        let live = pool(
-            options.clone().application_name(&live_name),
-            LIVE_CONNECTIONS,
         )
         .await?;
         let lobby_reads = PgPoolOptions::new()
@@ -130,17 +118,17 @@ impl Store {
                 ("default_transaction_read_only", "on".to_owned()),
             ]));
         crate::migrations::require_current(&mut *primary.acquire().await?).await?;
-        let state = LiveState::connect(live, &options.application_name(&live_name)).await?;
+        let state =
+            LiveState::connect(primary.clone(), &options.application_name(&ownership_name)).await?;
         Ok(Self {
             primary,
-            archive,
             lobby_reads,
             primary_name,
-            archive_name,
             lobby_name,
             state,
             stats: TaskTracker::new(),
             stats_slots: Arc::new(Semaphore::new(STATS_SLOTS)),
+            stats_running: Arc::new(Semaphore::new(STATS_RUNNING)),
         })
     }
     pub fn check_state(&self) -> Result<()> {
@@ -171,7 +159,7 @@ impl Store {
         let id: i64 = sqlx::query_scalar!(
             "SELECT nextval(pg_get_serial_sequence('games','id')) AS \"value!\""
         )
-        .fetch_one(&self.archive)
+        .fetch_one(&self.primary)
         .await?;
         Ok(GameId(i32::try_from(id)?))
     }
@@ -182,11 +170,11 @@ impl Store {
                 json!({"maxConnections":pool.options().get_max_connections(),"totalConnections":row.total,"activeConnections":row.active,"idleConnections":row.idle,"idleTransactionConnections":row.idle_transaction}),
             )
         }
-        let (primary, recovery) = tokio::try_join!(
+        let (primary, reads) = tokio::try_join!(
             report(&self.primary, &self.primary_name),
-            report(&self.archive, &self.archive_name)
+            report(&self.lobby_reads, &self.lobby_name)
         )?;
-        Ok(json!({"primary":primary,"recovery":recovery}))
+        Ok(json!({"primary":primary,"lobbyReads":reads}))
     }
     pub async fn remove(&self, id: TableId, revision: i64) -> Result<()> {
         self.state.remove(id, revision).await
@@ -370,7 +358,10 @@ impl Store {
         let store = self.clone();
         self.stats.spawn(async move {
             let _permit = permit;
-            if let Err(e) = crate::stats::refresh(&store.archive, &snapshot).await {
+            let Ok(_running) = store.stats_running.acquire().await else {
+                return;
+            };
+            if let Err(e) = crate::stats::refresh(&store.primary, &snapshot).await {
                 eprintln!("Derived statistics failed: {e}");
             }
         });
@@ -379,7 +370,6 @@ impl Store {
         self.stats.close();
         self.stats.wait().await;
         let result = self.state.close().await;
-        self.archive.close().await;
         self.lobby_reads.close().await;
         self.primary.close().await;
         result
@@ -943,7 +933,7 @@ mod tests {
                     .collect();
                 snapshot.game.state_mut().score = hanabi_engine::int(count) + 10;
                 expected[count - 2] = i16::try_from(count)? + 10;
-                crate::stats::refresh(&store.archive, &snapshot).await?;
+                crate::stats::refresh(&store.primary, &snapshot).await?;
                 let user = sqlx::query!(
                     "SELECT best_score2,best_score3,best_score4,best_score5,best_score6
                      FROM user_stats WHERE user_id=1 AND variant_id=0"

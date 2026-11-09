@@ -183,10 +183,10 @@ databaseDescribe("Rust actor durability and ownership", () => {
         const acknowledged = await liveTables(sql);
         if (failure === "lost ownership") {
           const stopped = once(state.child, "close");
-          // End the server's live-state connections, including the one that holds ownership.
+          // End the server's connection that holds live-table ownership.
           await sql`
             SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-            WHERE datname = current_database() AND application_name LIKE 'hanabi-live-%-live'
+            WHERE datname = current_database() AND application_name LIKE 'hanabi-live-%-ownership'
           `;
           await bounded(stopped, "Rust fail-closed shutdown", 15_000);
           expect(state.child.exitCode).not.toBe(0);

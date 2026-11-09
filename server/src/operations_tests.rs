@@ -340,14 +340,23 @@ async fn metrics_report_actual_primary_and_archive_connection_budgets() -> anyho
     assert_eq!(status, StatusCode::OK, "{body}");
     let report: serde_json::Value = serde_json::from_str(&body)?;
     for (pool, max) in [
-        (&report["database"], 8),
-        (&report["recovery"]["database"], 2),
+        (
+            &report["database"],
+            u64::from(crate::store::PRIMARY_CONNECTIONS),
+        ),
+        (
+            &report["lobbyDatabase"],
+            u64::from(crate::store::LOBBY_READ_CONNECTIONS),
+        ),
     ] {
         assert_eq!(pool["maxConnections"], max);
         assert!((1..=max).contains(&pool["totalConnections"].as_u64().unwrap()));
     }
     assert_eq!(report["recovery"]["authority"], "PostgreSQL");
-    assert_eq!(store.lobby_reads.options().get_max_connections(), 2);
+    assert_eq!(
+        store.lobby_reads.options().get_max_connections(),
+        crate::store::LOBBY_READ_CONNECTIONS
+    );
     let mut reader = store.lobby_reads.acquire().await?;
     #[expect(clippy::disallowed_methods, reason = "test SQL that sets up database state or failures directly")]
     let read_only: String = sqlx::query_scalar("SHOW default_transaction_read_only").fetch_one(&mut *reader).await?;

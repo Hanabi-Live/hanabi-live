@@ -123,18 +123,16 @@ databaseDescribe("compiled application entry point (rust)", () => {
         const reports = z
           .object({
             database: poolSchema,
+            lobbyDatabase: poolSchema,
             recovery: z.object({
               storageInitialized: z.literal(true),
-              database: poolSchema,
             }),
           })
           .parse(await metrics.json());
-        expect(reports.database.maxConnections).toBe(8);
-        expect(reports.database.totalConnections).toBeLessThanOrEqual(10);
-        expect(reports.recovery.database.maxConnections).toBe(2);
-        expect(reports.recovery.database.totalConnections).toBeLessThanOrEqual(
-          2,
-        );
+        expect(reports.database.maxConnections).toBe(14);
+        expect(reports.database.totalConnections).toBeLessThanOrEqual(14);
+        expect(reports.lobbyDatabase.maxConnections).toBe(2);
+        expect(reports.lobbyDatabase.totalConnections).toBeLessThanOrEqual(2);
         const aliceCookie = await login(address, "SmokeAlice");
         const alice = socketClient(address, aliceCookie);
         sockets.push(alice.socket);

@@ -458,7 +458,7 @@ impl TableActor {
         let snapshot = self.table.game().context("Missing completed game")?;
         if snapshot.game_id > crate::model::UNSAVED_GAME && !self.table.extra.no_write_to_database {
             // The replay may be visible before its background statistics finish.
-            crate::stats::refresh(&self.store.archive, snapshot).await?;
+            crate::stats::refresh(&self.store.primary, snapshot).await?;
         }
         let variant = hanabi_engine::get_variant(&self.table.options.variant_name)?;
         for player in &mut players {
