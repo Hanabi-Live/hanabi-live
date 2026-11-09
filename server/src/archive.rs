@@ -9,6 +9,7 @@ use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{NO_VALUE, ReplayAction};
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json};
@@ -119,7 +120,7 @@ pub(crate) async fn replay(
     pool: &PgPool,
     id: i32,
     table_id: TableId,
-    owner: i32,
+    owner: UserId,
 ) -> Result<Snapshot> {
     let archive = load(pool, id).await?.context("Unknown replay")?;
     let row = archive.game;
@@ -143,7 +144,7 @@ pub(crate) async fn replay(
             "Invalid replay seat"
         );
         players.push(Player {
-            id: r.user_id,
+            id: UserId(r.user_id),
             name: r.name.clone(),
             stats: zero_stats(),
         });
@@ -232,7 +233,7 @@ pub(crate) async fn tags(pool: &PgPool, id: i32) -> Result<Option<Vec<Tag>>> {
     for row in rows {
         if let Some(tag) = row.tag.clone() {
             tags.push(Tag {
-                user: row.user_id.context("Missing tag author")?,
+                user: UserId(row.user_id.context("Missing tag author")?),
                 tag,
             });
         }
@@ -260,7 +261,7 @@ pub(crate) async fn insert(
     let mut metadata = vec![];
     for (seat, p) in s.players.iter().enumerate() {
         let (assignment, value) = stored_character(&s.game.players[seat])?;
-        users.push(p.id);
+        users.push(p.id.0);
         seats.push(i16::try_from(seat)?);
         assignments.push(assignment);
         metadata.push(value);
@@ -320,7 +321,7 @@ pub(crate) async fn insert(
         .map(|a| i16::try_from(a.value))
         .collect::<Result<_, _>>()?;
     sqlx::query!("INSERT INTO game_actions(game_id,turn,type,target,value) SELECT $1,(a.turn-1)::smallint,a.kind,a.target,a.value FROM UNNEST($2::smallint[],$3::smallint[],$4::smallint[]) WITH ORDINALITY AS a(kind,target,value,turn)", s.game_id, &kinds, &targets, &values).execute(&mut **tx).await?;
-    let tag_users = s.tags.iter().map(|tag| tag.user).collect::<Vec<_>>();
+    let tag_users = s.tags.iter().map(|tag| tag.user.0).collect::<Vec<_>>();
     let tags = s
         .tags
         .iter()

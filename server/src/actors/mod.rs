@@ -7,8 +7,11 @@ use crate::{
     store::Store,
     transport::Session,
 };
+#[cfg(test)]
+use anyhow::Context;
 use anyhow::Result;
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{ClientMessage, NO_VALUE, Status};
 use serde::Serialize;
 use serde_json::Value;
@@ -19,8 +22,6 @@ use std::{
 };
 use tokio::sync::{Notify, OwnedSemaphorePermit, mpsc, oneshot};
 use tokio_util::task::TaskTracker;
-#[cfg(test)]
-use {anyhow::Context, hanabi_protocol::UserId};
 
 #[cfg(test)]
 mod protocol_tests;
@@ -59,12 +60,12 @@ pub struct Allocation {
 /// it when the request finishes; a reservation dropped earlier asks the hub to end it.
 pub struct SeatReservation {
     id: u64,
-    users: Vec<i32>,
+    users: Vec<UserId>,
     hub: Option<mpsc::Sender<HubCommand>>,
 }
 impl SeatReservation {
     /// The reservation's ID and users, for the hub to end it. Dropping it afterward does nothing.
-    fn take(mut self) -> (u64, Vec<i32>) {
+    fn take(mut self) -> (u64, Vec<UserId>) {
         self.hub = None;
         (self.id, std::mem::take(&mut self.users))
     }
@@ -128,14 +129,14 @@ impl Drop for Allocation {
 }
 #[derive(Clone, PartialEq)]
 pub struct TableView {
-    players: Vec<i32>,
+    players: Vec<UserId>,
     replay: bool,
     /// The database game shown by a replay.
     replay_game: Option<i32>,
     visible: bool,
     data: hanabi_protocol::Table,
     inspection: TableInspection,
-    reconnects: BTreeMap<i32, Option<i32>>,
+    reconnects: BTreeMap<UserId, Option<i32>>,
 }
 /// A table's state as the operations endpoint reports it.
 #[derive(Clone, Copy, Default, PartialEq, Serialize)]
@@ -208,14 +209,14 @@ pub enum HubCommand {
     },
     /// Reserves seats for users who move from table `from` to a new table, such as in a split.
     ReserveSeats {
-        users: Vec<i32>,
+        users: Vec<UserId>,
         from: TableId,
         reply: oneshot::Sender<CommandResult<SeatReservation>>,
     },
     /// Ends a seat reservation that was dropped before its request finished.
     EndReservation {
         id: u64,
-        users: Vec<i32>,
+        users: Vec<UserId>,
     },
     Operations {
         command: Operation,
@@ -246,7 +247,7 @@ pub enum HubCommand {
         revision: i64,
         allocation: Allocation,
         attendees: Vec<(Arc<Session>, bool, Option<usize>)>,
-        chat_read: HashMap<i32, usize>,
+        chat_read: HashMap<UserId, usize>,
     },
     Quiesce(oneshot::Sender<Vec<TableHandle>>),
     Stop(oneshot::Sender<()>),
@@ -337,9 +338,9 @@ struct TableActor {
     revision: i64,
     frozen: bool,
     retired: bool,
-    attendees: HashMap<i32, Attendance>,
-    chat_read: HashMap<i32, usize>,
-    pregame_absent_until: HashMap<i32, Instant>,
+    attendees: HashMap<UserId, Attendance>,
+    chat_read: HashMap<UserId, usize>,
+    pregame_absent_until: HashMap<UserId, Instant>,
     replay_absent_until: Option<Instant>,
     cleanup: Arc<Notify>,
     store: Store,
@@ -352,7 +353,7 @@ struct TableActor {
     timer_retry: Option<Instant>,
     /// Who the table was told tried to join it while it was full. Kept in memory: after a restart,
     /// the table can be told again.
-    full_join_notices: HashSet<i32>,
+    full_join_notices: HashSet<UserId>,
     /// Each player's recent table chat. Kept in memory: a restart forgives it.
     chat_limit: crate::accounts::Counter<i32>,
     _permit: OwnedSemaphorePermit,

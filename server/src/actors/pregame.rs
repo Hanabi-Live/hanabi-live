@@ -21,6 +21,7 @@ use anyhow::Context;
 use chrono::Utc;
 use hanabi_engine::{EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, MIN_PLAYERS, NO_VALUE, Status, TableRequest, TableStarted};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -36,7 +37,7 @@ const SPLIT_GROUPS: usize = 2;
 
 pub(super) fn remove_pregame_players(
     table: &mut TableSnapshot,
-    removed: &HashSet<i32>,
+    removed: &HashSet<UserId>,
 ) -> Vec<Chat> {
     let Phase::Pregame {
         players, countdown, ..
@@ -184,7 +185,7 @@ impl TableActor {
             let mut next = self.candidate();
             next.chat.push(TableChat {
                 id: None,
-                user: 0,
+                user: crate::model::SERVER_AUTHOR,
                 message: message.clone(),
             });
             self.persist(next).await?;
@@ -254,7 +255,7 @@ impl TableActor {
         );
         next.chat.push(TableChat {
             id: None,
-            user: 0,
+            user: crate::model::SERVER_AUTHOR,
             message: message.clone(),
         });
         self.persist(next).await?;

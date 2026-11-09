@@ -32,6 +32,7 @@ use axum::{
 use chrono::{DateTime, Utc};
 use futures_util::{SinkExt, StreamExt};
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::UserId;
 use std::{
     collections::HashMap,
     future::Future,
@@ -363,7 +364,7 @@ async fn check_origin(State(app): State<Arc<App>>, request: Request, next: Next)
 
 /// The account that a live connection signs in to, as `websocket` reads it before the upgrade.
 struct Account {
-    id: i32,
+    id: UserId,
     name: String,
     normalized_name: String,
     created: DateTime<Utc>,
@@ -380,7 +381,7 @@ impl Account {
         .fetch_optional(pool)
         .await?
         .map(|row| Self {
-            id,
+            id: UserId(id),
             name: row.username,
             normalized_name: row.normalized_username,
             created: row.datetime_created,
@@ -393,7 +394,7 @@ struct Bootstrap {
     name: String,
     normalized_name: String,
     bot: bool,
-    blocks: Vec<i32>,
+    blocks: Vec<UserId>,
     welcome: hanabi_protocol::Welcome,
     initial: Vec<String>,
 }
@@ -408,13 +409,13 @@ async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
         bot,
     } = account;
     let (settings, friends, blocks, muted) = tokio::try_join!(
-        lobby::get_settings(pool, id),
-        lobby::friends(pool, id),
-        lobby::block_relations(pool, id),
+        lobby::get_settings(pool, id.0),
+        lobby::friends(pool, id.0),
+        lobby::block_relations(pool, id.0),
         accounts::is_muted(pool, ip)
     )?;
     let welcome = hanabi_protocol::Welcome {
-        user_id: hanabi_protocol::UserId(id),
+        user_id: id,
         username: name.clone(),
         total_games: None,
         muted,
@@ -427,7 +428,7 @@ async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
     };
     sqlx::query!(
         "UPDATE users SET datetime_last_login=NOW(),last_ip=$2 WHERE id=$1",
-        id,
+        id.0,
         ip
     )
     .execute(pool)
@@ -436,7 +437,7 @@ async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
         name,
         normalized_name,
         bot,
-        blocks,
+        blocks: blocks.into_iter().map(UserId).collect(),
         welcome,
         initial: vec![frame(
             hanabi_protocol::server::LOBBY_STATUS,
@@ -445,7 +446,7 @@ async fn bootstrap(app: &App, account: Account, ip: &str) -> Result<Bootstrap> {
     })
 }
 
-async fn lobby_initial(app: &App, id: i32) -> Result<(Vec<String>, i64)> {
+async fn lobby_initial(app: &App, id: UserId) -> Result<(Vec<String>, i64)> {
     let pool = &app.store.lobby_reads;
     let total = crate::database::normal_game_count(pool, id, true).await?;
     let mut initial = vec![];

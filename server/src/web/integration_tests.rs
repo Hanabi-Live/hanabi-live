@@ -527,7 +527,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
     let mut replacement = connect(&fixture, &bob_cookie).await;
     receive(&mut replacement, "welcome").await;
     let alice_generation = Session::new(
-        i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap(),
+        UserId(i32::try_from(welcome["userID"].as_i64().unwrap()).unwrap()),
         "Alicè".into(),
         1,
         true,
@@ -540,7 +540,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .send(HubCommand::LobbyEffects {
             session: alice_generation,
             effects: vec![Effect::ToUser {
-                id: i32::try_from(bob_welcome["userID"].as_i64().unwrap()).unwrap(),
+                id: UserId(i32::try_from(bob_welcome["userID"].as_i64().unwrap()).unwrap()),
                 generation: 2,
                 message: crate::transport::Outgoing::new(
                     hanabi_protocol::server::CHAT,
@@ -574,7 +574,7 @@ async fn native_browser_login_ws_bootstrap_and_command_routing_postgres() {
         .app
         .hub
         .send(HubCommand::Directory {
-            session: Session::new(999, "stale".into(), 999, false).0,
+            session: Session::new(UserId(999), "stale".into(), 999, false).0,
             users: true,
             reply,
         })
@@ -698,7 +698,7 @@ async fn game_archive_locks_do_not_block_authentication_and_deferred_errors_are_
         .acquire_many_owned(64)
         .await
         .unwrap();
-    let (session, mut outgoing) = Session::new(user, "FastResume".into(), 1, false);
+    let (session, mut outgoing) = Session::new(UserId(user), "FastResume".into(), 1, false);
     load_lobby(fixture.app.clone(), session);
     let message = tokio::time::timeout(Duration::from_secs(1), outgoing.recv())
         .await
@@ -781,11 +781,13 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         .execute(&mut *history_lock)
         .await
         .unwrap();
-    let (messages, total) =
-        tokio::time::timeout(Duration::from_secs(1), lobby_initial(&fixture.app, alice))
-            .await
-            .expect("Lobby initialization queried personal history")
-            .unwrap();
+    let (messages, total) = tokio::time::timeout(
+        Duration::from_secs(1),
+        lobby_initial(&fixture.app, UserId(alice)),
+    )
+    .await
+    .expect("Lobby initialization queried personal history")
+    .unwrap();
     assert_eq!(total, 200);
     assert!(
         messages
@@ -817,7 +819,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
                 .unwrap()
         ),
     );
-    let mut initial = lobby_initial(&fixture.app, alice).await.unwrap().0;
+    let mut initial = lobby_initial(&fixture.app, UserId(alice)).await.unwrap().0;
     assert!(
         initial
             .iter()
@@ -841,7 +843,7 @@ async fn full_history_bootstrap_queues_in_order_without_a_writer_postgres() {
         "This regression must exercise aggregate bootstrap size, not only a large single frame"
     );
     assert!(initial.iter().map(String::len).sum::<usize>() > 262_144);
-    let (session, mut outgoing) = Session::new(alice, prepared.name, 42, false);
+    let (session, mut outgoing) = Session::new(UserId(alice), prepared.name, 42, false);
     let (reply, received) = oneshot::channel();
     fixture
         .app

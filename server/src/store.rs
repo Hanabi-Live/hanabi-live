@@ -6,6 +6,7 @@ use crate::{
 use anyhow::{Context, Result, bail, ensure};
 use hanabi_protocol::ChatSource;
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use serde_json::{Value, json};
 
 use sqlx::{
@@ -395,7 +396,7 @@ impl Store {
     }
     /// The first seed with this prefix that none of the players have played.
     pub async fn next_seed(&self, players: &[Player], prefix: String) -> Result<String> {
-        let ids = players.iter().map(|p| p.id).collect::<Vec<_>>();
+        let ids = players.iter().map(|p| p.id.0).collect::<Vec<_>>();
         let seeds = crate::lobby::blocked_seeds(&self.primary, &ids, &prefix).await?;
         let seeds = seeds.into_iter().collect::<std::collections::HashSet<_>>();
         for next in 1_u64.. {
@@ -502,7 +503,7 @@ async fn archive_chat(
         (vec![], vec![], vec![], vec![], vec![], vec![]);
     for entry in entries {
         ids.push(entry.id.context("Missing chat identity")?);
-        users.push(entry.user);
+        users.push(entry.user.0);
         messages.push(entry.message.msg.clone());
         rooms.push(
             entry
@@ -548,13 +549,13 @@ async fn apply_tag(
         .await?;
     match edit.operation {
         TagOperation::Tag => {
-            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id, &edit.tag).execute(&mut **transaction).await?;
+            sqlx::query!("INSERT INTO game_tags(game_id,user_id,tag) SELECT $1,$2,$3 WHERE NOT EXISTS(SELECT 1 FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3)", edit.game_id, edit.user_id.0, &edit.tag).execute(&mut **transaction).await?;
         }
         TagOperation::TagDelete => {
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2 AND tag=$3",
                 edit.game_id,
-                edit.user_id,
+                edit.user_id.0,
                 &edit.tag
             )
             .execute(&mut **transaction)
@@ -564,7 +565,7 @@ async fn apply_tag(
             sqlx::query!(
                 "DELETE FROM game_tags WHERE game_id=$1 AND user_id=$2",
                 edit.game_id,
-                edit.user_id
+                edit.user_id.0
             )
             .execute(&mut **transaction)
             .await?;
@@ -578,7 +579,7 @@ async fn apply_tag(
     .await?
     .into_iter()
     .map(|row| Tag {
-        user: row.user_id,
+        user: UserId(row.user_id),
         tag: row.tag,
     })
     .collect())
@@ -607,7 +608,7 @@ mod tests {
             format: FORMAT.into(),
             id,
             name: "Native parity".into(),
-            owner: 1,
+            owner: UserId(1),
             visible: true,
             options: Options::default(),
             max_players: 6,
@@ -616,7 +617,7 @@ mod tests {
             created: Utc::now(),
             phase: Phase::Pregame {
                 players: vec![Player {
-                    id: 1,
+                    id: UserId(1),
                     name: "Alice".into(),
                     stats: zero_stats(),
                 }],
@@ -631,12 +632,12 @@ mod tests {
     fn terminal(table: &mut TableSnapshot) -> Result<()> {
         let players = vec![
             Player {
-                id: 1,
+                id: UserId(1),
                 name: "Alice".into(),
                 stats: zero_stats(),
             },
             Player {
-                id: 2,
+                id: UserId(2),
                 name: "Bob".into(),
                 stats: zero_stats(),
             },
@@ -664,7 +665,7 @@ mod tests {
                 format: FORMAT.into(),
                 table_id: table.id,
                 game_id: 1,
-                owner: 1,
+                owner: UserId(1),
                 name: table.name.clone(),
                 players,
                 seed: "p2v0s1".into(),
@@ -682,7 +683,7 @@ mod tests {
                 notes: vec![vec![String::new(); 55]; 2],
                 spectator_notes: BTreeMap::new(),
                 tags: vec![Tag {
-                    user: 1,
+                    user: UserId(1),
                     tag: "native".into(),
                 }],
                 votes: vec![false, false],
@@ -704,11 +705,11 @@ mod tests {
             .game_mut()
             .unwrap()
             .spectator_notes
-            .insert(3, owner.clone());
+            .insert(UserId(3), owner.clone());
         table.game_mut().unwrap().notes[1][2] = "note".into();
         table.chat.push(TableChat {
             id: Some(7),
-            user: 1,
+            user: UserId(1),
             message: hanabi_protocol::Chat::new(
                 "hello",
                 ChatSource::User,
@@ -775,7 +776,7 @@ mod tests {
             };
             players[0].stats.num_games = 727;
             players.push(Player {
-                id: 2,
+                id: UserId(2),
                 name: "Bob".into(),
                 stats: zero_stats(),
             });
@@ -787,7 +788,7 @@ mod tests {
             replay.phase = Phase::Replay {
                 snapshot: Box::new(replay.game().unwrap().clone()),
                 replay: crate::model::ReplayState {
-                    leader: 1,
+                    leader: UserId(1),
                     segment: 0,
                     efficiency_modifier: 0,
                     hypothetical: false,
@@ -946,7 +947,7 @@ mod tests {
                 let mut snapshot = template.clone();
                 snapshot.players = (1..=hanabi_engine::int(count))
                     .map(|id| Player {
-                        id,
+                        id: UserId(id),
                         name: format!("Player{id}"),
                         stats: zero_stats(),
                     })
@@ -1016,7 +1017,8 @@ mod tests {
             )
             .execute(&store.primary)
             .await?;
-            let player = crate::stats::player(&store.primary, 9001, "Carol".into(), 0).await?;
+            let player =
+                crate::stats::player(&store.primary, UserId(9001), "Carol".into(), 0).await?;
             let best = serde_json::to_value(&player.stats.variant.best_scores)?;
             ensure!(
                 best[0]["score"] == 25
@@ -1058,7 +1060,7 @@ mod tests {
     fn chat(id: TableId, text: &str) -> Result<TableChat> {
         Ok(TableChat {
             id: None,
-            user: 1,
+            user: UserId(1),
             message: serde_json::from_value(json!({
                 "msg": text, "who": "Alice", "source": "user",
                 "room": format!("table{id}"), "datetime": "2026-11-02T20:00:00.123456Z"
@@ -1150,7 +1152,7 @@ mod tests {
                 "The finished game did not become a fresh review"
             );
             ensure!(count(&pool, "game_actions").await? == 1);
-            let replay = crate::archive::replay(&store.primary, 1, TableId(99), 1).await?;
+            let replay = crate::archive::replay(&store.primary, 1, TableId(99), UserId(1)).await?;
             ensure!(
                 replay.game.actions == finished.game().unwrap().game.actions
                     && replay.notes == finished.game().unwrap().notes
@@ -1160,7 +1162,7 @@ mod tests {
 
             let edit = PendingTag {
                 game_id: 1,
-                user_id: 1,
+                user_id: UserId(1),
                 operation: TagOperation::Tag,
                 tag: "added".into(),
             };
@@ -1299,10 +1301,10 @@ mod tests {
             let source = pregame(source_id);
             store.save(&source, 0).await?;
             let mut destination = pregame(store.allocate_table().await?);
-            destination.owner = 2;
+            destination.owner = UserId(2);
             if let Phase::Pregame { players, .. } = &mut destination.phase {
                 players[0] = Player {
-                    id: 2,
+                    id: UserId(2),
                     name: "Bob".into(),
                     stats: zero_stats(),
                 };
@@ -1366,7 +1368,7 @@ mod tests {
         let old_commit = tokio::spawn(async move {
             let edit = PendingTag {
                 game_id: 1,
-                user_id: 1,
+                user_id: UserId(1),
                 operation: TagOperation::Tag,
                 tag: "old-owner".into(),
             };
@@ -1457,8 +1459,12 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) =
-                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
+            let (session, frames) = Session::new(
+                UserId(hanabi_engine::int(index) + 1),
+                (*name).into(),
+                1,
+                false,
+            );
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1527,8 +1533,12 @@ mod tests {
         let mut users = vec![];
         let mut outgoing = vec![];
         for (index, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
-            let (session, frames) =
-                Session::new(hanabi_engine::int(index) + 1, (*name).into(), 1, false);
+            let (session, frames) = Session::new(
+                UserId(hanabi_engine::int(index) + 1),
+                (*name).into(),
+                1,
+                false,
+            );
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1567,7 +1577,8 @@ mod tests {
                 .find(|(t, _)| t.id == id)
                 .context("Lost source")?;
             ensure!(
-                source.0.players().iter().map(|p| p.id).collect::<Vec<_>>() == vec![1, 3],
+                source.0.players().iter().map(|p| p.id).collect::<Vec<_>>()
+                    == vec![UserId(1), UserId(3)],
                 "Wrong split membership"
             );
             send(
@@ -1678,7 +1689,7 @@ mod tests {
         let mut frames = vec![];
         for (i, name) in ["Alice", "Bob", "Cathy"].iter().enumerate() {
             let (session, outgoing) =
-                Session::new(hanabi_engine::int(i) + 1, (*name).into(), 1, false);
+                Session::new(UserId(hanabi_engine::int(i) + 1), (*name).into(), 1, false);
             let (reply, received) = oneshot::channel();
             hub.send(HubCommand::Register {
                 session: session.clone(),
@@ -1697,7 +1708,7 @@ mod tests {
             for user in users.iter().skip(1){send(&hub,user.clone(),"tableJoin",json!({"tableID":id,"password":""})).await?;}
             send(&hub,users[0].clone(),"tableStart",json!({"tableID":id})).await?;
             let loaded=store.load().await?;let s=loaded[0].0.game().unwrap();ensure!(s.players.len()==3&&s.game.stacks.len()==6&&s.game.clue_tokens==16,"Native variant ignored");
-            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id)?-1;
+            let active=s.game.active_player_index;let actor=usize::try_from(s.players[active].id.0)?-1;
             send(&hub,users[actor].clone(),"loaded",json!({"tableID":id})).await?;
             send(&hub,users[actor].clone(),"pause",json!({"tableID":id,"setting":"pause"})).await?;
             send(&hub,users[actor].clone(),"note",json!({"tableID":id,"order":0,"note":"private"})).await?;

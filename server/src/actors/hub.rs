@@ -34,7 +34,7 @@ const RESTART_CLOSE_TIMEOUT: Duration = Duration::from_secs(1);
 pub struct Hub {
     pub(super) receiver: mpsc::Receiver<HubCommand>,
     pub(super) sender: mpsc::Sender<HubCommand>,
-    pub(super) sessions: HashMap<i32, Presence>,
+    pub(super) sessions: HashMap<UserId, Presence>,
     pub(super) tables: HashMap<TableId, Entry>,
     pub(super) closing: bool,
     pub(super) store: Store,
@@ -43,7 +43,7 @@ pub struct Hub {
     /// The users with a pending request to play at a table, and the ID of the reservation that
     /// holds each one's seat. The hub alone decides who plays where: from the tables' published
     /// views, and from these reservations for requests that no view shows yet.
-    pub(super) reservations: HashMap<i32, u64>,
+    pub(super) reservations: HashMap<UserId, u64>,
     pub(super) next_reservation: u64,
     pub(super) info: Arc<ServerInfo>,
 }
@@ -120,7 +120,7 @@ impl Hub {
     }
     fn user(p: &Presence) -> User {
         User {
-            user_id: UserId(p.session.user),
+            user_id: p.session.user,
             name: p.session.name.clone(),
             status: p.status,
             table_id: if p.status == Status::Replay {
@@ -141,12 +141,12 @@ impl Hub {
             }
         }
     }
-    fn table_for(v: &TableView, user: i32) -> hanabi_protocol::Table {
+    fn table_for(v: &TableView, user: UserId) -> hanabi_protocol::Table {
         let mut data = v.data.clone();
         data.joined = v.players.contains(&user);
         data
     }
-    fn playing_elsewhere(&self, user: i32, except: Option<TableId>) -> bool {
+    fn playing_elsewhere(&self, user: UserId, except: Option<TableId>) -> bool {
         self.tables.iter().any(|(id, entry)| {
             Some(*id) != except && !entry.view.replay && entry.view.players.contains(&user)
         })
@@ -155,7 +155,7 @@ impl Hub {
     /// at a table other than `except` or has another such request pending.
     fn reserve(
         &mut self,
-        users: Vec<i32>,
+        users: Vec<UserId>,
         except: Option<TableId>,
         playing_elsewhere: &str,
     ) -> CommandResult<SeatReservation> {
@@ -188,7 +188,7 @@ impl Hub {
         let (id, users) = reservation.take();
         self.end_reservation_of(id, &users);
     }
-    fn end_reservation_of(&mut self, id: u64, users: &[i32]) {
+    fn end_reservation_of(&mut self, id: u64, users: &[UserId]) {
         for user in users {
             if self.reservations.get(user) == Some(&id) {
                 self.reservations.remove(user);
@@ -412,15 +412,13 @@ impl Hub {
         }
         Ok(())
     }
-    fn disconnect(&mut self, users: &[i32]) {
+    fn disconnect(&mut self, users: &[UserId]) {
         for user in users {
             if let Some(p) = self.sessions.remove(user) {
                 p.session.cancel.cancel();
                 self.broadcast(&frame(
                     hanabi_protocol::server::USER_LEFT,
-                    UserLeft {
-                        user_id: UserId(*user),
-                    },
+                    UserLeft { user_id: *user },
                 ));
             }
         }
@@ -592,9 +590,7 @@ impl Hub {
                         self.sessions.remove(&s.user);
                         self.broadcast(&frame(
                             hanabi_protocol::server::USER_LEFT,
-                            UserLeft {
-                                user_id: UserId(s.user),
-                            },
+                            UserLeft { user_id: s.user },
                         ));
                     }
                     for e in self.tables.values() {

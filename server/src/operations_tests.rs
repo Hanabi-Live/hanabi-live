@@ -9,6 +9,7 @@ use axum::{
     extract::ConnectInfo,
     http::{Request, StatusCode},
 };
+use hanabi_protocol::UserId;
 use serde_json::json;
 use sqlx::PgPool;
 use std::{
@@ -286,7 +287,7 @@ async fn moderation_uses_canonical_accounts_and_persists_ip_actions() {
             .lock()
             .unwrap()
             .iter()
-            .any(|o| matches!(o,Operation::Ban{user_id,..} if *user_id==user))
+            .any(|o| matches!(o,Operation::Ban{user_id,..} if *user_id==UserId(user)))
     );
     h.close().await;
     db.close().await;

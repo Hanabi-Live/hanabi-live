@@ -2,6 +2,7 @@ use super::{Caller, Effect, notice, warning};
 use crate::accounts::{escape_html, normalize_string};
 use crate::transport::Outgoing;
 use anyhow::Result;
+use hanabi_protocol::UserId;
 use sqlx::PgPool;
 
 pub async fn friends(pool: &PgPool, id: i32) -> Result<Vec<String>> {
@@ -95,7 +96,7 @@ pub async fn relationship(
         let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_blocks b JOIN users u ON u.id=b.blocked_id
              WHERE b.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.id
+            caller.id.0
         )
         .fetch_all(pool)
         .await?;
@@ -117,7 +118,7 @@ pub async fn relationship(
         let names: Vec<String> = sqlx::query_scalar!(
             "SELECT u.username FROM user_linkages l JOIN users u ON u.id=l.linked_id
              WHERE l.user_id=$1 ORDER BY LOWER(u.username) COLLATE \"C\"",
-            caller.id
+            caller.id.0
         )
         .fetch_all(pool)
         .await?;
@@ -171,12 +172,12 @@ pub async fn relationship(
     let add = matches!(verb, "friend" | "link");
     let friend = matches!(verb, "friend" | "unfriend");
     let changed = if friend {
-        change_friend(pool, caller.id, target, add).await?
+        change_friend(pool, caller.id.0, target, add).await?
     } else {
         let result = if add {
             sqlx::query!(
                 "INSERT INTO user_linkages(user_id,linked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-                caller.id,
+                caller.id.0,
                 target
             )
             .execute(pool)
@@ -184,7 +185,7 @@ pub async fn relationship(
         } else {
             sqlx::query!(
                 "DELETE FROM user_linkages WHERE user_id=$1 AND linked_id=$2",
-                caller.id,
+                caller.id.0,
                 target
             )
             .execute(pool)
@@ -219,13 +220,13 @@ pub async fn relationship(
     if friend {
         effects.push(Effect::RelationshipChanged {
             user_id: caller.id,
-            target_id: target,
+            target_id: UserId(target),
             added: add,
         });
         effects.push(Effect::ToSelf(Outgoing::new(
             hanabi_protocol::server::FRIENDS,
             hanabi_protocol::Friends {
-                friends: friends(pool, caller.id).await?,
+                friends: friends(pool, caller.id.0).await?,
             },
         )));
     }
@@ -243,7 +244,7 @@ async fn block(
     let result = if add {
         sqlx::query!(
             "INSERT INTO user_blocks(user_id,blocked_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-            caller.id,
+            caller.id.0,
             target
         )
         .execute(pool)
@@ -251,7 +252,7 @@ async fn block(
     } else {
         sqlx::query!(
             "DELETE FROM user_blocks WHERE user_id=$1 AND blocked_id=$2",
-            caller.id,
+            caller.id.0,
             target
         )
         .execute(pool)
@@ -275,9 +276,9 @@ async fn block(
         notice(&caller.name, &message, room),
         Effect::BlocksChanged {
             user_id: caller.id,
-            target_id: target,
+            target_id: UserId(target),
             // The other user may have blocked this one too.
-            blocked: blocked_between(pool, caller.id, &[target]).await?,
+            blocked: blocked_between(pool, caller.id.0, &[target]).await?,
         },
     ])
 }

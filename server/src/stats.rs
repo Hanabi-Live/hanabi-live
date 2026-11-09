@@ -5,17 +5,23 @@ use crate::{
     store::{LockSpace, advisory_lock},
 };
 use anyhow::Result;
+use hanabi_protocol::UserId;
 use sqlx::PgPool;
 
 /// A pregame player with their statistics on `variant`.
-pub(crate) async fn player(pool: &PgPool, id: i32, name: String, variant: u32) -> Result<Player> {
+pub(crate) async fn player(
+    pool: &PgPool,
+    id: UserId,
+    name: String,
+    variant: u32,
+) -> Result<Player> {
     let count = crate::database::normal_game_count(pool, id, false).await?;
     let row = sqlx::query_as!(
         crate::database::UserStats,
         "SELECT user_id,variant_id,num_games,best_score2,best_score2_mod,best_score3,best_score3_mod,
          best_score4,best_score4_mod,best_score5,best_score5_mod,best_score6,best_score6_mod
          FROM user_stats WHERE user_id=$1 AND variant_id=$2",
-        id,
+        id.0,
         i16::try_from(variant)?
     )
     .fetch_optional(pool)
@@ -45,7 +51,7 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
     for p in &s.players {
         sqlx::query!(
             "INSERT INTO user_stats(user_id,variant_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
-            p.id,
+            p.id.0,
             v
         )
         .execute(&mut *tx)
@@ -61,7 +67,7 @@ pub(crate) async fn refresh(pool: &PgPool, s: &Snapshot) -> Result<()> {
              JOIN game_participants p ON p.game_id=g.id
              WHERE p.user_id=$1 AND g.variant_id=$2 AND NOT g.speedrun) s
              WHERE user_id=$1 AND variant_id=$2",
-            p.id,
+            p.id.0,
             v,
             i16::try_from(s.game.score)?,
             modifier.bits(),

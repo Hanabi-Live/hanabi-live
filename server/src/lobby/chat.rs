@@ -304,7 +304,7 @@ pub async fn private_message(
             escape_html(&recipient)
         ))]);
     };
-    if super::blocked_between(pool, caller.id, &[target.id]).await? {
+    if super::blocked_between(pool, caller.id.0, &[target.id.0]).await? {
         return Ok(vec![warning(&format!(
             "You cannot send a private message to \"{}\".",
             escape_html(&target.name)
@@ -314,8 +314,8 @@ pub async fn private_message(
     let row = sqlx::query!(
         "INSERT INTO chat_log_pm(user_id,recipient_id,message) VALUES($1,$2,$3)
          RETURNING id, datetime_sent",
-        caller.id,
-        target.id,
+        caller.id.0,
+        target.id.0,
         &message
     )
     .fetch_one(pool)
@@ -378,7 +378,7 @@ pub async fn private_history(
            AND ($2::int IS NULL OR (c.user_id=$1 AND c.recipient_id=$2)
                 OR (c.user_id=$2 AND c.recipient_id=$1))
          ORDER BY c.id DESC LIMIT $3",
-        caller.id,
+        caller.id.0,
         peer,
         amount
     )
@@ -435,7 +435,7 @@ pub async fn lobby_chat(
         let response = if args.iter().any(|arg| !arg.is_empty()) {
             "The format of the /token command is: /token".into()
         } else {
-            let token = regenerate_token(pool, secret, caller.id, &caller.ip).await?;
+            let token = regenerate_token(pool, secret, caller.id.0, &caller.ip).await?;
             format!(
                 "Identity token (valid until {} UTC): <code>{}</code>",
                 token.expires_at.to_rfc3339_opts(SecondsFormat::Secs, true),
@@ -514,12 +514,19 @@ pub async fn lobby_chat(
         rendered.map_or_else(|| escape_html(&message), str::to_owned),
         message.clone(),
     ))
-    .chain(public_response.map(|r| (0, "server", "Hanab Live", r.clone(), r)))
-    {
+    .chain(public_response.map(|r| {
+        (
+            crate::model::SERVER_AUTHOR,
+            "server",
+            "Hanab Live",
+            r.clone(),
+            r,
+        )
+    })) {
         let row = sqlx::query!(
             "INSERT INTO chat_log(user_id,source,message,room) VALUES($1,$2,$3,'lobby')
              RETURNING id,datetime_sent",
-            id,
+            id.0,
             source,
             &content
         )

@@ -1,13 +1,14 @@
+use hanabi_protocol::UserId;
 use serde_json::Value;
 
 #[derive(Clone, Debug)]
 pub enum Operation {
     Ban {
-        user_id: i32,
+        user_id: UserId,
         ip: String,
     },
     Mute {
-        user_id: i32,
+        user_id: UserId,
     },
     Inspect,
     Drained {
@@ -247,11 +248,13 @@ async fn user_action(control: &Control, path: &str, body: &Query) -> Result<Resp
     control
         .operation(if path == "/ban" {
             Operation::Ban {
-                user_id: id,
+                user_id: UserId(id),
                 ip: ip.clone(),
             }
         } else {
-            Operation::Mute { user_id: id }
+            Operation::Mute {
+                user_id: UserId(id),
+            }
         })
         .await?;
     Ok("success\n".into_response())

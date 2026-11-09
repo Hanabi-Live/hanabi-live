@@ -191,7 +191,7 @@ impl TableActor {
         if replay {
             next.chat.push(TableChat {
                 id: None,
-                user: 0,
+                user: crate::model::SERVER_AUTHOR,
                 message: message.clone(),
             });
         } else {
@@ -265,7 +265,7 @@ impl TableActor {
         );
         next.chat.push(TableChat {
             id: None,
-            user: 0,
+            user: crate::model::SERVER_AUTHOR,
             message: message.clone(),
         });
         self.persist(next).await?;

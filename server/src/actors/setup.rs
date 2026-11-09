@@ -12,6 +12,7 @@ use crate::{
 };
 use chrono::Utc;
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{Chat, GameId, MAX_SEED_LENGTH, MIN_PLAYERS, NO_VALUE, ReplayAction};
 use std::{collections::BTreeMap, fmt::Write as _};
 
@@ -128,7 +129,7 @@ pub(super) async fn load_replay(
     store: &Store,
     extra: &mut ExtraOptions,
     table_id: TableId,
-    user: i32,
+    user: UserId,
     options: &mut Options,
 ) -> CommandResult<()> {
     let Some(game_id) = extra.replay_game_id else {
@@ -309,7 +310,7 @@ pub(super) fn replay_table(
     mut snapshot: Snapshot,
     shared: bool,
     spoiler_free: bool,
-    owner: i32,
+    owner: UserId,
     owner_name: &str,
 ) -> TableSnapshot {
     let id = snapshot.table_id;

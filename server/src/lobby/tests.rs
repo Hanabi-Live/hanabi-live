@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 
 fn caller(id: i32, name: &str) -> Caller {
     Caller {
-        id,
+        id: UserId(id),
         name: name.into(),
         normalized_name: normalize_username(name),
         ip: "127.0.0.1".into(),
@@ -196,7 +196,10 @@ async fn blocked_players_cannot_message_each_other_postgres() {
         normalized_name: normalize_username(name),
         generation: 1,
     };
-    let online = vec![online_user(a, "Alice"), online_user(b, "Bob")];
+    let online = vec![
+        online_user(UserId(a), "Alice"),
+        online_user(UserId(b), "Bob"),
+    ];
     let warning_of = |effects: &[Effect]| {
         self_data(effects, "warning")["warning"]
             .as_str()
@@ -280,7 +283,7 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     let c = db.user("Carol").await;
     let who = caller(a, "Alice");
     let target = OnlineUser {
-        id: b,
+        id: UserId(b),
         name: "Bob".into(),
         normalized_name: "bob".into(),
         generation: 29,
@@ -301,13 +304,13 @@ async fn lobby_private_messages_and_command_privacy_postgres() {
     assert_eq!(effects.len(), 2);
     assert!(effects.iter().all(|effect| match effect {
         Effect::ToSelf { .. } => true,
-        Effect::ToUser { id, .. } => *id == b,
+        Effect::ToUser { id, .. } => *id == UserId(b),
         _ => false,
     }));
     assert!(
         effects
             .iter()
-            .any(|e| matches!(e,Effect::ToUser {id,generation:29,..} if *id==b))
+            .any(|e| matches!(e,Effect::ToUser {id,generation:29,..} if *id==UserId(b)))
     );
     let stored = sqlx::query!("SELECT datetime_sent FROM chat_log_pm")
         .fetch_one(&db.pool)

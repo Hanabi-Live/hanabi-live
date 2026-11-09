@@ -157,7 +157,7 @@ impl TableActor {
                 name: self.table.name.clone(),
                 num_players: small(self.table.players().len()),
                 options: wire_table_options(&self.table.options, &self.table.extra),
-                owner_id: UserId(self.table.owner),
+                owner_id: self.table.owner,
                 password_protected: self.table.password_hash.is_some(),
                 players: self
                     .table
@@ -253,13 +253,19 @@ impl TableActor {
             e.messages.push((a.session.clone(), message.clone()));
         }
     }
-    pub(super) fn spectating(&self, user: i32) -> bool {
+    pub(super) fn spectating(&self, user: UserId) -> bool {
         self.attendees.get(&user).is_some_and(|a| a.spectator)
     }
     pub(super) fn add_chat(&self, e: &mut Effects, chat: &Chat) {
         self.add_all(e, hanabi_protocol::server::CHAT, chat.clone());
     }
-    pub(super) fn typing_messages(&self, e: &mut Effects, author: i32, name: &str, typing: bool) {
+    pub(super) fn typing_messages(
+        &self,
+        e: &mut Effects,
+        author: UserId,
+        name: &str,
+        typing: bool,
+    ) {
         let message = frame(
             hanabi_protocol::server::CHAT_TYPING,
             ChatTyping {
@@ -293,7 +299,7 @@ impl TableActor {
             let pregame = hanabi_protocol::Pregame {
                 table_id: self.table.id,
                 name: self.table.name.clone(),
-                owner: UserId(self.table.owner),
+                owner: self.table.owner,
                 players,
                 options: wire_table_options(&self.table.options, &self.table.extra),
                 password_protected: self.table.password_hash.is_some(),
@@ -465,7 +471,7 @@ impl TableActor {
                 .chat
                 .iter()
                 .skip(self.table.chat.len())
-                .any(|chat| chat.user > 0)
+                .any(|chat| chat.user > UserId(0))
             && let Phase::Replay { snapshot, .. } = &mut next.phase
         {
             snapshot.idle_remaining = IDLE_TIMEOUT_MS;
@@ -698,7 +704,7 @@ impl TableActor {
     /// Updates the cached game totals of pregame players after a recovery.
     async fn apply_game_counts(
         &mut self,
-        result: Result<(Vec<i32>, BTreeMap<i32, i64>)>,
+        result: Result<(Vec<UserId>, BTreeMap<UserId, i64>)>,
     ) -> CommandResult<()> {
         let (users, counts) = result?;
         let mut next = self.candidate();

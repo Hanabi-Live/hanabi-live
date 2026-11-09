@@ -20,12 +20,13 @@ use crate::routing::{Route, route};
 use crate::transport::Outgoing;
 use anyhow::{Result, ensure};
 use hanabi_protocol::ClientMessage;
+use hanabi_protocol::UserId;
 
 use sqlx::PgPool;
 
 #[derive(Clone, Debug)]
 pub struct Caller {
-    pub id: i32,
+    pub id: UserId,
     pub name: String,
     pub normalized_name: String,
     pub ip: String,
@@ -34,7 +35,7 @@ pub struct Caller {
 
 #[derive(Clone, Debug)]
 pub struct OnlineUser {
-    pub id: i32,
+    pub id: UserId,
     pub name: String,
     pub normalized_name: String,
     pub generation: u64,
@@ -44,7 +45,7 @@ pub struct OnlineUser {
 pub enum Effect {
     ToSelf(Outgoing),
     ToUser {
-        id: i32,
+        id: UserId,
         generation: u64,
         message: Outgoing,
     },
@@ -53,14 +54,14 @@ pub enum Effect {
     HGroupLevel(u8),
     Inactive(bool),
     RelationshipChanged {
-        user_id: i32,
-        target_id: i32,
+        user_id: UserId,
+        target_id: UserId,
         added: bool,
     },
     /// Whether any block remains between two users after one of them changed it.
     BlocksChanged {
-        user_id: i32,
-        target_id: i32,
+        user_id: UserId,
+        target_id: UserId,
         blocked: bool,
     },
     DiscordMirror {
@@ -129,7 +130,7 @@ pub async fn dispatch(
     if !handles(&message) {
         return Ok(None);
     }
-    ensure!(caller.id > 0, "Invalid caller");
+    ensure!(caller.id > UserId(0), "Invalid caller");
     let command = message.name();
     let effects = match message {
         ClientMessage::Setting(request) => {
@@ -137,7 +138,7 @@ pub async fn dispatch(
             if let Err(error) = settings::validate_setting(name, value) {
                 return Ok(Some(vec![warning(&error.to_string())]));
             }
-            set_setting(pool, caller.id, name, value).await?;
+            set_setting(pool, caller.id.0, name, value).await?;
             match name {
                 "hGroupConventions" => vec![Effect::HGroup(value == "true")],
                 // `validate_setting` has already checked that the level is in range.
@@ -152,7 +153,7 @@ pub async fn dispatch(
                 Effect::Broadcast(Outgoing::new(
                     hanabi_protocol::server::USER_INACTIVE,
                     hanabi_protocol::UserInactive {
-                        user_id: hanabi_protocol::UserId(caller.id),
+                        user_id: caller.id,
                         inactive,
                     },
                 )),
@@ -186,7 +187,7 @@ pub async fn dispatch(
             if amount < 0 {
                 return Ok(Some(vec![warning("That is not a valid end value.")]));
             }
-            let ids = history_ids(pool, caller.id, offset, amount).await?;
+            let ids = history_ids(pool, caller.id.0, offset, amount).await?;
             vec![Effect::ToSelf(Outgoing::new(
                 hanabi_protocol::server::GAME_HISTORY,
                 hanabi_protocol::GameHistoryList(get_history(pool, &ids, false).await?),

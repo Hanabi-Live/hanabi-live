@@ -8,6 +8,7 @@ use crate::{
 use chrono::Utc;
 use hanabi_engine::{AssignedCharacter, EndCondition, GameSetup, Interpretation};
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{NO_VALUE, RecordedActionType, ReplayAction, ReplayImport};
 use std::collections::BTreeMap;
 
@@ -223,7 +224,7 @@ pub fn parse(input: &ReplayImport) -> CommandResult<Imported> {
         custom_seed: (!seed.is_empty()).then(|| seed.into()),
     })
 }
-pub fn snapshot(imported: Imported, table_id: TableId, owner: i32) -> Snapshot {
+pub fn snapshot(imported: Imported, table_id: TableId, owner: UserId) -> Snapshot {
     let now = Utc::now();
     let n = imported.game.players.len();
     Snapshot {
@@ -238,7 +239,7 @@ pub fn snapshot(imported: Imported, table_id: TableId, owner: i32) -> Snapshot {
             .iter()
             .enumerate()
             .map(|(i, p)| Player {
-                id: hanabi_engine::int(i) + 1,
+                id: UserId(hanabi_engine::int(i) + 1),
                 name: p.name.clone(),
                 stats: zero_stats(),
             })

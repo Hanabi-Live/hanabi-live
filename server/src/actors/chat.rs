@@ -8,6 +8,7 @@ use crate::{
 };
 use anyhow::Result;
 use chrono::{Duration as ChronoDuration, Utc};
+use hanabi_protocol::UserId;
 use hanabi_protocol::{
     Chat, ChatSource, ClientMessage, MAX_PLAYERS, MIN_PLAYERS, SECONDS_PER_MINUTE, Status, TableId,
     TableRequest,
@@ -73,7 +74,7 @@ pub(super) fn membership_notice(table: &mut TableSnapshot, text: &str) -> Option
     let message = server_chat(table.id, text);
     table.chat.push(TableChat {
         id: None,
-        user: 0,
+        user: crate::model::SERVER_AUTHOR,
         message: message.clone(),
     });
     Some(message)
@@ -104,14 +105,14 @@ pub(super) fn is_variant_discovery(command: &Command) -> bool {
 }
 pub(super) struct VariantDiscovery {
     pub(super) requester: Arc<Session>,
-    pub(super) participants: Vec<(i32, String)>,
+    pub(super) participants: Vec<(UserId, String)>,
     pub(super) query: std::pin::Pin<Box<dyn Future<Output = Result<Option<String>>> + Send>>,
 }
 
 impl TableActor {
     /// The users whose scores the score commands compare: everyone watching a replay, or the
     /// table's players.
-    fn score_participants(&self) -> CommandResult<Vec<(i32, String)>> {
+    fn score_participants(&self) -> CommandResult<Vec<(UserId, String)>> {
         let participants = if matches!(self.table.phase, Phase::Replay { .. }) {
             self.audience()
                 .map(|a| (a.session.user, a.session.name.clone()))
@@ -139,7 +140,7 @@ impl TableActor {
         );
         let participants = self.score_participants()?;
         let count = participants.len();
-        let ids = participants.iter().map(|(id, _)| *id).collect::<Vec<_>>();
+        let ids = participants.iter().map(|(id, _)| id.0).collect::<Vec<_>>();
         let store = self.store.clone();
         let query = Box::pin(async move {
             let rows = sqlx::query!(
@@ -190,7 +191,7 @@ impl TableActor {
         let mut next = self.candidate();
         next.chat.push(TableChat {
             id: None,
-            user: 0,
+            user: crate::model::SERVER_AUTHOR,
             message: message.clone(),
         });
         self.persist(next).await?;
@@ -250,7 +251,7 @@ impl TableActor {
         ensure_or_reject!(self.attending(&session), "Not attending");
         let text = crate::accounts::normalize_chat(msg).map_err(anyhow::Error::msg)?;
         // Every message rewrites the table's checkpoint, so its cost grows with the chat.
-        if let Err(wait) = self.chat_limit.charge(session.user, Instant::now()) {
+        if let Err(wait) = self.chat_limit.charge(session.user.0, Instant::now()) {
             reject!(
                 "You are sending messages too quickly. Please wait {} seconds.",
                 wait.as_secs().max(1)
@@ -289,7 +290,11 @@ impl TableActor {
             for (index, message) in messages.iter().enumerate() {
                 next.chat.push(TableChat {
                     id: None,
-                    user: if index == 0 { session.user } else { 0 },
+                    user: if index == 0 {
+                        session.user
+                    } else {
+                        crate::model::SERVER_AUTHOR
+                    },
                     message: message.clone(),
                 });
             }
@@ -357,7 +362,7 @@ impl TableActor {
             let message = server_chat(self.table.id, &message);
             next.chat.push(TableChat {
                 id: None,
-                user: 0,
+                user: crate::model::SERVER_AUTHOR,
                 message: message.clone(),
             });
             self.persist(next).await?;
@@ -398,7 +403,7 @@ impl TableActor {
             for message in &messages {
                 next.chat.push(TableChat {
                     id: None,
-                    user: 0,
+                    user: crate::model::SERVER_AUTHOR,
                     message: message.clone(),
                 });
             }
@@ -539,7 +544,7 @@ impl TableActor {
         });
         next.chat.push(TableChat {
             id: None,
-            user: 0,
+            user: crate::model::SERVER_AUTHOR,
             message: notice.clone(),
         });
         self.persist(next).await?;

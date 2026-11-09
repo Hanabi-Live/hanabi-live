@@ -1,4 +1,5 @@
 use anyhow::Result;
+use hanabi_protocol::UserId;
 use serde::Serialize;
 use sqlx::PgPool;
 use std::collections::BTreeMap;
@@ -6,37 +7,42 @@ use std::collections::BTreeMap;
 // Pregame/player-info exclude speedruns; the welcome/history total includes them.
 pub(crate) async fn normal_game_counts(
     pool: &PgPool,
-    ids: &[i32],
+    ids: &[UserId],
     include_speedruns: bool,
-) -> Result<BTreeMap<i32, i64>> {
+) -> Result<BTreeMap<UserId, i64>> {
+    let ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
     let rows = sqlx::query!(
         "SELECT id AS user_id,
          (num_normal_games + CASE WHEN $2 THEN num_normal_speedrun_games ELSE 0 END)::bigint
          AS \"count!\"
          FROM users WHERE id=ANY($1)",
-        ids,
+        &ids,
         include_speedruns,
     )
     .fetch_all(pool)
     .await?;
     Ok(rows
         .into_iter()
-        .map(|row| (row.user_id, row.count))
+        .map(|row| (UserId(row.user_id), row.count))
         .collect())
 }
 
 /// The users among `ids` whose accounts are bots.
-pub(crate) async fn bot_ids(pool: &PgPool, ids: &[i32]) -> Result<Vec<i32>> {
+pub(crate) async fn bot_ids(pool: &PgPool, ids: &[UserId]) -> Result<Vec<UserId>> {
+    let ids = ids.iter().map(|id| id.0).collect::<Vec<_>>();
     Ok(
-        sqlx::query_scalar!("SELECT id FROM users WHERE id=ANY($1) AND is_bot", ids)
+        sqlx::query_scalar!("SELECT id FROM users WHERE id=ANY($1) AND is_bot", &ids)
             .fetch_all(pool)
-            .await?,
+            .await?
+            .into_iter()
+            .map(UserId)
+            .collect(),
     )
 }
 
 pub(crate) async fn normal_game_count(
     pool: &PgPool,
-    id: i32,
+    id: UserId,
     include_speedruns: bool,
 ) -> Result<i64> {
     Ok(normal_game_counts(pool, &[id], include_speedruns)
@@ -87,7 +93,7 @@ pub(crate) struct VariantStats {
 
 #[cfg(test)]
 mod tests {
-    use super::normal_game_counts;
+    use super::{UserId, normal_game_counts};
     use crate::accounts::test_support::TestDb;
 
     async fn game(db: &TestDb, end_condition: i16, speedrun: bool, players: &[i32]) -> i32 {
@@ -150,11 +156,14 @@ mod tests {
         game(&db, 4, false, &[alice]).await;
         game(&db, 1, false, &[bob, carol]).await;
         assert!(stored_counts_match_a_recount(&db).await);
-        let ids = [alice, bob, carol];
+        let ids = [alice, bob, carol].map(UserId);
         let normal = normal_game_counts(&db.pool, &ids, false).await.unwrap();
         let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
-        assert_eq!((normal[&alice], normal[&bob], normal[&carol]), (1, 2, 1));
-        assert_eq!((all[&alice], all[&bob], all[&carol]), (2, 2, 1));
+        assert_eq!(
+            (normal[&ids[0]], normal[&ids[1]], normal[&ids[2]]),
+            (1, 2, 1)
+        );
+        assert_eq!((all[&ids[0]], all[&ids[1]], all[&ids[2]]), (2, 2, 1));
 
         sqlx::query!("DELETE FROM games WHERE id=$1", shared)
             .execute(&db.pool)
@@ -168,7 +177,7 @@ mod tests {
             .unwrap();
         assert!(stored_counts_match_a_recount(&db).await);
         let all = normal_game_counts(&db.pool, &ids, true).await.unwrap();
-        assert_eq!((all[&alice], all[&bob], all.get(&carol)), (1, 0, None));
+        assert_eq!((all[&ids[0]], all[&ids[1]], all.get(&ids[2])), (1, 0, None));
         db.close().await;
     }
 }

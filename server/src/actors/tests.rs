@@ -262,7 +262,7 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
         format: FORMAT.into(),
         id,
         name: "reservation".into(),
-        owner: 1,
+        owner: UserId(1),
         visible: true,
         options: Options::default(),
         max_players: 6,
@@ -271,7 +271,7 @@ pub(super) fn pregame(id: TableId) -> TableSnapshot {
         created: Utc::now(),
         phase: Phase::Pregame {
             players: vec![Player {
-                id: 1,
+                id: UserId(1),
                 name: "Alice".into(),
                 stats: crate::stats::zero_stats(),
             }],
@@ -321,7 +321,12 @@ async fn joining_or_reattending_an_old_review_does_not_immediately_close_it() ->
         actor.anchor = Instant::now()
             .checked_sub(Duration::from_millis(900))
             .unwrap();
-        let (viewer, _frames) = Session::new(if shared { 3 } else { 1 }, "Viewer".into(), 1, false);
+        let (viewer, _frames) = Session::new(
+            if shared { UserId(3) } else { UserId(1) },
+            "Viewer".into(),
+            1,
+            false,
+        );
         actor.reattend(viewer, shared, None).await?;
         actor.anchor -= Duration::from_secs(2);
         actor.tick().await?;
@@ -465,7 +470,7 @@ async fn live_tables_wake_at_their_next_deadline() -> Result<()> {
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     let lead = 1000;
     snapshot.idle_remaining = IDLE_WARNING_MS + lead;
     let mut table = pregame(id);
@@ -515,7 +520,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     snapshot.idle_remaining = IDLE_WARNING_MS;
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
@@ -535,7 +540,7 @@ async fn idle_live_games_warn_once_and_players_can_keep_them_going() -> Result<(
     );
     let player = actor.table.players()[0].id;
     let (alice, _alice_frames) = Session::new(player, "Alice".into(), 1, false);
-    let (viewer, _viewer_frames) = Session::new(99, "Viewer".into(), 1, false);
+    let (viewer, _viewer_frames) = Session::new(UserId(99), "Viewer".into(), 1, false);
     actor.reattend(alice.clone(), false, None).await?;
     actor.reattend(viewer.clone(), true, None).await?;
     published(&mut notifications, "idleWarning");
@@ -589,7 +594,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     let imported = replay_helpers::parse(&hanabi_protocol::decode(
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
-    let mut snapshot = replay_helpers::snapshot(imported, id, 1);
+    let mut snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     snapshot.idle_remaining = 1000;
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
@@ -610,7 +615,7 @@ async fn spectating_a_live_game_does_not_refresh_its_idle_deadline() -> Result<(
     actor.anchor = Instant::now()
         .checked_sub(Duration::from_millis(900))
         .unwrap();
-    let (viewer, _frames) = Session::new(3, "Viewer".into(), 1, false);
+    let (viewer, _frames) = Session::new(UserId(3), "Viewer".into(), 1, false);
     actor.reattend(viewer, true, None).await?;
     ensure!(
         actor.table.game().unwrap().idle_remaining <= 1000,
@@ -626,12 +631,12 @@ pub(super) fn review(id: TableId, condition: EndCondition) -> Result<TableSnapsh
         &json!({"players":["Alice","Bob"],"seed":"p2v0s1"}),
     )?)?;
     imported.game.terminate(0, condition, -1, None, None)?;
-    let snapshot = replay_helpers::snapshot(imported, id, 1);
+    let snapshot = replay_helpers::snapshot(imported, id, UserId(1));
     let mut table = pregame(id);
     table.options = snapshot.game.options.clone();
     table.phase = Phase::Replay {
         replay: ReplayState {
-            leader: 1,
+            leader: UserId(1),
             segment: snapshot.game.turn,
             efficiency_modifier: 0,
             hypothetical: false,
@@ -665,10 +670,14 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
             capacity.clone().try_acquire_owned()?,
             crate::server_info::test_info(),
         );
-        let (owner, _owner_frames) = Session::new(1, "Alice".into(), 1, false);
-        let (observer, _observer_frames) = Session::new(2, "Observer".into(), 1, false);
-        actor.attendees.insert(1, attendance(owner.clone(), false));
-        actor.attendees.insert(2, attendance(observer, true));
+        let (owner, _owner_frames) = Session::new(UserId(1), "Alice".into(), 1, false);
+        let (observer, _observer_frames) = Session::new(UserId(2), "Observer".into(), 1, false);
+        actor
+            .attendees
+            .insert(UserId(1), attendance(owner.clone(), false));
+        actor
+            .attendees
+            .insert(UserId(2), attendance(observer, true));
         let now = Instant::now();
         actor.cleanup(now).await?;
         owner.cancel.cancel();
@@ -697,7 +706,7 @@ async fn abandoned_pregames_expire_durably_even_with_a_password_or_spectator() -
                 HubCommand::Retire(table) => removed |= table == id,
                 HubCommand::Effects(effects) => {
                     observer_booted |= effects.messages.iter().any(|(session, message)| {
-                        session.user == 2 && message.starts_with("boot ")
+                        session.user == UserId(2) && message.starts_with("boot ")
                     });
                 }
                 _ => {}
@@ -743,7 +752,7 @@ async fn restored_pregames_allow_reconnects_and_keep_connected_afk_players() -> 
         !actor.retired,
         "Recovery immediately deleted an old pregame"
     );
-    let (owner, _frames) = Session::new(1, "Alice".into(), 2, false);
+    let (owner, _frames) = Session::new(UserId(1), "Alice".into(), 2, false);
     actor.reattend(owner.clone(), false, None).await?;
     owner.set_inactive(true);
     let later = now + PREGAME_RECONNECT_GRACE;
@@ -869,14 +878,14 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         return Ok(());
     };
     let (sender, receiver) = mpsc::channel(16);
-    let (old, mut old_frames) = Session::new(1, "Alice".into(), 1, false);
+    let (old, mut old_frames) = Session::new(UserId(1), "Alice".into(), 1, false);
     let (table_sender, _table_receiver) = mpsc::channel(1);
     let (drain, _drained) = oneshot::channel();
     table_sender
         .try_send(TableCommand::Drain(drain))
         .map_err(|_| anyhow::anyhow!("fixture mailbox"))?;
     let view = TableView {
-        players: vec![1],
+        players: vec![UserId(1)],
         replay: false,
         replay_game: None,
         visible: false,
@@ -898,7 +907,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         info: crate::server_info::test_info(),
     };
     hub.sessions.insert(
-        1,
+        UserId(1),
         Presence {
             session: old.clone(),
             status: Status::Playing,
@@ -944,7 +953,7 @@ async fn full_table_mailboxes_do_not_block_hub_and_replacements_fence_private_ef
         .await?;
     tokio::time::timeout(Duration::from_secs(1), replied).await???;
     ensure!(old_frames.try_recv().is_ok(), "Hub blocked on table");
-    let (new, mut new_frames) = Session::new(1, "Alice".into(), 2, false);
+    let (new, mut new_frames) = Session::new(UserId(1), "Alice".into(), 2, false);
     let (reply, replied) = oneshot::channel();
     sender
         .send(HubCommand::Register {
@@ -1004,7 +1013,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
         for _ in 0..CHAT_BATCH {
             table.chat.push(TableChat {
                 id: None,
-                user: 1,
+                user: UserId(1),
                 message: authored_chat(
                     TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
                     &name,
@@ -1017,7 +1026,7 @@ fn a_table_chat_that_players_filled_still_fits_in_a_checkpoint() -> Result<()> {
     while table.chat.len() < crate::model::MAX_TABLE_CHAT {
         table.chat.push(TableChat {
             id: None,
-            user: 0,
+            user: UserId(0),
             message: server_chat(
                 TableId(hanabi_protocol::MAX_SAFE_INTEGER.unsigned_abs()),
                 &notice,

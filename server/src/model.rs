@@ -3,6 +3,7 @@ use anyhow::{Result, ensure};
 use chrono::{DateTime, Utc};
 use hanabi_engine::EndCondition;
 use hanabi_protocol::TableId;
+use hanabi_protocol::UserId;
 use hanabi_protocol::{
     CLOCK_UNITS_PER_MINUTE, Chat, HypotheticalAction, NO_VALUE, PregameStats, ReplayAction,
 };
@@ -12,13 +13,15 @@ use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
 
 pub const FORMAT: &str = "hanabi-live-1";
+/// The author of chat that the server wrote, as `chat_log` stores it. Real users have positive IDs.
+pub const SERVER_AUTHOR: UserId = UserId(0);
 /// How long before an idle game ends to warn its table.
 pub const IDLE_WARNING_MS: i64 = 5 * CLOCK_UNITS_PER_MINUTE;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Player {
-    pub id: i32,
+    pub id: UserId,
     pub name: String,
     pub stats: PregameStats,
 }
@@ -46,7 +49,7 @@ pub struct Snapshot {
     pub format: String,
     pub table_id: TableId,
     pub game_id: i32,
-    pub owner: i32,
+    pub owner: UserId,
     pub name: String,
     pub players: Vec<Player>,
     pub seed: String,
@@ -63,7 +66,7 @@ pub struct Snapshot {
     pub queued_pauses: Vec<bool>,
     pub notes: Vec<Vec<String>>,
     #[serde(deserialize_with = "deserialize_note_owners")]
-    pub spectator_notes: BTreeMap<i32, NoteOwner>,
+    pub spectator_notes: BTreeMap<UserId, NoteOwner>,
     pub tags: Vec<Tag>,
     pub votes: Vec<bool>,
     pub maintenance_applied: bool,
@@ -77,7 +80,7 @@ pub struct NoteOwner {
 
 fn deserialize_note_owners<'de, D>(
     deserializer: D,
-) -> std::result::Result<BTreeMap<i32, NoteOwner>, D::Error>
+) -> std::result::Result<BTreeMap<UserId, NoteOwner>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -88,14 +91,14 @@ where
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Tag {
-    pub user: i32,
+    pub user: UserId,
     pub tag: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PendingTag {
     pub game_id: i32,
-    pub user_id: i32,
+    pub user_id: UserId,
     pub operation: TagOperation,
     pub tag: String,
 }
@@ -110,7 +113,7 @@ pub enum TagOperation {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ReplayState {
-    pub leader: i32,
+    pub leader: UserId,
     pub segment: i32,
     pub efficiency_modifier: i32,
     /// Whether the leader is exploring a hypothetical.
@@ -124,7 +127,7 @@ pub struct ReplayState {
     pub spoiler_free: bool,
     /// The players who will not play again if the leader restarts.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub restart_declined: Vec<i32>,
+    pub restart_declined: Vec<UserId>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "phase", rename_all = "camelCase", deny_unknown_fields)]
@@ -133,7 +136,7 @@ pub enum Phase {
         players: Vec<Player>,
         automatic_start: Option<usize>,
         countdown: Option<DateTime<Utc>>,
-        kicked: Vec<i32>,
+        kicked: Vec<UserId>,
     },
     Live {
         snapshot: Box<Snapshot>,
@@ -149,7 +152,7 @@ pub struct TableSnapshot {
     pub format: String,
     pub id: TableId,
     pub name: String,
-    pub owner: i32,
+    pub owner: UserId,
     pub visible: bool,
     #[serde(deserialize_with = "deserialize_stored_options")]
     pub options: Options,
@@ -160,7 +163,7 @@ pub struct TableSnapshot {
     pub phase: Phase,
     /// Messages without an ID are new: the next commit archives them.
     pub chat: Vec<TableChat>,
-    pub shadows: BTreeMap<i32, Option<i32>>,
+    pub shadows: BTreeMap<UserId, Option<i32>>,
 }
 /// Reads a checkpoint's table options. `Options` fills in a missing option with its default, which
 /// would silently change a stored table, so every option that checkpoints always write is required.
@@ -188,7 +191,7 @@ where
 pub struct TableChat {
     #[serde(default)]
     pub id: Option<i32>,
-    pub user: i32,
+    pub user: UserId,
     pub message: Chat,
 }
 impl TableChat {
@@ -248,7 +251,7 @@ impl TableSnapshot {
     }
     /// Updates the cached game totals of the pregame players in `users`, whose totals `counts`
     /// holds (a missing user has none). Returns whether any total changed.
-    pub fn set_game_counts(&mut self, users: &[i32], counts: &BTreeMap<i32, i64>) -> bool {
+    pub fn set_game_counts(&mut self, users: &[UserId], counts: &BTreeMap<UserId, i64>) -> bool {
         let Phase::Pregame { players, .. } = &mut self.phase else {
             return false;
         };
@@ -327,7 +330,7 @@ impl TableSnapshot {
         );
         hanabi_engine::get_variant(&self.options.variant_name)?;
         ensure!(
-            self.owner > 0
+            self.owner > UserId(0)
                 && hanabi_protocol::is_player_count(self.options.num_players)
                 && self.options.time_base.is_finite(),
             "Invalid table options"
@@ -337,19 +340,23 @@ impl TableSnapshot {
                 && self
                     .shadows
                     .iter()
-                    .all(|(id, seat)| *id > 0
+                    .all(|(id, seat)| *id > UserId(0)
                         && seat.is_none_or(|seat| usize::try_from(seat)
                             .is_ok_and(|seat| seat < self.players().len()))),
             "Invalid persisted spectator"
         );
         ensure!(
             self.players().len() <= self.max_players
-                && self.players().iter().enumerate().all(|(index, p)| (p.id > 0
-                    || (matches!(self.phase, Phase::Replay { .. })
-                        && self.extra.no_write_to_database
-                        && p.id == placeholder_player_id(index)))
-                    && !p.name.is_empty()
-                    && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
+                && self
+                    .players()
+                    .iter()
+                    .enumerate()
+                    .all(|(index, p)| (p.id > UserId(0)
+                        || (matches!(self.phase, Phase::Replay { .. })
+                            && self.extra.no_write_to_database
+                            && p.id == placeholder_player_id(index)))
+                        && !p.name.is_empty()
+                        && p.name.len() <= crate::accounts::MAX_USERNAME_LENGTH),
             "Invalid players"
         );
         ensure!(
@@ -602,8 +609,8 @@ const MAX_SHADOWS: usize = 4096;
 
 /// The ID of the player in a seat of a replay that is not written to the database. It is negative,
 /// so it cannot match a user.
-pub fn placeholder_player_id(seat: usize) -> i32 {
-    -1 - hanabi_engine::int(seat)
+pub fn placeholder_player_id(seat: usize) -> UserId {
+    UserId(-1 - hanabi_engine::int(seat))
 }
 
 pub fn tag_too_long() -> String {
@@ -752,7 +759,7 @@ mod tests {
     fn checkpoint_chat_keeps_its_archived_timestamp_but_sends_the_wire_form() {
         let chat = TableChat {
             id: Some(1),
-            user: 1,
+            user: UserId(1),
             message: serde_json::from_value(serde_json::json!(
                 {"msg": "hi", "source": "user", "datetime": "2026-11-02T20:00:00.123456Z"}
             ))
